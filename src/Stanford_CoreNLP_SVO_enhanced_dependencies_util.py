@@ -84,7 +84,10 @@ def conj_string(subjects, sent_data): # connect multiple conjugates into a singl
                 if len(subjects) == 2 and subjects[-1] == subj_gov[key]:
                     result = result + " " + conj + " " + sent_data[subjects[-1]]['word']
                     break
-    # It is a mistake to think that we can expand the scale of construction without limit, regardless of the possible objective conditions, or to go about without any certainty, without paying attention to the most rational and efficient use of material, human and financial resources.
+    # "It is a mistake to think that we can expand the scale of construction without limit,
+    # regardless of the possible objective conditions, or to go about without any certainty,
+    # without paying attention to the most rational and efficient use of material,
+    # human and financial resources."
     # the above sentence results in a Subject (S) we we rather than we
     # should the == be != ???
     if result == start_result:
@@ -187,7 +190,7 @@ def advcl_building(token, sent_data, ner, p_s, p_o, v_obj_obl_json, v_prep_json)
         if advcl_token["pos"] == "VBN" and o == "":# if the modifier is in passive voice
             o = p_s#the subject of the verb it modifies will be its default object
         else:
-            if s == "inferred_subject_passive":
+            if s == "Inferred_Subject_Passive":
                 s = p_s#the subject of the verb it modifies will be its default subject
         result.append([s, v, o])
         negation_result.append(negation)
@@ -211,7 +214,7 @@ def advcl_extraction(token, sent_data, p_s, p_o, v_obj_obl_json, v_prep_json):
     return result, negation_result
         
 def verb_root_svo_building(verb, sent_data, v_obj_obl_json, v_prep_json):#extract the subject and object of a single verb (as well as processing modifiers of that verb)
-    s = 'inferred_subject_passive'
+    s = 'Inferred_Subject_Passive'
     o = ''
     s_idx = -1
     o_idx = -1
@@ -325,7 +328,7 @@ def verb_root(verb_list, conj_word, token, sent_data):#extract subject, object, 
     s_set = False #booleans indicating if setting a default subject is needed (T:neede; F: already set)
     o_set = False#booleans indicating if setting default object is needed (T:neede; F: already set)
     o_share_idx = -1
-    s_share = 'inferred_subject_passive'# a potential default subject for multiple conjunct verbs
+    s_share = 'Inferred_Subject_Passive'# a potential default subject for multiple conjunct verbs
     o_share = ""# a potential default object for multiple conjunct verbs
     for verb in verb_list:
         s, v, o, negation, o_idx = verb_root_svo_building(verb, sent_data, v_obj_obl_json, v_prep_json)
@@ -335,14 +338,14 @@ def verb_root(verb_list, conj_word, token, sent_data):#extract subject, object, 
             if negation_list[0] == True and conj_word == "or":
                 negation = True
 
-        if s_set == False and s != 'inferred_subject_passive':#setting potential subject
+        if s_set == False and s != 'Inferred_Subject_Passive':#setting potential subject
             s_set = True
             s_share = s
         if o_set == False and o != '':#setting potential object
             o_set = True
             o_share = o
             o_share_idx = o_idx
-        if s == 'inferred_subject_passive':
+        if s == 'Inferred_Subject_Passive':
             s = s_share
         if o == '' and verb < o_share_idx: #object has to locate behind the verb in the sentence.
             o = o_share  
@@ -363,7 +366,7 @@ def pred_root(token, gov_dict, sent_data):# returns one triplet of subject-link 
     #predicative nominate
     #https://www.thesaurus.com/e/grammar/predicate-nominative-vs-predicate-adjectives/
     # the predicative nominate would be the synactical head of the subject and the link verb (usually is "be")
-    s = 'inferred_subject_passive'
+    s = 'Inferred_Subject_Passive'
     v = ''
     o = ''
     negation = negation_detect(token, sent_data)
@@ -433,7 +436,7 @@ def negation_detect(token, sent_data):#detect if there's negation associated wit
                     
         
 def link_verb_LVC_extraction(token, gov_dict, sent_data):
-    s = 'inferred_subject_passive'
+    s = 'Inferred_Subject_Passive'
     v = ''
     o = ''
     negation = negation_detect(token, sent_data)
@@ -513,7 +516,7 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
     T_T = []#list that stores Date Type of normalized date
     N = []#list that stores negation booleans (T=negation; F= without negation)
     acl = []#list that stores modifier
-    s = "inferred_subject_passive"#default subject
+    s = "Inferred_Subject_Passive" #default subject
     v = ""
     o = ""
 
@@ -572,7 +575,7 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
                     # a verb will be collected into the output if it:
                     #   i. has associated subject
                     #   ii. OR has associated object
-                    if s != 'inferred_subject_passive' or o != '':
+                    if s != 'Inferred_Subject_Passive' or o != '':
                         SVO.append([s, v, o])
                         N.append(n)
 
@@ -580,7 +583,7 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
         else:#if that token is not a verb 
             #check if that token is a part of an LVC that starts with a link verb (like "be responsible for")
             s,v,o, negation = link_verb_LVC_extraction(token, gov_dict, sent_data)
-            if v != "" and ( s != "inferred_subject_passive" or o != ''):
+            if v != "" and ( s != "Inferred_Subject_Passive" or o != ''):
                 if [s, v, o] not in SVO:#avoid repetition
                     SVO.append([s, v, o])
                     N.append(negation)
@@ -588,7 +591,7 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
             elif (token["deprel"] == "ROOT" or token["deprel"] == "parataxis") and ("NN" in token["pos"] or token["pos"] == "PRP"):#Subject -> Verb(be) -> predicative nominative
                 s, v, o, negation = pred_root(token, gov_dict, sent_data)
                 
-                if v != "" and ( s != "inferred_subject_passive" or o != ''):
+                if v != "" and ( s != "Inferred_Subject_Passive" or o != ''):
                     if [s, v, o] not in SVO:#avoid repetition
                         SVO.append([s, v, o])
                         N.append(negation)
@@ -615,7 +618,7 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
                     CollectedVs.append(v_id)
                     svo_acl, negation_acl = verb_root([v_id], "",v_token, sent_data)
                     if len(svo_acl) != 0:
-                        if svo_acl[0][0] == "inferred_subject_passive":
+                        if svo_acl[0][0] == "Inferred_Subject_Passive":
                             #if the subject is missing in the dependency, the subject of the clausal modifier is the token that it modifies (syntactical head)
                             svo_acl[0][0] = token["word"]
                     SVO.extend(svo_acl)
@@ -626,9 +629,11 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
     for index, item in enumerate(SVO):
         SVO[index][0] = replace_words_with_full_names(SVO[index][0],person_list)
         SVO[index][0] = replace_words_with_full_names(SVO[index][0], organization_list)
+        SVO[index][0] = replace_words_with_full_names(SVO[index][0], location_list)
         SVO[index][2] = replace_words_with_full_names(SVO[index][2], person_list)
         SVO[index][2] = replace_words_with_full_names(SVO[index][2], organization_list)
-    # print(SVO)
+        SVO[index][2] = replace_words_with_full_names(SVO[index][2], location_list)
+# print(SVO)
     # print("======END")
     # the values are returned for every SVO
     return SVO, location_list, loc_NER_value, T, T_S, T_T, per_NER_value, org_NER_value, person_list, organization_list, N

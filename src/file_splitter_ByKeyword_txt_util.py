@@ -17,7 +17,7 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window,"file_splitter_
 import os
 import pandas as pd
 import csv
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
 
 from nltk.corpus import wordnet#lemmatization
 #https://wordnet.princeton.edu/documentation/morphy7wn
@@ -38,7 +38,7 @@ def run(inputFilename, outputPath, keyword, first_occurrence, lemmatization = Tr
         if letter == '<' or letter == '>' or letter ==':' or letter =='"' or letter =='/' or letter =='\\' or letter =='|' or letter =='?' or letter =='*':
             title_keyword = keyword.replace(letter,"")
     # kwtokens = word_tokenize(keyword.lower())
-    kwtokens = word_tokenize_stanza(stanzaPipeLine(keyword.lower()))
+    kwtokens = tokenize_stanza_text(stanzaPipeLine(keyword.lower()))
     kwlist = []#list of list which includes conjugated forms of each token in keyword phrase
     default_conjugator = mlconjug.Conjugator(language='en')
     if first_occurrence == True:
@@ -80,7 +80,7 @@ def run(inputFilename, outputPath, keyword, first_occurrence, lemmatization = Tr
         docText = f.read()
         f.close()
         # sentences_ = sent_tokenize(docText)#the list of sentneces in corpus
-        sentences_ = sent_tokenize_stanza(stanzaPipeLine(docText))#the list of sentneces in corpus
+        sentences_ = sentence_split_stanza_text(stanzaPipeLine(docText))#the list of sentneces in corpus
         subfileindex = 1
         subfilePath = outputPath+os.sep+title+"_"+str(subfileindex)+'.txt'
         if first_occurrence == True:
@@ -91,7 +91,7 @@ def run(inputFilename, outputPath, keyword, first_occurrence, lemmatization = Tr
 
         for sent in sentences_: 
             # tokens_ = word_tokenize(sent)
-            tokens_ = word_tokenize_stanza(stanzaPipeLine(sent))
+            tokens_ = tokenize_stanza_text(stanzaPipeLine(sent))
             kwindex = 0
             kw = False
             for token in tokens_: 

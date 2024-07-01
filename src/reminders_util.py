@@ -69,8 +69,8 @@ message_SVO_default = 'The SVO algorithms use default settings for visualizing r
 title_options_no_SVO_records = ['No SVO records extracted']
 message_no_SVO_records = 'The SVO algorithms have not extracted any SVOs. If you have selected to filter Subject and/or Verb, the filtering algorithms may have excluded available records.\n\nYou may want to untick either/both checkboxes and try again.'
 
-title_options_SVO_inferred_subject_passive = ['SVO inferred_subject_passive']
-message_SVO_inferred_subject_passive = 'The SVO algorithms convert passive sentences into active ones. When no subject is present (e.g., "A beautiful car was bought"), a subject is automatically added as inferred_subject_passive.'
+title_options_SVO_Inferred_Subject_Passive = ['SVO Inferred_Subject_Passive']
+message_SVO_Inferred_Subject_Passive = 'The SVO algorithms convert passive sentences into active ones. When no subject is present (e.g., "A beautiful car was bought"), a subject is automatically added as Inferred_Subject_Passive.'
 
 title_options_CoreNLP_pronouns = ['CoreNLP pronouns detected']
 message_CoreNLP_pronouns = 'The CoreNLP algorithms have detected the presence of pronouns (e.g., he, she). You should run the coreference annotator to resolve the coreferences.'

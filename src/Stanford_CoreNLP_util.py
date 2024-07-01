@@ -192,6 +192,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                      sentence_length=1000, # unless otherwise specified; sentence length limit does not seem to work for parsers only for NER and POS but then it is useless
                      export_json_toTxt = True,
                      silent=False,
+                     filter_subjects=False,
                      **kwargs):
 
     # These values can be zero if the setup has specified e.g., spaCy but in SVO or other annotators, the user selects to run CoreNLP
@@ -310,7 +311,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'SVO':{"annotators": SVO_annotators},
         'OpenIE':{"annotators": ['tokenize','ssplit','natlog','openie','ner']},
         'parser (pcfg)':{"annotators": ['tokenize','ssplit','pos','lemma','ner', 'parse','regexner']},
-        'parser (nn)' :{"annotators": ['tokenize','ssplit','pos','lemma','ner','depparse','regexner']}
+        'parser (nn)':{"annotators": ['tokenize','ssplit','pos','lemma','ner','depparse','regexner']}
     }
 
     routine_option = {
@@ -534,7 +535,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 'replaceExtension': True,
                 'parse.maxlen': str(sentence_length),
                 'ner.maxlen': str(sentence_length),
-                'pos.maxlen': str(sentence_length)}
+                'pos.maxlen': str(sentence_length),
+                'filter_subjects': str(filter_subjects)}
 
     if DoCleanXML:
         params['annotators'] = params['annotators'] + ',cleanXML'
@@ -726,9 +728,9 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 # elif "DepRel" in annotator_chosen or "All POS" in annotator_chosen or "Lemma" in annotator_chosen:
                 #      sub_result, recordID = routine(config_filename,docID, docName, sentenceID, recordID, CoreNLP_output, **kwargs)
                 elif ("SVO" in str(annotator_params) or "OpenIE" in str(annotator_params)) and "coref" in docName.split("_"):
-                    sub_result = routine(config_filename, split_docID, doc_split, sentenceID, CoreNLP_output, **kwargs)
+                    sub_result = routine(config_filename, split_docID, doc_split, sentenceID, CoreNLP_output, filter_subjects, **kwargs)
                 else:
-                    sub_result = routine(config_filename,docID, docName, sentenceID, CoreNLP_output, **kwargs)
+                    sub_result = routine(config_filename,docID, docName, sentenceID, CoreNLP_output, filter_subjects, **kwargs)
                 if output_format == 'text': # this type of output format is for 'coref' annotator only
                     # coreference produces a text output;
                     # the coreferenced document should not include the prefix NLP_CoreNLP_coref
@@ -1158,7 +1160,7 @@ def date_get_info(norm_date):
     #     tense = "OTHER"
     return tense
 
-# check if an NER tag is part of a multi-line tag (e.g., for locations, Soviet Union, United States;
+# check if an NER tag is part of a multi-word expression/multi-line tag (e.g., for locations, Soviet Union, United States;
 #   for PERSON Mao Zedung)
 #   when they are, the tokenEnd in current row is equal to tokenBegin of next row
 
@@ -1552,7 +1554,7 @@ def process_json_sentence(config_filename, documentID, document, sentenceID, jso
 
 
 # Dec. 21
-def process_json_SVO_enhanced_dependencies(config_filename,documentID, document, sentenceID, json, **kwargs):
+def process_json_SVO_enhanced_dependencies(config_filename,documentID, document, sentenceID, json, filter_subjects, **kwargs):
     #extract date from file name
     filename_embeds_date_var = False
     gender_var = False
@@ -1680,7 +1682,13 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         # CYNTHIA: added list of locations in SVO output (e.g., Los Angeles; New York; Washington)
         # TODO Mino: add Date Type columns
         for row in SVO:
-            # SVO_brief.append([sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2]])
+            # add the tag suffix @# to row[0] (i.e., Subject (S)) to identify the Subject (S) as a mwe (multi-word expression)
+            #   that is a PERSON, ORGANIZATION, or LOCATION (e.g., Christopher Columbus, United States of America)
+            #   This information will be used in the SVO_util function lemmatize_filter_svo
+            #   to NOT lemmatize but filter the @# tagged Subject (S) as social actor, independently of the WordNet scoial actors list
+            if filter_subjects:
+                if row[0] in person_list or row[0] in organization_list or row[0] in location_list:
+                    row[0] = '@#' + row[0]
             SVO_brief.append([row[0], row[1], row[2], sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
             # TODO MINO: only add one value because the list includes duplicates.
             if len(T_S) > 1:

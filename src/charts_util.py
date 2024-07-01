@@ -513,8 +513,7 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
             #   typically because of too many rows for Excel to handle, when Excel is used
             return
 
-    n_documents = IO_csv_util.GetMaxValueInCSVField(inputFilename, 'visualize_charts_util', 'Document ID')
-
+    n_documents=0
     # by DOCUMENT
     if byDoc:
         # TODO depends on how many documents we have;
@@ -1001,7 +1000,7 @@ def process_sentenceID_record(Row_list, Row_list_new, index,
 # output is a csv file
 # TODO Samir very slow
 def add_missing_IDs(input, outputFilename):
-    from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
+    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
     # TODO temporary to measure process time
     startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                                    'Started running Excel Add missing IDs at',
@@ -1032,7 +1031,7 @@ def add_missing_IDs(input, outputFilename):
             inputFilename = Row_list[index][docName_pos]
             inputFilename = IO_csv_util.undressFilenameForCSVHyperlink(inputFilename)
             text = (open(inputFilename, "r", encoding="utf-8", errors='ignore').read())
-            sentences = sent_tokenize_stanza(stanzaPipeLine(text))
+            sentences = sentence_split_stanza_text(stanzaPipeLine(text))
             number_sentences.append([inputFilename, len(sentences)])
 
             # check whether the last sentence for the previous doc was less than number of sentences

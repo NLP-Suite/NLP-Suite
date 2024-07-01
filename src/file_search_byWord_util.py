@@ -23,7 +23,6 @@ import shutil # for copy of files
 import csv
 import tkinter.messagebox as mb
 import stanza
-# from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 import collections
 import re
 
@@ -112,8 +111,8 @@ def get_words_minus_K_plus_K(docText, search_keyword, exact_word_match,
 
     # convert string to list
     if isinstance(docText, str):
-        from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
-        words_ = word_tokenize_stanza(stanzaPipeLine(docText))
+        from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
+        words_ = tokenize_stanza_text(stanzaPipeLine(docText))
     # hashmap[hashfile.calculate_checksum(file)] = words_
     # hashfile.writehash(hashmap,hashOutputDir)
     # print("   Building cache...")
@@ -125,6 +124,7 @@ def get_words_minus_K_plus_K(docText, search_keyword, exact_word_match,
     # a is the word list used for a wordcloud of the set of -K and +K words
     return a
 
+# not used
 def get_lemma(form_lemma_pair, lang, keyword):
     if keyword not in form_lemma_pair:
         nlp = stanza.Pipeline(lang=lang, processors='tokenize, lemma')
@@ -150,13 +150,13 @@ def search_in_document(file, create_subcorpus_var, corpus_to_copy, docText, docI
     all_found_csv_words_records_oneDoc = []
     all_found_csv_words_minusK_plusK_records_oneDoc = []
 
-    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+    from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
     # SIMON cache
     # import hashfile
 
     search_keywords_found=False
 
-    words_ = word_tokenize_stanza(stanzaPipeLine(docText))
+    words_ = tokenize_stanza_text(stanzaPipeLine(docText))
     # hashmap[hashfile.calculate_checksum(file)+"case"+str(case_sensitive)] = words_
     # hashfile.writehash(hashmap, hashOutputDir)
     # print("   Building cache...")
@@ -188,7 +188,7 @@ def search_in_document(file, create_subcorpus_var, corpus_to_copy, docText, docI
 
 # the function search_in_sentence will loop through every sentence of a specific document
 # @@@
-def search_in_all_sentences_oneDoc(nlp, inputDir, file,
+def search_in_all_sentences_oneDoc(file,
     create_subcorpus_var, corpus_to_copy, docText, docIndex,
     form_lemma_pair, lang,
     search_keywords_list,
@@ -204,9 +204,8 @@ def search_in_all_sentences_oneDoc(nlp, inputDir, file,
     nDocsExtractOutput = 0
     nDocsExtractMinusOutput = 0
 
-    from Stanza_functions_util import word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
-    sentences = sent_tokenize_stanza(nlp(docText))
-    # sentences = nlp(docText).sentences
+    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
+    sentences = sentence_split_stanza_text(stanzaPipeLine(docText))
     num_sentences=len(sentences)
     all_adjacent_words_oneDoc = []
     all_adjacent_sentences_oneDoc = ''
@@ -304,7 +303,6 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
     # each occurrence of a search keyword, it's file path will be stored in a set
     form_lemma_pair = {}
     corpus_to_copy = set()
-    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 
     # loop through every txt file and annotate via request to YAGO
     files = IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
@@ -385,14 +383,15 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                                         True, '', True, '', False)
 
 
-    nlp = stanza.Pipeline(lang=lang, processors='tokenize, lemma')
-
+    # nlp = stanza.Pipeline(lang=lang, processors='tokenize, lemma')
+    #
     # processing corpus files
 
     # when lemmatizing, the search words also need to be lemmatized
     if lemmatize:
         import NGrams_CoOccurrences_util
-        lemmatized_search_keywords_list, lemmatized_search_word_str = NGrams_CoOccurrences_util.lemmatize_search_words(search_keywords_list)
+        # lemmatized_search_keywords_list, lemmatized_search_word_str = NGrams_CoOccurrences_util.lemmatize_search_words(search_keywords_list)
+        lemmatized_search_keywords_list, lemmatized_search_word_str = NGrams_CoOccurrences_util.lemmatize_search_words(search_keywords_str)
         search_keywords_list=lemmatized_search_keywords_list
 
     for file in files:
@@ -429,7 +428,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
             #   it will process the same sentences from different docs!!!
             search_keywords_found, corpus_to_copy, all_adjacent_words_oneDoc, \
                     all_adjacent_sentences_oneDoc, all_found_sentences_oneDoc, all_found_csv_words_minusK_plusK_records_oneDoc, all_found_csv_sentences_records_oneDoc = \
-                search_in_all_sentences_oneDoc(nlp, inputDir, file, create_subcorpus_var, corpus_to_copy,
+                search_in_all_sentences_oneDoc(file, create_subcorpus_var, corpus_to_copy,
                         docText, docIndex,
                         form_lemma_pair, lang,
                         search_keywords_list, case_sensitive, lemmatize,

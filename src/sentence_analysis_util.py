@@ -9,7 +9,6 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window, "sentence_anal
 import tkinter as tk
 import collections
 import os
-# from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 import pandas as pd
 import IO_csv_util
 import IO_files_util
@@ -21,7 +20,7 @@ def Extract(lst):
 def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, configFileName,
 								  chartPackage, dataTransformation, openOutputFiles=True,
 								  input_dictionary_file='', chart_title=''):
-	from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+	from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text
 
 	filesToOpen = []
 	DictionaryList = []
@@ -58,12 +57,12 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, co
 			# Process each word in txt
 			Sentence_ID = 0
 			# sentences = tokenize.sent_tokenize(text)
-			sentences = sent_tokenize_stanza(stanzaPipeLine(text))
+			sentences = sentence_split_stanza_text(stanzaPipeLine(text))
 			# word  frequency sentenceID DocumentID FileName
 			for each_sentence in sentences:
 				In = []
 				Sentence_ID += 1
-				token = word_tokenize_stanza(stanzaPipeLine(each_sentence))
+				token = tokenize_stanza_text(stanzaPipeLine(each_sentence))
 				for word in token:
 					for dict_word in dic:
 						if word == dict_word[0].rstrip():
@@ -97,12 +96,12 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, co
 			# Process each word in txt
 			Sentence_ID = 0
 			# sentences = tokenize.sent_tokenize(text)
-			sentences = sent_tokenize_stanza(stanzaPipeLine(text))
+			sentences = sentence_split_stanza_text(stanzaPipeLine(text))
 			# word  frequency sentenceID DocumentID FileName
 			for each_sentence in sentences:
 				In = []
 				Sentence_ID += 1
-				token = word_tokenize_stanza(stanzaPipeLine(each_sentence))
+				token = tokenize_stanza_text(stanzaPipeLine(each_sentence))
 				for word in token:
 					for dict_word in dic_value:
 						if word == dict_word.rstrip():

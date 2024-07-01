@@ -292,7 +292,7 @@ Your selected NLP package for basic functions (e.g., sentence splitting, tokeniz
 You can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language.",OFF
 NGrams_CoOccurrences,NLP setup options,"Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.
 
-Your selected corpus language is Latin.
+Your selected corpus language is English.
 Your selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is Stanza.
 
 You can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language.",OFF
@@ -486,7 +486,7 @@ word2vec,Gensim Word2Vec timing,"Beware that Gensim Word2Vec on the 296 files (2
 1954_Mao_Zhou.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
 
 This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
-SVO,SVO inferred_subject_passive,"The SVO algorithms convert passive sentences into active ones. When no subject is present (e.g., ""A beautiful car was bought""), a subject is automatically added as inferred_subject_passive.",ON
+SVO,SVO Inferred_Subject_Passive,"The SVO algorithms convert passive sentences into active ones. When no subject is present (e.g., ""A beautiful car was bought""), a subject is automatically added as Inferred_Subject_Passive.",ON
 Stanford_CoreNLP,CoreNLP quote timing,"Beware that the CoreNLP quote annotator on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 3 hours on a standard laptop.",ON
 1954_Mao_Zhou_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
 
@@ -1902,3 +1902,4 @@ This is done so that a date string returned by gthe function can be sorted prope
 2013_Xi_Wen.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
 
 This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+Stanford_CoreNLP,CoreNLP PCFG parser timing,"Beware that the CoreNLP PCFG parser on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 1 hour and 40 minutes on a standard laptop.",ON

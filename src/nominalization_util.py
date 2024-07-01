@@ -33,7 +33,7 @@ from nltk.corpus import wordnet as wn
 if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Nominalization",['pywsd'])==False:
     sys.exit(0)
 
-# from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
+# from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
 # MUST use this version or code will break no longer true; pywsd~=1.2.4 pip install pywsd~=1.2.4; even try pip install pywsd=1.2.2
 #   or this version pip install pywsd==1.0.2
 # https://github.com/alvations/pywsd/issues/65
@@ -85,8 +85,8 @@ def nominalized_verb_detection(docID,doc,dateStr, sent,check_ending,nominalized_
     nominalized_cnt = Counter()
 
     # sentences = tokenize.sent_tokenize(sent)
-    from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
-    sentences = sent_tokenize_stanza(stanzaPipeLine(sent))
+    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
+    sentences = sentence_split_stanza_text(stanzaPipeLine(sent))
 
     result_true_false_each_noun = []
     result_specific_document = []

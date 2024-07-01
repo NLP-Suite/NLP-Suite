@@ -96,10 +96,10 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
         print('Empty file ', inputFilename)
         return
 
-    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
 
     # sentences = tokenize.sent_tokenize(fulltext)  # split text into sentences
-    sentences = sent_tokenize_stanza(stanzaPipeLine(fulltext))
+    sentences = sentence_split_stanza_text(stanzaPipeLine(fulltext))
 
     # SentiWordNet Interface http://www.nltk.org/howto/sentiwordnet.html
     # SentiSynsets
@@ -112,7 +112,7 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
     for s in sentences:
         tagged_sentence = pos_tag(word_tokenize(s))
         # TODO Mino I cannot simply substitute the NLTK pos_tag; what is the Stanza equivalent?
-        # tagged_sentence = pos_tag(word_tokenize_stanza(stanzaPipeLine(s)))
+        # tagged_sentence = pos_tag(tokenize_stanza_text(stanzaPipeLine(s)))
         sentiment = 0
         tokens_count = 0
         label = ""
@@ -122,7 +122,7 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
                 continue
 
             # lemma = lemmatizer.lemmatize(word, pos=wn_tag)
-            lemma = lemmatize_stanza(stanzaPipeLine(word))
+            lemma = lemmatize_stanza_word(stanzaPipeLine(word))
             if not lemma:
                 continue
 

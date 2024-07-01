@@ -17,7 +17,7 @@ import csv
 import os
 import pandas as pd
 
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza
+from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
 
 
 
@@ -37,7 +37,7 @@ def run(inputCoNLL, outputPath, keyword, first_occurrence):
     #https://stackoverflow.com/questions/18171739/unicodedecodeerror-when-reading-csv-file-in-pandas-with-python
     subfileindex = 1#record the number of subfles generated
     # kwtoken = word_tokenize(keyword)
-    kwtoken = word_tokenize_stanza(stanzaPipeLine(keyword))
+    kwtoken = tokenize_stanza_text(stanzaPipeLine(keyword))
     keyword_size = len(kwtoken)
     head, output_name = os.path.split(df.iloc[0][11])
     name = output_name.partition('.')[0]

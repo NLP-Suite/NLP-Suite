@@ -88,21 +88,32 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         return
 
     if all_analyses_var.get():
-        # create a subdirectory of the output directory; should create a subdir with increasing number to avoid writing ver
-        outputDir_temp = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='CoNLL_analyses',
-                                                           silent=True)
-        if outputDir_temp == '':
-            return
-
-        outputDir=outputDir_temp
-
+        # # create a subdirectory of the output directory; should create a subdir with increasing number to avoid writing ver
+        # outputDir_temp = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='CoNLL_analyses',
+        #                                                    silent=True)
+        # if outputDir_temp == '':
+        #     return
+        #
+        # outputDir=outputDir_temp
+        #
         if all_analyses.get() == '*':
             label = "Clause, noun, verb, function words"
         else:
             label = all_analyses.get()
         startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running CoNLL table ' + label + ' analyses at',
                                                      True, '', True, '', False)
+
+        outputDirSV = outputDir
+
         if all_analyses.get() == '*' or all_analyses.get() == 'Clause analysis':
+            # create a subdirectory of the output directory; should create a subdir with increasing number to avoid writing ver
+            outputDir_temp = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir,
+                                                                    label='CoNLL_clause',
+                                                                    silent=True)
+            if outputDir_temp == '':
+                return
+            outputDir = outputDir_temp
+
             import CoNLL_clause_analysis_util
             outputFiles = CoNLL_clause_analysis_util.clause_stats(inputFilename, '', outputDir,
                                                                   data,
@@ -112,6 +123,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                 filesToOpen.extend(outputFiles)
 
         if all_analyses.get() =='*' or all_analyses.get() =='Noun analysis':
+            # create a subdirectory of the output directory; should create a subdir with increasing number to avoid writing ver
+            outputDir_temp = IO_files_util.make_output_subdirectory(inputFilename, '', outputDirSV,
+                                                                    label='CoNLL_noun',
+                                                                    silent=True)
+            if outputDir_temp == '':
+                return
+            outputDir = outputDir_temp
             import CoNLL_noun_analysis_util
             outputFiles = CoNLL_noun_analysis_util.noun_stats(inputFilename, outputDir, data, all_CoNLL_records,
                                                               openOutputFiles,
@@ -120,6 +138,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
             if outputFiles!=None:
                 filesToOpen.extend(outputFiles)
         if all_analyses.get() =='*' or all_analyses.get() =='Verb analysis':
+            # create a subdirectory of the output directory; should create a subdir with increasing number to avoid writing ver
+            outputDir_temp = IO_files_util.make_output_subdirectory(inputFilename, '', outputDirSV,
+                                                                    label='CoNLL_verb',
+                                                                    silent=True)
+            if outputDir_temp == '':
+                return
+            outputDir = outputDir_temp
             import CoNLL_verb_analysis_util
             outputFiles = CoNLL_verb_analysis_util.verb_stats(config_filename, inputFilename, outputDir, data, all_CoNLL_records,
                                                               openOutputFiles, chartPackage, dataTransformation)
@@ -128,6 +153,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                 filesToOpen.extend(outputFiles)
 
         if all_analyses.get() =='*' or all_analyses.get() =='Function (junk/stop) words analysis':
+            # create a subdirectory of the output directory; should create a subdir with increasing number to avoid writing ver
+            outputDir_temp = IO_files_util.make_output_subdirectory(inputFilename, '', outputDirSV,
+                                                                    label='CoNLL_stop',
+                                                                    silent=True)
+            if outputDir_temp == '':
+                return
+            outputDir = outputDir_temp
             import CoNLL_function_words_analysis_util
             outputFiles = CoNLL_function_words_analysis_util.function_words_stats(inputFilename, outputDir, data,
                                                                                   all_CoNLL_records, openOutputFiles,
