@@ -1903,3 +1903,19 @@ This is done so that a date string returned by gthe function can be sorted prope
 
 This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
 Stanford_CoreNLP,CoreNLP PCFG parser timing,"Beware that the CoreNLP PCFG parser on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 1 hour and 40 minutes on a standard laptop.",ON
+knowledge_graphs_DBpedia_YAGO,DBpedia/YAGO options,"You have several options available. You can
+   1. select an ontology class, using the dropdown menu;
+   2. enter a sub-class in the 'Sub-class' widget taking the value from the TIPS files on ontology classes;
+   3. you can enter both class and sub-class if needed.
+
+After selecting/entering a class, several widgets will become available. You can select a color to be associated to the selected class; blue will be the default color if none is selected; you can select the same color for different classes.
+
+After selecting class (and perhaps sub-class and color), press
+   1. 'Reset ' to start all over;
+   2. 'Show' to display the choices made thuus far;
+   3. + to approve the choices made and possibly add new choices.
+
+Then press RUN.
+
+Compared to DBpedia, YAGO can be much slower (10 seconds vs. 1 minute for a short document).",ON
+DB_PCACE_data_analyzer,GIS geocoder,"After the geocoding and mapping is done, please, check carefully the results. If you are geocoding locations such as Athens or Rome in Georgia, most likely they will be geocoded in Greece and Italy. If you specify the United States as the country bias, the geocoder may select Rome, New York, or Indiana, or Illinois, rather than Georgia. To make sure the geocoded Rome is in Georgia, you may need to edit the geocoded csv file, adding Georgia as the state, e.g., Rome, Georgia.",ON

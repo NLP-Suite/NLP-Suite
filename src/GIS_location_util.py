@@ -192,44 +192,49 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 			if str(row["Location"]) != '' and str(row["Location"]) != 'nan':
 				# LOCATION, CITY, STATE_OR_PROVINCE, COUNTRY are the location NER tags for CoreNLP
 				# GPE is location NER tag for spaCy and Stanza
-				if (row["NER"]=='LOCATION' or  \
-					row["NER"]=='CITY' or  \
-					row["NER"]=='STATE_OR_PROVINCE' or \
-					row["NER"]=='COUNTRY') or \
-					('GPE' in row["NER"]):
-					# check next row
-					try:
-						nextrow = dt.iloc[index + 1]
-					except:
-						nextrow=row
-					# spaCy and Stanza do not contain tokenEnd tokenBegin headers; code would break
-					sentence = row["Sentence"]
-					document = row["Document"]
-					try:
-						if row["tokenEnd"]==nextrow["tokenBegin"]:
-							# the current location value (e.g., las) needs to be merged with the next row value (e.g., las vegas)
-							if currLocation != '':  # we are on the next row
-								currLocation = currLocation + ' ' + row["Location"]
+				# the code would break if no NER is passed (e.g., from DB_PC-ACE)
+				try:
+					if (row["NER"]=='LOCATION' or  \
+						row["NER"]=='CITY' or  \
+						row["NER"]=='STATE_OR_PROVINCE' or \
+						row["NER"]=='COUNTRY') or \
+						('GPE' in row["NER"]):
+						# check next row
+						try:
+							nextrow = dt.iloc[index + 1]
+						except:
+							nextrow=row
+						# spaCy and Stanza do not contain tokenEnd tokenBegin headers; code would break
+						sentence = row["Sentence"]
+						document = row["Document"]
+						try:
+							if row["tokenEnd"]==nextrow["tokenBegin"]:
+								# the current location value (e.g., las) needs to be merged with the next row value (e.g., las vegas)
+								if currLocation != '':  # we are on the next row
+									currLocation = currLocation + ' ' + row["Location"]
+								else:
+									currLocation = row["Location"]
+								continue
 							else:
-								currLocation = row["Location"]
-							continue
-						else:
-							if currLocation != '':
-								currLocation = currLocation + ' ' + row["Location"]
-							# currLocation = ''
-							else:
-								currLocation = row["Location"]
-						# sentence = row["Sentence"]
-						# document = row["Document"]
-					except:
-						currLocation = row["Location"]
-						pass
-
-					# locList.append(save_location(datePresent, currLocation, row)[0])
-					locList.append(save_location(datePresent, currLocation, sentence, document, row)[0])
+								if currLocation != '':
+									currLocation = currLocation + ' ' + row["Location"]
+								# currLocation = ''
+								else:
+									currLocation = row["Location"]
+							# sentence = row["Sentence"]
+							# document = row["Document"]
+						except:
+							currLocation = row["Location"]
+							pass
+						# locList.append(save_location(datePresent, currLocation, row)[0])
+						locList.append(save_location(datePresent, currLocation, sentence, document, row)[0])
+						currLocation = ''
+				except:
+					currLocation = row["Location"]
+					locList.append([row[locationColumnNumber], row[1]])
 					currLocation = ''
 
-				# the code would break if no NER is passed (e.g., from DB_PC-ACE)
+	# the code would break if no NER is passed (e.g., from DB_PC-ACE)
 				# 		try:
 				# 			locList.append([row[locationColumnNumber],[index],[0], row['NER']])
 				# 		except:

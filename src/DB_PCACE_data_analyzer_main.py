@@ -43,6 +43,8 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
     filesToOpen = []
     outputFile = ''
 
+    outputDirSV = outputDir
+
     import os
     if select_DB_tables_var.get()!='':
         IO_files_util.openFile(window, inputDir + os.sep + select_DB_tables_var.get() + ".xlsx")
@@ -50,9 +52,10 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
 
     outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
                                                                      label='DB_PC-ACE',
-                                                                     silent=True)
+                                                                     silent=False)
 
     # complex frequencies
+    # all frequencies
     if ALL_objects_frequencies_var:
         outputFile = DB_PCACE_data_analyzer_util.get_complex_frequencies_all(inputDir, outputDir)
         if outputFile != '':
@@ -60,6 +63,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         outputFile = DB_PCACE_data_analyzer_util.get_simplex_frequencies_all(inputDir, outputDir)
         if outputFile!='':
             filesToOpen.append(outputFile)
+        outputDir = inputDir
     if SELECTED_objects_frequencies_var:
         if setup_complex!='':
             outputFile = DB_PCACE_data_analyzer_util.get_complex_frequencies(setup_complex, inputDir, outputDir)
@@ -72,6 +76,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
             return
         if outputFile != '':
             filesToOpen.append(outputFile)
+            outputDir = inputDir
     if simplex_data!='' and value_parent_object_var:
         outputFile = DB_PCACE_data_analyzer_util.individual_simplex_info_main(simplex_data, inputDir, outputDir)
         if outputFile!='':
@@ -152,8 +157,9 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
 # GIS maps _____________________________________________________
 
     if semantic_triplet_var or space_var:
-        if google_earth_var and (setup_simplex=='City name' or setup_simplex=='County') \
-                and SELECTED_simplex_objects_frequencies_var:
+        # if google_earth_var and (setup_simplex=='City name' or setup_simplex=='County') \
+        #         and SELECTED_simplex_objects_frequencies_var:
+        if google_earth_var:
             extract_date_from_text_var = 0
             filename_embeds_date_var = 0
             reminders_util.checkReminder(scriptName, reminders_util.title_options_geocoder,
@@ -164,8 +170,11 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
             area_var = ''
             restrict = False
             # TODO temporary for now
-            location_filename=os.path.join(outputDir,'NLP_simplex_freq_Dir_Lynching_csv_SQLite.xlsx')
+            setup_simplex = 'City name'
+            if not os.path.isfile(os.path.join(outputDir,'NLP_City name_simplex_freq_Dir_Lynching_PCACE_xlsx.csv')):
+                outputFile = DB_PCACE_data_analyzer_util.get_simplex_frequencies(setup_simplex, inputDir, outputDir)
 
+            location_filename=os.path.join(outputDir,'NLP_City name_simplex_freq_Dir_Lynching_PCACE_xlsx.csv')
             if setup_simplex == 'City name':
                 IO_csv_util.rename_header(location_filename, 'City name', 'Location')
             if setup_simplex == 'County':
@@ -213,13 +222,13 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
+        outputDir = outputDirSV
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(
                                 GUI_util.input_main_dir_path.get(),
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
-                                GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_package_options_widget.get(),
                                 GUI_util.data_transformation_options_widget.get(),
                                 simplex_data_type_var.get(),
@@ -576,7 +585,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
 # print_narrative_checkbox = tk.Checkbutton(window, text='Print selected complex object in narrative form', variable=print_narrative_var, onvalue=1, offvalue=0)
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,print_narrative_checkbox)
 
-ALL_complex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencies for ALL objects', variable=ALL_objects_frequencies_var, onvalue=1, offvalue=0)
+ALL_complex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencies for ALL objects (complex & simplex)', variable=ALL_objects_frequencies_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    ALL_complex_objects_checkbox,
