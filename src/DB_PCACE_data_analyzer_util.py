@@ -53,7 +53,8 @@ def import_PCACE_tables(inputDir):
 
 
 
-# check if the required documents can be found. OK pass checks.
+# check if a required document can be found.
+# OK pass checks and returns a dataframe or a boolean set to False if the file is not found.
 def check_missing(fileName):
     if os.path.isfile(fileName):
         fileName_df = pd.DataFrame(pd.read_excel(fileName))
@@ -61,7 +62,8 @@ def check_missing(fileName):
     else:
         mb.showwarning(title='Warning',
                     message='The table ' + fileName + ' is missing.\n\nPlease, make sure to export this table from PC-ACE data backend and try again.')
-        return False
+        # create an empty dataframe
+        return pd.DataFrame()
 
 
 # give the list for all table names (e.g., simplex, complex)
@@ -218,9 +220,10 @@ def get_simplex_frequencies(name, inputDir, outputDir):
     name = simplex_id.iat[0,1]
 
     temp = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_df, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
-    select = temp[temp['ID_data_simplex']==id]
-    select = select[['ID_data_simplex', 'ID_data_complex']]
-    count = select.groupby(['ID_data_simplex']).count()
+    # select_simplex = temp[temp['ID_data_simplex']==id]
+    select_simplex = temp[temp['ID_setup_simplex']==id]
+    select_simplex_complex = select_simplex[['ID_data_simplex', 'ID_data_complex']]
+    count = select_simplex_complex.groupby(['ID_data_simplex']).count()
 
     data_Simplex_temp = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'left', on = 'ID_data_date_number_text')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
@@ -233,7 +236,7 @@ def get_simplex_frequencies(name, inputDir, outputDir):
     # TODO Anna: The first column should have a header "Name of Simplex Object"
 
     simplex_frequency_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
-                                                                       'simplex_freq')
+                                                                       name+'_simplex_freq')
     count.to_csv(simplex_frequency_file_name, encoding='utf-8', index=False)
 
     return simplex_frequency_file_name

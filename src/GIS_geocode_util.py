@@ -410,8 +410,13 @@ def geocode(window,locations, inputFilename, outputDir,
 					sentence = item[3]
 					document = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(item[4]))[1]
 				else:
-					sentence = item[2]
-					document = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(item[3]))[1]
+					# code breaks when geocoding PC-ACE_data
+					try:
+						sentence = item[2]
+						document = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(item[3]))[1]
+					except:
+						sentence = ''
+						document = ''
 			# avoid repetition so as not to access the geocoder service several times for the same location;
 			# 	location already in list
 			if itemToGeocode in distinctGeocodedList:
@@ -568,7 +573,7 @@ def geocode(window,locations, inputFilename, outputDir,
 	if locationsNotFound==0:
 		locationsNotFoundoutputFilename='' #used NOT to open the file since there are NO errors
 	else:
-		if locationsNotFound==index:
+		if locationsNotFound==index_locations or locationsNotFound==len(distinctGeocodedList):
 			geocodedLocationsOutputFilename='' #used NOT to open the file since there are no records
 			# this warning is already given
 	IO_user_interface_util.timed_alert(window, 2000, "GIS geocoder", "Finished geocoding " + str(len(locations)) + " locations via the online service '" + geocoder + "' at", True, str(locationsNotFound) + " location(s) was/were NOT geocoded out of " + str(index_locations) + ". The list will be displayed as a csv file.\n\nPlease, check your locations and try again.\n\nA Google Earth Pro kml map file will now be produced for all successfully geocoded locations.", True, startTime, True)
