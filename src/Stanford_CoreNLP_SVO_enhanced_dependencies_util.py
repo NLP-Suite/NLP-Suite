@@ -488,7 +488,8 @@ def replace_words_with_full_names(sentence, full_names):
     for word in words:
         was_replaced = False
         for full_name in available_names:
-            if word in full_name.split():
+            # if word in full_name.split() such name as Chiang Kai-shek would not be replaced and would keep shek
+            if word in str(full_name.split()):
                 updated_sentence += full_name + ' '
                 available_names.remove(full_name)  # Remove the used name from the copy
                 was_replaced = True
@@ -520,18 +521,17 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
     v = ""
     o = ""
 
-    # CYNTHIA: get locations from entitymentions
+    # CYNTHIA: get locations from entitymentions; get location, person, organization from entitymentions
+    # entitymentions for each sentence record (sent_data)
     for item in entitymentions:
         if item["ner"] is not None and item["ner"] in ['STATE_OR_PROVINCE', 'COUNTRY', "CITY", "LOCATION"]:
             location_list.append(item["text"])
             loc_NER_value.append([item["text"], item["ner"], item["tokenBegin"], item["tokenEnd"]])
         if item["ner"] is not None and item["ner"] in ['PERSON']:
-            # SIMON
             if not item["text"] in person_list:
                 person_list.append(item["text"])
                 per_NER_value.append([item["text"], item["ner"], item["tokenBegin"], item["tokenEnd"]])
         if item["ner"] is not None and item["ner"] in ['ORGANIZATION']:
-            # SIMON
             if not item["text"] in organization_list:
                 organization_list.append(item["text"])
                 org_NER_value.append([item["text"], item["ner"], item["tokenBegin"], item["tokenEnd"]])

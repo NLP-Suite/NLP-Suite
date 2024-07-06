@@ -18,7 +18,11 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
     # head, scriptName = os.path.split(os.path.basename(__file__))
     scriptName=configFilename.replace("_config.csv","")
     filesToOpen=[]
-    if ("Lemma" in str(annotator_params) and 'Lemma' in outputFilename) or 'parse' in str(annotator_params):
+
+    head, tail = os.path.split(outputFilename)
+    temp_outputFilename=tail
+
+    if ("Lemma" in str(annotator_params) and 'Lemma' in temp_outputFilename) or 'parse' in str(annotator_params):
         # reminders_util.checkReminder(scriptName, reminders_util.lemma_frequencies,
         #                              reminders_util.message_lemma_frequencies, True)
         outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
@@ -43,7 +47,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
     # generate visualization output ----------------------------------------------------------------
 # All POS ________________________________________________________________
 
-    if ('POS' in str(annotator_params) and 'POS' in outputFilename) or 'parse' in str(annotator_params):
+    if ('POS' in str(annotator_params) and 'POS' in temp_outputFilename) or 'parse' in str(annotator_params):
         outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
@@ -83,7 +87,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
     # generate visualization output ----------------------------------------------------------------
 # NER ________________________________________________________________
 
-    if ('NER' in str(annotator_params) and 'NER' in outputFilename) or 'parse' in str(annotator_params):
+    if ('NER' in str(annotator_params) and 'NER' in temp_outputFilename) or 'parse' in str(annotator_params):
         reminders_util.checkReminder(scriptName, reminders_util.NER_frequencies,
                                      reminders_util.message_NER_frequencies)
         if IO_csv_util.get_csvfile_headers(outputFilename, False)[1] == "NER":
@@ -175,8 +179,8 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
 # SPECIAL ANNOTATORS: date, gender, quote, sentiment, SVO, OpenIE
 # date ________________________________________________________________
     # dates are extracted by the date annotator, but also as part of SVO and OpenIE
-    if (('date' in str(annotator_params) and 'date' in outputFilename)) or \
-            ('OpenIE' in str(annotator_params) and 'OpenIE' in outputFilename):
+    if (('date' in str(annotator_params) and 'date' in temp_outputFilename)) or \
+            ('OpenIE' in str(annotator_params) and 'OpenIE' in temp_outputFilename):
             # (('SVO' in str(annotator_params) and 'SVO' in outputFilename)) or \
             # visualizing normalized-date for SVO is done in SVO_util called in SVO_main
         # Date expressions are in the form yesterday, tomorrow morning, the day before Christmas
@@ -239,7 +243,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
     # generate visualization output ----------------------------------------------------------------
 # gender ________________________________________________________________
 
-    if 'gender' in str(annotator_params) and 'gender' in outputFilename:
+    if 'gender' in str(annotator_params) and 'gender' in temp_outputFilename:
         outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
@@ -306,7 +310,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
     # generate visualization output ----------------------------------------------------------------
 # quote ________________________________________________________________
 
-    if 'quote' in str(annotator_params) and 'quote' in outputFilename:
+    if 'quote' in str(annotator_params) and 'quote' in temp_outputFilename:
         outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
@@ -327,7 +331,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
     # generate visualization output ----------------------------------------------------------------
 # sentiment ________________________________________________________________
 
-    if 'sentiment' in str(annotator_params) and 'sentiment' in outputFilename:
+    if 'sentiment' in str(annotator_params) and 'sentiment' in temp_outputFilename:
         if IO_csv_util.get_csvfile_headers(outputFilename, False)[0] == "Sentiment score":
             outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                                outputDir,
@@ -367,8 +371,8 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
 # generate visualization output ----------------------------------------------------------------
 # SVO and OpenIE ________________________________________________________________
 
-    if ('SVO' in str(annotator_params) and 'SVO' in outputFilename) or \
-            ('OpenIE' in str(annotator_params) and 'OpenIE' in outputFilename):
+    if ('SVO' in str(annotator_params) and 'SVO' in temp_outputFilename) or \
+            ('OpenIE' in str(annotator_params) and 'OpenIE' in temp_outputFilename):
         # create an SVO-unfiltered subdirectory of the main output directory
         import IO_files_util
         import os
