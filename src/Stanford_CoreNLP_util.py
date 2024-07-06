@@ -1210,6 +1210,8 @@ def check_NER_tokenBegin_tokenEnd(NER):
             index = index + 1
     return new_NER
 
+# The ner function processes NER tags and for multi-word expressions (e.g., Christopher Columbus)
+#   with the same NER tag (e.g., PERSON) computes and returns a new, single value NER tag
 def process_json_ner(config_filename,documentID, document, sentenceID, json, **kwargs):
     print("   Processing Json output file for NER annotator")
     # establish the kwarg local vars
@@ -1613,7 +1615,8 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         # TODO MINO: add Date Type columns
         # CYNTHIA: feed another information sentence['entitymentions'] to SVO_extraction to get locations
         #
-        SVO, location_list, loc_NER_value, T, T_S, T_T, per_NER_value, org_NER_value, person_list, organization_list, N = Stanford_CoreNLP_SVO_enhanced_dependencies_util.SVO_extraction(sent_data, sentence['entitymentions'])# main function
+        SVO, location_list, loc_NER_value, T, T_S, T_T, per_NER_value, org_NER_value, person_list, organization_list, N \
+            = Stanford_CoreNLP_SVO_enhanced_dependencies_util.SVO_extraction(sent_data, sentence['entitymentions'])# main function
         # per_NER_value currently not used
         nidx = 0
         location_list = []
