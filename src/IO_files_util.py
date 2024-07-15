@@ -487,46 +487,65 @@ def getDateFromFileName(file_name, date_format='mm-dd-yyyy', sep='_', date_field
             dateStr = ''
             if date_format == 'mm-dd-yyyy':
                 # date = datetime.datetime.strptime(raw_date, '%m-%d-%Y').date()
+                # dateStr = date.strftime('%Y-%m-%d')
+                # month=dateStr[5:7]
+                # day=dateStr[8:10]
+                # year=dateStr[:4]
                 date = datetime.strptime(raw_date, '%m-%d-%Y').date()
-                dateStr = date.strftime('%Y-%m-%d')
-                month=dateStr[5:7]
-                day=dateStr[8:10]
-                year=dateStr[:4]
+                dateStr = date.strftime('%m-%d-%Y')
+                month=dateStr[0:2]
+                day=dateStr[3:5]
+                year=dateStr[6:10]
             elif date_format == 'dd-mm-yyyy':
                 # date = datetime.datetime.strptime(raw_date, '%d-%m-%Y').date()
+                # month=dateStr[5:7]
+                # day=dateStr[8:10]
+                # year=dateStr[:4]
                 date = datetime.strptime(raw_date, '%d-%m-%Y').date()
-                dateStr = date.strftime('%Y-%m-%d') # '%d-%m-%Y'
-                month=dateStr[5:7]
-                day=dateStr[8:10]
-                year=dateStr[:4]
+                dateStr = date.strftime('%d-%m-%Y')
+                day=dateStr[0:2]
+                month=dateStr[3:5]
+                year=dateStr[6:10]
             elif date_format == 'yyyy-mm-dd':
                 # date = datetime.datetime.strptime(raw_date, '%Y-%m-%d').date()
+                # month=dateStr[5:7]
+                # day=dateStr[8:10]
+                # year=dateStr[:4]
                 date = datetime.strptime(raw_date, '%Y-%m-%d').date()
-                dateStr = date.strftime('%Y-%m-%d') # '%Y-%m-%d'
+                dateStr = date.strftime('%Y-%m-%d')
+                year=dateStr[0:4]
                 month=dateStr[5:7]
                 day=dateStr[8:10]
-                year=dateStr[:4]
             elif date_format == 'yyyy-dd-mm':
                 # date = datetime.datetime.strptime(raw_date, '%Y-%d-%m').date()
+                # month=dateStr[5:7]
+                # day=dateStr[8:10]
+                # year=dateStr[:4]
                 date = datetime.strptime(raw_date, '%Y-%d-%m').date()
-                dateStr = date.strftime('%Y-%m-%d') # '%Y-%d-%m'
-                month=dateStr[5:7]
-                day=dateStr[8:10]
+                dateStr = date.strftime('%Y-%d-%m')
                 year=dateStr[:4]
+                day=dateStr[5:7]
+                month=dateStr[8:10]
             elif date_format == 'yyyy-mm':
                 # date = datetime.datetime.strptime(raw_date, '%Y-%m').date()
+                # month=dateStr[5:7]
+                # day=0
+                # year=dateStr[:4]
                 date = datetime.strptime(raw_date, '%Y-%m').date()
                 dateStr = date.strftime('%Y-%m')
+                year=dateStr[:4]
                 month=dateStr[5:7]
                 day=0
-                year=dateStr[:4]
             elif date_format == 'yyyy':
                 # date = datetime.datetime.strptime(raw_date, '%Y').date()
+                # month = 0
+                # day = 0
+                # year = dateStr[:4]
                 date = datetime.strptime(raw_date, '%Y').date()
                 dateStr = date.strftime('%Y')
+                year = dateStr[:4]
                 month = 0
                 day = 0
-                year = dateStr[:4]
             dateStr = dateStr.replace('/', '-')
         except ValueError:
             if errMsg == True:

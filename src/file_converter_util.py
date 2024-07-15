@@ -190,7 +190,7 @@ def csv_converter(window,inputFilename,inputDir,outputDir,config_filename,openOu
         #   Could further ask if they want to embed the filename in special symbols (e.g., <@ @>, as in <@filename@>
         #       so that the files can also be easily split
 
-def rtf_converter(window,inputFilename,inputDir,outputDir,openOutputFiles,chartPackage, dataTransformation):
+def rtf_converter(window,inputFilename,inputDir,outputDir,config_filename, openOutputFiles,chartPackage, dataTransformation):
     textFilename=''
     if len(inputDir)>0:
         msgbox_subDir = tk.messagebox.askyesnocancel("Process sub-directories",

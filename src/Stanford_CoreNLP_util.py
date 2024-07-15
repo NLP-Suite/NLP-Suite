@@ -259,10 +259,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
     NERs = []
 
     for key, value in kwargs.items():
-        if key == 'extract_date_from_text_var' and value == True:
-            extract_date_from_text_var = True
+        # when coming from parsers_annotators_main the kwargs do not contain the item NERs
+        #   the NERs item is only available when coming from NER_main
         if key == 'NERs':
             NERs = value
+        if key == 'extract_date_from_text_var' and value == True:
+            extract_date_from_text_var = True
         if key == 'filename_embeds_date_var' and value == True:
             filename_embeds_date_var = True
         if key == 'date_format':
@@ -716,6 +718,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
 
 #  generate output from json file for specific annotators ------------------------------------
 
+#   the sentence splitter is processed in process_json_sentence
                 if "parser" in annotator_chosen:
                     if "pcfg" in annotator_chosen:
                         sub_result, recordID = routine(config_filename, docID, docName, sentenceID, recordID, True,CoreNLP_output, **kwargs)
@@ -727,10 +730,11 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                CoreNLP_output, **kwargs)
                 # elif "DepRel" in annotator_chosen or "All POS" in annotator_chosen or "Lemma" in annotator_chosen:
                 #      sub_result, recordID = routine(config_filename,docID, docName, sentenceID, recordID, CoreNLP_output, **kwargs)
-                elif ("SVO" in str(annotator_params) or "OpenIE" in str(annotator_params)) and "coref" in docName.split("_"):
+                # elif ("SVO" in str(annotator_params) or "OpenIE" in str(annotator_params)) and "coref" in docName.split("_"):
+                elif "SVO" in str(annotator_params) or "OpenIE" in str(annotator_params):
                     sub_result = routine(config_filename, split_docID, doc_split, sentenceID, CoreNLP_output, filter_subjects, **kwargs)
                 else:
-                    sub_result = routine(config_filename,docID, docName, sentenceID, CoreNLP_output, filter_subjects, **kwargs)
+                    sub_result = routine(config_filename,docID, docName, sentenceID, CoreNLP_output, **kwargs)
                 if output_format == 'text': # this type of output format is for 'coref' annotator only
                     # coreference produces a text output;
                     # the coreferenced document should not include the prefix NLP_CoreNLP_coref
@@ -795,7 +799,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                              'CoreNLP_'+annotator_chosen+'_lemma_'+output_format[index][0])
                 else:
                     #@@@
-                    outputFilename = IO_files_util.generate_output_file_name(str(doc), inputDir, outputDir_chosen,'.csv',
+                    outputFilename = IO_files_util.generate_output_file_name(str(docName), inputDir, outputDir_chosen,'.csv',
                                                                               'CoreNLP_'+annotator_chosen+'_lemma'+output_format[index][0])
                 filesToOpen.append(outputFilename)
                 df = pd.DataFrame(run_output[index], columns=output_format[index])
@@ -804,23 +808,27 @@ def CoreNLP_annotate(config_filename,inputFilename,
             # generate output file name
             if annotator_chosen == 'NER':
                 print("Stanford CoreNLP annotator: NER")
-                if len(kwargs['NERs']) == 1:
-                    outputFilename_tag = str(kwargs['NERs'][0])
-                elif len(kwargs['NERs'])>10 and len(kwargs['NERs'])<20:
-                    outputFilename_tag = 'MISC'
-                elif len(kwargs['NERs'])>20:
+                # when Stanford_CoreNLP_utilis called from parsers_annotators_main,
+                # the kwargs do not contain the value['NERs'] the code would break
+                try:
+                    if len(kwargs['NERs']) == 1:
+                        outputFilename_tag = str(kwargs['NERs'][0])
+                    elif len(kwargs['NERs'])>10 and len(kwargs['NERs'])<20:
+                        outputFilename_tag = 'MISC'
+                    elif len(kwargs['NERs'])>20:
+                        outputFilename_tag = 'ALL_NER'
+                    else:
+                        if 'CITY' in str(kwargs['NERs']) and 'STATE_OR_PROVINCE' and str(kwargs['NERs']) and 'COUNTRY' in str(kwargs['NERs']) and 'LOCATION' in str(kwargs['NERs']):
+                            outputFilename_tag='LOCATIONS'
+                        elif 'NUMBER' in str(kwargs['NERs']) and 'ORDINAL' and str(kwargs['NERs']) and 'PERCENT' in str(kwargs['NERs']):
+                            outputFilename_tag = 'NUMBERS'
+                        elif 'PERSON' in str(kwargs['NERs']) and 'ORGANIZATION' in str(kwargs['NERs']):
+                            outputFilename_tag = 'ACTORS'
+                        elif 'DATE' in str(kwargs['NERs']) and 'TIME' in str(kwargs['NERs']) and 'DURATION' in str(kwargs['NERs']) and 'SET' in str(kwargs['NERs']):
+                            outputFilename_tag = 'DATES'
+                except:
+                    NERs = 'PERSON, ORGANIZATION, MISC, MONEY, NUMBER, ORDINAL, PERCENT, DATE, TIME, DURATION, SET, EMAIL, URL, CITY,STATE_OR_PROVINCE, COUNTRY, LOCATION, NATIONALITY, RELIGION, TITLE, IDEOLOGY, CRIMINAL_CHARGE,CAUSE_OF_DEATH'
                     outputFilename_tag = 'ALL_NER'
-                else:
-                    if 'CITY' in str(kwargs['NERs']) and 'STATE_OR_PROVINCE' and str(kwargs['NERs']) and 'COUNTRY' in str(kwargs['NERs']) and 'LOCATION' in str(kwargs['NERs']):
-                        outputFilename_tag='LOCATIONS'
-                    elif 'NUMBER' in str(kwargs['NERs']) and 'ORDINAL' and str(kwargs['NERs']) and 'PERCENT' in str(kwargs['NERs']):
-                        outputFilename_tag = 'NUMBERS'
-                    elif 'PERSON' in str(kwargs['NERs']) and 'ORGANIZATION' in str(kwargs['NERs']):
-                        outputFilename_tag = 'ACTORS'
-                    elif 'DATE' in str(kwargs['NERs']) and 'TIME' in str(kwargs['NERs']) and 'DURATION' in str(kwargs['NERs']) and 'SET' in str(kwargs['NERs']):
-                        outputFilename_tag = 'DATES'
-                    # else:
-                    #     outputFilename_tag = 'Multi-tags'
                 outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir_chosen, '.csv',
                                                                                  'CoreNLP_NER_'+outputFilename_tag)
             elif "parser" in annotator_chosen:
@@ -845,7 +853,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     # 'Date' added at the end of the column list for SVO, for instance
                     output_format.append("Date")
                 # save csv file with the expected header (i.e., output_format)
-                # @@@
                 df = pd.DataFrame(run_output, columns=output_format)
                 IO_csv_util.df_to_csv(GUI_util.window, df, outputFilename, headers=output_format, index=False)
                 #count the number of corefed pronouns (COREF annotator)
@@ -1024,7 +1031,7 @@ def date_in_filename(document, **kwargs):
         if key == 'date_position_var':
             date_position_var = value
     if filename_embeds_date_var:
-        date, date_str, month, day, year = IO_files_util.getDateFromFileName(document, date_format, items_separator_var, date_position_var)
+        date, date_str, int_month, int_day, int_year = IO_files_util.getDateFromFileName(document, date_format, items_separator_var, date_position_var)
     return date_str
 
 # ["Word", "Normalized date", "tid","tense","Date type","Sentence ID", "Sentence", "Document ID", "Document"],
@@ -1163,7 +1170,6 @@ def date_get_info(norm_date):
 # check if an NER tag is part of a multi-word expression/multi-line tag (e.g., for locations, Soviet Union, United States;
 #   for PERSON Mao Zedung)
 #   when they are, the tokenEnd in current row is equal to tokenBegin of next row
-
 def check_NER_tokenBegin_tokenEnd(NER):
     index = 0
     new_NER= []
@@ -1181,7 +1187,7 @@ def check_NER_tokenBegin_tokenEnd(NER):
         except:
             beginToken_nextRow = None
             NERtag_nextRow = None
-        # the NER values but have the same beginning/ending values AND
+        # the NER values must have the same beginning/ending values AND
         #   be of the same tag type (e.g., PERSON)
         #   unless LOCATION is the type; e.g., Denmark Street, is tagged as COUNTRY and LOCATION
         if ((endToken_currenRow == beginToken_nextRow) or (beginToken_nextRow == None)) and \
@@ -1217,17 +1223,21 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
     # establish the kwarg local vars
     extract_date_from_text_var = False
     filename_embeds_date_var = False
-    request_NER = []
+    # when coming from parsers_annotators_main the kwargs do not contain the item NERs and request_NER
+    #   the NERs item is only available when coming from NER_main
+    request_NER = 'PERSON, ORGANIZATION, MISC, MONEY, NUMBER, ORDINAL, PERCENT, DATE, TIME, DURATION, SET, EMAIL, URL, CITY,STATE_OR_PROVINCE, COUNTRY, LOCATION, NATIONALITY, RELIGION, TITLE, IDEOLOGY, CRIMINAL_CHARGE,CAUSE_OF_DEATH'
     # date_format = ''
     # items_separator_var = ''
     # date_position_var = 0
     # date_str = ''
     # process the optional values in kwargs
     for key, value in kwargs.items():
-        if key == 'extract_date_from_text_var' and value == True:
-            extract_date_from_text_var = True
+        # when coming from parsers_annotators_main the kwargs do not contain the item NERs
+        #   the NERs item is only available when coming from NER_main
         if key == 'NERs':
             request_NER = value
+        if key == 'extract_date_from_text_var' and value == True:
+            extract_date_from_text_var = True
         if key == 'filename_embeds_date_var' and value == True:
             filename_embeds_date_var = True
         # if key == 'date_format':
@@ -1294,9 +1304,9 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
                         NER.append(temp)
 
     # check tokenBegin & tokenEnd in current and next sentence
-    new_NER = check_NER_tokenBegin_tokenEnd(NER)
-
-    return new_NER
+    # new_NER = check_NER_tokenBegin_tokenEnd(NER)
+    # return new_NER
+    return NER
 
 def process_json_sentiment(config_filename,documentID, document, sentenceID, json, **kwargs):
     print("   Processing Json output file for SENTIMENT annotator")
@@ -1550,7 +1560,13 @@ def process_json_sentence(config_filename, documentID, document, sentenceID, jso
                     complete_sent = complete_sent + ' ' + token['originalText']
             sentence_length=sentence_length+1
         sentenceID = sentenceID + 1
-        temp.append([sentenceID, complete_sent, sentence_length, number_punctuations, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+        if 'filename_embeds_date_var' in kwargs:
+            date_str = date_in_filename(document, **kwargs)
+            if date_str!='':
+                temp.append([sentenceID, complete_sent, sentence_length, number_punctuations, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), date_str])
+            else:
+                temp.append([sentenceID, complete_sent, sentence_length, number_punctuations, documentID,
+                             IO_csv_util.dressFilenameForCSVHyperlink(document)])
     return temp
 
 

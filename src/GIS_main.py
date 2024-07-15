@@ -96,7 +96,7 @@ def run(inputFilename,
 
     if csv_file!='':
         result = mb.askokcancel("GIS pipeline input file",
-                       "This is a reminder that you are now running the GIS pipeline with the csv input file\n\n"+csv_file+'\n\nPress Cancel then Esc to clear the csv file widget if you want to run the GIS pipeline from your input txt file(s) and try again.')
+                       "This is a reminder that you are running the GIS pipeline with the csv input file\n\n"+csv_file+'\n\nand the GIS package ' + GIS_package_var +'\n\nPress Cancel then Esc to clear the csv file widget if you want to run the GIS pipeline from your input txt file(s) (you can select a different mapping software using the dropdown menu) and try again.')
         if result == False:
             return
         inputFilename=csv_file

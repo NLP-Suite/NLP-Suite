@@ -32,6 +32,8 @@ import IO_csv_util # TODO MINO GIS create kml record
 
 filesToOpen = []
 
+# multi_name_locations is provided in the NLP Suite lib/wordLists to make sure that multiple name locations are processed correctly
+#	e.g., China, People's Republic of China, US, U.S., United States, United States of America
 multi_name_locations = pd.read_csv(os.path.join(GUI_IO_util.wordLists_libPath,"multi_name_locations.csv"))
 
 # TODO
@@ -393,7 +395,7 @@ def geocode(window,locations, inputFilename, outputDir,
 				document = item[5]
 				if datePresent==True:
 					date = item[6]
-			else:
+			else: # not CoNLL
 				itemToGeocode =item[0]
 				if datePresent:
 					date = item[1]
@@ -422,6 +424,8 @@ def geocode(window,locations, inputFilename, outputDir,
 			if itemToGeocode in distinctGeocodedList:
 				# print(len(distinctGeocodedList))
 				# print("   Geocoding NON-DISTINCT location: " + itemToGeocode)
+				# multi_name_locations is provided in the NLP Suite lib/wordLists to make sure that multiple name locations are processed correctly
+				#	e.g., China, People's Republic of China, US, U.S., United States, United States of America
 				for index, row in multi_name_locations.iterrows():  # For every row in the ConLL
 					multi_name_location = row[0]
 					multi_name_location = multi_name_location.split(', ')
@@ -445,14 +449,14 @@ def geocode(window,locations, inputFilename, outputDir,
 					country_geocoder=address_list[-1].strip()
 			else:
 				print("   Geocoding DISTINCT location: " + itemToGeocode)
-				for index, row in multi_name_locations.iterrows():  # For every row in the ConLL
-					multi_name_location = row[0]
+				for index1, row1 in multi_name_locations.iterrows():  # For every row in the ConLL
+					multi_name_location = row1[0]
 					multi_name_location = multi_name_location.split(', ')
 					for loc_name in multi_name_location: # "Location multiple names"
 						if itemToGeocode==loc_name:
-							itemToGeocode = row["Location single name"]
-							NER_tag = row["NER_Tag"]
-							NER_tag_nominatim = row["NER_Tag_Nominatim"]
+							itemToGeocode = row1["Location single name"]
+							NER_tag = row1["NER_Tag"]
+							NER_tag_nominatim = row1["NER_Tag_Nominatim"]
 							break
 					if itemToGeocode == loc_name:
 						break
@@ -503,15 +507,18 @@ def geocode(window,locations, inputFilename, outputDir,
 					address_list = address.split(',')
 					country_geocoder=address_list[-1].strip()
 			#print(currRecord + itemToGeocode + str(lat) + str(lng) + address+"\n")
+			# WRITE THE RECORD -----------------------------------------------------------------
 			if lat!=0 and lng!=0:
 				if inputIsCoNLL:
 					if datePresent:
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, country_geocoder, sentenceID, sentence, documentID, document, date])
 					else:
-						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, country_geocoder, sentenceID, sentence, documentID, document])
+						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng,
+										address, country_geocoder, sentenceID, sentence, documentID, document])
 				else:
 					if datePresent:
-						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, country_geocoder, date])
+						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng,
+											address, country_geocoder, date])
 					else:
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, country_geocoder])
 
@@ -525,10 +532,6 @@ def geocode(window,locations, inputFilename, outputDir,
 				# pnt.style.labelstyle.color = simplekml.Color.rgb(int(r_value), int(g_value), int(b_value))
 				# the code would break if no sentence is passed (e.g., from DB_PC-ACE)
 				try:
-					document = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(document))[1]
-					date=''
-					if datePresent:
-						date = input_df.at[index - 1, 'Date']
 					if date!='':
 						try:
 							pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>" \
@@ -543,9 +546,14 @@ def geocode(window,locations, inputFilename, outputDir,
 										  "<i><b>Sentence</b></i>: " + sentence + "<br/><br/>"
 				except:
 					pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>"
-				# TODO MINO GIS date option
+
+				# create the date values for the slide bar in Google Earth Pro for dynamic time
 				if datePresent:
-					GEPdateFormat = convertToGEP(date)
+					try:
+						GEPdateFormat = convertToGEP(date)
+					except:
+						print(date)
+						GEPdateFormat = ''
 					pnt.timespan.begin = GEPdateFormat
 					pnt.timespan.end = GEPdateFormat
 
