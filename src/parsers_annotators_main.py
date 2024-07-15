@@ -100,7 +100,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                 if annotators_var and annotators_menu_var != '':
                     if 'NER annotator' in annotators_menu_var:
                         annotator = 'NER'
-                    # if 'NER (Open GUI)' in annotators_menu_var: # NER annotator
+                    # if 'NER annotator' in annotators_menu_var:
+                    #     annotator = 'NER'
                     #     if IO_libraries_util.check_inputPythonJavaProgramFile('NER_main.py') == False:
                     #         return
                     #     call("python NER_main.py", shell=True)
@@ -129,8 +130,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                         if IO_libraries_util.check_inputPythonJavaProgramFile(
                                 "Stanford_CoreNLP_coReference_util.py") == False:
                             return
-
-
                         outputFiles, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename,
                                                                                            inputDir,
                                                                                            outputDir, openOutputFiles,
@@ -152,16 +151,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                         return
 
             if len(annotator)>0:
+                # all items in red (e.g., filename_embeds_date_var, date_format) are the **kwargs in the function CoreNLP_annotate
                 outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                               outputDir,
-                                                                               openOutputFiles, chartPackage, dataTransformation,
-                                                                               annotator, False, #'All POS',
-                                                                               language, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
-                                                                               filename_embeds_date_var=filename_embeds_date_var,
-                                                                               date_format=date_format_var,
-                                                                               items_separator_var=items_separator_var,
-                                                                               date_position_var=date_position_var,
-                                                                               single_quote_var = single_quote)
+                                   outputDir,
+                                   openOutputFiles, chartPackage, dataTransformation,
+                                   annotator, False, #'All POS',
+                                   language, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
+                                   filename_embeds_date_var=filename_embeds_date_var,
+                                   date_format=date_format_var,
+                                   items_separator_var=items_separator_var,
+                                   date_position_var=date_position_var,
+                                   single_quote_var = single_quote)
 
                 if outputFiles == None:
                     return

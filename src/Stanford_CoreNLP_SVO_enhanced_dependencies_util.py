@@ -479,7 +479,8 @@ def link_verb_LVC_extraction(token, gov_dict, sent_data):
     return "", "", "", negation
 
 
-
+# in mwe (multi-word expressions) such as Chiang Kai-shek, the function replaces the single token
+#   extracted by s, v, o (e.g., o shek) with the full name Chiang Kai-shek
 def replace_words_with_full_names(sentence, full_names):
     updated_sentence = ''
     words = sentence.split()

@@ -51,6 +51,8 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
     outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
                                                                      label='DB_PC-ACE',
                                                                      silent=False)
+    if outputDir == '':
+        return
 
 # compute frequencies of complex/simplex objects ______________________________________________________________________________
 
@@ -144,20 +146,42 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         if nRecords > 1:  # including headers; file is empty
             import pandas as pd
 
-            df = pd.read_csv(outputFile,encoding='utf-8',on_bad_lines='skip')
-            # Add a new empty column called 'data expression'
-            df['Date expression'] = '1998-09-01'
-            df['Normalized date'] = ''
-            df['Date type'] = ''
-            # Write the updated DataFrame back to the CSV file
-            df.to_csv(outputFile, index=False)
-            print("New column 'data expression' added successfully!")
+            # the next lines do not seem to do anything,
+            #   perhaps, should take the date from the date in the database to create a dynamic networkk graph
+            # df = pd.read_csv(outputFile,encoding='utf-8',on_bad_lines='skip')
+            # # Add a new empty column called 'data expression'
+            # df['Date expression'] = '' # '1998-09-01' should take the date from the date in the database
+            # df['Normalized date'] = ''
+            # df['Date type'] = ''
+            # # Write the updated DataFrame back to the CSV file
+            # df.to_csv(outputFile, index=False)
+            # print("New column 'Date expression' added successfully!")
 
             gexf_file = Gephi_util.create_gexf(window, fileBase, outputDir, outputFile,
                                                "Subject (S)", "Verb (V)", "Object (O)",'',"non-default") # Sentence ID will be added as the last column
             filesToOpen.append(gexf_file)
 
-# wordcloud for semantic triplets SVO _________________________________________________
+        # Sankey charts
+
+            Sankey_limit1_var = 5
+            Sankey_limit2_var = 10
+            Sankey_limit3_var = 20
+            three_way_Sankey = True
+
+            output_label = 'sankey'
+            outputFilename_sankey = IO_files_util.generate_output_file_name(outputFile, inputDir, outputDir,
+                                                                            '.html', output_label)
+            outputFiles = charts_util.Sankey(outputFile, outputFilename_sankey,
+                                             'Subject (S)', Sankey_limit1_var, 'Verb (V)', Sankey_limit2_var,
+                                             three_way_Sankey, 'Object (O)', Sankey_limit3_var)
+
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
+    # wordcloud for semantic triplets SVO _________________________________________________
 
     if semantic_triplet_var and wordcloud_var:
         nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(outputFile)
@@ -187,8 +211,35 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
 
 # GIS maps for semantic triplets SVO _____________________________________________________
 
-    if semantic_triplet_var or space_var:
-        if google_earth_var:
+    if semantic_triplet_var or space_var or time_var:
+        if time_var and not semantic_triplet_var:
+            outputFile = DB_PCACE_data_analyzer_util.get_time_simplex(inputDir, outputDir,
+                                                                               primary_complex_var, comments_var,
+                                                                               document_sources_var)
+            if outputFile != '':
+                filesToOpen.append(outputFile)
+
+                # headers=IO_csv_util.get_csvfile_headers(outputFile)
+                # columns_to_be_plotted_xAxis=IO_csv_util.get_headerValue_from_columnNumber(headers,column_number=0)
+                columns_to_be_plotted_yAxis=['Time of day']
+                outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFile,
+                                                                   outputDir,
+                                                                   columns_to_be_plotted_xAxis=[],
+                                                                   columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
+                                                                   chart_title='Frequency Distribution of Time of day',
+                                                                   count_var=1, hover_label=[],
+                                                                   outputFileNameType='time', #'gender_bar',
+                                                                   column_xAxis_label='Time of day',
+                                                                   groupByList=[],
+                                                                   plotList=[],
+                                                                   chart_title_label='')
+                if outputFiles!=None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
+
+        if space_var or google_earth_var:
             extract_date_from_text_var = 0
             filename_embeds_date_var = 0
             reminders_util.checkReminder(scriptName, reminders_util.title_options_geocoder,
@@ -204,9 +255,28 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                 return
             # location_filename = os.path.join(outputDir,'NLP_' + setup_simplex + '_simplex_freq_Dir_Lynching_PCACE_xlsx.csv')
             # if not os.path.isfile(location_filename):
-            location_filename = DB_PCACE_data_analyzer_util.get_simplex_frequencies(setup_simplex, inputDir, outputDir)
+            location_filename = DB_PCACE_data_analyzer_util.get_simplex_frequencies(setup_simplex, inputDir, outputDir, False)
 
-            IO_csv_util.rename_header(location_filename, setup_simplex, 'Location')
+            # IO_csv_util.rename_header(location_filename, setup_simplex, 'Location')
+            IO_csv_util.rename_header(location_filename, 'Value', 'Location')
+
+            columns_to_be_plotted_yAxis = ['Location']
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, location_filename,
+                                                      outputDir,
+                                                      columns_to_be_plotted_xAxis=[],
+                                                      columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
+                                                      chart_title='Frequency Distribution of Locations',
+                                                      count_var=1, hover_label=[],
+                                                      outputFileNameType='time',  # 'gender_bar',
+                                                      column_xAxis_label='Location',
+                                                      groupByList=[],
+                                                      plotList=[],
+                                                      chart_title_label='')
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
             outputFile = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
                                                       config_filename, location_filename, inputDir,
@@ -234,15 +304,15 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
 
 # actors ----------------------------------------------------------------------
 
-    if actors_var != '':
-        if actors_var == '*' or actors_var == 'collective actor':
-            outputFile = DB_PCACE_data_analyzer_util.collective_actor_characteristics(inputDir, outputDir)
+    if actors_var!='':
+        if 'Collective' in actors_var:
+            outputFile = DB_PCACE_data_analyzer_util.collective_actor_characteristics(inputDir, outputDir, actors_var)
             if outputFile != '':
                 filesToOpen.append(outputFile)
 
                 # headers=IO_csv_util.get_csvfile_headers(outputFile)
                 # columns_to_be_plotted_xAxis=IO_csv_util.get_headerValue_from_columnNumber(headers,column_number=0)
-                columns_to_be_plotted_yAxis=['Name of collective actor Simplex', 'Actor aggregate (Collective) COLIN Simplex']
+                columns_to_be_plotted_yAxis=['Name of collective actor Simplex']
                 outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFile,
                                                                    outputDir,
                                                                    columns_to_be_plotted_xAxis=[],
@@ -260,16 +330,18 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                     else:
                         filesToOpen.extend(outputFiles)
 
-        if actors_var == '*' or actors_var == 'individual':
-            outputFile = DB_PCACE_data_analyzer_util.individual_characteristics(inputDir, outputDir)
+
+        if 'Individual' in actors_var:
+            outputFile = DB_PCACE_data_analyzer_util.individual_characteristics(inputDir, outputDir, actors_var)
             if outputFile != '':
                 filesToOpen.append(outputFile)
                 # headers=IO_csv_util.get_csvfile_headers(outputFile)
                 # columns_to_be_plotted_xAxis=IO_csv_util.get_headerValue_from_columnNumber(headers,column_number=0)
-                columns_to_be_plotted_yAxis=['First name Simplex', 'Last name Simplex',
-                                             'Type of relationship Simplex', 'Exact age Simplex', 'Qualitative age Simplex',
-                                             'Name of individual actor Simplex', 'Actor aggregate (Individual) COLIN Simplex',
-                                             'Lynch victim Simplex', 'Crime victim Simplex']
+                # columns_to_be_plotted_yAxis=['First name Simplex', 'Last name Simplex',
+                #                              'Type of relationship Simplex', 'Exact age Simplex', 'Qualitative age Simplex',
+                #                              'Name of individual actor Simplex', 'Actor aggregate (Individual) COLIN Simplex',
+                #                              'Lynch victim Simplex', 'Crime victim Simplex']
+                columns_to_be_plotted_yAxis=['Name of individual actor Simplex']
                 outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFile,
                                                                    outputDir,
                                                                    columns_to_be_plotted_xAxis=[],
@@ -287,9 +359,9 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                     else:
                         filesToOpen.extend(outputFiles)
 
+        if 'Organization' in actors_var:
 
-        if actors_var == '*' or actors_var == 'organization':
-            outputFile = DB_PCACE_data_analyzer_util.organization_characteristics_main(inputDir, outputDir)
+            outputFile = DB_PCACE_data_analyzer_util.organization_characteristics_main(inputDir, outputDir, actors_var)
             if outputFile != '':
                 filesToOpen.append(outputFile)
 
@@ -312,7 +384,6 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                         filesToOpen.append(outputFiles)
                     else:
                         filesToOpen.extend(outputFiles)
-
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -427,8 +498,8 @@ def clear(e):
 
     simplex_data_type_var.set('')
     simplex_list=[]
-    simplex_data_menu_var.set(simplex_list)
-    simplex_data_menu_var.set('')
+    simplex_data_var.set(simplex_list)
+    simplex_data_var.set('')
     simplex_data['values'] = []
 
     value_parent_object_var.set(0)
@@ -510,15 +581,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    True, False, True, False, 90, GUI_IO_util.open_S_dictionary,
                                    "Use the dropdown menu to select the data type to be used to extract a list of values.")
 
-simplex_data_menu_var = tk.StringVar()
-simplex_list = DB_PCACE_data_analyzer_util.give_Simplex_text_date_number(simplex_data_type_var.get(), os.path.join(inputDir.get(),'data_SimplexText.xlsx'), os.path.join(inputDir.get(),'data_SimplexDate.xlsx'), os.path.join(inputDir.get(),'data_SimplexNumber.xlsx'))
-simplex_data_menu_var.set(simplex_list)
-simplex_data_menu = ttk.Combobox(window, textvariable = simplex_data_menu_var, width=GUI_IO_util.widget_width_short)
-# simplex_data_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(),'setup_simplex.csv'))
-# simplex_data_menu = DB_PCACE_data_analyzer_util.give_Simplex_text_date_number(simplex_data_menu_var, data_SimplexText, data_SimplexDate, data_SimplexNumber)
-
-simplex_data = ttk.Combobox(window, width=GUI_IO_util.widget_width_short)
-# setup_complex.configure(state='disabled')
+# simplex_data = ''
+simplex_data_var = tk.StringVar()
+# simplex_data_var.set(simplex_list)
+# simplex_data_var = simplex_list
+simplex_data = ttk.Combobox(window, textvariable = simplex_data_var, width=GUI_IO_util.widget_width_short)
+simplex_list = DB_PCACE_data_analyzer_util.get_Simplex_text_date_number(simplex_data_type_var.get(), os.path.join(inputDir.get(),'data_SimplexText.xlsx'), os.path.join(inputDir.get(),'data_SimplexDate.xlsx'), os.path.join(inputDir.get(),'data_SimplexNumber.xlsx'))
+simplex_data_menu = simplex_list
 simplex_data['values'] = simplex_data_menu
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+350, y_multiplier_integer,
@@ -527,14 +596,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
                                    "Use the dropdown menu to select the simplex data type value (e.g., police) for which you want to find simplex & complex objects usage")
 
 def activate_date_number_text(*args):
-    simplex_list = DB_PCACE_data_analyzer_util.give_Simplex_text_date_number(simplex_data_type_var.get(),
+    simplex_list = DB_PCACE_data_analyzer_util.get_Simplex_text_date_number(simplex_data_type_var.get(),
                                     os.path.join(inputDir.get(),
                                              'data_SimplexText.xlsx'),
                                      os.path.join(inputDir.get(),
                                               'data_SimplexDate.xlsx'),
                                      os.path.join(inputDir.get(),
                                             'data_SimplexNumber.xlsx'))
-    simplex_data_menu_var.set(simplex_list)
+    simplex_data_var.set(simplex_list)
     simplex_data['values'] = simplex_list
 simplex_data_type_var.trace('w',activate_date_number_text)
 
@@ -557,7 +626,7 @@ primary_complex['values'] = primary_complex_menu
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    primary_complex,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Use the dropdown menu to select a specific primary complex object (Macro event) to analyze.\nWhen a specific macro event is selected, all analyses (e.g., SVO, actors) will be based on that macro event.")
+                                   "Use the dropdown menu to select a specific primary complex object (Macro event) by its identifier to analyze.\nWhen a specific macro event is selected, all analyses (e.g., SVO, actors) will be based on that macro event.")
 
 def set_visualization():
     if semantic_triplet_var.get()==1:
@@ -580,36 +649,37 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 actors_lb = tk.Label(window, text='Actors ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,actors_lb,True)
 
-actors_var.set('')
-actors_menu = tk.OptionMenu(window, actors_var, '*', 'collective actor', 'individual', 'organization')
+actors_var=tk.StringVar()
+actors = ttk.Combobox(window, textvariable = actors_var, width=GUI_IO_util.widget_width_short)
+
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+50, y_multiplier_integer,
-                                   actors_menu,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Use the dropdown menu to select the type of actor you want to extract ")
+                                   actors,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   "Use the dropdown menu to select the complex oobject that is a type of actor that you want to extract (e.g., Collective actor, Individual, Organization)")
 
 time_checkbox = tk.Checkbutton(window, text='Time', variable=time_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                    time_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Tick the checkbox to extract the time of action when running SVO. Columns with time information will be added to the SVO csv output file.\nWhen a specific macro event is selected, the time will be extracted for that specific macro event.")
 
 space_checkbox = tk.Checkbutton(window, text='Space', variable=space_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+150, y_multiplier_integer,
                                    space_checkbox,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Tick the checkbox to extract the space of action when running SVO. Columns with space information will be added to the SVO csv output file.\nWhen a specific macro event is selected, the space will be extracted for that specific macro event.")
+                                   "Tick the checkbox to extract space information. When running Space in conjuction with SVO, columns with space information will be added to the SVO csv output file.\nWhen a specific macro event is selected, the space will be extracted for that specific macro event.\nWhen the Visualize Where checkbox is ticked and a Simplex location name is selected, space information will be geocoded using Nominatim and displayed as pin map via Google Earth Pro and heat map via Google Maps.")
 
 gephi_var.set(0)
-gephi_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in network graphs (via Gephi) ',
+gephi_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in network graphs (via Gephi and Sankey) ',
                                 variable=gephi_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+20, y_multiplier_integer,
                                    gephi_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Tick the checkbox to visualize the triplet SVOs as a network graph in Gephi")
+                                   "Tick the checkbox to visualize the triplet SVOs as a network graph in Gephi and Sankey flowchart")
 
 wordcloud_var.set(0)
 wordcloud_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in wordcloud', variable=wordcloud_var,
@@ -629,21 +699,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
                                    False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "Tick the checkbox to visualize the space of SVOs as in a Google Earth Pro pin map and Google Maps heat map")
 
-# actors_lb = tk.Label(window, text='Extract actors ')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,actors_lb,True)
-#
-# actors_var.set('')
-# actors_menu = tk.OptionMenu(window, actors_var, '*', 'collective actor', 'individual', 'organization')
-# # place widget with hover-over info
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
-#                                    actors_menu,
-#                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-#                                    "Use the dropdown menu to select the type of actor you want to extract ")
-
 complex_objects_lb = tk.Label(window, text='Complex ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,complex_objects_lb,True)
 
-setup_complex_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(),'setup_complex.xlsx'))
+setup_complex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(),'setup_complex.xlsx'))
 
 setup_complex_var=tk.StringVar()
 setup_complex = ttk.Combobox(window, textvariable = setup_complex_var, width=GUI_IO_util.widget_width_short)
@@ -659,7 +718,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 simplex_objects_lb = tk.Label(window, text='Simplex ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,y_multiplier_integer,simplex_objects_lb, True)
 
-setup_simplex_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(),'setup_simplex.xlsx'))
+setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(),'setup_simplex.xlsx'))
 
 setup_simplex_var = tk.StringVar()
 
@@ -714,26 +773,23 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
                                    False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "The menu displays a list of complex objects children of the 'Complex objects' selected in the widget above.\nThe option is only available for the 'Complex objects' widget above (Simplex objects do not have children).")
 
-def activate_children(*args):
+def activate_parents_children(*args):
     parent_complex_list = []
     parent_simplex_list = []
     parent_complex_list = DB_PCACE_data_analyzer_util.find_parent_complex(setup_complex_var.get(),inputDir.get())
     parent_simplex_list = DB_PCACE_data_analyzer_util.find_parent_simplex(setup_simplex_var.get(),inputDir.get())
     parent_menu_values = ''
-    if len(parent_complex_list)>0:
-        parent_menu_values = ", ".join(parent_complex_list)
-    if len(parent_simplex_list)>0:
-        parent_menu_values = ", ".join(parent_simplex_list)
+    parent_menu_values = parent_complex_list
     select_parents['values'] = parent_menu_values
 
     children_list = []
     children_menu_values = ''
     children_list = DB_PCACE_data_analyzer_util.find_child_complex(setup_complex_var.get(),inputDir.get())
-    children_menu_values = ", ".join(children_list)
+    children_menu_values = children_list 
     select_children['values'] = children_menu_values
     # select_children_var.set(children_menu[0])
-setup_complex_var.trace('w',activate_children)
-setup_simplex_var.trace('w',activate_children)
+setup_complex_var.trace('w',activate_parents_children)
+setup_simplex_var.trace('w',activate_parents_children)
 
 comments_lb = tk.Label(window, text='Extract comments ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,comments_lb,True)
@@ -745,7 +801,7 @@ comments_menu = tk.OptionMenu(window, comments_var, '*', 'users comments', 'veri
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    comments_menu,
                                    False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "Use the dropdown menu to extract the comments left by users and/or verifiers ")
+                                   "Use the dropdown menu to extract the comments left by users and/or verifiers for specific objects (e.g., Semantic triplets (SVO)).")
 
 # verifier_comments_var = tk.IntVar()
 # verifier_comments_checkbox = tk.Checkbutton(window, text='Get verifiers comments ', variable=verifier_comments_var, onvalue=1, offvalue=0)
@@ -757,7 +813,7 @@ document_sources_checkbox = tk.Checkbutton(window, text='Extract document source
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    document_sources_checkbox,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Tick the checkbox to extract the documents (e.g., newspaper articles) that are the sources of information for specific objects. ")
+                                   "Tick the checkbox to extract the documents (e.g., newspaper articles) that are the sources of information for specific objects (e.g., Semantic triplets (SVO)).")
 
 error = False
 table_values = []
@@ -786,16 +842,22 @@ def changed_filename(*args):
         else:
             select_DB_tables.set('')
             select_DB_tables.configure(state='disabled')
-        setup_complex_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(), 'setup_complex.xlsx'))
+
+        setup_complex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(), 'setup_complex.xlsx'))
         setup_complex['values'] = setup_complex_menu
+        actors_menu = setup_complex_menu
+        actors['values'] = actors_menu
         if len(setup_complex_menu)>0:
             setup_complex.configure(state='normal')
             # setup_complex.set(setup_complex_menu[0])
             setup_complex.set('')
+
+            primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(inputDir.get())
+            primary_complex['values'] = primary_complex_menu
         else:
             setup_complex.set('')
             setup_complex.configure(state='disabled')
-        setup_simplex_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(), 'setup_simplex.xlsx'))
+        setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(), 'setup_simplex.xlsx'))
         setup_simplex['values'] = setup_simplex_menu
         if len(setup_simplex_menu)>0:
             setup_simplex.configure(state='normal')
@@ -819,7 +881,7 @@ def view_relations():
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'PC-ACE tables to Pandas':'TIPS_NLP_PC-ACE tables to Pandas.pdf',
+TIPS_lookup = {'PC-ACE tables analyzer via Pandas':'TIPS_NLP_PC-ACE Access DB Analyzer.pdf',
                'SVO extraction and visualization': 'TIPS_NLP_SVO extraction and visualization.pdf',
                'Stanford CoreNLP enhanced dependencies parser (SVO)': 'TIPS_NLP_Stanford CoreNLP enhanced dependencies parser (SVO).pdf',
                'WordNet': 'TIPS_NLP_WordNet.pdf',
@@ -833,7 +895,7 @@ TIPS_lookup = {'PC-ACE tables to Pandas':'TIPS_NLP_PC-ACE tables to Pandas.pdf',
                "Tagxedo":"TIPS_NLP_Wordclouds Tagxedo.pdf",
                "Tagcrowd":"TIPS_NLP_Wordclouds Tagcrowd.pdf"
                }
-TIPS_options='PC-ACE tables to Pandas', 'SVO extraction and visualization', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'Google Earth Pro', 'Google API Key', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs', 'Word clouds', 'Tagcrowd', 'Tagxedo', 'Wordle'
+TIPS_options='PC-ACE tables analyzer via Pandas', 'SVO extraction and visualization', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'Google Earth Pro', 'Google API Key', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs', 'Word clouds', 'Tagcrowd', 'Tagxedo', 'Wordle'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
