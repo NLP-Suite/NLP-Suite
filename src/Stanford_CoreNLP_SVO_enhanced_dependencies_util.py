@@ -237,7 +237,6 @@ def verb_root_svo_building(verb, sent_data, v_obj_obl_json, v_prep_json):#extrac
         s, s_idx = s_o_formation(vgd["nsubj"], sent_data)
         s_dep = "nsubj"
 
-        
     elif 'obl:agent' in vgd.keys():#subject in passive sentence
         s, s_idx = s_o_formation(vgd['obl:agent'], sent_data)
         s_dep = 'obl:agent'

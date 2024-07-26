@@ -695,7 +695,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
 y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
-readMe_message = "This Python 3 script will perform different types of textual operations using a selected NLP package (e.g., spaCy, Stanford CoreNLP, Stanza). The main operation is text parsing to produce the CoNLL table (CoNLL U format).\n\nYOU MUST BE CONNETED TO THE INTERNET TO RUN THE SCRIPTS.\n\nIn INPUT the algorithms expect a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithms will produce different file types: txt-format copies of the same input txt files for co-reference, csv for annotators (HTML for gender annotator)."
+readMe_message = "This Python 3 script will perform different types of textual operations using a selected NLP package (e.g., spaCy, Stanford CoreNLP, Stanza). The main operation is text parsing to produce the CoNLL table (CoNLL U format).\n\nYOU MUST BE CONNETED TO THE INTERNET TO RUN THE SCRIPTS.\n\nIn INPUT the algorithms expect a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithms will produce different file types: txt-format copies of the same input txt files for co-reference, csv files (HTML for gender annotator), and different types of visuals, from Bar charts to Sankey flowcharts."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName, False)

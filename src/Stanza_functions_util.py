@@ -32,7 +32,7 @@ except:
 
 import IO_internet_util
 
-# should make the Stanza pipeline parametrizerd by lang selected b user
+# should make the Stanza pipeline parametrized by lang selected by user
 # @@@
 # check internet connection
 if IO_internet_util.check_internet_availability_warning("Stanza_functions_util.py"):

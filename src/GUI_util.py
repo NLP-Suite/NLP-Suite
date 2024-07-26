@@ -1292,7 +1292,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                    y_multiplier_integer,
                                                    tips_menu_lb, True, False, False, False, 90,
                                                    GUI_IO_util.open_TIPS_x_coordinate,
-                                                   "Use the dropdown menu to select the TIPS file to display.\nWhen TIPS are available the 'Open TIPS files' widget is red, otherwise black.")
+                                                   "Use the dropdown menu to select the TIPS file to display.\nJust like for the reminders, only the TIPS files available for the current GUI are displayed.\nWhen TIPS are available the 'Open TIPS files' widget is red, otherwise black.")
     # tips_menu_lb.place(x=GUI_IO_util.open_TIPS_x_coordinate,y=GUI_IO_util.basic_y_coordinate+GUI_IO_util.y_step*y_multiplier_integer)
 
     TIPS_util.trace_open_tips(tips_dropdown_field,tips_menu_lb,TIPS_lookup)
@@ -1333,13 +1333,15 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate,
                                                    y_multiplier_integer,
                                                    reminders_menu_lb, True, False, False, False, 90,
-                                                   GUI_IO_util.open_reminders_x_coordinate,
-                                                   "Use the dropdown menu to select the reminder to display and turn ON/OFF.\nWhen reminders are available the 'Open reminders' widget is red, otherwise black.")
+                                                   GUI_IO_util.open_TIPS_x_coordinate,
+                                                   "Use the dropdown menu to select the reminder to display and turn ON/OFF.\nJust like for the TIPS, only the reminders available for the current GUI are displayed.\nWhen reminders are available the 'Open reminders' widget is red, otherwise black.")
 
     def trace_reminders_dropdown(*args):
         if len(reminder_options)>0:
             reminders_util.resetReminder(scriptName,reminders_dropdown_field.get())
     reminders_dropdown_field.trace('w', trace_reminders_dropdown)
+
+    trace_reminders_dropdown()
 
     # do not lay Setup widget in NLP_menu_main and in NLP_setup_package_language_main
 

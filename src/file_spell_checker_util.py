@@ -826,7 +826,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, configFileNam
         stanza.download(lang="multilingual", verbose=False)
         nlp_stanza = MultilingualPipeline()
 
-    lang_dict  = dict(constants_util.languages)
+    lang_dict = dict(constants_util.languages)
 
     with open(outputFilenameCSV, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -843,6 +843,10 @@ def language_detection(window, inputFilename, inputDir, outputDir, configFileNam
                 print("  The file is empty. It will be discarded from processing.")
                 docErrors_empty=docErrors_empty+1
                 continue
+            # split text into paragraphs, paragraph = text.split('\n\n')
+            # loop through paragraphs passing each para to detect_lang
+            # value = detect_langs(paragraph)
+
             # text = opened_file.read()
             # head, tail = os.path.split(filename)
             # head is path, tail is filename

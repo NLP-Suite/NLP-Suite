@@ -325,10 +325,34 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
             if outputSVOFilterDir == '':
                 return
 
-    # Creating filtered sets from WordNet list
-    s_filtered_set = set(open(filter_s_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')) if filter_s else set()
-    v_filtered_set = set(open(filter_v_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')) if filter_v else set()
-    o_filtered_set = set(open(filter_o_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')) if filter_o else set()
+    # Creating filtered sets from WordNet verbose lists; use only the first column 'Term'
+    if not filter_s:
+        s_filtered_set = set()
+    else:
+        # convert all WordNet categories to lower case to make comparison easier
+        temp_pd = pd.read_csv(filter_s_fileName)['Term']
+        temp_pd = temp_pd.astype(str).str.lower()
+        s_filtered_set = set(temp_pd)
+        sorted(s_filtered_set)
+        # s_filtered_set = set(pd.read_csv(filter_s_fileName)['Term'])
+    if not filter_v:
+        v_filtered_set = set()
+    else:
+        # convert all WordNet categories to lower case to make comparison easier
+        temp_pd = pd.read_csv(filter_v_fileName)['Term']
+        temp_pd = temp_pd.astype(str).str.lower()
+        v_filtered_set = set(temp_pd)
+        sorted(v_filtered_set)
+        # v_filtered_set = set(pd.read_csv(filter_v_fileName)['Term'])
+    if not filter_o:
+        o_filtered_set = set()
+    else:
+        # convert all WordNet categories to lower case to make comparison easier
+        temp_pd = pd.read_csv(filter_o_fileName)['Term']
+        temp_pd = temp_pd.astype(str).str.lower()
+        o_filtered_set = set(temp_pd)
+        sorted(o_filtered_set)
+        # o_filtered_set = set(pd.read_csv(filter_o_fileName)['Term'])
     # should add any PERSON or ORGANIZATION or LOCATION to the list, if these PERSON or ORGANIZATION or LOCATION values are not in the WordNet social-actor-list
     # multi name S & O (e.g., Mao Zedong) in WordNet are listed with underscores (Mao_Zedong); we must do the same for multi-word names
     # to recognize mwe expressions that are tagged as PERSON or ORGANIZATION or LOCATION '@#'
@@ -338,6 +362,7 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
 
     lemmatize_s_SV = lemmatize_s
     for idx, row in df.iterrows():
+        print('Processing SVO record '+ str(idx) + '/' + str(len(df)))
         if lemmatize_s_SV == True:
             lemmatize_s = True
         # the tag suffix @# will have been added in the Stanford_CoreNLP_util function process_json_SVO_enhanced_dependencies
@@ -351,12 +376,9 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
                 row['Subject (S)'] = lemmatize_stanza_word(stanzaPipeLine(row['Subject (S)']))
             else:
                 if filter_s:
-                    # WordNet multi-word expressions are all _ separated (e.g., Christopher_Columbus)
-                    # convert string to list
-                    # if '@#' in row['Subject (S)']:
-                    #     row['Subject (S)'] = row['Subject (S)'].replace('@#','')
-                    # else:
                     if not '@#' in row['Subject (S)']:
+                        # WordNet multi-word expressions are all _ separated (e.g., Christopher_Columbus)
+                        # convert string to list
                         temp_list = row['Subject (S)'].split(' ')
                         temp_lemma = ''
                         for i in range(len(temp_list)):
@@ -410,12 +432,13 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
         keep_record = False
 
 # S-V-O filter ALL -----------------------------------------------------------------------------------
+# When multiple filters are applied (for S, V, and O) all conditions must be met
         if filter_s and filter_v and filter_o:
-            if ((row['Subject (S)'] in s_filtered_set) or \
+            if ((row['Subject (S)'].lower() in s_filtered_set) or \
                 (str(row['Subject (S)']).lower() in filter_byNER)) and \
-                (row['Verb (V)'] in v_filtered_set) and \
-                ((row['Object (O)'] in o_filtered_set) and \
-                (row['Object (O)'] in filter_byNER)):
+                (row['Verb (V)'].lower() in v_filtered_set) and \
+                ((row['Object (O)'].lower() in o_filtered_set) and \
+                (row['Object (O)'].lower() in filter_byNER)):
                 keep_record=True
             # the tag @# is added to mwe that are classified in NER as PERSON, ORGANIZATION, or LOCATION
             #   which can be social actors that should not be lemmatized (e.g., 'Christopher Columbus discovered America')
@@ -423,10 +446,14 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
                 keep_record = True
 
 # S-V filter ONLY NO O -----------------------------------------------------------------------------------
+# When multiple filters are applied (for S, V, and O) all conditions must be met
+
+        # filter_byNER is typically capitalized, e.g., United States of America;
+        #   should not use row['Subject (S)'].lower()
         if filter_s and filter_v and not filter_o:
-            if ((row['Subject (S)'] in s_filtered_set) or \
-                (str(row['Subject (S)']).lower() in filter_byNER)) and \
-                (row['Verb (V)'] in v_filtered_set):
+            if ((row['Subject (S)'].lower() in s_filtered_set) or \
+                (str(row['Subject (S)']) in filter_byNER)) and \
+                (row['Verb (V)'].lower() in v_filtered_set):
                 keep_record = True
             # the tag @# is added to mwe that are classified in NER as PERSON, ORGANIZATION, or LOCATION
             #   which can be social actors that should not be lemmatized (e.g., 'Christopher Columbus discovered America')
@@ -434,8 +461,12 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
                 keep_record = True
 
 # S filter ONLY NO V & O -----------------------------------------------------------------------------------
+# When multiple filters are applied (for S, V, and O) all conditions must be met
+# filter_byNER is typically capitalized, e.g., United States of America;
+#   should not use row['Subject (S)'].lower()
+
         if filter_s and not filter_v and not filter_o:
-            if ((row['Subject (S)'] in s_filtered_set) or \
+            if ((row['Subject (S)'].lower() in s_filtered_set) or \
                 (str(row['Subject (S)']) in filter_byNER)):
                 keep_record = True
             # the tag @# is added to mwe that are classified in NER as PERSON, ORGANIZATION, or LOCATION
@@ -444,13 +475,19 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
                 keep_record = True
 
 # V filter ONLY NO S & O -----------------------------------------------------------------------------------
+# When multiple filters are applied (for S, V, and O) all conditions must be met
+
         if filter_v and not filter_s and not filter_o:
-            if (row['Verb (V)'] in v_filtered_set):
+            if (row['Verb (V)'].lower() in v_filtered_set):
                 keep_record = True
 
-# O filter ONLY NO S & V -----------------------------------------------------------------------------------
+# O filter ONLY NO S & V -------------------------------------------------------------------------------
+# When multiple filters are applied (for S, V, and O) all conditions must be met
+# filter_byNER is typically capitalized, e.g., United States of America;
+#   should not use row['Subject (S)'].lower()
+
         if filter_o and not filter_s and not filter_v:
-            if ((row['Object (O)'] in o_filtered_set) or \
+            if ((row['Object (O)'].lower() in o_filtered_set) or \
                 (str(row['Object (O)']) in filter_byNER)):
                 keep_record = True
 
@@ -465,7 +502,7 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
             # update the original df dataframe with @# tags with the new cleaned values
             df.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
                 ['Subject (S)', 'Verb (V)', 'Object (O)']]
-        if keep_record:
+        if keep_record: # export the filtered record
             filtered_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
                 ['Subject (S)', 'Verb (V)', 'Object (O)']]
             keep_record = False
@@ -531,6 +568,15 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
             IO_user_interface_util.timed_alert(window,6000,'Filtered records', 'The filter algorithms have filtered out ' + str(filtered_records) + \
                 ' records.\n\nNumber of original SVO records: ' + str(num_rows) + '\nNumber of filtered SVO records: ' + str(nRecords_filter))
 
+            # save filtered records info
+            svo_filter_records = []
+            svo_filter_records_file_name = os.path.join(outputSVOFilterDir, tail[:-4]+'_records.csv')
+            filesToOpen.append(svo_filter_records_file_name)
+            headers = ['Number of original unfiltered SVO records', 'Number of filtered SVO records', 'Difference']
+            row = [str(num_rows), str(nRecords_filter), str(num_rows - nRecords_filter)]
+            svo_filter_records.append(headers)
+            svo_filter_records.append(row)
+            IO_csv_util.list_to_csv(1, svo_filter_records, svo_filter_records_file_name)
     else:
         svo_lemma_file_name= ''
 

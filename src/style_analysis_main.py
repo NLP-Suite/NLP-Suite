@@ -230,7 +230,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
                 else:
                     filesToOpen.extend(outputFiles)
 
-        if '*' == vocabulary_analysis_menu_var or 'Unusual' in vocabulary_analysis_menu_var:
+        if '*' == vocabulary_analysis_menu_var or 'NLTK' in vocabulary_analysis_menu_var:
             outputFiles =file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir_style, config_filename, False, chartPackage, dataTransformation)
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
