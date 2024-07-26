@@ -242,7 +242,7 @@ def activate_fields(*args):
         item_separator.config(state='disabled')
         items_separator_var.set('_')
         sort_order_menu.config(state='disabled')
-        sort_order_var.set('1')
+        sort_order_var.set('0')
         # filename_embeds_date_var.set(0)
 
     if filename_embeds_date_var.get():
@@ -294,7 +294,7 @@ def set_default_options():
     if config_input_output_alphabetic_options[list_item][2] != '':
         sort_order_var.set(config_input_output_alphabetic_options[list_item][2])
     else:
-        sort_order_var.set('1')  # default value
+        sort_order_var.set('0')  # default value
 
     # set item separator
     if config_input_output_alphabetic_options[list_item][3] != '':

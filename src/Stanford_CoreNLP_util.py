@@ -64,23 +64,33 @@ def create_output_directory(inputFilename, inputDir, outputDir, config_filename,
                             export_json_var, annotator, silent, Json_question_already_asked):
     outputJsonDir = ''
     outputDirSV=GUI_util.output_dir_path.get()
-    if outputDirSV != outputDir:
-        # create output subdirectory
-        outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
-                                                           label=annotator + "_CoreNLP",
-                                                           silent=silent)
-    else:
-        # when coming from coref annotator, the outputDir will contain an unnecessary NLP_CoreNLP_coref_ string
-        # if 'NLP_CoreNLP_coref_' in inputFilename:
-        #     inputFilename = inputFilename.replace('NLP_CoreNLP_coref_', 'coref_')
-        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
-                                                           label=annotator + "_CoreNLP",
-                                                           silent=silent)
-    # create a subdirectory of the output directory
-    outputJsonDir=''
+    # create a Json subdirectory of the main output directory
     if export_json_var:
         outputJsonDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
                                                                label='Json',
+                                                               silent=silent)
+    else:
+        outputJsonDir = ''
+
+    if 'coref' in outputDir and 'coref' in str(annotator):
+        # when coming from coref annotator, the outputDir will contain an unnecessary NLP_CoreNLP_coref_ string
+        temp_head, temp_dir = os.path.split(outputDir)
+        if 'table' in annotator:
+            label = 'table_' + temp_dir
+        else:
+            label = temp_dir
+        outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
+                                                           label=label,
+                                                           silent=silent)
+    else:
+        if outputDirSV != outputDir:
+            # create output subdirectory
+            outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
+                                                               label=annotator + "_CoreNLP",
+                                                               silent=silent)
+        else:
+            outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                                                               label=annotator + "_CoreNLP",
                                                                silent=silent)
     return outputDir, outputJsonDir
 
@@ -190,7 +200,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
                      memory_var=6,
                      document_length=90000,
                      sentence_length=1000, # unless otherwise specified; sentence length limit does not seem to work for parsers only for NER and POS but then it is useless
-                     export_json_toTxt = True,
                      silent=False,
                      filter_subjects=False,
                      **kwargs):
@@ -678,9 +687,11 @@ def CoreNLP_annotate(config_filename,inputFilename,
             for run in routine_list:
                 if errorFound:
                     continue  # move to next document; this only continues to next routine_list
+                # routine_list may contain several annotators (e.g., ['SVO', 'gender', 'quote'] when coming from SVO_main
+                #   the function, though, loops through the annotators list and annotator_chosen is the currently selected annotator
+                annotator_chosen = run[0]
                 annotator_start_time = time.time()
                 # params = run[0]
-                annotator_chosen = run[0]
                 routine = run[1]
                 output_format = run[2]
                 parse_model = run[4]
@@ -731,7 +742,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 # elif "DepRel" in annotator_chosen or "All POS" in annotator_chosen or "Lemma" in annotator_chosen:
                 #      sub_result, recordID = routine(config_filename,docID, docName, sentenceID, recordID, CoreNLP_output, **kwargs)
                 # elif ("SVO" in str(annotator_params) or "OpenIE" in str(annotator_params)) and "coref" in docName.split("_"):
-                elif "SVO" in str(annotator_params) or "OpenIE" in str(annotator_params):
+                elif "SVO" in annotator_chosen or "OpenIE" in annotator_chosen:
                     sub_result = routine(config_filename, split_docID, doc_split, sentenceID, CoreNLP_output, filter_subjects, **kwargs)
                 else:
                     sub_result = routine(config_filename,docID, docName, sentenceID, CoreNLP_output, **kwargs)
@@ -1427,7 +1438,7 @@ def process_json_coref_table(config_filename, documentID, document, sentenceID, 
     return result
 
 # December.10 Yi: Modify process_json_gender to provide one more column(complete sentence)
-def process_json_gender(config_filename,documentID, document, start_sentenceID, json, **kwargs):
+def process_json_gender(config_filename, documentID, document, start_sentenceID, json, **kwargs):
 
     # print("CoreNLP output: ")
     # pprint.pprint(json)

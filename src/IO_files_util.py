@@ -318,13 +318,15 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=
                 mb.showwarning(title='Input config file error',
                                message='The GUI-specific config file ' + configFileName + ' does not exist.\n\nPlease, use the dropdown menu "I/O configuration" to select the GUI-specific option, then click on "Setup INPUT/OUTPUT configuration" button to setup the GUI-specific I/O config file and try again.')
             return files
-
+        # drop records with nan in Sort order
+        a = a.dropna(subset=['Sort order'])
         try:
-            sort_order = str(a['Sort order'][0])  # changed to 0 from 1
+            sort_order = str(a['Sort order'][1])
         except:
-            sort_order = str(a['Sort order'][1])  # changed to 0 from 1
+            # using an old config without Sort order field, the code would break
+            sort_order = 0
 
-        if str(sort_order) =="nan":
+        if str(sort_order) == '0':
             sort_order = "1"
             IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
                         "No sort order available. Files will be read without sorting.\nIf you wish to sort the input files in a specific order, you should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration' at the top of the GUI.\n\n", False,'',True,'',False)
@@ -337,29 +339,28 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=
             pass
 
         try:
-            separator = a['Item separator character(s)'][0]  # changed to 0 from 1
+            separator = a['Item separator character(s)'][1]
         except:
-            separator = a['Item separator character(s)'][1]  # changed to 0 from 1
+            # using an old config without Sort order field, the code would break
+            separator = ''
 
         if str(separator)=="nan":
             separator=' '
 
         try:
-            date_format = a['Date format'][0] # changed to 0 from 1
-        except:
             date_format = a['Date format'][1]
+        except:
+            # using an old config without Sort order field, the code would break
+            date_format = ''
 
         try:
-            date_pos = int(a['Date position'][0]) # changed to 0 from 1
+            date_pos = int(a['Date position'][1])
         except:
+            # using an old config without Sort order field, the code would break
             try:
                 date_pos = int(a['Date position'][1]) # changed to 0 from 1
             except:
                 date_pos = 9e999
-        #@@@
-        # separator = a['Item separator character(s)'][1]
-        # if str(separator)=="nan":
-        #     separator=' '
 
         try:
             files = do_compare(files, fileType, sort_order, separator, date_format, date_pos)

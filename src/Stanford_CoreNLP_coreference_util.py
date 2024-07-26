@@ -347,7 +347,7 @@ def run(config_filename,inputFilename, inputDir, outputDir, openOutputFiles, cha
     corefed_files = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                     outputDir, openOutputFiles, chartPackage, dataTransformation,
                                                                     ['coref table','coref'], False,
-                                                                    language_var, memory_var, export_json_var)
+                                                                    language_var, export_json_var, memory_var)
 
     if manual_Coref:
         if len(inputDir) == 0 and len(inputFilename) > 0:

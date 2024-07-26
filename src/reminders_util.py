@@ -70,7 +70,7 @@ title_options_no_SVO_records = ['No SVO records extracted']
 message_no_SVO_records = 'The SVO algorithms have not extracted any SVOs. If you have selected to filter Subject and/or Verb, the filtering algorithms may have excluded available records.\n\nYou may want to untick either/both checkboxes and try again.'
 
 title_options_SVO_Inferred_Subject_Passive = ['SVO Inferred_Subject_Passive']
-message_SVO_Inferred_Subject_Passive = 'The SVO algorithms convert passive sentences into active ones. When no subject is present (e.g., "A beautiful car was bought"), a subject is automatically added as Inferred_Subject_Passive.'
+message_SVO_Inferred_Subject_Passive = 'The SVO algorithms convert passive sentences into active ones. When no subject is present (e.g., "A beautiful car was bought"), a subject is automatically added as Inferred_Subject_Passive (e.g., Subject (S): Inferred_Subject_Passive Verb (V): bought Object (O): car).'
 
 title_options_CoreNLP_pronouns = ['CoreNLP pronouns detected']
 message_CoreNLP_pronouns = 'The CoreNLP algorithms have detected the presence of pronouns (e.g., he, she). You should run the coreference annotator to resolve the coreferences.'
@@ -414,6 +414,12 @@ def getReminders_list(scriptName,silent=False):
     remindersFile = os.path.join(GUI_IO_util.remindersPath, 'reminders.csv')
     try:
         df = pd.read_csv(remindersFile,encoding='utf-8',on_bad_lines='skip')
+        if not 'Reset to ON all reminders' in df.iloc[0][1] or not 'Reset to OFF all reminders' in df.iloc[1][1]:
+            df.iloc[0] = ['*','Reset to ON all reminders', 'Turn ON all available reminders for all GUIs', 'ON']
+            df.iloc[1] = ['*','Reset to OFF all reminders', 'Turn OFF all available reminders for all GUIs', 'OFF']
+            # save the reminders file since it will be read in the function resetReminder
+            remindersFile = os.path.join(GUI_IO_util.remindersPath, 'reminders.csv')
+            df.to_csv(remindersFile, encoding='utf-8', index=False, header=True)
     except FileNotFoundError:
         if silent == False:
             mb.showwarning(title='Reminders file generated', message="The reminders.csv file saved in the reminders subdirectory was not found. If this is your first time running NLP Suite, do not worry. A default reminders.csv has been automatically generated for you.")
@@ -454,7 +460,7 @@ def displayReminder(df, row_num, title, message, currentStatus, question, seeMsg
         return
     else:
         # message = message + question # the question "Do you want to see this message again?" is asked
-        #   in GUI_IO_util.message_box_widget so that it can be placed n red
+        #   in GUI_IO_util.message_box_widget so that it can be placed in red
         answer = GUI_IO_util.message_box_widget(1, title, message, buttonType='Yes-No', timeout=30000)
 
     answer=answer.capitalize() # Yes/No
@@ -480,7 +486,11 @@ def displayReminder(df, row_num, title, message, currentStatus, question, seeMsg
 # * in the Routine column are used for reminders that apply to any GUI
 # set silent to True if you just want to check the status of the reminder ON or OFF without asking the question
 def checkReminder(scriptName, title_options=[], message='', triggered_by_GUI_event=False, silent=False):
-    routine = get_routine_from_scriptName(scriptName)
+    # some functions that call checkReminder (getDateFromFileName) do not pass a config file but a txt filename
+    if 'config' in scriptName:
+        routine = get_routine_from_scriptName(scriptName)
+    else:
+        routine = '*'
     status=''
     if title_options==[]: # None:
         title_options = getReminders_list(scriptName)
@@ -550,12 +560,36 @@ def checkReminder(scriptName, title_options=[], message='', triggered_by_GUI_eve
                     #@@@ 5/21
                     # checkReminder(scriptName, title_options, message, triggered_by_GUI_event)
                     checkReminder(scriptName, title_options, message)
-    return status # returns Yes for ON or No for OFF
+    return status # returns ON/OFF (Yes/No old way)
+
+def resetAllReminders(title):
+    remindersFile = os.path.join(GUI_IO_util.remindersPath, 'reminders.csv')
+    try:
+        df = pd.read_csv(remindersFile, encoding='utf-8', on_bad_lines='skip')
+        # get the row number of the routine that we are looking at
+    except:
+        mb.showwarning(title='Reminders file error',
+                       message="The reminders.csv file saved in the reminders subdirectory is ill formed. Most likely, it contains extra , in one of the three fields (Routine, Title, Message).\n\nPlease, let the NLP Suite development team know the problem so it can be fixed.\n\nIf any of the fields contain , the field content must be enclosed in \"\".")
+        return
+    import tkinter as tk
+    if 'ON' in title:
+        status = 'ON'
+    if 'OFF' in title:
+        status = 'OFF'
+    answer = tk.messagebox.askyesno("Warning", 'Are you sure you want to reset to ' + status + ' ALL reminders for ALL GUIs?')
+    if not answer:
+        return
+    df['Status'] = status
+    df.to_csv(remindersFile, encoding='utf-8', index=False, header=True)
+    tk.messagebox.showwarning("Warning", 'ALL reminders for ALL GUIs have been turned ' + status + ' in the ' + remindersFile)
 
 # called from a GUI when a reminder is selected from the reminder dropdown menu
 # title is a string, the reminders option selected in the GUI dropdown menu
 def resetReminder(scriptName,title):
     routine = get_routine_from_scriptName(scriptName)
+    if 'all reminders' in title:
+        resetAllReminders(title)
+        return
     if title != "Open reminders":
         if title == 'No Reminders available':
             mb.showwarning(title='Reminders warning', message="There are no reminders available for this script.")
