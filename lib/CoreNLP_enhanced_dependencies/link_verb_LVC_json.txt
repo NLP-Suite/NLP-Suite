@@ -1,20 +1,16 @@
-{
-    "charge": [
+{   "be": [ 
+    "aware":
         {
             "be": "cop",
             "in": "case",
-            "prep": [
-                "nmod:of"
-            ]
-        }
-    ],
-    "responsible": [
+            "prep": "nmod:of"
+        },
+    "responsible":
         {
             "be": "cop",
-            "prep": [
+            "prep":
                 "obl:for",
                 "advcl:for"
-            ]
         }
     ]
 }

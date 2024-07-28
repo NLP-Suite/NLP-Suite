@@ -210,6 +210,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
 
     # create an SVO_filtered subdirectory of the main output directory
     outputSVOFilterDir=''
+    if (filter_subjects and not lemmatize_subjects) or (filter_verbs and not lemmatize_verbs) or (filter_objects and not lemmatize_objects):
+        mb.showwarning(title='Warning',
+                       message='Filtering for either S or V or O requires lemmatizing the respective object, S or V or O. '
+                               '\n\nFiltering is based on WordNet and all WWordNet entries are lemmatized.')
+        return
+
     if filter_subjects or filter_verbs or filter_objects:
         outputSVOFilterDir = outputSVODir + os.sep + 'SVO_filtered'
 
