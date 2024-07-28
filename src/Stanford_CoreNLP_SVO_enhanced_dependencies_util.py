@@ -435,7 +435,7 @@ def link_verb_LVC_extraction(token, gov_dict, sent_data, link_verb_LVC_json):
     o = ''
     negation = negation_detect(token, sent_data)
 
-    if token["lemma"] in link_verb_LVC_json.keys():#that token is the dependency ROOT (the syntactical head of other tokens in that LVC) of that LVC 
+    if token["lemma"] in link_verb_LVC_json.keys():#that token is the dependency ROOT (the syntactical head of other tokens in that LVC) of that LVC
         for conb in link_verb_LVC_json[token["lemma"]]:
             start_index= token["index"]
             end_index= token["index"]
@@ -517,16 +517,16 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
             return
 
     #load the json from the txt file
-    link_verb_LVC_text = GUI_IO_util.CoreNLP_enhanced_dependencies_libPath + os.sep + "link_verb_LVC_json.txt"#json that help with extracting object that follows a preposition
-    with open(link_verb_LVC_text) as link_verb_LVC_doc:
+    linking_verb_text = GUI_IO_util.CoreNLP_enhanced_dependencies_libPath + os.sep + "linking_verb_LVC_json.txt"#json that help with extracting object that follows a preposition
+    with open(linking_verb_text) as linking_verb_LVC_doc:
         try:
-            link_verb_LVC_json = json.load(link_verb_LVC_doc)
+            link_verb_LVC_json = json.load(linking_verb_LVC_doc)
         except ValueError as err:
             import tkinter.messagebox as mb
             mb.showwarning(title='Warning',
-                           message="The file\n\n" + link_verb_LVC_text + "\n\nmust have been edited incorrectly and gives the error\n\n" + str(err) + "\n\nThe file will be opened for your convenience. Please, check the file, edit it, save it, and try again.")
+                           message="The file\n\n" + linking_verb_text + "\n\nmust have been edited incorrectly and gives the error\n\n" + str(err) + "\n\nThe file will be opened for your convenience. Please, check the file, edit it, save it, and try again.")
             import IO_files_util
-            IO_files_util.openFile(1, link_verb_LVC_text)
+            IO_files_util.openFile(1, linking_verb_text)
             return
 
     CollectedVs = []#list of processed verbs
@@ -561,7 +561,7 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
                 organization_list.append(item["text"])
                 org_NER_value.append([item["text"], item["ner"], item["tokenBegin"], item["tokenEnd"]])
 
-    link_verb_LVC_text = GUI_IO_util.CoreNLP_enhanced_dependencies_libPath + os.sep + "LVC_verb_obj_obl_json.txt"
+    linking_verb_text = GUI_IO_util.CoreNLP_enhanced_dependencies_libPath + os.sep + "LVC_verb_obj_obl_json.txt"
     for key in sent_data.keys():#traverse each token in that sentence
         negation = False 
         token = sent_data[key]
