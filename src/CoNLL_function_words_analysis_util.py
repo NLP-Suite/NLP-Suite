@@ -46,6 +46,23 @@ def compute_stats(data):
     deprel_counter = Counter(deprel_list)
     return postag_list, postag_counter, deprel_list, deprel_counter
 
+
+def process_df_headers(df, function_word):
+    if len(df.columns)==15: #date column present
+        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+                      "Sentence ID", "Document ID", "Document", 'Date', function_word]
+        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+                   "Sentence ID",
+                   "Document ID", "Document", 'Date', function_word]
+    else:
+        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+                      "Sentence ID", "Document ID", "Document", function_word]
+        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+                   "Sentence ID",
+                   "Document ID", "Document", function_word]
+    return df, headers
+
+
 def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputFiles,chartPackage, dataTransformation):
     filesToOpen = []  # Store all files that are to be opened once finished
 
@@ -72,11 +89,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
 
         # convert list to dataframe and save
         df = pd.DataFrame(pronouns_list)
-        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                      "Sentence ID", "Document ID", "Document", "PRONOUNS"]
-        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                   "Sentence ID",
-                   "Document ID", "Document", "PRONOUNS"]
+        df, headers = process_df_headers(df, "PRONOUNS")
 
         IO_csv_util.df_to_csv(GUI_util.window, df, pronouns_list_file_name, headers=headers, index=False,
                               language_encoding='utf-8')
@@ -84,7 +97,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
         if chartPackage!='No charts':
 
             columns_to_be_plotted_xAxis = []
-            columns_to_be_plotted_yAxis = ['PRONOUNS']
+            columns_to_be_plotted_yAxis = ['FORM']
             count_var = 1
 
             outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
@@ -93,6 +106,29 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
                                                       chart_title="Frequency Distribution of Pronouns",
                                                       outputFileNameType='FuncWords_pron',
                                                       column_xAxis_label='Pronoun',
+                                                      count_var=count_var,
+                                                      hover_label=[],
+                                                      groupByList=['Document'],
+                                                      plotList=[],
+                                                      chart_title_label='')
+
+            # run_all returns a string; must use append
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
+            columns_to_be_plotted_xAxis = []
+            columns_to_be_plotted_yAxis = ['PRONOUNS']
+            count_var = 1
+
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
+                                                      pronouns_list_file_name, outputDir,
+                                                      columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+                                                      chart_title="Frequency Distribution of Types of Pronouns",
+                                                      outputFileNameType='FuncWords_pron_type',
+                                                      column_xAxis_label='Pronoun type',
                                                       count_var=count_var,
                                                       hover_label=[],
                                                       groupByList=['Document'],
@@ -135,11 +171,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
 
         # convert list to dataframe and save
         df = pd.DataFrame(prepositions_list)
-        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                      "Sentence ID", "Document ID", "Document", "PREPOSITIONS"]
-        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                   "Sentence ID",
-                   "Document ID", "Document", "PREPOSITIONS"]
+        df, headers = process_df_headers(df, "PREPOSITIONS")
 
         IO_csv_util.df_to_csv(GUI_util.window, df, function_words_prepositions_file_name, headers=headers, index=False,
                               language_encoding='utf-8')
@@ -198,11 +230,7 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
 
         # convert list to dataframe and save
         df = pd.DataFrame(article_list)
-        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                      "Sentence ID", "Document ID", "Document", "ARTICLES"]
-        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                   "Sentence ID",
-                   "Document ID", "Document", "ARTICLES"]
+        df, headers = process_df_headers(df, "ARTICLES")
 
         IO_csv_util.df_to_csv(GUI_util.window, df, function_words_articles_file_name, headers=headers, index=False,
                               language_encoding='utf-8')
@@ -236,6 +264,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
     filesToOpen = []  # Store all files that are to be opened once finished
 
     #output file names
+    #output file names
     function_words_conjunctions_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Conjunctions', 'list')
     function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Conjunctions')
     # not necessary to open stats since these stats are included in the pie chart
@@ -258,12 +287,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
 
         # convert list to dataframe and save
         df = pd.DataFrame(conjunction_list)
-        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                      "Sentence ID", "Document ID", "Document", "CONJUNCTIONS"]
-        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                   "Sentence ID",
-                   "Document ID", "Document", "CONJUNCTIONS"]
-
+        df, headers = process_df_headers(df, "CONJUNCTIONS")
         IO_csv_util.df_to_csv(GUI_util.window, df, function_words_conjunctions_file_name, headers=headers, index=False,
                               language_encoding='utf-8')
 
@@ -317,11 +341,7 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
 
         # convert list to dataframe and save
         df = pd.DataFrame(auxiliary_list)
-        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                      "Sentence ID", "Document ID", "Document", "AUXILIARIES"]
-        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                   "Sentence ID",
-                   "Document ID", "Document", "AUXILIARIES"]
+        df, headers = process_df_headers(df, "AUXILIARIES")
 
         IO_csv_util.df_to_csv(GUI_util.window, df, function_words_auxiliaries_file_name, headers=headers, index=False,
                               language_encoding='utf-8')
@@ -474,29 +494,33 @@ def function_words_stats(inputFilename,outputDir,data, data_divided_sents, openO
     startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running FUNCTION WORDS ANALYSES at',
                                                  True, '', True, '', True)
 
-
+# articles  ---------------------------------------------------
     outputFiles = article_stats(inputFilename, outputDir, data, data_divided_sents,
                                                                    openOutputFiles, chartPackage, dataTransformation)
     if outputFiles!=None:
         filesToOpen.extend(outputFiles)
 
+# auxiliaries ---------------------------------------------------
     outputFiles = auxiliary_stats(inputFilename, outputDir, data, data_divided_sents,openOutputFiles,
                                                         chartPackage, dataTransformation)
     if outputFiles!=None:
         filesToOpen.extend(outputFiles)
 
+# conjunctions ---------------------------------------------------
     outputFiles = conjunction_stats(inputFilename, outputDir, data,
                                                                        data_divided_sents, openOutputFiles,
                                                                        chartPackage, dataTransformation)
     if outputFiles!=None:
         filesToOpen.extend(outputFiles)
 
+# prepositions  ---------------------------------------------------
     outputFiles = preposition_stats(inputFilename, outputDir, data,
                                                                        data_divided_sents, openOutputFiles,
                                                                        chartPackage, dataTransformation)
     if outputFiles!=None:
         filesToOpen.extend(outputFiles)
 
+# pronouns  ---------------------------------------------------
     outputFiles = pronoun_stats(inputFilename, outputDir, data, data_divided_sents,openOutputFiles,
                                 chartPackage, dataTransformation)
     if outputFiles!=None:

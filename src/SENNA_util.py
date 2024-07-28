@@ -201,7 +201,7 @@ def get_verb_root(verb: str):
 
 
 def process_verb_obj_obl(sent_len, mapping, df, sent_col, start_index):
-    with open(os.path.join(GUI_IO_util.CoreNLP_enhanced_dependencies_libPath, "verb_obj_obl_json.txt")) as f:
+    with open(os.path.join(GUI_IO_util.CoreNLP_enhanced_dependencies_libPath, "LVC_verb_obj_obl_json.txt")) as f:
         verb_obj_obl = json.load(f)
 
     verb_index = sent_col.index('S-V') if 'S-V' in sent_col else sent_col.index('B-V')
@@ -374,7 +374,7 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
 
                 # Extract only if verb exists
                 if 'V' in clause and len(clause) > 1:
-                    if os.path.exists(os.path.join(GUI_IO_util.CoreNLP_enhanced_dependencies_libPath, "verb_obj_obl_json.txt")):
+                    if os.path.exists(os.path.join(GUI_IO_util.CoreNLP_enhanced_dependencies_libPath, "LVC_verb_obj_obl_json.txt")):
                         process_verb_obj_obl(sent_len, mapping, df, sent_col, start_index)
                     if os.path.exists(os.path.join(GUI_IO_util.CoreNLP_enhanced_dependencies_libPath, "verb_prep_json.txt")):
                         process_verb_prep(sent_len, mapping, df, sent_col, start_index)
