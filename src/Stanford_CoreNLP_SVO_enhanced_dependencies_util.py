@@ -429,14 +429,14 @@ def negation_detect(token, sent_data):#detect if there's negation associated wit
                     
 
 # process link verbs -------------------------------------------------------
-def link_verb_LVC_extraction(token, gov_dict, sent_data, link_verb_LVC_json):
-    s = '' #'Inferred_Subject_Passive'
+def linking_verb_LVC_extraction(token, gov_dict, sent_data, linking_verb_LVC_json):
+    s = ''
     v = ''
     o = ''
     negation = negation_detect(token, sent_data)
 
-    if token["lemma"] in link_verb_LVC_json.keys():#that token is the dependency ROOT (the syntactical head of other tokens in that LVC) of that LVC
-        for conb in link_verb_LVC_json[token["lemma"]]:
+    if token["lemma"] in linking_verb_LVC_json.keys():#that token is the dependency ROOT (the syntactical head of other tokens in that LVC) of that LVC
+        for conb in linking_verb_LVC_json[token["lemma"]]:
             start_index= token["index"]
             end_index= token["index"]
             for key in conb.keys():
@@ -492,9 +492,12 @@ def replace_words_with_full_names(sentence, full_names):
 
 # CYNTHIA
 def SVO_extraction (sent_data, entitymentions): #returns columns of the final output
+
     # get all verb special files
     v_prep_text = GUI_IO_util.CoreNLP_enhanced_dependencies_libPath + os.sep + "verb_prep_json.txt"#json that help with extracting object that follows a preposition
     v_obj_obl_text = GUI_IO_util.CoreNLP_enhanced_dependencies_libPath + os.sep + "LVC_verb_obj_obl_json.txt" #json that help with extracting certain light verb constructions as a whole verb
+    linking_verb_text = GUI_IO_util.CoreNLP_enhanced_dependencies_libPath + os.sep + "linking_verb_LVC_json.txt"#json that help with extracting object that follows a preposition
+
     with open(v_prep_text) as v_prep_doc:
         try:
             v_prep_json = json.load(v_prep_doc)
@@ -517,10 +520,9 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
             return
 
     #load the json from the txt file
-    linking_verb_text = GUI_IO_util.CoreNLP_enhanced_dependencies_libPath + os.sep + "linking_verb_LVC_json.txt"#json that help with extracting object that follows a preposition
     with open(linking_verb_text) as linking_verb_LVC_doc:
         try:
-            link_verb_LVC_json = json.load(linking_verb_LVC_doc)
+            linking_verb_LVC_json = json.load(linking_verb_LVC_doc)
         except ValueError as err:
             import tkinter.messagebox as mb
             mb.showwarning(title='Warning',
@@ -607,8 +609,8 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
         
         else:#if the token is not a verb
             #check if the token is a part of an LVC that starts with a link verb (like "be responsible for")
-            s,v,o, negation = link_verb_LVC_extraction(token, gov_dict, sent_data, link_verb_LVC_json)
-            if v != "" and ( s != "Inferred_Subject_Passive" or o != ''):
+            s,v,o, negation = linking_verb_LVC_extraction(token, gov_dict, sent_data, linking_verb_LVC_json)
+            if v != "" and (s != "Inferred_Subject_Passive" or o != ''):
                 if [s, v, o] not in SVO:#avoid repetition
                     SVO.append([s, v, o])
                     N.append(negation)
@@ -616,7 +618,7 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
             elif (token["deprel"] == "ROOT" or token["deprel"] == "parataxis") and ("NN" in token["pos"] or token["pos"] == "PRP"):#Subject -> Verb(be) -> predicative nominative
                 s, v, o, negation = pred_root(token, gov_dict, sent_data)
                 
-                if v != "" and ( s != "Inferred_Subject_Passive" or o != ''):
+                if v != "" and (s != "Inferred_Subject_Passive" or o != ''):
                     if [s, v, o] not in SVO:#avoid repetition
                         SVO.append([s, v, o])
                         N.append(negation)

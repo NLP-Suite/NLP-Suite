@@ -914,7 +914,7 @@ def getDictFile(lemma_checkbox_var, filter_checkbox_var, dict_path_var, checkbox
 
     if 'English' not in str(language_list):
         mb.showwarning(title='Warning',
-                       message='The filter functions are available only for the English language.' \
+                       message='The filter functions are available only for the English language. Words in MWE, except entitymentions, are _ separated.' \
                        '\n\nYour current language list is: ' + str(language_list) +
                        '\n\nYou can use the Setup dropdown menu at the bottom of this GUI to select a different language.')
         filter_checkbox_var.set(0)
@@ -965,7 +965,7 @@ lemmatize_subjects_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                lemmatize_subjects_checkbox,
                                                True, False, True, False, 90,
-                                               GUI_IO_util.filter_S,
+                                               GUI_IO_util.labels_x_coordinate,
                                                "When lemmatizing subjects, WordNet will be used to aggregate subjects into top synsets noun categories")
 
 filter_subjects_var.set(1)
@@ -976,7 +976,7 @@ subjects_checkbox = tk.Checkbutton(window, text='Filter', variable=filter_subjec
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.filter_S, y_multiplier_integer,
                                    subjects_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Filter subjects list EXCLUDING subjects that are not social actors. When S and V and O filters are selected all conditions must be met.\nThe option for filtering subjects via WordNet for social actors is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
+                                   "Filter subjects list EXCLUDING subjects that are not social actors. When S and V and O filters are selected all conditions must be met.\nThe option for filtering subjects via WordNet for social actors is available only for the English language. Words in MWE, except entitymentions, are _ separated.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
 
 # setup a button to open Windows Explorer on the subjects file
 openInputFile_subjects_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
@@ -1001,7 +1001,7 @@ verbs_checkbox = tk.Checkbutton(window, text='Filter', variable=filter_verbs_var
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.filter_V, y_multiplier_integer,
                                    verbs_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "Filter verbs list EXCLUDING verbs that are not social actions. When S and V and O filters are selected all conditions must be met.\nThe option for filtering verbs for social actions via WordNet is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
+                                   "Filter verbs list EXCLUDING verbs that are not social actions. When S and V and O filters are selected all conditions must be met.\nThe option for filtering verbs for social actions via WordNet is available only for the English language. Words in MWE are _ separated.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
 
 # setup a button to open Windows Explorer on the verbs file
 openInputFile_verbs_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
@@ -1025,8 +1025,8 @@ objects_checkbox = tk.Checkbutton(window, text='Filter', variable=filter_objects
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.filter_O, y_multiplier_integer,
                                    objects_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
-                                   "Filter objects list EXCLUDING objects that are not social actors. When S and V and O filters are selected all conditions must be met.\nThe option for filtering objects for social actors via WordNet is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   "Filter objects list EXCLUDING objects that are not social actors. When S and V and O filters are selected all conditions must be met.\nThe option for filtering objects for social actors via WordNet is available only for the English language. Words in MWE, except entitymentions, are _ separated.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
 
 # setup a button to open Windows Explorer on the objects file
 openInputFile_objects_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
