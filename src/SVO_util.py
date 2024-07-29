@@ -386,7 +386,7 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
                                 temp_lemma = lemmatize_stanza_word(stanzaPipeLine(temp_list[i]))
                             else:
                                 temp_lemma = temp_lemma + ' ' + lemmatize_stanza_word(stanzaPipeLine(temp_list[i]))
-                        row['Subject (S)'] = temp_lemma.replace('  ', ' ') # temp_lemma will have 2 blanks when lemmatizing  a blank token
+                        row['Subject (S)'] = temp_lemma.replace('  ', ' ') # temp_lemma will have 2 blanks when lemmatizing a blank token
                         row['Subject (S)'] = temp_lemma.replace(' ', '_')
         if lemmatize_v:
             if row['Verb (V)'].count(' ')==0:
@@ -514,6 +514,14 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
         lemmatized_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
             ['Subject (S)', 'Verb (V)', 'Object (O)']]
 
+        # reset the row, replacing the _ back to " "
+        if not "inferred_subject_passive" in row['Subject (S)']:
+            df.loc[idx, ['Subject (S)']] = row['Subject (S)'].replace('_', ' ')
+        df.loc[idx, ['Verb (V)']] = row['Verb (V)'].replace('_', ' ')
+        df.loc[idx, ['Object (O)']] = row['Object (O)'].replace('_', ' ')
+    # save the edited df to the svo file
+    df.to_csv(svo_file_name, encoding='utf-8', index=False)
+
     # print(lemmatized_svo,filtered_svo)
     # Continue with your code, now working with filtered and lemmatized DataFrames
 
@@ -546,11 +554,6 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
             elif filter_o:
                 label='O_'
 
-            # # create a subdirectory of the output SVO directory for filtered SVOs
-            # # filtered SVOs are stored in the WordNet directory
-            # outputWNDir = IO_files_util.make_output_subdirectory('', '', outputDir,
-            #                                                      label='WordNet',
-            #                                                      silent=True)
             outputDir, tail = os.path.split(svo_lemma_file_name)
             tail = tail.replace('NLP_SVO_lemma_', 'NLP_SVO_filter_'+ label)
             svo_filter_file_name = os.path.join(outputSVOFilterDir, tail)
