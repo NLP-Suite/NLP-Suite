@@ -1055,7 +1055,9 @@ def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, inputDir,
         if IO_libraries_util.check_inputPythonJavaProgramFile(script[0] + '.py') == False:
             return filesToOpen
         func = getattr(pythonFile, script[1])
-        # # correct values are checked in NLP_GUI
+        # the func function will be executed (e.g., newspaper_titles in file_cleaner_util,
+        #   if function_to_run contains "newspaper title"
+        # correct values are checked in NLP_GUI
         if IO_values == 1: # no inputDir
             filesToOpen = func(GUI_util.window, inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformation, processType)
         elif IO_values == 2: # no inputFilename

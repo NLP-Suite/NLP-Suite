@@ -383,3 +383,21 @@ On Stanford CoreNLP and memory and performance issues and what to do about them,
 
 If you are processing files in a directory, other files may similarly need to be split and the message display may become annoying.",OFF
 *,Clause tags with CoreNLP neural network parser,The CoreNLP neural network parser does not produce clause tags in output. The column 'Clause Tag' in the output csv CoNLL table would contain all blank values.,OFF
+*,NER tags frequency,"O is likely to be the most frequent NER tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the row containing the O tag in the Data worksheet of the Excel chart file to have a better view of all other tags.",OFF
+*,CoreNLP SVO + gender + quote timing,"Beware that the CoreNLP SVO + gender + quote algorithms on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 4 hours on a standard laptop.",ON
+*,CoreNLP quote annotator,"The CoreNLP quote annotator works with double quotes as default "" rather than with single quotes '. If your document(s) use single quotes for dialogue, make sure to tick the checkbox 'Include single quotes'. The Stanford CoreNLP annotator will then process BOTH single AND double quotes, otherwise single quotes for dialogues would be missed (e.g., The user said: 'This NLP Suite sucks.').",OFF
+*,CoreNLP split files,"Stanford CoreNLP has a limit of 100,000 characters maximum text size.
+
+The input file was automatically split into chunks smaller than 100K characters size, fed to Stanford CoreNLP and the output recomposed into a single file.
+
+Split files are created in a sub-folder named ""split_files"" inside the directory where the input txt files are located, regardless of the choice of output directory.
+
+If you are processing files in a directory, other files may similarly need to be split and the message display may become annoying.",OFF
+*,CoreNLP NER annotator timing,"Beware that the CoreNLP NER annotator on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 50 minutes on a standard laptop.",OFF
+*,CoreNLP PCFG parser timing,"Beware that the CoreNLP PCFG parser on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 1 hour and 40 minutes on a standard laptop.",OFF
+*,DepRel tags frequency,"punct (punctuation) and det (determiner/article) are likely to be the most frequent DepRel tags in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete in the Data worksheet of the Excel chart file the rows containing the 'punct' and 'det' tags to have a better view of all other tags.",ON
+*,CoreNLP NER tags,"The CoNLL table produced by the CoreNLP parser has a record for each token in the document(s) processed.
+
+If you are planning to produce frequency distributions of NER tags directly from the CoNLL table, you need to remember that tags such as 'Date' or 'City' may be grossly overestimated. For instance, in the expression 'the day before Christmas' each word 'the,' 'day,' 'before,' 'Christmas' will be tagged as NER date. The same is true for NER CITY tags such as 'New York City.'
+
+A better way to obtain frequency distributions of NER values is to run the NER annotators from the 'Stanford_CoreNLP_NER_main.py.'",ON

@@ -100,7 +100,7 @@ def run(inputFilename, outputDir, openOutputFiles,
                                                         dataTransformation=GUI_util.data_transformation_options_widget.get(),
                                                         chart_type_list=chart_type_list,
                                                         chart_title="Frequency Distribution of " + csv_field_visualization_var,
-                                                        column_xAxis_label_var=csv_field_visualization_var,
+                                                        column_xAxis_label_var=X_axis_var, #csv_field_visualization_var,
                                                         hover_info_column_list=[],
                                                         count_var=count_var,
                                                         complete_sid=False, csv_field_Y_axis_list=csv_file_field_Y_axis_list, X_axis_var = X_axis_var)  # TODO to be changed
