@@ -27,7 +27,6 @@ import config_util
 
 def run(inputFilename,inputDir, outputDir,
     openOutputFiles,
-    
     chartPackage,
     dataTransformation,
     check_tools,
@@ -61,14 +60,11 @@ def run(inputFilename,inputDir, outputDir,
             mb.showwarning(title='Option not available', message='The Levenshtein\'s distance option is not available from this GUI.\n\nPlease, run the script from the spell_checker_main.')
             return
 
-        # if 'Vocabulary richness' in function_to_run or 'Short words' in function_to_run or 'Vowel words' in function_to_run:
-        #     mb.showwarning(title='Option not available',
-        #                    message='The option is not available from this GUI.\n\nPlease, run the script from the style_analysis_main.')
-        #     return
-
-
         pythonFile = importlib.import_module(script_to_run)
         func = getattr(pythonFile, function_to_run)
+        # the func function will be executed (e.g., newspaper_titles in file_cleaner_util,
+        #   if function_to_run contains "newspaper title"
+        # correct values are checked in NLP_GUI
         if IO_libraries_util.check_inputPythonJavaProgramFile(script_to_run + ".py") == False:
             return
         outputFile=[]
@@ -94,12 +90,6 @@ def run(inputFilename,inputDir, outputDir,
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
-
-    # IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
-    #                                        'Started running ' + menu_option + ' at', True,
-    #                                        'You can follow ' + menu_option + ' in command line.')
-    #
-    # IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running ' + menu_option + ' at', True)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
@@ -183,6 +173,7 @@ pydict["Change to ASCII non-ASCII apostrophes & quotes and % to percent"] = ["fi
 pydict["Remove blank lines from text file(s)"] = ["file_cleaner_util.remove_blank_lines"]
 pydict["Remove all characters between a set of characters (e.g., []) from text file(s)"] = ["file_cleaner_util.remove_characters_between_characters"]
 pydict["Remove end-of-line typesetting hyphenation and join split parts"] = ["file_cleaner_util.remove_typeseting_hyphenation"]
+pydict["Remove all end-of-line hard carriage returns"] = ["file_cleaner_util.remove_hard_carriage_returns"]
 pydict["Find & Replace string"] = ["file_cleaner_util.find_replace_string"]
 pydict["Find & Replace string (via csv file)"] = ["file_spell_checker_util.spelling_checker_cleaner"]
 pydict["Separate titles from documents (newspaper articles)"] = ["file_cleaner_util.newspaper_titles"]
@@ -255,6 +246,7 @@ clean_menu = tk.OptionMenu(window,clean_tools_var,
                     'Find & Replace string',
                     'Find & Replace string (via csv file)',
                     'Remove blank lines from text file(s)',
+                    'Remove all end-of-line hard carriage returns',
                     'Remove end-of-line typesetting hyphenation and join split parts',
                     'Remove all characters between a set of characters (e.g., []) from text file(s)',
                     'Add full stop (.) at the end of paragraphs without end-of-paragraph punctuation',

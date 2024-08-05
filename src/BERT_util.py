@@ -590,8 +590,6 @@ def sentiment_main(inputFilename, inputDir, outputDir, configFileName, mode,  ch
                     if filename.endswith(".txt"):
                         # start_time = time.asctime( time.localtime(time.time()))()
                         start_time = time.time()
-                        # print("Started SentiWordNet sentiment analysis of " + filename + "...")
-                        documentID += 1
                         filesToOpen.append(sentiment_analysis_BERT(
                             filename, outputDir, outputFilename, mode, documentID, filename,model_path))
                         # print("Finished SentiWordNet sentiment analysis of " + filename + " in " + str((time.asctime( time.localtime(time.time()))() - start_time)) + " seconds")
