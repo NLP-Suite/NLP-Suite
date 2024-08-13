@@ -64,13 +64,6 @@ def create_output_directory(inputFilename, inputDir, outputDir, config_filename,
                             export_json_var, annotator, silent, Json_question_already_asked):
     outputJsonDir = ''
     outputDirSV=GUI_util.output_dir_path.get()
-    # create a Json subdirectory of the main output directory
-    if export_json_var:
-        outputJsonDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
-                                                               label='Json',
-                                                               silent=silent)
-    else:
-        outputJsonDir = ''
 
     if 'coref' in outputDir and 'coref' in str(annotator):
         # when coming from coref annotator, the outputDir will contain an unnecessary NLP_CoreNLP_coref_ string
@@ -92,6 +85,16 @@ def create_output_directory(inputFilename, inputDir, outputDir, config_filename,
             outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
                                                                label=annotator + "_CoreNLP",
                                                                silent=silent)
+
+
+    # create a Json subdirectory of the main output directory
+    if export_json_var:
+        outputJsonDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                                                               label='Json',
+                                                               silent=silent)
+    else:
+        outputJsonDir = ''
+
     return outputDir, outputJsonDir
 
 def check_CoreNLP_available_languages(language):
@@ -218,6 +221,9 @@ def CoreNLP_annotate(config_filename,inputFilename,
     speed_assessment_format = ['Document ID', 'Document','Time', 'Tokens to Annotate', 'Params', 'Number of Params']#the column titles of the csv output of speed assessment
     # start_time = time.time()#start time
     filesToOpen = []
+
+    global subtree_string
+    subtree_string = []
 
     available_language = check_CoreNLP_available_languages(language)
     if not available_language:
@@ -732,10 +738,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
 #   the sentence splitter is processed in process_json_sentence
                 if "parser" in annotator_chosen:
                     if "pcfg" in annotator_chosen:
-                        sub_result, recordID = routine(config_filename, docID, docName, sentenceID, recordID, True,CoreNLP_output, **kwargs)
+                        sub_result, subtree_string, recordID = routine(config_filename, docID, docName,
+                                            sentenceID, recordID, True, CoreNLP_output, **kwargs)
                     else:
                         # neural network parser does not contain clause tags
-                        sub_result, recordID = routine(config_filename, docID, docName, sentenceID, recordID, False,CoreNLP_output, **kwargs)
+                        sub_result, subtree_string, recordID = routine(config_filename, docID, docName,
+                                            sentenceID, recordID, False, CoreNLP_output, **kwargs)
                 elif "All POS" in annotator_chosen or "Lemma" in annotator_chosen:
                     sub_result, recordID = routine(config_filename, docID, docName, sentenceID, recordID,
                                                CoreNLP_output, **kwargs)
@@ -845,6 +853,13 @@ def CoreNLP_annotate(config_filename,inputFilename,
             elif "parser" in annotator_chosen:
                 if "pcfg" in annotator_chosen:
                     parser_label = 'PCFG'
+                    if len(subtree_string) > 0:
+                        subtree_string.insert(0, ['Subtree', 'Sentence ID', 'Document ID', 'Document'])
+                        subtree_string_fileName = outputDir_chosen + os.sep + 'subtree_string.csv'
+                        IO_csv_util.list_to_csv(GUI_util.window, subtree_string, subtree_string_fileName,
+                                                encoding=language_encoding)
+                        filesToOpen.append(subtree_string_fileName)
+
                 else:
                     parser_label = 'nn'
                 outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir,
@@ -2136,8 +2151,10 @@ def process_json_single_annotation(config_filename, documentID, document, senten
 
     return result, recordID
 
+# processes one document at a time
 def process_json_parser(config_filename, documentID, document, sentenceID, recordID, pcfg, json, **kwargs):
-    print("   Processing Json output file for Parser")
+
+    print("   Processing Json output file for Parser ",document)
     old_recordID = recordID
     filename_embeds_date_var = False
     for key, value in kwargs.items():
@@ -2149,8 +2166,19 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
     result = []
     # neural network parser does not contain clausal tags (e.g., NP, VP,...)
     if pcfg:
-        sent_list_clause = [Stanford_CoreNLP_clause_util.clausal_info_extract_from_string(parsed_sent['parse'])
-                            for parsed_sent in json['sentences']]
+        # examples is a double list of [clausal tag, string of tokens that make up the clause tag]
+        # print ('FINAL ', [Stanford_CoreNLP_clause_util.clausal_info_extract_from_string(parsed_sent['parse']) for parsed_sent in json['sentences']])
+        # sent_list_clause, examples = [Stanford_CoreNLP_clause_util.clausal_info_extract_from_string(parsed_sent['parse']) for parsed_sent in json['sentences']]
+        sent_list_clause = []
+        # subtree_string = []
+        sentID = 0
+        for parsed_sent in json['sentences']:
+            sentID+=1
+            sent_list, sent_examples = Stanford_CoreNLP_clause_util.clausal_info_extract_from_string(parsed_sent['parse'])
+            sent_list_clause.append(sent_list)
+            subtree_string.append([sent_examples, sentID, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+        # sent_list_clause = [Stanford_CoreNLP_clause_util.clausal_info_extract_from_string(parsed_sent['parse']) for
+        #                 parsed_sent in json['sentences']]
     # else: a reminder is posted at the end
     for i in range(len(json["sentences"])):
         # print("*************")
@@ -2224,7 +2252,7 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
                 temp.append(date_str)
             result.append(temp)
 
-    return result, recordID
+    return result, subtree_string, recordID
 
 
 def exportJson(export_json_var, inputFilename, outputJsonDir, CoreNLP_output,

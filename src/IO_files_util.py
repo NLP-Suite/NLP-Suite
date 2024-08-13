@@ -300,13 +300,13 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=
         else:
             mb.showwarning(title='Input file error',
                            message='The input file type expected by the algorithm is ' + fileType + '.\n\nPlease, select the expected file type and try again.')
-    configFileName= GUI_IO_util.configPath + os.sep+configFileName
     #print(inputDir)
 
     # append sort order and separator
     # unfortunately, the sort order is saved as first column in the config file and separator second,
     #   contrary to the display in the IO setup GUI)
     if configFileName!='':
+        configFileName = GUI_IO_util.configPath + os.sep + configFileName
         import pandas as pd
         try:
             a = pd.read_csv(configFileName, index_col=False,encoding='utf-8',on_bad_lines='skip')

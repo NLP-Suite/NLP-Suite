@@ -38,22 +38,44 @@ param:
 output:
 @full_list: list of token-clausal TAG pair for that sentence
 """
+# processing the parsetree of one sentence at a time
 def clausal_info_extract(parsetree):
     full_list = parsetree.leaves()
     # print("IN clausal_info_extract full_list 1",full_list)
     dict_ind = dict()
+    subtree_string=[]
     for subtree in parsetree.subtrees():
-        if subtree.label() in ['SBAR', 'SQ', 'SBARQ','SINV','S','VP','NP']:
+        if subtree.label() in ['ADJP', 'ADVP', 'PP', 'SBAR', 'SQ', 'SBARQ','SINV','S','VP','NP']:
             ind = sublist_match(full_list,subtree.leaves())
             dict_ind[ind] = subtree.label()
+            # subtree.flatten() is a tree, e.g., NP, ['a','middle','class','family']
+            # the list ['a','middle','class','family'] must be converted to string via ' '.join(subtree.flatten())
+            # -RRB- -LRB-
+            #  , ; . remove blank
+            example = ' '.join(subtree.flatten())
+            example=example.replace(' ,',',')
+            example=example.replace(' ;',';')
+            example=example.replace(' .','.')
+            example=example.replace(' ?','?')
+            example=example.replace(' !','!')
+            example=example.replace(' -RRB- ',' ')
+            example=example.replace(' -LRB- ',' ')
+            example=example.replace('  ',' ')
+            subtree_string.append(subtree.label() + ',' + example)
+    # print('\n\nsubtree_string\n\n', str(subtree_string))
+    # full_list is a double list
     for i, tok in enumerate(full_list):
         if i in dict_ind:
+            # subtree_string.append(dict_ind[i])
             full_list[i] = [dict_ind[i]]
         else:
             full_list[i] = [0]
+        # subtree_string.append(tok)
     try:
         # print("IN clausal_info_extract full_list 2",full_list)
-        return full_list
+        # print('\n\nsubtree_string\n\n',str(subtree_string))
+        return full_list, subtree_string
+        # return full_list
     except:
         print("\nERROR IN PARSE-TREE\n",parsetree)
         mb.showwarning(title='ERROR IN PARSE-TREE', message="There was an error in parsing the tree of a sentence for the full_list displayed in command line.")
@@ -66,7 +88,10 @@ def clausal_info_extract(parsetree):
 def clausal_info_extract_from_string(parse_tree_str):
     try:
         parse_tree = Tree.fromstring(parse_tree_str)
-        return clausal_info_extract(parse_tree)
+        full_list, subtree_string = clausal_info_extract(parse_tree)
+        return full_list, subtree_string
+        # full_list = clausal_info_extract(parse_tree)
+        # return full_list
     except:
         print("\nERROR IN NLTK PARSE-TREE\n",parse_tree_str,parse_tree.flatten())
         mb.showwarning(title='ERROR IN PARSE-TREE', message="There was an error in NLTK parsing of the sentence tree displayed in command line.\n\nSearch in your document for the words displayed in command line, edit your document for characters that may lead to this error, and try again.")
