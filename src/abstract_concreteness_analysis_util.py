@@ -18,7 +18,7 @@ Uses concreteness measures by Brysbaert, Marc, Amy Beth Warriner, and Victor Kup
 	“Concreteness Ratings for 40 Thousand Generally Known English Word Lemmas.”
 	Behavioral Research Methods, Vol. 46, No. 3, pp. 904–911.
 
-#a 5-point rating scale going from abstract to concrete
+#a 5-point rating scale going from abstract, 1, to concrete, 5
 
 """
 # add parameter to exclude duplicates? also mean or median analysis
@@ -76,6 +76,7 @@ def analyzefile(inputFilename, outputDir, outputFilename,  documentID, documentN
 	:return:
 	"""
 
+	from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
 	# read file into string
 	with open(inputFilename, 'r', encoding='utf-8', errors='ignore') as myfile:
 		fulltext = myfile.read()
@@ -88,8 +89,7 @@ def analyzefile(inputFilename, outputDir, outputFilename,  documentID, documentN
 
 	# otherwise, split into sentences
 	# sentences = tokenize.sent_tokenize(fulltext)
-	from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
-	sentences = tokenize_stanza_text(stanzaPipeLine(fulltext))
+	sentences = sentence_split_stanza_text(stanzaPipeLine(fulltext))
 
 	# check each word in sentence for concreteness and write to outputFilename
 	# analyze each sentence for concreteness
@@ -118,6 +118,8 @@ def analyzefile(inputFilename, outputDir, outputFilename,  documentID, documentN
 				found_words.append('(' + str(lemma) + ', ' + str(score) + ')')
 				score_list.append(score)
 				# print('score: '+ str(score) + ' LEMMA: ' + str(lemma))
+			else:
+				continue
 		# else:  # output concreteness info for this sentence
 		if len(score_list) > 0:
 			conc_median = round(float(statistics.median(score_list)), 2)

@@ -936,6 +936,15 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
             return
         k = int(k_str)
 
+    # create the appropriate subdir
+    if "Objectivity/subjectivity" in processType:
+        # create a subdirectory of the output directory
+        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                                                           label='spaCy_obj_subj',
+                                                           silent=True)
+        if outputDir == '':
+            return
+
     for doc in inputDocs:
         head, tail = os.path.split(doc)
         documentID = documentID + 1
@@ -998,6 +1007,7 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                 chart_title_bySentID = 'Frequency of subjectivity scores by Sentence ID'
                 column_xAxis_label = 'Subjectivity scores'
 
+                # process sentence
                 d = nlp(s)
                 subjectivity_score = d._.blob.subjectivity
 

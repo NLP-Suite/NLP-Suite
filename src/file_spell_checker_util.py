@@ -68,6 +68,8 @@ def lemmatizing(word):#edited by Claude Hu 08/2020
 
 # https://www.nltk.org/book/ch02.html
 def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, openOutputFiles,  chartPackage='Excel', dataTransformation='No transformation'):
+
+
     import nltk
     nltk.download('words')
     filesToOpen=[]
@@ -78,8 +80,18 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, 
     nFile=len(files)
     if nFile==0:
         return
-    outputFilename=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'NLTK_unus', 'stats')
-    filesToOpen.append(outputFilename)
+
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='NLTK_unus',
+                                                       silent=True)
+    if outputDir == '':
+        return
+
+    outputFilename_list=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'NLTK_unus_list', '')
+    filesToOpen.append(outputFilename_list)
+
+    outputFilename_byDoc=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'NLTK_unus_byDoc', '')
+    filesToOpen.append(outputFilename_byDoc)
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'NLTK unusual words-spelling checker start',
                                        'Started running NLTK unusual words-spelling checker at',
@@ -87,26 +99,42 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, 
 
     # already shown in NLP.py
     # IO_util.timed_alert(GUI_util.window,2000,'Analysis start','Started running NLTK unusual words at',True,'You can follow NLTK unusual words in command line.')
+
+    # https://stackoverflow.com/questions/28339622/is-there-a-corpus-of-english-words-in-nltk
+    english_vocab = set([w.lower() for w in nltk.corpus.words.words()])
+    # should lemmatize english_vocab
+    # you can add words to NLTK words, e.g.,
+    #   words.update(['climatisation', 'equipped'])
+    # https://stackoverflow.com/questions/72099620/how-to-solve-missing-words-in-nltk-corpus-words-words
+    # print(english_vocab)
+    from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza_doc
     for file in files:
         documentID=documentID+1
         head, tail = os.path.split(file)
         print("Processing file " + str(documentID) + "/" + str(nFile) + ' ' + tail)
         text = (open(file, "r", encoding="utf-8", errors="ignore").read())
-        #lemmatizer = WordNetLemmatizer()
-        # text_vocab = set(lemmatizer.lemmatize(w.lower()) for w in text.split(" ") if w.isalpha())
-        text_vocab = set(lemmatizing(w.lower()) for w in text.split(" ") if w.isalpha())
-        english_vocab = set([w.lower() for w in nltk.corpus.words.words()])
-        # print("Using NLTK English_vocab",english_vocab)
-        # print("text_vocab",text_vocab)
+        text = text.lower()
+        # text_list = text.split(" ")
+        text_list = []
+        # the NLTK vocab is lowercase, lemmatized; must lemmatize your input
+        lemmatized_text = lemmatize_stanza_doc(stanzaPipeLine(text))
+        for w in lemmatized_text:
+            if w.isalpha():
+                text_list.append(w.lower())
+        # convert list to set
+        text_vocab = set(text_list)
         unusual = text_vocab - english_vocab
-        #convert the set to a list
+        # convert the set to a list
         unusual=list(unusual)
         #sort the list
         unusual.sort()
         [container.append([word, documentID, IO_csv_util.dressFilenameForCSVHyperlink(file)]) for word in unusual]
-    container.insert(0, ['Misspelled-unusual word','Document ID', 'Document'])
     if len(container)>0:
-        if IO_csv_util.list_to_csv(window,container,outputFilename): return
+        unusual.insert(0, 'Misspelled-unusual word')
+        if IO_csv_util.list_to_csv(window,unusual,outputFilename_list): return
+        container.insert(0, ['Misspelled-unusual word', 'Document ID', 'Document'])
+        if IO_csv_util.list_to_csv(window,container,outputFilename_byDoc): return
+        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Spelling checker (via nltk)', str(len(text_vocab)) + ' words in your corpus were compared to ' + str(len(english_vocab)) + ' words available in the NLTK corpus.\nThe difference of ' + str(len(unusual)) + ' words between the two sets of words gives the set of unusual words in your corpus.', True)
     else:
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Spelling checker (via nltk)', 'No misspelled-unusual words found in\n' + file, True)
         if nFile==1:
@@ -121,14 +149,15 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, 
              if result==False:
                  pass
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename_byDoc, outputDir,
                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Misspelled-unusual word'],
                                                    chart_title='Frequency of Misspelled-Unusual Words',
                                                    count_var=1, hover_label=[],
                                                    outputFileNameType='',  # 'line_bar',
                                                    column_xAxis_label='Misspelled-Unusual word',
                                                    groupByList=['Document'],
-                                                   plotList=['Misspelled-Unusual Words Statistics'],
+                                                   # plotList=['Misspelled-Unusual Words Statistics'],
+                                                   plotList=[],
                                                    chart_title_label='')
 
         if outputFiles!=None:

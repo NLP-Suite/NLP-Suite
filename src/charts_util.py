@@ -2064,11 +2064,11 @@ def select_and_counting(df, select_and_count):
 
 def where_data(data, **kwargs):
     conditions = kwargs.get('where_column', {})  # WHERE conditions
-    for col, value in conditions.items():
-        if value == '' or value == ['']:
+    for col, values in conditions.items():
+        if values == '' or values == ['']:
             continue
-        if isinstance(value, (list, tuple)):
-            data = data[data[col].isin(value)]
+        if isinstance(values, (list, tuple)):
+            data = data[data[col].isin(values)]
     # THIS FUNCTION IS DOING: SELECT FROM DATA WHERE cond_1, cond_2, ... con_n for ** kwargs
     return data
 
@@ -2108,8 +2108,10 @@ def rate_prop(df, rt, base):
 
 
 # THIS IS AN ABBREVIATED VERSION FOR The sunburst / treemap
+# returns two files: a csv fle of intermediate results and an html file for the Sunburst_Treemap chart
 def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categorical_field_list, suntree,
                      fixed_param_var, rate_param_var, base_param_var, filter_options_var, case_sensitive=False):
+    filesToOpen = []
     print(fixed_param_var, rate_param_var, base_param_var, filter_options_var, case_sensitive)
     # print("======")
     data = pd.read_csv(inputFilename)
@@ -2126,7 +2128,9 @@ def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categori
     select_and_count.extend(list(WHERE.keys()))
     df = select_and_counting(data, select_and_count)
     df_grouped = df.groupby(select_and_count).size().reset_index(name='counts')
-    df_grouped.to_csv(outputDir + os.sep + "Output_Csv_intermediate.csv", index=False)
+    intermediate_csv_filename =outputDir + os.sep + "sunburst_treemap_intermediate.csv"
+    filesToOpen.append(intermediate_csv_filename)
+    df_grouped.to_csv(intermediate_csv_filename, index=False)
     # df_grouped.head(5)
     if filter_options_var == 'Fixed parameter':
         df_grouped = fixed_transform(df_grouped, int(fixed_param_var))
@@ -2144,4 +2148,5 @@ def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categori
     else:
         fig = px.treemap(df_grouped, path=select_and_count, values='counts')
     fig.write_html(outputFilename)
-    return outputFilename
+    filesToOpen.append(outputFilename)
+    return filesToOpen

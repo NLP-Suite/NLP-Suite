@@ -79,18 +79,19 @@ def lemmatize_stanza_word(text_to_process, return_empty_string=True):
         else:
             return text_to_process.sentences[0].words[0].text
 
-# in INPUT the function takes a document or sentence or even word as string
+# in INPUT the function takes a document text or sentence or even word as strings
 #   e.g., 'Robert went to Italy for vacation'
 # in OUTPUT the function returns a list [] of the lemmatized document, sentence or word
 #   e.g., ['Robert', 'go', 'to', 'Italy', 'on', 'vacation']
 # similar to tokenized_stanza_doc except that in this one the list items are tokenized (NOT lemmatized) words
-
 def lemmatize_stanza_doc(text_to_process, return_string=False, exact_word_match = True):
     if return_string:
         lemmatized_text_to_process=''
     else:
         lemmatized_text_to_process=[]
     punctuation_set = ',;.?!'
+    # for text_to_process.sentences to work, the calling function must first have
+    #   from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza_doc
     for sentence in text_to_process.sentences:
         for word in sentence.words:
             if return_string:

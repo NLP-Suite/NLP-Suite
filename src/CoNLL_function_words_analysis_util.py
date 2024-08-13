@@ -64,6 +64,13 @@ def process_df_headers(df, function_word):
 
 
 def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputFiles,chartPackage, dataTransformation):
+    # create pronoun subdir
+    outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
+                                                            label='FW_pron',
+                                                            silent=True)
+    if outputDir == '':
+        return
+
     filesToOpen = []  # Store all files that are to be opened once finished
 
     #output file names
@@ -104,7 +111,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
                                                       pronouns_list_file_name, outputDir,
                                                       columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
                                                       chart_title="Frequency Distribution of Pronouns",
-                                                      outputFileNameType='FuncWords_pron',
+                                                      outputFileNameType='FW_pron',
                                                       column_xAxis_label='Pronoun',
                                                       count_var=count_var,
                                                       hover_label=[],
@@ -127,7 +134,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
                                                       pronouns_list_file_name, outputDir,
                                                       columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
                                                       chart_title="Frequency Distribution of Types of Pronouns",
-                                                      outputFileNameType='FuncWords_pron_type',
+                                                      outputFileNameType='FW_pron_type',
                                                       column_xAxis_label='Pronoun type',
                                                       count_var=count_var,
                                                       hover_label=[],
@@ -146,6 +153,13 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
     return filesToOpen
 
 def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,chartPackage, dataTransformation):
+    # create preposition subdir
+    outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
+                                                            label='FW_prep',
+                                                            silent=True)
+    if outputDir == '':
+        return
+
     filesToOpen = []  # Store all files that are to be opened once finished
 
     #output file names
@@ -186,7 +200,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
                                                       function_words_prepositions_file_name, outputDir,
                                                       columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
                                                       chart_title="Frequency Distribution of Prepositions",
-                                                      outputFileNameType='FuncWords_prep',
+                                                      outputFileNameType='FW_prep',
                                                       column_xAxis_label='Preposition',
                                                       count_var=count_var,
                                                       hover_label=[],
@@ -203,6 +217,13 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
     return filesToOpen
 
 def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,chartPackage, dataTransformation):
+    # create article/determinant subdir
+    outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
+                                                            label='FW_det',
+                                                            silent=True)
+    if outputDir == '':
+        return
+
     filesToOpen = []  # Store all files that are to be opened once finished
 
     #output file names
@@ -245,7 +266,7 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
                                                       function_words_articles_file_name, outputDir,
                                                       columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
                                                       chart_title="Frequency Distribution of Articles",
-                                                      outputFileNameType='FuncWords_art',
+                                                      outputFileNameType='FW_art',
                                                       column_xAxis_label='Article',
                                                       count_var=count_var,
                                                       hover_label=[],
@@ -261,6 +282,14 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
     return filesToOpen
 
 def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutputFiles,chartPackage, dataTransformation):
+
+    # create conjunction subdir
+    outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
+                                                            label='FW_conj',
+                                                            silent=True)
+    if outputDir == '':
+        return
+
     filesToOpen = []  # Store all files that are to be opened once finished
 
     #output file names
@@ -298,16 +327,37 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
             count_var = 1
 
             outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                      function_words_conjunctions_file_name, outputDir,
-                                                      columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                      chart_title="Frequency Distribution of Conjunctions",
-                                                      outputFileNameType='FuncWords_conj',
-                                                      column_xAxis_label='Conjunction',
-                                                      count_var=count_var,
-                                                      hover_label=[],
-                                                      groupByList=['Document'],
-                                                      plotList=[],
-                                                      chart_title_label='')
+                                  function_words_conjunctions_file_name, outputDir,
+                                  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+                                  chart_title="Frequency Distribution of Conjunctions",
+                                  outputFileNameType='FW_conj',
+                                  column_xAxis_label='Conjunction',
+                                  count_var=count_var,
+                                  hover_label=[],
+                                  groupByList=['Document'],
+                                  plotList=[],
+                                  chart_title_label='')
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
+            columns_to_be_plotted_xAxis = []
+            columns_to_be_plotted_yAxis = ['Lemma']
+            count_var = 1
+
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
+                                  function_words_conjunctions_file_name, outputDir,
+                                  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+                                  chart_title="Frequency Distribution of Conjunction Words",
+                                  outputFileNameType='FW_conj_words',
+                                  column_xAxis_label='Conjunction word',
+                                  count_var=count_var,
+                                  hover_label=[],
+                                  groupByList=['Document'],
+                                  plotList=[],
+                                  chart_title_label='')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -317,6 +367,12 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
     return filesToOpen
 
 def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,chartPackage, dataTransformation):
+    # create auxiliary subdir
+    outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
+                                                            label='FW_aux',
+                                                            silent=True)
+    if outputDir == '':
+        return
     filesToOpen = []  # Store all files that are to be opened once finished
 
     #output file names
@@ -356,7 +412,7 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
                                                       function_words_auxiliaries_file_name, outputDir,
                                                       columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
                                                       chart_title="Frequency Distribution of Auxiliaries",
-                                                      outputFileNameType='FuncWords_aux',
+                                                      outputFileNameType='FW_aux',
                                                       column_xAxis_label='Auxiliary verb',
                                                       count_var=count_var,
                                                       hover_label=[],

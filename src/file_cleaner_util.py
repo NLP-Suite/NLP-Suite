@@ -25,7 +25,7 @@ import IO_csv_util
 def create_input_subdir(inputDir, label):
     # create a subdirectory of the input directory
     inputDirBase = os.path.basename(inputDir)
-    outputDir = inputDir + os.sep + inputDirBase + '_'+label
+    outputDir = inputDir + os.sep + inputDirBase + label
     outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
                                                        label='',
                                                        silent=True)
@@ -305,6 +305,7 @@ def remove_characters_between_characters(window,inputFilename,inputDir, outputDi
     No_odd_pairs = 0
     edited_files_list=[]
     odd_pairs_files_list=[]
+    file_sizes=[]
     docID = 0
     files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt', silent=False, configFileName=configFileName)
     nDocs = len(files)
@@ -332,7 +333,7 @@ def remove_characters_between_characters(window,inputFilename,inputDir, outputDi
                 if number_of_characters_start % 2 != 0: # ODD integer
                     IO_user_interface_util.timed_alert(GUI_util.window, 1000, 'Warning',
                                                        '   ODD NUMBER of ' + startCharacter + ' and ' + endCharacter + ' was found in the input file ' + tail + '.\n   File skipped. Please, check carefully the input file for start/end pairs.',
-                                                       True, '', True, '', False)
+                                                       True, '', True, '', True)
                     No_odd_pairs += 1
                     odd_pairs_files_list.append(tail)
                     continue  # skip to next file
@@ -368,6 +369,16 @@ def remove_characters_between_characters(window,inputFilename,inputDir, outputDi
                 outfile = outputDir + os.sep + tail.replace('.txt',label+'.txt')
             with open(outfile, 'w+',encoding='utf_8',errors='ignore') as out:
                 out.write(fullText)
+
+                # export file sizes as a check
+                os.stat(file)
+                os.stat(file).st_size
+                os.stat(outfile)
+                os.stat(outfile).st_size
+                # file_sizes.append(tail + ' FILE SIZES (in bytes) - ORIGINAL ' + str(os.stat(file).st_size) + ' EDITED ' + str(os.stat(outfile).st_size))
+                file_sizes.append([IO_csv_util.dressFilenameForCSVHyperlink(file), IO_csv_util.dressFilenameForCSVHyperlink(outfile), str(os.stat(file).st_size), str(os.stat(outfile).st_size), str(os.stat(file).st_size - os.stat(outfile).st_size)])
+                print('   FILE SIZES (in bytes) - ORIGINAL ',os.stat(file).st_size,' EDITED ',os.stat(outfile).st_size)
+
                 if inputDir!='':
                     No_files_edited += 1
                     edited_files_list.append(tail)
@@ -381,14 +392,22 @@ def remove_characters_between_characters(window,inputFilename,inputDir, outputDi
 
 
     if inputDir!='':
-        mb.showwarning(title='Warning', message=str(
-            No_files_edited) + ' files were edited removing ALL substrings contained between ' + startCharacter + ' ' + endCharacter + '.\n\nThe edits were saved to files in a subdirectory of the input directory\n\n' + head+'\n\n'+str(edited_files_list))
-        print(str(
-            No_files_edited) + ' files were edited removing ALL substrings contained between ' + startCharacter + ' ' + endCharacter + '.\n\nThe edits were saved to files in a subdirectory of the input directory\n\n' + head+'\n\n'+str(edited_files_list))
+        if No_files_edited>0:
+            mb.showwarning(title='Warning', message=str(
+                No_files_edited) + ' files were edited removing ALL substrings contained between ' + startCharacter + ' ' + endCharacter + '.\n\nThe edits were saved to files in a subdirectory of the input directory\n\n' + head + '\n\nList of edited files:\n\n' + str(
+                edited_files_list))
+            # mb.showwarning(title='Warning', message='List of edited files with file sizes. CHECK FILE SIZES CAREFULLY! Too large discrepancies may indicate unbalanced start/end characters and too much text removed.\n\n' + str(file_sizes))
+            print(str(
+                No_files_edited) + ' files edited removing ALL substrings between ' + startCharacter + ' ' + endCharacter + '.\n'+str(edited_files_list))
+            # print('\n\nList of edited files with file sizes.  CHECK FILE SIZES CAREFULLY! Too large discrepancies may indicate unbalanced start/end characters and too much text removed.\n\n' + str(file_sizes))
+            header = ['Original file', 'Edited file', 'Original file size in bytes', 'Edited file size in bytes', 'Difference in bytes (should be >0)']
+            file_sizes.insert(0, header)
+            IO_csv_util.list_to_csv(window, file_sizes, outputDir+os.sep+"file_sizes.csv")
+            IO_files_util.openFile(window, outputDir+os.sep+"file_sizes.csv")
 
     if No_odd_pairs>0:
         mb.showwarning(title='Warning', message='ODD PAIRS of start/end values ' + startCharacter + ' ' + endCharacter + ' were found in '+ str(No_odd_pairs)+' files.\n\nTHE FILES WERE SKIPPED FROM PROCESSING. PLEASE, CHECK THOSE FILES CAREFULLY.\n\n'+str(odd_pairs_files_list))
-        print('ODD PAIRS of start/end values ' + startCharacter + ' ' + endCharacter + ' were found in '+ str(No_odd_pairs)+' files.\n\nTHE FILES WERE SKIPPED FROM PROCESSING. PLEASE, CHECK THOSE FILES CAREFULLY.\n\n'+str(odd_pairs_files_list))
+        print('\n\nODD PAIRS of start/end values ' + startCharacter + ' ' + endCharacter + ' were found in '+ str(No_odd_pairs)+' files. FILES WERE SKIPPED FROM PROCESSING. CHECK CAREFULLY.\n   '+str(odd_pairs_files_list))
 
     # \n\nThe edits were saved to the files in the subdirectory\n\n' + str(outputDir) + '\n\nof the input directory\n\n'+inputDir
     # always open outputDir
