@@ -81,6 +81,7 @@ def lemmatize_stanza_word(text_to_process, return_empty_string=True):
 
 # in INPUT the function takes a document text or sentence or even word as strings
 #   e.g., 'Robert went to Italy for vacation'
+#   BUT MANIPULATED BY THE stanzaPipeLine function
 # in OUTPUT the function returns a list [] of the lemmatized document, sentence or word
 #   e.g., ['Robert', 'go', 'to', 'Italy', 'on', 'vacation']
 # similar to tokenized_stanza_doc except that in this one the list items are tokenized (NOT lemmatized) words

@@ -69,9 +69,11 @@ def lemmatizing(word):#edited by Claude Hu 08/2020
 # https://www.nltk.org/book/ch02.html
 def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, openOutputFiles,  chartPackage='Excel', dataTransformation='No transformation'):
 
-
     import nltk
     nltk.download('words')
+
+    from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza_doc, lemmatize_stanza_word
+
     filesToOpen=[]
     unusual=[]
     container=[]
@@ -95,46 +97,98 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, 
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'NLTK unusual words-spelling checker start',
                                        'Started running NLTK unusual words-spelling checker at',
-                                                 True, '', True, '', True)
+                                                 True, '', True, '', False)
+
 
     # already shown in NLP.py
     # IO_util.timed_alert(GUI_util.window,2000,'Analysis start','Started running NLTK unusual words at',True,'You can follow NLTK unusual words in command line.')
 
     # https://stackoverflow.com/questions/28339622/is-there-a-corpus-of-english-words-in-nltk
-    english_vocab = set([w.lower() for w in nltk.corpus.words.words()])
-    # should lemmatize english_vocab
+    import GUI_IO_util
+    NLTK_corpus_lemmatized = GUI_IO_util.wordLists_libPath + os.sep + 'NLTK_corpus_lemmatized.csv'
+    filesToOpen.append(NLTK_corpus_lemmatized)
+
+    if not os.path.exists(NLTK_corpus_lemmatized):
+        mb.showwarning(title='Warning',
+                       message='The csv file of NLTK corpus of lemmatized English words was not found in the lib subdir ' + GUI_IO_util.wordLists_libPath + '\n\nThe script will now run the much slower lemmatization function.\n\nPlease, alert the NLP Suite developers of the missing file.')
+        # this approach is extremely slow
+        NLTK_english_vocab_lemmatized=[]
+        nltk.corpus = nltk.corpus.words.words()
+        NLTK_corpus_size = len(nltk.corpus)
+        for corpus_index, w in enumerate(nltk.corpus):
+            lemma = lemmatize_stanza_word(stanzaPipeLine(w))
+            NLTK_english_vocab_lemmatized.append(lemma)
+            print('   NLTK corpus word ' + str(corpus_index) + '/' + str(NLTK_corpus_size) + '  ' + w + ' / ' + lemma)
+        # this is much faster but does not lemmatize
+        # english_vocab = [w.lower() for w in nltk.corpus.words.words()]
+        outputFilename_NLTK_corpus = IO_files_util.generate_output_file_name('', '', outputDir, '.csv', 'NLTK_corpus','')
+        filesToOpen.append(outputFilename_NLTK_corpus)
+        NLTK_english_vocab_lemmatized.insert(0, 'NLTK corpus lemmatized words')
+        if IO_csv_util.list_to_csv(window, NLTK_english_vocab_lemmatized, outputFilename_NLTK_corpus): return
+    else:
+        NLTK_english_vocab = open(NLTK_corpus_lemmatized, "r", encoding="utf-8", errors="ignore").read()
+        NLTK_english_vocab_lemmatized = NLTK_english_vocab.split('\n') # '\n'.english_vocab()
+    NLTK_english_vocab_lemmatized.pop(0)
+    # NLTK_english_vocab_lemmatized are distinct values
+    NLTK_english_vocab_lemmatized=set(NLTK_english_vocab_lemmatized)
     # you can add words to NLTK words, e.g.,
     #   words.update(['climatisation', 'equipped'])
     # https://stackoverflow.com/questions/72099620/how-to-solve-missing-words-in-nltk-corpus-words-words
-    # print(english_vocab)
-    from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza_doc
+    ALL_files_unusual=[]
+    text_list_lemmatized = []
     for file in files:
         documentID=documentID+1
         head, tail = os.path.split(file)
         print("Processing file " + str(documentID) + "/" + str(nFile) + ' ' + tail)
         text = (open(file, "r", encoding="utf-8", errors="ignore").read())
-        text = text.lower()
+        # text = text.lower()
         # text_list = text.split(" ")
-        text_list = []
         # the NLTK vocab is lowercase, lemmatized; must lemmatize your input
+        # lemmatize the input corpus, to be comparable to the lemmatized NLTK corpus
         lemmatized_text = lemmatize_stanza_doc(stanzaPipeLine(text))
+        # text_list_lemmatized = []
         for w in lemmatized_text:
             if w.isalpha():
-                text_list.append(w.lower())
-        # convert list to set
-        text_vocab = set(text_list)
-        unusual = text_vocab - english_vocab
+                # text_list_lemmatized.append(w.lower())
+                text_list_lemmatized.append(w)
+        # convert list to set to produce distinct values
+        text_vocab_lemmatized = set(text_list_lemmatized)
+
+# ------------------------------------------------------------------------------
+        unusual = text_vocab_lemmatized - NLTK_english_vocab_lemmatized
+# ------------------------------------------------------------------------------
+
+        # reconvert back to list
+        text_vocab_lemmatized=list(text_vocab_lemmatized)
         # convert the set to a list
         unusual=list(unusual)
         #sort the list
         unusual.sort()
+        ALL_files_unusual=ALL_files_unusual+unusual
+        # ALL_files_unusual.append(' '.join(unusual))
+
         [container.append([word, documentID, IO_csv_util.dressFilenameForCSVHyperlink(file)]) for word in unusual]
+
+    ALL_files_unusual.sort()
+    ALL_files_unusual=set(ALL_files_unusual)
+    ALL_files_unusual=list(ALL_files_unusual)
+    ALL_files_unusual.sort()
+
+    outputFilename_input_corpus = IO_files_util.generate_output_file_name('', '', outputDir, '.csv', 'Input_corpus_ALL_distinct_lemmatized_words',
+                                                                         '')
+    filesToOpen.append(outputFilename_input_corpus)
+    text_set = set(text_list_lemmatized) # set are collections of unordered distinct items
+    text_list=list(text_set)
+    text_list.sort()
+    text_list.insert(0, 'Input lemmatized words (ALL distinct)')
+    if IO_csv_util.list_to_csv(window, text_list, outputFilename_input_corpus): return
+
     if len(container)>0:
-        unusual.insert(0, 'Misspelled-unusual word')
-        if IO_csv_util.list_to_csv(window,unusual,outputFilename_list): return
-        container.insert(0, ['Misspelled-unusual word', 'Document ID', 'Document'])
+        ALL_files_unusual.insert(0, 'Misspelled-unusual lemmatized word')
+        if IO_csv_util.list_to_csv(window,ALL_files_unusual,outputFilename_list): return
+        container.insert(0, ['Misspelled-unusual lemmatized word', 'Document ID', 'Document'])
         if IO_csv_util.list_to_csv(window,container,outputFilename_byDoc): return
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Spelling checker (via nltk)', str(len(text_vocab)) + ' words in your corpus were compared to ' + str(len(english_vocab)) + ' words available in the NLTK corpus.\nThe difference of ' + str(len(unusual)) + ' words between the two sets of words gives the set of unusual words in your corpus.', True)
+        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Spelling checker (via nltk)', str(len(text_vocab_lemmatized)) + ' distinct words in your corpus were compared to ' + str(len(NLTK_english_vocab_lemmatized)) + ' words available in the NLTK corpus.\n' + str(len(ALL_files_unusual)) + ' words were not found in the NLTK corpus and are classified as unusual.\n   1. The word may be a misspelling, but also a proper name (e.g., a person, location).\n   2. Stanza could have also lemmatized a word incorrectly (e.g., dared not lemmatized as dare but as dared).\n   3. Finally, words may be capitalized differently in the NLTK corpus and your input corpus.\n\nPlease, check the list of unusual words carefully.', True)
     else:
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Spelling checker (via nltk)', 'No misspelled-unusual words found in\n' + file, True)
         if nFile==1:
@@ -143,6 +197,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, 
     # if not silent: IO_user_interface_util.single_file_output_save(inputDir,'NLTK Unusual Words')
 
     # NLTK unusual words
+    chartPackage = 'No charts' # no point exporting charts
     if chartPackage!='No charts':
         if nFile>10:
              result = mb.askyesno("Excel charts","You have " + str(nFile) + " files for which to compute Excel charts.\n\nTHIS WILL TAKE A LONG TIME.\n\nAre you sure you want to do that?")
@@ -150,11 +205,12 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, 
                  pass
 
         outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename_byDoc, outputDir,
-                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Misspelled-unusual word'],
+                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Misspelled-unusual lemmatized word'],
                                                    chart_title='Frequency of Misspelled-Unusual Words',
-                                                   count_var=1, hover_label=[],
+                                                   count_var=0, # no point counting; all values are distinct
+                                                   hover_label=[],
                                                    outputFileNameType='',  # 'line_bar',
-                                                   column_xAxis_label='Misspelled-Unusual word',
+                                                   column_xAxis_label='Misspelled-Unusual lemmatized word',
                                                    groupByList=['Document'],
                                                    # plotList=['Misspelled-Unusual Words Statistics'],
                                                    plotList=[],

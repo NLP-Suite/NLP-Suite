@@ -990,6 +990,8 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
 # SUBJECTIVITY/OBJECTIVITY PER SENTENCE---------------------------------------------------------------------------------------------
 
             if "Objectivity/subjectivity" in processType:
+                # https://spacy.io/universe/project/spacy-textblob
+
                 # import spaCy_util
                 # annotator_available = spaCy_util.check_spaCy_annotator_availability(['Objectivity/subjectivity'], language, silent=False)
                 # if not annotator_available:

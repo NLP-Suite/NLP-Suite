@@ -93,9 +93,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
         if vocabulary_analysis_menu_var=='':
             mb.showwarning('Warning', 'No option has been selected for Vocabulary analysis.\n\nPlease, select an option and try again.')
             return
-        if 'Repetition across' in vocabulary_analysis_menu_var:
-            mb.showwarning('Warning', 'The selected option is not available yet.\n\nSorry!')
-            return
+
+        # if 'Iconic' in vocabulary_analysis_menu_var or 'Repetition across' in vocabulary_analysis_menu_var:
+        #     mb.showwarning('Warning', 'The selected option is not available yet.\n\nSorry!')
+        #     return
 
         if '*' == vocabulary_analysis_menu_var:
             outputDir_style = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
@@ -249,7 +250,21 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
                         filesToOpen.extend(outputFiles)
             else:
                 if not '*' == vocabulary_analysis_menu_var:
-                    mb.showwarning(title='Warning', message='The Abstract/concrete vocabulary algorithm is only available for the English language.')
+                    mb.showwarning(title='Warning', message='The Abstract/concrete vocabulary analysis algorithm is only available for the English language.')
+
+        if '*' == vocabulary_analysis_menu_var or 'Iconic' in vocabulary_analysis_menu_var:
+            if language == 'English':
+                mode = "both" # mean, median, both (calculates both mean and median)
+                import iconicity_analysis_util
+                outputFiles = iconicity_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir_style, config_filename, openOutputFiles, chartPackage, dataTransformation,processType='')
+                if outputFiles!=None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
+            else:
+                if not '*' == vocabulary_analysis_menu_var:
+                    mb.showwarning(title='Warning', message='The Iconicity analysis algorithm is only available for the English language.')
 
         if '*' == vocabulary_analysis_menu_var or 'Yule' in vocabulary_analysis_menu_var:
             outputFiles =statistics_txt_util.yule(window, inputFilename, inputDir, outputDir, config_filename)
@@ -428,6 +443,7 @@ vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*'
                                          'Vocabulary (via NLTK unusual words)',
                                          'Vocabulary richness (word type/token ratio or Yule’s K)',
                                          'Abstract/concrete vocabulary',
+                                         'Iconic vocabulary',
                                          'Objectivity/subjectivity (via spaCy)',
                                          'Punctuation as figures of pathos (? !)',
                                          'Word length',

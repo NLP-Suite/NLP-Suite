@@ -407,3 +407,9 @@ A better way to obtain frequency distributions of NER values is to run the NER a
 
 2. CoreNLP, in turn, requires to have the FREEWARE Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/",OFF
 *,CoreNLP neural network parser timing,"Beware that the CoreNLP neural network parser algortithm on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 1 hour and 40 minutes on a standard laptop.",OFF
+*,CoNLL table - Verb modality,"The categories of Verb modality (Obligation, Will/would, Can/may) computed from the CoNLL table are NOT mutually exclusive. The same verb may appear in several categories.",OFF
+*,subprocess.call(cmd) error,"subprocess.call(cmd) error
+
+If the VIEWER you are running exits with an error code about a file not found, most likely your selected INPUT & OUTPUT directory options are too long for Windows to handle.
+
+You may need to move your input and output folders so as to have a shorter path (e.g., desktop).",OFF
