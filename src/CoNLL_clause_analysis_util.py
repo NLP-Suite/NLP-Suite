@@ -69,23 +69,30 @@ def clause_data_preparation(data):
     sbar_counter = 0
     s_counter = 0
     sbarq_counter = 0
+    sq_counter = 0
     sinv_counter = 0
     np_counter = 0
     vp_counter = 0
     adjp_counter = 0
     advp_counter = 0
     pp_counter = 0
-    clause_list = ['S','SBAR', 'SBARQ', 'SINV', 'NP', 'VP', 'ADJP', 'ADVP', 'PP']
+    clause_list = ['S','SBAR', 'SBARQ', 'SQ', 'SINV', 'NP', 'VP', 'ADJP', 'ADVP', 'PP']
 
     for i in data:
         if(i[8] in clause_list):
             clause = i[8]
-            if(clause == 'SBAR'):
+            if(clause == 'S'):
+                clause_col = 'Sentence'
+                s_counter+=1
+            elif(clause == 'SBAR'):
                 clause_col = 'Clause introduced by a (possibly empty) subordinating conjunction'
                 sbar_counter+=1
             elif(clause == 'SBARQ'):
                 clause_col = 'Direct question introduced by a wh-word or a wh-phrase'
                 sbarq_counter+=1
+            elif (clause == 'SQ'):
+                clause_col = 'Inverted yes/no question, or main clause of a wh-question, following the wh-phrase in SBARQ'
+                sq_counter += 1
             elif(clause == 'SINV'):
                 clause_col = 'Inverted declarative sentence'
                 sinv_counter+=1
@@ -104,15 +111,13 @@ def clause_data_preparation(data):
             elif(clause == 'PP'):
                 clause_col = 'Prepositional Phrase'
                 pp_counter+=1
-            elif(clause == 'S'):
-                clause_col = 'Sentence'
-                s_counter+=1
             dat.append(i+[clause_col])
 
     clause_stats = [['Clause Tags', 'Frequencies'],
                          ['Clause-level (S - Sentence)', s_counter],
                          ['Clause-level (SBAR - Clause introduced by a (possibly empty) subordinating conjunction)', sbar_counter],
                          ['Clause-level (SBARQ - Direct question introduced by a wh-word or a wh-phrase)', sbarq_counter],
+                         ['Clause-level (SQ - Inverted yes/no question, or main clause of a wh-question, following the wh-phrase in SBARQ)', sq_counter],
                          ['Clause-level (SINV - Inverted declarative sentence, i.e. one in which the subject follows the tensed verb or modal)', sinv_counter],
                          ['Phrase-level (NP - Noun Phrase)', np_counter],
                          ['Phrase-level (VP - Verb Phrase)', vp_counter],

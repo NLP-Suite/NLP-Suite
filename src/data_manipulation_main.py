@@ -912,7 +912,7 @@ if __name__ == '__main__':
         global error
         if tracedInputFile[-4:] != '.csv':
             mb.showerror(title='Input file error',
-                         message="The Data manipulation functions expect in input a csv file.\n\nPlease, select a csv file for your Default orGUI-specific I/O configuration and try again.\n\nThe RUN button is disabled until the required Input/Output option is entered.")
+                         message="The Data manipulation functions expect in input a csv file.\n\nPlease, select a csv file for your Default or GUI-specific I/O configuration and try again.\n\nThe RUN button is disabled until the required Input/Output option is entered.")
             error = True
         else:
             error = False

@@ -52,6 +52,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         mb.showwarning(title='No NER tag selected', message='No NER tag has been selected.\n\nPlease, select an NER tag and try again.')
         return
 
+# BERT -------------------------------------------------------------------------
+
     if '*' in NER_package or 'BERT' in NER_package:
         if language!='English':
             mb.showwarning(title='Warning', message='NER in BERT is only available for the English language. Your currently selected language is ' + language + '.' \
@@ -66,6 +68,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
+
+# spaCy -------------------------------------------------------------------------
 
     if '*' in NER_package or 'spaCy' in NER_package:
         document_length_var = 1
@@ -91,6 +95,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
             else:
                 filesToOpen.extend(outputFiles)
 
+# Stanford CoreNLP -------------------------------------------------------------------------
+
     if '*' in NER_package or 'CoreNLP' in NER_package:
         NER_list = NER_entry_var.get() #Stanford_CoreNLP_util.NER_list
         outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
@@ -114,6 +120,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
+
+# Stanza -------------------------------------------------------------------------
 
     if '*' in NER_package or 'Stanza' in NER_package:
         document_length_var = 1
