@@ -3,6 +3,12 @@ Author:
 
 Performs iconicity analysis on a text file using Winter et al. 2024 iconicity ratings.
 a 7-point rating scale going from (1) “Not iconic at all” and (7) “Very iconic.”
+
+min_rating is hard coded at to list the most-iconic words
+	min_rating=5.0
+rating standard deviation set at 2
+ 	max_rating_sd = 2
+
 Parameters:
     --dir [path of input directory]
         specifies directory of files to analyze
@@ -54,9 +60,9 @@ stops = set(fin.read().splitlines())
 ratings = GUI_IO_util.iconicity_libPath + os.sep + "iconicity_ratings.csv"
 if not os.path.isfile(ratings):
 	print(
-		"The file " + ratings + " could not be found. The ICONICITY analysis routine expects a csv dictionary file 'iconicity_ratings.csv' in a directory 'lib' expected to be a subdirectory of the directory where the iconicity_analysis_util.py script is stored.\n\nPlease, check your lib directory and try again.")
+		"The file " + ratings + " could not be found. The ICONICITY analysis routine expects a csv dictionary file 'iconicity_ratings.csv' in a directory 'lib' expected to be a subdirectory of the directory where the style_analysis_iconicity_analysis_util.py script is stored.\n\nPlease, check your lib directory and try again.")
 	mb.showerror(title='File not found',
-				 message="The ICONICITY analysis routine expects a csv dictionary file 'iconicity_ratings.csv' in a directory 'lib' expected to be a subdirectory of the directory where the iconicity_analysis_util.py script is stored.\n\nPlease, check your lib directory and try again.")
+				 message="The ICONICITY analysis routine expects a csv dictionary file 'iconicity_ratings.csv' in a directory 'lib' expected to be a subdirectory of the directory where the style_analysis_iconicity_analysis_util.py script is stored.\n\nPlease, check your lib directory and try again.")
 	sys.exit()
 data = pd.read_csv(ratings,encoding='utf-8',on_bad_lines='skip')
 data_dict = {col: list(data[col]) for col in data.columns}
@@ -64,10 +70,18 @@ data_dict = {col: list(data[col]) for col in data.columns}
 
 # print data_dict
 # performs Iconicity analysis on inputFile using the Winter et al. 2024 Iconicity ratings, outputting results to a new CSV file in outputDir
-def analyzefile(inputFilename, inputDir, outputDir, outputFilename,  documentID, documentName, min_rating):
+# min_rating is hard coded at to list the most-iconic words
+# 	min_rating=5.0
+# rating standard deviation set at 2
+#  	max_rating_sd = 2
+def analyzefile(inputFilename, inputDir, outputDir, outputFilename,  documentID, documentName, min_rating, max_rating_sd):
 	"""
 	Performs iconicity analysis on the text file given as input using the Winter et al. 2024 iconicity ratings.
 		ratings are on a 7-point rating scale going from (1) “Not iconic at all” and (7) “Very iconic.”
+	min_rating is hard coded at to list the most-iconic words
+		min_rating=5.0
+	rating standard deviation set at 2
+ 		max_rating_sd = 2
 	Outputs results to a new CSV file in outputDir.
 	:param inputFilename: path of .txt file to analyze
 	:param outputDir: path of directory to create new output file
@@ -76,7 +90,7 @@ def analyzefile(inputFilename, inputDir, outputDir, outputFilename,  documentID,
 
 	global total_words
 
-	from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
+	# from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
 	# read file into string
 	with open(inputFilename, 'r', encoding='utf-8', errors='ignore') as myfile:
 		fulltext = myfile.read()
@@ -116,8 +130,13 @@ def analyzefile(inputFilename, inputDir, outputDir, outputFilename,  documentID,
 				index = data_dict['word'].index(lemma)
 				# ratings are on a 7-point rating scale going from (1) “Not iconic at all” and (7) “Very iconic.”
 				score = round(float(data_dict['rating'][index]), 2)
+				score_sd = round(float(data_dict['rating_sd'][index]), 3)
 				found_words.append('(' + str(lemma) + ', ' + str(score) + ')')
-				if score > min_rating:
+				# min_rating is hard coded at to list the most-iconic words
+				# 	min_rating=5.0
+				# rating standard deviation set at 2
+				# 	rating_sd = 2
+				if score > min_rating and max_rating_sd<2:
 					iconic_words.append([lemma, str(score), documentID, IO_csv_util.dressFilenameForCSVHyperlink(documentName)])
 					iconic_words_list.append(lemma)
 				score_list.append(score)
@@ -162,7 +181,7 @@ def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutput
 
 	if lib_util.checklibFile(
 			GUI_IO_util.iconicity_libPath + os.sep + 'iconicity_ratings.csv',
-			'iconicity_analysis_util.py') == False:
+			'style_analysis_iconicity_analysis_util.py') == False:
 		return
 
 	if len(outputDir) < 0 or not os.path.exists(outputDir):  # empty output
@@ -184,7 +203,18 @@ def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutput
 	if outputDir == '':
 		return
 
+	# min_rating is hard coded at to list the most-iconic words
+	# 	min_rating=5.0
+	# rating standard deviation set at 2
+	#  	max_rating_sd = 2
+
 	min_rating=5.0
+	max_rating_sd=2.0
+	min_rating = GUI_IO_util.slider_widget(window, "Please, select the minimum value of the iconicity rating. The suggested value is " + str(min_rating), 1, 7, min_rating)
+	max_rating_sd = GUI_IO_util.slider_widget(window, "Please, select the maximum value of the iconicity rating standard deviation. The suggested value is " + str(max_rating_sd), 0, 3, max_rating_sd)
+
+	global stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
+	from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
 
 	startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
 	                                               'Started running Iconicity Analysis at', True,silent=True)
@@ -206,7 +236,7 @@ def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutput
 			print("Processing file 1/1 " + tail)
 			chart_title = tail
 			if os.path.exists(inputFilename):
-				filesToOpen.append(analyzefile(inputFilename, inputDir, outputDir, outputFilename, 1, inputFilename, min_rating))
+				filesToOpen.append(analyzefile(inputFilename, inputDir, outputDir, outputFilename, 1, inputFilename, min_rating, max_rating_sd))
 			else:
 				print('Input file "' + inputFilename + '" is invalid.')
 				sys.exit(0)
@@ -231,7 +261,7 @@ def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutput
 						print("Processing file " + str(index) + "/" + str(Ndocs) + " " + tail)
 						documentID += 1
 						analyzefile(filename, inputDir, outputDir, outputFilename, documentID,
-														   filename, min_rating)  # LINE ADDED (edited)
+														   filename, min_rating, max_rating_sd)  # LINE ADDED (edited)
 			else:
 				print('Input directory "' + inputDir + '" is invalid.')
 				sys.exit(0)
@@ -265,8 +295,6 @@ def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutput
 						filesToOpen.append(outputFiles)
 					else:
 						filesToOpen.extend(outputFiles)
-
-
 
 	outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
 													   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Sentence iconicity (Mean score: 1 Not iconic-7 Very iconic)'],

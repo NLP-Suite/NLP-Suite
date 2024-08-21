@@ -420,3 +420,9 @@ You may need to move your input and output folders so as to have a shorter path 
 With a TXT file, NER extraction via Stanford CoreNLP must be first performed.
 
 With a CSV file, the script checks whether the file is a CoNLL table, a geocoded file containing latitude and longitude values, or a file containing a list of locations that need to be geocoded.",OFF
+*,Open TIPS file,"You will be asked next if you want to open a TIPS file for help.
+
+If you do not want to be asked again to open the TIPS file, just hit 'No' below.",OFF
+*,Line length,"Line length only makes sense for poetry or song lyrics (or perhaps for newspaper articles to gauge the importance of the article by the column width).
+
+For your typical document line length depends on the vaguaries of typesetting and sentence length may provide a better measure of style.",OFF
