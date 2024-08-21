@@ -27,7 +27,7 @@ import reminders_util
 import file_checker_util
 import file_cleaner_util
 import file_spell_checker_util
-import abstract_concreteness_analysis_util
+import style_analysis_style_analysis_abstract_concreteness_analysis_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -274,7 +274,7 @@ def run(inputFilename,inputDir, outputDir,
                     filesToOpen.extend(outputFiles)
         if '*' == corpus_statistics_options_menu_var or 'Abstract' in corpus_statistics_options_menu_var:
             # ABSTRACT/CONCRETENESS _______________________________________________________
-            outputFiles = abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir, config_filename, openOutputFiles, chartPackage, dataTransformation, processType='')
+            outputFiles = style_analysis_style_analysis_abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir, config_filename, openOutputFiles, chartPackage, dataTransformation, processType='')
             if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)

@@ -16,7 +16,7 @@ import GUI_IO_util
 import IO_files_util
 import file_spell_checker_util
 import statistics_txt_util
-import abstract_concreteness_analysis_util
+import style_analysis_abstract_concreteness_analysis_util
 import Stanza_util
 import reminders_util
 import config_util
@@ -242,7 +242,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
         if '*' == vocabulary_analysis_menu_var or 'Abstract' in vocabulary_analysis_menu_var:
             if language == 'English':
                 mode = "both" # mean, median, both (calculates both mean and median)
-                outputFiles = abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir_style, config_filename, openOutputFiles, chartPackage, dataTransformation,processType='')
+                outputFiles = style_analysis_abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir_style, config_filename, openOutputFiles, chartPackage, dataTransformation,processType='')
                 if outputFiles!=None:
                     if isinstance(outputFiles, str):
                         filesToOpen.append(outputFiles)
@@ -255,8 +255,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
         if '*' == vocabulary_analysis_menu_var or 'Iconic' in vocabulary_analysis_menu_var:
             if language == 'English':
                 mode = "both" # mean, median, both (calculates both mean and median)
-                import iconicity_analysis_util
-                outputFiles = iconicity_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir_style, config_filename, openOutputFiles, chartPackage, dataTransformation,processType='')
+                import style_analysis_iconicity_analysis_util
+                outputFiles = style_analysis_iconicity_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir_style, config_filename, openOutputFiles, chartPackage, dataTransformation, processType='')
                 if outputFiles!=None:
                     if isinstance(outputFiles, str):
                         filesToOpen.append(outputFiles)
@@ -513,9 +513,12 @@ TIPS_lookup = {'Style analysis':'TIPS_NLP_Style analysis.pdf',
                'English Language Benchmarks': 'TIPS_NLP_English Language Benchmarks.pdf',
                'Things to do with words: Overall view': 'TIPS_NLP_Things to do with words Overall view.pdf',
                'Clause analysis':'TIPS_NLP_Clause analysis.pdf',
-               'Sentence complexity':'TIPS_NLP_Sentence complexity.pdf',
                'Text readability':'TIPS_NLP_Text readability.pdf',
-               'Objective/subjective writing':'TIPS_NLP_Objectivity_subjectivity (via spaCy and TextBlob).pdf',
+               'Sentence complexity':'TIPS_NLP_Sentence complexity.pdf',
+               'Yule measures of vocabulary richness':'TIPS_NLP_Yule - Measures of vocabulary richness.pdf',
+               'Abstract/concrete language':'TIPS_NLP_Language concreteness analysis.pdf',
+               'Iconic language':'TIPS_NLP_Iconic language.pdf',
+               'Objective/subjective language':'TIPS_NLP_Objectivity_subjectivity (via spaCy and TextBlob).pdf',
                'Nominalization':'TIPS_NLP_Nominalization.pdf',
                'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
                'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf",
@@ -524,15 +527,19 @@ TIPS_lookup = {'Style analysis':'TIPS_NLP_Style analysis.pdf',
                'N-Grams (word & character)':"TIPS_NLP_Ngrams (word & character).pdf",
                'NLP Ngram and Word Co-Occurrence VIEWER':"TIPS_NLP_Ngram and Word Co-Occurrence VIEWER.pdf",
                'Google Ngram Viewer':'TIPS_NLP_Ngram Google Ngram Viewer.pdf',
-               'Language concreteness':'TIPS_NLP_Language concreteness analysis.pdf',
-               'Yule measures of vocabulary richness':'TIPS_NLP_Yule - Measures of vocabulary richness.pdf',
                'The world of emotions and sentiments':'TIPS_NLP_The world of emotions and sentiments.pdf',
                'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
                'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
 
-TIPS_options='Style analysis', 'English Language Benchmarks','Things to do with words: Overall view', 'Clause analysis', 'Sentence complexity', 'Text readability', \
-             'Objective/subjective writing','Nominalization','CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)','NLP Searches','N-Grams (word & character)','NLP Ngram and Word Co-Occurrence VIEWER','Google Ngram Viewer','Language concreteness','Yule measures of vocabulary richness','The world of emotions and sentiments','Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures'
+TIPS_options='Style analysis', 'English Language Benchmarks','Things to do with words: Overall view', \
+            'Clause analysis', 'Sentence complexity', 'Text readability', 'Yule measures of vocabulary richness',\
+             'Abstract/concrete language','Iconic language', 'Objective/subjective language',\
+             'Nominalization','CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)',\
+             'NLP Searches','N-Grams (word & character)',\
+             'NLP Ngram and Word Co-Occurrence VIEWER','Google Ngram Viewer',\
+             'The world of emotions and sentiments','Excel smoothing data series', \
+             'csv files - Problems & solutions', 'Statistical measures'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons

@@ -384,7 +384,7 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
                     columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
                     chart_title, count_var, hover_label, outputFileNameType, column_xAxis_label,
                     groupByList, plotList, chart_title_label, column_yAxis_label='Frequencies', pivot=False):
-
+    outputFiles= []
     filesToOpen = []
     columns_to_be_plotted_numeric = []
     columns_to_be_plotted_byDoc = []
@@ -490,7 +490,7 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
     # Form	Lemma	POS	Record ID	Sentence ID	Document ID	Document
     # columns_to_be_plotted_numeric = [[0,0], [1,1]] with count_var = 1 since these values need to be counted
     # @@@ 9/29/2023
-    if len(columns_to_be_plotted_numeric[0]) > 0:  # compute only if the double list is not empty
+    if columns_to_be_plotted_numeric[0][0] > 0:  # compute only if the double list is not empty
         outputFiles = run_all(columns_to_be_plotted_numeric, inputFilename, outputDir,
                               outputFileLabel=outputFileNameType,
                               chartPackage=chartPackage,

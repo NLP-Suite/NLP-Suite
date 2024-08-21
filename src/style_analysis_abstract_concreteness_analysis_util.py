@@ -158,7 +158,7 @@ def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutput
 
 	if lib_util.checklibFile(
 			GUI_IO_util.concreteness_libPath + os.sep + 'Concreteness_ratings_Brysbaert_et_al_BRM.csv',
-			'abstract_concreteness_analysis_util.py') == False:
+			'style_analysis_style_analysis_abstract_concreteness_analysis_util.py') == False:
 		return
 
 	if len(outputDir) < 0 or not os.path.exists(outputDir):  # empty output

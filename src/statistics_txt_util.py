@@ -175,7 +175,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
     filesToOpen = []
 
     # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='corpus_stats',
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='statistics_txt',
                                                        silent=False)
     if outputDir == '':
         return
@@ -363,6 +363,13 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
     Ndocs = len(inputDocs)
     if Ndocs == 0:
         return
+
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='Statistics_txt_sent_length',
+                                                       silent=True)
+    if outputDir == '':
+        return
+
     startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running sentence length algorithm at',
                                                    True, '', True, '', False)
@@ -372,6 +379,8 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                              'sentence_length')
     csv_headers = ['Sentence length (in words)', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
+
+    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text
 
     with open(outputFilename, 'w', newline="", encoding='utf-8', errors='ignore') as csvOut:
         writer = csv.writer(csvOut)
@@ -383,13 +392,13 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
             print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
             with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
                 text = inputFile.read().replace("\n", " ")
-                from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text
                 sentences = sentence_split_stanza_text(stanzaPipeLine(text))
                 if len(sentences)==0:
-                    mb.showwarning('Warning','The input file\n\n' + doc + '\n\nappears to be empty. Please, check the file and try again.')
-                    return filesToOpen
+                    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
+                                                                   'The input file\n\n' + doc + '\n\nappears to be empty. Please, check the file and try again.',
+                                                                   False, '', True, '', False)
+                    continue
                 for sentence in sentences:
-                    # tokens = nltk.word_tokenize(sentence)
                     tokens = tokenize_stanza_text(stanzaPipeLine(sentence))
                     if len(tokens) > 100:
                         long_sentences = long_sentences + 1
@@ -455,6 +464,14 @@ def compute_line_length(window, configFileName, inputFilename, inputDir, outputD
     startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running line length analysis at',
                                                  True, '', True, '', True)
 
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='Statistics_txt_line_length',
+                                                       silent=True)
+    if outputDir == '':
+        return
+
+    from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
+
     with open(outputFilename, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
@@ -479,7 +496,6 @@ def compute_line_length(window, configFileName, inputFilename, inputDir, outputD
                 while line:
                     lineID += 1
                     # words = nltk.word_tokenize(line)
-                    from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
                     words = tokenize_stanza_text(stanzaPipeLine(line))
                     # print("Line {}: Length (in characters) {} Length (in words) {}".format(lineID, len(line), len(words)))
                     currentLine = [

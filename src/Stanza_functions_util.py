@@ -46,6 +46,7 @@ if IO_internet_util.check_internet_availability_warning("Stanza_functions_util.p
 # similar to lemmatized_stanza_doc except that in this one the list items are lemmatized words
 # same as nltk.tokenize.sent_tokenize()
 def tokenize_stanza_text(text_to_process):
+    tokenized_text_to_process=[]
     for sentence in text_to_process.sentences:
         tokenized_text_to_process = [word.text for word in sentence.words]
         # you get the same result by using tokens instead or words
