@@ -143,7 +143,8 @@ def process_CoreNLP_error(window, CoreNLP_output, inputFilename, nDocs, filesErr
     # You can use Java8. They use metaspace for heap. So, no heap space error will occur.
     # see also
     # https://stackoverflow.com/questions/909018/avoiding-initial-memory-heap-size-error
-
+    # https://stackoverflow.com/questions/40968038/exception-java-lang-outofmemoryerror-java-heap-space
+    # https://stackoverflow.com/questions/40968038/exception-java-lang-outofmemoryerror-java-heap-space
     # need to add -d64 to the Java call (e.g., ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp', os.path.join(CoreNLPdir, '*'),
     #          'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
     # TODO % will break the code
@@ -160,17 +161,24 @@ def process_CoreNLP_error(window, CoreNLP_output, inputFilename, nDocs, filesErr
         elif len(filesError) == 0:
             filesError.append(['Document ID', 'Document', 'Error'])
             duration = 3000
-        msg = 'Stanford CoreNLP failed to process your document\n\n' + tail + '\n\nexiting with the following error:\n\n   ' + (
+        msg = 'Stanford CoreNLP failed to process the document\n\n' + tail + '\n\nexiting with the following error:\n\n   ' + (
             str(
-                CoreNLP_output) if CoreNLP_output else error) + '\n\nPlease, CHECK CAREFULLY THE REASONS FOR FAILURE REPORTED BY STANFORD CORENLP. If necessary, then edit the file leading to errors if necessary.'
-        msgPrint = "Stanford CoreNLP failed to process your document " + tail
+                CoreNLP_output) if CoreNLP_output else error)
+        msgPrint = 'Stanford CoreNLP failed to process the document ' + tail + ' exiting with the following error:\n   ' + (
+            str(
+                CoreNLP_output) if CoreNLP_output else error)
+        if CoreNLP_output and 'Java heap space' in CoreNLP_output:
+            msg = msg + '\n\nThe file or a sentence in the file may simply be too big for Stanford CoreNLP. Please, CHECK CAREFULLY YOUR INPUT FILE and, if necessary, edit it and try again.'
+            msg = msg + '\n\nFor more information on memory java heap size, read the stackoverflow posting: https://stackoverflow.com/questions/40968038/exception-java-lang-outofmemoryerror-java-heap-space'
+            msgPrint = msgPrint + '\n   The file or a sentence in the file may simply be too big for Stanford CoreNLP. Please, CHECK CAREFULLY YOUR INPUT FILE and, if necessary, edit it and try again.'
+            msgPrint = msgPrint + '\n   For more information on memory java heap size, read the stackoverflow posting: https://stackoverflow.com/questions/40968038/exception-java-lang-outofmemoryerror-java-heap-space'
         # + '\nexiting with the following error:\n\n' + CoreNLP_output + '\n\nTHE ERROR MAY HAPPEN WHEN CoreNLP HANGS. REBOOT YOUR MACHINE AND TRY AGAIN.\n\nTHE ERROR IS ALSO LIKELY TO HAPPEN WHEN THE STANFORD CORENLP HAS BEEN STORED TO A CLOUD SERVICE (e.g., OneDrive) OR INSIDE THE /NLP/src DIRECTORY. TRY TO MOVE THE STANFORD CORENLP FOLDER TO A DIFFERENT LOCATION.
         if nDocs > 1:
             msg = msg + " Processing will continue with the next file."
-            msgPrint += " Processing will continue with the next file."
+            msgPrint += "\n   Processing will continue with the next file."
         # mb.showwarning("Stanford CoreNLP Error", msg)
         if not silent:
-            timed_alert(window, duration, 'Stanford CoreNLP error', msg)
+            timed_alert(window, duration, 'Stanford CoreNLP error', msg,False,'',False)
         print("\n\n" + msgPrint)
         filesError.append([len(filesError), IO_csv_util.dressFilenameForCSVHyperlink(inputFilename), str(CoreNLP_output) + " " + str(error)])
     return errorFound, filesError, CoreNLP_output

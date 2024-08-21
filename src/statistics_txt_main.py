@@ -52,7 +52,8 @@ def run(inputFilename, inputDir, outputDir,
             lemmatize_var = True
         if 'stopwords' in corpus_text_options_menu_var:
             stopwords_var = True
-        if "*" in corpus_statistics_options_menu_var or 'frequencies' in corpus_statistics_options_menu_var:
+        if "*" in corpus_statistics_options_menu_var or \
+                'frequencies' in corpus_statistics_options_menu_var:
 
             import statistics_txt_util
             outputFiles, outputDir = statistics_txt_util.compute_corpus_statistics(window, inputFilename, inputDir, outputDir,
@@ -64,6 +65,7 @@ def run(inputFilename, inputDir, outputDir,
                 else:
                     filesToOpen.extend(outputFiles)
         if "Compute sentence length" in corpus_statistics_options_menu_var or "*" in corpus_statistics_options_menu_var:
+            import statistics_txt_util
             outputFiles = statistics_txt_util.compute_sentence_length(inputFilename, inputDir, outputDir,
                                                                       config_filename, chartPackage, dataTransformation)
             if outputFiles != None:
@@ -73,6 +75,7 @@ def run(inputFilename, inputDir, outputDir,
                     filesToOpen.extend(outputFiles)
 
         if "Compute line length" in corpus_statistics_options_menu_var or "*" in corpus_statistics_options_menu_var:
+            import statistics_txt_util
             outputFiles = statistics_txt_util.compute_line_length(window, config_filename, inputFilename, inputDir,
                                                                   outputDir,
                                                                   False, chartPackage, dataTransformation)

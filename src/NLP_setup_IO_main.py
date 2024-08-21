@@ -233,6 +233,7 @@ if config_input_output_numeric_options[3] != 0: # output dir
 
 
 def activate_fields(*args):
+    # print("filename_embeds_multiple_items_var.get()",filename_embeds_multiple_items_var.get())
     if filename_embeds_multiple_items_var.get():
         item_separator.config(state='normal')
         sort_order_menu.config(state='normal')
@@ -286,11 +287,15 @@ def get_list_item():
 
 def set_default_options():
     list_item = get_list_item()
+    # print('list_item',str(list_item))
     if list_item==None:
         return
     # the index for config_input_output_alphabetic_options starts at 0 with I/O configuration label
 
     # set sort order
+    # print("config_input_output_alphabetic_options",str(config_input_output_alphabetic_options))
+    # print("config_input_output_alphabetic_options [list_item][1])",str(config_input_output_alphabetic_options[list_item][1]))
+    # print("config_input_output_alphabetic_options [list_item][2])",str(config_input_output_alphabetic_options[list_item][2]))
     if config_input_output_alphabetic_options[list_item][2] != '':
         sort_order_var.set(config_input_output_alphabetic_options[list_item][2])
     else:
@@ -747,7 +752,7 @@ def get_IO_options_list(saving=False):
 def save_config(config_input_output_alphabetic_options):
     current_config_input_output_alphabetic_options=get_IO_options_list(True)
     #@@@
-    # print("current_config_input_output_alphabetic_options",current_config_input_output_alphabetic_options)
+    # print("SAVE current_config_input_output_alphabetic_options",current_config_input_output_alphabetic_options)
     config_util.write_IO_config_file(window, config_filename, config_input_output_numeric_options,
                                      current_config_input_output_alphabetic_options, silent=False)
 

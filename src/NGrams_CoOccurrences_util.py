@@ -91,7 +91,7 @@ def search_within_sentence_coOccurences(inputFilename, inputDir, search_keywords
                 if keywords_co_occurr(search_keywords_list, sentence):
                     co_occurring = True
             search_keywords_str = str(', '.join(search_keywords_list))
-            results.append((search_keywords_str, co_occurring, sentIndex, sentence, doc_index, file))
+            results.append((search_keywords_str, co_occurring, sentIndex, sentence, doc_index, IO_csv_util.dressFilenameForCSVHyperlink(file)))
         df = pd.DataFrame(results, columns=['Search word(s)', 'Co-Occurring in Sentence', 'Sentence ID', 'Sentence',
                                               'Document ID', 'Document'])
 
