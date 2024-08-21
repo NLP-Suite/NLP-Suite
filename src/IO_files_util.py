@@ -326,7 +326,7 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=
             # using an old config without Sort order field, the code would break
             sort_order = 0
 
-        if str(sort_order) == '0':
+        if str(sort_order) == '0' and inputDir!='':
             sort_order = "1"
             IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
                         "No sort order available. Files will be read without sorting.\nIf you wish to sort the input files in a specific order, you should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration' at the top of the GUI.\n\n", False,'',True,'',False)
