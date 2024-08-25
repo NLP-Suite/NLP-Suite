@@ -170,12 +170,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         # Categorical data: colormap  --------------------------------------------------------------------------------
 
         if 'Colormap' in categorical_menu_var.get():
+            if len(csv_file_categorical_field_list) > 2:
+                mb.showwarning(title='Search values',
+                               message='You have entered ' + str(len(csv_file_categorical_field_list)) + ' different search fields. \n\n   ' + str(
+                                   csv_file_categorical_field_list) + '\n\nOnly 2 fields are allowed in the Colormap/heatmap.\n\nOnly the first and last field will be used in the visualization; any intermediate field will be ignored.\n\nNext time, please, select only two fields.')
+
             if csv_field_categorical_var == '':
                 mb.showwarning("Warning",
-                               "The colormap algorithm requires a value for 'csv file field.'\n\nPlease, select a value and try again.")
+                               "The colormap/heatmap algorithm requires a value for 'csv file field.'\n\nPlease, select a value and try again.")
                 return
             params = [max_rows_var, color_1_style_var, color_2_style_var, normalize_var]
-            outputFiles = charts_util.main_colormap(inputFilename, outputDir, csv_file_categorical_field_list, params)
+            outputFiles = charts_util.colormap(inputFilename, outputDir, csv_file_categorical_field_list, params)
 
             if outputFiles != None:
                 if isinstance(outputFiles, str):
@@ -646,15 +651,15 @@ categorical_checkbox = tk.Checkbutton(window, text='Visualize categorical data',
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    categorical_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Tick the checkbox if you wish to visualize hierarchical, categorical data in interactive colormap, sunburst, or treemap charts.\nA categorical variable, numeric or alphabetic, takes only a handful of different values.")
+                                   "Tick the checkbox if you wish to visualize hierarchical, categorical data in interactive colormap/heatmap, sunburst, or treemap charts.\nA categorical variable, numeric or alphabetic, takes only a handful of different values.")
 
 csv_field_categorical_var.set('Sunburst')
-csv_field_categorical_menu = tk.OptionMenu(window, categorical_menu_var, 'Colormap', 'Sunburst', 'Treemap')
+csv_field_categorical_menu = tk.OptionMenu(window, categorical_menu_var, 'Colormap/heatmap', 'Sunburst', 'Treemap')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    csv_field_categorical_menu,
                                    False, False, True, False, 90, GUI_IO_util.visualization_filename_label_lb_pos,
-                                   "Visualize categorical data as colormap chart, sunburst chart, or treemap chart)")
+                                   "Visualize categorical data as colormap/heatmap chart, sunburst chart, or treemap chart")
 
 # def activate_case_label(*args):
 #     if case_sensitive_var.get():
@@ -724,7 +729,7 @@ search_values_categorical = tk.Entry(window, state='disabled', textvariable=sear
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                    search_values_categorical,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Enter the comma-separated search values to be used to sample the corpus for visualization. Leave blank to display all values for the selected field.\nIf you select 'Document' as csv file field, you can enter specific parts of a filename (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...).\nIf you select 'NER' as csv file field in an input CoNLL table, you can enter the tags 'PERSON' or 'LOCATION, COUNTRY, STATE_OR_PROVINCE, CITY'")
+                                   "Enter the comma-separated search values to be used to sample the corpus for visualization. LEAVE BLANK TO DISPLAY ALL VALUES FOR THE SELECTED FIELD.\nIf you select 'Document' as csv file field, you can enter specific parts of a filename (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...).\nIf you select 'NER' as csv file field in an input CoNLL table, you can enter the tags 'PERSON' or 'LOCATION, COUNTRY, STATE_OR_PROVINCE, CITY'")
 def add_combination_csvField_searchValues():
     comingFromPlus=True
     global csv_file_categorical_field_string
@@ -860,12 +865,12 @@ def activate_filtering_options(*args):
 
 filter_options_var.trace('w',activate_filtering_options)
 
-colormap_lb = tk.Label(window, text='Colormap',foreground="red",font=("Courier", 12, "bold"))
+colormap_lb = tk.Label(window, text='Colormap/heatmap',foreground="red",font=("Courier", 12, "bold"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    colormap_lb,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-                                   "The widgets on this line refer to the colormap option only")
+                                   "The widgets on this line refer to the colormap/heatmap option only")
 
 max_rows_lb = tk.Label(window, text='Max no. of rows')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,
@@ -1182,7 +1187,8 @@ def activate_all_options(*args):
         #         show_button_categorical.configure(state='normal')
 
             search_values_categorical.configure(state='normal')
-            filter_options_menu.configure(state='normal')
+            if not 'Colormap' in categorical_menu_var.get():
+                filter_options_menu.configure(state='normal')
 
         if categorical_menu_var.get()=='':
             # K_sent_begin.configure(state='disabled')
@@ -1191,7 +1197,7 @@ def activate_all_options(*args):
             # do_not_split_checkbox.configure(state='disabled')
             use_numerical_variable_checkbox.configure(state='disabled')
 
-        elif categorical_menu_var.get() == 'Colormap':
+        elif categorical_menu_var.get() == 'Colormap/heatmap':
             max_rows.configure(state='normal')
             color_1_checkbox.configure(state='normal')
             color_2_checkbox.configure(state='normal')
@@ -1245,7 +1251,7 @@ TIPS_lookup = {
                "Network Graphs (via Gephi)": "TIPS_NLP_Gephi network graphs.pdf",
                "Sankey chart":"TIPS_NLP_Charts - Sankey chart.pdf",
                "Sunburst pie chart":"TIPS_NLP_Charts - Sunburst pie chart.pdf",
-               "Colormap chart":"",
+               "Colormap/heatmap chart":"",
                "Treemap chart":"TIPS_NLP_Charts - Treemap chart.pdf",
                "Boxplots":"TIPS_NLP_Charts - Boxplots.pdf",
                "Multiple bar charts":"TIPS_NLP_Charts - Multiple bar charts.pdf",
@@ -1254,7 +1260,7 @@ TIPS_lookup = {
                'Excel charts': 'TIPS_NLP_Excel Charts.pdf',
                'csv files - Problems & solutions': 'TIPS_NLP_csv files - Problems & solutions.pdf'}
 
-TIPS_options='Network Graphs (via Gephi)', 'Sankey chart', 'Sunburst pie chart', 'Colormap chart', 'Treemap chart', 'Boxplots', 'Multiple bar charts', 'Time mapper','Word clouds', 'Excel charts', 'csv files - Problems & solutions'
+TIPS_options='Network Graphs (via Gephi)', 'Sankey chart', 'Sunburst pie chart', 'Colormap/heatmap chart', 'Treemap chart', 'Boxplots', 'Multiple bar charts', 'Time mapper','Word clouds', 'Excel charts', 'csv files - Problems & solutions'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
@@ -1285,8 +1291,8 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                         "'No filtering' is the default option. Start with this option, then, if necessary, try filtering."
                         "\n   Select the 'Fixed parameter' option and see whether the chart improves, perhaps varying the parameter value."
                         "\n   Select the 'Propagating parameter' option to use different filters for each layer of seletected csv file field, and see whether the chart improves, perhaps varying the parameter values.")
-    # colormap line
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE COLORMAP OPTION ONLY.\n\nPlease, enter the maximum number of rows to be displayed in the chart (default = 20).\n\nTick the 'Color' checkbox to select from the color palette the RGB color to be used for the chart (default color orange, RGB 255 166 0).")
+    # colormap/heatmap line
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE COLORMAP/HEATMAP OPTION ONLY.\n\nPlease, enter the maximum number of rows to be displayed in the chart (default = 20).\n\nTick the 'Color' checkbox to select from the color palette the RGB color to be used for the chart (default color orange, RGB 255 166 0).")
     # OLD line
     # y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SUNBURST OPTION ONLY.\n\nPlease, enter the number of sentences at the beginning and at the end of a document to be used to visualize specific sentences.\n\nTick the checkbox 'Split documents in equal halves' if you wish to visualize the data for the first and last half of the documents in your corpus, rather than for begin and end sentences.\n\nTick the checkbox 'Do NOT split documents' if you wish to visualize an entire document.\n\nThe three options are mutually exclusive.\n\nThe Sunburst algorithm uses the values in Document ID and Sentence ID to process First K and Last K sentences or to split a document in halves.")
     # treemap line

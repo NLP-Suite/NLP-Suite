@@ -763,13 +763,22 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
         if isinstance(filesToOpen[0], list):
             filesToOpen = filesToOpen[0]
         for file in filesToOpen:
+            if not os.path.isfile(file):
+                print('The file could not be found by Windows:', file)
+                continue
+            if len(file) > 256:
+                print('The file, with path, has length > then the 256 characters allowed by Windows: ',str(len(file)), file)
+                continue
             if file == None or file == '':
                 continue
             if os.path.isfile(file):
                 if file.endswith('.kml'):
                     open_kmlFile(window, file)
                 else:
-                    openFile(window, file)
+                    try:
+                        openFile(window, file)
+                    except:
+                        print()
             # once printed empty array
         # if len(filesToOpen)>0:
         #     filesToOpen.clear()

@@ -1817,7 +1817,8 @@ def process_and_aggregate_data(data, **kwargs):
         raise ValueError("The 'groupby_column' parameter is required for aggregation.")
         print("Due to exception in missing groupby_column parameter required for aggregation, the function is aborted")
         return
-        # Group by the specified column along with select_columns and calculate the count
+
+    # Group by the specified column along with select_columns and calculate the count
     agg_data = data.groupby([agg_column, select_columns]).size().reset_index(name='Count')
     # Pivot the table. If select_columns is empty, this will consider all other columns.
     pivot_data = agg_data.pivot_table(index=select_columns, columns=agg_column, values='Count', fill_value=0)
@@ -1845,7 +1846,7 @@ def transform_data(pivot_data, transformation='min-max'):
         return pivot_data  # return original data if no recognized transformation is given
 
 
-def visualize_data(data, top_n=60, figsize=(15, 10), y_label='Lemma', x_label='Document', normalize='log',
+def visualize_colormap_data(data, top_n=60, figsize=(15, 10), y_label='Lemma', x_label='Document', normalize='log',
                    color='YlOrBr', outputname='output_figure'):
     import seaborn as sns
     import matplotlib.pyplot as plt
@@ -1870,8 +1871,9 @@ def visualize_data(data, top_n=60, figsize=(15, 10), y_label='Lemma', x_label='D
     ax.set_xticks(np.arange(len(transposed_data.columns)))
     ax.set_xticklabels(transposed_data.columns, rotation=90)
     ax.set_ylabel(y_label)
+    x_label = x_label.replace('Real_','')
     ax.set_xlabel(x_label)
-    ax.set_title(y_label + ' Frequency Visualization over ' + x_label + ' on a ' + normalize + ' Scale')
+    ax.set_title('Colormap/heatmap of ' + y_label + ' Frequency by ' + x_label + ' Values (' + normalize + ' Scale)')
     plt.savefig(outputname + '.png')
     print(f"Data visualization saved as {outputname}.png.")
     # plt.show() // we don't need to show it because we have that other option
@@ -1972,7 +1974,11 @@ def sql_commands(s, dataFrame):
         further_group(dataFrame, GROUPBY, all_values)
         print("The function detected string values in input, and they were mapped accordingly")
         GROUPBY = 'Real_' + GROUPBY
-    SELECT = s[-1][0].replace("|", "")
+    SELECT = s[-1][0].split('|')
+    if SELECT[1]!='':
+        mb.showwarning(title='Search values ignored',
+                       message='The search values\n   ' + str(SELECT[1]) + '\nentered for the last selected csv file field ' + str(SELECT[0]) + ' will be ignored.\n\nThe field values for a last selected field of a colormap should be left blank.')
+    SELECT = SELECT[0]
     WHERE = {}
     if WHERE_s:
         for condition in WHERE_s:
@@ -2031,14 +2037,41 @@ def cmaps(start_color, end_color):
         return 'YlOrBr'
 
 
-def main_colormap(inputFilename, outputDir, csv_file_categorical_field_list, params):
+def colormap(inputFilename, outputDir, csv_file_categorical_field_list, params):
+    filesToOpen = []
     dataFrame = read_filename_color(inputFilename)
+
     WHERE, GROUPBY, SELECT = sql_commands(csv_file_categorical_field_list, dataFrame)
+    # step1 is a dataframe
     step1 = process_and_aggregate_data(dataFrame, where_column=WHERE, groupby_column=GROUPBY, select_column=SELECT)
+    if step1.empty:
+        mb.showwarning(title='No search values found',
+                       message='No combination of csv file fields and search values were found in your input file.\n\n' + str(csv_file_categorical_field_list) + '\n\nPlease, make sure to check whether\n   1. you have not entered the same field twice;\n   2. you are using a case sensitive search option.\n\nPlease, click on the Reset button and start again.')
+        return
+    colormap_dataframe_csv_filename =outputDir + os.sep + "colormap_dataframe.csv"
+    filesToOpen.append(colormap_dataframe_csv_filename)
+    # add headers to dataframe
+    if GROUPBY == 'Document':
+        if len(WHERE)==0:
+            for i in range(len(list(step1.columns.values))):
+                header = list(step1.columns.values)[i]
+                head, tail = os.path.split(header)
+                step1 = step1.rename(columns={header: 'Frequency in: ' + tail})
+    step1.to_csv(colormap_dataframe_csv_filename, index=True)
+
     # val = 1 #get_transformation_choice(), but we will connect it....
     step2 = transform_data(step1)  # There needs to be a GUI to allow transformation, but...
     # We proceed with default instead perhaps...
     if GROUPBY == 'Document':
+        # if len(WHERE)==0:
+            # when a specific document part (e.g., Book1 for Harry Potter) is not entered by the user
+            #   the document will contain the entire path along with an hypewrlink and this may be very cumbersome to display in the X axis
+            #   must remove hyperlink and display document tail only
+            # print('Must REMOVE hyperlink and display document tail only, not path')
+            # for i in range(len(list(step2.columns.values))):
+            #     header=list(step2.columns.values)[i]
+            #     head, tail = os.path.split(header)
+            #     step2 = step2.rename(columns = {header:tail})
         renamedf(step2)  # We rename to file relative location, not absolute location
     try:
         cmap = cmaps(eval(params[1]), eval(params[2]))
@@ -2047,10 +2080,11 @@ def main_colormap(inputFilename, outputDir, csv_file_categorical_field_list, par
     import IO_files_util
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
                                                              '.colormetric')
-    visualize_data(step2, outputname=outputFilename, color=cmap, top_n=params[0],
-                   normalize=params[-1])  # There is no GUI yet...
 
-    return outputFilename
+    visualize_colormap_data(step2, top_n=params[0], y_label = SELECT, x_label = GROUPBY,
+                   normalize=params[-1], color=cmap, outputname=outputFilename)  # There is no GUI yet...
+    filesToOpen.append(outputFilename)
+    return filesToOpen
 
 
 def select_and_counting(df, select_and_count):
