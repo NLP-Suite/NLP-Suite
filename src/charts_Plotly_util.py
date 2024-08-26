@@ -6,7 +6,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"charts_Plotly_util",['os','pandas','plotly','kaleido'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"charts_Plotly_util",['os','pandas','plotly','math','kaleido'])==False:
     sys.exit(0)
 # if Plotly fails, install version 0.1.0 of kaleido
 # pip install kaleido==0.1.0post1
@@ -18,6 +18,7 @@ import plotly.graph_objs as go
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import math
+
 
 import IO_csv_util
 
@@ -349,81 +350,65 @@ def plot_multi_line_chart_w_slider_px(fileName, chart_title, col_to_be_ploted, s
 # inputFilename is the csv file it will read, xAxis, yAxis, and category are all csv file column fields.
 # outputFilename is the html file where the bubble chart will be saved
 
+
+
 def bubble_chart(inputFilename, outputFilename, xAxis, yAxis, category):
-    # Load csv
+
     df = pd.read_csv(inputFilename)
 
-    # Determine x-axis and y-axis columns based on user inputs, as well as the category you want bubbles to be separated by.
-    # get column numbers
-    # x_axis = df.columns[xAxis]
-    # y_axis = df.columns[yAxis]
-    # cat = df.columns[category]
-    x_axis = xAxis
-    y_axis = yAxis
-    cat = category
+    if xAxis not in df.columns or yAxis not in df.columns:
+        raise ValueError("Columns " + xAxis + " or " + yAxis + " not found in the input file.")
 
-    # Define hover text based off of the column entries.
-    hover_text = []
-    for index, row in df.iterrows():
-        text = ''
-        for col in df.columns:
-            text += f"{col}: {row[col]}<br>"
-        hover_text.append(text)
+    if category and category not in df.columns:
+        raise ValueError("Category column '" + category + "' not found in the input file.")
 
-    df['text'] = hover_text
+    df['text'] = df.apply(lambda row: '<br>'.join([col + ": " + str(row[col]) for col in df.columns]), axis=1)
 
-    # If there is a number column, determine bubble size based on it.
     numeric_columns = df.select_dtypes(include=['number']).columns
     if not numeric_columns.empty:
-        bubble_size = [math.sqrt(row[numeric_columns[0]]) for l, row in df.iterrows()]
-        df['size'] = bubble_size
+        df['size'] = df[numeric_columns[0]].apply(lambda x: math.sqrt(x) * 2 if pd.notnull(x) else 0)  # Increase size
         sizeref = 2. * max(df['size']) / (100 ** 2)
     else:
         sizeref = None
 
-    # Define color mapping for categories
-    category_colors = {
-        category_value: f'rgb({i * 50 % 256}, {i * 30 % 256}, {i * 70 % 256})'
-        for i, category_value in enumerate(df[cat].unique())
-    }
+    if category and category in df.columns:
+        category_colors = {
+            category_value: 'rgb(' + str(i * 50 % 256) + ', ' + str(i * 30 % 256) + ', ' + str(i * 70 % 256) + ')'
+            for i, category_value in enumerate(df[category].unique())
+        }
+    else:
+        category_colors = {'All': 'rgba(0,0,0,0)'}
 
     fig = go.Figure()
 
-    # Create scatterplot.
-    for i, (_, row) in enumerate(df.iterrows()):
-        color = category_colors[row[cat]] if cat in df.columns else None
-        size = row['size'] if 'size' in df.columns else None
-        if str(size)=='nan':
-            size=None
+    for cat in df[category].unique() if category in df.columns else ['All']:
+        filtered_df = df[df[category] == cat] if category in df.columns else df
         fig.add_trace(go.Scatter(
-            x=[row[x_axis]], y=[row[y_axis]],
-            text=row['text'],
+            x=filtered_df[xAxis],
+            y=filtered_df[yAxis],
+            text=filtered_df['text'],
+            mode='markers',
             marker=dict(
-                size=size,
-                # size=row['size'] if 'size' in df.columns else None,
-                color=color,
+                size=filtered_df['size'] if 'size' in filtered_df.columns else 20,
+                color=[category_colors.get(cat, 'rgba(0,0,0,0)')] * len(filtered_df),
+                opacity=0.8,
+                line=dict(width=2)
             ),
-            name=row[cat] if cat in df.columns else None
+            name=str(cat)
         ))
 
-    # Tune marker appearance and layout
-    fig.update_traces(mode='markers', marker=dict(sizemode='area', sizeref=sizeref, line_width=2))
-
-    # Adjust bubble positions based on the values of the x and y axes
-    if sizeref:
-        fig.update_layout(autosize=False, width=800, height=600)
-        fig.update_xaxes(scaleanchor="y", scaleratio=1)
-        fig.update_yaxes(scaleanchor="x", scaleratio=1)
-
     fig.update_layout(
-        title=f"{x_axis} vs {y_axis} by {cat}", # {category} specific value not available at this point
+        title=(xAxis + " vs " + yAxis + " by " + category) if category in df.columns else (xAxis + " vs " + yAxis),
+        autosize=False,
+        width=1000,
+        height=800,
         xaxis=dict(
-            title=f'{x_axis}',
+            title=xAxis,
             gridcolor='white',
             gridwidth=2,
         ),
         yaxis=dict(
-            title=f'{y_axis}',
+            title=yAxis,
             gridcolor='white',
             gridwidth=2,
         ),
@@ -431,41 +416,74 @@ def bubble_chart(inputFilename, outputFilename, xAxis, yAxis, category):
         plot_bgcolor='rgb(243, 243, 243)',
     )
 
-    # Visible toggle buttons based on category.
-    if cat in df.columns:
-        buttons = []
-        categories = df[cat].unique()
-        for category in categories:
-            buttons.append(
-                dict(label=str(category),
-                     method="update",
-                     args=[{"visible": [True if x == category else False for x in df[cat]]},
-                           {"title": f"{x_axis} vs {y_axis} by {cat}: {category}"}])
-            )
-        fig.update_layout(
-            updatemenus=[{"buttons": buttons,
-                          "direction": "down",
-                          "showactive": True,
-                          "x": 1.1,
-                          "xanchor": "left",
-                          "y": 1.05,
-                          "yanchor": "top"}]
-        )
+    unique_categories = df[category].unique() if category in df.columns else ['All']
 
-    # Add a reset toggle button option.
-    buttons.append(
-        dict(label = "Reset Zoom" ,
-             method = "update",
-             args = [{"visible": [True] * len(df)},
-                     {"title": f"{x_axis} vs {y_axis} by {cat}: {category}"}]))
-    fig.update_layout(
-        updatemenus = [{"buttons" : buttons,
-                        "showactive": True,
-                        "x": 1.1,
-                        "xanchor": "left",
-                        "y": 1.05,
-                        "yanchor": "top"}]
+    category_buttons = [
+        dict(
+            label="Show All",
+            method="update",
+            args=[
+                {"visible": [True] * len(fig.data)},
+                {"title": xAxis + " vs " + yAxis + " - Show All"}
+            ]
+        )
+    ]
+
+    category_buttons.extend(
+        dict(
+            label=str(cat),
+            method="update",
+            args=[
+                {"visible": [trace.name == str(cat) for trace in fig.data]},
+                {"title": xAxis + " vs " + yAxis + " by " + category + ": " + str(cat)}
+            ]
+        ) for cat in unique_categories
     )
+
+    hover_text_buttons = [
+        dict(
+            label="Hover Text On",
+            method="update",
+            args=[
+                {"text": [trace.text for trace in fig.data]},
+                {"title": xAxis + " vs " + yAxis}
+            ]
+        ),
+        dict(
+            label="Hover Text Off",
+            method="update",
+            args=[
+                {"text": [None for _ in fig.data]},
+                {"title": xAxis + " vs " + yAxis}
+            ]
+        )
+    ]
+
+    fig.update_layout(
+        updatemenus=[
+            dict(
+                buttons=category_buttons,
+                direction="down",
+                showactive=True,
+                x=1.15,
+                xanchor="left",
+                y=1.15,
+                yanchor="top",
+                pad={"r": 10, "t": 10}
+            ),
+            dict(
+                buttons=hover_text_buttons,
+                direction="down",
+                showactive=True,
+                x=1.15,
+                xanchor="left",
+                y=1.05,
+                yanchor="top",
+                pad={"r": 10, "t": 10}
+            )
+        ]
+    )
+
     fig.write_html(outputFilename)
     return outputFilename
 
