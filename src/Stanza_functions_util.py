@@ -61,7 +61,6 @@ def sentence_split_stanza_text(text_to_process, return_text=True):
     return sentences
 
 # returns a single lemmatized word. input should be a single word.
-# same as nltk.stem.wordnet.WordNetLemmatizer().lemmatize(text)
 # https://stanfordnlp.github.io/stanza/lemma.html
 # https://github.com/stanfordnlp/stanza/blob/main/stanza/models/lemmatizer.py
 
@@ -71,6 +70,9 @@ def sentence_split_stanza_text(text_to_process, return_text=True):
 # in OUTPUT, whatever the input, the function returns a STRING of a lemmatized single word
 #   (regardless of input, always the first word of the first sentence of a document)
 #   e.g., ['Robert']
+
+# must be called as lemmatize_stanza_word(stanzaPipeLine(token))
+# https://stanfordnlp.github.io/stanza/lemma.html
 def lemmatize_stanza_word(text_to_process, return_empty_string=True):
     try:
         return text_to_process.sentences[0].words[0].lemma
@@ -86,6 +88,9 @@ def lemmatize_stanza_word(text_to_process, return_empty_string=True):
 # in OUTPUT the function returns a list [] of the lemmatized document, sentence or word
 #   e.g., ['Robert', 'go', 'to', 'Italy', 'on', 'vacation']
 # similar to tokenized_stanza_doc except that in this one the list items are tokenized (NOT lemmatized) words
+# for text_to_process.sentences to work, the calling function must first have
+#   from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza_doc
+# must be called as lemmatize_stanza_doc(stanzaPipeLine(text))
 def lemmatize_stanza_doc(text_to_process, return_string=False, exact_word_match = True):
     if return_string:
         lemmatized_text_to_process=''
@@ -94,6 +99,8 @@ def lemmatize_stanza_doc(text_to_process, return_string=False, exact_word_match 
     punctuation_set = ',;.?!'
     # for text_to_process.sentences to work, the calling function must first have
     #   from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza_doc
+    # must be called as lemmatize_stanza_doc(stanzaPipeLine(text))
+
     for sentence in text_to_process.sentences:
         for word in sentence.words:
             if return_string:

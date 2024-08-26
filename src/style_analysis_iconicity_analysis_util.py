@@ -136,7 +136,7 @@ def analyzefile(inputFilename, inputDir, outputDir, outputFilename,  documentID,
 				# 	min_rating=5.0
 				# rating standard deviation set at 2
 				# 	rating_sd = 2
-				if score > min_rating and max_rating_sd<2:
+				if score > min_rating and score_sd < max_rating_sd:
 					iconic_words.append([lemma, str(score), documentID, IO_csv_util.dressFilenameForCSVHyperlink(documentName)])
 					iconic_words_list.append(lemma)
 				score_list.append(score)
@@ -219,7 +219,7 @@ def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutput
 	startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
 	                                               'Started running Iconicity Analysis at', True,silent=True)
 	outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
-																			   '.csv', 'iconicity-vocab', 'stats')
+																			   '.csv', 'iconicity-vocab', '')
 	with open(outputFilename, 'w', encoding='utf-8', errors='ignore') as csvfile:
 		fieldnames = ['Sentence iconicity (Mean score: 1 Not iconic-7 Very iconic)',
 					  'Sentence iconicity (Median score: 1 Not iconic-7 Very iconic)',
@@ -266,6 +266,24 @@ def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutput
 				print('Input directory "' + inputDir + '" is invalid.')
 				sys.exit(0)
 
+		outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
+												  columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=[
+				'Sentence iconicity (Mean score: 1 Not iconic-7 Very iconic)'],
+												  # columns_to_be_plotted_bySent= [[10, 7, 0]],
+												  chart_title='Frequency Distribution of Sentence Iconicity Scores (1 Not iconic-7 Very iconic)',
+												  count_var=1,  # 0 for numeric field
+												  hover_label=[],
+												  outputFileNameType='',
+												  column_xAxis_label='Sentence iconicity scores',
+												  groupByList=['Document'],
+												  plotList=[],
+												  chart_title_label='Sentence Iconicity Statistics')
+		if outputFiles != None:
+			if isinstance(outputFiles, str):
+				filesToOpen.append(outputFiles)
+			else:
+				filesToOpen.extend(outputFiles)
+
 		if len(iconic_words) > 0:
 			iconic_words_set = set(iconic_words_list) # the set has only distinct words
 			mb.showwarning(title='Warning',
@@ -280,7 +298,8 @@ def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutput
 			if not IO_error:
 				filesToOpen.append(temp_outputFilename)
 				outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, temp_outputFilename, outputDir,
-																   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Word'],
+																   columns_to_be_plotted_xAxis=[],
+														  		   columns_to_be_plotted_yAxis=['Word'],
 																   # columns_to_be_plotted_bySent= [[10, 7, 0]],
 																   chart_title='Frequency Distribution of Iconic Words',
 																   count_var=1, # 0 for numeric field
@@ -295,24 +314,6 @@ def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutput
 						filesToOpen.append(outputFiles)
 					else:
 						filesToOpen.extend(outputFiles)
-
-	outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
-													   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Sentence iconicity (Mean score: 1 Not iconic-7 Very iconic)'],
-													   # columns_to_be_plotted_bySent= [[10, 7, 0]],
-													   chart_title='Frequency Distribution of Sentence Iconicity Scores (1 Not iconic-7 Very iconic)',
-													   count_var=1, # 0 for numeric field
-													   hover_label=[],
-													   outputFileNameType='',
-													   column_xAxis_label='Sentence iconicity scores',
-													   groupByList=['Document'],
-													   plotList=[],
-													   chart_title_label='Sentence Iconicity Statistics')
-	if outputFiles!=None:
-		if isinstance(outputFiles, str):
-			filesToOpen.append(outputFiles)
-		else:
-			filesToOpen.extend(outputFiles)
-
 
 	IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
 	                                       'Finished running Iconicity Analysis at', True, '', True, startTime, False)

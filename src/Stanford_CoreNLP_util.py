@@ -2153,8 +2153,8 @@ def process_json_single_annotation(config_filename, documentID, document, senten
 
 # processes one document at a time
 def process_json_parser(config_filename, documentID, document, sentenceID, recordID, pcfg, json, **kwargs):
-
-    print("   Processing Json output file for Parser ",document)
+    head, tail = os.path.split(document)
+    print("   Processing Json output file for Parser ",tail)
     old_recordID = recordID
     filename_embeds_date_var = False
     for key, value in kwargs.items():

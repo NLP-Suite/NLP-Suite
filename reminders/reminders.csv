@@ -384,7 +384,7 @@ On Stanford CoreNLP and memory and performance issues and what to do about them,
 If you are processing files in a directory, other files may similarly need to be split and the message display may become annoying.",OFF
 *,Clause tags with CoreNLP neural network parser,The CoreNLP neural network parser does not produce clause tags in output. The column 'Clause Tag' in the output csv CoNLL table would contain all blank values.,OFF
 *,NER tags frequency,"O is likely to be the most frequent NER tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the row containing the O tag in the Data worksheet of the Excel chart file to have a better view of all other tags.",OFF
-*,CoreNLP SVO + gender + quote timing,"Beware that the CoreNLP SVO + gender + quote algorithms on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 4 hours on a standard laptop.",ON
+*,CoreNLP SVO + gender + quote timing,"Beware that the CoreNLP SVO + gender + quote algorithms on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 4 hours on a standard laptop.",OFF
 *,CoreNLP quote annotator,"The CoreNLP quote annotator works with double quotes as default "" rather than with single quotes '. If your document(s) use single quotes for dialogue, make sure to tick the checkbox 'Include single quotes'. The Stanford CoreNLP annotator will then process BOTH single AND double quotes, otherwise single quotes for dialogues would be missed (e.g., The user said: 'This NLP Suite sucks.').",OFF
 *,CoreNLP split files,"Stanford CoreNLP has a limit of 100,000 characters maximum text size.
 
@@ -426,3 +426,9 @@ If you do not want to be asked again to open the TIPS file, just hit 'No' below.
 *,Line length,"Line length only makes sense for poetry or song lyrics (or perhaps for newspaper articles to gauge the importance of the article by the column width).
 
 For your typical document line length depends on the vaguaries of typesetting and sentence length may provide a better measure of style.",OFF
+*,Stanford CoreNLP coref merged files,"The Stanford CoreNLP coref annotator with a corpus of files in a directory in input will create a merged corefed file (with filenames embedded in <@# #@>) in output.
+
+Manual coreference resolution will not be available; depending upon the number of files merged, bringing the files into memory for manual editing may exceed memory capacity. You can always
+   1. manually edit the merged file anyway using the 'coreference_main' GUI;
+   2. split the merged file and then edit the individual coreferenced files, again, using the 'coreference_main' GUI.",ON
+*,CoreNLP coreference timing,"Beware that CoreNLP coreference resolution on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 3 hours on a standard laptop.",OFF

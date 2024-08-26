@@ -11,7 +11,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"file_splitter_ByKeyword_txt",['os','tkinter','nltk','mlconjug'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"file_splitter_ByKeyword_txt",['os','tkinter','nltk'])==False:
     sys.exit(0)
 
 import os
@@ -24,11 +24,6 @@ from nltk.corpus import wordnet#lemmatization
 #https://stackoverflow.com/questions/31016540/lemmatize-plural-nouns-using-nltk-and-wordnet
 
 
-import mlconjug #conjugation of verbs
-#https://readthedocs.org/projects/mlconjug/downloads/pdf/latest/
-#https://pypi.org/project/mlconjug/
-
-
 # import pattern.en
 #https://stackoverflow.com/questions/18902608/generating-the-plural-form-of-a-noun/19018986#comment27903114_18902608
 
@@ -38,20 +33,28 @@ def run(inputFilename, outputPath, keyword, first_occurrence, lemmatization = Tr
         if letter == '<' or letter == '>' or letter ==':' or letter =='"' or letter =='/' or letter =='\\' or letter =='|' or letter =='?' or letter =='*':
             title_keyword = keyword.replace(letter,"")
     # kwtokens = word_tokenize(keyword.lower())
-    kwtokens = tokenize_stanza_text(stanzaPipeLine(keyword.lower()))
+    # kwtokens = tokenize_stanza_text(stanzaPipeLine(keyword.lower()))
+    kwtokens = tokenize_stanza_text(stanzaPipeLine(keyword))
     kwlist = []#list of list which includes conjugated forms of each token in keyword phrase
-    default_conjugator = mlconjug.Conjugator(language='en')
+    # default_conjugator = mlconjug.Conjugator(language='en')
     if first_occurrence == True:
         outputPathone = outputPath + "/subfile_1"
         outputPathtwo = outputPath + "/subfile_2"
         if not os.path.exists(outputPathone) and not os.path.exists(outputPathtwo):
             os.mkdir(outputPathone)
             os.mkdir(outputPathtwo)
-            
+
+    formlist =[]
+
     for token in kwtokens:
         if token.isalpha():
-            conjus = default_conjugator.conjugate(token.lower())
-            formlist = conjus.iterate()
+            # lemmatize instead
+            # conjus = default_conjugator.conjugate(token.lower())
+            # formlist = conjus.iterate()
+            token_lemma = lemmatize_stanza_word(stanzaPipeLine(token))
+            if token_lemma=='':
+                continue
+            formlist = token_lemma
             forms = []
             for form in formlist:
                 forms.append(form[-1])
