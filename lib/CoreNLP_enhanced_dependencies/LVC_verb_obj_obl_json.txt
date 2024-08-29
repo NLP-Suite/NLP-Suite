@@ -1,0 +1,18 @@
+{
+    "take": [
+        {
+            "obj": "advantage",
+            "obl": "of"
+        },
+        {
+            "obj": "care",
+            "obl": "of"
+        },
+        {
+            "obj": "charge",
+            "nmod": "of",
+            "downwards": "obj"
+        }
+    ]
+
+}

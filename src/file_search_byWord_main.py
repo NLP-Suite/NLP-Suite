@@ -71,11 +71,6 @@ def run(inputFilename,inputDir, outputDir,
     # if outputDir == '':
     #     return
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Word/collocation search start',
-                        'Started running Word/collocation search at', True,
-                        'SEARCH options: ' + str(search_options_list)+'\nSEARCH words: '+search_keyword_values,
-                                       True, '', True)
-
     if not 'Search within document' in search_options_list:
         if not 'Search within sentence (default)' in search_options_list:
             search_options_list.append('Search within sentence (default)')
@@ -85,10 +80,19 @@ def run(inputFilename,inputDir, outputDir,
     else:
         useLemma = False
 
-    if search_by_keyword:
-        print('Search options:', search_options_list)
-        print('-K +K ',minus_K_words_sentences_var, plus_K_words_sentences_var)
-        print('Search word(s):', search_keyword_values)
+    if search_by_dictionary:
+        label = 'SEARCH word(s) by values in dictionary file: ' + selectedCsvFile
+    else:
+        label = 'SEARCH word(s): ' + search_keyword_values
+    #@@
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Word/collocation search start',
+                        'Started running Word/collocation search at', True,
+                        'SEARCH options: ' + str(search_options_list)+'\n'+label,
+                                       True, '', True)
+
+    if search_by_dictionary or search_by_keyword:
+        # print('Search options:', search_options_list)
+        # print('-K +K ',minus_K_words_sentences_var, plus_K_words_sentences_var)
         if coOccurring_keywords_var:
             import NGrams_CoOccurrences_util
             outputFiles = NGrams_CoOccurrences_util.NGrams_coOccurrences_VIEWER(
@@ -120,7 +124,7 @@ def run(inputFilename,inputDir, outputDir,
         else:
             filesToOpen = file_search_byWord_util.search_sentences_documents(inputFilename, inputDir, outputDir,
                                                                              config_filename,
-                                                                             search_by_dictionary,
+                                                                             search_by_dictionary, selectedCsvFile,
                                                                              search_by_keyword, search_keyword_values,
                                                                              minus_K_words_sentences_var, plus_K_words_sentences_var,
                                                                              extract_sentences_var,

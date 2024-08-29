@@ -350,137 +350,77 @@ def plot_multi_line_chart_w_slider_px(fileName, chart_title, col_to_be_ploted, s
 # inputFilename is the csv file it will read, xAxis, yAxis, and category are all csv file column fields.
 # outputFilename is the html file where the bubble chart will be saved
 
-
-
 def bubble_chart(inputFilename, outputFilename, xAxis, yAxis, category):
-
     df = pd.read_csv(inputFilename)
 
     if xAxis not in df.columns or yAxis not in df.columns:
-        raise ValueError("Columns " + xAxis + " or " + yAxis + " not found in the input file.")
+        raise ValueError(f"Columns {xAxis} or {yAxis} not found in the input file.")
 
-    if category and category not in df.columns:
-        raise ValueError("Category column '" + category + "' not found in the input file.")
+    if category not in df.columns:
+        raise ValueError(f"Category column '{category}' not found in the input file.")
 
-    df['text'] = df.apply(lambda row: '<br>'.join([col + ": " + str(row[col]) for col in df.columns]), axis=1)
+    df_grouped = df.groupby([category, xAxis, yAxis]).size().reset_index(name='count')
 
-    numeric_columns = df.select_dtypes(include=['number']).columns
-    if not numeric_columns.empty:
-        df['size'] = df[numeric_columns[0]].apply(lambda x: math.sqrt(x) * 2 if pd.notnull(x) else 0)  # Increase size
-        sizeref = 2. * max(df['size']) / (100 ** 2)
-    else:
-        sizeref = None
+    category_totals = df_grouped.groupby(category)['count'].sum().reset_index(name='total')
 
-    if category and category in df.columns:
-        category_colors = {
-            category_value: 'rgb(' + str(i * 50 % 256) + ', ' + str(i * 30 % 256) + ', ' + str(i * 70 % 256) + ')'
-            for i, category_value in enumerate(df[category].unique())
-        }
-    else:
-        category_colors = {'All': 'rgba(0,0,0,0)'}
+    df_grouped = df_grouped.merge(category_totals, on=category)
+
+    df_grouped['proportion'] = df_grouped['count'] / df_grouped['total']
+
+    df_grouped['text'] = df_grouped.apply(
+        lambda row: f"{category}: {row[category]}<br>{xAxis}: {row[xAxis]}<br>{yAxis}: {row[yAxis]}<br>Count: {row['count']}<br>Proportion: {row['proportion']:.3f}", axis=1)
+
+    categories = df_grouped[category].unique()
+    category_colors = {cat: f'rgb({random.randint(0,255)}, {random.randint(0,255)}, {random.randint(0,255)})' for cat in categories}
 
     fig = go.Figure()
 
-    for cat in df[category].unique() if category in df.columns else ['All']:
-        filtered_df = df[df[category] == cat] if category in df.columns else df
+    for cat in categories:
+        filtered_df = df_grouped[df_grouped[category] == cat]
         fig.add_trace(go.Scatter(
             x=filtered_df[xAxis],
             y=filtered_df[yAxis],
             text=filtered_df['text'],
             mode='markers',
             marker=dict(
-                size=filtered_df['size'] if 'size' in filtered_df.columns else 20,
-                color=[category_colors.get(cat, 'rgba(0,0,0,0)')] * len(filtered_df),
-                opacity=0.8,
-                line=dict(width=2)
+                size=filtered_df['proportion'] * 1000,
+                sizemode='area',
+                sizemin=4,
+                color=category_colors[cat],
+                opacity=0.7,
+                line=dict(width=1, color='white')
             ),
             name=str(cat)
         ))
 
     fig.update_layout(
-        title=(xAxis + " vs " + yAxis + " by " + category) if category in df.columns else (xAxis + " vs " + yAxis),
+        title=f"{xAxis} vs {yAxis} by {category}",
         autosize=False,
-        width=1000,
-        height=800,
-        xaxis=dict(
-            title=xAxis,
-            gridcolor='white',
-            gridwidth=2,
-        ),
-        yaxis=dict(
-            title=yAxis,
-            gridcolor='white',
-            gridwidth=2,
-        ),
+        width=1200,
+        height=900,
+        xaxis=dict(title=xAxis, gridcolor='white', gridwidth=2),
+        yaxis=dict(title=yAxis, gridcolor='white', gridwidth=2),
         paper_bgcolor='rgb(243, 243, 243)',
         plot_bgcolor='rgb(243, 243, 243)',
     )
 
-    unique_categories = df[category].unique() if category in df.columns else ['All']
-
     category_buttons = [
-        dict(
-            label="Show All",
-            method="update",
-            args=[
-                {"visible": [True] * len(fig.data)},
-                {"title": xAxis + " vs " + yAxis + " - Show All"}
-            ]
-        )
+        dict(label="Show All", method="update", args=[{"visible": [True] * len(fig.data)}, {"title": f"{xAxis} vs {yAxis} - Show All"}])
     ]
-
-    category_buttons.extend(
-        dict(
-            label=str(cat),
-            method="update",
-            args=[
-                {"visible": [trace.name == str(cat) for trace in fig.data]},
-                {"title": xAxis + " vs " + yAxis + " by " + category + ": " + str(cat)}
-            ]
-        ) for cat in unique_categories
-    )
+    category_buttons.extend([
+        dict(label=str(cat), method="update", args=[{"visible": [trace.name == str(cat) for trace in fig.data]}, {"title": f"{xAxis} vs {yAxis} by {category}: {str(cat)}"}])
+        for cat in categories
+    ])
 
     hover_text_buttons = [
-        dict(
-            label="Hover Text On",
-            method="update",
-            args=[
-                {"text": [trace.text for trace in fig.data]},
-                {"title": xAxis + " vs " + yAxis}
-            ]
-        ),
-        dict(
-            label="Hover Text Off",
-            method="update",
-            args=[
-                {"text": [None for _ in fig.data]},
-                {"title": xAxis + " vs " + yAxis}
-            ]
-        )
+        dict(label="Hover Text On", method="update", args=[{"text": [trace.text for trace in fig.data]}, {"title": f"{xAxis} vs {yAxis}"}]),
+        dict(label="Hover Text Off", method="update", args=[{"text": [None for _ in fig.data]}, {"title": f"{xAxis} vs {yAxis}"}])
     ]
 
     fig.update_layout(
         updatemenus=[
-            dict(
-                buttons=category_buttons,
-                direction="down",
-                showactive=True,
-                x=1.15,
-                xanchor="left",
-                y=1.15,
-                yanchor="top",
-                pad={"r": 10, "t": 10}
-            ),
-            dict(
-                buttons=hover_text_buttons,
-                direction="down",
-                showactive=True,
-                x=1.15,
-                xanchor="left",
-                y=1.05,
-                yanchor="top",
-                pad={"r": 10, "t": 10}
-            )
+            dict(buttons=category_buttons, direction="down", showactive=True, x=1.15, xanchor="left", y=1.15, yanchor="top", pad={"r": 10, "t": 10}),
+            dict(buttons=hover_text_buttons, direction="down", showactive=True, x=1.15, xanchor="left", y=1.05, yanchor="top", pad={"r": 10, "t": 10})
         ]
     )
 

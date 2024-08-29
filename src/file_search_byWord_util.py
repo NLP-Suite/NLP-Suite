@@ -154,6 +154,7 @@ def search_in_document(file, create_subcorpus_var, corpus_to_copy, docText, docI
     # SIMON cache
     # import hashfile
 
+    search_keywords_NOT_found = []
     search_keywords_found=False
 
     words_ = tokenize_stanza_text(stanzaPipeLine(docText))
@@ -175,6 +176,12 @@ def search_in_document(file, create_subcorpus_var, corpus_to_copy, docText, docI
         if (not search_keywords_found) and frequency_keyword>0:
             search_keywords_found=True
 
+        if frequency_keyword == 0:
+            # document search
+            search_keywords_NOT_found.append([keyword, docIndex, IO_csv_util.dressFilenameForCSVHyperlink(file)])
+
+            document_percent_position = 0
+
         if create_subcorpus_var and frequency_keyword>0:
             corpus_to_copy.add(file)
 
@@ -184,10 +191,9 @@ def search_in_document(file, create_subcorpus_var, corpus_to_copy, docText, docI
                                        IO_csv_util.dressFilenameForCSVHyperlink(file)]
         all_found_csv_sentences_records_oneDoc.append(temp_csv_record_oneSentence)
 
-    return search_keywords_found, corpus_to_copy, all_found_csv_sentences_records_oneDoc
+    return search_keywords_found, search_keywords_NOT_found, corpus_to_copy, all_found_csv_sentences_records_oneDoc
 
 # the function search_in_sentence will loop through every sentence of a specific document
-# @@@
 def search_in_all_sentences_oneDoc(file,
     create_subcorpus_var, corpus_to_copy, docText, docIndex,
     form_lemma_pair, lang,
@@ -207,6 +213,7 @@ def search_in_all_sentences_oneDoc(file,
     from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
     sentences = sentence_split_stanza_text(stanzaPipeLine(docText))
     num_sentences=len(sentences)
+    search_keywords_NOT_found = []
     all_adjacent_words_oneDoc = []
     all_adjacent_sentences_oneDoc = ''
     all_found_sentences_oneDoc = ''
@@ -233,68 +240,67 @@ def search_in_all_sentences_oneDoc(file,
             search_word_frequency = NGrams_CoOccurrences_util.get_search_word_from_text(sentence, search_word,
                                                                                         lemmatize, case_sensitive,
                                                                                         exact_word_match)
-            if search_word_frequency>0:
+            if search_word_frequency == 0:
+                # sentence search
+                search_keywords_NOT_found.append([search_word, sentence_index, sentence, docIndex, IO_csv_util.dressFilenameForCSVHyperlink(file)])
+                document_percent_position = 0
+            elif search_word_frequency>0:
                 if isFirstOcc:
                     first_occurrence_index = sentence_index
                     isFirstOcc = False
+                search_keywords_found = True
+                if create_subcorpus_var:
+                    corpus_to_copy.add(file)
+                document_percent_position = round((sentence_index / num_sentences), 2)
+                if minus_K_var > 0 or plus_K_var > 0:
+                    minus_plus_K_words = get_words_minus_K_plus_K(sentence,
+                        search_word, exact_word_match, minus_K_var, plus_K_var,
+                        lemmatize, form_lemma_pair, lang)
+                    if minus_plus_K_words==[]:
+                        continue
+                    all_adjacent_words_oneDoc.extend(minus_plus_K_words)
+                    try:
+                        left_words=minus_plus_K_words[0]
+                    except:
+                        left_words=''
+                    try:
+                        right_words=minus_plus_K_words[1]
+                    except:
+                        right_words=''
+                    temp_csv_record_oneSentence = [left_words, search_word, right_words, str(num_sentences), str(sentences.index(sentence)), \
+                        str(document_percent_position), \
+                        str(search_word_frequency), \
+                        str(sentence_index), \
+                        sentence, \
+                        str(docIndex), \
+                        IO_csv_util.dressFilenameForCSVHyperlink(file)]
+                    all_found_csv_words_minusK_plusK_records_oneDoc.append(temp_csv_record_oneSentence)
+                if (minus_K_var == 0 and plus_K_var == 0):
+                    temp_csv_record_oneSentence = [search_word, str(num_sentences), str(sentences.index(sentence)), \
+                        str(document_percent_position), \
+                        str(search_word_frequency), \
+                        str(sentence_index), \
+                        sentence, \
+                        str(docIndex), \
+                        IO_csv_util.dressFilenameForCSVHyperlink(file)]
+                    all_found_csv_sentences_records_oneDoc.append(temp_csv_record_oneSentence)
 
-                if search_word_frequency == 0:
-                    document_percent_position = 0
-                    continue
-                else:
-                    search_keywords_found = True
-                    if create_subcorpus_var:
-                        corpus_to_copy.add(file)
-                    document_percent_position = round((sentence_index / num_sentences), 2)
-                    if minus_K_var > 0 or plus_K_var > 0:
-                        minus_plus_K_words = get_words_minus_K_plus_K(sentence,
-                            search_word, exact_word_match, minus_K_var, plus_K_var,
-                            lemmatize, form_lemma_pair, lang)
-                        if minus_plus_K_words==[]:
-                            continue
-                        all_adjacent_words_oneDoc.extend(minus_plus_K_words)
-                        try:
-                            left_words=minus_plus_K_words[0]
-                        except:
-                            left_words=''
-                        try:
-                            right_words=minus_plus_K_words[1]
-                        except:
-                            right_words=''
-                        temp_csv_record_oneSentence = [left_words, search_word, right_words, str(num_sentences), str(sentences.index(sentence)), \
-                            str(document_percent_position), \
-                            str(search_word_frequency), \
-                            str(sentence_index), \
-                            sentence, \
-                            str(docIndex), \
-                            IO_csv_util.dressFilenameForCSVHyperlink(file)]
-                        all_found_csv_words_minusK_plusK_records_oneDoc.append(temp_csv_record_oneSentence)
-                    if (minus_K_var == 0 and plus_K_var == 0):
-                        temp_csv_record_oneSentence = [search_word, str(num_sentences), str(sentences.index(sentence)), \
-                            str(document_percent_position), \
-                            str(search_word_frequency), \
-                            str(sentence_index), \
-                            sentence, \
-                            str(docIndex), \
-                            IO_csv_util.dressFilenameForCSVHyperlink(file)]
-                        all_found_csv_sentences_records_oneDoc.append(temp_csv_record_oneSentence)
+                sentencecopy = sentence
+                all_found_sentences_oneDoc = all_found_sentences_oneDoc + '\n' + sentence
+                adjacent_sentences = find_k_adjacent_sentences(sentences, sentence, minus_K_var, plus_K_var)
+                # Search word(s)	Sentence ID	 Relative position in document	 Sentence	 Document ID	 Document
 
-                    sentencecopy = sentence
-                    all_found_sentences_oneDoc = all_found_sentences_oneDoc + '\n' + sentence
-                    adjacent_sentences = find_k_adjacent_sentences(sentences, sentence, minus_K_var, plus_K_var)
-                    # Search word(s)	Sentence ID	 Relative position in document	 Sentence	 Document ID	 Document
-
-                    # create a string containing all the searched sentences so that they can be displayed ina wordcloud
-                    all_adjacent_sentences_oneDoc = all_adjacent_sentences_oneDoc + ' '.join(adjacent_sentences) + "\n"
+                # create a string containing all the searched sentences so that they can be displayed ina wordcloud
+                all_adjacent_sentences_oneDoc = all_adjacent_sentences_oneDoc + ' '.join(adjacent_sentences) + "\n"
 
 
     # convert list to string for wordcloud
     all_adjacent_words_oneDoc=' '.join(all_adjacent_words_oneDoc)
     # end of search_in_sentence function
-    return search_keywords_found, corpus_to_copy, all_adjacent_words_oneDoc, all_adjacent_sentences_oneDoc, all_found_sentences_oneDoc, all_found_csv_words_minusK_plusK_records_oneDoc, all_found_csv_sentences_records_oneDoc
+    return search_keywords_found, search_keywords_NOT_found, corpus_to_copy, all_adjacent_words_oneDoc, all_adjacent_sentences_oneDoc, all_found_sentences_oneDoc, all_found_csv_words_minusK_plusK_records_oneDoc, all_found_csv_sentences_records_oneDoc
 
 def search_sentences_documents(inputFilename, inputDir, outputDir, configFileName,
-        search_by_dictionary, search_by_search_keywords, search_keywords_list, minus_K_var, plus_K_var,
+        search_by_dictionary, selectedCsvFile, search_by_search_keywords, search_keywords_list, minus_K_var, plus_K_var,
         extract_sentences, create_subcorpus_var, search_options_list, lang, chartPackage, dataTransformation):
 
     filesToOpen=[]
@@ -315,7 +321,15 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
         case_sensitive=False
     else:
         case_sensitive = True
-    search_keywords_str, search_keywords_list = IO_string_util.process_comma_separated_string_list(search_keywords_list, case_sensitive)
+    # when processing an input csv file must create the search_keywords_list
+    if search_by_dictionary:
+        import pandas as pd
+        df = pd.read_csv(selectedCsvFile)
+        colname = df.columns[0]
+        search_keywords_list = df[colname].tolist()
+        search_keywords_str = ', '.join(search_keywords_list)
+    else:
+        search_keywords_str, search_keywords_list = IO_string_util.process_comma_separated_string_list(search_keywords_list, case_sensitive)
 
     case_sensitive = False
     lemmatize = False
@@ -339,8 +353,9 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
         label='_sent'
     else:
         search_word_header = 'Search Word in Document'
-        label='doc'
-
+        label='_doc'
+    if search_by_dictionary:
+        label=label+'_dict'
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='search_word'+label,
                                                        silent=False)
@@ -362,13 +377,13 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
     all_adjacent_words_allDocs = ''
     all_adjacent_sentences_allDocs = ''
     all_found_sentences_allDocs = ''
+    all_search_keywords_NOT_found = []
     all_found_csv_sentences_records_allDocs = []
     all_found_csv_words_minusK_plusK_records_allDocs = []
     all_found_csv_words_minusK_plusK_records_oneDoc = []
 
     docIndex = 0
     first_occurrence_index = -1
-
 
     outputFilename_csv_sentence = ''
     # outputDir_sentences_extract = ''
@@ -398,9 +413,9 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
         docIndex += 1
         _, tail = os.path.split(file)
         print("Processing file " + str(docIndex) + "/" + str(nFile) + ' ' + tail)
-        if search_by_dictionary:
-            break
-        if search_by_search_keywords:
+        # if search_by_dictionary:
+        #     break
+        if search_by_dictionary or search_by_search_keywords:
             output_dir_path = inputDir + os.sep + "search_result_csv"
             if file[-4:] != '.txt':
                 continue
@@ -412,11 +427,14 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
 
 # search in document, regardless of sentence -----------------------------------------------
         if not search_within_sentence:
-            search_keywords_found, corpus_to_copy, all_found_csv_sentences_records_oneDoc = \
+            search_keywords_found, search_keywords_NOT_found, corpus_to_copy, all_found_csv_sentences_records_oneDoc = \
                 search_in_document (file, create_subcorpus_var, corpus_to_copy,
                     docText, docIndex,
                     search_keywords_list, search_keywords_str, case_sensitive, lemmatize, exact_word_match)
 
+            if len(search_keywords_NOT_found)>0:
+                #@@
+                all_search_keywords_NOT_found.extend(search_keywords_NOT_found)
             if len(all_found_csv_sentences_records_oneDoc)>0:
                 all_found_csv_sentences_records_allDocs.append(all_found_csv_sentences_records_oneDoc)
 
@@ -426,7 +444,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
         else:
             # the function search_in_sentence will loop through every sentence in the corpus
             #   it will process the same sentences from different docs!!!
-            search_keywords_found, corpus_to_copy, all_adjacent_words_oneDoc, \
+            search_keywords_found, search_keywords_NOT_found, corpus_to_copy, all_adjacent_words_oneDoc, \
                     all_adjacent_sentences_oneDoc, all_found_sentences_oneDoc, all_found_csv_words_minusK_plusK_records_oneDoc, all_found_csv_sentences_records_oneDoc = \
                 search_in_all_sentences_oneDoc(file, create_subcorpus_var, corpus_to_copy,
                         docText, docIndex,
@@ -436,6 +454,8 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                         minus_K_var, plus_K_var)
 
             # csv output files
+            if len(search_keywords_NOT_found)>0:
+                all_search_keywords_NOT_found.extend(search_keywords_NOT_found)
             if len(all_found_csv_words_minusK_plusK_records_oneDoc)>0:
                 all_found_csv_words_minusK_plusK_records_allDocs.append(all_found_csv_words_minusK_plusK_records_oneDoc)
             if len(all_found_csv_sentences_records_oneDoc)>0:
@@ -459,9 +479,79 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                                                                       'search_word' + label)
     filesToOpen.append(outputFilename_csv_word)
 
+    outputFilename_csv_word_NOT_found = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
+                                                                      '.csv',
+                                                                      'search_word_NOT_found' + label)
+
+    outputFilename_csv_distinct_word_NOT_found = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
+                                                                      '.csv',
+                                                                      'distinct_search_word_NOT_found' + label)
+
+# keywords NOT found applies to both documents and sentences searches
+    # convert list to set to produce distinct values
+    # all_search_keywords_NOT_found_set = set(all_search_keywords_NOT_found)
+    # # convert set back to list
+    # all_search_keywords_NOT_found=list(all_search_keywords_NOT_found_set)
+    # sort the list of keywords not found
+    all_search_keywords_NOT_found.sort()
+    df = pd.DataFrame(all_search_keywords_NOT_found)
+    # insert column names in dataframe
+    # df.columns = ['Searched keyword NOT found', 'Document ID', 'Document']
+
+    # 0 is the column 'Searched keyword NOT found'
+    # group and compute the frequency of 'Searched keyword NOT found' (column 0) in dataframe
+    df.groupby([0]).count()
+    df['Frequency'] = df[0].map(df[0].value_counts())
+    # keywords with a frequency equal to the number of files in corpus signals keywords not found anywhere in the corpus
+    # nfile as criterion only works for document searches!!!
+    df = df.loc[df['Frequency'] == nFile]
+    series = df.iloc[:, 0]
+    # convert series into a dataframe
+    df = series.to_frame().reset_index()
+    # drop the index column introduced by the conversion
+    df = df.drop('index', axis=1)
+    # drop any duplicate keywords; we just a list of distinct values
+    df = df.drop_duplicates()
+    distinct_keywords_not_found_list = df[0].to_list()
+    distinct_keywords_not_found_list.insert(0, 'Searched keyword NOT found')
+    IO_error = IO_csv_util.list_to_csv(GUI_util.window, distinct_keywords_not_found_list,
+                                       outputFilename_csv_distinct_word_NOT_found)
+    if not IO_error:
+        filesToOpen.append(outputFilename_csv_distinct_word_NOT_found)
+
+# search in document, regardless of sentence -----------------------------------------------
     if not search_within_sentence:
         # the within document option does not produce wordclouds. There is no point since entire documents containing the seatrch words would be processed
         #   these documents can be exported and visualized separately for wordclouds
+        # # keywords NOT found
+        # all_search_keywords_NOT_found.sort()
+        # df = pd.DataFrame(all_search_keywords_NOT_found)
+        # # insert column names in dataframe
+        # df.columns = ['Searched keyword NOT found', 'Document ID', 'Document']
+        # # group and compute the frequency of 'Searched keyword NOT found' in dataframe
+        # df.groupby('Searched keyword NOT found').count()
+        # df['Frequency'] = df['Searched keyword NOT found'].map(df['Searched keyword NOT found'].value_counts())
+        # df = df.loc[df['Frequency'] == nFile]
+        # series = df.iloc[:,0]
+        # df = series.to_frame().reset_index()
+        # df = df.drop('index', axis=1)
+        # df = df.drop_duplicates()
+        # distinct_keywords_not_found_list = df['Searched keyword NOT found'].to_list()
+        # distinct_keywords_not_found_list.insert(0,'Searched keyword NOT found')
+        # IO_error = IO_csv_util.list_to_csv(GUI_util.window, distinct_keywords_not_found_list,
+        #                                    outputFilename_csv_distinct_word_NOT_found)
+        # if not IO_error:
+        #     filesToOpen.append(outputFilename_csv_distinct_word_NOT_found)
+
+        header = ['Searched keyword NOT found', 'Document ID', 'Document']
+        all_search_keywords_NOT_found.insert(0, header)
+
+        IO_error = IO_csv_util.list_to_csv(GUI_util.window, all_search_keywords_NOT_found,
+                                           outputFilename_csv_word_NOT_found)
+        if not IO_error:
+            filesToOpen.append(outputFilename_csv_word_NOT_found)
+
+        # keywords found
         header = [search_word_header, "Frequency of occurrence", "Document ID", "Document"]
         with open(outputFilename_csv_word, 'w', newline='') as f_csv:
             writer = csv.writer(f_csv)
@@ -478,7 +568,15 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                     except:
                         continue
         f_csv.close()
+
+# search in sentence
     else:
+        header = ['Searched keyword NOT found', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
+        all_search_keywords_NOT_found.insert(0, header)
+        IO_error = IO_csv_util.list_to_csv(GUI_util.window, all_search_keywords_NOT_found,
+                                           outputFilename_csv_word_NOT_found)
+        if not IO_error:
+            filesToOpen.append(outputFilename_csv_word_NOT_found)
         # headers for csv files
         header = [search_word_header, "Number of sentences", "Sentence ID of first occurrence",
                   "Relative position in document",

@@ -497,7 +497,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, chartPackage, dataTrans
             if word not in processed_word_list:
                 processed_word_list.append(word)
 
-    # Processing NER
+# Processing by NER tag
     else:
         # headers 2 rearranges the headers but must have the same values
         # it includes the NER tag
