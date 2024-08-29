@@ -19,10 +19,11 @@ import file_spell_checker_util
 
 def run(inputFilename, inputDir, outputDir,
         openOutputFiles,
-        
         chartPackage,
         dataTransformation,
-        by_all_tokens_var,
+        by_all_words_var,
+        bydictionary_value_var,
+        selectedCsvFile_var,
         byNER_value_var,
         NER_list,
         similarity_value,
@@ -40,7 +41,7 @@ def run(inputFilename, inputDir, outputDir,
     df_list = []
     df = []
 
-    # spell checking by Python algorithms -------------------------------------------------------------------------------------------------
+# spell checking by Python NLTK unusual words algorithms -------------------------------------------------------------------------------------------------
 
     if spelling_checker_var:
         if checker_value_var == '*' or checker_value_var == "Spell checker (via NLTK unusual words)":
@@ -83,10 +84,14 @@ def run(inputFilename, inputDir, outputDir,
                            message="The 'Spell checker(via Java tool)' is not available yet.\n\nSorry!")
             return
 
-    # spell checking by CoreNLP algorithms -------------------------------------------------------------------------------------------------
+# spell checking by CoreNLP algorithms -------------------------------------------------------------------------------------------------
 
     else:
-        if by_all_tokens_var == False and byNER_value_var == False and spelling_checker_var == False:
+        if bydictionary_value_var:
+            mb.showwarning(title='Option not available',
+                           message='The dictionary option is not available yet.\n\nPlease, select one of the other available options and try again.\n\nSorry!')
+            return
+        if by_all_words_var == False and byNER_value_var == False and spelling_checker_var == False:
             mb.showwarning(title='No selected options',
                            message='No options have been seleced.\n\nPlease, select one of the available options and try again.')
             return
@@ -104,13 +109,13 @@ def run(inputFilename, inputDir, outputDir,
         if check_withinSubDir and (not spelling_checker_var):
             outputFiles = file_spell_checker_util.check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles,
 																		 NER_list, similarity_value,
-																		 by_all_tokens_var,
+																		 by_all_words_var,
                                                                          spelling_checker_var)
         else:
             outputFiles = file_spell_checker_util.check_for_typo(inputDir, outputDir,
                                                                  openOutputFiles, chartPackage, dataTransformation,
                                                                  NER_list, similarity_value,
-																 by_all_tokens_var)
+																 by_all_words_var)
 
         if outputFiles!=None:
             filesToOpen.append(outputFiles)
@@ -126,7 +131,9 @@ run_similarity_command = lambda: run(
                                      GUI_util.open_csv_output_checkbox.get(),
                                      GUI_util.charts_package_options_widget.get(),
                                      GUI_util.data_transformation_options_widget.get(),
-                                     by_all_tokens_var.get(),
+                                     by_all_words_var.get(),
+                                     bydictionary_value_var.get(),
+                                     selectedCsvFile_var.get(),
                                      byNER_value_var.get(),
                                      NER_list,
                                      similarity_value_var.get(),
@@ -142,7 +149,7 @@ GUI_util.run_button.configure(command=run_similarity_command)
 #   just change the next statement to True or False IO_setup_display_brief=True
 IO_setup_display_brief=True
 GUI_width=GUI_IO_util.get_GUI_width(3)
-GUI_height=560 # height of GUI with full I/O display
+GUI_height=640 # height of GUI with full I/O display
 
 if IO_setup_display_brief:
     GUI_height = GUI_height - 80
@@ -188,7 +195,9 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_
 NER_list = []
 
 Levenshtein_distance_var = tk.IntVar()
-by_all_tokens_var = tk.IntVar()
+by_all_words_var = tk.IntVar()
+bydictionary_value_var = tk.IntVar()
+selectedCsvFile_var=tk.StringVar()
 byNER_value_var = tk.IntVar()
 NER_value_var = tk.StringVar()
 selected_NER_list_var = tk.StringVar()
@@ -199,7 +208,9 @@ checker_value_var = tk.StringVar()
 check_withinDir_spell_checker_var = tk.IntVar()
 
 def clear(e):
-    by_all_tokens_var.set(0)
+    by_all_words_var.set(0)
+    bydictionary_value_var.set(0)
+    selectedCsvFile_var.set('')
     byNER_value_var.set(0)
     NER_value_var.set('')
     selected_NER_list_var.set('')
@@ -229,14 +240,43 @@ Levenshtein_distance_checkbox = tk.Checkbutton(window, text='Run Levensthein\' d
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                Levenshtein_distance_checkbox)
 
-by_all_tokens_var.set(0)
-by_all_tokens_checkbox = tk.Checkbutton(window, text='Check all tokens (words)', state='normal',
-                                        variable=by_all_tokens_var, onvalue=1, offvalue=0)
+by_all_words_var.set(0)
+by_all_words_checkbox = tk.Checkbutton(window, text='Check all words against one another', state='normal',
+                                        variable=by_all_words_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                               by_all_tokens_checkbox)
+                                               by_all_words_checkbox)
+
+bydictionary_value_var.set(0)
+byNER_value_checkbox = tk.Checkbutton(window, state='normal', text='Check all words against selected words in csv dictionary file', variable=bydictionary_value_var,
+                                      onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+                                               byNER_value_checkbox)
+
+dictionary_button=tk.Button(window, width=20, text='Select dictionary file',command=lambda: get_dictionary_file(window,'Select INPUT dictionary file', [("dictionary files", "*.csv")]))
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,dictionary_button,True)
+
+def get_dictionary_file(window,title,fileType):
+    initialFolder = os.path.dirname(os.path.abspath(__file__))
+    filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
+    if len(filePath)>0:
+        #always disabled; user cannot tinker with the selection
+        #selectedCsvFile.config(state='disabled')
+        selectedCsvFile_var.set(filePath)
+
+#setup a button to open Windows Explorer on the selected input directory
+# current_y_multiplier_integer=y_multiplier_integer-1
+openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, selectedCsvFile_var.get()))
+# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
+# the two x-coordinate and x-coordinate_hover_over must have the same values
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
+    GUI_IO_util.file_search_byWord_openInputFile_button_pos, y_multiplier_integer,
+    openInputFile_button, True, False, True, False, 90, GUI_IO_util.file_search_byWord_openInputFile_button_pos, "Open selected csv dictionary file")
+
+selectedCsvFile = tk.Entry(window,width=GUI_IO_util.file_search_byWord_widget_width,state='disabled',textvariable=selectedCsvFile_var)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_selectedCsvFile_pos,y_multiplier_integer,selectedCsvFile)
 
 byNER_value_var.set(0)
-byNER_value_checkbox = tk.Checkbutton(window, state='normal', text='Check by NER tag', variable=byNER_value_var,
+byNER_value_checkbox = tk.Checkbutton(window, state='normal', text='Check words by their NER tag', variable=byNER_value_var,
                                       onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                byNER_value_checkbox)
@@ -310,7 +350,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 def activate_all_options(*args):
     Levenshtein_distance_checkbox.configure(state='normal')
     spelling_checker_checkbox.configure(state='normal')
-    by_all_tokens_checkbox.configure(state='disabled')
+    by_all_words_checkbox.configure(state='disabled')
     byNER_value_checkbox.configure(state='disabled')
     NER_value.config(state='disabled')
     NER_value_var.set('')
@@ -324,16 +364,16 @@ def activate_all_options(*args):
         spelling_checker_checkbox.configure(state='disabled')
         similarity_value.config(state='normal')
         check_withinSubDir_checkbox.config(state='normal')
-        if by_all_tokens_var.get() == True:
+        if by_all_words_var.get() == True:
             byNER_value_checkbox.configure(state='disabled')
         else:
             byNER_value_checkbox.configure(state='normal')
         if byNER_value_var.get() == True:
-            by_all_tokens_checkbox.configure(state='disabled')
+            by_all_words_checkbox.configure(state='disabled')
             NER_value.config(state='normal')
             selected_NER_list.config(state='normal')
         else:
-            by_all_tokens_checkbox.configure(state='normal')
+            by_all_words_checkbox.configure(state='normal')
     else:
         spelling_checker_checkbox.configure(state='normal')
     if spelling_checker_var.get() == True:
@@ -344,7 +384,7 @@ def activate_all_options(*args):
 
 
 Levenshtein_distance_var.trace('w', activate_all_options)
-by_all_tokens_var.trace('w', activate_all_options)
+by_all_words_var.trace('w', activate_all_options)
 byNER_value_var.trace('w', activate_all_options)
 spelling_checker_var.trace('w', activate_all_options)
 
@@ -380,9 +420,11 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   'Please, tick the checkbox if you wish to use Levenshtein\' edit distance algorithm.' + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  'Please, tick the checkbox if you wish to find the edit distance of any token (word) in your input document(s), regardless of their NER tag.' + GUI_IO_util.msg_Esc)
+                                  'Please, tick the checkbox if you wish to find the edit distance of any word in your input document(s), regardless of their NER tag.' + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to search input txt file(s) using the values contained in a csv dictionary file.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click to select a csv file containing a list of values to be used as a dictionary for searching the input file(s).\n\nEntries in the file, one per line, can be single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nThe little square button to the right will allow you to open the selected csv file.\n\nThe csv filename will be displayed in the entry widget to the right.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  'Please, tick the checkbox if you wish to find the edit distance of tokens (words) in your input document(s) by their selected NER values.' + GUI_IO_util.msg_Esc)
+                                  'Please, tick the checkbox if you wish to find the edit distance of words in your input document(s) by their selected NER values.' + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   'Please, using the dropdown menu, select the NER (Named Entity Recognition) type you wish to use for computing spelling differences (Levenshtein\'s edit distance).\n\nFor all NER values, select *; for multiple values, but not *, enter the NER values, comma separated, in the next widget.' + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
