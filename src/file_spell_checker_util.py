@@ -231,7 +231,7 @@ def generate_simple_csv(Dataframe):
     pass
 
 # check within subdirectory
-def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, NERs, similarity_value, by_all_tokens_var,spelling_checker_var=False):
+def check_for_typo_sub_dir(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles, chartPackage, dataTransformation, NERs, similarity_value, by_all_tokens_var,spelling_checker_var=False):
     outputFileName_complete = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'WordSimil',
                                                                       str(similarity_value), 'Edit_dist_algo',
                                                                       'NERs', 'Full-table')
@@ -247,7 +247,7 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, chartPackage, d
                        message='There are no sub directories under the selected input directory\n\n' + inputDir +'\n\nPlease, uncheck your subdir option if you want to process this directory and try again.')
     df_list = []
     for dir in subdir:
-        dfs = check_for_typo(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, NERs, similarity_value, by_all_tokens_var)
+        dfs = check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles, chartPackage, dataTransformation, NERs, similarity_value, by_all_tokens_var)
         df_list.append(dfs)
     if len(df_list) > 0:
         df_complete_list = [df[0] for df in df_list]
@@ -330,11 +330,11 @@ def check_edit_dist(input_word, checklist, similarity_value):
 
 # the main checking function, takes input:
 #   CoreNLPDirectory, inputDir, output_file_path
-# now checking for NE list ['CITY', 'LOCATION', 'PERSON']
+# now checking for NER list ['CITY', 'LOCATION', 'PERSON']
 # output csv header list: ['NNPs', 'sentenceID', 'DocumentID', 'fileName', 'NamedEntity', 'potential_Typo']
 
 # using Levenshtein distance to check for typos
-def check_for_typo(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, NERs, similarity_value, by_all_tokens_var):
+def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles, chartPackage, dataTransformation, NERs, similarity_value, by_all_tokens_var):
     filesToOpen=[]
     all_header_rows_dict = []
     ner_dict = {}
@@ -344,9 +344,10 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, chartPackage, dataTrans
                                                                                          'Stanford CoreNLP',
                                                                                          '',
                                                                                          silent=False, errorFound=False)
+
     if CoreNLPDir == None or CoreNLPDir=='':
         return
-    if by_all_tokens_var:
+    if by_all_tokens_var or inputCsvDictionaryFile!='':
         pass
     else:
         if NERs[0] == '*':
@@ -358,6 +359,14 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, chartPackage, dataTrans
     fileID=0
     #subfolder=[]#angel
     #nFiles = nFolders = 0#angel
+
+    # read dictionary file
+    if inputCsvDictionaryFile!='':
+        df = pd.read_csv(inputCsvDictionaryFile, encoding='utf-8', on_bad_lines='skip')
+        # only the first columns matters; any other column is ignored
+        true_spellings = df.iloc[:,0]
+        # convert to a set of unique, distinct value
+        true_spellings = set(true_spellings)
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity start', 'Started running Word similarity at',
                                                  True, '', True, '', True)
