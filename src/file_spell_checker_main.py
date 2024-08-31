@@ -11,6 +11,7 @@ import os
 import tkinter as tk
 import tkinter.messagebox as mb
 
+import GUI_util
 import GUI_IO_util
 import IO_files_util
 import file_spell_checker_util
@@ -81,17 +82,17 @@ def run(inputFilename, inputDir, outputDir,
 
         if checker_value_var == "Spell checker (via Java tool)":
             mb.showwarning(title='Option not available',
-                           message="The 'Spell checker(via Java tool)' is not available yet.\n\nSorry!")
+                           message="The 'Spell checker(via Java tool)' is not available.\n\nPlease, select one of the other available options and try again.\n\nSorry!")
             return
 
 # spell checking by CoreNLP algorithms -------------------------------------------------------------------------------------------------
 
     else:
         if bydictionary_value_var:
-            mb.showwarning(title='Option not available',
-                           message='The dictionary option is not available yet.\n\nPlease, select one of the other available options and try again.\n\nSorry!')
-            return
-        if by_all_words_var == False and byNER_value_var == False and spelling_checker_var == False:
+            mb.showwarning(title='Option under testing',
+                           message='The dictionary option is not completed yet.\n\nPlease, use with caution.')
+            # return
+        if by_all_words_var == False and byNER_value_var == False and spelling_checker_var == False and bydictionary_value_var == False:
             mb.showwarning(title='No selected options',
                            message='No options have been seleced.\n\nPlease, select one of the available options and try again.')
             return
@@ -106,14 +107,22 @@ def run(inputFilename, inputDir, outputDir,
                            message='The Levenshtein\'s distance can only be computed for documents in a directory and/or sub-directories.\n\nPlease, select a directory in input and try again.')
             return
 
-        if check_withinSubDir and (not spelling_checker_var):
-            outputFiles = file_spell_checker_util.check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles,
+        if check_withinSubDir and (not spelling_checker_var) and (not bydictionary_value_var):
+            # def check_for_typo_sub_dir(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles, chartPackage,
+            #                            dataTransformation, NERs, similarity_value, by_all_tokens_var,
+            #                            spelling_checker_var=False):
+            #
+                outputFiles = file_spell_checker_util.check_for_typo_sub_dir(inputDir, outputDir, selectedCsvFile_var,
+                                                                         openOutputFiles,
+                                                                         chartPackage,
+                                                                         dataTransformation,
 																		 NER_list, similarity_value,
 																		 by_all_words_var,
                                                                          spelling_checker_var)
         else:
-            outputFiles = file_spell_checker_util.check_for_typo(inputDir, outputDir,
-                                                                 openOutputFiles, chartPackage, dataTransformation,
+            outputFiles = file_spell_checker_util.check_for_typo(inputDir, outputDir, selectedCsvFile_var,
+                                                                 openOutputFiles, chartPackage,
+                                                                 dataTransformation,
                                                                  NER_list, similarity_value,
 																 by_all_words_var)
 
@@ -236,21 +245,30 @@ def build_NER_list():
 
 
 Levenshtein_distance_checkbox = tk.Checkbutton(window, text='Run Levensthein\' distance algorithm', state='normal',
-                                               variable=Levenshtein_distance_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               Levenshtein_distance_checkbox)
+                                               variable=Levenshtein_distance_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
+# the two x-coordinate and x-coordinate_hover_over must have the same values
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
+    GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+    Levenshtein_distance_checkbox, False, False, True, False, 90, GUI_IO_util.labels_x_coordinate, 'Check the spelling of words in your corpus using the Levenshtein edit distance.\nSelect any of the options listed below.')
 
 by_all_words_var.set(0)
 by_all_words_checkbox = tk.Checkbutton(window, text='Check all words against one another', state='normal',
-                                        variable=by_all_words_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                               by_all_words_checkbox)
+                                        variable=by_all_words_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
+# the two x-coordinate and x-coordinate_hover_over must have the same values
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
+    GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+    by_all_words_checkbox, False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate, 'Check each word in your corpus against each and every other word in the corpus.')
 
 bydictionary_value_var.set(0)
-byNER_value_checkbox = tk.Checkbutton(window, state='normal', text='Check all words against selected words in csv dictionary file', variable=bydictionary_value_var,
-                                      onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                               byNER_value_checkbox)
+bydictionary_value_checkbox = tk.Checkbutton(window, state='disabled', text='Check all words against dictionary "true" values', variable=bydictionary_value_var,
+                                      onvalue=1, offvalue=0, command=lambda: activate_all_options())
+# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
+# the two x-coordinate and x-coordinate_hover_over must have the same values
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
+    GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+    bydictionary_value_checkbox, False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate, 'Check all words against a set of "true" spelling values in a csv file.\n\Only first column will be considered; any other colum will be ignored.')
 
 dictionary_button=tk.Button(window, width=20, text='Select dictionary file',command=lambda: get_dictionary_file(window,'Select INPUT dictionary file', [("dictionary files", "*.csv")]))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,dictionary_button,True)
@@ -276,8 +294,9 @@ selectedCsvFile = tk.Entry(window,width=GUI_IO_util.file_search_byWord_widget_wi
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_selectedCsvFile_pos,y_multiplier_integer,selectedCsvFile)
 
 byNER_value_var.set(0)
+
 byNER_value_checkbox = tk.Checkbutton(window, state='normal', text='Check words by their NER tag', variable=byNER_value_var,
-                                      onvalue=1, offvalue=0)
+                                      onvalue=1, offvalue=0, command=lambda: activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                byNER_value_checkbox)
 
@@ -318,14 +337,18 @@ similarity_value = tk.Entry(window, width=5, textvariable=similarity_value_var)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                                similarity_value, True)
 
-check_withinSubDir_var.set(1)
+check_withinSubDir_var.set(0)
 check_withinSubDir_checkbox = tk.Checkbutton(window, text='Check WITHIN each subdirectory only',
                                              variable=check_withinSubDir_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate + 600, y_multiplier_integer,
                                                check_withinSubDir_checkbox)
 
-spelling_checker_checkbox = tk.Checkbutton(window, text='Run spelling checker',state='normal',variable=spelling_checker_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,spelling_checker_checkbox,True)
+spelling_checker_checkbox = tk.Checkbutton(window, text='Run spelling checker',state='normal',variable=spelling_checker_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
+# the two x-coordinate and x-coordinate_hover_over must have the same values
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
+    GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+    spelling_checker_checkbox, True, False, True, False, 90, GUI_IO_util.labels_x_coordinate, 'Check the spelling of words in your corpus using various spelling algorithms edit distance.')
 
 checker_value_var.set('*')
 spelling_checker_value_lb = tk.Label(window, text='Select script')
@@ -339,7 +362,12 @@ spelling_checker_value = tk.OptionMenu(window, checker_value_var, '*',
                                        'Spell checker (via textblob)',
                                        'Find & Replace string (via csv file)')
 
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,spelling_checker_value,True)
+# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
+# the two x-coordinate and x-coordinate_hover_over must have the same values
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
+    GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
+    spelling_checker_value, True, False, True, False, 90, GUI_IO_util.entry_box_x_coordinate, 'Check the spelling of words in your corpus using various spelling algorithms.\nSelect * to run all algorithms.')
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,spelling_checker_value,True)
 
 check_withinDir_spell_checker_var.set(1)
 check_withinDir_spell_checker_checkbox = tk.Checkbutton(window, text='Check WITHIN main directory only',
@@ -351,6 +379,7 @@ def activate_all_options(*args):
     Levenshtein_distance_checkbox.configure(state='normal')
     spelling_checker_checkbox.configure(state='normal')
     by_all_words_checkbox.configure(state='disabled')
+    bydictionary_value_checkbox.configure(state='disabled')
     byNER_value_checkbox.configure(state='disabled')
     NER_value.config(state='disabled')
     NER_value_var.set('')
@@ -362,18 +391,21 @@ def activate_all_options(*args):
     spelling_checker_value.config(state='disabled')
     if Levenshtein_distance_var.get() == True:
         spelling_checker_checkbox.configure(state='disabled')
+        by_all_words_checkbox.configure(state='normal')
+        bydictionary_value_checkbox.configure(state='normal')
+        byNER_value_checkbox.configure(state='normal')
         similarity_value.config(state='normal')
         check_withinSubDir_checkbox.config(state='normal')
         if by_all_words_var.get() == True:
+            bydictionary_value_checkbox.configure(state='disabled')
             byNER_value_checkbox.configure(state='disabled')
-        else:
-            byNER_value_checkbox.configure(state='normal')
+        if bydictionary_value_var.get() == True:
+            by_all_words_checkbox.configure(state='disabled')
+            byNER_value_checkbox.configure(state='disabled')
         if byNER_value_var.get() == True:
             by_all_words_checkbox.configure(state='disabled')
             NER_value.config(state='normal')
             selected_NER_list.config(state='normal')
-        else:
-            by_all_words_checkbox.configure(state='normal')
     else:
         spelling_checker_checkbox.configure(state='normal')
     if spelling_checker_var.get() == True:
@@ -383,10 +415,11 @@ def activate_all_options(*args):
         Levenshtein_distance_checkbox.configure(state='normal')
 
 
-Levenshtein_distance_var.trace('w', activate_all_options)
-by_all_words_var.trace('w', activate_all_options)
-byNER_value_var.trace('w', activate_all_options)
-spelling_checker_var.trace('w', activate_all_options)
+# Levenshtein_distance_var.trace('w', activate_all_options)
+# by_all_words_var.trace('w', activate_all_options)
+# bydictionary_value_var.trace('w', activate_all_options)
+# byNER_value_var.trace('w', activate_all_options)
+# spelling_checker_var.trace('w', activate_all_options)
 
 activate_all_options()
 
