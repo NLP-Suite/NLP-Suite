@@ -209,7 +209,10 @@ def remove_typeseting_hyphenation(window,inputFilename,inputDir, outputDir='', c
                 dest.write(f"{holdover}{lin}\n")
                 holdover = e[:-1]
     if removed_hyphens > 0:
-        save_msg = '\n\nOutput file(s) saved in the same directory of input file(s) with _1.txt ending.'
+        if inputDir!='':
+            save_msg = '\n\nOutput files saved in the subdirectory ' + outputDir + ' of the same directory of input files.'
+        else:
+            save_msg = '\n\nOutput file saved in the same directory of the input file with ' + label + '.txt ending.'
     else:
         save_msg = ''
     mb.showwarning('Warning',str(removed_hyphens) + ' end-line typesetting hyphens removed from the input file(s).'+ save_msg)
@@ -250,7 +253,7 @@ def remove_hard_carriage_returns(window,inputFilename,inputDir, outputDir='', co
             #   this way, they can be copied directly over the inputDir
             outfile = outputDir + os.sep + tail
         else:
-            outfile = outputDir + os.sep + tail.replace('.txt', label + '.txt')
+            outfile = head + os.sep + tail.replace('.txt', label + '.txt')
         # outfile = outputDir + os.sep + tail.replace('.txt',label+'.txt')
         new_paragraph=''
         with open(infile,'r', encoding='utf-8', errors='ignore') as fn:
@@ -261,9 +264,12 @@ def remove_hard_carriage_returns(window,inputFilename,inputDir, outputDir='', co
                     new_paragraph = new_paragraph + paragraph + ' '
                     removed_hard_returns += 1
                 out.write(new_paragraph)
-
+        out.close()
     if removed_hard_returns > 0:
-        save_msg = '\n\nOutput file(s) saved in the same directory of input file(s) with _1.txt ending.'
+        if inputDir!='':
+            save_msg = '\n\nOutput files saved in the subdirectory ' + outputDir + ' of the same directory of input files.'
+        else:
+            save_msg = '\n\nOutput file saved in the same directory of the input file with ' + label + '.txt ending.'
     else:
         save_msg = ''
     mb.showwarning('Warning',str(removed_hard_returns) + ' hard-carriage returns removed from the input file(s).'+ save_msg)
@@ -271,6 +277,60 @@ def remove_hard_carriage_returns(window,inputFilename,inputDir, outputDir='', co
     IO_files_util.openExplorer(window, head)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the hard-carriage returns function at', True, '', True, startTime, False)
+
+def add_missing_blank_after_punctuation(window,inputFilename,inputDir, outputDir='', configFileName='', openOutputFiles=False,chartPackage='Excel',dataTransformation='No transformation'):
+
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running the add missing blank after punctuation function at',
+                                                 True, '', True, '', False)
+
+    label = '_add_blank'
+    if inputDir != '':
+        outputDir = create_input_subdir(inputDir, label)
+
+    docID = 0
+    files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt', silent=False, configFileName=configFileName)
+    nDocs = len(files)
+    if nDocs==0:
+        return
+    for infile in files:
+        docID = docID + 1
+        head, tail = os.path.split(infile)
+        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
+        blanks_added=0
+        if inputDir != '':
+            # do not modify the filename when processing multiple files in a directory
+            #   this way, they can be copied directly over the inputDir
+            outfile = outputDir + os.sep + tail
+        else:
+            outfile = head + os.sep + tail.replace('.txt', label + '.txt')
+        # outfile = outputDir + os.sep + tail.replace('.txt',label+'.txt')
+        split_sentences=''
+        with open(infile,'r', encoding='utf-8', errors='ignore') as fn:
+            with open(outfile, 'w', encoding='utf-8',errors='ignore') as out:
+                # TODO Max change the next
+                # you would need to run the Stanza sentence splitter or simply search/replace the entire text in out
+                # EITHER:
+                #         from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
+                #         sentences = sentence_split_stanza_text(stanzaPipeLine(readfile(file)))
+                #         for sentence in sentences:
+                #           ...
+                # OR:
+                #       search/replace the entire text in out
+                #     blanks_added += 1
+                out.write(split_sentences)
+        out.close()
+    if blanks_added > 0:
+        if inputDir!='':
+            save_msg = '\n\nOutput files saved in the subdirectory ' + outputDir + ' of the same directory of input files.'
+        else:
+            save_msg = '\n\nOutput file saved in the same directory of the input file with ' + label + '.txt ending.'
+    else:
+        save_msg = ''
+    mb.showwarning('Warning',str(blanks_added) + ' missing blanks were inserted after punctuation in the input file(s).'+ save_msg)
+    # always open outputDir
+    IO_files_util.openExplorer(window, head)
+
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the add missing blank after punctuation function at', True, '', True, startTime, False)
 
 def remove_characters_between_characters(window,inputFilename,inputDir, outputDir='', configFileName='', openOutputFiles=False, chartPackage='Excel',dataTransformation='No transformation', startCharacter='', endCharacter=''):
 
