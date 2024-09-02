@@ -177,6 +177,7 @@ pydict["Remove all end-of-line hard carriage returns"] = ["file_cleaner_util.rem
 pydict["Find & Replace string"] = ["file_cleaner_util.find_replace_string"]
 pydict["Find & Replace string (via csv file)"] = ["file_spell_checker_util.spelling_checker_cleaner"]
 pydict["Separate titles from documents (newspaper articles)"] = ["file_cleaner_util.newspaper_titles"]
+pydict["Add missing blank after punctuation (e.g., blank between wrongly joined sentences)"] = ["file_cleaner_util.add_missing_blank_after_punctuation"]
 pydict["Add full stop (.) at the end of paragraphs without end-of-paragraph punctuation"] = ["file_cleaner_util.add_full_stop_to_paragraph"]
 # pydict["Vocabulary richness (Yule\'s K)"] = ["style_analysis_main.Vocabulary richness"]
 # pydict["Short words"] = ["style_analysis_main.Short words"]
@@ -249,6 +250,7 @@ clean_menu = tk.OptionMenu(window,clean_tools_var,
                     'Remove all end-of-line hard carriage returns',
                     'Remove end-of-line typesetting hyphenation and join split parts',
                     'Remove all characters between a set of characters (e.g., []) from text file(s)',
+                     'Add missing blank after punctuation (e.g., blank between wrongly joined sentences)',
                     'Add full stop (.) at the end of paragraphs without end-of-paragraph punctuation',
                     'Separate titles from documents (newspaper articles)')
 
