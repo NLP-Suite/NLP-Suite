@@ -433,7 +433,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                                                  increment=1)  # to be added for full display
 
 GUI_label='Graphical User Interface (GUI) for PC-ACE Tables Analyzer (via Pandas)'
-config_filename = 'NLP_default_IO_config.csv'
+config_filename = 'DB_PCACE_data_analyzer_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
 
 # The 4 values of config_option refer to:
@@ -457,7 +457,6 @@ config_filename=GUI_util.config_filename
 inputFilename=GUI_util.inputFilename
 inputDir=GUI_util.input_main_dir_path
 outputDir=GUI_util.output_dir_path
-
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 select_DB_tables_var=tk.StringVar()
@@ -580,6 +579,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    simplex_data_type_menu,
                                    True, False, True, False, 90, GUI_IO_util.open_S_dictionary,
                                    "Use the dropdown menu to select the data type to be used to extract a list of values.")
+
+# load all excel sheets and store in data
+DB_PCACE_data_analyzer_util.load_df(inputDir.get())
 
 # simplex_data = ''
 simplex_data_var = tk.StringVar()
