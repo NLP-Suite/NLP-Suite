@@ -268,7 +268,7 @@ bydictionary_value_checkbox = tk.Checkbutton(window, state='disabled', text='Che
 # the two x-coordinate and x-coordinate_hover_over must have the same values
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-    bydictionary_value_checkbox, False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate, 'Check all words against a set of "true" spelling values in a csv file.\n\Only first column will be considered; any other colum will be ignored.')
+    bydictionary_value_checkbox, False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate, 'Check all words against a set of "true" spelling values in a csv file.\nOnly the first column will be considered; any other colum will be ignored.')
 
 dictionary_button=tk.Button(window, width=20, text='Select dictionary file',command=lambda: get_dictionary_file(window,'Select INPUT dictionary file', [("dictionary files", "*.csv")]))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,dictionary_button,True)

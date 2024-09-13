@@ -6,10 +6,14 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"charts_Plotly_util",['os','pandas','plotly','math','kaleido'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"charts_Plotly_util",['os','pandas','numpy','plotly','random','kaleido','mpld3'])==False:
     sys.exit(0)
 # if Plotly fails, install version 0.1.0 of kaleido
 # pip install kaleido==0.1.0post1
+
+import matplotlib.pyplot as plt
+import numpy as np
+from collections import Counter
 
 import os
 import pandas as pd
@@ -17,7 +21,13 @@ import plotly.express as px
 import plotly.graph_objs as go
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import math
+import random
+
+import matplotlib.pyplot as plt
+import numpy as np
+from collections import Counter
+import mpld3
+from mpld3 import plugins
 
 
 import IO_csv_util
@@ -346,85 +356,179 @@ def plot_multi_line_chart_w_slider_px(fileName, chart_title, col_to_be_ploted, s
 #Bubble Chart Graph
 #Created by Aiden Amaya and ChatGPT 3.5
 
-# The chart will plot yAxis vs the xAxis, but categorize them using the category field.
+# The chart will plot yAxis vs. the xAxis, but categorize them using the category field.
 # inputFilename is the csv file it will read, xAxis, yAxis, and category are all csv file column fields.
 # outputFilename is the html file where the bubble chart will be saved
 
-def bubble_chart(inputFilename, outputFilename, xAxis, yAxis, category):
+
+def bubble_chart(inputFilename, outputFilename, x, y, color, show_labels=True):
+
+    print(f"\nCHART PARAMETERS: {x} (X-axis) vs. {y} (Y-axis)")
+
     df = pd.read_csv(inputFilename)
 
-    if xAxis not in df.columns or yAxis not in df.columns:
-        raise ValueError(f"Columns {xAxis} or {yAxis} not found in the input file.")
+    df = df[(df[x] != 'None') & (df[y] != 'None')]
 
-    if category not in df.columns:
-        raise ValueError(f"Category column '{category}' not found in the input file.")
+    df[x] = df[x].astype(str)
+    df[y] = df[y].astype(str)
 
-    df_grouped = df.groupby([category, xAxis, yAxis]).size().reset_index(name='count')
+    xy_pairs = list(zip(df[x], df[y]))
+    pair_counts = Counter(xy_pairs)
 
-    category_totals = df_grouped.groupby(category)['count'].sum().reset_index(name='total')
+    unique_pairs = list(pair_counts.keys())
+    frequencies = list(pair_counts.values())
 
-    df_grouped = df_grouped.merge(category_totals, on=category)
+    n_bubbles = len(frequencies)
+    max_size = 5000 / np.sqrt(n_bubbles)
+    min_size = max_size / 10
 
-    df_grouped['proportion'] = df_grouped['count'] / df_grouped['total']
+    sizes = np.array(frequencies)
+    sizes = (sizes - sizes.min()) / (sizes.max() - sizes.min()) * 50 * (max_size - min_size) + min_size
 
-    df_grouped['text'] = df_grouped.apply(
-        lambda row: f"{category}: {row[category]}<br>{xAxis}: {row[xAxis]}<br>{yAxis}: {row[yAxis]}<br>Count: {row['count']}<br>Proportion: {row['proportion']:.3f}", axis=1)
+    unique_x = sorted(set(df[x]))
+    unique_y = sorted(set(df[y]))
+    x_pos = [unique_x.index(pair[0]) for pair in unique_pairs]
+    y_pos = [unique_y.index(pair[1]) for pair in unique_pairs]
 
-    categories = df_grouped[category].unique()
-    category_colors = {cat: f'rgb({random.randint(0,255)}, {random.randint(0,255)}, {random.randint(0,255)})' for cat in categories}
+    labels = [f"{pair[0]}, {pair[1]}\nFreq: {freq}" for pair, freq in zip(unique_pairs, frequencies)]
 
-    fig = go.Figure()
+    unique_frequencies = sorted(set(frequencies))
+    frequency_colors = {freq: f'#{random.randint(0, 0xFFFFFF):06x}' for freq in unique_frequencies}
+    colors = [frequency_colors[freq] for freq in frequencies]
 
-    for cat in categories:
-        filtered_df = df_grouped[df_grouped[category] == cat]
-        fig.add_trace(go.Scatter(
-            x=filtered_df[xAxis],
-            y=filtered_df[yAxis],
-            text=filtered_df['text'],
-            mode='markers',
-            marker=dict(
-                size=filtered_df['proportion'] * 1000,
-                sizemode='area',
-                sizemin=4,
-                color=category_colors[cat],
-                opacity=0.7,
-                line=dict(width=1, color='white')
-            ),
-            name=str(cat)
-        ))
+    class BubbleChart:
+        def __init__(self, area, x_pos, y_pos, colors):
+            bubble_spacing = 0.1
+            area = np.asarray(area)
+            r = np.sqrt(area / np.pi)
 
-    fig.update_layout(
-        title=f"{xAxis} vs {yAxis} by {category}",
-        autosize=False,
-        width=1200,
-        height=900,
-        xaxis=dict(title=xAxis, gridcolor='white', gridwidth=2),
-        yaxis=dict(title=yAxis, gridcolor='white', gridwidth=2),
-        paper_bgcolor='rgb(243, 243, 243)',
-        plot_bgcolor='rgb(243, 243, 243)',
-    )
+            self.bubble_spacing = bubble_spacing
+            self.bubbles = np.ones((len(area), 4))
+            self.bubbles[:, 2] = r
+            self.bubbles[:, 3] = area
+            self.maxstep = 2 * self.bubbles[:, 2].max() + self.bubble_spacing
+            self.step_dist = self.maxstep / 2
+            self.colors = colors
 
-    category_buttons = [
-        dict(label="Show All", method="update", args=[{"visible": [True] * len(fig.data)}, {"title": f"{xAxis} vs {yAxis} - Show All"}])
-    ]
-    category_buttons.extend([
-        dict(label=str(cat), method="update", args=[{"visible": [trace.name == str(cat) for trace in fig.data]}, {"title": f"{xAxis} vs {yAxis} by {category}: {str(cat)}"}])
-        for cat in categories
-    ])
+            length = np.ceil(np.sqrt(len(self.bubbles)))
+            grid = np.arange(length) * self.maxstep
+            gx, gy = np.meshgrid(grid, grid)
+            self.bubbles[:, 0] = gx.flatten()[:len(self.bubbles)]
+            self.bubbles[:, 1] = gy.flatten()[:len(self.bubbles)]
 
-    hover_text_buttons = [
-        dict(label="Hover Text On", method="update", args=[{"text": [trace.text for trace in fig.data]}, {"title": f"{xAxis} vs {yAxis}"}]),
-        dict(label="Hover Text Off", method="update", args=[{"text": [None for _ in fig.data]}, {"title": f"{xAxis} vs {yAxis}"}])
-    ]
+            self.com = self.center_of_mass()
 
-    fig.update_layout(
-        updatemenus=[
-            dict(buttons=category_buttons, direction="down", showactive=True, x=1.15, xanchor="left", y=1.15, yanchor="top", pad={"r": 10, "t": 10}),
-            dict(buttons=hover_text_buttons, direction="down", showactive=True, x=1.15, xanchor="left", y=1.05, yanchor="top", pad={"r": 10, "t": 10})
-        ]
-    )
+        def center_of_mass(self):
+            return np.average(
+                self.bubbles[:, :2], axis=0, weights=self.bubbles[:, 3]
+            )
 
-    fig.write_html(outputFilename)
-    return outputFilename
+        def center_distance(self, bubble, bubbles):
+            return np.hypot(bubble[0] - bubbles[:, 0],
+                            bubble[1] - bubbles[:, 1])
 
+        def outline_distance(self, bubble, bubbles):
+            center_distance = self.center_distance(bubble, bubbles)
+            return center_distance - bubble[2] - \
+                bubbles[:, 2] - self.bubble_spacing
+
+        def check_collisions(self, bubble, bubbles):
+            distance = self.outline_distance(bubble, bubbles)
+            return len(distance[distance < 0])
+
+        def collides_with(self, bubble, bubbles):
+            distance = self.outline_distance(bubble, bubbles)
+            return np.argmin(distance, keepdims=True)
+
+        def collapse(self, n_iterations=50):
+            """
+            Move bubbles to the center of mass.
+
+            Parameters
+            ----------
+            n_iterations : int, default: 50
+                Number of moves to perform.
+            """
+            for _i in range(n_iterations):
+                moves = 0
+                for i in range(len(self.bubbles)):
+                    rest_bub = np.delete(self.bubbles, i, 0)
+
+                    dir_vec = self.com - self.bubbles[i, :2]
+                    dir_vec = dir_vec / np.sqrt(dir_vec.dot(dir_vec))
+                    new_point = self.bubbles[i, :2] + dir_vec * self.step_dist
+                    new_bubble = np.append(new_point, self.bubbles[i, 2:4])
+
+                    if not self.check_collisions(new_bubble, rest_bub):
+                        self.bubbles[i, :] = new_bubble
+                        self.com = self.center_of_mass()
+                        moves += 1
+                    else:
+                        for colliding in self.collides_with(new_bubble, rest_bub):
+                            dir_vec = rest_bub[colliding, :2] - self.bubbles[i, :2]
+                            dir_vec = dir_vec / np.sqrt(dir_vec.dot(dir_vec))
+                            orth = np.array([dir_vec[1], -dir_vec[0]])
+                            new_point1 = (self.bubbles[i, :2] + orth * self.step_dist)
+                            new_point2 = (self.bubbles[i, :2] - orth * self.step_dist)
+                            dist1 = self.center_distance(self.com, np.array([new_point1]))
+                            dist2 = self.center_distance(self.com, np.array([new_point2]))
+                            new_point = new_point1 if dist1 < dist2 else new_point2
+                            new_bubble = np.append(new_point, self.bubbles[i, 2:4])
+                            if not self.check_collisions(new_bubble, rest_bub):
+                                self.bubbles[i, :] = new_bubble
+                                self.com = self.center_of_mass()
+
+                if moves / len(self.bubbles) < 0.1:
+                    self.step_dist = self.step_dist / 2
+
+        def plot(self, ax, labels):
+            """
+            Draw the bubble plot with specified colors and scale text to bubble size.
+
+            Parameters
+            ----------
+            ax : matplotlib.axes.Axes
+            labels : list
+                Labels of the bubbles.
+            """
+            self.circles = []
+            self.texts = []
+            for i in range(len(self.bubbles)):
+                circ = plt.Circle(
+                    self.bubbles[i, :2], self.bubbles[i, 2], color=self.colors[i])
+                self.circles.append(circ)
+                ax.add_patch(circ)
+
+                bubble_size = self.bubbles[i, 2] * 2
+                text_size = bubble_size / 10
+
+                if show_labels:
+                    text = ax.text(*self.bubbles[i, :2], labels[i],
+                            horizontalalignment='center', verticalalignment='center',
+                            fontsize=text_size, color='black')
+                    self.texts.append(text)
+
+    bubble_chart = BubbleChart(area=sizes, x_pos=x_pos, y_pos=y_pos, colors=colors)
+    bubble_chart.collapse()
+
+    fig, ax = plt.subplots(figsize=(10, 8))
+    bubble_chart.plot(ax, labels)
+    ax.axis("off")
+    ax.relim()
+    ax.autoscale_view()
+    ax.set_title('Bubble Chart for ' + x + " (X-axis) and " + y + " (Y-axis)")
+
+    scatter = ax.scatter([bubble[0] for bubble in bubble_chart.bubbles],
+                         [bubble[1] for bubble in bubble_chart.bubbles],
+                         s=[bubble[3] for bubble in bubble_chart.bubbles],
+                         color=bubble_chart.colors, alpha=0)
+
+    tooltip = plugins.PointLabelTooltip(scatter, labels=labels)
+    plugins.connect(fig, tooltip)
+
+    plt.tight_layout(pad=0.1, w_pad=0.1, h_pad=0.1)
+    plt.subplots_adjust(left=0.02, right=0.98, top=0.95, bottom=0.05)
+
+    mpld3.save_html(fig, outputFilename + ".html")
+    return outputFilename + ".html"
 

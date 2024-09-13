@@ -114,9 +114,9 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                      GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                     GUI_height_brief=360,
+                                                     GUI_height_brief=440,
                                                      # height at brief display
-                                                     GUI_height_full=440,  # height at full display
+                                                     GUI_height_full=520,  # height at full display
                                                      y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                      y_multiplier_integer_add=2,
                                                      # to be added for full display
@@ -186,6 +186,8 @@ pydict["Add full stop (.) at the end of paragraphs without end-of-paragraph punc
 check_tools_var=tk.StringVar()
 convert_tools_var=tk.StringVar()
 clean_tools_var=tk.StringVar()
+bydictionary_value_var=tk.IntVar()
+selectedCsvFile_var=tk.StringVar()
 
 def clear(e):
     check_tools_var.set('')
@@ -257,6 +259,43 @@ clean_menu = tk.OptionMenu(window,clean_tools_var,
 clean_menu.configure(width=GUI_IO_util.widget_width_long)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,clean_menu)
 
+bydictionary_value_var.set(0)
+bydictionary_value_checkbox = tk.Checkbutton(window, state='disabled', text='Replace strings in input file(s) via a csv file containg two columns: old string, new string.', variable=bydictionary_value_var,
+                                      onvalue=1, offvalue=0, command=lambda: activate_all_options())
+# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
+# the two x-coordinate and x-coordinate_hover_over must have the same values
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
+    GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+    bydictionary_value_checkbox, False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate, 'Tick the checkbox to clean txt files by replacing strings via a csv file containg two columns: old string, new string..\nOnly the first two columns will be considered; any other colum will be ignored.')
+
+dictionary_button=tk.Button(window, width=20, text='Select csv file',command=lambda: get_dictionary_file(window,'Select INPUT string replace file', [("csv files", "*.csv")]))
+# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
+# the two x-coordinate and x-coordinate_hover_over must have the same values
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
+    GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+    dictionary_button, True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate, 'Click to select the csv file to be used to replace strings in your corpus.')
+
+def get_dictionary_file(window,title,fileType):
+    initialFolder = os.path.dirname(os.path.abspath(__file__))
+    filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
+    if len(filePath)>0:
+        #always disabled; user cannot tinker with the selection
+        #selectedCsvFile.config(state='disabled')
+        selectedCsvFile_var.set(filePath)
+
+#setup a button to open Windows Explorer on the selected input directory
+# current_y_multiplier_integer=y_multiplier_integer-1
+openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, selectedCsvFile_var.get()))
+# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
+# the two x-coordinate and x-coordinate_hover_over must have the same values
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
+    GUI_IO_util.file_search_byWord_openInputFile_button_pos, y_multiplier_integer,
+    openInputFile_button, True, False, True, False, 90, GUI_IO_util.file_search_byWord_openInputFile_button_pos, "Open selected string-replace csv file")
+
+selectedCsvFile = tk.Entry(window,width=GUI_IO_util.file_search_byWord_widget_width,state='disabled',textvariable=selectedCsvFile_var)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_selectedCsvFile_pos,y_multiplier_integer,selectedCsvFile)
+
+
 
 def activate_all_options(*args):
     global menu_option
@@ -319,6 +358,8 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select one of the options available for converting the file type: from pdf to txt, docx (NOT doc) to txt, or rtf to txt.\n\nThe pdf convert (via the pdfminer package) can also convert column-based pdf files. MAKE SURE TO OCR THE PDF DOCUMENT(S) BEFORE CONVERTING FOR BETTER QUALITY RESULTS.\n\nIn INPUT, when a directory is selected, all files in a directory and its subdirectories can be converted. The script will ask users whether they want to convert files in subdirectories.\n\nIn OUTPUT, the converted file(s) will be placed in the same directory as the input file(s)." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select one of the options available for cleaning a text file:\n\n   find & replace, via a single expression or a set of expressions in a csv file (will replace EXACT expressions - even multiple words but cannot include punctuation);\n   removing blank lines;\n   removing titles in documents (e.g., newspaper articles) and putting them in separate documents (titles and body text).\n\nOf particular IMPORTANTCE is the function that converts non-ASCII apostrophes and quotes and the % symbol.\n   The Windows Word non-ASCII slanted apostrophes and quotes will NOT break any NLP Suite code but will display as weird characters in a csv file (in a Windows machine; not on Mac).\n   The presence in your corpus of % signs is more fatal and will break the Stanford CoreNLP parser since % is interpreted as the start of a special escaped sequence.\n   Slanted apostrophes and quotes will be converted to straight apostrophes and quotes.\n   % signs will be converted to the word \'percent\'." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to search input txt file(s) using the values contained in a csv dictionary file.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click to select a csv file containing a list of values to be used as a dictionary for searching the input file(s).\n\nEntries in the file, one per line, can be single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nThe little square button to the right will allow you to open the selected csv file.\n\nThe csv filename will be displayed in the entry widget to the right.")
 
     return y_multiplier_integer -1
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,increment)

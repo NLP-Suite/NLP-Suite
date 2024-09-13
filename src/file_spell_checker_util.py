@@ -288,7 +288,7 @@ def check_for_typo_sub_dir(inputDir, outputDir, inputCsvDictionaryFile, openOutp
 # design choice for this algorithm:
 #   if the word is shorter than user-supplied word length (default 4 characters):
 #       1 or more character mistake will be considered as typo should use 1 only for longer words
-#   else(the word is longer than or equal to user-supplied word length (default 4 characters):
+#   else (the word is longer than or equal to user-supplied word length (default 4 characters):
 #       2 or more character mistake will be considered as typo; DEFAULT
 
 # checklist contains words with more than 1 time of appearance
