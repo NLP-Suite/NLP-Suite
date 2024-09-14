@@ -27,7 +27,8 @@ def run(inputFilename, outputDir, openOutputFiles,
         csv_field_boxplot_var,
         csv_field_boxplot_color_var,
         X_axis_bubble_var,
-        category_bubble_var,
+        # category_bubble_var,
+        color_1_style_var,
         csv_files_list,
         date_format_var,
         time_var,
@@ -63,7 +64,7 @@ def run(inputFilename, outputDir, openOutputFiles,
 
     if extra_GUIs_var.get()==False and csv_field_visualization_var == '':
         mb.showwarning("Warning",
-                       "No csv file field to be used for visualization has been selected.\n\nPlease, use the dropdown menu of the 'csv file field for visualization (Y-axis)' widget to select the desired field and try again.")
+                       "No csv file field to be used for visualization (Y-axis) has been selected.\n\nPlease, use the dropdown menu of the 'csv file field for visualization (Y-axis)' widget to select the desired field and try again.")
         return
 
     if extra_GUIs_var.get()==False and visualizations_menu_var=='':
@@ -71,8 +72,17 @@ def run(inputFilename, outputDir, openOutputFiles,
                        message="No visualization option has been selected.\n\nPlease, use the dropdown menu of the 'Visualization options' widget to select the desired visualization option and try again.")
         return
 
+    if csv_field_visualization_var=='':
+        mb.showwarning(title="Warning",
+                       message="No Y-axis variable has been selected.\n\nPlease, use the dropdown menu to select the csv file column to be used as Y-axis and try again.")
+        return
+
 # Excel/Plotly charts --------------------------------------------------------------------------------
     if 'Excel' in visualizations_menu_var or 'Plotly' in visualizations_menu_var:
+        if X_axis_var == '':
+            mb.showwarning(title="Warning",
+                           message="No X-axis variable has been selected.\n\nPlease, use the dropdown menu to select the csv file column to be used as X-axis and try again.")
+            return
 
         if 'bar' in GUI_util.charts_type_options_widget.get().lower() or 'line' in GUI_util.charts_type_options_widget.get().lower():
             if X_axis_var=='' and len(csv_file_field_Y_axis_list) < 1:
@@ -135,6 +145,24 @@ def run(inputFilename, outputDir, openOutputFiles,
 # bubble chart  --------------------------------------------------------------------------------
 
     if 'Bubble' in visualizations_menu_var:
+        if X_axis_bubble_var == '':
+            mb.showwarning(title="Warning",
+                           message="No X-axis variable has been selected.\n\nPlease, use the dropdown menu to select the csv file column to be used as X-axis and try again.")
+            return
+        if csv_field_visualization_var == X_axis_bubble_var:
+            mb.showwarning(title="Warning",
+                           message='You have selected the same csv field "' + csv_field_visualization_var + '" for both Y-axis and X-axis.\n\nPlease, select different csv fle fields and try again.')
+            return
+
+        # if category_bubble_var==csv_field_visualization_var or category_bubble_var== X_axis_bubble_var:
+        #     mb.showwarning(title="Warning",
+        #                    message='You have selected a Category variable "' + category_bubble_var + '" already selected for Y-axis/X-axis variable.\n\nPlease, select a different csv file field for Category variable (or different Y-axis/X-axis fields) and try again.')
+        #     return
+
+        # if category_bubble_var=='':
+        #     mb.showwarning(title="Warning",
+        #                    message="No Category variable has been selected.\n\nPlease, use the Category dropdown menu to select the csv file column to be used as Column and try again.")
+        #     return
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
                                                                  '.html', 'bubble')
         # You cannot keep it as float inside the csv. The csv will treat everything as strings.
@@ -142,8 +170,7 @@ def run(inputFilename, outputDir, openOutputFiles,
 
         # fileName, xAxis, yAxis, category
         import charts_Plotly_util
-        outputfilename = charts_Plotly_util.bubble_chart(inputFilename, outputFilename, X_axis_bubble_var, csv_field_visualization_var,
-                                             category_bubble_var)
+        outputfilename = charts_Plotly_util.bubble_chart(inputFilename, outputFilename, X_axis_bubble_var, csv_field_visualization_var, color_1_style_var)
         if outputfilename != '':
             filesToOpen.append(outputfilename)
 
@@ -200,7 +227,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             csv_field_boxplot_var.get(),
                             csv_field_boxplot_color_var.get(),
                             X_axis_bubble_var.get(),
-                            category_bubble_var.get(),
+                            color_1_style_var.get(),
                             csv_files_list,
                             date_format_var.get(),
                             time_var.get(),
@@ -259,6 +286,10 @@ csv_field_visualization_var = tk.StringVar()
 split_data_byCategory_var = tk.IntVar()
 use_numerical_variable_var = tk.IntVar()
 csv_field_boxplot_var = tk.StringVar()
+
+color_1_var = tk.IntVar()
+color_1_style_var = tk.StringVar()
+
 
 date_format_var = tk.StringVar()
 time_var = tk.StringVar()
@@ -340,8 +371,67 @@ else:
 if nColumns == -1:
     pass
 
-csv_field_visualization_lb = tk.Label(window, text='csv file field for visualization (Y-axis)')
+# csv_field_visualization_lb = tk.Label(window, text='csv file field for visualization (Y-axis)')
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+#                                                csv_field_visualization_lb, True)
+#
+# csv_field_visualization_menu = tk.OptionMenu(window, csv_field_visualization_var, *menu_values)
+# # csv_field_visualization_menu.configure(state='disabled')
+# # place widget with hover-over info
+# # visualization_csv_field_visualization_menu_pos
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+#                                    csv_field_visualization_menu,
+#                                    False, False, True, False, 90, GUI_IO_util.visualization_filename_label_lb_pos,
+#                                    "Select the csv file field to be used for visualizing the chart\nBoxplots require a NUMERIC field; Comparative bar charts require a CATEGORICAL field")
+#
+# #@@@
+# def check_selected_csv_file_field_Y_axis_list(main_Y_axis):
+#     global csv_field_visualization_var_SV
+#     if not 'Excel' in visualizations_menu_var.get():
+#         # csv_file_field_Y_axis_list.clear()
+#         return
+#     if csv_field_visualization_var.get()!='':
+#         # the next line does not work on Mac,
+#         #   so must take a convoluted way of making sure the same value is not added several times to csv_file_field_Y_axis_list
+#         # csv_field_visualization_menu.configure(state='disabled')
+#         if csv_field_visualization_var_SV=='':
+#             csv_field_visualization_var_SV=csv_field_visualization_var.get()
+#         else:
+#             if main_Y_axis:
+#                 # remove the previously selected field from csv_file_field_Y_axis_list ONLY if coming from main Y-axis
+#                 if csv_field_visualization_var_SV in str(', '.join(csv_file_field_Y_axis_list)):
+#                     csv_file_field_Y_axis_list.remove(csv_field_visualization_var_SV)
+#                 csv_field_visualization_var_SV=''
+#     if main_Y_axis:
+#         field_value = csv_field_visualization_var.get() # main Y-axis, used for boxplots, comparative bar chhrts, time mapper
+#     else:
+#         field_value = Y_axis_var.get() # additional Y-axis used for Excel and Plotly
+#     if field_value =='':
+#         return
+#     if field_value in str(', '.join(csv_file_field_Y_axis_list)):
+#         mb.showwarning(title='Warning',
+#                        message='The option "' + field_value + '" has already been selected. Selection ignored.\n\nYou can see your current selections by using the dropdown menu.')
+#     else:
+#         csv_file_field_Y_axis_list.append(field_value)
+#
+# csv_field_visualization_var.trace('w', lambda x, y, z: check_selected_csv_file_field_Y_axis_list(True))
+
+visualization_basic_options_lb = tk.Label(window, text='Visualization options')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                               visualization_basic_options_lb, True)
+
+
+visualizations_menu_var.set('Excel/Plotly charts')
+visualizations_menu = tk.OptionMenu(window, visualizations_menu_var, 'Boxplots','Bubble chart','Comparative bar charts','Excel/Plotly charts','Time mapper')
+# select_time_menu.configure(state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                   visualizations_menu,
+                                   False, False, True, False, 90, GUI_IO_util.visualization_filename_label_lb_pos,
+                                   "Use the dropdown menu to select a visualization option for your data: Boxplots, Comparative bar charts, Excel/Plotly charts, Time mapper\nBoxplots require a NUMERIC field; Comparative bar charts require a CATEGORICAL field")
+
+csv_field_visualization_lb = tk.Label(window, text='csv file field for visualization (Y-axis)')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                csv_field_visualization_lb, True)
 
 csv_field_visualization_menu = tk.OptionMenu(window, csv_field_visualization_var, *menu_values)
@@ -384,20 +474,6 @@ def check_selected_csv_file_field_Y_axis_list(main_Y_axis):
         csv_file_field_Y_axis_list.append(field_value)
 
 csv_field_visualization_var.trace('w', lambda x, y, z: check_selected_csv_file_field_Y_axis_list(True))
-
-visualization_basic_options_lb = tk.Label(window, text='Visualization options')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               visualization_basic_options_lb, True)
-
-
-visualizations_menu_var.set('Excel/Plotly charts')
-visualizations_menu = tk.OptionMenu(window, visualizations_menu_var, 'Boxplots','Bubble chart','Comparative bar charts','Excel/Plotly charts','Time mapper')
-# select_time_menu.configure(state='disabled')
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
-                                   visualizations_menu,
-                                   False, False, True, False, 90, GUI_IO_util.visualization_filename_label_lb_pos,
-                                   "Use the dropdown menu to select a visualization option for your data: Boxplots, Comparative bar charts, Excel/Plotly charts, Time mapper\nBoxplots require a NUMERIC field; Comparative bar charts require a CATEGORICAL field")
 
 def check_selected_csv_files(selected_filename):
     file_accepted = True
@@ -570,25 +646,54 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configurat
                                                GUI_IO_util.labels_x_coordinate + 100,
                                                "Select the csv file field to be used as X-axis")
 
-category_bubble_lb = tk.Label(window, text='Category')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget, y_multiplier_integer,
-                                               category_bubble_lb, True)
+# category_bubble_lb = tk.Label(window, text='Category')
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget, y_multiplier_integer,
+#                                                category_bubble_lb, True)
+# category_bubble_var = tk.StringVar()
+# category_bubble_menu = tk.OptionMenu(window, category_bubble_var, *file_menu_values)
+# # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.setup_pop_up_text_widget+100, y_multiplier_integer,
+#                                                category_bubble_menu,
+#                                                False, False, True, False, 90,
+#                                                GUI_IO_util.setup_pop_up_text_widget+100,
+#                                                "Select the csv file field to be used as category for bubble splitting")
 
-category_bubble_var = tk.StringVar()
-category_bubble_menu = tk.OptionMenu(window, category_bubble_var, *file_menu_values)
+color_1_var.set(0)
+color_1_var_list=[]
+color_1_style_var_list=[]
+color_1_style_var_list.append("")
+color_1_var_list.append(0)
+color_1_checkbox = tk.Checkbutton(window, text='Color ', variable=color_1_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.setup_pop_up_text_widget+100, y_multiplier_integer,
-                                               category_bubble_menu,
-                                               False, False, True, False, 90,
-                                               GUI_IO_util.setup_pop_up_text_widget+100,
-                                               "Select the csv file field to be used as category for bubble splitting")
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+                                   color_1_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   "Tick the checkbox to select the LIGHTER color (left to right) for less frequent occurrences to be used for the cormap (default = light blue, RGB = 135 207 236)")
+
+color_1_style_var.set("135, 207, 236")
+color_1_entry = tk.Entry(window, width=10, textvariable=color_1_style_var)
+color_1_entry.configure(state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+70, y_multiplier_integer,
+                                               color_1_entry,False)
+
+def activate_color_1_palette(*args):
+    import tkinter.ttk as ttk
+    from tkcolorpicker import askcolor
+    if color_1_var.get() == 1:
+        style = ttk.Style(window)
+        style.theme_use('clam')
+        color_1_list = askcolor((135, 207, 236), window)
+        color_1_style = color_1_list[0]
+        color_1_style_var.set(color_1_style)
+color_1_var.trace('w', activate_color_1_palette)
+
 
 multiple_bar_lb = tk.Label(window, text='Bar charts',foreground="red",font=("Courier", 12, "bold"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    multiple_bar_lb,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-                                   "The widgets on this line refer to the comparative bar charts option only")
+                                   "The widgets on this line refer to the comparative/multiple bar charts option only")
 
 # add another file
 add_file = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1,
@@ -811,11 +916,11 @@ def changed_filename(tracedInputFile):
             m6.add_command(label=s, command=lambda value=s: X_axis_bubble_var.set(value))
 
         # bubble category
-        m7 = category_bubble_menu["menu"]
-        m7.delete(0, "end")
+        # m7 = category_bubble_menu["menu"]
+        # m7.delete(0, "end")
 
-        for s in menu_values:
-            m7.add_command(label=s, command=lambda value=s: category_bubble_var.set(value))
+        # for s in menu_values:
+        #     m7.add_command(label=s, command=lambda value=s: category_bubble_var.set(value))
 
     else:
         csv_files_list.clear()
@@ -840,7 +945,7 @@ def activate_all_options(*args):
 
     # bubble
     X_axis_bubble_menu.configure(state='disabled')
-    category_bubble_menu.configure(state='disabled')
+    # category_bubble_menu.configure(state='disabled')
 
     # comparative bar charts
     add_file.configure(state='disabled')
@@ -868,7 +973,7 @@ def activate_all_options(*args):
 
     if 'bubble' in visualizations_menu_var.get().lower():
         X_axis_bubble_menu.configure(state='normal')
-        category_bubble_menu.configure(state='normal')
+        # category_bubble_menu.configure(state='normal')
 
     if 'comparative' in visualizations_menu_var.get().lower():
         add_file.configure(state='normal')
@@ -927,9 +1032,8 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          'Please, tick the \'GUIs available\' checkbox if you wish to see and select the range of other available tools suitable for data visualization.')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, select the csv file field to be used for visualization.\n\nA NUMERIC field is required for the 'Boxplot' option and a CATEGORICAL field for the 'Comparative bar charts' option.")
-    # y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, select the csv file field to be used for visualization.\n\nA NUMERIC field is required for the 'Bubble chart' option and a CATEGORICAL field for the 'Comparative bar charts' option.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select type of visual chart to be used for visualization.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, select the csv file field to be used for visualization.\n\nA NUMERIC field is required for the 'Boxplot' option and a CATEGORICAL field for the 'Comparative bar charts' option.")
     # Excel/Plotly
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Use the widgets in this line to set the parameters required by The Excel/Plotly charts option." \
                         "\n\nThe Excel/Plotly charts require an X-axis field and, perhaps, additional Y-axis fields (e.g., for multiple series line charts or bar charts).")
