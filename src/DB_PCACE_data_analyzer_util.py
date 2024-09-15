@@ -121,15 +121,10 @@ def get_complex_simplex_names(setup_Name):
 # return: the list of all simplex names
 def get_all_simplex_name(setup_Simplex):
     list_simplex_name = []
-    if type(setup_Simplex) == str:
-        if os.path.isfile(setup_Simplex):
-            # setup_Simplex_df = pd.DataFrame(pd.read_excel(setup_Simplex))
-            setup_Simplex_df = pd.read_excel(setup_Simplex)
-            setup_Simplex_df = setup_Simplex_df.rename(columns = {'ID':'ID_setup_simplex'})
-            simplex_name = setup_Simplex_df[['Name']]
-            simplex_name = simplex_name[simplex_name['Name'].notna()]
-            list_simplex_name = simplex_name['Name'].values.tolist()
-            list_simplex_name.sort()
+    if isinstance(setup_Simplex, str) and os.path.isfile(setup_Simplex):
+        # setup_Simplex_df = pd.DataFrame(pd.read_excel(setup_Simplex))
+        setup_Simplex_df = pd.read_excel(setup_Simplex).rename(columns = {'ID':'ID_setup_simplex'})
+        list_simplex_name = setup_Simplex_df['Name'].dropna().sort_values().tolist()
     return list_simplex_name
 
 
@@ -138,24 +133,17 @@ def get_all_simplex_name(setup_Simplex):
 # return: the list of all complex names
 def get_all_complex_name(setup_Complex):
     list_complex_name = []
-    if type(setup_Complex) == str:
-        if os.path.isfile(setup_Complex):
-            # setup_Complex_df = pd.DataFrame(pd.read_excel(setup_Complex))
-            setup_Complex_df = pd.read_excel(setup_Complex)
-            setup_Complex_df = setup_Complex_df.rename(columns = {'ID':'ID_setup_complex'})
-            complex_name = setup_Complex_df[['Name']]
-            complex_name = complex_name[complex_name['Name'].notna()]
-            list_complex_name = complex_name['Name'].values.tolist()
-            list_complex_name.sort()
+    if isinstance(setup_Complex, str) and os.path.isfile(setup_Complex):
+        # setup_Complex_df = pd.DataFrame(pd.read_excel(setup_Complex))
+        setup_Complex_df = pd.read_excel(setup_Complex).rename(columns = {'ID':'ID_setup_complex'})
+        list_complex_name = setup_Complex_df['Name'].dropna().sort_values().tolist()
     return list_complex_name
 
 
 # helper method for get_Simplex_text_date_number
 # convert the column named 'Value' into list type
 def get_all_Simplex(data):
-    data = data[data['Value'].notna()]
-    simplex = data['Value'].values.tolist()
-    return simplex
+    return data['Value'].dropna().tolist()
 
 # depend on users' choice, get a list of all value in data_SimplexText, data_SimplexDate or data_SimplexNumber
 # Pass test 2023 / 09 / 22
@@ -353,6 +341,7 @@ def get_complex_frequencies_all(inputDir, outputDir):
 # return: a dataframe: id, name of the input complex
 def find_setup_id(complex_name, setup_Complex):
     data = setup_Complex[setup_Complex['Name'].isin(complex_name)]
+    print(setup_Complex['Name'].values.tolist())
     data = data[['ID_setup_complex', 'Name']]
     data['ID_setup_complex'] = [int(x) for x in data['ID_setup_complex']]
     return data
@@ -403,9 +392,11 @@ def find_child_complex(complex, inputDir):
         has_files = False
 
     if(has_files):
+        print(f"Has files child complex !!!!! Complex: {complex}")
         complex_id = find_setup_id(complex, setup_Complex_df)
         complex_id = complex_id['ID_setup_complex'].values.tolist()
-
+        print(f"COMPLEX ID: {complex_id}")
+        print(setup_xref_Complex_Complex_df[setup_xref_Complex_Complex_df['HigherComplex'].isin(complex_id)])
         lower_level_complex = setup_xref_Complex_Complex_df[setup_xref_Complex_Complex_df['HigherComplex'].isin(complex_id)]
         lower_level_complex = lower_level_complex[['LowerComplex', 'Name']]
         lower_level_complex = lower_level_complex['Name'].values.tolist()
@@ -430,6 +421,7 @@ def find_parent_complex(complex, inputDir):
         has_files = False
 
     if(has_files):
+        print(f"Has files in parent complex!!!!! Complex: {complex}")
         complex_id = find_setup_id(complex, setup_Complex_df)
         complex_id = complex_id['ID_setup_complex'].values.tolist()
 
@@ -2134,12 +2126,6 @@ def victim_of_lynching_info(inputDir, outputDir):
 
     # start to build simplex table
     table_simplex = table_complex
-
-    data_Simplex_temp = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'left', on = 'ID_data_date_number_text')
-    data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
-
-    xref_sc_value = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
-    xref_sc_value = xref_sc_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
 
     # Age
     data_Simplex_temp1 = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'right', on = 'ID_data_date_number_text')

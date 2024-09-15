@@ -24,7 +24,6 @@ import charts_util
 import IO_user_interface_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
-
 def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         simplex_data_type, simplex_data,
         primary_complex_var,
@@ -580,9 +579,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    True, False, True, False, 90, GUI_IO_util.open_S_dictionary,
                                    "Use the dropdown menu to select the data type to be used to extract a list of values.")
 
-# load all excel sheets and store in data
-DB_PCACE_data_analyzer_util.load_df(inputDir.get())
-
 # simplex_data = ''
 simplex_data_var = tk.StringVar()
 # simplex_data_var.set(simplex_list)
@@ -775,23 +771,19 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
                                    False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "The menu displays a list of complex objects children of the 'Complex objects' selected in the widget above.\nThe option is only available for the 'Complex objects' widget above (Simplex objects do not have children).")
 
+
 def activate_parents_children(*args):
-    parent_complex_list = []
-    parent_simplex_list = []
     parent_complex_list = DB_PCACE_data_analyzer_util.find_parent_complex(setup_complex_var.get(),inputDir.get())
-    parent_simplex_list = DB_PCACE_data_analyzer_util.find_parent_simplex(setup_simplex_var.get(),inputDir.get())
-    parent_menu_values = ''
     parent_menu_values = parent_complex_list
     select_parents['values'] = parent_menu_values
 
-    children_list = []
-    children_menu_values = ''
     children_list = DB_PCACE_data_analyzer_util.find_child_complex(setup_complex_var.get(),inputDir.get())
     children_menu_values = children_list 
     select_children['values'] = children_menu_values
     # select_children_var.set(children_menu[0])
 setup_complex_var.trace('w',activate_parents_children)
 setup_simplex_var.trace('w',activate_parents_children)
+
 
 comments_lb = tk.Label(window, text='Extract comments ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,comments_lb,True)
@@ -819,8 +811,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 
 error = False
 table_values = []
+read_dfs=False
 def changed_filename(*args):
-    global error, setup_simplex_menu
+    global error, setup_simplex_menu, read_dfs
     # 25 PC-ACE files
     if GUI_util.input_main_dir_path.get()!='':
         GUI_util.run_button.configure(state='normal')
@@ -844,6 +837,11 @@ def changed_filename(*args):
         else:
             select_DB_tables.set('')
             select_DB_tables.configure(state='disabled')
+
+        if (not read_dfs):
+            # load all excel sheets and store in data
+            DB_PCACE_data_analyzer_util.load_df(inputDir.get())
+            read_dfs = True
 
         setup_complex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(), 'setup_complex.xlsx'))
         setup_complex['values'] = setup_complex_menu
