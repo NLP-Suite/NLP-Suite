@@ -516,16 +516,9 @@ def clear(e):
     google_earth_var.set(0)
     time_var.set(0)
     space_var.set(0)
-
     actors_var.set('')
-
     setup_complex_var.set('')
-    setup_simplex_var.set('')
-
-    actors_var.set('')
-
     comments_var.set('')
-
     document_sources_var.set(0)
     GUI_util.clear("Escape")
 
@@ -654,7 +647,7 @@ actors = ttk.Combobox(window, textvariable = actors_var, width=GUI_IO_util.widge
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+50, y_multiplier_integer,
                                    actors,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "Use the dropdown menu to select the complex oobject that is a type of actor that you want to extract (e.g., Collective actor, Individual, Organization)")
+                                   "Use the dropdown menu to select the complex object that is a type of actor that you want to extract (e.g., Collective actor, Individual, Organization)")
 
 time_checkbox = tk.Checkbutton(window, text='Time', variable=time_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
@@ -811,9 +804,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 
 error = False
 table_values = []
-read_dfs=False
+currentInputDir = inputDir.get()
+readDir = False
 def changed_filename(*args):
-    global error, setup_simplex_menu, read_dfs
+    global error, setup_simplex_menu, currentInputDir, readDir
     # 25 PC-ACE files
     if GUI_util.input_main_dir_path.get()!='':
         GUI_util.run_button.configure(state='normal')
@@ -838,10 +832,11 @@ def changed_filename(*args):
             select_DB_tables.set('')
             select_DB_tables.configure(state='disabled')
 
-        if (not read_dfs):
+        if currentInputDir != inputDir.get() or not readDir:
             # load all excel sheets and store in data
             DB_PCACE_data_analyzer_util.load_df(inputDir.get())
-            read_dfs = True
+            currentInputDir = inputDir.get()
+            readDir = True
 
         setup_complex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(), 'setup_complex.xlsx'))
         setup_complex['values'] = setup_complex_menu
