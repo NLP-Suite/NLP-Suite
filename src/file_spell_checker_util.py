@@ -335,6 +335,34 @@ def check_edit_dist(input_word, checklist, similarity_value):
 
 # using Levenshtein distance to check for typos
 def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles, chartPackage, dataTransformation, NERs, similarity_value, by_all_tokens_var):
+
+    def check_spell(word, true_spellings, speller):
+        if word.lower() in true_spellings:
+            return word, "Correct spell (HP)"
+        else:
+            corrected = speller.correction(word)
+            if corrected != word:
+                return corrected, "Potential typo"
+            else:
+                return word, "Not in HP spells"
+
+    def find_unused_spells(true_spellings, words_in_book):
+        return true_spellings - set(words_in_book)
+
+    def find_potential_new_spells(words_in_book, true_spellings):
+        return set(word for word in words_in_book if word.istitle() and word not in true_spellings)
+
+    def write_additional_analysis(unused_spells, potential_new_spells, outputDir):
+        output_file = os.path.join(outputDir, "spell_analysis.txt")
+        with open(output_file, "w") as f:
+            f.write("Unused spells from HP_spells.csv:\n")
+            for spell in unused_spells:
+                f.write(f"- {spell}\n")
+            f.write("\nPotential new spells found in the books:\n")
+            for spell in potential_new_spells:
+                f.write(f"- {spell}\n")
+        return output_file
+
     filesToOpen=[]
     all_header_rows_dict = []
     ner_dict = {}
@@ -367,6 +395,13 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
         true_spellings = df.iloc[:,0]
         # convert to a set of unique, distinct value
         true_spellings = set(true_spellings)
+        # Check if there is repetition in the dictionary file
+        if len(true_spellings) != len(df):
+            print("There are repeated words in the dictionary file.")
+            return
+        else:
+            print("All words in the dictionary file are distinct.")
+        # print("Ture spellings: ", true_spellings)
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity start', 'Started running Word similarity at',
                                                  True, '', True, '', True)
@@ -435,16 +470,22 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
         header_row_list_to_check = header_rows
 
     else:
-
+        print('Running NER on each file...')
+        print("documents: ", documents)
         NER = [[ners[0], sentence_number + 1, document_number + 1, sentence, document[1],IO_csv_util.dressFilenameForCSVHyperlink(document[2]), ners[1]]
                for document_number, document in enumerate(documents)
                for sentence_number, sentence in enumerate(document[0])
                for ners in NLP.ner(sentence) if ners[1] in NERs]
+        # print("NER: ", NER)
         ner_dict = {}
         for each_ner in NERs:
             temp = [elmt[0] for elmt in NER if elmt[-1] == each_ner]#list of all tokens that belong to specified NER categories
             ner_dict[each_ner] = [(item, count) for item, count in collections.Counter(temp).items() if count > 1]
         header_row_list_to_check = NER
+
+        word_list = [elmt[0] for elmt in header_row_list_to_check]
+        unused_spells = find_unused_spells(true_spellings, set(word_list))
+        potential_new_spells = find_potential_new_spells(word_list, true_spellings)
 
     # word_list contains all the first element - token - of each row, i.e., a list of all words
     word_list = [elmt[0] for elmt in header_row_list_to_check]
@@ -472,6 +513,9 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
                  'Similar-word frequency in directory', 'Typo?',
                  'Number of documents processed', 'Sentence ID', 'Sentence',
                  'Document ID', 'Document', 'Document path', 'Processed directory']
+
+        headers2.extend(['Corrected Word', 'Spell Status'])
+
         header_rowID=0
         processed_wordID=0
         for header_row in header_row_list_to_check:
@@ -479,8 +523,11 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
             word=header_row[0]
             header_row.insert(1, word_freq_dict.get(word))
             checker_against = all_header_rows_dict
-            if (len(word)>3)and (word not in processed_word_list) and (word.isalpha()):
+            if (len(word)>3) and (word not in processed_word_list) and (word.isalpha()):
                 processed_wordID=processed_wordID+1
+                corrected_word, spell_status = check_spell(word, true_spellings, speller)
+                header_row.append(corrected_word)
+                header_row.append(spell_status)
                 speller = SpellChecker()
                 respelled_word = speller.correction(word)
                 # print("      Processing DISTINCT word " + str(processed_wordID) + "/" + str(len(distinct_word_list)) + " Row " + str(header_rowID) + "/" + str(len(header_row_list_to_check)) + ":" + word)
@@ -502,6 +549,13 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
                     #header_row.append('')
                     #header_row.append('')
                     #header_row.append('')
+                if spell_status != "Correct spell (HP)":
+                    value_tuple = fuzzywuzzy_check_dist(word, checker_against, similarity_value)
+                    if value_tuple[0]:  # a close match been found
+                        header_row.append(value_tuple[1])  # returned similar word from check_edit_list
+                        header_row.append(value_tuple[2])  # returned similar word frequency from check_edit_list
+                        header_row.append('Typo?')
+                        header_row_list_final.append(header_row)
             # print("      Processing word " + str(header_rowID) + "/" + str(len(header_row_list_to_check)) + ":" + word)
             if word not in processed_word_list:
                 processed_word_list.append(word)
@@ -538,8 +592,11 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
                     #    header_row.append('')#Angel
                 processed_word_list.append(word)#Angel
 
+    analysis_file = write_additional_analysis(unused_spells, potential_new_spells, outputDir)
+    filesToOpen.append(analysis_file)
     #df = pd.DataFrame(header_row_list_to_check, columns=headers1)
     df = pd.DataFrame(header_row_list_final, columns=headers1)
+    df['Number of documents processed'] = None  # Add this line to initialize the column
     for index, row in df.iterrows():
         if row['Similar-word frequency in directory'] != None:
             tmp = df[df['Words'] == row['Similar word in directory']]
