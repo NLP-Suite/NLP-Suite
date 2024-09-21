@@ -302,87 +302,64 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                     filesToOpen = filesToOpen + outputFile
 
 # actors ----------------------------------------------------------------------
+    def process_actor(inputDir, outputDir, actors_var, chart_title, yAxis_columns, output_type):
+        actor_function_map = {
+            'Collective': DB_PCACE_data_analyzer_util.collective_actor_characteristics,
+            'Individual': DB_PCACE_data_analyzer_util.individual_characteristics,
+            'Organization': DB_PCACE_data_analyzer_util.organization_characteristics_main
+        }
 
-    if actors_var!='':
-        if 'Collective' in actors_var:
-            outputFile = DB_PCACE_data_analyzer_util.collective_actor_characteristics(inputDir, outputDir, actors_var)
-            if outputFile != '':
-                filesToOpen.append(outputFile)
+        outputFile = actor_function_map[actors_var](inputDir, outputDir, actors_var)
 
-                # headers=IO_csv_util.get_csvfile_headers(outputFile)
-                # columns_to_be_plotted_xAxis=IO_csv_util.get_headerValue_from_columnNumber(headers,column_number=0)
-                columns_to_be_plotted_yAxis=['Name of collective actor Simplex']
-                outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFile,
-                                                                   outputDir,
-                                                                   columns_to_be_plotted_xAxis=[],
-                                                                   columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                                   chart_title='Frequency Distribution of Collective Actors',
-                                                                   count_var=1, hover_label=[],
-                                                                   outputFileNameType='coll', #'gender_bar',
-                                                                   column_xAxis_label='Collective actor',
-                                                                   groupByList=[],
-                                                                   plotList=[],
-                                                                   chart_title_label='')
-                if outputFiles!=None:
-                    if isinstance(outputFiles, str):
-                        filesToOpen.append(outputFiles)
-                    else:
-                        filesToOpen.extend(outputFiles)
+        files_to_open = []
+        if outputFile:
+            files_to_open.append(outputFile)
+            outputFiles = charts_util.visualize_chart(
+                chartPackage, dataTransformation, outputFile, outputDir,
+                columns_to_be_plotted_xAxis=[],
+                columns_to_be_plotted_yAxis=yAxis_columns,
+                chart_title=f'Frequency Distribution of {actors_var.capitalize()}s',
+                count_var=1, hover_label=[],
+                outputFileNameType=output_type,
+                column_xAxis_label=actors_var,
+                groupByList=[], plotList=[], chart_title_label=''
+            )
 
+            if outputFiles:
+                if isinstance(outputFiles, str):
+                    files_to_open.append(outputFiles)
+                else:
+                    files_to_open.extend(outputFiles)
+        return files_to_open
 
-        if 'Individual' in actors_var:
-            outputFile = DB_PCACE_data_analyzer_util.individual_characteristics(inputDir, outputDir, actors_var)
-            if outputFile != '':
-                filesToOpen.append(outputFile)
-                # headers=IO_csv_util.get_csvfile_headers(outputFile)
-                # columns_to_be_plotted_xAxis=IO_csv_util.get_headerValue_from_columnNumber(headers,column_number=0)
-                # columns_to_be_plotted_yAxis=['First name Simplex', 'Last name Simplex',
-                #                              'Type of relationship Simplex', 'Exact age Simplex', 'Qualitative age Simplex',
-                #                              'Name of individual actor Simplex', 'Actor aggregate (Individual) COLIN Simplex',
-                #                              'Lynch victim Simplex', 'Crime victim Simplex']
-                columns_to_be_plotted_yAxis=['Name of individual actor Simplex']
-                outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFile,
-                                                                   outputDir,
-                                                                   columns_to_be_plotted_xAxis=[],
-                                                                   columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                                   chart_title='Frequency Distribution of Individuals',
-                                                                   count_var=1, hover_label=[],
-                                                                   outputFileNameType='ind', #'gender_bar',
-                                                                   column_xAxis_label='Individual',
-                                                                   groupByList=[],
-                                                                   plotList=[],
-                                                                   chart_title_label='')
-                if outputFiles!=None:
-                    if isinstance(outputFiles, str):
-                        filesToOpen.append(outputFiles)
-                    else:
-                        filesToOpen.extend(outputFiles)
+    # Define the actor configurations
+    actor_configs = {
+        'Collective': {
+            'chart_title': 'Frequency Distribution of Collective Actors',
+            'yAxis_columns': ['Name of collective actor Simplex'],
+            'output_file_type': 'coll'
+        },
+        'Individual': {
+            'chart_title': 'Frequency Distribution of Individuals',
+            'yAxis_columns': ['Name of individual actor Simplex'],
+            'output_file_type': 'ind'
+        },
+        'Organization': {
+            'chart_title': 'Frequency Distribution of Organizations',
+            'yAxis_columns': [
+                'State organisation Simplex', 'Political party Simplex', 'Other institution Simplex',
+                'Actor aggregate code Simplex', 'Actor aggregate (Institution) COLIN Simplex'
+            ],
+            'output_file_type': 'org'
+        }
+    }
 
-        if 'Organization' in actors_var:
-
-            outputFile = DB_PCACE_data_analyzer_util.organization_characteristics_main(inputDir, outputDir, actors_var)
-            if outputFile != '':
-                filesToOpen.append(outputFile)
-
-                # headers=IO_csv_util.get_csvfile_headers(outputFile)
-                # columns_to_be_plotted_xAxis=IO_csv_util.get_headerValue_from_columnNumber(headers,column_number=0)
-                columns_to_be_plotted_yAxis=['State organisation Simplex', 'Political party Simplex', 'Other institution Simplex', 'Actor aggregate code Simplex', 'Actor aggregate (Institution) COLIN Simplex']
-                outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFile,
-                                                                   outputDir,
-                                                                   columns_to_be_plotted_xAxis=[],
-                                                                   columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                                   chart_title='Frequency Distribution of Organizations',
-                                                                   count_var=1, hover_label=[],
-                                                                   outputFileNameType='org', #'gender_bar',
-                                                                   column_xAxis_label='Organization',
-                                                                   groupByList=[],
-                                                                   plotList=[],
-                                                                   chart_title_label='')
-                if outputFiles!=None:
-                    if isinstance(outputFiles, str):
-                        filesToOpen.append(outputFiles)
-                    else:
-                        filesToOpen.extend(outputFiles)
+    for actor_type, config in actor_configs.items():
+        if actor_type == actors_var:
+            filesToOpen.extend(process_actor(
+                inputDir, outputDir, actors_var,
+                config['chart_title'], config['yAxis_columns'], config['output_file_type']
+            ))
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -840,8 +817,8 @@ def changed_filename(*args):
 
         setup_complex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(), 'setup_complex.xlsx'))
         setup_complex['values'] = setup_complex_menu
-        actors_menu = setup_complex_menu
-        actors['values'] = actors_menu
+        # actors_menu = setup_complex_menu
+        actors['values'] = ['Individual', 'Collective', 'Organization']
         if len(setup_complex_menu)>0:
             setup_complex.configure(state='normal')
             # setup_complex.set(setup_complex_menu[0])

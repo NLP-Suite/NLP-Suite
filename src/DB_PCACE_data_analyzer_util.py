@@ -1235,9 +1235,9 @@ def individual_characteristics(inputDir, outputDir, actors_var, macro_event_id='
     data_SimplexNumber_df = library['data_SimplexNumber.xlsx']
     utility_Security_df = library['utility_Security.xlsx']
 
-# build table for complex
+    # build table for complex
     id_complex = find_setup_id([actors_var], setup_Complex_df).iat[0, 0]
-    table_complex = data_Complex_df[data_Complex_df['ID_setup_complex'].isin([id_complex])]
+    table_complex = data_Complex_df[data_Complex_df['ID_setup_complex'] == id_complex]
 
     # 'Personal characteristics' must change to reflect the specific setup of a specific project
     names_personal_characteristics = find_lower_complex(['Personal characteristics'], setup_Complex_df, setup_xref_Complex_Complex_df)
@@ -2009,8 +2009,8 @@ def organization_characteristics_main(inputDir, outputDir, actors_var, macro_eve
         table_simplex = table_simplex[table_simplex['Collective actor ID'] == actor_id]
 
 
-    if not document_info:
-        table_simplex = table_simplex.drop('Document ID', axis=1)
+    # if not document_info:
+    #     table_simplex = table_simplex.drop('Document ID', axis=1)
 
     if comment_info == '':
         table_simplex = table_simplex.drop(['Comment','UserID','UserName','VerifierID','VerifierName'], axis=1)
