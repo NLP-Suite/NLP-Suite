@@ -104,40 +104,12 @@ def check_missing(fileName):
 # parameter: dataframe of setup_Complex or filename with path
 # return: the list of all table names
 def get_complex_simplex_names(setup_Name):
-    list_setup_Name = []
-    if type(setup_Name) == str:
-        if os.path.isfile(setup_Name):
-            # setup_Name = pd.DataFrame(pd.read_excel(setup_Name))
-            setup_Name = pd.read_excel(setup_Name)
-            setup_name = setup_Name[['Name']]
-            setup_name = setup_name[setup_name['Name'].notna()]
-            list_setup_Name = setup_name['Name'].values.tolist()
-            list_setup_Name.sort()
-    return list_setup_Name
-
-
-# the list for all simplex names
-# parameter: dataframe of setup_Simplex
-# return: the list of all simplex names
-def get_all_simplex_name(setup_Simplex):
-    list_simplex_name = []
-    if isinstance(setup_Simplex, str) and os.path.isfile(setup_Simplex):
-        # setup_Simplex_df = pd.DataFrame(pd.read_excel(setup_Simplex))
-        setup_Simplex_df = pd.read_excel(setup_Simplex).rename(columns = {'ID':'ID_setup_simplex'})
-        list_simplex_name = setup_Simplex_df['Name'].dropna().sort_values().tolist()
-    return list_simplex_name
-
-
-# give the list for all complex names
-# parameter: dataframe of setup_Complex
-# return: the list of all complex names
-def get_all_complex_name(setup_Complex):
-    list_complex_name = []
-    if isinstance(setup_Complex, str) and os.path.isfile(setup_Complex):
-        # setup_Complex_df = pd.DataFrame(pd.read_excel(setup_Complex))
-        setup_Complex_df = pd.read_excel(setup_Complex).rename(columns = {'ID':'ID_setup_complex'})
-        list_complex_name = setup_Complex_df['Name'].dropna().sort_values().tolist()
-    return list_complex_name
+    if isinstance(setup_Name, str) and os.path.isfile(setup_Name):
+        file_key = "setup_Simplex.xlsx" if "setup_Simplex" in setup_Name else "setup_Complex.xlsx"
+        df = library.get(file_key)
+        if df is not None:
+            return df["Name"].dropna().sort_values().tolist()
+    return []
 
 
 # helper method for get_Simplex_text_date_number
@@ -148,182 +120,145 @@ def get_all_Simplex(data):
 # depend on users' choice, get a list of all value in data_SimplexText, data_SimplexDate or data_SimplexNumber
 # Pass test 2023 / 09 / 22
 def get_Simplex_text_date_number(simplex_type, data_SimplexText, data_SimplexDate, data_SimplexNumber):
-    list_simplex_data = []
+    data_files = {
+        'text': data_SimplexText,
+        'date': data_SimplexDate,
+        'number': data_SimplexNumber
+    }
+    if simplex_type not in data_files:
+        return []
+    file_path = data_files[simplex_type]
+    if not(isinstance(file_path, str) and os.path.isfile(file_path)):
+        return []
 
-    if simplex_type == 'text':
-        if isinstance(data_SimplexText, str) and os.path.isfile(data_SimplexText):
-            data_SimplexText_df = library['data_SimplexText.xlsx']
-            data = data_SimplexText_df[data_SimplexText_df['Value'].notna()]
-            list_simplex_data = data['Value'].values.tolist()
+    data_df = library.get(f'data_Simplex{simplex_type.capitalize()}.xlsx')
+    if data_df is None:
+        return []
 
-    elif simplex_type == 'date':
-        if isinstance(data_SimplexDate, str) and os.path.isfile(data_SimplexDate):
-            data_SimplexDate_df = library['data_SimplexDate_df']
-            data = data_SimplexDate_df[data_SimplexDate_df['Value'].notna()]
-            list_simplex_data = data['Value'].values.tolist()
-
-    elif simplex_type == 'number':
-        if isinstance(data_SimplexNumber, str) and os.path.isfile(data_SimplexNumber):
-            data_SimplexNumber_df = library['data_SimplexNumber.xlsx']
-            data = data_SimplexNumber_df[data_SimplexNumber_df['Value'].notna()]
-            list_simplex_data = data['Value'].values.tolist()
-            for i in range(len(list_simplex_data)):
-                num = list_simplex_data[i]
-                if isinstance(num, float) and num.is_integer():
-                    list_simplex_data[i] = int(num)
-
-    if all(isinstance(item, (int, float)) for item in list_simplex_data):
+    list_simplex_data = data_df[data_df['Value'].notna()]['Value'].tolist()
+    if simplex_type == 'number':
+        list_simplex_data = [int(num) if isinstance(num, float) and num.is_integer() else num for num in list_simplex_data]
+    if list_simplex_data and all(isinstance(item, type(list_simplex_data[0])) for item in list_simplex_data):
         list_simplex_data.sort()
-    elif all(isinstance(item, (str)) for item in list_simplex_data):
-        list_simplex_data.sort()
-    elif all(isinstance(item, (pd.Timestamp)) for item in list_simplex_data):
-        list_simplex_data.sort()
-    # add more conditions as necessary based on the data types you expect in the list
 
     return list_simplex_data
-
-def find_complex_in_document(name, inputDir, outputDir):
-    setup_Complex_df = library['setup_Complex.xlsx']
-    data_Complex_df = library['data_Complex.xlsx']
-    data_xref_Complex_Document_df = library['data_xref_Complex-Document.xlsx']
-
-    if type(name) == str:
-        name = [name]
-
-    complex_setup_info = find_setup_id(name, setup_Complex_df)
-    complex_id = complex_setup_info['ID_setup_complex'].values.tolist()
-    data = pd.merge(data_Complex_df, data_xref_Complex_Document_df, how = 'left', left_on = 'ID_data_complex', right_on = 'Complex')
-    data = data[data['ID_setup_complex'].isin(complex_id)]
-    data = data[['Document', 'ID_data_complex', 'Identifier']]
-
-    complex_in_document_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
-                                                                       'complex_in_document')
-    data.to_csv(complex_in_document_name, encoding='utf-8', index=False)
-
-    return complex_in_document_name
-
 
 # get data for the input simplex name
 # parameter: name: simplex name in str type
 # return: dataframe: name, value, frequency
 def get_simplex_frequencies(name, inputDir, outputDir, compute_frequencies=True):
-    setup_Simplex_df = library['setup_Simplex.xlsx']
-    data_Simplex_df = library['data_Simplex.xlsx']
-    data_SimplexText_df = library['data_SimplexText.xlsx']
-    data_xref_Simplex_Complex_df = library['data_xref_Simplex-Complex.xlsx']
+    # load necessary dataframes from library
+    setup_Simplex_df = library.get('setup_Simplex.xlsx')
+    data_Simplex_df = library.get('data_Simplex.xlsx')
+    data_SimplexText_df = library.get('data_SimplexText.xlsx')
+    data_xref_Simplex_Complex_df = library.get('data_xref_Simplex-Complex.xlsx')
+    if any(df is None or df.empty for df in [setup_Simplex_df, data_Simplex_df, data_xref_Simplex_Complex_df]):
+        return None
 
-
-    if type(name) == str:
+    # name must be a list
+    if isinstance(name, str):
         name = [name]
 
     simplex_id = find_setup_id_simplex(name, setup_Simplex_df)
-    id = simplex_id.iat[0,0]
-    name = simplex_id.iat[0,1]
+    id, name = simplex_id.iloc[0]
 
-    temp = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_df, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
+    merged_data = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_df, how = 'left', on = 'ID_data_simplex')
     # filter the dataframe by the selected simplex
-    select_simplex = temp[temp['ID_setup_simplex']==id]
-    select_simplex_complex = select_simplex[['ID_data_simplex', 'ID_data_complex']]
+    filtered_simplex = merged_data[merged_data['ID_setup_simplex']==id][['ID_data_simplex', 'ID_data_complex']]
 
-    data_Simplex_temp = pd.merge(data_Simplex_df, data_SimplexText_df, how='left', on='ID_data_date_number_text')
-    data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
+    simplex_data_combined = pd.merge(data_Simplex_df, data_SimplexText_df, how='left', on='ID_data_date_number_text')[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
+
     if compute_frequencies:
-        count = select_simplex_complex.groupby(['ID_data_simplex']).count()
-        count = pd.merge(count, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
-        count = count[['Value', 'ID_data_complex']]
-        count = count.rename(columns = {'Value':name, 'ID_data_complex':'Frequency'})
-        count = count.sort_values(by=['Frequency'], ascending=False)
+        count = filtered_simplex.groupby(['ID_data_simplex']).size().reset_index(name='Frequency')
+        result = pd.merge(count, simplex_data_combined, how = 'left', on = 'ID_data_simplex')
+        result = result.rename(columns={'Value': name}).sort_values(by='Frequency', ascending=False)
         # TODO Anna: The first column should have a header "Name of Simplex Object"
         simplex_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                            name+'_simplex_freq')
-        count.to_csv(simplex_file_name, encoding='utf-8', index=False)
     else:
-        data_Simplex_temp = pd.merge(select_simplex_complex, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
-        # data_Simplex_temp=data_Simplex_temp[data_Simplex_temp['ID_setup_simplex']==id]
+        #list all simplex values
+        result = pd.merge(filtered_simplex, simplex_data_combined, how = 'left', on = 'ID_data_simplex')
         simplex_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                            name+'_simplex_list')
-        data_Simplex_temp.to_csv(simplex_file_name, encoding='utf-8', index=False)
+    result.to_csv(simplex_file_name, encoding='utf-8', index=False)
     return simplex_file_name # this can be a file of simplex frequencies or simplex list
 
 
+# Creates csv file with frequencies of complex associations for each simplex.
+# return: path to generated csv or None if data is missing
 def get_simplex_frequencies_all(inputDir, outputDir):
-    setup_Simplex_df = library['setup_Simplex.xlsx']
-    data_Simplex_df = library['data_Simplex.xlsx']
-    data_xref_Simplex_Complex_df = library['data_xref_Simplex-Complex.xlsx']
+    setup_Simplex_df = library.get('setup_Simplex.xlsx')
+    data_Simplex_df = library.get('data_Simplex.xlsx')
+    data_xref_Simplex_Complex_df = library.get('data_xref_Simplex-Complex.xlsx')
+    if any(df is None or df.empty for df in [setup_Simplex_df, data_Simplex_df, data_xref_Simplex_Complex_df]):
+        return None
 
-    all_rows = []
+    list_simplex_name = setup_Simplex_df['Name'].dropna().tolist()
+    merged_data = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_df, how='left', on='ID_data_simplex')
 
-    simplex_name = setup_Simplex_df[['Name']]
-    simplex_name = simplex_name[simplex_name['Name'].notna()]
-    list_simplex_name = simplex_name['Name'].values.tolist()
-
+    all_rows=[]
     for name in list_simplex_name:
-        simplex_id = find_setup_id_simplex([name], setup_Simplex_df)
-        id = simplex_id.iat[0,0]
+        simplex_info = find_setup_id_simplex([name], setup_Simplex_df)
+        simplex_id = simplex_info.iloc[0,0]
 
-        temp = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_df, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
-        select = temp[temp['ID_setup_simplex']==id]
-        select = select[['ID_data_simplex', 'ID_data_complex']]
+        filtered_data = merged_data[merged_data['ID_setup_simplex'] == simplex_id]
+        all_rows.append([name, len(filtered_data)])
 
-        all_rows.append([name, len(select)])
+    count_df = pd.DataFrame(all_rows, columns=['name', 'frequency'])
 
-    count = pd.DataFrame(all_rows, columns=['name', 'frequency'])
-
-    all_simplex_frequency_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
+    output_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                        'all_simplex_freq')
-    count.to_csv(all_simplex_frequency_file_name, encoding='utf-8', index=False)
+    count_df.to_csv(output_file_name, encoding='utf-8', index=False)
 
-    return all_simplex_frequency_file_name
+    return output_file_name
 
 
 def get_complex_frequencies(name, inputDir, outputDir):
-    setup_Complex_df = library['setup_Complex.xlsx']
-    data_xref_Complex_Complex_df = library['data_xref_Complex-Complex.xlsx']
-    data_Complex_df = library['data_Complex.xlsx']
+    setup_Complex_df = library.get('setup_Simplex.xlsx')
+    data_Complex_df = library.get('data_Simplex.xlsx')
+    data_xref_Complex_Complex_df = library.get('data_xref_Complex-Complex.xlsx')
+    if any(df is None or df.empty for df in [setup_Complex_df, data_Complex_df, data_xref_Complex_Complex_df]):
+        return None
 
-    if type(name) == str:
-        name = [name]
+    if isinstance(name, str):
+            name = [name]
 
-    complex_id = find_setup_id(name, setup_Complex_df)
-    id = complex_id.iat[0,0]
-    name = complex_id.iat[0,1]
+    # Find the complex ID and name
+    complex_info = find_setup_id(name, setup_Complex_df)
+    complex_id, name = complex_info.iloc[0]
 
-    temp = pd.merge(data_xref_Complex_Complex_df, data_Complex_df, how = 'left', left_on = 'ID_data_complex.1', right_on = 'ID_data_complex')
-    select = temp[temp['ID_setup_complex']==id]
-    select = select[['ID_data_complex.1', 'ID_data_complex_x']]
-    count = select.groupby(['ID_data_complex.1']).count()
+    # Merge DataFrames to get the relevant data
+    merged_data = pd.merge(data_xref_Complex_Complex_df, data_Complex_df, how = 'left', on = 'ID_data_complex.1')
+    select = merged_data[merged_data['ID_setup_complex'] == complex_id]
 
-    count = pd.merge(count, data_Complex_df, how = 'left', left_on = 'ID_data_complex.1', right_on = 'ID_data_complex')
-    count = count[['Identifier', 'ID_data_complex_x']]
-    count = count.rename(columns = {'Identifier':name, 'ID_data_complex_x':'Frequency'})
-    count = count.sort_values(by=['Frequency'], ascending=False)
+    # Group and count the frequencies
+    count = select.groupby('ID_data_complex.1').size().reset_index(name='Frequency')
+    result = pd.merge(count, data_Complex_df, how = 'left', left_on = 'ID_data_complex.1', right_on = 'ID_data_complex')
 
+    result = result[['Identifier', 'Frequency']].rename(columns={'Identifier': name}).sort_values(by='Frequency', ascending=False)
     complex_frequency_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                        'complex_freq')
-    count.to_csv(complex_frequency_file_name, encoding='utf-8', index=False)
+    result.to_csv(complex_frequency_file_name, encoding='utf-8', index=False)
 
     return complex_frequency_file_name
 
 # pass test, Sep 22, 2023
 def get_complex_frequencies_all(inputDir, outputDir):
-    setup_Complex_df = library['setup_Complex.xlsx']
-    data_xref_Complex_Complex_df = library['data_xref_Complex-Complex.xlsx']
-    data_Complex_df = library['data_Complex.xlsx']
+    setup_Complex_df = library.get('setup_Complex.xlsx')
+    data_xref_Complex_Complex_df = library.get('data_xref_Complex-Complex.xlsx')
+    data_Complex_df = library.get('data_Complex.xlsx')
+    if any(df is None or df.empty for df in [setup_Complex_df, data_xref_Complex_Complex_df, data_Complex_df]):
+        return None
+
+    list_complex_name = setup_Complex_df['Name'].dropna().tolist()
+    merged_data = pd.merge(data_xref_Complex_Complex_df, data_Complex_df, how='left', on='ID_data_complex')
 
     all_rows = []
-
-    complex_name = setup_Complex_df[['Name']]
-    complex_name = complex_name[complex_name['Name'].notna()]
-    list_complex_name = complex_name['Name'].values.tolist()
-
     for name in list_complex_name:
-        simplex_id = find_setup_id([name], setup_Complex_df)
-        id = simplex_id.iat[0,0]
+        complex_info = find_setup_id([name], setup_Complex_df)
+        complex_id = complex_info.iat[0,0]
 
-        temp = pd.merge(data_xref_Complex_Complex_df, data_Complex_df, how = 'left', on = 'ID_data_complex')
-        select = temp[temp['ID_data_complex']==id]
-        select = select[['ID_data_complex.1', 'ID_data_complex']]
-
+        select = merged_data[merged_data['ID_setup_complex'] == complex_id]
         all_rows.append([name, len(select)])
 
     count = pd.DataFrame(all_rows, columns=['name', 'frequency'])
@@ -333,7 +268,6 @@ def get_complex_frequencies_all(inputDir, outputDir):
     count.to_csv(all_complex_frequency_file_name, encoding='utf-8', index=False)
 
     return all_complex_frequency_file_name
-
 
 
 # find the id of the input complex (name)
