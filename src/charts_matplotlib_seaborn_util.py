@@ -51,7 +51,12 @@ def MALLET_heatmap(composition_file, topics_file, outputDir, fig_set={"figure.fi
             composition.drop(index=index, inplace=True)
 
     composition.drop(["Document ID"], axis=1, inplace=True)  # Drop ID, DataFrames are already indexed
-    composition.reset_index(drop=True, inplace=True)  # Reseting index as some rows could have been removed
+    composition.reset_index(drop=True, inplace=True)  # Resetting index as some rows could have been removed
+
+    for index, row in composition.iterrows():
+        updated_document = row["Document"].replace('file:' + os.sep, '')
+        head, tail = os.path.split(updated_document)
+        composition.loc[index, "Document"] = tail
 
     document_titles = composition["Document"]  # Clean hyperlinks function here
 
@@ -67,6 +72,16 @@ def MALLET_heatmap(composition_file, topics_file, outputDir, fig_set={"figure.fi
     plt.suptitle("Topic Composition and Keys", fontsize=18)  # Title
 
     # Add topics labels to heatmap x-axis
+    # if show_topics:
+    #     size = plt.gcf().get_size_inches()  # Figure dimensions to align topics under chart
+    #     topic_num = 1
+    #     for keys in topics["Keys"]:
+    #         plt.text(-size[0] * 0.4,  # adjust for left indent
+    #                  -size[1] * 0.25 - topic_num * 0.5,  # adjust for vertical position
+    #                  f"Topic {topic_num}: {keys}",
+    #                  ha="left", va="top", fontsize=8)  # change fontsize
+    #         topic_num += 1
+
     if show_topics:
         size = plt.gcf().get_size_inches()  # Figure dimensions to align topics under chart
         topic_num = 1

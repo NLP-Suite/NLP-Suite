@@ -66,6 +66,8 @@ def run(inputFilename,inputdirname, outdirname,
             mb.showwarning(title='No options selected', message='No options have been selected.\n\nPlease, select an option and try again.')
             return
 
+    config_filename = GUI_util.config_filename_selected_config.get()
+
     # if IO_libraries_util.check_inputPythonJavaProgramFile('parsers_annotators_main.py')==False:
     #     return
     #     call("python parsers_annotators_main.py", shell=True)
@@ -151,7 +153,7 @@ GUI_size = GUI_width + 'x590'
 
 GUI_label='Graphical User Interface (GUI) for Narrative Analysis'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('_main.py', '_config.csv')
+config_filename = GUI_util.config_filename_selected_config.get()
 increment = 0
 
 # The 4 values of config_option refer to:

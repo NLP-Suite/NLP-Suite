@@ -24,6 +24,7 @@ import GUI_IO_util
 
 def run(inputFilename,inputDir, outputDir,openOutputFiles,chartPackage, dataTransformation,check_ending):
 
+    config_filename = GUI_util.config_filename_selected_config.get()
     filesToOpen = []
 
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
@@ -71,7 +72,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for Nominalization'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('_main.py', '_config.csv')
+config_filename = GUI_util.config_filename_selected_config.get()
 
 # The 4 values of config_option refer to:
 #   input file

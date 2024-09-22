@@ -36,10 +36,7 @@ def run(inputFilename,inputDir,outputDir,
         sentence_index_var,
         shape_of_stories_var):
 
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('_main.py', '_config.csv')
+    config_filename = GUI_util.config_filename_selected_config.get()
 
     usefile = False
     usedir = False

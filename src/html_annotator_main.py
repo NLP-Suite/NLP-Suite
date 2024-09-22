@@ -34,6 +34,7 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, chartPacka
         csvValue_color_list,
         html_annotator_extractor):
 
+    config_filename = GUI_util.config_filename_selected_config.get()
     filesToOpen=[]
 
     if knowledge_graphs_DBpedia_YAGO_var==True:
@@ -134,7 +135,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for Annotating Documents in HTML Format'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('_main.py', '_config.csv')
+config_filename = GUI_util.config_filename_selected_config.get()
 
 # The 4 values of config_option refer to:
 #   input file

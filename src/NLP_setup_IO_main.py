@@ -23,14 +23,17 @@ import IO_files_util
 if __name__ == '__main__':
     # get arguments from command line
     parser = argparse.ArgumentParser(description='Setup Input/Output Options')
+    # print('in setup parser',str(parser))
+    # blanks in the config_filename will break the argparse algorithm
     parser.add_argument('--config_option', type=str, dest='config_option', default='',
-                        help='a string to hold the I/O configuration for the GUI, e.g., [1,0,0,1]')
+                        help='a string to hold the I/O configuration for the GUI, e.g., 1,0,0,1')
     parser.add_argument('--config_filename', type=str, dest='config_filename', default='',
                         help='a string to hold the config filename containing the selected I/O options, e.g., NLP_default_IO_config.csv')
     args = parser.parse_args()
-
     config_input_output_numeric_options = args.config_option
     config_filename = args.config_filename
+    # print('in setup config_input_output_numeric_options',str(config_input_output_numeric_options))
+    # print('in setup config_filename',config_filename)
     if len(config_input_output_numeric_options)==0:
         mb.showwarning(title='Warning',
                        message='You are running the IO_setup_main as a standalone. Although all _main scripts can be run independently as standalone GUIs, this particularly script cannot. It can only be opened via another GUI script. Sorry!\n\nThe GUI will close after clicking OK.')
@@ -749,12 +752,49 @@ def get_IO_options_list(saving=False):
     return current_config_input_output_alphabetic_options
 
 
+def create_new_config_filename(config_input_output_alphabetic_options):
+    # filename input
+    temp_str=''
+    if config_input_output_alphabetic_options[0][1]!= '':
+        IO_setup_display_string = "INPUT FILE: " + str(os.path.basename(os.path.normpath(config_input_output_alphabetic_options[0][1])))
+        temp_str=IO_setup_display_string.replace("INPUT FILE: ","")
+        temp_str = temp_str.replace(".txt","")
+    # directory input
+    elif config_input_output_alphabetic_options[1][1]!= '':
+        IO_setup_display_string = "INPUT DIR: " + str(os.path.basename(os.path.normpath(config_input_output_alphabetic_options[1][1])))
+        temp_str=IO_setup_display_string.replace("INPUT DIR: ","")
+    temp_str=temp_str.replace("Date: ","Date ")
+    temp_str=temp_str.replace("(Date: ","_")
+    temp_str=temp_str.replace(")","")
+    # temp_str=temp_str.replace(" _ "," ")
+    temp_str=temp_str.replace(" _ ","_")
+    # replace blanks in the filename or inputdir with - or it will break the argparse code in NLP_setup_IO_main
+    temp_str=temp_str.replace(" ","-")
+    config_filename = temp_str
+    return config_filename
+
 def save_config(config_input_output_alphabetic_options):
+    global config_filename
     current_config_input_output_alphabetic_options=get_IO_options_list(True)
-    #@@@
-    # print("SAVE current_config_input_output_alphabetic_options",current_config_input_output_alphabetic_options)
+    new_config_filename = create_new_config_filename(current_config_input_output_alphabetic_options) + '.csv'
+    head, tail = os.path.split(config_filename)
+
+    answer = tk.messagebox.askyesnocancel("Warning", "Where would you like to save your changes?\n\n\n" +
+                                          "YES to save changes to the CURRENTLY SELECTED CONFIG file\n\n   " + tail + "\n\n" +
+                                          "NO to save changes to a NEW CONFIG FILE with the name \n\n   " + new_config_filename + "\n\n\n" +
+                                          "CANCEL to make NO changes")
+    if answer==None: # Cancel
+        return
+    if not answer: # not answer = NO to save on current config
+        new_config_filename = os.path.join(GUI_IO_util.configPath,new_config_filename)
+        # GUI_util.set_IO_brief_values(new_config_filename, 0)
+        # the next command does not see to actually change the value of config_filename_selected_config in GUI_util
+        #   so... in GUI_util, I take a different approach based on the time of the config file just saved
+        GUI_util.config_filename_selected_config.set(new_config_filename)
+        config_filename = new_config_filename
     config_util.write_IO_config_file(window, config_filename, config_input_output_numeric_options,
                                      current_config_input_output_alphabetic_options, silent=False)
+
 
 def close_GUI(IO_configuration_upon_entry):
     missing_input = False

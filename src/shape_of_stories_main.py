@@ -42,11 +42,7 @@ import file_checker_util as utf
 def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, sentimentAnalysis, sentimentAnalysisMethod, memory_var, corpus_analysis,
         hierarchical_clustering, SVD, NMF, best_topic_estimation):
 
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('_main.py', '_config.csv')
-
+    config_filename = GUI_util.config_filename_selected_config.get()
     global nSAscoreFiles
     nSAscoreFiles = 0
     filesToOpen = []

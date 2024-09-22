@@ -36,12 +36,8 @@ def run(inputFilename,inputDir, outputDir,
     script_to_run,
     function_to_run):
 
+    config_filename = GUI_util.config_filename_selected_config.get()
     filesToOpen=[]
-
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('_main.py', '_config.csv')
 
     if (check_tools=='') and (convert_tools=='') and (clean_tools==""):
         mb.showwarning(title='No options selected', message='No options have been selected.\n\nPlease, select one of the available options and try again.')

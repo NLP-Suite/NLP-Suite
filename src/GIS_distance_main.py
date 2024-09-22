@@ -41,7 +41,7 @@ def run(inputFilename,outputDir, openOutputFiles, chartPackage, dataTransformati
         encoding, geocoder,
         # geocode,
         compute_pairwise_distances, compute_baseline_distances, baselineLocation,locationColumn,locationColumn2):
-
+    config_filename = GUI_util.config_filename_selected_config.get()
 
     filesToOpen = []
 
@@ -170,7 +170,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for Computing Geodesic and Great-Circle Distances between Locations'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('_main.py', '_config.csv')
+config_filename = GUI_util.config_filename_selected_config.get()
 
 # The 4 values of config_option refer to:
 #   input file
