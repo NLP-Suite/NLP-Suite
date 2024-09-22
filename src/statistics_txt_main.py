@@ -33,6 +33,7 @@ def run(inputFilename, inputDir, outputDir,
         corpus_statistics_var,
         corpus_statistics_byPOS_var):
 
+    config_filename = GUI_util.config_filename_selected_config.get()
     filesToOpen = []  # Store all files that are to be opened once finished
 
     if not corpus_statistics_var and not corpus_statistics_byPOS_var:
@@ -154,7 +155,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for Statistical Analyses of txt Files'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('_main.py', '_config.csv')
+config_filename = GUI_util.config_filename_selected_config.get()
 
 # The 4 values of config_option refer to:
 #   input file

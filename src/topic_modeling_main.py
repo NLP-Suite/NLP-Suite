@@ -28,7 +28,11 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"topic_modeling_gensim_main.py",['nltk','os','tkinter','multiprocessing','pandas','gensim','spacy','pyLDAvis','matplotlib','logging','IPython','bertopic'])==False:
+#@@@
+# if IO_libraries_util.install_all_Python_packages(GUI_util.window,"topic_modeling_gensim_main.py",['nltk','os','tkinter','multiprocessing','pandas','gensim','spacy','pyLDAvis','matplotlib','logging','IPython','bertopic'])==False:
+#     sys.exit(0)
+
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"topic_modeling_gensim_main.py",['nltk','os','tkinter','multiprocessing','pandas','gensim','spacy','pyLDAvis','matplotlib','logging','IPython'])==False:
     sys.exit(0)
 
 import os
@@ -40,7 +44,8 @@ import spacy
 # python -m spacy download en_core_web_sm)
 
 import GUI_IO_util
-import topic_modeling_bert_util
+#@@@
+# import topic_modeling_bert_util
 import topic_modeling_mallet_util
 import topic_modeling_gensim_util
 import IO_internet_util
@@ -70,10 +75,7 @@ def run(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, 
         mb.showwarning(title='Warning', message='There are no options selected.\n\nPlease, select one of the available options (MALLET or Gensim) and try again.')
         return
 
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('main.py', 'config.csv')
+    config_filename = GUI_util.config_filename_selected_config.get()
 
     filesToOpen = []
     
@@ -133,14 +135,13 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=560, # height at brief display
-                             GUI_height_full=600, # height at full display
+                             GUI_height_brief=640, # height at brief display
+                             GUI_height_full=680, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=1, # to be added for full display
                              increment=1)  # to be added for full display
 
 GUI_label = 'Graphical User Interface (GUI) for Topic Modeling with MALLET and Gensim'
-config_filename = 'NLP_default_IO_config.csv'
 
 head, scriptName = os.path.split(os.path.basename(__file__))
 
@@ -155,6 +156,7 @@ head, scriptName = os.path.split(os.path.basename(__file__))
 #   input dir
 #   input secondary dir
 #   output dir
+config_filename = 'NLP_default_IO_config.csv'
 config_input_output_numeric_options=[0,1,0,1]
 
 # necessary to avoid opening the GUI repeatedly
@@ -330,6 +332,10 @@ if current_process().name == 'MainProcess':
 
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "Please, enter the number of topics to be used (recommended default = 20).\n\nVarying the number of topics may provide better results.")
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                      "Please, tick the checkbox if you wish to run BERtopic LLM (Large Language Model) topic modeling.")
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                      "Please, tick the checkbox to split long documents to improve the effiency of BERtopic topic modeling algorithms.")
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "Please, tick the checkbox if you wish to run MALLET LDA topic modeling.")
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,

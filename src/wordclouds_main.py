@@ -35,12 +35,8 @@ def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizont
         prepare_image_var,selectedImage, use_contour_only,
         differentColumns_differentColors, csvField_color_list, openOutputFiles, doNotCreateIntermediateFiles):
 
+    config_filename = GUI_util.config_filename_selected_config.get()
     filesToOpen=[]
-
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('_main.py', '_config.csv')
 
     # get the NLP package and language options
     error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
