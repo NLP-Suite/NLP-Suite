@@ -109,7 +109,7 @@ def write_external_software_config_file(window, config_filename, currently_selec
         csv_file.to_csv(config_filename_path, encoding='utf-8', index=False)
 
         IO_user_interface_util.timed_alert(window, 2000, 'Warning',
-                                           'NLP external software options have been saved to\n\n  ' + config_filename_path,
+                                           'NLP external software options have been saved to\n\n   ' + config_filename_path,
                                            False)
     except:
         mb.showwarning(title='Permission error?',
@@ -226,6 +226,25 @@ def save_NLP_package_language_config(window, currently_selected_options,
 # e.g., [['C:/Users/rfranzo/Desktop/NLP-Suite/lib/sampleData/The Three Little Pigs.txt', '', '', ''], ['', '', '', ''], ['', '', '', ''], ['C:\\Program Files (x86)\\NLP_backup\\Output', '', '', '']]
 # 5 fields: label/path + sort order + 3 date items (Item separator character(s), Date format, Date position)
 
+
+# function not used
+def get_config_filenameget_config_filename_from_alphabetic_options(config_input_output_alphabetic_options):
+    if config_input_output_alphabetic_options[0][1]!= '':
+        #head is path, tail is filename
+        head, tail = os.path.split(config_input_output_alphabetic_options[0][1])
+        config_filename = str(tail)
+    # else:
+    # check input directory config_input_output_numeric_options[1]!=0:
+    if config_input_output_alphabetic_options[1][1]!= '':
+        config_filename = str(os.path.basename(os.path.normpath(config_input_output_alphabetic_options[1][1])))
+
+    # both filename [1] and input Dir [2] are empty
+    if (config_input_output_alphabetic_options[0][1] == '') and (
+            config_input_output_alphabetic_options[1][1] == ''):
+        config_filename = ""
+
+    return config_filename
+
 def get_template_config_csv_file(config_input_output_numeric_options, config_input_output_alphabetic_options):
     IO_configuration =[]
     fileType=getFiletype(config_input_output_numeric_options) # different types of input files
@@ -268,6 +287,43 @@ def get_template_config_csv_file(config_input_output_numeric_options, config_inp
 #   Jan 2023 added sort order
 # 5 fields: label/path + sort order + 3 date items
 
+def get_input_file_directory(config_filename):
+    config_input_output_alphabetic_options = []
+    configFilePath = os.path.join(GUI_IO_util.configPath, config_filename)
+    # check that the config file exists
+    if os.path.isfile(configFilePath) == True:
+        config_file_exists=True
+        csv_file = open(configFilePath, 'r', newline='')
+        # config_input_output_alphabetic_options a double list [[]]
+        config_input_output_alphabetic_options = list(csv.reader(csv_file, delimiter=','))
+        input_filename=config_input_output_alphabetic_options[1][1]
+        input_filename=os.path.basename(input_filename)
+        input_dir=config_input_output_alphabetic_options[2][1]
+        # print('INPUT DIR            ',input_dir)
+        # remove the last item from dir path
+        # first_part_dir_path = input_dir.rsplit("/", 1)[0]
+        # print('first_part_dir_path',first_part_dir_path)
+        # import pathlib
+        # path = pathlib.Path(rdir_path)
+        # print(path.parent)
+
+        # get last item of dir path
+        input_dir_last_item=os.path.basename(input_dir)
+
+        # if date present remove the date part containing _ which would break the filename saving
+        #   but do signal that the dir contains a date
+        if '(Date:' in input_dir_last_item:
+            input_dir_last_item=input_dir_last_item.rsplit('(Date')[0]+ '_date'
+        new_config_filename=os.path.join(GUI_IO_util.configPath, input_dir_last_item+'.csv')
+        # print('new_config_filename',new_config_filename)
+        csv_file.close()
+    else:
+        config_file_exists=False
+        input_filename=''
+        input_dir=''
+        input_dir_last_item=''
+    return config_file_exists, input_filename, input_dir, input_dir_last_item, new_config_filename
+
 def read_config_file(config_filename, config_input_output_numeric_options):
     config_input_output_alphabetic_options = []
     configFilePath = os.path.join(GUI_IO_util.configPath, config_filename)
@@ -293,6 +349,7 @@ def read_config_file(config_filename, config_input_output_numeric_options):
             os.remove(configFilePath)
             # repeat until the user has entered the appropriate information in NLP_setup_IO_main.py
             while os.path.isfile(configFilePath) == False:
+                # blanks in the config_filename will break the argparse algorithm
                 call("python NLP_setup_IO_main.py --config_option " +
                      str(config_input_output_numeric_options).replace('[','"').replace(
                     ']', '"') + " --config_filename " + config_filename, shell=True)
@@ -320,6 +377,8 @@ def read_config_file(config_filename, config_input_output_numeric_options):
 # returns the IO labels that are missing: Filename, Dir, output Dir
 def get_missing_IO_values(config_input_output_numeric_options, config_input_output_alphabetic_options):
     missing_IO=''
+    if len(config_input_output_alphabetic_options[0])==0: # the csv file is a wrong file
+        return missing_IO
     # loop through the 4 input/output options: input filename, input man dir, input secondary dir, output dir
     index = 0
     # index ranges 0-3: Input filename, input main dir, input secondary dir, output dir
@@ -395,7 +454,7 @@ def check_missing_IO(window, config_filename, scriptName, IO_setup_display_brief
     # test for "filename with path" since the actual label could be "Input txt filename with path" or "Input csv filename with path"
     if "filename with path" in missing_IO and "Input files directory" in missing_IO:
         mutually_exclusive_msg='The two I/O options - "Input filename with path" and "Input files directory" - are MUTUALLY EXCLUSIVE. YOU CAN ONLY HAVE ONE OR THE OTHER BUT NOT BOTH. In other words, you can choose to work with a sigle file in input or with many files stored in a directory.\n\n'
-    open_setup_IO_GUI=True # = cancel in mb.askokcancel
+    open_setup_IO_GUI=False # = cancel in mb.askokcancel
     if missing_IO!='':
         Run_Button_Off = True
         if not silent:
@@ -431,9 +490,11 @@ def write_IO_config_file(window, config_filename, config_input_output_numeric_op
                            message="The command failed to create the Config directory.\n\nIf you look at your command line and you see a \'Permission error\', it means that the folder where you installed your NLP Suite is Read only.\n\nYou can check whether that's the case by right clicking on the folder name, clicking on \'Properties\'. Make sure that the \'Attributes\' setting, the last one on the display window, is NOT set to \'Read only\'. If so, click on the checkbox until the Read only is cleared, click on \'Apply\' and then \'OK\', exit the NLP Suite and try again.")
             return
 
-    config_filename_path=os.path.join(GUI_IO_util.configPath, config_filename)
+    head, tail = os.path.split(config_filename)
+    if head == '':
+        config_filename=os.path.join(GUI_IO_util.configPath, config_filename)
     try:
-        with open(config_filename_path, 'w+', newline='') as csv_file:
+        with open(config_filename, 'w+', newline='') as csv_file:
             writer = csv.writer(csv_file)
             # writer.writerows(temp)
             # in the NLP_setup_IO_config there are 6 columns and 4 rows (each row for input file, input dir1, input dir2, output dir)
@@ -441,16 +502,19 @@ def write_IO_config_file(window, config_filename, config_input_output_numeric_op
             config_input_output_alphabetic_options.insert(0, header)
             writer.writerows(config_input_output_alphabetic_options)
         csv_file.close()
+        #@@@
+        config_file_exists, input_filename, input_dir, input_dir_last_item, new_config_filename = get_input_file_directory(config_filename)
+        # os.rename(config_filename_path,input_dir)
     except:
         mb.showwarning(title='Permission error?',
                        message="The command failed to save the config file\n\n" + config_filename + "\n\nIf you look at your command line and you see a \'Permission error\', it means that the folder where you installed your NLP Suite is Read only.\n\nYou can check whether that's the case by right clicking on the folder name, clicking on \'Properties\'. Make sure that the \'Attributes\' setting, the last one on the display window, is NOT set to \'Read only\'. If so, click on the checkbox until the Read only is cleared, click on \'Apply\' and then \'OK\', exit the NLP Suite and try again.")
 
     if config_filename != 'license_config.csv':
         IO_user_interface_util.timed_alert(window, 2000, 'Warning',
-                                           'INPUT and OUTPUT paths configuration have been saved to\n\n' + config_filename_path,
+                                           'INPUT and OUTPUT paths configuration have been saved to config file   ' + config_filename,
                                            False)
-
 def get_date_options(config_filename, config_input_output_numeric_options):
+
 
     # in the NLP_setup_IO_config there are 6 columns and 4 rows (each row for input file, input dir1, input dir2, output dir):
     # 5 fields: label/path + sort order + 3 date items (Item separator character(s), Date format, Date position)

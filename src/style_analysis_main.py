@@ -32,10 +32,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
     vocabulary_analysis_menu_var,
     gender_guesser_var):
 
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('_main.py', '_config.csv')
+    config_filename = GUI_util.config_filename_selected_config.get()
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
@@ -45,9 +42,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
     language_list = [language]
 
     # get the date options from filename
-    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = config_util.get_date_options(
-        config_filename, config_input_output_numeric_options)
-    extract_date_from_text_var = 0
+    # filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = config_util.get_date_options(
+    #     config_filename, config_input_output_numeric_options)
+    # extract_date_from_text_var = 0
 
     if package_display_area_value == '':
         mb.showwarning(title='No setup for NLP package and language',
@@ -345,7 +342,6 @@ GUI_util.set_window(GUI_size, GUI_label, config_filename,config_input_output_num
 
 window=GUI_util.window
 config_input_output_numeric_options=GUI_util.config_input_output_numeric_options
-config_filename=GUI_util.config_filename
 inputFilename=GUI_util.inputFilename
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
@@ -570,7 +566,6 @@ readMe_message="The Python 3 scripts analyze different aspects of style, from th
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command,
                     videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
-
 def activate_NLP_options(*args):
     global error, package_basics, package, language, language_var, language_list
     error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()

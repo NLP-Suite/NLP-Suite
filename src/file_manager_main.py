@@ -430,7 +430,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for File Manager (by Filename)'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('_main.py', '_config.csv')
+# config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file
@@ -445,15 +445,14 @@ config_filename = scriptName.replace('_main.py', '_config.csv')
 #   output dir
 config_input_output_numeric_options=[0,1,0,1]
 
-GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
+GUI_util.set_window(GUI_size, GUI_label, GUI_util.config_filename_selected_config.get(), config_input_output_numeric_options)
 
 window=GUI_util.window
 config_input_output_numeric_options=GUI_util.config_input_output_numeric_options
-config_filename=GUI_util.config_filename
+config_filename=GUI_util.config_filename_selected_config.get()
 inputFilename=GUI_util.inputFilename
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
-
 
 selectedCsvFile_var=tk.StringVar()
 select_csv_field_var=tk.StringVar()

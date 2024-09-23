@@ -61,6 +61,8 @@ def dbFromCSV(inpath, outpath):
 
 def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation, SQL_query_var, createFromCSV):
 
+    config_filename = GUI_util.config_filename_selected_config.get()
+
     if createFromCSV==1:
         dbOutput = dbFromCSV(inputDir,outputDir)
         if dbOutput != -1:
@@ -135,7 +137,8 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for Relational Database SQL queries'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('_main.py', '_config.csv')
+
+config_filename = GUI_util.config_filename_selected_config.get()
 
 # The 4 values of config_option refer to:
 #   input file

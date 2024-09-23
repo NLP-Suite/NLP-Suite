@@ -21,10 +21,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, chartPackage, dataTr
         sg_menu_var, vector_size_var, window_var, min_count_var,
         vis_menu_var, dim_menu_var, keywords_var):
 
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('_main.py', '_config.csv')
+    config_filename = GUI_util.config_filename_selected_config.get()
 
     if not BERT_var and not Gensim_var and not WSI_var:
         mb.showwarning(title='Warning',message='No option has been selected.\n\nPlease select the Word2Vec package you wish to use (BERT and/or Gensim) and try again.')

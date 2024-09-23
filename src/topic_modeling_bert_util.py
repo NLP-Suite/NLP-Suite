@@ -2,13 +2,17 @@ import matplotlib.pyplot as plt
 import GUI_util
 import IO_files_util
 import re
-from sklearn.feature_extraction.text import CountVectorizer
+# from sklearn.feature_extraction.text import CountVectorizer
+# from bertopic import BERTopic
+#
+# from sklearn.feature_extraction.text import CountVectorizer
+# from bertopic import BERTopic
+
 from sentence_transformers import SentenceTransformer
 import pandas as pd
 import argparse
 import os
 from gensim.parsing.preprocessing import STOPWORDS
-from bertopic import BERTopic
 import json
 
 

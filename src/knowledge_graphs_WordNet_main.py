@@ -31,7 +31,6 @@ pd.set_option('display.max_columns', 500)
 # written by Yi Wang April 2020
 
 def run(inputFilename, inputDir, outputDir,openOutputFiles,
-        
         chartPackage,
         dataTransformation,
         csv_file,
@@ -47,6 +46,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         aggregate_bySentenceID_var,
         dict_WordNet_filename_var):
 
+    config_filename = GUI_util.config_filename_selected_config.get()
     filesToOpen = []  # Store all files that are to be opened once finished
 
     # get the NLP package and language options
@@ -271,7 +271,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for WordNet tools'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('_main.py', '_config.csv')
+config_filename = GUI_util.config_filename_selected_config.get()
 
 # The 4 values of config_option refer to:
 #   input file

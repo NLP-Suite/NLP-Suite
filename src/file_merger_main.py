@@ -18,7 +18,7 @@ import file_merger_util
 
 def run(input_main_dir_path, output_dir_path,
     openOutputFiles,
-	chartPackage, dataTransformation,
+    chartPackage, dataTransformation,
     merge_processSubdir,
     merge_saveFilenameInOutput,
     merge_embed_filenames_inStringSeparators,
@@ -27,11 +27,13 @@ def run(input_main_dir_path, output_dir_path,
     merge_embed_subdir_name,
     merge_character_separator):
 
+    config_filename = GUI_util.config_filename_selected_config.get()
+
     if IO_libraries_util.check_inputPythonJavaProgramFile('file_merger_util.py')==False:
         return
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', "Started running 'File Merger' at",
-												 True, '', True,'',True)
+                                                 True, '', True,'',True)
 
     file_merger_util.file_merger(GUI_util.window,
                                 input_main_dir_path,
@@ -44,7 +46,7 @@ def run(input_main_dir_path, output_dir_path,
                                 merge_separator_entry_end,
                                 merge_embed_subdir_name,
                                 merge_character_separator,
-								config_filename)
+                                config_filename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, "Analysis end", "Finished running 'File Merger' at", True, '', True, startTime, True)
 
@@ -54,8 +56,8 @@ run_script_command=lambda: run(
                             GUI_util.input_main_dir_path.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
-							GUI_util.charts_package_options_widget.get(),
-							GUI_util.data_transformation_options_widget.get(),
+                            GUI_util.charts_package_options_widget.get(),
+                            GUI_util.data_transformation_options_widget.get(),
                             merge_subdir_var.get(),
                             merge_save_fileName_var.get(),
                             merge_embed_filenames_inStringSeparators_var.get(),
@@ -89,7 +91,7 @@ GUI_size = str(GUI_width) + 'x' + str(GUI_height)
 
 GUI_label='Graphical User Interface (GUI) for File Merger'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('_main.py', '_config.csv')
+config_filename = GUI_util.config_filename_selected_config.get()
 
 # The 4 values of config_option refer to:
 #   input file
@@ -123,7 +125,7 @@ merge_separator_entry_begin_var=tk.StringVar()
 merge_separator_entry_end_var=tk.StringVar()
 
 def clear(e):
-	GUI_util.clear("Escape")
+    GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
 
@@ -146,13 +148,13 @@ merge_separator_entry_begin = tk.Entry(window,width=10,textvariable=merge_separa
 merge_separator_entry_end = tk.Entry(window,width=10,textvariable=merge_separator_entry_end_var)
 
 def display_merge_separator(y_multiplier_integer):
-	merge_separator_entry_begin_var.set("<@#")
-	merge_separator_entry_begin.configure(state="disabled")
-	y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_merger_merge_separator_entry_begin_pos,y_multiplier_integer,merge_separator_entry_begin,True)
+    merge_separator_entry_begin_var.set("<@#")
+    merge_separator_entry_begin.configure(state="disabled")
+    y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_merger_merge_separator_entry_begin_pos,y_multiplier_integer,merge_separator_entry_begin,True)
 
-	merge_separator_entry_end_var.set("#@>")
-	merge_separator_entry_end.configure(state="disabled")
-	y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_merger_merge_separator_entry_end_pos,y_multiplier_integer,merge_separator_entry_end,True)
+    merge_separator_entry_end_var.set("#@>")
+    merge_separator_entry_end.configure(state="disabled")
+    y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_merger_merge_separator_entry_end_pos,y_multiplier_integer,merge_separator_entry_end,True)
 display_merge_separator(y_multiplier_integer)
 
 merge_embed_subdir_name_var.set(0)
@@ -171,24 +173,24 @@ merge_subdir_checkbox = tk.Checkbutton(window, text='Process subdirectories', va
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,merge_subdir_checkbox)
 
 def activate_all_options(*args):
-	merge_save_fileName_checkbox.configure(state='normal')
-	merge_subdir_checkbox.configure(state="normal")
-	merge_embed_filenames_inStringSeparators_checkbox.configure(state="disabled")
-	merge_separator_entry_begin.configure(state="disabled")
-	merge_separator_entry_end.configure(state="disabled")
-	merge_embed_subdir_name_checkbox.configure(state='disabled')
-	merge_character_separator.configure(state='disabled')
-	if merge_save_fileName_var.get()==True:
-		merge_embed_filenames_inStringSeparators_checkbox.configure(state="normal")
-		if merge_embed_filenames_inStringSeparators_var.get()==True:
-			merge_separator_entry_begin.configure(state="normal")
-			merge_separator_entry_end.configure(state="normal")
-		if merge_subdir_var.get()==True:
-			merge_embed_subdir_name_checkbox.configure(state='normal')
-		if merge_embed_subdir_name_var.get()==True:
-			merge_character_separator.configure(state='normal')
-	else:
-		merge_embed_filenames_inStringSeparators_var.set(0)
+    merge_save_fileName_checkbox.configure(state='normal')
+    merge_subdir_checkbox.configure(state="normal")
+    merge_embed_filenames_inStringSeparators_checkbox.configure(state="disabled")
+    merge_separator_entry_begin.configure(state="disabled")
+    merge_separator_entry_end.configure(state="disabled")
+    merge_embed_subdir_name_checkbox.configure(state='disabled')
+    merge_character_separator.configure(state='disabled')
+    if merge_save_fileName_var.get()==True:
+        merge_embed_filenames_inStringSeparators_checkbox.configure(state="normal")
+        if merge_embed_filenames_inStringSeparators_var.get()==True:
+            merge_separator_entry_begin.configure(state="normal")
+            merge_separator_entry_end.configure(state="normal")
+        if merge_subdir_var.get()==True:
+            merge_embed_subdir_name_checkbox.configure(state='normal')
+        if merge_embed_subdir_name_var.get()==True:
+            merge_character_separator.configure(state='normal')
+    else:
+        merge_embed_filenames_inStringSeparators_var.set(0)
 
 
 merge_embed_filenames_inStringSeparators_var.trace('w',activate_all_options)
@@ -210,18 +212,18 @@ TIPS_options= 'File merger','File splitter','File handling in NLP Suite','File m
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
-	clearOptions="\n\nTo clear a previously selected option for any of the tools, click on the appropriate dropdown menu and press ESCape twice."
-	if not IO_setup_display_brief:
-		y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,GUI_IO_util.msg_anyData)
-		y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,GUI_IO_util.msg_outputDirectory)
-	else:
-		y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-									  GUI_IO_util.msg_IO_setup)
+    clearOptions="\n\nTo clear a previously selected option for any of the tools, click on the appropriate dropdown menu and press ESCape twice."
+    if not IO_setup_display_brief:
+        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,GUI_IO_util.msg_anyData)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,GUI_IO_util.msg_outputDirectory)
+    else:
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                      GUI_IO_util.msg_IO_setup)
 
-	y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to save the filenames in the merged output file.\n\nTo make it easy to find files in the merged output, embed the filenames in unique start/end strings. Filenames will be saved with their path. WHEN SELECTING THE OPTION OF EMBEDDING THE SUBDIRECTORY NAME IN THE FILENAME, THE FILENAME WILL BE SAVED WITHOUT PATH.\n\nThe option of saving the subdirectory name when saving the file is only available when processing subdirectories.")
-	y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to process files in subdirectories.\n\nWhen processing subdirectories, if the filename is saved in the merged output, the filename will be saved without a path. You will, however, have the option to save the filename with the suffix of the subdirectory name.")
-	y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
-	return y_multiplier_integer - 1
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to save the filenames in the merged output file.\n\nTo make it easy to find files in the merged output, embed the filenames in unique start/end strings. Filenames will be saved with their path. WHEN SELECTING THE OPTION OF EMBEDDING THE SUBDIRECTORY NAME IN THE FILENAME, THE FILENAME WILL BE SAVED WITHOUT PATH.\n\nThe option of saving the subdirectory name when saving the file is only available when processing subdirectories.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to process files in subdirectories.\n\nWhen processing subdirectories, if the filename is saved in the merged output, the filename will be saved without a path. You will, however, have the option to save the filename with the suffix of the subdirectory name.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
+    return y_multiplier_integer - 1
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message

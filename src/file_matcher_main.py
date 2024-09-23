@@ -19,6 +19,8 @@ import IO_files_util
 
 def run(inputPath, outputPath, selectedCsvFile_var, openOutputFiles, chartPackage, dataTransformation, find_var, source_extension_var, target_extension_var, matching_var, copy_var, move_var, character_value, number_of_items):
 
+    config_filename = GUI_util.config_filename_selected_config.get()
+
     startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running File Matcher at',
                                                  True, '', True, '', False)
 
@@ -85,7 +87,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for File Matcher'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('_main.py', '_config.csv')
+config_filename = GUI_util.config_filename_selected_config.get()
 
 # The 4 values of config_option refer to:
 #   input file

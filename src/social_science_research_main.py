@@ -270,10 +270,7 @@ def run(inputDir, input_secondary_dir_path, outputDir, openOutputFiles, chartPac
         similarityIndex_Intruder_var, ancestor_var, nouns_verbs,
         plagiarist_var, similarityIndex_Plagiarist_var, Levenshtein_var):
 
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('_main.py', '_config.csv')
+    config_filename = GUI_util.config_filename_selected_config.get()
 
     global filesToOpen
     filesToOpen = []

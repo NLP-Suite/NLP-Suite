@@ -41,10 +41,7 @@ def run(inputFilename, inputDir, outputDir,
         continue_manual_Coref_var,
         corefed_txt_file):
 
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('_main.py', '_config.csv')
+    config_filename = GUI_util.config_filename_selected_config.get()
 
     # pull the widget names from the GUI since the scripts change the IO values
     inputFilename = GUI_util.inputFilename.get()
