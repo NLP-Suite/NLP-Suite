@@ -33,10 +33,7 @@ def run(inputFilename, inputDir, outputDir,
         checker_value_var,
         check_withinSubDir_spell_checker_var):
 
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = GUI_util.config_filename_selected_config.get()
+    config_filename = GUI_util.config_filename_selected_config.get()
 
     filesToOpen = []
     df_list = []

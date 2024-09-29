@@ -3271,7 +3271,11 @@ def individual_simplex_info_main(simplex, inputDir, outputDir):
     return individual_simplex_info_file_name
 
 
-def build_macro_event_dropdown_menu(inputDir):
+def build_macro_event_dropdown_menu(window, inputDir):
+    import IO_user_interface_util
+    IO_user_interface_util.timed_alert(window, 1000, 'Warning',
+                                       'Loading PC-ACE Excel xlsx database... Please wait...',
+                                       False, '', False, '', False)
     downdown_menu_list = []
     has_files = True
 

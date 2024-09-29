@@ -852,18 +852,21 @@ def open_NLP_setup_IO_main(config_input_output_numeric_options, config_filename)
         # https://stackoverflow.com/questions/39327032/how-to-get-the-latest-file-in-a-folder
         import glob
         list_of_files = glob.glob(GUI_IO_util.configPath + os.sep + '*.csv')  # * means all if need specific format then *.csv
-        # for unix getctime; what about Mac?
         latest_file = max(list_of_files, key=os.path.getmtime)
-        config_filename_selected_config.set(latest_file)
-        config_filename = config_filename_selected_config.get()
+        # config_filename_selected_config.set(latest_file)
+        # config_filename = config_filename_selected_config.get()
 
         # need to compare the datetime and it should be less than a minute
-        # import datetime
-        # now = datetime.datetime.now()
-        # latest_file_time = datetime.datetime.fromtimestamp(os.path.getmtime(latest_file))
-        # # get the new config csv file if it was just created in NLP_setup_IO_main
-        # if(now-datetime.timedelta(seconds=30) > latest_file_time):
-        #     error_found = True
+        import datetime
+        now = datetime.datetime.now()
+        latest_file_time = datetime.datetime.fromtimestamp(os.path.getmtime(latest_file))
+        # get the new config csv file if it was just created in NLP_setup_IO_main
+        if(now-datetime.timedelta(seconds=30) > latest_file_time):
+            # do not change the current config_filename
+            config_filename_selected_config.set(config_filename)
+        else:
+            config_filename_selected_config.set(latest_file)
+            config_filename = config_filename_selected_config.get()
 
     return error_found
 

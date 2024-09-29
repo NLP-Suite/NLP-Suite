@@ -48,10 +48,7 @@ def run(inputFilename, outputDir, openOutputFiles,
     #     time_var,
     #     cumulative_var)
 
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('main.py', 'config.csv')
+    config_filename = GUI_util.config_filename_selected_config.get()
 
     filesToOpen = []
 
