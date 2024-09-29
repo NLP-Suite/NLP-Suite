@@ -40,6 +40,8 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         comments_var,
         document_sources_var):
 
+    config_filename = GUI_util.config_filename_selected_config.get()
+
     filesToOpen = []
     outputFile = ''
 
@@ -581,6 +583,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    True, False, True, False, 90, GUI_IO_util.open_S_dictionary,
                                    "Use the dropdown menu to select the data type to be used to extract a list of values.")
 
+
+inputDirSV = ''
 # simplex_data = ''
 simplex_data_var = tk.StringVar()
 # simplex_data_var.set(simplex_list)
@@ -816,11 +820,23 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "Tick the checkbox to extract the documents (e.g., newspaper articles) that are the sources of information for specific objects (e.g., Semantic triplets (SVO)).")
 
 error = False
+database_already_loaded = False
 table_values = []
 def changed_filename(*args):
-    global error, setup_simplex_menu
+    global error, setup_simplex_menu, database_already_loaded, inputDirSV
     # 25 PC-ACE files
-    if GUI_util.input_main_dir_path.get()!='':
+    # if GUI_util.input_main_dir_path.get()!='' and not error:
+    if GUI_util.input_main_dir_path.get() != '' and GUI_util.input_main_dir_path.get() != inputDirSV:
+        inputDirSV = GUI_util.input_main_dir_path.get()
+        inputDocs = IO_files_util.getFileList('', GUI_util.input_main_dir_path.get(), fileType='.xlsx', silent=True)
+        nDocs = len(inputDocs)
+        if nDocs < 20:
+            GUI_util.run_button.configure(state='disabled')
+            table_menu_values = []
+            error = True
+            mb.showwarning(title='Warning',
+                           message="The PC-ACE table analyzer scripts require in input a directory of Excel (xlsx) files. But the selected directory\n\n" + inputDir.get() + "\n\ndoes not contain the required PC-ACE Excel files.\n\nPlease, select a PC-ACE directory and try again")
+            return
         GUI_util.run_button.configure(state='normal')
         table_list = DB_PCACE_data_analyzer_util.import_PCACE_tables(inputDir.get())
         # 25 files including all comments files
@@ -834,6 +850,8 @@ def changed_filename(*args):
                 table_values.append(table[:len(table)-5])
             table_menu_values = table_values # ", ".join(table_values)
             select_DB_tables['values'] = table_menu_values
+        # if error:
+        #     return
         if len(table_menu_values)>0:
             select_DB_tables.configure(state='normal')
             select_DB_tables.set(table_menu_values[0])
@@ -851,13 +869,15 @@ def changed_filename(*args):
             setup_complex.configure(state='normal')
             # setup_complex.set(setup_complex_menu[0])
             setup_complex.set('')
-
-            primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(inputDir.get())
-            primary_complex['values'] = primary_complex_menu
+            if not database_already_loaded:
+                primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(window,inputDir.get())
+                primary_complex['values'] = primary_complex_menu
+                database_already_loaded = True
         else:
             setup_complex.set('')
             setup_complex.configure(state='disabled')
-        setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(), 'setup_simplex.xlsx'))
+        # setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(), 'setup_simplex.xlsx'))
+        setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names('setup_simplex.xlsx')
         setup_simplex['values'] = setup_simplex_menu
         if len(setup_simplex_menu)>0:
             setup_simplex.configure(state='normal')
@@ -870,6 +890,9 @@ def changed_filename(*args):
         if inputFilename.get()!='':
             GUI_util.run_button.configure(state='disabled')
             error = True
+    # if not error:
+    #     primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(window, inputDir.get())
+    #     primary_complex['values'] = primary_complex_menu
 GUI_util.inputFilename.trace('w', changed_filename)
 GUI_util.input_main_dir_path.trace('w', changed_filename)
 
@@ -953,19 +976,20 @@ readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 changed_filename()
-if error:
-    error = True
+if error and GUI_util.input_main_dir_path.get()!='':
     # check to see if there is a GUI-specific config file and set it to the setup_IO_menu_var
     if os.path.isfile(os.path.join(GUI_IO_util.configPath, config_filename)):
-        GUI_util.setup_IO_menu_var.set('GUI-specific I/O configuration')
+        GUI_util.setup_IO_menu_var.set('Select any I/O csv config file')
         mb.showwarning(title='Warning',
-                       message="The PC-ACE table analyzer scripts require in input a directory of Excel (xlsx) files. But the directory in 'Default I/O configuration' does not contain the required PC-ACE Excel files.\n\n"
-                                "Since a GUI-specific " + config_filename + " file is available, the I/O configuration has been automatically set to GUI-specific I/O configuration.")
+                       message="The PC-ACE table analyzer scripts require in input a directory of Excel (xlsx) files. But the selected directory\n\n" + inputDir.get() + "\n\ndoes not contain the required PC-ACE Excel files.\n\nPlease, select a PC-ACE directory and try again")
+                                # "Since a GUI-specific " + config_filename + " file is available, the I/O configuration has been automatically set to GUI-specific I/O configuration.")
+                                # "Since a GUI-specific " + config_filename + " file is available, the I/O configuration has been automatically set to GUI-specific I/O configuration.")
+        select_DB_tables.configure(state='disabled')
         error = False
-IO_user_interface_util.timed_alert(window, 1000, 'Warning',
-                                   'Loading data... Please wait...',
-                                   False, '', False, '', False)
-primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(inputDir.get())
-primary_complex['values'] = primary_complex_menu
+        database_already_loaded = False
+
+# if inputDir.get()!='' and not error:
+#     primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(window, inputDir.get())
+#     primary_complex['values'] = primary_complex_menu
 GUI_util.window.mainloop()
 

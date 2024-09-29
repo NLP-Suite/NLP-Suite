@@ -30,10 +30,7 @@ def run(inputFilename,inputDir,outputDir, openOutputFiles, chartPackage, dataTra
         ontology_color_list,
         bold_DBpedia_YAGO_var):
 
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('main.py', 'config.csv')
+    config_filename = GUI_util.config_filename_selected_config.get()
 
     if ontology_class_var.get()=='':
         msg = 'The "Ontology class" widget is empty.\n\nPlease, use the dropdown menu to select an Ontology class and try again.'

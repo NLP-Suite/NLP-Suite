@@ -28,11 +28,8 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label = 'Graphical User Interface (GUI) for setting up the default NLP packages and the language of your corpus'
 head, scriptName = os.path.split(os.path.basename(__file__))
-if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-    config_filename = 'NLP_default_package_language_config.csv'
-else:
-    config_filename = scriptName.replace('main.py', 'config.csv')
-    config_filename = config_filename.replace('setup','default')
+
+config_filename = GUI_util.config_filename_selected_config.get()
 
 config_input_output_numeric_options=[0,0,0,0]
 

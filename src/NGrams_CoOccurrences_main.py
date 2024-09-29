@@ -43,13 +43,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         temporal_aggregation_var,
         viewer_options_list):
 
+    config_filename = GUI_util.config_filename_selected_config.get()
+
     filesToOpen = []
-
-
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('main.py', 'config.csv')
 
     if csv_file_var!='':
         result = mb.askokcancel("Warning",
