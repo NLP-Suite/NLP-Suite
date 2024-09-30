@@ -290,16 +290,18 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=
         for path in Path(inputDir).glob('*' + fileType):
             files.append(str(path))
         if len(files) == 0:
-            mb.showwarning(title='Input files error',
-                           message='No files of type ' + fileType + ' found in the directory\n\n' + inputDir)
+            if not silent:
+                mb.showwarning(title='Input files error',
+                               message='No files of type ' + fileType + ' found in the directory\n\n' + inputDir)
     else:
         if not checkFile(inputFile):
             return files
         if inputFile.endswith(fileType):
             files = [inputFile]
         else:
-            mb.showwarning(title='Input file error',
-                           message='The input file type expected by the algorithm is ' + fileType + '.\n\nPlease, select the expected file type and try again.')
+            if not silent:
+                mb.showwarning(title='Input file error',
+                               message='The input file type expected by the algorithm is ' + fileType + '.\n\nPlease, select the expected file type and try again.')
     #print(inputDir)
 
     # append sort order and separator
@@ -314,10 +316,12 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=
             a = pd.read_csv(configFileName, index_col=False,encoding='utf-8',on_bad_lines='skip')
         except:
             if configFileName=='NLP_default_IO_config.csv':
-                mb.showwarning(title='Input config file error',
+                if not silent:
+                    mb.showwarning(title='Input config file error',
                                message='The default I/O config file ' + configFileName + ' does not exist.\n\nPlease, use the "Setup INPUT/OUTPUT configuration" button to setup the I/O config file and try again.')
             else:
-                mb.showwarning(title='Input config file error',
+                if not silent:
+                    mb.showwarning(title='Input config file error',
                                message='The GUI-specific config file ' + configFileName + ' does not exist.\n\nPlease, use the dropdown menu "I/O configuration" to select the GUI-specific option, then click on "Setup INPUT/OUTPUT configuration" button to setup the GUI-specific I/O config file and try again.')
             return files
         # drop records with nan in Sort order
@@ -368,7 +372,7 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=
             files = do_compare(files, fileType, sort_order, separator, date_format, date_pos)
         except:
             files.sort()
-        return files
+    return files
 
 
 def selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, outputFileVar=None,

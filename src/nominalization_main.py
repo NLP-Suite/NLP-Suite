@@ -27,11 +27,6 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,chartPackage, dataTran
     config_filename = GUI_util.config_filename_selected_config.get()
     filesToOpen = []
 
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('main.py', 'config.csv')
-
     import nominalization_util
     outputFiles = nominalization_util.nominalization(inputFilename,inputDir, outputDir, config_filename, config_input_output_numeric_options, openOutputFiles,chartPackage,dataTransformation,check_ending)
 

@@ -16,6 +16,7 @@ if not IO_libraries_util.install_all_Python_packages(GUI_util.window,"spell_chec
     sys.exit(0)
 
 import os
+import re
 from tkinter import filedialog
 # from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
 # import nltk
@@ -336,30 +337,101 @@ def check_edit_dist(input_word, checklist, similarity_value):
 # using Levenshtein distance to check for typos
 def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles, chartPackage, dataTransformation, NERs, similarity_value, by_all_tokens_var):
 
-    def check_spell(word, true_spellings, speller):
-        if word.lower() in true_spellings:
-            return word, "Correct spell (HP)"
-        else:
-            corrected = speller.correction(word)
-            if corrected != word:
-                return corrected, "Potential typo"
+    def preprocess_word_list(word_list, true_spellings):
+        processed_words = {}
+        for word in word_list:
+            if len(word) > 3 and word.isalpha():
+                lower_word = word.lower()
+                if lower_word in true_spellings:
+                    processed_words[word] = "Correct spell"
+                elif word[0].isupper():
+                    processed_words[word] = "Potential new spell"
+                else:
+                    processed_words[word] = "Unknown"
+        return processed_words
+
+    def check_spell(word, sentence, processed_words, speller):
+        if word in processed_words:
+            status = processed_words[word]
+            if status == "Unknown":
+                corrected = speller.correction(word)
+                if corrected != word:
+                    return corrected, "Potential typo"
+                else:
+                    return word, "Not a spell"
             else:
-                return word, "Not in HP spells"
+                return word, status
+        else:
+            return word, "Not a spell"
 
     def find_unused_spells(true_spellings, words_in_book):
         return true_spellings - set(words_in_book)
 
-    def find_potential_new_spells(words_in_book, true_spellings):
-        return set(word for word in words_in_book if word.istitle() and word not in true_spellings)
+    def find_potential_new_spells(documents, true_spellings):
+        potential_spells = set()
+        for document in documents:
+            for sentence in document[0]:
+                words = sentence.split()
+                for word in words:
+                    if word.isalpha() and len(word) > 3 and word not in true_spellings:
+                        if identify_potential_spell(sentence, word, true_spellings):
+                            potential_spells.add(word)
+        return potential_spells
 
-    def write_additional_analysis(unused_spells, potential_new_spells, outputDir):
+    def analyze_processed_words(processed_words, true_spellings):
+        correct_spells = set()
+        potential_new_spells = set()
+        potential_typos = set()
+
+        for word, status in processed_words.items():
+            if status == "Correct spell (HP)":
+                correct_spells.add(word)
+            elif status == "Potential new spell":
+                potential_new_spells.add(word)
+            elif status == "Unknown":
+                potential_typos.add(word)
+
+        unused_spells = true_spellings - set(word.lower() for word in correct_spells)
+
+        return correct_spells, potential_new_spells, potential_typos, unused_spells
+
+    def identify_potential_spell(sentence, word, true_spellings):
+        lower_sentence = sentence.lower()
+        lower_word = word.lower()
+
+        spell_patterns = [
+            r'\b' + re.escape(lower_word) + r'!',
+            r'"' + re.escape(lower_word) + r'"',
+            r'cast.*' + re.escape(lower_word),
+            r'spell.*' + re.escape(lower_word),
+            r'incantation.*' + re.escape(lower_word),
+            r'wand.*' + re.escape(lower_word),
+            r'shouted.*' + re.escape(lower_word),
+            r'yelled.*' + re.escape(lower_word),
+        ]
+
+        if any(re.search(pattern, lower_sentence) for pattern in spell_patterns):
+            return True
+
+        if lower_word in true_spellings:
+            return True
+
+        return False
+
+    def write_additional_analysis(correct_spells, potential_new_spells, potential_typos, unused_spells, outputDir):
         output_file = os.path.join(outputDir, "spell_analysis.txt")
         with open(output_file, "w") as f:
-            f.write("Unused spells from HP_spells.csv:\n")
-            for spell in unused_spells:
+            f.write("Correct spells found in the books:\n")
+            for spell in sorted(correct_spells):
                 f.write(f"- {spell}\n")
             f.write("\nPotential new spells found in the books:\n")
-            for spell in potential_new_spells:
+            for spell in sorted(potential_new_spells):
+                f.write(f"- {spell}\n")
+            f.write("\nPotential typos found in the books:\n")
+            for word in sorted(potential_typos):
+                f.write(f"- {word}\n")
+            f.write("\nUnused spells from HP_spells.csv:\n")
+            for spell in sorted(unused_spells):
                 f.write(f"- {spell}\n")
         return output_file
     filesToOpen=[]
@@ -396,11 +468,14 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
         true_spellings = set(true_spellings)
 
         # Check if there is repetition in the dictionary file
+
         if len(true_spellings) != len(df):
             print("There are repeated words in the dictionary file.")
             return
         else:
             print("All words in the dictionary file are distinct.")
+
+        # print(true_spellings)
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity start', 'Started running Word similarity at',
                                                  True, '', True, '', True)
 
@@ -430,7 +505,7 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
             # sentences = tokenize.sent_tokenize(text)
             from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
             sentences = sentence_split_stanza_text(stanzaPipeLine(text))
-            documents.append([sentences,filename, dir_path])
+            documents.append([sentences, filename, dir_path])
     # IO_util.timed_alert(GUI_util.window, 5000, 'Word similarity', 'Finished preparing data...\n\nProcessed '+str(folderID)+' subfolders and '+str(fileID)+' files.\n\nNow running Stanford CoreNLP to get NER values on every file processed... PLEASE, be patient. This may take a while...')
     if by_all_tokens_var:
         # TODO header_rows ends up including filename as well; must only include the words in the documents
@@ -479,10 +554,39 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
         for each_ner in NERs:
             temp = [elmt[0] for elmt in NER if elmt[-1] == each_ner]#list of all tokens that belong to specified NER categories
             ner_dict[each_ner] = [(item, count) for item, count in collections.Counter(temp).items() if count > 1]
+        # Testing why NRE is empty
+        # print("NER: ", NER)
+        # print("Sample document:", documents[0] if documents else "Documents is empty")
+        # test_sentence = documents[0][0][0] if documents and documents[0] and documents[0][0] else "This is a test sentence with John Doe and New York."
+        # print("NER test:", NLP.ner(test_sentence))
+        # NER = []
+        # for document_number, document in enumerate(documents):
+        #     for sentence_number, sentence in enumerate(document[0]):
+        #         ners = NLP.ner(sentence)
+        #         print(f"Sentence {sentence_number}: {sentence}")
+        #         print(f"NERs found: {ners}")
+        #         for ner in ners:
+        #             if ner[1] in NERs:
+        #                 NER.append([ner[0], sentence_number + 1, document_number + 1, sentence, document[1],
+        #                             IO_csv_util.dressFilenameForCSVHyperlink(document[2]), ner[1]])
+        #
+        # print("Final NER:", NER)
+        # End of test
         header_row_list_to_check = NER
-        word_list = [elmt[0] for elmt in header_row_list_to_check]
+        # word_list = [elmt[0] for elmt in header_row_list_to_check]
+        word_list = []
+        for document in documents:
+            for sentence in document[0]:
+                ners = NLP.ner(sentence)
+
+                for token, entity_type in ners:
+                    word_list.append(token)
+
+        word_list = list(set(word_list))
+        processed_words = preprocess_word_list(word_list, true_spellings)
+        print("Now word_list: ", word_list)
         unused_spells = find_unused_spells(true_spellings, set(word_list))
-        potential_new_spells = find_potential_new_spells(word_list, true_spellings)
+        potential_new_spells = find_potential_new_spells(documents, true_spellings)
 
     # word_list contains all the first element - token - of each row, i.e., a list of all words
     word_list = [elmt[0] for elmt in header_row_list_to_check]
@@ -513,14 +617,19 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
         headers2.extend(['Corrected Word', 'Spell Status'])
         header_rowID=0
         processed_wordID=0
+        word_index = headers1.index('Words')
+        sentence_index = headers1.index('Sentence')
+        document_index = headers1.index('Document')
         for header_row in header_row_list_to_check:
             header_rowID+=1
-            word=header_row[0]
+            word = header_row[word_index]
+            sentence = header_row[sentence_index]
+            document = header_row[document_index]
             header_row.insert(1, word_freq_dict.get(word))
             checker_against = all_header_rows_dict
             if (len(word) > 3) and (word not in processed_word_list) and (word.isalpha()):
                 processed_wordID = processed_wordID + 1
-                corrected_word, spell_status = check_spell(word, true_spellings, speller)
+                corrected_word, spell_status = check_spell(word, sentence, processed_words, speller)
                 header_row.append(corrected_word)
                 header_row.append(spell_status)
                 speller = SpellChecker()
@@ -544,11 +653,11 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
                     #header_row.append('')
                     #header_row.append('')
                     #header_row.append('')
-                if spell_status != "Correct spell (HP)":
+                if spell_status in ["Potential typo", "Potential new spell"]:
                     value_tuple = fuzzywuzzy_check_dist(word, checker_against, similarity_value)
                     if value_tuple[0]:  # a close match been found
-                        header_row.append(value_tuple[1])  # returned similar word from check_edit_list
-                        header_row.append(value_tuple[2])  # returned similar word frequency from check_edit_list
+                        header_row.append(value_tuple[1:])  # returned similar word from check_edit_list
+                        # header_row.append(value_tuple[2])  # returned similar word frequency from check_edit_list
                         header_row.append('Typo?')
                         header_row_list_final.append(header_row)
             # print("      Processing word " + str(header_rowID) + "/" + str(len(header_row_list_to_check)) + ":" + word)
@@ -586,7 +695,8 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
                     #    header_row.append('')#Angel
                     #    header_row.append('')#Angel
                 processed_word_list.append(word)#Angel
-    analysis_file = write_additional_analysis(unused_spells, potential_new_spells, outputDir)
+    correct_spells, potential_new_spells, potential_typos, unused_spells = analyze_processed_words(processed_words, true_spellings)
+    analysis_file = write_additional_analysis(correct_spells, potential_new_spells, potential_typos, unused_spells, outputDir)
     filesToOpen.append(analysis_file)
     #df = pd.DataFrame(header_row_list_to_check, columns=headers1)
     df = pd.DataFrame(header_row_list_final, columns=headers1)

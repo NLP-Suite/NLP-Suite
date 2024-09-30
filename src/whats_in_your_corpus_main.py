@@ -83,6 +83,7 @@ def run(inputFilename,inputDir, outputDir,
 
     config_filename = GUI_util.config_filename_selected_config.get()
     filesToOpen=[]
+
     openOutputFilesSV=openOutputFiles
     openOutputFiles=False # to make sure files are only opened at the end of this multi-tool script
 
@@ -1117,8 +1118,7 @@ readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", 
 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
-if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-    config_filename = 'NLP_default_IO_config.csv'
+config_filename = GUI_util.config_filename_selected_config.get()
 filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = config_util.get_date_options(config_filename, config_input_output_numeric_options)
 extract_date_from_text_var=0
 
