@@ -1243,37 +1243,30 @@ def individual_characteristics(inputDir, outputDir, actors_var, macro_event_id='
     table_complex = data_Complex_df[data_Complex_df['ID_setup_complex'] == id_complex]
 
     # 'Personal characteristics' must change to reflect the specific setup of a specific project
-    names_personal_characteristics = find_lower_complex(['Personal characteristics'], setup_Complex_df, setup_xref_Complex_Complex_df)
+    attribute = find_lower_complex([actors_var], setup_Complex_df, setup_xref_Complex_Complex_df)['Name'].iat[0]
+    names_personal_characteristics = find_lower_complex([attribute], setup_Complex_df, setup_xref_Complex_Complex_df)
     names_personal_characteristics = names_personal_characteristics['Name'].values.tolist()
-    print('----------------------------------------------------------------------------------------------------------------------------------------------------------------')
-    print(names_personal_characteristics)
-
-    # 'Personal characteristics' must change to reflect the specific setup of a specific project
-    path = ['Individual', 'Personal characteristics']
+    path = [actors_var, attribute]
+    print(path)
     print(
         '----------------------------------------------------------------------------------------------------------------------------------------------------------------')
-    print(table_complex)
+
     # loop through all the children complex objects (e.g., Age, First name and last name, ...)
     for name in names_personal_characteristics:
         path.append(name)
-        print('names list', names_personal_characteristics)
         id_data_personal_characteristics = link_data_id(path, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
-        print('ID data collective characteristics:', id_data_personal_characteristics)
         data_personal_characteristics = find_identifier(id_data_personal_characteristics, [name], data_Complex_df)
-        print('Columns in data_collective_characteristics:', data_personal_characteristics.columns)
         table_complex = pd.merge(table_complex, data_personal_characteristics, how = 'left', left_on = 'ID_data_complex', right_on = actors_var)
-        print('table complex', table_complex)
         table_complex = table_complex.drop(actors_var, axis = 1)
         path.pop()
 
     print(
         '----------------------------------------------------------------------------------------------------------------------------------------------------------------')
     print(path)
-    print(table_complex)
 
 
     table_complex = table_complex.drop('ID_setup_complex', axis = 1)
-    table_complex = table_complex.rename(columns = {'ID_data_complex':actors_var + ' ID', 'Identifier':'Individual Identifier'})
+    table_complex = table_complex.rename(columns = {'ID_data_complex':actors_var + ' ID', 'Identifier':actors_var + ' Identifier'})
 
 # start to build simplex table
     table_simplex = table_complex
@@ -1435,16 +1428,16 @@ def collective_actor_characteristics(inputDir, outputDir, actors_var, macro_even
     data_SimplexNumber_df = library['data_SimplexNumber.xlsx']
     utility_Security_df = library['utility_Security.xlsx']
 
-
 # build table for complex
-    id_complex = find_setup_id(['Collective characteristics'], setup_Complex_df).iat[0, 0]
+    attribute = find_lower_complex([actors_var], setup_Complex_df, setup_xref_Complex_Complex_df)['Name'].iat[0]
+    id_complex = find_setup_id([actors_var], setup_Complex_df).iat[0, 0]
     table_complex = data_Complex_df[data_Complex_df['ID_setup_complex'] == id_complex]
 
-    names_collective_characteristics = find_lower_complex(['Collective characteristics'], setup_Complex_df, setup_xref_Complex_Complex_df)
+    names_collective_characteristics = find_lower_complex([attribute], setup_Complex_df, setup_xref_Complex_Complex_df)
     names_collective_characteristics = names_collective_characteristics['Name'].values.tolist()
     names_collective_characteristics.remove('Subgroup (among which)')
 
-    path = ['Collective actor', 'Collective characteristics']
+    path = [actors_var, attribute]
 
     for name in names_collective_characteristics:
         print('names list', names_collective_characteristics)
@@ -1454,13 +1447,13 @@ def collective_actor_characteristics(inputDir, outputDir, actors_var, macro_even
         data_collective_characteristics = find_identifier(id_data_collective_characteristics, [name], data_Complex_df)
         print('table complex', table_complex)
         print('Columns in data_collective_characteristics:', data_collective_characteristics.columns)
-        table_complex = pd.merge(table_complex, data_collective_characteristics, how = 'left', left_on = 'ID_data_complex', right_on = 'Collective actor')
+        table_complex = pd.merge(table_complex, data_collective_characteristics, how = 'left', left_on = 'ID_data_complex', right_on = actors_var)
         print('table complex', table_complex.columns)
         table_complex = table_complex.drop(actors_var, axis = 1)
         path.pop()
 
     table_complex = table_complex.drop('ID_setup_complex', axis = 1)
-    table_complex = table_complex.rename(columns = {'ID_data_complex':actors_var + ' ID', 'Identifier':'Collective actor Identifier'})
+    table_complex = table_complex.rename(columns = {'ID_data_complex':actors_var + ' ID', 'Identifier':actors_var+' Identifier'})
 
 # start to build simplex table
     table_simplex = table_complex
@@ -1614,27 +1607,29 @@ def collective_actor_characteristics(inputDir, outputDir, actors_var, macro_even
     return collective_actor_characteristics_file_name
 
 
-def organization_characteristics(setup_Simplex, data_Simplex, data_SimplexText, data_SimplexNumber, data_Complex, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex, setup_xref_Simplex_Complex, data_xref_Simplex_Complex, data_xref_Complex_Document_df, data_xref_VComment_df, utility_Security_df):
+def organization_characteristics(actors_var, setup_Simplex, data_Simplex, data_SimplexText, data_SimplexNumber, data_Complex, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex, setup_xref_Simplex_Complex, data_xref_Simplex_Complex, data_xref_Complex_Document_df, data_xref_VComment_df, utility_Security_df):
     # organization
-    id_complex = find_setup_id(['Organization'], setup_Complex).iat[0, 0]
+    id_complex = find_setup_id([actors_var], setup_Complex).iat[0, 0]
     table = data_Complex[data_Complex['ID_setup_complex'].isin([id_complex])]
 
-    names_organization = find_lower_complex(['Organization'], setup_Complex, setup_xref_Complex_Complex)
+    names_organization = find_lower_complex([actors_var], setup_Complex, setup_xref_Complex_Complex)
     names_organization = names_organization['Name'].values.tolist()
 
-    path = ['Organization']
+    path = [actors_var]
 
     for name in names_organization:
         path.append(name)
         id_data_collective_characteristics = link_data_id(path, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex)
         data_collective_characteristics = find_identifier(id_data_collective_characteristics, [name], data_Complex)
-        table = pd.merge(table, data_collective_characteristics, how = 'left', left_on = 'ID_data_complex', right_on = 'Organization')
-        table = table.drop('Organization', axis = 1)
+        table = pd.merge(table, data_collective_characteristics, how = 'left', left_on = 'ID_data_complex', right_on = actors_var)
+        table = table.drop(actors_var, axis = 1)
         path.pop()
 
     table = table.drop('ID_setup_complex', axis = 1)
-    table = table.rename(columns={'ID_data_complex':'Organization', 'Identifier':'Organization Identifier'})
+    table = table.rename(columns={'ID_data_complex':actors_var + ' ID', 'Identifier':actors_var + ' Identifier'})
 
+
+    # simplex table create
     organization_table_complex = table
 
     # institution
@@ -1913,7 +1908,7 @@ def organization_characteristics_main(inputDir, outputDir, actors_var, macro_eve
     data_SimplexNumber_df = library['data_SimplexNumber.xlsx']
     utility_Security_df = library['utility_Security.xlsx']
 
-    table_simplex = organization_characteristics(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, data_SimplexNumber_df, data_Complex_df, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, setup_xref_Simplex_Complex_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df, utility_Security_df)
+    table_simplex = organization_characteristics(actors_var, setup_Simplex_df, data_Simplex_df, data_SimplexText_df, data_SimplexNumber_df, data_Complex_df, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, setup_xref_Simplex_Complex_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df, utility_Security_df)
 
     if macro_event_id != '':
         svo = semantic_triplet_simplex(setup_Complex_df, setup_Simplex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df, utility_Security_df)
