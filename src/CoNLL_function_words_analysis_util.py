@@ -47,21 +47,20 @@ def compute_stats(data):
     return postag_list, postag_counter, deprel_list, deprel_counter
 
 
-def process_df_headers(df, function_word):
+def process_df_headers(df, word_type):
     if len(df.columns)==15: #date column present
         df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                      "Sentence ID", "Document ID", "Document", 'Date', function_word]
+                      "Sentence ID", "Document ID", "Document", 'Date', word_type]
         headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
                    "Sentence ID",
-                   "Document ID", "Document", 'Date', function_word]
+                   "Document ID", "Document", 'Date', word_type]
     else:
         df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                      "Sentence ID", "Document ID", "Document", function_word]
+                      "Sentence ID", "Document ID", "Document", word_type]
         headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
                    "Sentence ID",
-                   "Document ID", "Document", function_word]
+                   "Document ID", "Document", word_type]
     return df, headers
-
 
 def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputFiles,chartPackage, dataTransformation):
     # create pronoun subdir

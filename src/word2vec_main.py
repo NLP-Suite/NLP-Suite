@@ -17,13 +17,13 @@ import IO_files_util
 
 def run(inputFilename, inputDir, outputDir,openOutputFiles, chartPackage, dataTransformation,
         remove_stopwords_var, lemmatize_var, WSI_var,
-        BERT_var, Gensim_var, compute_distances_var, top_words_var,
+        BERT_var, Gensim_var,
         sg_menu_var, vector_size_var, window_var, min_count_var,
-        vis_menu_var, dim_menu_var, keywords_var):
+        vis_menu_var, dim_menu_var, compute_distances_var, top_words_var, keywords_var):
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
-    if not BERT_var and not Gensim_var and not WSI_var:
+    if not BERT_var and not Gensim_var and not WSI_var and not compute_distances_var:
         mb.showwarning(title='Warning',message='No option has been selected.\n\nPlease select the Word2Vec package you wish to use (BERT and/or Gensim) and try again.')
         return
 
@@ -31,7 +31,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, chartPackage, dataTr
 
     if not 'Do not' in vis_menu_var:
         result = mb.askyesno('Visualization via t-SNE',
-                             'You have selected to run Word2Vec with the t-SNE visualization option. Depending upon the total number of words in your corpus, this option is computationally VERY demanding (it can take many hours on a standard laptop, particularly with BERT). Compressing an n-dimensional space into a a 2D or 3D graph can also be somewhat misleading (cosine similarities provide a better alternative).\n\nAre you sure you want to continue?')
+                             'You have selected to run Word2Vec with the t-SNE visualization option ("Plot word vectors"). Depending upon the total number of words in your corpus, this option is computationally VERY demanding (it can take many hours on a standard laptop, particularly with BERT). Compressing an n-dimensional space into a a 2D or 3D graph can also be somewhat misleading (cosine similarities provide a better alternative).\n\nAre you sure you want to continue?')
         if not result:
             return
 
@@ -50,7 +50,9 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, chartPackage, dataTr
     ## if statements for any requirements
     if WSI_var:
 
-        #placeholder for reminders etc.
+        if WSI_keywords_var.get()=='':
+            mb.showwarning(title='Missing keywords',message='The "Word sense induction" algorithm requires a comma-separated list of case-sensitive keywords taken from the corpus in order to run.\n\nPlease, enter the keywords and try again.')
+            return
 
         import WSI_util, WSI_viz, WSI_keyterms
 
@@ -80,9 +82,9 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, chartPackage, dataTr
                                      reminders_util.title_options_Gensim_Word2Vec_timing,
                                      reminders_util.message_Gensim_Word2Vec_timing,
                                      True)
-        if 'Clustering' in vis_menu_var and keywords_var=='':
-            mb.showwarning(title='Missing keywords',message='The algorithm requires a comma-separated list of case-sensitive keywords taken from the corpus to be used as a Word2Vec run.\n\nPlease, enter the keywords and try again.')
-            return
+        # if vis_menu_var == 'Plot word vectors' and keywords_var == '':
+        #     mb.showwarning(title='Missing keywords',message='The algorithm requires a comma-separated list of case-sensitive keywords taken from the corpus to be used as a Word2Vec run.\n\nPlease, enter the keywords and try again.')
+        #     return
         import word2vec_Gensim_util
         filesToOpen = word2vec_Gensim_util.run_Gensim_word2vec(inputFilename, inputDir, Word2Vec_Dir, config_filename, openOutputFiles, chartPackage, dataTransformation,
                                  remove_stopwords_var, lemmatize_var,
@@ -106,14 +108,14 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 WSI_var.get(),
                                 BERT_var.get(),
                                 Gensim_var.get(),
-                                compute_distances_var.get(),
-                                top_words_var.get(),
                                 sg_menu_var.get(),
                                 vector_size_var.get(),
                                 window_var.get(),
                                 min_count_var.get(),
                                 vis_menu_var.get(),
                                 dim_menu_var.get(),
+                                compute_distances_var.get(),
+                                top_words_var.get(),
                                 keywords_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
@@ -125,8 +127,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=680, # height at brief display
-                             GUI_height_full=760, # height at full display
+                             GUI_height_brief=720, # height at brief display
+                             GUI_height_full=800, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -379,6 +381,39 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_top_wor
     False, False, False, False, 90, GUI_IO_util.labels_x_coordinate,
     "Enter the number of top words to be used in computing distances (the more words, the longer it takes to compute distances)")
 
+word_distance_var=tk.StringVar() # word-distance
+word_distance_file_var=tk.StringVar() # word-distance csv file
+def get_word_distance_file(window,title,fileType):
+    word_distance_filePath = tk.filedialog.askopenfilename(title = title, initialdir =outputDir.get(), filetypes = fileType)
+    if len(word_distance_filePath)>0:
+        word_distance_file_var.set(word_distance_filePath)
+
+word_distance_button=tk.Button(window, text='Select distance file ',command=lambda: get_word_distance_file(window,'Select INPUT distance file', [("distance files", "*.csv")]))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+                                   word_distance_button,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "Select the previously-computed word distance csv file to be used for searching ")
+
+#setup a button to open Windows Explorer on the selected input directory
+open_word_distance_file_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, word_distance_file_var.get()))
+# openInputFile_button.configure(state='disabled')
+# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
+# the two x-coordinate and x-coordinate_hover_over must have the same values
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
+    GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+    open_word_distance_file_button, True, False, True, False, 90, GUI_IO_util.IO_configuration_menu, "Open word_distance csv file")
+
+# word_distance_entry_var = tk.StringVar()
+word_distance_file = tk.Entry(window, textvariable=word_distance_file_var)
+word_distance_file.configure(state='disabled',width=GUI_IO_util.widget_width_extra_long)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+100,
+    y_multiplier_integer,
+    word_distance_file,
+    False, False, False, False, 90, GUI_IO_util.IO_configuration_menu,
+    "Previously-computed word distance csv file ")
+
 keywords_var.set('')
 keywords_lb = tk.Label(window, text='Keywords')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,keywords_lb,True)
@@ -477,6 +512,9 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
                                   "Please, tick the checkbox to compute Euclidean distances and cosine similarity between words. Cosine similarity measure will be computed whether the checkbox 'Compute word distances' is ticked or not.\n\n2-dimentional distances reflect the position of words in the two-dimentional html graph. But... it may not reflect the 'true' semantic distance between words, more accurately measured by the n-dimenional distance (which, of course, you cannot see).\n\nCosine similarity varies betwteen 0 and 1 (a value 0 indicates that the words are orthgonal to each other, i.e., they are distant in the semantic space; a value of 1 indicates the opposite.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                  "NLP Suite Help",
+                                  "Select the previously-computed csv file of word distances.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
                                   "Enter comma-separated, case-sensitive keywords you want to focus on for semantic similarity. The words MUST be in the file(s) being analyzed, either as lemma or as the original word. Words not present in the document(s) will be skipped silently.")

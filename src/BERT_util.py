@@ -334,7 +334,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
     filesToOpen.append(outputFilename)
 
-      # compute distances
+    # compute distances
     if compute_distances_var:
 
         outputFiles = word2vec_distances_util.compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage, dataTransformation,

@@ -108,8 +108,12 @@ def noun_POSTAG_NER_DEPREL_compute_lists_frequencies(data, data_divided_sents):
     #     ['ORGANIZATION', ner_counter['ORGANIZATION']],
     #     ['STATE_OR_PROVINCE', ner_counter['STATE_OR_PROVINCE']]]
 
-    tl = ['ID', 'Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel', 'Deps', 'Clause Tag', 'Record ID', 'Sentence ID',
-          'Document ID', 'Document']
+    if len(data[0])==14:
+        tl = ['ID', 'Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel', 'Deps', 'Clause Tag', 'Record ID', 'Sentence ID',
+              'Document ID', 'Document', 'Date']
+    else:
+        tl = ['ID', 'Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel', 'Deps', 'Clause Tag', 'Record ID', 'Sentence ID',
+              'Document ID', 'Document']
     included_tags = ['NN', 'NNPS', 'NNP', 'NNS']
     df = pd.DataFrame(data, columns=tl)
     filtered_df = df[df['POS'].isin(included_tags)]
@@ -126,6 +130,21 @@ def noun_POSTAG_NER_DEPREL_compute_lists_frequencies(data, data_divided_sents):
     return list_nouns_postag, list_nouns_deprel, list_nouns_ner, noun_postag_stats, noun_deprel_stats, noun_ner_stats
 
     # return list_nouns_postag, list_nouns_deprel, list_nouns_ner, noun_postag_stats, noun_deprel_stats, noun_ner_stats
+
+def process_df_headers(df, word_type):
+    if len(df.columns)==15: #date column present
+        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+                      "Sentence ID", "Document ID", "Document", 'Date', word_type]
+        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+                   "Sentence ID",
+                   "Document ID", "Document", 'Date', word_type]
+    else:
+        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+                      "Sentence ID", "Document ID", "Document", word_type]
+        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+                   "Sentence ID",
+                   "Document ID", "Document", word_type]
+    return df, headers
 
 
 def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, chartPackage, dataTransformation):
@@ -174,10 +193,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 
     # convert list to dataframe and save
     df = pd.DataFrame(noun_postag_list)
-    df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                  "Sentence ID", "Document ID", "Document", "Noun POS Tags"]
-    headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID",
-               "Document ID", "Document", "Noun POS Tags"]
+    df, headers = process_df_headers(df, "Noun POS Tags")
 
     IO_csv_util.df_to_csv(GUI_util.window, df, noun_postag_list_file_name, headers=headers, index=False,
                           language_encoding='utf-8')
@@ -186,10 +202,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 
     # convert list to dataframe and save
     df = pd.DataFrame(noun_ner_list)
-    df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                  "Sentence ID", "Document ID", "Document", "Noun NER Tags"]
-    headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID",
-               "Document ID", "Document", "Noun NER Tags"]
+    df, headers = process_df_headers(df, "Noun NER Tags")
 
     IO_csv_util.df_to_csv(GUI_util.window, df, noun_ner_list_file_name, headers=headers, index=False,
                           language_encoding='utf-8')
@@ -198,10 +211,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 
     # convert list to dataframe and save
     df = pd.DataFrame(noun_deprel_list)
-    df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                  "Sentence ID", "Document ID", "Document", "Noun DEPREL Tags"]
-    headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID",
-               "Document ID", "Document", "Noun DEPREL Tags"]
+    df, headers = process_df_headers(df, "Noun DEPREL Tags")
 
     IO_csv_util.df_to_csv(GUI_util.window, df, noun_deprel_list_file_name, headers=headers, index=False,
                           language_encoding='utf-8')
