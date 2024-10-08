@@ -127,6 +127,21 @@ def clause_data_preparation(data):
     dat = sorted(dat, key=lambda x: int(x[recordID_position]))
     return clause_stats, dat
 
+def process_df_headers(df, word_type):
+    if len(df.columns)==15: #date column present
+        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+                      "Sentence ID", "Document ID", "Document", 'Date', word_type]
+        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+                   "Sentence ID",
+                   "Document ID", "Document", 'Date', word_type]
+    else:
+        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+                      "Sentence ID", "Document ID", "Document", word_type]
+        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+                   "Sentence ID",
+                   "Document ID", "Document", word_type]
+    return df, headers
+
 def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,openOutputFiles,chartPackage, dataTransformation):
 
     filesToOpen = []  # Store all files that are to be opened once finished
@@ -171,8 +186,8 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
     # convert list to dataframe and save
     # headers=['Clause Tags','Frequencies']
     df = pd.DataFrame(clausal_list)
-    df.columns=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document", "Tag"]
-    headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document", "Tag"]
+    df, headers = process_df_headers(df, "Clause Tag")
+
     IO_csv_util.df_to_csv(GUI_util.window, df, clausal_analysis_stats_file_name, headers=headers, index=False, language_encoding='utf-8')
 
     if chartPackage!='No charts':
