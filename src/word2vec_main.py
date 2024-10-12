@@ -127,13 +127,13 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=720, # height at brief display
-                             GUI_height_full=800, # height at full display
+                             GUI_height_brief=680, # height at brief display
+                             GUI_height_full=760, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
 
-GUI_label='Graphical User Interface (GUI) for Word2Vec with Gensim'
+GUI_label='Graphical User Interface (GUI) for Word2Vec/Word embeddings with BERT & Gensim'
 config_filename = 'NLP_default_IO_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
 
@@ -197,12 +197,12 @@ window.bind("<Escape>", clear)
 ## option for stopwords
 remove_stopwords_var.set(1)
 remove_stopwords_checkbox = tk.Checkbutton(window, text='Remove stopwords & punctuation', variable=remove_stopwords_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,remove_stopwords_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,remove_stopwords_checkbox,True)
 
 ## option for Lemmatization
 lemmatize_var.set(1)
 lemmatize_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=lemmatize_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,lemmatize_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget,y_multiplier_integer,lemmatize_checkbox)
 
 vis_var_lb = tk.Label(window,text='Select visualization option')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,vis_var_lb,True)
@@ -285,7 +285,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indente
 WSIdictionary_file_var=tk.StringVar() # dictionary file used to annotate
 def get_dictionary_file(window,title,fileType):
     #WSIdictionary_var.set('')
-    filePath = tk.filedialog.askopenfilename(title = title, initialdir =GUI_IO_util.namesGender_libPath, filetypes = fileType)
+    filePath = tk.filedialog.askopenfilename(title = title, initialdir =outputDir, filetypes = fileType)
     if len(filePath)>0:
         # WSIdictionary_file.config(state='normal')
         WSI_keywords_var.set(filePath)
@@ -296,7 +296,7 @@ WSIdictionary_button=tk.Button(window, text='Select dictionary file ',command=la
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate + 100, y_multiplier_integer,
                                    WSIdictionary_button,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-                                   "The lib/nameGender subdirectory contains several US names files (Carnegie Mellon list, US Social Security list, US census, NLTK)\nBut... you can also selected a file of names of your own chosing")
+                                   "Click to select a csv file containing a list of words for which disambiguation is sought.\nIf disambiguation is sought for only a few words, please, enter them comma-separated in the entry widget.")
 
 #setup a button to open Windows Explorer on the selected input directory
 openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, WSI_keywords_var.get()))
@@ -482,10 +482,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
-                                  "Please, tick the checkbox to exclude stopwords from the analyzes (e.g, determiners, personal and possessive pronouns, auxiliaries).")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
-                                  "NLP Suite Help",
-                                  "Please, tick the checkbox to lemmatize nouns (using the singular version instead of plural, e.g., ox iinstead of oxen, child instead of children) and verbs (using the infinitive form instead of any verb forms, e.g., go gor going, went, goes).")
+                                  "Please, tick the checkbox to exclude stopwords from the analyzes (e.g, determiners, personal and possessive pronouns, auxiliaries).\nTick the Lemmatize checkbox to lemmatize nouns (using the singular version instead of plural, e.g., ox iinstead of oxen, child instead of children) and verbs (using the infinitive form instead of any verb forms, e.g., go gor going, went, goes).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
                                   "Please, using the dropdown menus, select the types of preferred display.")
