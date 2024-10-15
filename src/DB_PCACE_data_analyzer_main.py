@@ -7,9 +7,12 @@ import GUI_util
 #     sys.exit(0)
 
 import os
+import pandas as pd
+
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox as mb
+
 
 import IO_csv_util
 import IO_files_util
@@ -305,12 +308,12 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
 
 # actors ----------------------------------------------------------------------
     def process_actor(inputDir, outputDir, actors_var, chart_title, yAxis_columns, output_type):
+        # maybe have them write the actor down
         actor_function_map = {
             'Collective actor': DB_PCACE_data_analyzer_util.collective_actor_characteristics,
             'Individual': DB_PCACE_data_analyzer_util.individual_characteristics,
             'Organization': DB_PCACE_data_analyzer_util.organization_characteristics_main
         }
-
         outputFile = actor_function_map[actors_var](inputDir, outputDir, actors_var)
 
         files_to_open = []
@@ -748,12 +751,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
 
 def activate_parents_children(*args):
     parent_complex_list = DB_PCACE_data_analyzer_util.find_parent_complex(setup_complex_var.get(),inputDir.get())
-    parent_menu_values = parent_complex_list
-    select_parents['values'] = parent_menu_values
+    select_parents['values'] = parent_complex_list
 
     children_list = DB_PCACE_data_analyzer_util.find_child_complex(setup_complex_var.get(),inputDir.get())
-    children_menu_values = children_list 
-    select_children['values'] = children_menu_values
+    select_children['values'] = children_list
     # select_children_var.set(children_menu[0])
 setup_complex_var.trace('w',activate_parents_children)
 setup_simplex_var.trace('w',activate_parents_children)
