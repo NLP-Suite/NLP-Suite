@@ -314,7 +314,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
             'Individual': DB_PCACE_data_analyzer_util.individual_characteristics,
             'Organization': DB_PCACE_data_analyzer_util.organization_characteristics_main
         }
-        outputFile = actor_function_map[actors_var](inputDir, outputDir, actors_var)
+        outputFile = actor_function_map[actors_var](inputDir, outputDir, 'Individual')
 
         files_to_open = []
         if outputFile:
