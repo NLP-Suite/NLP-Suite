@@ -1268,6 +1268,11 @@ def individual_characteristics(inputDir, outputDir, actors_var, macro_event_id='
         # Make a copy of the path to avoid modifying the same list in recursive calls
         current_path = path + [complex_name]
 
+        # Check if the complex_name is already in the path to prevent repeated cycles
+        if complex_name in path:
+            # Skip adding this path entirely if it's a repeating cycle
+            return
+
         # Get the simplex names for the current complex
         simplex_names = corresponding_name_simplex_complex(complex_name, setup_Complex_df,
                                                            setup_xref_Simplex_Complex_df)

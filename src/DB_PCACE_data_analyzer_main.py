@@ -311,10 +311,11 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         # maybe have them write the actor down
         actor_function_map = {
             'Collective actor': DB_PCACE_data_analyzer_util.collective_actor_characteristics,
-            'Individual': DB_PCACE_data_analyzer_util.individual_characteristics,
+            'Individuo': DB_PCACE_data_analyzer_util.individual_characteristics,
             'Organization': DB_PCACE_data_analyzer_util.organization_characteristics_main
         }
-        outputFile = actor_function_map[actors_var](inputDir, outputDir, 'Individual')
+        print(actors_var)
+        outputFile = actor_function_map[actors_var](inputDir, outputDir, actors_var)
 
         files_to_open = []
         if outputFile:
@@ -344,7 +345,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
             'yAxis_columns': ['Name of collective actor Simplex'],
             'output_file_type': 'coll'
         },
-        'Individual': {
+        'Individuo': {
             'chart_title': 'Frequency Distribution of Individuals',
             'yAxis_columns': ['Name of individual actor Simplex'],
             'output_file_type': 'ind'
@@ -837,8 +838,8 @@ def changed_filename(*args):
 
         setup_complex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(), 'setup_complex.xlsx'))
         setup_complex['values'] = setup_complex_menu
-        # actors_menu = setup_complex_menu
-        actors['values'] = ['Individual', 'Collective actor', 'Organization']
+        actors['values'] = setup_complex_menu
+        # actors['values'] = ['Individual', 'Collective actor', 'Organization']
         if len(setup_complex_menu)>0:
             setup_complex.configure(state='normal')
             # setup_complex.set(setup_complex_menu[0])
