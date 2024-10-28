@@ -308,14 +308,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
 
 # actors ----------------------------------------------------------------------
     def process_actor(inputDir, outputDir, actors_var, chart_title, yAxis_columns, output_type):
-        # maybe have them write the actor down
-        actor_function_map = {
-            'Collective actor': DB_PCACE_data_analyzer_util.collective_actor_characteristics,
-            'Individuo': DB_PCACE_data_analyzer_util.individual_characteristics,
-            'Organization': DB_PCACE_data_analyzer_util.organization_characteristics_main
-        }
-        print(actors_var)
-        outputFile = actor_function_map[actors_var](inputDir, outputDir, actors_var)
+        outputFile = DB_PCACE_data_analyzer_util.actor_characterestics(inputDir, outputDir, actors_var)
 
         files_to_open = []
         if outputFile:
@@ -340,7 +333,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
 
     # Define the actor configurations
     actor_configs = {
-        'Collective actor': {
+        'Attore collettivo': {
             'chart_title': 'Frequency Distribution of Collective Actors',
             'yAxis_columns': ['Name of collective actor Simplex'],
             'output_file_type': 'coll'
@@ -350,7 +343,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
             'yAxis_columns': ['Name of individual actor Simplex'],
             'output_file_type': 'ind'
         },
-        'Organization': {
+        'Organizzazione': {
             'chart_title': 'Frequency Distribution of Organizations',
             'yAxis_columns': [
                 'State organisation Simplex', 'Political party Simplex', 'Other institution Simplex',
