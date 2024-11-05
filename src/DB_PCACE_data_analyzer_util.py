@@ -774,6 +774,7 @@ def semantic_triplet_simplex(setup_Complex, setup_Simplex, setup_xref_Complex_Co
 
     # S1: find setup id of 'Macro Event', 'Event' and 'Semantic Triplet'
     macro_event_id = find_setup_id(['Macro Event'], setup_Complex)
+    # 'Macro event refers to the highest complex in the hierarchy, not specific
     macro_event_id = macro_event_id.iloc[[0], [0]].values[0][0]
     event_id = find_setup_id(['Event'], setup_Complex)
     event_id = event_id.iloc[[0], [0]].values[0][0]
@@ -850,7 +851,7 @@ def semantic_triplet_simplex(setup_Complex, setup_Simplex, setup_xref_Complex_Co
 # get the semantic triplet with simplex
 # return: dataframe: Semantic triplet data id, S data id, S Type, S Simplex, V data id, V Simplex, O data id, O Type, O Simplex
 # p.s. Type = Individual / Orgaization / Collective actor
-def semantic_triplet_simplex_main(inputDir, outputDir, macro_event_id, comment_info='', document_info=False):
+def semantic_triplet_simplex_main(inputDir, outputDir, macro_event_id, subject, object, verb, comment_info='', document_info=False):
     setup_Complex_df = library['setup_Complex.xlsx']
     setup_Simplex_df = library['setup_Simplex.xlsx']
     setup_xref_Complex_Complex_df = library['setup_xref_Complex-Complex.xlsx']
@@ -862,6 +863,13 @@ def semantic_triplet_simplex_main(inputDir, outputDir, macro_event_id, comment_i
     data_xref_Complex_Document_df = library['data_xref_Complex-Document.xlsx']
     data_xref_VComment_df = library['data_xref_VComment.xlsx']
     utility_Security_df = library['utility_Security.xlsx']
+
+    print('------------------------------------------------------------------------------------------------------------------------')
+    print('Subject', subject)
+    print('------------------------------------------------------------------------------------------------------------------------')
+    print('verb', verb)
+    print('------------------------------------------------------------------------------------------------------------------------')
+    print('object', object)
 
     simplex_version = semantic_triplet_simplex(setup_Complex_df, setup_Simplex_df, setup_xref_Complex_Complex_df,
                                                data_xref_Complex_Complex_df, data_Complex_df, data_Simplex_df,
@@ -1355,7 +1363,7 @@ def actor_characterestics(inputDir, outputDir, actors_var, macro_event_id='', co
     print('----------------------------------------------------------------------------------')
     print('before residence table_simplex', table_simplex)
 
-
+    table_simplex = table_simplex.dropna(axis=1, how='all')
     individual_characteristics_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                        'individual characteristics')
     table_simplex.to_csv(individual_characteristics_file_name, encoding='utf-8', index=False)
