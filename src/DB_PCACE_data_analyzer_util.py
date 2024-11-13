@@ -809,38 +809,6 @@ def semantic_triplet_simplex(inputDir, subject, verb, object, setup_Complex, set
 
 
     # add 'Macro Event' and 'Event' data id
-    def find_intermediary_complex_paths(top_complex_id, semantic_triplet_id, setup_Complex, setup_xref_Complex_Complex):
-        def dfs(current_complex_id, target_id, path):
-            # Add the current complex to the path
-            path.append(current_complex_id)
-
-            # If the current complex is the target, return the path
-            if current_complex_id == target_id:
-                # Convert complex IDs in path to names for readability
-                return [[setup_Complex[setup_Complex['ID_setup_complex'] == cid]['Name'].values[0] for cid in path]]
-
-            # List to store all paths found from this complex
-            paths = []
-
-            # Explore all lower complexes of the current complex
-            lower_complexes = \
-            setup_xref_Complex_Complex[setup_xref_Complex_Complex['HigherComplex'] == current_complex_id][
-                'LowerComplex']
-
-            for lower_id in lower_complexes:
-                # Avoid cycles by checking if the lower complex is already in the path
-                if lower_id not in path:
-                    # Recursively search from the lower complex
-                    result_paths = dfs(lower_id, target_id, path[:])  # Pass a copy of the current path
-                    if result_paths:
-                        paths.extend(result_paths)  # Collect all valid paths
-
-            return paths if paths else None  # Return paths found or None if no path exists
-
-        # Start DFS from the top_complex and return all intermediary paths to semantic_triplet
-        all_paths = dfs(top_complex_id, semantic_triplet_id, [])
-
-        return all_paths
 
      # S1: find setup id of 'Macro Event', 'Event' and 'Semantic Triplet'
     # 'Macro event refers to the highest complex in the hierarchy, not specific
@@ -852,14 +820,14 @@ def semantic_triplet_simplex(inputDir, subject, verb, object, setup_Complex, set
     if intermediary_complex_paths:
         path = intermediary_complex_paths[0]  # Use the unique path
 
-        # Step 2: Map each complex in the path to its ID
+        # Step 3: Map each complex in the path to its ID
         name_to_id = {
             name: find_setup_id([name], setup_Complex)['ID_setup_complex'].values[0]
             for name in path
         }
 
-        # Step 3: Retrieve and store link IDs
-        link_ids = []
+        # Step 4: Retrieve and store link IDs and relevant data_xref details
+        link_data_frames = []
         for i in range(len(path) - 1):
             higher_id = name_to_id[path[i]]
             lower_id = name_to_id[path[i + 1]]
@@ -870,77 +838,46 @@ def semantic_triplet_simplex(inputDir, subject, verb, object, setup_Complex, set
                 (setup_xref_Complex_Complex['LowerComplex'] == lower_id)
                 ]['ID_setup_xref_complex-complex'].values[0]
 
-            link_ids.append(xref_id)
-
-        # Step 4: Extract data_xref details for each link
-        link_data_frames = []
-        for i, xref_id in enumerate(link_ids):
-            data_xref = data_xref_Complex_Complex[data_xref_Complex_Complex['ID_setup_xref_complex_complex'] == xref_id]
-
-            # Rename columns for consistency in the hierarchy
-            data_xref = data_xref.rename(columns={
-                'ID_data_complex': f'Complex_{i} ID',
-                'ID_data_complex.1': f'Complex_{i + 1} ID'
+            # Retrieve and rename relevant data_xref columns
+            data_xref = data_xref_Complex_Complex[
+                data_xref_Complex_Complex['ID_setup_xref_complex_complex'] == xref_id
+                ][['ID_data_complex', 'ID_data_complex.1']].rename(columns={
+                'ID_data_complex': f'{path[i]} ID',
+                'ID_data_complex.1': f'{path[i + 1]} ID'
             })
             link_data_frames.append(data_xref)
 
-        # Step 5: Merge link data to build the complete hierarchy
+        # Step 5: Merge link data frames into a complete hierarchy while eliminating extra columns
         merged_data = link_data_frames[0]
         for i in range(1, len(link_data_frames)):
-            merged_data = pd.merge(merged_data, link_data_frames[i], left_on=f'Complex_{i} ID',
-                                   right_on=f'Complex_{i} ID', how='right')
+            merged_data = pd.merge(merged_data, link_data_frames[i],
+                                   left_on=f'{path[i]} ID',
+                                   right_on=f'{path[i]} ID',
+                                   how='right')
 
-        # Step 6: Combine with simplex_version
-        simplex_version = pd.merge(merged_data, simplex_version, how='left', left_on=f'Complex_{len(path) - 1} ID',
+        # Step 6: Remove any extraneous columns introduced by the merges
+        # merged_data = merged_data.loc[:,
+        #               ~merged_data.columns.str.contains('ID_setup_xref_complex_complex|ID_data_xref_complex-complex')]
+
+        # Step 7: Merge with simplex_version using semantic triplet ID as the key
+        simplex_version = pd.merge(merged_data, simplex_version, how='left', left_on=f'{path[-1]} ID',
                                    right_on='Semantic Triplet ID')
 
-        # Print or return the final result
+        # Step 8: Add the top complex identifier by merging with data_Complex
+        data_complex_top = data_Complex[['ID_data_complex', 'Identifier']].rename(
+            columns={'ID_data_complex': f'{path[0]} ID', 'Identifier': f'{path[0]} Identifier'}
+        )
+        simplex_version = pd.merge(simplex_version, data_complex_top, how='left', on=f'{path[0]} ID')
+
+        # Step 9: Reorder to have the top complex identifier and clean up any remaining extraneous columns
+        top_complex_identifier = simplex_version.pop(f'{path[0]} Identifier')
+        simplex_version.insert(1, f'{path[0]} Identifier', top_complex_identifier)
+
+        # Final output should have only the relevant path columns and top complex identifier
         print("Final Hierarchy Data with Simplex Version:", simplex_version)
     else:
         print("No path found from top_complex to semantic_triplet.")
     print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-    # intermediate_complex_id = find_setup_id([intermediate_complex], setup_Complex)['ID_setup_complex'].values[0]
-    # # find event
-    # print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-    # print(top_complex, intermediate_complex, semantic_triplet)
-    #
-    # print(top_complex_id, intermediate_complex_id, semantic_triplet_id)
-
-    # S2: find setup_xref id of 'Macro Event' and 'Event', and 'Event' and 'Semantic Triplet'
-    # macro_event_event_setup_id = setup_xref_Complex_Complex[
-    #     (setup_xref_Complex_Complex['HigherComplex'] == top_complex_id) & (
-    #                 setup_xref_Complex_Complex['LowerComplex'] == intermediate_complex_id)]
-    # macro_event_event_setup_id = macro_event_event_setup_id['ID_setup_xref_complex-complex'].values[0]
-    # event_semantic_triplet_setup_id = setup_xref_Complex_Complex[
-    #     (setup_xref_Complex_Complex['HigherComplex'] == intermediate_complex_id) & (
-    #                 setup_xref_Complex_Complex['LowerComplex'] == semantic_triplet_id)]
-    # event_semantic_triplet_setup_id = event_semantic_triplet_setup_id['ID_setup_xref_complex-complex'].values[0]
-    #
-    # # S3: find data_xref_id
-    # macro_event_event_data = data_xref_Complex_Complex[
-    #     data_xref_Complex_Complex['ID_setup_xref_complex_complex'] == macro_event_event_setup_id]
-    # macro_event_event_data = macro_event_event_data.rename(
-    #     columns={'ID_data_complex': 'Macro Event ID', 'ID_data_complex.1': 'Event ID'})
-    # macro_event_event_data = macro_event_event_data[['Macro Event ID', 'Event ID']]
-    # event_semantic_triplet_data = data_xref_Complex_Complex[
-    #     data_xref_Complex_Complex['ID_setup_xref_complex_complex'] == event_semantic_triplet_setup_id]
-    # event_semantic_triplet_data = event_semantic_triplet_data.rename(
-    #     columns={'ID_data_complex': 'Event ID', 'ID_data_complex.1': 'Semantic Triplet ID'})
-    # event_semantic_triplet_data = event_semantic_triplet_data[['Event ID', 'Semantic Triplet ID']]
-    #
-    # # S4: merge
-    # macro_event_event_semantic_triplet = pd.merge(macro_event_event_data, event_semantic_triplet_data, how='right', on='Event ID')
-    # simplex_version = pd.merge(macro_event_event_semantic_triplet, simplex_version, how='left', on='Semantic Triplet ID')
-    #
-    # data_complex_macro_event = data_Complex[['ID_data_complex','Identifier']]
-    # data_complex_macro_event = data_complex_macro_event.rename(
-    #     columns={'ID_data_complex': 'Macro Event ID', 'Identifier': 'Macro Event Identifier'})
-    # simplex_version = pd.merge(simplex_version, data_complex_macro_event, how = 'left', on = 'Macro Event ID')
-    # macro_event_identifier = simplex_version.pop('Macro Event Identifier')
-    # simplex_version.insert(1, 'Macro Event Identifier', macro_event_identifier)
-
-    # S5: add document information
-    # ref: complex id for semantic triplet
 
     if document_info:
         data_xref_Complex_Document_modified = data_xref_Complex_Document[['ID_data_complex','ID_data_document']]
@@ -968,6 +905,39 @@ def semantic_triplet_simplex(inputDir, subject, verb, object, setup_Complex, set
         simplex_version.insert(verifierID_idx + 1, 'VerifierName', verifier_name)
 
     return simplex_version
+
+def find_intermediary_complex_paths(top_complex_id, semantic_triplet_id, setup_Complex, setup_xref_Complex_Complex):
+    def dfs(current_complex_id, target_id, path):
+        # Add the current complex to the path
+        path.append(current_complex_id)
+
+        # If the current complex is the target, return the path
+        if current_complex_id == target_id:
+            # Convert complex IDs in path to names for readability
+            return [[setup_Complex[setup_Complex['ID_setup_complex'] == cid]['Name'].values[0] for cid in path]]
+
+        # List to store all paths found from this complex
+        paths = []
+
+        # Explore all lower complexes of the current complex
+        lower_complexes = \
+        setup_xref_Complex_Complex[setup_xref_Complex_Complex['HigherComplex'] == current_complex_id][
+            'LowerComplex']
+
+        for lower_id in lower_complexes:
+            # Avoid cycles by checking if the lower complex is already in the path
+            if lower_id not in path:
+                # Recursively search from the lower complex
+                result_paths = dfs(lower_id, target_id, path[:])  # Pass a copy of the current path
+                if result_paths:
+                    paths.extend(result_paths)  # Collect all valid paths
+
+        return paths if paths else None  # Return paths found or None if no path exists
+
+    # Start DFS from the top_complex and return all intermediary paths to semantic_triplet
+    all_paths = dfs(top_complex_id, semantic_triplet_id, [])
+
+    return all_paths
 
 
 # prepare the function for the use in main
@@ -1015,8 +985,24 @@ def semantic_triplet_simplex_main(inputDir, outputDir, macro_event_id, subject, 
     # elif comment_info == 'verifier':
     #     simplex_version = simplex_version.drop(['UserID', 'UserName'], axis=1)
 
-    # simplex_version = simplex_version.sort_values(['Macro Event ID', 'Event ID', 'Semantic Triplet ID'],
-    #                                               ascending=[True, True, True])
+    top_complex = setup_Complex_df[setup_Complex_df['ID_setup_complex'] == 1]['Name'].values[0]
+    top_complex_id = find_setup_id([top_complex], setup_Complex_df)['ID_setup_complex'].values[0]
+    semantic_triplet = find_parent_complex(subject, inputDir)
+    if isinstance(semantic_triplet, list):
+        semantic_triplet = semantic_triplet[0]
+    semantic_triplet_id = find_setup_id([semantic_triplet], setup_Complex_df)['ID_setup_complex'].values[0]
+    intermediary_complexes = find_intermediary_complex_paths(top_complex_id, semantic_triplet_id, setup_Complex_df,
+                                                                 setup_xref_Complex_Complex_df)
+    if(intermediary_complexes):
+        intermediary_complexes = intermediary_complexes[0]
+    print(intermediary_complexes)
+    existing_columns = [f'{col} ID' for col in intermediary_complexes if f'{col} ID' in simplex_version.columns]
+    print('===============================================================================================')
+    print('===============================================================================================')
+    print('===============================================================================================')
+    print(existing_columns)
+    if existing_columns:
+        simplex_version = simplex_version.sort_values(existing_columns, ascending=True)
 
     triplet_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'triplet (SVO)')
     simplex_version.to_csv(triplet_file_name, encoding='utf-8', index=False)
