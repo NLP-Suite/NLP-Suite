@@ -1380,7 +1380,7 @@ def find_complex_paths(complex_name, path, complete_complexes, setup_Complex_df,
     return complete_complexes
 
 # get individual characteristics
-def actor_characterestics(inputDir, outputDir, actors_var, macro_event_id='', comment_info='', document_info=False):
+def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', comment_info='', document_info=False):
     setup_Complex_df = library['setup_Complex.xlsx']
     setup_Simplex_df = library['setup_Simplex.xlsx']
     setup_xref_Complex_Complex_df = library['setup_xref_Complex-Complex.xlsx']

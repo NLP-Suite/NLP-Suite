@@ -317,7 +317,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
 
 # actors ----------------------------------------------------------------------
     def process_actor(inputDir, outputDir, actors_var, chart_title, yAxis_columns, output_type):
-        outputFile = DB_PCACE_data_analyzer_util.actor_characterestics(inputDir, outputDir, actors_var)
+        outputFile = DB_PCACE_data_analyzer_util.actor_characteristics(inputDir, outputDir, actors_var)
 
         files_to_open = []
         if outputFile:
