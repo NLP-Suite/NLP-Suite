@@ -102,7 +102,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                                y_multiplier_integer,
                                                check_nom_verb_ending_checkbox, False, False, False, False, 90,
                                                GUI_IO_util.labels_x_coordinate,
-                                               "The checkbox, when ticked, checks nominalized verbs (i.e., nouns) for the typical ending of nominalized verbs (nnent, ing, ion, ance, ence)\n" \
+                                               "The checkbox, when ticked, checks nominalized verbs (i.e., nouns) for the typical ending of nominalized verbs (nment, ing, ion, ance, ence)\n" \
                                                "and for the values listed in the nominalized-verbs-list.csv in the lib/wordList subdirectory that users can edit")
 
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,check_nom_verb_ending_checkbox)

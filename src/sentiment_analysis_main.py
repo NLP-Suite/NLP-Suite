@@ -517,7 +517,7 @@ def display_reminder(*args):
         return
 SA_algorithm_var.trace('w',display_reminder)
 
-SA_algorithms=['*','Neural network approaches:','   BERT (English model)','   BERT (Multilingual model)','   spaCy','   Stanford CoreNLP','   Stanza','','Dictionary approaches:','   ANEW','   hedonometer','   SentiWordNet','   VADER']
+SA_algorithms=['*','Large Language Models (LLM):','   BERT (English model)','   BERT (Multilingual model)','','Neural network approaches:', '   spaCy','   Stanford CoreNLP','   Stanza','','Dictionary approaches:','   ANEW','   hedonometer','   SentiWordNet','   VADER']
 
 SA_algorithm_var.set('*')
 SA_algorithm_lb = tk.Label(window, text='Select sentiment analysis algorithm')

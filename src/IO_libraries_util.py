@@ -86,7 +86,7 @@ def install_all_Python_packages(window, calling_script, modules_to_try):
         message = "FATAL ERROR. Please, read carefully. The NLP Suite will exit.\n\nThe script '" + \
                   calling_script + "' needs to import the following modules:\n\n" + ', '.join(missingModules) + \
                   "\n\nPlease, in command prompt/terminal, type\n\nNLP\n\nif you have run STEP3-NLP environment. Otherwise type" + \
-                  "\n\nconda activate NLP\n\nEither command will activate the right NLP environment (NLP case sensitive) where to install the module.\n\nIF IN TERMINAL YOU SEE THE WORD (base) YOU ARE NOT IN THE NLP ENVIRONMENT.\n\nIn the right NLP environment, type" + \
+                  "\n\nconda activate NLP\n\nEither command will activate the right NLP environment (NLP case sensitive) where to install the module.\nIF IN TERMINAL YOU SEE THE WORD (base) YOU ARE NOT IN THE NLP ENVIRONMENT.\n\nIn the right NLP environment, type" + \
                   "\n\npip install " + str(msg) + "\n\nto install the module, close the NLP Suite, and try again."
 
         if 'pygit2' in str(missingModules):
@@ -103,8 +103,7 @@ def install_all_Python_packages(window, calling_script, modules_to_try):
                 if 'stanza' in missingModules:
                     mb.showwarning(title='Python version error',
                                    message="The module 'stanza' requires a Python version 3.6 or higher. You are currently running version " +
-                                           sys.version_info[0] + "." + sys.version_info[
-                                               0] + ".\n\nTo install Python with Anaconda, in command prompt/terminal type 'Conda install Python=3.7'.")
+                                           sys.version_info[0] + "." + sys.version_info[0] + ".\n\nTo install Python with Anaconda, in command prompt/terminal type 'Conda install Python=3.7'.")
             # https://stackoverflow.com/questions/56239310/could-not-find-a-version-that-satisfies-the-requirement-torch-1-0-0
             # for more recent torch and torchvision, see https://pytorch.org/get-started/previous-versions/
             # for most recent torch and torchvision, see https://pytorch.org/get-started/locally/
@@ -151,9 +150,13 @@ def import_nltk_resource(window, resource_path, resource):
         except:
             nltk.data.find(resource_path+'.zip')
     except LookupError:
-        IO_user_interface_util.timed_alert(window, 2000, 'Downloading nltk resource',
-                                           'The NLTK resource ' + resource + ' is missing. Starting to download nltk ' + resource + '...\n\nIf downloading fails, in command line please type python -m nltk.downloader all\n\n Please, be patient...', False)
-        print('Downloading nltk ' + resource + 'If downloading fails, in command line please type: python -m nltk.downloader all')
+        msg = "The NLTK resource " + resource + " is missing.\n\nStarting to download NLTK..." + "\nIf downloading fails, please, open terminal/command line and type\nNLP\nif you have run STEP3-NLP environment. Otherwise type" + \
+        "\nconda activate NLP\nEither command will activate the right NLP environment (NLP case sensitive) where to install the NLTK modules.\nIF IN TERMINAL YOU SEE THE WORD (base) YOU ARE NOT IN THE NLP ENVIRONMENT.\nIn the right NLP environment, type" + \
+        "\npython -m nltk.downloader all\n\nPlease, be patient... When done, close the NLP Suite, and try again."
+
+        IO_user_interface_util.timed_alert(window, 2000, 'Downloading NLTK resource', msg, False)
+        print(msg)
+
         nltk.download(resource)
 
 def check_avaialable_memory(software):

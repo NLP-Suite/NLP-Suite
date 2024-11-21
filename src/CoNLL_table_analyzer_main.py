@@ -531,7 +531,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_inde
                                                y_multiplier_integer,
                                                k_words_checkbox, True, False, False, False, 90,
                                                GUI_IO_util.labels_x_indented_coordinate,
-                                               "Tick the checkbox if you want to search the CoNLL table for the selected word and extract a number of words BEFORE and AFTER the search word")
+                                               "Tick the checkbox if you want to search the CoNLL table for the selected word and extract a number of words BEFORE and AFTER the search word.\nTHE OPTION IS NOT AVAILABLE YET.")
 
 before_K_words_entry_lb = tk.Label(window,
                                     text='Before K-words')
@@ -697,6 +697,7 @@ def activate_all_options():
     WordNet_checkbox.configure(state='normal')
     sentence_table_checkbox.configure(state='normal')
     k_sentences_checkbox.configure(state='normal')
+    k_words_checkbox.configure(state='disabled')
     before_K_words_entry.configure(state='disabled')
     after_K_words_entry.configure(state='disabled')
     sentence_table_checkbox.configure(state='normal')
@@ -746,7 +747,7 @@ def activate_all_options():
     elif search_token_var.get()==True:
         extra_GUIs_checkbox.configure(state='disabled')
         all_analyses_checkbox.configure(state='disabled')
-        k_words_checkbox.configure(state='disabled')
+        # k_words_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
         k_sentences_checkbox.configure(state='disabled')
         entry_searchField_kw.configure(state='normal')
@@ -755,6 +756,7 @@ def activate_all_options():
         deprel_menu_lb.configure(state='normal')
         co_postag_menu_lb.configure(state='normal')
         co_deprel_menu_lb.configure(state='normal')
+        k_words_checkbox.configure(state='normal')
     elif WordNet_var.get():
         WordNet_checkbox.configure(state='normal')
 
@@ -825,6 +827,11 @@ def activate_all_options():
         WordNet_checkbox.configure(state='normal')
         sentence_table_checkbox.configure(state='normal')
         k_sentences_checkbox.configure(state='normal')
+    if k_words_var.get():
+        mb.showwarning(title='Warning',
+                       message="The option is not available yet. Try again soon.\n\nSorry!")
+        k_words_var.set(0)
+        return
 
 activate_all_options()
 

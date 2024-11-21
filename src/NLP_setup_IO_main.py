@@ -758,7 +758,9 @@ def create_new_config_filename(config_input_output_alphabetic_options):
     if config_input_output_alphabetic_options[0][1]!= '':
         IO_setup_display_string = "INPUT FILE: " + str(os.path.basename(os.path.normpath(config_input_output_alphabetic_options[0][1])))
         temp_str=IO_setup_display_string.replace("INPUT FILE: ","")
+        # the selected file could be either a txt file or csv file
         temp_str = temp_str.replace(".txt","")
+        temp_str = temp_str.replace(".csv", "")
     # directory input
     elif config_input_output_alphabetic_options[1][1]!= '':
         IO_setup_display_string = "INPUT DIR: " + str(os.path.basename(os.path.normpath(config_input_output_alphabetic_options[1][1])))
@@ -781,7 +783,8 @@ def save_config(config_input_output_alphabetic_options):
 
     answer = tk.messagebox.askyesnocancel("Warning", "Where would you like to save your changes?\n\n\n" +
                                           "YES to save changes to the CURRENTLY SELECTED CONFIG file\n\n   " + tail + "\n\n" +
-                                          "NO to save changes to a NEW CONFIG FILE with the name \n\n   " + new_config_filename + "\n\n\n" +
+                                          "NO to save changes to a NEW CONFIG FILE with the name\n\n" +
+                                          "   " + new_config_filename + "\n\n\n" +
                                           "CANCEL to make NO changes")
     if answer==None: # Cancel
         return
