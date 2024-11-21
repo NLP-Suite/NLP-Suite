@@ -1,6 +1,7 @@
 # OSX
 #
 .DS_Store
+src/__pycache__/
 
 # Xcode
 #

@@ -1,0 +1,5 @@
+I/O configuration label,Path,Sort order,Item separator character(s),Date format,Date position
+Input filename with path,,,,,,
+Input files directory,/Users/home/Documents/nlp-data/inputs/Franzinelli,0,_,,,
+Input files secondary directory,,,,,,
+Output files directory,/Users/home/Documents/nlp-data/outputs,,,,,

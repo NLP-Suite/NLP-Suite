@@ -1,0 +1,7 @@
+Software,Installation_path,Download_link
+Stanford CoreNLP,/Users/home/Documents/nlp-external-software/stanford-corenlp-4.5.7,https://stanfordnlp.github.io/CoreNLP/download.html
+Gephi,/Applications,https://gephi.org/users/download/
+Google Earth Pro,/Applications,https://www.google.com/earth/download/gep/agree.html?hl=en-GB
+Java (JDK),"Java version ""22.0.2"" installed",https://www.oracle.com/java/technologies/downloads/archive/
+MALLET,/Users/home/Documents/nlp-external-software/mallet-2.0.8,http://mallet.cs.umass.edu/download.php
+WordNet,/Users/home/Documents/nlp-external-software/WordNet-3.0,https://wordnet.princeton.edu/download/current-version

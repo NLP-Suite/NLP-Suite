@@ -695,6 +695,9 @@ def run_all(columns_to_be_plotted, inputFilename, outputDir, outputFileLabel,
         df.to_csv(csv_file_path, index=False)
 
     data_to_be_plotted_2 = []
+    if data_to_be_plotted is None:
+        return
+
     if type(data_to_be_plotted[0]) == list:
         list_of_lists_to_csv(data_to_be_plotted[0], "temptemp2.csv")
         df = statistics_csv_util.data_transformation('temptemp2.csv', dataTransformation)
@@ -702,8 +705,7 @@ def run_all(columns_to_be_plotted, inputFilename, outputDir, outputFileLabel,
         data_to_be_plotted_2 = [[df.columns.tolist()] + df.values.tolist()]
     if len(data_to_be_plotted_2) == len(data_to_be_plotted):
         data_to_be_plotted = data_to_be_plotted_2
-    if data_to_be_plotted == None:
-        return
+
 
     transform_list = []
     # the following is deciding which type of data is returned from prepare_data_to_be_plotted_inExcel
