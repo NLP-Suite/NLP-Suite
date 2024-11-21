@@ -455,3 +455,23 @@ Please, arm yourself with patience, depending upon the number and size of docume
 Stanza, contrary to the other algorithms, does not compute the probability of language detection.",ON
 *,BERT Word2Vec timing,"Beware that BERT Word2Vec on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, with the tokenizing, lemmatzing, and Eucledian distance options, takes approximately 2 hours on a standard laptop. Eucledian distance is the item taking the longest.",OFF
 *,Gensim Word2Vec timing,"Beware that Gensim Word2Vec on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, with the tokenizing, lemmatzing, and Eucledian distance options, takes approximately 2 hours on a standard laptop. Eucledian distance is the item taking the longest.",OFF
+*,Stanford CoreNLP coreference,"The coreference algorithms in this GUI are based exclusively on Stanford CoreNLP coref annotator.
+
+Watch this space for an extension to spaCy of coreference resolution (Stanza relies on Stanford CoreNLP coreference annotator).",OFF
+*,CoreNLP gender timing,"Beware that the CoreNLP gender algortithm on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 3 hours on a standard laptop.",OFF
+*,English language & WordNet,WordNet is only available for texts in the English language.,OFF
+*,DBpedia/YAGO options,"You have several options available. You can
+   1. select an ontology class, using the dropdown menu;
+   2. enter a sub-class in the 'Sub-class' widget taking the value from the TIPS files on ontology classes;
+   3. you can enter both class and sub-class if needed.
+
+After selecting/entering a class, several widgets will become available. You can select a color to be associated to the selected class; blue will be the default color if none is selected; you can select the same color for different classes.
+
+After selecting class (and perhaps sub-class and color), press
+   1. 'Reset ' to start all over;
+   2. 'Show' to display the choices made thuus far;
+   3. + to approve the choices made and possibly add new choices.
+
+Then press RUN.
+
+Compared to DBpedia, YAGO can be much slower (10 seconds vs. 1 minute for a short document).",OFF

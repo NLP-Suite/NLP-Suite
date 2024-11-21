@@ -36,6 +36,7 @@ from spacy_langdetect import LanguageDetector
 from spacy.language import Language
 import langid
 from langid.langid import LanguageIdentifier, model
+from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
 import csv
 import subprocess
 import time
@@ -339,7 +340,7 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
 
 
     def find_similar_words(word, true_spellings, threshold=95):
-        exact_match = [w for w in true_spellings if w.lower() == word.lower()]
+        exact_match = [w for w in true_spellings if w == word]
         if exact_match:
             return [(exact_match[0], 100)]
         similar = process.extractBests(word, true_spellings, score_cutoff=threshold)
@@ -405,7 +406,7 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
             elif status == "Unknown":
                 potential_typos.add(word)
 
-        unused_spells = true_spellings - set(word.lower() for word in correct_spells)
+        unused_spells = true_spellings - set(word for word in correct_spells)
 
         return correct_spells, potential_new_spells, potential_typos, unused_spells
 
@@ -432,49 +433,42 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
 
         return False
 
-    import csv
-
     def write_additional_analysis(correct_spells, potential_new_spells, potential_typos, unused_spells, outputDir,
-                                  true_spellings):
+                                  true_spellings, word_occurrences):
         output_file = os.path.join(outputDir, "spell_analysis.csv")
-
         with open(output_file, 'w', newline='', encoding='utf-8') as csvfile:
             csvwriter = csv.writer(csvfile)
+            csvwriter.writerow(['Category', 'Spell in Dict', 'Spell in Book', 'Book ID', 'Book File', 'Sentence Number',
+                                'Sentence Content', 'Status'])
 
-            # Write header
-            csvwriter.writerow(['Category', 'Spell in Dict', 'Spell in Book', 'Status'])
+            def get_closest_true_spelling(word):
+                similar_words = process.extractOne(word, true_spellings)
+                if similar_words:
+                    return similar_words[0]
+                return word
 
-            # Write correct spells
-            for spell in sorted(correct_spells):
-                csvwriter.writerow(['Correct Spell', spell, spell, 'Exact match in dictionary'])
+            for word in identified_words:
+                if word in true_spellings:
+                    category = "Correct Spell"
+                    status = 'Exact match in dictionary'
+                else:
+                    category = "Potential New Spell"
+                    status = 'Similar spell found'
+                true_spell = get_closest_true_spelling(word) if category != "Correct Spell" else word
+                occurrences = word_occurrences.get(word, [])
+                for filename, sentence_number, book_id, sentence_content in occurrences:
+                    csvwriter.writerow(
+                        [category, true_spell, word, book_id, filename, sentence_number, sentence_content, status])
 
-            # Write potential new spells
-            for spell in sorted(potential_new_spells):
-                similar = find_similar_words(spell, true_spellings)
-                if similar and similar[0][1] == 100:
-                    csvwriter.writerow(['Correct Spell', spell, spell, 'Exact match in dictionary'])
-                elif similar and similar[0][1] >= 95:
-                    similar_str = ', '.join([f"{w}" for w, s in similar]) if similar else ''
-                    csvwriter.writerow(['Potential New Spell', spell, similar_str, 'Similar spell found'])
-
-            # Write potential typos
-            for word in sorted(potential_typos):
-                similar = find_similar_words(word, true_spellings)
-                if similar and similar[0][1] == 100:
-                    csvwriter.writerow(['Correct Spell', word, word, 'Exact match in dictionary'])
-                elif similar and similar[0][1] >= 95:
-                    similar_str = ', '.join([f"{w}" for w, s in similar]) if similar else ''
-                    csvwriter.writerow(['Potential Typo', word, similar_str, 'Similar spell found'])
-
-            # Write unused spells
             for spell in sorted(unused_spells):
-                csvwriter.writerow(['Unused Spell', spell, '', 'Not found in text'])
+                csvwriter.writerow(['Unused Spell', spell, '', '', '', '', '', 'Not found in text'])
 
         return output_file
     filesToOpen=[]
     all_header_rows_dict = []
     ner_dict = {}
-
+    all_words_in_documents = set()
+    word_occurrences = {}  # Key: word, Value: list of (filename, sentence_number)
     # check that the CoreNLPdir has been setup
     CoreNLPDir, existing_software_config, errorFound = IO_libraries_util.external_software_install('file_spell_checker_util',
                                                                                          'Stanford CoreNLP',
@@ -511,7 +505,7 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
             return
         else:
             print("All words in the dictionary file are distinct.")
-
+        # print("Dictionary file read successfully. And it contains ", len(true_spellings), " words.")
         # print(true_spellings)
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity start', 'Started running Word similarity at',
                                                  True, '', True, '', True)
@@ -525,24 +519,47 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
     print('Starting to run Stanford CoreNLP to prepare data for each folder and file.')
 
     for folder, subs, files in os.walk(inputDir):
-        nFolders=len(subs)+1
-        folderID+=1
-        print("\nProcessing folder "+str(folderID)+"/"+str(nFolders)+": "+os.path.basename(os.path.normpath(folder)))
-        fileID=0
+        nFolders = len(subs) + 1
+        folderID += 1
+        print("\nProcessing folder " + str(folderID) + "/" + str(nFolders) + ": " + os.path.basename(
+            os.path.normpath(folder)))
+        fileID = 0
+        book_id = 0
         for filename in files:
-            fileID+=1
+            book_id += 1
+            fileID += 1
             if not filename.endswith('.txt'):
                 continue
-            print("  Processing file "+str(fileID)+"/"+str(len(files)) + ": " + filename)
+            print("  Processing file " + str(fileID) + "/" + str(len(files)) + ": " + filename)
             dir_path = os.path.join(folder, filename)
             with open(dir_path, 'r', encoding='utf-8', errors='ignore') as src:
                 text = src.read().replace("\n", " ")
-                text = text.replace("%","percent")
+                text = text.replace("%", "percent")
                 NLP = StanfordCoreNLP('http://localhost', port=9000)
-            # sentences = tokenize.sent_tokenize(text)
             from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
             sentences = sentence_split_stanza_text(stanzaPipeLine(text))
             documents.append([sentences, filename, dir_path])
+
+            for sentence_number, sentence in enumerate(sentences):
+                words = re.findall(r'\b\w+\b', sentence)
+                for word in words:
+                    if word.isalpha() and len(word) > 3:
+                        lower_word = word
+                        all_words_in_documents.add(lower_word)
+                        if lower_word not in word_occurrences:
+                            word_occurrences[lower_word] = []
+                        word_occurrences[lower_word].append((filename, sentence_number + 1, book_id, sentence))
+    identified_words = set()
+    print("~~~all_words_in_documents: ", all_words_in_documents)
+    print(true_spellings)
+    for word in all_words_in_documents:
+        if word in true_spellings:
+            identified_words.add(word)
+        else:
+            similar_words = find_similar_words(word, true_spellings)
+            if similar_words:
+                identified_words.add(word)
+    print("~~~identified_words: ", identified_words)
     # IO_util.timed_alert(GUI_util.window, 5000, 'Word similarity', 'Finished preparing data...\n\nProcessed '+str(folderID)+' subfolders and '+str(fileID)+' files.\n\nNow running Stanford CoreNLP to get NER values on every file processed... PLEASE, be patient. This may take a while...')
     if by_all_tokens_var:
         # TODO header_rows ends up including filename as well; must only include the words in the documents
@@ -740,7 +757,7 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
                     #    header_row.append('')#Angel
                 processed_word_list.append(word)#Angel
     correct_spells, potential_new_spells, potential_typos, unused_spells = analyze_processed_words(processed_words, true_spellings)
-    analysis_file = write_additional_analysis(correct_spells, potential_new_spells, potential_typos, unused_spells, outputDir, true_spellings)
+    analysis_file = write_additional_analysis(correct_spells, potential_new_spells, potential_typos, unused_spells, outputDir, true_spellings, word_occurrences)
     filesToOpen.append(analysis_file)
     #df = pd.DataFrame(header_row_list_to_check, columns=headers1)
     df = pd.DataFrame(header_row_list_final, columns=headers1)

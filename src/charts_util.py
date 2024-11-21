@@ -1271,7 +1271,6 @@ def boxplot(data, outputFilename, var, points, bycategory=None, category=None, c
 
 
 # written by Samir Kaddoura, March 2023
-# edited by Simon Bian, October 2023
 
 # var1 is the first categorical variable, lengthvar1 is the amount of var 1: should take values of 5 or 10
 # var2 is the second categorical variable, lengthvar2 is the amount of var 2: should take values of 5,10 or 20
@@ -1370,13 +1369,20 @@ def Sankey(data, outputFilename, var1, lengthvar1, var2, lengthvar2, three_way_S
         valuevector = []
 
         for i in sorted(list(set(finalframe[var1]))):
+            tempvec = []
             tempdata = pd.DataFrame(finalframe[finalframe[var1] == i][var2].value_counts()).reset_index().rename(
                 columns={'index': var2, var2: 'Frequency'})
+            # tempvec = tempvec + list(np.repeat(0, len(target2) - len(tempvec)))
+            # tempvec = list(np.repeat(0, len(set(finalframe[var2]))))
             for j in sorted(list(set(tempdata[var2]))):
                 if j not in list(tempdata[var2]):
-                    valuevector.append(0)
+                    # valuevector.append(0)
+                    tempvec.append(0)
                 else:
-                    valuevector.append(list(tempdata[tempdata[var2] == j]['Frequency'])[0])
+                    # valuevector.append(list(tempdata[tempdata[var2] == j]['Frequency'])[0])
+                    tempvec.append(list(tempdata[tempdata[var2] == j]['Frequency'])[0])
+            tempvec = tempvec + list(np.repeat(0, len(target2) - len(tempvec)))
+            valuevector = valuevector + tempvec
 
     fig = go.Figure(go.Sankey(link=dict(source=source, target=target, value=valuevector),
                               node=dict(label=labelvector, pad=35, thickness=10)))

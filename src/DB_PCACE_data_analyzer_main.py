@@ -885,7 +885,7 @@ def changed_filename(*args):
             setup_simplex_var.set('')
         else:
             setup_simplex.set('')
-            setup_simplex.configure(state='disabled')
+            # setup_simplex.configure(state='disabled')
     else:
         if inputFilename.get()!='':
             GUI_util.run_button.configure(state='disabled')

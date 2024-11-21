@@ -151,7 +151,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
     outputFilenameCSV1=os.path.join(outputDir, "NLP_WordNet_UP_" + fileName+"_output.csv")
     outputFilenameCSV2=os.path.join(outputDir, "NLP_WordNet_UP_" + fileName+"_frequency.csv")
     # remove _output from the Java output
-    outputFilenameCSV1_new = outputFilenameCSV1.replace("_output", "")
+    outputFilenameCSV1_new = outputFilenameCSV1.replace("_output.csv", ".csv")
     # the Java script returns the filenames without VERB or NOUN in the filename
     #   one for # intermediate synsets, the other of frequencies
     if (not 'VERB' in outputFilenameCSV1_new) and (not 'NOUN' in outputFilenameCSV1_new):
@@ -163,7 +163,8 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         # the frequency file already exists and must be removed
         if os.path.isfile(outputFilenameCSV2_new):
             os.remove(outputFilenameCSV2_new)
-        # rename the output file of synsets values created by JAVA script (outputFilenameCSV1) to the new filename (outputFilenameCSV1_new)
+        # rename the output file of synsets values created by JAVA script (outputFilenameCSV1)
+        #   to the new filename (outputFilenameCSV1_new) containing either NOUN or VERB in the filename
         os.rename(outputFilenameCSV1, outputFilenameCSV1_new)
         # rename the output file of frequency values created by JAVA script (outputFilenameCSV2) to the new filename (outputFilenameCSV2_new)
         os.rename(outputFilenameCSV2, outputFilenameCSV2_new)
