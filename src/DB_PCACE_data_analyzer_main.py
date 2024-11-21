@@ -40,7 +40,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         semantic_triplet_subject,
         semantic_triplet_verb,
         semantic_triplet_object,
-        actors_var, time_var, space_var,
+        actors_var, time_var, time_label_var, space_var,
         gephi_var, wordcloud_var, google_earth_var,
         comments_var,
         document_sources_var):
@@ -134,18 +134,18 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
 
     if semantic_triplet_var and time_var and space_var:
         # SVO + time + space
-        outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_time_space(inputDir, outputDir,
-                     primary_complex_var, comments_var, document_sources_var)
+        outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_time_space(inputDir, outputDir, time_label_var,
+                     primary_complex_var, semantic_triplet_subject,semantic_triplet_verb, semantic_triplet_object, comments_var, document_sources_var)
 
     if semantic_triplet_var and time_var and not space_var:
         # SVO + time
-        outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_time(inputDir, outputDir,
-                     primary_complex_var, comments_var, document_sources_var)
+        outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_time(inputDir, outputDir, time_label_var,
+                     primary_complex_var, semantic_triplet_subject, semantic_triplet_verb, semantic_triplet_object, comments_var, document_sources_var)
 
     if semantic_triplet_var and space_var and not time_var:
         # SVO + space
         outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_space_main(inputDir, outputDir,
-                     primary_complex_var, comments_var, document_sources_var)
+                     primary_complex_var, semantic_triplet_subject,semantic_triplet_verb, semantic_triplet_object, comments_var, document_sources_var)
 
     if outputFile != '':
         filesToOpen.append(outputFile)
@@ -225,24 +225,32 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
 # GIS maps for semantic triplets SVO _____________________________________________________
 
     if semantic_triplet_var or space_var or time_var:
+        if time_var and not time_label_var:
+            mb.showwarning(title='Warning',
+                           message="You must select the time complex to be analyzed, using the complex dropdown menu on the right of the checkbox.")
+            return
+
         if time_var and not semantic_triplet_var:
-            outputFile = DB_PCACE_data_analyzer_util.get_time_simplex(inputDir, outputDir,
-                                                                               primary_complex_var, comments_var,
-                                                                               document_sources_var)
+            outputFile = DB_PCACE_data_analyzer_util.get_time_simplex(inputDir, outputDir, time_label_var,
+                                                                      semantic_triplet_subject, semantic_triplet_verb,
+                                                                      semantic_triplet_object, primary_complex_var, comments_var, document_sources_var)
             if outputFile != '':
                 filesToOpen.append(outputFile)
+                simplexes = DB_PCACE_data_analyzer_util.corresponding_name_simplex_complex(time_label_var)
 
                 # headers=IO_csv_util.get_csvfile_headers(outputFile)
                 # columns_to_be_plotted_xAxis=IO_csv_util.get_headerValue_from_columnNumber(headers,column_number=0)
-                columns_to_be_plotted_yAxis=['Time of day']
+                result = ', '.join(simplexes[0])
+                print(simplex_list)
+                columns_to_be_plotted_yAxis=[result]
                 outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFile,
                                                                    outputDir,
                                                                    columns_to_be_plotted_xAxis=[],
                                                                    columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                                   chart_title='Frequency Distribution of Time of day',
+                                                                   chart_title='Frequency Distribution of simplexes of ' + time_label_var,
                                                                    count_var=1, hover_label=[],
                                                                    outputFileNameType='time', #'gender_bar',
-                                                                   column_xAxis_label='Time of day',
+                                                                   column_xAxis_label=result,
                                                                    groupByList=[],
                                                                    plotList=[],
                                                                    chart_title_label='')
@@ -252,7 +260,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                     else:
                         filesToOpen.extend(outputFiles)
 
-        if space_var or google_earth_var:
+        if google_earth_var:
             extract_date_from_text_var = 0
             filename_embeds_date_var = 0
             reminders_util.checkReminder(scriptName, reminders_util.title_options_geocoder,
@@ -398,6 +406,7 @@ run_script_command=lambda: run(
                                 semantic_triplet_object.get(),
                                 actors_var.get(),
                                 time_var.get(),
+                                time_label_var.get(),
                                 space_var.get(),
                                 gephi_var.get(),wordcloud_var.get(),google_earth_var.get(),
                                 comments_var.get(),
@@ -470,6 +479,7 @@ semantic_triplet_verb = tk.StringVar()
 semantic_triplet_object = tk.StringVar()
 actors_var = tk.StringVar()
 time_var = tk.IntVar()
+time_label_var = tk.StringVar()
 space_var = tk.IntVar()
 
 select_parents_var = tk.StringVar()
@@ -509,6 +519,7 @@ def clear(e):
     wordcloud_var.set(0)
     google_earth_var.set(0)
     time_var.set(0)
+    time_label_var.set('')
     space_var.set(0)
     actors_var.set('')
     setup_complex_var.set('')
@@ -612,38 +623,49 @@ primary_complex = ttk.Combobox(window, textvariable = primary_complex_var, width
 primary_complex['values'] = primary_complex_menu
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu-50, y_multiplier_integer,
                                    primary_complex,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Use the dropdown menu to select a specific primary complex object (Macro event) by its identifier to analyze.\nWhen a specific macro event is selected, all analyses (e.g., SVO, actors) will be based on that macro event.")
 
+actors_lb = tk.Label(window, text='Actors ')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+250,y_multiplier_integer,actors_lb,True)
+actors = ttk.Combobox(window, textvariable = actors_var, width=GUI_IO_util.widget_width_short)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+300, y_multiplier_integer,
+                                   actors,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Use the dropdown menu to select the complex object that is a type of actor that you want to extract (e.g., Collective actor, Individual, Organization)")
 
-semantic_triplet_var_checkbox = tk.Checkbutton(window, text='Semantic triplets (SVO)', variable=semantic_triplet_var, onvalue=1, offvalue=0)
+
+def set_visualization():
+    if semantic_triplet_var.get() == 1:
+        semantic_triplet_subject.set('Participant-S')
+        semantic_triplet_verb.set('Process')
+        semantic_triplet_object.set('Participant-O')
+
+semantic_triplet_var_checkbox = tk.Checkbutton(window, text='Semantic triplets (SVO)', variable=semantic_triplet_var, onvalue=1, offvalue=0, command=lambda: set_visualization())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    semantic_triplet_var_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Tick the checkbox to extract semantic triplets/SVOs (i.e., combinations of Subject, Verb, Object).\nWhen a specific macro event is selected, SVOs will be extracted for that specific macro event.")
 
-actors_lb = tk.Label(window, text='Actors ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,actors_lb,True)
-
-actors = ttk.Combobox(window, textvariable = actors_var, width=GUI_IO_util.widget_width_short)
-
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+50, y_multiplier_integer,
-                                   actors,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "Use the dropdown menu to select the complex object that is a type of actor that you want to extract (e.g., Collective actor, Individual, Organization)")
-
 time_checkbox = tk.Checkbutton(window, text='Time', variable=time_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+500, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    time_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "Tick the checkbox to extract the time of action when running SVO. Columns with time information will be added to the SVO csv output file.\nWhen a specific macro event is selected, the time will be extracted for that specific macro event.")
 
+
+time_label_var_box = ttk.Combobox(window, textvariable = time_label_var, width=GUI_IO_util.widget_width_short)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+60, y_multiplier_integer,
+                                               time_label_var_box,
+                                               True, True, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate)
+
+
 space_checkbox = tk.Checkbutton(window, text='Space', variable=space_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+600, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+650, y_multiplier_integer,
                                    space_checkbox,
                                    False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "Tick the checkbox to extract space information. When running Space in conjuction with SVO, columns with space information will be added to the SVO csv output file.\nWhen a specific macro event is selected, the space will be extracted for that specific macro event.\nWhen the Visualize Where checkbox is ticked and a Simplex location name is selected, space information will be geocoded using Nominatim and displayed as pin map via Google Earth Pro and heat map via Google Maps.")
@@ -657,7 +679,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                                True, True, True, False, 90, GUI_IO_util.labels_x_coordinate)
 
 verb_lb = tk.Label(window, text='Verb ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+400,y_multiplier_integer,verb_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+380,y_multiplier_integer,verb_lb,True)
 semantic_triplet_verb_box = ttk.Combobox(window, textvariable = semantic_triplet_verb, width=GUI_IO_util.widget_width_short)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+430, y_multiplier_integer,
                                                semantic_triplet_verb_box,
@@ -718,7 +740,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 simplex_objects_lb = tk.Label(window, text='Simplex ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,y_multiplier_integer,simplex_objects_lb, True)
 
-setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(),'setup_simplex.xlsx'))
+setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(),'setup_Simplex.xlsx'))
 
 setup_simplex_var = tk.StringVar()
 
@@ -866,6 +888,7 @@ def changed_filename(*args):
         semantic_triplet_object_box['values'] = setup_complex_menu
         semantic_triplet_subject_box['values'] = setup_complex_menu
         semantic_triplet_verb_box['values'] = setup_complex_menu
+        time_label_var_box['values'] = setup_complex_menu
 
         if len(setup_complex_menu)>0:
             setup_complex.configure(state='normal')
@@ -878,8 +901,7 @@ def changed_filename(*args):
         else:
             setup_complex.set('')
             setup_complex.configure(state='disabled')
-        # setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(), 'setup_simplex.xlsx'))
-        setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names('setup_simplex.xlsx')
+        setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(), 'setup_Simplex.xlsx'))
         setup_simplex['values'] = setup_simplex_menu
         if len(setup_simplex_menu)>0:
             setup_simplex.configure(state='normal')
@@ -887,7 +909,7 @@ def changed_filename(*args):
             setup_simplex_var.set('')
         else:
             setup_simplex.set('')
-            setup_simplex.configure(state='disabled')
+            # setup_simplex.configure(state='disabled')
     else:
         if inputFilename.get()!='':
             GUI_util.run_button.configure(state='disabled')
