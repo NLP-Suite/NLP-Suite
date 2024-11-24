@@ -40,7 +40,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         semantic_triplet_subject,
         semantic_triplet_verb,
         semantic_triplet_object,
-        actors_var, time_var, time_label_var, space_var,
+        actors_var, time_var, time_label_var, space_var, space_label_var,
         gephi_var, wordcloud_var, google_earth_var,
         comments_var,
         document_sources_var):
@@ -134,7 +134,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
 
     if semantic_triplet_var and time_var and space_var:
         # SVO + time + space
-        outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_time_space(inputDir, outputDir, time_label_var,
+        outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_time_space(inputDir, outputDir, time_label_var,space_label_var,
                      primary_complex_var, semantic_triplet_subject,semantic_triplet_verb, semantic_triplet_object, comments_var, document_sources_var)
 
     if semantic_triplet_var and time_var and not space_var:
@@ -144,7 +144,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
 
     if semantic_triplet_var and space_var and not time_var:
         # SVO + space
-        outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_space_main(inputDir, outputDir,
+        outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_space(inputDir, outputDir, space_label_var,
                      primary_complex_var, semantic_triplet_subject,semantic_triplet_verb, semantic_triplet_object, comments_var, document_sources_var)
 
     if outputFile != '':
@@ -223,6 +223,36 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
             filesToOpen.append(outputFile)
 
 # GIS maps for semantic triplets SVO _____________________________________________________
+    def generateChart(outputFile, label):
+        filesToOpen.append(outputFile)
+        print('------------------------------------------------------')
+        print('------------------------------------------------------')
+        print('------------------------------------------------------')
+        print(label)
+        simplexes = DB_PCACE_data_analyzer_util.corresponding_name_simplex_complex(label)
+
+        # headers=IO_csv_util.get_csvfile_headers(outputFile)
+        # columns_to_be_plotted_xAxis=IO_csv_util.get_headerValue_from_columnNumber(headers,column_number=0)
+        result = ', '.join(simplexes[0])
+        print(simplex_list)
+        columns_to_be_plotted_yAxis = [result]
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFile,
+                                                  outputDir,
+                                                  columns_to_be_plotted_xAxis=[],
+                                                  columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
+                                                  chart_title='Frequency Distribution of simplexes of ' + label,
+                                                  count_var=1, hover_label=[],
+                                                  outputFileNameType='time',  # 'gender_bar',
+                                                  column_xAxis_label=result,
+                                                  groupByList=[],
+                                                  plotList=[],
+                                                  chart_title_label='')
+        print(outputFiles)
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     if semantic_triplet_var or space_var or time_var:
         if time_var and not time_label_var:
@@ -234,31 +264,21 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
             outputFile = DB_PCACE_data_analyzer_util.get_time_simplex(inputDir, outputDir, time_label_var,
                                                                       semantic_triplet_subject, semantic_triplet_verb,
                                                                       semantic_triplet_object, primary_complex_var, comments_var, document_sources_var)
-            if outputFile != '':
-                filesToOpen.append(outputFile)
-                simplexes = DB_PCACE_data_analyzer_util.corresponding_name_simplex_complex(time_label_var)
+            if outputFile and time_label_var:
+                generateChart(outputFile, time_label_var)
 
-                # headers=IO_csv_util.get_csvfile_headers(outputFile)
-                # columns_to_be_plotted_xAxis=IO_csv_util.get_headerValue_from_columnNumber(headers,column_number=0)
-                result = ', '.join(simplexes[0])
-                print(simplex_list)
-                columns_to_be_plotted_yAxis=[result]
-                outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFile,
-                                                                   outputDir,
-                                                                   columns_to_be_plotted_xAxis=[],
-                                                                   columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                                   chart_title='Frequency Distribution of simplexes of ' + time_label_var,
-                                                                   count_var=1, hover_label=[],
-                                                                   outputFileNameType='time', #'gender_bar',
-                                                                   column_xAxis_label=result,
-                                                                   groupByList=[],
-                                                                   plotList=[],
-                                                                   chart_title_label='')
-                if outputFiles!=None:
-                    if isinstance(outputFiles, str):
-                        filesToOpen.append(outputFiles)
-                    else:
-                        filesToOpen.extend(outputFiles)
+        if space_var and not space_label_var:
+            mb.showwarning(title='Warning',
+                           message="You must select the space complex to be analyzed, using the complex dropdown menu on the right of the checkbox.")
+            return
+
+        if space_var and not semantic_triplet_var:
+            outputFile = DB_PCACE_data_analyzer_util.get_space_simplex(inputDir, outputDir, space_label_var,
+                                                                      semantic_triplet_subject, semantic_triplet_verb,
+                                                                      semantic_triplet_object, primary_complex_var, comments_var, document_sources_var)
+            if outputFile and space_label_var:
+                generateChart(outputFile, space_label_var)
+
 
         if google_earth_var:
             extract_date_from_text_var = 0
@@ -408,6 +428,7 @@ run_script_command=lambda: run(
                                 time_var.get(),
                                 time_label_var.get(),
                                 space_var.get(),
+                                space_label_var.get(),
                                 gephi_var.get(),wordcloud_var.get(),google_earth_var.get(),
                                 comments_var.get(),
                                 document_sources_var.get())
@@ -481,6 +502,7 @@ actors_var = tk.StringVar()
 time_var = tk.IntVar()
 time_label_var = tk.StringVar()
 space_var = tk.IntVar()
+space_label_var = tk.StringVar()
 
 select_parents_var = tk.StringVar()
 select_children_var = tk.StringVar()
@@ -521,6 +543,7 @@ def clear(e):
     time_var.set(0)
     time_label_var.set('')
     space_var.set(0)
+    space_label_var.set('')
     actors_var.set('')
     setup_complex_var.set('')
     comments_var.set('')
@@ -664,11 +687,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_co
 
 
 space_checkbox = tk.Checkbutton(window, text='Space', variable=space_var, onvalue=1, offvalue=0)
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+650, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+400, y_multiplier_integer,
                                    space_checkbox,
-                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "Tick the checkbox to extract space information. When running Space in conjuction with SVO, columns with space information will be added to the SVO csv output file.\nWhen a specific macro event is selected, the space will be extracted for that specific macro event.\nWhen the Visualize Where checkbox is ticked and a Simplex location name is selected, space information will be geocoded using Nominatim and displayed as pin map via Google Earth Pro and heat map via Google Maps.")
+space_label_var_box = ttk.Combobox(window, textvariable = space_label_var, width=GUI_IO_util.widget_width_short)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+475, y_multiplier_integer,
+                                               space_label_var_box,
+                                               False, True, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate)
 
 
 subject_lb = tk.Label(window, text='Subject ')
@@ -889,6 +915,7 @@ def changed_filename(*args):
         semantic_triplet_subject_box['values'] = setup_complex_menu
         semantic_triplet_verb_box['values'] = setup_complex_menu
         time_label_var_box['values'] = setup_complex_menu
+        space_label_var_box['values'] = setup_complex_menu
 
         if len(setup_complex_menu)>0:
             setup_complex.configure(state='normal')
