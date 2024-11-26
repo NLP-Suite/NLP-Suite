@@ -15,10 +15,6 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window, "charts_util",
 import plotly
 from plotly.subplots import make_subplots
 
-plotly.offline.init_notebook_mode(connected=True)
-# import warnings
-# warnings.filterwarnings("ignore")
-
 import numpy as np
 import re
 
@@ -1347,42 +1343,67 @@ def Sankey(data, outputFilename, var1, lengthvar1, var2, lengthvar2, three_way_S
 
     else:
         # 2 variables
-        data[var1] = data[var1].str.lower()
-        tempframe = pd.DataFrame(data[var1].value_counts().head(lengthvar1)).reset_index()
-        try:
-            finalframe = data[data[var1].isin(list(set(tempframe['index'])))]
-        except:
-            mb.showwarning(title='Warning',
-                           message='The dataframe computed by the Sankey flowchart is empty.\n\nIt is likely that you are using a version of pandas > 1.5.2. If so, in command line please, pip unistall pandas and pip install pandas==1.5.2')
-            return
-            finalframe = tempframe  # data[data[var1].isin(list(set(tempframe['count'])))]
-        tempframe2 = pd.DataFrame(finalframe[var2]).value_counts().head(lengthvar2).reset_index()
-        finalframe = finalframe[finalframe[var2].isin(list(set(tempframe2[var2])))]
-        finalframe = finalframe.reset_index(drop=True)
-        sourcelist = list(range(0, len(set(finalframe[var1]))))
 
-        source = [item for item in sourcelist for _ in range(len(set(finalframe[var2])))]
-        target1 = list(range(0, len(set(finalframe[var2]))))
-        target2 = [x + len(set(finalframe[var1])) for x in target1]
-        target = target2 * len(set(finalframe[var1]))
-        labelvector = sorted(list(set(finalframe[var1]))) + sorted(list(set(finalframe[var2])))
+        data[var1] = data[var1].str.lower()
+        tempframe = data[var1].value_counts().head(lengthvar1).reset_index()
+        tempframe.columns = [var1, "Frequency"]
+        finalframe = data[data[var1].isin(tempframe[var1])]
+
+        tempframe2 = finalframe[var2].value_counts().head(lengthvar2).reset_index()
+        tempframe2.columns = [var2, "Frequency"]
+        finalframe = finalframe[finalframe[var2].isin(tempframe2[var2])]
+        finalframe.reset_index(drop=True, inplace=True)
+
+        source = []
+        target = []
         valuevector = []
 
-        for i in sorted(list(set(finalframe[var1]))):
-            tempvec = []
-            tempdata = pd.DataFrame(finalframe[finalframe[var1] == i][var2].value_counts()).reset_index().rename(
-                columns={'index': var2, var2: 'Frequency'})
-            # tempvec = tempvec + list(np.repeat(0, len(target2) - len(tempvec)))
-            # tempvec = list(np.repeat(0, len(set(finalframe[var2]))))
-            for j in sorted(list(set(tempdata[var2]))):
-                if j not in list(tempdata[var2]):
-                    # valuevector.append(0)
-                    tempvec.append(0)
-                else:
-                    # valuevector.append(list(tempdata[tempdata[var2] == j]['Frequency'])[0])
-                    tempvec.append(list(tempdata[tempdata[var2] == j]['Frequency'])[0])
-            tempvec = tempvec + list(np.repeat(0, len(target2) - len(tempvec)))
-            valuevector = valuevector + tempvec
+        for i, val1 in enumerate(finalframe[var1].unique()):
+            for j, val2 in enumerate(finalframe[var2].unique()):
+                source.append(i)
+                target.append(j + len(finalframe[var1].unique()))
+                valuevector.append(
+                    len(finalframe[(finalframe[var1] == val1) & (finalframe[var2] == val2)])
+                )
+
+        labelvector = list(finalframe[var1].unique()) + list(finalframe[var2].unique())
+
+        # data[var1] = data[var1].str.lower()
+        # tempframe = pd.DataFrame(data[var1].value_counts().head(lengthvar1)).reset_index()
+        # try:
+        #     finalframe = data[data[var1].isin(list(set(tempframe['index'])))]
+        # except:
+        #     mb.showwarning(title='Warning',
+        #                    message='The dataframe computed by the Sankey flowchart is empty.\n\nIt is likely that you are using a version of pandas > 1.5.2. If so, in command line please, pip unistall pandas and pip install pandas==1.5.2')
+        #     return
+        #     finalframe = tempframe  # data[data[var1].isin(list(set(tempframe['count'])))]
+        # tempframe2 = pd.DataFrame(finalframe[var2]).value_counts().head(lengthvar2).reset_index()
+        # finalframe = finalframe[finalframe[var2].isin(list(set(tempframe2[var2])))]
+        # finalframe = finalframe.reset_index(drop=True)
+        # sourcelist = list(range(0, len(set(finalframe[var1]))))
+        #
+        # source = [item for item in sourcelist for _ in range(len(set(finalframe[var2])))]
+        # target1 = list(range(0, len(set(finalframe[var2]))))
+        # target2 = [x + len(set(finalframe[var1])) for x in target1]
+        # target = target2 * len(set(finalframe[var1]))
+        # labelvector = sorted(list(set(finalframe[var1]))) + sorted(list(set(finalframe[var2])))
+        # valuevector = []
+        #
+        # for i in sorted(list(set(finalframe[var1]))):
+        #     tempvec = []
+        #     tempdata = pd.DataFrame(finalframe[finalframe[var1] == i][var2].value_counts()).reset_index().rename(
+        #         columns={'index': var2, var2: 'Frequency'})
+        #     # tempvec = tempvec + list(np.repeat(0, len(target2) - len(tempvec)))
+        #     # tempvec = list(np.repeat(0, len(set(finalframe[var2]))))
+        #     for j in sorted(list(set(tempdata[var2]))):
+        #         if j not in list(tempdata[var2]):
+        #             # valuevector.append(0)
+        #             tempvec.append(0)
+        #         else:
+        #             # valuevector.append(list(tempdata[tempdata[var2] == j]['Frequency'])[0])
+        #             tempvec.append(list(tempdata[tempdata[var2] == j]['Frequency'])[0])
+        #     tempvec = tempvec + list(np.repeat(0, len(target2) - len(tempvec)))
+        #     valuevector = valuevector + tempvec
 
     fig = go.Figure(go.Sankey(link=dict(source=source, target=target, value=valuevector),
                               node=dict(label=labelvector, pad=35, thickness=10)))
