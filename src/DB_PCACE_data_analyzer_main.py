@@ -661,9 +661,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
 
 def set_visualization():
     if semantic_triplet_var.get() == 1:
-        semantic_triplet_subject.set('Participant-S')
-        semantic_triplet_verb.set('Process')
-        semantic_triplet_object.set('Participant-O')
+        mb.showwarning(title='Warning',
+                       message='You have selected to extract the SVO information (Subject-Verb-Object) from the database. Using the respective dropdown menus, please select the appropriate complex object.\n\nDifferent databases may have different names for the SVO, depending also upon user preferences and the language used for the setup (e.g., English or Italian). The Subject could be named Participant-S or Actor-S; the Verb, Process or Action; the Object, Participant-O or Actor-O.')
+        semantic_triplet_subject.set('')
+        semantic_triplet_verb.set('')
+        semantic_triplet_object.set('')
 
 semantic_triplet_var_checkbox = tk.Checkbutton(window, text='Semantic triplets (SVO)', variable=semantic_triplet_var, onvalue=1, offvalue=0, command=lambda: set_visualization())
 # place widget with hover-over info
@@ -941,6 +943,7 @@ def changed_filename(*args):
         if inputFilename.get()!='':
             GUI_util.run_button.configure(state='disabled')
             error = True
+    clear("Escape")
     # if not error:
     #     primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(window, inputDir.get())
     #     primary_complex['values'] = primary_complex_menu

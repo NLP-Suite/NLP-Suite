@@ -73,6 +73,14 @@ reading_list = [
 library = {}
 
 def load_df(inputDir):
+    import IO_user_interface_util
+    inputDocs = IO_files_util.getFileList('',inputDir, fileType='.xlsx', silent=True)
+    nDocs = len(inputDocs)
+
+    head, tail = os.path.split(inputDir)
+    IO_user_interface_util.timed_alert(GUI_util.window,5000,'Loading PC-AE database...', 'Loadindg ' + str(nDocs) + ' xlsx files from PC-ACE database ' + tail + '\n\nPlease, be patient. Depending on database size this may take several minutes.',
+        False, '', True, '', False)
+
     for filename, rename_columns in reading_list:
         print('inputDir', inputDir)
         print('filename', filename)
@@ -281,11 +289,7 @@ def get_complex_frequencies_all(inputDir, outputDir):
 def find_setup_id(complex_name, setup_Complex):
     if isinstance(complex_name, str):
         complex_name = [complex_name]
-
-    print('============================================================')
-    print(complex_name)
     data = setup_Complex[setup_Complex['Name'].isin(complex_name)]
-    print(setup_Complex['Name'].values.tolist())
     data = data[['ID_setup_complex', 'Name']]
     data['ID_setup_complex'] = [int(x) for x in data['ID_setup_complex']]
     return data
@@ -344,11 +348,8 @@ def find_child_complex(complex, inputDir):
         has_files = False
 
     if(has_files):
-        print(f"Has files child complex !!!!! Complex: {complex}")
         complex_id = find_setup_id(complex, setup_Complex_df)
         complex_id = complex_id['ID_setup_complex'].values.tolist()
-        print(f"COMPLEX ID: {complex_id}")
-        print(setup_xref_Complex_Complex_df[setup_xref_Complex_Complex_df['HigherComplex'].isin(complex_id)])
         lower_level_complex = setup_xref_Complex_Complex_df[setup_xref_Complex_Complex_df['HigherComplex'].isin(complex_id)]
         lower_level_complex = lower_level_complex[['LowerComplex', 'Name']]
         lower_level_complex = lower_level_complex['Name'].values.tolist()
@@ -366,14 +367,12 @@ def find_parent_complex(complex, inputDir):
     if isinstance(complex, str):
         complex = [complex]
 
-    print(library)
     setup_Complex_df = library['setup_Complex.xlsx']
     setup_xref_Complex_Complex_df = library['setup_xref_Complex-Complex.xlsx']
     if setup_Complex_df.empty or setup_xref_Complex_Complex_df.empty:
         has_files = False
 
     if(has_files):
-        print(f"Has files in parent complex!!!!! Complex: {complex}")
         complex_id = find_setup_id(complex, setup_Complex_df)
         complex_id = complex_id['ID_setup_complex'].values.tolist()
 
@@ -737,11 +736,7 @@ def participant_simplex(subject, participant, data_Simplex, data_SimplexText, se
 
         simplexes.append(data)
 
-    simplexes_combined = pd.concat([simplexes[0], simplexes[1], simplexes[2]])
-    print(
-        '========================================================================================================================')
-    print(
-        '========================================================================================================================')
+    simplexes_combined = pd.concat(simplexes)
     print(
         '========================================================================================================================')
     print(simplexes_combined)
@@ -956,8 +951,6 @@ def semantic_triplet_simplex_main(inputDir, outputDir, macro_event_id, subject, 
     path = path[0]
     print(path)
     existing_columns = [f'{col} ID' for col in path if f'{col} ID' in simplex_version.columns]
-    print('===============================================================================================')
-    print('===============================================================================================')
     print('===============================================================================================')
     print(existing_columns)
     if existing_columns:
