@@ -63,7 +63,8 @@ URL_link = []
 Html_link = []
 
 
-def DBpedia_annotate(inputFile, inputDir, outputDir, configFileName, openOutputFiles, annotationTypes, colors, confidence_level=0.5):
+def DBpedia_annotate(inputFile, inputDir, outputDir, configFileName, openOutputFiles, annotationTypes, colors, confidence_level=0.5, chartPackage = 'Excel',
+    dataTransformation = 'No transformation'):
 
     filesToOpen = []
     annotationOpts = ''
@@ -247,20 +248,19 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, configFileName, openOutputF
         for link in URL_link:
             hyperLink = IO_csv_util.dressFilenameForCSVHyperlink(link)
             HyperLinkedURL.append(hyperLink)
+        DocumentID = []
         HyperLinkedDoc = []
-        for doc in Document:
-            hyperLinkedDoc = IO_csv_util.dressFilenameForCSVHyperlink(doc)
-            HyperLinkedDoc.append(hyperLinkedDoc)
+        k = 0
+        DocID = 0
+        for k in range(len(Document)):
+            HyperLinkedDoc.append(IO_csv_util.dressFilenameForCSVHyperlink(Document[k]))
+            if Document[k] == Document[k - 1]:
+                DocumentID.append(DocID)
+            else:
+                DocID = DocID + 1
+                DocumentID.append(DocID)
 
-        df = pd.DataFrame(list(zip(Phrase,HyperLinkedURL,Ontology_class,HyperLinkedDoc)),columns=['Token','URL','Ontology class','Document'])
-
-        # generate CSV file
-        #
-        # from datetime import datetime
-        # from datetime import date
-        # csvname= "DBpedia_output_"+date.today().strftime("%b_%d_%Y")+"_"+datetime.now().strftime("%H_%M_%S")+".csv"
-        # csvname = os.path.join(outputDir,csvname)
-        # df.to_csv((csvname),index=False)
+        df = pd.DataFrame(list(zip(Phrase,HyperLinkedURL,Ontology_class, DocumentID, HyperLinkedDoc)),columns=['Token','URL','Ontology class','Document ID', 'Document'])
 
         filesToOpen.append(outFilename)
         for k in range(len(Document)-len(Html_link)):
@@ -271,12 +271,33 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, configFileName, openOutputF
     csvname = "DBpedia_output_" + date.today().strftime("%b_%d_%Y") + "_" + datetime.now().strftime("%H_%M_%S") + ".csv"
     csvname = os.path.join(outputDir, csvname)
     # generate CSV file
-    df = generate_csv()
-    df.to_csv((csvname), index=False)
+    df.to_csv((csvname),encoding='utf-8', index=False)
     filesToOpen.append(csvname)
-    clear_cache()
 
-    # add charts
+    if not df.empty:
+        # create charts
+
+        import charts_util
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, csvname, outputDir,
+                                                  columns_to_be_plotted_xAxis=[],
+                                                  columns_to_be_plotted_yAxis=['Token'],
+                                                  chart_title='Frequency of DBpedia Words',
+                                                  count_var=1,  # no point counting; all values are distinct
+                                                  hover_label=[],
+                                                  outputFileNameType='',  # 'line_bar',
+                                                  column_xAxis_label='DBpedia word',
+                                                  groupByList=['Document'],
+                                                  plotList=[],
+                                                  chart_title_label='')
+
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+        else:
+            mb.showwarning(title='Warning',
+                           message='The DBpedia algorithm has found no instances in your input document(s) of the selected annotator type ' + annotationTypes[0] + '.\n\nPlease, select a different a annotator and try again.')
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running DBpedia Knowledge Graph at',
                                        True, '', True, startTime)

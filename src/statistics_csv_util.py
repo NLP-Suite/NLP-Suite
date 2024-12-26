@@ -473,6 +473,8 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         except:
             pass
     data = pd.read_csv(inputFilename,encoding='utf-8',on_bad_lines='skip')
+    if data.empty:
+        print('empty df')
     # TODO check if data is empty exit
     # fileNameType=fileNameType.replace('/','-')
     # outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
@@ -566,6 +568,7 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         group_colsumn_names_SV = group_colsumn_names.copy()
         group_cols_SV = group_cols.copy()
 
+        # initialize dataframe
         group_list = group_cols.copy()
         data_final = pd.DataFrame()
 

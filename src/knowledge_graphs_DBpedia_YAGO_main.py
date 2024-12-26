@@ -79,7 +79,7 @@ def run(inputFilename,inputDir,outputDir, openOutputFiles, chartPackage, dataTra
         #http://mappings.DBpedia.org/server/ontology/classes/
         filesToOpen = knowledge_graphs_DBpedia_util.DBpedia_annotate(inputFilename, inputDir,
                                                                      outputDir,config_filename, 0,
-                                                                     ontology_list, colorlist, confidence_level)
+                                                                     ontology_list, colorlist, confidence_level, chartPackage, dataTransformation)
 
     elif 'YAGO' in knowledge_graphs_var:
         import knowledge_graphs_YAGO_util
@@ -88,7 +88,7 @@ def run(inputFilename,inputDir,outputDir, openOutputFiles, chartPackage, dataTra
         color1='black'
         filesToOpen = knowledge_graphs_YAGO_util.YAGO_annotate(inputFilename, inputDir, outputDir,
                                                                config_filename,
-                                                               ontology_list, color1, colorlist)
+                                                               ontology_list, color1, colorlist, chartPackage, dataTransformation)
 
     else:
         mb.showwarning(title='Warning', message='There are no options selected.\n\nPlease, select one of the available options and try again.')

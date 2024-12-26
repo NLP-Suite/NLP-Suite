@@ -349,6 +349,8 @@ def display_wordCloud(inputFilename,inputDir,outputDir,textToProcess,doNotListIn
     else:
         plt.imshow(wordcloud, interpolation="bilinear")
         plt.axis("off")
+        if len(output_file_name)>255:
+            return
         wordcloud.to_file(output_file_name)
     return output_file_name
 
@@ -648,6 +650,8 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                 else:
                     # when stopwords = '' stopwords will be INCLUDED in the output visual
                     tempOutputfile=display_wordCloud(doc,inputDir,outputDir,textToProcess, doNotListIndividualFiles,transformed_image_mask, stopwords, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only , font = font, max_words = max_words)
+                    if tempOutputfile==None:
+                        return
                 filesToOpen.append(tempOutputfile)
                 # write an output txt file that can be used for internet wordclouds services
                 if lemmatize or exclude_stopwords:

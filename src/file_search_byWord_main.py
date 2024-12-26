@@ -250,6 +250,7 @@ def clear(e):
     search_options_menu_var.set('Case sensitive (default)')
     keyword_value_var.set('')
     extract_sentences_search_words_var.set('')
+    selectedCsvFile_var.set('')
     activate_all_options()
 window.bind("<Escape>", clear)
 
@@ -483,6 +484,8 @@ def activate_all_options(*args):
     search_by_dictionary_checkbox.configure(state='normal')
     selectedCsvFile.configure(state='disabled')
     search_by_keyword_checkbox.configure(state='normal')
+
+    selectedCsvFile_var.set('')
 
     keyword_value.configure(state='disabled')
     # keyword_value_var.set('')

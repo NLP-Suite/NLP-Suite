@@ -44,7 +44,8 @@ Html_Doc = []
 
 
 # This is the main function
-def YAGO_annotate(inputFile, inputDir, outputDir, configFileName, annotationTypes,color1,colorls):
+def YAGO_annotate(inputFile, inputDir, outputDir, configFileName, annotationTypes,color1,colorls, chartPackage = 'Excel',
+    dataTransformation = 'No transformation'):
     # this will avoid an SSL certificate error ONLY for a specific url file
     ssl._create_default_https_context = ssl._create_unverified_context
     # this will renew the SSL certificate indefinitely
@@ -79,9 +80,10 @@ def YAGO_annotate(inputFile, inputDir, outputDir, configFileName, annotationType
     i=0
     docID=1
     for file in files:
-            head, tail = os.path.split(file)
-            splitHtmlFileList = []
             i = i + 1
+            head, tail = os.path.split(file)
+            print("Processing file " + str(i) + "/" + str(len(files)) + " " + tail)
+            splitHtmlFileList = []
             # print("Processing file " + str(i) + "/" + str(nFile) + " " + tail)
             listOfFiles=[file]
             subFile = 0
@@ -126,15 +128,15 @@ def YAGO_annotate(inputFile, inputDir, outputDir, configFileName, annotationType
             filesToOpen.append(outFilename)
             for i in range(len(Document) - len(Html_Doc)):
                 Html_Doc.append(IO_csv_util.dressFilenameForCSVHyperlink(outFilename))
-
-            # print(outFilename)
-            # TODO Sentence ID must start from1 rather than CS 0
-            # TODO in the output csv file the html url one should be able to click on it and open the website
-            #   in IO_csv_util there is a function def dressFilenameForCSVHyperlink(fileName) that does that for a regular file
-            #csvname = outFilename.replace(".html","_")+str(annotationTypes).replace("[", "").replace("]", "").replace("'", "").replace(",", "_")
-            diff = len(Document) - len(DocumentID)
-            if diff>0:DocumentID.append([docID]*diff)
-            docID = docID + 1
+    # Html_Doc is already hyperlinked above
+    DocID = 0
+    for i in range(len(Html_Doc)):
+        # Html_Doc.append(IO_csv_util.dressFilenameForCSVHyperlink(Html_Doc[i]))
+        if Html_Doc[i] == Html_Doc[i - 1]:
+            DocumentID.append(DocID)
+        else:
+            DocID=DocID+1
+            DocumentID.append(DocID)
     # save csv output file
     df = pd.DataFrame(list(zip(phrase,ont, link,sentID,Sentence,DocumentID, Document, Html_Doc)),
                       columns=['Token','Ontology class','url','Sentence ID','Sentence', 'Document ID','Document', 'Html File'])
@@ -145,6 +147,27 @@ def YAGO_annotate(inputFile, inputDir, outputDir, configFileName, annotationType
     csvname = os.path.join(outputDir,csvname)
     df.to_csv((csvname),encoding='utf-8', index=False)
     filesToOpen.append(csvname)
+
+    # create charts
+    import charts_util
+    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, csvname, outputDir,
+                                              columns_to_be_plotted_xAxis=[],
+                                              columns_to_be_plotted_yAxis=['Token'],
+                                              chart_title='Frequency of YAGO ' + annotationTypes[0] + ' Words',
+                                              count_var=1,  # no point counting; all values are distinct
+                                              hover_label=[],
+                                              outputFileNameType='',  # 'line_bar',
+                                              column_xAxis_label='YAGO ' + annotationTypes[0] + ' word',
+                                              groupByList=['Document'],
+                                              plotList=[],
+                                              chart_title_label='')
+
+    if outputFiles != None:
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
+
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running YAGO Knowledge Graph at',
                                        True, '', True, startTime, False)
