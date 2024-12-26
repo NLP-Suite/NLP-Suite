@@ -420,7 +420,7 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
         field_number_xAxis = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted_xAxis[0],
                                                                            inputFilename)
 
-    if "Document" in str(groupByList):
+    if "Document" in str(groupByList): # regardless of Document or Document ID
         docCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document', inputFilename)
         # we need to visualize the doc filename
         byDoc = True
@@ -485,8 +485,8 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
     # standard bar chart ------------------------------------------------------------------------------
     # Form	Lemma	POS	Record ID	Sentence ID	Document ID	Document
     # columns_to_be_plotted_numeric = [[0,0], [1,1]] with count_var = 1 since these values need to be counted
-    # @@@ 9/29/2023
-    if columns_to_be_plotted_numeric[0][0] > 0:  # compute only if the double list is not empty
+    # @@@ 12/22/2024
+    if isinstance(columns_to_be_plotted_numeric, list): # only plot if not empty list
         outputFiles = run_all(columns_to_be_plotted_numeric, inputFilename, outputDir,
                               outputFileLabel=outputFileNameType,
                               chartPackage=chartPackage,

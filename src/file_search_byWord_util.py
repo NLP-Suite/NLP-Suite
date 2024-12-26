@@ -303,6 +303,8 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
         search_by_dictionary, selectedCsvFile, search_by_search_keywords, search_keywords_list, minus_K_var, plus_K_var,
         extract_sentences, create_subcorpus_var, search_options_list, lang, chartPackage, dataTransformation):
 
+    import pandas as pd
+
     filesToOpen=[]
     outputFiles = []
 
@@ -323,7 +325,6 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
         case_sensitive = True
     # when processing an input csv file must create the search_keywords_list
     if search_by_dictionary:
-        import pandas as pd
         df = pd.read_csv(selectedCsvFile)
         colname = df.columns[0]
         search_keywords_list = df[colname].tolist()

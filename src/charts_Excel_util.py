@@ -23,7 +23,6 @@ import IO_csv_util
 import GUI_IO_util
 import IO_files_util
 import IO_user_interface_util
-import charts_util
 
 # ensure filename extension is correct for hover_over effects (xlxm) and no effects (xlsx)
 def checkExcel_extension(output_file_name,hover_info_column_list):
