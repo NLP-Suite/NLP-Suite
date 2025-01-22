@@ -578,7 +578,8 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                                            outputFilename_csv_word_NOT_found)
         if not IO_error:
             filesToOpen.append(outputFilename_csv_word_NOT_found)
-        # headers for csv files
+
+        # headers for csv file for word FOUND
         header = [search_word_header, "Number of sentences", "Sentence ID of first occurrence",
                   "Relative position in document",
                   "Frequency of occurrence", "Sentence ID", "Sentence", "Document ID", "Document"]
@@ -597,6 +598,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
             outputFilename_extract_wo_searchword = os.path.join(outputDir) + \
                                                                 "NLP_extract_wo_searchwords.txt"
 
+# write csv output files -----------------------------------------------------------------
         with open(outputFilename_csv_word, 'w', newline='') as f_csv:
             writer = csv.writer(f_csv)
 

@@ -307,7 +307,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_lem
                                    lemmatize_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.wordclouds_lemmas_pos,
                                    "Untick the checkbox to NOT lemmatize words; tick the checkbox to lemmatize words in the corpus."
-                                   "\nLemmatization is based on Stanza.")
+                                   "\nLemmatization is based on Stanza.\nLemmatization is NOT applied when a csv file is used in input.")
 
 stopwords_checkbox = tk.Checkbutton(window, variable=exclude_stopwords_var,
                                                        onvalue=1, offvalue=0)
@@ -328,7 +328,7 @@ punctuation_checkbox.config(text="Punctuation")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_punctuation_pos, y_multiplier_integer,
                                    punctuation_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.wordclouds_punctuation_pos,
-                                   "Untick the checkbox to EXCLUDE punctuation; tick the checkbox to INCLUDE punctuation")
+                                   "Untick the checkbox to EXCLUDE punctuation; tick the checkbox to INCLUDE punctuation.\nPunctuation is NOT applied when a csv file is used in input.")
 
 lowercase_checkbox = tk.Checkbutton(window, variable=lowercase_var,
                                                        onvalue=1, offvalue=0)
@@ -356,7 +356,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_col
                                    differentPOS_differentColor_checkbox,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "Untick the checkbox to NOT process words in different colors by their POS value; tick the checkbox to process in different colors words by their POS value: nouns, verbs, adjectives, and adverbs.\n"
-                                   "POS values are computed by Stanza."
+                                   "POS values are computed by Stanza. Must have text file(s) as INPUT."
                                    "\nRED for NOUNS (including proper nouns), BLUE for VERBS, GREEN for ADJECTIVES, and GREY for ADVERBS.")
 
 menu_values=''
@@ -415,12 +415,12 @@ def get_image(window,title,fileType):
 # labeling each group of words with separate colors"
 differentColumns_differentColor_var.set(0)
 differentColumns_differentColor_checkbox = tk.Checkbutton(window, variable=differentColumns_differentColor_var, onvalue=1, offvalue=0)
-differentColumns_differentColor_checkbox.config(text="Use different colors for different columns (csv file)")
+differentColumns_differentColor_checkbox.config(text="Use different colors for different columns (csv file as INPUT)")
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    differentColumns_differentColor_checkbox,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "The option is available only when a non-CoNLL csv file is selected. CoNLL files are automatically processed for wordclouds visualization.")
+                                   "The option is available only when a non-CoNLL csv file is selected as INPUT. CoNLL files are automatically processed for wordclouds visualization.\nThe Stopwords, Lemmas, and Punctuation options are NOT applied when a csv file is used in input.")
 def displayWarning(*args):
     if collocation_var.get()==True and differentPOS_differentColor_var.get()==True:
         mb.showwarning(title='Warning',

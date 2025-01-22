@@ -263,7 +263,7 @@ extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analy
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'CoNLL table searches', 'N-grams_Co-Occurrences searches & VIEWER','Wordnet searches', 'Style analysis')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Spell checker', 'CoNLL table searches', 'N-grams_Co-Occurrences searches & VIEWER','Wordnet searches', 'Style analysis')
 extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -279,6 +279,8 @@ def open_GUI(*args):
     else:
         return
     if extra_GUIs_var.get():
+        if 'Spell' in extra_GUIs_menu_var.get():
+            call("python file_spell_checker_main.py", shell=True)
         if 'CoNLL' in extra_GUIs_menu_var.get():
             call("python CoNLL_table_analyzer_main.py", shell=True)
         if 'Style' in extra_GUIs_menu_var.get():

@@ -20,7 +20,6 @@ import GUI_IO_util
 import TIPS_util
 import DB_PCACE_data_analyzer_util
 import Gephi_util
-import wordclouds_util
 import GIS_pipeline_util
 import reminders_util
 import charts_util
@@ -561,8 +560,14 @@ view_relations_button = tk.Button(window, text='View table relations', width=20,
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    view_relations_button,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Click to open a pdf file of the PC-ACE table relations")
+                                   "Click to open a pdf file of the PC-ACE table relations. These relations are ALWAYS the same across any type of application of PC-ACE (e.g., Avanti! or Lynchings).\nTo view the grammar of data collection for a specific PC-ACE implementation click on the button View grrammar.")
 
+view_grammar_button = tk.Button(window, text='View grammar', width=20,height=1,state='normal', command=lambda: view_grammar())
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                   view_grammar_button,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Click to view the grammmar used for the selected, specific implementation of the PC-ACE database.\nClick on the button View table relations to visualize the general table relations in the PC-ACE databasee, regardless of a selected, specific implementation (i./e., grammar setup).")
 # https://www.geeksforgeeks.org/convert-excel-to-csv-in-python/
 # view_relations_button = tk.Button(window, text='Convert PC-ACE Excel tables to csv  ', height=1,state='normal', command=lambda: view_relations())
 # # place widget with hover-over info
@@ -572,7 +577,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 #                                    "Click to convert the Excel files exported from Microsoft ACCESS database to csv files for use in this GUI")
 
 select_DB_tables_lb = tk.Label(window, text='PC-ACE table ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,select_DB_tables_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate,y_multiplier_integer,select_DB_tables_lb,True)
 
 table_menu_values = ''
 table_list=[]
@@ -583,9 +588,9 @@ select_DB_tables = ttk.Combobox(window, width=GUI_IO_util.widget_width_short, te
 select_DB_tables.configure(state='disabled')
 select_DB_tables['values'] = table_menu_values
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+350, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate+100, y_multiplier_integer,
                                    select_DB_tables,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate+120,
+                                   False, False, True, False, 90, GUI_IO_util.setup_IO_brief_coordinate,
                                    "Use the dropdown menu to select a PC-ACE table to be opened for display; click RUN after selection.")
 
 simplex_data_type_lb = tk.Label(window, text='PC-ACE data type ')
@@ -954,6 +959,10 @@ table_fields_menu_values = []
 
 def view_relations():
     TIPS_util.open_TIPS('TIPS_NLP_PC-ACE table relations.pdf')
+
+def view_grammar():
+    mb.showwarning(title='Warning',
+                   message="The function to display the grammar for the selected database is under construction.\n\nPlease, check back soon.")
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'

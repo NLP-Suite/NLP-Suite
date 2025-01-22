@@ -404,7 +404,8 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
         if chartPackage!='No charts':
 
             columns_to_be_plotted_xAxis = []
-            columns_to_be_plotted_yAxis = ['AUXILIARIES']
+            # columns_to_be_plotted_yAxis = ['AUXILIARIES']
+            columns_to_be_plotted_yAxis = ['Lemma']
             count_var = 1
 
             outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
