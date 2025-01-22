@@ -518,37 +518,46 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
 
     print('Starting to run Stanford CoreNLP to prepare data for each folder and file.')
 
-    for folder, subs, files in os.walk(inputDir):
-        nFolders = len(subs) + 1
-        folderID += 1
-        print("\nProcessing folder " + str(folderID) + "/" + str(nFolders) + ": " + os.path.basename(
-            os.path.normpath(folder)))
-        fileID = 0
-        book_id = 0
-        for filename in files:
-            book_id += 1
-            fileID += 1
-            if not filename.endswith('.txt'):
-                continue
-            print("  Processing file " + str(fileID) + "/" + str(len(files)) + ": " + filename)
-            dir_path = os.path.join(folder, filename)
-            with open(dir_path, 'r', encoding='utf-8', errors='ignore') as src:
-                text = src.read().replace("\n", " ")
-                text = text.replace("%", "percent")
-                NLP = StanfordCoreNLP('http://localhost', port=9000)
-            from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
-            sentences = sentence_split_stanza_text(stanzaPipeLine(text))
-            documents.append([sentences, filename, dir_path])
+    files=IO_files_util.getFileList('', inputDir, fileType='txt', silent=False, configFileName='')
+    nDocs = len(files)
+    if nDocs==0:
+        return
+    fileID = 0
+    for filename in files:
 
-            for sentence_number, sentence in enumerate(sentences):
-                words = re.findall(r'\b\w+\b', sentence)
-                for word in words:
-                    if word.isalpha() and len(word) > 3:
-                        lower_word = word
-                        all_words_in_documents.add(lower_word)
-                        if lower_word not in word_occurrences:
-                            word_occurrences[lower_word] = []
-                        word_occurrences[lower_word].append((filename, sentence_number + 1, book_id, sentence))
+    # for folder, subs, files in os.walk(inputDir):
+    #     nFolders = len(subs) + 1
+    #     folderID += 1
+    #     print("\nProcessing folder " + str(folderID) + "/" + str(nFolders) + ": " + os.path.basename(
+    #         os.path.normpath(folder)))
+    #     fileID = 0
+        book_id = 0
+        # for filename in files:
+        book_id += 1
+        fileID += 1
+        if not filename.endswith('.txt'):
+            continue
+        # print("  Processing file " + str(fileID) + "/" + str(len(files)) + ": " + filename)
+        print("Processing file " + str(fileID) + "/" + str(len(files)) + ": " + filename)
+        # dir_path = os.path.join(folder, filename)
+        dir_path = os.path.join(inputDir, filename)
+        with open(dir_path, 'r', encoding='utf-8', errors='ignore') as src:
+            text = src.read().replace("\n", " ")
+            text = text.replace("%", "percent")
+            NLP = StanfordCoreNLP('http://localhost', port=9000)
+        from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
+        sentences = sentence_split_stanza_text(stanzaPipeLine(text))
+        documents.append([sentences, filename, dir_path])
+
+        for sentence_number, sentence in enumerate(sentences):
+            words = re.findall(r'\b\w+\b', sentence)
+            for word in words:
+                if word.isalpha() and len(word) > 3:
+                    lower_word = word
+                    all_words_in_documents.add(lower_word)
+                    if lower_word not in word_occurrences:
+                        word_occurrences[lower_word] = []
+                    word_occurrences[lower_word].append((filename, sentence_number + 1, book_id, sentence))
     identified_words = set()
     print("~~~all_words_in_documents: ", all_words_in_documents)
     print(true_spellings)

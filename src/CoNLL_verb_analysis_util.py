@@ -83,7 +83,7 @@ def compute_stats(data):
     # VBP present (non-3rd person singular), VBZ present (3rd person singular)
     # VB future, VB infinitive, depending on MD modal
 
-    verb_postags = ['VB', 'VBN', 'VBD', 'VBG', 'VBP', 'VBZ', 'MD']
+    verb_postags = ['VB', 'VBN', 'VBD', 'VBG', 'VBP', 'VBZ', 'MD'] # all verb types
     data = [tok for tok in data if (tok[3] in verb_postags)]
     form_list = [i[1] for i in data]
     lemma_list = [i[2] for i in data]
@@ -165,7 +165,7 @@ def verb_voice_compute_frequencies(list_all_tok):
 # verb voice; compute frequencies
 def verb_voice_data_preparation(data):
     try:
-        verb_postags = ['VB', 'VBN', 'VBD', 'VBG', 'VBP', 'VBZ']
+        verb_postags = ['VB', 'VBN', 'VBD', 'VBG', 'VBP', 'VBZ'] # all verb types excluding modals
         verb_deprel = ['aux:pass', 'aux']
         data_2 = [tok for tok in data if (tok[3] in verb_postags or tok[6] in verb_deprel)]
         return data_2
@@ -246,7 +246,7 @@ def verb_modality_data_preparation(data):
     high_value_row = []
     median_value_row = []
     low_value_row = []
-    verb_postags = ['MD']
+    verb_postags = ['MD'] # verb modals
     high_value_keywords = ['must', 'ought to', 'need', 'have to', 'be to']
     median_value_keywords = ['will', 'would', 'shall', 'should']
     low_value_keywords = ['may', 'might', 'can', 'could']
@@ -472,6 +472,37 @@ def verb_compute_frequencies(inputFilename, outputDir, data, data_divided_sents,
     verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb_ALL',
                                                                 'list')
     filesToOpen.append(verb_file_name)
+
+    verb_POS_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb_POS',
+                                                                'list')
+    df = pd.DataFrame({'Verb POS tag': postag_list})
+    IO_csv_util.df_to_csv(GUI_util.window, df, verb_POS_file_name, headers=['Verb POS tag'], index=False,
+                          language_encoding='utf-8')
+
+    filesToOpen.append(verb_POS_file_name)
+
+    columns_to_be_plotted_xAxis = []
+    columns_to_be_plotted_yAxis = ['Verb POS tag']
+    count_var = 1
+
+    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
+                                              verb_POS_file_name, outputDir,
+                                              columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+                                              chart_title="Frequency Distribution of Verb POS Tags",
+                                              outputFileNameType='verb_POS',
+                                              column_xAxis_label='Verb POS tag',
+                                              count_var=count_var,
+                                              hover_label=[],
+                                              groupByList=[],
+                                              plotList=[],
+                                              chart_title_label='')
+
+    if outputFiles!=None:
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
+
     verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
                                                                    'Verb_ALL','stats')
 
@@ -593,10 +624,6 @@ def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sen
 
     outputFiles = verb_compute_frequencies(inputFilename, outputDir, data, data_divided_sents,
                                    openOutputFiles, chartPackage, dataTransformation)
-
-    if outputFiles!=None:
-        filesToOpen.extend(outputFiles)
-
 
     outputFiles = verb_voice_stats(inputFilename, outputDir, data, data_divided_sents,
                                    openOutputFiles, chartPackage, dataTransformation)

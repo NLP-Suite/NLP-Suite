@@ -214,7 +214,7 @@ def SVOWordCloud(svoFile, inputFilename, outputDir, transformed_image_mask, pref
 
 
 # for label separate column with separate color only
-def processColorList(currenttext, color_to_words, csvField_color_list, myfile):
+def processColorList(currenttext, lowercase, color_to_words, csvField_color_list, myfile):
     cur_list = []
     column_color = {}
 
@@ -227,19 +227,24 @@ def processColorList(currenttext, color_to_words, csvField_color_list, myfile):
             cur_list = []
 
     reader = csv.DictReader(myfile)  # read rows into a dictionary format
-    for row in reader:  # read a row as {column1: value1, column2: value2,...}
-        for (k, v) in row.items():  # go over each column name and value
+    for row in reader:  # read a row as {column name1: color value1, column name2: color value2,...}
+        for (k, v) in row.items():  # go over each column name and color value
+            # in Excel, the first column header contains non utf encoding \ufeff and must be removed
+            #   or the first column would never be processed
+            k=k.replace('\ufeff','')
+            if lowercase:
+                v = v.lower()
             if k in column_color:
                 if " " in v:
-                    color_to_words[column_color[k]] += ["".join(filter(str.isalnum, s)) for s in v.lower().split(" ")]
+                    color_to_words[column_color[k]] += ["".join(filter(str.isalnum, s)) for s in v.split(" ")]
                 else:
-                    color_to_words[column_color[k]].append("".join(filter(str.isalnum, v.lower())))
-                currenttext += v.lower() + " "
+                    color_to_words[column_color[k]].append("".join(filter(str.isalnum, v)))
+                currenttext += v + " "
     return currenttext, color_to_words
 
 # add bg_image_flag parameter to indicate whether to add background image
 # display_wordCloud_sep_color(inputFilename, outputDir, currenttext, color_to_words, transformed_image_mask, collocation, prefer_horizontal, bg_image = bg_image, bg_image_flag= bg_image_flag)
-def display_wordCloud_sep_color(inputFilename, inputDir, outputDir, text, color_to_words, transformed_image_mask, collocation, prefer_horizontal, bg_image = None,bg_image_flag = False, font = None, max_words = 100):
+def display_wordCloud_sep_color(inputFilename, inputDir, outputDir, text, color_to_words, transformed_image_mask, max_words, collocation, prefer_horizontal, bg_image = None,bg_image_flag = False, font = None):
     # stopwords dealt with in main function
     stopwords=''
     c_wid = 0 if bg_image_flag else 3
@@ -372,19 +377,19 @@ def check_file_empty(currenttext,inputFilename,nDocs,NumEmptyDocs):
         return False, False, NumEmptyDocs
 
 #Modified by Tony 01/23/2022  add bg_image and bg_image_flag
-def processCsvColumns(inputFilename, inputDir, outputDir, openOutputFiles,csvField_color_list, doNotListIndividualFiles, bg_image=None, bg_image_flag=False):
+def processCsvColumns(inputFilename, inputDir, outputDir, openOutputFiles,csvField_color_list, doNotListIndividualFiles, max_words, lowercase, collocation, prefer_horizontal, bg_image=None, bg_image_flag=False):
     transformed_image_mask=[]
-    collocation=False
-    prefer_horizontal=.9
+    # collocation=False
+    # prefer_horizontal=.9
     currenttext = ''
     color_to_words = defaultdict(list)
     with open(inputFilename, 'r', encoding='utf-8', errors='ignore') as myfile:
         if len(csvField_color_list) != 0:
             # process csvField_color_list
-            currenttext, color_to_words = processColorList(currenttext, color_to_words, csvField_color_list, myfile)
+            currenttext, color_to_words = processColorList(currenttext, lowercase, color_to_words, csvField_color_list, myfile)
             tempOutputfile=''
             if currenttext!='':
-                tempOutputfile = display_wordCloud_sep_color(inputFilename, inputDir, outputDir, currenttext, color_to_words, transformed_image_mask, collocation, prefer_horizontal, bg_image = bg_image, bg_image_flag= bg_image_flag)
+                tempOutputfile = display_wordCloud_sep_color(inputFilename, inputDir, outputDir, currenttext, color_to_words, transformed_image_mask, max_words, collocation, prefer_horizontal, bg_image = bg_image, bg_image_flag= bg_image_flag)
     myfile.close()
     return tempOutputfile
 
@@ -526,16 +531,20 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
         i = i+1
         head, tail = os.path.split(doc)
         print("Processing file " + str(i) + "/" + str(nDocs) + ' ' + tail)
-        if doc[-4:]=='.csv':#processing CoNLL table that contains pos values
-            # check that input file is a CoNLL table
+        if doc[-4:]=='.csv':
             import CoNLL_util
+            # check that input file is a CoNLL table
             if not CoNLL_util.check_CoNLL(doc,True):
+                # processing CoNLL table that contains POS values
                 if differentColumns_differentColors:
                     tempOutputfile = processCsvColumns(inputFilename, inputDir, outputDir, openOutputFiles, csvField_color_list,
-                                      doNotListIndividualFiles, bg_image=img, bg_image_flag=use_contour_only)
+                                      doNotListIndividualFiles, max_words, lowercase, collocation, prefer_horizontal, bg_image=img, bg_image_flag=use_contour_only)
                     if tempOutputfile!='':
                         filesToOpen.append(tempOutputfile)
             else:
+                # processing any csv file for its values,
+                #   with the option of selecting specific colors and display them in selected colors
+                #   with the option of selecting specific colors and display them in selected colors
                 try:
                     # this assumes that the input csv file is a CoNLL table
                     df = pd.read_csv(doc, encoding='utf-8',on_bad_lines='skip')
@@ -554,16 +563,21 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                         words_ = forms_
 
                     for j in range(len(words_)):
+                        print ('Processing CoNLL table record ' + str(j) + '/' + str(len(words_)))
                         # print("word: ", forms_[i])
                         # print("pos: ", postags_[i])
                         # RED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, GREY for ADVERBS
                         #   YELLOW for anything else; no longer used
-                        if len(postags_[j]) >= 2 and 'VB' in postags_[j][0:2]: # == "VB":
+                        # any verb "VB", i.e., 'VB', 'VBN', 'VBD', 'VBG', 'VBP', 'VBZ' MODALS MD are excluded
+                        if len(postags_[j]) >= 2 and 'VB' in postags_[j][0:2]:
                             color_to_words[blue_code].append(words_[j])
+                        # any noun "NN" i.e., 'NN', 'NNS', 'NNP', 'NNPS'
                         elif len(postags_[j]) >= 2 and 'NN' in postags_[j][0:2]: # == "NN":
                             color_to_words[red_code].append(words_[j])
+                        # ONLY JJ
                         elif len(postags_[j]) >= 2 and postags_[j][0:2] == "JJ":
                             color_to_words[green_code].append(words_[j])
+                        # only "RB" and not RBR, RBS, RP, -RRB-
                         elif len(postags_[j]) >= 2 and postags_[j][0:2] == "RB":
                             color_to_words[grey_code].append(words_[j])
                         # else:  # should not process? Skip any other tags?
@@ -643,21 +657,21 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                     if len(textToProcess) == 0:
                         textToProcess = currenttext
 
-            if doNotListIndividualFiles==False or len(inputFilename)>0:
-                if differentPOS_differentColors:
-                    tempOutputfile = display_wordCloud_sep_color(doc, inputDir, outputDir, textToProcess, color_to_words,
-                                                                 transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only, font = font, max_words = max_words)
-                else:
-                    # when stopwords = '' stopwords will be INCLUDED in the output visual
-                    tempOutputfile=display_wordCloud(doc,inputDir,outputDir,textToProcess, doNotListIndividualFiles,transformed_image_mask, stopwords, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only , font = font, max_words = max_words)
-                    if tempOutputfile==None:
-                        return
-                filesToOpen.append(tempOutputfile)
-                # write an output txt file that can be used for internet wordclouds services
-                if lemmatize or exclude_stopwords:
-                    with open(tempOutputfile[:-8]+'.txt', 'w', encoding='utf-8', errors='ignore') as f:
-                        f.write(textToProcess)
-            combinedtext = combinedtext + textToProcess
+        if doNotListIndividualFiles==False or len(inputFilename)>0:
+            if differentPOS_differentColors:
+                tempOutputfile = display_wordCloud_sep_color(doc, inputDir, outputDir, textToProcess, color_to_words,
+                                                             transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only, font = font, max_words = max_words)
+            else:
+                # when stopwords = '' stopwords will be INCLUDED in the output visual
+                tempOutputfile=display_wordCloud(doc,inputDir,outputDir,textToProcess, doNotListIndividualFiles,transformed_image_mask, stopwords, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only , font = font, max_words = max_words)
+                if tempOutputfile==None:
+                    return
+            filesToOpen.append(tempOutputfile)
+            # write an output txt file that can be used for internet wordclouds services
+            if lemmatize or exclude_stopwords:
+                with open(tempOutputfile[:-8]+'.txt', 'w', encoding='utf-8', errors='ignore') as f:
+                    f.write(textToProcess)
+        combinedtext = combinedtext + textToProcess
 
     if len(inputDir)>0:
         doc = '' # doc would otherwise have the value of the last document read in the inputDir

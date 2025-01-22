@@ -78,12 +78,15 @@ def load_df(inputDir):
     nDocs = len(inputDocs)
 
     head, tail = os.path.split(inputDir)
-    IO_user_interface_util.timed_alert(GUI_util.window,5000,'Loading PC-AE database...', 'Loadindg ' + str(nDocs) + ' xlsx files from PC-ACE database ' + tail + '\n\nPlease, be patient. Depending on database size this may take several minutes.',
+    IO_user_interface_util.timed_alert(GUI_util.window,5000,'Loading PC-AE database...', 'Loading ' + str(nDocs) + ' xlsx files from PC-ACE database ' + tail + '\n\nPlease, be patient. Depending on database size this may take several minutes.',
         False, '', True, '', False)
 
+    print('InputDir', inputDir)
+    i = 0
+    NumTables = len(reading_list)
     for filename, rename_columns in reading_list:
-        print('inputDir', inputDir)
-        print('filename', filename)
+        i = i + 1
+        print('  Filename ' + str(i) + '/' + str(NumTables), filename)
         df = check_missing(os.path.join(inputDir, filename))
         if df.empty:
             library[filename] = {}
