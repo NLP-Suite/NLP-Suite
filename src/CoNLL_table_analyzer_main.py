@@ -67,7 +67,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
 # Ngrams searches & VIEWER','Word searches
 
 
-    if search_token_var.get() and searchField_kw=='e.g.: father':
+    if search_token_var.get() and 'e.g.: father' in searchField_kw:
         mb.showwarning(title='Search error',
                        message="The 'Searched token' field must be different from 'e.g.: father'. Please, enter a CoNLL table token/word and try again.")
         return
@@ -380,6 +380,8 @@ extra_GUIs_var = tk.IntVar()
 extra_GUIs_menu_var = tk.StringVar()
 all_analyses = tk.StringVar()
 searchField_kw_var = tk.StringVar()
+searchField_POS_var = tk.StringVar()
+
 searchedCoNLLField_var = tk.StringVar()
 k_words_var = tk.IntVar()
 before_K_words_var = tk.IntVar()
@@ -414,7 +416,7 @@ def clear(e):
     all_analyses_menu.configure(state='disabled')
     all_analyses.set('*')
     search_token_var.set(0)
-    searchField_kw_var.set('e.g.: father')
+    searchField_kw_var.set('e.g.: father or * for all tokens in the CoNLL table')
     postag_var.set('*')
     deprel_var.set('*')
     co_postag_var.set('*')
@@ -485,7 +487,13 @@ all_analyses.set('*')
 all_analyses_menu = tk.OptionMenu(window, all_analyses, '*', 'Clause analysis', 'Noun analysis', 'Verb analysis', 'Function (junk/stop) words analysis')
 all_analyses_menu.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
-                                               all_analyses_menu)
+                                               all_analyses_menu,True)
+
+content_junk_var = tk.IntVar()
+content_junk_checkbox = tk.Checkbutton(window, state='disabled', variable = content_junk_var, text='Content & junk words',
+                                onvalue=1, offvalue=0, command = lambda: activate_all_options())
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,
+                                                    y_multiplier_integer, content_junk_checkbox,False)
 
 WordNet_var = tk.IntVar()
 WordNet_checkbox = tk.Checkbutton(window, state='disabled', variable=WordNet_var,  text='WordNet classification of Nouns & Verbs', onvalue=1,
@@ -499,18 +507,40 @@ searchToken_checkbox = tk.Checkbutton(window, state='disabled', variable=search_
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                     y_multiplier_integer, searchToken_checkbox,True)
 
-searchField_kw_var.set('e.g.: father')
-
+searchField_kw_var.set('e.g.: father or * for all tokens in the CoNLL table')
+# search_kw_var = tk.IntVar()
+# searchKw_checkbox = tk.Checkbutton(window, state='disabled', variable=search_token_var,  text='Search token/word', onvalue=1,
+#                                   offvalue=0, command = lambda:  activate_all_options())
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+70,
+#                                                     y_multiplier_integer, searchKw_checkbox,True)
+#
 # used to place noun/verb checkboxes starting at the top level
 y_multiplier_integer_top = y_multiplier_integer
 
 entry_searchField_kw = tk.Entry(window, width=GUI_IO_util.combobox_width, state='disabled', textvariable=searchField_kw_var)
 # place widget with hover-over info
+#labels_x_indented_coordinate+140
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,
     y_multiplier_integer,
     entry_searchField_kw,
-    False, False, False, False, 90, GUI_IO_util.IO_configuration_menu,
+    False, False, False, False, 90, GUI_IO_util.watch_videos_x_coordinate,
     "Enter the CASE SENSITIVE word (ONE WORD ONLY) that you would like to search (* for any word). All searches are done WITHIN EACH SENTENCE for the EXACT word.")
+
+# search_POS_var = tk.IntVar()
+# searchPOS_checkbox = tk.Checkbutton(window, state='disabled', variable=search_POS_var,  text='Search POS', onvalue=1,
+#                                   offvalue=0, command = lambda:  activate_all_options())
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+130,
+#                                                     y_multiplier_integer, searchPOS_checkbox,True)
+# searchField_POS_var.set('e.g.: NN*')
+#
+# entry_searchField_POS = tk.Entry(window, width=GUI_IO_util.combobox_width, state='disabled', textvariable=searchField_POS_var)
+# # place widget with hover-over info
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+70,
+#     y_multiplier_integer,
+#     entry_searchField_POS,
+#     False, False, False, False, 90, GUI_IO_util.IO_configuration_menu,
+#     "Enter the CASE SENSITIVE word (ONE WORD ONLY) that you would like to search (* for any word). All searches are done WITHIN EACH SENTENCE for the EXACT word.")
+#
 
 # Search type var (FORM/LEMMA)
 searchedCoNLLField_var.set('FORM')
@@ -693,6 +723,7 @@ def activate_all_options():
     extra_GUIs_menu.configure(state='disabled')
     all_analyses_checkbox.configure(state='normal')
     all_analyses_menu.configure(state='disabled')
+    content_junk_checkbox.configure(state='normal')
     searchToken_checkbox.configure(state='normal')
     WordNet_checkbox.configure(state='normal')
     sentence_table_checkbox.configure(state='normal')
@@ -722,6 +753,7 @@ def activate_all_options():
         all_analyses_checkbox.configure(state='disabled')
         all_analyses_menu.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
+        content_junk_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
         k_sentences_checkbox.configure(state='disabled')
@@ -730,6 +762,7 @@ def activate_all_options():
         extra_GUIs_menu.configure(state='normal')
         all_analyses_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
+        content_junk_checkbox.configure(state='disabled')
         k_words_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
         k_sentences_checkbox.configure(state='disabled')
@@ -737,6 +770,7 @@ def activate_all_options():
         all_analyses_menu.configure(state='normal')
         extra_GUIs_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
+        content_junk_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
         k_sentences_checkbox.configure(state='disabled')
@@ -747,6 +781,7 @@ def activate_all_options():
     elif search_token_var.get()==True:
         extra_GUIs_checkbox.configure(state='disabled')
         all_analyses_checkbox.configure(state='disabled')
+        content_junk_checkbox.configure(state='disabled')
         # k_words_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
         k_sentences_checkbox.configure(state='disabled')
@@ -764,6 +799,7 @@ def activate_all_options():
         all_analyses_checkbox.configure(state='disabled')
         k_words_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
+        content_junk_checkbox.configure(state='disabled')
         entry_searchField_kw.configure(state='disabled')
         searchedCoNLLdescription_csv_field_menu_lb.configure(state='disabled')
         postag_menu_lb.configure(state='disabled')
@@ -780,6 +816,7 @@ def activate_all_options():
         return
         extra_GUIs_checkbox.configure(state='disabled')
         all_analyses_checkbox.configure(state='disabled')
+        content_junk_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
         entry_searchField_kw.configure(state='disabled')
         before_K_words_entry.configure(state='normal')
@@ -796,6 +833,7 @@ def activate_all_options():
     elif compute_sentence_var.get():
         extra_GUIs_checkbox.configure(state='disabled')
         all_analyses_checkbox.configure(state='disabled')
+        content_junk_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
         entry_searchField_kw.configure(state='disabled')
         searchedCoNLLdescription_csv_field_menu_lb.configure(state='disabled')
@@ -807,6 +845,7 @@ def activate_all_options():
     elif k_sentences_var.get():
         extra_GUIs_checkbox.configure(state='disabled')
         all_analyses_checkbox.configure(state='disabled')
+        content_junk_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
         entry_searchField_kw.configure(state='disabled')
@@ -823,6 +862,7 @@ def activate_all_options():
         extra_GUIs_menu.configure(state='disabled')
         all_analyses_checkbox.configure(state='normal')
         all_analyses_menu.configure(state='disabled')
+        content_junk_checkbox.configure(state='normal')
         searchToken_checkbox.configure(state='normal')
         WordNet_checkbox.configure(state='normal')
         sentence_table_checkbox.configure(state='normal')
@@ -876,7 +916,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "Please, tick the checkbox if you wish to aggregate nouns and verbs in the CoNLL table (POS NN* and POS VB*) via WordNet." \
                                   "\n\nCAVEAT: For VERBS, the 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies."+ GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checbox to search the CoNLL table for a specific token/word. Enter the CASE SENSITIVE token (i.e., word) to be searched (enter * for any word). ENTER * TO SEARCH FOR ANY TOKEN/WORD. The EXACT word will be searched (e.g., if you enter 'American', any instances of 'America' will not be found).\n\nDO NOT USE QUOTES WHEN ENTERING A SEARCH TOKEN. n\nThe algorithm will search all the tokens related to this token in the CoNLL table. For example, if the the token wife is entered, the algorithm will search in each dependency tree (i.e., each sentence).\n\nIn OUTPUT the algorithm will produce several charts and a Gephi network graphs of the relationship between searched and co-occurring words." + GUI_IO_util.msg_Esc)
+                                  "Please, tick the checbox to search the CoNLL table for a specific token/word. Enter the CASE SENSITIVE token (i.e., word) to be searched (enter * for any word).\n\nENTER * TO SEARCH FOR ANY TOKEN/WORD.\n\nThe EXACT word will be searched (e.g., if you enter 'American', any instances of 'America' will not be found).\n\nDO NOT USE QUOTES WHEN ENTERING A SEARCH TOKEN. n\nThe algorithm will search all the tokens related to this token in the CoNLL table. For example, if the the token wife is entered, the algorithm will search in each dependency tree (i.e., each sentence).\n\nIn OUTPUT the algorithm will produce several charts and a Gephi network graphs of the relationship between searched and co-occurring words." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, select the CoNLL field to be used for the search (FORM or LEMMA).\n\nFor example, if brother is entered as the searched token, and FORM is entered as search field, the algorithm will first search all occurrences of the FORM brother. Note that in this case brothers will NOT be considered. Otherwise, if LEMMA is entered as search field, the algorithm will search all occurences of the LEMMA brother. In this case, tokens with form brother and brothers will all be considered." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",

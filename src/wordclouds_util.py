@@ -256,7 +256,8 @@ def display_wordCloud_sep_color(inputFilename, inputDir, outputDir, text, color_
                         background_color='white', font_path = font).generate(text)
     default_color = "(169, 169, 169)" # dark grey; black is 0,0,0
     grouped_color_func = GroupedColorFunc(color_to_words, default_color)
-    wc.recolor(color_func=grouped_color_func)
+    # wc.recolor(color_func=grouped_color_func)
+    wc = wc.recolor(color_func=grouped_color_func)
     plt.figure(figsize = (8, 8), facecolor = None)
     output_file_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.png', 'WC', 'img')
     if bg_image_flag and bg_image is not None:
@@ -266,6 +267,7 @@ def display_wordCloud_sep_color(inputFilename, inputDir, outputDir, text, color_
         plt.imshow(img,interpolation='bilinear')
         plt.axis("off")
         #title must be set before layout
+        plt.title("Test title")
         plt.tight_layout(pad = 0)
         # Save the image in the output folder
         plt.figure()
@@ -277,9 +279,11 @@ def display_wordCloud_sep_color(inputFilename, inputDir, outputDir, text, color_
                     format='png',
                     dpi=300)
     else:
-        plt.imshow(wc, interpolation="bilinear")
+        # plt.imshow(wc, interpolation="bilinear")
+        plt.imshow(wc.to_image(), interpolation="bilinear")
         plt.axis("off")
-        wc.to_file(output_file_name)
+        # wc.to_file(output_file_name)
+        plt.savefig(output_file_name)
     return output_file_name
 
 # called by python_wordCloud
@@ -532,6 +536,10 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
         head, tail = os.path.split(doc)
         print("Processing file " + str(i) + "/" + str(nDocs) + ' ' + tail)
         if doc[-4:]=='.csv':
+            startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Running wordcloud on csv file',
+                                                           'Started running wordcloud at', True,
+                                                           'Please, be patient. Depending upon the number of documents processed this may take a few minutes.',
+                                                           True, '', False)
             import CoNLL_util
             # check that input file is a CoNLL table
             if not CoNLL_util.check_CoNLL(doc,True):
@@ -591,6 +599,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                     mb.showwarning(title='Not a CoNLL table',
                                    message=doc + " is not a CoNLL table.\n\nPlease, select in input a proper csv CoNLL file with Form, Lemma, and POS columns and try again.")
                     return
+
         elif doc[-4:]=='.txt':
             with open(doc, 'r', encoding='utf-8', errors='ignore') as myfile:
                 textToProcess = ''
@@ -664,8 +673,8 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
             else:
                 # when stopwords = '' stopwords will be INCLUDED in the output visual
                 tempOutputfile=display_wordCloud(doc,inputDir,outputDir,textToProcess, doNotListIndividualFiles,transformed_image_mask, stopwords, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only , font = font, max_words = max_words)
-                if tempOutputfile==None:
-                    return
+            if tempOutputfile==None:
+                return
             filesToOpen.append(tempOutputfile)
             # write an output txt file that can be used for internet wordclouds services
             if lemmatize or exclude_stopwords:
@@ -707,6 +716,9 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
     #     head, scriptName = os.path.split(os.path.basename(__file__))
     #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
     #     filesToOpen = None
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+                                       'Finished running wordcloud at',
+                                       True, '', True, startTime, False)
     return filesToOpen
 
     # plt.show()

@@ -227,7 +227,8 @@ def filter_output_list(list_queried, header, related_token_DEPREL="*", Sentence_
     if related_token_POSTAG == "*" and related_token_DEPREL == "*" and Sentence_ID == "*":
         return list_queried
     if "*" not in related_token_POSTAG:
-        postag_list_queried = list(filter(lambda tok: tok[1] == related_token_POSTAG, list_queried))
+        # postag_list_queried = list(filter(lambda tok: tok[1] == related_token_POSTAG, list_queried))
+        postag_list_queried = list(filter(lambda tok: tok[6] == related_token_POSTAG, list_queried))
     elif related_token_POSTAG == "NN*":
         postag_list_queried = [token for token in list_queried if token[6] in ['NN', 'NNS', 'NNP', 'NNPS']]
     elif related_token_POSTAG == 'JJ*':
@@ -387,6 +388,8 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, 
                        related_token_DEPREL="*",
                        Sentence_ID="*", _tok_postag_='*', _tok_deprel_='*'):
 
+    filesToOpen = []  # Store all files that are to be opened once finished
+
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='CoNLL_search',
                                                        silent=True)
@@ -531,7 +534,6 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, 
                 else:
                     filesToOpen.extend(outputFiles)
 
-
         columns_to_be_plotted_xAxis = ['Co-occurring Token/Word']
         columns_to_be_plotted_yAxis = ['Co-occurring Token/Word']
         outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
@@ -605,23 +607,45 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, 
 
         # wordclouds graphs _________________________________________________
 
+        # display only the Co-occurring Token/Word'
         import wordclouds_util
         # run with all default values;
         prefer_horizontal = .9
-        doNotListIndividualFiles = True
+        lowercase = False
+        use_contour_only = False
         collocation = False
         transformed_image_mask = []
+        max_words = 200
+        doNotListIndividualFiles = False
         stopwords = ''
         column_name='Co-occurring Token/Word'
         textToProcess = IO_csv_util.get_csv_field_values(outputFilename, column_name, uniqueValues=False, returnList=False)
+        # print("\n",textToProcess)
 
         outputFiles = wordclouds_util.display_wordCloud(outputFilename, '', outputDir, textToProcess, doNotListIndividualFiles,
                               transformed_image_mask, stopwords, collocation, prefer_horizontal, bg_image=None,
                               bg_image_flag=True, font=None, max_words=100)
-
         if outputFiles!=None:
-            if isinstance(outputFiles, str):
-                filesToOpen.append(outputFiles)
+            if isinstance(outputFiles, str):  # always for wordclouds
+                newName = outputFiles.replace('.png', '_coOcc_Words.png')
+                os.rename(outputFiles, newName)
+                filesToOpen.append(newName)
+            else:
+                filesToOpen.extend(outputFiles)
+
+        # display BOTH Searched Token/Word in RED and Co-occurring Token/Word in BLUE
+
+        csvField_color_list = ['Searched Token/Word', '(255, 0, 0)', '|', 'Co-occurring Token/Word', '(0, 0, 255)', '|']
+        openOutputFiles=False
+        img = None
+        outputFiles = wordclouds_util.processCsvColumns(outputFilename, '', outputDir, openOutputFiles, csvField_color_list,
+                                           doNotListIndividualFiles, max_words, lowercase, collocation,
+                                           prefer_horizontal, bg_image=img, bg_image_flag=use_contour_only)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):  # always for wordclouds
+                newName = outputFiles.replace('.png', '_Search_coOcc_Words.png')
+                os.rename(outputFiles, newName)
+                filesToOpen.append(newName)
             else:
                 filesToOpen.extend(outputFiles)
 
