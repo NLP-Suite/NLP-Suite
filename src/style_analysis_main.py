@@ -201,7 +201,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
                 else:
                     filesToOpen.extend(outputFiles)
 
+        if '*' in vocabulary_analysis_menu_var or 'Sentence length' in vocabulary_analysis_menu_var:
+            import statistics_txt_util
+            outputFiles = statistics_txt_util.compute_sentence_length(inputFilename, inputDir, outputDir,
+                                                                      config_filename, chartPackage, dataTransformation)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
         if '*' in vocabulary_analysis_menu_var or 'Word length' in vocabulary_analysis_menu_var:
+            import statistics_txt_util
             outputFiles =statistics_txt_util.process_words(window, config_filename, inputFilename,inputDir, outputDir_style,
                                                       openOutputFiles, chartPackage,dataTransformation,'Word length')
             if outputFiles!=None:
@@ -442,6 +453,7 @@ vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*'
                                          'Iconic vocabulary',
                                          'Objectivity/subjectivity (via spaCy)',
                                          'Punctuation as figures of pathos (? !)',
+                                         'Sentence length',
                                          'Word length',
                                          'Vowel words',
                                          'Words with capital initial (proper nouns)',
