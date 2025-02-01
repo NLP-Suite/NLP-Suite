@@ -236,10 +236,20 @@ def processColorList(currenttext, lowercase, color_to_words, csvField_color_list
                 v = v.lower()
             if k in column_color:
                 if " " in v:
-                    color_to_words[column_color[k]] += ["".join(filter(str.isalnum, s)) for s in v.split(" ")]
+                    words = ["".join(filter(str.isalnum, s)) for s in v.split(" ")]
                 else:
-                    color_to_words[column_color[k]].append("".join(filter(str.isalnum, v)))
-                currenttext += v + " "
+                    words = ["".join(filter(str.isalnum, v))]
+
+                color = column_color[k]
+                color_index = list(column_color.values()).index(color)  # Find the index of the color
+                suffix = '_' * (color_index + 1)  # Create the suffix based on the color's position
+                color_to_words[color] += [word + suffix for word in words]
+
+                # Update currenttext with the suffixed word(s)
+
+                # Update currenttext with the word(s)
+                currenttext += " ".join([word + suffix for word in words]) + " "
+
     return currenttext, color_to_words
 
 # add bg_image_flag parameter to indicate whether to add background image
@@ -248,41 +258,6 @@ def display_wordCloud_sep_color(inputFilename, inputDir, outputDir, text, color_
     # stopwords dealt with in main function
     stopwords=''
     c_wid = 0 if bg_image_flag else 3
-    from collections import OrderedDict, defaultdict
-
-    color_to_words = OrderedDict(color_to_words.items())
-
-
-    # Step 1: Create a suffix mapping for each color group
-    color_suffixes = {color: '_' * (idx + 1) for idx, color in enumerate(color_to_words.keys())}
-
-    # Step 2: Create a word replacement dictionary
-    word_map = {}  # Maps original words to their suffixed version
-    modified_color_to_words = {}  # Store the correctly suffixed words for each color
-
-    for color, words in color_to_words.items():
-        suffix = color_suffixes[color]
-        modified_words = [word + suffix for word in words]  # Apply suffix
-        # modified_color_to_words[color] = modified_words  # Store correctly modified words
-        for word in words:
-            word_map[word.lower()] = word + suffix  # Store mapping for fast lookup
-
-    updated_color_to_words = {
-        color: [word + color_suffixes[color] for word in words]
-        for color, words in color_to_words.items()
-    }
-
-    # Step 3: Tokenize text and replace words using a dictionary lookup
-    def fast_replace(text, word_map):
-        words = text.split()  # Simple tokenization (split by whitespace)
-        return ' '.join(word_map.get(word.lower(), word) for word in words)
-
-    modified_text = fast_replace(text, word_map)
-
-    text = modified_text
-    color_to_words = updated_color_to_words
-
-
 
     if len(transformed_image_mask) != 0:
         wc = WordCloud(collocations=collocation,width = 800, height = 800, max_words=max_words, prefer_horizontal=prefer_horizontal, stopwords = stopwords, mask=transformed_image_mask,
@@ -294,6 +269,13 @@ def display_wordCloud_sep_color(inputFilename, inputDir, outputDir, text, color_
     grouped_color_func = GroupedColorFunc(color_to_words, default_color)
     # wc.recolor(color_func=grouped_color_func)
     wc = wc.recolor(color_func=grouped_color_func)
+    w = []
+    for l in wc.layout_:
+        x = l[0]
+        x = (x[0].replace('_', ''), x[1])
+        w.append((x, l[1], l[2], l[3], l[4]))
+    wc.layout_ = w
+
     plt.figure(figsize = (8, 8), facecolor = None)
     output_file_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.png', 'WC', 'img')
     if bg_image_flag and bg_image is not None:

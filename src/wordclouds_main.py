@@ -156,8 +156,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=560, # height at brief display
-                             GUI_height_full=640, # height at full display
+                             GUI_height_brief=600, # height at brief display
+                             GUI_height_full=680, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -239,6 +239,44 @@ def clear_field_color_list():
 # def run_clouds(window,y_multiplier_integer, wordclouds_var,selectedImage_var,
 # 	doNotCreateIntermediateFiles_var,input_main_dir_path):
 
+
+extra_GUIs_var = tk.IntVar()
+extra_GUIs_menu_var = tk.StringVar()
+
+extra_GUIs_var.set(0)
+extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_GUI_options())
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
+
+extra_GUIs_menu_var.set('')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Statistics csv file','Data visualization 1','Data visualization 2','Parsers & annotators')
+extra_GUIs_menu.configure(state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                   extra_GUIs_menu,
+                                   False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                   "Select other related types of analysis you wish to perform" \
+                                    "\nThe selected GUI will open without having to press RUN")
+
+def open_GUI(*args):
+    extra_GUIs_menu.configure(state='disabled')
+    if extra_GUIs_var.get():
+        extra_GUIs_menu.configure(state='normal')
+    else:
+        return
+    if extra_GUIs_var.get():
+        if 'Statistics' in extra_GUIs_menu_var.get():
+            call("python statistics_csv_main.py", shell=True)
+        if 'visualization 1' in extra_GUIs_menu_var.get():
+            call("python data_visualization_1_main.py", shell=True)
+        if 'visualization 2' in extra_GUIs_menu_var.get():
+            call("python data_visualization_2_main.py", shell=True)
+        elif 'Parsers' in extra_GUIs_menu_var.get():
+            call("python parsers_annotators_main.py", shell=True)
+extra_GUIs_menu_var.trace('w',open_GUI)
+
+def activate_GUI_options():
+    extra_GUIs_menu.configure(state='normal')
+
 wordclouds_var.set('Python WordCloud')
 selectedImage_var.set('')
 use_contour_only_var.set(1)
@@ -296,7 +334,7 @@ max_words.config(state='normal')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_max_words_number, y_multiplier_integer,
                                    max_words,
                                    True, False, True, False, 90, GUI_IO_util.wordclouds_max_words_number,
-                                   "Enter the maximum number of words to be displayed on the wordclouds image")
+                                   "Enter the maximum number of words to be displayed on the wordclouds image.\nIncrease the number, if words are not displayed as expected.")
 
 lemmatize_var.set(1)
 lemmatize_checkbox = tk.Checkbutton(window, variable=lemmatize_var,
@@ -657,6 +695,8 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                                         'Please, tick the \'GUIs available\' checkbox if you wish to see and select the range of other available tools suitable for searches and style analysis.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the word cloud service you want to use to generate a worldcloud.\n\nFor 'TagCrowd', 'Tagul', 'Tagxedo', 'Wordclouds', and 'Wordle' you must be connected to the internet. You will also need to copy/paste text or upload a text file, depending upon the word clouds service. If you wish to visualize the words in all the files in a directory, you would need to merge the files first via the file_merger_main, then use your merged file.\n\nThe Python algorithm uses Andreas Mueller's Python package wordclouds (https://amueller.github.io/word_cloud/) can be run without internet connection.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files or a csv CoNLL table file.\n\nIn OUTPUT the algorithm creates word cloud image file(s).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","\n\nThe filter options are only available when selecting Python as the wordclouds service to use. When available,\n\n   1. tick the 'Horizonal' checkbox if you wish to display words in the wordclouds horizonally only;\n   2. select the preferred font; default font is the Adobe Droid Sans Mono font.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","\n\nThe filter options are only available when selecting Python as the wordclouds service to use. When available,\n\n   1. enter the maximum number of words to be displayed;\n   2. tick the 'Stopwords' checkbox if you wish to exclude from processing stopwords present in the input file(s);\n   3. tick the 'Lemmas' checkbox if you wish to lemmatize the words in the input file(s);\n   4. tick the 'Punctuation' checkbox if you wish to exclude from processing punctuation symbols present in the input file(s);\n   5. tick the 'Lowercase' checkbox if you wish to convert all words to lowercase to avoid having some words capitalized simply because they are the first words in a sentence;\n   6. tick the 'Collocation' checkbox if you wish to keep together common combinations of words (e.g., South Carolina; White House); TICKING THE COLLOCATION CHECKBOX MAY RESULT IN THE UNWANTED DUPLICATION OF SOME WORDS;\n   7. tick the 'Different colors for different POS tags' checkbox if you wish to display different POSTAG values (namely, nouns, verbs, adjectives, and adverbs) in different colors (RED for NOUNS (including proper nouns), BLUE for VERBS, GREEN for ADJECTIVES, and GREY for ADVERBS). For greater control over the use of different colors for different items, you can use the csv file option below with a CoNLL table as input. You will then be able to use NER or DEPREL and not just POSTAG (or more POSTAG values).\n\nStanford CoreNLP STANZA will be used to tokenize sentences, lemmatize words, and compute POS tags. Depending upon the number of files processed and length of files, the process can be time consuming. Please, be patient.\n\nREGARDLESS OF OPTIONS SELECTED, THE S OF THE SAXON GENITIVE WILL NOT BE DISPLAYED.")

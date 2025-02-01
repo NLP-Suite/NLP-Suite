@@ -165,7 +165,7 @@ def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, ope
         loopValue=columnNumber
     else:
         nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(outputFilename)
-        loopValue=range(nColumns)
+        loopValue=range(nColumns-1)
     # insert headers
     headers=['Column header','Number of documents',
              'Count','Mean','Mode','Median','Standard deviation','Minimum','Maximum',
@@ -506,7 +506,7 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
 # no aggregation by group_cols --------------------------------------------------------
 
     elif len(plot_cols) != 0 and len(group_cols) == 0:
-        plot_cols=['Victim Race','Victim Gender']
+        # plot_cols=['Victim Race','Victim Gender']
         for col in plot_cols:
             data = data[col].value_counts().to_frame().reset_index()
             hdr = [col, col + ' Frequency']
