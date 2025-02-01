@@ -404,7 +404,7 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
                         long_sentences = long_sentences + 1
                     sentenceID = sentenceID + 1
                     writer.writerow(
-                        [len(tokens), sentenceID, sentence, fileID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                        [int(len(tokens)), sentenceID, sentence, fileID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
         csvOut.close()
         head, scriptName = os.path.split(os.path.basename(__file__))
         reminder_status = reminders_util.checkReminder(scriptName,
@@ -427,7 +427,7 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
                                                        chart_title='Sentence Length (In Words)',
                                                        count_var=1, hover_label=[],
                                                        outputFileNameType='Sent', #'line_bar',
-                                                       column_xAxis_label='Sentence length',
+                                                       column_xAxis_label='Sentence length (in words)',
                                                        groupByList=['Document'],
                                                        plotList=['Sentence length (in words)'],
                                                        chart_title_label='Sentence Lenghts')

@@ -248,6 +248,42 @@ def display_wordCloud_sep_color(inputFilename, inputDir, outputDir, text, color_
     # stopwords dealt with in main function
     stopwords=''
     c_wid = 0 if bg_image_flag else 3
+    from collections import OrderedDict, defaultdict
+
+    color_to_words = OrderedDict(color_to_words.items())
+
+
+    # Step 1: Create a suffix mapping for each color group
+    color_suffixes = {color: '_' * (idx + 1) for idx, color in enumerate(color_to_words.keys())}
+
+    # Step 2: Create a word replacement dictionary
+    word_map = {}  # Maps original words to their suffixed version
+    modified_color_to_words = {}  # Store the correctly suffixed words for each color
+
+    for color, words in color_to_words.items():
+        suffix = color_suffixes[color]
+        modified_words = [word + suffix for word in words]  # Apply suffix
+        # modified_color_to_words[color] = modified_words  # Store correctly modified words
+        for word in words:
+            word_map[word.lower()] = word + suffix  # Store mapping for fast lookup
+
+    updated_color_to_words = {
+        color: [word + color_suffixes[color] for word in words]
+        for color, words in color_to_words.items()
+    }
+
+    # Step 3: Tokenize text and replace words using a dictionary lookup
+    def fast_replace(text, word_map):
+        words = text.split()  # Simple tokenization (split by whitespace)
+        return ' '.join(word_map.get(word.lower(), word) for word in words)
+
+    modified_text = fast_replace(text, word_map)
+
+    text = modified_text
+    color_to_words = updated_color_to_words
+
+
+
     if len(transformed_image_mask) != 0:
         wc = WordCloud(collocations=collocation,width = 800, height = 800, max_words=max_words, prefer_horizontal=prefer_horizontal, stopwords = stopwords, mask=transformed_image_mask,
                        contour_width=c_wid, contour_color='firebrick', background_color ='white', font_path = font).generate(text)
@@ -570,31 +606,52 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                         currenttext = (" ").join(forms_)
                         words_ = forms_
 
-                    for j in range(len(words_)):
-                        print ('Processing CoNLL table record ' + str(j) + '/' + str(len(words_)))
-                        # print("word: ", forms_[i])
-                        # print("pos: ", postags_[i])
-                        # RED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, GREY for ADVERBS
-                        #   YELLOW for anything else; no longer used
-                        # any verb "VB", i.e., 'VB', 'VBN', 'VBD', 'VBG', 'VBP', 'VBZ' MODALS MD are excluded
-                        if len(postags_[j]) >= 2 and 'VB' in postags_[j][0:2]:
-                            color_to_words[blue_code].append(words_[j])
-                        # any noun "NN" i.e., 'NN', 'NNS', 'NNP', 'NNPS'
-                        elif len(postags_[j]) >= 2 and 'NN' in postags_[j][0:2]: # == "NN":
-                            color_to_words[red_code].append(words_[j])
-                        # ONLY JJ
-                        elif len(postags_[j]) >= 2 and postags_[j][0:2] == "JJ":
-                            color_to_words[green_code].append(words_[j])
-                        # only "RB" and not RBR, RBS, RP, -RRB-
-                        elif len(postags_[j]) >= 2 and postags_[j][0:2] == "RB":
-                            color_to_words[grey_code].append(words_[j])
-                        # else:  # should not process? Skip any other tags?
-                        #     color_to_words[yellow_code].append(words_[j])
-                        # if postags_[j][0:2] == "NN" or postags_[j][0:2] == "VB" or \
-                        #         postags_[j][0:2] == "JJ" or postags_[j][0:2] == "RB":
-                        if 'NN' in postags_[j][0:2] or 'VB' in postags_[j][0:2] or \
-                                postags_[j][0:2] == "JJ" or postags_[j][0:2] == "RB":
-                            textToProcess = textToProcess + ' ' + words_[j]
+                    df = pd.read_csv(doc, encoding='utf-8', on_bad_lines='skip')
+                    df = df.dropna(subset=['Form', 'Lemma', 'POS'])
+                    text_words = []
+                    for row in df.itertuples():
+                        word = row.Lemma if lemmatize else row.Form
+                        pos = row.POS
+                        pos_prefix = pos[:2] if len(pos) >= 2 else pos
+                        color = None
+                        if pos_prefix.startswith('VB'):
+                            color = blue_code
+                        elif pos_prefix.startswith('NN'):
+                            color = red_code
+                        elif pos_prefix == 'JJ':
+                            color = green_code
+                        elif pos_prefix == 'RB':
+                            color = grey_code
+                        if color:
+                            color_to_words[color].append(word)
+                            text_words.append(str(word))
+                    textToProcess = ' '.join(text_words)
+
+                    # for j in range(len(words_)):
+                    #     print ('Processing CoNLL table record ' + str(j) + '/' + str(len(words_)))
+                    #     # print("word: ", forms_[i])
+                    #     # print("pos: ", postags_[i])
+                    #     # RED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, GREY for ADVERBS
+                    #     #   YELLOW for anything else; no longer used
+                    #     # any verb "VB", i.e., 'VB', 'VBN', 'VBD', 'VBG', 'VBP', 'VBZ' MODALS MD are excluded
+                    #     if len(postags_[j]) >= 2 and 'VB' in postags_[j][0:2]:
+                    #         color_to_words[blue_code].append(words_[j])
+                    #     # any noun "NN" i.e., 'NN', 'NNS', 'NNP', 'NNPS'
+                    #     elif len(postags_[j]) >= 2 and 'NN' in postags_[j][0:2]: # == "NN":
+                    #         color_to_words[red_code].append(words_[j])
+                    #     # ONLY JJ
+                    #     elif len(postags_[j]) >= 2 and postags_[j][0:2] == "JJ":
+                    #         color_to_words[green_code].append(words_[j])
+                    #     # only "RB" and not RBR, RBS, RP, -RRB-
+                    #     elif len(postags_[j]) >= 2 and postags_[j][0:2] == "RB":
+                    #         color_to_words[grey_code].append(words_[j])
+                    #     # else:  # should not process? Skip any other tags?
+                    #     #     color_to_words[yellow_code].append(words_[j])
+                    #     # if postags_[j][0:2] == "NN" or postags_[j][0:2] == "VB" or \
+                    #     #         postags_[j][0:2] == "JJ" or postags_[j][0:2] == "RB":
+                    #     if 'NN' in postags_[j][0:2] or 'VB' in postags_[j][0:2] or \
+                    #             postags_[j][0:2] == "JJ" or postags_[j][0:2] == "RB":
+                    #         textToProcess = textToProcess + ' ' + words_[j]
                 except:
                     mb.showwarning(title='Not a CoNLL table',
                                    message=doc + " is not a CoNLL table.\n\nPlease, select in input a proper csv CoNLL file with Form, Lemma, and POS columns and try again.")
@@ -666,7 +723,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                     if len(textToProcess) == 0:
                         textToProcess = currenttext
 
-        if doNotListIndividualFiles==False or len(inputFilename)>0:
+        if doNotListIndividualFiles==False or len(tempOutputfile)==0:
             if differentPOS_differentColors:
                 tempOutputfile = display_wordCloud_sep_color(doc, inputDir, outputDir, textToProcess, color_to_words,
                                                              transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only, font = font, max_words = max_words)
