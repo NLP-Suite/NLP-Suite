@@ -84,6 +84,7 @@ def compute_stats(data):
     # VB future, VB infinitive, depending on MD modal
 
     verb_postags = ['VB', 'VBN', 'VBD', 'VBG', 'VBP', 'VBZ', 'MD'] # all verb types
+    verb_postags = ['VB', 'VBN', 'VBD', 'VBG', 'VBP', 'VBZ'] # exclude modals, 'MD'] # all verb types
     data = [tok for tok in data if (tok[3] in verb_postags)]
     form_list = [i[1] for i in data]
     lemma_list = [i[2] for i in data]
@@ -222,7 +223,7 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
                                                   column_xAxis_label='Verb voice',
                                                   count_var=count_var,
                                                   hover_label=[],
-                                                  groupByList=['Document'],
+                                                  groupByList=[], # 'Document' not exported
                                                   plotList=[],
                                                   chart_title_label='')
 
@@ -239,6 +240,7 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 # written by Tony Chen Gu Mar 2022
 # add an extra column describing verb modality
 def verb_modality_data_preparation(data):
+    modals_row = []
     obl_row = []
     will_row = []
     can_row = []
@@ -256,6 +258,10 @@ def verb_modality_data_preparation(data):
 
     # i includes all the CoNLL table data, much useless for modality but easier to export; so be it, for now
     for i in data:
+        # modal verbs MD
+        if(i[3] in verb_postags):
+            modals_row.append(i+["Modals"])
+
         # Halliday's modality value
         if(i[1] in high_value_keywords and i[3] in verb_postags):
             high_value_row.append(i+["High-value modals"])
@@ -264,7 +270,7 @@ def verb_modality_data_preparation(data):
         if(i[1] in low_value_keywords and i[3] in verb_postags):
             low_value_row.append(i+["Low-value modals"])
 
-        # general modality
+        # modality type
         if(i[1] in obligation_keywords and i[3] in verb_postags):
             obl_row.append(i+["Obligation"])
         elif(i[1] in will_would_keywords and i[3] in verb_postags):
@@ -272,6 +278,8 @@ def verb_modality_data_preparation(data):
         elif(i[1] in can_may_keywords and i[3] in verb_postags):
             can_row.append(i+["Can/May"])
 
+    verb_modals_list = modals_row
+    verb_modals_stats = [['Verb Modals (POS tag MD)', 'Frequencies'], ['MD', len(modals_row)]]
     verb_modality_value_list = high_value_row + median_value_row + low_value_row
     verb_modality_list = obl_row + will_row + can_row
     verb_modality_stats = [['Verb Modality', 'Frequencies'],
@@ -283,9 +291,10 @@ def verb_modality_data_preparation(data):
                   ['Median-value Modals', len(median_value_row)],
                   ['Low-value Modals', len(low_value_row)]]
 
+    verb_modals_list  = sorted(verb_modals_list, key=lambda x: int(x[recordID_position]))
     verb_modality_list = sorted(verb_modality_list, key=lambda x: int(x[recordID_position]))
     verb_modality_value_list = sorted(verb_modality_value_list, key=lambda x: int(x[recordID_position]))
-    return verb_modality_list, verb_modality_stats, verb_modality_value_list, verb_modality_value_stats
+    return verb_modals_list, verb_modals_stats, verb_modality_list, verb_modality_stats, verb_modality_value_list, verb_modality_value_stats
 
 # modality compute frequencies of modality categories
 # def verb_modality_compute_categories(data, data_divided_sents):
@@ -331,15 +340,49 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
-    verb_modality_list, verb_modality_stats, verb_modality_value_list, verb_modality_value_stats = verb_modality_data_preparation(data)
+    verb_modals_list, verb_modals_stats, verb_modality_list, verb_modality_stats, verb_modality_value_list, verb_modality_value_stats = verb_modality_data_preparation(data)
     # output file names
     # NVA Noun Verb Analysis
+    verb_modals_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
+                                                             'Verb Modals')
     verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
                                                              'Verb Modality list')
     verb_modality_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
                                                                    'Verb Modality')
     verb_modality_value_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
                                                                    'Verb Modality Value')
+
+    # convert list to dataframe and save
+    df = pd.DataFrame(verb_modals_list)
+    df, headers = process_df_headers(df, "Verb Modals (POS tag MD)")
+
+    IO_csv_util.df_to_csv(GUI_util.window, df, verb_modals_file_name, headers=headers, index=False,
+                          language_encoding='utf-8')
+
+    if chartPackage!='No charts':
+
+        columns_to_be_plotted_xAxis = []
+        columns_to_be_plotted_yAxis = ['Verb Modals (POS tag MD)']
+        count_var = 1
+
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
+                                                  verb_modals_file_name, outputDir,
+                                                  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+                                                  chart_title="Frequency Distribution of Verb Modals (POS tag MD)",
+                                                  outputFileNameType='verb_modls',
+                                                  column_xAxis_label='Verb Modals (POS tag MD)',
+                                                  count_var=count_var,
+                                                  hover_label=[],
+                                                  groupByList=['Document'],
+                                                  plotList=[],
+                                                  chart_title_label='')
+
+
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     # convert list to dataframe and save
     df = pd.DataFrame(verb_modality_list)
@@ -418,7 +461,8 @@ def verb_tense_data_preparation(data):
     vbz_counter = 0 # present (3rd person singular)
     vb_counter_future = 0 # future
     vb_counter_infinitive = 0 # infintive
-    verb_tense_list = ['VBG', 'VBD', 'VB', 'VBN', 'VBP', 'VBZ', 'MD'] # MD modal verb
+    # verb_tense_list = ['VBG', 'VBD', 'VB', 'VBN', 'VBP', 'VBZ', 'MD'] # MD modal verb
+    verb_tense_list = ['VBG', 'VBD', 'VB', 'VBN', 'VBP', 'VBZ'] #, 'MD'] # MD modal verb
 
 
     aux = False
@@ -493,7 +537,7 @@ def verb_compute_frequencies(inputFilename, outputDir, data, data_divided_sents,
                                               column_xAxis_label='Verb POS tag',
                                               count_var=count_var,
                                               hover_label=[],
-                                              groupByList=[],
+                                              groupByList=[], # 'Document' not exported in this output file
                                               plotList=[],
                                               chart_title_label='')
 
@@ -596,7 +640,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
                                                   column_xAxis_label='Verb tense',
                                                   count_var=count_var,
                                                   hover_label=[],
-                                                  groupByList=['Document'],
+                                                  groupByList=[], # 'Document' not exported in this output file
                                                   plotList=[],
                                                   chart_title_label='')
 
