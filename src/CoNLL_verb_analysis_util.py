@@ -83,7 +83,7 @@ def compute_stats(data):
     # VBP present (non-3rd person singular), VBZ present (3rd person singular)
     # VB future, VB infinitive, depending on MD modal
 
-    verb_postags = ['VB', 'VBN', 'VBD', 'VBG', 'VBP', 'VBZ', 'MD'] # all verb types
+    # verb_postags = ['VB', 'VBN', 'VBD', 'VBG', 'VBP', 'VBZ', 'MD'] # all verb types
     verb_postags = ['VB', 'VBN', 'VBD', 'VBG', 'VBP', 'VBZ'] # exclude modals, 'MD'] # all verb types
     data = [tok for tok in data if (tok[3] in verb_postags)]
     form_list = [i[1] for i in data]

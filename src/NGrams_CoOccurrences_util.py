@@ -544,6 +544,7 @@ def search_ngrams_csv_file(csv_file_var, inputDir, outputDir, configFileName, se
             outputFiles2 = wordclouds_util.python_wordCloud(NgramsSearchFileName_txt, '', outputDir, configFileName,
                                                             selectedImage="",
                                                             use_contour_only=use_contour_only,
+                                                            wordcloud_title='',
                                                             prefer_horizontal=prefer_horizontal, font=font,
                                                             max_words=max_words,
                                                             lemmatize=lemmatize,

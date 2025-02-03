@@ -30,7 +30,7 @@ def transform_format(val):
     else:
         return val
 
-def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizontal, font,
+def run(inputFilename, inputDir, outputDir, visualization_tools, wordcloud_title_var, prefer_horizontal, font,
         max_words, lemmatize, exclude_stopwords, exclude_punctuation, lowercase, collocation, differentPOS_differentColor,
         prepare_image_var,selectedImage, use_contour_only,
         differentColumns_differentColors, csvField_color_list, openOutputFiles, doNotCreateIntermediateFiles):
@@ -109,7 +109,7 @@ def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizont
         if differentPOS_differentColor or differentColumns_differentColors: # should not process stopwords when useing a csv file in input or POS values
             exclude_stopwords = True
         outputFiles = wordclouds_util.python_wordCloud(inputFilename, inputDir, outputDir, config_filename,  selectedImage,
-                                use_contour_only, prefer_horizontal, font,
+                                use_contour_only, wordcloud_title_var, prefer_horizontal, font,
                                 int(max_words), lemmatize, exclude_stopwords, exclude_punctuation,
                                 lowercase, differentPOS_differentColor, differentColumns_differentColors,
                                 csvField_color_list,doNotCreateIntermediateFiles,openOutputFiles, collocation)
@@ -131,6 +131,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.input_main_dir_path.get(),
                             GUI_util.output_dir_path.get(),
                             wordclouds_var.get(),
+                            wordcloud_title_var.get(),
                             prefer_horizontal_var.get(),
                             font_var.get(),
                             max_words_var.get(),
@@ -200,6 +201,7 @@ csv_field_var=tk.StringVar()
 differentColumns_differentColor_var = tk.IntVar()
 doNotCreateIntermediateFiles_var = tk.IntVar() #when an entire directory is processed; could lead to an enourmus number of output files
 wordclouds_var=tk.StringVar()
+wordcloud_title_var = tk.StringVar()
 font_var=tk.StringVar()
 prepare_image_var = tk.IntVar()
 selectedImage_var=tk.StringVar()
@@ -214,6 +216,7 @@ def clear(e):
     font_var.set('Default')
     differentColumns_differentColor_var.set(0)
     differentColumns_differentColor_checkbox.config(state='normal')
+    wordcloud_title_var.set('')
     selectedImage_var.set('')
     use_contour_only_var.set(1)
     prefer_horizontal_var.set(0)
@@ -291,12 +294,23 @@ differentPOS_differentColor_var.set(0)
 differentPOS_differentColor_checkbox = tk.Checkbutton(window, variable=differentPOS_differentColor_var,
                                                        onvalue=1, offvalue=0)
 
+wordcloud_title_lb = tk.Label(window, text='Wordcloud title')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,wordcloud_title_lb,True)
+
+wordcloud_title = tk.Entry(window, width=GUI_IO_util.widget_width_medium,textvariable=wordcloud_title_var)
+# selectedImage.config(state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordcloud_title, y_multiplier_integer,
+                                   wordcloud_title,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "Enter a preferred title for the wordcloud image.\n"
+                                   "If left blank, the chart title will be automatically created from the input fiilename or input directory.")
+
 prefer_horizontal_checkbox = tk.Checkbutton(window, variable=prefer_horizontal_var,
                                                        onvalue=1, offvalue=0)
 
 prefer_horizontal_checkbox.config(text="Horizontal")
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_lowercase_pos, y_multiplier_integer,
                                    prefer_horizontal_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "Tick the checkbox to visualize words horizontally.\nHorizontal layout may be more readable but low-frequency words may need to be dropped.\nUntick the checkbox to displays words both horizontally and vertically to maximize space and number of words displayed.")
@@ -313,7 +327,7 @@ prefer_horizontal_var.trace('w',warnUser)
 font_var.set('Default')
 font_lb = tk.Label(window, text='Font')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_font_lb, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_collocation_pos, y_multiplier_integer,
                                    font_lb,
                                    True, False, True, False, 90, GUI_IO_util.wordclouds_font_lb,
                                    "Select the font you want to use in the wordclouds visualization; default font is the Adobe Droid Sans Mono font.")

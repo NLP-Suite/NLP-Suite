@@ -120,7 +120,11 @@ def get_words_minus_K_plus_K(docText, search_keyword, exact_word_match,
     # for keyword in search_keywords_list: the calling function now loops through the search_keywords_list
     left, mid, right = find_k_adjacent_tokens(words_, search_keyword, exact_word_match, minus_K_words_var, plus_K_words_var)
     for i in range(len(mid)):
-        a = [left[i], right[i]]  # If you would like to retain, just follow the 4 lines above and you can do that.
+        try:
+            a = [left[i], right[i]]  # If you would like to retain, just follow the 4 lines above and you can do that.
+        except:
+            a = ['','']
+            # print('error')
     # a is the word list used for a wordcloud of the set of -K and +K words
     return a
 
@@ -688,7 +692,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                                                                        hover_label=[],
                                                                        outputFileNameType='',
                                                                        column_xAxis_label=search_keywords_str,
-                                                                       groupByList=[],
+                                                                       groupByList=['Document'],
                                                                        plotList=[],
                                                                        chart_title_label='')
             if outputFiles!=None:
@@ -699,7 +703,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
 
     # wordclouds ----------------------------------------------------------------------------
 
-            outputFiles = visualize_wordcloud(all_found_sentences_allDocs, 'all_sents_with_searchwords',
+            outputFiles = visualize_wordcloud(all_found_sentences_allDocs, search_keywords_str, 'all_sents_with_searchwords',
                                               inputFilename, inputDir, outputDir,
                                               configFileName, filesToOpen, lemmatize)
 
@@ -710,7 +714,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                     filesToOpen.extend(outputFiles)
 
             if minus_K_var > 0 and plus_K_var > 0:
-                outputFiles = visualize_wordcloud(all_adjacent_sentences_allDocs, 'K+K_sents_around_searchwords',
+                outputFiles = visualize_wordcloud(all_adjacent_sentences_allDocs, search_keywords_str, 'K+K_sents_around_searchwords',
                                                   inputFilename, inputDir, outputDir,
                                                   configFileName, filesToOpen, lemmatize)
 
@@ -720,7 +724,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                     else:
                         filesToOpen.extend(outputFiles)
 
-                outputFiles = visualize_wordcloud(all_adjacent_words_allDocs, '-K+K_words_around_searchwords',
+                outputFiles = visualize_wordcloud(all_adjacent_words_allDocs, search_keywords_str, '-K+K_words_around_searchwords',
                                                   inputFilename, inputDir, outputDir,
                                                   configFileName, filesToOpen, lemmatize)
 
@@ -736,7 +740,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
     # end of function search_sentences_documents
     return filesToOpen
 
-def visualize_wordcloud(textToProcess, label, inputFilename, inputDir, outputDir, configFileName, filesToOpen, lemmatize):
+def visualize_wordcloud(textToProcess, search_keywords_str, label, inputFilename, inputDir, outputDir, configFileName, filesToOpen, lemmatize):
     if len(textToProcess)<15:
         mb.showwarning(title='Warning',message='The text required to produce a wordcloud is too short.\n"'
                         + textToProcess + '\n\nWordcloud exits.')
@@ -753,9 +757,8 @@ def visualize_wordcloud(textToProcess, label, inputFilename, inputDir, outputDir
     max_words = 100
     font = 'Default'
     prefer_horizontal = .9
-    # lemmatize = False
-    exclude_stopwords = True
-    exclude_punctuation = True
+    exclude_stopwords = False
+    exclude_punctuation = False
     lowercase = False
     differentPOS_differentColors = False
     differentColumns_differentColors = False
@@ -763,8 +766,10 @@ def visualize_wordcloud(textToProcess, label, inputFilename, inputDir, outputDir
     doNotListIndividualFiles = True
     collocation = False
     import wordclouds_util
+    wordcloud_title='Wordcloud for word search in file(s) ('+search_keywords_str+')'
     outputFiles = wordclouds_util.python_wordCloud(outputFilenameTxt, '', outputDir, configFileName, selectedImage="",
                                               use_contour_only=use_contour_only,
+                                              wordcloud_title=wordcloud_title,
                                               prefer_horizontal=prefer_horizontal, font=font, max_words=max_words,
                                               lemmatize=lemmatize, exclude_stopwords=exclude_stopwords,
                                               exclude_punctuation=exclude_punctuation, lowercase=lowercase,

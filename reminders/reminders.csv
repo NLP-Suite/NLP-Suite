@@ -484,3 +484,7 @@ In the 'CoNLL table analyzer' GUI you can:
 *,Python wordclouds,"You have selected to visualize words only horizontally in the wordclouds image. Some of the lower-frequency words may need to be dropped from the wordclouds image since there may not be enough room for their display.
 
 Combining horizontal and vertical displays maximizes the number of words visualized in the wordclouds image.",OFF
+*,What is in your corpus - GIS redundant options,"You are running simultaneously two options that are redundant: ""References to geographical locations (CoreNLP NER)"" under ""What else is in your document(s)?"" and ""GIS (Geographic Information System) pipeline"".
+
+The GIS option has the advantage that it extracts locations via CoreNLP NER annotator and maps them via Google Earth Pro and Google Maps. But... you need to install these freeware software options.",OFF
+*,What is in your corpus - Topic modeling,"The topic modeling option requires in input a set of txt documents, rather than a single txt file. The topic modeling option is disabled for single documents.",ON

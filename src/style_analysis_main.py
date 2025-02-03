@@ -61,7 +61,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
         mb.showwarning('Warning','No options have been selected.\n\nPlease, select an option and try again.')
         return
 
-
 # complexity_readability    ---------------------------------------------------------------------
 
     if complexity_readability_analysis_var == True:
@@ -202,7 +201,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
                     filesToOpen.extend(outputFiles)
 
         if '*' in vocabulary_analysis_menu_var or 'Sentence length' in vocabulary_analysis_menu_var:
-            import statistics_txt_util
             outputFiles = statistics_txt_util.compute_sentence_length(inputFilename, inputDir, outputDir,
                                                                       config_filename, chartPackage, dataTransformation)
             if outputFiles != None:
@@ -212,7 +210,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
                     filesToOpen.extend(outputFiles)
 
         if '*' in vocabulary_analysis_menu_var or 'Word length' in vocabulary_analysis_menu_var:
-            import statistics_txt_util
             outputFiles =statistics_txt_util.process_words(window, config_filename, inputFilename,inputDir, outputDir_style,
                                                       openOutputFiles, chartPackage,dataTransformation,'Word length')
             if outputFiles!=None:
