@@ -217,7 +217,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
             import wordclouds_util
 
             outputFile = wordclouds_util.SVOWordCloud(myfile, outputFile, outputDir,
-                                                    "", prefer_horizontal=.9)
+                                                    "", wordcloud_title='', prefer_horizontal=.9)
             myfile.close()
             filesToOpen.append(outputFile)
 

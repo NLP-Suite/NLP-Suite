@@ -621,9 +621,9 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, 
         column_name='Co-occurring Token/Word'
         textToProcess = IO_csv_util.get_csv_field_values(outputFilename, column_name, uniqueValues=False, returnList=False)
         # print("\n",textToProcess)
-
+        wordcloud_title='Wordcloud for CoNLL table searched co-occurring words'
         outputFiles = wordclouds_util.display_wordCloud(outputFilename, '', outputDir, textToProcess, doNotListIndividualFiles,
-                              transformed_image_mask, stopwords, collocation, prefer_horizontal, bg_image=None,
+                              transformed_image_mask, stopwords, collocation, wordcloud_title, prefer_horizontal, bg_image=None,
                               bg_image_flag=True, font=None, max_words=100)
         if outputFiles!=None:
             if isinstance(outputFiles, str):  # always for wordclouds
@@ -638,11 +638,12 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, 
         csvField_color_list = ['Searched Token/Word', '(255, 0, 0)', '|', 'Co-occurring Token/Word', '(0, 0, 255)', '|']
         openOutputFiles=False
         img = None
+        wordcloud_title = 'Wordcloud for CoNLL table searched and co-occurring words' # red & blue
         outputFiles = wordclouds_util.processCsvColumns(outputFilename, '', outputDir, openOutputFiles, csvField_color_list,
                                            doNotListIndividualFiles, max_words, lowercase, collocation,
-                                           prefer_horizontal, bg_image=img, bg_image_flag=use_contour_only)
+                                           wordcloud_title, prefer_horizontal=prefer_horizontal, bg_image=img, bg_image_flag=use_contour_only)
         if outputFiles!=None:
-            if isinstance(outputFiles, str):  # always for wordclouds
+            if isinstance(outputFiles, str):  # always an str for wordclouds
                 newName = outputFiles.replace('.png', '_Search_coOcc_Words.png')
                 os.rename(outputFiles, newName)
                 filesToOpen.append(newName)

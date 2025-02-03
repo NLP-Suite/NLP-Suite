@@ -586,11 +586,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
             if wordcloud_var:
                 import wordclouds_util
                 # i = 0
+                wordcloud_title = 'Wordcloud of Subject (red), Verb (blue), Object (green)'
                 if inputFilename[-4:] == ".csv":
                     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
                     if nRecords > 1:  # including headers; file is empty
                         myfile = IO_files_util.openCSVFile(inputFilename, 'r')
-                        outputFiles = wordclouds_util.SVOWordCloud(myfile, inputFilename, tempOutputDir, "", prefer_horizontal=.9)
+                        outputFiles = wordclouds_util.SVOWordCloud(myfile, inputFilename, tempOutputDir, wordcloud_title, prefer_horizontal=.9)
                         myfile.close()
                         filesToOpen.append(outputFiles)
                 else:
@@ -609,7 +610,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                         #     tempOutputDir = outputSVOSVODir
                         # else:
                         #     tempOutputDir = outputSVOSVODir
-                        outputFiles = wordclouds_util.SVOWordCloud(myfile, f, tempOutputDir, "", prefer_horizontal=.9)
+                        #wordcloud_title = 'Wordcloud of Subject (red), Verb (blue), Object (green)'
+
+                        outputFiles = wordclouds_util.SVOWordCloud(myfile, f, tempOutputDir, transformed_image_mask='', wordcloud_title=wordcloud_title, prefer_horizontal=.9)
                         myfile.close()
                         if "CoreNLP" in f or "OpenIE" in f or "SENNA_SVO" in f or "spaCy" in f or "Stanza" in f:
                             filesToOpen.append(outputFiles)

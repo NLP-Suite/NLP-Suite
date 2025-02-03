@@ -439,10 +439,11 @@ if sys.platform == 'darwin':  # Mac OS
     narrative_analysis_5th_column = 1100
 
 # Mac wordclouds_main.py
-    wordclouds_font_lb = 310
-    wordclouds_font_menu = 355
+    wordcloud_title = labels_x_indented_coordinate + 120
+    wordclouds_font_lb = 940
+    wordclouds_font_menu = 985
 
-    wordclouds_max_words_number = wordclouds_font_lb
+    wordclouds_max_words_number = wordcloud_title
     wordclouds_stopwords_pos = 400
     wordclouds_lemmas_pos = 545
     wordclouds_punctuation_pos = 680
@@ -455,7 +456,7 @@ if sys.platform == 'darwin':  # Mac OS
     wordclouds_selectedImage_file_path = wordclouds_stopwords_pos
     contour_only_pos = wordclouds_collocation_pos
 
-    wordclouds_select_csv_field = wordclouds_font_lb
+    wordclouds_select_csv_field = wordcloud_title
     wordclouds_color_checkbox_pos = wordclouds_lemmas_pos
     wordclouds_RGB_lb = wordclouds_punctuation_pos # 680
     wordclouds_RGB = wordclouds_lowercase_pos # 840
@@ -841,10 +842,11 @@ else: #windows and anything else
 
 # Windows wordclouds_main.py
 
-    wordclouds_font_lb = 270
-    wordclouds_font_menu = 310
+    wordcloud_title = labels_x_indented_coordinate + 120
+    wordclouds_font_lb = 870 # 270
+    wordclouds_font_menu = 910 # 310 wordclouds_collocation_pos
 
-    wordclouds_max_words_number = wordclouds_font_lb
+    wordclouds_max_words_number = wordcloud_title
     wordclouds_stopwords_pos = 340
     wordclouds_lemmas_pos = 470
     wordclouds_punctuation_pos = 590
@@ -857,7 +859,7 @@ else: #windows and anything else
     wordclouds_selectedImage_file_path = wordclouds_stopwords_pos
     contour_only_pos = wordclouds_color_by_POS_tags
 
-    wordclouds_select_csv_field = wordclouds_font_lb
+    wordclouds_select_csv_field = wordcloud_title
     wordclouds_color_checkbox_pos = wordclouds_punctuation_pos
     wordclouds_RGB_lb = wordclouds_lowercase_pos #730
     wordclouds_RGB = wordclouds_lowercase_pos + 100 #800
