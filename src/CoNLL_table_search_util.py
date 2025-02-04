@@ -29,7 +29,7 @@ import charts_util
 
 dict_POSTAG, dict_DEPREL = Stanford_CoreNLP_tags_util.dict_POSTAG, Stanford_CoreNLP_tags_util.dict_DEPREL
 
-noResults = "No results found matching your search criteria for your input CoNLL file. Please, try different search criteria.\n\nTypical reasons for this warning are:\n   1.  You are searching for a token/word not found in the FORM or LEMMA fields (e.g., 'child' in FORM when in fact FORM contains 'children', or 'children' in LEMMA when in fact LEMMA contains 'child'; the same would be true for the verbs 'running' in LEMMA instead of 'run');\n   2. you are searching for a token that is a noun (e.g., 'children'), but you select the POS value 'VB', i.e., verb, for the POSTAG of searched token."
+noResults = "No results found matching your search criteria for your input CoNLL file. Please, try different search criteria.\n\nTypical reasons for this warning are:\n   1.  You are searching for a Token_Word not found in the FORM or LEMMA fields (e.g., 'child' in FORM when in fact FORM contains 'children', or 'children' in LEMMA when in fact LEMMA contains 'child'; the same would be true for the verbs 'running' in LEMMA instead of 'run');\n   2. you are searching for a token that is a noun (e.g., 'children'), but you select the POS value 'VB', i.e., verb, for the POSTAG of searched token."
 
 filesToOpen = []  # Store all files that are to be opened once finished
 
@@ -401,7 +401,7 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, 
     else:
         compare_term = 2  # field position of LEMMA in CoNLL
 
-    header = ["Searched Token/Word", "ID of Searched Token/Word", "POS Tag of Searched Token/Word", "DepRel of Searched Token/Word" , "Co-occurring Token/Word", " ID of Co-occurring Token/Word", "POS Tag of Co-occurring Token/Word", "DepRel of Co-occurring Token/Word", "Head ID", "Sentence ID", "Sentence", "Document ID", "Document"]
+    header = ["Searched Token_Word", "ID of Searched Token_Word", "POS Tag of Searched Token_Word", "DepRel of Searched Token_Word" , "Co-occurring Token_Word", " ID of Co-occurring Token_Word", "POS Tag of Co-occurring Token_Word", "DepRel of Co-occurring Token_Word", "Head ID", "Sentence ID", "Sentence", "Document ID", "Document"]
     list_queried = []
     deprel_list_queried = []
     # record is a list of all the CoNLL table records for a given sentence
@@ -477,7 +477,7 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, 
     # convert list to dataframe and save
     df = pd.DataFrame(deprel_list_queried)
     # headers=['list_queried, related_token_DEPREL, Sentence_ID, related_token_POSTAG']
-    # header = ["Searched Token/Word", "ID of Searched Token/Word", "POS Tag of Searched Token/Word", "DepRel of Searched Token/Word" , "Co-occurring Token/Word", " ID of Co-occurring Token/Word", "POS Tag of Co-occurring Token/Word", "DepRel of Co-occurring Token/Word", "Head ID", "Sentence ID", "Sentence", "Document ID", "Document"]
+    # header = ["Searched Token_Word", "ID of Searched Token_Word", "POS Tag of Searched Token_Word", "DepRel of Searched Token_Word" , "Co-occurring Token_Word", " ID of Co-occurring Token_Word", "POS Tag of Co-occurring Token_Word", "DepRel of Co-occurring Token_Word", "Head ID", "Sentence ID", "Sentence", "Document ID", "Document"]
     IO_csv_util.df_to_csv(GUI_util.window, df, outputFilename, headers=None, index=False,
                           language_encoding='utf-8')
 
@@ -495,12 +495,31 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, 
 
         count_var = 1
 
-        columns_to_be_plotted_xAxis = ['POS Tag of Searched Token/Word']
-        columns_to_be_plotted_yAxis = ['POS Tag of Searched Token/Word']
+        columns_to_be_plotted_xAxis = ['Searched Token_Word']
+        columns_to_be_plotted_yAxis = ['Searched Token_Word']
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
+                                                  outputFilename, outputDir,
+                                                  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+                                                  chart_title="Frequency Distribution of Searched " + related_token_POSTAG + " words/tokens",
+                                                  outputFileNameType='srchd_word',
+                                                  column_xAxis_label= '' + ' Searched words for the word "' + form_of_token + '"',
+                                                  count_var=count_var,
+                                                  hover_label=[],
+                                                  groupByList=['Document'],  # ['Document ID', 'Document'],
+                                                  plotList=[],  # ['Concreteness (Mean score)'],
+                                                  chart_title_label='')  # 'Concreteness Statistics')
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+
+        columns_to_be_plotted_xAxis = ['POS Tag of Searched Token_Word']
+        columns_to_be_plotted_yAxis = ['POS Tag of Searched Token_Word']
         outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
                                                            outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                           chart_title="Frequency Distribution of ' + _tok_postag_ + ' POS Tag of Searched Token/Word",
+                                                           chart_title="Frequency Distribution of ' + _tok_postag_ + ' POS Tag of Searched Token_Word",
                                                            outputFileNameType='',
                                                            column_xAxis_label=_tok_postag_ + ' POS Tag for the word "' + form_of_token + '"',
                                                            count_var=count_var,
@@ -514,13 +533,13 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, 
             else:
                 filesToOpen.extend(outputFiles)
 
-            columns_to_be_plotted_xAxis = ['DepRel of Searched Token/Word']
-            columns_to_be_plotted_yAxis = ['DepRel of Searched Token/Word']
+            columns_to_be_plotted_xAxis = ['DepRel of Searched Token_Word']
+            columns_to_be_plotted_yAxis = ['DepRel of Searched Token_Word']
             # @@@
             outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
                                                                outputFilename, outputDir,
                                                                columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                               chart_title="Frequency Distribution of " + _tok_deprel_ + " DepRel of Searched Token/Word",
+                                                               chart_title="Frequency Distribution of " + _tok_deprel_ + " DepRel of Searched Token_Word",
                                                                outputFileNameType='',
                                                                column_xAxis_label=_tok_deprel_ + ' DepRel Tag for the word "' + form_of_token + '"',
                                                                count_var=count_var,
@@ -534,13 +553,14 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, 
                 else:
                     filesToOpen.extend(outputFiles)
 
-        columns_to_be_plotted_xAxis = ['Co-occurring Token/Word']
-        columns_to_be_plotted_yAxis = ['Co-occurring Token/Word']
+
+        columns_to_be_plotted_xAxis = ['Co-occurring Token_Word']
+        columns_to_be_plotted_yAxis = ['Co-occurring Token_Word']
         outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
                                                            outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
                                                            chart_title="Frequency Distribution of Co-occurring " + related_token_POSTAG + " words/tokens",
-                                                           outputFileNameType='',
+                                                           outputFileNameType='coOcc_word',
                                                            column_xAxis_label=related_token_POSTAG  + ' Co-occurring words for the word "' + form_of_token + '"',
                                                            count_var=count_var,
                                                            hover_label=[],
@@ -553,8 +573,8 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, 
             else:
                 filesToOpen.extend(outputFiles)
 
-        columns_to_be_plotted_xAxis = ['POS Tag of Co-occurring Token/Word']
-        columns_to_be_plotted_yAxis = ['POS Tag of Co-occurring Token/Word']
+        columns_to_be_plotted_xAxis = ['POS Tag of Co-occurring Token_Word']
+        columns_to_be_plotted_yAxis = ['POS Tag of Co-occurring Token_Word']
         outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
                                                            outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
@@ -572,8 +592,8 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, 
             else:
                 filesToOpen.extend(outputFiles)
 
-        columns_to_be_plotted_xAxis = ['DepRel of Co-occurring Token/Word']
-        columns_to_be_plotted_yAxis = ['DepRel of Co-occurring Token/Word']
+        columns_to_be_plotted_xAxis = ['DepRel of Co-occurring Token_Word']
+        columns_to_be_plotted_yAxis = ['DepRel of Co-occurring Token_Word']
 
         outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
                                                            outputFilename, outputDir,
@@ -596,9 +616,9 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, 
 
         fileBase = os.path.basename(outputFilename)[0:-4]
         outputFiles = Gephi_util.create_gexf(GUI_util.window, fileBase, outputDir, outputFilename,
-                                        'Searched Token/Word',
-                                        'POS Tag of Searched Token/Word',
-                                        'Co-occurring Token/Word', 'Sentence ID')
+                                        'Searched Token_Word',
+                                        'POS Tag of Searched Token_Word',
+                                        'Co-occurring Token_Word', 'Sentence ID')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -607,7 +627,7 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, 
 
         # wordclouds graphs _________________________________________________
 
-        # display only the Co-occurring Token/Word'
+        # display only the searched Token_Word'
         import wordclouds_util
         # run with all default values;
         prefer_horizontal = .9
@@ -618,10 +638,35 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, 
         max_words = 200
         doNotListIndividualFiles = False
         stopwords = ''
-        column_name='Co-occurring Token/Word'
+        column_name='Searched Token_Word'
         textToProcess = IO_csv_util.get_csv_field_values(outputFilename, column_name, uniqueValues=False, returnList=False)
         # print("\n",textToProcess)
-        wordcloud_title='Wordcloud for CoNLL table searched co-occurring words'
+        wordcloud_title='Wordcloud for CoNLL table searched words'
+        outputFiles = wordclouds_util.display_wordCloud(outputFilename, '', outputDir, textToProcess, doNotListIndividualFiles,
+                              transformed_image_mask, stopwords, collocation, wordcloud_title, prefer_horizontal, bg_image=None,
+                              bg_image_flag=True, font=None, max_words=100)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):  # always for wordclouds
+                newName = outputFiles.replace('.png', '_serchd_Words.png')
+                os.rename(outputFiles, newName)
+                filesToOpen.append(newName)
+            else:
+                filesToOpen.extend(outputFiles)
+
+        # display only the Co-occurring Token_Word'
+        # run with all default values;
+        prefer_horizontal = .9
+        lowercase = False
+        use_contour_only = False
+        collocation = False
+        transformed_image_mask = []
+        max_words = 200
+        doNotListIndividualFiles = False
+        stopwords = ''
+        column_name='Co-occurring Token_Word'
+        textToProcess = IO_csv_util.get_csv_field_values(outputFilename, column_name, uniqueValues=False, returnList=False)
+        # print("\n",textToProcess)
+        wordcloud_title='Wordcloud for CoNLL table co-occurring words'
         outputFiles = wordclouds_util.display_wordCloud(outputFilename, '', outputDir, textToProcess, doNotListIndividualFiles,
                               transformed_image_mask, stopwords, collocation, wordcloud_title, prefer_horizontal, bg_image=None,
                               bg_image_flag=True, font=None, max_words=100)
@@ -633,9 +678,9 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, 
             else:
                 filesToOpen.extend(outputFiles)
 
-        # display BOTH Searched Token/Word in RED and Co-occurring Token/Word in BLUE
+        # display BOTH Searched Token_Word in RED and Co-occurring Token_Word in BLUE
 
-        csvField_color_list = ['Searched Token/Word', '(255, 0, 0)', '|', 'Co-occurring Token/Word', '(0, 0, 255)', '|']
+        csvField_color_list = ['Searched Token_Word', '(255, 0, 0)', '|', 'Co-occurring Token_Word', '(0, 0, 255)', '|']
         openOutputFiles=False
         img = None
         wordcloud_title = 'Wordcloud for CoNLL table searched and co-occurring words' # red & blue
