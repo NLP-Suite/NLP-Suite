@@ -569,9 +569,16 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
     # errorFound=False
     try:
         wb.save(chart_outputFilename)
-    except IOError:
-        mb.showwarning(title='Output file error', message="Could not write the Excel chart file " + chart_outputFilename + "\n\nA file with the same name is already open. Please close the Excel file and try again!")
-        return
+    except IOError as e:
+        # mb.showwarning(title='Output file error', message="Could not write the file " + outputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
+        mb.showwarning(title='Output file error', message="Could not write the file " +
+                                                          chart_outputFilename + "\n\n" + str(e) + "\n\nCLOSE THE FILE TO EXIT LOOP...")
+        if not "Permission" in str(e):
+            chart_outputFilename = ''
+            return
+
+        # mb.showwarning(title='Output file error', message="Could not write the Excel chart file " + chart_outputFilename + "\n\nA file with the same name is already open. Please close the Excel file and try again!")
+        # return
     #     errorFound=True
     # if errorFound==True:
     #     chart_outputFilename=''
