@@ -488,3 +488,4 @@ Combining horizontal and vertical displays maximizes the number of words visuali
 
 The GIS option has the advantage that it extracts locations via CoreNLP NER annotator and maps them via Google Earth Pro and Google Maps. But... you need to install these freeware software options.",OFF
 *,What is in your corpus - Topic modeling,"The topic modeling option requires in input a set of txt documents, rather than a single txt file. The topic modeling option is disabled for single documents.",ON
+*,CoreNLP normalized date timing,"Beware that the CoreNLP normalized date algortithm on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 50 minutes on a standard laptop.",ON

@@ -99,6 +99,7 @@ def run(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, 
     if outputDir == '':
         return
     if BERT_var:
+        import topic_modeling_bert_util
         filesToOpen = topic_modeling_bert_util.run_BERTopic(inputDir, outputDir, openOutputFiles, split_docs_var)
     if MALLET_var:
         filesToOpen = topic_modeling_mallet_util.run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation,

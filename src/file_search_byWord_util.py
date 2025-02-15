@@ -681,25 +681,43 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                            message='The search keywords:\n\n   ' + search_keywords_str + '\n\nwere not found in your input document(s) with the following set of search options:\n\n  '+ str('\n  '.join(search_options_list)))
             outputFilename_csv_word = ''
         else:
-
+            try:
+                df = pd.read_csv(outputFilename_csv_word)
+            except UnicodeEncodeError:
+                # mb.showwarning(title='Output file error', message="Could not write the file " + outputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
+                mb.showwarning(title='Input file error', message="Could not read the file " +
+                                    outputFilename_csv_word + "\n\nThe file is not utf-8")
+                df = pd.read_csv(outputFilename_csv_word, encoding="ISO-8859-1")
+            # except UnicodeEncodeError:
+            #     print('   Filename ' + outputFilename_csv_word + ' is not utf-8')
+            unique_words = df["Search Word in Sentence"].unique()
+            # Save separate CSVs for each unique search word
+            file_paths = []
+            for word in unique_words:
+                filtered_df = df[df["Search Word in Sentence"] == word]
+                output_filename = f"outputFilename_csv_word_{word}.csv"
+                output_path = os.path.join(outputDir, output_filename)
+                filtered_df.to_csv(output_path, index=False)
+                file_paths.append(output_path)
+            for outputFilename_csv_word in file_paths:
             # bar charts ----------------------------------------------------------------------
-            chart_title = 'Frequency Distribution of Search Words'
-            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename_csv_word, outputDir,
-                                                                       columns_to_be_plotted_xAxis=['Search Word in Sentence'],
-                                                                       columns_to_be_plotted_yAxis=['Frequency of occurrence'],
-                                                                       chart_title=chart_title,
-                                                                       count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
-                                                                       hover_label=[],
-                                                                       outputFileNameType='',
-                                                                       column_xAxis_label=search_keywords_str,
-                                                                       groupByList=['Document'],
-                                                                       plotList=[],
-                                                                       chart_title_label='')
-            if outputFiles!=None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
+                chart_title = 'Frequency Distribution of Search Words'
+                outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename_csv_word, outputDir,
+                                                                           columns_to_be_plotted_xAxis=['Search Word in Sentence'],
+                                                                           columns_to_be_plotted_yAxis=['Frequency of occurrence'],
+                                                                           chart_title=chart_title,
+                                                                           count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
+                                                                           hover_label=[],
+                                                                           outputFileNameType='',
+                                                                           column_xAxis_label=search_keywords_str,
+                                                                           groupByList=['Document'],
+                                                                           plotList=[],
+                                                                           chart_title_label='')
+                if outputFiles!=None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
 
     # wordclouds ----------------------------------------------------------------------------
 

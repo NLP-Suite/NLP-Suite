@@ -1274,10 +1274,10 @@ def boxplot(data, outputFilename, var, points, bycategory=None, category=None, c
 # All these recommendations are for performance
 # three_way_Sankey is a boolean variable that dictates whether the returned Sankey is 2way or 3way. True for 3 variables, false for 2 variables
 def Sankey(data, outputFilename, var1, lengthvar1, var2, lengthvar2, three_way_Sankey, var3=None, lengthvar3=None):
-    if pd.__version__[0] == '2':
-        mb.showwarning(title='Warning',
-                       message='The Sankey algorithm is incompatible with a version of pandas higher than 2.0\n\nIn command line, please, pip unistall pandas and pip install pandas==1.5.2.\n\nMake sure you are in the right NLP environment by typing conda activate NLP')
-        return
+    # if pd.__version__[0] == '2':
+    #     mb.showwarning(title='Warning',
+    #                    message='The Sankey algorithm is incompatible with a version of pandas higher than 2.0\n\nIn command line, please, pip unistall pandas and pip install pandas==1.5.2.\n\nMake sure you are in the right NLP environment by typing conda activate NLP')
+    #     return
 
     if type(data) == str:
         try:
