@@ -2,11 +2,9 @@ import matplotlib.pyplot as plt
 import GUI_util
 import IO_files_util
 import re
-# from sklearn.feature_extraction.text import CountVectorizer
-# from bertopic import BERTopic
-#
-# from sklearn.feature_extraction.text import CountVectorizer
-# from bertopic import BERTopic
+from sklearn.feature_extraction.text import CountVectorizer
+from bertopic import BERTopic
+
 
 from sentence_transformers import SentenceTransformer
 import pandas as pd
@@ -22,7 +20,7 @@ def get_docs(inputDir, split_docs_var):
     paths = [f_name for f_name in os.listdir(inputDir) if '.txt' in f_name]
     for f_name in paths:
         if split_docs_var == 0:
-            with open(f'{inputDir}/{f_name}', 'r') as f:
+            with open(f'{inputDir}/{f_name}', 'r', encoding='utf-8') as f:
                 docs.append(f.read())
         else:
             chunks = []
@@ -63,6 +61,8 @@ def run_BERTopic(inputDir, outputDir, openOutputFiles, split_docs_var):
     topic_model.save(f'{model_path}/model.pt', serialization='pytorch', save_ctfidf=True, save_embedding_model=embedding_model) 
     ####results
     df = topic_model.get_topic_info()
+    print(f"Number of documents: {len(docs)}")
+    print(f"Documents: {docs[:5]}")
     hierarchical_topics = topic_model.hierarchical_topics(docs)
     fig = topic_model.visualize_hierarchy(hierarchical_topics=hierarchical_topics)
     fig.write_html(f'{outputDir}/topic_hierarchy.html')

@@ -1296,7 +1296,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        GUI_IO_util.open_TIPS_x_coordinate,
                                                        "Charts can be visualized automatically as bar, line, or pie charts. Select your preferred option.\nMany more chart types are available in the specialized GUIs data_visualization_1_main.py and data_visualization_2_main.py.\nOpen those GUIs and select the csv file and variable you wish to chart.")
 
-        data_transformation_options=['No transformation','Ln','Log','Square rooot','Z score']
+        data_transformation_options=['No transformation','Normalize by document size', 'Ln','Log','Square rooot','Z score']
         data_transformation_options_widget.set('No transformation')
         data_transformation_menu_lb = tk.OptionMenu(window,data_transformation_options_widget,*data_transformation_options)
         # place widget with hover-over info
@@ -1306,6 +1306,11 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        True,False,False,False,90,
                                                        GUI_IO_util.open_reminders_x_coordinate,
                                                        "Select the type of data transformation you wish to apply in plotting charts.\nAll charts involving multiple documents are automatically normalized by document size.")
+
+        def run_data_transformation(*args):
+            if 'Normalize' in data_transformation_options_widget.get():
+                  mb.showwarning(title='Warning',message='All charts involving multiple documents are automatically normalized by document size')
+        data_transformation_options_widget.trace('w',run_data_transformation)
 
         def open_GUI(*args):
             if 'Bubble' in charts_type_options_widget.get() or 'Comparative' in charts_type_options_widget.get() or 'Box' in charts_type_options_widget.get() or 'Time' in charts_type_options_widget.get():

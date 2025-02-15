@@ -18,6 +18,9 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Nominalization
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
+import nltk
+nltk.download('averaged_perceptron_tagger_eng')
+nltk.download('punkt_tab')
 
 # all nltk resources are stored in C:\Users\rfranzo\AppData\Roaming then nltk_data
 # check averaged_perceptron_tagger
@@ -30,6 +33,7 @@ IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/wordnet','wordne
 IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/omw-1.4','omw-1.4')
 from nltk.corpus import wordnet as wn
 # pywsd word-sense-disambiguation needs ALL previous
+
 if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Nominalization",['pywsd'])==False:
     sys.exit(0)
 
