@@ -478,7 +478,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_co
                                    False, False, True, False, 90, GUI_IO_util.visualization_filename_label_lb_pos,
                                    "Visualize relations (network graphs via Gephi or Sankey chart via Plotly)")
 
-def get_csv_file_menu_vales():
+def get_csv_file_menu_values():
     global menu_values
     if GUI_util.inputFilename.get() != '' and GUI_util.inputFilename.get()[-4:] == ".csv":
         nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(GUI_util.inputFilename.get())
@@ -493,7 +493,7 @@ def get_csv_file_menu_vales():
     if nColumns == -1:
         pass
     return menu_values
-get_csv_file_menu_vales()
+get_csv_file_menu_values()
 
 csv_field_lb = tk.Label(window, text='csv file field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,

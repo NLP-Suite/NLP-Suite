@@ -201,8 +201,10 @@ def get_cluster_sentences(Word2Vec_Dir):
             for i, tok in enumerate(s_occs):
                 idx = int(tok[0].split('<sep>')[0])
                 f_name = tok[0].split('<sep>')[1]
-                with open(f'{Word2Vec_Dir}/output/{f_name.split(".txt")[0]}/sentences.pickle', 'rb') as f:
-                    sentences = pickle.load(f)
+                head, tail = os.path.split(f_name)
+                # with open(f'{Word2Vec_Dir}/output/{f_name.split(".txt")[0]}/sentences.pickle', 'rb') as f:
+                with open(f'{Word2Vec_Dir}/output/{tail.split(".txt")[0]}/sentences.pickle', 'rb') as f:
+                        sentences = pickle.load(f)
                 sents.append(sentences[idx])
             d[w][s] = [sent[1] for sent in sents]
             for sent in sents:
