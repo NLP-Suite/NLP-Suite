@@ -443,7 +443,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
             if len(all_found_csv_sentences_records_oneDoc)>0:
                 all_found_csv_sentences_records_allDocs.append(all_found_csv_sentences_records_oneDoc)
 
-            chart_title = 'Frequency Distribution of Documents with Search Words'
+            chart_title = 'Frequency Distribution of Documents with Search Words\n' + search_keywords_str
 
 # search in sentence  -----------------------------------------------
         else:
@@ -701,7 +701,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                 file_paths.append(output_path)
             for outputFilename_csv_word in file_paths:
             # bar charts ----------------------------------------------------------------------
-                chart_title = 'Frequency Distribution of Search Words'
+                chart_title = 'Frequency Distribution of Search Words\n' + search_keywords_str
                 outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename_csv_word, outputDir,
                                                                            columns_to_be_plotted_xAxis=['Search Word in Sentence'],
                                                                            columns_to_be_plotted_yAxis=['Frequency of occurrence'],

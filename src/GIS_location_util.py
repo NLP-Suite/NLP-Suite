@@ -89,7 +89,7 @@ def extract_NER_locations(window,conllFile,encodingValue,datePresent):
 				# A blank value for the filename will be checked in Description to avoid displaying it
 				if numDocs!=1:
 					# currList.append(row[filenamePositionInCoNLLTable]) #append filename
-					if "=dressforhyperlink" in str(row[filenamePositionInCoNLLTable]):
+					if "hyperlink" in str(row[filenamePositionInCoNLLTable]):
 						currList.append(row[filenamePositionInCoNLLTable])  # append filename
 					else:
 						currList.append(IO_csv_util.dressFilenameForCSVHyperlink(row[filenamePositionInCoNLLTable])) #append filename

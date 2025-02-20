@@ -95,7 +95,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         # outputDir=outputDir_temp
         #
         if all_analyses.get() == '*':
-            label = "Clause, noun, verb, function words"
+            label = "All CoNLL table analyses"
         else:
             label = all_analyses.get()
         startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running CoNLL table ' + label + ' analyses at',
@@ -136,6 +136,57 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
             outputDir = outputDir_temp
             import CoNLL_noun_analysis_util
             outputFiles = CoNLL_noun_analysis_util.noun_stats(inputFilename, outputDir, data, all_CoNLL_records,
+                                                              openOutputFiles,
+                                                              chartPackage,
+                                                              dataTransformation)
+            if outputFiles!=None:
+                filesToOpen.extend(outputFiles)
+
+
+        if all_analyses.get() =='*' or all_analyses.get() =='Adjective analysis':
+            # create a subdirectory of the output directory; should create a subdir with increasing number to avoid writing ver
+            outputDir_temp = IO_files_util.make_output_subdirectory(inputFilename, '', outputDirSV,
+                                                                    label='CoNLL_adjective',
+                                                                    silent=True)
+            if outputDir_temp == '':
+                return
+            outputDir = outputDir_temp
+            import CoNLL_adjective_analysis_util
+            outputFiles = CoNLL_adjective_analysis_util.adjective_stats(inputFilename, outputDir, data, all_CoNLL_records,
+                                                              openOutputFiles,
+                                                              chartPackage,
+                                                              dataTransformation)
+            if outputFiles!=None:
+                filesToOpen.extend(outputFiles)
+
+
+        if all_analyses.get() =='*' or all_analyses.get() =='Content/Function ratio analysis':
+            # create a subdirectory of the output directory; should create a subdir with increasing number to avoid writing ver
+            outputDir_temp = IO_files_util.make_output_subdirectory(inputFilename, '', outputDirSV,
+                                                                    label='CoNLL_ratio',
+                                                                    silent=True)
+            if outputDir_temp == '':
+                return
+            outputDir = outputDir_temp
+            import CoNLL_ratio_analysis_util
+            outputFiles = CoNLL_ratio_analysis_util.compute_word_class_frequencies(inputFilename, outputDir, data, all_CoNLL_records,
+                                                              openOutputFiles,
+                                                              chartPackage,
+                                                              dataTransformation)
+            if outputFiles!=None:
+                filesToOpen.extend(outputFiles)
+
+
+        if all_analyses.get() =='*' or all_analyses.get() =='Adverb analysis':
+            # create a subdirectory of the output directory; should create a subdir with increasing number to avoid writing ver
+            outputDir_temp = IO_files_util.make_output_subdirectory(inputFilename, '', outputDirSV,
+                                                                    label='CoNLL_adverb',
+                                                                    silent=True)
+            if outputDir_temp == '':
+                return
+            outputDir = outputDir_temp
+            import CoNLL_adverb_analysis_util
+            outputFiles = CoNLL_adverb_analysis_util.adverb_stats(inputFilename, outputDir, data, all_CoNLL_records,
                                                               openOutputFiles,
                                                               chartPackage,
                                                               dataTransformation)
@@ -478,22 +529,16 @@ def open_GUI(*args):
 extra_GUIs_menu_var.trace('w',open_GUI)
 
 all_analyses_var = tk.IntVar()
-all_analyses_checkbox = tk.Checkbutton(window, state='disabled', variable = all_analyses_var, text='Clause, noun, verb, function word',
+all_analyses_checkbox = tk.Checkbutton(window, state='disabled', variable = all_analyses_var, text='CoNLL analyses',
                                 onvalue=1, offvalue=0, command = lambda: activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                     y_multiplier_integer, all_analyses_checkbox,True)
 
 all_analyses.set('*')
-all_analyses_menu = tk.OptionMenu(window, all_analyses, '*', 'Clause analysis', 'Noun analysis', 'Verb analysis', 'Function (junk/stop) words analysis')
+all_analyses_menu = tk.OptionMenu(window, all_analyses, '*', 'Clause analysis', 'Noun analysis', 'Verb analysis', 'Adjective analysis', 'Adverb analysis', 'Function (junk/stop) words analysis','Content/Function ratio analysis')
 all_analyses_menu.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
-                                               all_analyses_menu,True)
-
-content_junk_var = tk.IntVar()
-content_junk_checkbox = tk.Checkbutton(window, state='disabled', variable = content_junk_var, text='Content & junk words',
-                                onvalue=1, offvalue=0, command = lambda: activate_all_options())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,
-                                                    y_multiplier_integer, content_junk_checkbox,False)
+                                               all_analyses_menu,False)
 
 WordNet_var = tk.IntVar()
 WordNet_checkbox = tk.Checkbutton(window, state='disabled', variable=WordNet_var,  text='WordNet classification of Nouns & Verbs', onvalue=1,
@@ -723,7 +768,6 @@ def activate_all_options():
     extra_GUIs_menu.configure(state='disabled')
     all_analyses_checkbox.configure(state='normal')
     all_analyses_menu.configure(state='disabled')
-    content_junk_checkbox.configure(state='normal')
     searchToken_checkbox.configure(state='normal')
     WordNet_checkbox.configure(state='normal')
     sentence_table_checkbox.configure(state='normal')
@@ -753,7 +797,6 @@ def activate_all_options():
         all_analyses_checkbox.configure(state='disabled')
         all_analyses_menu.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
-        content_junk_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
         k_sentences_checkbox.configure(state='disabled')
@@ -762,7 +805,6 @@ def activate_all_options():
         extra_GUIs_menu.configure(state='normal')
         all_analyses_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
-        content_junk_checkbox.configure(state='disabled')
         k_words_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
         k_sentences_checkbox.configure(state='disabled')
@@ -770,7 +812,6 @@ def activate_all_options():
         all_analyses_menu.configure(state='normal')
         extra_GUIs_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
-        content_junk_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
         k_sentences_checkbox.configure(state='disabled')
@@ -781,7 +822,6 @@ def activate_all_options():
     elif search_token_var.get()==True:
         extra_GUIs_checkbox.configure(state='disabled')
         all_analyses_checkbox.configure(state='disabled')
-        content_junk_checkbox.configure(state='disabled')
         # k_words_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
         k_sentences_checkbox.configure(state='disabled')
@@ -799,7 +839,6 @@ def activate_all_options():
         all_analyses_checkbox.configure(state='disabled')
         k_words_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
-        content_junk_checkbox.configure(state='disabled')
         entry_searchField_kw.configure(state='disabled')
         searchedCoNLLdescription_csv_field_menu_lb.configure(state='disabled')
         postag_menu_lb.configure(state='disabled')
@@ -816,7 +855,6 @@ def activate_all_options():
         return
         extra_GUIs_checkbox.configure(state='disabled')
         all_analyses_checkbox.configure(state='disabled')
-        content_junk_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
         entry_searchField_kw.configure(state='disabled')
         before_K_words_entry.configure(state='normal')
@@ -833,7 +871,6 @@ def activate_all_options():
     elif compute_sentence_var.get():
         extra_GUIs_checkbox.configure(state='disabled')
         all_analyses_checkbox.configure(state='disabled')
-        content_junk_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
         entry_searchField_kw.configure(state='disabled')
         searchedCoNLLdescription_csv_field_menu_lb.configure(state='disabled')
@@ -845,7 +882,6 @@ def activate_all_options():
     elif k_sentences_var.get():
         extra_GUIs_checkbox.configure(state='disabled')
         all_analyses_checkbox.configure(state='disabled')
-        content_junk_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
         entry_searchField_kw.configure(state='disabled')
@@ -862,7 +898,6 @@ def activate_all_options():
         extra_GUIs_menu.configure(state='disabled')
         all_analyses_checkbox.configure(state='normal')
         all_analyses_menu.configure(state='disabled')
-        content_junk_checkbox.configure(state='normal')
         searchToken_checkbox.configure(state='normal')
         WordNet_checkbox.configure(state='normal')
         sentence_table_checkbox.configure(state='normal')
@@ -911,7 +946,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          'Please, tick the \'GUIs available\' checkbox if you wish to see and select the range of other available tools suitable for searches and style analysis.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox to analyze the CoNLL table for different types of clauses (e.g., noun-phrase, NP, verb phrase, VP), nouns (singular, plural, proper nouns, subject and object), verbs (modality, tense, voice), and functions words (or junk/stop words) (e.g., articles/determinants, auxiliaries, conjunctions, prepositions, pronouns).\n\nThe CoNLL table search algorithms use the deps tags of enhanced dependencies, rather than the regular deprel dependencies.\n\nThe Stanford CoreNLP neural network parser does NOT produce clausal tags (only the PCFG parser - Probabilistic Context Free Grammar).\n\nThe Stanford CoreNLP parser does not produce information on verb mood (e.g, indicative, imperative, subjunctive). Stanza does. Use the Stanza CoNLL table output to analyze verb Mood (unfortunately, not in this GUI which only works with Stanford CoreNLP CoNLL)." + GUI_IO_util.msg_Esc)
+                                  "Please, tick the checkbox to analyze the CoNLL table for different types of clauses (e.g., noun-phrase, NP, verb phrase, VP), nouns (singular, plural, proper nouns, subject and object), verbs (modality, tense, voice), functions words (or junk/stop words) (e.g., articles/determinants, auxiliaries, conjunctions, prepositions, pronouns), adjectives, adverbs, and ratios of word classes (e.g., content words vs. juunk words).\n\nThe CoNLL table search algorithms use the deps tags of enhanced dependencies, rather than the regular deprel dependencies.\n\nThe Stanford CoreNLP neural network parser does NOT produce clausal tags (only the PCFG parser - Probabilistic Context Free Grammar).\n\nThe Stanford CoreNLP parser does not produce information on verb mood (e.g, indicative, imperative, subjunctive). Stanza does. Use the Stanza CoNLL table output to analyze verb Mood (unfortunately, not in this GUI which only works with Stanford CoreNLP CoNLL)." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to aggregate nouns and verbs in the CoNLL table (POS NN* and POS VB*) via WordNet." \
                                   "\n\nCAVEAT: For VERBS, the 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies."+ GUI_IO_util.msg_Esc)

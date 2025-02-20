@@ -178,7 +178,8 @@ def match_embeddings(all_sent, all_vocab, Word2Vec_Dir):
 
 
 def get_cluster_sentences(Word2Vec_Dir):
-
+    # should export the file as a csv file so that items can be used for analyzing, sorting, opening exported filenames with hyperlinks
+    # should use the dressFilenameForCSVHyperlink in the filename IO_csv_util.dressFilenameForCSVHyperlink(tail)
     s_paths = []
     with open(f'{Word2Vec_Dir}/output/senses', 'r') as f:
         tokens = f.read().split('\n')[:-1]
@@ -203,6 +204,7 @@ def get_cluster_sentences(Word2Vec_Dir):
                 f_name = tok[0].split('<sep>')[1]
                 head, tail = os.path.split(f_name)
                 # with open(f'{Word2Vec_Dir}/output/{f_name.split(".txt")[0]}/sentences.pickle', 'rb') as f:
+                # should use the dressFilenameForCSVHyperlink in the filename IO_csv_util.dressFilenameForCSVHyperlink(tail)
                 with open(f'{Word2Vec_Dir}/output/{tail.split(".txt")[0]}/sentences.pickle', 'rb') as f:
                         sentences = pickle.load(f)
                 sents.append(sentences[idx])
