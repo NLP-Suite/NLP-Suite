@@ -29,7 +29,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, chartPackage, dataTr
 
     filesToOpen = []
 
-    if not 'Do not' in vis_menu_var:
+    if not 'Do not' in vis_menu_var and word_distance_file_var.get()=='':
         result = mb.askyesno('Visualization via t-SNE',
                              'You have selected to run Word2Vec with the t-SNE visualization option ("Plot word vectors"). Depending upon the total number of words in your corpus, this option is computationally VERY demanding (it can take many hours on a standard laptop, particularly with BERT). Compressing an n-dimensional space into a a 2D or 3D graph can also be somewhat misleading (cosine similarities provide a better alternative).\n\nAre you sure you want to continue?')
         if not result:
@@ -93,6 +93,9 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, chartPackage, dataTr
                                  sg_menu_var, vector_size_var, window_var, min_count_var,
                                  vis_menu_var, dim_menu_var)
 
+
+    if word_distance_file_var.get()!='':
+        print('')
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, Word2Vec_Dir, scriptName)
 

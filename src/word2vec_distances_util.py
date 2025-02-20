@@ -113,6 +113,8 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage,
 
         dist_df.to_csv(dist_outputFilename, encoding='utf-8', index=False)
 
+# visualize distances _________________________________________________
+
         filesToOpen.append(dist_outputFilename)
         outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, dist_outputFilename,
                                                            outputDir,
@@ -160,6 +162,9 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage,
             cos_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_top_' + str(top_words_var)+'_Cos_Similarity')
             cos_sim_df.to_csv(cos_sim_outputFilename, encoding='utf-8', index=False)
             filesToOpen.append(cos_sim_outputFilename)
+
+# visualize distances _________________________________________________
+
             outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, cos_sim_outputFilename,
                                                             outputDir,
                                                             columns_to_be_plotted_xAxis=['Word_1_2'], columns_to_be_plotted_yAxis=['Cosine similarity'],
@@ -201,6 +206,8 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage,
                 keyword_df.to_csv(keyword_sim_outputFilename, encoding='utf-8', index=False)
                 filesToOpen.append(keyword_sim_outputFilename)
 
+# visualize distances _________________________________________________
+
                 outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, keyword_sim_outputFilename,
                                                                 outputDir,
                                                                 columns_to_be_plotted_xAxis=['Word_1_2'], columns_to_be_plotted_yAxis=['Cosine similarity'],
@@ -219,7 +226,7 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage,
                     else:
                         filesToOpen.extend(outputFiles)
 
-    else:
+    else: #BERT
         if compute_cosine_similarity:
             cos_sim_df = pd.DataFrame()
             cos_idx = 0
@@ -246,6 +253,7 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage,
             cos_sim_df.to_csv(cos_sim_outputFilename, encoding='utf-8', index=False)
             filesToOpen.append(cos_sim_outputFilename)
 
+# visualize distances _________________________________________________
             outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, cos_sim_outputFilename,
                                                             outputDir,
                                                             columns_to_be_plotted_xAxis=['Word_1_2'], columns_to_be_plotted_yAxis=['Cosine similarity'],
@@ -288,6 +296,7 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage,
                 keyword_df.to_csv(keyword_sim_outputFilename, encoding='utf-8', index=False)
                 filesToOpen.append(keyword_sim_outputFilename)
 
+# visualize distances _________________________________________________
                 outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, keyword_sim_outputFilename,
                                                                 outputDir,
                                                                 columns_to_be_plotted_xAxis=['Word_1_2'], columns_to_be_plotted_yAxis=['Cosine similarity'],
