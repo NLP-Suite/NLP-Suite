@@ -203,9 +203,16 @@ def get_cluster_sentences(Word2Vec_Dir):
                 idx = int(tok[0].split('<sep>')[0])
                 f_name = tok[0].split('<sep>')[1]
                 head, tail = os.path.split(f_name)
+                tail=tail.replace(".txt","")
+                fileN = f'{Word2Vec_Dir}/output/{tail}/sentences.pickle'
                 # with open(f'{Word2Vec_Dir}/output/{f_name.split(".txt")[0]}/sentences.pickle', 'rb') as f:
                 # should use the dressFilenameForCSVHyperlink in the filename IO_csv_util.dressFilenameForCSVHyperlink(tail)
-                with open(f'{Word2Vec_Dir}/output/{tail.split(".txt")[0]}/sentences.pickle', 'rb') as f:
+                # fileN = f'{Word2Vec_Dir}/output/{tail.split(".txt")[0]}/sentences.pickle'
+                if not os.path.isfile(fileN):
+                    print('   Skipping input txt file which seems to have filename problems:', f_name)
+                    continue # to avoid that the code will break with the open statement in the next line
+                # with open(f'{Word2Vec_Dir}/output/{tail.split(".txt")[0]}/sentences.pickle', 'rb') as f:
+                with open(fileN, 'rb') as f:
                         sentences = pickle.load(f)
                 sents.append(sentences[idx])
             d[w][s] = [sent[1] for sent in sents]

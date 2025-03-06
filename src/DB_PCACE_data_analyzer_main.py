@@ -60,7 +60,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
     if outputDir == '':
         return
 
-# compute frequencies of complex/simplex objects ______________________________________________________________________________
+    # compute frequencies of complex/simplex objects ______________________________________________________________________________
 
     # complex frequencies
     # all frequencies
@@ -159,7 +159,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
             import pandas as pd
 
             # the next lines do not seem to do anything,
-            #   perhaps, should take the date from the date in the database to create a dynamic networkk graph
+            #   perhaps, should take the date from the date in the database to create a dynamic network graph
             # df = pd.read_csv(outputFile,encoding='utf-8',on_bad_lines='skip')
             # # Add a new empty column called 'data expression'
             # df['Date expression'] = '' # '1998-09-01' should take the date from the date in the database
@@ -936,6 +936,7 @@ def changed_filename(*args):
             setup_complex.set('')
             setup_complex.configure(state='disabled')
         setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(), 'setup_Simplex.xlsx'))
+        setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(), 'setup_Simplex.xlsx'))
         setup_simplex['values'] = setup_simplex_menu
         if len(setup_simplex_menu)>0:
             setup_simplex.configure(state='normal')
@@ -960,9 +961,13 @@ table_fields_menu_values = []
 def view_relations():
     TIPS_util.open_TIPS('TIPS_NLP_PC-ACE table relations.pdf')
 
+
 def view_grammar():
-    mb.showwarning(title='Warning',
-                   message="The function to display the grammar for the selected database is under construction.\n\nPlease, check back soon.")
+    head, tail = os.path.split(inputDir.get())
+    DB_PCACE_data_analyzer_util.view_grammar(os.path.join(inputDir.get(), 'setup_Complex.xlsx'),
+                                             'GrammarRule_Text', os.path.join(outputDir.get(),
+                                                                              'PC-ACE grammar for database ' + tail + '.txt'))
+
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
