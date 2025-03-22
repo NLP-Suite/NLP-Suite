@@ -622,7 +622,7 @@ def open_kmlFile(window,inputFilename):
             print("OS error in opening file " + inputFilename)
 
 
-# opens a filename with its path
+# open a filename with its path
 # if a file with the same name is already open, it throws an error
 def openFile(window, inputFilename):
     if len(inputFilename) == 0:

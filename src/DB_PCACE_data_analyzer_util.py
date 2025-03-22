@@ -20,7 +20,8 @@ import tkinter as tk
 import tkinter.messagebox as mb
 from subprocess import call
 
-import IO_csv_util
+import I
+O_csv_util
 import IO_files_util
 import GUI_IO_util
 import TIPS_util
@@ -110,7 +111,30 @@ def check_missing(fileName):
         # create an empty dataframe
         return pd.DataFrame()
 
+def view_grammar(excel_file, column_name, output_file):
+    """
+    exports the contents from a specific excel file to a txt
+    - excel_file (str): Path to the Excel file.
+    - column_name (str): Name of the column to read.
+    - output_file (str): Path to the output text file.
+    """
+    try:
+        df = pd.read_excel(excel_file)
 
+        column_data = df[column_name].dropna().astype(str)
+
+        #replacing extra '_x00d_' strings that appear
+        column_data = column_data.str.replace('_x000d_', '', regex=False)
+
+        with open(output_file, 'w', encoding='utf-8') as f:
+            for i,row in enumerate(column_data, start=1):
+                f.write(f"{i}.    {row}\n")
+
+        IO_files_util.openFile('', output_file)
+    except Exception as e:
+         print(f"An error occurred: {e}")
+
+# excel_column_to_text('setup_Complex.xlsx','GrammarRule_Text', 'column_text')
 # give the list for all simplex & complex names
 # parameter: dataframe of setup_Complex or filename with path
 # return: the list of all table names

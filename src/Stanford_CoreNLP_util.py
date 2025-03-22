@@ -7,6 +7,7 @@
 # extensively edited and finalized by Claude Hu Fall 2020-2021
 # edited for SVO by Cynthia Dong Fall 2020
 # Edited by Roberto, Mino Cha, Jeongrok Yu, Seong Kim Fall 2022
+#Edited by Julian Lucio Paredes 2025
 
 """
 TODO
@@ -854,8 +855,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 if "pcfg" in annotator_chosen:
                     parser_label = 'PCFG'
                     if len(subtree_string) > 0:
-                        subtree_string.insert(0, ['Subtree', 'Sentence ID', 'Document ID', 'Document'])
-                        subtree_string_fileName = outputDir_chosen + os.sep + 'subtree_string.csv'
+                        subtree_string.insert(0, ['Clause tag', 'String','Indexes', 'Sentence ID', 'Document ID', 'Document'])
+                        subtree_string_fileName = outputDir_chosen + os.sep + 'clausal_tags.csv'
                         IO_csv_util.list_to_csv(GUI_util.window, subtree_string, subtree_string_fileName,
                                                 encoding=language_encoding)
                         filesToOpen.append(subtree_string_fileName)
@@ -906,7 +907,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 outputDir_chosen = os.path.dirname(outputFilename)
                 outputFiles = parsers_annotators_visualization_util.parsers_annotators_visualization(
                     config_filename, inputFilename, inputDir, outputDir_chosen,
-                    outputFilename, annotator_params, kwargs, 
+                    outputFilename, annotator_params, kwargs,
                     chartPackage, dataTransformation)
                 if outputFiles!=None:
                     if isinstance(outputFiles, str):
@@ -2176,7 +2177,10 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
             sentID+=1
             sent_list, sent_examples = Stanford_CoreNLP_clause_util.clausal_info_extract_from_string(parsed_sent['parse'])
             sent_list_clause.append(sent_list)
-            subtree_string.append([sent_examples, sentID, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+            for clause_phrase in sent_examples:
+                subtree_string.append(
+                    [clause_phrase[0],clause_phrase[1],clause_phrase[2], sentID, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+            #subtree_string.append([sent_examples, sentID, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
         # sent_list_clause = [Stanford_CoreNLP_clause_util.clausal_info_extract_from_string(parsed_sent['parse']) for
         #                 parsed_sent in json['sentences']]
     # else: a reminder is posted at the end

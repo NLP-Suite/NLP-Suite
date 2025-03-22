@@ -33,7 +33,7 @@ output_dir = ''
 # if a Json file is present for pcfg output, the function extract each clause tag with the set of words that make it up
 def process_Json(inputFilename, outputDir):
     head, tail = os.path.split(inputFilename)
-    subtree_string_fileName = head + os.sep + 'subtree_string.csv'
+    subtree_string_fileName = head + os.sep + 'clausal_tags.csv'
     if not os.path.exists(subtree_string_fileName):
         if os.path.exists(head):
             import Stanford_CoreNLP_clause_util

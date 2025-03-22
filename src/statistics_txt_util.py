@@ -956,7 +956,7 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
     if "Objectivity/subjectivity" in processType:
         # create a subdirectory of the output directory
         outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
-                                                           label='spaCy_obj_subj',
+                                                           label='obj_subj_spaCy',
                                                            silent=True)
         if outputDir == '':
             return
