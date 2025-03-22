@@ -45,7 +45,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         max_rows_var,
         color_1_style_var,
         color_2_style_var,
-        normalize_var
+        data_transformation_var
         # K_sent_begin_var,
         # K_sent_end_var,
         # split_var,
@@ -189,7 +189,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                 mb.showwarning("Warning",
                                "The colormap/heatmap algorithm requires a value for 'csv file field.'\n\nPlease, select a value and try again.")
                 return
-            params = [max_rows_var, color_1_style_var, color_2_style_var, normalize_var]
+            params = [max_rows_var, color_1_style_var, color_2_style_var, data_transformation_var]
             outputFiles = charts_util.colormap(inputFilename, outputDir, csv_file_categorical_field_list, params)
 
             if outputFiles != None:
@@ -279,7 +279,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             max_rows_var.get(),
                             color_1_style_var.get(),
                             color_2_style_var.get(),
-                            normalize_var.get())
+                            data_transformation_var.get())
                             # K_sent_begin_var.get(),
                             # K_sent_end_var.get(),
                             # split_var.get(),
@@ -967,17 +967,17 @@ color_2_entry.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+70, y_multiplier_integer,
                                                color_2_entry, True)
 
-normalize_lb = tk.Label(window, text='Normalize')
+data_transformation_lb = tk.Label(window, text='Normalize')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
-                                               normalize_lb, True)
+                                               data_transformation_lb, True)
 
-normalize_var=tk.StringVar()
-normalize_var.set('No transform')
-normalize_menu = tk.OptionMenu(window, normalize_var, 'No transform','Min-Max','Z-score','Square root','Log','Ln')
-# normalize_menu.configure(state='disabled')
+data_transformation_var=tk.StringVar()
+data_transformation_var.set('No transform')
+data_transformation_menu = tk.OptionMenu(window, data_transformation_var, 'No transform','Min-Max','Z-score','Square root','Log','Ln')
+# data_transformation_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_do_not_split_pos, y_multiplier_integer,
-                                   normalize_menu,
+                                   data_transformation_menu,
                                    False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "Select the type of data normalization, if any, to be used in displaying the results, thus making them more comparable")
 
@@ -1138,7 +1138,7 @@ def activate_all_options(*args):
     max_rows.configure(state='disabled')
     color_1_checkbox.configure(state='disabled')
     color_2_checkbox.configure(state='disabled')
-    normalize_menu.configure(state='disabled')
+    data_transformation_menu.configure(state='disabled')
     # K_sent_begin.configure(state='disabled')
     # K_sent_end.configure(state='disabled')
     # split_checkbox.configure(state='disabled')
@@ -1178,7 +1178,7 @@ def activate_all_options(*args):
         # for now always set to disabled
         search_values_categorical.configure(state='normal')
         extra_GUIs_checkbox.configure(state='disabled')
-        menu_values = get_csv_file_menu_vales()
+        menu_values = get_csv_file_menu_values()
         if csv_field_categorical_var.get()=='' and 'Document' in menu_values:
             csv_field_categorical_var.set('Document')
 
@@ -1194,6 +1194,8 @@ def activate_all_options(*args):
             reset_button_categorical.configure(state='normal')
             show_button_categorical.configure(state='normal')
         else:
+            add_button_categorical.configure(state='normal')
+            reset_button_categorical.configure(state='normal')
             show_button_categorical.configure(state='normal')
 
             search_values_categorical.configure(state='normal')
@@ -1204,7 +1206,7 @@ def activate_all_options(*args):
             max_rows.configure(state='normal')
             color_1_checkbox.configure(state='normal')
             color_2_checkbox.configure(state='normal')
-            normalize_menu.configure(state='normal')
+            data_transformation_menu.configure(state='normal')
         # @@ commented out
         # @@ commented out
         # elif categorical_menu_var.get()=='Sunburst':

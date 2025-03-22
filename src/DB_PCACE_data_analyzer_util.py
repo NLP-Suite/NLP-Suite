@@ -20,7 +20,8 @@ import tkinter as tk
 import tkinter.messagebox as mb
 from subprocess import call
 
-import IO_csv_util
+import I
+O_csv_util
 import IO_files_util
 import GUI_IO_util
 import TIPS_util
@@ -124,7 +125,6 @@ def view_grammar(excel_file, column_name, output_file):
 
         #replacing extra '_x00d_' strings that appear
         column_data = column_data.str.replace('_x000d_', '', regex=False)
-
 
         with open(output_file, 'w', encoding='utf-8') as f:
             for i,row in enumerate(column_data, start=1):

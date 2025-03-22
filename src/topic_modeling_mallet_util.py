@@ -262,6 +262,15 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransform
     header = ['Document ID', 'Document']
     header.extend(Topic_Weight_in_Document)
     Composition_FileName = file_converter_util.tsv_converter(GUI_util.window, Composition_FileName, outputDir, header)
+    # Composition files from MALLET contain file:
+    import pandas as pd
+    df = pd.read_csv(Composition_FileName, encoding='utf-8', on_bad_lines='skip')
+    # new_df = df[df['Document'].isin(included_tags)]
+    # import IO_csv_util
+    # item = IO_csv_util.dressFilenameForCSVHyperlink(item)
+    # # save new Composition file
+    # IO_csv_util.df_to_csv(GUI_util.window, df, Composition_FileName, headers=header, index=False,
+    #                       language_encoding='utf-8')
     filesToOpen.append(Keys_FileName)
     filesToOpen.append(Composition_FileName)
 

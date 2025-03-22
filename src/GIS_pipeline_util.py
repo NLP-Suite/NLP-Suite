@@ -111,13 +111,14 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
 
     software=config_filename.replace('_config.csv','')
     # check that the GEP has been setup
-    GoogleEarthProDir, existing_software_config, errorFound = IO_libraries_util.external_software_install('GIS_pipeline_util',
-                                                                                         'Google Earth Pro',
-                                                                                         '',
-                                                                                         silent=False, errorFound=False)
+    if 'Google' in mapping_package:
+        GoogleEarthProDir, existing_software_config, errorFound = IO_libraries_util.external_software_install('GIS_pipeline_util',
+                                                                                             'Google Earth Pro',
+                                                                                             '',
+                                                                                             silent=False, errorFound=False)
 
-    if GoogleEarthProDir == None or GoogleEarthProDir == '':
-        return
+        if GoogleEarthProDir == None or GoogleEarthProDir == '':
+            return
 
     startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start', 'Started running GIS pipeline at',
                                                    True, '', True, '', False)
@@ -215,6 +216,8 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
 
     geocodedLocationsOutputFilename=inputFilename
 
+    # this is required for docker version for now
+    # if 'Google' in mapping_package:
     kmloutputFilename = geocodedLocationsOutputFilename.replace('.csv', '.kml')
 
     if not inputIsGeocoded:
