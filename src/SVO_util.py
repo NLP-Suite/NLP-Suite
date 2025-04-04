@@ -120,40 +120,20 @@ def count_frequency_two_svo(CoreNLP_csv, senna_csv, inputFilename, inputDir, out
     # S, V, O are in loc 0, 1, 2
 
     # Adding each row of SVO into the corresponding sets
-    for i in range(len(CoreNLP_df)):
-        # if pd.notnull(CoreNLP_df.iloc[i, 4]):
-        #     if not pd.isnull(CoreNLP_df.iloc[i, 5]) and not pd.isnull(CoreNLP_df.iloc[i, 3]):
-        #         open_ie_svo.add(generate_key(S=CoreNLP_df.iloc[i, 3], V=CoreNLP_df.iloc[i, 4], O=CoreNLP_df.iloc[i, 5]))
-        #     elif not pd.isnull(CoreNLP_df.iloc[i, 3]):
-        #         open_ie_sv.add(generate_key(S=CoreNLP_df.iloc[i, 3], V=CoreNLP_df.iloc[i, 4], O=''))
-        if pd.notnull(CoreNLP_df.iloc[i, 1]):
-            if not pd.isnull(CoreNLP_df.iloc[i, 2]) and not pd.isnull(CoreNLP_df.iloc[i, 1]):
-                open_ie_svo.add(
-                    generate_key(S=CoreNLP_df.iloc[i, 0], V=CoreNLP_df.iloc[i, 1], O=CoreNLP_df.iloc[i, 2]))
-            elif not pd.isnull(CoreNLP_df.iloc[i, 0]):
-                open_ie_sv.add(generate_key(S=CoreNLP_df.iloc[i, 0], V=CoreNLP_df.iloc[i, 1], O=''))
 
-            # elif not pd.isnull(CoreNLP_df.iloc[i, 5]):
-            #     open_ie_sv.add(generate_key(S='', V=CoreNLP_df.iloc[i, 4], O=CoreNLP_df.iloc[i, 5]))
-            # else:
-            #     open_ie_sv.add(generate_key(S='', V=CoreNLP_df.iloc[i, 4], O=''))
-
-    for i in range(len(senna_df)):
-        # if pd.notnull(senna_df.iloc[i, 4]):
-        #     if not pd.isnull(senna_df.iloc[i, 3]) and not pd.isnull(senna_df.iloc[i, 5]):  # Has S, V, O
-        #         senna_svo.add(generate_key(S=senna_df.iloc[i, 3], V=senna_df.iloc[i, 4], O=senna_df.iloc[i, 5]))
-        #     elif not pd.isnull(senna_df.iloc[i, 3]):  # Has S, V
-        #         senna_sv.add(generate_key(S=senna_df.iloc[i, 3], V=senna_df.iloc[i, 4], O=''))
-        if pd.notnull(senna_df.iloc[i, 1]): # VERB
-            if not pd.isnull(senna_df.iloc[i, 0]) and not pd.isnull(senna_df.iloc[i, 2]):  # Has S and O
-                senna_svo.add(generate_key(S=senna_df.iloc[i, 0], V=senna_df.iloc[i, 1], O=senna_df.iloc[i, 2]))
-            elif not pd.isnull(senna_df.iloc[i, 0]):  # Has S, V NO O
-                senna_sv.add(generate_key(S=senna_df.iloc[i, 0], V=senna_df.iloc[i, 1], O=''))
-
-            # elif not pd.isnull(senna_df.iloc[i, 5]):  # Has V, O
-            #     senna_sv.add(generate_key(S='', V=senna_df.iloc[i, 4], O=senna_df.iloc[i, 5]))
-            # else:  # Has V
-            #     senna_sv.add(generate_key(S='', V=senna_df.iloc[i, 4], O=''))
+    #optimized using itertuples:
+    for row in CoreNLP_df.itertuples(index=False):
+        if pd.notnull(row[1]):
+            if pd.notnull(row[0]) and pd.notnull(row[2]):
+                open_ie_svo.add(generate_key(S=row[0], V=row[1], O=row[2]))
+            elif pd.notnull(row[0]):
+                open_ie_sv.add(generate_key(S=row[0], V=row[1], O=''))
+    for row in senna_df.itertuples(index=False):
+        if pd.notnull(row[1]):  # Verb
+            if pd.notnull(row[0]) and pd.notnull(row[2]):
+                senna_svo.add(generate_key(S=row[0], V=row[1], O=row[2]))
+            elif pd.notnull(row[0]):
+                senna_sv.add(generate_key(S=row[0], V=row[1], O=''))
 
     # Generating the stats
     same_svo = open_ie_svo.intersection(senna_svo)

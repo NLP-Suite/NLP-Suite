@@ -51,7 +51,10 @@ def clausal_info_extract(parsetree):
     dict_ind = dict()
     clausal_tags = []
     for subtree in parsetree.subtrees():
-        if subtree.label() in ['ADJP', 'ADVP', 'PP', 'SBAR', 'SQ', 'SBARQ', 'SINV', 'S', 'VP', 'NP']:
+        # should use dict_CLAUSALTAG from Stanford_CoreNLP_tags_util
+        # Stanford_CoreNLP_tags_util.dict_CLAUSALTAG
+        #     clause_list = ['S','SBAR', 'SBARQ', 'SQ', 'SINV', 'NP', 'VP', 'ADJP', 'ADVP', 'PP']
+        if subtree.label() in ['ADJP', 'ADVP', 'CC', 'PP', 'PRP', 'RB', 'SBAR', 'SQ', 'SBARQ', 'SINV', 'S', 'VP', 'NP', 'NNP']:
             ind = sublist_match(full_list, subtree.leaves())
             dict_ind[ind] = subtree.label()
             comp_len = len(subtree.leaves())

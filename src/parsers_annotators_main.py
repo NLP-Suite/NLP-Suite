@@ -36,6 +36,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         manual_Coref, open_GUI,
         parser_var,
         parser_menu_var,
+        Json_var,
         single_quote,
         CoNLL_table_analyzer_var, annotators_var, annotators_menu_var):
 
@@ -51,6 +52,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
     # get the NLP package and language options
     error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = \
         config_util.read_NLP_package_language_config()
+
+    # the new GUI allows user to select the option of exporting Json directly from the parsers_annotators_main
+    #   ignoring the choice in setup
+    export_json_var = Json_var
+
     language_var = language
     language_list = [language]
     if package_display_area_value == '':
@@ -352,6 +358,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  open_GUI_var.get(),
                                  parser_var.get(),
                                  parser_menu_var.get(),
+                                 Json_var.get(),
                                  quote_var.get(),
                                  CoNLL_table_analyzer_var.get(),
                                  annotators_var.get(),
@@ -407,6 +414,7 @@ def clear(e):
     annotators_menu_var.set('')
     manual_Coref_checkbox.place_forget()  # invisible
     open_GUI_checkbox.place_forget()  # invisible
+    Json_checkbox.place_forget()  # invisible
     quote_checkbox.place_forget()  # invisible
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
@@ -423,7 +431,7 @@ manual_Coref_var = tk.IntVar()
 open_GUI_var = tk.IntVar()
 parser_var = tk.IntVar()
 parser_menu_var = tk.StringVar()
-
+Json_var = tk.IntVar()
 
 CoNLL_table_analyzer_var = tk.IntVar()
 
@@ -461,7 +469,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
 
 y_multiplier_integer_SV=y_multiplier_integer
 
-parser_checkbox = tk.Checkbutton(window, variable=parser_var, onvalue=1, offvalue=0)
+parser_checkbox = tk.Checkbutton(window, variable=parser_var, onvalue=1, offvalue=0, command=lambda: activate_NLP_options())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer_SV,
                                                parser_checkbox, True, False, False, False, 90,
@@ -486,6 +494,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.parsers_annot
                                                parser_menu, False, False, False, False, 90,
                                                GUI_IO_util.labels_x_coordinate,
                                                "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
+
+Json_checkbox = tk.Checkbutton(window, text='Export Json file',
+                               variable=Json_var,
+                               onvalue=1, offvalue=0)
 
 CoNLL_table_analyzer_var.set(0)
 # CoNLL_table_analyzer_checkbox = tk.Checkbutton(window, text='CoNLL table analyzer', variable=CoNLL_table_analyzer_var,
@@ -589,10 +601,19 @@ def activate_annotators_menu(*args):
         annotators_menu.configure(state='normal')
         if y_multiplier_integer_SV1 == 0:
             y_multiplier_integer_SV1 = y_multiplier_integer
+
+        if 'CoreNLP' in annotators_menu_var.get():
+            y_multiplier_integer=y_multiplier_integer_SV1-1
+            Json_var.set(0)
+            y_multiplier_integer = GUI_IO_util.placeWidget(window,
+                                                           GUI_IO_util.open_setup_x_coordinate,
+                                                           y_multiplier_integer,
+                                                           Json_checkbox, True)
+
         if '*' in annotators_menu_var.get() or 'dialogue' in annotators_menu_var.get():
             y_multiplier_integer=y_multiplier_integer_SV1-1
             quote_var.set(0)
-            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.parsers_annotators_parser_manual_coref_edit_pos,
+            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate,
                                                            y_multiplier_integer,
                                                            quote_checkbox,True)
             quote_checkbox.configure(state='normal')
@@ -623,6 +644,9 @@ def activate_annotators_menu(*args):
         open_GUI_checkbox.place_forget()  # invisible
         annotators_menu_var.set('')
         annotators_menu.configure(state='disabled')
+    if not 'CoreNLP' in annotators_menu_var.get():
+        Json_checkbox.place_forget()  # invisible
+
 parser_var.trace('w', activate_annotators_menu)
 annotators_var.trace('w', activate_annotators_menu)
 annotators_menu_var.trace('w', activate_annotators_menu)
@@ -706,12 +730,24 @@ def activate_NLP_options(*args):
         available_parsers = 'Parsers'
     if not 'CoreNLP' in package:
         CoNLL_table_analyzer_checkbox.configure(state='disabled')
+        Json_checkbox.place_forget()  # invisible
     else:
+        if parser_var.get():
+            Json_var.set(0)
+            y_multiplier_integer = y_multiplier_integer_SV
+            y_multiplier_integer = GUI_IO_util.placeWidget(window,
+                                                           GUI_IO_util.open_setup_x_coordinate,
+                                                           y_multiplier_integer,
+                                                           Json_checkbox, True)
+            Json_checkbox.configure(state='normal')
         if CoNLL_table_analyzer_var.get() == 1:
             CoNLL_table_analyzer_checkbox_msg.config(text="Open CoNLL table analyzer GUI")
         else:
             CoNLL_table_analyzer_checkbox_msg.config(text="Do NOT open CoNLL table analyzer GUI")
         CoNLL_table_analyzer_checkbox.configure(state='normal')
+
+    if parser_var.get()==0 and annotators_var.get()==0:
+        Json_checkbox.place_forget()  # invisible
 
     if package_display_area_value_new != package_display_area_value:
         language_list = [language]

@@ -88,7 +88,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         return
 
     datePresent=False
-    geocoder='Nominatim'
+    geocoder='Nominatim' # Nominatim performs too poorly and until we figure it out, we must geocode with Google
+    geocoder = 'Google'
     encodingValue='utf-8'
 
     reminders_util.checkReminder(scriptName, reminders_util.title_options_geocoder,

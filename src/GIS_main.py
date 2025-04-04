@@ -48,7 +48,7 @@ def run(inputFilename,
         restrict_var,
         map_locations,
         GIS_package_var,
-        GIS_package2_var):
+        Google_Earth_OpenGUI):
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -183,7 +183,7 @@ def run(inputFilename,
     #
     # ----------------------------------------------------------------------------------------------------------------------------------------------
 
-    if 'folium' in GIS_package_var or GIS_package_var == 'Google Earth Pro & Google Maps' or GIS_package_var == 'Google Maps' or GIS_package_var == 'Google Earth Pro':
+    if 'folium' in GIS_package_var or 'Google' in GIS_package_var:
         # if GIS_package_var=='Google Earth Pro': # check installation
             # locationColumnName where locations to be geocoded (or geocoded) are stored in the csv file;
         #   any changes to the columns will result in error
@@ -217,6 +217,10 @@ def run(inputFilename,
             mb.showwarning("Option not available","The " + GIS_package_var + " option is not available yet.\n\nSorry! Please, check back soon...")
             return
 
+    if Google_Earth_OpenGUI:
+        call('python GIS_Google_Earth_main.py', shell=True)
+        return
+
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.input_main_dir_path.get(),
@@ -234,7 +238,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             restrict_var.get(),
                             map_locations_var.get(),
                             GIS_package_var.get(),
-                            GIS_package2_var.get())
+                            Google_Earth_OpenGUI.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -288,7 +292,7 @@ country_bias_var=tk.StringVar()
 area_var=tk.StringVar()
 restrict_var=tk.IntVar()
 GIS_package_var=tk.StringVar()
-GIS_package2_var=tk.IntVar()
+Google_Earth_OpenGUI=tk.IntVar()
 map_locations_var=tk.IntVar()
 open_API_config_var=tk.StringVar()
 
@@ -404,9 +408,9 @@ def display_csv_file_options():
     m.delete(0, "end")
     for s in menu_values:
         m.add_command(label=s, command=lambda value=s: location_menu_var.set(value))
-    if GIS_package2_var.get() == False:
-        # GIS_package_var.set('Google Earth Pro & Google Maps')
-        GIS_package_var.set('Python folium pin map & heatmap')
+    # if Google_Earth_OpenGUI.get() == False:
+    #     # GIS_package_var.set('Google Earth Pro & Google Maps')
+    #     GIS_package_var.set('Python folium pin map & heatmap')
     cannotRun, NER_extractor, geocode_locations, location_menu = check_csv_file_headers(csv_file_var.get())
 
     return cannotRun
@@ -474,7 +478,10 @@ geocoder_lb = tk.Label(window, text='Geocoder')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.label_columns,y_multiplier_integer,geocoder_lb,True)
 geocoder_var.set('Nominatim')
 geocoder = tk.OptionMenu(window,geocoder_var,'Nominatim','Google')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,geocoder)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
+                    geocoder, False, False, True, False,
+                    90, GUI_IO_util.labels_x_coordinate, "Select the geocoder to be used: Nominatim or Google.\nNominatim is less accurate than Google, but Google requires an API key (please, read the TIPS file on how to obtain a free Google API key).")
 
 # https://developers.google.com/maps/documentation/embed/get-api-key
 # Google_API_geocode_lb = tk.Label(window, text='API key')
@@ -585,7 +592,7 @@ geocode_locations_var.trace('w',activate_geocoder)
 
 def call_reminders(*args):
     if map_locations_var.get()==True:
-        if GIS_package_var.get()!='':
+        if GIS_package_var.get()=='':
             # GIS_package_var.set('Google Earth Pro & Google Maps')
             GIS_package_var.set('Python folium pin map & heatmap')
     else:
@@ -601,10 +608,14 @@ GIS_package_var.set('Python folium pin map & heatmap')
 GIS_package = tk.OptionMenu(window,GIS_package_var,'Python folium pin map & heatmap','Google Earth Pro & Google Maps','Google Earth Pro','Google Maps','QGIS','Tableau','TimeMapper')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,GIS_package,True)
 
-GIS_package2_var.set(0)
-GIS_package2_checkbox = tk.Checkbutton(window, variable=GIS_package2_var, onvalue=1, offvalue=0)
-GIS_package2_checkbox.config(text="GIS package - Open GUI")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,GIS_package2_checkbox)
+Google_Earth_OpenGUI.set(0)
+GIS_package2_checkbox = tk.Checkbutton(window, variable=Google_Earth_OpenGUI, onvalue=1, offvalue=0)
+GIS_package2_checkbox.config(text="Google Earth Pro - Open GUI")
+
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
+                    GIS_package2_checkbox, False, False, True, False,
+                    90, GUI_IO_util.open_reminders_x_coordinate, "Open the GIS_Google_Earth_main GUI.\nGUI opened automatically after running the NER location extractor (and geocoder).\nAfter the GUI opens, you will need to select as input the csv file produced by either the NER location extractor or the geocoder.")
 
 open_API_config_lb = tk.Label(window, text='View Google API key')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,open_API_config_lb,True)
@@ -645,7 +656,7 @@ def activate_Google_API_Google_Maps(*args):
 GIS_package_var.trace('w',activate_Google_API_Google_Maps)
 
 def display_reminder(*args):
-    if GIS_package2_var.get():
+    if Google_Earth_OpenGUI.get():
         routine_options = reminders_util.getReminders_list(scriptName)
         reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_Google_Earth,
@@ -653,7 +664,7 @@ def display_reminder(*args):
                                      True)
         routine_options = reminders_util.getReminders_list(scriptName)
         return
-GIS_package2_var.trace('w', display_reminder)
+Google_Earth_OpenGUI.trace('w', display_reminder)
 
 videos_lookup = {'GIS: From texts to maps':'https://www.youtube.com/watch?v=kIgXoxa6Az0'}
 videos_options='GIS: From texts to maps'
@@ -692,7 +703,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the column containing the location names (e.g., New York) to be geocoded and mapped.\n\nTHE OPTION IS NOT AVAILABLE WHEN SELECTING A CONLL INPUT CSV FILE. NER IS THE COLUMN AUTOMATICALLY USED WHEN WORKING WITH A CONLL FILE IN INPUT."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to GEOCODE a list of locations.\n\n'Split' locations (e.g. South America, Atlantic City) will be joined together for geocoding using the following prefix values:\n  south, north, west, east, los, new, san, las, la, hong\nand suffix values:\n  city, island\n\nWHEN USING THE CoNLL TABLE AS INPUT, ONLY TWO CONSECUTIVE VALUES WILL BE JOINED TOGETHER (thus, 'New South Wales' would not be joined).\n\nThe geocoding option is available ONLY when a csv file of locations NOT yet geocoded is selected."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","To obtain more accurate geocoded results, select a country where most locations are expected to be. Locations falling in the selected country of bias will be given PREFERENCE by the geocoder over locations with the same name in other countries. Thus, if you select United States as your country bias, the geocoder will geocode locations such as Florence, Rome, or Venice in the United States rather than in Italy.\n\nIf you want to geocode locations mostly located in a specific area, enter the latitude and longitude for the upper left-hand and lower right-hand corners of a rectangle that will be used for finding the locations.\n\nTick the Restrict checkbox if you wish to restrict the search area to the selected area ONLY (otherwise, it is just a preference).\n\nAREA AND RESTRICT WIDGETS ARE AVAILABLE ONLY FOR NOMINATIM."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to MAP a list of geocoded locations.\n\nUsing the dropdown menu, select the GIS (Geographic Information System) package you wish to use to produce maps.\n\nGoogle Maps requires an API key that you obtain from registering.\n\nWhen selecting Google Maps, the API key field will become available.\n\nYou will need to get the API key from the Google console and entering it there. REMEMBER! When applying for an API key you will need to enter billing information; billing information is required although it is VERY unlikely you will be charged since you are not producing maps on a massive scale.\n https://developers.google.com/maps/documentation/embed/get-api-key.\n\nAfter entering the Google API key, click OK to save it and the key will be read in automatically next time around.\n\nTick the Open GUI checkbox ONLY if you wish to open the Google Earth Pro GUI for more options. Do not tick the checkbox if you wish to run the pipeline automatically from text to maps."+GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to MAP a list of geocoded locations.\n\nUsing the dropdown menu, select the GIS (Geographic Information System) package you wish to use to produce maps.\n\nGoogle Maps requires an API key that you obtain from registering.\n\nWhen selecting Google Maps, the API key field will become available.\n\nYou will need to get the API key from the Google console and entering it there. REMEMBER! When applying for an API key you will need to enter billing information; billing information is required although it is VERY unlikely you will be charged since you are not producing maps on a massive scale.\n https://developers.google.com/maps/documentation/embed/get-api-key.\n\nAfter entering the Google API key, click OK to save it and the key will be read in automatically next time around.\n\nTick the Open GUI checkbox ONLY if you wish to open the Google Earth Pro GUI for more options after running the NER location extractor (and, perhaps, the geocoder)."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the Google Api key you wish to visualize, then click on the button to open the config file to view/change the key."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
 

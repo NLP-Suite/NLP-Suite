@@ -490,3 +490,6 @@ The GIS option has the advantage that it extracts locations via CoreNLP NER anno
 *,What is in your corpus - Topic modeling,"The topic modeling option requires in input a set of txt documents, rather than a single txt file. The topic modeling option is disabled for single documents.",ON
 *,CoreNLP normalized date timing,"Beware that the CoreNLP normalized date algortithm on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 50 minutes on a standard laptop.",ON
 *,CoreNLP quote timing,"Beware that the CoreNLP quote annotator on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 3 hours on a standard laptop.",ON
+*,Open Google Earth GUI,"You should tick the Open GUI checkbox ONLY if you wish to open the Google Earth Pro GUI.
+
+The Google Earth Pro GUI will provide a number of options to personalize a Google Earth Pro map. Press Run if you wish to open the Google Earth Pro GUI.",OFF
