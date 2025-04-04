@@ -76,6 +76,7 @@ def clause_data_preparation(data):
     adjp_counter = 0
     advp_counter = 0
     pp_counter = 0
+    # should use dict_CLAUSALTAG from Stanford_CoreNLP_tags_util
     clause_list = ['S','SBAR', 'SBARQ', 'SQ', 'SINV', 'NP', 'VP', 'ADJP', 'ADVP', 'PP']
 
     for i in data:
