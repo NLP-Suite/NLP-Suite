@@ -119,7 +119,7 @@ def count_frequency_two_svo(CoreNLP_csv, senna_csv, inputFilename, inputDir, out
 
     # S, V, O are in loc 0, 1, 2
 
-    # Adding each row of SVO into the corresponding sets
+    # Adding each row of xSVO into the corresponding sets
 
     #optimized using itertuples:
     for row in CoreNLP_df.itertuples(index=False):
@@ -281,6 +281,12 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
                lemmatize_s, lemmatize_v, lemmatize_o, outputSVODir,  chartPackage='Excel', dataTransformation='No transformation'):
     filesToOpen = []
     from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
+    from functools import lru_cache
+
+    @lru_cache(maxsize=10000)
+    def memoized_lemmatize(token):
+        return lemmatize_stanza_word(stanzaPipeLine(token))
+
 
     startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start',
                                                    'Started running the lemma/filter algorithm for Subject-Verb-Object (SVO) at',
@@ -353,7 +359,7 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
             keep_record = True
         if lemmatize_s:
             if row['Subject (S)'].count(' ')==0:
-                row['Subject (S)'] = lemmatize_stanza_word(stanzaPipeLine(row['Subject (S)']))
+                row['Subject (S)'] = memoized_lemmatize(row['Subject (S)'])
             else:
                 if filter_s:
                     if not '@#' in row['Subject (S)']:
@@ -363,9 +369,9 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
                         temp_lemma = ''
                         for i in range(len(temp_list)):
                             if temp_lemma=='':
-                                temp_lemma = lemmatize_stanza_word(stanzaPipeLine(temp_list[i]))
+                                temp_lemma = memoized_lemmatize(temp_list[i])
                             else:
-                                temp_lemma = temp_lemma + ' ' + lemmatize_stanza_word(stanzaPipeLine(temp_list[i]))
+                                temp_lemma = temp_lemma + ' ' + memoized_lemmatize(temp_list[i])
                         row['Subject (S)'] = temp_lemma.replace('  ', ' ') # temp_lemma will have 2 blanks when lemmatizing a blank token
                         row['Subject (S)'] = temp_lemma.replace(' ', '_')
         if lemmatize_v:
@@ -379,14 +385,14 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
                     temp_lemma = ''
                     for i in range(len(temp_list)):
                         if temp_lemma=='':
-                            temp_lemma = lemmatize_stanza_word(stanzaPipeLine(temp_list[i]))
+                            temp_lemma = memoized_lemmatize(temp_list[i])
                         else:
-                            temp_lemma = temp_lemma + ' ' + lemmatize_stanza_word(stanzaPipeLine(temp_list[i]))
+                            temp_lemma = temp_lemma + ' ' + memoized_lemmatize(temp_list[i])
                     row['Verb (V)'] = temp_lemma.replace('  ', ' ') # temp_lemma will have 2 blanks when lemmatizing  a blank token
                     row['Verb (V)'] = temp_lemma.replace(' ', '_')
         if lemmatize_o:
             if row['Object (O)'].count(' ')==0:
-                row['Object (O)'] = lemmatize_stanza_word(stanzaPipeLine(row['Object (O)']))
+                row['Object (O)'] = memoized_lemmatize(row['Object (O)'])
             else:
                 if filter_o:
                     # WordNet multi-word expressions are all _ separated (e.g., Christopher_Columbus)
@@ -395,9 +401,9 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
                     temp_lemma = ''
                     for i in range(len(temp_list)):
                         if temp_lemma=='':
-                            temp_lemma = lemmatize_stanza_word(stanzaPipeLine(temp_list[i]))
+                            temp_lemma = memoized_lemmatize(temp_list[i])
                         else:
-                            temp_lemma = temp_lemma + ' ' + lemmatize_stanza_word(stanzaPipeLine(temp_list[i]))
+                            temp_lemma = temp_lemma + ' ' + memoized_lemmatize(temp_list[i])
                     row['Object (O)'] = temp_lemma.replace('  ', ' ') # temp_lemma will have 2 blanks when lemmatizing  a blank token
                     row['Object (O)'] = temp_lemma.replace(' ', '_')
 

@@ -429,8 +429,14 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_keyWord_
                                              "The use of this widget is mutually exclusive with the widget 'Top-level synset'. You can use one or the other.")
 
 OK_button = tk.Button(window, text='OK', width=GUI_IO_util.OK_button_width, height=1, state='disabled', command=lambda: accept_WordNet_list())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_OK_button_pos, y_multiplier_integer,
-                                               OK_button)
+# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
+# the two x-coordinate and x-coordinate_hover_over must have the same values
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
+    GUI_IO_util.WordNet_OK_button_pos,
+    y_multiplier_integer,
+    OK_button, False, False, True, False, 90, GUI_IO_util.WordNet_keyWord_menu_pos, "Click OK when done entering YOUR synset list. ")
+#
+#                                                OK_button)
 def clear(e):
     if aggregate_lemmatized_var.get():
         aggregate_lemmatized_var.set(0)

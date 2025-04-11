@@ -606,7 +606,11 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.label_columns,y_
 
 GIS_package_var.set('Python folium pin map & heatmap')
 GIS_package = tk.OptionMenu(window,GIS_package_var,'Python folium pin map & heatmap','Google Earth Pro & Google Maps','Google Earth Pro','Google Maps','QGIS','Tableau','TimeMapper')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,GIS_package,True)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
+                    GIS_package, True, False, True, False,
+                    90, GUI_IO_util.watch_videos_x_coordinate, "The visualization of GIS maps is set by default on Python folium pin map & heatmap.\nGoogle maps do have some advantages but... Google requires setting up a free API key. And you may wish not to that, regarless of advantages.")
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,GIS_package,True)
 
 Google_Earth_OpenGUI.set(0)
 GIS_package2_checkbox = tk.Checkbutton(window, variable=Google_Earth_OpenGUI, onvalue=1, offvalue=0)
