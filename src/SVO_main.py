@@ -623,6 +623,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
     # GIS maps _____________________________________________________
 
         if google_earth_var:
+            key = GIS_pipeline_util.getGoogleAPIkey(window, 'Google-geocode-API_config.csv')
+            if key == '' or key == None:
+                geocoder = 'Nominatim'
+            else:
+                geocoder = 'Google'
             # SENNA locations are not really geocodable locations
             if (package_var=='SENNA') and os.path.isfile(location_filename):
                 reminders_util.checkReminder(scriptName, reminders_util.title_options_GIS_OpenIE_SENNA,
@@ -641,7 +646,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                                      config_filename, location_filename, inputDir,
                                      outputGISDir,
                                      # 'Nominatim', 'Google Earth Pro & Google Maps', chartPackage, dataTransformation,
-                                     'Google', 'Google Earth Pro & Google Maps', chartPackage, dataTransformation,
+                                     geocoder, 'Google Earth Pro & Google Maps', chartPackage, dataTransformation,
                                      date_present,
                                      country_bias,
                                      area_var,
@@ -1145,8 +1150,8 @@ google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where (via Google
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                    google_earth_checkbox,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-                                   "Draw pin and heat maps with Google Earth Pro and Google Maps. Maps are exported to the SVO subdirectory only, whether filtering or lemmatizing to avoid missing locations.\n"
-                                   "You will need a free Google API key. Read the TIPS file 'Google API Key' on how to get the API key.")
+                                   "Visualize GIS maps as pin and heat maps. Google Earth Pro and Google Maps will be used as mapping software if you have obtained a free Google API key. Otherwise, Python folium will be used.\n"
+                                   "Read the TIPS file 'Google API Key' on how to get the API key.\nMaps are exported to the SVO subdirectory only, whether filtering or lemmatizing to avoid missing locations.")
 def activateFilters(*args):
     if language!='English':
         filter_subjects_var.set(0)

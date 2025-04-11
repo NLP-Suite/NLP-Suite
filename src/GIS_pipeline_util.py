@@ -374,6 +374,12 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
     # map
     # ------------------------------------------------------------------------------------
 
+    Google_Maps_API = getGoogleAPIkey(window, 'Google-Maps-API_config.csv')
+    if Google_Maps_API == '':
+        mapping_package = 'folium'
+    else:
+        mapping_package = 'Google Maps'
+
     if nRecordsFound > 0 and 'folium' in mapping_package:
         import GIS_folium_map_util
         folium_pinmap_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir,
@@ -384,7 +390,6 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         folium_heatmap_outputFilename=folium_pinmap_outputFilename.replace('pin','heat')
         outputFiles = GIS_folium_map_util.run(geocodedLocationsOutputFilename, folium_pinmap_outputFilename, folium_heatmap_outputFilename)
         filesToOpen.extend(outputFiles)
-
 
     # ------------------------------------------------------------------------------------
     # Google Earth Pro (geocoding above produces the GEP map)
@@ -412,10 +417,6 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         else:
             mb.showwarning('Warning',
                            'The input csv file\n\n' + geocodedLocationsOutputFilename + '\n\ndoes not contain geocoded data with Latitude or Longitude columns required for Google Maps to produce heat maps.\n\nPlease, select a geocoded csv file in input and try again.')
-            return
-
-        Google_Maps_API = getGoogleAPIkey(window,'Google-Maps-API_config.csv')
-        if Google_Maps_API == '':
             return
 
         GIS_Google_Maps_util.create_js(window, heatMapoutputFilename, coordList, geocoder, True)
