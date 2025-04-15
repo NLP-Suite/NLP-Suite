@@ -462,6 +462,7 @@ def accept_WordNet_list():
         # what if user enter , followed by a space? most likely event...
         wordNet_keyword_list = [str(x) for x in keyWord_entry_var.get().split(',') if x]
         show_keywords_button.configure(state="normal")
+        GUI_util.run_button.configure(state='normal')
     else:
         mb.showwarning(title='Warning',
                        message='You have pressed the OK button, but you must first enter your keyword(s).\n\nPlease, enter the keyword(s) and try again.')
@@ -602,10 +603,12 @@ def activate_all_options(noun_verb, fromaggregate=False):
     add_keyword_button.configure(width=GUI_IO_util.add_button_width, height=1, state="disabled")
     reset_keywords_button.configure(width=GUI_IO_util.reset_button_width, height=1, state="disabled")
 
-    if len(wordNet_keyword_list) > 0:
-        show_keywords_button.configure(state="normal")
-    else:
-        show_keywords_button.configure(state="disabled")
+    # if len(wordNet_keyword_list) > 0:
+    #     show_keywords_button.configure(state="normal")
+    #     GUI_util.run_button.configure(state='normal')
+    # else:
+    #     show_keywords_button.configure(state="disabled")
+    #     GUI_util.run_button.configure(state='disabled')
 
     if disaggregate_var.get() == True:
         aggregate_lemmatized_checkbox.configure(state='disabled')
@@ -623,12 +626,13 @@ def activate_all_options(noun_verb, fromaggregate=False):
         else:
             add_keyword_button.configure(width=GUI_IO_util.add_button_width, height=1, state="disabled")
             keyWord_entry.configure(state="normal")
+            OK_button.configure(state="normal")
             if keyWord_entry_var.get() != '':
                 keyWord_menu.configure(state="disabled")
-                OK_button.configure(state="normal")
+                # OK_button.configure(state="normal")
             else:
-                OK_button.configure(state="disabled")
                 keyWord_menu.configure(state="normal")
+                # OK_button.configure(state="disabled")
 
         # RESET button
         if keyWord_var.get() == '' and keyWord_entry_var.get() == '':
@@ -640,6 +644,16 @@ def activate_all_options(noun_verb, fromaggregate=False):
         wordNet_keyword_list.clear()
         keyWord_entry_var.set('')
         dict_WordNet_filename_var.set('')
+
+    if len(wordNet_keyword_list) > 0:
+        show_keywords_button.configure(state="normal")
+    else:
+        show_keywords_button.configure(state="disabled")
+
+    if len(wordNet_keyword_list) > 0 or keyWord_entry_var.get() != '':
+        GUI_util.run_button.configure(state='normal')
+    else:
+        GUI_util.run_button.configure(state='disabled')
 
     # else:
     #     asked = False
