@@ -327,10 +327,12 @@ def check_CoreNLPVersion(CoreNLPdir,calling_script='',silent=False):
             local_version = f[:-4].split("-")[2]
             if github_version != local_version:
                 if not silent:
-                    IO_user_interface_util.timed_alert(GUI_util.window, 6000, 'Stanford CoreNLP version',
-                                   "Oops! Your local Stanford CoreNLP version is " + local_version +
-                                   ".\n\nIt is behind the latest Stanford CoreNLP version available on GitHub (" + github_version + ").\n\nYour current version of Stanford CoreNLP will run anyway, but you should update to the latest release.",
-                                                       False,'',True)
+                    reminders_util.checkReminder('Stanford-CoreNLP_config.csv', reminders_util.title_options_CoreNLP_version,
+                                                 reminders_util.message_CoreNLP_version, True)
+                    # IO_user_interface_util.timed_alert(GUI_util.window, 6000, 'Stanford CoreNLP version',
+                    #                "Oops! Your local Stanford CoreNLP version is " + local_version +
+                    #                ".\n\nIt is behind the latest Stanford CoreNLP version available on GitHub (" + github_version + ").\n\nYour current version of Stanford CoreNLP will run anyway, but you should update to the latest release.",
+                    #                                    False,'',True)
                 break
     return
 

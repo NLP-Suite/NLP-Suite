@@ -65,8 +65,9 @@ def create_output_directory(inputFilename, inputDir, outputDir, config_filename,
                             export_json_var, annotator, silent, Json_question_already_asked):
     outputJsonDir = ''
     outputDirSV=GUI_util.output_dir_path.get()
-
+    coref_outputDir = ''
     if 'coref' in outputDir and 'coref' in str(annotator):
+        coref_outputDir = outputDir
         # when coming from coref annotator, the outputDir will contain an unnecessary NLP_CoreNLP_coref_ string
         temp_head, temp_dir = os.path.split(outputDir)
         if 'table' in annotator:
@@ -90,9 +91,14 @@ def create_output_directory(inputFilename, inputDir, outputDir, config_filename,
 
     # create a Json subdirectory of the main output directory
     if export_json_var:
-        outputJsonDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
-                                                               label='Json',
-                                                               silent=silent)
+        if coref_outputDir!='':
+            outputJsonDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, coref_outputDir,
+                                                                   label='Json',
+                                                                   silent=silent)
+        else:
+            outputJsonDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                                                                   label='Json',
+                                                                   silent=silent)
     else:
         outputJsonDir = ''
 
@@ -505,6 +511,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
             # when multiple annotators are selected (e.g., quote, gender, normalized-date)
             #   output must go to the appropriate subdirectory and added to routine_list
             output_dir, outputJsonDir = create_output_directory(inputFilename, inputDir, outputDir, config_filename, export_json_var, annotator, silent, Json_question_already_asked)
+            if 'coref table' in str(annotators_):
+                outputJsonDir=outputDir
             if output_dir == '':
                 return filesToOpen
             # when running the SVO annotator in combination with gender and quote,
@@ -1400,9 +1408,12 @@ def process_json_coref(config_filename,documentID, document, sentenceID, json, *
             sentenceID += 1
             for token in sentence['tokens']:
                 output_word = token['word']
+                if output_word.lower() in pronouns:
+                    output_word = token['lemma']
+                    print(output_word)
                 # check lemmas as well as tags for possessive pronouns in case of tagging errors
-                if token['lemma'] in possessives or token['pos'] == 'PRP$':
-                    if not "'s" in output_word and output_word not in pronouns:
+                if token['lemma'].lower() in possessives or token['pos'] == 'PRP$':
+                    if not "'s" in output_word and output_word.lower() not in pronouns:
                         output_word += "'s"  # add the possessive morpheme
                 output_word += token['after']
                 if output_word == ". ":
@@ -2264,7 +2275,7 @@ def exportJson(export_json_var, inputFilename, outputJsonDir, CoreNLP_output,
         if not export_json_var:
             return
         if outputJsonDir!='':
-            jsonFilename = os.path.join(outputJsonDir, inputFilename[:-4] + "_" + str(annotator_params) + ".txt")
+            jsonFilename = os.path.join(outputJsonDir, "Json_" + inputFilename[:-4] + "_" + str(annotator_params) + ".txt")
             with open(jsonFilename, "a+", encoding=language_encoding, errors='ignore') as json_out_nn:
                 json.dump(CoreNLP_output, json_out_nn, indent=4, ensure_ascii=False)
         # no need to open the Json file
