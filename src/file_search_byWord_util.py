@@ -578,7 +578,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
     else:
         header = ['Searched keyword NOT found', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
         all_search_keywords_NOT_found.insert(0, header)
-        IO_error = IO_csv_util.list_to_csv(GUI_util.window, all_search_keywords_NOT_found,
+        IO_error = IO_csv_util.list_to_csv(GUI_util.window, all_search_keywords_NOT_found[2],
                                            outputFilename_csv_word_NOT_found)
         if not IO_error:
             filesToOpen.append(outputFilename_csv_word_NOT_found)
@@ -635,12 +635,12 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                 with open(outputFilename_extract_w_searchword, 'w', encoding='utf-8',
                           errors='ignore') as outputFile_extract_w_searchword:
                     outputFile_extract_w_searchword.write(
-                        all_found_sentences_allDocs)  # write out all the sentence containing the search word
+                        all_found_sentences_allDocs)  # write out all the sentences containing the search word
                 outputFile_extract_w_searchword.close()
                 with open(outputFilename_extract_wo_searchword, 'w', encoding='utf-8',
                           errors='ignore') as outputFile_extract_wo_searchword:
                     outputFile_extract_wo_searchword.write(
-                        all_adjacent_sentences_allDocs)  # write out all the sentence containing the search word
+                        all_adjacent_sentences_allDocs)  # write out all the sentences NOT containing the search word
                 outputFile_extract_wo_searchword.close()
 
     # when creating a subcorpus copy all the files in the set to a subdirectory 'subcorpus_search' of the input directory

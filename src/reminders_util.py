@@ -165,6 +165,9 @@ message_NER_frequencies = "O is likely to be the most frequent NER tag in your c
 DepRel_frequencies = ['DepRel tags frequency']
 message_DepRel_frequencies = "punct (punctuation) and det (determiner/article) are likely to be the most frequent DepRel tags in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete in the Data worksheet of the Excel chart file the rows containing the 'punct' and 'det' tags to have a better view of all other tags."
 
+title_options_CoreNLP_version = ['CoreNLP version']
+message_CoreNLP_version = "The CoreNLP version you are using is behind the latest Stanford CoreNLP version available on GitHub (https://stanfordnlp.github.io/CoreNLP/download.html).\n\nYour current version of Stanford CoreNLP will run anyway, but you should update to the latest release."
+
 title_options_CoreNLP_shutting_down = ['CoreNLP Server is shutting down']
 message_CoreNLP_shutting_down = "The Stanford CoreNLP, after firing up, will display on command line/prompt the message: CoreNLP Server is shutting down.\n\nIt is NOT a problem. The process will continue..."
 
