@@ -13,18 +13,18 @@ def safe_pandas_call(func):
             print(f"Error in {func.__name__}: {e}")
             # Handle error as needed
     return wrapper
-import numpy as np
+
 import pandas as pd
 import os
-import tkinter as tk
 import tkinter.messagebox as mb
-from subprocess import call
+#import numpy as np
+#import tkinter as tk
+#from subprocess import call
 
-import I
-O_csv_util
 import IO_files_util
-import GUI_IO_util
-import TIPS_util
+# import IO_csv_util
+# import GUI_IO_util
+# import TIPS_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -947,7 +947,7 @@ def semantic_triplet_simplex_main(inputDir, outputDir, macro_event_id, subject, 
     print('------------------------------------------------------------------------------------------------------------------------')
     print('verb', verb)
     print('------------------------------------------------------------------------------------------------------------------------')
-    print('object', object)
+    print('Object', object)
 
     simplex_version = semantic_triplet_simplex(inputDir, subject, verb, object,
                                                setup_Complex_df, setup_Simplex_df, setup_xref_Complex_Complex_df,

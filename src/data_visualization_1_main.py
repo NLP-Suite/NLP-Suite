@@ -78,8 +78,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         output_label = ''
 
     outputFiles = ''
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
-                                                             '.html', output_label)
+    outputFilename = ''
+    # outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
+    #                                                          '.html', output_label)
 
 # Visualize relations: Gephi, Sankey  --------------------------------------------------------------------------------
 
@@ -129,7 +130,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                     filesToOpen.extend(outputFiles)
 
 
-# Categorical data (sunburst or treemap) --------------------------------------------------------------------------------
+# Categorical data (sunburst or treemap or colormap) --------------------------------------------------------------------------------
 
     if categorical_var:
         if len(csv_file_categorical_field_list)<2:
@@ -156,17 +157,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         label=csv_field_categorical_var
 
 
-# Sunburst & Treemap
+# Sunburst & Treemap & Colormap
 
-        if 'Sunburst' in categorical_menu_var.get() or 'Treemap' in categorical_menu_var.get():
+        if '*' in categorical_menu_var.get() or 'Sunburst' in categorical_menu_var.get() or 'Treemap' in categorical_menu_var.get() or 'Colormap' in categorical_menu_var.get():
             if csv_field_categorical_var.get()!='' and not csv_field_categorical_var.get() in str(csv_file_categorical_field_list):
                 result = mb.askyesno(title="Warning",message="There is a search value '" + str(csv_field_categorical_var.get()) + "' that has not been added (using the + button) to the csv file fields to be processed.\n\nAre you sure you want to continue?")
                 if result == False: # No
                     return
 
-        # Categorical data: colormap  --------------------------------------------------------------------------------
+# Categorical data: colormap  --------------------------------------------------------------------------------
 
-        if 'Colormap' in categorical_menu_var.get():
+        if '*' in categorical_menu_var.get() or 'Colormap' in categorical_menu_var.get():
             all_fields = []
             intermediate_fields = []
 
@@ -211,14 +212,16 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             fixed_param_var=None
 
 # Categorical data: Sunburst  --------------------------------------------------------------------------------
+        if '*' in categorical_menu_var.get():
+            chart_type = 3
 
-        if 'Sunburst' in categorical_menu_var.get():
+        if '*' in categorical_menu_var.get() or 'Sunburst' in categorical_menu_var.get():
+            chart_type = 1
             if csv_field_categorical_var=='':
                 mb.showwarning("Warning",
                                "The sunburst algorithm requires a value for 'csv file field.'\n\nPlease, select a value and try again.")
                 return
-
-            outputFiles = charts_util.Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categorical_field_list, 1,  fixed_param_var, rate_param_var, base_param_var, filter_options_var, case_sensitive_var)
+            outputFiles = charts_util.Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categorical_field_list, chart_type,  fixed_param_var, rate_param_var, base_param_var, filter_options_var, case_sensitive_var)
 
             #### USED
         #    outputFiles = charts_util.Sunburst(inputFilename, outputFilename, outputDir, case_sensitive_var, temp_interest, label,
@@ -231,7 +234,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
 
 # Categorical data: treemap --------------------------------------------------------------------------------
 
-        if 'Treemap' in categorical_menu_var.get():
+        if 'Treemap' in categorical_menu_var.get(): # * deal above under sunburst when running all options
             if label=='':
                 mb.showwarning("Warning",
                                "You have not entered a 'csv file field' required by the treemap algorithm.\n\nPlease, use the dropdown menu to select the csv file field containing categorical data and try again.")
@@ -242,8 +245,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             #     return
             #def Treemap(data,outputFilename,interest,var,extra_dimension_average,average_variable=None):
 
+            chart_type = 0
             outputFiles = charts_util.Sunburst_Treemap(inputFilename, outputFilename, outputDir,
-                                                       csv_file_categorical_field_list, 0,
+                                                       csv_file_categorical_field_list, chart_type,
                                                        fixed_param_var, rate_param_var, base_param_var, filter_options_var, case_sensitive_var)
             # 0 - Treemap, 1 - Sunburst, lazy boolean for shortening the code in charts_util
 
@@ -663,7 +667,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "Tick the checkbox if you wish to visualize hierarchical, categorical data in interactive colormap/heatmap, sunburst, or treemap charts.\nA categorical variable, numeric or alphabetic, takes only a handful of different values.")
 
 categorical_menu_var.set('Sunburst')
-categorical_menu = tk.OptionMenu(window, categorical_menu_var, 'Colormap/heatmap', 'Sunburst', 'Treemap')
+categorical_menu = tk.OptionMenu(window, categorical_menu_var, '*', 'Colormap/heatmap', 'Sunburst', 'Treemap')
 categorical_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
