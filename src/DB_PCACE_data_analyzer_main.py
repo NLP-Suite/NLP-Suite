@@ -193,6 +193,24 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                 else:
                     filesToOpen.extend(outputFiles)
 
+            output_label = 'sunburst'
+            outputFilename_sunburst = IO_files_util.generate_output_file_name(outputFile, inputDir, outputDir,
+                                                                            '.html', output_label)
+            csv_file_categorical_field_list = [['Subject (S)|'], ['Verb (V)|'], ['Object (O)|']]
+            suntree = 1
+            fixed_param_var = 30
+            rate_param_var = None
+            base_param_var = None
+            filter_options_var = 'Fixed parameter'
+            case_sensitive_var = 1
+            outputFiles = charts_util.Sunburst_Treemap(outputFile, outputFilename_sunburst, outputDir, csv_file_categorical_field_list, 1,  fixed_param_var, rate_param_var, base_param_var, filter_options_var, case_sensitive_var)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
+
     # wordcloud for semantic triplets SVO _________________________________________________
 
     if semantic_triplet_var and wordcloud_var:
@@ -368,6 +386,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         return files_to_open
 
     # Define the actor configurations
+    # Taeeun must generalize names
     actor_configs = {
         'Attore collettivo': {
             'chart_title': 'Frequency Distribution of Collective Actors',
@@ -389,15 +408,17 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         }
     }
 
-    for actor_type, config in actor_configs.items():
-        if actor_type == actors_var:
-            filesToOpen.extend(process_actor(
-                inputDir, outputDir, actors_var,
-                config['chart_title'], config['yAxis_columns'], config['output_file_type']
-            ))
-
-    if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
+    # Taeeun must generalize names
+    # uncomment after generalization
+    # for actor_type, config in actor_configs.items():
+    #     if actor_type == actors_var:
+    #         filesToOpen.extend(process_actor(
+    #             inputDir, outputDir, actors_var,
+    #             config['chart_title'], config['yAxis_columns'], config['output_file_type']
+    #         ))
+    #
+    # if openOutputFiles:
+    #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(
@@ -598,6 +619,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 simplex_data_type_var= tk.StringVar()
 simplex_data_type_menu = tk.OptionMenu(window, simplex_data_type_var, 'text','date', 'number')
+simplex_data_type_menu.configure(state='disabled')
 simplex_data_type_var.set('')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+120, y_multiplier_integer,
@@ -605,13 +627,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    True, False, True, False, 90, GUI_IO_util.open_S_dictionary,
                                    "Use the dropdown menu to select the data type to be used to extract a list of values.")
 
-
 inputDirSV = ''
 # simplex_data = ''
 simplex_data_var = tk.StringVar()
 # simplex_data_var.set(simplex_list)
 # simplex_data_var = simplex_list
 simplex_data = ttk.Combobox(window, textvariable = simplex_data_var, width=GUI_IO_util.widget_width_short)
+simplex_data.configure(state='disabled')
+
 simplex_list = DB_PCACE_data_analyzer_util.get_Simplex_text_date_number(simplex_data_type_var.get(), os.path.join(inputDir.get(),'data_SimplexText.xlsx'), os.path.join(inputDir.get(),'data_SimplexDate.xlsx'), os.path.join(inputDir.get(),'data_SimplexNumber.xlsx'))
 simplex_data_menu = simplex_list
 simplex_data['values'] = simplex_data_menu
@@ -622,6 +645,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
                                    "Use the dropdown menu to select the simplex data type value (e.g., police) for which you want to find simplex & complex objects usage")
 
 def activate_date_number_text(*args):
+    if simplex_data_type_var.get()!='':
+        simplex_data.configure(state='normal')
+    else:
+        simplex_data.configure(state='disabled')
     simplex_list = DB_PCACE_data_analyzer_util.get_Simplex_text_date_number(simplex_data_type_var.get(),
                                     os.path.join(inputDir.get(),
                                              'data_SimplexText.xlsx'),
@@ -631,6 +658,7 @@ def activate_date_number_text(*args):
                                             'data_SimplexNumber.xlsx'))
     simplex_data_var.set(simplex_list)
     simplex_data['values'] = simplex_list
+simplex_data_type_var.trace('w',activate_date_number_text)
 simplex_data_type_var.trace('w',activate_date_number_text)
 
 value_parent_object_checkbox = tk.Checkbutton(window, text='Get simplex/complex objects of selected data type (& value)', variable=value_parent_object_var, onvalue=1, offvalue=0)
@@ -655,10 +683,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
                                    "Use the dropdown menu to select a specific primary complex object (Macro event) by its identifier to analyze.\nWhen a specific macro event is selected, all analyses (e.g., SVO, actors) will be based on that macro event.")
 
 actors_lb = tk.Label(window, text='Actors ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+250,y_multiplier_integer,actors_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+400,y_multiplier_integer,actors_lb,True)
 actors = ttk.Combobox(window, textvariable = actors_var, width=GUI_IO_util.widget_width_short)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+300, y_multiplier_integer,
+#GUI_IO_util.IO_configuration_menu+300
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+475, y_multiplier_integer,
                                    actors,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Use the dropdown menu to select the complex object that is a type of actor that you want to extract (e.g., Collective actor, Individual, Organization)")
@@ -696,36 +725,39 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_co
 space_checkbox = tk.Checkbutton(window, text='Space', variable=space_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+400, y_multiplier_integer,
                                    space_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   True, False, True, False, 90, GUI_IO_util.read_button_x_coordinate,
                                    "Tick the checkbox to extract space information. When running Space in conjuction with SVO, columns with space information will be added to the SVO csv output file.\nWhen a specific macro event is selected, the space will be extracted for that specific macro event.\nWhen the Visualize Where checkbox is ticked and a Simplex location name is selected, space information will be geocoded using Nominatim and displayed as pin map via Google Earth Pro and heat map via Google Maps.")
 space_label_var_box = ttk.Combobox(window, textvariable = space_label_var, width=GUI_IO_util.widget_width_short)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+475, y_multiplier_integer,
                                                space_label_var_box,
                                                False, True, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate)
 
-
 subject_lb = tk.Label(window, text='Subject ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,subject_lb,True)
 semantic_triplet_subject_box = ttk.Combobox(window, textvariable = semantic_triplet_subject, width=GUI_IO_util.widget_width_short)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+50, y_multiplier_integer,
                                                semantic_triplet_subject_box,
-                                               True, True, True, False, 90, GUI_IO_util.labels_x_coordinate)
+                                               True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                               "Using the Subject dropdown menu, select the complex object used for Subject in the selected database.\nDifferent databases may have different names for the Subject, depending also upon user preferences and the language used for the setup (e.g., English or Italian).\nThe Subject could be named Participant-S or Actor-S, Soggetto. The selected name will be used for the query.")
 
 verb_lb = tk.Label(window, text='Verb ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+380,y_multiplier_integer,verb_lb,True)
 semantic_triplet_verb_box = ttk.Combobox(window, textvariable = semantic_triplet_verb, width=GUI_IO_util.widget_width_short)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+430, y_multiplier_integer,
                                                semantic_triplet_verb_box,
-                                               True, True, True, False, 90, GUI_IO_util.labels_x_coordinate)
+                                               True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                               "Using the Verb dropdown menu, select the complex object used for Verbs.\nDifferent databases may have different names for the Verb, depending upon user preferences and the language used for the setup (e.g., English or Italian).\nThe Verb could be named Process or Action or Azione. The selected name will be used for the query.")
 
 object_lb = tk.Label(window, text='Object ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+750,y_multiplier_integer,object_lb,True)
+#labels_x_coordinate+750
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+150,y_multiplier_integer,object_lb,True)
 
-semantic_triplet_object_box = ttk.Combobox(window, textvariable = semantic_triplet_object, width=GUI_IO_util.widget_width_short)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+800, y_multiplier_integer,
+semantic_triplet_object_box = ttk.Combobox(window, textvariable = semantic_triplet_object, width=GUI_IO_util.widget_width_short-9)
+#labels_x_coordinate+800
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+200, y_multiplier_integer,
                                                semantic_triplet_object_box,
-                                               False, True, True, False, 90, GUI_IO_util.labels_x_coordinate)
-
+                                               False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                               "Using the Object dropdown menu, select the complex object used for Object in the selected database.\nDifferent databases may have different names for the Object, depending upon user preferences and the language used for the setup (e.g., English or Italian).\nThe Object could be named Participant-O or Actor-O or Oggetto. The selected name will be used for the query.")
 
 gephi_var.set(0)
 gephi_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in network graphs (via Gephi and Sankey) ',
@@ -849,7 +881,7 @@ comments_menu = tk.OptionMenu(window, comments_var, '*', 'users comments', 'veri
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    comments_menu,
-                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "Use the dropdown menu to extract the comments left by users and/or verifiers for specific objects (e.g., Semantic triplets (SVO)).")
 
 # verifier_comments_var = tk.IntVar()
@@ -859,7 +891,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_co
 document_sources_var = tk.IntVar()
 document_sources_checkbox = tk.Checkbutton(window, text='Extract document sources ', variable=document_sources_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                    document_sources_checkbox,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Tick the checkbox to extract the documents (e.g., newspaper articles) that are the sources of information for specific objects (e.g., Semantic triplets (SVO)).")
@@ -925,6 +957,8 @@ def changed_filename(*args):
         space_label_var_box['values'] = setup_complex_menu
 
         if len(setup_complex_menu)>0:
+            simplex_data_type_menu.configure(state='normal')
+            select_DB_tables.configure(state='normal')
             setup_complex.configure(state='normal')
             # setup_complex.set(setup_complex_menu[0])
             setup_complex.set('')
@@ -933,6 +967,7 @@ def changed_filename(*args):
                 primary_complex['values'] = primary_complex_menu
                 database_already_loaded = True
         else:
+            simplex_data_type_menu.configure(state='disabled')
             setup_complex.set('')
             setup_complex.configure(state='disabled')
         setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(), 'setup_Simplex.xlsx'))
@@ -947,6 +982,7 @@ def changed_filename(*args):
             # setup_simplex.configure(state='disabled')
     else:
         if inputFilename.get()!='':
+            simplex_data_type_menu.configure(state='disabled')
             GUI_util.run_button.configure(state='disabled')
             error = True
     clear("Escape")
@@ -972,21 +1008,17 @@ def view_grammar():
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'PC-ACE tables analyzer via Pandas':'TIPS_NLP_PC-ACE Access DB Analyzer.pdf',
-               'SVO extraction and visualization': 'TIPS_NLP_SVO extraction and visualization.pdf',
-               'Stanford CoreNLP enhanced dependencies parser (SVO)': 'TIPS_NLP_Stanford CoreNLP enhanced dependencies parser (SVO).pdf',
-               'WordNet': 'TIPS_NLP_WordNet.pdf',
+TIPS_lookup = {'PC-ACE tables analyzer via Pandas':'TIPS_NLP_PC-ACE ACCESS DB Analyzer.pdf',
+               'PC-ACE - Export ACCESS tables to Excel':'TIPS_NLP_PC-ACE - Export ACCESS tables to Excel.pdf',
+               'SVO automatic extraction and visualization': 'TIPS_NLP_SVO extraction and visualization.pdf',
                "Google Earth Pro": "TIPS_NLP_GIS_Google Earth Pro.pdf",
                "Google API Key": "TIPS_NLP_GIS_Google API Key.pdf",
                "Geocoding": "TIPS_NLP_GIS_Geocoding.pdf",
                "Geocoding: How to Improve Nominatim": "TIPS_NLP_GIS_Geocoding Nominatim.pdf",
                "Gephi network graphs": "TIPS_NLP_Gephi network graphs.pdf",
-               "Word clouds":"TIPS_NLP_Wordclouds Visualizing word clouds.pdf",
-               "Wordle":"TIPS_NLP_Wordclouds Wordle.pdf",
-               "Tagxedo":"TIPS_NLP_Wordclouds Tagxedo.pdf",
-               "Tagcrowd":"TIPS_NLP_Wordclouds Tagcrowd.pdf"
+               "Word clouds":"TIPS_NLP_Wordclouds Visualizing word clouds.pdf"
                }
-TIPS_options='PC-ACE tables analyzer via Pandas', 'SVO extraction and visualization', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'Google Earth Pro', 'Google API Key', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs', 'Word clouds', 'Tagcrowd', 'Tagxedo', 'Wordle'
+TIPS_options='PC-ACE tables analyzer via Pandas', 'PC-ACE - Export ACCESS tables to Excel', 'SVO automatic extraction and visualization', 'Google Earth Pro', 'Google API Key', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs', 'Word clouds'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
@@ -1012,6 +1044,8 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                                          "NLP Suite Help",
                                                          "Please, tick the checkbox to extract Subject, Verb, Objet relations (semantic triplet) and/or the type of actor for which you wish to extract all instances of semantic triplets, i.e., Subject-Verb-Object combinations (* for all types of actors) and/or the time and/or space of action.\n\nWhen a primary complex (or macro event) has been selected, SVOs, time, and space will be selected for the selected macro event only." + GUI_IO_util.msg_Esc)
+    # name of S V O in specific databases (e.g., Participant-S or Soggetto in Italian)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, use the dropdown menu to extract the users and/or visualize Verifiers comments." + GUI_IO_util.msg_Esc)
     # SVO visualization
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkboxes to visualize Subjects, Verbs, Objects in network graphs and wordclouds, and to visualize space in geographic maps." + GUI_IO_util.msg_Esc)
     # actors
@@ -1025,10 +1059,8 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                                          "Please, tick the 'Get value frequencies for ALL objects' checkbox to compute the frequencies of all available complex and simplex objects."
                                                          "\n\nTick the 'Get value frequencies for SELECTED object' checkbox to compute the frequencies of the selected Complex or Simplex object." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the PARENT object and/or the CHILD object." + GUI_IO_util.msg_Esc)
-    # comments
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, use the dropdown menu to extract the users and/or visualize Verifiers comments." + GUI_IO_util.msg_Esc)
-    # documents
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to extract the documents (e.g., newspaper articles) that are the sources of information for specific objects." + GUI_IO_util.msg_Esc)
+    # comments & documents
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, use the dropdown menu to extract the comments left by users and/or verifiers for specific objects (e.g., Semantic triplets (SVO)).\n\nTick the checkbox to extract the documents (e.g., newspaper articles) that are the sources of information for specific objects." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
 
     return y_multiplier_integer -1
@@ -1039,7 +1071,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 y_multiplier_integer = y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,increment)
 
 # change the value of the readMe_message
-readMe_message="The Python 3 scripts convert, via the Python Pandas package, and analyze, via various visualization packages, data collected via the Microsoft Access PC-ACE (Program for Computer-Assisted Coding of Events).\n\nIn INPUT the algorithms expect a set of xlsx files exported from the PC-ACE database tables data, setup, and utility.\n\nIn OUTPUT the algorithms produce a set of csv files and different types of visuals, from Excel charts to network graphs via Gephi and Sankey, geographic pin maps via Google Earth Pro and heat maps via Google Maps, wordclouds, and interactive time maps."
+readMe_message="The Python 3 scripts convert, via the Python Pandas package, and analyze, via various visualization packages, data collected via the Microsoft ACCESS PC-ACE (Program for Computer-Assisted Coding of Events).\n\nIn INPUT the algorithms expect a set of xlsx files in the input directory. The xlsx files must be exported from the PC-ACE database tables data, setup, and utility (see TIPS file on how to export tables from PC-ACE).\n\nIn OUTPUT the algorithms produce a set of csv files and different types of visuals, from Excel charts to network graphs via Gephi and Sankey, geographic pin maps via Google Earth Pro and heat maps via Google Maps, wordclouds, and interactive time maps."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 

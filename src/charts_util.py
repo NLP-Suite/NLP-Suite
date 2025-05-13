@@ -2105,8 +2105,7 @@ def colormap(inputFilename, outputDir, csv_file_categorical_field_list, params):
     except:
         cmap = cmaps((135, 207, 236), (0, 0, 255))
     import IO_files_util
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
-                                                             '.colormetric')
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.html', 'colormap')
 
     visualize_colormap_data(step2, top_n=params[0], y_label = SELECT, x_label = GROUPBY,
                    normalize=params[-1], color=cmap, outputname=outputFilename)  # There is no GUI yet...
@@ -2169,10 +2168,12 @@ def rate_prop(df, rt, base):
 
 
 # THIS IS AN ABBREVIATED VERSION FOR The sunburst / treemap
+# suntree = 1 for sunburst 0 for treemap
 # returns two files: a csv fle of intermediate results and an html file for the Sunburst_Treemap chart
 def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categorical_field_list, suntree,
                      fixed_param_var, rate_param_var, base_param_var, filter_options_var, case_sensitive=False):
     filesToOpen = []
+
     print(fixed_param_var, rate_param_var, base_param_var, filter_options_var, case_sensitive)
     # print("======")
     data = pd.read_csv(inputFilename)
@@ -2204,10 +2205,20 @@ def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categori
         mb.showwarning(title='No search values found',
                        message='No combination of csv file fields and search values were found in your input file.\n\nPlease, make sure to check whether you are using a case sensitive search option.')
         return
-    if suntree:
-        fig = px.sunburst(df_grouped, path=select_and_count, values='counts')  # Ensure the hierarchy levels are correct
-    else:
+    if suntree == 0 or suntree == 3: # treemap
         fig = px.treemap(df_grouped, path=select_and_count, values='counts')
-    fig.write_html(outputFilename)
-    filesToOpen.append(outputFilename)
+        if outputFilename == '':
+            import IO_files_util
+            outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
+                                                                 '.html', 'treemap')
+        fig.write_html(outputFilename)
+        filesToOpen.append(outputFilename)
+    if suntree==1 or suntree == 3: # sunburst
+        fig = px.sunburst(df_grouped, path=select_and_count, values='counts')  # Ensure the hierarchy levels are correct
+        if outputFilename == '':
+            import IO_files_util
+            outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
+                                                                 '.html', 'sunburst')
+        fig.write_html(outputFilename)
+        filesToOpen.append(outputFilename)
     return filesToOpen
