@@ -1286,8 +1286,10 @@ def Sankey(data, outputFilename, var1, lengthvar1, var2, lengthvar2, three_way_S
             mb.showwarning(title='Warning',
                            message='The input file ' + data + ' is empty.\n\nNo Sankey flowchart can be produced.\n\nPlease, check your input file and try again.')
             return
-    if type(data[var1][0]) != str or type(data[var2][0]) != str:
-        mb.showwarning("Warning",
+
+    if not np.isnan(data[var1][0]): # nan values are float, but do not need to be checked here
+        if type(data[var1][0]) != str or type(data[var2][0]) != str:
+            mb.showwarning("Warning",
                        "All csv file fields should be CATEGORICAL for a Sankey flowchart.\n\nPlease, select categorical field(s) (i.e., fields with string values), rather than continuous numeric field(s), and try again.")
 
     if three_way_Sankey:
@@ -2213,6 +2215,7 @@ def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categori
                                                                  '.html', 'treemap')
         fig.write_html(outputFilename)
         filesToOpen.append(outputFilename)
+        outputFilename = ''
     if suntree==1 or suntree == 3: # sunburst
         fig = px.sunburst(df_grouped, path=select_and_count, values='counts')  # Ensure the hierarchy levels are correct
         if outputFilename == '':

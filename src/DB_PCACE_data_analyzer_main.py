@@ -193,17 +193,18 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                 else:
                     filesToOpen.extend(outputFiles)
 
-            output_label = 'sunburst'
-            outputFilename_sunburst = IO_files_util.generate_output_file_name(outputFile, inputDir, outputDir,
-                                                                            '.html', output_label)
+            # output_label = 'sunburst'
+            # outputFilename_sunburst = IO_files_util.generate_output_file_name(outputFile, inputDir, outputDir,
+            #                                                                 '.html', output_label)
+            outputFilename_sunburst = ''
             csv_file_categorical_field_list = [['Subject (S)|'], ['Verb (V)|'], ['Object (O)|']]
-            suntree = 1
+            suntree = 3
             fixed_param_var = 30
             rate_param_var = None
             base_param_var = None
             filter_options_var = 'Fixed parameter'
             case_sensitive_var = 1
-            outputFiles = charts_util.Sunburst_Treemap(outputFile, outputFilename_sunburst, outputDir, csv_file_categorical_field_list, 1,  fixed_param_var, rate_param_var, base_param_var, filter_options_var, case_sensitive_var)
+            outputFiles = charts_util.Sunburst_Treemap(outputFile, outputFilename_sunburst, outputDir, csv_file_categorical_field_list, suntree, fixed_param_var, rate_param_var, base_param_var, filter_options_var, case_sensitive_var)
             if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -417,8 +418,8 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
     #             config['chart_title'], config['yAxis_columns'], config['output_file_type']
     #         ))
     #
-    # if openOutputFiles:
-    #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
+    if openOutputFiles:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(
@@ -542,6 +543,9 @@ def clear(e):
     simplex_data_var.set(simplex_list)
     simplex_data_var.set('')
     simplex_data['values'] = []
+
+    setup_complex_var.set('')
+    setup_simplex_var.set('')
 
     value_parent_object_var.set(0)
 
@@ -679,21 +683,21 @@ primary_complex = ttk.Combobox(window, textvariable = primary_complex_var, width
 primary_complex['values'] = primary_complex_menu
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu-50, y_multiplier_integer,
                                    primary_complex,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Use the dropdown menu to select a specific primary complex object (Macro event) by its identifier to analyze.\nWhen a specific macro event is selected, all analyses (e.g., SVO, actors) will be based on that macro event.")
 
-actors_lb = tk.Label(window, text='Actors ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+400,y_multiplier_integer,actors_lb,True)
-actors = ttk.Combobox(window, textvariable = actors_var, width=GUI_IO_util.widget_width_short)
-# place widget with hover-over info
-#GUI_IO_util.IO_configuration_menu+300
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+475, y_multiplier_integer,
-                                   actors,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Use the dropdown menu to select the complex object that is a type of actor that you want to extract (e.g., Collective actor, Individual, Organization)")
+# actors_lb = tk.Label(window, text='Actors ')
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+400,y_multiplier_integer,actors_lb,True)
+# actors = ttk.Combobox(window, textvariable = actors_var, width=GUI_IO_util.widget_width_short)
+# # place widget with hover-over info
+# #GUI_IO_util.IO_configuration_menu+300
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+475, y_multiplier_integer,
+#                                    actors,
+#                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+#                                    "Use the dropdown menu to select the complex object that is a type of actor that you want to extract (e.g., Collective actor, Individual, Organization)")
+#
 
-
-def set_visualization():
+def activate_SVO_visualization():
     if semantic_triplet_var.get() == 1:
         mb.showwarning(title='Warning',
                        message='You have selected to extract the SVO information (Subject-Verb-Object) from the database. Using the respective dropdown menus, please select the appropriate complex object.\n\nDifferent databases may have different names for the SVO, depending also upon user preferences and the language used for the setup (e.g., English or Italian). The Subject could be named Participant-S or Actor-S; the Verb, Process or Action; the Object, Participant-O or Actor-O.')
@@ -701,7 +705,29 @@ def set_visualization():
         semantic_triplet_verb.set('')
         semantic_triplet_object.set('')
 
-semantic_triplet_var_checkbox = tk.Checkbutton(window, text='Semantic triplets (SVO)', variable=semantic_triplet_var, onvalue=1, offvalue=0, command=lambda: set_visualization())
+        time_checkbox.configure(state='normal')
+        time_label_var_box.configure(state='normal')
+        space_checkbox.configure(state='normal')
+        space_label_var_box.configure(state='normal')
+        semantic_triplet_subject_box.configure(state='normal')
+        semantic_triplet_verb_box.configure(state='normal')
+        semantic_triplet_object_box.configure(state='normal')
+        gephi_checkbox.configure(state='normal')
+        wordcloud_checkbox.configure(state='normal')
+        google_earth_checkbox.configure(state='normal')
+    else:
+        time_checkbox.configure(state='disabled')
+        time_label_var_box.configure(state='disabled')
+        space_checkbox.configure(state='disabled')
+        space_label_var_box.configure(state='disabled')
+        semantic_triplet_subject_box.configure(state='disabled')
+        semantic_triplet_verb_box.configure(state='disabled')
+        semantic_triplet_object_box.configure(state='disabled')
+        gephi_checkbox.configure(state='disabled')
+        wordcloud_checkbox.configure(state='disabled')
+        google_earth_checkbox.configure(state='disabled')
+
+semantic_triplet_var_checkbox = tk.Checkbutton(window, text='Semantic triplets (SVO)', variable=semantic_triplet_var, onvalue=1, offvalue=0, command=lambda: activate_SVO_visualization())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    semantic_triplet_var_checkbox,
@@ -709,6 +735,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "Tick the checkbox to extract semantic triplets/SVOs (i.e., combinations of Subject, Verb, Object).\nWhen a specific macro event is selected, SVOs will be extracted for that specific macro event.")
 
 time_checkbox = tk.Checkbutton(window, text='Time', variable=time_var, onvalue=1, offvalue=0)
+time_checkbox.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    time_checkbox,
@@ -717,24 +744,29 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_co
 
 
 time_label_var_box = ttk.Combobox(window, textvariable = time_label_var, width=GUI_IO_util.widget_width_short)
+time_label_var_box.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+60, y_multiplier_integer,
                                                time_label_var_box,
-                                               True, True, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate)
-
+                                               True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                               "Using the dropdown menu, select the complex object used for Time in the selected database.\nDifferent databases may have different names for Time, depending also upon user preferences and the language used for the setup (e.g., English or Italian).")
 
 space_checkbox = tk.Checkbutton(window, text='Space', variable=space_var, onvalue=1, offvalue=0)
+space_checkbox.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+400, y_multiplier_integer,
                                    space_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.read_button_x_coordinate,
                                    "Tick the checkbox to extract space information. When running Space in conjuction with SVO, columns with space information will be added to the SVO csv output file.\nWhen a specific macro event is selected, the space will be extracted for that specific macro event.\nWhen the Visualize Where checkbox is ticked and a Simplex location name is selected, space information will be geocoded using Nominatim and displayed as pin map via Google Earth Pro and heat map via Google Maps.")
 space_label_var_box = ttk.Combobox(window, textvariable = space_label_var, width=GUI_IO_util.widget_width_short)
+space_label_var_box.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+475, y_multiplier_integer,
                                                space_label_var_box,
-                                               False, True, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate)
+                                               False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                               "Using the dropdown menu, select the complex object used for Space in the selected database.\nDifferent databases may have different names for Time, depending also upon user preferences and the language used for the setup (e.g., English or Italian).")
 
 subject_lb = tk.Label(window, text='Subject ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,subject_lb,True)
 semantic_triplet_subject_box = ttk.Combobox(window, textvariable = semantic_triplet_subject, width=GUI_IO_util.widget_width_short)
+semantic_triplet_subject_box.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+50, y_multiplier_integer,
                                                semantic_triplet_subject_box,
                                                True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
@@ -743,6 +775,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 verb_lb = tk.Label(window, text='Verb ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+380,y_multiplier_integer,verb_lb,True)
 semantic_triplet_verb_box = ttk.Combobox(window, textvariable = semantic_triplet_verb, width=GUI_IO_util.widget_width_short)
+semantic_triplet_verb_box.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+430, y_multiplier_integer,
                                                semantic_triplet_verb_box,
                                                True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
@@ -753,6 +786,7 @@ object_lb = tk.Label(window, text='Object ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+150,y_multiplier_integer,object_lb,True)
 
 semantic_triplet_object_box = ttk.Combobox(window, textvariable = semantic_triplet_object, width=GUI_IO_util.widget_width_short-9)
+semantic_triplet_object_box.configure(state='disabled')
 #labels_x_coordinate+800
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+200, y_multiplier_integer,
                                                semantic_triplet_object_box,
@@ -760,17 +794,21 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
                                                "Using the Object dropdown menu, select the complex object used for Object in the selected database.\nDifferent databases may have different names for the Object, depending upon user preferences and the language used for the setup (e.g., English or Italian).\nThe Object could be named Participant-O or Actor-O or Oggetto. The selected name will be used for the query.")
 
 gephi_var.set(0)
-gephi_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in network graphs (via Gephi and Sankey) ',
+gephi_checkbox = tk.Checkbutton(window, text='Visualize SVO relations ',
                                 variable=gephi_var, onvalue=1, offvalue=0)
+gephi_checkbox.configure(state='disabled')
+
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+20, y_multiplier_integer,
                                    gephi_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Tick the checkbox to visualize the triplet SVOs as a network graph in Gephi and Sankey flowchart")
+                                   "Tick the checkbox to visualize the triplet SVOs as a network graph in Gephi and Sankey flowcharts and in sunburst, treemap, and colormap charts.")
 
 wordcloud_var.set(0)
 wordcloud_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in wordcloud', variable=wordcloud_var,
                                     onvalue=1, offvalue=0)
+wordcloud_checkbox.configure(state='disabled')
+
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    wordcloud_checkbox,
@@ -780,11 +818,16 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
 google_earth_var.set(0)
 google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where (via Google Maps & Google Earth Pro)',
                                        variable=google_earth_var, onvalue=1, offvalue=0)
+google_earth_checkbox.configure(state='disabled')
+
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+150, y_multiplier_integer,
                                    google_earth_checkbox,
                                    False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "Tick the checkbox to visualize the space of SVOs as in a Google Earth Pro pin map and Google Maps heat map")
+
+# Taeeun the complex objects widget only displays the object identifier;
+# but... like the functions for the SVO extractor, it should display the value of all the simplex objects that make up the complex object
 
 complex_objects_lb = tk.Label(window, text='Complex ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,complex_objects_lb,True)
@@ -836,7 +879,7 @@ SELECTED_complex_objects_checkbox = tk.Checkbutton(window, text='Get value frequ
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                    SELECTED_complex_objects_checkbox,
                                    False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
-                                   "Tick the checkbox to extract the value frequencies for a SELECTED object (complex OR simplex)")
+                                   "Tick the checkbox to extract the value frequencies for a SELECTED object (complex OR simplex).\nFor complex objects, the object identifiers will be counted.")
 
 select_parents_lb = tk.Label(window, text='Parents ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,select_parents_lb,True)
@@ -949,7 +992,7 @@ def changed_filename(*args):
 
         setup_complex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(), 'setup_complex.xlsx'))
         setup_complex['values'] = setup_complex_menu
-        actors['values'] = setup_complex_menu
+        # actors['values'] = setup_complex_menu
         semantic_triplet_object_box['values'] = setup_complex_menu
         semantic_triplet_subject_box['values'] = setup_complex_menu
         semantic_triplet_verb_box['values'] = setup_complex_menu
