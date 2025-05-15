@@ -1516,6 +1516,68 @@ def process_json_gender(config_filename, documentID, document, start_sentenceID,
     return sorted(result, key=lambda x:x[3]) # this function did not add each row in order of sentence, so the output needs sorting by sentenceID
 
 
+# def process_json_quote(config_filename,documentID, document, sentenceID, json, **kwargs):
+#     print("   Processing Json output file for QUOTE annotator")
+#     filename_embeds_date_var = False
+#     for key, value in kwargs.items():
+#         if key == 'filename_embeds_date_var' and value == True:
+#             filename_embeds_date_var = True
+#
+#     # get date string of this sub file
+#     date_str = date_in_filename(document, **kwargs)
+#     result = []
+#     quoted_sentences = {}
+#     speakers = {}#the speakers of each quote
+#     quotes = {}
+#     for quote in json['quotes']:
+#         # to find all sentences with quotes
+#         sentenceIDs = list(range(quote['beginSentence'], quote['endSentence'] + 1))
+#         for sent in sentenceIDs:
+#             quoted_sentences[sent] = quoted_sentences.get(sent, 0) + 1
+#             # quote_text = quote['text']
+#             # print(quote['speaker'], quote_text)
+#             if sent in speakers.keys():
+#                 speakers[sent].append(quote['canonicalSpeaker'])
+#                 try:
+#                     quotes[sent].append(quote['text'])
+#                 except:
+#                     print('ERROR')
+#             else:
+#                 try:
+#                     if quote['mention']:
+#                         # pass
+#                         speakers[sent] = [quote['mention']]
+#                     else:
+#                         speakers[sent] = [quote['canonicalSpeaker']]
+#                 except:
+#                     speakers[sent] = [quote['canonicalSpeaker']]
+#                 quotes[sent] = [quote['text']]
+#     # iterate over those sentence indexes and find its complete sentence
+#     for quoted_sent_id, number_of_quotes in quoted_sentences.items():
+#         sentenceID = quoted_sent_id+1
+#         sentence_data = json['sentences'][quoted_sent_id]
+#         # for sentence in CoreNLP_output['sentences']:
+#         complete_sent = ''
+#         for token in sentence_data['tokens']:
+#             if token['originalText'] in string.punctuation:
+#                 complete_sent = complete_sent + token['originalText']
+#             else:
+#                 if token['index'] == 1:
+#                     complete_sent = complete_sent + token['originalText']
+#                 else:
+#                     complete_sent = complete_sent + ' ' + token['originalText']
+#
+#         check_sentence_length(len(sentence_data['tokens']), sentenceID, config_filename)
+#
+#         if filename_embeds_date_var:
+#             # TODO MINO: rearrange the columns
+#             temp = [str(speakers[quoted_sent_id][0]), quotes[quoted_sent_id][0], number_of_quotes,  sentenceID,
+#                     complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), date_str]
+#         else:
+#             temp = [str(speakers[quoted_sent_id][0]), quotes[quoted_sent_id][0], number_of_quotes, sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)]
+#         result.append(temp)
+#     return result
+
 def process_json_quote(config_filename,documentID, document, sentenceID, json, **kwargs):
     print("   Processing Json output file for QUOTE annotator")
     filename_embeds_date_var = False
@@ -1537,7 +1599,13 @@ def process_json_quote(config_filename,documentID, document, sentenceID, json, *
             # quote_text = quote['text']
             # print(quote['speaker'], quote_text)
             if sent in speakers.keys():
-                speakers[sent].append(quote['canonicalSpeaker'])
+                if quote['canonicalSpeaker'] == 'Unknown':
+                    if 'speaker' in quote and quote['speaker'] != 'Unknown':
+                        speakers[sent].append(quote['speaker'])
+                    else:
+                        speakers[sent].append('Unknown')
+                else:
+                    speakers[sent].append(quote['canonicalSpeaker'])
                 try:
                     quotes[sent].append(quote['text'])
                 except:
@@ -1545,12 +1613,23 @@ def process_json_quote(config_filename,documentID, document, sentenceID, json, *
             else:
                 try:
                     if quote['mention']:
-                        # pass
                         speakers[sent] = [quote['mention']]
                     else:
-                        speakers[sent] = [quote['canonicalSpeaker']]
+                        if quote['canonicalSpeaker'] == 'Unknown':
+                            if 'speaker' in quote and quote['speaker'] != 'Unknown':
+                                speakers[sent] = [quote['speaker']]
+                            else:
+                                speakers[sent] = ['Unknown']
+                        else:
+                            speakers[sent] = [quote['canonicalSpeaker']]
                 except:
-                    speakers[sent] = [quote['canonicalSpeaker']]
+                    if quote['canonicalSpeaker'] == 'Unknown':
+                        if 'speaker' in quote and quote['speaker'] != 'Unknown':
+                            speakers[sent] = [quote['speaker']]
+                        else:
+                            speakers[sent] = ['Unknown']
+                    else:
+                        speakers[sent] = [quote['canonicalSpeaker']]
                 quotes[sent] = [quote['text']]
     # iterate over those sentence indexes and find its complete sentence
     for quoted_sent_id, number_of_quotes in quoted_sentences.items():

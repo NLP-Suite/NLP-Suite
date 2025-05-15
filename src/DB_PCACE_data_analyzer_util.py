@@ -254,8 +254,8 @@ def get_simplex_frequencies_all(inputDir, outputDir):
 
 
 def get_complex_frequencies(name, inputDir, outputDir):
-    setup_Complex_df = library.get('setup_Simplex.xlsx')
-    data_Complex_df = library.get('data_Simplex.xlsx')
+    setup_Complex_df = library.get('setup_Complex.xlsx')
+    data_Complex_df = library.get('data_Complex.xlsx')
     data_xref_Complex_Complex_df = library.get('data_xref_Complex-Complex.xlsx')
     if any(df is None or df.empty for df in [setup_Complex_df, data_Complex_df, data_xref_Complex_Complex_df]):
         return None
@@ -268,7 +268,7 @@ def get_complex_frequencies(name, inputDir, outputDir):
     complex_id, name = complex_info.iloc[0]
 
     # Merge DataFrames to get the relevant data
-    merged_data = pd.merge(data_xref_Complex_Complex_df, data_Complex_df, how = 'left', on = 'ID_data_complex.1')
+    merged_data = pd.merge(data_xref_Complex_Complex_df, data_Complex_df, how = 'left', on = 'ID_data_complex')
     select = merged_data[merged_data['ID_setup_complex'] == complex_id]
 
     # Group and count the frequencies
@@ -734,11 +734,16 @@ def participant_simplex(subject, participant, data_Simplex, data_SimplexText, se
     xref_sc_value = xref_sc_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
 
     actor_complex = find_lower_complex([subject])['Name'].values.tolist()
+    # actor_lower_complexes contains 36 37 4 individual, collective actor, organization
     actor_lower_complexes = find_lower_complex(actor_complex)
+    # actor_lower_complex_ids contains [36, 37, 4]
     actor_lower_complex_ids = actor_lower_complexes['LowerComplex'].values.tolist()  # Extract IDs of actor lower complexes as a list
+    #actor_names contains a df where, however, collective actor, individual, organization in the order 37, 36, 4 rather than 36, 37, 4
     actor_names = setup_xref_Simplex_Complex[setup_xref_Simplex_Complex['ID_setup_complex'].isin(actor_lower_complex_ids)]
+    # lower_complexes contains {'Individual': 'Name of collective actor', 'Collective actor': 'Name of individual actor', 'Organization': 'Role in the Organization'}
+    # BUT THIS IS WRONG SINCE IT SHOULD BE {'Individual': 'Name of individual actor', 'Collective actor': 'Name of collective actor', 'Organization': 'Role in the Organization'}
     lower_complexes = dict(zip(actor_lower_complexes['Name'], actor_names['Name']))
-    print(lower_complexes) # {'Individuo': 'NON USARE!!!!', 'Attore collettivo': 'Nome di attore collettivo', 'Organizzazione': 'Nome di attore individuale'}
+    print(lower_complexes)
 
     simplexes = []
     for lower in lower_complexes:
