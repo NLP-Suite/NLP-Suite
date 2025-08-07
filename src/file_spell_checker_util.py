@@ -207,7 +207,8 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, 
                  pass
 
         outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename_byDoc, outputDir,
-                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Misspelled-unusual lemmatized word'],
+                                                   columns_to_be_plotted_xAxis=[],
+                                                  columns_to_be_plotted_yAxis=['Misspelled-unusual lemmatized word'],
                                                    chart_title='Frequency of Misspelled-Unusual Words',
                                                    count_var=0, # no point counting; all values are distinct
                                                    hover_label=[],

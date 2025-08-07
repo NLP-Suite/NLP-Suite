@@ -836,7 +836,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
             # generate output file name
             if annotator_chosen == 'NER':
                 print("Stanford CoreNLP annotator: NER")
-                # when Stanford_CoreNLP_utilis called from parsers_annotators_main,
+                # when Stanford_CoreNLP_utils called from parsers_annotators_main,
                 # the kwargs do not contain the value['NERs'] the code would break
                 try:
                     if len(kwargs['NERs']) == 1:
@@ -854,6 +854,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
                             outputFilename_tag = 'ACTORS'
                         elif 'DATE' in str(kwargs['NERs']) and 'TIME' in str(kwargs['NERs']) and 'DURATION' in str(kwargs['NERs']) and 'SET' in str(kwargs['NERs']):
                             outputFilename_tag = 'DATES'
+                        else:
+                            outputFilename_tag = NERs
                 except:
                     NERs = 'PERSON, ORGANIZATION, MISC, MONEY, NUMBER, ORDINAL, PERCENT, DATE, TIME, DURATION, SET, EMAIL, URL, CITY,STATE_OR_PROVINCE, COUNTRY, LOCATION, NATIONALITY, RELIGION, TITLE, IDEOLOGY, CRIMINAL_CHARGE,CAUSE_OF_DEATH'
                     outputFilename_tag = 'ALL_NER'

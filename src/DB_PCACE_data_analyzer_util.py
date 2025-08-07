@@ -62,7 +62,7 @@ reading_list = [
     ('data_Complex.xlsx', {"ID":"ID_data_complex", "ComplexType":"ID_setup_complex"}),
     ('data_Simplex.xlsx', {"ID":"ID_data_simplex", "SimplexType":"ID_setup_simplex", "refValue":"ID_data_date_number_text"}),
     ('data_SimplexText.xlsx', {"ID":"ID_data_date_number_text"}),
-    ('data_xref_Simplex-Complex.xlsx', {'ID':'ID_data_xref_simplex-complex', 'xrefID':'ID_setup_xref_simplex_complex', 'Simplex':'ID_data_simplex', 'Complex':'ID_data_complex'}),
+    ('data_xref_Simplex-Complex.xlsx', {'ID':'ID_data_xref_simplex_complex', 'xrefID':'ID_setup_xref_simplex_complex', 'Simplex':'ID_data_simplex', 'Complex':'ID_data_complex'}),
     ('data_xref_Complex-Complex.xlsx', {'ID':'ID_data_xref_complex-complex', 'HigherComplex':'ID_data_complex', 'xrefID':'ID_setup_xref_complex_complex', 'LowerComplex':'ID_data_complex.1'}),
     ('data_xref_Complex-Document.xlsx', {}),
     ('data_SimplexNumber.xlsx', {"ID":"ID_data_date_number_text"}),
@@ -79,22 +79,47 @@ def load_df(inputDir):
     nDocs = len(inputDocs)
 
     head, tail = os.path.split(inputDir)
-    IO_user_interface_util.timed_alert(GUI_util.window,5000,'Loading PC-AE database...', 'Loading ' + str(nDocs) + ' xlsx files from PC-ACE database ' + tail + '\n\nPlease, be patient. Depending on database size this may take several minutes.',
-        False, '', True, '', False)
+
+    if os.path.exists(f"{inputDir}/{'setup_Complex'}.pkl"):
+        timing = 2000
+        IO_user_interface_util.timed_alert(GUI_util.window, timing, 'Loading PC-ACE database...', 'Loading ' + str(
+            nDocs) + ' pkl files from PC-ACE database ' + tail + '\n\nPlease, be patient.',
+                                           False, '', True, '', False)
+    else:
+        timing = 5000
+        IO_user_interface_util.timed_alert(GUI_util.window, timing, 'Loading PC-ACE database...', 'Loading ' + str(
+            nDocs) + ' xlsx files from PC-ACE database ' + tail + '\n\nPlease, be patient. Depending on database size this may take several minutes.\n\nThe algorithm will create a set of pkl files that will make loading MUCH faster in the future.',
+                                           False, '', True, '', False)
 
     print('InputDir', inputDir)
     i = 0
     NumTables = len(reading_list)
+    # current_path = os.getcwd()
     for filename, rename_columns in reading_list:
-        i = i + 1
-        print('  Filename ' + str(i) + '/' + str(NumTables), filename)
-        df = check_missing(os.path.join(inputDir, filename))
-        if df.empty:
-            library[filename] = {}
-        else:
-            if rename_columns:
-                df.rename(columns=rename_columns, inplace=True)
+        parts = filename.split(".")
+        name = parts[0]
+
+        if os.path.exists(f"{inputDir}/{name}.pkl"):
+            df = pd.read_pickle(f"{inputDir}/{name}.pkl")
             library[filename] = df
+            print(library[filename])
+            i = i+1
+            print('  Filename ' + str(i) + '/' + str(NumTables), filename)
+        else:
+            i = i + 1
+            print('  Filename ' + str(i) + '/' + str(NumTables), filename)
+            df = check_missing(os.path.join(inputDir, filename))
+            if df.empty:
+                library[filename] = {}
+            else:
+                if rename_columns:
+                    df.rename(columns=rename_columns, inplace=True)
+                library[filename] = df
+                save = f"{name}.pkl"
+                df.to_pickle(str(inputDir) + "/" + str(save))
+
+
+
     return
 
 
@@ -324,11 +349,12 @@ def find_setup_id(complex_name, setup_Complex):
 
 # find the related names of simplexes to the input complex(es)
 # parameter:
-#           complexes: names of complexes in list type
-#           setup_Complex, setup_xref_Simplex_Complex
-# return: related names of simplexes in nested list type
+#   complexes: names of complexes in list type
+#   setup_Complex, setup_xref_Simplex_Complex
+# return: related names of simplexes and required simplexes in nested list type
 def corresponding_name_simplex_complex(complexes):
     simplexes = []
+    simplexes_required = []
     setup_Complex = library['setup_Complex.xlsx']
     setup_xref_Simplex_Complex = library['setup_xref_Simplex-Complex.xlsx']
     if isinstance(complexes, str):
@@ -341,11 +367,15 @@ def corresponding_name_simplex_complex(complexes):
             continue
         complex_id = complex_id.iat[0, 0]
         print('two ', complex_id)
-        data = setup_xref_Simplex_Complex[setup_xref_Simplex_Complex['ID_setup_complex'] == complex_id]
-        print('this is data', data)
-        data = data['Name'].values.tolist()
-        simplexes.append(data)
-    return simplexes
+        simplex_children = setup_xref_Simplex_Complex[setup_xref_Simplex_Complex['ID_setup_complex'] == complex_id]
+        data1 = simplex_children['Name'].values.tolist()
+        print('this is data', data1)
+        simplexes.append(data1)
+        # MUST keep only required simplex
+        data2 = simplex_children.loc[simplex_children['Required'] == True, 'Name'].tolist()
+        print('this is data', data2)
+        simplexes_required.append(data2)
+    return simplexes, simplexes_required
 
 
 # find the id of the input simplex (name)
@@ -387,6 +417,8 @@ def find_child_complex(complex, inputDir):
 # find the one level higher complex of the input complex
 # parameter: name of complex in string type, inputDir
 # return: a list of parent complex
+
+# @@ what is the difference with the function find_higher_complex?
 def find_parent_complex(complex, inputDir):
     higher_level_complex = []
     has_files = True
@@ -470,7 +502,7 @@ def find_parent_simplex_util(name, setup_Simplex, setup_xref_Simplex_Complex, se
 
 # find the one level lower complex of the input complex
 # parameter: name(s) of complex in list type, dataframe of setup_Complex and setup_xref_Complex_Complex
-# return: a dataframe: id, name of one level lower comple of the input complex
+# return: a dataframe: id, name of one level lower complex of the input complex
 def find_lower_complex(complex):
     setup_Complex = library['setup_Complex.xlsx']
     setup_xref_Complex_Complex = library['setup_xref_Complex-Complex.xlsx']
@@ -485,7 +517,10 @@ def find_lower_complex(complex):
 
 # find the one level upper complex of the input complex
 # parameter: name(s) of complex in list type, dataframe of setup_Complex and setup_xref_Complex_Complex
-# return: a dataframe: id, name of one level higher comple of the input complex
+# return: a dataframe: id, name of one level higher complex of the input complex
+
+# @@ what is the difference with the function find_parent_complex?
+
 def find_higher_complex(complex, setup_Complex, setup_xref_Complex_Complex):
     complex_id = find_setup_id(complex, setup_Complex)
     complex_id = complex_id['ID_setup_complex'].values.tolist()
@@ -504,11 +539,13 @@ def find_higher_complex(complex, setup_Complex, setup_xref_Complex_Complex):
 # give the lowest complex of the give complex
 # parameter: name of complex in list type, dataframe of setup_Complex and setup_xref_Complex_Complex
 # return: the lowest complex in list type
-def get_lowest_complex(complex_name, setup_Complex, setup_xref_Complex_Complex):
+
+# NOT USED
+def get_lowest_complex(complex_name, setup_Complex_df, setup_xref_Complex_Complex_df):
     start = find_lower_complex(complex_name)
     checked_complex = complex_name
     lowest_complex_list = []
-    lower(start, lowest_complex_list, checked_complex, setup_Complex, setup_xref_Complex_Complex)
+    lower(start, lowest_complex_list, checked_complex, setup_Complex_df, setup_xref_Complex_Complex_df)
     return lowest_complex_list
 
 
@@ -516,7 +553,7 @@ def get_lowest_complex(complex_name, setup_Complex, setup_xref_Complex_Complex):
 # to fill lowest_complex_list with the names of complex at the lowest level
 # parameter: dataframe returned by find_lower_complex function containing id and name of complex,
 #            dataframe of setup_Complex and setup_xref_Complex_Complex
-def lower(start, lowest_complex_list, checked_complex, setup_Complex, setup_xref_Complex_Complex):
+def lower(start, lowest_complex_list, checked_complex, setup_Complex_df, setup_xref_Complex_Complex_df):
     start = start['Name'].values.tolist()
     for each in start:
         if each not in checked_complex:
@@ -525,14 +562,13 @@ def lower(start, lowest_complex_list, checked_complex, setup_Complex, setup_xref
             if len(temp) == 0:
                 lowest_complex_list.append(each)
             else:
-                lower(temp, lowest_complex_list, checked_complex, setup_Complex, setup_xref_Complex_Complex)
+                lower(temp, lowest_complex_list, checked_complex, setup_Complex_df, setup_xref_Complex_Complex_df)
 
-
-# find the path between complex
-# parameter: name of complex1 at higher level, namne of complex2 at lower level
+# find the path between complex objects in the setup grammar
+# parameter: name of complex1 at higher level, name of complex2 at lower level
 #            dataframe of setup_Complex and setup_xref_Complex_Complex
 # return: the list of two complex and the complex in the path
-def find_path(complex1, complex2, setup_Complex, setup_xref_Complex_Complex):
+def find_path(complex1, complex2, setup_Complex_df, setup_xref_Complex_Complex_df):
     all_paths = []
     find_connections(complex1, complex2, [complex1], all_paths, set())
     return all_paths
@@ -563,30 +599,32 @@ def find_connections(complex1, complex2, current_path, all_paths, visited, depth
 # parameter: return of path function
 #            setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex
 # return: data id of the highest complex and lowest complex in the given path with xref
-def link_data_id(path, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex):
+def link_data_id(path, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df):
     highest_name = path[0]
     lowest_name = path[len(path) - 1]
 
     higher = highest_name
-    higher = find_setup_id([higher], setup_Complex)
+    higher = find_setup_id([higher], setup_Complex_df)
     higher = higher.iat[0, 0]
     path = path[1:]
     xrefs = []
+    #3 ->47->49
 
+    #3->49-79
     for each in path:
-        lower = find_setup_id([each], setup_Complex)
+        lower = find_setup_id([each], setup_Complex_df)
         lower = lower.iat[0, 0]
-        xref = setup_xref_Complex_Complex[(setup_xref_Complex_Complex['HigherComplex'] == higher) & (
-                    setup_xref_Complex_Complex['LowerComplex'] == lower)]
+        xref = setup_xref_Complex_Complex_df[(setup_xref_Complex_Complex_df['HigherComplex'] == higher) & (
+                    setup_xref_Complex_Complex_df['LowerComplex'] == lower)]
         xref = xref.iat[0, 0]
         higher = lower
         xrefs.append(xref)
 
     xref = xrefs.pop()
-    data = data_xref_Complex_Complex[data_xref_Complex_Complex['ID_setup_xref_complex_complex'] == xref]
+    data = data_xref_Complex_Complex_df[data_xref_Complex_Complex_df['ID_setup_xref_complex_complex'] == xref]
     data = data[['ID_data_complex', 'ID_data_complex.1']]
     for each in reversed(xrefs):
-        filter = data_xref_Complex_Complex[data_xref_Complex_Complex['ID_setup_xref_complex_complex'] == each]
+        filter = data_xref_Complex_Complex_df[data_xref_Complex_Complex_df['ID_setup_xref_complex_complex'] == each]
         filter = filter[['ID_data_complex', 'ID_data_complex.1']]
         data = pd.merge(filter, data, how='right', right_on='ID_data_complex', left_on='ID_data_complex.1')
         data = data[['ID_data_complex_x', 'ID_data_complex.1_y']]
@@ -603,9 +641,9 @@ def link_data_id(path, setup_Complex, setup_xref_Complex_Complex, data_xref_Comp
 #            cols: names of complexes that are part of column names of data
 #            data_Complex
 # return: dataframe of complex data id and identifier
-def find_identifier(data, cols, data_Complex):
+def find_identifier(data, cols, data_Complex_df):
     for col in cols:
-        data = pd.merge(data, data_Complex, how='left', left_on=col, right_on='ID_data_complex')
+        data = pd.merge(data, data_Complex_df, how='left', left_on=col, right_on='ID_data_complex')
         data = data.drop('ID_data_complex', axis=1)
         data = data.drop('ID_setup_complex', axis=1)
         index = data.columns.get_loc(col)
@@ -623,9 +661,11 @@ def find_identifier(data, cols, data_Complex):
 #           cols: names of complexes that are part of column names of data
 #           data_xref_Simplex_Complex, data_Simplex, data_SimplexText
 # return: adding corresponding simplex to input data dataframe
-def find_simplex_data(data, cols, data_xref_Simplex_Complex, data_Simplex, data_SimplexText):
-    xref_s_c = data_xref_Simplex_Complex[['ID_data_simplex', 'ID_data_complex']]
-    data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how='left', left_on='ID_data_date_number_text',
+
+# NOT USED
+def find_simplex_data(data, cols, data_xref_Simplex_Complex_df, data_Simplex_df, data_SimplexText_df):
+    xref_s_c = data_xref_Simplex_Complex_df[['ID_data_simplex', 'ID_data_complex']]
+    data_Simplex_temp = pd.merge(data_Simplex_df, data_SimplexText_df, how='left', left_on='ID_data_date_number_text',
                                  right_on='ID')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'Value']]
 
@@ -647,18 +687,20 @@ def find_simplex_data(data, cols, data_xref_Simplex_Complex, data_Simplex, data_
 #           complex_name: name of complex in list type
 #           data_Simplex, data_SimplexText, setup_Complex, data_Complex, data_xref_Simplex_Complex
 # return: dataframe containing individual data id, simplex, identifer
-def find_simplex_identifier_one_complextype(complex_name, data_Simplex, data_SimplexText, setup_Complex, data_Complex, data_xref_Simplex_Complex):
-    data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how='left', left_on='ID_data_date_number_text',
+
+# NOT USED
+def find_simplex_identifier_one_complextype(complex_name, data_Simplex_df, data_SimplexText_df, setup_Complex_df, data_Complex_df, data_xref_Simplex_Complex_df):
+    data_Simplex_temp = pd.merge(data_Simplex_df, data_SimplexText_df, how='left', left_on='ID_data_date_number_text',
                                  right_on='ID')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'Value']]
 
-    complex_id = find_setup_id(complex_name, setup_Complex).iat[0, 0]
-    complex_id = data_Complex[data_Complex['ID_setup_complex'].isin([complex_id])]
+    complex_id = find_setup_id(complex_name, setup_Complex_df).iat[0, 0]
+    complex_id = data_Complex_df[data_Complex_df['ID_setup_complex'].isin([complex_id])]
     complex_id = complex_id[['ID_data_complex']]
     complex_id = complex_id.rename(columns={'ID_data_complex': complex_name[0]})
 
-    complexes = find_identifier(complex_id, complex_name, data_Complex)
-    complexes = find_simplex_data(complexes, complex_name, data_xref_Simplex_Complex, data_Simplex, data_SimplexText)
+    complexes = find_identifier(complex_id, complex_name, data_Complex_df)
+    complexes = find_simplex_data(complexes, complex_name, data_xref_Simplex_Complex_df, data_Simplex_df, data_SimplexText_df)
 
     return complexes
 
@@ -667,6 +709,9 @@ def find_simplex_identifier_one_complextype(complex_name, data_Simplex, data_Sim
 # parameter: name: simplex name in list type
 # return: dataframe: name, value, frequency
 # duplicate function name
+
+# NOT USED
+
 def dist_1(name, setup_Simplex, setup_xref_Simplex_Complex, data_xref_Simplex_Complex, data_Simplex, data_SimplexText):
     simplex_id = find_setup_id_simplex(name, setup_Simplex)
     id = simplex_id.iat[0,0]
@@ -687,16 +732,16 @@ def dist_1(name, setup_Simplex, setup_xref_Simplex_Complex, data_xref_Simplex_Co
 
 # get identifier version of semantic triplet
 # return: dataframe: Semantic triplet data id, S data id, S Identifier, V data id, V Identifier, O data id, O Identifier
-def semantic_triplet_complex(semantic_triplet, subject, verb, object, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex, data_Complex):
+def semantic_triplet_complex(semantic_triplet, subject, verb, object, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df):
     if isinstance(semantic_triplet, list):
         semantic_triplet = str(semantic_triplet[0])
-    id = find_setup_id([semantic_triplet], setup_Complex).iat[0,0]
+    id = find_setup_id([semantic_triplet], setup_Complex_df).iat[0,0]
 
-    save = setup_xref_Complex_Complex[setup_xref_Complex_Complex['HigherComplex'] == id]
+    save = setup_xref_Complex_Complex_df[setup_xref_Complex_Complex_df['HigherComplex'] == id]
     save = save['ID_setup_xref_complex-complex'].values.tolist()
     save = save[:3]
 
-    triplet = data_xref_Complex_Complex[data_xref_Complex_Complex['ID_setup_xref_complex_complex'].isin(save)]
+    triplet = data_xref_Complex_Complex_df[data_xref_Complex_Complex_df['ID_setup_xref_complex_complex'].isin(save)]
     triplet = triplet.pivot_table(
         index = ['ID_data_complex'],
         columns = 'ID_setup_xref_complex_complex',
@@ -704,9 +749,9 @@ def semantic_triplet_complex(semantic_triplet, subject, verb, object, setup_Comp
     ).reset_index()
     print('=============================================================================')
     print(triplet.head())
-    subject_id = setup_xref_Complex_Complex[setup_xref_Complex_Complex['Name'] == subject]['ID_setup_xref_complex-complex'].values[0]
-    verb_id = setup_xref_Complex_Complex[setup_xref_Complex_Complex['Name'] == verb]['ID_setup_xref_complex-complex'].values[0]
-    object_id = setup_xref_Complex_Complex[setup_xref_Complex_Complex['Name'] == object]['ID_setup_xref_complex-complex'].values[0]
+    subject_id = setup_xref_Complex_Complex_df[setup_xref_Complex_Complex_df['Name'] == subject]['ID_setup_xref_complex-complex'].values[0]
+    verb_id = setup_xref_Complex_Complex_df[setup_xref_Complex_Complex_df['Name'] == verb]['ID_setup_xref_complex-complex'].values[0]
+    object_id = setup_xref_Complex_Complex_df[setup_xref_Complex_Complex_df['Name'] == object]['ID_setup_xref_complex-complex'].values[0]
 
     triplet = triplet.rename(columns = {'ID_data_complex': semantic_triplet ,subject_id: 'S', verb_id: 'V', object_id: 'O'})
 
@@ -714,7 +759,7 @@ def semantic_triplet_complex(semantic_triplet, subject, verb, object, setup_Comp
 
     for i in range(3):
         complex = complexes[i]
-        triplet = pd.merge(triplet, data_Complex, how = 'left', left_on = complex, right_on = 'ID_data_complex')
+        triplet = pd.merge(triplet, data_Complex_df, how = 'left', left_on = complex, right_on = 'ID_data_complex')
         pop = triplet.pop('Identifier')
         name = complex + ' Identifier'
         triplet.insert((i+1)*2, name, pop)
@@ -723,75 +768,251 @@ def semantic_triplet_complex(semantic_triplet, subject, verb, object, setup_Comp
 
     return triplet
 
-# get data for Participant-S or Participant-O
-# parameter: "Participant-S" or "Participant-O"
-# return: dataframe: Participant-S data id, Value = simplex, Type = simplex name
-def participant_simplex(subject, participant, data_Simplex, data_SimplexText, setup_Complex, setup_Simplex, data_Complex, data_xref_Simplex_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex):
-    setup_xref_Simplex_Complex = library['setup_xref_Simplex-Complex.xlsx']
+def get_simplex_value(simplex_name, complex_name, setup_Simplex_df, xref_simplex_complex_value):
+    simplexes_combined = pd.DataFrame()
+    simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
+    simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+    xref_simplex_complex_value_new = xref_simplex_complex_value[
+        xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
+    simplexes_combined = xref_simplex_complex_value_new
+    simplexes_combined = simplexes_combined.rename(columns={'ID_data_complex': complex_name})
+    simplexes_combined['Type'] = complex_name
+    return simplexes_combined
+
+# @@ NEW subject verb object function
+# get data for a complex object (e.g., Participant-S, PROCESS, or Participant-O)
+# used to construct a semantic triplet
+# parameter: "Participant-S," or "PROCESS," or "Participant-O"
+# return: dataframe: Participant-S/PROCESS/Participant-O data id, Value = simplex, Type = simplex name
+# def get_simplex_value_for_complex_object(complex_object_name, data_Simplex_df, data_SimplexText_df, setup_Complex_df, setup_Simplex_df, data_Complex_df, data_xref_Simplex_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df):
+#
+#     # initialize empty dataframe simplexes_combined
+#     simplexes_combined = pd.DataFrame()
+#
+#     # ----------------------------
+#     # @ a lot of repeated code!!!
+#     # search for simplex_names = corresponding_name_simplex_complex(
+#     #   [lower_complex]) or [complex] as the final key
+#     setup_Simplex_df = library['setup_Simplex.xlsx']
+#     # get a list of all the simplex names
+#     # get a list of all the simplex values
+#     data_Simplex_temp = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'left', on = 'ID_data_date_number_text')
+#     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
+#     # get a list of all the simplex values, regardless of simplex name
+#     xref_simplex_complex_value = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
+#     xref_simplex_complex_value = xref_simplex_complex_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
+#
+#
+#     simplex_names, simplex_required_names = corresponding_name_simplex_complex([complex_object_name])
+#
+#     # check setup_xref_Simplex-Complex.xlsx to see if the simplex is Required and only use the required simplex
+#     NSimplex = len(simplex_required_names[0])
+#     if NSimplex >1:
+#         mb.showwarning(title='Warning',
+#                        message="The complex object '" + str(complex_object_name) + "' contains " + str(NSimplex) + " required simplex objects (" + str(', '.join(simplex_required_names[0])) + "). Only the first simplex object (" + str(simplex_required_names[0][0]) + ") will be used to construct the triplet. Required simplex objects will have priority over any complex object children.\n\nTO CHANGE THE REQUIRED STATE OF ANY OF THESE SIMPLEX OBJECTS, OPEN THE FILE setup_xref_Simplex-Complex.xlsx AND SET THE VALUE OF REQUIRED TO FALSE FOR SELECTED SIMPLEX.")
+#
+#     if len(simplex_required_names[0])>0:
+#         simplexes_combined = get_simplex_value(simplex_required_names[0][0], complex_object_name, setup_Simplex_df, xref_simplex_complex_value)
+#     else:
+#         # get a list of all the simplex names, children of the complex object complex_object_name
+#         setup_xref_Simplex_Complex = library['setup_xref_Simplex-Complex.xlsx']
+#         # get a list of all the simplex values
+#         data_Simplex_temp = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'left', on = 'ID_data_date_number_text')
+#         data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
+#         # get a list of all the simplex values, regardless of simplex name
+#         xref_simplex_complex_value = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
+#         xref_simplex_complex_value = xref_simplex_complex_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
+#
+#         # get as list all the complex children of the initial complex_object_name
+#         #@@
+#         complex_children = find_lower_complex([complex_object_name])['Name'].values.tolist()
+#         # get as dataframe the names of all the complex children of the initial complex_object_name
+#         complex_children_children = find_lower_complex(complex_children)
+#         # get as list the IDs of complex children of complex_object_name
+#         complex_children_children_ids = complex_children_children['LowerComplex'].values.tolist()
+#         # get as dataframe all the simplex names required and not required under all complex_children_children
+#         simplex_names = setup_xref_Simplex_Complex[setup_xref_Simplex_Complex['ID_setup_complex'].isin(complex_children_children_ids)]
+#
+#         if len(simplex_names) > 0:
+#             merged = pd.merge(simplex_names, complex_children_children, left_on = 'ID_setup_complex', right_on='LowerComplex', suffixes=('_simplex_names', '_complex_children_children'))
+#             unique = merged[["Name_complex_children_children", "Name_simplex_names", "ID_setup_complex"]].drop_duplicates(subset=["ID_setup_complex"])
+#             lower_complexes = dict(zip(unique['Name_complex_children_children'], unique['Name_simplex_names']))
+#
+#             simplexes = []
+#             for lower in lower_complexes:
+#                 simplex_names, simplex_required_names = corresponding_name_simplex_complex([lower])
+#
+#                 # check setup_xref_Simplex-Complex.xlsx to see if the simplex is Required and only use the required simplex
+#                 NSimplex = len(simplex_required_names[0])
+#                 if NSimplex > 1:
+#                     mb.showwarning(title='Warning',
+#                                    message="The complex object '" + str(complex_object_name) + "' contains " + str(
+#                                        NSimplex) + " required simplex objects (" + str(
+#                                        ', '.join(
+#                                            simplex_required_names[0])) + "). Only the first simplex object (" + str(
+#                                        simplex_required_names[0][
+#                                            0]) + ") will be used to construct the triplet. Required simplex objects will have priority over any complex object children.\n\nTO CHANGE THE REQUIRED STATE OF ANY OF THESE SIMPLEX OBJECTS, OPEN THE FILE setup_xref_Simplex-Complex.xlsx AND SET THE VALUE OF REQUIRED TO FALSE FOR SELECTED SIMPLEX.")
+#
+#                 if len(simplex_required_names[0]) > 0:
+#                     # return: dataframe: Participant-S/PROCESS/Participant-O data id, Value = simplex, Type = simplex name
+#
+#                     simplexes_combined = get_simplex_value(simplex_required_names[0][0], lower,
+#                                                            setup_Simplex_df,
+#                                                            xref_simplex_complex_value)
+#
+#
+#                     return simplexes_combined
+#                 else:
+#                     simplex = lower_complexes[lower]
+#
+#                     simplex_id = find_setup_id_simplex([simplex], setup_Simplex_df)
+#                     simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+#
+#
+#                     xref_simplex_complex_value_select = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
+#
+#                     path = find_path(complex_object_name, lower, setup_Complex_df, setup_xref_Complex_Complex_df)
+#                     path = path[0]
+#                     id_data = link_data_id(path, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
+#
+#                     data = pd.merge(id_data, xref_simplex_complex_value_select, how = 'left', left_on = lower, right_on = 'ID_data_complex')
+#                     data = data[data[complex_object_name].notna()]
+#                     data = data.drop_duplicates(subset=[complex_object_name])
+#                     data = data[[complex_object_name, lower, 'Value']]
+#                     data = data.drop(lower, axis = 1)
+#                     data[['Type']] = lower
+#
+#                     simplexes.append(data)
+#
+#                     simplexes_combined = pd.concat(simplexes)
+#         print(simplexes_combined)
+#
+#     return simplexes_combined
+
+def get_simplex_value_for_complex_object(complex_object_name, data_Simplex, data_SimplexText, setup_Complex, setup_Simplex, data_Complex, data_xref_Simplex_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex):
+
+    crossref = library['setup_xref_Complex-Complex.xlsx']
+    crossref = crossref[['Required', 'Name']]
+
+    # initialize empty dataframe simplexes_combined
+    simplexes_combined = pd.DataFrame()
+
+    # ----------------------------
+    # @ a lot of repeated code!!!
+    # search for simplex_names = corresponding_name_simplex_complex(
+    #   [lower_complex]) or [complex] as the final key
+    setup_Simplex_df = library['setup_Simplex.xlsx']
+    # get a list of all the simplex names
+    # get a list of all the simplex values
     data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', on = 'ID_data_date_number_text')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
-    xref_sc_value = pd.merge(data_xref_Simplex_Complex, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
-    xref_sc_value = xref_sc_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
+    # get a list of all the simplex values, regardless of simplex name
+    xref_simplex_complex_value = pd.merge(data_xref_Simplex_Complex, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
+    xref_simplex_complex_value = xref_simplex_complex_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
 
-    actor_complex = find_lower_complex([subject])['Name'].values.tolist()
-    # actor_lower_complexes contains 36 37 4 individual, collective actor, organization
-    actor_lower_complexes = find_lower_complex(actor_complex)
-    # actor_lower_complex_ids contains [36, 37, 4]
-    actor_lower_complex_ids = actor_lower_complexes['LowerComplex'].values.tolist()  # Extract IDs of actor lower complexes as a list
-    #actor_names contains a df where, however, collective actor, individual, organization in the order 37, 36, 4 rather than 36, 37, 4
-    actor_names = setup_xref_Simplex_Complex[setup_xref_Simplex_Complex['ID_setup_complex'].isin(actor_lower_complex_ids)]
-    # lower_complexes contains {'Individual': 'Name of collective actor', 'Collective actor': 'Name of individual actor', 'Organization': 'Role in the Organization'}
-    # BUT THIS IS WRONG SINCE IT SHOULD BE {'Individual': 'Name of individual actor', 'Collective actor': 'Name of collective actor', 'Organization': 'Role in the Organization'}
-    lower_complexes = dict(zip(actor_lower_complexes['Name'], actor_names['Name']))
-    print(lower_complexes)
 
-    simplexes = []
-    for lower in lower_complexes:
-        simplex = lower_complexes[lower]
+    simplex_names, simplex_required_names = corresponding_name_simplex_complex([complex_object_name])
 
-        simplex_id = find_setup_id_simplex([simplex], setup_Simplex)
+    # check setup_xref_Simplex-Complex.xlsx to see if the simplex is Required and only use the required simplex
+    NSimplex = len(simplex_required_names[0])
+    if NSimplex >1:
+        mb.showwarning(title='Warning',
+                       message="The complex object '" + str(complex_object_name) + "' contains " + str(NSimplex) + " required simplex objects (" + str(', '.join(simplex_required_names[0])) + "). Only the first simplex object (" + str(simplex_required_names[0][0]) + ") will be used to construct the triplet. Required simplex objects will have priority over any complex object children.\n\nTO CHANGE THE REQUIRED STATE OF ANY OF THESE SIMPLEX OBJECTS, OPEN THE FILE setup_xref_Simplex-Complex.xlsx AND SET THE VALUE OF REQUIRED TO FALSE FOR SELECTED SIMPLEX.")
+
+    # for simplex_name in simplex_names[0]:
+    #     simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
+    #     simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+    #     xref_simplex_complex_value_new = xref_simplex_complex_value[
+    #     xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
+    #     xref_simplex_complex_value_new = xref_simplex_complex_value_new.rename(columns={'ID_data_complex': subject})
+    if len(simplex_required_names[0])>0:
+        simplex_id = find_setup_id_simplex([simplex_required_names[0][0]], setup_Simplex_df)
         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+        xref_simplex_complex_value_new = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
+        simplexes_combined = xref_simplex_complex_value_new
+        simplexes_combined = simplexes_combined.rename(columns={'ID_data_complex': complex_object_name})
+        simplexes_combined['Type'] = complex_object_name
+        # @@
+    else:
+        # get a list of all the simplex names, children of the complex object complex_object_name
+        setup_xref_Simplex_Complex = library['setup_xref_Simplex-Complex.xlsx']
+        # get a list of all the simplex values
+        data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', on = 'ID_data_date_number_text')
+        data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
+        # get a list of all the simplex values, regardless of simplex name
+        xref_simplex_complex_value = pd.merge(data_xref_Simplex_Complex, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
+        xref_simplex_complex_value = xref_simplex_complex_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
+
+        # get as list all the complex children of the initial complex_object_name
+        #@@
+        complex_children = find_lower_complex([complex_object_name])['Name'].values.tolist()
+        # get as dataframe the names of all the complex children of the initial complex_object_name
+        complex_children_children = find_lower_complex(complex_children)
+        # get as list the IDs of complex children of complex_object_name
+        complex_children_children_ids = complex_children_children['LowerComplex'].values.tolist()
+        # get as dataframe all the simplex names required and not required under all complex_children_children
+        simplex_names = setup_xref_Simplex_Complex[setup_xref_Simplex_Complex['ID_setup_complex'].isin(complex_children_children_ids)]
+        if len(simplex_names) > 0:
+            merged = pd.merge(simplex_names, complex_children_children, left_on = 'ID_setup_complex', right_on='LowerComplex', suffixes=('_simplex_names', '_complex_children_children'))
+            unique = merged[["Name_complex_children_children", "Name_simplex_names", "ID_setup_complex"]].drop_duplicates(subset=["ID_setup_complex"])
+            lower_complexes = dict(zip(unique['Name_complex_children_children'], unique['Name_simplex_names']))
+            #         data2 = simplex_children.loc[simplex_children['Required'] == True, 'Name'].tolist()
+            simplexes = []
+            for lower in lower_complexes:
+                required = crossref.loc[crossref['Name'] == lower, 'Required'].any()
+                if not required:
+                    continue
+
+                simplex = lower_complexes[lower]
+
+                simplex_id = find_setup_id_simplex([simplex], setup_Simplex)
+                simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
 
 
-        xref_sc_value_select = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
+                xref_simplex_complex_value_select = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
 
-        path = find_path(participant, lower, setup_Complex, setup_xref_Complex_Complex)
-        path = path[0]
-        id_data = link_data_id(path, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex)
+                path = find_path(complex_object_name, lower, setup_Complex, setup_xref_Complex_Complex)
+                path = path[0]
+                id_data = link_data_id(path, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex)
 
-        data = pd.merge(id_data, xref_sc_value_select, how = 'left', left_on = lower, right_on = 'ID_data_complex')
-        data = data[data[participant].notna()]
-        data = data.drop_duplicates(subset=[participant])
-        data = data[[participant, lower, 'Value']]
-        data = data.drop(lower, axis = 1)
-        data[['Type']] = lower
+                data = pd.merge(id_data, xref_simplex_complex_value_select, how = 'left', left_on = lower, right_on = 'ID_data_complex',)
+                data = data[data[complex_object_name].notna()]
+                data = data.drop_duplicates(subset=[complex_object_name])
+                data = data[[complex_object_name, lower, 'Value']]
+                data = data.drop(lower, axis = 1)
+                data[['Type']] = lower
 
-        simplexes.append(data)
+                simplexes.append(data)
 
-    simplexes_combined = pd.concat(simplexes)
-    print(
-        '========================================================================================================================')
-    print(simplexes_combined)
+            simplexes_combined = pd.concat(simplexes)
+        print(simplexes_combined)
+
     return simplexes_combined
 
 
 # get data for Process
 # return: dataframe: Process data id, Simple process data id, Value = simplex
-def process_simplex(subject, verb, object, setup_Simplex, data_Simplex, data_SimplexText, data_xref_Simplex_Complex, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex):
-    simplex_id = find_setup_id_simplex(['Negation', 'Modal verb', 'Verbal phrase'], setup_Simplex)
+# @@ OLD verb function
+
+# NOT USED
+def process_simplex(subject, verb, object, setup_Simplex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df):
+    # @Taeeun hard coded values !!!!
+    # simplex_id = find_setup_id_simplex(['Negation', 'Modal verb', 'Verbal phrase', 'Action', 'Codice processo aggregato', 'Azione STRINGHE UNIFICATE'], setup_Simplex)
+    simplex_id = find_setup_id_simplex(['Negation', 'Modal verb', 'Verbal phrase', 'Action'], setup_Simplex_df)
     simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
 
-    data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', on = 'ID_data_date_number_text')
+    data_Simplex_temp = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'left', on = 'ID_data_date_number_text')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
-    xref_sc_value = pd.merge(data_xref_Simplex_Complex, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
-    xref_sc_value = xref_sc_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
-    xref_sc_value = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
+    xref_simplex_complex_value = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
+    xref_simplex_complex_value = xref_simplex_complex_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
+    xref_simplex_complex_value = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
+    data_simple_process = [verb, xref_simplex_complex_value['Value']]
 
     verb_lower_complexes = find_lower_complex([verb])['Name'].values.tolist()
     for lower in verb_lower_complexes:
         path = [verb, lower]
-        id_data_simple_process_oneLevel = link_data_id(path, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex)
-        data_simple_process = pd.merge(id_data_simple_process_oneLevel, xref_sc_value, how = 'left', left_on = lower, right_on = 'ID_data_complex')
+        id_data_simple_process_oneLevel = link_data_id(path, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
+        data_simple_process = pd.merge(id_data_simple_process_oneLevel, xref_simplex_complex_value, how = 'left', left_on = lower, right_on = 'ID_data_complex')
         data_simple_process = data_simple_process.sort_values(by = ['ID_data_complex','ID_setup_simplex'], ascending = False)
         data_simple_process = data_simple_process.groupby([verb])['Value'].apply(lambda x: x.str.cat(sep=' ')).reset_index()
         data_simple_process = pd.merge(id_data_simple_process_oneLevel, data_simple_process, how = 'left', on=verb)
@@ -802,43 +1023,30 @@ def process_simplex(subject, verb, object, setup_Simplex, data_Simplex, data_Sim
 # get the semantic triplet with simplex
 # return: dataframe: Semantic triplet data id, S data id, S Type, S Simplex, V data id, V Simplex, O data id, O Type, O Simplex
 # p.s. Type = Individual / Organization / Collective actor
-def semantic_triplet_simplex(inputDir, subject, verb, object, setup_Complex, setup_Simplex, setup_xref_Complex_Complex, data_xref_Complex_Complex,
-                             data_Complex, data_Simplex, data_SimplexText, data_xref_Simplex_Complex,
-                             data_xref_Complex_Document, data_xref_VComment, utility_Security, comment_info='', document_info=False):
+def semantic_triplet_simplex(inputDir, subject, verb, object, setup_Complex_df, setup_Simplex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df,
+                             data_Complex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df,
+                             data_xref_Complex_Document_df, data_xref_VComment_df, utility_Security_df, comment_info_df='', document_info_df=False):
     semantic_triplet = find_parent_complex(subject, inputDir)
-    print('--------------------------------')
-    print('semantic_triplet')
-    print(semantic_triplet)
-    triplet = semantic_triplet_complex(semantic_triplet, subject, verb, object, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex, data_Complex)
-    print('--------------------------------')
-    print('triplet')
-    print(triplet.head())
-    print(triplet.columns)
-    s = participant_simplex(subject, subject, data_Simplex, data_SimplexText, setup_Complex, setup_Simplex, data_Complex, data_xref_Simplex_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex)
+    triplet = semantic_triplet_complex(semantic_triplet, subject, verb, object, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df)
+    # @@@@@@@@@@@@@@@
+    s = get_simplex_value_for_complex_object(subject, data_Simplex_df, data_SimplexText_df, setup_Complex_df, setup_Simplex_df, data_Complex_df, data_xref_Simplex_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
     s = s.rename(columns = {'Value':'Subject (S)', 'Type':'S Type'})
-    v = process_simplex(subject, verb, object, setup_Simplex, data_Simplex, data_SimplexText, data_xref_Simplex_Complex, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex)
-    o = participant_simplex(subject, object, data_Simplex, data_SimplexText, setup_Complex, setup_Simplex, data_Complex, data_xref_Simplex_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex)
+
+    v = process_simplex(subject, verb, object, setup_Simplex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
+    # v = get_simplex_value_for_complex_object(verb, data_Simplex_df, data_SimplexText_df, setup_Complex_df, setup_Simplex_df, data_Complex_df, data_xref_Simplex_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
+    # v = v.rename(columns = {'Value':'Verb (V)', 'Type':'V Type'})
+    o = get_simplex_value_for_complex_object(object, data_Simplex_df, data_SimplexText_df, setup_Complex_df, setup_Simplex_df, data_Complex_df, data_xref_Simplex_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
     o = o.rename(columns = {'Value':'Object (O)', 'Type':'O Type'})
 
-    print('------------------------------------------------------------------')
-    print('triplet')
-    print(triplet.head())
-    print('------------------------------------------------------------------')
-    print('s')
-    print(s.head())
-    print('------------------------------------------------------------------')
-    print('v')
-    print(v.head())
-    print('------------------------------------------------------------------')
-    print('o')
-    print(o.head())
     if isinstance(semantic_triplet, list):
         semantic_triplet = str(semantic_triplet[0])
+    # @@ NEXT LINE ERROR
     simplex_version = pd.merge(triplet, s, how = 'left', left_on = 'S', right_on = subject)
+    # @@ Aiden verb does not work for lynching
     simplex_version = pd.merge(simplex_version, v, how = 'left', left_on = 'V', right_on = verb)
     simplex_version = pd.merge(simplex_version, o, how = 'left', left_on = 'O', right_on = object)
-    simplex_version = simplex_version.loc[:, [semantic_triplet, 'S', 'S Type', 'Subject (S)', 'V', 'Value', 'O', 'O Type', 'Object (O)']]
-    simplex_version = simplex_version.rename(columns = {'Value':'Verb (V)'})
+    # simplex_version = simplex_version.loc[:, [semantic_triplet, 'S', 'S Type', 'Subject (S)', 'V', 'Value', 'O', 'O Type', 'Object (O)']]
+    simplex_version = simplex_version.loc[:, [semantic_triplet, 'S', 'S Type', 'Subject (S)', 'V', 'V Type', 'Verb (V)', 'O', 'O Type', 'Object (O)']]
     simplex_version = simplex_version.rename(columns = {semantic_triplet:'Semantic Triplet ID','S':'S ID','V':'V ID', 'O':'O ID'})
 
 
@@ -846,13 +1054,13 @@ def semantic_triplet_simplex(inputDir, subject, verb, object, setup_Complex, set
 
      # S1: find setup id of 'Macro Event', 'Event' and 'Semantic Triplet'
     # 'Macro event refers to the highest complex in the hierarchy, not specific
-    top_complex = setup_Complex[setup_Complex['ID_setup_complex']==1]['Name'].values[0]
-    path = find_path(top_complex, semantic_triplet, setup_Complex, setup_xref_Complex_Complex)
+    top_complex = setup_Complex_df[setup_Complex_df['ID_setup_complex']==1]['Name'].values[0]
+    path = find_path(top_complex, semantic_triplet, setup_Complex_df, setup_xref_Complex_Complex_df)
     path = path[0]
 
     # Step 3: Map each complex in the path to its ID
     name_to_id = {
-        name: find_setup_id([name], setup_Complex)['ID_setup_complex'].values[0]
+        name: find_setup_id([name], setup_Complex_df)['ID_setup_complex'].values[0]
         for name in path
     }
 
@@ -863,14 +1071,14 @@ def semantic_triplet_simplex(inputDir, subject, verb, object, setup_Complex, set
         lower_id = name_to_id[path[i + 1]]
 
         # Find setup xref ID for each link
-        xref_id = setup_xref_Complex_Complex[
-            (setup_xref_Complex_Complex['HigherComplex'] == higher_id) &
-            (setup_xref_Complex_Complex['LowerComplex'] == lower_id)
+        xref_id = setup_xref_Complex_Complex_df[
+            (setup_xref_Complex_Complex_df['HigherComplex'] == higher_id) &
+            (setup_xref_Complex_Complex_df['LowerComplex'] == lower_id)
             ]['ID_setup_xref_complex-complex'].values[0]
 
         # Retrieve and rename relevant data_xref columns
-        data_xref = data_xref_Complex_Complex[
-            data_xref_Complex_Complex['ID_setup_xref_complex_complex'] == xref_id
+        data_xref = data_xref_Complex_Complex_df[
+            data_xref_Complex_Complex_df['ID_setup_xref_complex_complex'] == xref_id
             ][['ID_data_complex', 'ID_data_complex.1']].rename(columns={
             'ID_data_complex': f'{path[i]} ID',
             'ID_data_complex.1': f'{path[i + 1]} ID'
@@ -890,7 +1098,7 @@ def semantic_triplet_simplex(inputDir, subject, verb, object, setup_Complex, set
                                right_on='Semantic Triplet ID')
 
     # Step 8: Add the top complex identifier by merging with data_Complex
-    data_complex_top = data_Complex[['ID_data_complex', 'Identifier']].rename(
+    data_complex_top = data_Complex_df[['ID_data_complex', 'Identifier']].rename(
         columns={'ID_data_complex': f'{path[0]} ID', 'Identifier': f'{path[0]} Identifier'}
     )
     simplex_version = pd.merge(simplex_version, data_complex_top, how='left', on=f'{path[0]} ID')
@@ -902,20 +1110,20 @@ def semantic_triplet_simplex(inputDir, subject, verb, object, setup_Complex, set
     # Final output should have only the relevant path columns and top complex identifier
     print("Final Hierarchy Data with Simplex Version:", simplex_version)
 
-    if document_info:
-        data_xref_Complex_Document_modified = data_xref_Complex_Document[['ID_data_complex','ID_data_document']]
+    if document_info_df:
+        data_xref_Complex_Document_modified = data_xref_Complex_Document_df[['ID_data_complex','ID_data_document']]
         simplex_version = pd.merge(simplex_version, data_xref_Complex_Document_modified, how = 'left', left_on = 'Semantic Triplet', right_on = 'ID_data_complex')
         simplex_version = simplex_version.drop('ID_data_complex', axis = 1)
         simplex_version = simplex_version.rename(columns = {'Macro Event':'Macro Event ID','Event':'Event ID', 'Semantic Triplet':'Semantic Triplet ID', 'ID_data_document':'Document ID'})
 
     # S6: add VComment
-    if comment_info!='':
+    if comment_info_df!='':
         # ref: complex id for semantic triplet
-        data_xref_VComment_modified = data_xref_VComment[['Complex','Comment','UserID','VerifierID']]
+        data_xref_VComment_modified = data_xref_VComment_df[['Complex','Comment','UserID','VerifierID']]
         simplex_version = pd.merge(simplex_version, data_xref_VComment_modified, how = 'left', left_on = 'Macro Event ID', right_on = 'Complex')
         simplex_version = simplex_version.drop('Complex', axis = 1)
 
-        utility_Security = utility_Security[['ID', 'UserName']]
+        utility_Security = utility_Security_df[['ID', 'UserName']]
         utility_Security_user = utility_Security.rename(columns={'ID': 'UserID'})
         simplex_version = pd.merge(simplex_version, utility_Security_user, how = 'left', left_on = 'UserID', right_on = 'UserID')
         user_name = simplex_version.pop('UserName')
@@ -959,7 +1167,7 @@ def semantic_triplet_simplex_main(inputDir, outputDir, macro_event_id, subject, 
                                                data_xref_Complex_Complex_df, data_Complex_df, data_Simplex_df,
                                                data_SimplexText_df, data_xref_Simplex_Complex_df,
                                                data_xref_Complex_Document_df, data_xref_VComment_df,
-                                               utility_Security_df, comment_info='', document_info=False)
+                                               utility_Security_df, comment_info_df='', document_info_df=False)
 
     if macro_event_id != '':
         macro_event_id = int(macro_event_id.split()[0])
@@ -1020,28 +1228,28 @@ def get_time_simplex(inputDir, outputDir, time_label, subject, verb, object, mac
 # helper method for semantic_triplet_time
 # link simplex of time complex with V
 # return: a dataframe: Process = data id of complex Process, Indefinite time of day = data id of simplex Indefinite time of day, Time = text of Indefinite time of day
-def find_time_simplex(inputDir, time_label, subject, verb, object, setup_Simplex, data_Simplex, data_SimplexText,
-                      setup_Complex, setup_xref_Complex_Complex,
-                      data_xref_Complex_Complex, data_xref_Simplex_Complex):
+def find_time_simplex(inputDir, time_label, subject, verb, object, setup_Simplex_df, data_Simplex_df, data_SimplexText_df,
+                      setup_Complex_df, setup_xref_Complex_Complex_df,
+                      data_xref_Complex_Complex_df, data_xref_Simplex_Complex_df):
     setup_Complex_df = library['setup_Complex.xlsx']
     setup_xref_Complex_Complex_df = library['setup_xref_Complex-Complex.xlsx']
 
     simplexes = corresponding_name_simplex_complex(time_label)
-    simplex_id = find_setup_id_simplex(simplexes[0], setup_Simplex)
+    simplex_id = find_setup_id_simplex(simplexes[0], setup_Simplex_df)
     simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
-    data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', on = 'ID_data_date_number_text')
+    data_Simplex_temp = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'left', on = 'ID_data_date_number_text')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
-    xref_sc_value = pd.merge(data_xref_Simplex_Complex, data_Simplex_temp, how = 'left', on = 'ID_data_simplex')
-    xref_sc_value = xref_sc_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
-    xref_sc_value = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
+    xref_simplex_complex_value = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_temp, how = 'left', on = 'ID_data_simplex')
+    xref_simplex_complex_value = xref_simplex_complex_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
+    xref_simplex_complex_value = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
     all_path = find_path(verb, time_label, setup_Complex_df, setup_xref_Complex_Complex_df)
 
     data = pd.DataFrame()
     for path in all_path:
-        id_data_subLevel = link_data_id(path, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex)
+        id_data_subLevel = link_data_id(path, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
         id_data_subLevel = id_data_subLevel[id_data_subLevel[verb].notna()]
         id_data_subLevel = id_data_subLevel.drop_duplicates(subset=[verb])
-        data_subLevel = pd.merge(id_data_subLevel, xref_sc_value, how='left', left_on=time_label,right_on='ID_data_complex')
+        data_subLevel = pd.merge(id_data_subLevel, xref_simplex_complex_value, how='left', left_on=time_label,right_on='ID_data_complex')
         if data_subLevel.empty:
             continue
         data = pd.concat([data, data_subLevel])
@@ -1125,9 +1333,9 @@ def find_space_simplex(inputDir, space_label_var, subject, verb, object, setup_S
     simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
     data_Simplex_temp = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'left', on = 'ID_data_date_number_text')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
-    xref_sc_value = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_temp, how = 'left', on = 'ID_data_simplex')
-    xref_sc_value = xref_sc_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
-    xref_sc_value = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
+    xref_simplex_complex_value = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_temp, how = 'left', on = 'ID_data_simplex')
+    xref_simplex_complex_value = xref_simplex_complex_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
+    xref_simplex_complex_value = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
     all_path = find_path(verb, space_label_var, setup_Complex_df, setup_xref_Complex_Complex_df)
 
     data = pd.DataFrame()
@@ -1135,7 +1343,7 @@ def find_space_simplex(inputDir, space_label_var, subject, verb, object, setup_S
         id_data_subLevel = link_data_id(path, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
         id_data_subLevel = id_data_subLevel[id_data_subLevel[verb].notna()]
         id_data_subLevel = id_data_subLevel.drop_duplicates(subset=[verb])
-        data_subLevel = pd.merge(id_data_subLevel, xref_sc_value, how='left', left_on=space_label_var,
+        data_subLevel = pd.merge(id_data_subLevel, xref_simplex_complex_value, how='left', left_on=space_label_var,
                                  right_on='ID_data_complex')
         if data_subLevel.empty:
             continue
@@ -1312,6 +1520,8 @@ def find_complex_paths(complex_name, path, complete_complexes, setup_Complex_df,
     return complete_complexes
 
 # get individual characteristics
+
+# NOT USED
 def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', comment_info='', document_info=False):
     setup_Complex_df = library['setup_Complex.xlsx']
     setup_Simplex_df = library['setup_Simplex.xlsx']
@@ -1327,15 +1537,15 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
     id_complex = find_setup_id([actors_var], setup_Complex_df).iat[0, 0]
     table_complex = data_Complex_df[data_Complex_df['ID_setup_complex'] == id_complex]
 
-    # 'Personal characteristics' must change to reflect the specific setup of a specific project
+    # @ Hard-coded 'Personal characteristics' must change to reflect the specific setup of a specific project
     names_personal_characteristics = find_lower_complex([actors_var])
     names_personal_characteristics = names_personal_characteristics['Name'].values.tolist()
 
     data_Simplex_temp = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'left', on = 'ID_data_date_number_text')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
 
-    xref_sc_value = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_temp, how = 'left', on = 'ID_data_simplex')
-    xref_sc_value = xref_sc_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
+    xref_simplex_complex_value = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_temp, how = 'left', on = 'ID_data_simplex')
+    xref_simplex_complex_value = xref_simplex_complex_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
 
     path_map = {}
     all_paths = []
@@ -1387,13 +1597,13 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
                 print("simplex name : ", simplex_name)
                 simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
                 simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
-                xref_sc_value_new = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
-                xref_sc_value_new = xref_sc_value_new.rename(columns={'ID_data_complex': complex_name})
+                xref_simplex_complex_value_new = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
+                xref_simplex_complex_value_new = xref_simplex_complex_value_new.rename(columns={'ID_data_complex': complex_name})
                 print(f"Columns in table_simplex: {table_simplex.columns}")
-                print(f"Columns in xref_sc_value_new: {xref_sc_value_new.columns}")
+                print(f"Columns in xref_simplex_complex_value_new: {xref_simplex_complex_value_new.columns}")
 
                 # Merge with table_simplex
-                table_simplex = pd.merge(table_simplex, xref_sc_value_new, how='left', on=complex_name)
+                table_simplex = pd.merge(table_simplex, xref_simplex_complex_value_new, how='left', on=complex_name)
                 table_simplex = table_simplex.rename(
                     columns={'ID_data_simplex': simplex_name + ' ID', 'Value': simplex_name + ' Simplex'})
                 table_simplex = table_simplex.drop('ID_setup_simplex', axis=1)
@@ -1413,416 +1623,418 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
     return individual_characteristics_file_name
 
 
-def victim_of_lynching_info(inputDir, outputDir):
-    setup_Complex_df = library['setup_Complex.xlsx']
-    setup_Simplex_df = library['setup_Simplex.xlsx']
-    setup_xref_Complex_Complex_df = library['setup_xref_Complex-Complex.xlsx']
-    setup_xref_Simplex_Complex_df = library['setup_xref_Simplex-Complex.xlsx']
-    data_xref_Complex_Complex_df = library['data_xref_Complex-Complex.xlsx']
-    data_Complex_df = library['data_Complex.xlsx']
-    data_Simplex_df = library['data_Simplex.xlsx']
-    data_SimplexText_df = library['data_SimplexText.xlsx']
-    data_xref_Simplex_Complex_df = library['data_xref_Simplex-Complex.xlsx']
-    data_SimplexNumber_df = library['data_SimplexNumber.xlsx']
-
-    # build table for complex
-    id_complex = find_setup_id(['Victim of lynching'], setup_Complex_df).iat[0, 0]
-    table_complex = data_Complex_df[data_Complex_df['ID_setup_complex'].isin([id_complex])]
-
-    names_victim_of_lynching = find_lower_complex(['Victim of lynching'])
-    names_victim_of_lynching = names_victim_of_lynching['Name'].values.tolist()
-
-    path = ['Victim of lynching']
-
-    for name in names_victim_of_lynching:
-        path.append(name)
-        id_data_victim_of_lynching = link_data_id(path, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
-        data_victim_of_lynching = find_identifier(id_data_victim_of_lynching, [name], data_Complex_df)
-        table_complex = pd.merge(table_complex, data_victim_of_lynching, how = 'left', left_on = 'ID_data_complex', right_on = 'Victim of lynching')
-        table_complex = table_complex.drop('Victim of lynching', axis = 1)
-        path.pop()
-
-    table_complex = table_complex.drop('ID_setup_complex', axis = 1)
-    table_complex = table_complex.rename(columns = {'ID_data_complex':'Victim of lynching', 'Identifier':'Victim of lynching Identifier'})
-
-    # start to build simplex table
-    table_simplex = table_complex
-
-    # Age
-    data_Simplex_temp1 = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'right', on = 'ID_data_date_number_text')
-    data_Simplex_temp1 = data_Simplex_temp1.dropna(subset = ['Value'])
-    data_Simplex_temp2 = pd.merge(data_Simplex_df, data_SimplexNumber_df, how = 'right', on = 'ID_data_date_number_text')
-    data_Simplex_temp2 = data_Simplex_temp2.dropna(subset = ['Value'])
-    data_Simplex_temp = pd.concat([data_Simplex_temp1, data_Simplex_temp2])
-    data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'Value']]
-    data_Simplex_temp = pd.merge(data_Simplex_df, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
-    data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
-
-    xref_sc_value = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
-    xref_sc_value = xref_sc_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
-
-    complex_name = 'Age'
-    simplex_names = corresponding_name_simplex_complex([complex_name])
-    for simplex_name in simplex_names[0]:
-        simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
-        simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
-        xref_sc_value_new = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
-        xref_sc_value_new = xref_sc_value_new.rename(columns = {'ID_data_complex':complex_name})
-
-        table_simplex = pd.merge(table_simplex, xref_sc_value_new, how = 'left', left_on = complex_name, right_on = complex_name)
-        table_simplex = table_simplex.rename(columns = {'ID_data_simplex':simplex_name+' ID', 'Value':simplex_name+' Simplex'})
-        table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
-
-    table_simplex = table_simplex.drop(complex_name, axis = 1)
-    table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
-
-    # Residence
-    complex_name = 'Residence'
-
-    simplex_id = find_setup_id_simplex(['City name', 'County', 'State'], setup_Simplex_df)
-    simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
-
-    xref_sc_value_new = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
-    xref_sc_value_new = xref_sc_value_new.rename(columns = {'ID_data_complex':'Type of territory'})
-
-    path = ['Residence', 'Space', 'Territory', 'Type of territory']
-    id_data_territory = link_data_id(path, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
-    id_data_territory = id_data_territory[id_data_territory['Residence'].notna()]
-    id_data_territory = id_data_territory.drop_duplicates(subset = ['Residence'])
-    data_territory = pd.merge(id_data_territory, xref_sc_value_new, how = 'left', left_on = 'Type of territory', right_on = 'Type of territory')
-    data_territory = data_territory[['Residence', 'Type of territory', 'Value']]
-
-    table_simplex = pd.merge(table_simplex, data_territory, how = 'left', left_on = complex_name, right_on = complex_name)
-
-    table_simplex = table_simplex.rename(columns = {'Value':'Type of territory Simplex'})
-    table_simplex = table_simplex.drop(complex_name, axis = 1)
-    table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
-
-    # Victim (Beck)
-    complex_name = 'Victim (Beck)'
-
-    simplex_names = corresponding_name_simplex_complex([complex_name])
-    for simplex_name in simplex_names[0]:
-        simplex_id = find_setup_id_simplex([name], setup_Simplex_df)
-        simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
-        xref_sc_value_new = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
-        xref_sc_value_new = xref_sc_value_new.rename(columns = {'ID_data_complex':complex_name})
-
-        table_simplex = pd.merge(table_simplex, xref_sc_value_new, how = 'left', left_on = complex_name, right_on = complex_name)
-        table_simplex = table_simplex.rename(columns = {'ID_data_simplex':name, 'Value':name+' Simplex'})
-        table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
-
-    table_simplex = table_simplex.drop(complex_name, axis = 1)
-    table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
-
-    # Victim (Brundage)
-    complex_name = 'Victim (Brundage)'
-
-    simplex_names = corresponding_name_simplex_complex([complex_name])
-    for simplex_name in simplex_names[0]:
-        simplex_id = find_setup_id_simplex([name], setup_Simplex_df)
-        simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
-        xref_sc_value_new = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
-        xref_sc_value_new = xref_sc_value_new.rename(columns = {'ID_data_complex':complex_name})
-
-        table_simplex = pd.merge(table_simplex, xref_sc_value_new, how = 'left', left_on = complex_name, right_on = complex_name)
-        table_simplex = table_simplex.rename(columns = {'ID_data_simplex':name, 'Value':name+' Simplex'})
-        table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
-
-    table_simplex = table_simplex.drop(complex_name, axis = 1)
-    table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
-
-    # simplex directly under Individual
-    complex_name = 'Victim of lynching'
-
-    simplex_names = corresponding_name_simplex_complex([complex_name])
-    for simplex_name in simplex_names[0]:
-        simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
-        simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
-        xref_sc_value_new = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
-        xref_sc_value_new = xref_sc_value_new.rename(columns = {'ID_data_complex':complex_name})
-
-        table_simplex = pd.merge(table_simplex, xref_sc_value_new, how = 'left', left_on = complex_name, right_on = complex_name)
-        table_simplex = table_simplex.rename(columns = {'ID_data_simplex':simplex_name, 'Value':simplex_name+' Simplex'})
-        table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
-
-
-
-    information_victim_of_lynching_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'victim of lynching information')
-    table_simplex.to_csv(information_victim_of_lynching_file_name, encoding='utf-8', index=False)
-
-    return information_victim_of_lynching_file_name
-
-
-def victim_of_alleged_crime_info(inputDir, outputDir):
-    setup_Complex_df = library['setup_Complex.xlsx']
-    setup_Simplex_df = library['setup_Simplex.xlsx']
-    setup_xref_Complex_Complex_df = library['setup_xref_Complex-Complex.xlsx']
-    setup_xref_Simplex_Complex_df = library['setup_xref_Simplex-Complex.xlsx']
-    data_xref_Complex_Complex_df = library['data_xref_Complex-Complex.xlsx']
-    data_Complex_df = library['data_Complex.xlsx']
-    data_Simplex_df = library['data_Simplex.xlsx']
-    data_SimplexText_df = library['data_SimplexText.xlsx']
-    data_xref_Simplex_Complex_df = library['data_xref_Simplex-Complex.xlsx']
-    data_SimplexNumber_df = library['data_SimplexNumber.xlsx']
-
-
-    # build table for complex
-    id_complex = find_setup_id(['Victim of alleged crime'], setup_Complex_df).iat[0, 0]
-    table_complex = data_Complex_df[data_Complex_df['ID_setup_complex'].isin([id_complex])]
-
-    names_victim_of_alleged_crime = find_lower_complex(['Victim of alleged crime'])
-    names_victim_of_alleged_crime = names_victim_of_alleged_crime['Name'].values.tolist()
-
-    path = ['Victim of alleged crime']
-
-    for name in names_victim_of_alleged_crime:
-        path.append(name)
-        id_data_victim_of_alleged_crime = link_data_id(path, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
-        data_victim_of_alleged_crime = find_identifier(id_data_victim_of_alleged_crime, [name], data_Complex_df)
-        table_complex = pd.merge(table_complex, data_victim_of_alleged_crime, how = 'left', left_on = 'ID_data_complex', right_on = 'Victim of alleged crime')
-        table_complex = table_complex.drop('Victim of alleged crime', axis = 1)
-        path.pop()
-
-    table_complex = table_complex.drop('ID_setup_complex', axis = 1)
-    table_complex = table_complex.rename(columns = {'ID_data_complex':'Victim of alleged crime', 'Identifier':'Victim of alleged crime Identifier'})
-
-    # start to build simplex table
-    table_simplex = table_complex
-
-    # Age
-    data_Simplex_temp1 = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'right', on = 'ID_data_date_number_text')
-    data_Simplex_temp1 = data_Simplex_temp1.dropna(subset = ['Value'])
-    data_Simplex_temp2 = pd.merge(data_Simplex_df, data_SimplexNumber_df, how = 'right', on = 'ID_data_date_number_text')
-    data_Simplex_temp2 = data_Simplex_temp2.dropna(subset = ['Value'])
-    data_Simplex_temp = pd.concat([data_Simplex_temp1, data_Simplex_temp2])
-    data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'Value']]
-    data_Simplex_temp = pd.merge(data_Simplex_df, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
-    data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
-
-    xref_sc_value = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
-    xref_sc_value = xref_sc_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
-
-    complex_name = 'Age'
-    simplex_names = corresponding_name_simplex_complex([complex_name])
-    for simplex_name in simplex_names[0]:
-        simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
-        simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
-        xref_sc_value_new = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
-        xref_sc_value_new = xref_sc_value_new.rename(columns = {'ID_data_complex':complex_name})
-
-        table_simplex = pd.merge(table_simplex, xref_sc_value_new, how = 'left', left_on = complex_name, right_on = complex_name)
-        table_simplex = table_simplex.rename(columns = {'ID_data_simplex':simplex_name+' ID', 'Value':simplex_name+' Simplex'})
-        table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
-
-    table_simplex = table_simplex.drop(complex_name, axis = 1)
-    table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
-
-    # Residence
-    complex_name = 'Residence'
-
-    simplex_id = find_setup_id_simplex(['City name', 'County', 'State'], setup_Simplex_df)
-    simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
-
-    xref_sc_value_new = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
-    xref_sc_value_new = xref_sc_value_new.rename(columns = {'ID_data_complex':'Type of territory'})
-
-    path = ['Residence', 'Space', 'Territory', 'Type of territory']
-    id_data_territory = link_data_id(path, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
-    id_data_territory = id_data_territory[id_data_territory['Residence'].notna()]
-    id_data_territory = id_data_territory.drop_duplicates(subset = ['Residence'])
-    data_territory = pd.merge(id_data_territory, xref_sc_value_new, how = 'left', left_on = 'Type of territory', right_on = 'Type of territory')
-    data_territory = data_territory[['Residence', 'Type of territory', 'Value']]
-
-    table_simplex = pd.merge(table_simplex, data_territory, how = 'left', left_on = complex_name, right_on = complex_name)
-
-    table_simplex = table_simplex.rename(columns = {'Value':'Type of territory Simplex'})
-    table_simplex = table_simplex.drop(complex_name, axis = 1)
-    table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
-
-    # First name and last name
-    complex_name = 'First name and last name'
-    simplex_names = corresponding_name_simplex_complex([complex_name])
-    for simplex_name in simplex_names[0]:
-        simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
-        simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
-        xref_sc_value_new = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
-        xref_sc_value_new = xref_sc_value_new.rename(columns = {'ID_data_complex':complex_name})
-
-        table_simplex = pd.merge(table_simplex, xref_sc_value_new, how = 'left', left_on = complex_name, right_on = complex_name)
-        table_simplex = table_simplex.rename(columns = {'ID_data_simplex':simplex_name+' ID', 'Value':simplex_name+' Simplex'})
-        table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
-
-    table_simplex = table_simplex.drop(complex_name, axis = 1)
-    table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
-
-    # Census linking
-    complex_name = 'Census linking'
-
-    simplex_names = corresponding_name_simplex_complex([complex_name])
-    for simplex_name in simplex_names[0]:
-
-        simplex_id = find_setup_id_simplex([name], setup_Simplex_df)
-        simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
-        xref_sc_value_new = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
-        xref_sc_value_new = xref_sc_value_new.rename(columns = {'ID_data_complex':complex_name})
-
-        table_simplex = pd.merge(table_simplex, xref_sc_value_new, how = 'left', left_on = complex_name, right_on = complex_name)
-        table_simplex = table_simplex.rename(columns = {'ID_data_simplex':name, 'Value':name+' Simplex'})
-        table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
-
-    table_simplex = table_simplex.drop(complex_name, axis = 1)
-    table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
-
-    # Siblings
-    complex_name = 'Siblings'
-
-    # lower complex: First name and last name
-    lower_complex = find_lower_complex([complex_name])
-    lower_complex = lower_complex.iat[0, 1]
-    id_data_lower_complex = link_data_id([complex_name, lower_complex], setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
-    data_lower_complex = find_identifier(id_data_lower_complex, [lower_complex], data_Complex_df)
-
-    # First name and last name
-    simplex_names = corresponding_name_simplex_complex([lower_complex])
-    for simplex_name in simplex_names[0]:
-
-        simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
-        simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
-        xref_sc_value_new = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
-        xref_sc_value_new = xref_sc_value_new.rename(columns = {'ID_data_complex':lower_complex})
-
-        data_lower_complex = pd.merge(data_lower_complex, xref_sc_value_new, how = 'left', left_on = lower_complex, right_on = lower_complex)
-        data_lower_complex = data_lower_complex.rename(columns = {'ID_data_simplex':complex_name+'\'s '+simplex_name, 'Value':complex_name+'\'s '+simplex_name+' Simplex'})
-        data_lower_complex = data_lower_complex.drop('ID_setup_simplex', axis = 1)
-
-
-    data_lower_complex = data_lower_complex.drop(lower_complex, axis = 1)
-    data_lower_complex = data_lower_complex.drop(lower_complex+' Identifier', axis = 1)
-
-    table_simplex = pd.merge(table_simplex, data_lower_complex, how = 'left', left_on = 'Siblings', right_on = 'Siblings')
-
-    # simplex: Number of siblings
-    simplex_names = corresponding_name_simplex_complex([complex_name])
-    for simplex_name in simplex_names[0]:
-
-        simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
-        simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
-        xref_sc_value_new = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
-        xref_sc_value_new = xref_sc_value_new.rename(columns = {'ID_data_complex':complex_name})
-
-        table_simplex = pd.merge(table_simplex, xref_sc_value_new, how = 'left', left_on = complex_name, right_on = complex_name)
-        table_simplex = table_simplex.rename(columns = {'ID_data_simplex':simplex_name, 'Value':simplex_name+' Simplex'})
-        table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
-
-    table_simplex = table_simplex.drop(complex_name, axis = 1)
-    table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
-
-    # Children
-    complex_name = 'Children'
-
-    # lower complex: First name and last name
-    lower_complex = find_lower_complex([complex_name])
-    lower_complex = lower_complex.iat[0, 1]
-    id_data_lower_complex = link_data_id([complex_name, lower_complex], setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
-    data_lower_complex = find_identifier(id_data_lower_complex, [lower_complex], data_Complex_df)
-
-    # First name and last name
-    simplex_names = corresponding_name_simplex_complex([lower_complex], setup_Complex_df, setup_xref_Simplex_Complex_df)
-    for simplex_name in simplex_names[0]:
-        simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
-        simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
-        xref_sc_value_new = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
-        xref_sc_value_new = xref_sc_value_new.rename(columns = {'ID_data_complex':lower_complex})
-
-        data_lower_complex = pd.merge(data_lower_complex, xref_sc_value_new, how = 'left', left_on = lower_complex, right_on = lower_complex)
-        data_lower_complex = data_lower_complex.rename(columns = {'ID_data_simplex':complex_name+'\'s '+simplex_name, 'Value':complex_name+'\'s '+simplex_name+' Simplex'})
-        data_lower_complex = data_lower_complex.drop('ID_setup_simplex', axis = 1)
-
-
-    data_lower_complex = data_lower_complex.drop(lower_complex, axis = 1)
-    data_lower_complex = data_lower_complex.drop(lower_complex+' Identifier', axis = 1)
-
-    table_simplex = pd.merge(table_simplex, data_lower_complex, how = 'left', left_on = 'Children', right_on = 'Children')
-
-    # simplex: Number of children
-    simplex_names = corresponding_name_simplex_complex([complex_name])
-    for simplex_name in simplex_names[0]:
-        simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
-        simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
-        xref_sc_value_new = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
-        xref_sc_value_new = xref_sc_value_new.rename(columns = {'ID_data_complex':complex_name})
-
-        table_simplex = pd.merge(table_simplex, xref_sc_value_new, how = 'left', left_on = complex_name, right_on = complex_name)
-        table_simplex = table_simplex.rename(columns = {'ID_data_simplex':simplex_name, 'Value':simplex_name+' Simplex'})
-        table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
-
-    table_simplex = table_simplex.drop(complex_name, axis = 1)
-    table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
-
-    # Relationship to others
-    complex_name = 'Relationship to others'
-
-    # lower complex: Personal characteristics
-
-    # simplex: Type of relationship
-    simplex_names = corresponding_name_simplex_complex([complex_name])
-    for simplex_name in simplex_names[0]:
-        simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
-        simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
-        xref_sc_value_new = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
-        xref_sc_value_new = xref_sc_value_new.rename(columns = {'ID_data_complex':complex_name})
-
-        table_simplex = pd.merge(table_simplex, xref_sc_value_new, how = 'left', left_on = complex_name, right_on = complex_name)
-        table_simplex = table_simplex.rename(columns = {'ID_data_simplex':simplex_name, 'Value':simplex_name+' Simplex'})
-        table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
-
-    table_simplex = table_simplex.drop(complex_name, axis = 1)
-    table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
-
-    # simplex directly under Individual
-    complex_name = 'Victim of alleged crime'
-
-    simplex_names = corresponding_name_simplex_complex([complex_name])
-    for simplex_name in simplex_names[0]:
-        simplex_id = find_setup_id_simplex([name], setup_Simplex_df)
-        simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
-        xref_sc_value_new = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
-        xref_sc_value_new = xref_sc_value_new.rename(columns = {'ID_data_complex':complex_name})
-
-        table_simplex = pd.merge(table_simplex, xref_sc_value_new, how = 'left', left_on = complex_name, right_on = complex_name)
-        table_simplex = table_simplex.rename(columns = {'ID_data_simplex':simplex_name, 'Value':simplex_name+' Simplex'})
-        table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
-
-
-
-    information_victim_of_alleged_crime_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv','victim of alleged crime information')
-    table_simplex.to_csv(information_victim_of_alleged_crime_file_name, encoding='utf-8', index=False)
-
-    return information_victim_of_alleged_crime_file_name
-
-
-def individual_simplex_info(simplex, setup_Simplex, setup_Complex, setup_xref_Simplex_Complex, setup_xref_Complex_Complex, data_xref_Simplex_Complex, data_Simplex, data_SimplexDate, data_SimplexNumber, data_SimplexText):
+# @ Taeeun NOT USED and with hard-coded values 'Victim of lynching', 'Age',...
+# def victim_of_lynching_info(inputDir, outputDir):
+#     setup_Complex_df = library['setup_Complex.xlsx']
+#     setup_Simplex_df = library['setup_Simplex.xlsx']
+#     setup_xref_Complex_Complex_df = library['setup_xref_Complex-Complex.xlsx']
+#     setup_xref_Simplex_Complex_df = library['setup_xref_Simplex-Complex.xlsx']
+#     data_xref_Complex_Complex_df = library['data_xref_Complex-Complex.xlsx']
+#     data_Complex_df = library['data_Complex.xlsx']
+#     data_Simplex_df = library['data_Simplex.xlsx']
+#     data_SimplexText_df = library['data_SimplexText.xlsx']
+#     data_xref_Simplex_Complex_df = library['data_xref_Simplex-Complex.xlsx']
+#     data_SimplexNumber_df = library['data_SimplexNumber.xlsx']
+#
+#     # build table for complex
+#     id_complex = find_setup_id(['Victim of lynching'], setup_Complex_df).iat[0, 0]
+#     table_complex = data_Complex_df[data_Complex_df['ID_setup_complex'].isin([id_complex])]
+#
+#     names_victim_of_lynching = find_lower_complex(['Victim of lynching'])
+#     names_victim_of_lynching = names_victim_of_lynching['Name'].values.tolist()
+#
+#     path = ['Victim of lynching']
+#
+#     for name in names_victim_of_lynching:
+#         path.append(name)
+#         id_data_victim_of_lynching = link_data_id(path, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
+#         data_victim_of_lynching = find_identifier(id_data_victim_of_lynching, [name], data_Complex_df)
+#         table_complex = pd.merge(table_complex, data_victim_of_lynching, how = 'left', left_on = 'ID_data_complex', right_on = 'Victim of lynching')
+#         table_complex = table_complex.drop('Victim of lynching', axis = 1)
+#         path.pop()
+#
+#     table_complex = table_complex.drop('ID_setup_complex', axis = 1)
+#     table_complex = table_complex.rename(columns = {'ID_data_complex':'Victim of lynching', 'Identifier':'Victim of lynching Identifier'})
+#
+#     # start to build simplex table
+#     table_simplex = table_complex
+#
+#     # Age
+#     data_Simplex_temp1 = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'right', on = 'ID_data_date_number_text')
+#     data_Simplex_temp1 = data_Simplex_temp1.dropna(subset = ['Value'])
+#     data_Simplex_temp2 = pd.merge(data_Simplex_df, data_SimplexNumber_df, how = 'right', on = 'ID_data_date_number_text')
+#     data_Simplex_temp2 = data_Simplex_temp2.dropna(subset = ['Value'])
+#     data_Simplex_temp = pd.concat([data_Simplex_temp1, data_Simplex_temp2])
+#     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'Value']]
+#     data_Simplex_temp = pd.merge(data_Simplex_df, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
+#     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
+#
+#     xref_simplex_complex_value = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
+#     xref_simplex_complex_value = xref_simplex_complex_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
+#
+#     complex_name = 'Age'
+#     simplex_names = corresponding_name_simplex_complex([complex_name])
+#     for simplex_name in simplex_names[0]:
+#         simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
+#         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+#         xref_simplex_complex_value_new = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
+#         xref_simplex_complex_value_new = xref_simplex_complex_value_new.rename(columns = {'ID_data_complex':complex_name})
+#
+#         table_simplex = pd.merge(table_simplex, xref_simplex_complex_value_new, how = 'left', left_on = complex_name, right_on = complex_name)
+#         table_simplex = table_simplex.rename(columns = {'ID_data_simplex':simplex_name+' ID', 'Value':simplex_name+' Simplex'})
+#         table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
+#
+#     table_simplex = table_simplex.drop(complex_name, axis = 1)
+#     table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
+#
+#     # Residence
+#     complex_name = 'Residence'
+#
+#     simplex_id = find_setup_id_simplex(['City name', 'County', 'State'], setup_Simplex_df)
+#     simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+#
+#     xref_simplex_complex_value_new = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
+#     xref_simplex_complex_value_new = xref_simplex_complex_value_new.rename(columns = {'ID_data_complex':'Type of territory'})
+#
+#     path = ['Residence', 'Space', 'Territory', 'Type of territory']
+#     id_data_territory = link_data_id(path, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
+#     id_data_territory = id_data_territory[id_data_territory['Residence'].notna()]
+#     id_data_territory = id_data_territory.drop_duplicates(subset = ['Residence'])
+#     data_territory = pd.merge(id_data_territory, xref_simplex_complex_value_new, how = 'left', left_on = 'Type of territory', right_on = 'Type of territory')
+#     data_territory = data_territory[['Residence', 'Type of territory', 'Value']]
+#
+#     table_simplex = pd.merge(table_simplex, data_territory, how = 'left', left_on = complex_name, right_on = complex_name)
+#
+#     table_simplex = table_simplex.rename(columns = {'Value':'Type of territory Simplex'})
+#     table_simplex = table_simplex.drop(complex_name, axis = 1)
+#     table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
+#
+#     # Victim (Beck)
+#     # @ Taeeun hard coded
+#     complex_name = 'Victim (Beck)'
+#
+#     simplex_names = corresponding_name_simplex_complex([complex_name])
+#     for simplex_name in simplex_names[0]:
+#         simplex_id = find_setup_id_simplex([name], setup_Simplex_df)
+#         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+#         xref_simplex_complex_value_new = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
+#         xref_simplex_complex_value_new = xref_simplex_complex_value_new.rename(columns = {'ID_data_complex':complex_name})
+#
+#         table_simplex = pd.merge(table_simplex, xref_simplex_complex_value_new, how = 'left', left_on = complex_name, right_on = complex_name)
+#         table_simplex = table_simplex.rename(columns = {'ID_data_simplex':name, 'Value':name+' Simplex'})
+#         table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
+#
+#     table_simplex = table_simplex.drop(complex_name, axis = 1)
+#     table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
+#
+#     # Victim (Brundage)
+#     complex_name = 'Victim (Brundage)'
+#
+#     simplex_names = corresponding_name_simplex_complex([complex_name])
+#     for simplex_name in simplex_names[0]:
+#         simplex_id = find_setup_id_simplex([name], setup_Simplex_df)
+#         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+#         xref_simplex_complex_value_new = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
+#         xref_simplex_complex_value_new = xref_simplex_complex_value_new.rename(columns = {'ID_data_complex':complex_name})
+#
+#         table_simplex = pd.merge(table_simplex, xref_simplex_complex_value_new, how = 'left', left_on = complex_name, right_on = complex_name)
+#         table_simplex = table_simplex.rename(columns = {'ID_data_simplex':name, 'Value':name+' Simplex'})
+#         table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
+#
+#     table_simplex = table_simplex.drop(complex_name, axis = 1)
+#     table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
+#
+#     # simplex directly under Individual
+#     complex_name = 'Victim of lynching'
+#
+#     simplex_names = corresponding_name_simplex_complex([complex_name])
+#     for simplex_name in simplex_names[0]:
+#         simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
+#         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+#         xref_simplex_complex_value_new = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
+#         xref_simplex_complex_value_new = xref_simplex_complex_value_new.rename(columns = {'ID_data_complex':complex_name})
+#
+#         table_simplex = pd.merge(table_simplex, xref_simplex_complex_value_new, how = 'left', left_on = complex_name, right_on = complex_name)
+#         table_simplex = table_simplex.rename(columns = {'ID_data_simplex':simplex_name, 'Value':simplex_name+' Simplex'})
+#         table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
+#
+#
+#
+#     information_victim_of_lynching_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'victim of lynching information')
+#     table_simplex.to_csv(information_victim_of_lynching_file_name, encoding='utf-8', index=False)
+#
+#     return information_victim_of_lynching_file_name
+
+
+# def victim_of_alleged_crime_info(inputDir, outputDir):
+#     setup_Complex_df = library['setup_Complex.xlsx']
+#     setup_Simplex_df = library['setup_Simplex.xlsx']
+#     setup_xref_Complex_Complex_df = library['setup_xref_Complex-Complex.xlsx']
+#     setup_xref_Simplex_Complex_df = library['setup_xref_Simplex-Complex.xlsx']
+#     data_xref_Complex_Complex_df = library['data_xref_Complex-Complex.xlsx']
+#     data_Complex_df = library['data_Complex.xlsx']
+#     data_Simplex_df = library['data_Simplex.xlsx']
+#     data_SimplexText_df = library['data_SimplexText.xlsx']
+#     data_xref_Simplex_Complex_df = library['data_xref_Simplex-Complex.xlsx']
+#     data_SimplexNumber_df = library['data_SimplexNumber.xlsx']
+#
+#
+#     # build table for complex
+#     id_complex = find_setup_id(['Victim of alleged crime'], setup_Complex_df).iat[0, 0]
+#     table_complex = data_Complex_df[data_Complex_df['ID_setup_complex'].isin([id_complex])]
+#
+#     names_victim_of_alleged_crime = find_lower_complex(['Victim of alleged crime'])
+#     names_victim_of_alleged_crime = names_victim_of_alleged_crime['Name'].values.tolist()
+#
+#     path = ['Victim of alleged crime']
+#
+#     for name in names_victim_of_alleged_crime:
+#         path.append(name)
+#         id_data_victim_of_alleged_crime = link_data_id(path, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
+#         data_victim_of_alleged_crime = find_identifier(id_data_victim_of_alleged_crime, [name], data_Complex_df)
+#         table_complex = pd.merge(table_complex, data_victim_of_alleged_crime, how = 'left', left_on = 'ID_data_complex', right_on = 'Victim of alleged crime')
+#         table_complex = table_complex.drop('Victim of alleged crime', axis = 1)
+#         path.pop()
+#
+#     table_complex = table_complex.drop('ID_setup_complex', axis = 1)
+#     table_complex = table_complex.rename(columns = {'ID_data_complex':'Victim of alleged crime', 'Identifier':'Victim of alleged crime Identifier'})
+#
+#     # start to build simplex table
+#     table_simplex = table_complex
+#
+#     # Age
+#     data_Simplex_temp1 = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'right', on = 'ID_data_date_number_text')
+#     data_Simplex_temp1 = data_Simplex_temp1.dropna(subset = ['Value'])
+#     data_Simplex_temp2 = pd.merge(data_Simplex_df, data_SimplexNumber_df, how = 'right', on = 'ID_data_date_number_text')
+#     data_Simplex_temp2 = data_Simplex_temp2.dropna(subset = ['Value'])
+#     data_Simplex_temp = pd.concat([data_Simplex_temp1, data_Simplex_temp2])
+#     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'Value']]
+#     data_Simplex_temp = pd.merge(data_Simplex_df, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
+#     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
+#
+#     xref_simplex_complex_value = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
+#     xref_simplex_complex_value = xref_simplex_complex_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
+#
+#     complex_name = 'Age'
+#     simplex_names = corresponding_name_simplex_complex([complex_name])
+#     for simplex_name in simplex_names[0]:
+#         simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
+#         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+#         xref_simplex_complex_value_new = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
+#         xref_simplex_complex_value_new = xref_simplex_complex_value_new.rename(columns = {'ID_data_complex':complex_name})
+#
+#         table_simplex = pd.merge(table_simplex, xref_simplex_complex_value_new, how = 'left', left_on = complex_name, right_on = complex_name)
+#         table_simplex = table_simplex.rename(columns = {'ID_data_simplex':simplex_name+' ID', 'Value':simplex_name+' Simplex'})
+#         table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
+#
+#     table_simplex = table_simplex.drop(complex_name, axis = 1)
+#     table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
+#
+#     # Residence
+#     complex_name = 'Residence'
+#
+#     simplex_id = find_setup_id_simplex(['City name', 'County', 'State'], setup_Simplex_df)
+#     simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+#
+#     xref_simplex_complex_value_new = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
+#     xref_simplex_complex_value_new = xref_simplex_complex_value_new.rename(columns = {'ID_data_complex':'Type of territory'})
+#
+#     path = ['Residence', 'Space', 'Territory', 'Type of territory']
+#     id_data_territory = link_data_id(path, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
+#     id_data_territory = id_data_territory[id_data_territory['Residence'].notna()]
+#     id_data_territory = id_data_territory.drop_duplicates(subset = ['Residence'])
+#     data_territory = pd.merge(id_data_territory, xref_simplex_complex_value_new, how = 'left', left_on = 'Type of territory', right_on = 'Type of territory')
+#     data_territory = data_territory[['Residence', 'Type of territory', 'Value']]
+#
+#     table_simplex = pd.merge(table_simplex, data_territory, how = 'left', left_on = complex_name, right_on = complex_name)
+#
+#     table_simplex = table_simplex.rename(columns = {'Value':'Type of territory Simplex'})
+#     table_simplex = table_simplex.drop(complex_name, axis = 1)
+#     table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
+#
+#     # First name and last name
+#     complex_name = 'First name and last name'
+#     simplex_names = corresponding_name_simplex_complex([complex_name])
+#     for simplex_name in simplex_names[0]:
+#         simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
+#         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+#         xref_simplex_complex_value_new = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
+#         xref_simplex_complex_value_new = xref_simplex_complex_value_new.rename(columns = {'ID_data_complex':complex_name})
+#
+#         table_simplex = pd.merge(table_simplex, xref_simplex_complex_value_new, how = 'left', left_on = complex_name, right_on = complex_name)
+#         table_simplex = table_simplex.rename(columns = {'ID_data_simplex':simplex_name+' ID', 'Value':simplex_name+' Simplex'})
+#         table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
+#
+#     table_simplex = table_simplex.drop(complex_name, axis = 1)
+#     table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
+#
+#     # Census linking
+#     complex_name = 'Census linking'
+#
+#     simplex_names = corresponding_name_simplex_complex([complex_name])
+#     for simplex_name in simplex_names[0]:
+#
+#         simplex_id = find_setup_id_simplex([name], setup_Simplex_df)
+#         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+#         xref_simplex_complex_value_new = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
+#         xref_simplex_complex_value_new = xref_simplex_complex_value_new.rename(columns = {'ID_data_complex':complex_name})
+#
+#         table_simplex = pd.merge(table_simplex, xref_simplex_complex_value_new, how = 'left', left_on = complex_name, right_on = complex_name)
+#         table_simplex = table_simplex.rename(columns = {'ID_data_simplex':name, 'Value':name+' Simplex'})
+#         table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
+#
+#     table_simplex = table_simplex.drop(complex_name, axis = 1)
+#     table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
+#
+#     # Siblings
+#     complex_name = 'Siblings'
+#
+#     # lower complex: First name and last name
+#     lower_complex = find_lower_complex([complex_name])
+#     lower_complex = lower_complex.iat[0, 1]
+#     id_data_lower_complex = link_data_id([complex_name, lower_complex], setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
+#     data_lower_complex = find_identifier(id_data_lower_complex, [lower_complex], data_Complex_df)
+#
+#     # First name and last name
+#     simplex_names = corresponding_name_simplex_complex([lower_complex])
+#     for simplex_name in simplex_names[0]:
+#
+#         simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
+#         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+#         xref_simplex_complex_value_new = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
+#         xref_simplex_complex_value_new = xref_simplex_complex_value_new.rename(columns = {'ID_data_complex':lower_complex})
+#
+#         data_lower_complex = pd.merge(data_lower_complex, xref_simplex_complex_value_new, how = 'left', left_on = lower_complex, right_on = lower_complex)
+#         data_lower_complex = data_lower_complex.rename(columns = {'ID_data_simplex':complex_name+'\'s '+simplex_name, 'Value':complex_name+'\'s '+simplex_name+' Simplex'})
+#         data_lower_complex = data_lower_complex.drop('ID_setup_simplex', axis = 1)
+#
+#
+#     data_lower_complex = data_lower_complex.drop(lower_complex, axis = 1)
+#     data_lower_complex = data_lower_complex.drop(lower_complex+' Identifier', axis = 1)
+#
+#     table_simplex = pd.merge(table_simplex, data_lower_complex, how = 'left', left_on = 'Siblings', right_on = 'Siblings')
+#
+#     # simplex: Number of siblings
+#     simplex_names = corresponding_name_simplex_complex([complex_name])
+#     for simplex_name in simplex_names[0]:
+#
+#         simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
+#         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+#         xref_simplex_complex_value_new = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
+#         xref_simplex_complex_value_new = xref_simplex_complex_value_new.rename(columns = {'ID_data_complex':complex_name})
+#
+#         table_simplex = pd.merge(table_simplex, xref_simplex_complex_value_new, how = 'left', left_on = complex_name, right_on = complex_name)
+#         table_simplex = table_simplex.rename(columns = {'ID_data_simplex':simplex_name, 'Value':simplex_name+' Simplex'})
+#         table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
+#
+#     table_simplex = table_simplex.drop(complex_name, axis = 1)
+#     table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
+#
+#     # Children
+#     complex_name = 'Children'
+#
+#     # lower complex: First name and last name
+#     lower_complex = find_lower_complex([complex_name])
+#     lower_complex = lower_complex.iat[0, 1]
+#     id_data_lower_complex = link_data_id([complex_name, lower_complex], setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
+#     data_lower_complex = find_identifier(id_data_lower_complex, [lower_complex], data_Complex_df)
+#
+#     # First name and last name
+#     simplex_names = corresponding_name_simplex_complex([lower_complex], setup_Complex_df, setup_xref_Simplex_Complex_df)
+#     for simplex_name in simplex_names[0]:
+#         simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
+#         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+#         xref_simplex_complex_value_new = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
+#         xref_simplex_complex_value_new = xref_simplex_complex_value_new.rename(columns = {'ID_data_complex':lower_complex})
+#
+#         data_lower_complex = pd.merge(data_lower_complex, xref_simplex_complex_value_new, how = 'left', left_on = lower_complex, right_on = lower_complex)
+#         data_lower_complex = data_lower_complex.rename(columns = {'ID_data_simplex':complex_name+'\'s '+simplex_name, 'Value':complex_name+'\'s '+simplex_name+' Simplex'})
+#         data_lower_complex = data_lower_complex.drop('ID_setup_simplex', axis = 1)
+#
+#
+#     data_lower_complex = data_lower_complex.drop(lower_complex, axis = 1)
+#     data_lower_complex = data_lower_complex.drop(lower_complex+' Identifier', axis = 1)
+#
+#     table_simplex = pd.merge(table_simplex, data_lower_complex, how = 'left', left_on = 'Children', right_on = 'Children')
+#
+#     # simplex: Number of children
+#     simplex_names = corresponding_name_simplex_complex([complex_name])
+#     for simplex_name in simplex_names[0]:
+#         simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
+#         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+#         xref_simplex_complex_value_new = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
+#         xref_simplex_complex_value_new = xref_simplex_complex_value_new.rename(columns = {'ID_data_complex':complex_name})
+#
+#         table_simplex = pd.merge(table_simplex, xref_simplex_complex_value_new, how = 'left', left_on = complex_name, right_on = complex_name)
+#         table_simplex = table_simplex.rename(columns = {'ID_data_simplex':simplex_name, 'Value':simplex_name+' Simplex'})
+#         table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
+#
+#     table_simplex = table_simplex.drop(complex_name, axis = 1)
+#     table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
+#
+#     # Relationship to others
+#     complex_name = 'Relationship to others'
+#
+#     # lower complex: Personal characteristics
+#
+#     # simplex: Type of relationship
+#     simplex_names = corresponding_name_simplex_complex([complex_name])
+#     for simplex_name in simplex_names[0]:
+#         simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
+#         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+#         xref_simplex_complex_value_new = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
+#         xref_simplex_complex_value_new = xref_simplex_complex_value_new.rename(columns = {'ID_data_complex':complex_name})
+#
+#         table_simplex = pd.merge(table_simplex, xref_simplex_complex_value_new, how = 'left', left_on = complex_name, right_on = complex_name)
+#         table_simplex = table_simplex.rename(columns = {'ID_data_simplex':simplex_name, 'Value':simplex_name+' Simplex'})
+#         table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
+#
+#     table_simplex = table_simplex.drop(complex_name, axis = 1)
+#     table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
+#
+#     # simplex directly under Individual
+#     complex_name = 'Victim of alleged crime'
+#
+#     simplex_names = corresponding_name_simplex_complex([complex_name])
+#     for simplex_name in simplex_names[0]:
+#         simplex_id = find_setup_id_simplex([name], setup_Simplex_df)
+#         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+#         xref_simplex_complex_value_new = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
+#         xref_simplex_complex_value_new = xref_simplex_complex_value_new.rename(columns = {'ID_data_complex':complex_name})
+#
+#         table_simplex = pd.merge(table_simplex, xref_simplex_complex_value_new, how = 'left', left_on = complex_name, right_on = complex_name)
+#         table_simplex = table_simplex.rename(columns = {'ID_data_simplex':simplex_name, 'Value':simplex_name+' Simplex'})
+#         table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
+#
+#
+#
+#     information_victim_of_alleged_crime_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv','victim of alleged crime information')
+#     table_simplex.to_csv(information_victim_of_alleged_crime_file_name, encoding='utf-8', index=False)
+#
+#     return information_victim_of_alleged_crime_file_name
+
+
+def individual_simplex_info(simplex, setup_Simplex_df, setup_Complex_df, setup_xref_Simplex_Complex_df, setup_xref_Complex_Complex_df, data_xref_Simplex_Complex_df, data_Simplex_df, data_SimplexDate_df, data_SimplexNumber_df, data_SimplexText_df):
     data = {'information': ['simplex name', 'frequency', 'complex name', 'higher complex', 'lower complex', 'relationship to event']}
     simplex_info = []
 
     # the name of simplex
-    data_simplex_temp = pd.concat([data_SimplexDate, data_SimplexNumber, data_SimplexText])
-    data_simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', on = 'ID_data_date_number_text')
+    data_simplex_temp = pd.concat([data_SimplexDate_df, data_SimplexNumber_df, data_SimplexText_df])
+    data_simplex_temp = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'left', on = 'ID_data_date_number_text')
     data_simplex_select = data_simplex_temp[data_simplex_temp['Value']==simplex]
     simplex_setup_id = data_simplex_select['ID_setup_simplex'].values.tolist()
-    simplex_name = setup_Simplex[setup_Simplex['ID_setup_simplex'].isin(simplex_setup_id)]
+    simplex_name = setup_Simplex_df[setup_Simplex_df['ID_setup_simplex'].isin(simplex_setup_id)]
     simplex_name = simplex_name['Name'].values.tolist()
     for name in simplex_name:
         simplex_info.append([name])
 
     # frequency
-    temp = pd.merge(data_xref_Simplex_Complex, data_Simplex, how = 'left', on = 'ID_data_simplex')
+    temp = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_df, how = 'left', on = 'ID_data_simplex')
     ID_data_date_number_text = temp['ID_data_date_number_text'].values.tolist()
     ID_data_date_number_text = ID_data_date_number_text[0]
     data_xref_Simplex_Complex_select = temp[temp['ID_data_date_number_text']==ID_data_date_number_text]
     for i in range(len(simplex_info)):
-        simplex_setup_id = find_setup_id_simplex([simplex_info[i][0]], setup_Simplex)
+        simplex_setup_id = find_setup_id_simplex([simplex_info[i][0]], setup_Simplex_df)
         simplex_setup_id = simplex_setup_id.iat[0,0]
         data_xref_Simplex_Complex_select_further = data_xref_Simplex_Complex_select[data_xref_Simplex_Complex_select['ID_setup_simplex']==simplex_setup_id]
         frequency = 0
@@ -1834,16 +2046,16 @@ def individual_simplex_info(simplex, setup_Simplex, setup_Complex, setup_xref_Si
     # complex related info
     for i in range(len(simplex_info)):
         simplex_name = simplex_info[i][0]
-        complex_name = find_parent_simplex_util([simplex_name], setup_Simplex, setup_xref_Simplex_Complex, setup_Complex)
+        complex_name = find_parent_simplex_util([simplex_name], setup_Simplex_df, setup_xref_Simplex_Complex_df, setup_Complex_df)
         if len(complex_name) != 0:
             # highercomplex
-            higher_complex = find_higher_complex(complex_name, setup_Complex, setup_xref_Complex_Complex)
+            higher_complex = find_higher_complex(complex_name, setup_Complex_df, setup_xref_Complex_Complex_df)
             higher_complex = higher_complex['Name'].values.tolist()
             # lowercomplex
             lower_complex = find_lower_complex(complex_name)
             lower_complex = lower_complex['Name'].values.tolist()
             # relationship to event
-            path = find_path('Event', complex_name[0], setup_Complex, setup_xref_Complex_Complex)
+            path = find_path('Event', complex_name[0], setup_Complex_df, setup_xref_Complex_Complex_df)
             path = path[0]
             # format
             complex_name_table = ', '.join(complex_name)
@@ -1895,10 +2107,10 @@ def individual_simplex_info_main(simplex, inputDir, outputDir):
 
 
 def build_macro_event_dropdown_menu(window, inputDir):
-    import IO_user_interface_util
-    IO_user_interface_util.timed_alert(window, 1000, 'Warning',
-                                       'Loading PC-ACE Excel xlsx database... Please wait...',
-                                       False, '', False, '', False)
+    # import IO_user_interface_util
+    # IO_user_interface_util.timed_alert(window, 1000, 'Warning',
+    #                                    'Loading PC-ACE Excel xlsx database... Please wait...',
+    #                                    False, '', False, '', False)
     downdown_menu_list = []
     has_files = True
 

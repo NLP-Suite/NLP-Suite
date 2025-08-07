@@ -40,7 +40,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         semantic_triplet_verb,
         semantic_triplet_object,
         actors_var, time_var, time_label_var, space_var, space_label_var,
-        gephi_var, wordcloud_var, google_earth_var,
+        SVO_relations_visuals_var, wordcloud_var, google_earth_var,
         comments_var,
         document_sources_var):
 
@@ -149,96 +149,179 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
     if outputFile != '':
         filesToOpen.append(outputFile)
 
-# Gephi for semantic triplets SVO ----------------------------------------------------------------------------------------
-    if semantic_triplet_var and gephi_var:
+# Visualization of semantic triplets SVO ----------------------------------------------------------------------------------------
+    if semantic_triplet_var:
         svo_result_list=[]
         fileBase = os.path.basename(outputFile)[0:-5]
         nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(outputFile, encodingValue='utf-8')
 
         if nRecords > 1:  # including headers; file is empty
-            import pandas as pd
 
-            # the next lines do not seem to do anything,
-            #   perhaps, should take the date from the date in the database to create a dynamic network graph
-            # df = pd.read_csv(outputFile,encoding='utf-8',on_bad_lines='skip')
-            # # Add a new empty column called 'data expression'
-            # df['Date expression'] = '' # '1998-09-01' should take the date from the date in the database
-            # df['Normalized date'] = ''
-            # df['Date type'] = ''
-            # # Write the updated DataFrame back to the CSV file
-            # df.to_csv(outputFile, index=False)
-            # print("New column 'Date expression' added successfully!")
-
-            gexf_file = Gephi_util.create_gexf(window, fileBase, outputDir, outputFile,
-                                               "Subject (S)", "Verb (V)", "Object (O)",'',"non-default") # Sentence ID will be added as the last column
-            filesToOpen.append(gexf_file)
-
-        # Sankey charts
-
-            Sankey_limit1_var = 5
-            Sankey_limit2_var = 10
-            Sankey_limit3_var = 20
-            three_way_Sankey = True
-
-            output_label = 'sankey'
-            outputFilename_sankey = IO_files_util.generate_output_file_name(outputFile, inputDir, outputDir,
-                                                                            '.html', output_label)
-            outputFiles = charts_util.Sankey(outputFile, outputFilename_sankey,
-                                             'Subject (S)', Sankey_limit1_var, 'Verb (V)', Sankey_limit2_var,
-                                             three_way_Sankey, 'Object (O)', Sankey_limit3_var)
-
-            if outputFiles != None:
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFile,
+                                                               outputDir,
+                                                               columns_to_be_plotted_xAxis=[],
+                                                               columns_to_be_plotted_yAxis=['S Type'],
+                                                               chart_title='Frequency Distribution of Subject Type',
+                                                               # count_var = 1 for columns of alphabetic values
+                                                               count_var=1, hover_label=[],
+                                                               outputFileNameType=str('S type'),
+                                                               column_xAxis_label=str('Subject type'),
+                                                               groupByList=[],
+                                                               plotList=[],
+                                                               chart_title_label='')
+            if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
                 else:
                     filesToOpen.extend(outputFiles)
 
-            # output_label = 'sunburst'
-            # outputFilename_sunburst = IO_files_util.generate_output_file_name(outputFile, inputDir, outputDir,
-            #                                                                 '.html', output_label)
-            outputFilename_sunburst = ''
-            csv_file_categorical_field_list = [['Subject (S)|'], ['Verb (V)|'], ['Object (O)|']]
-            suntree = 3
-            fixed_param_var = 30
-            rate_param_var = None
-            base_param_var = None
-            filter_options_var = 'Fixed parameter'
-            case_sensitive_var = 1
-            outputFiles = charts_util.Sunburst_Treemap(outputFile, outputFilename_sunburst, outputDir, csv_file_categorical_field_list, suntree, fixed_param_var, rate_param_var, base_param_var, filter_options_var, case_sensitive_var)
-            if outputFiles != None:
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFile,
+                                                               outputDir,
+                                                               columns_to_be_plotted_xAxis=[],
+                                                               columns_to_be_plotted_yAxis=['O Type'],
+                                                               chart_title='Frequency Distribution of Object Type',
+                                                               # count_var = 1 for columns of alphabetic values
+                                                               count_var=1, hover_label=[],
+                                                               outputFileNameType=str('O type'),
+                                                               column_xAxis_label=str('Object type'),
+                                                               groupByList=[],
+                                                               plotList=[],
+                                                               chart_title_label='')
+            if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
                 else:
                     filesToOpen.extend(outputFiles)
 
 
-    # wordcloud for semantic triplets SVO _________________________________________________
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFile,
+                                                               outputDir,
+                                                               columns_to_be_plotted_xAxis=[],
+                                                               columns_to_be_plotted_yAxis=['Subject (S)'],
+                                                               chart_title='Frequency Distribution of Subjects',
+                                                               # count_var = 1 for columns of alphabetic values
+                                                               count_var=1, hover_label=[],
+                                                               outputFileNameType=str('Subject (S)'),
+                                                               column_xAxis_label=str('Subject (S)'),
+                                                               groupByList=[],
+                                                               plotList=[],
+                                                               chart_title_label='')
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
-    if semantic_triplet_var and wordcloud_var:
-        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(outputFile)
-        if nRecords > 1:  # including headers; file is empty
-            myfile = IO_files_util.openCSVFile(outputFile, 'r')
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFile,
+                                                               outputDir,
+                                                               columns_to_be_plotted_xAxis=[],
+                                                               columns_to_be_plotted_yAxis=['Verb (V)'],
+                                                               chart_title='Frequency Distribution of Verbs',
+                                                               # count_var = 1 for columns of alphabetic values
+                                                               count_var=1, hover_label=[],
+                                                               outputFileNameType=str('Verb (V)'),
+                                                               column_xAxis_label=str('Verb (V)'),
+                                                               groupByList=[],
+                                                               plotList=[],
+                                                               chart_title_label='')
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
-            # run with all default values;
-            use_contour_only = False
-            max_words = 100
-            font = 'Default'
-            prefer_horizontal = .9
-            # lemmatize = False
-            exclude_stopwords = True
-            exclude_punctuation = True
-            lowercase = False
-            differentPOS_differentColors = False
-            differentColumns_differentColors = False
-            csvField_color_list = []
-            doNotListIndividualFiles = True
-            collocation = False
-            import wordclouds_util
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFile,
+                                                      outputDir,
+                                                      columns_to_be_plotted_xAxis=[],
+                                                      columns_to_be_plotted_yAxis=['Object (O)'],
+                                                      chart_title='Frequency Distribution of Objects',
+                                                      # count_var = 1 for columns of alphabetic values
+                                                      count_var=1, hover_label=[],
+                                                      outputFileNameType=str('Object (O)'),
+                                                      column_xAxis_label=str('Object (O)'),
+                                                      groupByList=[],
+                                                      plotList=[],
+                                                      chart_title_label='')
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
-            outputFile = wordclouds_util.SVOWordCloud(myfile, outputFile, outputDir,
-                                                    "", wordcloud_title='', prefer_horizontal=.9)
-            myfile.close()
-            filesToOpen.append(outputFile)
+            # Gephi graph
+
+            if SVO_relations_visuals_var:
+
+                gexf_file = Gephi_util.create_gexf(window, fileBase, outputDir, outputFile,
+                                                   "Subject (S)", "Verb (V)", "Object (O)",'',"non-default") # Sentence ID will be added as the last column
+                filesToOpen.append(gexf_file)
+
+            # Sankey charts
+
+                Sankey_limit1_var = 5
+                Sankey_limit2_var = 10
+                Sankey_limit3_var = 20
+                three_way_Sankey = True
+
+                output_label = 'sankey'
+                outputFilename_sankey = IO_files_util.generate_output_file_name(outputFile, inputDir, outputDir,
+                                                                                '.html', output_label)
+                outputFiles = charts_util.Sankey(outputFile, outputFilename_sankey,
+                                                 'Subject (S)', Sankey_limit1_var, 'Verb (V)', Sankey_limit2_var,
+                                                 three_way_Sankey, 'Object (O)', Sankey_limit3_var)
+
+                if outputFiles != None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
+
+                # output_label = 'sunburst'
+                # outputFilename_sunburst = IO_files_util.generate_output_file_name(outputFile, inputDir, outputDir,
+                #                                                                 '.html', output_label)
+                outputFilename_sunburst = ''
+                csv_file_categorical_field_list = [['Subject (S)|'], ['Verb (V)|'], ['Object (O)|']]
+                suntree = 3
+                fixed_param_var = 15
+                rate_param_var = None
+                base_param_var = None
+                filter_options_var = 'Fixed parameter'
+                case_sensitive_var = 1
+                outputFiles = charts_util.Sunburst_Treemap(outputFile, outputFilename_sunburst, outputDir, csv_file_categorical_field_list, suntree, fixed_param_var, rate_param_var, base_param_var, filter_options_var, case_sensitive_var)
+                if outputFiles != None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
+
+
+        # wordcloud for semantic triplets SVO _________________________________________________
+
+        # if semantic_triplet_var and wordcloud_var:
+        #     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(outputFile)
+        #     if nRecords > 1:  # including headers; file is empty
+                myfile = IO_files_util.openCSVFile(outputFile, 'r')
+
+                # run with all default values;
+                use_contour_only = False
+                max_words = 100
+                font = 'Default'
+                prefer_horizontal = .9
+                # lemmatize = False
+                exclude_stopwords = True
+                exclude_punctuation = True
+                lowercase = False
+                differentPOS_differentColors = False
+                differentColumns_differentColors = False
+                csvField_color_list = []
+                doNotListIndividualFiles = True
+                collocation = False
+                import wordclouds_util
+
+                outputFile = wordclouds_util.SVOWordCloud(myfile, outputFile, outputDir,
+                                                        "", wordcloud_title='', prefer_horizontal=.9)
+                myfile.close()
+                filesToOpen.append(outputFile)
 
 # GIS maps for semantic triplets SVO _____________________________________________________
     def generateChart(outputFile, label):
@@ -361,63 +444,65 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                     # since outputFile produced by KML is a list cannot use append
                     filesToOpen = filesToOpen + outputFile
 
-# actors ----------------------------------------------------------------------
-    def process_actor(inputDir, outputDir, actors_var, chart_title, yAxis_columns, output_type):
-        outputFile = DB_PCACE_data_analyzer_util.actor_characteristics(inputDir, outputDir, actors_var)
+# # NO LONGER USED
+# # actors ----------------------------------------------------------------------
+#     def process_actor(inputDir, outputDir, actors_var, chart_title, yAxis_columns, output_type):
+#         outputFile = DB_PCACE_data_analyzer_util.actor_characteristics(inputDir, outputDir, actors_var)
+#
+#         files_to_open = []
+#         if outputFile:
+#             files_to_open.append(outputFile)
+#             outputFiles = charts_util.visualize_chart(
+#                 chartPackage, dataTransformation, outputFile, outputDir,
+#                 columns_to_be_plotted_xAxis=[],
+#                 columns_to_be_plotted_yAxis=yAxis_columns,
+#                 chart_title=f'Frequency Distribution of {actors_var.capitalize()}s',
+#                 count_var=1, hover_label=[],
+#                 outputFileNameType=output_type,
+#                 column_xAxis_label=actors_var,
+#                 groupByList=[], plotList=[], chart_title_label=''
+#             )
+#
+#             if outputFiles:
+#                 if isinstance(outputFiles, str):
+#                     files_to_open.append(outputFiles)
+#                 else:
+#                     files_to_open.extend(outputFiles)
+#         return files_to_open
+#
+#     # Define the actor configurations
+#     # Taeeun must generalize names
+#     actor_configs = {
+#         'Attore collettivo': {
+#             'chart_title': 'Frequency Distribution of Collective Actors',
+#             'yAxis_columns': ['Name of collective actor Simplex'],
+#             'output_file_type': 'coll'
+#         },
+#         'Individuo': {
+#             'chart_title': 'Frequency Distribution of Individuals',
+#             'yAxis_columns': ['Name of individual actor Simplex'],
+#             'output_file_type': 'ind'
+#         },
+#         'Organizzazione': {
+#             'chart_title': 'Frequency Distribution of Organizations',
+#             'yAxis_columns': [
+#                 'State organisation Simplex', 'Political party Simplex', 'Other institution Simplex',
+#                 'Actor aggregate code Simplex', 'Actor aggregate (Institution) COLIN Simplex'
+#             ],
+#             'output_file_type': 'org'
+#         }
+#     }
+#
+#     # @ Taeeun must generalize names
+#     # uncomment after generalization
+#     # for actor_type, config in actor_configs.items():
+#     #     if actor_type == actors_var:
+#     #         filesToOpen.extend(process_actor(
+#     #             inputDir, outputDir, actors_var,
+#     #             config['chart_title'], config['yAxis_columns'], config['output_file_type']
+#     #         ))
+#     #
 
-        files_to_open = []
-        if outputFile:
-            files_to_open.append(outputFile)
-            outputFiles = charts_util.visualize_chart(
-                chartPackage, dataTransformation, outputFile, outputDir,
-                columns_to_be_plotted_xAxis=[],
-                columns_to_be_plotted_yAxis=yAxis_columns,
-                chart_title=f'Frequency Distribution of {actors_var.capitalize()}s',
-                count_var=1, hover_label=[],
-                outputFileNameType=output_type,
-                column_xAxis_label=actors_var,
-                groupByList=[], plotList=[], chart_title_label=''
-            )
-
-            if outputFiles:
-                if isinstance(outputFiles, str):
-                    files_to_open.append(outputFiles)
-                else:
-                    files_to_open.extend(outputFiles)
-        return files_to_open
-
-    # Define the actor configurations
-    # Taeeun must generalize names
-    actor_configs = {
-        'Attore collettivo': {
-            'chart_title': 'Frequency Distribution of Collective Actors',
-            'yAxis_columns': ['Name of collective actor Simplex'],
-            'output_file_type': 'coll'
-        },
-        'Individuo': {
-            'chart_title': 'Frequency Distribution of Individuals',
-            'yAxis_columns': ['Name of individual actor Simplex'],
-            'output_file_type': 'ind'
-        },
-        'Organizzazione': {
-            'chart_title': 'Frequency Distribution of Organizations',
-            'yAxis_columns': [
-                'State organisation Simplex', 'Political party Simplex', 'Other institution Simplex',
-                'Actor aggregate code Simplex', 'Actor aggregate (Institution) COLIN Simplex'
-            ],
-            'output_file_type': 'org'
-        }
-    }
-
-    # Taeeun must generalize names
-    # uncomment after generalization
-    # for actor_type, config in actor_configs.items():
-    #     if actor_type == actors_var:
-    #         filesToOpen.extend(process_actor(
-    #             inputDir, outputDir, actors_var,
-    #             config['chart_title'], config['yAxis_columns'], config['output_file_type']
-    #         ))
-    #
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
@@ -450,7 +535,7 @@ run_script_command=lambda: run(
                                 time_label_var.get(),
                                 space_var.get(),
                                 space_label_var.get(),
-                                gephi_var.get(),wordcloud_var.get(),google_earth_var.get(),
+                                SVO_relations_visuals_var.get(),wordcloud_var.get(),google_earth_var.get(),
                                 comments_var.get(),
                                 document_sources_var.get())
 
@@ -527,7 +612,7 @@ space_label_var = tk.StringVar()
 
 select_parents_var = tk.StringVar()
 select_children_var = tk.StringVar()
-gephi_var = tk.IntVar()
+SVO_relations_visuals_var = tk.IntVar()
 wordcloud_var = tk.IntVar()
 google_earth_var = tk.IntVar()
 
@@ -561,7 +646,7 @@ def clear(e):
     semantic_triplet_subject.set(''),
     semantic_triplet_verb.set(''),
     semantic_triplet_object.set(''),
-    gephi_var.set(0)
+    SVO_relations_visuals_var.set(0)
     wordcloud_var.set(0)
     google_earth_var.set(0)
     time_var.set(0)
@@ -712,8 +797,7 @@ def activate_SVO_visualization():
         semantic_triplet_subject_box.configure(state='normal')
         semantic_triplet_verb_box.configure(state='normal')
         semantic_triplet_object_box.configure(state='normal')
-        gephi_checkbox.configure(state='normal')
-        wordcloud_checkbox.configure(state='normal')
+        SVO_relations_visuals_checkbox.configure(state='normal')
         google_earth_checkbox.configure(state='normal')
     else:
         time_checkbox.configure(state='disabled')
@@ -723,8 +807,7 @@ def activate_SVO_visualization():
         semantic_triplet_subject_box.configure(state='disabled')
         semantic_triplet_verb_box.configure(state='disabled')
         semantic_triplet_object_box.configure(state='disabled')
-        gephi_checkbox.configure(state='disabled')
-        wordcloud_checkbox.configure(state='disabled')
+        SVO_relations_visuals_checkbox.configure(state='disabled')
         google_earth_checkbox.configure(state='disabled')
 
 semantic_triplet_var_checkbox = tk.Checkbutton(window, text='Semantic triplets (SVO)', variable=semantic_triplet_var, onvalue=1, offvalue=0, command=lambda: activate_SVO_visualization())
@@ -752,10 +835,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_co
 
 space_checkbox = tk.Checkbutton(window, text='Space', variable=space_var, onvalue=1, offvalue=0)
 space_checkbox.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+400, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                    space_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.read_button_x_coordinate,
-                                   "Tick the checkbox to extract space information. When running Space in conjuction with SVO, columns with space information will be added to the SVO csv output file.\nWhen a specific macro event is selected, the space will be extracted for that specific macro event.\nWhen the Visualize Where checkbox is ticked and a Simplex location name is selected, space information will be geocoded using Nominatim and displayed as pin map via Google Earth Pro and heat map via Google Maps.")
+                                   "Tick the checkbox to extract space information. When running Space in conjuction with SVO, columns with space information will be added to the SVO csv output file.\nWhen a specific macro event is selected, the space will be extracted for that specific macro event.\nWhen the Visualize Where checkbox is ticked and a Simplex location name is selected, space information will be geocoded using Google if the Google-geocode-API_config.csv file is present in the config subdirectory; otherwise Nominatim will be used. Geocoded waypoints will be displayed as pin map via Google Earth Pro and heat map via Google Maps (Python Folium will be used if no Google API key is found).")
+
 space_label_var_box = ttk.Combobox(window, textvariable = space_label_var, width=GUI_IO_util.widget_width_short)
 space_label_var_box.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+475, y_multiplier_integer,
@@ -793,40 +877,29 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
                                                False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                                "Using the Object dropdown menu, select the complex object used for Object in the selected database.\nDifferent databases may have different names for the Object, depending upon user preferences and the language used for the setup (e.g., English or Italian).\nThe Object could be named Participant-O or Actor-O or Oggetto. The selected name will be used for the query.")
 
-gephi_var.set(0)
-gephi_checkbox = tk.Checkbutton(window, text='Visualize SVO relations ',
-                                variable=gephi_var, onvalue=1, offvalue=0)
-gephi_checkbox.configure(state='disabled')
+SVO_relations_visuals_var.set(0)
+SVO_relations_visuals_checkbox = tk.Checkbutton(window, text='Visualize SVO relations (Gephi, Sankey, Sunburst, Wordcloud)',
+                                variable=SVO_relations_visuals_var, onvalue=1, offvalue=0)
+SVO_relations_visuals_checkbox.configure(state='disabled')
 
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+20, y_multiplier_integer,
-                                   gephi_checkbox,
+                                   SVO_relations_visuals_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Tick the checkbox to visualize the triplet SVOs as a network graph in Gephi and Sankey flowcharts and in sunburst, treemap, and colormap charts.")
-
-wordcloud_var.set(0)
-wordcloud_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in wordcloud', variable=wordcloud_var,
-                                    onvalue=1, offvalue=0)
-wordcloud_checkbox.configure(state='disabled')
-
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
-                                   wordcloud_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate+350,
-                                   "Tick the checkbox to visualize the triplet SVOs in a wordcloud: Subjects in red, Verbs in blue, Objects in green.")
+                                   "Tick the checkbox to visualize the triplet SVOs via  Gephi, Sankey, sunburst, treemap, colormap, and wordclouds.\nSankey graphs display top 10 Subject (S), 20 Verb (V), 20 Object (O). Sunburst and Treemap charts display top 15 values. Use data_visualization_1 GUI to change default values.\nSpace information is geocoded via Google if the Google-geocode-API_config.csv file is present in the config subdirectory; otherwise Nominatim is used. Geocoded waypoints are displayed as pin map via Google Earth Pro and heat map via Google Maps (Python Folium will be used if no Google API key is found).")
 
 google_earth_var.set(0)
-google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where (via Google Maps & Google Earth Pro)',
+google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where (via Google Maps & Google Earth Pro or Python Folium)',
                                        variable=google_earth_var, onvalue=1, offvalue=0)
 google_earth_checkbox.configure(state='disabled')
 
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+150, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                    google_earth_checkbox,
-                                   False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
-                                   "Tick the checkbox to visualize the space of SVOs as in a Google Earth Pro pin map and Google Maps heat map")
+                                   False, False, True, False, 90, GUI_IO_util.watch_videos_x_coordinate,
+                                   "Tick the checkbox to visualize the space of SVOs as in a Google Earth Pro pin map and Google Maps heat map.\nSpace information will be geocoded using Google if the Google-geocode-API_config.csv file is present in the config subdirectory; otherwise Nominatim will be used.\nGeocoded waypoints will be displayed as pin map via Google Earth Pro and heat map via Google Maps (Python Folium will be used if no Google API key is found).")
 
-# Taeeun the complex objects widget only displays the object identifier;
+# @ Taeeun the complex objects widget only displays the object identifier;
 # but... like the functions for the SVO extractor, it should display the value of all the simplex objects that make up the complex object
 
 complex_objects_lb = tk.Label(window, text='Complex ')
@@ -1008,7 +1081,7 @@ def changed_filename(*args):
             if not database_already_loaded:
                 primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(window,inputDir.get())
                 primary_complex['values'] = primary_complex_menu
-                database_already_loaded = True
+                database_already_loaded = False
         else:
             simplex_data_type_menu.configure(state='disabled')
             setup_complex.set('')
@@ -1090,7 +1163,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     # name of S V O in specific databases (e.g., Participant-S or Soggetto in Italian)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, use the dropdown menu to extract the users and/or visualize Verifiers comments." + GUI_IO_util.msg_Esc)
     # SVO visualization
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkboxes to visualize Subjects, Verbs, Objects in network graphs and wordclouds, and to visualize space in geographic maps." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkboxes to visualize Subjects, Verbs, Objects in network graphs, via Gephi, Sankey, and Sunburst, and wordclouds, and to visualize space in geographic maps.\n\nSankey graphs display only top 10 Subject (S), 20 Verb (V), 20 Object (O). Sunburst and Treemap charts display top 15 values. To change these default values, use the data_visualization_1 GUI.\n\nSpace information will be geocoded using Google if the Google-geocode-API_config.csv file is present in the config subdirectory; otherwise Nominatim will be used. Geocoded waypoints will be displayed as pin map via Google Earth Pro and heat map via Google Maps (Python Folium will be used if no Google API key is found)." + GUI_IO_util.msg_Esc)
     # actors
     # y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, use the dropdown menu to select the type of actor for which you wish to extract all instances of semantic triplets, i.e., Subject-Verb-Object combinations (* for all types of actors)." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,

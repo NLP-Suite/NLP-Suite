@@ -443,6 +443,8 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
             # filter_byNER is typically capitalized, e.g., United States of America;
             #   should not use row['Subject (S)'].lower()
             if filter_s and filter_v and not filter_o:
+                if row['Subject (S)'].lower() == 'sufficient':
+                    print()
                 if ((row['Subject (S)'].lower() in s_filtered_set) or \
                     (str(row['Subject (S)']) in filter_byNER)) and \
                     (row['Verb (V)'].lower() in v_filtered_set):
@@ -503,6 +505,7 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
         if keep_record: # export the filtered record
             filtered_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
                 ['Subject (S)', 'Verb (V)', 'Object (O)']]
+            print(filtered_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']])
             keep_record = False
         else:
             # Drop rows from filtered_svo DataFrame that do not meet the filter condition

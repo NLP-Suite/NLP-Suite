@@ -328,7 +328,7 @@ def add_NER_tag(coming_from_add, coming_from_reset):
     if NER_tag_var.get()!=' ':
         # --- is used for CoreNLP for NER subsets (e.g., --- All spatial expressions)
         if NER_tag_var.get() in NER_entry_var.get() and not('---' in NER_tag_var.get()):
-            mb.showwarning(title='Warning', message='The NER tag "'+ NER_tag_var.get() + '" is already in your selection NER list: '+ str(NER_entry_var.get()) + '.\n\nPlease, select another NER tag.')
+            mb.showwarning(title='Warning', message='The NER tag "'+ NER_tag_var.get() + '" is already in your selection NER list: '+ str(NER_entry_var.get()) + '.\n\nPlease, select another NER tag (or hit the Reset button and try again).')
             window.focus_force()
             return
 
