@@ -277,6 +277,328 @@ def visualize_SVOs(fileName, outputDir, chartPackage, dataTransformation, filesT
 
     return filesToOpen
 
+# def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, filter_s_fileName, filter_v_fileName, filter_o_fileName,
+#                lemmatize_s, lemmatize_v, lemmatize_o, outputSVODir,  chartPackage='Excel', dataTransformation='No transformation'):
+#     filesToOpen = []
+#     from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
+#     from functools import lru_cache
+#
+#     @lru_cache(maxsize=10000)
+#     def memoized_lemmatize(token):
+#         return lemmatize_stanza_word(stanzaPipeLine(token))
+#
+#
+#     startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start',
+#                                                    'Started running the lemma/filter algorithm for Subject-Verb-Object (SVO) at',
+#                                                    True, '', True)
+#
+#     df = pd.read_csv(svo_file_name, encoding='utf-8',on_bad_lines='skip')
+#     df = df.replace(np.nan, '', regex=True)  # replace NaNs with empty strings
+#     num_rows = df.shape[0]
+#     if lemmatize_s or lemmatize_v or lemmatize_o:
+#         head, tail = os.path.split(outputSVODir)
+#         # create an SVO-lemma subdirectory of the main output directory
+#         outputSVOLemmaDir = IO_files_util.make_output_subdirectory('', '', head, label='SVO_lemma',
+#                                                                     silent=True)
+#         if outputSVOLemmaDir == '':
+#             return
+#
+#         # create the lemma dict
+#         if filter_s or filter_v or filter_o:
+#             head, tail = os.path.split(outputSVODir)
+#             outputSVOFilterDir = IO_files_util.make_output_subdirectory('', '', head, label='SVO_filter',
+#                                                                         silent=True)
+#             if outputSVOFilterDir == '':
+#                 return
+#
+#     # Creating filtered sets from WordNet verbose lists; use only the first column 'Term'
+#     if not filter_s:
+#         s_filtered_set = set()
+#     else:
+#         # convert all WordNet categories to lower case to make comparison easier
+#         temp_pd = pd.read_csv(filter_s_fileName)['Term']
+#         temp_pd = temp_pd.astype(str).str.lower()
+#         s_filtered_set = set(temp_pd)
+#         sorted(s_filtered_set)
+#         # s_filtered_set = set(pd.read_csv(filter_s_fileName)['Term'])
+#     if not filter_v:
+#         v_filtered_set = set()
+#     else:
+#         # convert all WordNet categories to lower case to make comparison easier
+#         temp_pd = pd.read_csv(filter_v_fileName)['Term']
+#         temp_pd = temp_pd.astype(str).str.lower()
+#         v_filtered_set = set(temp_pd)
+#         sorted(v_filtered_set)
+#         # v_filtered_set = set(pd.read_csv(filter_v_fileName)['Term'])
+#     if not filter_o:
+#         o_filtered_set = set()
+#     else:
+#         # convert all WordNet categories to lower case to make comparison easier
+#         temp_pd = pd.read_csv(filter_o_fileName)['Term']
+#         temp_pd = temp_pd.astype(str).str.lower()
+#         o_filtered_set = set(temp_pd)
+#         sorted(o_filtered_set)
+#         # o_filtered_set = set(pd.read_csv(filter_o_fileName)['Term'])
+#     # should add any PERSON or ORGANIZATION or LOCATION to the list, if these PERSON or ORGANIZATION or LOCATION values are not in the WordNet social-actor-list
+#     # multi name S & O (e.g., Mao Zedong) in WordNet are listed with underscores (Mao_Zedong); we must do the same for multi-word names
+#     # to recognize mwe expressions that are tagged as PERSON or ORGANIZATION or LOCATION '@#'
+#     # Create DataFrames for lemmatized and filtered SVOs
+#     lemmatized_svo = df.copy()
+#     filtered_svo = df.copy()
+#
+#     df = df.fillna('')
+#     df = df.replace(to_replace='None', value='', regex=False)
+#
+#     lemmatize_s_SV = lemmatize_s
+#     for idx, row in df.iterrows():
+#         print('Processing SVO record '+ str(idx) + '/' + str(len(df)))
+#         if lemmatize_s_SV == True:
+#             lemmatize_s = True
+#         # the tag suffix @# will have been added in the Stanford_CoreNLP_util function process_json_SVO_enhanced_dependencies
+#         #   to identify any mwe (multi-word expression) that is a NER PERSON, ORGANIZATION, or LOCATION
+#         #   (e.g., Christopher Columbus, United States of America) which should always be treated as social actors independently of the WordNet list
+#         if '@#' in row['Subject (S)']:
+#             lemmatize_s = False
+#             keep_record = True
+#         if lemmatize_s:
+#             if row['Subject (S)'].count(' ')==0:
+#                 row['Subject (S)'] = memoized_lemmatize(row['Subject (S)'])
+#             else:
+#                 if filter_s:
+#                     if not '@#' in row['Subject (S)']:
+#                         # WordNet multi-word expressions are all _ separated (e.g., Christopher_Columbus)
+#                         # convert string to list
+#                         temp_list = row['Subject (S)'].split(' ')
+#                         temp_lemma = ''
+#                         for i in range(len(temp_list)):
+#                             if temp_lemma=='':
+#                                 temp_lemma = memoized_lemmatize(temp_list[i])
+#                             else:
+#                                 temp_lemma = temp_lemma + ' ' + memoized_lemmatize(temp_list[i])
+#                         row['Subject (S)'] = temp_lemma.replace('  ', ' ') # temp_lemma will have 2 blanks when lemmatizing a blank token
+#                         row['Subject (S)'] = temp_lemma.replace(' ', '_')
+#         if lemmatize_v:
+#             if row['Verb (V)'].count(' ')==0:
+#                 row['Verb (V)'] = lemmatize_stanza_word(stanzaPipeLine(row['Verb (V)']))
+#             else:
+#                 if filter_v:
+#                     # WordNet multi-word expressions are all _ separated (e.g., add_on)
+#                     # convert string to list
+#                     temp_list = row['Verb (V)'].split(' ')
+#                     temp_lemma = ''
+#                     for i in range(len(temp_list)):
+#                         if temp_lemma=='':
+#                             temp_lemma = memoized_lemmatize(temp_list[i])
+#                         else:
+#                             temp_lemma = temp_lemma + ' ' + memoized_lemmatize(temp_list[i])
+#                     row['Verb (V)'] = temp_lemma.replace('  ', ' ') # temp_lemma will have 2 blanks when lemmatizing  a blank token
+#                     row['Verb (V)'] = temp_lemma.replace(' ', '_')
+#         if lemmatize_o:
+#             if row['Object (O)'].count(' ')==0:
+#                 row['Object (O)'] = memoized_lemmatize(row['Object (O)'])
+#             else:
+#                 if filter_o:
+#                     # WordNet multi-word expressions are all _ separated (e.g., Christopher_Columbus)
+#                     # convert string to list
+#                     temp_list = row['Object (O)'].split(' ')
+#                     temp_lemma = ''
+#                     for i in range(len(temp_list)):
+#                         if temp_lemma=='':
+#                             temp_lemma = memoized_lemmatize(temp_list[i])
+#                         else:
+#                             temp_lemma = temp_lemma + ' ' + memoized_lemmatize(temp_list[i])
+#                     row['Object (O)'] = temp_lemma.replace('  ', ' ') # temp_lemma will have 2 blanks when lemmatizing  a blank token
+#                     row['Object (O)'] = temp_lemma.replace(' ', '_')
+#
+#         # # Assign lemmatized rows back to the lemmatized_svo DataFrame
+#         # lemmatized_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
+#         #     ['Subject (S)', 'Verb (V)', 'Object (O)']]
+#
+#         filter_byNER = set([row['Person']]).union(set([row['Organization']]).union(set([row['Location']])))
+#         # add unstated passive subjects as Inferred_Subject_Passive
+#         filter_byNER.add('Inferred_Subject_Passive')
+#
+#         keep_record = False
+#
+#
+#
+# # S-V-O filter ALL -----------------------------------------------------------------------------------
+# # When multiple filters are applied (for S, V, and O) all conditions must be met
+#         if row['Object (O)'] and row['Subject (S)'] and row['Verb (V)']:
+#             if filter_s and filter_v and filter_o:
+#                 if ((row['Subject (S)'].lower() in s_filtered_set) or \
+#                     (str(row['Subject (S)']).lower() in filter_byNER)) and \
+#                     (row['Verb (V)'].lower() in v_filtered_set) and \
+#                     ((row['Object (O)'].lower() in o_filtered_set) and \
+#                     (row['Object (O)'].lower() in filter_byNER)):
+#                     keep_record=True
+#                 # the tag @# is added to mwe that are classified in NER as PERSON, ORGANIZATION, or LOCATION
+#                 #   which can be social actors that should not be lemmatized (e.g., 'Christopher Columbus discovered America')
+#                 if '@#' in row['Subject (S)']:
+#                     keep_record = True
+#
+#     # S-V filter ONLY NO O -----------------------------------------------------------------------------------
+#     # When multiple filters are applied (for S, V, and O) all conditions must be met
+#
+#             # filter_byNER is typically capitalized, e.g., United States of America;
+#             #   should not use row['Subject (S)'].lower()
+#             if filter_s and filter_v and not filter_o:
+#                 if row['Subject (S)'].lower() == 'sufficient':
+#                     print()
+#                 if ((row['Subject (S)'].lower() in s_filtered_set) or \
+#                     (str(row['Subject (S)']) in filter_byNER)) and \
+#                     (row['Verb (V)'].lower() in v_filtered_set):
+#                     keep_record = True
+#                 # the tag @# is added to mwe that are classified in NER as PERSON, ORGANIZATION, or LOCATION
+#                 #   which can be social actors that should not be lemmatized (e.g., 'Christopher Columbus discovered America')
+#                 if '@#' in row['Subject (S)']:
+#                     keep_record = True
+#
+#     # S filter ONLY NO V & O -----------------------------------------------------------------------------------
+#     # When multiple filters are applied (for S, V, and O) all conditions must be met
+#     # filter_byNER is typically capitalized, e.g., United States of America;
+#     #   should not use row['Subject (S)'].lower()
+#
+#             if filter_s and not filter_v and not filter_o:
+#                 if ((row['Subject (S)'].lower() in s_filtered_set) or \
+#                     (str(row['Subject (S)']) in filter_byNER)):
+#                     keep_record = True
+#                 # the tag @# is added to mwe that are classified in NER as PERSON, ORGANIZATION, or LOCATION
+#                 #   which can be social actors that should not be lemmatized (e.g., 'Christopher Columbus discovered America')
+#                 if '@#' in row['Subject (S)']:
+#                     keep_record = True
+#
+#     # V filter ONLY NO S & O -----------------------------------------------------------------------------------
+#     # When multiple filters are applied (for S, V, and O) all conditions must be met
+#
+#             if filter_v and not filter_s and not filter_o:
+#                 if (row['Verb (V)'].lower() in v_filtered_set):
+#                     keep_record = True
+#
+#
+#     # O filter ONLY NO S & V -------------------------------------------------------------------------------
+#     # When multiple filters are applied (for S, V, and O) all conditions must be met
+#     # filter_byNER is typically capitalized, e.g., United States of America;
+#     #   should not use row['Subject (S)'].lower()
+#             if filter_o and not filter_s and not filter_v:
+#                 if ((row['Object (O)'].lower() in o_filtered_set) or \
+#                     (str(row['Object (O)']) in filter_byNER)):
+#                     keep_record = True
+#         else:
+#             print(f"Skipping incomplete SVO at row {idx}: S={row['Subject (S)']}, V={row['Verb (V)']}, O={row['Object (O)']}")
+#             continue
+#
+# # ----------------------------------------------------------------------------------------------------------
+#         # rewrite the original df record if @# was added as a tag to recognize the record as a
+#         #   PERSON, ORGANIZATION, or LOCATION
+#         #   which can be social actors that should not be lemmatized
+#         #   this would keep such mwe as 'United States of America' and preserve such sentences as 'United States of America fought Germany in WWII'
+#
+#         if '@#' in row['Subject (S)']:
+#             row['Subject (S)'] = row['Subject (S)'].replace('@#', '')
+#             # update the original df dataframe with @# tags with the new cleaned values
+#             df.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
+#                 ['Subject (S)', 'Verb (V)', 'Object (O)']]
+#
+#
+#
+#         if keep_record: # export the filtered record
+#             filtered_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
+#                 ['Subject (S)', 'Verb (V)', 'Object (O)']]
+#             print(filtered_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']])
+#             keep_record = False
+#         else:
+#             # Drop rows from filtered_svo DataFrame that do not meet the filter condition
+#             filtered_svo.drop(idx, inplace=True)
+#
+#         # Assign lemmatized rows back to the lemmatized_svo DataFrame
+#         lemmatized_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
+#             ['Subject (S)', 'Verb (V)', 'Object (O)']]
+#
+#         # reset the row, replacing the _ back to " "
+#         if not "inferred_subject_passive" in row['Subject (S)']:
+#             df.loc[idx, ['Subject (S)']] = row['Subject (S)'].replace('_', ' ')
+#         df.loc[idx, ['Verb (V)']] = row['Verb (V)'].replace('_', ' ')
+#         df.loc[idx, ['Object (O)']] = row['Object (O)'].replace('_', ' ')
+#     # save the edited df to the svo file
+#     df.to_csv(svo_file_name, encoding='utf-8', index=False)
+#
+#     # print(lemmatized_svo,filtered_svo)
+#     # Continue with your code, now working with filtered and lemmatized DataFrames
+#
+#     # filtering for WordNet social actors/actions requires lemmatizing
+#     nRecords_lemma = 0
+#     nRecords_filter = 0
+#     if lemmatize_s or lemmatize_v or lemmatize_o:
+#         head, tail = os.path.split(svo_file_name)
+#         tail = tail.replace('NLP_SVO_', 'NLP_SVO_lemma_')
+#         svo_lemma_file_name = os.path.join(outputSVOLemmaDir, tail)
+#         filesToOpen.append(svo_lemma_file_name)
+#         # save lemmatized file
+#         lemmatized_svo.to_csv(svo_lemma_file_name, encoding='utf-8', index=False)
+#         nRecords_lemma, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(svo_lemma_file_name)
+#
+#         # filtering for WordNet social actors/actions requires lemmatizing
+#         if filter_s or filter_v or filter_o:
+#             if filter_s and filter_v and filter_o:
+#                 label='SVO_'
+#             elif filter_s and filter_v:
+#                 label='SV_'
+#             elif filter_s and filter_o:
+#                 label='SO_'
+#             elif filter_s:
+#                 label = 'S_'
+#             elif filter_v and filter_o:
+#                 label='VO_'
+#             elif filter_v:
+#                 label='V_'
+#             elif filter_o:
+#                 label='O_'
+#
+#             outputDir, tail = os.path.split(svo_lemma_file_name)
+#             tail = tail.replace('NLP_SVO_lemma_', 'NLP_SVO_filter_'+ label)
+#             svo_filter_file_name = os.path.join(outputSVOFilterDir, tail)
+#             # save filtered file
+#             filesToOpen.append(svo_filter_file_name)
+#
+#             # save filtered file
+#             filtered_svo.to_csv(svo_filter_file_name, encoding='utf-8', index=False)
+#
+#             # if filter_s or filter_v or filter_o:
+#             # pd.DataFrame.from_dict(filtered_svo, orient='index').to_csv(svo_filter_file_name, encoding='utf-8', index=False)
+#
+#             nRecords_filter, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(svo_filter_file_name)
+#             filtered_records = num_rows - nRecords_filter
+#             IO_user_interface_util.timed_alert(window,6000,'Filtered records', 'The filter algorithms have filtered out ' + str(filtered_records) + \
+#                 ' records.\n\nNumber of original SVO records: ' + str(num_rows) + '\nNumber of filtered SVO records: ' + str(nRecords_filter))
+#
+#             # save filtered records info
+#             svo_filter_records = []
+#             svo_filter_records_file_name = os.path.join(outputSVOFilterDir, tail[:-4]+'_records.csv')
+#             filesToOpen.append(svo_filter_records_file_name)
+#             headers = ['Number of original unfiltered SVO records', 'Number of filtered SVO records', 'Difference']
+#             row = [str(num_rows), str(nRecords_filter), str(num_rows - nRecords_filter)]
+#             svo_filter_records.append(headers)
+#             svo_filter_records.append(row)
+#             IO_csv_util.list_to_csv(1, svo_filter_records, svo_filter_records_file_name)
+#     else:
+#         svo_lemma_file_name= ''
+#
+#     IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running the lemma/filter algorithm for Subject-Verb-Object (SVO) at', True, '', True,
+#                                        startTime, True)
+#
+#     if nRecords_lemma > 1 or nRecords_filter >1:
+#         openFiles = False # way too many files to open; but this can be changed at any time
+#         if lemmatize_s or lemmatize_v or lemmatize_o:
+#             filesToOpen = visualize_SVOs(svo_lemma_file_name, outputSVOLemmaDir, chartPackage, dataTransformation,filesToOpen, openFiles)
+#         if filter_s or filter_v or filter_o:
+#             filesToOpen = visualize_SVOs(svo_filter_file_name, outputSVOFilterDir, chartPackage, dataTransformation,filesToOpen, openFiles)
+#
+#     # rewrite the original df file in case @# were added as a tag to recognize the record as a PERSON, ORGANIZATION, or LOCATION
+#     df.to_csv(svo_file_name, encoding='utf-8', index=False)
+#
+#     return filesToOpen
+
 def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, filter_s_fileName, filter_v_fileName, filter_o_fileName,
                lemmatize_s, lemmatize_v, lemmatize_o, outputSVODir,  chartPackage='Excel', dataTransformation='No transformation'):
     filesToOpen = []
@@ -350,6 +672,211 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
     df = df.replace(to_replace='None', value='', regex=False)
 
     lemmatize_s_SV = lemmatize_s
+
+    #_1 is Subject (S), _2 is Verb (V) and _3 is Object (O)
+#     for row in df.itertuples():
+#         idx = row.Index
+#         print("THIS IS ROW        ", row)
+#         print("THIS IS ROW FIELDS      ", row._fields)
+#         print('Processing SVO record ' + str(idx) + '/' + str(len(df)))
+#         if lemmatize_s_SV == True:
+#             lemmatize_s = True
+#         # the tag suffix @# will have been added in the Stanford_CoreNLP_util function process_json_SVO_enhanced_dependencies
+#         #   to identify any mwe (multi-word expression) that is a NER PERSON, ORGANIZATION, or LOCATION
+#         #   (e.g., Christopher Columbus, United States of America) which should always be treated as social actors independently of the WordNet list
+#         if '@#' in row._1:
+#             lemmatize_s = False
+#             keep_record = True
+#         if lemmatize_s:
+#             if row.count(' ') == 0:
+#                 row._1= memoized_lemmatize(row._1)
+#             else:
+#                 if filter_s:
+#                     if not '@#' in row._1:
+#                         # WordNet multi-word expressions are all _ separated (e.g., Christopher_Columbus)
+#                         # convert string to list
+#                         temp_list = row._1.split(' ')
+#                         temp_lemma = ''
+#                         for i in range(len(temp_list)):
+#                             if temp_lemma == '':
+#                                 temp_lemma = memoized_lemmatize(temp_list[i])
+#                             else:
+#                                 temp_lemma = temp_lemma + ' ' + memoized_lemmatize(temp_list[i])
+#                         row._1 = temp_lemma.replace('  ',
+#                                                                 ' ')  # temp_lemma will have 2 blanks when lemmatizing a blank token
+#                         row._1 = temp_lemma.replace(' ', '_')
+#         if lemmatize_v:
+#             if row._2.count(' ') == 0:
+#                 rowVerb__V_ = lemmatize_stanza_word(stanzaPipeLine(row._2))
+#             else:
+#                 if filter_v:
+#                     # WordNet multi-word expressions are all _ separated (e.g., add_on)
+#                     # convert string to list
+#                     temp_list = row._2.split(' ')
+#                     temp_lemma = ''
+#                     for i in range(len(temp_list)):
+#                         if temp_lemma == '':
+#                             temp_lemma = memoized_lemmatize(temp_list[i])
+#                         else:
+#                             temp_lemma = temp_lemma + ' ' + memoized_lemmatize(temp_list[i])
+#                     row._2 = temp_lemma.replace('  ',
+#                                                          ' ')  # temp_lemma will have 2 blanks when lemmatizing  a blank token
+#                     row._2 = temp_lemma.replace(' ', '_')
+#         if lemmatize_o:
+#             if row._3.count(' ') == 0:
+#                 row._3 = memoized_lemmatize(row._3)
+#             else:
+#                 if filter_o:
+#                     # WordNet multi-word expressions are all _ separated (e.g., Christopher_Columbus)
+#                     # convert string to list
+#                     temp_list = row._3.split(' ')
+#                     temp_lemma = ''
+#                     for i in range(len(temp_list)):
+#                         if temp_lemma == '':
+#                             temp_lemma = memoized_lemmatize(temp_list[i])
+#                         else:
+#                             temp_lemma = temp_lemma + ' ' + memoized_lemmatize(temp_list[i])
+#                     row._3= temp_lemma.replace('  ',
+#                                                            ' ')  # temp_lemma will have 2 blanks when lemmatizing  a blank token
+#                     row._3= temp_lemma.replace(' ', '_')
+#
+#         # # Assign lemmatized rows back to the lemmatized_svo DataFrame
+#         # lemmatized_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
+#         #     ['Subject (S)', 'Verb (V)', 'Object (O)']]
+#
+#         filter_byNER = {row.Person, row.Organization, row.Location}
+#         # add unstated passive subjects as Inferred_Subject_Passive
+#         filter_byNER.add('Inferred_Subject_Passive')
+#
+#         keep_record = False
+#
+#         # S-V-O filter ALL -----------------------------------------------------------------------------------
+#         # When multiple filters are applied (for S, V, and O) all conditions must be met
+#         if filter_s and filter_v and filter_o:
+#             if row._3 and row._1 and row._2:
+#                 if ((row._1.lower() in s_filtered_set) or \
+#                     (str(row._1).lower() in filter_byNER)) and \
+#                         (row._2.lower() in v_filtered_set) and \
+#                         ((row._3.lower() in o_filtered_set) and \
+#                          (row._3.lower() in filter_byNER)):
+#                     keep_record = True
+#                 # the tag @# is added to mwe that are classified in NER as PERSON, ORGANIZATION, or LOCATION
+#                 #   which can be social actors that should not be lemmatized (e.g., 'Christopher Columbus discovered America')
+#                 if '@#' in row._1:
+#                     keep_record = True
+#             else:
+#                 print(
+#                     f"Skipping incomplete SVO at row {idx}: S={row._1}, V={row._2}, O={row._3}")
+#                 filtered_svo.drop(index=idx, inplace=True)
+#                 continue
+#
+#         # S-V filter ONLY NO O -----------------------------------------------------------------------------------
+#         # When multiple filters are applied (for S, V, and O) all conditions must be met
+#
+#         # filter_byNER is typically capitalized, e.g., United States of America;
+#         #   should not use row._1.lower()
+#         elif filter_s and filter_v and not filter_o:
+#             if row._2 and row._1:
+#                 if ((row._1.lower() in s_filtered_set) or \
+#                     (str(row._1) in filter_byNER)) and \
+#                         (row._2.lower() in v_filtered_set):
+#                     keep_record = True
+#                 # the tag @# is added to mwe that are classified in NER as PERSON, ORGANIZATION, or LOCATION
+#                 #   which can be social actors that should not be lemmatized (e.g., 'Christopher Columbus discovered America')
+#                 if '@#' in row._1:
+#                     keep_record = True
+#             else:
+#                 print(
+#                     f"Skipping incomplete SVO at row {idx}: S={row._1}, V={row._2}, O={row._3}")
+#                 filtered_svo.drop(index=idx, inplace=True)
+#                 continue
+#
+#         # S filter ONLY NO V & O -----------------------------------------------------------------------------------
+#         # When multiple filters are applied (for S, V, and O) all conditions must be met
+#         # filter_byNER is typically capitalized, e.g., United States of America;
+#         #   should not use row._1.lower()
+#
+#         elif filter_s and not filter_v and not filter_o:
+#             if row._1:
+#                 if ((row._1.lower() in s_filtered_set) or \
+#                         (str(row._1) in filter_byNER)):
+#                     keep_record = True
+#                 # the tag @# is added to mwe that are classified in NER as PERSON, ORGANIZATION, or LOCATION
+#                 #   which can be social actors that should not be lemmatized (e.g., 'Christopher Columbus discovered America')
+#                 if '@#' in row._1:
+#                     keep_record = True
+#             else:
+#                 print(
+#                     f"Skipping incomplete SVO at row {idx}: S={row._1}, V={row._2}, O={row._3}")
+#                 filtered_svo.drop(index=idx, inplace=True)
+#                 continue
+#
+#         # V filter ONLY NO S & O -----------------------------------------------------------------------------------
+#         # When multiple filters are applied (for S, V, and O) all conditions must be met
+#
+#         elif filter_v and not filter_s and not filter_o:
+#             if (row._2):
+#                 if (row._2.lower() in v_filtered_set):
+#                     keep_record = True
+#             else:
+#                 print(
+#                     f"Skipping incomplete SVO at row {idx}: S={row._1}, V={row._2}, O={row._3}")
+#                 filtered_svo.drop(index=idx, inplace=True)
+#                 continue
+#
+#
+#         # O filter ONLY NO S & V -------------------------------------------------------------------------------
+#         # When multiple filters are applied (for S, V, and O) all conditions must be met
+#         # filter_byNER is typically capitalized, e.g., United States of America;
+#         #   should not use row._1.lower()
+#         elif filter_o and not filter_s and not filter_v:
+#             if row._3:
+#                 if ((row._3.lower() in o_filtered_set) or \
+#                         (str(row._3) in filter_byNER)):
+#                     keep_record = True
+#             else:
+#                 print(
+#                     f"Skipping incomplete SVO at row {idx}: S={row._1}, V={row._2}, O={row._3}")
+#                 filtered_svo.drop(index=idx, inplace=True)
+#                 continue
+#
+#         # ----------------------------------------------------------------------------------------------------------
+#         # rewrite the original df record if @# was added as a tag to recognize the record as a
+#         #   PERSON, ORGANIZATION, or LOCATION
+#         #   which can be social actors that should not be lemmatized
+#         #   this would keep such mwe as 'United States of America' and preserve such sentences as 'United States of America fought Germany in WWII'
+#         subject = row[0]
+#         verb = row[1]
+#         obj = row[2]
+#
+#         # Clean subject if it contains '@#'
+#         if '@#' in subject:
+#             subject = subject.replace('@#', '')
+#             # Update the original df at idx for Subject (S)
+#             df.loc[idx, 'Subject (S)'] = subject
+#
+#         # Similarly update verb and object in df (replacing '_' with ' ')
+#         df.loc[idx, 'Verb (V)'] = verb.replace('_', ' ')
+#         df.loc[idx, 'Object (O)'] = obj.replace('_', ' ')
+#
+#         # Example updating filtered_svo DataFrame conditionally
+#         if keep_record:
+#             filtered_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = [subject, verb, obj]
+#             keep_record = False
+#         else:
+#             filtered_svo.drop(idx, inplace=True)
+#
+#         # Assign lemmatized rows back
+#         lemmatized_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = [subject, verb, obj]
+#
+#         # If you want to reset underscores in Subject only if condition met
+#         if "inferred_subject_passive" not in subject:
+#             df.loc[idx, 'Subject (S)'] = subject.replace('_', ' ')
+#         # save the edited df to the svo file
+#     df.to_csv(svo_file_name, encoding='utf-8', index=False)
+
+
+# OLD SLOWER VERSION
     for idx, row in df.iterrows():
         print('Processing SVO record '+ str(idx) + '/' + str(len(df)))
         if lemmatize_s_SV == True:
@@ -424,69 +951,89 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
 
 # S-V-O filter ALL -----------------------------------------------------------------------------------
 # When multiple filters are applied (for S, V, and O) all conditions must be met
-        if row['Object (O)'] and row['Subject (S)'] and row['Verb (V)']:
-            if filter_s and filter_v and filter_o:
+        if filter_s and filter_v and filter_o:
+            if row['Object (O)'] and row['Subject (S)'] and row['Verb (V)']:
                 if ((row['Subject (S)'].lower() in s_filtered_set) or \
                     (str(row['Subject (S)']).lower() in filter_byNER)) and \
-                    (row['Verb (V)'].lower() in v_filtered_set) and \
-                    ((row['Object (O)'].lower() in o_filtered_set) and \
-                    (row['Object (O)'].lower() in filter_byNER)):
-                    keep_record=True
+                        (row['Verb (V)'].lower() in v_filtered_set) and \
+                        ((row['Object (O)'].lower() in o_filtered_set) and \
+                         (row['Object (O)'].lower() in filter_byNER)):
+                    keep_record = True
                 # the tag @# is added to mwe that are classified in NER as PERSON, ORGANIZATION, or LOCATION
                 #   which can be social actors that should not be lemmatized (e.g., 'Christopher Columbus discovered America')
                 if '@#' in row['Subject (S)']:
                     keep_record = True
+            else:
+                print(f"Skipping incomplete SVO at row {idx}: S={row['Subject (S)']}, V={row['Verb (V)']}, O={row['Object (O)']}")
+                filtered_svo.drop(index=idx, inplace=True)
+                continue
 
-    # S-V filter ONLY NO O -----------------------------------------------------------------------------------
-    # When multiple filters are applied (for S, V, and O) all conditions must be met
+        # S-V filter ONLY NO O -----------------------------------------------------------------------------------
+        # When multiple filters are applied (for S, V, and O) all conditions must be met
 
-            # filter_byNER is typically capitalized, e.g., United States of America;
-            #   should not use row['Subject (S)'].lower()
-            if filter_s and filter_v and not filter_o:
-                if row['Subject (S)'].lower() == 'sufficient':
-                    print()
+        # filter_byNER is typically capitalized, e.g., United States of America;
+        #   should not use row['Subject (S)'].lower()
+        elif filter_s and filter_v and not filter_o:
+            if row['Verb (V)'] and row['Subject (S)']:
                 if ((row['Subject (S)'].lower() in s_filtered_set) or \
                     (str(row['Subject (S)']) in filter_byNER)) and \
-                    (row['Verb (V)'].lower() in v_filtered_set):
+                        (row['Verb (V)'].lower() in v_filtered_set):
                     keep_record = True
                 # the tag @# is added to mwe that are classified in NER as PERSON, ORGANIZATION, or LOCATION
                 #   which can be social actors that should not be lemmatized (e.g., 'Christopher Columbus discovered America')
                 if '@#' in row['Subject (S)']:
                     keep_record = True
+            else:
+                print(f"Skipping incomplete SVO at row {idx}: S={row['Subject (S)']}, V={row['Verb (V)']}, O={row['Object (O)']}")
+                filtered_svo.drop(index=idx, inplace=True)
+                continue
 
-    # S filter ONLY NO V & O -----------------------------------------------------------------------------------
-    # When multiple filters are applied (for S, V, and O) all conditions must be met
-    # filter_byNER is typically capitalized, e.g., United States of America;
-    #   should not use row['Subject (S)'].lower()
+        # S filter ONLY NO V & O -----------------------------------------------------------------------------------
+        # When multiple filters are applied (for S, V, and O) all conditions must be met
+        # filter_byNER is typically capitalized, e.g., United States of America;
+        #   should not use row['Subject (S)'].lower()
 
-            if filter_s and not filter_v and not filter_o:
+        elif filter_s and not filter_v and not filter_o:
+            if row['Subject (S)']:
                 if ((row['Subject (S)'].lower() in s_filtered_set) or \
-                    (str(row['Subject (S)']) in filter_byNER)):
+                        (str(row['Subject (S)']) in filter_byNER)):
                     keep_record = True
                 # the tag @# is added to mwe that are classified in NER as PERSON, ORGANIZATION, or LOCATION
                 #   which can be social actors that should not be lemmatized (e.g., 'Christopher Columbus discovered America')
                 if '@#' in row['Subject (S)']:
                     keep_record = True
+            else:
+                print(f"Skipping incomplete SVO at row {idx}: S={row['Subject (S)']}, V={row['Verb (V)']}, O={row['Object (O)']}")
+                filtered_svo.drop(index=idx, inplace=True)
+                continue
 
-    # V filter ONLY NO S & O -----------------------------------------------------------------------------------
-    # When multiple filters are applied (for S, V, and O) all conditions must be met
+        # V filter ONLY NO S & O -----------------------------------------------------------------------------------
+        # When multiple filters are applied (for S, V, and O) all conditions must be met
 
-            if filter_v and not filter_s and not filter_o:
+        elif filter_v and not filter_s and not filter_o:
+            if(row['Verb (V)']):
                 if (row['Verb (V)'].lower() in v_filtered_set):
                     keep_record = True
+            else:
+                print(f"Skipping incomplete SVO at row {idx}: S={row['Subject (S)']}, V={row['Verb (V)']}, O={row['Object (O)']}")
+                filtered_svo.drop(index=idx, inplace=True)
+                continue
 
 
-    # O filter ONLY NO S & V -------------------------------------------------------------------------------
-    # When multiple filters are applied (for S, V, and O) all conditions must be met
-    # filter_byNER is typically capitalized, e.g., United States of America;
-    #   should not use row['Subject (S)'].lower()
-            if filter_o and not filter_s and not filter_v:
+        # O filter ONLY NO S & V -------------------------------------------------------------------------------
+        # When multiple filters are applied (for S, V, and O) all conditions must be met
+        # filter_byNER is typically capitalized, e.g., United States of America;
+        #   should not use row['Subject (S)'].lower()
+        elif filter_o and not filter_s and not filter_v:
+            if row['Object (O)']:
                 if ((row['Object (O)'].lower() in o_filtered_set) or \
-                    (str(row['Object (O)']) in filter_byNER)):
+                        (str(row['Object (O)']) in filter_byNER)):
                     keep_record = True
-        else:
-            print(f"Skipping incomplete SVO at row {idx}: S={row['Subject (S)']}, V={row['Verb (V)']}, O={row['Object (O)']}")
-            continue
+            else:
+                print(f"Skipping incomplete SVO at row {idx}: S={row['Subject (S)']}, V={row['Verb (V)']}, O={row['Object (O)']}")
+                filtered_svo.drop(index=idx, inplace=True)
+                continue
+
 
 # ----------------------------------------------------------------------------------------------------------
         # rewrite the original df record if @# was added as a tag to recognize the record as a
@@ -505,7 +1052,6 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
         if keep_record: # export the filtered record
             filtered_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
                 ['Subject (S)', 'Verb (V)', 'Object (O)']]
-            print(filtered_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']])
             keep_record = False
         else:
             # Drop rows from filtered_svo DataFrame that do not meet the filter condition

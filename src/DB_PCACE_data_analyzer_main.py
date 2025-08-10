@@ -54,8 +54,9 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         IO_files_util.openFile(window, inputDir + os.sep + select_DB_tables_var.get() + ".xlsx")
         return
 
+    head, tail = os.path.split(inputDir)
     outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
-                                                                     label='DB_PC-ACE',
+                                                                     label= tail[:-5],
                                                                      silent=False)
     if outputDir == '':
         return
