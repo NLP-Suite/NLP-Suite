@@ -837,13 +837,13 @@ fixed_param_lb = tk.Label(window, text='Fixed')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate,
                                                y_multiplier_integer, fixed_param_lb, True)
 
-fixed_param_var.set(50)
+fixed_param_var.set(15)
 fixed_param = tk.Entry(window, state='disabled', textvariable=fixed_param_var, width=3)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+50, y_multiplier_integer,
                                    fixed_param,
-                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
-                                   "Enter the FIXED parameter value in a typical range 50-100 (default = 50).\n"
+                                   True, False, True, False, 90, GUI_IO_util.read_button_x_coordinate,
+                                   "Enter the FIXED parameter value in a typical range 30-100 (default = 15). CAVEAT! THE LARGER THE NUMBER, THE MORE CLUTTERED THE DISPLAY.\n"
                                    "The selected parameter will be used to set the maximum number of displayed elements in ALL the rings.\n"
                                     "Available only when selecting the 'Fixed parameter' filtering option.")
 
@@ -866,13 +866,13 @@ base_param_lb = tk.Label(window, text='Base')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate,
                                                y_multiplier_integer, base_param_lb, True)
 
-base_param_var.set(40)
+base_param_var.set(15)
 base_param = tk.Entry(window, state='disabled', textvariable=base_param_var, width=3)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate+40, y_multiplier_integer,
                                    base_param,
                                    False, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
-                                   "Enter the BASE parameter value in a typical range 50-100 (default = 40)\n"
+                                   "Enter the BASE parameter value in a typical range 30-100 (default = 15)\n"
                                     "Available only when selecting the 'Propagating parameter' filtering option")
 
 def activate_filtering_options(*args):

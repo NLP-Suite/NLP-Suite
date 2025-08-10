@@ -90,6 +90,34 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
     if ('NER' in str(annotator_params) and 'NER' in temp_outputFilename) or 'parse' in str(annotator_params):
         reminders_util.checkReminder(scriptName, reminders_util.NER_frequencies,
                                      reminders_util.message_NER_frequencies)
+
+        # SIMILAR CODE IS IN Stanford_CoreNLP_util
+        # when Stanford_CoreNLP_utils called from parsers_annotators_main,
+        # the kwargs do not contain the value['NERs'] the code would break
+        try:
+            if len(kwargs['NERs']) == 1:
+                NER_tag = str(kwargs['NERs'][0])
+            elif len(kwargs['NERs']) > 10 and len(kwargs['NERs']) < 20:
+                NER_tag = 'MISC'
+            elif len(kwargs['NERs']) > 20:
+                NER_tag = 'ALL_NER'
+            else:
+                if 'CITY' in str(kwargs['NERs']) and 'STATE_OR_PROVINCE' and str(kwargs['NERs']) and 'COUNTRY' in str(
+                        kwargs['NERs']) and 'LOCATION' in str(kwargs['NERs']):
+                    NER_tag = 'LOCATIONS'
+                elif 'NUMBER' in str(kwargs['NERs']) and 'ORDINAL' and str(kwargs['NERs']) and 'PERCENT' in str(
+                        kwargs['NERs']):
+                    outpNER_tag = 'NUMBERS'
+                elif 'PERSON' in str(kwargs['NERs']) and 'ORGANIZATION' in str(kwargs['NERs']):
+                    NER_tag = 'ACTORS'
+                elif 'DATE' in str(kwargs['NERs']) and 'TIME' in str(kwargs['NERs']) and 'DURATION' in str(
+                        kwargs['NERs']) and 'SET' in str(kwargs['NERs']):
+                    NER_tag = 'DATES'
+                else:
+                    NER_tag = str(kwargs['NERs'])
+        except:
+            NER_tag = 'ALL NERs'
+
         if IO_csv_util.get_csvfile_headers(outputFilename, False)[1] == "NER":
             # plot NER tag (e.g, LOCATION), standard bar and by Doc
             outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
@@ -114,11 +142,11 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                outputDir,
                                columns_to_be_plotted_xAxis=[],
                                columns_to_be_plotted_yAxis=['Word'],
-                               chart_title='Frequency Distribution of NER Tag Values',
+                               chart_title='Frequency Distribution of NER ' + NER_tag + ' Values',
                                # count_var = 1 for columns of alphabetic values
                                count_var=1, hover_label=[],
                                outputFileNameType='NER-tag-value', #'NER_tag_bar',
-                               column_xAxis_label='NER word',
+                               column_xAxis_label='NER ' + NER_tag + ' expression',
                                groupByList=['Document'],
                                plotList=[],
                                chart_title_label='NER Tag Values')
@@ -414,6 +442,24 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                 'Subject (S)', Sankey_limit1_var, 'Verb (V)', Sankey_limit2_var, three_way_Sankey, 'Object (O)', Sankey_limit3_var)
 
             if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
+            # output_label = 'sunburst'
+            # outputFilename_sunburst = IO_files_util.generate_output_file_name(outputFile, inputDir, outputDir,
+            #                                                                 '.html', output_label)
+            outputFilename_sunburst = ''
+            csv_file_categorical_field_list = [['Subject (S)|'], ['Verb (V)|'], ['Object (O)|']]
+            suntree = 3
+            fixed_param_var = 15
+            rate_param_var = None
+            base_param_var = None
+            filter_options_var = 'Fixed parameter'
+            case_sensitive_var = 1
+            outputFiles = charts_util.Sunburst_Treemap(outputFilename, outputFilename_sunburst, outputDir, csv_file_categorical_field_list, suntree, fixed_param_var, rate_param_var, base_param_var, filter_options_var, case_sensitive_var)
+            if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
                 else:

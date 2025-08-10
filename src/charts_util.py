@@ -1287,7 +1287,7 @@ def Sankey(data, outputFilename, var1, lengthvar1, var2, lengthvar2, three_way_S
                            message='The input file ' + data + ' is empty.\n\nNo Sankey flowchart can be produced.\n\nPlease, check your input file and try again.')
             return
 
-    if not np.isnan(data[var1][0]): # nan values are float, but do not need to be checked here
+    if type(data[var1][0])!=float: # nan values are float, but do not need to be checked here
         if type(data[var1][0]) != str or type(data[var2][0]) != str:
             mb.showwarning("Warning",
                        "All csv file fields should be CATEGORICAL for a Sankey flowchart.\n\nPlease, select categorical field(s) (i.e., fields with string values), rather than continuous numeric field(s), and try again.")
