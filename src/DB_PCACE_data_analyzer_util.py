@@ -1035,57 +1035,73 @@ def get_simplex_value(simplex_name, complex_name, setup_Simplex_df, xref_simplex
 
 
 
+
 dfs_df = pd.DataFrame(columns=['Parent', 'Children'])
 
 def dfs(parent, crossref):
     global dfs_df
 
     setup_Simplex = library['setup_Simplex.xlsx']
-
+    data_Simplex = library.get('data_Simplex.xlsx')
+    data_SimplexText = library['data_SimplexText.xlsx']
+    data_xref_Simplex_Complex = library.get('data_xref_Simplex-Complex.xlsx')
 
     required = crossref.loc[crossref['Name'] == parent, 'Required'].any()
     if not required:
-        return False
+        return
 
     simplex_names, simplex_required_names = corresponding_name_simplex_complex([parent])
 
-    # if simplex_required_names and len(simplex_required_names[0]) > 0:
-    if len(simplex_required_names[0]) > 0:
+    if simplex_required_names and len(simplex_required_names[0]) > 0:
         simplex = simplex_required_names[0][0]
-
         simplex_id = find_setup_id_simplex([simplex], setup_Simplex)
         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+
+        data_Simplex_temp = pd.merge(
+            data_Simplex, data_SimplexText,
+            how='left', on='ID_data_date_number_text'
+        )[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
+
+        xref_simplex_complex_value = pd.merge(
+            data_xref_Simplex_Complex, data_Simplex_temp,
+            how='left', on='ID_data_simplex'
+        )[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
 
         simplex_children_values = xref_simplex_complex_value[
             xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)
         ]
 
-        if not simplex_children_values.empty:
-            children = simplex_children_values['Name'].tolist()
+        if simplex_children_values.empty:
+            return
 
-            if parent in dfs_df['Parent'].values:
-                idx = dfs_df.index[dfs_df['Parent'] == parent][0]
-                dfs_df.at[idx, 'Children'] = list(set(dfs_df.at[idx, 'Children'] + children))
-            else:
-                dfs_df = pd.concat([
-                    dfs_df,
-                    pd.DataFrame([{'Parent': parent, 'Children': children}])
-                ], ignore_index=True)
-            for child in children:
-                dfs(child, crossref)
+        children = simplex_children_values['Value'].tolist()
 
-        return True
+        if parent in dfs_df['Parent'].values:
+            idx = dfs_df.index[dfs_df['Parent'] == parent][0]
+            dfs_df.at[idx, 'Children'] = list(
+                set(dfs_df.at[idx, 'Children'] + children)
+            )
+        else:
+            dfs_df = pd.concat([
+                dfs_df,
+                pd.DataFrame([{'Parent': parent, 'Children': children}])
+            ], ignore_index=True)
+
+        for child in children:
+            dfs(child, crossref)
 
     else:
         complex_children = find_lower_complex(parent)
         names = complex_children['Name'].tolist()
 
         if not names:
-            return False
+            return
 
         if parent in dfs_df['Parent'].values:
             idx = dfs_df.index[dfs_df['Parent'] == parent][0]
-            dfs_df.at[idx, 'Children'] = list(set(dfs_df.at[idx, 'Children'] + names))
+            dfs_df.at[idx, 'Children'] = list(
+                set(dfs_df.at[idx, 'Children'] + names)
+            )
         else:
             dfs_df = pd.concat([
                 dfs_df,
@@ -1094,8 +1110,6 @@ def dfs(parent, crossref):
 
         for name in names:
             dfs(name, crossref)
-
-        return True
 
 def get_simplex_value_for_complex_object(complex_object_name, is_verb):
 
@@ -1166,8 +1180,10 @@ def get_simplex_value_for_complex_object(complex_object_name, is_verb):
         # get a list of all the simplex values, regardless of simplex name
         xref_simplex_complex_value = pd.merge(data_xref_Simplex_Complex, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
         xref_simplex_complex_value = xref_simplex_complex_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
-
-        resultBool = dfs(complex_object_name, crossref)
+        global dfs_df
+        dfs_df = pd.DataFrame(columns=['Parent', 'Children'])
+        dfs(complex_object_name, crossref)
+        return dfs_df
 
         # get as list all the complex children of the initial complex_object_name
         # @@@
