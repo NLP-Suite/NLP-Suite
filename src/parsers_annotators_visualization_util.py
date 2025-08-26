@@ -95,16 +95,16 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
         # when Stanford_CoreNLP_utils called from parsers_annotators_main,
         # the kwargs do not contain the value['NERs'] the code would break
         try:
-            if len(kwargs['NERs']) == 1:
-                NER_tag = str(kwargs['NERs'][0])
-            elif len(kwargs['NERs']) > 10 and len(kwargs['NERs']) < 20:
+            if len(str.split(kwargs['NERs'])) == 1:
+                NER_tag = str(kwargs['NERs'])
+            elif len(str.split(kwargs['NERs'])) > 10 and len(str.split(kwargs['NERs'])) < 20:
                 NER_tag = 'MISC'
-            elif len(kwargs['NERs']) > 20:
+            elif len(str.split(kwargs['NERs'])) > 20:
                 NER_tag = 'ALL_NER'
             else:
                 if 'CITY' in str(kwargs['NERs']) and 'STATE_OR_PROVINCE' and str(kwargs['NERs']) and 'COUNTRY' in str(
                         kwargs['NERs']) and 'LOCATION' in str(kwargs['NERs']):
-                    NER_tag = 'LOCATIONS'
+                    NER_tag = 'SPACE'
                 elif 'NUMBER' in str(kwargs['NERs']) and 'ORDINAL' and str(kwargs['NERs']) and 'PERCENT' in str(
                         kwargs['NERs']):
                     outpNER_tag = 'NUMBERS'

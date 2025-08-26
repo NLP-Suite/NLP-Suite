@@ -146,9 +146,12 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                                                             datePresent)
     else:
         # locations is a double list of names of locations in the form [['United States','COUNTRY']]
-        locations = GIS_location_util.extract_csvFile_locations(window, inputFilename, withHeader, locationColumnNumber, encodingValue, datePresent, dateColumnNumber)
-        if locations == None or len(locations) == 0:
-            return
+        if locationColumnName=='':
+            locations = GIS_location_util.extract_csvFile_locations(window, inputFilename, withHeader, locationColumnNumber, encodingValue, datePresent, dateColumnNumber)
+            if locations == None or len(locations) == 0:
+                return
+        else:
+            locations=[locationColumnName]
         if not inputIsGeocoded and geocoder == 'Nominatim':
             changed = False
             if datePresent:
@@ -236,7 +239,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
 
     else:
         kmloutputFilename = GIS_geocode_util.process_geocoded_data_for_kml(window, locations, inputFilename, outputDir,
-                                      locationColumnName, encodingValue, geocoder)
+                                      locationColumnName, description_csv_field_var_list, encodingValue, geocoder)
         if kmloutputFilename!='':
             filesToOpen.append(kmloutputFilename)
 
@@ -262,7 +265,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         inputIsGeocoded=True
         filesToOpen.append(geocodedLocationsOutputFilename)
         if chartPackage!='No charts':
-            if geocoder=='':
+            if geocoder=='' or inputIsGeocoded:
                 chart_title = 'Frequency of Locations'
             else:
                 chart_title = 'Frequency of Locations Found by ' + geocoder

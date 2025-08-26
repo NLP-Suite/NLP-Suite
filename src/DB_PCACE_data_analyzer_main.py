@@ -61,8 +61,17 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
     if outputDir == '':
         return
 
-    # compute frequencies of complex/simplex objects ______________________________________________________________________________
 
+    # get complex object identifier and values  ______________________________________________________________________________
+    if setup_complex != '':
+        # @@@
+        # @@@ selecting Actor only returns Institution, i.e., the Organization values with NO Individual or Collective actor
+        isVerb = False
+        outputFile = DB_PCACE_data_analyzer_util.get_complex(setup_complex, isVerb, inputDir, outputDir)
+        if outputFile != '':
+            filesToOpen.append(outputFile)
+
+    # compute frequencies of complex/simplex objects ______________________________________________________________________________
     # complex frequencies
     # all frequencies
     if ALL_objects_frequencies_var:
@@ -916,7 +925,7 @@ setup_complex['values'] = setup_complex_menu
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+120, y_multiplier_integer,
                                    setup_complex,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Use the dropdown menu to select a specific complex object for which to compute frequencies.\nWhen a hierarchical complex object is selected (e.g., macro-event or event) and the checkbox Semantic triplets below is ticked...\n...semantic triplets will be listed in chronological order within the specific higher-level hierarchical complex object selected (e.g., macro-events, events).")
+                                   "Use the dropdown menu to select a specific complex object for which to display identifier and values and compute frequencies.\nWhen a hierarchical complex object is selected (e.g., macro-event or event) and the checkbox Semantic triplets below is ticked...\n...semantic triplets will be listed in chronological order within the specific higher-level hierarchical complex object selected (e.g., macro-events, events).")
 
 
 simplex_objects_lb = tk.Label(window, text='Simplex ')
