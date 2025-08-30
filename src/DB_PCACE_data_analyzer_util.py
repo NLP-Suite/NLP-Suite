@@ -303,7 +303,19 @@ def get_simplex_frequencies_all(inputDir, outputDir):
 # @@@
 # given a complex name selected in _main, the function returns an output file containing a set of information about the complex
 #   e.g., identifier, simplex values
-def get_complex(name, isVerb, inputDir, outputDir):
+def get_complex(complex_object_name, inputDir, outputDir):
+    setup_xref_Complex_Complex = library['setup_xref_Complex-Complex.xlsx']
+    # only keep required complex objects
+    crossref = setup_xref_Complex_Complex[['Required', 'Name']]
+    dfs_df = dfs(complex_object_name, crossref)
+    # @@@
+    add_path_info_to_complex_object(complex_object_name, dfs_df)
+    # @@@ Aiden this is where SVO triplet is exported
+    complex_object_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'Complex object')
+    dfs_df.to_csv(complex_object_file_name, encoding='utf-8', index=False)
+
+    return complex_object_file_name
+
     # @@@ selecting Actor only returns Institution, i.e., the Organization values with NO Individual or Collective actor
     complex_object_df = get_simplex_value_for_complex_object(name, isVerb)
     complex_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'complex')
@@ -778,6 +790,8 @@ def dist_1(name, setup_Simplex, setup_xref_Simplex_Complex, data_xref_Simplex_Co
 def semantic_triplet_complex(semantic_triplet, subject, verb, object, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df):
     if isinstance(semantic_triplet, list):
         semantic_triplet = str(semantic_triplet[0])
+
+    # Semantic triplet ID here @@@
     id = find_setup_id([semantic_triplet], setup_Complex_df).iat[0,0]
 
     save = setup_xref_Complex_Complex_df[setup_xref_Complex_Complex_df['HigherComplex'] == id]
@@ -1036,11 +1050,12 @@ def get_simplex_value(simplex_name, complex_name, setup_Simplex_df, xref_simplex
 
 
 
-dfs_df = pd.DataFrame(columns=['Parent', 'Children'])
+dfs_df = pd.DataFrame(columns=['Parent ID', 'Parent', 'Children'])
 
-def dfs(parent, crossref):
+def dfs(parent,crossref):
     global dfs_df
 
+    setup_Complex = library['setup_Complex.xlsx']
     setup_Simplex = library['setup_Simplex.xlsx']
     data_Simplex = library.get('data_Simplex.xlsx')
     data_SimplexText = library['data_SimplexText.xlsx']
@@ -1051,6 +1066,8 @@ def dfs(parent, crossref):
         return
 
     simplex_names, simplex_required_names = corresponding_name_simplex_complex([parent])
+
+    parent_id = find_setup_id([parent], setup_Complex).iat[0, 0]
 
     if simplex_required_names and len(simplex_required_names[0]) > 0:
         simplex = simplex_required_names[0][0]
@@ -1076,41 +1093,37 @@ def dfs(parent, crossref):
 
         children = simplex_children_values['Value'].tolist()
 
-        if parent in dfs_df['Parent'].values:
-            idx = dfs_df.index[dfs_df['Parent'] == parent][0]
-            dfs_df.at[idx, 'Children'] = list(
-                set(dfs_df.at[idx, 'Children'] + children)
-            )
-        else:
-            dfs_df = pd.concat([
-                dfs_df,
-                pd.DataFrame([{'Parent': parent, 'Children': children}])
-            ], ignore_index=True)
+        append_rows = pd.DataFrame({
+            "Parent ID": parent_id,
+            "Parent": [parent] * len(children),
+            "Children": children,
+        })
+
+        dfs_df = pd.concat([dfs_df, append_rows], ignore_index=True)
 
         for child in children:
             dfs(child, crossref)
 
     else:
+
         complex_children = find_lower_complex(parent)
         names = complex_children['Name'].tolist()
 
         if not names:
             return
 
-        if parent in dfs_df['Parent'].values:
-            idx = dfs_df.index[dfs_df['Parent'] == parent][0]
-            dfs_df.at[idx, 'Children'] = list(
-                set(dfs_df.at[idx, 'Children'] + names)
-            )
-        else:
-            dfs_df = pd.concat([
-                dfs_df,
-                pd.DataFrame([{'Parent': parent, 'Children': names}])
-            ], ignore_index=True)
+        append_rows = pd.DataFrame({
+            "Parent ID": parent_id,
+            "Parent": [parent] * len(names),
+            "Children": names
+        })
+
+        dfs_df = pd.concat([dfs_df, append_rows], ignore_index=True)
 
         for name in names:
             dfs(name, crossref)
 
+    return dfs_df
 def get_simplex_value_for_complex_object(complex_object_name, is_verb):
 
     # @@@@
@@ -1180,10 +1193,10 @@ def get_simplex_value_for_complex_object(complex_object_name, is_verb):
         # get a list of all the simplex values, regardless of simplex name
         xref_simplex_complex_value = pd.merge(data_xref_Simplex_Complex, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
         xref_simplex_complex_value = xref_simplex_complex_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
-        global dfs_df
-        dfs_df = pd.DataFrame(columns=['Parent', 'Children'])
-        dfs(complex_object_name, crossref)
-        return dfs_df
+        # global dfs_df
+        # dfs_df = pd.DataFrame(columns=['Parent', 'Children'])
+        # dfs(complex_object_name, crossref)
+        # return dfs_df
 
         # get as list all the complex children of the initial complex_object_name
         # @@@
@@ -1373,6 +1386,87 @@ def get_simplex_value_for_complex_object(complex_object_name, is_verb):
 #
 #     return data_simple_process
 
+def add_path_info_to_complex_object(semantic_triplet, simplex_version):
+
+    # initialize all necessary libraries
+    setup_Complex = library['setup_Complex.xlsx']
+    setup_xref_Complex_Complex = library['setup_xref_Complex-Complex.xlsx']
+    setup_Simplex = library['setup_Simplex.xlsx']
+    setup_xref_Simplex_Complex = library['setup_xref_Simplex-Complex.xlsx']
+
+    data_Complex = library.get('data_Complex.xlsx')
+    data_xref_Complex_Complex = library.get('data_xref_Complex-Complex.xlsx')
+    data_Simplex = library.get('data_Simplex.xlsx')
+    data_SimplexText = library['data_SimplexText.xlsx']
+    data_xref_Simplex_Complex = library.get('data_xref_Simplex-Complex.xlsx')
+
+    # only keep required complex objects
+    crossref = setup_xref_Complex_Complex[['Required', 'Name']]
+
+    # @@@ Aiden should the following lines through Step 9 be a function so that can also be called by get_complex()
+    #   could name the function add_hierarchical_info
+
+    # add 'Macro Event' and 'Event' data id
+
+     # S1: find setup id of 'Macro Event', 'Event' and 'Semantic Triplet'
+    # 'Macro event refers to the highest complex in the hierarchy, not specific
+    top_complex = setup_Complex[setup_Complex['ID_setup_complex']==1]['Name'].values[0]
+    path = find_path(top_complex, semantic_triplet, setup_Complex, setup_xref_Complex_Complex)
+    path = path[0]
+
+    # Step 3: Map each complex in the path to its ID
+    name_to_id = {
+        name: find_setup_id([name], setup_Complex)['ID_setup_complex'].values[0]
+        for name in path
+    }
+
+    # Step 4: Retrieve and store link IDs and relevant data_xref details
+    link_data_frames = []
+    for i in range(len(path) - 1):
+        higher_id = name_to_id[path[i]]
+        lower_id = name_to_id[path[i + 1]]
+
+        # Find setup xref ID for each link
+        xref_id = setup_xref_Complex_Complex[
+            (setup_xref_Complex_Complex['HigherComplex'] == higher_id) &
+            (setup_xref_Complex_Complex['LowerComplex'] == lower_id)
+            ]['ID_setup_xref_complex-complex'].values[0]
+
+        # Retrieve and rename relevant data_xref columns
+        data_xref = data_xref_Complex_Complex[
+            data_xref_Complex_Complex['ID_setup_xref_complex_complex'] == xref_id
+            ][['ID_data_complex', 'ID_data_complex.1']].rename(columns={
+            'ID_data_complex': f'{path[i]} ID',
+            'ID_data_complex.1': f'{path[i + 1]} ID'
+        })
+        link_data_frames.append(data_xref)
+
+        # Step 5: Merge link data frames into a complete hierarchy while eliminating extra columns
+    merged_data = link_data_frames[0]
+    for i in range(1, len(link_data_frames)):
+        merged_data = pd.merge(merged_data, link_data_frames[i],
+                               left_on=f'{path[i]} ID',
+                               right_on=f'{path[i]} ID',
+                               how='right')
+
+    # Step 7: Merge with simplex_version using semantic triplet ID as the key
+    #   when calling from get_complex, Semantic Triplet ID should be the parent complex ID
+    simplex_version = pd.merge(merged_data, simplex_version, how='left', left_on=f'{path[-1]} ID',
+                               right_on='Semantic Triplet ID')
+
+    # Step 8: Add the top complex identifier by merging with data_Complex
+    data_complex_top = data_Complex[['ID_data_complex', 'Identifier']].rename(
+        columns={'ID_data_complex': f'{path[0]} ID', 'Identifier': f'{path[0]} Identifier'}
+    )
+    simplex_version = pd.merge(simplex_version, data_complex_top, how='left', on=f'{path[0]} ID')
+
+    # Step 9: Reorder to have the top complex identifier and clean up any remaining extraneous columns
+    top_complex_identifier = simplex_version.pop(f'{path[0]} Identifier')
+    simplex_version.insert(1, f'{path[0]} Identifier', top_complex_identifier)
+
+    # Final output should have only the relevant path columns and top complex identifier
+    print("Final Hierarchy Data with Simplex Version:", simplex_version)
+    return simplex_version
 
 # get the semantic triplet with simplex
 # return: dataframe: Semantic triplet data id, S data id, S Type, S Simplex, V data id, V Simplex, O data id, O Type, O Simplex
@@ -1412,69 +1506,71 @@ def semantic_triplet_simplex(inputDir, subject, verb, object, setup_Complex_df, 
     target = simplex_version.columns.get_loc('Semantic Triplet ID')
     simplex_version.insert(target+1, 'ST Identifier', col)
 
-    # @@@ should the following lines be a function so that can also be called by get_complex()
-    #   could name the function add_hierarchical_info
+    simplex_version = add_path_info_to_complex_object(semantic_triplet, simplex_version)
 
-    # add 'Macro Event' and 'Event' data id
-
-     # S1: find setup id of 'Macro Event', 'Event' and 'Semantic Triplet'
-    # 'Macro event refers to the highest complex in the hierarchy, not specific
-    top_complex = setup_Complex_df[setup_Complex_df['ID_setup_complex']==1]['Name'].values[0]
-    path = find_path(top_complex, semantic_triplet, setup_Complex_df, setup_xref_Complex_Complex_df)
-    path = path[0]
-
-    # Step 3: Map each complex in the path to its ID
-    name_to_id = {
-        name: find_setup_id([name], setup_Complex_df)['ID_setup_complex'].values[0]
-        for name in path
-    }
-
-    # Step 4: Retrieve and store link IDs and relevant data_xref details
-    link_data_frames = []
-    for i in range(len(path) - 1):
-        higher_id = name_to_id[path[i]]
-        lower_id = name_to_id[path[i + 1]]
-
-        # Find setup xref ID for each link
-        xref_id = setup_xref_Complex_Complex_df[
-            (setup_xref_Complex_Complex_df['HigherComplex'] == higher_id) &
-            (setup_xref_Complex_Complex_df['LowerComplex'] == lower_id)
-            ]['ID_setup_xref_complex-complex'].values[0]
-
-        # Retrieve and rename relevant data_xref columns
-        data_xref = data_xref_Complex_Complex_df[
-            data_xref_Complex_Complex_df['ID_setup_xref_complex_complex'] == xref_id
-            ][['ID_data_complex', 'ID_data_complex.1']].rename(columns={
-            'ID_data_complex': f'{path[i]} ID',
-            'ID_data_complex.1': f'{path[i + 1]} ID'
-        })
-        link_data_frames.append(data_xref)
-
-        # Step 5: Merge link data frames into a complete hierarchy while eliminating extra columns
-    merged_data = link_data_frames[0]
-    for i in range(1, len(link_data_frames)):
-        merged_data = pd.merge(merged_data, link_data_frames[i],
-                               left_on=f'{path[i]} ID',
-                               right_on=f'{path[i]} ID',
-                               how='right')
-
-    # Step 7: Merge with simplex_version using semantic triplet ID as the key
-    #   when calling from get_complex, Semantic Triplet ID should be the parent complex ID
-    simplex_version = pd.merge(merged_data, simplex_version, how='left', left_on=f'{path[-1]} ID',
-                               right_on='Semantic Triplet ID')
-
-    # Step 8: Add the top complex identifier by merging with data_Complex
-    data_complex_top = data_Complex_df[['ID_data_complex', 'Identifier']].rename(
-        columns={'ID_data_complex': f'{path[0]} ID', 'Identifier': f'{path[0]} Identifier'}
-    )
-    simplex_version = pd.merge(simplex_version, data_complex_top, how='left', on=f'{path[0]} ID')
-
-    # Step 9: Reorder to have the top complex identifier and clean up any remaining extraneous columns
-    top_complex_identifier = simplex_version.pop(f'{path[0]} Identifier')
-    simplex_version.insert(1, f'{path[0]} Identifier', top_complex_identifier)
-
-    # Final output should have only the relevant path columns and top complex identifier
-    print("Final Hierarchy Data with Simplex Version:", simplex_version)
+    # # @@@ Aiden should the following lines through Step 9 be a function so that can also be called by get_complex()
+    # #   could name the function add_hierarchical_info
+    #
+    # # add 'Macro Event' and 'Event' data id
+    #
+    #  # S1: find setup id of 'Macro Event', 'Event' and 'Semantic Triplet'
+    # # 'Macro event refers to the highest complex in the hierarchy, not specific
+    # top_complex = setup_Complex_df[setup_Complex_df['ID_setup_complex']==1]['Name'].values[0]
+    # path = find_path(top_complex, semantic_triplet, setup_Complex_df, setup_xref_Complex_Complex_df)
+    # path = path[0]
+    #
+    # # Step 3: Map each complex in the path to its ID
+    # name_to_id = {
+    #     name: find_setup_id([name], setup_Complex_df)['ID_setup_complex'].values[0]
+    #     for name in path
+    # }
+    #
+    # # Step 4: Retrieve and store link IDs and relevant data_xref details
+    # link_data_frames = []
+    # for i in range(len(path) - 1):
+    #     higher_id = name_to_id[path[i]]
+    #     lower_id = name_to_id[path[i + 1]]
+    #
+    #     # Find setup xref ID for each link
+    #     xref_id = setup_xref_Complex_Complex_df[
+    #         (setup_xref_Complex_Complex_df['HigherComplex'] == higher_id) &
+    #         (setup_xref_Complex_Complex_df['LowerComplex'] == lower_id)
+    #         ]['ID_setup_xref_complex-complex'].values[0]
+    #
+    #     # Retrieve and rename relevant data_xref columns
+    #     data_xref = data_xref_Complex_Complex_df[
+    #         data_xref_Complex_Complex_df['ID_setup_xref_complex_complex'] == xref_id
+    #         ][['ID_data_complex', 'ID_data_complex.1']].rename(columns={
+    #         'ID_data_complex': f'{path[i]} ID',
+    #         'ID_data_complex.1': f'{path[i + 1]} ID'
+    #     })
+    #     link_data_frames.append(data_xref)
+    #
+    #     # Step 5: Merge link data frames into a complete hierarchy while eliminating extra columns
+    # merged_data = link_data_frames[0]
+    # for i in range(1, len(link_data_frames)):
+    #     merged_data = pd.merge(merged_data, link_data_frames[i],
+    #                            left_on=f'{path[i]} ID',
+    #                            right_on=f'{path[i]} ID',
+    #                            how='right')
+    #
+    # # Step 7: Merge with simplex_version using semantic triplet ID as the key
+    # #   when calling from get_complex, Semantic Triplet ID should be the parent complex ID
+    # simplex_version = pd.merge(merged_data, simplex_version, how='left', left_on=f'{path[-1]} ID',
+    #                            right_on='Semantic Triplet ID')
+    #
+    # # Step 8: Add the top complex identifier by merging with data_Complex
+    # data_complex_top = data_Complex_df[['ID_data_complex', 'Identifier']].rename(
+    #     columns={'ID_data_complex': f'{path[0]} ID', 'Identifier': f'{path[0]} Identifier'}
+    # )
+    # simplex_version = pd.merge(simplex_version, data_complex_top, how='left', on=f'{path[0]} ID')
+    #
+    # # Step 9: Reorder to have the top complex identifier and clean up any remaining extraneous columns
+    # top_complex_identifier = simplex_version.pop(f'{path[0]} Identifier')
+    # simplex_version.insert(1, f'{path[0]} Identifier', top_complex_identifier)
+    #
+    # # Final output should have only the relevant path columns and top complex identifier
+    # print("Final Hierarchy Data with Simplex Version:", simplex_version)
 
     # @@@ should the following lines be separate functions for document info and comments
 
@@ -1566,9 +1662,7 @@ def semantic_triplet_simplex_main(inputDir, outputDir, macro_event_id, subject, 
     if existing_columns:
         simplex_version = simplex_version.sort_values(existing_columns, ascending=True)
 
-    # @@@
-
-
+    # @@@ Aiden this is where SVO triplet is exported
     triplet_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'triplet (SVO)')
     simplex_version.to_csv(triplet_file_name, encoding='utf-8', index=False)
 

@@ -66,8 +66,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
     if setup_complex != '':
         # @@@
         # @@@ selecting Actor only returns Institution, i.e., the Organization values with NO Individual or Collective actor
-        isVerb = False
-        outputFile = DB_PCACE_data_analyzer_util.get_complex(setup_complex, isVerb, inputDir, outputDir)
+        outputFile = DB_PCACE_data_analyzer_util.get_complex(setup_complex, inputDir, outputDir)
         if outputFile != '':
             filesToOpen.append(outputFile)
 
