@@ -79,9 +79,6 @@ library = {}
 
 def load_lib(inputDir):
 
-    global setup_Complex_lib, setup_Simplex_lib, setup_xref_Complex_Complex_lib, crossref, setup_xref_Simplex_Complex_lib, data_Simplex_lib, data_SimplexText_lib, data_SimplexNumber_lib, data_SimplexDate_lib, data_Complex_lib, data_xref_Complex_Complex_lib, data_xref_Simplex_Complex_lib, data_xref_Complex_Document_lib, data_xref_VComment_lib, utility_Security_lib
-    # global setup_Complex_lib, setup_Simplex_lib, setup_xref_Complex_Complex_lib, setup_xref_Simplex_Complex_lib, data_Simplex_lib, data_SimplexText_lib, data_SimplexNumber_lib, data_SimplexDate_lib, data_xref_Simplex_Complex_lib
-
     import IO_user_interface_util
     inputDocs = IO_files_util.getFileList('',inputDir, fileType='.xlsx', silent=True)
     nDocs = len(inputDocs)
@@ -125,8 +122,6 @@ def load_lib(inputDir):
                 library[filename] = df
                 save = f"{name}.pkl"
                 df.to_pickle(str(inputDir) + "/" + str(save))
-
-    # build_libraries(inputDir)
 
     return
 
@@ -407,13 +402,17 @@ def get_simplex_frequencies_all(inputDir, outputDir):
 # given a complex name selected in _main, the function returns an output file containing a set of information about the complex
 #   e.g., identifier, simplex values
 def get_complex(complex_object_name, inputDir, outputDir):
-    dfs_lib = dfs(complex_object_name)
-    # @@@
-    add_path_info_to_complex_object(complex_object_name, dfs_lib)
+    global dfs_df
+    dfs_df = pd.DataFrame()
+    append_rows = dfs(complex_object_name)
+    new_rows_df = pd.DataFrame(append_rows)
+    dfs_df = pd.concat([dfs_df, new_rows_df], ignore_index=True)
+    # @@@ Aiden
+    dfs_df = add_path_info_to_complex_object(complex_object_name, dfs_df)
     # @@@ Aiden this is where SVO triplet is exported
     # @@@ should add the info added for triplets (search for # @@@ should the following lines be a function)
     complex_object_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'Complex object')
-    dfs_lib.to_csv(complex_object_file_name, encoding='utf-8', index=False)
+    dfs_df.to_csv(complex_object_file_name, encoding='utf-8', index=False)
 
     return complex_object_file_name
 
@@ -474,6 +473,14 @@ def get_complex_frequencies_all(inputDir, outputDir):
 # parameter: name of an complex in list type (e.g., [, dataframe of setup_Complex
 # return: a dataframe: id, name of the input complex
 def find_complex_setup_id(complex_name):
+    if isinstance(complex_name, str):
+        complex_name = [complex_name]
+    data = setup_Complex_lib[setup_Complex_lib['Name'].isin(complex_name)]
+    data = data[['ID_setup_complex', 'Name']]
+    data['ID_setup_complex'] = [int(x) for x in data['ID_setup_complex']]
+    return data
+
+def find_complex_data_id(complex_name):
     if isinstance(complex_name, str):
         complex_name = [complex_name]
     data = setup_Complex_lib[setup_Complex_lib['Name'].isin(complex_name)]
@@ -781,7 +788,6 @@ def find_identifier(data, cols):
         data.insert(index + 1, col + ' Identifier', temp)
         data = data.rename(columns={'Value': col + ' Identifier'})
         print(data)
-
     return data
 
 
@@ -1122,21 +1128,23 @@ def get_simplex_value(simplex_name, complex_name, setup_Simplex_lib, xref_simple
 #
 #     return simplexes_combined
 
-
-
-
-dfs_lib = pd.DataFrame(columns=['Parent ID', 'Parent', 'Children'])
+dfs_df = pd.DataFrame()
 
 def dfs(parent):
-    global dfs_lib
+    global dfs_df
 
     required = crossref.loc[crossref['Name'] == parent, 'Required'].any()
     if not required:
-        return
+        return []
 
     simplex_names, simplex_required_names = corresponding_name_simplex_complex([parent])
-
     parent_id = find_complex_setup_id([parent]).iat[0, 0]
+
+    # check setup_xref_Simplex-Complex.xlsx to see if the simplex is Required and only use the required simplex
+    NSimplex = len(simplex_required_names[0])
+    if NSimplex >1:
+        mb.showwarning(title='Warning',
+                       message="The complex object '" + str(parent) + "' contains " + str(NSimplex) + " required simplex objects (" + str(', '.join(simplex_required_names[0])) + "). Only the first simplex object (" + str(simplex_required_names[0][0]) + ") will be used to construct the triplet. Required simplex objects will have priority over any complex object children.\n\nTO CHANGE THE REQUIRED STATE OF ANY OF THESE SIMPLEX OBJECTS, OPEN THE FILE setup_xref_Simplex-Complex.xlsx AND SET THE VALUE OF REQUIRED TO FALSE FOR SELECTED SIMPLEX.")
 
     if simplex_required_names and len(simplex_required_names[0]) > 0:
         simplex = simplex_required_names[0][0]
@@ -1158,41 +1166,41 @@ def dfs(parent):
         ]
 
         if simplex_children_values.empty:
-            return
+            return []
 
+        # add column headers
         children = simplex_children_values['Value'].tolist()
-
-        append_rows = pd.DataFrame({
-            "Parent ID": parent_id,
-            "Parent": [parent] * len(children),
-            "Children": children,
-        })
-
-        dfs_lib = pd.concat([dfs_lib, append_rows], ignore_index=True)
-
+        child_rows = []
+        # type_id = find_([parent]).iat[0, 0]
         for child in children:
-            dfs(child)
+            child_rows.append({
+                "Type ID": parent_id,
+                "Type": parent,
+                "Value": child,
+            })
+
+        return child_rows
 
     else:
-
         complex_children = find_lower_complex(parent)
-        names = complex_children['Name'].tolist()
+        children = complex_children['Name'].tolist()
 
-        if not names:
-            return
+        if not children:
+            return []
 
-        append_rows = pd.DataFrame({
-            "Parent ID": parent_id,
-            "Parent": [parent] * len(names),
-            "Children": names
-        })
+        append_rows = []
+        # add column headers
+        for child in children:
+            child_rows = (dfs(child))
+            if child_rows:
+                append_rows.extend(child_rows)
 
-        dfs_lib = pd.concat([dfs_lib, append_rows], ignore_index=True)
+        if append_rows:
+            append_rows = [{parent + " ID": parent_id, parent: parent, **row} for row in append_rows]
 
-        for name in names:
-            dfs(name)
+        return append_rows
 
-    return dfs_lib
+
 def get_simplex_value_for_complex_object(complex_object_name, is_verb):
 
     # check whether Group is 0 or 1a, 1b, 1c,... i.e., whether the complex objects are mutually exclusive
@@ -1504,7 +1512,7 @@ def add_path_info_to_complex_object(semantic_triplet, simplex_version):
     #   when calling from get_complex, Semantic Triplet ID should be the parent complex ID
     try:
         simplex_version = pd.merge(merged_data, simplex_version, how='left', left_on=f'{path[-1]} ID',
-                                   right_on='Parent ID')
+                                   right_on=f'{path[-1]} ID')
     except:
         simplex_version = pd.merge(merged_data, simplex_version, how='left', left_on=f'{path[-1]} ID',
                                    right_on='Semantic Triplet ID')
