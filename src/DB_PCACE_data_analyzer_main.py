@@ -733,7 +733,10 @@ simplex_data_var = tk.StringVar()
 simplex_data = ttk.Combobox(window, textvariable = simplex_data_var, width=GUI_IO_util.widget_width_short)
 simplex_data.configure(state='disabled')
 
-simplex_list = DB_PCACE_data_analyzer_util.get_Simplex_text_date_number(simplex_data_type_var.get(), os.path.join(inputDir.get(),'data_SimplexText.xlsx'), os.path.join(inputDir.get(),'data_SimplexDate.xlsx'), os.path.join(inputDir.get(),'data_SimplexNumber.xlsx'))
+try:
+    simplex_list = DB_PCACE_data_analyzer_util.get_Simplex_text_date_number(simplex_data_type_var.get())
+except:
+    simplex_list=[]
 simplex_data_menu = simplex_list
 simplex_data['values'] = simplex_data_menu
 # place widget with hover-over info
@@ -747,16 +750,9 @@ def activate_date_number_text(*args):
         simplex_data.configure(state='normal')
     else:
         simplex_data.configure(state='disabled')
-    simplex_list = DB_PCACE_data_analyzer_util.get_Simplex_text_date_number(simplex_data_type_var.get(),
-                                    os.path.join(inputDir.get(),
-                                             'data_SimplexText.xlsx'),
-                                     os.path.join(inputDir.get(),
-                                              'data_SimplexDate.xlsx'),
-                                     os.path.join(inputDir.get(),
-                                            'data_SimplexNumber.xlsx'))
+    simplex_list = DB_PCACE_data_analyzer_util.get_Simplex_text_date_number(simplex_data_type_var.get())
     simplex_data_var.set(simplex_list)
     simplex_data['values'] = simplex_list
-simplex_data_type_var.trace('w',activate_date_number_text)
 simplex_data_type_var.trace('w',activate_date_number_text)
 
 value_parent_object_checkbox = tk.Checkbutton(window, text='Get simplex/complex objects of selected data type (& value)', variable=value_parent_object_var, onvalue=1, offvalue=0)
@@ -769,7 +765,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
 primary_complex_objects_lb = tk.Label(window, text='Primary complex (Macro event)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,primary_complex_objects_lb,True)
 
-primary_complex_menu = '' # DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(inputDir.get())
+primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(inputDir.get())
 
 primary_complex_var=tk.StringVar()
 primary_complex = ttk.Combobox(window, textvariable = primary_complex_var, width=GUI_IO_util.widget_width_short)
@@ -908,13 +904,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
                                    False, False, True, False, 90, GUI_IO_util.watch_videos_x_coordinate,
                                    "Tick the checkbox to visualize the space of SVOs as in a Google Earth Pro pin map and Google Maps heat map.\nSpace information will be geocoded using Google if the Google-geocode-API_config.csv file is present in the config subdirectory; otherwise Nominatim will be used.\nGeocoded waypoints will be displayed as pin map via Google Earth Pro and heat map via Google Maps (Python Folium will be used if no Google API key is found).")
 
-# @ Taeeun the complex objects widget only displays the object identifier;
-# but... like the functions for the SVO extractor, it should display the value of all the simplex objects that make up the complex object
-
 complex_objects_lb = tk.Label(window, text='Complex ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,complex_objects_lb,True)
 
-setup_complex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(),'setup_complex.xlsx'))
+setup_complex_menu, setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names() # os.path.join(inputDir.get())
 
 setup_complex_var=tk.StringVar()
 setup_complex = ttk.Combobox(window, textvariable = setup_complex_var, width=GUI_IO_util.widget_width_short)
@@ -930,8 +923,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 simplex_objects_lb = tk.Label(window, text='Simplex ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,y_multiplier_integer,simplex_objects_lb, True)
 
-setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(),'setup_Simplex.xlsx'))
-
+# setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get()))
+#
 setup_simplex_var = tk.StringVar()
 
 setup_simplex = ttk.Combobox(window, textvariable = setup_simplex_var, width=GUI_IO_util.widget_width_short)
@@ -986,16 +979,18 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
                                    "The menu displays a list of complex objects children of the 'Complex objects' selected in the widget above.\nThe option is only available for the 'Complex objects' widget above (Simplex objects do not have children).")
 
 
-def activate_parents_children(*args):
-    parent_complex_list = DB_PCACE_data_analyzer_util.find_parent_complex(setup_complex_var.get(),inputDir.get())
-    select_parents['values'] = parent_complex_list
-
-    children_list = DB_PCACE_data_analyzer_util.find_child_complex(setup_complex_var.get(),inputDir.get())
-    select_children['values'] = children_list
-    # select_children_var.set(children_menu[0])
-setup_complex_var.trace('w',activate_parents_children)
-setup_simplex_var.trace('w',activate_parents_children)
-
+# def activate_parents_children(*args):
+#     # @@@
+#     # DB_PCACE_data_analyzer_util.load_lib(inputDir.get())
+#     parent_complex_list = DB_PCACE_data_analyzer_util.find_parent_complex(setup_complex_var.get())
+#     select_parents['values'] = parent_complex_list
+#
+#     children_list = DB_PCACE_data_analyzer_util.find_child_complex(setup_complex_var.get())
+#     select_children['values'] = children_list
+#     # select_children_var.set(children_menu[0])
+# setup_complex_var.trace('w',activate_parents_children)
+# setup_simplex_var.trace('w',activate_parents_children)
+#
 
 comments_lb = tk.Label(window, text='Extract comments ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,comments_lb,True)
@@ -1027,8 +1022,7 @@ table_values = []
 currentInputDir = inputDir.get()
 readDir = False
 def changed_filename(*args):
-    global error, setup_simplex_menu, currentInputDir, readDir
-    global error, setup_simplex_menu, database_already_loaded, inputDirSV
+    global error, setup_simplex_menu, currentInputDir, readDir, database_already_loaded, inputDirSV
     # 25 PC-ACE files
     # if GUI_util.input_main_dir_path.get()!='' and not error:
     if GUI_util.input_main_dir_path.get() != '' and GUI_util.input_main_dir_path.get() != inputDirSV:
@@ -1059,7 +1053,7 @@ def changed_filename(*args):
         #     return
         if len(table_menu_values)>0:
             select_DB_tables.configure(state='normal')
-            select_DB_tables.set(table_menu_values[0])
+            # select_DB_tables.set(table_menu_values[0])
             select_DB_tables.set('')
 
         else:
@@ -1067,12 +1061,17 @@ def changed_filename(*args):
             select_DB_tables.configure(state='disabled')
 
         if currentInputDir != inputDir.get() or not readDir:
-            # load all excel sheets and store in data
-            DB_PCACE_data_analyzer_util.load_df(inputDir.get())
+            # load all Excel sheets and store in data
+            DB_PCACE_data_analyzer_util.load_lib(inputDir.get())
             currentInputDir = inputDir.get()
             readDir = True
 
-        setup_complex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(), 'setup_complex.xlsx'))
+        # @@@ temporary to load library
+        # DB_PCACE_data_analyzer_util.load_lib(inputDir.get())
+        # currentInputDir = inputDir.get()
+        # readDir = True
+        # @@@
+        setup_complex_menu, setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names() # os.path.join(inputDir.get())
         setup_complex['values'] = setup_complex_menu
         # actors['values'] = setup_complex_menu
         semantic_triplet_object_box['values'] = setup_complex_menu
@@ -1088,15 +1087,16 @@ def changed_filename(*args):
             # setup_complex.set(setup_complex_menu[0])
             setup_complex.set('')
             if not database_already_loaded:
-                primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(window,inputDir.get())
+                primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(inputDir.get())
                 primary_complex['values'] = primary_complex_menu
                 database_already_loaded = False
         else:
             simplex_data_type_menu.configure(state='disabled')
             setup_complex.set('')
             setup_complex.configure(state='disabled')
-        setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(), 'setup_Simplex.xlsx'))
-        setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(), 'setup_Simplex.xlsx'))
+        # setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get()))
+
+        # @@@
         setup_simplex['values'] = setup_simplex_menu
         if len(setup_simplex_menu)>0:
             setup_simplex.configure(state='normal')
@@ -1112,10 +1112,26 @@ def changed_filename(*args):
             error = True
     clear("Escape")
     # if not error:
-    #     primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(window, inputDir.get())
+    #     primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(inputDir.get())
     #     primary_complex['values'] = primary_complex_menu
 GUI_util.inputFilename.trace('w', changed_filename)
 GUI_util.input_main_dir_path.trace('w', changed_filename)
+
+
+def activate_parents_children(*args):
+    # @@@
+    # DB_PCACE_data_analyzer_util.load_lib(inputDir.get())
+    parent_complex_list = []
+    children_list = []
+    if setup_complex_var.get()!='':
+        parent_complex_list = DB_PCACE_data_analyzer_util.find_parent_complex(setup_complex_var.get())
+        children_list = DB_PCACE_data_analyzer_util.find_child_complex(setup_complex_var.get())
+    select_parents['values'] = parent_complex_list
+
+    select_children['values'] = children_list
+    # select_children_var.set(children_menu[0])
+setup_complex_var.trace('w',activate_parents_children)
+setup_simplex_var.trace('w',activate_parents_children)
 
 table_fields_menu_values = []
 
@@ -1214,7 +1230,7 @@ if error and GUI_util.input_main_dir_path.get()!='':
         database_already_loaded = False
 
 # if inputDir.get()!='' and not error:
-#     primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(window, inputDir.get())
+#     primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(inputDir.get())
 #     primary_complex['values'] = primary_complex_menu
 GUI_util.window.mainloop()
 
