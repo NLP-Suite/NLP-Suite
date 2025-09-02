@@ -93,10 +93,10 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         if outputFile != '':
             filesToOpen.append(outputFile)
 
-# display information about a specific simplex type and value (e.g., text type for burley value) _____________________________________________________________
+# display information about a specific simplex type and value (e.g., text type for "burley" value)
 
     if simplex_data!='' and value_parent_object_var:
-        outputFile = DB_PCACE_data_analyzer_util.individual_simplex_info_main(simplex_data, inputDir, outputDir)
+        outputFile = DB_PCACE_data_analyzer_util.individual_simplex_info(simplex_data, inputDir, outputDir)
         if outputFile!='':
             filesToOpen.append(outputFile)
         headers=IO_csv_util.get_csvfile_headers(outputFile)
