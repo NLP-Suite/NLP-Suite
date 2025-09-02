@@ -241,9 +241,9 @@ def check_missing(fileName):
 def view_grammar(excel_file, column_name, output_file):
     """
     exports the contents from a specific excel file to a txt
-    - excel_file (str): Path to the Excel file.
+    - excel_file (str): grammar_path to the Excel file.
     - column_name (str): Name of the column to read.
-    - output_file (str): Path to the output text file.
+    - output_file (str): grammar_path to the output text file.
     """
     try:
         df = pd.read_excel(excel_file)
@@ -280,7 +280,7 @@ def view_grammar(excel_file, column_name, output_file):
 
 # excel_column_to_text('setup_Complex.xlsx','GrammarRule_Text', 'column_text')
 # give the list for all simplex & complex names
-# parameter: dataframe of setup_Complex or filename with path
+# parameter: dataframe of setup_Complex or filename with grammar_path
 # return: the list of all table names
 # def get_complex_simplex_names(setup_Name):
 #     if isinstance(setup_Name, str) and os.path.isfile(setup_Name):
@@ -373,7 +373,7 @@ def get_simplex_frequencies(name, inputDir, outputDir, compute_frequencies=True)
 
 
 # Creates csv file with frequencies of complex associations for each simplex.
-# return: path to generated csv or None if data is missing
+# return: grammar_path to generated csv or None if data is missing
 def get_simplex_frequencies_all(inputDir, outputDir):
     if any(df is None or df.empty for df in [setup_Simplex_lib, data_Simplex_lib, data_xref_Simplex_Complex_lib]):
         return None
@@ -407,7 +407,6 @@ def get_complex(complex_object_name, inputDir, outputDir):
     append_rows = dfs(complex_object_name)
     new_rows_df = pd.DataFrame(append_rows)
     dfs_df = pd.concat([dfs_df, new_rows_df], ignore_index=True)
-    # @@@ Aiden
     dfs_df = add_path_info_to_complex_object(complex_object_name, dfs_df)
     # @@@ Aiden this is where SVO triplet is exported
     # @@@ should add the info added for triplets (search for # @@@ should the following lines be a function)
@@ -501,7 +500,9 @@ def find_simplex_setup_id(simplex_name):
 #   complexes: names of complexes in list type
 #   setup_Complex, setup_xref_Simplex_Complex
 # return: related names of simplexes and required simplexes in nested list type
-def corresponding_name_simplex_complex(complexes):
+
+# get_simplex_names_for_complex
+def get_simplex_names_for_complex(complexes):
     simplexes = []
     simplexes_required = []
     if isinstance(complexes, str):
@@ -694,11 +695,11 @@ def lower(start, lowest_complex_list, checked_complex):
             else:
                 lower(temp, lowest_complex_list, checked_complex)
 
-# find the path between complex objects in the setup grammar
+# find the grammar_path between complex objects in the setup grammar
 # parameter: name of complex1 at higher level, name of complex2 at lower level
 #            dataframe of setup_Complex and setup_xref_Complex_Complex
-# return: the list of two complex and the complex in the path
-def find_path(complex1, complex2):
+# return: the list of two complex and the complex in the grammar_path
+def find_grammar_path(complex1, complex2):
     all_paths = []
     find_connections(complex1, complex2, [complex1], all_paths, set())
     return all_paths
@@ -725,23 +726,26 @@ def find_connections(complex1, complex2, current_path, all_paths, visited, depth
 
 
 
-# link the data of the highest complex and lowest complex in the path
-# parameter: return of path function
+# get the data IDs of the highest complex and lowest complex in the grammar_path
+# parameter: return of grammar_path function
 #            setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex
-# return: data id of the highest complex and lowest complex in the given path with xref
-def link_data_id(path):
-    highest_name = path[0]
-    lowest_name = path[len(path) - 1]
+# return: 2 columns of data IDs of the highest complex and lowest complex in the given grammar_path with xref
+#   e.g., if grammar_path contains the values Participant-S, Actor, Individual, it will return the data IDs for Participant-S and Individual 
+
+# get complex_data_IDs_in_grammar_path
+def complex_data_IDs_in_grammar_path(grammar_path):
+    highest_name = grammar_path[0]
+    lowest_name = grammar_path[len(grammar_path) - 1]
 
     higher = highest_name
     higher = find_complex_setup_id([higher])
     higher = higher.iat[0, 0]
-    path = path[1:]
+    grammar_path = grammar_path[1:]
     xrefs = []
     #3 ->47->49
 
     #3->49-79
-    for each in path:
+    for each in grammar_path:
         lower = find_complex_setup_id([each])
         lower = lower.iat[0, 0]
         xref = setup_xref_Complex_Complex_lib[(setup_xref_Complex_Complex_lib['HigherComplex'] == higher) & (
@@ -754,7 +758,7 @@ def link_data_id(path):
         xrefs.append(xref)
 
     if len(xrefs) == 0:
-        print("Returning empty dataframe for :", path)
+        print("Returning empty dataframe for :", grammar_path)
         return pd.DataFrame()
 
     xref = xrefs.pop()
@@ -922,14 +926,14 @@ def get_simplex_value(simplex_name, complex_name, setup_Simplex_lib, xref_simple
 # used to construct a semantic triplet
 # parameter: "Participant-S," or "PROCESS," or "Participant-O"
 # return: dataframe: Participant-S/PROCESS/Participant-O data id, Value = simplex, Type = simplex name
-# def get_simplex_value_for_complex_object(complex_object_name, data_Simplex_lib, data_SimplexText_lib, setup_Complex_lib, setup_Simplex_lib, data_Complex_lib, data_xref_Simplex_Complex_lib, setup_xref_Complex_Complex_lib, data_xref_Complex_Complex_lib):
+# def get_simplex_value_for_complex(complex_object_name, data_Simplex_lib, data_SimplexText_lib, setup_Complex_lib, setup_Simplex_lib, data_Complex_lib, data_xref_Simplex_Complex_lib, setup_xref_Complex_Complex_lib, data_xref_Complex_Complex_lib):
 #
 #     # initialize empty dataframe simplexes_combined
 #     simplexes_combined = pd.DataFrame()
 #
 #     # ----------------------------
 #     # @ a lot of repeated code!!!
-#     # search for simplex_names = corresponding_name_simplex_complex(
+#     # search for simplex_names = get_simplex_names_for_complex(
 #     #   [lower_complex]) or [complex] as the final key
 #     setup_Simplex_lib = library['setup_Simplex.xlsx']
 #     # get a list of all the simplex names
@@ -941,7 +945,7 @@ def get_simplex_value(simplex_name, complex_name, setup_Simplex_lib, xref_simple
 #     xref_simplex_complex_value = xref_simplex_complex_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
 #
 #
-#     simplex_names, simplex_required_names = corresponding_name_simplex_complex([complex_object_name])
+#     simplex_names, simplex_required_names = get_simplex_names_for_complex([complex_object_name])
 #
 #     # check setup_xref_Simplex-Complex.xlsx to see if the simplex is Required and only use the required simplex
 #     NSimplex = len(simplex_required_names[0])
@@ -978,7 +982,7 @@ def get_simplex_value(simplex_name, complex_name, setup_Simplex_lib, xref_simple
 #
 #             simplexes = []
 #             for lower in lower_complexes:
-#                 simplex_names, simplex_required_names = corresponding_name_simplex_complex([lower])
+#                 simplex_names, simplex_required_names = get_simplex_names_for_complex([lower])
 #
 #                 # check setup_xref_Simplex-Complex.xlsx to see if the simplex is Required and only use the required simplex
 #                 NSimplex = len(simplex_required_names[0])
@@ -1009,9 +1013,9 @@ def get_simplex_value(simplex_name, complex_name, setup_Simplex_lib, xref_simple
 #
 #                     xref_simplex_complex_value_select = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
 #
-#                     path = find_path(complex_object_name, lower, setup_Complex_lib, setup_xref_Complex_Complex_lib)
-#                     path = path[0]
-#                     id_data = link_data_id(path, setup_Complex_lib, setup_xref_Complex_Complex_lib, data_xref_Complex_Complex_lib)
+#                     grammar_path = find_grammar_path(complex_object_name, lower, setup_Complex_lib, setup_xref_Complex_Complex_lib)
+#                     grammar_path = grammar_path[0]
+#                     id_data =complex_data_IDs_in_grammar_path(grammar_path, setup_Complex_lib, setup_xref_Complex_Complex_lib, data_xref_Complex_Complex_lib)
 #
 #                     data = pd.merge(id_data, xref_simplex_complex_value_select, how = 'left', left_on = lower, right_on = 'ID_data_complex')
 #                     data = data[data[complex_object_name].notna()]
@@ -1028,7 +1032,7 @@ def get_simplex_value(simplex_name, complex_name, setup_Simplex_lib, xref_simple
 #     return simplexes_combined
 
 
-# def get_simplex_value_for_complex_object(complex_object_name, data_Simplex, data_SimplexText, setup_Complex, setup_Simplex, data_Complex, data_xref_Simplex_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex):
+# def get_simplex_value_for_complex(complex_object_name, data_Simplex, data_SimplexText, setup_Complex, setup_Simplex, data_Complex, data_xref_Simplex_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex):
 #
 #     crossref = library['setup_xref_Complex-Complex.xlsx']
 #     crossref = crossref[['Required', 'Name']]
@@ -1038,7 +1042,7 @@ def get_simplex_value(simplex_name, complex_name, setup_Simplex_lib, xref_simple
 #
 #     # ----------------------------
 #     # @ a lot of repeated code!!!
-#     # search for simplex_names = corresponding_name_simplex_complex(
+#     # search for simplex_names = get_simplex_names_for_complex(
 #     #   [lower_complex]) or [complex] as the final key
 #     setup_Simplex_lib = library['setup_Simplex.xlsx']
 #     # get a list of all the simplex names
@@ -1050,7 +1054,7 @@ def get_simplex_value(simplex_name, complex_name, setup_Simplex_lib, xref_simple
 #     xref_simplex_complex_value = xref_simplex_complex_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
 #
 #
-#     simplex_names, simplex_required_names = corresponding_name_simplex_complex([complex_object_name])
+#     simplex_names, simplex_required_names = get_simplex_names_for_complex([complex_object_name])
 #
 #     # check setup_xref_Simplex-Complex.xlsx to see if the simplex is Required and only use the required simplex
 #     NSimplex = len(simplex_required_names[0])
@@ -1110,9 +1114,9 @@ def get_simplex_value(simplex_name, complex_name, setup_Simplex_lib, xref_simple
 #
 #                 xref_simplex_complex_value_select = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
 #
-#                 path = find_path(complex_object_name, lower, setup_Complex, setup_xref_Complex_Complex)
-#                 path = path[0]
-#                 id_data = link_data_id(path, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex)
+#                 grammar_path = find_grammar_path(complex_object_name, lower, setup_Complex, setup_xref_Complex_Complex)
+#                 grammar_path = grammar_path[0]
+#                 id_data =complex_data_IDs_in_grammar_path(grammar_path, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex)
 #
 #                 data = pd.merge(id_data, xref_simplex_complex_value_select, how = 'left', left_on = lower, right_on = 'ID_data_complex',)
 #                 data = data[data[complex_object_name].notna()]
@@ -1137,7 +1141,7 @@ def dfs(parent):
     if not required:
         return []
 
-    simplex_names, simplex_required_names = corresponding_name_simplex_complex([parent])
+    simplex_names, simplex_required_names = get_simplex_names_for_complex([parent])
     parent_id = find_complex_setup_id([parent]).iat[0, 0]
 
     # check setup_xref_Simplex-Complex.xlsx to see if the simplex is Required and only use the required simplex
@@ -1201,7 +1205,21 @@ def dfs(parent):
         return append_rows
 
 
-def get_simplex_value_for_complex_object(complex_object_name, is_verb):
+def get_xref_simplex_complex_values():
+    data_SimplexText_allValues = pd.merge(data_Simplex_lib, data_SimplexText_lib, how='left',
+                                          on='ID_data_date_number_text')
+    data_SimplexText_allValues = data_SimplexText_allValues[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
+    # add the data xref simplex-complex IDs, setup xref simplex-complex IDs, data complex IDs, data simplex IDs, setup simplex IDs, simplex values
+    xref_simplex_complex_value = pd.merge(data_xref_Simplex_Complex_lib, data_SimplexText_allValues, how='left',
+                                          left_on='ID_data_simplex', right_on='ID_data_simplex')
+    # select data complex IDs, data simplex IDs, setup simplex IDs, simplex values
+    xref_simplex_complex_value = xref_simplex_complex_value[
+        ['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
+
+    return xref_simplex_complex_value
+
+
+def get_simplex_value_for_complex(complex_object_name, is_verb):
 
     # check whether Group is 0 or 1a, 1b, 1c,... i.e., whether the complex objects are mutually exclusive
     mutually_exclusive = setup_xref_Complex_Complex_lib[['Group', 'Name']]
@@ -1209,22 +1227,16 @@ def get_simplex_value_for_complex_object(complex_object_name, is_verb):
     # initialize empty dataframe simplexes_combined
     simplexes_combined = pd.DataFrame()
 
-    # ----------------------------
-    # @ a lot of repeated code!!!
-    # search for simplex_names = corresponding_name_simplex_complex(
-    #   [lower_complex]) or [complex] as the final key
-    # get a list of all the simplex names
-    # get a list of all the simplex values
-    data_Simplex_temp = pd.merge(data_Simplex_lib, data_SimplexText_lib, how = 'left', on = 'ID_data_date_number_text')
-    data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
-    # get a list of all the simplex values, regardless of simplex name
-    xref_simplex_complex_value = pd.merge(data_xref_Simplex_Complex_lib, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
-    xref_simplex_complex_value = xref_simplex_complex_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
-
-
-
-
-    simplex_names, simplex_required_names = corresponding_name_simplex_complex([complex_object_name])
+    # # get a list of all the simplex data IDs, setup IDs, and TEXT values
+    xref_simplex_complex_value = get_xref_simplex_complex_values()
+    # data_SimplexText_allValues = pd.merge(data_Simplex_lib, data_SimplexText_lib, how = 'left', on = 'ID_data_date_number_text')
+    # data_SimplexText_allValues = data_SimplexText_allValues[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
+    # # add the data xref simplex-complex IDs, setup xref simplex-complex IDs, data complex IDs, data simplex IDs, setup simplex IDs, simplex values
+    # xref_simplex_complex_value = pd.merge(data_xref_Simplex_Complex_lib, data_SimplexText_allValues, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
+    # # select data complex IDs, data simplex IDs, setup simplex IDs, simplex values
+    # xref_simplex_complex_value = xref_simplex_complex_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
+    # extract all the simplex names and required simplex names for a selected complex
+    simplex_names, simplex_required_names = get_simplex_names_for_complex([complex_object_name])
 
     # check setup_xref_Simplex-Complex.xlsx to see if the simplex is Required and only use the required simplex
     NSimplex = len(simplex_required_names[0])
@@ -1249,11 +1261,13 @@ def get_simplex_value_for_complex_object(complex_object_name, is_verb):
     else:
         # get a list of all the simplex names, children of the complex object complex_object_name
         # get a list of all the simplex values
-        data_Simplex_temp = pd.merge(data_Simplex_lib, data_SimplexText_lib, how = 'left', on = 'ID_data_date_number_text')
-        data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
-        # get a list of all the simplex values, regardless of simplex name
-        xref_simplex_complex_value = pd.merge(data_xref_Simplex_Complex_lib, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
-        xref_simplex_complex_value = xref_simplex_complex_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
+        xref_simplex_complex_value = get_xref_simplex_complex_values()
+
+        # data_Simplex_temp = pd.merge(data_Simplex_lib, data_SimplexText_lib, how = 'left', on = 'ID_data_date_number_text')
+        # data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
+        # # get a list of all the simplex values, regardless of simplex name
+        # xref_simplex_complex_value = pd.merge(data_xref_Simplex_Complex_lib, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
+        # xref_simplex_complex_value = xref_simplex_complex_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
         # global dfs_lib
         # dfs_lib = pd.DataFrame(columns=['Parent', 'Children'])
         # dfs(complex_object_name, crossref)
@@ -1264,7 +1278,7 @@ def get_simplex_value_for_complex_object(complex_object_name, is_verb):
         complex_children = find_lower_complex([complex_object_name])['Name'].values.tolist()
         # get as dataframe the names of all the complex children of the initial complex_object_name
         for lower in complex_children:
-            simplex_names, simplex_required_names = corresponding_name_simplex_complex([lower])
+            simplex_names, simplex_required_names = get_simplex_names_for_complex([lower])
             if len(simplex_required_names[0]) > 0:
                 simplex = simplex_required_names[0][0]
 
@@ -1313,19 +1327,19 @@ def get_simplex_value_for_complex_object(complex_object_name, is_verb):
 
                 xref_simplex_complex_value_select = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
 
-                # the path contains the rewrite rule for a specific object
+                # the grammar_path contains the rewrite rule for a specific object
                 #   e.g., Participant-S --> Actor --> Collective actor
-                path = find_path(complex_object_name, lower)
-                path = path[0]
+                grammar_path = find_grammar_path(complex_object_name, lower)
+                grammar_path = grammar_path[0]
 
                 # @@@@
                 if is_verb:
-                    head = path[0]
-                    path = path[1:]
+                    head = grammar_path[0]
+                    grammar_path = grammar_path[1:]
                     id_data_list = []
-                    for item in path:
-                        path = [head, item]
-                        id_data = link_data_id(path)
+                    for item in grammar_path:
+                        grammar_path = [head, item]
+                        id_data =complex_data_IDs_in_grammar_path(grammar_path)
                         id_data_list.append(id_data)
 
                     combined_id_data = pd.concat(id_data_list, ignore_index=True)
@@ -1341,7 +1355,7 @@ def get_simplex_value_for_complex_object(complex_object_name, is_verb):
                     #
                     # simplexes.append(data)
                 else: # NOT a verb
-                    id_data = link_data_id(path)
+                    id_data =complex_data_IDs_in_grammar_path(grammar_path)
 
                     data = pd.merge(id_data, xref_simplex_complex_value_select, how = 'left', left_on = lower, right_on = 'ID_data_complex')
                     # data = data[data[complex_object_name].notna()]
@@ -1371,16 +1385,16 @@ def get_simplex_value_for_complex_object(complex_object_name, is_verb):
                     xref_simplex_complex_value_select = xref_simplex_complex_value[
                         xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
 
-                    path = find_path(complex_object_name, lower)
-                    path = path[0]
+                    grammar_path = find_grammar_path(complex_object_name, lower)
+                    grammar_path = grammar_path[0]
 
                     if is_verb:
-                        head = path[0]
-                        path = path[1:]
+                        head = grammar_path[0]
+                        grammar_path = grammar_path[1:]
                         id_data_list = []
-                        for item in path:
-                            path = [head, item]
-                            id_data = link_data_id(path)
+                        for item in grammar_path:
+                            grammar_path = [head, item]
+                            id_data =complex_data_IDs_in_grammar_path(grammar_path)
                             id_data_list.append(id_data)
 
                         combined_id_data = pd.concat(id_data_list, ignore_index=True)
@@ -1394,7 +1408,7 @@ def get_simplex_value_for_complex_object(complex_object_name, is_verb):
 
                         simplexes.append(data)
                     else:
-                        id_data = link_data_id(path)
+                        id_data =complex_data_IDs_in_grammar_path(grammar_path)
 
                         data = pd.merge(id_data, xref_simplex_complex_value_select, how='left', left_on=lower,
                                         right_on='ID_data_complex')
@@ -1436,8 +1450,8 @@ def get_simplex_value_for_complex_object(complex_object_name, is_verb):
 #
 #     verb_lower_complexes = find_lower_complex([verb])['Name'].values.tolist()
 #     for lower in verb_lower_complexes:
-#         path = [verb, lower]
-#         id_data_simple_process_oneLevel = link_data_id(path, setup_Complex_lib, setup_xref_Complex_Complex_lib, data_xref_Complex_Complex_lib)
+#         grammar_path = [verb, lower]
+#         id_data_simple_process_oneLevel =complex_data_IDs_in_grammar_path(grammar_path, setup_Complex_lib, setup_xref_Complex_Complex_lib, data_xref_Complex_Complex_lib)
 #         data_simple_process = pd.merge(id_data_simple_process_oneLevel, xref_simplex_complex_value, how = 'left', left_on = lower, right_on = 'ID_data_complex')
 #         data_simple_process = data_simple_process.sort_values(by = ['ID_data_complex','ID_setup_simplex'], ascending = False)
 #         data_simple_process = data_simple_process.groupby([verb])['Value'].apply(lambda x: x.str.cat(sep=' ')).reset_index()
@@ -1470,20 +1484,20 @@ def add_path_info_to_complex_object(semantic_triplet, simplex_version):
      # S1: find setup id of 'Macro Event', 'Event' and 'Semantic Triplet'
     # 'Macro event refers to the highest complex in the hierarchy, not specific
     top_complex = setup_Complex_lib[setup_Complex_lib['ID_setup_complex']==1]['Name'].values[0]
-    path = find_path(top_complex, semantic_triplet)
-    path = path[0]
+    grammar_path = find_grammar_path(top_complex, semantic_triplet)
+    grammar_path = grammar_path[0]
 
-    # Step 3: Map each complex in the path to its ID
+    # Step 3: Map each complex in the grammar_path to its ID
     name_to_id = {
         name: find_complex_setup_id([name])['ID_setup_complex'].values[0]
-        for name in path
+        for name in grammar_path
     }
 
     # Step 4: Retrieve and store link IDs and relevant data_xref details
     link_data_frames = []
-    for i in range(len(path) - 1):
-        higher_id = name_to_id[path[i]]
-        lower_id = name_to_id[path[i + 1]]
+    for i in range(len(grammar_path) - 1):
+        higher_id = name_to_id[grammar_path[i]]
+        lower_id = name_to_id[grammar_path[i + 1]]
 
         # Find setup xref ID for each link
         xref_id = setup_xref_Complex_Complex_lib[
@@ -1495,8 +1509,8 @@ def add_path_info_to_complex_object(semantic_triplet, simplex_version):
         data_xref = data_xref_Complex_Complex_lib[
             data_xref_Complex_Complex_lib['ID_setup_xref_complex_complex'] == xref_id
             ][['ID_data_complex', 'ID_data_complex.1']].rename(columns={
-            'ID_data_complex': f'{path[i]} ID',
-            'ID_data_complex.1': f'{path[i + 1]} ID'
+            'ID_data_complex': f'{grammar_path[i]} ID',
+            'ID_data_complex.1': f'{grammar_path[i + 1]} ID'
         })
         link_data_frames.append(data_xref)
 
@@ -1504,30 +1518,30 @@ def add_path_info_to_complex_object(semantic_triplet, simplex_version):
     merged_data = link_data_frames[0]
     for i in range(1, len(link_data_frames)):
         merged_data = pd.merge(merged_data, link_data_frames[i],
-                               left_on=f'{path[i]} ID',
-                               right_on=f'{path[i]} ID',
+                               left_on=f'{grammar_path[i]} ID',
+                               right_on=f'{grammar_path[i]} ID',
                                how='right')
 
     # Step 7: Merge with simplex_version using semantic triplet ID as the key
     #   when calling from get_complex, Semantic Triplet ID should be the parent complex ID
     try:
-        simplex_version = pd.merge(merged_data, simplex_version, how='left', left_on=f'{path[-1]} ID',
-                                   right_on=f'{path[-1]} ID')
+        simplex_version = pd.merge(merged_data, simplex_version, how='left', left_on=f'{grammar_path[-1]} ID',
+                                   right_on=f'{grammar_path[-1]} ID')
     except:
-        simplex_version = pd.merge(merged_data, simplex_version, how='left', left_on=f'{path[-1]} ID',
+        simplex_version = pd.merge(merged_data, simplex_version, how='left', left_on=f'{grammar_path[-1]} ID',
                                    right_on='Semantic Triplet ID')
 
     # Step 8: Add the top complex identifier by merging with data_Complex
     data_complex_top = data_Complex_lib[['ID_data_complex', 'Identifier']].rename(
-        columns={'ID_data_complex': f'{path[0]} ID', 'Identifier': f'{path[0]} Identifier'}
+        columns={'ID_data_complex': f'{grammar_path[0]} ID', 'Identifier': f'{grammar_path[0]} Identifier'}
     )
-    simplex_version = pd.merge(simplex_version, data_complex_top, how='left', on=f'{path[0]} ID')
+    simplex_version = pd.merge(simplex_version, data_complex_top, how='left', on=f'{grammar_path[0]} ID')
 
     # Step 9: Reorder to have the top complex identifier and clean up any remaining extraneous columns
-    top_complex_identifier = simplex_version.pop(f'{path[0]} Identifier')
-    simplex_version.insert(1, f'{path[0]} Identifier', top_complex_identifier)
+    top_complex_identifier = simplex_version.pop(f'{grammar_path[0]} Identifier')
+    simplex_version.insert(1, f'{grammar_path[0]} Identifier', top_complex_identifier)
 
-    # Final output should have only the relevant path columns and top complex identifier
+    # Final output should have only the relevant grammar_path columns and top complex identifier
     print("Final Hierarchy Data with Simplex Version:", simplex_version)
     return simplex_version
 
@@ -1540,15 +1554,15 @@ def semantic_triplet_simplex(inputDir, subject, verb, object, document_info, com
 
     # @@@
 
-    s = get_simplex_value_for_complex_object(subject, False)
+    s = get_simplex_value_for_complex(subject, False)
 
     s = s.rename(columns={'Value': 'Subject (S)', 'Type': 'S Type'})
 
     # @@@ turn verb False to True!!!
-    v = get_simplex_value_for_complex_object(verb, True)
+    v = get_simplex_value_for_complex(verb, True)
     v = v.rename(columns={'Value': 'Verb (V)', 'Type': 'V Type'})
 
-    o = get_simplex_value_for_complex_object(object, False)
+    o = get_simplex_value_for_complex(object, False)
     o = o.rename(columns={'Value': 'Object (O)', 'Type': 'O Type'})
 
     if isinstance(semantic_triplet, list):
@@ -1577,20 +1591,20 @@ def semantic_triplet_simplex(inputDir, subject, verb, object, document_info, com
     #  # S1: find setup id of 'Macro Event', 'Event' and 'Semantic Triplet'
     # # 'Macro event refers to the highest complex in the hierarchy, not specific
     # top_complex = setup_Complex_lib[setup_Complex_lib['ID_setup_complex']==1]['Name'].values[0]
-    # path = find_path(top_complex, semantic_triplet, setup_Complex_lib, setup_xref_Complex_Complex_lib)
-    # path = path[0]
+    # grammar_path = find_grammar_path(top_complex, semantic_triplet, setup_Complex_lib, setup_xref_Complex_Complex_lib)
+    # grammar_path = grammar_path[0]
     #
-    # # Step 3: Map each complex in the path to its ID
+    # # Step 3: Map each complex in the grammar_path to its ID
     # name_to_id = {
     #     name: find_complex_setup_id([name], setup_Complex_lib)['ID_setup_complex'].values[0]
-    #     for name in path
+    #     for name in grammar_path
     # }
     #
     # # Step 4: Retrieve and store link IDs and relevant data_xref details
     # link_data_frames = []
-    # for i in range(len(path) - 1):
-    #     higher_id = name_to_id[path[i]]
-    #     lower_id = name_to_id[path[i + 1]]
+    # for i in range(len(grammar_path) - 1):
+    #     higher_id = name_to_id[grammar_path[i]]
+    #     lower_id = name_to_id[grammar_path[i + 1]]
     #
     #     # Find setup xref ID for each link
     #     xref_id = setup_xref_Complex_Complex_lib[
@@ -1602,8 +1616,8 @@ def semantic_triplet_simplex(inputDir, subject, verb, object, document_info, com
     #     data_xref = data_xref_Complex_Complex_lib[
     #         data_xref_Complex_Complex_lib['ID_setup_xref_complex_complex'] == xref_id
     #         ][['ID_data_complex', 'ID_data_complex.1']].rename(columns={
-    #         'ID_data_complex': f'{path[i]} ID',
-    #         'ID_data_complex.1': f'{path[i + 1]} ID'
+    #         'ID_data_complex': f'{grammar_path[i]} ID',
+    #         'ID_data_complex.1': f'{grammar_path[i + 1]} ID'
     #     })
     #     link_data_frames.append(data_xref)
     #
@@ -1611,26 +1625,26 @@ def semantic_triplet_simplex(inputDir, subject, verb, object, document_info, com
     # merged_data = link_data_frames[0]
     # for i in range(1, len(link_data_frames)):
     #     merged_data = pd.merge(merged_data, link_data_frames[i],
-    #                            left_on=f'{path[i]} ID',
-    #                            right_on=f'{path[i]} ID',
+    #                            left_on=f'{grammar_path[i]} ID',
+    #                            right_on=f'{grammar_path[i]} ID',
     #                            how='right')
     #
     # # Step 7: Merge with simplex_version using semantic triplet ID as the key
     # #   when calling from get_complex, Semantic Triplet ID should be the parent complex ID
-    # simplex_version = pd.merge(merged_data, simplex_version, how='left', left_on=f'{path[-1]} ID',
+    # simplex_version = pd.merge(merged_data, simplex_version, how='left', left_on=f'{grammar_path[-1]} ID',
     #                            right_on='Semantic Triplet ID')
     #
     # # Step 8: Add the top complex identifier by merging with data_Complex
     # data_complex_top = data_Complex_lib[['ID_data_complex', 'Identifier']].rename(
-    #     columns={'ID_data_complex': f'{path[0]} ID', 'Identifier': f'{path[0]} Identifier'}
+    #     columns={'ID_data_complex': f'{grammar_path[0]} ID', 'Identifier': f'{grammar_path[0]} Identifier'}
     # )
-    # simplex_version = pd.merge(simplex_version, data_complex_top, how='left', on=f'{path[0]} ID')
+    # simplex_version = pd.merge(simplex_version, data_complex_top, how='left', on=f'{grammar_path[0]} ID')
     #
     # # Step 9: Reorder to have the top complex identifier and clean up any remaining extraneous columns
-    # top_complex_identifier = simplex_version.pop(f'{path[0]} Identifier')
-    # simplex_version.insert(1, f'{path[0]} Identifier', top_complex_identifier)
+    # top_complex_identifier = simplex_version.pop(f'{grammar_path[0]} Identifier')
+    # simplex_version.insert(1, f'{grammar_path[0]} Identifier', top_complex_identifier)
     #
-    # # Final output should have only the relevant path columns and top complex identifier
+    # # Final output should have only the relevant grammar_path columns and top complex identifier
     # print("Final Hierarchy Data with Simplex Version:", simplex_version)
 
     # @@@ should the following lines be separate functions for document info and comments
@@ -1701,10 +1715,10 @@ def semantic_triplet_simplex_main(inputDir, outputDir, macro_event_id, subject, 
     semantic_triplet = find_parent_complex(subject)
     if isinstance(semantic_triplet, list):
         semantic_triplet = semantic_triplet[0]
-    path = find_path(top_complex, semantic_triplet)
-    path = path[0]
-    print(path)
-    existing_columns = [f'{col} ID' for col in path if f'{col} ID' in simplex_version.columns]
+    grammar_path = find_grammar_path(top_complex, semantic_triplet)
+    grammar_path = grammar_path[0]
+    print(grammar_path)
+    existing_columns = [f'{col} ID' for col in grammar_path if f'{col} ID' in simplex_version.columns]
     print('===============================================================================================')
     print(existing_columns)
     if existing_columns:
@@ -1736,7 +1750,7 @@ def get_time_simplex(inputDir, outputDir, time_label, subject, verb, object, mac
 # return: a dataframe: Process = data id of complex Process, Indefinite time of day = data id of simplex Indefinite time of day, Time = text of Indefinite time of day
 def find_time_simplex(inputDir, time_label, subject, verb, object, document_info, comment_info):
 
-    simplexes = corresponding_name_simplex_complex(time_label)
+    simplexes = get_simplex_names_for_complex(time_label)
     simplex_id = find_simplex_setup_id(simplexes[0])
     simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
     data_Simplex_temp = pd.merge(data_Simplex_lib, data_SimplexText_lib, how = 'left', on = 'ID_data_date_number_text')
@@ -1744,11 +1758,11 @@ def find_time_simplex(inputDir, time_label, subject, verb, object, document_info
     xref_simplex_complex_value = pd.merge(data_xref_Simplex_Complex_lib, data_Simplex_temp, how = 'left', on = 'ID_data_simplex')
     xref_simplex_complex_value = xref_simplex_complex_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
     xref_simplex_complex_value = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
-    all_path = find_path(verb, time_label)
+    all_path = find_grammar_path(verb, time_label)
 
     data = pd.DataFrame()
-    for path in all_path:
-        id_data_subLevel = link_data_id(path)
+    for grammar_path in all_path:
+        id_data_subLevel =complex_data_IDs_in_grammar_path(grammar_path)
         id_data_subLevel = id_data_subLevel[id_data_subLevel[verb].notna()]
         id_data_subLevel = id_data_subLevel.drop_duplicates(subset=[verb])
         data_subLevel = pd.merge(id_data_subLevel, xref_simplex_complex_value, how='left', left_on=time_label,right_on='ID_data_complex')
@@ -1798,10 +1812,10 @@ def semantic_triplet_time(inputDir, outputDir, time_label, macro_event_id,  subj
     semantic_triplet = find_parent_complex(subject)
     if isinstance(semantic_triplet, list):
         semantic_triplet = semantic_triplet[0]
-    path = find_path(top_complex, semantic_triplet)
-    path = path[0]
+    grammar_path = find_grammar_path(top_complex, semantic_triplet)
+    grammar_path = grammar_path[0]
 
-    existing_columns = [f'{col} ID' for col in path if f'{col} ID' in triplet_with_time.columns]
+    existing_columns = [f'{col} ID' for col in grammar_path if f'{col} ID' in triplet_with_time.columns]
     if existing_columns:
         triplet_with_time = triplet_with_time.sort_values(existing_columns, ascending=True)
 
@@ -1816,7 +1830,7 @@ def semantic_triplet_time(inputDir, outputDir, time_label, macro_event_id,  subj
 # link simplex of space complex with V
 # return: a dataframe: Process = data id of complex Process, Type of territory = data id of simplex Type of territory, Space = text of Type of territory
 def find_space_simplex(inputDir, space_label_var, subject, verb, object):
-    simplexes = corresponding_name_simplex_complex(space_label_var)
+    simplexes = get_simplex_names_for_complex(space_label_var)
     simplex_id = find_simplex_setup_id(simplexes[0])
     simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
     data_Simplex_temp = pd.merge(data_Simplex_lib, data_SimplexText_lib, how = 'left', on = 'ID_data_date_number_text')
@@ -1824,11 +1838,11 @@ def find_space_simplex(inputDir, space_label_var, subject, verb, object):
     xref_simplex_complex_value = pd.merge(data_xref_Simplex_Complex_lib, data_Simplex_temp, how = 'left', on = 'ID_data_simplex')
     xref_simplex_complex_value = xref_simplex_complex_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
     xref_simplex_complex_value = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
-    all_path = find_path(verb, space_label_var)
+    all_path = find_grammar_path(verb, space_label_var)
 
     data = pd.DataFrame()
-    for path in all_path:
-        id_data_subLevel = link_data_id(path)
+    for grammar_path in all_path:
+        id_data_subLevel =complex_data_IDs_in_grammar_path(grammar_path)
         id_data_subLevel = id_data_subLevel[id_data_subLevel[verb].notna()]
         id_data_subLevel = id_data_subLevel.drop_duplicates(subset=[verb])
         data_subLevel = pd.merge(id_data_subLevel, xref_simplex_complex_value, how='left', left_on=space_label_var,
@@ -1882,10 +1896,10 @@ def semantic_triplet_space(inputDir, outputDir, space_label_var, macro_event_id,
     semantic_triplet = find_parent_complex(subject)
     if isinstance(semantic_triplet, list):
         semantic_triplet = semantic_triplet[0]
-    path = find_path(top_complex, semantic_triplet)
-    path = path[0]
+    grammar_path = find_grammar_path(top_complex, semantic_triplet)
+    grammar_path = grammar_path[0]
 
-    existing_columns = [f'{col} ID' for col in path if f'{col} ID' in triplet_with_space.columns]
+    existing_columns = [f'{col} ID' for col in grammar_path if f'{col} ID' in triplet_with_space.columns]
     if existing_columns:
         triplet_with_space = triplet_with_space.sort_values(existing_columns, ascending=True)
 
@@ -1925,10 +1939,10 @@ def semantic_triplet_time_space(inputDir, outputDir, space_label_var, time_label
     semantic_triplet = find_parent_complex(subject)
     if isinstance(semantic_triplet, list):
         semantic_triplet = semantic_triplet[0]
-    path = find_path(top_complex, semantic_triplet)
-    path = path[0]
+    grammar_path = find_grammar_path(top_complex, semantic_triplet)
+    grammar_path = grammar_path[0]
 
-    existing_columns = [f'{col} ID' for col in path if f'{col} ID' in triplet_with_time_space.columns]
+    existing_columns = [f'{col} ID' for col in grammar_path if f'{col} ID' in triplet_with_time_space.columns]
     if existing_columns:
         triplet_with_time_space = triplet_with_time_space.sort_values(existing_columns, ascending=True)
 
@@ -1939,19 +1953,19 @@ def semantic_triplet_time_space(inputDir, outputDir, space_label_var, time_label
     return triplet_with_space_time_file_name
 
 # Find paths for each simplexes under the actors var recursively
-def find_complex_paths(complex_name, path, complete_complexes):
-    # Make a copy of the path to avoid modifying the same list in recursive calls
-    current_path = path + [complex_name]
+def find_complex_paths(complex_name, grammar_path, complete_complexes):
+    # Make a copy of the grammar_path to avoid modifying the same list in recursive calls
+    current_path = grammar_path + [complex_name]
 
-    # Check if the complex_name is already in the path to prevent repeated cycles
-    if complex_name in path:
+    # Check if the complex_name is already in the grammar_path to prevent repeated cycles
+    if complex_name in grammar_path:
         return
 
     # Get the simplex names and child complexes for the current complex
-    simplex_names = corresponding_name_simplex_complex(complex_name)
+    simplex_names = get_simplex_names_for_complex(complex_name)
     child_complexes = find_child_complex(complex_name)
 
-    # Add path if simplex names are present
+    # Add grammar_path if simplex names are present
     if simplex_names and simplex_names[0]:  # This covers cases with direct simplex
         complete_complexes.append(current_path)
 
@@ -1963,7 +1977,7 @@ def find_complex_paths(complex_name, path, complete_complexes):
         else:  # Single child complex
             find_complex_paths(child_complexes, current_path, complete_complexes)
 
-    # If there's no simplex and only child complexes, the path is not added
+    # If there's no simplex and only child complexes, the grammar_path is not added
     return complete_complexes
 
 # get individual characteristics
@@ -1988,27 +2002,27 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
     path_map = {}
     all_paths = []
     complete_complexes = []
-    path = [actors_var]
+    grammar_path = [actors_var]
     print('all_paths', all_paths)
     # Loop through all complete paths and update path_map
     for complex_name in names_personal_characteristics:
-        path=path[:1]
-        all_paths = find_complex_paths(complex_name, path, all_paths)
-        for path in all_paths:
-            last_complex = path[-1]
+        grammar_path=grammar_path[:1]
+        all_paths = find_complex_paths(complex_name, grammar_path, all_paths)
+        for grammar_path in all_paths:
+            last_complex = grammar_path[-1]
             if last_complex not in complete_complexes:
                 complete_complexes.append(last_complex)
-                path_map[last_complex] = path
+                path_map[last_complex] = grammar_path
 
-    for complex_name, path in path_map.items():
+    for complex_name, grammar_path in path_map.items():
         print(f"Complex Name: {complex_name}")
-        print(f"Path: {path}")
+        print(f"grammar_path: {grammar_path}")
         print("-" * 40)
         print('----------------------------------------------------------------------------------------------------------------------------------------------------------------')
     # loop through all the children complex objects (e.g., Age, First name and last name, ...)
     for name in complete_complexes:
-        path = path_map[name]
-        id_data_personal_characteristics = link_data_id(path)
+        grammar_path = path_map[name]
+        id_data_personal_characteristics =complex_data_IDs_in_grammar_path(grammar_path)
         data_personal_characteristics = find_identifier(id_data_personal_characteristics, [name])
         table_complex = pd.merge(table_complex, data_personal_characteristics, how='left', left_on='ID_data_complex',
                                  right_on=actors_var)
@@ -2025,7 +2039,7 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
     complete_complexes.append(actors_var)
     # Loop through all complexes with direct simplexes and building simplex tables for each complex
     for complex_name in complete_complexes:
-        simplex_names = corresponding_name_simplex_complex(complex_name)
+        simplex_names = get_simplex_names_for_complex(complex_name)
 
         print('simplex_names',  simplex_names)
         for i in range(0, len(simplex_names)):
@@ -2079,15 +2093,15 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
 #     names_victim_of_lynching = find_lower_complex(['Victim of lynching'])
 #     names_victim_of_lynching = names_victim_of_lynching['Name'].values.tolist()
 #
-#     path = ['Victim of lynching']
+#     grammar_path = ['Victim of lynching']
 #
 #     for name in names_victim_of_lynching:
-#         path.append(name)
-#         id_data_victim_of_lynching = link_data_id(path, setup_Complex_lib, setup_xref_Complex_Complex_lib, data_xref_Complex_Complex_lib)
+#         grammar_path.append(name)
+#         id_data_victim_of_lynching =complex_data_IDs_in_grammar_path(grammar_path, setup_Complex_lib, setup_xref_Complex_Complex_lib, data_xref_Complex_Complex_lib)
 #         data_victim_of_lynching = find_identifier(id_data_victim_of_lynching, [name], data_Complex_lib)
 #         table_complex = pd.merge(table_complex, data_victim_of_lynching, how = 'left', left_on = 'ID_data_complex', right_on = 'Victim of lynching')
 #         table_complex = table_complex.drop('Victim of lynching', axis = 1)
-#         path.pop()
+#         grammar_path.pop()
 #
 #     table_complex = table_complex.drop('ID_setup_complex', axis = 1)
 #     table_complex = table_complex.rename(columns = {'ID_data_complex':'Victim of lynching', 'Identifier':'Victim of lynching Identifier'})
@@ -2109,7 +2123,7 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
 #     xref_simplex_complex_value = xref_simplex_complex_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
 #
 #     complex_name = 'Age'
-#     simplex_names = corresponding_name_simplex_complex([complex_name])
+#     simplex_names = get_simplex_names_for_complex([complex_name])
 #     for simplex_name in simplex_names[0]:
 #         simplex_id = find_simplex_setup_id([simplex_name], setup_Simplex_lib)
 #         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
@@ -2132,8 +2146,8 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
 #     xref_simplex_complex_value_new = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
 #     xref_simplex_complex_value_new = xref_simplex_complex_value_new.rename(columns = {'ID_data_complex':'Type of territory'})
 #
-#     path = ['Residence', 'Space', 'Territory', 'Type of territory']
-#     id_data_territory = link_data_id(path, setup_Complex_lib, setup_xref_Complex_Complex_lib, data_xref_Complex_Complex_lib)
+#     grammar_path = ['Residence', 'Space', 'Territory', 'Type of territory']
+#     id_data_territory =complex_data_IDs_in_grammar_path(grammar_path, setup_Complex_lib, setup_xref_Complex_Complex_lib, data_xref_Complex_Complex_lib)
 #     id_data_territory = id_data_territory[id_data_territory['Residence'].notna()]
 #     id_data_territory = id_data_territory.drop_duplicates(subset = ['Residence'])
 #     data_territory = pd.merge(id_data_territory, xref_simplex_complex_value_new, how = 'left', left_on = 'Type of territory', right_on = 'Type of territory')
@@ -2149,7 +2163,7 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
 #     # @ Taeeun hard coded
 #     complex_name = 'Victim (Beck)'
 #
-#     simplex_names = corresponding_name_simplex_complex([complex_name])
+#     simplex_names = get_simplex_names_for_complex([complex_name])
 #     for simplex_name in simplex_names[0]:
 #         simplex_id = find_simplex_setup_id([name], setup_Simplex_lib)
 #         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
@@ -2166,7 +2180,7 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
 #     # Victim (Brundage)
 #     complex_name = 'Victim (Brundage)'
 #
-#     simplex_names = corresponding_name_simplex_complex([complex_name])
+#     simplex_names = get_simplex_names_for_complex([complex_name])
 #     for simplex_name in simplex_names[0]:
 #         simplex_id = find_simplex_setup_id([name], setup_Simplex_lib)
 #         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
@@ -2183,7 +2197,7 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
 #     # simplex directly under Individual
 #     complex_name = 'Victim of lynching'
 #
-#     simplex_names = corresponding_name_simplex_complex([complex_name])
+#     simplex_names = get_simplex_names_for_complex([complex_name])
 #     for simplex_name in simplex_names[0]:
 #         simplex_id = find_simplex_setup_id([simplex_name], setup_Simplex_lib)
 #         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
@@ -2222,15 +2236,15 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
 #     names_victim_of_alleged_crime = find_lower_complex(['Victim of alleged crime'])
 #     names_victim_of_alleged_crime = names_victim_of_alleged_crime['Name'].values.tolist()
 #
-#     path = ['Victim of alleged crime']
+#     grammar_path = ['Victim of alleged crime']
 #
 #     for name in names_victim_of_alleged_crime:
-#         path.append(name)
-#         id_data_victim_of_alleged_crime = link_data_id(path, setup_Complex_lib, setup_xref_Complex_Complex_lib, data_xref_Complex_Complex_lib)
+#         grammar_path.append(name)
+#         id_data_victim_of_alleged_crime =complex_data_IDs_in_grammar_path(grammar_path, setup_Complex_lib, setup_xref_Complex_Complex_lib, data_xref_Complex_Complex_lib)
 #         data_victim_of_alleged_crime = find_identifier(id_data_victim_of_alleged_crime, [name], data_Complex_lib)
 #         table_complex = pd.merge(table_complex, data_victim_of_alleged_crime, how = 'left', left_on = 'ID_data_complex', right_on = 'Victim of alleged crime')
 #         table_complex = table_complex.drop('Victim of alleged crime', axis = 1)
-#         path.pop()
+#         grammar_path.pop()
 #
 #     table_complex = table_complex.drop('ID_setup_complex', axis = 1)
 #     table_complex = table_complex.rename(columns = {'ID_data_complex':'Victim of alleged crime', 'Identifier':'Victim of alleged crime Identifier'})
@@ -2252,7 +2266,7 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
 #     xref_simplex_complex_value = xref_simplex_complex_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
 #
 #     complex_name = 'Age'
-#     simplex_names = corresponding_name_simplex_complex([complex_name])
+#     simplex_names = get_simplex_names_for_complex([complex_name])
 #     for simplex_name in simplex_names[0]:
 #         simplex_id = find_simplex_setup_id([simplex_name], setup_Simplex_lib)
 #         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
@@ -2275,8 +2289,8 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
 #     xref_simplex_complex_value_new = xref_simplex_complex_value[xref_simplex_complex_value['ID_setup_simplex'].isin(simplex_id)]
 #     xref_simplex_complex_value_new = xref_simplex_complex_value_new.rename(columns = {'ID_data_complex':'Type of territory'})
 #
-#     path = ['Residence', 'Space', 'Territory', 'Type of territory']
-#     id_data_territory = link_data_id(path, setup_Complex_lib, setup_xref_Complex_Complex_lib, data_xref_Complex_Complex_lib)
+#     grammar_path = ['Residence', 'Space', 'Territory', 'Type of territory']
+#     id_data_territory =complex_data_IDs_in_grammar_path(grammar_path, setup_Complex_lib, setup_xref_Complex_Complex_lib, data_xref_Complex_Complex_lib)
 #     id_data_territory = id_data_territory[id_data_territory['Residence'].notna()]
 #     id_data_territory = id_data_territory.drop_duplicates(subset = ['Residence'])
 #     data_territory = pd.merge(id_data_territory, xref_simplex_complex_value_new, how = 'left', left_on = 'Type of territory', right_on = 'Type of territory')
@@ -2290,7 +2304,7 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
 #
 #     # First name and last name
 #     complex_name = 'First name and last name'
-#     simplex_names = corresponding_name_simplex_complex([complex_name])
+#     simplex_names = get_simplex_names_for_complex([complex_name])
 #     for simplex_name in simplex_names[0]:
 #         simplex_id = find_simplex_setup_id([simplex_name], setup_Simplex_lib)
 #         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
@@ -2307,7 +2321,7 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
 #     # Census linking
 #     complex_name = 'Census linking'
 #
-#     simplex_names = corresponding_name_simplex_complex([complex_name])
+#     simplex_names = get_simplex_names_for_complex([complex_name])
 #     for simplex_name in simplex_names[0]:
 #
 #         simplex_id = find_simplex_setup_id([name], setup_Simplex_lib)
@@ -2328,11 +2342,11 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
 #     # lower complex: First name and last name
 #     lower_complex = find_lower_complex([complex_name])
 #     lower_complex = lower_complex.iat[0, 1]
-#     id_data_lower_complex = link_data_id([complex_name, lower_complex], setup_Complex_lib, setup_xref_Complex_Complex_lib, data_xref_Complex_Complex_lib)
+#     id_data_lower_complex =complex_data_IDs_in_grammar_path([complex_name, lower_complex], setup_Complex_lib, setup_xref_Complex_Complex_lib, data_xref_Complex_Complex_lib)
 #     data_lower_complex = find_identifier(id_data_lower_complex, [lower_complex], data_Complex_lib)
 #
 #     # First name and last name
-#     simplex_names = corresponding_name_simplex_complex([lower_complex])
+#     simplex_names = get_simplex_names_for_complex([lower_complex])
 #     for simplex_name in simplex_names[0]:
 #
 #         simplex_id = find_simplex_setup_id([simplex_name], setup_Simplex_lib)
@@ -2351,7 +2365,7 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
 #     table_simplex = pd.merge(table_simplex, data_lower_complex, how = 'left', left_on = 'Siblings', right_on = 'Siblings')
 #
 #     # simplex: Number of siblings
-#     simplex_names = corresponding_name_simplex_complex([complex_name])
+#     simplex_names = get_simplex_names_for_complex([complex_name])
 #     for simplex_name in simplex_names[0]:
 #
 #         simplex_id = find_simplex_setup_id([simplex_name], setup_Simplex_lib)
@@ -2372,11 +2386,11 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
 #     # lower complex: First name and last name
 #     lower_complex = find_lower_complex([complex_name])
 #     lower_complex = lower_complex.iat[0, 1]
-#     id_data_lower_complex = link_data_id([complex_name, lower_complex], setup_Complex_lib, setup_xref_Complex_Complex_lib, data_xref_Complex_Complex_lib)
+#     id_data_lower_complex =complex_data_IDs_in_grammar_path([complex_name, lower_complex], setup_Complex_lib, setup_xref_Complex_Complex_lib, data_xref_Complex_Complex_lib)
 #     data_lower_complex = find_identifier(id_data_lower_complex, [lower_complex], data_Complex_lib)
 #
 #     # First name and last name
-#     simplex_names = corresponding_name_simplex_complex([lower_complex], setup_Complex_lib, setup_xref_Simplex_Complex_lib)
+#     simplex_names = get_simplex_names_for_complex([lower_complex], setup_Complex_lib, setup_xref_Simplex_Complex_lib)
 #     for simplex_name in simplex_names[0]:
 #         simplex_id = find_simplex_setup_id([simplex_name], setup_Simplex_lib)
 #         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
@@ -2394,7 +2408,7 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
 #     table_simplex = pd.merge(table_simplex, data_lower_complex, how = 'left', left_on = 'Children', right_on = 'Children')
 #
 #     # simplex: Number of children
-#     simplex_names = corresponding_name_simplex_complex([complex_name])
+#     simplex_names = get_simplex_names_for_complex([complex_name])
 #     for simplex_name in simplex_names[0]:
 #         simplex_id = find_simplex_setup_id([simplex_name], setup_Simplex_lib)
 #         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
@@ -2414,7 +2428,7 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
 #     # lower complex: Personal characteristics
 #
 #     # simplex: Type of relationship
-#     simplex_names = corresponding_name_simplex_complex([complex_name])
+#     simplex_names = get_simplex_names_for_complex([complex_name])
 #     for simplex_name in simplex_names[0]:
 #         simplex_id = find_simplex_setup_id([simplex_name], setup_Simplex_lib)
 #         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
@@ -2431,7 +2445,7 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
 #     # simplex directly under Individual
 #     complex_name = 'Victim of alleged crime'
 #
-#     simplex_names = corresponding_name_simplex_complex([complex_name])
+#     simplex_names = get_simplex_names_for_complex([complex_name])
 #     for simplex_name in simplex_names[0]:
 #         simplex_id = find_simplex_setup_id([name], setup_Simplex_lib)
 #         simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
@@ -2491,13 +2505,13 @@ def individual_simplex_info(simplex):
             lower_complex = find_lower_complex(complex_name)
             lower_complex = lower_complex['Name'].values.tolist()
             # relationship to event
-            path = find_path('Event', complex_name[0])
-            path = path[0]
+            grammar_path = find_grammar_path('Event', complex_name[0])
+            grammar_path = grammar_path[0]
             # format
             complex_name_table = ', '.join(complex_name)
             higher_complex_table = ', '.join(higher_complex)
             lower_complex_table = ', '.join(lower_complex)
-            path_table = ', '.join(path)
+            path_table = ', '.join(grammar_path)
         else:
             complex_name_table = ''
             higher_complex_table = ''
