@@ -70,7 +70,10 @@ reading_list = [
     ('data_xref_Simplex-Complex.xlsx', {'ID':'ID_data_xref_simplex_complex', 'xrefID':'ID_setup_xref_simplex_complex', 'Simplex':'ID_data_simplex', 'Complex':'ID_data_complex'}),
     ('data_xref_Complex-Complex.xlsx', {'ID':'ID_data_xref_complex-complex', 'HigherComplex':'ID_data_complex', 'xrefID':'ID_setup_xref_complex_complex', 'LowerComplex':'ID_data_complex.1'}),
     ('data_xref_Complex-Document.xlsx', {}),
+    ('data_xref_comment-complex.xlsx', {}),
+    ('data_xref_Comment-Document.xlsx', {}),
     ('data_xref_VComment.xlsx', {}),
+    ('data_xref_VComment-Document.xlsx', {}),
     ('utility_Security.xlsx', {})
 ]
 
@@ -126,7 +129,7 @@ def load_lib(inputDir):
     return
 
 def build_libraries(inputDir):
-    global setup_Complex_lib, setup_Simplex_lib, setup_xref_Complex_Complex_lib, crossref, setup_xref_Simplex_Complex_lib, data_Simplex_lib, data_SimplexText_lib, data_SimplexNumber_lib, data_SimplexDate_lib, data_Complex_lib, data_xref_Complex_Complex_lib, data_xref_Simplex_Complex_lib, data_xref_Complex_Document_lib, data_xref_VComment_lib, utility_Security_lib
+    global setup_Complex_lib, setup_Simplex_lib, setup_xref_Complex_Complex_lib, crossref, setup_xref_Simplex_Complex_lib, data_Simplex_lib, data_SimplexText_lib, data_SimplexNumber_lib, data_SimplexDate_lib, data_Complex_lib, data_xref_Complex_Complex_lib, data_xref_Simplex_Complex_lib, data_xref_Document_lib, data_xref_Complex_Document_lib, data_xref_comment_complex_lib, data_xref_Comment_Document_lib, data_xref_VComment_lib, data_xref_VComment_Document_lib, utility_Security_lib
 
     if os.path.exists(f"{inputDir}/{'setup_Complex'}.pkl"):
         name='setup_Complex'
@@ -199,24 +202,35 @@ def build_libraries(inputDir):
             library[name+'.xlsx'] = df
             data_xref_Simplex_Complex_lib = library['data_xref_Simplex-Complex.xlsx']
 
-
-        name='data_xref_Document'
+        name='data_xref_Complex-Document'
         if os.path.exists(f"{inputDir}/{name}.pkl"):
             df = pd.read_pickle(f"{inputDir}/{name}.pkl")
             library[name+'.xlsx'] = df
-            data_xref_Document_lib = library['data_xref_Document.xlsx']
+            data_xref_Complex_Document_lib = library['data_xref_Complex-Document.xlsx']
 
-        name='data_xref_Complex_Document'
+        name='data_xref_comment-complex'
         if os.path.exists(f"{inputDir}/{name}.pkl"):
             df = pd.read_pickle(f"{inputDir}/{name}.pkl")
             library[name+'.xlsx'] = df
-            data_xref_Complex_Document_lib = library['data_xref_Complex_Document.xlsx']
+            data_xref_comment_complex_lib = library['data_xref_comment-complex.xlsx']
+
+        name='data_xref_Comment-Document'
+        if os.path.exists(f"{inputDir}/{name}.pkl"):
+            df = pd.read_pickle(f"{inputDir}/{name}.pkl")
+            library[name+'.xlsx'] = df
+            data_xref_Comment_Document_lib = library['data_xref_Comment-Document.xlsx']
 
         name='data_xref_VComment'
         if os.path.exists(f"{inputDir}/{name}.pkl"):
             df = pd.read_pickle(f"{inputDir}/{name}.pkl")
             library[name+'.xlsx'] = df
             data_xref_VComment_lib = library['data_xref_VComment.xlsx']
+
+        name='data_xref_VComment-Document'
+        if os.path.exists(f"{inputDir}/{name}.pkl"):
+            df = pd.read_pickle(f"{inputDir}/{name}.pkl")
+            library[name+'.xlsx'] = df
+            data_xref_VComment_Document_lib = library['data_xref_VComment-Document.xlsx']
 
         name='utility_Security'
         if os.path.exists(f"{inputDir}/{name}.pkl"):
@@ -401,13 +415,19 @@ def get_simplex_frequencies_all(inputDir, outputDir):
 # @@@
 # given a complex name selected in _main, the function returns an output file containing a set of information about the complex
 #   e.g., identifier, simplex values
-def get_complex(complex_name, inputDir, outputDir):
+def get_complex(complex_name, comment_info, document_info, inputDir, outputDir):
     global dfs_df
     dfs_df = pd.DataFrame()
     append_rows = dfs(complex_name)
     new_rows_df = pd.DataFrame(append_rows)
     dfs_df = pd.concat([dfs_df, new_rows_df], ignore_index=True)
     dfs_df = add_path_info_to_complex_object(complex_name, dfs_df)
+    if document_info:
+        dfs_df = add_document_info(dfs_df)
+
+    if comment_info!='':
+        dfs_df = add_comment_info(dfs_df,comment_info)
+
     # @@@ Aiden this is where SVO triplet is exported
     # @@@ should add the info added for triplets (search for # @@@ should the following lines be a function)
     complex_object_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'Complex object')
@@ -1454,32 +1474,54 @@ def get_simplex_value_for_complex(complex_name, is_verb):
 #
 #     return data_simple_process
 
-def add_path_info_to_complex_object(semantic_triplet, simplex_version):
+def add_comment_info(df, comment_info):
+    object_ID =
+    # comments contain _x000D_ should be removed
+    if 'Verifiers' in comment_info:
+        data_xref_Comment_modified = data_xref_VComment_lib[['Complex', 'Comment', 'UserID', 'VerifierID']]
+    else:
+        # rename ID_data_complex to Complex
+        data_xref_Comment_modified = data_xref_comment_complex_lib.rename(columns={'ID_data_complex': 'Actor ID'})
+        data_xref_Comment_modified = data_xref_Comment_modified[[object_ID, 'Comment', 'UserID']]
+    df = pd.merge(df, data_xref_Comment_modified, how='left', left_on='Macro Event ID',
+                               right_on=object_ID)
+    # df = df.drop('Complex', axis=1)
 
-    # initialize all necessary libraries
-    # setup_Complex = library['setup_Complex.xlsx']
-    # setup_xref_Complex_Complex = library['setup_xref_Complex-Complex.xlsx']
-    # setup_Simplex = library['setup_Simplex.xlsx']
-    # setup_xref_Simplex_Complex = library['setup_xref_Simplex-Complex.xlsx']
-    #
-    # data_Complex = library.get('data_Complex.xlsx')
-    # data_xref_Complex_Complex = library.get('data_xref_Complex-Complex.xlsx')
-    # data_Simplex = library.get('data_Simplex.xlsx')
-    # data_SimplexText = library['data_SimplexText.xlsx']
-    # data_xref_Simplex_Complex = library.get('data_xref_Simplex-Complex.xlsx')
-    #
-    # # only keep required complex objects
-    # crossref = setup_xref_Complex_Complex[['Required', 'Name']]
+    utility_Security = utility_Security_lib[['ID', 'UserName']]
+    utility_Security = utility_Security.rename(columns={'ID': 'UserID'})
+    df = pd.merge(df, utility_Security, how='left', left_on='UserID', right_on='UserID')
+    user_name = df.pop('UserName')
+    userID_idx = df.columns.get_loc('UserID')
+    df.insert(userID_idx + 1, 'UserName', user_name)
+    if 'Verifiers' in comment_info:
+        utility_Security_verifier = utility_Security.rename(columns={'ID': 'VerifierID', 'UserName': 'VerifierName'})
+        df = pd.merge(df, utility_Security_verifier, how='left', left_on='VerifierID',
+                                   right_on='VerifierID')
+        verifier_name = df.pop('VerifierName')
+        verifierID_idx = df.columns.get_loc('VerifierID')
+        df.insert(verifierID_idx + 1, 'VerifierName', verifier_name)
+    return df
 
-    # @@@ Aiden should the following lines through Step 9 be a function so that can also be called by get_complex()
-    #   could name the function add_hierarchical_info
+def add_document_info(df):
+    # @@@ Aiden error
+    data_xref_Complex_Document_modified = data_xref_Complex_Document_lib[['ID_data_complex', 'ID_data_document']]
+    simplex_version = pd.merge(df, data_xref_Complex_Document_modified, how='left', left_on='Semantic Triplet',
+                               right_on='ID_data_complex')
+    simplex_version = simplex_version.drop('ID_data_complex', axis=1)
+    simplex_version = simplex_version.rename(
+        columns={'Macro Event': 'Macro Event ID', 'Event': 'Event ID', 'Semantic Triplet': 'Semantic Triplet ID',
+                 'ID_data_document': 'Document ID'})
+    return simplex_version
 
-    # add 'Macro Event' and 'Event' data id
+# df is the input dataframe with the object data
+# complex_name is the setup string value of the complex object
+# return a modified dataframe of input df
+def add_path_info_to_complex_object(complex_name, df):
 
      # S1: find setup id of 'Macro Event', 'Event' and 'Semantic Triplet'
     # 'Macro event refers to the highest complex in the hierarchy, not specific
     top_complex = setup_Complex_lib[setup_Complex_lib['ID_setup_complex']==1]['Name'].values[0]
-    grammar_path = find_grammar_path(top_complex, semantic_triplet)
+    grammar_path = find_grammar_path(top_complex, complex_name)
     grammar_path = grammar_path[0]
 
     # Step 3: Map each complex in the grammar_path to its ID
@@ -1494,7 +1536,7 @@ def add_path_info_to_complex_object(semantic_triplet, simplex_version):
         higher_id = name_to_id[grammar_path[i]]
         lower_id = name_to_id[grammar_path[i + 1]]
 
-        # Find setup xref ID for each link
+        # Find setup xref ID for each object in the grammar path
         xref_id = setup_xref_Complex_Complex_lib[
             (setup_xref_Complex_Complex_lib['HigherComplex'] == higher_id) &
             (setup_xref_Complex_Complex_lib['LowerComplex'] == lower_id)
@@ -1520,25 +1562,25 @@ def add_path_info_to_complex_object(semantic_triplet, simplex_version):
     # Step 7: Merge with simplex_version using semantic triplet ID as the key
     #   when calling from get_complex, Semantic Triplet ID should be the parent complex ID
     try:
-        simplex_version = pd.merge(merged_data, simplex_version, how='left', left_on=f'{grammar_path[-1]} ID',
+        df = pd.merge(merged_data, df, how='left', left_on=f'{grammar_path[-1]} ID',
                                    right_on=f'{grammar_path[-1]} ID')
     except:
-        simplex_version = pd.merge(merged_data, simplex_version, how='left', left_on=f'{grammar_path[-1]} ID',
+        df = pd.merge(merged_data, df, how='left', left_on=f'{grammar_path[-1]} ID',
                                    right_on='Semantic Triplet ID')
 
     # Step 8: Add the top complex identifier by merging with data_Complex
     data_complex_top = data_Complex_lib[['ID_data_complex', 'Identifier']].rename(
         columns={'ID_data_complex': f'{grammar_path[0]} ID', 'Identifier': f'{grammar_path[0]} Identifier'}
     )
-    simplex_version = pd.merge(simplex_version, data_complex_top, how='left', on=f'{grammar_path[0]} ID')
+    df = pd.merge(df, data_complex_top, how='left', on=f'{grammar_path[0]} ID')
 
     # Step 9: Reorder to have the top complex identifier and clean up any remaining extraneous columns
-    top_complex_identifier = simplex_version.pop(f'{grammar_path[0]} Identifier')
-    simplex_version.insert(1, f'{grammar_path[0]} Identifier', top_complex_identifier)
+    top_complex_identifier = df.pop(f'{grammar_path[0]} Identifier')
+    df.insert(1, f'{grammar_path[0]} Identifier', top_complex_identifier)
 
     # Final output should have only the relevant grammar_path columns and top complex identifier
-    print("Final Hierarchy Data with Simplex Version:", simplex_version)
-    return simplex_version
+    print("Final Hierarchy Data with Simplex Version:", df)
+    return df
 
 # get the semantic triplet with simplex
 # return: dataframe: Semantic triplet data id, S data id, S Type, S Simplex, V data id, V Simplex, O data id, O Type, O Simplex
@@ -1578,99 +1620,11 @@ def semantic_triplet_simplex(inputDir, subject, verb, object, document_info, com
 
     simplex_version = add_path_info_to_complex_object(semantic_triplet, simplex_version)
 
-    # # @@@ Aiden should the following lines through Step 9 be a function so that can also be called by get_complex()
-    # #   could name the function add_hierarchical_info
-    #
-    # # add 'Macro Event' and 'Event' data id
-    #
-    #  # S1: find setup id of 'Macro Event', 'Event' and 'Semantic Triplet'
-    # # 'Macro event refers to the highest complex in the hierarchy, not specific
-    # top_complex = setup_Complex_lib[setup_Complex_lib['ID_setup_complex']==1]['Name'].values[0]
-    # grammar_path = find_grammar_path(top_complex, semantic_triplet, setup_Complex_lib, setup_xref_Complex_Complex_lib)
-    # grammar_path = grammar_path[0]
-    #
-    # # Step 3: Map each complex in the grammar_path to its ID
-    # name_to_id = {
-    #     name: find_complex_setup_id([name], setup_Complex_lib)['ID_setup_complex'].values[0]
-    #     for name in grammar_path
-    # }
-    #
-    # # Step 4: Retrieve and store link IDs and relevant data_xref details
-    # link_data_frames = []
-    # for i in range(len(grammar_path) - 1):
-    #     higher_id = name_to_id[grammar_path[i]]
-    #     lower_id = name_to_id[grammar_path[i + 1]]
-    #
-    #     # Find setup xref ID for each link
-    #     xref_id = setup_xref_Complex_Complex_lib[
-    #         (setup_xref_Complex_Complex_lib['HigherComplex'] == higher_id) &
-    #         (setup_xref_Complex_Complex_lib['LowerComplex'] == lower_id)
-    #         ]['ID_setup_xref_complex-complex'].values[0]
-    #
-    #     # Retrieve and rename relevant data_xref columns
-    #     data_xref = data_xref_Complex_Complex_lib[
-    #         data_xref_Complex_Complex_lib['ID_setup_xref_complex_complex'] == xref_id
-    #         ][['ID_data_complex', 'ID_data_complex.1']].rename(columns={
-    #         'ID_data_complex': f'{grammar_path[i]} ID',
-    #         'ID_data_complex.1': f'{grammar_path[i + 1]} ID'
-    #     })
-    #     link_data_frames.append(data_xref)
-    #
-    #     # Step 5: Merge link data frames into a complete hierarchy while eliminating extra columns
-    # merged_data = link_data_frames[0]
-    # for i in range(1, len(link_data_frames)):
-    #     merged_data = pd.merge(merged_data, link_data_frames[i],
-    #                            left_on=f'{grammar_path[i]} ID',
-    #                            right_on=f'{grammar_path[i]} ID',
-    #                            how='right')
-    #
-    # # Step 7: Merge with simplex_version using semantic triplet ID as the key
-    # #   when calling from get_complex, Semantic Triplet ID should be the parent complex ID
-    # simplex_version = pd.merge(merged_data, simplex_version, how='left', left_on=f'{grammar_path[-1]} ID',
-    #                            right_on='Semantic Triplet ID')
-    #
-    # # Step 8: Add the top complex identifier by merging with data_Complex
-    # data_complex_top = data_Complex_lib[['ID_data_complex', 'Identifier']].rename(
-    #     columns={'ID_data_complex': f'{grammar_path[0]} ID', 'Identifier': f'{grammar_path[0]} Identifier'}
-    # )
-    # simplex_version = pd.merge(simplex_version, data_complex_top, how='left', on=f'{grammar_path[0]} ID')
-    #
-    # # Step 9: Reorder to have the top complex identifier and clean up any remaining extraneous columns
-    # top_complex_identifier = simplex_version.pop(f'{grammar_path[0]} Identifier')
-    # simplex_version.insert(1, f'{grammar_path[0]} Identifier', top_complex_identifier)
-    #
-    # # Final output should have only the relevant grammar_path columns and top complex identifier
-    # print("Final Hierarchy Data with Simplex Version:", simplex_version)
-
-    # @@@ should the following lines be separate functions for document info and comments
-
-    # @@@ Aiden add document info
     if document_info:
-        #def add_document_info()
-        data_xref_Complex_Document_modified = data_xref_Complex_Document_lib[['ID_data_complex','ID_data_document']]
-        simplex_version = pd.merge(simplex_version, data_xref_Complex_Document_modified, how = 'left', left_on = 'Semantic Triplet', right_on = 'ID_data_complex')
-        simplex_version = simplex_version.drop('ID_data_complex', axis = 1)
-        simplex_version = simplex_version.rename(columns = {'Macro Event':'Macro Event ID','Event':'Event ID', 'Semantic Triplet':'Semantic Triplet ID', 'ID_data_document':'Document ID'})
+        simplex_version = add_document_info(simplex_version)
 
-    # @@@ Aiden add VComment
     if comment_info=='':
-        #def add_comment_info()
-        # ref: complex id for semantic triplet
-        data_xref_VComment_modified = data_xref_VComment_lib[['Complex','Comment','UserID','VerifierID']]
-        simplex_version = pd.merge(simplex_version, data_xref_VComment_modified, how = 'left', left_on = 'Macro Event ID', right_on = 'Complex')
-        simplex_version = simplex_version.drop('Complex', axis = 1)
-
-        utility_Security = utility_Security_lib[['ID', 'UserName']]
-        utility_Security_user = utility_Security.rename(columns={'ID': 'UserID'})
-        simplex_version = pd.merge(simplex_version, utility_Security_user, how = 'left', left_on = 'UserID', right_on = 'UserID')
-        user_name = simplex_version.pop('UserName')
-        userID_idx = simplex_version.columns.get_loc('UserID')
-        simplex_version.insert(userID_idx + 1, 'UserName', user_name)
-        utility_Security_verifier = utility_Security.rename(columns={'ID': 'VerifierID', 'UserName':'VerifierName'})
-        simplex_version = pd.merge(simplex_version, utility_Security_verifier, how = 'left', left_on = 'VerifierID', right_on = 'VerifierID')
-        verifier_name = simplex_version.pop('VerifierName')
-        verifierID_idx = simplex_version.columns.get_loc('VerifierID')
-        simplex_version.insert(verifierID_idx + 1, 'VerifierName', verifier_name)
+        simplex_version = add_comment_info(simplex_version, comment_info)
 
     # S ID V ID O ID
     simplex_version.drop_duplicates(subset=['S ID', 'V ID', 'O ID'], inplace=True)
@@ -2463,14 +2417,15 @@ def individual_simplex_info(simplex, inputDir, outputDir):
     data = {'information': ['simplex name', 'frequency', 'complex name', 'higher complex', 'lower complex', 'relationship to event']}
     simplex_info = []
 
-    # the name of simplex
-    data_simplex_temp = pd.concat([data_SimplexDate_lib, data_SimplexNumber_lib, data_SimplexText_lib])
-    data_simplex_temp = pd.merge(data_Simplex_lib, data_SimplexText_lib, how = 'left', on = 'ID_data_date_number_text')
-    data_simplex_select = data_simplex_temp[data_simplex_temp['Value']==simplex]
-    simplex_setup_id = data_simplex_select['ID_setup_simplex'].values.tolist()
-    simplex_name = setup_Simplex_lib[setup_Simplex_lib['ID_setup_simplex'].isin(simplex_setup_id)]
-    simplex_name = simplex_name['Name'].values.tolist()
-    for name in simplex_name:
+    # get data ID and simplex value in text-number-date file
+    # data_simplex_temp = pd.concat([data_SimplexDate_lib, data_SimplexNumber_lib, data_SimplexText_lib])
+    # get setup and data ID and value of all simplex
+    data_simplex = pd.merge(data_Simplex_lib, data_SimplexText_lib, how = 'left', on = 'ID_data_date_number_text')
+    data_simplex_selected = data_simplex[data_simplex['Value']==simplex]
+    simplex_setup_id = data_simplex_selected['ID_setup_simplex'].values.tolist()
+    simplex_names = setup_Simplex_lib[setup_Simplex_lib['ID_setup_simplex'].isin(simplex_setup_id)]
+    simplex_names = simplex_names['Name'].values.tolist()
+    for name in simplex_names:
         simplex_info.append([name])
 
     # frequency

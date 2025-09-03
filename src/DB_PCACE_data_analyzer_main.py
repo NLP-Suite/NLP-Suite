@@ -66,7 +66,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
     if setup_complex != '':
         # @@@
         # @@@ selecting Actor only returns Institution, i.e., the Organization values with NO Individual or Collective actor
-        outputFile = DB_PCACE_data_analyzer_util.get_complex(setup_complex, inputDir, outputDir)
+        outputFile = DB_PCACE_data_analyzer_util.get_complex(setup_complex, comments_var, document_sources_var, inputDir, outputDir)
         if outputFile != '':
             filesToOpen.append(outputFile)
 
@@ -93,7 +93,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         if outputFile != '':
             filesToOpen.append(outputFile)
 
-# display information about a specific simplex type and value (e.g., text type for "burley" value)
+    # display information about a specific simplex type and value (e.g., text type for "burley" value)
 
     if simplex_data!='' and value_parent_object_var:
         outputFile = DB_PCACE_data_analyzer_util.individual_simplex_info(simplex_data, inputDir, outputDir)
@@ -452,65 +452,6 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                 if len(outputFile) > 0:
                     # since outputFile produced by KML is a list cannot use append
                     filesToOpen = filesToOpen + outputFile
-
-# # NO LONGER USED
-# # actors ----------------------------------------------------------------------
-#     def process_actor(inputDir, outputDir, actors_var, chart_title, yAxis_columns, output_type):
-#         outputFile = DB_PCACE_data_analyzer_util.actor_characteristics(inputDir, outputDir, actors_var)
-#
-#         files_to_open = []
-#         if outputFile:
-#             files_to_open.append(outputFile)
-#             outputFiles = charts_util.visualize_chart(
-#                 chartPackage, dataTransformation, outputFile, outputDir,
-#                 columns_to_be_plotted_xAxis=[],
-#                 columns_to_be_plotted_yAxis=yAxis_columns,
-#                 chart_title=f'Frequency Distribution of {actors_var.capitalize()}s',
-#                 count_var=1, hover_label=[],
-#                 outputFileNameType=output_type,
-#                 column_xAxis_label=actors_var,
-#                 groupByList=[], plotList=[], chart_title_label=''
-#             )
-#
-#             if outputFiles:
-#                 if isinstance(outputFiles, str):
-#                     files_to_open.append(outputFiles)
-#                 else:
-#                     files_to_open.extend(outputFiles)
-#         return files_to_open
-#
-#     # Define the actor configurations
-#     # Taeeun must generalize names
-#     actor_configs = {
-#         'Attore collettivo': {
-#             'chart_title': 'Frequency Distribution of Collective Actors',
-#             'yAxis_columns': ['Name of collective actor Simplex'],
-#             'output_file_type': 'coll'
-#         },
-#         'Individuo': {
-#             'chart_title': 'Frequency Distribution of Individuals',
-#             'yAxis_columns': ['Name of individual actor Simplex'],
-#             'output_file_type': 'ind'
-#         },
-#         'Organizzazione': {
-#             'chart_title': 'Frequency Distribution of Organizations',
-#             'yAxis_columns': [
-#                 'State organisation Simplex', 'Political party Simplex', 'Other institution Simplex',
-#                 'Actor aggregate code Simplex', 'Actor aggregate (Institution) COLIN Simplex'
-#             ],
-#             'output_file_type': 'org'
-#         }
-#     }
-#
-#     # @ Taeeun must generalize names
-#     # uncomment after generalization
-#     # for actor_type, config in actor_configs.items():
-#     #     if actor_type == actors_var:
-#     #         filesToOpen.extend(process_actor(
-#     #             inputDir, outputDir, actors_var,
-#     #             config['chart_title'], config['yAxis_columns'], config['output_file_type']
-#     #         ))
-#     #
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -997,7 +938,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 comments_var = tk.StringVar()
 comments_var.set('')
-comments_menu = tk.OptionMenu(window, comments_var, '*', 'users comments', 'verifiers comments')
+comments_menu = tk.OptionMenu(window, comments_var, '*', 'Users comments', 'Verifiers comments')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    comments_menu,
