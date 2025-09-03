@@ -426,7 +426,7 @@ def get_complex(complex_name, comment_info, document_info, inputDir, outputDir):
         dfs_df = add_document_info(dfs_df)
 
     if comment_info!='':
-        dfs_df = add_comment_info(dfs_df,comment_info)
+        dfs_df = add_comment_info(dfs_df, complex_name, comment_info)
 
     # @@@ Aiden this is where SVO triplet is exported
     # @@@ should add the info added for triplets (search for # @@@ should the following lines be a function)
@@ -1474,8 +1474,9 @@ def get_simplex_value_for_complex(complex_name, is_verb):
 #
 #     return data_simple_process
 
-def add_comment_info(df, comment_info):
-    object_ID =
+def add_comment_info(df, object_name, comment_info):
+    # @@@ Aiden must grab name from df
+    object_ID = object_name + ' ID'
     # comments contain _x000D_ should be removed
     if 'Verifiers' in comment_info:
         data_xref_Comment_modified = data_xref_VComment_lib[['Complex', 'Comment', 'UserID', 'VerifierID']]
@@ -1624,7 +1625,7 @@ def semantic_triplet_simplex(inputDir, subject, verb, object, document_info, com
         simplex_version = add_document_info(simplex_version)
 
     if comment_info=='':
-        simplex_version = add_comment_info(simplex_version, comment_info)
+        simplex_version = add_comment_info(simplex_version, semantic_triplet, comment_info)
 
     # S ID V ID O ID
     simplex_version.drop_duplicates(subset=['S ID', 'V ID', 'O ID'], inplace=True)
