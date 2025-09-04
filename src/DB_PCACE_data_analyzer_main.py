@@ -642,7 +642,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_c
 table_menu_values = ''
 table_list=[]
 if os.path.isdir(inputDir.get()):
-    table_list = DB_PCACE_data_analyzer_util.import_PCACE_tables(inputDir.get())
+    table_list = DB_PCACE_data_analyzer_util.import_PCACE_tables(inputDir.get(), outputDir.get())
     table_menu_values = ", ".join(table_list)
 select_DB_tables = ttk.Combobox(window, width=GUI_IO_util.widget_width_short, textvariable=select_DB_tables_var)
 select_DB_tables.configure(state='disabled')
@@ -978,7 +978,7 @@ def changed_filename(*args):
                            message="The PC-ACE table analyzer scripts require in input a directory of Excel (xlsx) files. But the selected directory\n\n" + inputDir.get() + "\n\ndoes not contain the required PC-ACE Excel files.\n\nPlease, select a PC-ACE directory and try again")
             return
         GUI_util.run_button.configure(state='normal')
-        table_list = DB_PCACE_data_analyzer_util.import_PCACE_tables(inputDir.get())
+        table_list = DB_PCACE_data_analyzer_util.import_PCACE_tables(inputDir.get(), outputDir.get())
         # 25 files including all comments files
         if (len(table_list) == 0) or ((len(table_list) > 18) and (not "data_Document.xlsx" in str(table_list) and not "data_Complex.xlsx" in str(table_list))):
                 GUI_util.run_button.configure(state='disabled')

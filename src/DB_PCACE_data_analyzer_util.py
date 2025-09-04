@@ -29,7 +29,7 @@ import IO_files_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 ## OK Pass test of import PCACE
-def import_PCACE_tables(inputDir):
+def import_PCACE_tables(inputDir, outputDir):
     dirSearch = os.listdir(inputDir)
     tableList = []
 
@@ -53,7 +53,7 @@ def import_PCACE_tables(inputDir):
         tableList=[]
     else:
         # load_lib(inputDir)
-        build_libraries(inputDir)
+        build_libraries(inputDir, outputDir)
     return tableList
 
 
@@ -128,7 +128,7 @@ def load_lib(inputDir):
 
     return
 
-def build_libraries(inputDir):
+def build_libraries(inputDir, outputDir):
     global setup_Complex_lib, setup_Simplex_lib, setup_xref_Complex_Complex_lib, crossref, setup_xref_Simplex_Complex_lib, data_Simplex_lib, data_SimplexText_lib, data_SimplexNumber_lib, data_SimplexDate_lib, data_Complex_lib, data_xref_Complex_Complex_lib, data_xref_Simplex_Complex_lib, data_xref_Document_lib, data_xref_Complex_Document_lib, data_xref_comment_complex_lib, data_xref_Comment_Document_lib, data_xref_VComment_lib, data_xref_VComment_Document_lib, utility_Security_lib
 
     if os.path.exists(f"{inputDir}/{'setup_Complex'}.pkl"):
@@ -242,7 +242,10 @@ def build_libraries(inputDir):
         xref_simplex_complex_ALL = pd.DataFrame()
         xref_simplex_complex_ALL = get_xref_simplex_complex_data_setup_IDs_simplex_values()
 
-
+        output_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
+                                                                           'Complex object')
+        xref_simplex_complex_ALL.to_csv(output_file_name, encoding='utf-8', index=False)
+        print()
 # check if a required document can be found.
 # OK pass checks and returns a dataframe or a boolean set to False if the file is not found.
 def check_missing(fileName):
@@ -949,14 +952,20 @@ dfs_df = pd.DataFrame()
 
 def dfs(parent):
     global dfs_df
+    get_xref_simplex_complex_data_setup_IDs_simplex_values()
 
     required = crossref.loc[crossref['Name'] == parent, 'Required'].any()
     if not required:
         return []
 
     simplex_names, simplex_required_names = get_simplex_names_for_complex([parent])
-    parent_id = get_complex_setup_id([parent]).iat[0, 0]
+    parent_id = xref_simplex_complex_ALL.loc[(xref_simplex_complex_ALL["Complex name"] == parent), "ID_data_complex"]
+    parent_id = parent_id.reset_index(drop=True)
 
+    try:
+        parent_id = parent_id.loc[0]
+    except:
+        parent_id = "NO_ID_FOUND"
     # check setup_xref_Simplex-Complex.xlsx to see if the simplex is Required and only use the required simplex
     NSimplex = len(simplex_required_names[0])
     if NSimplex >1:
@@ -986,14 +995,21 @@ def dfs(parent):
             return []
 
         # add column headers
-        children = simplex_children_values['Value'].tolist()
+        simplex_values = simplex_children_values['Value'].tolist()
         child_rows = []
+
         # type_id = get_([parent]).iat[0, 0]
-        for child in children:
+        for simplex_value in simplex_values:
+            type_id = xref_simplex_complex_ALL.loc[(xref_simplex_complex_ALL["Complex name"] == parent) & (xref_simplex_complex_ALL["Value"]==simplex_value), "ID_data_simplex"]
+            type_id = type_id.reset_index(drop=True)
+            try:
+                type_id = type_id.loc[0]
+            except:
+                type_id = "NO_ID_FOUND"
             child_rows.append({
-                "Type ID": parent_id,
+                "Type ID": type_id,
                 "Type": parent,
-                "Value": child,
+                "Value": simplex_value,
             })
 
         return child_rows
