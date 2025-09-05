@@ -1091,8 +1091,16 @@ def dfs(parent):
 #   so there is no need to recompute it once it is computed
 def get_xref_simplex_complex_data_setup_IDs_simplex_values():
     # get ALL simplex text values
+    # Aiden these merge only produce DATE values, i.e., the last of the three merges
     data_SimplexText_allValues = pd.merge(data_Simplex_lib, data_SimplexText_lib, how='left',
                                           on='ID_data_date_number_text')
+
+    data_SimplexText_allValues = pd.merge(data_SimplexText_allValues, data_SimplexNumber_lib, how='left',
+                                          on='ID_data_date_number_text')
+
+    data_SimplexText_allValues = pd.merge(data_SimplexText_allValues, data_SimplexDate_lib, how='left',
+                                          on='ID_data_date_number_text')
+
     # # select columns
     # data_SimplexText_allValues = data_SimplexText_allValues[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
 
