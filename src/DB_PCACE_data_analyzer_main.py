@@ -923,10 +923,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
 # def activate_parents_children(*args):
 #     # @@@
 #     # DB_PCACE_data_analyzer_util.load_lib(inputDir.get())
-#     parent_complex_list = DB_PCACE_data_analyzer_util.find_parent_complex(setup_complex_var.get())
+#     parent_complex_list = DB_PCACE_data_analyzer_util.get_parent_complex(setup_complex_var.get())
 #     select_parents['values'] = parent_complex_list
 #
-#     children_list = DB_PCACE_data_analyzer_util.find_child_complex(setup_complex_var.get())
+#     children_list = DB_PCACE_data_analyzer_util.get_child_complex(setup_complex_var.get())
 #     select_children['values'] = children_list
 #     # select_children_var.set(children_menu[0])
 # setup_complex_var.trace('w',activate_parents_children)
@@ -1065,8 +1065,8 @@ def activate_parents_children(*args):
     parent_complex_list = []
     children_list = []
     if setup_complex_var.get()!='':
-        parent_complex_list = DB_PCACE_data_analyzer_util.find_parent_complex(setup_complex_var.get())
-        children_list = DB_PCACE_data_analyzer_util.find_child_complex(setup_complex_var.get())
+        parent_complex_list = DB_PCACE_data_analyzer_util.get_parent_complex(setup_complex_var.get())
+        children_list = DB_PCACE_data_analyzer_util.get_child_complex(setup_complex_var.get())
     select_parents['values'] = parent_complex_list
 
     select_children['values'] = children_list

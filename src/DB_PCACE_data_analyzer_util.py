@@ -147,8 +147,9 @@ def load_lib(inputDir):
 
     return
 
+
 def build_libraries(inputDir, outputDir):
-    global setup_Complex_lib, setup_Simplex_lib, setup_xref_Complex_Complex_lib, crossref, setup_xref_Simplex_Complex_lib, data_Simplex_lib, data_SimplexText_lib, data_SimplexNumber_lib, data_SimplexDate_lib, data_Complex_lib, data_xref_Complex_Complex_lib, data_xref_Simplex_Complex_lib, data_xref_Document_lib, data_xref_Complex_Document_lib, data_xref_comment_complex_lib, data_xref_Comment_Document_lib, data_xref_VComment_lib, data_xref_VComment_Document_lib, utility_Security_lib
+    global setup_Complex_lib, setup_Simplex_lib, setup_xref_Complex_Complex_lib, crossref, setup_xref_Simplex_Complex_lib, data_Simplex_lib, data_SimplexText_lib, data_SimplexNumber_lib, data_SimplexDate_lib, data_Complex_lib, data_xref_Complex_Complex_lib, data_xref_Simplex_Complex_lib, data_xref_Document_lib, data_xref_Complex_Document_lib, data_xref_comment_complex_lib, data_xref_Comment_Document_lib, data_xref_VComment_lib, data_xref_VComment_Document_lib, utility_Security_lib, xref_simplex_complex_ALL
 
     if os.path.exists(f"{inputDir}/{'setup_Complex'}.pkl"):
         name='setup_Complex'
@@ -291,8 +292,6 @@ def build_libraries(inputDir, outputDir):
         else:
             utility_Security_lib = create_pkl_file(inputDir, name)
 
-        global xref_simplex_complex_ALL
-        xref_simplex_complex_ALL = pd.DataFrame()
         xref_simplex_complex_ALL = get_xref_simplex_complex_data_setup_IDs_simplex_values()
 
         output_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
@@ -325,23 +324,6 @@ def view_grammar(excel_file, column_name, output_file):
         IO_files_util.openFile('', output_file)
     except Exception as e:
          print(f"An error occurred: {e}")
-
-# Aiden we should setup these libraries once and for all, to be used everywhere
-
-# setup_Simplex_lib = library['setup_Simplex.xlsx']
-# setup_Complex = library['setup_Complex.xlsx']
-# setup_xref_Simplex_Complex = library['setup_xref_Simplex-Complex.xlsx']
-# setup_xref_Complex_Complex = library['setup_xref_Complex-Complex.xlsx']
-#
-# data_xref_Complex_Complex_lib = library['data_xref_Complex-Complex.xlsx']
-# data_Complex_lib = library['data_Complex.xlsx']
-# data_Simplex_lib = library['data_Simplex.xlsx']
-# data_SimplexText_lib = library['data_SimplexText.xlsx']
-# data_xref_Simplex_Complex_lib = library['data_xref_Simplex-Complex.xlsx']
-# data_xref_Complex_Document_lib = library['data_xref_Complex-Document.xlsx']
-# data_xref_VComment_lib = library['data_xref_VComment.xlsx']
-# utility_Security_lib = library['utility_Security.xlsx']
-
 
 def get_complex_simplex_names():
     try:
@@ -456,8 +438,8 @@ def get_complex(complex_name, comment_info, document_info, inputDir, outputDir):
     new_rows_df = pd.DataFrame(append_rows)
     dfs_df = pd.concat([dfs_df, new_rows_df], ignore_index=True)
 
-    # @@@@@ Aiden temporarily disconnected
-    # dfs_df = add_path_info_to_complex_object(complex_name, dfs_df)
+    # @@@@@ Aiden question temporarily disconnected
+    dfs_df = add_path_info_to_complex_object(complex_name, dfs_df)
 
     if document_info:
         dfs_df = add_document_info(dfs_df)
@@ -599,18 +581,16 @@ def get_simplex_names_for_complex(complexes):
 
     for c in complexes:
         complex_id = get_complex_setup_id([c])
-        print('one: ', complex_id)
         if complex_id.empty:
             continue
         complex_id = complex_id.iat[0, 0]
-        print('two ', complex_id)
         simplex_children = setup_xref_Simplex_Complex_lib[setup_xref_Simplex_Complex_lib['ID_setup_complex'] == complex_id]
         data1 = simplex_children['Name'].values.tolist()
-        print('this is data', data1)
+        print('List of ALL simplex', data1)
         simplexes.append(data1)
         # MUST keep only required simplex
         data2 = simplex_children.loc[simplex_children['Required'] == True, 'Name'].tolist()
-        print('this is data', data2)
+        print('List of REQUIRED simplex', data2)
         simplexes_required.append(data2)
     return simplexes, simplexes_required
 
@@ -703,7 +683,8 @@ def get_parent_simplex(name):
     if isinstance(name, str):
         name = [name]
 
-    # @@@ Aiden why not recognized???
+    # @@@ Aiden question why not recognized???
+    global setup_Complex_lib
     if setup_Complex_lib.empty or setup_Simplex_lib.empty or setup_xref_Simplex_Complex_lib.empty:
         has_files = False
 
@@ -1015,17 +996,18 @@ dfs_df = pd.DataFrame()
 
 def dfs(parent):
     global dfs_df
-    # df = get_xref_simplex_complex_data_setup_IDs_simplex_values()
 
     required = crossref.loc[crossref['Name'] == parent, 'Required'].any()
     if not required:
         return []
 
     simplex_names, simplex_required_names = get_simplex_names_for_complex([parent])
-    # @@@@@ Aiden, despite being global xref_simplex_complex_ALL is often not recognized
-    # if xref_simplex_complex_ALL.empty:
-    #     xref_simplex_complex_ALL = get_xref_simplex_complex_data_setup_IDs_simplex_values()
-    xref_simplex_complex_ALL = get_xref_simplex_complex_data_setup_IDs_simplex_values()
+    # @@@@@ Aiden Question, despite being global xref_simplex_complex_ALL is not recognized here
+    #   although it is recognized further down
+    global xref_simplex_complex_ALL
+    if xref_simplex_complex_ALL.empty:
+        xref_simplex_complex_ALL = get_xref_simplex_complex_data_setup_IDs_simplex_values()
+    # xref_simplex_complex_ALL = get_xref_simplex_complex_data_setup_IDs_simplex_values()
     parent_id = xref_simplex_complex_ALL.loc[(xref_simplex_complex_ALL["Complex name"] == parent), "ID_data_complex"]
     parent_id = parent_id.reset_index(drop=True)
 
@@ -1067,15 +1049,18 @@ def dfs(parent):
 
         # type_id = get_([parent]).iat[0, 0]
         for simplex_value in simplex_values:
-            type_id = xref_simplex_complex_ALL.loc[(xref_simplex_complex_ALL["Complex name"] == parent) & (xref_simplex_complex_ALL["Value"]==simplex_value), "ID_data_simplex"]
-            type_id = type_id.reset_index(drop=True)
+            complex_id = xref_simplex_complex_ALL.loc[(xref_simplex_complex_ALL["Complex name"] == parent), "ID_data_complex"]
+            complex_id = complex_id.reset_index(drop=True)
+            simplex_name = xref_simplex_complex_ALL.loc[(xref_simplex_complex_ALL["Complex name"] == parent) & (xref_simplex_complex_ALL["Value"] == simplex_value), "Simplex name"].values
+
             try:
-                type_id = type_id.loc[0]
+                complex_id = complex_id.loc[0]
             except:
-                type_id = "NO_ID_FOUND"
+                complex_id = "NO_ID_FOUND"
             child_rows.append({
-                "Type ID": type_id,
-                "Type": parent,
+                parent + " ID": complex_id,
+                "Complex name": parent,
+                "Simplex name": simplex_name,
                 "Value": simplex_value,
             })
 
@@ -1108,8 +1093,8 @@ def get_xref_simplex_complex_data_setup_IDs_simplex_values():
     # get ALL simplex text values
     data_SimplexText_allValues = pd.merge(data_Simplex_lib, data_SimplexText_lib, how='left',
                                           on='ID_data_date_number_text')
-    # select columns
-    data_SimplexText_allValues = data_SimplexText_allValues[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
+    # # select columns
+    # data_SimplexText_allValues = data_SimplexText_allValues[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
 
     # add the data xref simplex-complex IDs, setup xref simplex-complex IDs, data complex IDs, data simplex IDs, setup simplex IDs, simplex values
     xref_simplex_complex_value = pd.merge(data_xref_Simplex_Complex_lib, data_SimplexText_allValues, how='left',
@@ -1117,6 +1102,15 @@ def get_xref_simplex_complex_data_setup_IDs_simplex_values():
     # add the simplex setup name
     xref_simplex_complex_value = pd.merge(setup_Simplex_lib, xref_simplex_complex_value, how='left',
                                           left_on='ID_setup_simplex', right_on='ID_setup_simplex')
+
+    xref_simplex_complex_value["ID_data_xref_simplex-complex"] = xref_simplex_complex_value["ID_data_xref_simplex-complex"].fillna(-1).astype(int)
+    xref_simplex_complex_value["ID_setup_xref_simplex_complex"] = xref_simplex_complex_value["ID_setup_xref_simplex_complex"].fillna(-1).astype(int)
+    xref_simplex_complex_value["ID_data_simplex"] = xref_simplex_complex_value["ID_data_simplex"].fillna(-1).astype(int)
+    xref_simplex_complex_value["ID_data_complex"] = xref_simplex_complex_value["ID_data_complex"].fillna(-1).astype(int)
+    xref_simplex_complex_value["Order"] = xref_simplex_complex_value["Order"].fillna(-1).astype(int)
+    xref_simplex_complex_value["ID_data_date_number_text"] = xref_simplex_complex_value["ID_data_date_number_text"].fillna(-1).astype(int)
+
+    # @@@@@ Aiden Question IDs now have long decimals
     xref_simplex_complex_value = xref_simplex_complex_value.rename(columns={'Name': "Simplex name"})
 
     # select columns
@@ -1130,14 +1124,14 @@ def get_xref_simplex_complex_data_setup_IDs_simplex_values():
         ['ID_data_complex', 'ID_setup_complex','Complex name', 'Identifier']]
 
     # merge xref_simplex_complex_value & xref_complex_complex_value
-    xref_simplex_complex_ALL = pd.merge(xref_complex_complex_value, xref_simplex_complex_value, how='left',
+    xref_simplex_complex = pd.merge(xref_complex_complex_value, xref_simplex_complex_value, how='left',
                                           left_on='ID_data_complex', right_on='ID_data_complex')
 
     # select columns
-    xref_simplex_complex_ALL = xref_simplex_complex_ALL[
+    xref_simplex_complex = xref_simplex_complex[
         ['ID_setup_complex','Complex name', 'ID_setup_simplex','Simplex name', 'ID_data_complex', 'ID_data_simplex', 'Value']]
 
-    return xref_simplex_complex_ALL
+    return xref_simplex_complex
 
 
 def get_simplex_value_for_complex(complex_name, is_verb):
@@ -1148,7 +1142,7 @@ def get_simplex_value_for_complex(complex_name, is_verb):
     # initialize empty dataframe simplexes_combined
     simplexes_combined = pd.DataFrame()
 
-    # # get a list of all the simplex data IDs, setup IDs, and TEXT values
+    # # get a list of all the simplex and complex data IDs, setup IDs, and simplex TEXT values
     if xref_simplex_complex_ALL.empty:
         xref_simplex_complex_value = get_xref_simplex_complex_data_setup_IDs_simplex_values()
 
@@ -1387,8 +1381,7 @@ def add_document_info(df):
 # return a modified dataframe of input df
 def add_path_info_to_complex_object(complex_name, df):
 
-     # S1: find setup id of 'Macro Event', 'Event' and 'Semantic Triplet'
-    # 'Macro event refers to the highest complex in the hierarchy, not specific
+     # S1: find the list of complex names from the top, primary complex value (e.g., Macro event) UP TO the selected complex
     top_complex = setup_Complex_lib[setup_Complex_lib['ID_setup_complex']==1]['Name'].values[0]
     grammar_path = get_grammar_path(top_complex, complex_name)
     grammar_path = grammar_path[0]
@@ -1412,18 +1405,20 @@ def add_path_info_to_complex_object(complex_name, df):
             ]['ID_setup_xref_complex-complex'].values[0]
 
         # Retrieve and rename relevant data_xref columns
+        # @@@@@@ Aiden question wrong fields
         data_xref = data_xref_Complex_Complex_lib[
-            data_xref_Complex_Complex_lib['HigherComplex'] == xref_id
-            ][['ID_data_complex', 'ID_data_complex.1']].rename(columns={
-            'ID_data_complex': f'{grammar_path[i]} ID',
-            'ID_data_complex.1': f'{grammar_path[i + 1]} ID'
+            data_xref_Complex_Complex_lib['xrefID'] == xref_id # setup x ref ID for complex object
+            ][['HigherComplex', 'LowerComplex']].rename(columns={
+            'HigherComplex': f'{grammar_path[i]} ID',
+            'LowerComplex': f'{grammar_path[i + 1]} ID'
         })
-        data_xref = data_xref_Complex_Complex_lib[
-            data_xref_Complex_Complex_lib['ID_setup_xref_complex_complex'] == xref_id
-            ][['ID_data_complex', 'ID_data_complex.1']].rename(columns={
-            'ID_data_complex': f'{grammar_path[i]} ID',
-            'ID_data_complex.1': f'{grammar_path[i + 1]} ID'
-        })
+
+        # data_xref = data_xref_Complex_Complex_lib[
+        #     data_xref_Complex_Complex_lib['ID_setup_xref_complex_complex'] == xref_id
+        #     ][['ID_data_complex', 'ID_data_complex.1']].rename(columns={
+        #     'ID_data_complex': f'{grammar_path[i]} ID',
+        #     'ID_data_complex.1': f'{grammar_path[i + 1]} ID'
+        # })
         link_data_frames.append(data_xref)
 
         # Step 5: Merge link data frames into a complete hierarchy while eliminating extra columns
@@ -1548,7 +1543,6 @@ def semantic_triplet_simplex_main(inputDir, outputDir, macro_event_id, subject, 
     if existing_columns:
         simplex_version = simplex_version.sort_values(existing_columns, ascending=True)
 
-    # @@@ Aiden this is where SVO triplet is exported
     triplet_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'triplet (SVO)')
     simplex_version.to_csv(triplet_file_name, encoding='utf-8', index=False)
 
