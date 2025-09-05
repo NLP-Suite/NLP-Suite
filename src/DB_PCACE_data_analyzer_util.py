@@ -79,7 +79,26 @@ reading_list = [
 
 library = {}
 
+def check_missing(fileName):
+    if os.path.isfile(fileName):
+        # fileName_lib = pd.DataFrame(pd.read_excel(fileName))
+        fileName_lib = pd.read_excel(fileName)
+        return fileName_lib
+    else:
+        mb.showwarning(title='Warning',
+                    message='The table ' + fileName + ' is missing.\n\nPlease, make sure to export this table from PC-ACE data backend and try again.')
+        # create an empty dataframe
+        return pd.DataFrame()
 
+def create_pkl_file(inputDir, filename):
+    df = check_missing(os.path.join(inputDir, filename+'.xlsx'))
+    if df.empty:
+        library[filename] = {}
+    else:
+        library[filename] = df
+        save = f"{filename}.pkl"
+        df.to_pickle(str(inputDir) + "/" + str(save))
+    return df
 def load_lib(inputDir):
 
     import IO_user_interface_util
@@ -137,32 +156,42 @@ def build_libraries(inputDir, outputDir):
             df = pd.read_pickle(f"{inputDir}/{name}.pkl")
             library['setup_Complex.xlsx'] = df
             setup_Complex_lib = library['setup_Complex.xlsx']
+        else:
+            setup_Complex_lib = create_pkl_file(inputDir, name)
 
         name='setup_Simplex'
         if os.path.exists(f"{inputDir}/{name}.pkl"):
             df = pd.read_pickle(f"{inputDir}/{name}.pkl")
             library[name+'.xlsx'] = df
             setup_Simplex_lib = library['setup_Simplex.xlsx']
+        else:
+            setup_Simplex_lib = create_pkl_file(inputDir, name)
 
         name='setup_xref_Complex-Complex'
         if os.path.exists(f"{inputDir}/{name}.pkl"):
             df = pd.read_pickle(f"{inputDir}/{name}.pkl")
             library[name+'.xlsx'] = df
             setup_xref_Complex_Complex_lib = library['setup_xref_Complex-Complex.xlsx']
-            # only keep required complex objects
-            crossref = setup_xref_Complex_Complex_lib[['Required', 'Name']]
+        else:
+            setup_xref_Complex_Complex_lib = create_pkl_file(inputDir, name)
+        # only keep required complex objects
+        crossref = setup_xref_Complex_Complex_lib[['Required', 'Name']]
 
         name='setup_xref_Simplex-Complex'
         if os.path.exists(f"{inputDir}/{name}.pkl"):
             df = pd.read_pickle(f"{inputDir}/{name}.pkl")
             library[name+'.xlsx'] = df
             setup_xref_Simplex_Complex_lib = library['setup_xref_Simplex-Complex.xlsx']
+        else:
+            setup_xref_Simplex_Complex_lib = create_pkl_file(inputDir, name)
 
         name='data_Simplex'
         if os.path.exists(f"{inputDir}/{name}.pkl"):
             df = pd.read_pickle(f"{inputDir}/{name}.pkl")
             library[name+'.xlsx'] = df
             data_Simplex_lib = library['data_Simplex.xlsx']
+        else:
+            data_Simplex_lib = create_pkl_file(inputDir, name)
 
 
         name='data_SimplexText'
@@ -170,6 +199,8 @@ def build_libraries(inputDir, outputDir):
             df = pd.read_pickle(f"{inputDir}/{name}.pkl")
             library[name+'.xlsx'] = df
             data_SimplexText_lib = library['data_SimplexText.xlsx']
+        else:
+            data_SimplexText_lib = create_pkl_file(inputDir, name)
 
 
         name='data_SimplexNumber'
@@ -177,66 +208,88 @@ def build_libraries(inputDir, outputDir):
             df = pd.read_pickle(f"{inputDir}/{name}.pkl")
             library[name+'.xlsx'] = df
             data_SimplexNumber_lib = library['data_SimplexNumber.xlsx']
+        else:
+            data_SimplexNumber_lib = create_pkl_file(inputDir, name)
 
         name='data_SimplexDate'
         if os.path.exists(f"{inputDir}/{name}.pkl"):
             df = pd.read_pickle(f"{inputDir}/{name}.pkl")
             library[name+'.xlsx'] = df
             data_SimplexDate_lib = library['data_SimplexDate.xlsx']
+        else:
+            data_SimplexDate_lib = create_pkl_file(inputDir, name)
 
         name='data_Complex'
         if os.path.exists(f"{inputDir}/{name}.pkl"):
             df = pd.read_pickle(f"{inputDir}/{name}.pkl")
             library[name+'.xlsx'] = df
             data_Complex_lib = library['data_Complex.xlsx']
+        else:
+            data_Complex_lib = create_pkl_file(inputDir, name)
 
         name='data_xref_Complex-Complex'
         if os.path.exists(f"{inputDir}/{name}.pkl"):
             df = pd.read_pickle(f"{inputDir}/{name}.pkl")
             library[name+'.xlsx'] = df
             data_xref_Complex_Complex_lib = library['data_xref_Complex-Complex.xlsx']
+        else:
+            data_xref_Complex_Complex_lib = create_pkl_file(inputDir, name)
 
         name='data_xref_Simplex-Complex'
         if os.path.exists(f"{inputDir}/{name}.pkl"):
             df = pd.read_pickle(f"{inputDir}/{name}.pkl")
             library[name+'.xlsx'] = df
             data_xref_Simplex_Complex_lib = library['data_xref_Simplex-Complex.xlsx']
+        else:
+            data_xref_Simplex_Complex_lib = create_pkl_file(inputDir, name)
 
         name='data_xref_Complex-Document'
         if os.path.exists(f"{inputDir}/{name}.pkl"):
             df = pd.read_pickle(f"{inputDir}/{name}.pkl")
             library[name+'.xlsx'] = df
             data_xref_Complex_Document_lib = library['data_xref_Complex-Document.xlsx']
+        else:
+            data_xref_Complex_Document_lib = create_pkl_file(inputDir, name)
 
         name='data_xref_comment-complex'
         if os.path.exists(f"{inputDir}/{name}.pkl"):
             df = pd.read_pickle(f"{inputDir}/{name}.pkl")
             library[name+'.xlsx'] = df
             data_xref_comment_complex_lib = library['data_xref_comment-complex.xlsx']
+        else:
+            data_xref_comment_complex_lib = create_pkl_file(inputDir, name)
 
         name='data_xref_Comment-Document'
         if os.path.exists(f"{inputDir}/{name}.pkl"):
             df = pd.read_pickle(f"{inputDir}/{name}.pkl")
             library[name+'.xlsx'] = df
             data_xref_Comment_Document_lib = library['data_xref_Comment-Document.xlsx']
+        else:
+            data_xref_Comment_Document_lib = create_pkl_file(inputDir, name)
 
         name='data_xref_VComment'
         if os.path.exists(f"{inputDir}/{name}.pkl"):
             df = pd.read_pickle(f"{inputDir}/{name}.pkl")
             library[name+'.xlsx'] = df
             data_xref_VComment_lib = library['data_xref_VComment.xlsx']
+        else:
+            data_xref_VComment_lib = create_pkl_file(inputDir, name)
 
         name='data_xref_VComment-Document'
         if os.path.exists(f"{inputDir}/{name}.pkl"):
             df = pd.read_pickle(f"{inputDir}/{name}.pkl")
             library[name+'.xlsx'] = df
             data_xref_VComment_Document_lib = library['data_xref_VComment-Document.xlsx']
+        else:
+            data_xref_VComment_Document_lib = create_pkl_file(inputDir, name)
 
         name='utility_Security'
         if os.path.exists(f"{inputDir}/{name}.pkl"):
             df = pd.read_pickle(f"{inputDir}/{name}.pkl")
             library[name+'.xlsx'] = df
             utility_Security_lib = library['utility_Security.xlsx']
+        else:
+            utility_Security_lib = create_pkl_file(inputDir, name)
 
         global xref_simplex_complex_ALL
         xref_simplex_complex_ALL = pd.DataFrame()
@@ -245,19 +298,10 @@ def build_libraries(inputDir, outputDir):
         output_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                            'Complex object')
         xref_simplex_complex_ALL.to_csv(output_file_name, encoding='utf-8', index=False)
-        print()
+        print('Done importing libraries...')
+
 # check if a required document can be found.
 # OK pass checks and returns a dataframe or a boolean set to False if the file is not found.
-def check_missing(fileName):
-    if os.path.isfile(fileName):
-        # fileName_lib = pd.DataFrame(pd.read_excel(fileName))
-        fileName_lib = pd.read_excel(fileName)
-        return fileName_lib
-    else:
-        mb.showwarning(title='Warning',
-                    message='The table ' + fileName + ' is missing.\n\nPlease, make sure to export this table from PC-ACE data backend and try again.')
-        # create an empty dataframe
-        return pd.DataFrame()
 
 def view_grammar(excel_file, column_name, output_file):
     """
@@ -411,7 +455,9 @@ def get_complex(complex_name, comment_info, document_info, inputDir, outputDir):
     append_rows = dfs(complex_name)
     new_rows_df = pd.DataFrame(append_rows)
     dfs_df = pd.concat([dfs_df, new_rows_df], ignore_index=True)
-    dfs_df = add_path_info_to_complex_object(complex_name, dfs_df)
+
+    # @@@@@ Aiden temporarily disconnected
+    # dfs_df = add_path_info_to_complex_object(complex_name, dfs_df)
 
     if document_info:
         dfs_df = add_document_info(dfs_df)
@@ -496,7 +542,7 @@ def get_complex_data_id(complex_name):
     data['ID_setup_complex'] = [int(x) for x in data['ID_setup_complex']]
     return data
 
-# @@@@
+# @@@@@@ Useful function
 # given a complex data ID value, returns its setup ID and name
 def get_complex_setup_id_from_data_id(complex_data_id):
     ID_setup_complex = data_Complex_lib[data_Complex_lib['ID_data_complex'] == complex_data_id]['ID_setup_complex'].iloc[0]
@@ -504,12 +550,29 @@ def get_complex_setup_id_from_data_id(complex_data_id):
     return ID_setup_complex, complex_name
 
 # @@@@@
-# given a df of complex data IDs, returns a df of all complex setup IDs and names
-def get_complex_setup_id_from_data_id_ALL(df):
+# given a df with a column of IDs of data complex (ID_data_complex), returns a df of all complex setup IDs and names
+
+# @@@@@@ Useful function
+
+# def get_complex_setup_id_from_data_id_ALL(df):
+#     # get setup IDs from data complex IDs
+#     df = pd.merge(df, data_Complex_lib, how='left', left_on='ID_data_complex', right_on='ID_data_complex')
+#     # get the setup complex name
+#     df = pd.merge(df, setup_Complex_lib, how='left', left_on='ID_setup_complex', right_on='ID_setup_complex')
+#     df = df.rename(columns={'Name': "Complex name"})
+#     # drop the grammar column which creates a very messy output csv file
+#     df = df.drop("GrammarRule_Text", axis=1)
+#
+#     return df
+
+def get_complex_setup_id_from_data_id_ALL():
     # get setup IDs from data complex IDs
-    df = pd.merge(df, data_Complex_lib, how='left', left_on='ID_data_complex', right_on='ID_data_complex')
-    df = pd.merge(df, setup_Complex_lib, how='left', left_on='ID_setup_complex', right_on='ID_setup_complex')
+    df = pd.merge(data_Complex_lib, data_xref_Complex_Complex_lib, how='left', left_on='ID_data_complex', right_on='HigherComplex')
+    # get the setup complex name
+    df = pd.merge(df, setup_xref_Complex_Complex_lib, how='left', left_on='ID_setup_complex', right_on='ID_setup_xref_complex-complex')
     df = df.rename(columns={'Name': "Complex name"})
+    # drop the grammar column which creates a very messy output csv file
+    # df = df.drop("GrammarRule_Text", axis=1)
 
     return df
 
@@ -952,13 +1015,17 @@ dfs_df = pd.DataFrame()
 
 def dfs(parent):
     global dfs_df
-    get_xref_simplex_complex_data_setup_IDs_simplex_values()
+    # df = get_xref_simplex_complex_data_setup_IDs_simplex_values()
 
     required = crossref.loc[crossref['Name'] == parent, 'Required'].any()
     if not required:
         return []
 
     simplex_names, simplex_required_names = get_simplex_names_for_complex([parent])
+    # @@@@@ Aiden, despite being global xref_simplex_complex_ALL is often not recognized
+    # if xref_simplex_complex_ALL.empty:
+    #     xref_simplex_complex_ALL = get_xref_simplex_complex_data_setup_IDs_simplex_values()
+    xref_simplex_complex_ALL = get_xref_simplex_complex_data_setup_IDs_simplex_values()
     parent_id = xref_simplex_complex_ALL.loc[(xref_simplex_complex_ALL["Complex name"] == parent), "ID_data_complex"]
     parent_id = parent_id.reset_index(drop=True)
 
@@ -1034,7 +1101,6 @@ def dfs(parent):
         return append_rows
 
 # @@@@@@
-# called from get_simplex_value_for_complex(complex_name, is_verb)
 # the function builds a complete dataframe of complex & simplex setup and data IDs & simplex values
 # return a complete dataframe (which is always invariant for any database);
 #   so there is no need to recompute it once it is computed
@@ -1042,25 +1108,34 @@ def get_xref_simplex_complex_data_setup_IDs_simplex_values():
     # get ALL simplex text values
     data_SimplexText_allValues = pd.merge(data_Simplex_lib, data_SimplexText_lib, how='left',
                                           on='ID_data_date_number_text')
+    # select columns
     data_SimplexText_allValues = data_SimplexText_allValues[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
 
     # add the data xref simplex-complex IDs, setup xref simplex-complex IDs, data complex IDs, data simplex IDs, setup simplex IDs, simplex values
     xref_simplex_complex_value = pd.merge(data_xref_Simplex_Complex_lib, data_SimplexText_allValues, how='left',
                                           left_on='ID_data_simplex', right_on='ID_data_simplex')
+    # add the simplex setup name
+    xref_simplex_complex_value = pd.merge(setup_Simplex_lib, xref_simplex_complex_value, how='left',
+                                          left_on='ID_setup_simplex', right_on='ID_setup_simplex')
+    xref_simplex_complex_value = xref_simplex_complex_value.rename(columns={'Name': "Simplex name"})
 
+    # select columns
     xref_simplex_complex_value = xref_simplex_complex_value[
-        ['ID_data_complex', 'ID_setup_xref_simplex_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
+        ['ID_data_complex', 'ID_setup_xref_simplex_complex', 'ID_setup_simplex', 'Simplex name', 'ID_data_simplex', 'Value']]
 
-    complex_names_df = setup_xref_Complex_Complex_lib[['ID_setup_xref_complex-complex', 'Name']]
-    simplex_names_df = setup_xref_Simplex_Complex_lib[['ID_setup_xref_simplex-complex', 'Name']]
+    # add complex setup IDs and Names
+    xref_complex_complex_value = get_complex_setup_id_from_data_id_ALL()
+    # select columns
+    xref_complex_complex_value = xref_complex_complex_value[
+        ['ID_data_complex', 'ID_setup_complex','Complex name', 'Identifier']]
 
-    complex_names_df = complex_names_df.rename(columns={'Name': "Complex name"})
-    simplex_names_df = simplex_names_df.rename(columns={'Name': "Simplex name"})
+    # merge xref_simplex_complex_value & xref_complex_complex_value
+    xref_simplex_complex_ALL = pd.merge(xref_complex_complex_value, xref_simplex_complex_value, how='left',
+                                          left_on='ID_data_complex', right_on='ID_data_complex')
 
-    xref_simplex_complex_value = pd.merge(xref_simplex_complex_value, simplex_names_df, how='left', left_on='ID_setup_xref_simplex_complex',
-                                          right_on='ID_setup_xref_simplex-complex')
-
-    xref_simplex_complex_ALL = get_complex_setup_id_from_data_id_ALL(xref_simplex_complex_value)
+    # select columns
+    xref_simplex_complex_ALL = xref_simplex_complex_ALL[
+        ['ID_setup_complex','Complex name', 'ID_setup_simplex','Simplex name', 'ID_data_complex', 'ID_data_simplex', 'Value']]
 
     return xref_simplex_complex_ALL
 
@@ -1337,6 +1412,12 @@ def add_path_info_to_complex_object(complex_name, df):
             ]['ID_setup_xref_complex-complex'].values[0]
 
         # Retrieve and rename relevant data_xref columns
+        data_xref = data_xref_Complex_Complex_lib[
+            data_xref_Complex_Complex_lib['HigherComplex'] == xref_id
+            ][['ID_data_complex', 'ID_data_complex.1']].rename(columns={
+            'ID_data_complex': f'{grammar_path[i]} ID',
+            'ID_data_complex.1': f'{grammar_path[i + 1]} ID'
+        })
         data_xref = data_xref_Complex_Complex_lib[
             data_xref_Complex_Complex_lib['ID_setup_xref_complex_complex'] == xref_id
             ][['ID_data_complex', 'ID_data_complex.1']].rename(columns={
