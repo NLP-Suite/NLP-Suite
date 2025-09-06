@@ -148,6 +148,12 @@ def load_lib(inputDir):
     return
 
 
+def export_df_to_csv(df, inputDir, outputDir, label):
+    output_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
+                                                               label)
+    df.to_csv(output_file_name, encoding='utf-8', index=False)
+
+
 def build_libraries(inputDir, outputDir):
     global setup_Complex_lib, setup_Simplex_lib, setup_xref_Complex_Complex_lib, crossref, setup_xref_Simplex_Complex_lib, data_Simplex_lib, data_SimplexText_lib, data_SimplexNumber_lib, data_SimplexDate_lib, data_Complex_lib, data_xref_Complex_Complex_lib, data_xref_Simplex_Complex_lib, data_xref_Document_lib, data_xref_Complex_Document_lib, data_xref_comment_complex_lib, data_xref_Comment_Document_lib, data_xref_VComment_lib, data_xref_VComment_Document_lib, utility_Security_lib, xref_simplex_complex_ALL
 
@@ -292,11 +298,9 @@ def build_libraries(inputDir, outputDir):
         else:
             utility_Security_lib = create_pkl_file(inputDir, name)
 
-        xref_simplex_complex_ALL = get_xref_simplex_complex_data_setup_IDs_simplex_values()
+        xref_simplex_complex_ALL = get_xref_simplex_complex_data_setup_IDs_simplex_values(inputDir, outputDir)
 
-        output_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
-                                                                           'Complex object')
-        xref_simplex_complex_ALL.to_csv(output_file_name, encoding='utf-8', index=False)
+        export_df_to_csv(xref_simplex_complex_ALL, inputDir, outputDir, "complex")
         print('Done importing libraries...')
 
 # check if a required document can be found.
@@ -547,7 +551,7 @@ def get_complex_setup_id_from_data_id(complex_data_id):
 #
 #     return df
 
-def get_complex_setup_id_from_data_id_ALL():
+def get_complex_setup_id_from_data_id_ALL(inputDir, outputDir):
     # get setup IDs from data complex IDs
     df = pd.merge(data_Complex_lib, data_xref_Complex_Complex_lib, how='left', left_on='ID_data_complex', right_on='HigherComplex')
     # get the setup complex name
@@ -555,6 +559,8 @@ def get_complex_setup_id_from_data_id_ALL():
     df = df.rename(columns={'Name': "Complex name"})
     # drop the grammar column which creates a very messy output csv file
     # df = df.drop("GrammarRule_Text", axis=1)
+
+    export_df_to_csv(df, inputDir, outputDir, "ALL")
 
     return df
 
@@ -994,7 +1000,7 @@ def get_simplex_value(simplex_name, complex_name, xref_simplex_complex_value):
 
 dfs_df = pd.DataFrame()
 
-def dfs(parent):
+def dfs(parent, inputDir='', outputDir=''):
     global dfs_df
 
     required = crossref.loc[crossref['Name'] == parent, 'Required'].any()
@@ -1006,7 +1012,7 @@ def dfs(parent):
     #   although it is recognized further down
     global xref_simplex_complex_ALL
     if xref_simplex_complex_ALL.empty:
-        xref_simplex_complex_ALL = get_xref_simplex_complex_data_setup_IDs_simplex_values()
+        xref_simplex_complex_ALL = get_xref_simplex_complex_data_setup_IDs_simplex_values(inputDir, outputDir)
     # xref_simplex_complex_ALL = get_xref_simplex_complex_data_setup_IDs_simplex_values()
     parent_id = xref_simplex_complex_ALL.loc[(xref_simplex_complex_ALL["Complex name"] == parent), "ID_data_complex"]
     parent_id = parent_id.reset_index(drop=True)
@@ -1089,20 +1095,17 @@ def dfs(parent):
 # the function builds a complete dataframe of complex & simplex setup and data IDs & simplex values
 # return a complete dataframe (which is always invariant for any database);
 #   so there is no need to recompute it once it is computed
-def get_xref_simplex_complex_data_setup_IDs_simplex_values():
+def get_xref_simplex_complex_data_setup_IDs_simplex_values(inputDir, outputDir):
     # get ALL simplex text values
     # Aiden these merge only produce DATE values, i.e., the last of the three merges
     data_SimplexText_allValues = pd.merge(data_Simplex_lib, data_SimplexText_lib, how='left',
                                           on='ID_data_date_number_text')
 
-    data_SimplexText_allValues = pd.merge(data_SimplexText_allValues, data_SimplexNumber_lib, how='left',
-                                          on='ID_data_date_number_text')
-
-    data_SimplexText_allValues = pd.merge(data_SimplexText_allValues, data_SimplexDate_lib, how='left',
-                                          on='ID_data_date_number_text')
-
-    # # select columns
-    # data_SimplexText_allValues = data_SimplexText_allValues[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
+    # data_SimplexText_allValues = pd.merge(data_SimplexText_allValues, data_SimplexNumber_lib, how='left',
+    #                                       on='ID_data_date_number_text')
+    #
+    # data_SimplexText_allValues = pd.merge(data_SimplexText_allValues, data_SimplexDate_lib, how='left',
+    #                                       on='ID_data_date_number_text')
 
     # add the data xref simplex-complex IDs, setup xref simplex-complex IDs, data complex IDs, data simplex IDs, setup simplex IDs, simplex values
     xref_simplex_complex_value = pd.merge(data_xref_Simplex_Complex_lib, data_SimplexText_allValues, how='left',
@@ -1110,23 +1113,24 @@ def get_xref_simplex_complex_data_setup_IDs_simplex_values():
     # add the simplex setup name
     xref_simplex_complex_value = pd.merge(setup_Simplex_lib, xref_simplex_complex_value, how='left',
                                           left_on='ID_setup_simplex', right_on='ID_setup_simplex')
+    # remove the decimals
+    # xref_simplex_complex_value["ID_data_xref_simplex-complex"] = xref_simplex_complex_value["ID_data_xref_simplex-complex"].fillna(-1).astype(int)
+    # xref_simplex_complex_value["ID_setup_xref_simplex_complex"] = xref_simplex_complex_value["ID_setup_xref_simplex_complex"].fillna(-1).astype(int)
+    # xref_simplex_complex_value["ID_data_simplex"] = xref_simplex_complex_value["ID_data_simplex"].fillna(-1).astype(int)
+    # xref_simplex_complex_value["ID_data_complex"] = xref_simplex_complex_value["ID_data_complex"].fillna(-1).astype(int)
+    # xref_simplex_complex_value["Order"] = xref_simplex_complex_value["Order"].fillna(-1).astype(int)
+    # xref_simplex_complex_value["ID_data_date_number_text"] = xref_simplex_complex_value["ID_data_date_number_text"].fillna(-1).astype(int)
 
-    xref_simplex_complex_value["ID_data_xref_simplex-complex"] = xref_simplex_complex_value["ID_data_xref_simplex-complex"].fillna(-1).astype(int)
-    xref_simplex_complex_value["ID_setup_xref_simplex_complex"] = xref_simplex_complex_value["ID_setup_xref_simplex_complex"].fillna(-1).astype(int)
-    xref_simplex_complex_value["ID_data_simplex"] = xref_simplex_complex_value["ID_data_simplex"].fillna(-1).astype(int)
-    xref_simplex_complex_value["ID_data_complex"] = xref_simplex_complex_value["ID_data_complex"].fillna(-1).astype(int)
-    xref_simplex_complex_value["Order"] = xref_simplex_complex_value["Order"].fillna(-1).astype(int)
-    xref_simplex_complex_value["ID_data_date_number_text"] = xref_simplex_complex_value["ID_data_date_number_text"].fillna(-1).astype(int)
-
-    # @@@@@ Aiden Question IDs now have long decimals
     xref_simplex_complex_value = xref_simplex_complex_value.rename(columns={'Name': "Simplex name"})
 
     # select columns
     xref_simplex_complex_value = xref_simplex_complex_value[
         ['ID_data_complex', 'ID_setup_xref_simplex_complex', 'ID_setup_simplex', 'Simplex name', 'ID_data_simplex', 'Value']]
 
+    export_df_to_csv(xref_simplex_complex_value, inputDir, outputDir, "simplex")
+
     # add complex setup IDs and Names
-    xref_complex_complex_value = get_complex_setup_id_from_data_id_ALL()
+    xref_complex_complex_value = get_complex_setup_id_from_data_id_ALL(inputDir, outputDir)
     # select columns
     xref_complex_complex_value = xref_complex_complex_value[
         ['ID_data_complex', 'ID_setup_complex','Complex name', 'Identifier']]
@@ -1138,6 +1142,10 @@ def get_xref_simplex_complex_data_setup_IDs_simplex_values():
     # select columns
     xref_simplex_complex = xref_simplex_complex[
         ['ID_setup_complex','Complex name', 'ID_setup_simplex','Simplex name', 'ID_data_complex', 'ID_data_simplex', 'Value']]
+
+    # Aiden export_df_to_csv will have woman as simplex value for Name of individual actor but the complex name is Actor and NOT individual
+    #   the last merge above must merge on the wrong values?
+    export_df_to_csv(xref_simplex_complex, inputDir, outputDir, "simplex-complex")
 
     return xref_simplex_complex
 
