@@ -453,6 +453,20 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                     # since outputFile produced by KML is a list cannot use append
                     filesToOpen = filesToOpen + outputFile
 
+    if comments_var!='':
+        if setup_complex !="":
+            object_var = setup_complex
+        elif setup_simplex !="":
+            object_var = setup_simplex
+        else:
+            object_var = ""
+        outputFile = DB_PCACE_data_analyzer_util.get_comment_info('',  object_var, comments_var, inputDir, outputDir)
+        if outputFile != None:
+            if isinstance(outputFile, str):
+                filesToOpen.append(outputFile)
+            else:
+                filesToOpen.extend(outputFile)
+
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 

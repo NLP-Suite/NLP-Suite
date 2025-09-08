@@ -3,6 +3,13 @@
 # Aiden Summer 2025 improved loading of different databases using pickle files, fixed SVO extractor, and continued to generalize the code across different databases
 # RF added all visuals
 
+# LEGENDA
+# ComplexType in data:complex & SimplexType in data:simplex point to setup IDs in setup:complex & setup:simplex
+# xrefID in data_xref_Complex-Complex, data_xref_Simplex-Complex, data_xref_Simplex-Simplex-Document refer to
+#   the ID in the respective setup_xref
+# the number of records in data:complex is generally much < than data:xref_Complex-Complex
+# the number of records in data:simplex is generally much < than data:xref_Simplex-Complex
+
 import sys
 import IO_libraries_util
 import GUI_util
@@ -149,10 +156,11 @@ def load_lib(inputDir):
 
 
 def export_df_to_csv(df, inputDir, outputDir, label):
-    output_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
+    outputFilename = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                label)
-    df.to_csv(output_file_name, encoding='utf-8', index=False)
+    df.to_csv(outputFilename, encoding='utf-8', index=False)
 
+    return outputFilename
 
 def build_libraries(inputDir, outputDir):
     global setup_Complex_lib, setup_Simplex_lib, setup_xref_Complex_Complex_lib, crossref, setup_xref_Simplex_Complex_lib, data_Simplex_lib, data_SimplexText_lib, data_SimplexNumber_lib, data_SimplexDate_lib, data_Complex_lib, data_xref_Complex_Complex_lib, data_xref_Simplex_Complex_lib, data_xref_Document_lib, data_xref_Complex_Document_lib, data_xref_comment_complex_lib, data_xref_Comment_Document_lib, data_xref_VComment_lib, data_xref_VComment_Document_lib, utility_Security_lib, xref_simplex_complex_ALL
@@ -300,7 +308,7 @@ def build_libraries(inputDir, outputDir):
 
         xref_simplex_complex_ALL = get_xref_simplex_complex_data_setup_IDs_simplex_values(inputDir, outputDir)
 
-        export_df_to_csv(xref_simplex_complex_ALL, inputDir, outputDir, "complex")
+        outputFilename = export_df_to_csv(xref_simplex_complex_ALL, inputDir, outputDir, "complex")
         print('Done importing libraries...')
 
 # check if a required document can be found.
@@ -435,7 +443,7 @@ def get_simplex_frequencies_all(inputDir, outputDir):
 # @@@
 # given a complex name selected in _main, the function returns an output file containing a set of information about the complex
 #   e.g., identifier, simplex values
-def get_complex(complex_name, comment_info, document_info, inputDir, outputDir):
+def get_complex(complex_name, comment_type, document_info, inputDir, outputDir):
     global dfs_df
     dfs_df = pd.DataFrame()
     append_rows = dfs(complex_name)
@@ -443,13 +451,13 @@ def get_complex(complex_name, comment_info, document_info, inputDir, outputDir):
     dfs_df = pd.concat([dfs_df, new_rows_df], ignore_index=True)
 
     # @@@@@ Aiden question temporarily disconnected
-    dfs_df = add_path_info_to_complex_object(complex_name, dfs_df)
+    dfs_df = get_path_info_to_complex_object(complex_name, dfs_df)
 
     if document_info:
-        dfs_df = add_document_info(dfs_df)
+        dfs_df = get_document_info(dfs_df)
 
-    if comment_info!='':
-        dfs_df = add_comment_info(dfs_df, complex_name, comment_info)
+    if comment_type!='':
+        dfs_df = get_comment_info(dfs_df, complex_name, comment_type)
 
     complex_object_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'Complex object')
     dfs_df.to_csv(complex_object_file_name, encoding='utf-8', index=False)
@@ -560,7 +568,7 @@ def get_complex_setup_id_from_data_id_ALL(inputDir, outputDir):
     # drop the grammar column which creates a very messy output csv file
     # df = df.drop("GrammarRule_Text", axis=1)
 
-    export_df_to_csv(df, inputDir, outputDir, "ALL")
+    outputFilename = export_df_to_csv(df, inputDir, outputDir, "ALL")
 
     return df
 
@@ -1127,7 +1135,7 @@ def get_xref_simplex_complex_data_setup_IDs_simplex_values(inputDir, outputDir):
     xref_simplex_complex_value = xref_simplex_complex_value[
         ['ID_data_complex', 'ID_setup_xref_simplex_complex', 'ID_setup_simplex', 'Simplex name', 'ID_data_simplex', 'Value']]
 
-    export_df_to_csv(xref_simplex_complex_value, inputDir, outputDir, "simplex")
+    outputFilename = export_df_to_csv(xref_simplex_complex_value, inputDir, outputDir, "simplex")
 
     # add complex setup IDs and Names
     xref_complex_complex_value = get_complex_setup_id_from_data_id_ALL(inputDir, outputDir)
@@ -1145,7 +1153,7 @@ def get_xref_simplex_complex_data_setup_IDs_simplex_values(inputDir, outputDir):
 
     # Aiden export_df_to_csv will have woman as simplex value for Name of individual actor but the complex name is Actor and NOT individual
     #   the last merge above must merge on the wrong values?
-    export_df_to_csv(xref_simplex_complex, inputDir, outputDir, "simplex-complex")
+    outputFilename = export_df_to_csv(xref_simplex_complex, inputDir, outputDir, "simplex-complex")
 
     return xref_simplex_complex
 
@@ -1258,14 +1266,14 @@ def get_simplex_value_for_complex(complex_name, is_verb):
                 if is_verb:
                     head = grammar_path[0]
                     grammar_path = grammar_path[1:]
-                    id_data_list = []
+                    ID_data_list = []
                     for item in grammar_path:
                         grammar_path = [head, item]
-                        id_data =complex_data_IDs_in_grammar_path(grammar_path)
-                        id_data_list.append(id_data)
+                        ID_data_complex =complex_data_IDs_in_grammar_path(grammar_path)
+                        ID_data_list.append(ID_data_complex)
 
-                    combined_id_data = pd.concat(id_data_list, ignore_index=True)
-                    data = pd.merge(combined_id_data, xref_simplex_complex_value_select, how='left', left_on=lower,
+                    combined_ID_data = pd.concat(ID_data_list, ignore_index=True)
+                    data = pd.merge(combined_ID_data, xref_simplex_complex_value_select, how='left', left_on=lower,
                                     right_on='ID_data_complex')
 
                     # data = data[data[complex_name].notna()]
@@ -1277,9 +1285,9 @@ def get_simplex_value_for_complex(complex_name, is_verb):
                     #
                     # simplexes.append(data)
                 else: # NOT a verb
-                    id_data =complex_data_IDs_in_grammar_path(grammar_path)
+                    ID_data_complex = complex_data_IDs_in_grammar_path(grammar_path)
 
-                    data = pd.merge(id_data, xref_simplex_complex_value_select, how = 'left', left_on = lower, right_on = 'ID_data_complex')
+                    data = pd.merge(ID_data_complex, xref_simplex_complex_value_select, how = 'left', left_on = lower, right_on = 'ID_data_complex')
                     # data = data[data[complex_name].notna()]
                     data = data.drop_duplicates(subset=[complex_name])
 
@@ -1313,14 +1321,14 @@ def get_simplex_value_for_complex(complex_name, is_verb):
                     if is_verb:
                         head = grammar_path[0]
                         grammar_path = grammar_path[1:]
-                        id_data_list = []
+                        ID_data_list = []
                         for item in grammar_path:
                             grammar_path = [head, item]
-                            id_data =complex_data_IDs_in_grammar_path(grammar_path)
-                            id_data_list.append(id_data)
+                            ID_data_complex =complex_data_IDs_in_grammar_path(grammar_path)
+                            ID_data_list.append(ID_data_complex)
 
-                        combined_id_data = pd.concat(id_data_list, ignore_index=True)
-                        data = pd.merge(combined_id_data, xref_simplex_complex_value_select, how='left', left_on=lower,
+                        combined_ID_data = pd.concat(ID_data_list, ignore_index=True)
+                        data = pd.merge(combined_ID_data, xref_simplex_complex_value_select, how='left', left_on=lower,
                                         right_on='ID_data_complex')
                         data = data[data[complex_name].notna()]
                         data = data.drop_duplicates(subset=[complex_name])
@@ -1330,9 +1338,9 @@ def get_simplex_value_for_complex(complex_name, is_verb):
 
                         simplexes.append(data)
                     else:
-                        id_data =complex_data_IDs_in_grammar_path(grammar_path)
+                        ID_data_complex =complex_data_IDs_in_grammar_path(grammar_path)
 
-                        data = pd.merge(id_data, xref_simplex_complex_value_select, how='left', left_on=lower,
+                        data = pd.merge(ID_data_complex, xref_simplex_complex_value_select, how='left', left_on=lower,
                                         right_on='ID_data_complex')
                         data = data[data[complex_name].notna()]
                         data = data.drop_duplicates(subset=[complex_name])
@@ -1352,36 +1360,87 @@ def get_simplex_value_for_complex(complex_name, is_verb):
     return simplexes_combined
 
 
-def add_comment_info(df, object_name, comment_info):
-    # @@@ Aiden must grab name from df
-    object_ID = object_name + ' ID'
-    # comments contain _x000D_ should be removed
-    if 'Verifiers' in comment_info:
-        data_xref_Comment_modified = data_xref_VComment_lib[['Complex', 'Comment', 'UserID', 'VerifierID']]
-    else:
-        # rename ID_data_complex to Complex
-        data_xref_Comment_modified = data_xref_comment_complex_lib.rename(columns={'ID_data_complex': 'Actor ID'})
-        data_xref_Comment_modified = data_xref_Comment_modified[[object_ID, 'Comment', 'UserID']]
-    df = pd.merge(df, data_xref_Comment_modified, how='left', left_on='Macro Event ID',
-                               right_on=object_ID)
+def get_comment_info(df, object_name, comment_type, inputDir, outputDir):
+    outputFiles = []
+    # Aiden comments contain _x000D_ should be removed
+    if object_name!='':
+        object_ID = object_name + ' ID'
+        if '*' in comment_type or 'Verifiers' in comment_type:
+            data_xref_Comment_modified = data_xref_VComment_lib[['Complex', 'Comment', 'UserID', 'VerifierID']]
+        if '*' in comment_type or 'Users' in comment_type:
+            # rename ID_data_complex to Complex
+            # Aiden Actor ID is wrong
+            data_xref_Comment_modified = data_xref_comment_complex_lib.rename(columns={'ID_data_complex': 'Actor ID'})
+            data_xref_Comment_modified = data_xref_Comment_modified[[object_ID, 'Comment', 'UserID']]
+        df = pd.merge(df, data_xref_Comment_modified, how='left', left_on='Macro Event ID',
+                                   right_on=object_ID)
+    else: # exporting all comments regardless of selected complex object
+        if '*' in comment_type or 'Users' in comment_type:
+            df = pd.merge(data_xref_comment_complex_lib, data_Complex_lib, how='left', left_on='ID_data_complex', right_on='ID_data_complex')
+            df = pd.merge(df, setup_Complex_lib, how='left', left_on='ID_setup_complex', right_on='ID_setup_complex')
+        # Aiden question when * is used we overwrite what was done three lines above...
+        if '*' in comment_type or 'Verifiers' in comment_type:
+            df = pd.merge(data_xref_VComment_lib, data_Complex_lib, how='left', left_on='Complex', right_on='ID_data_complex')
+            df = pd.merge(df, setup_Complex_lib, how='left', left_on='ID_setup_complex', right_on='ID_setup_complex')
+
     # df = df.drop('Complex', axis=1)
 
-    utility_Security = utility_Security_lib[['ID', 'UserName']]
-    utility_Security = utility_Security.rename(columns={'ID': 'UserID'})
-    df = pd.merge(df, utility_Security, how='left', left_on='UserID', right_on='UserID')
-    user_name = df.pop('UserName')
-    userID_idx = df.columns.get_loc('UserID')
-    df.insert(userID_idx + 1, 'UserName', user_name)
-    if 'Verifiers' in comment_info:
-        utility_Security_verifier = utility_Security.rename(columns={'ID': 'VerifierID', 'UserName': 'VerifierName'})
-        df = pd.merge(df, utility_Security_verifier, how='left', left_on='VerifierID',
-                                   right_on='VerifierID')
-        verifier_name = df.pop('VerifierName')
-        verifierID_idx = df.columns.get_loc('VerifierID')
-        df.insert(verifierID_idx + 1, 'VerifierName', verifier_name)
-    return df
+    # get the users and verifiers names in utility_security
+    if '*' in comment_type or 'Users' in comment_type:
+        utility_Security = utility_Security_lib[['ID', 'UserName']]
+        utility_Security = utility_Security.rename(columns={'ID': 'UserID'})
+        df = pd.merge(df, utility_Security, how='left', left_on='UserID', right_on='UserID')
+        user_name = df.pop('UserName')
+        # Aiden question what are these lines?
+        userID_idx = df.columns.get_loc('UserID')
+        df.insert(userID_idx + 1, 'UserName', user_name)
 
-def add_document_info(df):
+    if '*' in comment_type or 'Verifiers' in comment_type:
+        # Aiden question when * is used we overwrite what was done three lines above...
+        # Aiden question wrong columns for verifier
+        # utility_Security = utility_Security_lib[['ID', 'UserName', 'UserLevel']]
+        # utility_Security = utility_Security.rename(columns={'ID': 'VerifierID', 'UserName': 'VerifierName'})
+        df = pd.merge(df, utility_Security_lib, how='left', left_on='UserID', right_on='ID')
+        df = df.rename(columns={'UserName': 'User name'})
+
+        df = pd.merge(df, utility_Security_lib, how='left', left_on='VerifierID', right_on='ID')
+        # df = df.rename(columns={'UserName': 'Verifier name'})
+        # select all verifiers names
+        verifier_name = utility_Security_lib.pop('UserName')
+        # Aiden question what are these lines?
+        verifierID_idx = df.columns.get_loc('VerifierID')
+        df.insert(verifierID_idx + 1, 'Verifier name', verifier_name)
+        df = df.rename(columns={'UserName': 'Verifier name'})
+
+    if '*' in comment_type:
+        df = df.rename(
+        columns={'VerifierName': 'Verifier name', 'UserName': 'User name', 'Name': 'Complex name'})
+        # select columns
+        df = df[
+            ['Comment', 'Complex name', 'Verifier name', 'User name', 'Identifier']]
+        outputFilename = export_df_to_csv(df, inputDir, outputDir, "verifiers_users-comments")
+        outputFiles.apppend(outputFilename)
+    elif 'Users' in comment_type:
+        df = df.rename(columns={'UserName': 'User name', 'Name': 'Complex name'})
+        # select columns
+        df = df[
+            ['Comment', 'Complex name', 'User name', 'Identifier']]
+        outputFilename = export_df_to_csv(df, inputDir, outputDir, "users-comments")
+        outputFiles.append(outputFilename)
+    elif 'Verifiers' in comment_type:
+        df = df.rename(columns={'VerifierName': 'Verifier name', 'UserName': 'User name', 'Name': 'Complex name'})
+        # select columns
+        df = df[
+            ['Comment', 'Completed', 'Complex name', 'Verifier name', 'User name', 'Identifier']]
+        outputFilename = export_df_to_csv(df, inputDir, outputDir, "verifiers-comments")
+        outputFiles.append(outputFilename)
+
+    if object_name=='':
+        return outputFiles
+    else:
+        return df
+
+def get_document_info(df=None):
     # @@@ Aiden error
     data_xref_Complex_Document_modified = data_xref_Complex_Document_lib[['ID_data_complex', 'ID_data_document']]
     simplex_version = pd.merge(df, data_xref_Complex_Document_modified, how='left', left_on='Semantic Triplet',
@@ -1395,7 +1454,7 @@ def add_document_info(df):
 # df is the input dataframe with the object data
 # complex_name is the setup string value of the complex object
 # return a modified dataframe of input df
-def add_path_info_to_complex_object(complex_name, df):
+def get_path_info_to_complex_object(complex_name, df):
 
      # S1: find the list of complex names from the top, primary complex value (e.g., Macro event) UP TO the selected complex
     top_complex = setup_Complex_lib[setup_Complex_lib['ID_setup_complex']==1]['Name'].values[0]
@@ -1471,7 +1530,7 @@ def add_path_info_to_complex_object(complex_name, df):
 # get the semantic triplet with simplex
 # return: dataframe: Semantic triplet data id, S data id, S Type, S Simplex, V data id, V Simplex, O data id, O Type, O Simplex
 # p.s. Type = Individual / Organization / Collective actor
-def semantic_triplet_simplex(inputDir, subject, verb, object, document_info, comment_info):
+def semantic_triplet_simplex(inputDir, outputDir, subject, verb, object, document_info, comment_type):
     semantic_triplet = get_parent_complex(subject)
     triplet = semantic_triplet_complex(semantic_triplet, subject, verb, object)
 
@@ -1504,13 +1563,13 @@ def semantic_triplet_simplex(inputDir, subject, verb, object, document_info, com
     target = simplex_version.columns.get_loc('Semantic Triplet ID')
     simplex_version.insert(target+1, 'ST Identifier', col)
 
-    simplex_version = add_path_info_to_complex_object(semantic_triplet, simplex_version)
+    simplex_version = get_path_info_to_complex_object(semantic_triplet, simplex_version)
 
     if document_info:
-        simplex_version = add_document_info(simplex_version)
+        simplex_version = get_document_info(simplex_version)
 
-    if comment_info!='':
-        simplex_version = add_comment_info(simplex_version, semantic_triplet, comment_info)
+    if comment_type!='':
+        simplex_version = get_comment_info(simplex_version, semantic_triplet, comment_type, inputDir, outputDir)
 
     # S ID V ID O ID
     simplex_version.drop_duplicates(subset=['S ID', 'V ID', 'O ID'], inplace=True)
@@ -1521,7 +1580,7 @@ def semantic_triplet_simplex(inputDir, subject, verb, object, document_info, com
 # get the semantic triplet with simplex
 # return: dataframe: Semantic triplet data id, S data id, S Type, S Simplex, V data id, V Simplex, O data id, O Type, O Simplex
 # p.s. Type = Individual / Orgaization / Collective actor
-def semantic_triplet_simplex_main(inputDir, outputDir, macro_event_id, subject, verb, object, comment_info='', document_info=False):
+def semantic_triplet_simplex_main(inputDir, outputDir, macro_event_id, subject, verb, object, comment_type='', document_info=False):
 
     print('------------------------------------------------------------------------------------------------------------------------')
     print('Subject', subject)
@@ -1530,7 +1589,7 @@ def semantic_triplet_simplex_main(inputDir, outputDir, macro_event_id, subject, 
     print('------------------------------------------------------------------------------------------------------------------------')
     print('Object', object)
 
-    simplex_version = semantic_triplet_simplex(inputDir, subject, verb, object, document_info, comment_info)
+    simplex_version = semantic_triplet_simplex(inputDir, outputDir, subject, verb, object, document_info, comment_type)
 
     if macro_event_id != '':
         macro_event_id = int(macro_event_id.split()[0])
@@ -1539,11 +1598,11 @@ def semantic_triplet_simplex_main(inputDir, outputDir, macro_event_id, subject, 
     # if document_info:
     #     simplex_version = simplex_version.drop('Document ID', axis=1)
     #
-    # if comment_info == '':
+    # if comment_type == '':
     #     simplex_version = simplex_version.drop(['Comment', 'UserID', 'UserName', 'VerifierID', 'VerifierName'], axis=1)
-    # elif comment_info == 'user':
+    # elif comment_type == 'user':
     #     simplex_version = simplex_version.drop(['VerifierID', 'VerifierName'], axis=1)
-    # elif comment_info == 'verifier':
+    # elif comment_type == 'verifier':
     #     simplex_version = simplex_version.drop(['UserID', 'UserName'], axis=1)
 
     top_complex = setup_Complex_lib[setup_Complex_lib['ID_setup_complex'] == 1]['Name'].values[0]
@@ -1564,9 +1623,9 @@ def semantic_triplet_simplex_main(inputDir, outputDir, macro_event_id, subject, 
 
     return triplet_file_name
 
-def get_time_simplex(inputDir, outputDir, time_label, subject, verb, object, macro_event_id, comment_info='', document_info=False):
+def get_time_simplex(inputDir, outputDir, time_label, subject, verb, object, macro_event_id, comment_type='', document_info=False):
 
-    time = get_time_simplex(inputDir, time_label, subject, verb, object)
+    time = get_time_simplex(inputDir, outputDir, time_label, subject, verb, object)
 
     time_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                        'time')
@@ -1582,7 +1641,7 @@ def get_time_simplex(inputDir, outputDir, time_label, subject, verb, object, mac
 # helper method for semantic_triplet_time
 # link simplex of time complex with V
 # return: a dataframe: Process = data id of complex Process, Indefinite time of day = data id of simplex Indefinite time of day, Time = text of Indefinite time of day
-def get_time_simplex(inputDir, time_label, subject, verb, object, document_info, comment_info):
+def get_time_simplex(inputDir, outputDir, time_label, subject, verb, object, document_info, comment_type):
 
     simplexes = get_simplex_names_for_complex(time_label)
     simplex_id = get_simplex_setup_id(simplexes[0])
@@ -1596,10 +1655,10 @@ def get_time_simplex(inputDir, time_label, subject, verb, object, document_info,
 
     data = pd.DataFrame()
     for grammar_path in all_path:
-        id_data_subLevel =complex_data_IDs_in_grammar_path(grammar_path)
-        id_data_subLevel = id_data_subLevel[id_data_subLevel[verb].notna()]
-        id_data_subLevel = id_data_subLevel.drop_duplicates(subset=[verb])
-        data_subLevel = pd.merge(id_data_subLevel, xref_simplex_complex_value, how='left', left_on=time_label,right_on='ID_data_complex')
+        ID_data_subLevel =complex_data_IDs_in_grammar_path(grammar_path)
+        ID_data_subLevel = ID_data_subLevel[ID_data_subLevel[verb].notna()]
+        ID_data_subLevel = ID_data_subLevel.drop_duplicates(subset=[verb])
+        data_subLevel = pd.merge(ID_data_subLevel, xref_simplex_complex_value, how='left', left_on=time_label,right_on='ID_data_complex')
         if data_subLevel.empty:
             continue
         data = pd.concat([data, data_subLevel])
@@ -1609,10 +1668,10 @@ def get_time_simplex(inputDir, time_label, subject, verb, object, document_info,
     return data
 
 # get the semantic triplet (SVO) with time
-def semantic_triplet_time(inputDir, outputDir, time_label, macro_event_id,  subject, verb, object, comment_info='', document_info=False):
+def semantic_triplet_time(inputDir, outputDir, time_label, macro_event_id,  subject, verb, object, comment_type='', document_info=False):
 
-    triplet = semantic_triplet_simplex(inputDir, subject, verb, object, document_info, comment_info)
-    time = get_time_simplex(inputDir, time_label, subject, verb, object, document_info, comment_info)
+    triplet = semantic_triplet_simplex(inputDir, outputDir, subject, verb, object, document_info, comment_type)
+    time = get_time_simplex(inputDir, outputDir, time_label, subject, verb, object, document_info, comment_type)
 
     triplet_with_time = pd.merge(triplet, time, how = 'left', left_on = 'V ID', right_on = verb)
     triplet_with_time = triplet_with_time.drop(verb, axis = 1)
@@ -1626,7 +1685,7 @@ def semantic_triplet_time(inputDir, outputDir, time_label, macro_event_id,  subj
         document_id = triplet_with_time.pop('Document ID')
         triplet_with_time.insert(len(triplet_with_time.columns), 'Document ID', document_id)
 
-    if comment_info != '':
+    if comment_type != '':
         # move Comment column to the last position of the dataframe
         comment = triplet_with_time.pop('Comment')
         triplet_with_time.insert(len(triplet_with_time.columns), 'Comment', comment)
@@ -1635,11 +1694,11 @@ def semantic_triplet_time(inputDir, outputDir, time_label, macro_event_id,  subj
         macro_event_id = int(macro_event_id.split()[0])
         triplet_with_time = triplet_with_time[triplet_with_time['Macro Event ID'] == macro_event_id]
 
-#   if comment_info == '':
+#   if comment_type == '':
 #        triplet_with_time = triplet_with_time.drop(['Comment','UserID','UserName','VerifierID','VerifierName'], axis=1)
-    if comment_info == 'user':
+    if comment_type == 'user':
         triplet_with_time = triplet_with_time.drop(['VerifierID','VerifierName'], axis=1)
-    elif comment_info == 'verifier':
+    elif comment_type == 'verifier':
         triplet_with_time = triplet_with_time.drop(['UserID','UserName'], axis=1)
 
     top_complex = setup_Complex_lib[setup_Complex_lib['ID_setup_complex'] == 1]['Name'].values[0]
@@ -1676,10 +1735,10 @@ def get_space_simplex(inputDir, space_label_var, subject, verb, object):
 
     data = pd.DataFrame()
     for grammar_path in all_path:
-        id_data_subLevel =complex_data_IDs_in_grammar_path(grammar_path)
-        id_data_subLevel = id_data_subLevel[id_data_subLevel[verb].notna()]
-        id_data_subLevel = id_data_subLevel.drop_duplicates(subset=[verb])
-        data_subLevel = pd.merge(id_data_subLevel, xref_simplex_complex_value, how='left', left_on=space_label_var,
+        ID_data_subLevel =complex_data_IDs_in_grammar_path(grammar_path)
+        ID_data_subLevel = ID_data_subLevel[ID_data_subLevel[verb].notna()]
+        ID_data_subLevel = ID_data_subLevel.drop_duplicates(subset=[verb])
+        data_subLevel = pd.merge(ID_data_subLevel, xref_simplex_complex_value, how='left', left_on=space_label_var,
                                  right_on='ID_data_complex')
         if data_subLevel.empty:
             continue
@@ -1690,7 +1749,7 @@ def get_space_simplex(inputDir, space_label_var, subject, verb, object):
 
     return data
 
-def get_space_simplex(inputDir, outputDir, space_label_var, subject, verb, object, macro_event_id, comment_info='', document_info=False):
+def get_space_simplex(inputDir, outputDir, space_label_var, subject, verb, object, macro_event_id, comment_type='', document_info=False):
 
     space = get_space_simplex(inputDir, space_label_var, subject, verb, object)
 
@@ -1702,10 +1761,10 @@ def get_space_simplex(inputDir, outputDir, space_label_var, subject, verb, objec
 
 # prepare the function for the use in main
 # get semantic triplet with space
-def semantic_triplet_space(inputDir, outputDir, space_label_var, macro_event_id, subject, verb, object, document_info, comment_info):
+def semantic_triplet_space(inputDir, outputDir, space_label_var, macro_event_id, subject, verb, object, document_info, comment_type):
 
-    triplet = semantic_triplet_simplex(inputDir, subject, verb, object, document_info, comment_info)
-    space = get_space_simplex(inputDir, space_label_var, subject, verb, object, document_info, comment_info)
+    triplet = semantic_triplet_simplex(inputDir, subject, verb, object, document_info, comment_type)
+    space = get_space_simplex(inputDir, space_label_var, subject, verb, object, document_info, comment_type)
 
     triplet_with_space = pd.merge(triplet, space, how='left', left_on='V ID', right_on=verb)
     triplet_with_space = triplet_with_space.drop(verb, axis=1)
@@ -1719,11 +1778,11 @@ def semantic_triplet_space(inputDir, outputDir, space_label_var, macro_event_id,
     # if not document_info:
     #     triplet_with_space = triplet_with_space.drop('Document ID', axis=1)
 
-    # if comment_info == '':
+    # if comment_type == '':
     #     triplet_with_space = triplet_with_space.drop(['Comment','UserID','UserName','VerifierID','VerifierName'], axis=1)
-    # elif comment_info == 'user':
+    # elif comment_type == 'user':
     #     triplet_with_space = triplet_with_space.drop(['VerifierID','VerifierName'], axis=1)
-    # elif comment_info == 'verifier':
+    # elif comment_type == 'verifier':
     #     triplet_with_space = triplet_with_space.drop(['UserID','UserName'], axis=1)
 
     top_complex = setup_Complex_lib[setup_Complex_lib['ID_setup_complex'] == 1]['Name'].values[0]
@@ -1745,13 +1804,13 @@ def semantic_triplet_space(inputDir, outputDir, space_label_var, macro_event_id,
 
 
 # get semantic triplet with time and space
-def semantic_triplet_time_space(inputDir, outputDir, space_label_var, time_label, macro_event_id,  subject, verb, object, comment_info='', document_info=False):
+def semantic_triplet_time_space(inputDir, outputDir, space_label_var, time_label, macro_event_id,  subject, verb, object, comment_type='', document_info=False):
 
-    triplet = semantic_triplet_simplex(inputDir, subject, verb, object, document_info, comment_info)
+    triplet = semantic_triplet_simplex(inputDir, subject, verb, object, document_info, comment_type)
 
-    space = get_space_simplex(inputDir, space_label_var, subject, verb, object, document_info, comment_info)
+    space = get_space_simplex(inputDir, outputDir, space_label_var, subject, verb, object, document_info, comment_type)
     triplet_with_space = pd.merge(triplet, space, how = 'left', left_on = 'V ID', right_on = verb)
-    time = get_time_simplex(inputDir, time_label, subject, verb, object)
+    time = get_time_simplex(inputDir, outputDir, time_label, subject, verb, object)
     triplet_with_time_space = pd.merge(triplet_with_space, time, how = 'left', left_on = 'V ID', right_on = verb)
     # triplet_with_time_space = triplet_with_time_space.drop(verb, axis = 1)
     triplet_with_time_space = triplet_with_time_space.rename(columns = {time_label:'Time ID', space_label_var:'Space ID'})
@@ -1762,11 +1821,11 @@ def semantic_triplet_time_space(inputDir, outputDir, space_label_var, time_label
         macro_event_id = int(macro_event_id.split()[0])
         triplet_with_time_space = triplet_with_time_space[triplet_with_time_space['Macro Event ID'] == macro_event_id]
 
-    # if comment_info == '':
+    # if comment_type == '':
     #     triplet_with_time_space = triplet_with_time_space.drop(['Comment','UserID','UserName','VerifierID','VerifierName'], axis=1)
-    # elif comment_info == 'user':
+    # elif comment_type == 'user':
     #     triplet_with_time_space = triplet_with_time_space.drop(['VerifierID','VerifierName'], axis=1)
-    # elif comment_info == 'verifier':
+    # elif comment_type == 'verifier':
     #     triplet_with_time_space = triplet_with_time_space.drop(['UserID','UserName'], axis=1)
 
     top_complex = setup_Complex_lib[setup_Complex_lib['ID_setup_complex'] == 1]['Name'].values[0]
@@ -1817,7 +1876,7 @@ def get_complex_paths(complex_name, grammar_path, complete_complexes):
 # get individual characteristics
 
 # NOT USED
-def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', comment_info='', document_info=False):
+def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', comment_type='', document_info=False):
 
     # build table for complex
     id_complex = get_complex_setup_id([actors_var]).iat[0, 0]
@@ -1856,8 +1915,8 @@ def actor_characteristics(inputDir, outputDir, actors_var, macro_event_id='', co
     # loop through all the children complex objects (e.g., Age, First name and last name, ...)
     for name in complete_complexes:
         grammar_path = path_map[name]
-        id_data_personal_characteristics =complex_data_IDs_in_grammar_path(grammar_path)
-        data_personal_characteristics = get_identifier(id_data_personal_characteristics, [name])
+        ID_data_personal_characteristics =complex_data_IDs_in_grammar_path(grammar_path)
+        data_personal_characteristics = get_identifier(ID_data_personal_characteristics, [name])
         table_complex = pd.merge(table_complex, data_personal_characteristics, how='left', left_on='ID_data_complex',
                                  right_on=actors_var)
         table_complex = table_complex.drop(actors_var, axis=1)
