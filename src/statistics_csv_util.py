@@ -304,7 +304,7 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
         try:
             # the function computes mean, mode... skewness, kurtosis, ...
 
-            # mode always returns a series and t must be processed lambda x: stats.mode(x, keepdims=False)[0]
+            # mode always returns a series and it must be processed lambda x: stats.mode(x, keepdims=False)[0]
             df_group = df.groupby(groupByField).agg([np.sum, np.mean,
                                                      lambda x: stats.mode(x, keepdims=False)[0],
                                                      np.median, np.std, np.min, np.max,

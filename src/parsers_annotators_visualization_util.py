@@ -402,7 +402,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                                columns_to_be_plotted_xAxis=[],
                                                                columns_to_be_plotted_yAxis=['Sentiment label'],
                                                                chart_title='Frequency Distribution of Sentiment Labels',
-                                                               count_var=1, hover_label=[],
+                                                               count_var=1, hover_label=[], # ['Sentiment label'],
                                                                outputFileNameType='label', #'senti_bar',
                                                                column_xAxis_label='Sentiment label',
                                                                groupByList=['Document'],

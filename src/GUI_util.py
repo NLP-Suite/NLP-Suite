@@ -698,7 +698,8 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_config_file_button_brief, y_multiplier_integer,
                                                    openInputConfigFile_button, True, False, True,False, 90,
-                                                   x_coordinate_hover_over, "Open csv config file")
+                                                   GUI_IO_util.open_reminders_x_coordinate, "Open csv config file\nAll config files are stored in a subdirectory Config where you installed the NLP Suite; together with src, TIPS, etc.")
+    #x_coordinate_hover_over
 def update_display_area(IO_setup_display_string,IO_setup_brief_display_area):
 # def update_display_area(IO_setup_display_string):
 #     global IO_setup_brief_display_area

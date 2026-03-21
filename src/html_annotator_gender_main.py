@@ -99,7 +99,7 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, chartPacka
                 html_annotator_gender_dictionary_util.build_dictionary_state_year(new_SS_folders[1])
                 html_annotator_gender_dictionary_util.build_dictionary_yob(new_SS_folders[0])
         if (year_state_var=='' or firstName_entry_var==''):
-            mb.showwarning(title='Warning', message="The plot option requires both 'By year/state' value and first name(s) in the 'Enter firt name(s)' widget.\n\nPlease, enter the required information and try again.")
+            mb.showwarning(title='Warning', message="The plot option requires both 'By year/state' value and first name(s) in the 'Enter first name(s)' widget.\n\nPlease, enter the required information and try again.")
             return
         else:
             outputFiles = html_annotator_gender_dictionary_util.SSA_annotate(year_state_var,firstName_entry_var,outputDir)

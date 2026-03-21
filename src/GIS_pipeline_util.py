@@ -151,15 +151,27 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
             if locations == None or len(locations) == 0:
                 return
         else:
-            locations=[locationColumnName]
+            locations=[[locationColumnName]]
         if not inputIsGeocoded and geocoder == 'Nominatim':
             changed = False
+            nom_df = pd.read_csv(inputFilename)
+            # select columns
             if datePresent:
-                # nom_df = pd.DataFrame(locations, columns=['Location', 'Date', 'NER']) if len(locations[0])==3 else pd.DataFrame(locations, columns=['Location', 'Index', '0', 'NER'])
-                nom_df = pd.DataFrame(locations, columns=['Location', 'Date', 'NER', 'Sentence', 'Document']) if len(locations[0])==5 else pd.DataFrame(locations, columns=['Location', 'Index', '0', 'NER', 'Sentence', 'Document'])
+                nom_df = nom_df[['Location', 'Date', 'NER', 'Sentence', 'Document']]
             else:
-                # , columns=['Location', 'Frequency']
-                nom_df = pd.DataFrame(locations) if len(locations[0])==2 else pd.DataFrame(locations, columns=['Location', 'NER', 'Sentence', 'Document']) if len(locations[0])==4 else pd.DataFrame(locations, columns=['Location', 'Index', '0', 'NER', 'Sentence', 'Document'])
+                nom_df = nom_df[['Location', 'NER', 'Sentence', 'Document']]
+            # if datePresent:
+            #     # nom_df = pd.DataFrame(locations, columns=['Location', 'Date', 'NER']) if len(locations[0])==3 else pd.DataFrame(locations, columns=['Location', 'Index', '0', 'NER'])
+            #     nom_df = pd.DataFrame(locations, columns=['Location', 'Date', 'NER', 'Sentence', 'Document']) if len(locations[0])==5 else pd.DataFrame(locations, columns=['Location', 'Index', '0', 'NER', 'Sentence', 'Document'])
+            # else:
+            #     # , columns=['Location', 'Frequency']
+            #     nom_df = pd.DataFrame(locations) if len(locations[0])==1 else pd.DataFrame(locations, columns=['Location', 'NER', 'Sentence', 'Document']) if len(locations[0])==4 else pd.DataFrame(locations, columns=['Location', 'Index', '0', 'NER', 'Sentence', 'Document'])
+            #     # nom_df = pd.DataFrame(locations) if len(locations) == 1 else pd.DataFrame(locations,
+            #     #                                                                          columns=['Location', 'NER',
+            #     #                                                                                   'Sentence',
+            #     #                                                                                   'Document']) if len(
+            #     locations[0]) == 4 else pd.DataFrame(locations,
+            #                                          columns=['Location', 'Index', '0', 'NER', 'Sentence', 'Document'])
             if nom_df is None:
                 return
             drop_idx = []

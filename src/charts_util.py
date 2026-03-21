@@ -42,14 +42,43 @@ import statistics_csv_util
 # inputFilename has the full path
 # columns_to_be_plotted is a double list [[0, 1], [0, 2], [0, 3]]
 
+# returns a double list of dataframes
 def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, chart_type_list,
                                        count_var=0, column_yAxis_field_list=[]):
-    # TODO change to pandas half of this function relies on csv half on pandas, reading in data twice!
     # TODO temporary to measure process time
     # startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Excel prepare_data_to_be_plotted_inExcel at',
     #                                              True, '', True, '', True)
-    withHeader_var = IO_csv_util.csvFile_has_header(inputFilename)  # check if the file has header
-    data, headers = IO_csv_util.get_csv_data(inputFilename, withHeader_var)  # get the data and header
+
+    # index_col see https://stackoverflow.com/questions/12960574/pandas-read-csv-index-col-none-not-working-with-delimiters-at-the-end-of-each-li
+
+    try:
+        data = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+    except:
+        try:
+            data = pd.read_csv(inputFilename, encoding='ISO-8859-1', on_bad_lines='skip')
+            IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
+                                               'Excel-util encountered errors with utf-8 encoding and switched to ISO-8859-1 in reading into pandas the csv file ' + inputFilename)
+            print(
+                "Excel-util encountered errors with utf-8 encoding and switched to ISO-8859-1 encoding in reading into pandas the csv file " + inputFilename)
+        except ValueError as err:
+            if 'codec' in str(err):
+                err = str(
+                    err) + '\n\nExcel-util encountered errors with both utf-8 and ISO-8859-1 encoding in the function \'prepare_data_to_be_plotted_inExcel\' while reading into pandas the csv file\n\n' + inputFilename + '\n\nPlease, check carefully the data in the csv file; it may contain filenames with non-utf-8/ISO-8859-1 characters; less likely, the data in the txt files that generated the csv file may also contain non-compliant characters. Run the utf-8 compliance algorithm and, perhaps, run the cleaning algorithm that converts apostrophes.\n\nNO EXCEL CHART PRODUCED.'
+            mb.showwarning(title='Input file read error',
+                           message=str(err))
+            return
+
+    headers = list(data.columns.values)
+    withHeader_var = False
+    if len(headers)>0:
+        withHeader_var = True
+    if ('byDoc' in inputFilename and 'hyperlinks' in inputFilename) and (not 'group' in inputFilename):
+        # sort by document ID and relevant column in headers[columns_to_be_plotted[0][0]]
+        #   use [0][1] if saving with Index=False
+        data = data.sort_values([headers[0], headers[columns_to_be_plotted[0][0]]])
+        # save sorted data to inputFilename for later use
+        data.to_csv(inputFilename, index=False)
+
     if len(data) == 0:
         return None
     headers = list(headers)
@@ -62,22 +91,6 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
                                                                 columns_to_be_plotted, column_yAxis_field_list,
                                                                 dataRange)
     else:
-        try:
-            data = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
-        except:
-            try:
-                data = pd.read_csv(inputFilename, encoding='ISO-8859-1', on_bad_lines='skip')
-                IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
-                                                   'Excel-util encountered errors with utf-8 encoding and switched to ISO-8859-1 in reading into pandas the csv file ' + inputFilename)
-                print(
-                    "Excel-util encountered errors with utf-8 encoding and switched to ISO-8859-1 encoding in reading into pandas the csv file " + inputFilename)
-            except ValueError as err:
-                if 'codec' in str(err):
-                    err = str(
-                        err) + '\n\nExcel-util encountered errors with both utf-8 and ISO-8859-1 encoding in the function \'prepare_data_to_be_plotted_inExcel\' while reading into pandas the csv file\n\n' + inputFilename + '\n\nPlease, check carefully the data in the csv file; it may contain filenames with non-utf-8/ISO-8859-1 characters; less likely, the data in the txt files that generated the csv file may also contain non-compliant characters. Run the utf-8 compliance algorithm and, perhaps, run the cleaning algorithm that converts apostrophes.\n\nNO EXCEL CHART PRODUCED.'
-                mb.showwarning(title='Input file read error',
-                               message=str(err))
-                return
         data_to_be_plotted = get_data_to_be_plotted_NO_counts(inputFilename, withHeader_var, headers,
                                                               columns_to_be_plotted, data)
     # TODO temporary to measure process time
@@ -681,24 +694,25 @@ def run_all(columns_to_be_plotted, inputFilename, outputDir, outputFileLabel,
                                                                        csv_field_Y_axis_list=csv_field_Y_axis_list,
                                                                        X_axis_var=X_axis_var)
         return Plotly_outputFilename
+
     data_to_be_plotted = prepare_data_to_be_plotted_inExcel(inputFilename,
                                                             columns_to_be_plotted,
                                                             chart_type_list, count_var,
                                                             column_yAxis_field_list)
-
     def list_of_lists_to_csv(data, csv_file_path):
         df = pd.DataFrame(data[1:], columns=data[0])
         df.to_csv(csv_file_path, index=False)
 
     data_to_be_plotted_2 = []
-    if type(data_to_be_plotted[0]) == list:
-        list_of_lists_to_csv(data_to_be_plotted[0], "temptemp2.csv")
-        df = statistics_csv_util.data_transformation('temptemp2.csv', dataTransformation)
-        os.remove('temptemp2.csv')
-        data_to_be_plotted_2 = [[df.columns.tolist()] + df.values.tolist()]
+    if len(data_to_be_plotted)>0:
+        if type(data_to_be_plotted[0]) == list:
+            list_of_lists_to_csv(data_to_be_plotted[0], "temptemp2.csv")
+            df = statistics_csv_util.data_transformation('temptemp2.csv', dataTransformation)
+            os.remove('temptemp2.csv')
+            data_to_be_plotted_2 = [[df.columns.tolist()] + df.values.tolist()]
     if len(data_to_be_plotted_2) == len(data_to_be_plotted):
         data_to_be_plotted = data_to_be_plotted_2
-    if data_to_be_plotted == None:
+    if data_to_be_plotted == None or data_to_be_plotted == []:
         return
 
     transform_list = []
@@ -718,10 +732,10 @@ def run_all(columns_to_be_plotted, inputFilename, outputDir, outputFileLabel,
     if data_to_be_plotted == None:
         return
     else:
-        # the lines below handle specifically the "Form-Lemma" annotator because "form-lemma" is not processed in statistics_csv_util.py
         withHeader_var = IO_csv_util.csvFile_has_header(inputFilename)  # check if the file has header
         data, headers = IO_csv_util.get_csv_data(inputFilename, withHeader_var)  # get the data and header
 
+        # the lines below handle specifically the "Form-Lemma" annotator because "form-lemma" is not processed in statistics_csv_util.py
         def double_level_grouping_and_frequency(data, plot_cols, group_cols):
             # Calculate the counts for each column
             group_cols_count = data[group_cols[0]].value_counts().reset_index()
@@ -791,10 +805,11 @@ def get_xaxis_yaxis_values(columns_to_be_plotted):
 def get_dataRange(columns_to_be_plotted, data):
     dataRange = []
     for i in range(len(columns_to_be_plotted)):
-        for row in data:
+        for row in data.itertuples(index=False):
             try:
-                rowValues = list(row[w] for w in columns_to_be_plotted[i])
-                dataRange.append(rowValues)
+                value = row[columns_to_be_plotted[0][0]]
+
+                dataRange.append(value)
             except IndexError:
                 continue
     dataRange = [dataRange[i:i + len(data)] for i in range(0, len(dataRange), len(data))]
@@ -846,7 +861,9 @@ def get_data_to_be_plotted_with_counts(inputFilename, withHeader_var, headers, c
                 if 'Search Word' in str(headers):
                     column_list = [i[0] for i in data_list[k]] # works for search function
                 else:
-                    column_list = [i[1] for i in data_list[k]]
+                    column_list = []
+                    for val in data_list[k]:
+                        column_list.append(val)
             except IndexError:
                 continue
             counts = list(Counter(column_list).most_common())
@@ -898,6 +915,12 @@ def get_data_to_be_plotted_NO_counts(inputFilename, withHeader_var, headers, col
         # data.iloc[:, gp[1]].astype('float')
         tempData = data.iloc[:, gp]
         data_to_be_plotted.append(data.iloc[:, gp])
+    # retruns a double list, first list of a dataframe of plot columns (e.g., sentiment score, sentiment frequencies), the second another dataframe of Document and doc freq
+    # select columns from dataframe
+    # complete this
+    # for colNumber in columns_to_be_plotted: #colNumber [3, 4]
+    #     colname = data.columns[colNumber[0]] # [columns_to_be_plotted[0][1]]
+    #     data_to_be_plotted = data[colname]
     return data_to_be_plotted
 
 

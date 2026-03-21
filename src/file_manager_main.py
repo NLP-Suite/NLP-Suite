@@ -66,6 +66,8 @@ def run(inputDir, outputDir,
         if command==False:
             return
 
+    filesToOpen = []
+
     outputFilename=''
     options=0
     i=0
@@ -139,7 +141,7 @@ def run(inputDir, outputDir,
 
     # -------------------------------------------------------------------------------------------------
     # setup the field names of the output csv file
-    fieldnames = ['File_Name', 'Path_To_File', 'File_Name_With_Path']
+    fieldnames = ['File_Name', 'Path_To_File', 'File_Name_With_Path', 'File_Type']
 
     if by_creation_date_var==1:
         if file_type_menu_var!='' and file_type_menu_var!='doc' and by_file_type_var!='docx':
@@ -290,6 +292,7 @@ def run(inputDir, outputDir,
 							hasFullPath,
 							utf8_var,
 							ASCII_var,
+                            list_var,
 							rename_var,
 							copy_var,
 							move_var,
@@ -356,6 +359,23 @@ def run(inputDir, outputDir,
                         if fileFound:
                             i=i+1
 
+    import charts_util
+    columns_to_be_plotted_xAxis=[]
+    columns_to_be_plotted_yAxis=['File_Type']
+    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
+                                              outputDir + os.sep + outputFilename, outputDir,
+                                              columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+                                              chart_title="Frequency Distribution of File Types",
+                                              outputFileNameType='File_Types',
+                                              column_xAxis_label='File type',
+                                              count_var=1,
+                                              hover_label=[],
+                                              groupByList=[],
+                                              plotList=['Frequency'],
+                                              chart_title_label='')
+    if outputFiles:
+        filesToOpen.extend(outputFiles if isinstance(outputFiles, list) else [outputFiles])
+
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running File manager at', True, '', True, startTime)
 
     if i > 0:
@@ -365,7 +385,6 @@ def run(inputDir, outputDir,
             mb.showwarning(title='File manager', message=str(i) + ' files ' + msg + operation + '.\n\n'+operation + ' files have been saved in the output directory ' + outputDir + '.')
         else:
             mb.showwarning(title='File manager', message=str(i) + ' files ' + msg + operation + '.')
-            filesToOpen=[]
             filesToOpen.append(os.path.join(outputDir,outputFilename))
             IO_files_util.OpenOutputFiles(GUI_util.window, True, filesToOpen, outputDir, scriptName)
     else:

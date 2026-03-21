@@ -396,8 +396,13 @@ def geocode(window,locations, inputFilename, outputDir,
 			continue
 		if not pd.isna(item[0]) and str(item[0]) != '':
 			currRecord=str(index_locations) + "/" + str(len(locations))
-			print("Processing location " + currRecord + " for geocoding: "
-					+ str(item[0]) + " (NER tag: " + str(item[1]) + ")")
+			if len(item)==1:
+				print("Processing location " + currRecord + " for geocoding: "
+					  + str(item[0]) + " (NO NER tag available)")
+				continue
+			else:
+				print("Processing location " + currRecord + " for geocoding: "
+						+ str(item[0]) + " (NER tag: " + str(item[1]) + ")")
 			# for CoNLL tables as input rows & columns
 			#   refer to the four fields exported by the NER locator
 			if inputIsCoNLL: #the filename was exported in GIS_location_util
