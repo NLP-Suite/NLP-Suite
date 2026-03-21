@@ -181,7 +181,7 @@ def run(inputFilename,inputDir,outputDir,
 
 # Stanford CORENLP  _______________________________________________________
 
-    if SA_algorithm_var=='*' or CoreNLP_var==1 and (mean_var or median_var):
+    if SA_algorithm_var=='*' or CoreNLP_var==1:
         #check internet connection
         import IO_internet_util
         if not IO_internet_util.check_internet_availability_warning('Stanford CoreNLP Sentiment Analysis'):

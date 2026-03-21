@@ -62,7 +62,7 @@ CoreNLP_web = '\n\nLanguage and annotator options for Stanford CoreNLP are liste
 # the function creates the subdirectory for a given annotator
 # outputDirSV is the original output directory listed in the
 def create_output_directory(inputFilename, inputDir, outputDir, config_filename,
-                            export_json_var, annotator, silent, Json_question_already_asked):
+                            export_json_var, annotator, kwargs, silent, Json_question_already_asked):
     outputJsonDir = ''
     outputDirSV=GUI_util.output_dir_path.get()
     coref_outputDir = ''
@@ -77,10 +77,45 @@ def create_output_directory(inputFilename, inputDir, outputDir, config_filename,
         outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
                                                            label=label,
                                                            silent=silent)
+    elif 'NER' in str(annotator):
+        temp_head, temp_dir = os.path.split(outputDir)
+        head, scriptName = os.path.split(os.path.basename(__file__))
+        reminders_util.checkReminder(scriptName, reminders_util.NER_frequencies,
+                                     reminders_util.message_NER_frequencies)
+
+        # SIMILAR CODE IS IN Stanford_CoreNLP_util
+        # when Stanford_CoreNLP_utils called from parsers_annotators_main,
+        # the kwargs do not contain the value['NERs'] the code would break
+        try:
+            if len(str.split(kwargs['NERs'])) == 1:
+                NER_tag = str(kwargs['NERs'])
+            elif len(str.split(kwargs['NERs'])) > 10 and len(str.split(kwargs['NERs'])) < 20:
+                NER_tag = 'MISC'
+            elif len(str.split(kwargs['NERs'])) > 20:
+                NER_tag = 'ALL_NER'
+            else:
+                if 'CITY' in str(kwargs['NERs']) and 'STATE_OR_PROVINCE' and str(kwargs['NERs']) and 'COUNTRY' in str(
+                        kwargs['NERs']) and 'LOCATION' in str(kwargs['NERs']):
+                    NER_tag = 'SPACE'
+                elif 'NUMBER' in str(kwargs['NERs']) and 'ORDINAL' and str(kwargs['NERs']) and 'PERCENT' in str(
+                        kwargs['NERs']):
+                    outpNER_tag = 'NUMBERS'
+                elif 'PERSON' in str(kwargs['NERs']) and 'ORGANIZATION' in str(kwargs['NERs']):
+                    NER_tag = 'ACTORS'
+                elif 'DATE' in str(kwargs['NERs']) and 'TIME' in str(kwargs['NERs']) and 'DURATION' in str(
+                        kwargs['NERs']) and 'SET' in str(kwargs['NERs']):
+                    NER_tag = 'DATES'
+                else:
+                    NER_tag = str(kwargs['NERs'])
+        except:
+            NER_tag = 'ALL NERs'
+        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                                                           label=annotator + "_" + NER_tag + "_CoreNLP",
+                                                           silent=silent)
     else:
         if outputDirSV != outputDir:
             # create output subdirectory
-            outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
+            outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
                                                                label=annotator + "_CoreNLP",
                                                                silent=silent)
         else:
@@ -510,7 +545,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         param_string_NN = param_string_NN + ", " + param
             # when multiple annotators are selected (e.g., quote, gender, normalized-date)
             #   output must go to the appropriate subdirectory and added to routine_list
-            output_dir, outputJsonDir = create_output_directory(inputFilename, inputDir, outputDir, config_filename, export_json_var, annotator, silent, Json_question_already_asked)
+            output_dir, outputJsonDir = create_output_directory(inputFilename, inputDir, outputDir, config_filename, export_json_var, annotator, kwargs, silent, Json_question_already_asked)
             if 'coref table' in str(annotators_):
                 outputJsonDir=outputDir
             if output_dir == '':
@@ -531,7 +566,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         param_string = param_string + ", " + param
             # when multiple annotators are selected (e.g., quote, gender, normalized-date)
             #   output must go to the appropriate subdirectory and added to routine_list
-            output_dir, outputJsonDir = create_output_directory(inputFilename, inputDir, outputDir, config_filename, export_json_var, annotator, silent, Json_question_already_asked)
+            output_dir, outputJsonDir = create_output_directory(inputFilename, inputDir, outputDir, config_filename, export_json_var, annotator, kwargs, silent, Json_question_already_asked)
             if output_dir == '':
                 return filesToOpen
             # when running the SVO annotator in combination with gender and quote,
@@ -839,15 +874,15 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 # when Stanford_CoreNLP_utils called from parsers_annotators_main,
                 # the kwargs do not contain the value['NERs'] the code would break
                 try:
-                    if len(kwargs['NERs']) == 1:
-                        outputFilename_tag = str(kwargs['NERs'][0])
-                    elif len(kwargs['NERs'])>10 and len(kwargs['NERs'])<20:
+                    if len(str.split(kwargs['NERs'])) == 1:
+                        outputFilename_tag = str(kwargs['NERs'])
+                    elif len(str.split(kwargs['NERs']))>10 and len(str.split(kwargs['NERs']))<20:
                         outputFilename_tag = 'MISC'
-                    elif len(kwargs['NERs'])>20:
+                    elif len(str.split(kwargs['NERs']))>20:
                         outputFilename_tag = 'ALL_NER'
                     else:
                         if 'CITY' in str(kwargs['NERs']) and 'STATE_OR_PROVINCE' and str(kwargs['NERs']) and 'COUNTRY' in str(kwargs['NERs']) and 'LOCATION' in str(kwargs['NERs']):
-                            outputFilename_tag='LOCATIONS'
+                            outputFilename_tag='SPACE'
                         elif 'NUMBER' in str(kwargs['NERs']) and 'ORDINAL' and str(kwargs['NERs']) and 'PERCENT' in str(kwargs['NERs']):
                             outputFilename_tag = 'NUMBERS'
                         elif 'PERSON' in str(kwargs['NERs']) and 'ORGANIZATION' in str(kwargs['NERs']):

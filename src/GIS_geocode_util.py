@@ -168,8 +168,16 @@ def google_geocode(geolocator, loc, region=None, timeout=10):
 #	 filenames are '' if empty, perhaps for a permission error
 
 def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
-			locationColumnName, encodingValue, geocoder):
-	if 'Google' in geocoder:
+			locationColumnName, description_csv_field_var_list, encodingValue, geocoder):
+	if locationColumnName != '':
+		locName = locationColumnName
+	else:
+		locName = 'Location'
+
+	inputIsCoNLL, inputIsGeocoded, withHeader, \
+		headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(inputFilename)
+
+	if 'Google' in geocoder and not inputIsGeocoded:
 		Google_API = GIS_pipeline_util.getGoogleAPIkey(window, 'Google-geocode-API_config.csv')
 		# if Google_API == '':
 		# 	return Google_API
@@ -182,13 +190,11 @@ def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
 	# 	but in the regular output directory
 	kmloutputFilename = outputDir + os.sep + tail
 
-	inputIsCoNLL, inputIsGeocoded, withHeader, \
-		headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(inputFilename)
 	input_df = pd.read_csv(inputFilename, encoding=encodingValue, on_bad_lines='skip')
 	# input_df = input_df[['Location', 'Latitude', 'Longitude']]
 	input_df = input_df.reset_index()
 	for index, row in input_df.iterrows():
-		location = row['Location']
+		location = row[locName]
 		lat = row['Latitude']
 		lng = row['Longitude']
 		if datePresent:
@@ -212,6 +218,14 @@ def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
 		else:
 			sentence = ''
 
+		if 'Event' in headers:
+			event = row['Event']
+		else:
+			event = ''
+
+		if not 'Sentence' in headers and not 'Event' in headers:
+			if description_csv_field_var_list[0]!='':
+				sentence = row[description_csv_field_var_list[0]]
 
 		# TODO MINO GIS create kml record
 		print("   Processing geocoded record for kml file for Google Earth Pro " + str(index+1) + '/' + str(len(input_df.index)))
@@ -223,8 +237,6 @@ def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
 		# pnt.style.labelstyle.color = simplekml.Color.rgb(int(r_value), int(g_value), int(b_value))
 		# the code would break if no sentence is passed (e.g., from DB_PC-ACE)
 		try:
-			label = 'Event'
-			sentence = input_df.at[index-1, label]
 			description = "<i><b>Location</b></i>: " + location + "<br/><br/>"
 			if datePresent:
 				description = description + "\n" + "<i><b>Date</b></i>: " + str(date) + "<br/><br/>"
@@ -234,6 +246,8 @@ def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
 				description = description + "\n" + "<i><b>Summary</b></i>: " + summary + "<br/><br/>"
 			if sentence !='':
 				description = description + "\n" + "<i><b>Sentence</b></i>: " + sentence + "<br/><br/>"
+			if event !='':
+				description = description + "\n" + "<i><b>Event</b></i>: " + event + "<br/><br/>"
 			pnt.description = description
 		except:
 			print("Error processing ", location.upper(), ". No sentence available for description field.")
@@ -382,8 +396,13 @@ def geocode(window,locations, inputFilename, outputDir,
 			continue
 		if not pd.isna(item[0]) and str(item[0]) != '':
 			currRecord=str(index_locations) + "/" + str(len(locations))
-			print("Processing location " + currRecord + " for geocoding: "
-					+ str(item[0]) + " (NER tag: " + str(item[1]) + ")")
+			if len(item)==1:
+				print("Processing location " + currRecord + " for geocoding: "
+					  + str(item[0]) + " (NO NER tag available)")
+				continue
+			else:
+				print("Processing location " + currRecord + " for geocoding: "
+						+ str(item[0]) + " (NER tag: " + str(item[1]) + ")")
 			# for CoNLL tables as input rows & columns
 			#   refer to the four fields exported by the NER locator
 			if inputIsCoNLL: #the filename was exported in GIS_location_util

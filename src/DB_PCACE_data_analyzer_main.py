@@ -30,7 +30,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         simplex_data_type, simplex_data,
         primary_complex_var,
         value_parent_object_var,
-        setup_complex,setup_simplex,
+        setup_complex, extended_headers, setup_simplex,
         # print_narrative_var,
         ALL_objects_frequencies_var, SELECTED_objects_frequencies_var,
         ALL_simplex_objects_frequencies_var, SELECTED_simplex_objects_frequencies_var,
@@ -41,8 +41,8 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         semantic_triplet_object,
         actors_var, time_var, time_label_var, space_var, space_label_var,
         SVO_relations_visuals_var, wordcloud_var, google_earth_var,
-        comments_var,
-        document_sources_var):
+        document_sources_var, comments_var,
+        from_dataID_setupID_objectType_var, enter_data_ID_var):
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -54,6 +54,19 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         IO_files_util.openFile(window, inputDir + os.sep + select_DB_tables_var.get() + ".xlsx")
         return
 
+    if enter_data_ID_var != '':
+        if from_dataID_setupID_objectType_var=='':
+            mb.showwarning(title='Warning',
+                       message='You must select the object type - complex or simplex - using the dropdown menu "From data ID to setup ID".\n\nPlease, select the object type and try again')
+            return
+        if from_dataID_setupID_objectType_var == 'Complex':
+            ID_setup_complex, complex_name = DB_PCACE_data_analyzer_util.get_complex_setup_ID_Name_from_data_ID(int(enter_data_ID_var))
+            setup_name_var.set(complex_name)
+        elif from_dataID_setupID_objectType_var == 'Simplex':
+            ID_setup_simplex, simplex_name = DB_PCACE_data_analyzer_util.get_simplex_setup_ID_Name_from_data_ID(int(enter_data_ID_var))
+            setup_name_var.set(simplex_name)
+        return
+
     head, tail = os.path.split(inputDir)
     outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
                                                                      label= tail[:-5],
@@ -61,8 +74,29 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
     if outputDir == '':
         return
 
-    # compute frequencies of complex/simplex objects ______________________________________________________________________________
+    # get complex object identifier and values  ______________________________________________________________________________
+    if setup_complex != '':
+        # data = DB_PCACE_data_analyzer_util.get_complex_data_ID(setup_complex)
+        # mb.showwarning(title='Warning',
+        #                message="YOU HAVE ADDED A RETURN!!!!!!!!!!!!!!!!!!!!!!!!!!\n\nMUST REMOVE IT.")
+        # return
 
+        # the next lines are used to test the three functions; nothing to do with the function identified by # -------
+        # data_IDs = DB_PCACE_data_analyzer_util.get_complex_data_ID(setup_complex)
+        # lowerComplex_IDs = DB_PCACE_data_analyzer_util.get_lower_complex(setup_complex)
+        # lowestComplex_IDs = DB_PCACE_data_analyzer_util.get_lowest_complex(setup_complex)
+
+        # mb.showwarning(title='Warning',
+        #                message="YOU HAVE ADDED A RETURN in _main!!!!!!!!!!!!!!!!!!!!!!!!!!\n\nMUST REMOVE IT.")
+        # return
+
+# --------------------------------------------------------------------------------------
+
+        df, outputFile = DB_PCACE_data_analyzer_util.get_complex(setup_complex, comments_var, document_sources_var, inputDir, outputDir, extended_headers)
+        if outputFile != '':
+            filesToOpen.append(outputFile)
+
+    # compute frequencies of complex/simplex objects ______________________________________________________________________________
     # complex frequencies
     # all frequencies
     if ALL_objects_frequencies_var:
@@ -85,25 +119,10 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         if outputFile != '':
             filesToOpen.append(outputFile)
 
-# display information about a specific simplex type and value (e.g., text type for burley value) _____________________________________________________________
+    # display information about a specific simplex type and value (e.g., text type for "burley" value)
 
     if simplex_data!='' and value_parent_object_var:
-        outputFile = DB_PCACE_data_analyzer_util.individual_simplex_info_main(simplex_data, inputDir, outputDir)
-        if outputFile!='':
-            filesToOpen.append(outputFile)
-        headers=IO_csv_util.get_csvfile_headers(outputFile)
-        columns_to_be_plotted_xAxis=IO_csv_util.get_headerValue_from_columnNumber(headers,column_number=0)
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFile,
-                                                           outputDir,
-                                                           columns_to_be_plotted_xAxis=[columns_to_be_plotted_xAxis], columns_to_be_plotted_yAxis=['Frequency'],
-                                                           chart_title='Frequency Distribution of Simplex Object\n' + str(simplex_data),
-                                                           # count_var = 1 for columns of alphabetic values
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType=str(simplex_data), #'gender_bar',
-                                                           column_xAxis_label=str(simplex_data),
-                                                           groupByList=[],
-                                                           plotList=[],
-                                                           chart_title_label='')
+        outputFiles = DB_PCACE_data_analyzer_util.get_simplex_info(simplex_data, inputDir, outputDir)
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -128,7 +147,8 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                                                                                primary_complex_var,
                                                                                semantic_triplet_subject,semantic_triplet_verb, semantic_triplet_object,
                                                                                comments_var,
-                                                                               document_sources_var)
+                                                                               document_sources_var,
+                                                                               extended_headers)
 
 # compute SVO (Semantic triplets) data with time and space -------------------------------------------------------------------
 
@@ -445,64 +465,19 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                     # since outputFile produced by KML is a list cannot use append
                     filesToOpen = filesToOpen + outputFile
 
-# # NO LONGER USED
-# # actors ----------------------------------------------------------------------
-#     def process_actor(inputDir, outputDir, actors_var, chart_title, yAxis_columns, output_type):
-#         outputFile = DB_PCACE_data_analyzer_util.actor_characteristics(inputDir, outputDir, actors_var)
-#
-#         files_to_open = []
-#         if outputFile:
-#             files_to_open.append(outputFile)
-#             outputFiles = charts_util.visualize_chart(
-#                 chartPackage, dataTransformation, outputFile, outputDir,
-#                 columns_to_be_plotted_xAxis=[],
-#                 columns_to_be_plotted_yAxis=yAxis_columns,
-#                 chart_title=f'Frequency Distribution of {actors_var.capitalize()}s',
-#                 count_var=1, hover_label=[],
-#                 outputFileNameType=output_type,
-#                 column_xAxis_label=actors_var,
-#                 groupByList=[], plotList=[], chart_title_label=''
-#             )
-#
-#             if outputFiles:
-#                 if isinstance(outputFiles, str):
-#                     files_to_open.append(outputFiles)
-#                 else:
-#                     files_to_open.extend(outputFiles)
-#         return files_to_open
-#
-#     # Define the actor configurations
-#     # Taeeun must generalize names
-#     actor_configs = {
-#         'Attore collettivo': {
-#             'chart_title': 'Frequency Distribution of Collective Actors',
-#             'yAxis_columns': ['Name of collective actor Simplex'],
-#             'output_file_type': 'coll'
-#         },
-#         'Individuo': {
-#             'chart_title': 'Frequency Distribution of Individuals',
-#             'yAxis_columns': ['Name of individual actor Simplex'],
-#             'output_file_type': 'ind'
-#         },
-#         'Organizzazione': {
-#             'chart_title': 'Frequency Distribution of Organizations',
-#             'yAxis_columns': [
-#                 'State organisation Simplex', 'Political party Simplex', 'Other institution Simplex',
-#                 'Actor aggregate code Simplex', 'Actor aggregate (Institution) COLIN Simplex'
-#             ],
-#             'output_file_type': 'org'
-#         }
-#     }
-#
-#     # @ Taeeun must generalize names
-#     # uncomment after generalization
-#     # for actor_type, config in actor_configs.items():
-#     #     if actor_type == actors_var:
-#     #         filesToOpen.extend(process_actor(
-#     #             inputDir, outputDir, actors_var,
-#     #             config['chart_title'], config['yAxis_columns'], config['output_file_type']
-#     #         ))
-#     #
+    if comments_var!='':
+        if setup_complex !="":
+            object_var = setup_complex
+        elif setup_simplex !="":
+            object_var = setup_simplex
+        else:
+            object_var = ""
+        outputFile = DB_PCACE_data_analyzer_util.get_comment_info('',  object_var, comments_var, inputDir, outputDir)
+        if outputFile != None:
+            if isinstance(outputFile, str):
+                filesToOpen.append(outputFile)
+            else:
+                filesToOpen.extend(outputFile)
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -519,6 +494,7 @@ run_script_command=lambda: run(
                                 primary_complex_var.get(),
                                 value_parent_object_var.get(),
                                 setup_complex.get(),
+                                extended_headers_var.get(),
                                 setup_simplex.get(),
                                 # print_narrative_var.get(),
                                 ALL_objects_frequencies_var.get(),
@@ -537,8 +513,8 @@ run_script_command=lambda: run(
                                 space_var.get(),
                                 space_label_var.get(),
                                 SVO_relations_visuals_var.get(),wordcloud_var.get(),google_earth_var.get(),
-                                comments_var.get(),
-                                document_sources_var.get())
+                                document_sources_var.get(), comments_var.get(),
+                                from_dataID_setupID_objectType_var.get(), enter_data_ID_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -587,7 +563,10 @@ select_DB_tables_var=tk.StringVar()
 select_DB_table_fields_var=tk.StringVar()
 view_relations_var=tk.IntVar()
 
+
 complex_objects_var = tk.StringVar()
+extended_headers_var = tk.IntVar()
+
 simplex_objects_var = tk.StringVar()
 
 ALL_objects_frequencies_var = tk.IntVar()
@@ -616,6 +595,9 @@ select_children_var = tk.StringVar()
 SVO_relations_visuals_var = tk.IntVar()
 wordcloud_var = tk.IntVar()
 google_earth_var = tk.IntVar()
+
+enter_data_ID_var = tk.StringVar()
+setup_name_var = tk.StringVar()
 
 def clear(e):
     primary_complex_var.set('')
@@ -658,6 +640,9 @@ def clear(e):
     setup_complex_var.set('')
     comments_var.set('')
     document_sources_var.set(0)
+    from_dataID_setupID_objectType_var.set('')
+    enter_data_ID_var.set('')
+    setup_name_var.set('')
     GUI_util.clear("Escape")
 
     GUI_util.tips_dropdown_field.set('Open TIPS files')
@@ -678,7 +663,7 @@ view_grammar_button = tk.Button(window, text='View grammar', width=20,height=1,s
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    view_grammar_button,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Click to view the grammmar used for the selected, specific implementation of the PC-ACE database.\nClick on the button View table relations to visualize the general table relations in the PC-ACE databasee, regardless of a selected, specific implementation (i./e., grammar setup).")
+                                   "Click to export as a text file the grammmar used for the selected, specific implementation of the PC-ACE database.\nThe grammar will be exported in the same directory of the Input Excel files.\nClick on the button View table relations to visualize the general table relations in the PC-ACE databasee, regardless of a selected, specific implementation (i./e., grammar setup).")
 # https://www.geeksforgeeks.org/convert-excel-to-csv-in-python/
 # view_relations_button = tk.Button(window, text='Convert PC-ACE Excel tables to csv  ', height=1,state='normal', command=lambda: view_relations())
 # # place widget with hover-over info
@@ -693,7 +678,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_c
 table_menu_values = ''
 table_list=[]
 if os.path.isdir(inputDir.get()):
-    table_list = DB_PCACE_data_analyzer_util.import_PCACE_tables(inputDir.get())
+    table_list = DB_PCACE_data_analyzer_util.import_PCACE_tables(inputDir.get(), outputDir.get())
     table_menu_values = ", ".join(table_list)
 select_DB_tables = ttk.Combobox(window, width=GUI_IO_util.widget_width_short, textvariable=select_DB_tables_var)
 select_DB_tables.configure(state='disabled')
@@ -704,7 +689,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief
                                    False, False, True, False, 90, GUI_IO_util.setup_IO_brief_coordinate,
                                    "Use the dropdown menu to select a PC-ACE table to be opened for display; click RUN after selection.")
 
-simplex_data_type_lb = tk.Label(window, text='PC-ACE data type ')
+simplex_data_type_lb = tk.Label(window, text='Simplex data type ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,simplex_data_type_lb,True)
 
 simplex_data_type_var= tk.StringVar()
@@ -712,10 +697,10 @@ simplex_data_type_menu = tk.OptionMenu(window, simplex_data_type_var, 'text','da
 simplex_data_type_menu.configure(state='disabled')
 simplex_data_type_var.set('')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+120, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_S_dictionary, y_multiplier_integer,
                                    simplex_data_type_menu,
                                    True, False, True, False, 90, GUI_IO_util.open_S_dictionary,
-                                   "Use the dropdown menu to select the data type to be used to extract a list of values.")
+                                   "Use the dropdown menu to select the simplex data type to be used to extract a list of all available values.")
 
 inputDirSV = ''
 # simplex_data = ''
@@ -725,7 +710,10 @@ simplex_data_var = tk.StringVar()
 simplex_data = ttk.Combobox(window, textvariable = simplex_data_var, width=GUI_IO_util.widget_width_short)
 simplex_data.configure(state='disabled')
 
-simplex_list = DB_PCACE_data_analyzer_util.get_Simplex_text_date_number(simplex_data_type_var.get(), os.path.join(inputDir.get(),'data_SimplexText.xlsx'), os.path.join(inputDir.get(),'data_SimplexDate.xlsx'), os.path.join(inputDir.get(),'data_SimplexNumber.xlsx'))
+try:
+    simplex_list = DB_PCACE_data_analyzer_util.get_Simplex_text_date_number(simplex_data_type_var.get())
+except:
+    simplex_list=[]
 simplex_data_menu = simplex_list
 simplex_data['values'] = simplex_data_menu
 # place widget with hover-over info
@@ -739,16 +727,9 @@ def activate_date_number_text(*args):
         simplex_data.configure(state='normal')
     else:
         simplex_data.configure(state='disabled')
-    simplex_list = DB_PCACE_data_analyzer_util.get_Simplex_text_date_number(simplex_data_type_var.get(),
-                                    os.path.join(inputDir.get(),
-                                             'data_SimplexText.xlsx'),
-                                     os.path.join(inputDir.get(),
-                                              'data_SimplexDate.xlsx'),
-                                     os.path.join(inputDir.get(),
-                                            'data_SimplexNumber.xlsx'))
+    simplex_list = DB_PCACE_data_analyzer_util.get_Simplex_text_date_number(simplex_data_type_var.get())
     simplex_data_var.set(simplex_list)
     simplex_data['values'] = simplex_list
-simplex_data_type_var.trace('w',activate_date_number_text)
 simplex_data_type_var.trace('w',activate_date_number_text)
 
 value_parent_object_checkbox = tk.Checkbutton(window, text='Get simplex/complex objects of selected data type (& value)', variable=value_parent_object_var, onvalue=1, offvalue=0)
@@ -761,7 +742,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
 primary_complex_objects_lb = tk.Label(window, text='Primary complex (Macro event)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,primary_complex_objects_lb,True)
 
-primary_complex_menu = '' # DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(inputDir.get())
+primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(inputDir.get())
 
 primary_complex_var=tk.StringVar()
 primary_complex = ttk.Combobox(window, textvariable = primary_complex_var, width=GUI_IO_util.widget_width_short)
@@ -879,7 +860,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
                                                "Using the Object dropdown menu, select the complex object used for Object in the selected database.\nDifferent databases may have different names for the Object, depending upon user preferences and the language used for the setup (e.g., English or Italian).\nThe Object could be named Participant-O or Actor-O or Oggetto. The selected name will be used for the query.")
 
 SVO_relations_visuals_var.set(0)
-SVO_relations_visuals_checkbox = tk.Checkbutton(window, text='Visualize SVO relations (Gephi, Sankey, Sunburst, Wordcloud)',
+SVO_relations_visuals_checkbox = tk.Checkbutton(window, text='Visualize SVO relations (Gephi, Sankey, Sunburst, Word cloud)',
                                 variable=SVO_relations_visuals_var, onvalue=1, offvalue=0)
 SVO_relations_visuals_checkbox.configure(state='disabled')
 
@@ -887,7 +868,7 @@ SVO_relations_visuals_checkbox.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+20, y_multiplier_integer,
                                    SVO_relations_visuals_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Tick the checkbox to visualize the triplet SVOs via  Gephi, Sankey, sunburst, treemap, colormap, and wordclouds.\nSankey graphs display top 10 Subject (S), 20 Verb (V), 20 Object (O). Sunburst and Treemap charts display top 15 values. Use data_visualization_1 GUI to change default values.\nSpace information is geocoded via Google if the Google-geocode-API_config.csv file is present in the config subdirectory; otherwise Nominatim is used. Geocoded waypoints are displayed as pin map via Google Earth Pro and heat map via Google Maps (Python Folium will be used if no Google API key is found).")
+                                   "Tick the checkbox to visualize the triplet SVOs via  Gephi, Sankey, sunburst, treemap, colormap, and word clouds.\nSankey graphs display top 10 Subject (S), 20 Verb (V), 20 Object (O). Sunburst and Treemap charts display top 15 values. Use data_visualization_1 GUI to change default values.\nSpace information is geocoded via Google if the Google-geocode-API_config.csv file is present in the config subdirectory; otherwise Nominatim is used. Geocoded waypoints are displayed as pin map via Google Earth Pro and heat map via Google Maps (Python Folium will be used if no Google API key is found).")
 
 google_earth_var.set(0)
 google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where (via Google Maps & Google Earth Pro or Python Folium)',
@@ -900,13 +881,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
                                    False, False, True, False, 90, GUI_IO_util.watch_videos_x_coordinate,
                                    "Tick the checkbox to visualize the space of SVOs as in a Google Earth Pro pin map and Google Maps heat map.\nSpace information will be geocoded using Google if the Google-geocode-API_config.csv file is present in the config subdirectory; otherwise Nominatim will be used.\nGeocoded waypoints will be displayed as pin map via Google Earth Pro and heat map via Google Maps (Python Folium will be used if no Google API key is found).")
 
-# @ Taeeun the complex objects widget only displays the object identifier;
-# but... like the functions for the SVO extractor, it should display the value of all the simplex objects that make up the complex object
-
 complex_objects_lb = tk.Label(window, text='Complex ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,complex_objects_lb,True)
 
-setup_complex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(),'setup_complex.xlsx'))
+setup_complex_menu, setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names() # os.path.join(inputDir.get())
 
 setup_complex_var=tk.StringVar()
 setup_complex = ttk.Combobox(window, textvariable = setup_complex_var, width=GUI_IO_util.widget_width_short)
@@ -916,14 +894,22 @@ setup_complex['values'] = setup_complex_menu
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+120, y_multiplier_integer,
                                    setup_complex,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Use the dropdown menu to select a specific complex object for which to compute frequencies.\nWhen a hierarchical complex object is selected (e.g., macro-event or event) and the checkbox Semantic triplets below is ticked...\n...semantic triplets will be listed in chronological order within the specific higher-level hierarchical complex object selected (e.g., macro-events, events).")
+                                   "Use the dropdown menu to select a specific complex object for which to display identifier and values and compute frequencies.\nWhen a hierarchical complex object is selected (e.g., macro-event or event) and the checkbox Semantic triplets below is ticked...\n...semantic triplets will be listed in chronological order within the specific higher-level hierarchical complex object selected (e.g., macro-events, events).")
 
 
+extended_headers_checkbox = tk.Checkbutton(window, text='', variable=extended_headers_var, onvalue=1, offvalue=0)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate-150, y_multiplier_integer,
+                                   extended_headers_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
+                                   "Tick the checkbox to display the output of complex search with extended headers")
+
+#################
 simplex_objects_lb = tk.Label(window, text='Simplex ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,y_multiplier_integer,simplex_objects_lb, True)
 
-setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(),'setup_Simplex.xlsx'))
-
+# setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get()))
+#
 setup_simplex_var = tk.StringVar()
 
 setup_simplex = ttk.Combobox(window, textvariable = setup_simplex_var, width=GUI_IO_util.widget_width_short)
@@ -978,40 +964,72 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
                                    "The menu displays a list of complex objects children of the 'Complex objects' selected in the widget above.\nThe option is only available for the 'Complex objects' widget above (Simplex objects do not have children).")
 
 
-def activate_parents_children(*args):
-    parent_complex_list = DB_PCACE_data_analyzer_util.find_parent_complex(setup_complex_var.get(),inputDir.get())
-    select_parents['values'] = parent_complex_list
-
-    children_list = DB_PCACE_data_analyzer_util.find_child_complex(setup_complex_var.get(),inputDir.get())
-    select_children['values'] = children_list
-    # select_children_var.set(children_menu[0])
-setup_complex_var.trace('w',activate_parents_children)
-setup_simplex_var.trace('w',activate_parents_children)
-
-
-comments_lb = tk.Label(window, text='Extract comments ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,comments_lb,True)
-
-comments_var = tk.StringVar()
-comments_var.set('')
-comments_menu = tk.OptionMenu(window, comments_var, '*', 'users comments', 'verifiers comments')
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
-                                   comments_menu,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "Use the dropdown menu to extract the comments left by users and/or verifiers for specific objects (e.g., Semantic triplets (SVO)).")
-
-# verifier_comments_var = tk.IntVar()
-# verifier_comments_checkbox = tk.Checkbutton(window, text='Get verifiers comments ', variable=verifier_comments_var, onvalue=1, offvalue=0)
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,verifier_comments_checkbox)
+# def activate_parents_children(*args):
+#     # @@@
+#     # DB_PCACE_data_analyzer_util.load_lib(inputDir.get())
+#     parent_complex_list = DB_PCACE_data_analyzer_util.get_parent_complex(setup_complex_var.get())
+#     select_parents['values'] = parent_complex_list
+#
+#     children_list = DB_PCACE_data_analyzer_util.get_child_complex(setup_complex_var.get())
+#     select_children['values'] = children_list
+#     # select_children_var.set(children_menu[0])
+# setup_complex_var.trace('w',activate_parents_children)
+# setup_simplex_var.trace('w',activate_parents_children)
+#
 
 document_sources_var = tk.IntVar()
 document_sources_checkbox = tk.Checkbutton(window, text='Extract document sources ', variable=document_sources_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    document_sources_checkbox,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Tick the checkbox to extract the documents (e.g., newspaper articles) that are the sources of information for specific objects (e.g., Semantic triplets (SVO)).")
+
+comments_lb = tk.Label(window, text='Extract comments ')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,comments_lb,True)
+
+comments_var = tk.StringVar()
+comments_var.set('')
+comments_menu = tk.OptionMenu(window, comments_var, '*', 'Users comments', 'Verifiers comments')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+120, y_multiplier_integer,
+                                   comments_menu,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   "Use the dropdown menu to extract the comments left by users and/or verifiers for specific objects (e.g., Semantic triplets (SVO)).")
+
+
+from_dataID_setupID_lb = tk.Label(window, text='From data ID to setup ID ')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate,y_multiplier_integer,from_dataID_setupID_lb,True)
+
+from_dataID_setupID_objectType_var = tk.StringVar()
+from_dataID_setupID_objectType_var.set('')
+from_dataID_setupID_menu = tk.OptionMenu(window, from_dataID_setupID_objectType_var, 'Complex', 'Simplex')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+140, y_multiplier_integer,
+                                   from_dataID_setupID_menu,
+                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
+                                   "Use the dropdown menu to select the type of object - complex or simplex - to go from data ID to setup name")
+
+enter_data_ID_lb = tk.Label(window, text='Enter data ID')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+50,y_multiplier_integer,enter_data_ID_lb,True)
+
+enter_data_ID = tk.Entry(window,width=GUI_IO_util.widget_width_extra_short,textvariable=enter_data_ID_var)
+# enter_data_ID.configure(state="disabled")
+# place widget with hover-over info
+
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+130,
+    y_multiplier_integer,
+    enter_data_ID, True, False, True, False, 90,
+    GUI_IO_util.open_setup_x_coordinate+130, "Enter the numeric data ID value")
+
+setup_name = tk.Entry(window,width=GUI_IO_util.widget_width_short,textvariable=setup_name_var)
+# setup_name.configure(state="disabled")
+# place widget with hover-over info
+
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate+20,
+    y_multiplier_integer,
+    setup_name, False, False, True, False, 90,
+    GUI_IO_util.run_button_x_coordinate+20, "Extracted setup name")
 
 error = False
 database_already_loaded = False
@@ -1019,8 +1037,7 @@ table_values = []
 currentInputDir = inputDir.get()
 readDir = False
 def changed_filename(*args):
-    global error, setup_simplex_menu, currentInputDir, readDir
-    global error, setup_simplex_menu, database_already_loaded, inputDirSV
+    global error, setup_simplex_menu, currentInputDir, readDir, database_already_loaded, inputDirSV
     # 25 PC-ACE files
     # if GUI_util.input_main_dir_path.get()!='' and not error:
     if GUI_util.input_main_dir_path.get() != '' and GUI_util.input_main_dir_path.get() != inputDirSV:
@@ -1035,7 +1052,7 @@ def changed_filename(*args):
                            message="The PC-ACE table analyzer scripts require in input a directory of Excel (xlsx) files. But the selected directory\n\n" + inputDir.get() + "\n\ndoes not contain the required PC-ACE Excel files.\n\nPlease, select a PC-ACE directory and try again")
             return
         GUI_util.run_button.configure(state='normal')
-        table_list = DB_PCACE_data_analyzer_util.import_PCACE_tables(inputDir.get())
+        table_list = DB_PCACE_data_analyzer_util.import_PCACE_tables(inputDir.get(), outputDir.get())
         # 25 files including all comments files
         if (len(table_list) == 0) or ((len(table_list) > 18) and (not "data_Document.xlsx" in str(table_list) and not "data_Complex.xlsx" in str(table_list))):
                 GUI_util.run_button.configure(state='disabled')
@@ -1051,7 +1068,7 @@ def changed_filename(*args):
         #     return
         if len(table_menu_values)>0:
             select_DB_tables.configure(state='normal')
-            select_DB_tables.set(table_menu_values[0])
+            # select_DB_tables.set(table_menu_values[0])
             select_DB_tables.set('')
 
         else:
@@ -1059,12 +1076,18 @@ def changed_filename(*args):
             select_DB_tables.configure(state='disabled')
 
         if currentInputDir != inputDir.get() or not readDir:
-            # load all excel sheets and store in data
-            DB_PCACE_data_analyzer_util.load_df(inputDir.get())
+            # load all Excel sheets and store in data
+            # DB_PCACE_data_analyzer_util.load_lib(inputDir.get(), outputDir.get())
+            DB_PCACE_data_analyzer_util.build_libraries(inputDir.get(), outputDir.get())
             currentInputDir = inputDir.get()
             readDir = True
 
-        setup_complex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(), 'setup_complex.xlsx'))
+        # @@@ temporary to load library
+        # DB_PCACE_data_analyzer_util.load_lib(inputDir.get())
+        # currentInputDir = inputDir.get()
+        # readDir = True
+        # @@@
+        setup_complex_menu, setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names() # os.path.join(inputDir.get())
         setup_complex['values'] = setup_complex_menu
         # actors['values'] = setup_complex_menu
         semantic_triplet_object_box['values'] = setup_complex_menu
@@ -1080,15 +1103,16 @@ def changed_filename(*args):
             # setup_complex.set(setup_complex_menu[0])
             setup_complex.set('')
             if not database_already_loaded:
-                primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(window,inputDir.get())
+                primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(inputDir.get())
                 primary_complex['values'] = primary_complex_menu
                 database_already_loaded = False
         else:
             simplex_data_type_menu.configure(state='disabled')
             setup_complex.set('')
             setup_complex.configure(state='disabled')
-        setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(), 'setup_Simplex.xlsx'))
-        setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get(), 'setup_Simplex.xlsx'))
+        # setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get()))
+
+        # @@@
         setup_simplex['values'] = setup_simplex_menu
         if len(setup_simplex_menu)>0:
             setup_simplex.configure(state='normal')
@@ -1104,10 +1128,58 @@ def changed_filename(*args):
             error = True
     clear("Escape")
     # if not error:
-    #     primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(window, inputDir.get())
+    #     primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(inputDir.get())
     #     primary_complex['values'] = primary_complex_menu
 GUI_util.inputFilename.trace('w', changed_filename)
 GUI_util.input_main_dir_path.trace('w', changed_filename)
+
+
+def activate_parents_children(*args):
+    parent_complex_list = []
+    children_list = []
+    if setup_complex_var.get()!='':
+        parent_complex_list = DB_PCACE_data_analyzer_util.get_complex_parents(setup_complex_var.get())
+        children_list = DB_PCACE_data_analyzer_util.get_complex_children(setup_complex_var.get())
+        if len(parent_complex_list)>0:
+            select_parents_var.set(str(parent_complex_list[0]))
+            if len(parent_complex_list) > 1:
+                timing = 2000
+                IO_user_interface_util.timed_alert(GUI_util.window, timing, 'Warning',
+                                                   "The selected complex " + str(setup_complex_var.get()) + " has " + str(len(parent_complex_list)) + " complex parents. Only the first one is displayed. Use the dropdown menu to scroll through all available complex parent names.",
+                                                   False, '', True, '', False)
+                # mb.showwarning(title='Warning',
+                #                message="The selected complex " + str(setup_complex_var.get()) + " has " + str(len(parent_complex_list)) + " complex parents. Only the first one is displayed. Use the dropdown menu to scroll through all available complex parent names.")
+            select_parents['values'] = parent_complex_list
+
+        if len(children_list) > 0:
+            select_children_var.set(str(children_list[0]))
+            if len(children_list) > 1:
+                timing = 2000
+                IO_user_interface_util.timed_alert(GUI_util.window, timing, 'Warning',
+                                                   "The selected complex " + str(setup_complex_var.get()) + " has " + str(
+                                                    len(children_list)) + " complex children. Only the first one is displayed. Use the dropdown menu to scroll through all available complex children names.",
+                                                   False, '', True, '', False)
+
+                # mb.showwarning(title='Warning',
+                #                message="The selected complex " + str(setup_complex_var.get()) + " has " + str(
+                #                    len(children_list)) + " complex children. Only the first one is displayed. Use the dropdown menu to scroll through all available complex children names.")
+        else:
+            mb.showwarning(title='Warning',
+                           message="The selected complex " + str(setup_complex_var.get()) + " has no complex children.")
+        select_children['values'] = children_list
+
+    if setup_simplex_var.get()!='':
+        parent_complex_list = DB_PCACE_data_analyzer_util.get_simplex_parents(setup_simplex_var.get())
+        if len(parent_complex_list) > 0:
+            select_parents_var.set(str(parent_complex_list[0]))
+            if len(parent_complex_list) > 1:
+                mb.showwarning(title='Warning',
+                               message="The selected simplex " + str(setup_simplex_var.get()) + " has " + str(
+                                   len(parent_complex_list)) + " complex parents. Only the first one is displayed. Use the dropdown menu to scroll through all available complex parent names.")
+            select_parents['values'] = parent_complex_list
+
+setup_complex_var.trace('w',activate_parents_children)
+setup_simplex_var.trace('w',activate_parents_children)
 
 table_fields_menu_values = []
 
@@ -1118,7 +1190,7 @@ def view_relations():
 def view_grammar():
     head, tail = os.path.split(inputDir.get())
     DB_PCACE_data_analyzer_util.view_grammar(os.path.join(inputDir.get(), 'setup_Complex.xlsx'),
-                                             'GrammarRule_Text', os.path.join(outputDir.get(),
+                                             'GrammarRule_Text', os.path.join(inputDir.get(),
                                                                               'PC-ACE grammar for database ' + tail + '.txt'))
 
 
@@ -1164,7 +1236,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     # name of S V O in specific databases (e.g., Participant-S or Soggetto in Italian)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, use the dropdown menu to extract the users and/or visualize Verifiers comments." + GUI_IO_util.msg_Esc)
     # SVO visualization
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkboxes to visualize Subjects, Verbs, Objects in network graphs, via Gephi, Sankey, and Sunburst, and wordclouds, and to visualize space in geographic maps.\n\nSankey graphs display only top 10 Subject (S), 20 Verb (V), 20 Object (O). Sunburst and Treemap charts display top 15 values. To change these default values, use the data_visualization_1 GUI.\n\nSpace information will be geocoded using Google if the Google-geocode-API_config.csv file is present in the config subdirectory; otherwise Nominatim will be used. Geocoded waypoints will be displayed as pin map via Google Earth Pro and heat map via Google Maps (Python Folium will be used if no Google API key is found)." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkboxes to visualize Subjects, Verbs, Objects in network graphs, via Gephi, Sankey, and Sunburst, and word clouds, and to visualize space in geographic maps.\n\nSankey graphs display only top 10 Subject (S), 20 Verb (V), 20 Object (O). Sunburst and Treemap charts display top 15 values. To change these default values, use the data_visualization_1 GUI.\n\nSpace information will be geocoded using Google if the Google-geocode-API_config.csv file is present in the config subdirectory; otherwise Nominatim will be used. Geocoded waypoints will be displayed as pin map via Google Earth Pro and heat map via Google Maps (Python Folium will be used if no Google API key is found)." + GUI_IO_util.msg_Esc)
     # actors
     # y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, use the dropdown menu to select the type of actor for which you wish to extract all instances of semantic triplets, i.e., Subject-Verb-Object combinations (* for all types of actors)." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
@@ -1188,7 +1260,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 y_multiplier_integer = y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,increment)
 
 # change the value of the readMe_message
-readMe_message="The Python 3 scripts convert, via the Python Pandas package, and analyze, via various visualization packages, data collected via the Microsoft ACCESS PC-ACE (Program for Computer-Assisted Coding of Events).\n\nIn INPUT the algorithms expect a set of xlsx files in the input directory. The xlsx files must be exported from the PC-ACE database tables data, setup, and utility (see TIPS file on how to export tables from PC-ACE).\n\nIn OUTPUT the algorithms produce a set of csv files and different types of visuals, from Excel charts to network graphs via Gephi and Sankey, geographic pin maps via Google Earth Pro and heat maps via Google Maps, wordclouds, and interactive time maps."
+readMe_message="The Python 3 scripts convert, via the Python Pandas package, and analyze, via various visualization packages, data collected via the Microsoft ACCESS PC-ACE (Program for Computer-Assisted Coding of Events).\n\nIn INPUT the algorithms expect a set of xlsx files in the input directory. The xlsx files must be exported from the PC-ACE database tables data, setup, and utility (see TIPS file on how to export tables from PC-ACE).\n\nIn OUTPUT the algorithms produce a set of csv files and different types of visuals, from Excel charts to network graphs via Gephi and Sankey, geographic pin maps via Google Earth Pro and heat maps via Google Maps, word clouds, and interactive time maps."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
@@ -1206,7 +1278,7 @@ if error and GUI_util.input_main_dir_path.get()!='':
         database_already_loaded = False
 
 # if inputDir.get()!='' and not error:
-#     primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(window, inputDir.get())
+#     primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(inputDir.get())
 #     primary_complex['values'] = primary_complex_menu
 GUI_util.window.mainloop()
 

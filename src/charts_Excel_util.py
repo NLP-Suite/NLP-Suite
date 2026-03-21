@@ -229,22 +229,22 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
         fpath = ''
         first_chart_type = chart_type_list[0]
         if chart_type_list and all(type == first_chart_type for type in chart_type_list):
-            if first_chart_type=="bar":
+            if first_chart_type.lower()=="bar":
                 chartName = BarChart()
                 fpath = GUI_IO_util.Excel_charts_libPath + os.sep + "barchartsample.xlsm"
                 chartFile = "barchartsample.xlsm"
-            elif first_chart_type=="pie":
+            elif first_chart_type.lower()=="pie":
                 chartName = BarChart()
                 fpath = GUI_IO_util.Excel_charts_libPath + os.sep + "piechartsample.xlsm"
                 chartFile = "piechartsample.xlsm"
                 if len(chart_type_list) > 1:
                     mb.showwarning(title='Pie Chart error', message="If you selected pie chart as the intended chart type for display data, only one group of data can be displayed. The system indicates more than one group of data are selected.\n\nPlease, check your input and try again!")
                     return
-            elif first_chart_type=="line":
+            elif first_chart_type.lower()=="line":
                 chartName = LineChart()
                 fpath = GUI_IO_util.Excel_charts_libPath + os.sep + "linechartsample.xlsm"
                 chartFile="linechartsample.xlsm"
-            elif first_chart_type=="scatter":
+            elif first_chart_type.lower()=="scatter":
                 chartName = ScatterChart()
                 fpath = GUI_IO_util.Excel_charts_libPath + os.sep + "scatterchartsample.xlsm"
                 chartFile = "scatterchartsample.xlsm"

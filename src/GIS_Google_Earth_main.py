@@ -57,22 +57,23 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
     filesToOpen = []
     inputIsCoNLL = False
 
-    if locationColumnName=='':
-        mb.showwarning(title='No location column selected', message='No csv column containing location names has been selected.\n\nPlease, select a column and try again.')
-        return
-
     inputIsCoNLL, inputIsGeocoded, withHeader, headers, datePresent, filenamePositionInCoNLLTable=GIS_file_check_util.CoNLL_checker(inputFilename)
 
-    if withHeader==True:
-        locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumnName, inputFilename)
+    if not inputIsGeocoded:
+        if locationColumnName=='' and (not inputIsGeocoded):
+            mb.showwarning(title='No location column selected', message='No csv column containing location names has been selected.\n\nPlease, select a column and try again.')
+            return
 
-    # Word is the header from Stanford CoreNLP NER annotator
-    if not 'Location' in headers and not 'Word' in headers and not 'NER' in headers:
-        GUI_util.run_button.configure(state='disabled')
-        mb.showwarning(title='Warning',
-                       message="The selected input csv file does not contain the word 'Location' or 'NER' in its headers.\n\nThe GIS algorithms expect in input either\n   1. a csv file\n      a. with a column of locations (with header 'Location') to be geocoded and mapped;\n      b. a csv file with a column of locations (with header 'Location') already geocoded and to be mapped (this file will also contain latitudes and longitudes, with headers 'Latitude' and 'Longitude').\n\nThe RUN button is disabled until the expected csv file is seleted in input.\n\nPlease, select the appropriate input csv file and try again.")
+        if withHeader==True:
+            locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumnName, inputFilename)
 
-        return
+        # Word is the header from Stanford CoreNLP NER annotator
+        if not 'Location' in headers and not 'Word' in headers and not 'NER' in headers:
+            GUI_util.run_button.configure(state='disabled')
+            mb.showwarning(title='Warning',
+                           message="The selected input csv file does not contain the word 'Location' or 'NER' in its headers.\n\nThe GIS algorithms expect in input either\n   1. a csv file\n      a. with a column of locations (with header 'Location') to be geocoded and mapped;\n      b. a csv file with a column of locations (with header 'Location') already geocoded and to be mapped (this file will also contain latitudes and longitudes, with headers 'Latitude' and 'Longitude').\n\nThe RUN button is disabled until the expected csv file is seleted in input.\n\nPlease, select the appropriate input csv file and try again.")
+
+            return
 
     # if restrictions_checker(inputFilename,inputIsCoNLL,numColumns,withHeader,headers,locationColumnName)==False:
     # 	return
@@ -434,10 +435,12 @@ group_values_entry_var_list.append('')
 group_label_entry_var.set('')
 group_label_entry_var_list.append('')
 
+reset_group_button.config(state='normal')
 
 def groupSelection(*args):
     if group_var.get() == 1:
-        reset_group_button.config(state='normal')
+        mb.showwarning(title='Group option', message='The group option is currently not available.\n\nSorry!')
+        return
         group_values_entry.configure(state='normal')
         group_label_entry.configure(state='normal')
         csv_field_forGroups_menu.config(state='normal')
@@ -684,7 +687,6 @@ else:
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 100, y_multiplier_integer,
                                                description_csv_field_menu, True)
 
-
 def changed_GIS_filename(*args):
     global errorDisplayed, inputError
     errorDisplayed=True
@@ -708,10 +710,14 @@ def changed_GIS_filename(*args):
         # description_checkbox.config(state='disabled')
         description_csv_field_menu.config(state='disabled')
     else:
-        # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location'
-        if IO_csv_util.rename_header(inputFilename.get(), "Word", "Location") == False:
-            inputError = True
-            return
+        headers = IO_csv_util.get_csvfile_headers (inputFilename.get(),ask_Question=False)
+        if not('Latitude' in str(headers) and 'Longitude' in str(headers)):
+            # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location'
+            if IO_csv_util.rename_header(inputFilename.get(), "Word", "Location") == False:
+                inputError = True
+                return
+        else:
+            isGeocoded = True
         GUI_util.run_button.configure(state='normal')
         location_var.set('Location')
         location_field.config(state='normal')
@@ -1025,7 +1031,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, using the dropdown menu, select the type of encoding you wish to use.\n\nLocations in different languages may require encodings (e.g., latin-1 for French or Italian) different from the standard (and default) utf-8 encoding." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, using the dropdown menu, select the column containing the location names (e.g., New York) to be geocoded and mapped.\n\nTHE OPTION IS NOT AVAILABLE WHEN SELECTING A CONLL INPUT CSV FILE. NER IS THE COLUMN AUTOMATICALLY USED WHEN WORKING WITH A CONLL FILE IN INPUT.\n\nWhen GIS distance is to be computed, the column refers to the FIRST set of location names. In this case, you can use the second dropdown menu to select the column containing the second set of location names." + GUI_IO_util.msg_Esc)
+                                  "Please, using the dropdown menu, select the column containing the location names (e.g., New York) to be geocoded and mapped.\n\nIf the headers contain 'Latitude' and 'Longitude' fields, geocoding will be skipped and the selected Location column will only be used to display in the DESCRIPTION field of Google Earth Pro.\n\nTHE OPTION IS NOT AVAILABLE WHEN SELECTING A CONLL INPUT CSV FILE. NER IS THE COLUMN AUTOMATICALLY USED WHEN WORKING WITH A CONLL FILE IN INPUT.\n\nWhen GIS distance is to be computed, the column refers to the FIRST set of location names. In this case, you can use the second dropdown menu to select the column containing the second set of location names." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "\n\nUsing the dropdown menu, if a date is present, select the column containing the date and the date format. If a date is present, it will be used to construct dynamic GIS models." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -1035,7 +1041,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, enter various types of information required for the pin NAME option.\n\nNAME refers to the label to be displayed on the map for each coordinates point. KEEP IN MIND THAT WHEN THE MAP CONTAINS A LARGE NUMBER OF LOCATIONS, DISPLAYING LOCATIONS WITH PINS AND NAMES MAY RESULT IN A VERY 'BUSY' MAP HARD TO READ.\n\nSCALE refers to the size of the label (NAME) to be displayed. Default value 1, but .5 or 2, 3,... acceptable. Try out different values!\n\nOPACITY refers to the transparency of the label displayed (i.e., how much you can see of the map behind the NAME label). Default value 100%. Enter a value (0-100) for the opacity of the label (NAME) to be displayed. Try out different opacity values!\n\nCOLOR refers to the color for the label (NAME) to be displayed on the map for each coordinates point."+ GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, enter various types of information required for the pin DESCRIPTION option. DESCRIPTION contains the information that will be displayed when clicking on a pin.\n\nTHE OPTION IS NOT AVAILABLE WHEN SELECTING A CONLL INPUT CSV FILE. FOR CONLL FILES, THE DESCRIPTION FIELD IS AUTOMATICALLY COMPUTED, DISPLAYING THE LOCATION, THE FILENAME, AND THE SENTENCE WHERE THE LOCATION IS MENTIONED.\n\nSelect the field name from the input csv file whose values will be displayed when clicking on a pin on the map.\n\nTick the bold checkbox if you want to display in BOLD the field name.\n\nTick the italic checkbox if you want to display in ITALIC the field name."+ GUI_IO_util.msg_Esc)
+                                  "Please, enter various types of information required for the pin DESCRIPTION option. DESCRIPTION contains the information that will be displayed when clicking on a pin.\n\nTHE OPTION IS NOT AVAILABLE WHEN SELECTING A CONLL INPUT CSV FILE. FOR CONLL FILES, THE DESCRIPTION FIELD IS AUTOMATICALLY COMPUTED, DISPLAYING THE LOCATION, THE FILENAME, AND THE SENTENCE WHERE THE LOCATION IS MENTIONED.\n\nSelect the field name from the input csv file whose values will be displayed when clicking on a pin on the map. IF THE HEADER CONTAINS A HEADER 'Event' or 'Sentence,' 'Document,' and 'Date' will be displayed automatically.\n\nTick the bold checkbox if you want to display in BOLD the field name.\n\nTick the italic checkbox if you want to display in ITALIC the field name."+ GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick ther checkbox if you wish to produce a heat map using Google Maps.\n\n\MUST HAVE a GOOGLE MAPS API KEY."+ GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",

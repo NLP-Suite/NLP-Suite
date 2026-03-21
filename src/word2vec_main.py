@@ -236,7 +236,16 @@ vis_menu_var.trace('w',activate_plot_options)
 #@@@
 WSI_var.set(0)
 WSI_checkbox = tk.Checkbutton(window, text='Word sense induction (via BERT (English language model))', variable=WSI_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,WSI_checkbox,True)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,WSI_checkbox,True)
+
+# Word sense induction (WSI) is the problem of automatically identifying the different senses expressed by a word used in a collection of documents.
+
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
+    y_multiplier_integer,
+    WSI_checkbox,
+    True, False, False, False, 90, GUI_IO_util.labels_x_coordinate,
+    "Tick the checkbox to run the word sense induction (WSI) algorithm to automatically identify the different senses expressed by a word used in your corpus based on Lucy & Bamman, 2021, BERT model.\nAdjust the various options in the next line of widgets to control the model parameters.")
 
 k_means_min_var = tk.Scale(window, from_=2, to=9, orient=tk.HORIZONTAL)
 k_means_min_var.pack()
@@ -322,12 +331,21 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration
 ## option for BERT
 BERT_var.set(0)
 BERT_checkbox = tk.Checkbutton(window, text='Word embeddings (via BERT (English language model))', variable=BERT_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,BERT_checkbox)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
+    y_multiplier_integer,
+    BERT_checkbox,
+    False, False, False, False, 90, GUI_IO_util.labels_x_coordinate,
+    "Word embeddings are vector values corresponding to specific words.\nWords are converted into such vectors so that they can be plotted easily on XY or XYZ axes, and we can analyze words with close relations to one another in a semantic space.\nThere are many different models that can construct these vector values (BERT models, Word2Vec, etc.).")
 
 ## option for Gensim
 Gensim_var.set(0)
 Gensim_checkbox = tk.Checkbutton(window, text='Word2Vec (via Gensim)', variable=Gensim_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,Gensim_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
+    y_multiplier_integer,
+    Gensim_checkbox,
+    False, False, False, False, 90, GUI_IO_util.labels_x_coordinate,
+    "Word2Vec is one of the word embedding techniques in the Natural Language Processing. Word2Vec turns text into a numerical form, the vectors of similar words clustered together in vector space.\nThe vectors used to represent words are called neural word embeddings.\nWord2Vec was developed at Google by Tomas Mikolov and his team in 2013.")
 
 ## option for Gensim model architecture
 sg_lb = tk.Label(window,text='Training model architecture')
@@ -428,7 +446,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration
     y_multiplier_integer,
     keywords_entry,
     False, False, False, False, 90, GUI_IO_util.IO_configuration_menu,
-    "Enter the comma-separated, case-sensitive words to be used to visualize Euclidean distances and cosine similarity between selected words.\nCosine similarity will always be computed for the top selected n words whether the checkbox 'Compute word distances' is ticked or not.")
+    "Enter the comma-separated, case-sensitive words to be used to visualize Euclidean distances and cosine similarity between selected words.\nKEYWORDS MUST BE IN YOUR CORPUS.\nCosine similarity will always be computed for the top selected n words whether the checkbox 'Compute word distances' is ticked or not.")
 
 def activate_all_options():
     WSI_checkbox.configure(state='normal')
@@ -497,10 +515,12 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                   "Please, select the csv dictionary file containing the words or enter the comma-separated words to be use to compute word sense induction via BERT.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
-                                  "Please, tick the checkbox to run word embeddings via BERT.")
+                                  "Please, tick the checkbox to run word embeddings via BERT.\n\nWord embeddings are vector values corresponding to specific words.\n\nWords are converted into such vectors so that they can be plotted easily on XY or XYZ axes, and we can analyze words with close relations to one another in a semantic space.\n\nThere are many different models that can construct these vector values (BERT models, Word2Vec, etc.).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
-                                  "Please, tick the checkbox to run Word2Vec via Gensim.")
+                                  "Please, tick the checkbox to run Word2Vec via Gensim. Word2Vec is one of the word embedding techniques in the Natural Language Processing. It was developed at Google by Tomas Mikolov and his team in 2013.\n\nWord2Vec turns text into a numerical form, the vectors of similar words clustered together in vector space. The vectors used to represent words are called neural word embeddings.")
+    # Word2Vec is one of the word embedding techniques in the Natural Language Processing. It was developed at Google by Tomas Mikolov and his team [Mikolov et al., 2013].
+
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
                                   "Please, using the dropdown menu, select the preferred model architecture for training Word2Vec: Skip-Gram and CBOW (Continuous Bag of Words).\n\nWhich model is better?\n\nAccording to the original paper by Mikolov et al. (2013) Skip-Gram works well with small datasets, and can better represent less frequent words. However, CBOW is found to train faster than Skip-Gram, and can better represent more frequent words.\n\nMikolov, Tomas, Kai Chen, Greg Corrado, and Jeffrey Dean. 2013. 'Efficient Estimation of Word Representations in Vector Space' arXiv:1301.3781.")

@@ -201,7 +201,7 @@ if current_process().name == 'MainProcess':
                                                BERT_checkbox,
                                                False, False, True, False, 90,
                                                GUI_IO_util.labels_x_coordinate,
-                                               "Tick/untick the checkbox to run the BERTopic topic modeling algorithm")
+                                               "Tick/untick the checkbox to run the BERtopic LLM (Large Language Model) topic modeling.\nBERTopic was developed by Maarten Grootendorst in 2022.\nBERTopic is based on BERT, released by Google in October 2018.")
     split_docs_var.set(0)
     split_docs_checkbox = tk.Checkbutton(window, text='Split documents into sentences (recommended for datasets consisting of a small number of long documents)', variable=split_docs_var, onvalue=1, offvalue=0, command=lambda: activate_options())
     # place widget with hover-over info
@@ -216,7 +216,7 @@ if current_process().name == 'MainProcess':
                                                    MALLET_checkbox,
                                                    False, False, True, False, 90,
                                                    GUI_IO_util.labels_x_coordinate,
-                                                   "Tick/untick the checkbox to run the MALLET topic modeling algorithm")
+                                                   "Tick/untick the checkbox to run the java-based MALLET LDA (Latent Dirichlet Allocation) topic modeling algorithm, first released in 2002.\nMALLET was developed by Andrew McCallum of the University of Massachusetts Amherst.\nMALLET does not come with any visual displays of its own.")
 
     optimize_intervals_var.set(1)
     optimize_intervals_checkbox = tk.Checkbutton(window, text='Optimize topic intervals',
@@ -233,8 +233,7 @@ if current_process().name == 'MainProcess':
                                                    Gensim_checkbox,
                                                    False, False, True, False, 90,
                                                    GUI_IO_util.labels_x_coordinate,
-                                                   "Tick/untick the checkbox to run the Gensim topic modeling algorithm")
-
+                                                   "Tick/untick the checkbox to run the Gensim LDA (Latent Dirichlet Allocation) topic modeling algorithm.\nGensim uses the MALLET algorithm and displays the results in beautiful interactive visuals.")
     remove_stopwords_var.set(1)
     remove_stopwords_checkbox = tk.Checkbutton(window, text='Remove stopwords', variable=remove_stopwords_var,
                                                onvalue=1, offvalue=0)
@@ -334,18 +333,18 @@ if current_process().name == 'MainProcess':
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "Please, enter the number of topics to be used (recommended default = 20).\n\nVarying the number of topics may provide better results.")
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                      "Please, tick the checkbox if you wish to run BERtopic LLM (Large Language Model) topic modeling.")
+                                      "Please, tick the checkbox if you wish to run BERtopic LLM (Large Language Model) topic modeling.\nBERTopic was developed by Maarten Grootendorst in 2022.\n\nBERTopic is based on BERT released by Google in October 2018.")
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "Please, tick the checkbox to split long documents to improve the effiency of BERtopic topic modeling algorithms.")
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                      "Please, tick the checkbox if you wish to run MALLET LDA topic modeling.")
+                                      "Please, tick the checkbox if you wish to run the java-based MALLET LDA (Latent Dirichlet Allocation) topic modeling algorithm, first released in 2002.\n\nMALLET was developed by Andrew McCallum, of the University of Massachusetts Amherst.")
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                                              "NLP Suite Help",
                                                              "Please, tick the checkbox if you do NOT wish to optimize intervals.\n\n"
                                                              "Optimization, however, seems to lead to better reults "
                                                              "(https://programminghistorian.org/lessons/topic-modeling-and-mallet).")
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                      "Please, tick the checkbox if you wish to run Gensim LDA topic modeling.")
+                                      "Please, tick the checkbox if you wish to run Gensim LDA (Latent Dirichlet Allocation) topic modeling algorithm.\nGensim uses the MALLET algorithm and displays the results in beautiful interactive visuals.")
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "Please, tick the checkbox if you wish to run Gensim LDA topic modeling removing stopwords first.\n\nRemoving stopwords may provide better results.")
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -360,7 +359,7 @@ if current_process().name == 'MainProcess':
     y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
     # change the value of the readMe_message
-    readMe_message = "This Python 3 script analyzes a set of documents for topic modeling with Gensim.\n\nIn INPUT the script expects a set of text files stored in a directory.\n\nIn OUTPUT, the script creates an html file with graphical displays of topic information.\n\nGensim topc modelling requires internet connection to run."
+    readMe_message = "This Python 3 script analyzes a set of documents for topic modeling with Gensim.\n\nIn INPUT the script expects a set of text files stored in a directory.\n\nIn OUTPUT, the script creates an html file with graphical displays of topic information.\n\nGensim topic modelling requires internet connection to run."
     readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
     GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 

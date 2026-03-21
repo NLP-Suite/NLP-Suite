@@ -264,7 +264,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
     bydictionary_value_checkbox, False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate, 'Tick the checkbox to clean txt files by replacing strings via a csv file containg two columns: old string, new string..\nOnly the first two columns will be considered; any other colum will be ignored.')
 
-dictionary_button=tk.Button(window, width=20, text='Select csv file',command=lambda: get_dictionary_file(window,'Select INPUT string replace file', [("csv files", "*.csv")]))
+dictionary_button=tk.Button(window, width=20, text='Select csv file',command=lambda: get_dictionary_file(window,'Select INPUT string '
+                                                                                                                'replace file', [("csv files", "*.csv")]))
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 # the two x-coordinate and x-coordinate_hover_over must have the same values
 y_multiplier_integer = GUI_IO_util.placeWidget(window,

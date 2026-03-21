@@ -193,8 +193,11 @@ def writeOutput(inputPath, inputFilenamename, outputPath, outputFilename, fieldn
             # write file headers
             writer = csv.DictWriter(csvfile, fieldnames)
             head, tail = os.path.split(inputFilenamename)
+            filename, file_extension = os.path.splitext(inputFilenamename)
+            ext = file_extension[1:]
+
             printLine = {'File_Name': tail, 'Path_To_File': IO_csv_util.dressFilenameForCSVHyperlink(inputPath),
-                         'File_Name_With_Path': IO_csv_util.dressFilenameForCSVHyperlink(inputFilenamename)}
+                         'File_Name_With_Path': IO_csv_util.dressFilenameForCSVHyperlink(inputFilenamename), 'File_Type':ext}
             if by_creation_date_var == 1:
                 printLine['Creation_date'] = creation_date
                 printLine['Modification_date'] = modification_date
@@ -268,6 +271,8 @@ def processFile(inputPath, outputPath, filename, outputFilename,
     dateStr = ''
     split_string = ''
     fileFound = True
+
+    # ext = IO_files_util.getFileExtension(os.path.join(inputPath, filename))
 
     if character_count_var == 1:
         # use the Python built-in function count for strings
