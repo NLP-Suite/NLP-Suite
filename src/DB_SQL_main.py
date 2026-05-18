@@ -114,7 +114,7 @@ run_script_command=lambda: run(
                                 GUI_util.input_main_dir_path.get(),
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
-                                GUI_util.create_chart_output_checkbox.get(),
+                                # GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_package_options_widget.get(),
                                 GUI_util.data_transformation_options_widget.get(),
                                 SQL_query_entry.get("1.0", "end-1c"),
@@ -357,7 +357,7 @@ def view_relations():
         view_rels_command = ['C:\\Program Files\\DBeaver\\dbeaver-cli.exe', '-con', 'driver=sqlite|database='+select_SQLite_DB_var.get()]
         call(view_rels_command)
 
-import_query_button=tk.Button(window, width=15, text='Import SQL query',command=lambda: import_query(window,'Select INPUT SQL query file', [("SQL files", "*.sql")]))
+import_query_button=tk.Button(window, width=15, text='Import SQL query',command=lambda: import_query(window,'Select INPUT SQL query file', [("SQL files", "*.txt")]))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+700, y_multiplier_integer,import_query_button,True)
 
 save_query_button=tk.Button(window, width=15, text='Save SQL query',command=lambda: save_query())

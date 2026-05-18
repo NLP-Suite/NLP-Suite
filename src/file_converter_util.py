@@ -281,6 +281,10 @@ import os
 # necessary functions to convert pdf to img to txt
 ################################################
 def convert_pdf_to_img(pdf_file):
+    import pytesseract
+    from pytesseract import image_to_string
+    import pdf2image
+    from pdf2image import convert_from_path
     return convert_from_path(pdf_file)
 
 
