@@ -30,7 +30,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         simplex_value_type, simplex_value,
         primary_complex_var,
         value_parent_object_var,
-        setup_complex, extended_headers, setup_simplex,
+        setup_complex, identifiers, extended_headers, setup_simplex,
         # print_narrative_var,
         ALL_objects_frequencies_var, SELECTED_objects_frequencies_var,
         ALL_simplex_objects_frequencies_var, SELECTED_simplex_objects_frequencies_var,
@@ -136,7 +136,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         outputDir = outputSubDir
 
     # Story form export ______________________________________________________________________________
-    if hierarchical_complex_var != '' and complex_identifiers_var != '':
+    if hierarchical_complex_var != '' and complex_identifiers_var.get() != '':
         story_text, filepath = DB_PCACE_data_analyzer_util.story_form_from_dropdown(primary_complex_var, outputDir)
         if filepath:
             filesToOpen.append(filepath)
@@ -186,15 +186,18 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         # Checkbox 4: export comments for the selected complex
         elif comments_var == 1:
             comment_type_str = comments_type if comments_type != '' else '*'
-            outputFile = DB_PCACE_data_analyzer_util.get_comment_info('', setup_complex, comment_type_str, inputDir, outputDir)
-            if outputFile is not None and not isinstance(outputFile, pd.DataFrame):
-                if isinstance(outputFile, str):
-                    filesToOpen.append(outputFile)
-                elif isinstance(outputFile, list):
-                    filesToOpen.extend(outputFile)
+            comment_files = DB_PCACE_data_analyzer_util.get_comment_info('', setup_complex, comment_type_str, inputDir, outputDir)
+            if comment_files:
+                filesToOpen.extend(comment_files)
+        elif identifiers == 1:
+            # Export identifiers only (Actor_IDENTIFIER)
+            df = DB_PCACE_data_analyzer_util.higher_lower(inputDir, outputDir, setup_complex, export_identifier=True)
+        elif extended_headers == 1:
+            # Export expanded ALL headers (Actor_ALL)
+            df = DB_PCACE_data_analyzer_util.higher_lower(inputDir, outputDir, setup_complex, export_identifier=False)
         else:
-            # Export complex data via higher_lower, with extended headers option
-            df = DB_PCACE_data_analyzer_util.higher_lower(inputDir, outputDir, setup_complex, extended_headers)
+            # Default: export ALL headers when no checkbox is selected
+            df = DB_PCACE_data_analyzer_util.higher_lower(inputDir, outputDir, setup_complex, export_identifier=False)
         # df = DB_PCACE_data_analyzer_util.call_get_expanded_complex(inputDir, outputDir, setup_complex)
 
     # get complex object identifier and values  ______________________________________________________________________________
@@ -571,6 +574,7 @@ run_script_command=lambda: run(
                                 complex_identifiers_var.get(),
                                 value_parent_object_var.get(),
                                 setup_complex.get(),
+                                identifiers_var.get(),
                                 extended_headers_var.get(),
                                 setup_simplex.get(),
                                 # print_narrative_var.get(),
@@ -644,6 +648,7 @@ view_relations_var=tk.IntVar()
 
 
 complex_objects_var = tk.StringVar()
+identifiers_var = tk.IntVar()
 extended_headers_var = tk.IntVar()
 parents_children_var = tk.IntVar()
 
@@ -700,6 +705,7 @@ def clear(e):
     setup_complex_var.set('')
     setup_simplex_var.set('')
 
+    identifiers_var.set(0)
     extended_headers_var.set(0)
     value_parent_object_var.set(0)
     parents_children_var.set(0)
@@ -889,12 +895,18 @@ def update_complex_identifier_dropdown(*args):
     if selected_type:
         identifier_list = DB_PCACE_data_analyzer_util.build_story_dropdown(selected_type)
         complex_identifiers['values'] = identifier_list
-        complex_identifiers_var.set('')
+        if identifier_list:
+            complex_identifiers_var.set(identifier_list[0])
+        else:
+            complex_identifiers_var.set('')
     else:
         # Reset to macro event list
         macro_list = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(inputDir.get())
         complex_identifiers['values'] = macro_list
-        complex_identifiers_var.set('')
+        if macro_list:
+            complex_identifiers_var.set(macro_list[0])
+        else:
+            complex_identifiers_var.set('')
 
 hierarchical_complex_var.trace('w', update_complex_identifier_dropdown)
 
@@ -1007,22 +1019,28 @@ setup_complex = ttk.Combobox(window, textvariable = setup_complex_var, width=GUI
 # setup_complex.configure(state='disabled')
 setup_complex['values'] = setup_complex_menu
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+120, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+90, y_multiplier_integer,
                                    setup_complex,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Use the dropdown menu to select a specific complex object for which to display identifier and values and compute frequencies.\nWhen a hierarchical complex object is selected (e.g., macro-event or event) and the checkbox Semantic triplets below is ticked...\n...semantic triplets will be listed in chronological order within the specific higher-level hierarchical complex object selected (e.g., macro-events, events).")
 
+identifiers_checkbox = tk.Checkbutton(window, text='', variable=identifiers_var, onvalue=1, offvalue=0)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate-10, y_multiplier_integer,
+                                   identifiers_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
+                                   "Tick the checkbox to display the selected complex object identifiers as an Excel and text story form outputs")
 
 extended_headers_checkbox = tk.Checkbutton(window, text='', variable=extended_headers_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+10, y_multiplier_integer,
                                    extended_headers_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "Tick the checkbox to display the selected complex object as an Excel and text story form outputs")
 
 parents_children_checkbox = tk.Checkbutton(window, text='', variable=parents_children_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+40, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+30, y_multiplier_integer,
                                    parents_children_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "Tick the checkbox to display the parents and children of the selected complex object")
@@ -1031,7 +1049,7 @@ document_sources_var = tk.IntVar()
 document_sources_checkbox = tk.Checkbutton(window, text='', variable=document_sources_var, onvalue=1, offvalue=0)
 
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+60, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+50, y_multiplier_integer,
                                    document_sources_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Tick the checkbox to extract the documents (e.g., newspaper articles) that are the sources of information for specific objects (e.g., Semantic triplets (SVO)).")
@@ -1041,7 +1059,7 @@ comments_var.set(0)
 comments_checkbox = tk.Checkbutton(window, text='', variable=comments_var, onvalue=1, offvalue=0)
 
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+80, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+70, y_multiplier_integer,
                                    comments_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Tick the checkbox to extract the comments left by users and/or verifiers for specific objects (e.g., Semantic triplets (SVO)).")
@@ -1053,7 +1071,7 @@ comments_type_var = tk.StringVar()
 comments_type_var.set('')
 comments_menu = tk.OptionMenu(window, comments_type_var, '*', 'Users comments', 'Verifiers comments')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+105, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+95, y_multiplier_integer,
                                    comments_menu,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "Use the dropdown menu to extract the comments left by users and/or verifiers for specific objects (e.g., Semantic triplets (SVO)).")
@@ -1100,7 +1118,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indente
 select_parents = ttk.Combobox(window, width=GUI_IO_util.widget_width_short, textvariable=complex_parents_var)
 # select_parents.configure(state='disabled')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+120, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+90, y_multiplier_integer,
                                    select_parents,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "The menu displays a list of complex objects parent of the 'Complex objects' or 'Simplex objects' selected in the widgets above")
