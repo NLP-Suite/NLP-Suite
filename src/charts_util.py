@@ -2248,3 +2248,4 @@ def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categori
         fig.write_html(outputFilename)
         filesToOpen.append(outputFilename)
     return filesToOpen
+
