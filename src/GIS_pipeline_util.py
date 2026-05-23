@@ -18,6 +18,7 @@ import GIS_location_util
 import GIS_geocode_util
 import GIS_KML_util
 import GIS_Google_Maps_util
+import GIS_folium_util
 import IO_libraries_util
 import config_util
 import TIPS_util
@@ -32,8 +33,8 @@ def getGoogleAPIkey(window,Google_config, display_key=False):
     configFilePath = os.path.join(GUI_IO_util.configPath, Google_config)
     configAPIKey = []
     if os.path.isfile(configFilePath):
-        f_config = open(configFilePath, 'r', encoding='utf-8', errors='ignore')
-        configAPIKey = f_config.readlines()
+        with open(configFilePath, 'r', encoding='utf-8', errors='ignore') as f_config:
+            configAPIKey = f_config.readlines()
     if len(configAPIKey) == 0 or display_key:
         if 'Maps' in Google_config:
             msg='Maps'
@@ -69,7 +70,8 @@ def getGoogleAPIkey(window,Google_config, display_key=False):
             config_util.Google_API_Config_Save(window,Google_config, key)
     else:
         key = configAPIKey[0]
-    return key
+    # strip whitespace/newline that readlines() may include
+    return key.strip()
 
 
 # the list of arguments reflect the order of widgets in the Google_Earth_main GUI
@@ -390,21 +392,6 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
     # ------------------------------------------------------------------------------------
 
     Google_Maps_API = getGoogleAPIkey(window, 'Google-Maps-API_config.csv')
-    if Google_Maps_API == '':
-        mapping_package = 'folium'
-    else:
-        mapping_package = 'Google Maps'
-
-    if nRecordsFound > 0 and 'folium' in mapping_package:
-        import GIS_folium_map_util
-        folium_pinmap_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir,
-                                                                                  outputDir, '.html', 'GIS_pin',
-                                                                                  geoName, locationColumnName, '',
-                                                                                  '',
-                                                                                  False, True)
-        folium_heatmap_outputFilename=folium_pinmap_outputFilename.replace('pin','heat')
-        outputFiles = GIS_folium_map_util.run(geocodedLocationsOutputFilename, folium_pinmap_outputFilename, folium_heatmap_outputFilename)
-        filesToOpen.extend(outputFiles)
 
     # ------------------------------------------------------------------------------------
     # Google Earth Pro (geocoding above produces the GEP map)
@@ -414,7 +401,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
     # Google Maps heat map
     # ------------------------------------------------------------------------------------
 
-    if nRecordsFound > 0 and 'Google Maps' in mapping_package:
+    if nRecordsFound > 0 and 'Google' in mapping_package and Google_Maps_API != '':
 
         heatMapoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
                                                                         '.html', 'GIS',
@@ -422,20 +409,58 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                                                                         False, True)
         coordList = []
 
+        print(f"  Google Maps heatmap: reading geocoded CSV: {geocodedLocationsOutputFilename}")
         df = pd.read_csv(geocodedLocationsOutputFilename, encoding='utf-8', on_bad_lines='skip')
+        print(f"  Google Maps heatmap: CSV columns: {list(df.columns)}")
+        print(f"  Google Maps heatmap: CSV rows: {len(df)}")
+
         if 'Latitude' in df and 'Longitude' in df:
+            df = df.dropna(subset=['Latitude', 'Longitude'])
             lat = df.Latitude
             lon = df.Longitude
+            print(f"  Google Maps heatmap: {len(lat)} valid lat/lon rows after dropna")
 
             for i in range(len(lat)):
                 coordList.append([lat[i], lon[i]])
+
+            if len(coordList) > 0:
+                print(f"  Google Maps heatmap: first coord = [{coordList[0][0]}, {coordList[0][1]}]")
+            else:
+                print(f"  WARNING: Google Maps heatmap: coordList is EMPTY after reading CSV!")
         else:
+            print(f"  WARNING: Google Maps heatmap: 'Latitude' or 'Longitude' column NOT found in CSV!")
             mb.showwarning('Warning',
                            'The input csv file\n\n' + geocodedLocationsOutputFilename + '\n\ndoes not contain geocoded data with Latitude or Longitude columns required for Google Maps to produce heat maps.\n\nPlease, select a geocoded csv file in input and try again.')
             return
 
         GIS_Google_Maps_util.create_js(window, heatMapoutputFilename, coordList, geocoder, True)
         filesToOpen.append(heatMapoutputFilename)
+    else:
+        if nRecordsFound <= 0:
+            print(f"  Google Maps heatmap: SKIPPED - nRecordsFound={nRecordsFound}")
+        elif 'Google' not in mapping_package:
+            print(f"  Google Maps heatmap: SKIPPED - mapping_package='{mapping_package}' does not contain 'Google'")
+        elif Google_Maps_API == '':
+            print(f"  Google Maps heatmap: SKIPPED - Google_Maps_API is empty")
+
+    # ------------------------------------------------------------------------------------
+    # Folium pin map and heat map (no API key required)
+    # ------------------------------------------------------------------------------------
+
+    if 'folium' in mapping_package.lower():
+        folium_pin_file = GIS_folium_util.create_folium_pin_map(window,
+                                                                 geocodedLocationsOutputFilename,
+                                                                 outputDir,
+                                                                 locationColumnName)
+        if folium_pin_file != '':
+            filesToOpen.append(folium_pin_file)
+
+        folium_heat_file = GIS_folium_util.create_folium_heatmap(window,
+                                                                  geocodedLocationsOutputFilename,
+                                                                  outputDir,
+                                                                  locationColumnName)
+        if folium_heat_file != '':
+            filesToOpen.append(folium_heat_file)
 
     IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running GIS pipeline at', True, '', True, startTime)
     return filesToOpen

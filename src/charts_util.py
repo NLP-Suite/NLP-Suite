@@ -1,4 +1,4 @@
-# Written by Yuhang Feng November 2019-April 2020
+﻿# Written by Yuhang Feng November 2019-April 2020
 # Written by Yuhang Feng November 2019-April 2020
 # Edited by Roberto Franzosi, Tony May 2022
 # Edited by Samir Kaddoura, March 2023
@@ -1630,15 +1630,15 @@ def timechart(data, outputFilename, var, date_format_var, cumulative, monthly=No
     day = []
 
     if date_format_var == 'yyyy':  # creates year variable based on yyyy format
-        for i in range(0, len(data['Document'])):
+        for i in range(0, len(data[date_field])):
             year.append(re.search('\d{4}', data[date_field][i])[0])
             data['year'] = year
     elif date_format_var == 'mm-yyyy':  # creates year and month variable in yyyy-mm format
-        for i in range(0, len(data['Document'])):
+        for i in range(0, len(data[date_field])):
             date.append(re.search('\d.*\d', data[date_field][i])[0])
-        for i in range(0, len(data['Document'])):
+        for i in range(0, len(data[date_field])):
             year.append(re.search('\d{4}', date[i])[0])
-        for i in range(0, len(data['Document'])):
+        for i in range(0, len(data[date_field])):
             month.append(year[i] + '-' + date[i][0:2])
         data['year'] = year
         data['month'] = month
@@ -1656,7 +1656,7 @@ def timechart(data, outputFilename, var, date_format_var, cumulative, monthly=No
             date.append(re.search('\d.*\d', data[date_field][i])[0])
         for i in range(0, len(data[date_field])):
             year.append(re.search('\d{4}', date[i])[0])
-        for i in range(0, en(data[date_field])):
+        for i in range(0, len(data[date_field])):
             month.append(year[i] + '-' + date[i][3:5])
         for i in range(0, len(data[date_field])):
             day.append(month[i] + '-' + date[i][0:2])
@@ -2248,4 +2248,816 @@ def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categori
         fig.write_html(outputFilename)
         filesToOpen.append(outputFilename)
     return filesToOpen
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Auto-charting for cross-complex / SVO query results
+# Shared by DB_SQL_main.py and DB_PCACE_data_analyzer_main.py
+# ═══════════════════════════════════════════════════════════════════════
+
+def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
+    """Auto-generate charts from cross-complex or SVO query CSV results.
+
+    Produces: bar charts, Sankey, sunburst, treemap, network graph,
+    heatmap, word clouds, and proportional circle map.
+    """
+    import re as _re
+    def _safe_filename(s):
+        """Sanitize a string for use in Windows filenames."""
+        return _re.sub(r'[<>:"/\\|?*]', '_', s).replace(' ', '_')
+
+    try:
+        _px = px
+    except Exception:
+        _px = None
+
+    try:
+        df = pd.read_csv(csv_path, encoding='utf-8', on_bad_lines='skip')
+    except Exception as e:
+        print(f"  WARNING: Could not read CSV for charting: {e}")
+        return
+
+    if df.empty:
+        return
+
+    # Identify chartable columns: keep only final simplex text values
+    # Exclude: _ID columns, _Simplex columns, Order columns, and purely numeric columns
+    skip_cols = set()
+    for c in df.columns:
+        if c.endswith('_ID') or c == 'Source_ID' or c == 'Target_ID':
+            skip_cols.add(c)
+        elif c.endswith('_Simplex'):
+            skip_cols.add(c)
+        elif c.endswith(' Order') or c == 'Order':
+            skip_cols.add(c)
+        elif c.endswith(' Identifier'):
+            skip_cols.add(c)
+
+    candidate_cols = [c for c in df.columns if c not in skip_cols]
+
+    # Further exclude columns that are purely numeric (IDs stored without _ID suffix)
+    value_cols = []
+    skipped_empty = []
+    skipped_numeric = []
+    for c in candidate_cols:
+        col_data = df[c].dropna()
+        if col_data.empty:
+            skipped_empty.append(c)
+            continue
+        # Check if all non-null values are numeric
+        str_vals = col_data.astype(str)
+        numeric_ratio = str_vals.str.match(r'^-?\d+\.?\d*$').mean()
+        if numeric_ratio < 0.9:  # keep column only if <90% numeric
+            value_cols.append(c)
+        else:
+            skipped_numeric.append(c)
+
+    if not value_cols:
+        return
+
+    print(f"  Auto-charting {len(value_cols)} text columns")
+
+    # Drop NaN rows for charting
+    df_clean = df.dropna(subset=value_cols, how='all').copy()
+    if df_clean.empty:
+        return
+
+    # Convert value columns to string for categorical charting
+    for col in value_cols:
+        df_clean[col] = df_clean[col].fillna('').astype(str)
+        df_clean[col] = df_clean[col].replace('', pd.NA)
+    df_clean = df_clean.dropna(subset=value_cols, how='all')
+    if df_clean.empty:
+        return
+
+    base_name = _safe_filename(os.path.splitext(os.path.basename(csv_path))[0])
+
+    # For datasets with many columns, pick a small set of "key" columns
+    # that represent the main S-V-O or source-target relationship.
+    # Heuristic: prefer columns with "Value" in the name, or the shortest
+    # column names (they tend to be the primary ones like Source_Value, Target_Value).
+    # Limit bar charts and word clouds to at most 6 columns.
+    MAX_CHART_COLS = 6
+    if len(value_cols) > MAX_CHART_COLS:
+        # Prefer columns containing common simplex-value keywords (multi-language)
+        primary = [c for c in value_cols if any(kw.lower() in c.lower() for kw in
+                   ['Value', 'Verbal', 'verbale', 'Name', 'nome', 'Frase',
+                    'Participant', 'Partecipant', 'Process', 'Processo'])]
+        if not primary:
+            primary = value_cols
+        chart_cols = primary[:MAX_CHART_COLS]
+    else:
+        chart_cols = value_cols
+
+    # For Sankey/sunburst/treemap/network/heatmap, merge all sub-columns
+    # per SVO role into one combined column.  The real data has many
+    # sub-columns per role (e.g., 14 Participant-S columns), each very
+    # sparse.  We coalesce them: first non-null value across all
+    # sub-columns for that role → single "Subject" / "Verb" / "Object".
+    def _merge_svo(dataframe, all_cols):
+        """Create merged Subject, Verb, Object columns from sparse sub-cols.
+        Returns (new_df, svo_col_names) where svo_col_names is a list of
+        the 2-3 merged column names actually created."""
+        # Match on column PREFIX (part before first '>') to avoid
+        # false matches like 'Verbal phrase' matching 'Verb' patterns.
+        # For columns without '>' (e.g., Source_Value), match the full name.
+        def _prefix(col):
+            return col.split(' > ')[0].strip()
+
+        # For each SVO role, prefer columns whose names suggest the "main" value:
+        #   Subject/Object: Name, Nome, individual, individuo, actor, attore
+        #   Verb: Verbal, verbale, Frase, phrase
+        # Columns matching these keywords are sorted first so coalesce picks them.
+        _so_keywords = ['name', 'nome', 'individual', 'individuo', 'actor', 'attore', 'collective', 'collettivo']
+        _v_keywords = ['verbal', 'verbale', 'frase', 'phrase']
+
+        role_map = [
+            ('Subject', ['Participant-S', 'PARTECIPANTE-S', 'Subject', 'Source_Value'], _so_keywords),
+            ('Verb',    ['Process', 'PROCESSO'], _v_keywords),
+            ('Object',  ['Participant-O', 'PARTECIPANTE-O', 'Object', 'Target_Value'], _so_keywords),
+        ]
+        new_df = dataframe.copy()
+        created = []
+        for role_name, patterns, preferred_kw in role_map:
+            # Case-insensitive prefix matching to handle any language
+            role_cols = [c for c in all_cols
+                         if any(p.lower() == _prefix(c).lower() or p.lower() == c.lower() for p in patterns)]
+            if not role_cols:
+                continue
+            # Sort: columns matching preferred keywords first
+            def _priority(col):
+                cl = col.lower()
+                return 0 if any(kw in cl for kw in preferred_kw) else 1
+            role_cols.sort(key=_priority)
+            print(f"    {role_name} columns (priority-sorted): {role_cols}")
+            # Coalesce: first non-null across role_cols for each row
+            merged = new_df[role_cols[0]].copy()
+            for rc in role_cols[1:]:
+                merged = merged.fillna(new_df[rc])
+            merged = merged.astype(str).replace('nan', pd.NA)
+            new_df[role_name] = merged
+            created.append(role_name)
+        return new_df, created
+
+    df_svo, svo_cols = _merge_svo(df_clean, value_cols)
+    print(f"  Merged SVO columns: {svo_cols}")
+    if svo_cols:
+        for sc in svo_cols:
+            nn = df_svo[sc].dropna().shape[0]
+            print(f"    {sc}: {nn}/{len(df_svo)} non-null")
+
+    # ── 1. Bar charts: frequency distribution of key Value columns ──────
+    if _px:
+        for col in chart_cols:
+            col_data = df_clean[col].dropna().astype(str)
+            if col_data.empty:
+                continue
+            freq = col_data.value_counts().head(30)
+            if freq.empty:
+                continue
+            freq_df = freq.reset_index()
+            freq_df.columns = [col, 'Frequency']
+            safe_col = _safe_filename(col)
+            try:
+                fig = _px.bar(freq_df, x=col, y='Frequency',
+                             title='Top 30 Frequency: {}'.format(col))
+                bar_file = os.path.join(outputDir, '{}_{}_bar.html'.format(base_name, safe_col))
+                fig.write_html(bar_file)
+                filesToOpen.append(bar_file)
+            except Exception as e:
+                print(f"  WARNING: Bar chart for {col}: {e}")
+
+    # ── 2. Sankey diagram: flow between merged S-V-O columns ─────────────
+    if len(svo_cols) >= 2:
+        sankey_df = df_svo[svo_cols].dropna(how='all').copy()
+        for sc in svo_cols:
+            sankey_df[sc] = sankey_df[sc].fillna('(none)').astype(str)
+        # Limit to top N values per column for readability
+        TOP_SANKEY = 10
+        for sc in svo_cols:
+            top_vals = sankey_df[sc].value_counts().head(TOP_SANKEY).index.tolist()
+            sankey_df = sankey_df[sankey_df[sc].isin(top_vals + ['(none)'])]
+        sankey_df = sankey_df.reset_index(drop=True)
+        if not sankey_df.empty and len(sankey_df) > 0:
+            try:
+                three_way = len(svo_cols) >= 3
+                sankey_out = os.path.join(outputDir, '{}_sankey.html'.format(base_name))
+                print(f"  Sankey: using columns {svo_cols}, {len(sankey_df)} rows")
+                Sankey(
+                    data=sankey_df,
+                    outputFilename=sankey_out,
+                    var1=svo_cols[0],
+                    lengthvar1=10,
+                    var2=svo_cols[1],
+                    lengthvar2=10,
+                    three_way_Sankey=three_way,
+                    var3=svo_cols[2] if three_way else None,
+                    lengthvar3=10 if three_way else None)
+                if os.path.exists(sankey_out):
+                    filesToOpen.append(sankey_out)
+                    print(f"  Sankey saved: {sankey_out}")
+            except Exception as e:
+                import traceback
+                print(f"  WARNING: Sankey chart failed: {e}")
+                traceback.print_exc()
+
+    # ── 3. Sunburst & Treemap: hierarchical view of merged S-V-O ─────────
+    if _px and len(svo_cols) >= 2:
+        hier_df = df_svo[svo_cols].dropna(how='all').copy()
+        for sc in svo_cols:
+            hier_df[sc] = hier_df[sc].fillna('(none)').astype(str)
+        print(f"  Sunburst/Treemap: columns={svo_cols}, rows={len(hier_df)}")
+        if not hier_df.empty:
+            # Limit to top values per column to keep charts readable
+            TOP_N = 20
+            for sc in svo_cols:
+                top_vals = hier_df[sc].value_counts().head(TOP_N).index.tolist()
+                hier_df = hier_df[hier_df[sc].isin(top_vals + ['(none)'])]
+            grouped = hier_df.groupby(svo_cols).size().reset_index(name='Count')
+            if not grouped.empty and len(grouped) > 0:
+                # Sunburst — show all levels expanded
+                try:
+                    fig = _px.sunburst(grouped, path=svo_cols, values='Count',
+                                      title='Sunburst: {}'.format(' → '.join(svo_cols)),
+                                      maxdepth=-1)
+                    fig.update_traces(maxdepth=-1)
+                    sunburst_file = os.path.join(outputDir, '{}_sunburst.html'.format(base_name))
+                    fig.write_html(sunburst_file)
+                    filesToOpen.append(sunburst_file)
+                    print(f"  Sunburst saved: {sunburst_file}")
+                except Exception as e:
+                    import traceback
+                    print(f"  WARNING: Sunburst chart: {e}")
+                    traceback.print_exc()
+
+                # Treemap — show all levels expanded
+                try:
+                    fig = _px.treemap(grouped, path=svo_cols, values='Count',
+                                     title='Treemap: {}'.format(' → '.join(svo_cols)),
+                                     maxdepth=-1)
+                    fig.update_traces(maxdepth=-1)
+                    treemap_file = os.path.join(outputDir, '{}_treemap.html'.format(base_name))
+                    fig.write_html(treemap_file)
+                    filesToOpen.append(treemap_file)
+                    print(f"  Treemap saved: {treemap_file}")
+                except Exception as e:
+                    import traceback
+                    print(f"  WARNING: Treemap chart: {e}")
+                    traceback.print_exc()
+        else:
+            print(f"  Sunburst/Treemap skipped: no rows after filtering on {svo_cols}")
+
+    # ── 4. Interactive network graph (vis.js) ─────────────────────────────
+    # Click a node → highlight the full S→V→O chains that pass through it
+    # and list them in the info panel (e.g. "mob → shot → Negro (12)").
+    TOP_NET_PER_ROLE = 15
+    if len(svo_cols) >= 2:
+        try:
+            net_df = df_svo[svo_cols].dropna(how='all').fillna('').astype(str)
+            if not net_df.empty:
+                palette = {'S': '#E04040', 'V': '#4060E0', 'O': '#30A030'}
+                role_of = {}
+                top_per_role = {}
+                role_keys = ['S', 'V', 'O']
+                for idx_r, sc in enumerate(svo_cols):
+                    rk = role_keys[idx_r] if idx_r < 3 else 'O'
+                    top_vals = net_df[sc].value_counts().head(TOP_NET_PER_ROLE).index.tolist()
+                    top_per_role[sc] = set(top_vals)
+                    for v in top_vals:
+                        if v and v not in role_of:
+                            role_of[v] = rk
+
+                mask = net_df.apply(
+                    lambda row: all(row[c] in top_per_role[c] or row[c] == ''
+                                    for c in svo_cols), axis=1)
+                net_df = net_df[mask]
+
+                # Build edge dict with weights
+                edges = {}
+                for _, row in net_df.iterrows():
+                    vals = [row[c] for c in svo_cols if row[c]]
+                    for i in range(len(vals) - 1):
+                        key = (vals[i], vals[i + 1])
+                        edges[key] = edges.get(key, 0) + 1
+
+                # Build triplet counts for the info panel
+                # triplet_counts["mob|shot|Negro"] = 12
+                triplet_counts = {}
+                for _, row in net_df.iterrows():
+                    vals = tuple(row[c] for c in svo_cols)
+                    if any(v == '' for v in vals):
+                        continue
+                    triplet_counts[vals] = triplet_counts.get(vals, 0) + 1
+
+                # Index: for each node label, which triplets contain it?
+                # node_triplets["mob"] = [["mob","shot","Negro",12], ...]
+                node_triplets = {}
+                for triplet, cnt in triplet_counts.items():
+                    for val in triplet:
+                        node_triplets.setdefault(val, []).append(list(triplet) + [cnt])
+
+                all_nodes = set()
+                for (s, t) in edges:
+                    all_nodes.add(s)
+                    all_nodes.add(t)
+
+                # Compute frequency per node value across all SVO columns
+                import math as _math
+                node_freq = {}
+                for sc in svo_cols:
+                    for val, cnt in net_df[sc].value_counts().items():
+                        if val:
+                            node_freq[val] = node_freq.get(val, 0) + cnt
+
+                print(f"  Network graph: {len(all_nodes)} nodes, {len(edges)} edges, {len(triplet_counts)} unique triplets")
+                if all_nodes:
+                    import json as _json
+
+                    # Scale node sizes: log-based, min=8, max=45
+                    freq_vals = [node_freq.get(n, 1) for n in all_nodes]
+                    max_freq = max(freq_vals) if freq_vals else 1
+                    min_freq = min(freq_vals) if freq_vals else 1
+                    SIZE_MIN, SIZE_MAX = 8, 45
+
+                    def _node_size(freq):
+                        if max_freq == min_freq:
+                            return (SIZE_MIN + SIZE_MAX) / 2
+                        # log scale so high-frequency nodes don't dwarf everything
+                        log_ratio = _math.log(1 + freq - min_freq) / _math.log(1 + max_freq - min_freq)
+                        return SIZE_MIN + log_ratio * (SIZE_MAX - SIZE_MIN)
+
+                    node_id_map = {n: i for i, n in enumerate(sorted(all_nodes))}
+                    vis_nodes = []
+                    for n, nid in node_id_map.items():
+                        rk = role_of.get(n, 'O')
+                        freq = node_freq.get(n, 1)
+                        sz = round(_node_size(freq), 1)
+                        # Font size scales with node: bigger nodes get bigger labels
+                        fsz = max(10, min(22, int(10 + (sz - SIZE_MIN) / (SIZE_MAX - SIZE_MIN) * 12)))
+                        vis_nodes.append({
+                            'id': nid, 'label': n,
+                            'color': palette.get(rk, '#888'),
+                            'font': {'size': fsz},
+                            'shape': 'dot',
+                            'size': sz,
+                            'title': '{} (freq: {})'.format(n, freq),
+                            'role': rk})
+                    vis_edges = []
+                    for (s, t), w in edges.items():
+                        vis_edges.append({
+                            'from': node_id_map[s],
+                            'to': node_id_map[t],
+                            'value': w,
+                            'title': '{} → {} ({})'.format(s, t, w),
+                            'color': {'color': '#aaaaaa', 'highlight': '#333333'}})
+
+                    # Build JS-friendly triplet index keyed by node id
+                    # nodeTriplets[nodeId] = [[s,v,o,count], ...]
+                    js_node_triplets = {}
+                    for label, trips in node_triplets.items():
+                        nid = node_id_map.get(label)
+                        if nid is not None:
+                            # Sort by count descending, keep top 30
+                            trips_sorted = sorted(trips, key=lambda x: -x[-1])[:30]
+                            js_node_triplets[nid] = trips_sorted
+
+                    role_labels = ['Subject', 'Verb', 'Object'][:len(svo_cols)]
+
+                    html = """<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<title>SVO Network</title>
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<style>
+  body {{ font-family: Arial, sans-serif; margin: 0; }}
+  #network {{ width: 100%; height: 75vh; border: 1px solid #ccc; }}
+  #title {{ text-align: center; padding: 8px; font-size: 16px; font-weight: bold; }}
+  #legend {{ text-align: center; padding: 4px; font-size: 13px; }}
+  .leg {{ display: inline-block; width: 14px; height: 14px; border-radius: 50%;
+          vertical-align: middle; margin: 0 3px 0 12px; }}
+  #info {{ padding: 8px 16px; font-size: 13px; color: #333;
+           max-height: 18vh; overflow-y: auto; border-top: 1px solid #ccc; }}
+  #info table {{ border-collapse: collapse; margin: 4px auto; }}
+  #info th, #info td {{ padding: 2px 10px; text-align: left; }}
+  #info th {{ border-bottom: 1px solid #999; }}
+  .s {{ color: #E04040; font-weight: bold; }}
+  .v {{ color: #4060E0; font-weight: bold; }}
+  .o {{ color: #30A030; font-weight: bold; }}
+</style>
+</head><body>
+<div id="title">SVO Network (top {top_n} per role) &mdash; click a node to see full Subject &rarr; Verb &rarr; Object chains</div>
+<div id="legend">{legend_html} &nbsp;&nbsp;&nbsp; <span style="font-size:12px;color:#666">&#9679; Node size = frequency</span></div>
+<div id="network"></div>
+<div id="info">Click a node to see its S &rarr; V &rarr; O relationships.</div>
+<script>
+var nodes = new vis.DataSet({nodes_json});
+var edges = new vis.DataSet({edges_json});
+var nodeTriplets = {triplets_json};
+var container = document.getElementById('network');
+var gdata = {{ nodes: nodes, edges: edges }};
+var options = {{
+  physics: {{ solver: 'forceAtlas2Based',
+              forceAtlas2Based: {{ gravitationalConstant: -60, springLength: 150,
+                                  springConstant: 0.04, damping: 0.5 }},
+              stabilization: {{ iterations: 200 }} }},
+  interaction: {{ hover: true, tooltipDelay: 100 }},
+  nodes: {{ scaling: {{ min: 8, max: 45 }} }},
+  edges: {{ arrows: {{ to: {{ enabled: true, scaleFactor: 0.5 }} }},
+            smooth: {{ type: 'continuous' }}, scaling: {{ min: 1, max: 6 }} }}
+}};
+var network = new vis.Network(container, gdata, options);
+
+// Store original sizes/fonts for reset
+var origNodeProps = {{}};
+nodes.forEach(function(n) {{
+  origNodeProps[n.id] = {{ size: n.size, fontSize: n.font ? n.font.size : 14 }};
+}});
+
+function resetAll() {{
+  nodes.forEach(function(n) {{
+    var orig = origNodeProps[n.id] || {{ size: 12, fontSize: 14 }};
+    nodes.update({{ id: n.id, opacity: 1.0, size: orig.size,
+                    font: {{ size: orig.fontSize, color: '#333' }} }});
+  }});
+  edges.forEach(function(e) {{
+    edges.update({{ id: e.id, color: {{ color: '#aaaaaa', opacity: 1.0 }} }});
+  }});
+}}
+
+// Build a lookup: label → id
+var labelToId = {{}};
+nodes.forEach(function(n) {{ labelToId[n.label] = n.id; }});
+
+network.on("click", function(params) {{
+  var infoDiv = document.getElementById('info');
+  if (params.nodes.length === 0) {{
+    resetAll();
+    infoDiv.innerHTML = 'Click a node to see its S &rarr; V &rarr; O relationships.';
+    return;
+  }}
+  var clickedId = params.nodes[0];
+  var clickedNode = nodes.get(clickedId);
+  var trips = nodeTriplets[clickedId] || [];
+
+  // Collect all node ids involved in the triplets
+  var involvedIds = new Set();
+  involvedIds.add(clickedId);
+  trips.forEach(function(t) {{
+    for (var i = 0; i < t.length - 1; i++) {{
+      var nid = labelToId[t[i]];
+      if (nid !== undefined) involvedIds.add(nid);
+    }}
+  }});
+
+  // Collect all edges between involved nodes
+  var involvedEdgeIds = new Set();
+  edges.forEach(function(e) {{
+    if (involvedIds.has(e.from) && involvedIds.has(e.to)) {{
+      involvedEdgeIds.add(e.id);
+    }}
+  }});
+
+  // Dim / highlight — preserve original sizes for highlighted nodes
+  nodes.forEach(function(n) {{
+    var orig = origNodeProps[n.id] || {{ size: 12, fontSize: 14 }};
+    if (involvedIds.has(n.id)) {{
+      nodes.update({{ id: n.id, opacity: 1.0, size: orig.size,
+                      font: {{ size: Math.max(orig.fontSize, 14), color: '#000' }} }});
+    }} else {{
+      nodes.update({{ id: n.id, opacity: 0.10, size: Math.max(6, orig.size * 0.5),
+                      font: {{ size: 8, color: '#ccc' }} }});
+    }}
+  }});
+  edges.forEach(function(e) {{
+    if (involvedEdgeIds.has(e.id)) {{
+      edges.update({{ id: e.id, color: {{ color: '#333', opacity: 1.0 }} }});
+    }} else {{
+      edges.update({{ id: e.id, color: {{ color: '#eee', opacity: 0.08 }} }});
+    }}
+  }});
+
+  // Build info table showing full S → V → O triplets
+  if (trips.length === 0) {{
+    infoDiv.innerHTML = '<b>' + clickedNode.label + '</b>: no full S→V→O triplets.';
+    return;
+  }}
+  var html = '<b>' + clickedNode.label + '</b> &mdash; '
+           + trips.length + ' triplet(s):<br>'
+           + '<table><tr><th>Subject</th><th></th><th>Verb</th><th></th><th>Object</th><th>Count</th></tr>';
+  trips.forEach(function(t) {{
+    html += '<tr>'
+          + '<td class="s">' + t[0] + '</td><td>&rarr;</td>'
+          + '<td class="v">' + t[1] + '</td><td>&rarr;</td>'
+          + '<td class="o">' + t[2] + '</td>'
+          + '<td>' + t[3] + '</td></tr>';
+  }});
+  html += '</table>';
+  infoDiv.innerHTML = html;
+}});
+</script>
+</body></html>"""
+
+                    legend_parts = []
+                    for rk, rl in zip(['S', 'V', 'O'], role_labels):
+                        legend_parts.append(
+                            '<span class="leg" style="background:{}"></span>{}'.format(
+                                palette[rk], rl))
+                    legend_html = '  '.join(legend_parts)
+
+                    html = html.format(
+                        top_n=TOP_NET_PER_ROLE,
+                        legend_html=legend_html,
+                        nodes_json=_json.dumps(vis_nodes),
+                        edges_json=_json.dumps(vis_edges),
+                        triplets_json=_json.dumps(js_node_triplets))
+
+                    network_file = os.path.join(outputDir, '{}_network.html'.format(base_name))
+                    with open(network_file, 'w', encoding='utf-8') as fh:
+                        fh.write(html)
+                    filesToOpen.append(network_file)
+                    print(f"  Network saved: {network_file}")
+
+                    # ── 4b. Gephi .gexf export ──────────────────────────────
+                    # Export the same SVO network as a .gexf file for Gephi.
+                    # Uses the Gexf classes from Gephi_util directly (no Gephi
+                    # install required — just produces the XML file).
+                    try:
+                        import Gephi_util as _gephi
+
+                        rgb_map = {
+                            'S': (224, 64, 64),    # red
+                            'V': (64, 96, 224),    # blue
+                            'O': (48, 160, 48),    # green
+                        }
+
+                        gexf = _gephi.Gexf("NLP Suite", "SVO Network")
+                        graph = gexf.addGraph("directed", "static", "SVO Network")
+                        # Node attribute: role (S/V/O)
+                        role_attr_id = graph.addNodeAttribute("Role", "O", "string", "static")
+
+                        # Add nodes with SVO-colored dots and frequency-based size
+                        for n, nid in node_id_map.items():
+                            rk = role_of.get(n, 'O')
+                            freq = node_freq.get(n, 1)
+                            r, g_c, b = rgb_map.get(rk, (128, 128, 128))
+                            node = graph.addNode(str(nid), n,
+                                                 r=str(r), g=str(g_c), b=str(b),
+                                                 size=str(max(10, freq)))
+                            node.addAttribute(role_attr_id, rk)
+
+                        # Add edges with weight
+                        for eidx, ((s, t), w) in enumerate(edges.items()):
+                            graph.addEdge(str(eidx),
+                                          str(node_id_map[s]),
+                                          str(node_id_map[t]),
+                                          weight=str(w),
+                                          label='{} → {}'.format(s, t))
+
+                        gexf_file = os.path.join(outputDir, '{}_network.gexf'.format(base_name))
+                        with open(gexf_file, 'wb') as gf:
+                            gexf.write(gf, print_stat=False)
+                        filesToOpen.append(gexf_file)
+                        print(f"  Gephi .gexf saved: {gexf_file}")
+                    except ImportError:
+                        print("  Gephi_util not available — skipping .gexf export")
+                    except Exception as ge:
+                        print(f"  WARNING: Gephi .gexf export: {ge}")
+
+        except Exception as e:
+            import traceback
+            print(f"  WARNING: Network graph: {e}")
+            traceback.print_exc()
+
+    # ── 5. Heatmap: cross-tabulation of first two SVO columns ────────────
+    if _px and len(svo_cols) >= 2:
+        try:
+            heat_df = df_svo[[svo_cols[0], svo_cols[1]]].dropna(how='all').fillna('(none)').astype(str)
+            if not heat_df.empty:
+                ctab = pd.crosstab(heat_df[svo_cols[0]], heat_df[svo_cols[1]])
+                top_rows = ctab.sum(axis=1).nlargest(30).index
+                top_cols_ct = ctab.sum(axis=0).nlargest(30).index
+                ctab = ctab.loc[ctab.index.isin(top_rows), ctab.columns.isin(top_cols_ct)]
+                if not ctab.empty:
+                    fig = _px.imshow(ctab, text_auto=True, aspect='auto',
+                                    title='Heatmap: {} × {}'.format(svo_cols[0], svo_cols[1]),
+                                    labels=dict(x=svo_cols[1], y=svo_cols[0], color='Count'))
+                    heatmap_file = os.path.join(outputDir, '{}_heatmap.html'.format(base_name))
+                    fig.write_html(heatmap_file)
+                    filesToOpen.append(heatmap_file)
+        except Exception as e:
+            print(f"  WARNING: Heatmap: {e}")
+
+    # ── 6. Word cloud: SVO colored (S=red, V=blue, O=green) ──────────────
+    # Reproduces the logic from wordclouds_util.SVOWordCloud inline so we
+    # avoid importing wordclouds_util (which triggers stanza downloads).
+    svo_wc_done = False
+    if len(svo_cols) >= 2:
+        try:
+            from wordcloud import WordCloud as _WC
+            from collections import Counter as _Counter
+            import matplotlib
+            matplotlib.use('Agg')
+            import matplotlib.pyplot as _plt
+
+            # Grouped color function (same as wordclouds_util.GroupedColorFunc)
+            class _GroupedColor:
+                def __init__(self, color_to_words, default_color):
+                    self.mapping = [
+                        ('rgb({},{},{})'.format(*[int(x) for x in col.strip('()').split(',')]),
+                         set(words))
+                        for col, words in color_to_words.items()]
+                    dc = [int(x) for x in default_color.strip('()').split(',')]
+                    self.default = 'rgb({},{},{})'.format(*dc)
+                def __call__(self, word, **kw):
+                    for rgb, words in self.mapping:
+                        if word in words:
+                            return rgb
+                    return self.default
+
+            red   = "(250, 0, 0)"     # Subject
+            blue  = "(0, 0, 250)"     # Verb
+            green = "(0, 250, 0)"     # Object
+            grey  = "(169, 169, 169)"
+            color_map = {red: [], blue: [], green: []}
+
+            svo_wc_df = df_svo[svo_cols].dropna(how='all').fillna('').astype(str)
+            words_list = []
+
+            def _clean_phrase(val):
+                """Strip punctuation per word but keep multi-word phrases together
+                by joining with underscores (WordCloud treats _ as part of a word).
+                Underscores are rendered visually as spaces via _normalize_underscores."""
+                words = []
+                for w in val.lower().split():
+                    cleaned = ''.join(filter(str.isalnum, w))
+                    if cleaned:
+                        words.append(cleaned)
+                return '_'.join(words) if words else ''
+
+            for _, row in svo_wc_df.iterrows():
+                s_val = row.get('Subject', '')
+                v_val = row.get('Verb', '')
+                o_val = row.get('Object', '')
+                if s_val:
+                    clean = _clean_phrase(s_val)
+                    if clean:
+                        words_list.append(clean)
+                        color_map[red].append(clean)
+                if v_val:
+                    clean = _clean_phrase(v_val)
+                    if clean:
+                        words_list.append(clean)
+                        color_map[blue].append(clean)
+                if o_val:
+                    clean = _clean_phrase(o_val)
+                    if clean:
+                        words_list.append(clean)
+                        color_map[green].append(clean)
+
+            if words_list:
+                freq = _Counter(words_list)
+                # Replace underscores with thin spaces in display keys so
+                # "white_woman" renders as "white woman" with minimal gap
+                # Use THIN SPACE (U+2009) to keep multi-word phrases
+                # visually tight — much narrower gap than a regular space
+                _THIN = ' '
+                freq_display = {k.replace('_', _THIN): v for k, v in freq.items()}
+                # Update color_map keys to match the display form
+                color_map_display = {}
+                for color_key, wlist in color_map.items():
+                    color_map_display[color_key] = [w.replace('_', _THIN) for w in wlist]
+
+                # regexp: include thin space (U+2009) so phrases stay as one token
+                wc = _WC(width=800, height=800, max_words=1000,
+                         prefer_horizontal=0.9, collocations=False,
+                         regexp=r"[\w][\w ]+",
+                         contour_width=3, background_color='white'
+                         ).generate_from_frequencies(freq_display)
+                wc.recolor(color_func=_GroupedColor(color_map_display, grey))
+                _plt.figure(figsize=(8, 8), facecolor=None)
+                _plt.imshow(wc, interpolation='bilinear')
+                _plt.title('SVO Word Cloud:  Subject (red)  —  Verb (blue)  —  Object (green)',
+                           fontsize=12, fontweight='bold', pad=20)
+                _plt.axis('off')
+                wc_file = os.path.join(outputDir, '{}_SVO_wordcloud.png'.format(base_name))
+                wc.to_file(wc_file)
+                filesToOpen.append(wc_file)
+                _plt.close()
+                print(f"  SVO Word Cloud saved: {wc_file}")
+                svo_wc_done = True
+        except ImportError:
+            pass
+        except Exception as e:
+            import traceback
+            print(f"  WARNING: SVO Word Cloud failed: {e}")
+            traceback.print_exc()
+
+    # Fall back to plain word clouds if SVO word cloud was not produced
+    if not svo_wc_done:
+        try:
+            from wordcloud import WordCloud as _WC2
+            import matplotlib
+            matplotlib.use('Agg')
+            import matplotlib.pyplot as _plt2
+
+            for col in chart_cols:
+                col_data = df_clean[col].dropna().astype(str)
+                if col_data.empty or len(col_data) < 2:
+                    continue
+                non_numeric = col_data[~col_data.str.match(r'^-?\d+\.?\d*$')]
+                if non_numeric.empty:
+                    continue
+                # Use generate_from_frequencies to keep multi-word phrases intact
+                # Replace regular spaces with THIN SPACE (U+2009) for tighter rendering
+                from collections import Counter as _Counter2
+                phrase_freq_raw = _Counter2(non_numeric.str.strip().str.lower().tolist())
+                phrase_freq = {k.replace(' ', ' '): v for k, v in phrase_freq_raw.items()}
+                # Remove empty keys
+                phrase_freq.pop('', None)
+                phrase_freq.pop('nan', None)
+                if not phrase_freq:
+                    continue
+                try:
+                    wc = _WC2(width=800, height=400, background_color='white',
+                              max_words=100, collocations=False,
+                              regexp=r"[\w][\w ]+"
+                              ).generate_from_frequencies(phrase_freq)
+                    safe_col = _safe_filename(col)
+                    wc_file = os.path.join(outputDir, '{}_{}_wordcloud.png'.format(base_name, safe_col))
+                    wc.to_file(wc_file)
+                    filesToOpen.append(wc_file)
+                except Exception as e:
+                    print(f"  WARNING: Word cloud for {col}: {e}")
+        except ImportError:
+            pass
+
+    # ── 7. Proportional circle map (Leaflet.js via folium) ───────────────
+    _LOCATION_KEYWORDS = {'city', 'state', 'country', 'location', 'place', 'town',
+                          'province', 'region', 'county', 'municipality'}
+    location_cols = [c for c in value_cols
+                     if any(kw in c.lower() for kw in _LOCATION_KEYWORDS)]
+    if location_cols:
+        try:
+            import folium
+            from geopy.geocoders import Nominatim
+            import time as _time
+
+            geolocator = Nominatim(user_agent='NLP_Suite_cross_complex')
+            _geo_cache = {}
+
+            for loc_col in location_cols:
+                loc_data = df_clean[loc_col].dropna().astype(str)
+                if loc_data.empty:
+                    continue
+                freq = loc_data.value_counts().head(50)
+                if freq.empty:
+                    continue
+
+                geo_rows = []
+                for loc_name, count in freq.items():
+                    if loc_name in _geo_cache:
+                        lat, lon = _geo_cache[loc_name]
+                    else:
+                        try:
+                            result = geolocator.geocode(loc_name, timeout=5)
+                            if result:
+                                lat, lon = result.latitude, result.longitude
+                                _geo_cache[loc_name] = (lat, lon)
+                            else:
+                                continue
+                            _time.sleep(1.1)
+                        except Exception:
+                            continue
+                    geo_rows.append((loc_name, lat, lon, count))
+
+                if not geo_rows:
+                    continue
+
+                avg_lat = sum(r[1] for r in geo_rows) / len(geo_rows)
+                avg_lon = sum(r[2] for r in geo_rows) / len(geo_rows)
+                m = folium.Map(location=[avg_lat, avg_lon], zoom_start=4,
+                               tiles='CartoDB positron')
+                max_count = max(r[3] for r in geo_rows)
+                for loc_name, lat, lon, count in geo_rows:
+                    radius = max(5, (count / max_count) * 40)
+                    folium.CircleMarker(
+                        location=[lat, lon],
+                        radius=radius,
+                        color='#3388ff',
+                        fill=True,
+                        fill_color='#3388ff',
+                        fill_opacity=0.6,
+                        popup='{}: {}'.format(loc_name, count),
+                        tooltip='{} ({})'.format(loc_name, count)
+                    ).add_to(m)
+
+                safe_col = _safe_filename(loc_col)
+                map_file = os.path.join(outputDir, '{}_{}_map.html'.format(base_name, safe_col))
+                m.save(map_file)
+                filesToOpen.append(map_file)
+                print(f"  Proportional circle map: {len(geo_rows)} locations geocoded for {loc_col}")
+
+        except ImportError as e:
+            print(f"  Note: Folium/geopy not available for map generation: {e}")
+        except Exception as e:
+            print(f"  WARNING: Proportional circle map: {e}")
 

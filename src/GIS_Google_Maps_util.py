@@ -20,32 +20,54 @@ import GIS_pipeline_util
 # then saves a new file that contains the html/js to display the heatmap
 def create_google_heatmap(window, outputFilename, gmaps_list):
     api_key = GIS_pipeline_util.getGoogleAPIkey(window, 'Google-Maps-API_config.csv')
-    # 10 is a random number because the APY key is a long set of characters
-    if len(api_key)< 5 or api_key == None :
+    # strip whitespace/newline that may be present
+    if api_key:
+        api_key = api_key.strip()
+    if api_key is None or len(api_key) < 5:
         import tkinter.messagebox as mb
         mb.showwarning(title='Google Maps API key error',
                        message="The expected API key required by Google Maps is missing in the config file Google-Maps-API_config.csv.\n\nPlease, make sure to obtain the key, enter it, and save it correctly in the Google-Maps-API_config.csv file and try again.\n\nNo Google Maps heatmap can be produced.")
-        # import IO_user_interface_util
-        # IO_user_interface_util.timed_alert('', 2000, 'Google Maps API key error',
-        #                                    'The expected API key required by Google Maps is missing. Please, make sure to obtain the key, enter it, and save it correctly in the Google-Maps-API_config.csv file.')
         return
 
-    js_template_loc = GUI_IO_util.Google_heatmaps_libPath + os.sep + "heatmap_template.html"
-    open_js = open(js_template_loc, 'r')
-    js_contents = open_js.readlines()
-    js_template = "".join(js_contents)
-    open_js.close()
+    print(f"  Google Maps heatmap: {len(gmaps_list)} data points to write to {outputFilename}")
 
-    js_to_write = js_template.split("//DO NOT REMOVE! PROGRAM INSERTS THE CORRECT JS HERE!")
-    #js_to_write.insert(1,js_to_insert)
+    js_template_loc = GUI_IO_util.Google_heatmaps_libPath + os.sep + "heatmap_template.html"
+    with open(js_template_loc, 'r') as open_js:
+        js_template = open_js.read()
+
+    split_marker = "//DO NOT REMOVE! PROGRAM INSERTS THE CORRECT JS HERE!"
+    js_to_write = js_template.split(split_marker)
+    if len(js_to_write) != 2:
+        print(f"  WARNING: heatmap_template.html does not contain the expected marker comment. "
+              f"Split produced {len(js_to_write)} parts instead of 2.")
+        return
+
+    # build the data-point string
     s = ""
     for item in gmaps_list:
-        s += str(item+"\n")
-    js_output_file = open(outputFilename, 'w+')
-    js_output_file.write(js_to_write[0].replace("<YOUR API KEY HERE>",api_key))
-    js_output_file.write(s)
-    js_output_file.write(js_to_write[1])
-    js_output_file.close()
+        s += str(item + "\n")
+
+    with open(outputFilename, 'w', encoding='utf-8') as js_output_file:
+        js_output_file.write(js_to_write[0].replace("<YOUR API KEY HERE>", api_key))
+        js_output_file.write(s)
+        js_output_file.write(js_to_write[1])
+
+    # verify the output file was written correctly
+    try:
+        with open(outputFilename, 'r', encoding='utf-8') as verify_f:
+            content = verify_f.read()
+        if 'new google.maps.LatLng(' in content:
+            count = content.count('new google.maps.LatLng(')
+            print(f"  Google Maps heatmap: VERIFIED {count} LatLng points in output file.")
+        else:
+            print(f"  WARNING: Google Maps heatmap output file contains NO LatLng data points!")
+        if api_key in content:
+            print(f"  Google Maps heatmap: API key correctly inserted.")
+        else:
+            print(f"  WARNING: API key NOT found in output file!")
+    except Exception as e:
+        print(f"  WARNING: Could not verify heatmap output: {e}")
+
     return
 
 # generate the javascript to be inserted into the template file to create the map
@@ -66,10 +88,13 @@ def create_js(window, outputFilename, locations, geocoder, latLongList):
             latLongList.append([returned_loc.latitude, returned_loc.longitude])
     else:
         latLongList = locations
+    print(f"  create_js: {len(latLongList)} coordinate pairs to convert")
     for item in latLongList:
         gmaps_str = ''.join(["new google.maps.LatLng(",str(item[0]),", ",str(item[1]),"),"])
         gmaps_list.append(gmaps_str)
-        # gmaps_list geocoded values`
+    print(f"  create_js: {len(gmaps_list)} LatLng strings generated")
+    if len(gmaps_list) > 0:
+        print(f"  create_js: first entry = {gmaps_list[0]}")
     create_google_heatmap(window, outputFilename, gmaps_list)
     head, scriptName = os.path.split(os.path.basename(__file__))
     reminders_util.checkReminder(scriptName,

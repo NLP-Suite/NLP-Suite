@@ -164,11 +164,21 @@ reading_list = [
 library ={}
 
 def check_missing(fileName):
+    """Read a table file. Tries the given path first (typically .xlsx);
+    if not found, tries the .csv version as a fallback for tables that
+    exceed Excel's row limit (e.g., Popolo)."""
     if os.path.isfile(fileName):
-        # fileName_lib = pd.DataFrame(pd.read_excel(fileName))
         fileName_lib = pd.read_excel(fileName)
+        # Drop fully-empty rows — Excel files often pad to 1,048,575 rows
+        fileName_lib = fileName_lib.dropna(how='all')
         return fileName_lib
     else:
+        # Try csv fallback (swap .xlsx → .csv)
+        csv_path = os.path.splitext(fileName)[0] + '.csv'
+        if os.path.isfile(csv_path):
+            print(f"  Reading CSV fallback: {os.path.basename(csv_path)}")
+            fileName_lib = pd.read_csv(csv_path, encoding='utf-8', on_bad_lines='skip')
+            return fileName_lib
         mb.showwarning(title='Warning',
                     message='The table ' + fileName + ' is missing.\n\nPlease, make sure to export this table from PC-ACE data backend and try again')
         # create an empty dataframe
@@ -383,6 +393,8 @@ def build_libraries(inputDir, outputDir):
     name='data_Complex'
     if os.path.exists(f"{inputDir}/{name}.pkl"):
         df = pd.read_pickle(f"{inputDir}/{name}.pkl")
+        # Drop fully-empty rows (Excel padding to 1,048,575 rows)
+        df = df.dropna(how='all')
         library[name+'.xlsx'] = df
         data_Complex_lib = library[name+'.xlsx']
     else:
@@ -486,6 +498,9 @@ def build_libraries(inputDir, outputDir):
         utility_Security_lib = create_pkl_file(inputDir, name)
 
     build_NLP_libraries(inputDir, outputDir)
+
+    # ── Build fast lookup dictionaries for O(1) access ──────────────────
+    _build_lookup_indexes()
 
     print('Done importing libraries.')
 
@@ -703,8 +718,8 @@ def build_data_xref_simplex_complex_ALL_lib(inputDir, outputDir):
         # xref_complex_complex_step1 = xref_complex_complex_step1.dropna(subset= ['ID_setup_complex'])
 
 # EXPORT STEP 1
-        xref_complex_complex_step1 = export_df_to_excel(xref_complex_complex_step1, inputDir, inputDir,
-                                                'NLP_data_xref_Complex_step1', False)
+#         xref_complex_complex_step1 = export_df_to_excel(xref_complex_complex_step1, inputDir, inputDir,
+#                                                 'NLP_data_xref_Complex_step1', False)
 
 # STEP 2 add the setup complex name and setup xref complex name
 
@@ -717,7 +732,7 @@ def build_data_xref_simplex_complex_ALL_lib(inputDir, outputDir):
         xref_complex_complex_step2 = xref_complex_complex_step2.rename(columns={'Name': "Complex name"})
 
 # EXPORT STEP 2
-        xref_complex_complex_step2 = export_df_to_excel(xref_complex_complex_step2, inputDir, inputDir, 'NLP_data_xref_Complex_step2', False)
+#         xref_complex_complex_step2 = export_df_to_excel(xref_complex_complex_step2, inputDir, inputDir, 'NLP_data_xref_Complex_step2', False)
 
 # STEP 3 add the setup XREF complex name, and setup higher and lower
         if 'ID_setup_xref_complex-complex' in xref_complex_complex_step2.columns and 'ID_setup_xref_complex-complex' in setup_xref_Complex_Complex_lib.columns:
@@ -737,7 +752,7 @@ def build_data_xref_simplex_complex_ALL_lib(inputDir, outputDir):
         xref_complex_complex_step3 = xref_complex_complex_step3[available_step3_cols]
 
 # EXPORT STEP 3
-        xref_complex_complex_step3 = export_df_to_excel(xref_complex_complex_step3, inputDir, inputDir, 'NLP_data_xref_Complex_step3', False)
+#         xref_complex_complex_step3 = export_df_to_excel(xref_complex_complex_step3, inputDir, inputDir, 'NLP_data_xref_Complex_step3', False)
 
 # xref simplex-complex
 
@@ -765,7 +780,6 @@ def build_data_xref_simplex_complex_ALL_lib(inputDir, outputDir):
         # outputFilename with simplex-complex_ALL is set at the top of the function so that it can be checked
 
 # EXPORT STEP 4 FINAL
-
         data_xref_simplex_complex_ALL_lib = export_df_to_excel(xref_simplex_complex_step4, inputDir, inputDir, 'NLP_data_xref_Simplex-Complex_ALL')
 
     return xref_simplex_complex_step4
@@ -801,6 +815,106 @@ def export_df_to_excel(df, inputDir, outputDir, outputFilename, create_pkl_file=
         # save df as pkl file
         df.to_pickle(str(inputDir) + "/" + str(f"{outputFilename}.pkl"))
     return df
+
+
+def create_sqlite_from_pcace(inputDir, outputDir):
+    """Export all loaded PC-ACE library DataFrames to a single SQLite database.
+
+    Parameters
+    ----------
+    inputDir : str
+        The PC-ACE input directory. The .sqlite file is saved here alongside the xlsx files.
+    outputDir : str
+        (Kept for backward compatibility but no longer used for database location.)
+
+    Returns
+    -------
+    str or None
+        Path to the created SQLite file, or None on failure.
+    """
+    import sqlite3
+
+    if not library:
+        print("  WARNING: No PC-ACE library loaded. Please load a database first.")
+        return None
+
+    head, tail = os.path.split(inputDir)
+    db_name = tail.replace(' ', '_') + '.sqlite'
+    db_path = os.path.join(inputDir, db_name)
+
+    # Remove existing database so we start fresh
+    if os.path.exists(db_path):
+        try:
+            os.remove(db_path)
+        except OSError as e:
+            print(f"  WARNING: Could not remove existing database: {e}")
+            return None
+
+    # Build a lookup of column renames from reading_list so we can ensure
+    # every table has the correct renamed columns even if the library entry
+    # was loaded from a stale pkl or without renames.
+    _rename_lookup = {}
+    for fn, rename_cols in reading_list:
+        if rename_cols:
+            base = os.path.splitext(fn)[0]
+            _rename_lookup[base] = rename_cols
+
+    conn = sqlite3.connect(db_path)
+    table_count = 0
+
+    for key, df in library.items():
+        # Skip non-DataFrame entries (empty dicts from missing tables)
+        if not isinstance(df, pd.DataFrame) or df.empty:
+            continue
+
+        # Build a clean table name from the library key
+        # e.g., 'setup_Complex.xlsx' → 'setup_Complex', 'NLP_data_xref_Simplex' → 'NLP_data_xref_Simplex'
+        table_name = key.replace('.xlsx', '').replace('-', '_').replace(' ', '_')
+
+        try:
+            # Ensure column renames from reading_list are applied.
+            # The library entry may have been loaded from pkl without renames.
+            base_key = key.replace('.xlsx', '')
+            export_df = df
+            if base_key in _rename_lookup:
+                # Only rename columns that still have the old names
+                applicable = {old: new for old, new in _rename_lookup[base_key].items()
+                              if old in df.columns and old != new}
+                if applicable:
+                    export_df = df.copy()
+                    export_df.rename(columns=applicable, inplace=True)
+
+            # Handle duplicate column names (e.g., two columns both renamed to ID_data_complex)
+            # by appending _2, _3, etc. — SQLite does not allow duplicate column names.
+            cols = list(export_df.columns)
+            if len(cols) != len(set(cols)):
+                seen = {}
+                new_cols = []
+                for c in cols:
+                    if c in seen:
+                        seen[c] += 1
+                        new_cols.append(f"{c}_{seen[c]}")
+                    else:
+                        seen[c] = 1
+                        new_cols.append(c)
+                if export_df is df:
+                    export_df = df.copy()
+                export_df.columns = new_cols
+
+            export_df.to_sql(name=table_name, con=conn, index=False, if_exists='replace')
+            table_count += 1
+        except Exception as e:
+            print(f"  WARNING: Could not export table '{table_name}': {e}")
+
+    conn.close()
+
+    if table_count == 0:
+        print("  WARNING: No tables were exported to SQLite.")
+        os.remove(db_path)
+        return None
+
+    print(f"\n  Exported {table_count} tables to SQLite database: {db_path}")
+    return db_path
 
 
 #######################################################################################################
@@ -862,29 +976,67 @@ def view_grammar(excel_file, column_name, output_file):
 def update_grammar_text(inputDir):
     """Auto-generate the GrammarRule_Text field in setup_Complex
     from the setup_xref tables. This reflects the current Required,
-    AllowMultiple, and Group settings."""
+    AllowMultiple, and Group settings.
+    Preserves existing +/++ prefixes from the original grammar when available."""
     global setup_Complex_lib
 
-    # Compute hierarchical complex IDs (these get ++ prefix)
-    # A complex is ++ if any of its complex children also have complex children
-    hierarchical_ids = set()
-    higher_ids = setup_xref_Complex_Complex_lib["HigherComplex"].unique()
-    for higher_id in higher_ids:
-        child_ids = setup_xref_Complex_Complex_lib[
-            setup_xref_Complex_Complex_lib["HigherComplex"] == higher_id
-        ]["LowerComplex"].unique()
-        for child_id in child_ids:
-            if len(setup_xref_Complex_Complex_lib[
-                setup_xref_Complex_Complex_lib["HigherComplex"] == child_id
-            ]) > 0:
-                hierarchical_ids.add(higher_id)
-                break
+    # Parse existing prefixes from current GrammarRule_Text so we preserve
+    # the original editorial +/++ markers instead of guessing from structure.
+    existing_prefix = {}  # complex_name -> "<++" or "<+" or "<"
+    if 'GrammarRule_Text' in setup_Complex_lib.columns:
+        for _, row in setup_Complex_lib.iterrows():
+            gt = str(row.get("GrammarRule_Text", "")).replace('_x000d_', '').strip()
+            if gt and gt != 'nan' and '-->' in gt:
+                if gt.startswith("<++"):
+                    existing_prefix[row["Name"]] = "<++"
+                elif gt.startswith("<+"):
+                    existing_prefix[row["Name"]] = "<+"
+                elif gt.startswith("<"):
+                    existing_prefix[row["Name"]] = "<"
 
-    hierarchical_names = set()
-    for hid in hierarchical_ids:
-        name_match = setup_Complex_lib[setup_Complex_lib["ID_setup_complex"] == hid]
-        if len(name_match) > 0:
-            hierarchical_names.add(name_match["Name"].iloc[0])
+    # Build children lookup for structural fallback
+    _children_of = {}
+    for _, xrow in setup_xref_Complex_Complex_lib.iterrows():
+        _children_of.setdefault(xrow["HigherComplex"], set()).add(xrow["LowerComplex"])
+
+    # ++ detection using the Relationship field in setup_xref_Complex-Complex.
+    # Relationship == 2 marks hierarchical links. Both ends of these links are ++
+    # (e.g., Macro Event, Event, Semantic Triplet).
+    # When Relationship field exists, it is authoritative — ignore existing prefixes.
+    _structural_pp = set()
+    if 'Relationship' in setup_xref_Complex_Complex_lib.columns:
+        rel2 = setup_xref_Complex_Complex_lib[
+            setup_xref_Complex_Complex_lib['Relationship'] == 2
+        ]
+        for _, r2row in rel2.iterrows():
+            hid = r2row['HigherComplex']
+            lid = r2row['LowerComplex']
+            if hid != -1:
+                _structural_pp.add(hid)
+            if lid != -1:
+                _structural_pp.add(lid)
+        if _structural_pp:
+            existing_prefix.clear()  # Relationship field is authoritative
+    # Fallback if Relationship column not available: 3+ direct children + grandchild
+    if not _structural_pp:
+        for higher_id, children in _children_of.items():
+            if len(children) >= 3:
+                for child_id in children:
+                    if child_id in _children_of:
+                        _structural_pp.add(higher_id)
+                        break
+
+    def _get_prefix(complex_id, complex_name):
+        """Return the grammar prefix for a complex type.
+        Uses existing prefix if available, otherwise derives from structure."""
+        if complex_name in existing_prefix:
+            return existing_prefix[complex_name]
+        # Structural fallback
+        if complex_id in _structural_pp:
+            return "<++"
+        if complex_id in _children_of:
+            return "<+"
+        return "<"
 
     # Build a lookup: for each setup complex ID, what is its name?
     complex_name_map = {}
@@ -917,13 +1069,7 @@ def update_grammar_text(inputDir):
             # No rewrite rule needed for leaf nodes without children
             continue
 
-        # Determine prefix for this complex
-        if complex_name in hierarchical_names:
-            prefix = "<++"
-        else:
-            # Check if this complex has complex children (making it a + complex)
-            has_complex_children = len(complex_children) > 0
-            prefix = "<+" if has_complex_children else "<"
+        prefix = _get_prefix(complex_id, complex_name)
 
         # Build the right side of the rewrite rule
         parts = []
@@ -960,15 +1106,7 @@ def update_grammar_text(inputDir):
             allow_multiple = c_row.get("AllowMultiple", False)
             group = str(c_row.get("Group", "0")) if pd.notna(c_row.get("Group", None)) else "0"
 
-            # Determine child prefix
-            if child_name in hierarchical_names:
-                child_prefix = "<++"
-            else:
-                # Check if child has its own complex children
-                child_has_complex = len(setup_xref_Complex_Complex_lib[
-                    setup_xref_Complex_Complex_lib["HigherComplex"] == child_id
-                ]) > 0
-                child_prefix = "<+" if child_has_complex else "<"
+            child_prefix = _get_prefix(child_id, child_name)
 
             token = f"{child_prefix}{child_name}>"
 
@@ -1087,6 +1225,152 @@ def get_setup_complex_children(complex_name, get_required_only=True):
                 print('List of REQUIRED complex', complex_children_required)
 
     return complex_children_all, complex_children_required
+
+
+# ============================================================================
+# TOGGLE REQUIRED BOOLEAN
+# ============================================================================
+
+def get_required_value(object_type, object_name):
+    """Look up the current REQUIRED boolean for a complex or simplex object in its xref table.
+
+    Parameters:
+        object_type: 'Complex' or 'Simplex'
+        object_name: the Name of the object in setup_Complex or setup_Simplex
+
+    Returns:
+        (current_required_bool, info_dict) or (None, None) if not found.
+        info_dict contains the xref table name and matching row indices for the update.
+    """
+    if object_type == 'Complex':
+        # Look up the LowerComplex ID from setup_Complex
+        match = setup_Complex_lib[setup_Complex_lib['Name'] == object_name]
+        if match.empty:
+            return None, None
+        complex_id = match.iloc[0]['ID_setup_complex']
+        # Find in setup_xref_Complex-Complex where LowerComplex == this ID
+        xref_rows = setup_xref_Complex_Complex_lib[
+            setup_xref_Complex_Complex_lib['LowerComplex'] == complex_id
+        ]
+        if xref_rows.empty:
+            # Could also be a top-level complex (HigherComplex)
+            # Check if it appears as HigherComplex
+            print(f"  '{object_name}' (ID {complex_id}) not found as LowerComplex in setup_xref_Complex-Complex.")
+            print(f"  It may be a top-level complex with no parent — REQUIRED is not applicable.")
+            return None, None
+        raw_val = xref_rows.iloc[0].get('Required', False)
+        if isinstance(raw_val, str):
+            current_val = raw_val.strip().upper() in ('TRUE', '1', 'YES')
+        elif pd.isna(raw_val):
+            current_val = False
+        else:
+            current_val = bool(raw_val)
+        return current_val, {
+            'table': 'setup_xref_Complex-Complex',
+            'column': 'LowerComplex',
+            'match_id': complex_id,
+            'indices': xref_rows.index.tolist()
+        }
+
+    elif object_type == 'Simplex':
+        # Look up the simplex ID from setup_Simplex
+        match = setup_Simplex_lib[setup_Simplex_lib['Name'] == object_name]
+        if match.empty:
+            return None, None
+        simplex_id = match.iloc[0]['ID_setup_simplex']
+        # Find in setup_xref_Simplex-Complex where ID_setup_simplex == this ID
+        xref_rows = setup_xref_simplex_complex_lib[
+            setup_xref_simplex_complex_lib['ID_setup_simplex'] == simplex_id
+        ]
+        if xref_rows.empty:
+            print(f"  '{object_name}' (ID {simplex_id}) not found in setup_xref_Simplex-Complex.")
+            return None, None
+        raw_val = xref_rows.iloc[0].get('Required', False)
+        if isinstance(raw_val, str):
+            current_val = raw_val.strip().upper() in ('TRUE', '1', 'YES')
+        elif pd.isna(raw_val):
+            current_val = False
+        else:
+            current_val = bool(raw_val)
+        return current_val, {
+            'table': 'setup_xref_Simplex-Complex',
+            'column': 'ID_setup_simplex',
+            'match_id': simplex_id,
+            'indices': xref_rows.index.tolist()
+        }
+
+    return None, None
+
+
+def toggle_required_value(object_type, object_name, new_value, inputDir):
+    """Toggle the REQUIRED boolean for a complex or simplex object.
+    Updates the xref DataFrame, saves xlsx + pkl, and regenerates grammar.
+
+    Parameters:
+        object_type: 'Complex' or 'Simplex'
+        object_name: the Name of the object
+        new_value: True or False
+        inputDir: the PC-ACE database directory
+
+    Returns:
+        True on success, False on failure.
+    """
+    global setup_xref_Complex_Complex_lib, setup_xref_simplex_complex_lib
+
+    current_val, info = get_required_value(object_type, object_name)
+    if current_val is None:
+        return False
+
+    try:
+        if object_type == 'Complex':
+            # Update all rows where this complex appears as LowerComplex
+            for idx in info['indices']:
+                setup_xref_Complex_Complex_lib.at[idx, 'Required'] = new_value
+            # Save xlsx and pkl
+            table_name = 'setup_xref_Complex-Complex'
+            xlsx_path = os.path.join(inputDir, f"{table_name}.xlsx")
+            pkl_path = os.path.join(inputDir, f"{table_name}.pkl")
+            setup_xref_Complex_Complex_lib.to_excel(xlsx_path, index=False)
+            setup_xref_Complex_Complex_lib.to_pickle(pkl_path)
+            print(f"  Updated REQUIRED for '{object_name}' to {new_value} in {table_name}")
+            print(f"  Saved {xlsx_path} and {pkl_path}")
+
+        elif object_type == 'Simplex':
+            # Update all rows where this simplex appears
+            for idx in info['indices']:
+                setup_xref_simplex_complex_lib.at[idx, 'Required'] = new_value
+            # Save xlsx and pkl
+            table_name = 'setup_xref_Simplex-Complex'
+            xlsx_path = os.path.join(inputDir, f"{table_name}.xlsx")
+            pkl_path = os.path.join(inputDir, f"{table_name}.pkl")
+            setup_xref_simplex_complex_lib.to_excel(xlsx_path, index=False)
+            setup_xref_simplex_complex_lib.to_pickle(pkl_path)
+            print(f"  Updated REQUIRED for '{object_name}' to {new_value} in {table_name}")
+            print(f"  Saved {xlsx_path} and {pkl_path}")
+
+        # Rebuild the Required-flag indexes
+        if "Required" in setup_xref_Complex_Complex_lib.columns:
+            _idx_xref_cc_setup.clear()
+            _idx_xref_cc_setup.update(dict(zip(
+                setup_xref_Complex_Complex_lib["ID_setup_xref_complex-complex"],
+                setup_xref_Complex_Complex_lib["Required"])))
+        if "Required" in setup_xref_simplex_complex_lib.columns:
+            _idx_xref_sc_setup.clear()
+            _idx_xref_sc_setup.update(dict(zip(
+                setup_xref_simplex_complex_lib["ID_setup_xref_simplex-complex"],
+                setup_xref_simplex_complex_lib["Required"])))
+
+        # Regenerate grammar to reflect the new Required status
+        print("  Regenerating grammar rules...")
+        update_grammar_text(inputDir)
+
+        return True
+
+    except Exception as e:
+        print(f"  ERROR toggling REQUIRED: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
 
 
 # given a setup simplex name, the function returns a list of all the complex parents that have the simplex amo0ng its children, regardless of whether required
@@ -1219,13 +1503,570 @@ def get_connections(complex1, complex2, current_path, all_paths, visited, depth_
     visited.remove(complex1)
 
 
+# ---------------------------------------------------------------------------
+# Cross-complex SQL query generator
+#
+# Uses BFS on the setup_xref_Complex-Complex hierarchy to find a path between
+# any two complex types, then mechanically produces a SQL query with the
+# appropriate chain of JOINs through data_xref_Complex_Complex.
+#
+# The generated query:
+#   - optionally filters the SOURCE complex by a simplex name/value
+#   - navigates UP or DOWN through the hierarchy
+#   - extracts simplex values from the TARGET complex
+#   - handles all three value types (text, number, date) via a UNION sub-query
+# ---------------------------------------------------------------------------
+
+def _build_hierarchy_graph():
+    """Build bidirectional adjacency maps from setup_xref_Complex_Complex_lib.
+
+    Returns (children_map, parents_map) where each is
+    {setup_complex_id: [setup_complex_id, ...]}.
+    """
+    children = {}
+    parents = {}
+    for _, row in setup_xref_Complex_Complex_lib.iterrows():
+        h = int(row['HigherComplex'])
+        l = int(row['LowerComplex'])
+        children.setdefault(h, []).append(l)
+        parents.setdefault(l, []).append(h)
+    return children, parents
+
+
+def find_cross_complex_path(source_name, target_name):
+    """BFS path between two complex types (by Name).
+
+    Returns a list of (setup_complex_id, direction) tuples where direction
+    is 'start', 'down', or 'up'.  Returns None if no path exists.
+    """
+    from collections import deque
+
+    id_lookup = dict(zip(setup_Complex_lib['Name'],
+                         setup_Complex_lib['ID_setup_complex'].astype(int)))
+    source_id = id_lookup.get(source_name)
+    target_id = id_lookup.get(target_name)
+    if source_id is None or target_id is None:
+        return None
+
+    if source_id == target_id:
+        return [(source_id, 'start')]
+
+    children, parents = _build_hierarchy_graph()
+    visited = {source_id}
+    queue = deque([(source_id, [(source_id, 'start')])])
+
+    while queue:
+        current, path = queue.popleft()
+        # Explore UP (parents) first — PC-ACE navigation naturally goes
+        # UP to the Semantic Triplet hub, then DOWN to the target branch.
+        for parent in parents.get(current, []):
+            if parent not in visited:
+                visited.add(parent)
+                new_path = path + [(parent, 'up')]
+                if parent == target_id:
+                    return new_path
+                queue.append((parent, new_path))
+        for child in children.get(current, []):
+            if child not in visited:
+                visited.add(child)
+                new_path = path + [(child, 'down')]
+                if child == target_id:
+                    return new_path
+                queue.append((child, new_path))
+    return None
+
+
+def generate_cross_complex_query(source_name, target_name,
+                                 source_filter_simplex=None,
+                                 source_filter_value=None,
+                                 source_filter_operator='LIKE',
+                                 where_simplex=None,
+                                 target_simplex=None):
+    """Generate a SQL query that navigates from one complex type to another.
+
+    Parameters
+    ----------
+    source_name : str
+        Name of the source complex type (e.g. 'Event', 'Individual').
+    target_name : str
+        Name of the target complex type (e.g. 'City', 'Personal characteristics').
+    source_filter_simplex : str, optional
+        Name of a simplex attribute to filter the source (e.g. 'Type of event').
+        Used to restrict which simplex column is displayed for the source.
+    source_filter_value : str, optional
+        Value or pattern for the WHERE filter (e.g. 'lynching', '%woman%').
+    source_filter_operator : str, optional
+        SQL operator for the filter: 'LIKE', '=', '!=', 'NOT LIKE'. Default 'LIKE'.
+    where_simplex : str, optional
+        Simplex name to apply the WHERE filter on. If provided, uses this
+        instead of source_filter_simplex for the WHERE clause.
+    target_simplex : str, optional
+        If given, only extract this simplex from the target.  Otherwise all
+        target simplexes are returned.
+
+    Returns
+    -------
+    (query_string, path) or (None, error_message)
+    """
+    id_lookup = dict(zip(setup_Complex_lib['Name'],
+                         setup_Complex_lib['ID_setup_complex'].astype(int)))
+    name_lookup = dict(zip(setup_Complex_lib['ID_setup_complex'].astype(int),
+                           setup_Complex_lib['Name']))
+
+    source_id = id_lookup.get(source_name)
+    target_id = id_lookup.get(target_name)
+    if source_id is None or target_id is None:
+        return None, "Unknown complex type name"
+
+    path = find_cross_complex_path(source_name, target_name)
+    if path is None:
+        return None, "No path found between {} and {}".format(source_name, target_name)
+
+    # Build aliases for each step in the path
+    aliases = []
+    for i, (node_id, direction) in enumerate(path):
+        if i == 0:
+            aliases.append(('src', node_id, direction))
+        elif i == len(path) - 1:
+            aliases.append(('tgt', node_id, direction))
+        else:
+            aliases.append(('nav{}'.format(i), node_id, direction))
+
+    # Check whether source and target complex types have simplex definitions
+    source_has_simplexes = len(get_cross_complex_simplex_names(source_name)) > 0
+    target_has_simplexes = len(get_cross_complex_simplex_names(target_name)) > 0
+
+    # ---- SELECT ----
+    # COALESCE picks the value from the correct table based on LEFT JOIN + ValueType
+    src_value_expr = "COALESCE(src_vt.Value, src_vn.Value, src_vd.Value)"
+    tgt_value_expr = "COALESCE(tgt_vt.Value, tgt_vn.Value, tgt_vd.Value)"
+    select_parts = ["    src_dc.ID_data_complex     AS Source_ID"]
+    if source_has_simplexes:
+        if source_filter_simplex:
+            select_parts.append("    {} AS Source_Value".format(src_value_expr))
+        else:
+            select_parts.append("    src_ss.Name                AS Source_Simplex")
+            select_parts.append("    {} AS Source_Value".format(src_value_expr))
+    select_parts.append("    tgt_dc.ID_data_complex     AS Target_ID")
+    if target_has_simplexes:
+        if target_simplex:
+            select_parts.append("    {} AS Target_Value".format(tgt_value_expr))
+        else:
+            select_parts.append("    tgt_ss.Name                AS Target_Simplex")
+            select_parts.append("    {} AS Target_Value".format(tgt_value_expr))
+
+    # ---- FROM + JOINs ----
+    from_parts = ["    data_Complex src_dc"]
+
+    # Navigation joins: walk UP or DOWN through the hierarchy.
+    # Use CROSS JOIN to force SQLite to use left-to-right join order
+    # (start from source, navigate outward). Without this, SQLite may
+    # choose a bad plan that starts from the target with a full table scan.
+    prev_alias = 'src'
+    for i in range(1, len(aliases)):
+        alias, node_id, direction = aliases[i]
+        xref_alias = 'xref{}'.format(i)
+        dc_alias = '{}_dc'.format(alias)
+
+        if direction == 'down':
+            from_parts.append(
+                "    CROSS JOIN data_xref_Complex_Complex {xref}\n"
+                "        ON {xref}.ID_data_complex_HIGHER = {prev}_dc.ID_data_complex\n"
+                "    CROSS JOIN data_Complex {dc}\n"
+                "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_LOWER\n"
+                "        AND {dc}.ID_setup_complex = {setup_id}".format(
+                    xref=xref_alias, prev=prev_alias, dc=dc_alias, setup_id=node_id))
+        else:  # up
+            from_parts.append(
+                "    CROSS JOIN data_xref_Complex_Complex {xref}\n"
+                "        ON {xref}.ID_data_complex_LOWER = {prev}_dc.ID_data_complex\n"
+                "    CROSS JOIN data_Complex {dc}\n"
+                "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_HIGHER\n"
+                "        AND {dc}.ID_setup_complex = {setup_id}".format(
+                    xref=xref_alias, prev=prev_alias, dc=dc_alias, setup_id=node_id))
+        prev_alias = alias
+
+    # Source simplex extraction (placed after navigation to preserve CROSS JOIN order)
+    # Use ValueType to join the correct value table (1=Text, 2=Number, 3=Date)
+    # to avoid spurious rows from ID overlaps across value tables.
+    if source_has_simplexes:
+        from_parts.append(
+            "    JOIN [data_xref_Simplex_Complex] src_sxc\n"
+            "        ON src_sxc.ID_data_complex = src_dc.ID_data_complex\n"
+            "    JOIN data_Simplex src_ds\n"
+            "        ON src_ds.ID_data_simplex = src_sxc.ID_data_simplex\n"
+            "    JOIN setup_Simplex src_ss\n"
+            "        ON src_ss.ID_setup_simplex = src_ds.ID_setup_simplex\n"
+            "    LEFT JOIN data_SimplexText   src_vt ON src_vt.ID_data_date_number_text = src_ds.ID_data_date_number_text AND src_ss.ValueType = 1\n"
+            "    LEFT JOIN data_SimplexNumber src_vn ON src_vn.ID_data_date_number_text = src_ds.ID_data_date_number_text AND src_ss.ValueType = 2\n"
+            "    LEFT JOIN data_SimplexDate   src_vd ON src_vd.ID_data_date_number_text = src_ds.ID_data_date_number_text AND src_ss.ValueType = 3"
+        )
+
+    # Target simplex extraction (only if target has simplexes)
+    if target_has_simplexes:
+        from_parts.append(
+            "    JOIN [data_xref_Simplex_Complex] tgt_sxc\n"
+            "        ON tgt_sxc.ID_data_complex = tgt_dc.ID_data_complex\n"
+            "    JOIN data_Simplex tgt_ds\n"
+            "        ON tgt_ds.ID_data_simplex = tgt_sxc.ID_data_simplex\n"
+            "    JOIN setup_Simplex tgt_ss\n"
+            "        ON tgt_ss.ID_setup_simplex = tgt_ds.ID_setup_simplex\n"
+            "    LEFT JOIN data_SimplexText   tgt_vt ON tgt_vt.ID_data_date_number_text = tgt_ds.ID_data_date_number_text AND tgt_ss.ValueType = 1\n"
+            "    LEFT JOIN data_SimplexNumber tgt_vn ON tgt_vn.ID_data_date_number_text = tgt_ds.ID_data_date_number_text AND tgt_ss.ValueType = 2\n"
+            "    LEFT JOIN data_SimplexDate   tgt_vd ON tgt_vd.ID_data_date_number_text = tgt_ds.ID_data_date_number_text AND tgt_ss.ValueType = 3"
+        )
+
+    # ---- WHERE ----
+    where_parts = ["    src_dc.ID_setup_complex = {}".format(source_id)]
+    if source_filter_simplex and source_has_simplexes:
+        where_parts.append("    AND src_ss.Name = '{}'".format(source_filter_simplex))
+    # WHERE filter: use where_simplex if provided, otherwise fall back to source_filter_simplex
+    _filter_simplex = where_simplex or source_filter_simplex
+    if source_filter_value and _filter_simplex and source_has_simplexes:
+        _op = source_filter_operator.upper() if source_filter_operator else 'LIKE'
+        if _op in ('LIKE', 'NOT LIKE'):
+            where_parts.append("    AND LOWER({}) {} LOWER('{}')".format(
+                src_value_expr, _op, source_filter_value))
+        else:
+            where_parts.append("    AND {} {} '{}'".format(
+                src_value_expr, _op, source_filter_value))
+        # If where_simplex differs from source_filter_simplex, add a filter on simplex name
+        if where_simplex and where_simplex != source_filter_simplex:
+            where_parts.append("    AND src_ss.Name = '{}'".format(where_simplex))
+    if target_simplex and target_has_simplexes:
+        where_parts.append("    AND tgt_ss.Name = '{}'".format(target_simplex))
+
+    # ---- Comment header ----
+    path_desc = ' -> '.join(
+        '{}({})'.format(name_lookup.get(nid, nid), d) for nid, d in path)
+    comment = (
+        "-- Auto-generated cross-complex query\n"
+        "-- Source: {src} (setup_complex={src_id})\n"
+        "-- Target: {tgt} (setup_complex={tgt_id})\n"
+        "-- Path: {path}\n".format(
+            src=source_name, src_id=source_id,
+            tgt=target_name, tgt_id=target_id,
+            path=path_desc))
+    if _filter_simplex and source_filter_value:
+        comment += "-- WHERE: {} {} '{}'\n".format(
+            _filter_simplex, source_filter_operator or 'LIKE', source_filter_value)
+    elif source_filter_simplex:
+        comment += "-- Filter simplex: {}\n".format(source_filter_simplex)
+    if not source_has_simplexes:
+        children = get_children_with_simplexes(source_name)
+        comment += "-- Note: {} has no simplex attributes; source IDs only\n".format(
+            source_name)
+        if children:
+            comment += "--   Try using as source: {}\n".format(', '.join(children))
+    if not target_has_simplexes:
+        children = get_children_with_simplexes(target_name)
+        comment += "-- Note: {} has no simplex attributes; target IDs only\n".format(
+            target_name)
+        if children:
+            comment += "--   Try using as target: {}\n".format(', '.join(children))
+
+    # Order by source then target values when available
+    if source_has_simplexes and target_has_simplexes:
+        order_by = "ORDER BY src_dc.ID_data_complex, tgt_ss.Name, {}".format(tgt_value_expr)
+    elif target_has_simplexes:
+        order_by = "ORDER BY {}".format(tgt_value_expr)
+    elif source_has_simplexes:
+        order_by = "ORDER BY src_dc.ID_data_complex, src_ss.Name"
+    else:
+        order_by = "ORDER BY src_dc.ID_data_complex, tgt_dc.ID_data_complex"
+
+    query = (
+        "{comment}\n"
+        "SELECT\n{select_}\n"
+        "FROM\n{from_}\n"
+        "WHERE\n{where}\n"
+        "{order_by}\n".format(
+            comment=comment,
+            select_=',\n'.join(select_parts),
+            from_='\n'.join(from_parts),
+            where='\n'.join(where_parts),
+            order_by=order_by))
+
+    return query, path
+
+
+def generate_multi_target_query(source_name, source_simplex=None,
+                                targets=None):
+    """Generate a SQL query with one source and multiple targets.
+
+    Each target is independently navigated from the source and the results
+    are LEFT JOINed on Source_ID so each target appears as its own column(s).
+
+    Parameters
+    ----------
+    source_name : str
+        Name of the source complex type.
+    source_simplex : str or None
+        Specific source simplex to extract (None = all).
+    targets : list of (target_name, target_simplex_or_None)
+        Each element is a (complex_name, simplex_name_or_None) pair.
+
+    Returns
+    -------
+    (query_string, info_dict) or (None, error_message)
+    """
+    if not targets:
+        return None, "No targets specified."
+
+    id_lookup = dict(zip(setup_Complex_lib['Name'],
+                         setup_Complex_lib['ID_setup_complex'].astype(int)))
+    name_lookup = dict(zip(setup_Complex_lib['ID_setup_complex'].astype(int),
+                           setup_Complex_lib['Name']))
+
+    source_id = id_lookup.get(source_name)
+    if source_id is None:
+        return None, "Unknown source complex type: {}".format(source_name)
+
+    source_has_simplexes = len(get_cross_complex_simplex_names(source_name)) > 0
+
+    # Build one CTE per target
+    cte_parts = []
+    cte_names = []
+    all_paths = []
+    warnings = []
+
+    for idx, (tgt_name, tgt_simplex) in enumerate(targets):
+        tgt_id = id_lookup.get(tgt_name)
+        if tgt_id is None:
+            return None, "Unknown target complex type: {}".format(tgt_name)
+
+        path = find_cross_complex_path(source_name, tgt_name)
+        if path is None:
+            return None, "No path from {} to {}".format(source_name, tgt_name)
+        all_paths.append((tgt_name, path))
+
+        tgt_has_simplexes = len(get_cross_complex_simplex_names(tgt_name)) > 0
+        cte_alias = 'cte_{}'.format(idx)
+        cte_names.append((cte_alias, tgt_name, tgt_simplex, tgt_has_simplexes))
+
+        # Build aliases for path steps
+        aliases = []
+        for i, (node_id, direction) in enumerate(path):
+            if i == 0:
+                aliases.append(('src', node_id, direction))
+            elif i == len(path) - 1:
+                aliases.append(('tgt', node_id, direction))
+            else:
+                aliases.append(('nav{}'.format(i), node_id, direction))
+
+        # SELECT for this CTE
+        cte_select = ["        src_dc.ID_data_complex AS Source_ID"]
+        if tgt_has_simplexes:
+            val_expr = "COALESCE(tgt_vt.Value, tgt_vn.Value, tgt_vd.Value)"
+            if tgt_simplex:
+                cte_select.append("        {} AS Value".format(val_expr))
+            else:
+                cte_select.append("        tgt_ss.Name AS Simplex")
+                cte_select.append("        {} AS Value".format(val_expr))
+        else:
+            cte_select.append("        tgt_dc.ID_data_complex AS Target_ID")
+
+        # FROM for this CTE
+        cte_from = ["        data_Complex src_dc"]
+        prev = 'src'
+        for i in range(1, len(aliases)):
+            alias, node_id, direction = aliases[i]
+            xref_alias = 'xref{}'.format(i)
+            dc_alias = '{}_dc'.format(alias)
+            if direction == 'down':
+                cte_from.append(
+                    "        CROSS JOIN data_xref_Complex_Complex {xref}\n"
+                    "            ON {xref}.ID_data_complex_HIGHER = {prev}_dc.ID_data_complex\n"
+                    "        CROSS JOIN data_Complex {dc}\n"
+                    "            ON {dc}.ID_data_complex = {xref}.ID_data_complex_LOWER\n"
+                    "            AND {dc}.ID_setup_complex = {sid}".format(
+                        xref=xref_alias, prev=prev, dc=dc_alias, sid=node_id))
+            else:
+                cte_from.append(
+                    "        CROSS JOIN data_xref_Complex_Complex {xref}\n"
+                    "            ON {xref}.ID_data_complex_LOWER = {prev}_dc.ID_data_complex\n"
+                    "        CROSS JOIN data_Complex {dc}\n"
+                    "            ON {dc}.ID_data_complex = {xref}.ID_data_complex_HIGHER\n"
+                    "            AND {dc}.ID_setup_complex = {sid}".format(
+                        xref=xref_alias, prev=prev, dc=dc_alias, sid=node_id))
+            prev = alias
+
+        # Target simplex joins
+        if tgt_has_simplexes:
+            cte_from.append(
+                "        JOIN [data_xref_Simplex_Complex] tgt_sxc\n"
+                "            ON tgt_sxc.ID_data_complex = tgt_dc.ID_data_complex\n"
+                "        JOIN data_Simplex tgt_ds\n"
+                "            ON tgt_ds.ID_data_simplex = tgt_sxc.ID_data_simplex\n"
+                "        JOIN setup_Simplex tgt_ss\n"
+                "            ON tgt_ss.ID_setup_simplex = tgt_ds.ID_setup_simplex\n"
+                "        LEFT JOIN data_SimplexText   tgt_vt ON tgt_vt.ID_data_date_number_text = tgt_ds.ID_data_date_number_text AND tgt_ss.ValueType = 1\n"
+                "        LEFT JOIN data_SimplexNumber tgt_vn ON tgt_vn.ID_data_date_number_text = tgt_ds.ID_data_date_number_text AND tgt_ss.ValueType = 2\n"
+                "        LEFT JOIN data_SimplexDate   tgt_vd ON tgt_vd.ID_data_date_number_text = tgt_ds.ID_data_date_number_text AND tgt_ss.ValueType = 3"
+            )
+
+        # WHERE for this CTE
+        cte_where = ["        src_dc.ID_setup_complex = {}".format(source_id)]
+        if tgt_simplex and tgt_has_simplexes:
+            cte_where.append("        AND tgt_ss.Name = '{}'".format(tgt_simplex))
+
+        cte_sql = (
+            "    {alias} AS (\n"
+            "        SELECT\n{sel}\n"
+            "        FROM\n{frm}\n"
+            "        WHERE\n{whr}\n"
+            "    )".format(
+                alias=cte_alias,
+                sel=',\n'.join(cte_select),
+                frm='\n'.join(cte_from),
+                whr='\n'.join(cte_where)))
+        cte_parts.append(cte_sql)
+
+        if not tgt_has_simplexes:
+            children = get_children_with_simplexes(tgt_name)
+            msg = "'{}' has no simplex attributes.".format(tgt_name)
+            if children:
+                msg += " Try: {}".format(', '.join(children))
+            warnings.append(msg)
+
+    # ---- Source CTE (with optional source simplex filter) ----
+    src_select = ["        src_dc.ID_data_complex AS Source_ID"]
+    src_from = ["        data_Complex src_dc"]
+    src_where = ["        src_dc.ID_setup_complex = {}".format(source_id)]
+
+    if source_has_simplexes:
+        src_value_expr = "COALESCE(src_vt.Value, src_vn.Value, src_vd.Value)"
+        if source_simplex:
+            src_select.append("        {} AS Source_Value".format(src_value_expr))
+        else:
+            src_select.append("        src_ss.Name AS Source_Simplex")
+            src_select.append("        {} AS Source_Value".format(src_value_expr))
+        src_from.append(
+            "        JOIN [data_xref_Simplex_Complex] src_sxc\n"
+            "            ON src_sxc.ID_data_complex = src_dc.ID_data_complex\n"
+            "        JOIN data_Simplex src_ds\n"
+            "            ON src_ds.ID_data_simplex = src_sxc.ID_data_simplex\n"
+            "        JOIN setup_Simplex src_ss\n"
+            "            ON src_ss.ID_setup_simplex = src_ds.ID_setup_simplex\n"
+            "        LEFT JOIN data_SimplexText   src_vt ON src_vt.ID_data_date_number_text = src_ds.ID_data_date_number_text AND src_ss.ValueType = 1\n"
+            "        LEFT JOIN data_SimplexNumber src_vn ON src_vn.ID_data_date_number_text = src_ds.ID_data_date_number_text AND src_ss.ValueType = 2\n"
+            "        LEFT JOIN data_SimplexDate   src_vd ON src_vd.ID_data_date_number_text = src_ds.ID_data_date_number_text AND src_ss.ValueType = 3"
+        )
+        if source_simplex:
+            src_where.append("        AND src_ss.Name = '{}'".format(source_simplex))
+
+    src_cte = (
+        "    src_cte AS (\n"
+        "        SELECT\n{sel}\n"
+        "        FROM\n{frm}\n"
+        "        WHERE\n{whr}\n"
+        "    )".format(
+            sel=',\n'.join(src_select),
+            frm='\n'.join(src_from),
+            whr='\n'.join(src_where)))
+
+    # ---- Final SELECT from CTEs ----
+    final_select = ["    src_cte.Source_ID"]
+    if source_has_simplexes:
+        if source_simplex:
+            final_select.append("    src_cte.Source_Value")
+        else:
+            final_select.append("    src_cte.Source_Simplex")
+            final_select.append("    src_cte.Source_Value")
+
+    final_from = ["    src_cte"]
+    for cte_alias, tgt_name, tgt_simplex, tgt_has_sx in cte_names:
+        # Clean label for column name
+        label = tgt_name.replace(' ', '_')
+        if tgt_has_sx:
+            if tgt_simplex:
+                final_select.append("    {a}.Value AS [{tgt}_{sx}]".format(
+                    a=cte_alias, tgt=label, sx=tgt_simplex.replace(' ', '_')))
+            else:
+                final_select.append("    {a}.Simplex AS [{tgt}_Simplex]".format(
+                    a=cte_alias, tgt=label))
+                final_select.append("    {a}.Value AS [{tgt}_Value]".format(
+                    a=cte_alias, tgt=label))
+        else:
+            final_select.append("    {a}.Target_ID AS [{tgt}_ID]".format(
+                a=cte_alias, tgt=label))
+        final_from.append(
+            "    LEFT JOIN {a} ON {a}.Source_ID = src_cte.Source_ID".format(a=cte_alias))
+
+    # ---- Comment header ----
+    comment = "-- Auto-generated MULTI-TARGET cross-complex query\n"
+    comment += "-- Source: {} (setup_complex={})\n".format(source_name, source_id)
+    if source_simplex:
+        comment += "-- Source simplex: {}\n".format(source_simplex)
+    for tgt_name, path in all_paths:
+        path_desc = ' -> '.join('{}({})'.format(name_lookup.get(nid, nid), d) for nid, d in path)
+        comment += "-- Target: {} | Path: {}\n".format(tgt_name, path_desc)
+
+    query = (
+        "{comment}\n"
+        "WITH\n{ctes}\n\n"
+        "SELECT\n{sel}\n"
+        "FROM\n{frm}\n"
+        "ORDER BY src_cte.Source_ID\n".format(
+            comment=comment,
+            ctes=',\n'.join([src_cte] + cte_parts),
+            sel=',\n'.join(final_select),
+            frm='\n'.join(final_from)))
+
+    info = {'paths': all_paths, 'warnings': warnings}
+    return query, info
+
+
+def get_cross_complex_simplex_names(complex_name):
+    """Return a list of simplex names associated with a complex type.
+
+    Useful for populating dropdown menus so the user can pick which simplex
+    to filter on or extract.
+    """
+    complex_id_df = get_setup_complex_ID(complex_name)
+    if complex_id_df.empty:
+        return []
+    complex_id = int(complex_id_df['ID_setup_complex'].iloc[0])
+    # Look up which simplexes are linked via setup_xref_Simplex-Complex
+    linked = setup_xref_simplex_complex_lib[
+        setup_xref_simplex_complex_lib['ID_setup_complex'] == complex_id]
+    simplex_ids = linked['ID_setup_simplex'].unique()
+    names = setup_Simplex_lib[
+        setup_Simplex_lib['ID_setup_simplex'].isin(simplex_ids)]['Name']
+    return sorted(names.dropna().tolist())
+
+
+def get_children_with_simplexes(complex_name):
+    """Return a list of child complex names that have simplex definitions.
+    Useful for suggesting lower-level alternatives when a complex has no
+    direct simplex attributes."""
+    complex_id_df = get_setup_complex_ID(complex_name)
+    if complex_id_df.empty:
+        return []
+    complex_id = int(complex_id_df['ID_setup_complex'].iloc[0])
+    # Get children from setup_xref_Complex-Complex
+    children = setup_xref_Complex_Complex_lib[
+        setup_xref_Complex_Complex_lib['HigherComplex'] == complex_id
+    ]['LowerComplex'].unique()
+    result = []
+    name_lookup = dict(zip(
+        setup_Complex_lib['ID_setup_complex'].astype(int),
+        setup_Complex_lib['Name']))
+    for child_id in children:
+        child_name = name_lookup.get(int(child_id))
+        if child_name and len(get_cross_complex_simplex_names(child_name)) > 0:
+            result.append(child_name)
+    return sorted(result)
+
+
 # get a list of all setup complex and simplex names to be used in dropdown menus in _main
 def get_setup_complex_simplex_names():
     try:
         if setup_Complex_lib is not None and setup_Simplex_lib is not None:
             return setup_Complex_lib["Name"].dropna().sort_values().tolist(), setup_Simplex_lib["Name"].dropna().sort_values().tolist()
-    except:
-        return [], []
+    except Exception as e:
+        print(f"  WARNING: get_setup_complex_simplex_names error: {e}")
+    return [], []
 
 
 # Creates csv file with frequencies of each simplex grammar name as found in setup.
@@ -1379,6 +2220,340 @@ def get_data_simplex_frequencies(inputDir, outputDir, simplex_name):
     return output_file_name
 
 
+def get_data_simplex_values_listing(inputDir, outputDir, simplex_name):
+    """List all actual data values for a given simplex name (e.g., 'City name')
+    with their frequencies.  Returns the path to the output CSV, or None."""
+    global data_simplex_values_ALL_lib
+    if data_simplex_values_ALL_lib is None or data_simplex_values_ALL_lib.empty:
+        print("  WARNING: data_simplex_values_ALL_lib not built yet.")
+        return None
+    if simplex_name == '':
+        return None
+
+    # Filter to the requested simplex name
+    filtered = data_simplex_values_ALL_lib[
+        data_simplex_values_ALL_lib['Simplex name'] == simplex_name]
+    if filtered.empty:
+        print(f"  No data values found for simplex '{simplex_name}'.")
+        return None
+
+    # Build frequency table of the 'Value' column
+    freq = filtered['Value'].value_counts().reset_index()
+    freq.columns = [simplex_name, 'Frequency']
+    freq = freq.sort_values('Frequency', ascending=False)
+
+    output_file_type = simplex_name + '_values_listing'
+    output_file_name = IO_files_util.generate_output_file_name(
+        '', inputDir, outputDir, '.csv', output_file_type)
+    freq.to_csv(output_file_name, encoding='utf-8', index=False)
+    print(f"  Simplex values listing: {len(freq)} unique values for '{simplex_name}' saved to {output_file_name}")
+    return output_file_name
+
+
+def get_simplex_value_type(simplex_name):
+    """Return the ValueType (1=text, 2=number, 3=date) for a given simplex name.
+    Returns None if the simplex is not found."""
+    if setup_Simplex_lib is None or setup_Simplex_lib.empty:
+        return None
+    match = setup_Simplex_lib[setup_Simplex_lib['Name'] == simplex_name]
+    if match.empty:
+        return None
+    if 'ValueType' not in setup_Simplex_lib.columns:
+        return None
+    try:
+        return int(match.iloc[0]['ValueType'])
+    except (ValueError, TypeError):
+        return None
+
+
+def find_near_duplicate_simplex_values(inputDir, outputDir, simplex_name='', similarity_threshold=0.8):
+    """Find near-duplicate (potentially misspelled) text values in data_SimplexText.
+
+    Groups similar strings within each simplex name. For example, if 'City name'
+    has values 'Barnesville', 'Barnesvile', 'barnesville', these are flagged.
+
+    Parameters:
+        inputDir, outputDir: paths for file generation
+        simplex_name: if specified, only check that simplex; if '', check all text simplexes
+        similarity_threshold: 0.0-1.0, how similar strings must be (0.8 = 80% match)
+
+    Returns: path to the review CSV, or None if no near-duplicates found.
+    """
+    import difflib
+
+    global data_simplex_values_ALL_lib
+    if data_simplex_values_ALL_lib is None or data_simplex_values_ALL_lib.empty:
+        print("  WARNING: data_simplex_values_ALL_lib not available for spell-check.")
+        return None
+
+    # Filter to text-type simplexes (ValueType == 1)
+    if 'ValueType' in data_simplex_values_ALL_lib.columns:
+        text_data = data_simplex_values_ALL_lib[
+            data_simplex_values_ALL_lib['ValueType'].astype(float).fillna(0).astype(int) == 1].copy()
+    else:
+        text_data = data_simplex_values_ALL_lib.copy()
+
+    if simplex_name:
+        text_data = text_data[text_data['Simplex name'] == simplex_name]
+
+    if text_data.empty:
+        return None
+
+    clusters = []  # list of dicts for the output CSV
+
+    # Group by simplex name and find near-duplicates within each group
+    for sx_name, group in text_data.groupby('Simplex name'):
+        values = group['Value'].dropna().astype(str).tolist()
+        if not values:
+            continue
+
+        # Build frequency map
+        freq_map = {}
+        for v in values:
+            freq_map[v] = freq_map.get(v, 0) + 1
+
+        unique_vals = list(freq_map.keys())
+        if len(unique_vals) < 2:
+            continue
+
+        # Normalize for comparison (lowercase, stripped)
+        norm_map = {}  # normalized → list of original values
+        for v in unique_vals:
+            norm = v.strip().lower()
+            norm_map.setdefault(norm, []).append(v)
+
+        # Flag exact case-only duplicates (e.g., 'Police' vs 'police')
+        for norm, originals in norm_map.items():
+            if len(originals) > 1:
+                # Pick the most frequent as the "canonical" form
+                originals_sorted = sorted(originals, key=lambda x: freq_map.get(x, 0), reverse=True)
+                canonical = originals_sorted[0]
+                for variant in originals_sorted[1:]:
+                    clusters.append({
+                        'Simplex name': sx_name,
+                        'Value': variant,
+                        'Frequency': freq_map.get(variant, 0),
+                        'Similar to': canonical,
+                        'Canonical frequency': freq_map.get(canonical, 0),
+                        'Match type': 'Case variant',
+                        'Similarity': 1.0
+                    })
+
+        # Find fuzzy near-duplicates using SequenceMatcher
+        checked = set()
+        for i, v1 in enumerate(unique_vals):
+            v1_lower = v1.strip().lower()
+            if len(v1_lower) < 3:
+                continue  # Skip very short strings (too many false positives)
+            for j, v2 in enumerate(unique_vals):
+                if j <= i:
+                    continue
+                v2_lower = v2.strip().lower()
+                if len(v2_lower) < 3:
+                    continue
+                if v1_lower == v2_lower:
+                    continue  # Already handled as case variants
+                pair_key = (min(v1, v2), max(v1, v2))
+                if pair_key in checked:
+                    continue
+                checked.add(pair_key)
+
+                ratio = difflib.SequenceMatcher(None, v1_lower, v2_lower).ratio()
+                if ratio >= similarity_threshold:
+                    # The more frequent one is likely the correct spelling
+                    if freq_map.get(v1, 0) >= freq_map.get(v2, 0):
+                        canonical, variant = v1, v2
+                    else:
+                        canonical, variant = v2, v1
+                    clusters.append({
+                        'Simplex name': sx_name,
+                        'Value': variant,
+                        'Frequency': freq_map.get(variant, 0),
+                        'Similar to': canonical,
+                        'Canonical frequency': freq_map.get(canonical, 0),
+                        'Match type': 'Fuzzy match',
+                        'Similarity': round(ratio, 3)
+                    })
+
+    if not clusters:
+        print("  No near-duplicate simplex text values found.")
+        return None
+
+    df = pd.DataFrame(clusters)
+    df = df.sort_values(['Simplex name', 'Similarity'], ascending=[True, False])
+
+    label = simplex_name + '_' if simplex_name else ''
+    output_file_name = IO_files_util.generate_output_file_name(
+        '', inputDir, outputDir, '.csv', label + 'near_duplicate_values')
+    df.to_csv(output_file_name, encoding='utf-8', index=False)
+    print(f"  Found {len(clusters)} potential near-duplicate value(s) across "
+          f"{df['Simplex name'].nunique()} simplex(es). Saved to {output_file_name}")
+
+    return output_file_name
+
+
+def _detect_date_format(date_values):
+    """Detect the most likely date format from a list of date strings.
+    Returns one of: 'mm-dd-yyyy', 'dd-mm-yyyy', 'yyyy-mm-dd', 'yyyy-dd-mm',
+    'mm-yyyy', 'yyyy-mm', 'yyyy', or None."""
+    import re
+    if not date_values:
+        return None
+    # Sample up to 20 values for detection
+    samples = [str(v).strip() for v in date_values[:20] if pd.notna(v) and str(v).strip()]
+    if not samples:
+        return None
+    # Count separator patterns
+    yyyy_mm_dd = 0  # 2020-01-15 or 2020/01/15
+    mm_dd_yyyy = 0  # 01-15-2020 or 01/15/2020
+    dd_mm_yyyy = 0  # 15-01-2020 or 15/01/2020
+    yyyy_only = 0   # 2020
+    for s in samples:
+        # Normalize separators
+        s_norm = s.replace('/', '-').replace('.', '-')
+        parts = s_norm.split('-')
+        if len(parts) == 3:
+            p0, p1, p2 = parts
+            if len(p0) == 4:  # Starts with year
+                yyyy_mm_dd += 1
+            elif len(p2) == 4:  # Ends with year
+                # Disambiguate mm-dd vs dd-mm
+                try:
+                    if int(p0) > 12:
+                        dd_mm_yyyy += 1
+                    elif int(p1) > 12:
+                        mm_dd_yyyy += 1
+                    else:
+                        mm_dd_yyyy += 1  # Default US format
+                except ValueError:
+                    mm_dd_yyyy += 1
+        elif len(parts) == 1 and re.match(r'^\d{4}$', s_norm):
+            yyyy_only += 1
+
+    if yyyy_mm_dd >= max(mm_dd_yyyy, dd_mm_yyyy, yyyy_only, 1):
+        return 'yyyy-mm-dd'
+    elif dd_mm_yyyy > mm_dd_yyyy:
+        return 'dd-mm-yyyy'
+    elif mm_dd_yyyy > 0:
+        return 'mm-dd-yyyy'
+    elif yyyy_only > 0:
+        return 'yyyy'
+    return 'mm-dd-yyyy'  # Default
+
+
+def prepare_timechart_csv(inputDir, outputDir, simplex_name):
+    """Create a timechart-ready CSV from a date-type simplex.
+
+    Reads all date values for the given simplex and writes a CSV with
+    columns 'Date' and 'Category' (the parent complex name).
+    Returns (csv_path, date_format) or (None, None) if not applicable.
+    """
+    global data_simplex_values_ALL_lib
+
+    # Verify this is a date simplex (ValueType == 3)
+    vtype = get_simplex_value_type(simplex_name)
+    if vtype != 3:
+        return None, None
+
+    if data_simplex_values_ALL_lib is None or data_simplex_values_ALL_lib.empty:
+        return None, None
+
+    filtered = data_simplex_values_ALL_lib[
+        data_simplex_values_ALL_lib['Simplex name'] == simplex_name]
+    if filtered.empty:
+        return None, None
+
+    date_values = filtered['Value'].dropna().tolist()
+    if not date_values:
+        return None, None
+
+    # Detect date format from actual values
+    date_format = _detect_date_format(date_values)
+    if not date_format:
+        return None, None
+
+    # Find the parent complex name(s) for this simplex
+    parent_names = get_setup_simplex_parent(simplex_name)
+    parent_label = parent_names[0] if parent_names else 'Object'
+
+    # Build a DataFrame with Date and Category columns
+    # Each row is one occurrence of the date value, with the parent complex as category
+    df = pd.DataFrame({
+        'Date': date_values,
+        parent_label: [parent_label] * len(date_values)
+    })
+
+    output_file_name = IO_files_util.generate_output_file_name(
+        '', inputDir, outputDir, '.csv', simplex_name + '_timechart_data')
+    df.to_csv(output_file_name, encoding='utf-8', index=False)
+    print(f"  Timechart data: {len(df)} date values for '{simplex_name}' saved to {output_file_name}")
+
+    return output_file_name, date_format
+
+
+def prepare_gis_locations_csv(inputDir, outputDir, simplex_name):
+    """Prepare a GIS-pipeline-compatible CSV from simplex location values.
+
+    Reads every unique *data* value stored for the given simplex name
+    (e.g., "City name" → Barnesville, Atlanta, …) and writes a CSV with
+    the columns that ``GIS_pipeline_util.GIS_pipeline`` / ``GIS_geocode_util.geocode``
+    expect:  Location · NER · Sentence · Document.
+
+    The NER tag is inferred from the simplex name so that Nominatim can
+    narrow the search (city vs. state vs. country).
+
+    Returns the path to the output CSV, or *None* if data is missing.
+    """
+    global data_simplex_values_ALL_lib
+    if data_simplex_values_ALL_lib is None or data_simplex_values_ALL_lib.empty:
+        print("  WARNING: data_simplex_values_ALL_lib not built yet – cannot prepare GIS CSV.")
+        return None
+    if simplex_name == '':
+        return None
+
+    # ── Filter to the requested simplex ──────────────────────────────
+    filtered = data_simplex_values_ALL_lib[
+        data_simplex_values_ALL_lib['Simplex name'] == simplex_name]
+    if filtered.empty:
+        print(f"  No data values found for simplex '{simplex_name}' – GIS CSV not created.")
+        return None
+
+    # ── Map simplex name → NER tag (language-agnostic) ───────────────
+    name_lower = simplex_name.lower()
+    if any(kw in name_lower for kw in ['city', 'città', 'town', 'village', 'municipalit',
+                                        'lynching']):          # "City of lynching"
+        ner_tag = 'CITY'
+    elif any(kw in name_lower for kw in ['state', 'stato', 'province', 'provincia',
+                                          'region', 'regione']):
+        ner_tag = 'STATE_OR_PROVINCE'
+    elif any(kw in name_lower for kw in ['country', 'nation', 'paese', 'nazione']):
+        ner_tag = 'COUNTRY'
+    elif any(kw in name_lower for kw in ['county', 'contea']):
+        ner_tag = 'CITY'          # county geocodes better at city level
+    else:
+        ner_tag = 'CITY'          # safe default
+
+    # ── Collect unique non-null values ───────────────────────────────
+    values = filtered['Value'].dropna().unique().tolist()
+    # Remove blanks / whitespace-only
+    values = [v for v in values if str(v).strip()]
+    if not values:
+        print(f"  All values for simplex '{simplex_name}' are empty – GIS CSV not created.")
+        return None
+
+    # ── Build GIS-compatible DataFrame ───────────────────────────────
+    db_name = os.path.basename(inputDir) if inputDir else ''
+    rows = [[str(v), ner_tag, '', db_name] for v in values]
+    gis_df = pd.DataFrame(rows, columns=['Location', 'NER', 'Sentence', 'Document'])
+
+    output_file_name = IO_files_util.generate_output_file_name(
+        '', inputDir, outputDir, '.csv', simplex_name + '_GIS_locations')
+    gis_df.to_csv(output_file_name, index=False, encoding='utf-8')
+    print(f"  GIS locations CSV: {len(gis_df)} unique locations for '{simplex_name}' "
+          f"(NER={ner_tag}) saved to {output_file_name}")
+    return output_file_name
+
+
 # find the id of the input complex (name)
 # parameter: name of a complex in list type (e.g. [, dataframe of setup_Complex
 # return: a dataframe: id, name of the input complex
@@ -1402,7 +2577,7 @@ def get_data_simplex_info(inputDir, outputDir, simplex_value):
     # data_xref_simplex_complex_select is a df
     data_xref_simplex_complex_select = data_simplex_values_ALL_lib.loc[data_simplex_values_ALL_lib['Value'] == simplex_value, ['ID_setup_simplex', 'Simplex name']]
     # simplex_names is a list
-    simplex_names = data_xref_simplex_complex_select['Simplex name'].values.tolist(index=False)
+    simplex_names = data_xref_simplex_complex_select['Simplex name'].values.tolist()
     for name in simplex_names:
         simplex_info.append([name])
 
@@ -1515,6 +2690,27 @@ def get_data_simplex_text_date_number(simplex_type):
         list_simplex_data.sort()
 
     return list_simplex_data
+
+
+def get_simplex_values_by_name(simplex_name):
+    """Return a sorted list of unique data values for a specific simplex name
+    (e.g., 'City name' → ['Atlanta', 'Barnesville', ...]).
+    Uses data_simplex_values_ALL_lib which merges text/date/number values."""
+    global data_simplex_values_ALL_lib
+    if data_simplex_values_ALL_lib is None or (hasattr(data_simplex_values_ALL_lib, 'empty') and data_simplex_values_ALL_lib.empty):
+        return []
+    if not simplex_name:
+        return []
+    filtered = data_simplex_values_ALL_lib[
+        data_simplex_values_ALL_lib['Simplex name'] == simplex_name]
+    if filtered.empty:
+        return []
+    values = filtered['Value'].dropna().unique().tolist()
+    try:
+        values.sort()
+    except TypeError:
+        values.sort(key=str)
+    return values
 
 
 # get all the data IDs (higher & lower) from data_xref_Complex_Complex as dataframe for a given setup complex name
@@ -1698,6 +2894,13 @@ def get_comment_info(df, object_name, comment_type, inputDir, outputDir):
 def build_macro_event_dropdown_menu(inputDir):
     macro_event_dropdown_menu_list = []
 
+    # Guard: libraries must be loaded first (build_libraries must have been called)
+    try:
+        if setup_Complex_lib is None or data_Complex_lib is None:
+            return macro_event_dropdown_menu_list
+    except NameError:
+        return macro_event_dropdown_menu_list
+
     if os.path.exists(f"{inputDir}/{'setup_Complex'}.pkl"):
         has_files = True
     else:
@@ -1710,7 +2913,15 @@ def build_macro_event_dropdown_menu(inputDir):
 
         macro_event_IDentifier = data_Complex_lib[data_Complex_lib['ID_setup_complex'] ==macro_event_name_ID]
 
-        macro_event_dropdown_menu_list =macro_event_IDentifier.apply(lambda x: f"{x['ID_data_complex']} - {x['Identifier']}", axis=1).tolist()
+        def _format_macro_row(x):
+            cid = x['ID_data_complex']
+            ident = x.get('Identifier', '')
+            if pd.isna(ident) or str(ident).strip() == '':
+                ident = compute_identifier(cid)
+            if ident:
+                return f"{cid} - {macro_event_name}: {ident}"
+            return f"{cid} - {macro_event_name}"
+        macro_event_dropdown_menu_list = macro_event_IDentifier.apply(_format_macro_row, axis=1).tolist()
 
     return macro_event_dropdown_menu_list
 
@@ -1729,20 +2940,31 @@ def _get_structural_hierarchical_types():
     if 'HigherComplex' not in setup_xref_Complex_Complex_lib.columns:
         return hierarchical_list
 
-    # A complex is truly hierarchical (++) if any of its complex children
-    # also have complex children — same logic as update_grammar_text()
+    # Use Relationship == 2 in setup_xref_Complex-Complex to identify hierarchical types.
+    # Both ends of Relationship=2 links are hierarchical (e.g., Macro Event, Event, Semantic Triplet).
     hierarchical_ids = set()
-    higher_ids = setup_xref_Complex_Complex_lib["HigherComplex"].unique()
-    for higher_id in higher_ids:
-        child_ids = setup_xref_Complex_Complex_lib[
-            setup_xref_Complex_Complex_lib["HigherComplex"] == higher_id
-        ]["LowerComplex"].unique()
-        for child_id in child_ids:
-            if len(setup_xref_Complex_Complex_lib[
-                setup_xref_Complex_Complex_lib["HigherComplex"] == child_id
-            ]) > 0:
-                hierarchical_ids.add(higher_id)
-                break
+    if 'Relationship' in setup_xref_Complex_Complex_lib.columns:
+        rel2 = setup_xref_Complex_Complex_lib[
+            setup_xref_Complex_Complex_lib['Relationship'] == 2
+        ]
+        for _, r2row in rel2.iterrows():
+            hid = r2row['HigherComplex']
+            lid = r2row['LowerComplex']
+            if hid != -1:
+                hierarchical_ids.add(hid)
+            if lid != -1:
+                hierarchical_ids.add(lid)
+    # Fallback if Relationship column not available
+    if not hierarchical_ids:
+        _children_of = {}
+        for _, xrow in setup_xref_Complex_Complex_lib.iterrows():
+            _children_of.setdefault(xrow["HigherComplex"], set()).add(xrow["LowerComplex"])
+        for higher_id, children in _children_of.items():
+            if len(children) >= 3:
+                for child_id in children:
+                    if child_id in _children_of:
+                        hierarchical_ids.add(higher_id)
+                        break
 
     for setup_id in hierarchical_ids:
         name_rows = setup_Complex_lib[setup_Complex_lib['ID_setup_complex'] == setup_id]
@@ -1823,7 +3045,15 @@ def higher_lower(inputDir, outputDir, complex_name, export_identifier=False):
             unique_IDs = set(data_Complex_lib[data_Complex_lib["ID_setup_complex"].isin(setup_ids)]["ID_data_complex"])
             print(f"  Fallback: found {len(unique_IDs)} instances of '{complex_name}' directly from data_Complex")
 
-    for id in unique_IDs:
+    total_IDs = len(unique_IDs)
+    import time as _time
+    _t0 = _time.time()
+    for idx, id in enumerate(unique_IDs, 1):
+        if idx <= 3 or idx % 500 == 0 or idx == total_IDs:
+            _elapsed = _time.time() - _t0
+            _rate = idx / _elapsed if _elapsed > 0 else 0
+            _eta = int((total_IDs - idx) / _rate) if _rate > 0 else 0
+            print(f"Processing complex {idx}/{total_IDs}  ({_rate:.0f}/sec, ~{_eta}s remaining)")
 
         # Walk up the hierarchy generically (works with any grammar/language)
         ancestors = _get_ancestor_chain(id)
@@ -1839,21 +3069,20 @@ def higher_lower(inputDir, outputDir, complex_name, export_identifier=False):
                 _order_cols.append(f"{root_child['name']} Order")
             _hierarchy_captured = True
 
-        filter_df = data_xref_simplex_complex_ALL_lib[(data_xref_simplex_complex_ALL_lib["ID_data_complex"] == id) & (data_xref_simplex_complex_ALL_lib["ID_data_complex_LOWER"] != id)]
+        # Use indexed lookup instead of DataFrame scan
+        _all_children_raw = _idx_all_lib_by_complex.get(id, [])
+        _all_children = [(lower, cname) for lower, cname in _all_children_raw if lower != id]
 
         # Check if this complex has complex children or is a leaf complex
-        has_complex_children = len(data_xref_Complex_Complex_lib[data_xref_Complex_Complex_lib["ID_data_complex_HIGHER"] == id]) > 0
+        has_complex_children = id in _idx_children_of_higher
 
         if not has_complex_children:
             # LEAF COMPLEX (e.g., Age, Collective actor): no complex children,
             # only simplex values directly attached. Extract them into a single row.
             row_dict = {}
-            simplex_rows = data_xref_simplex_complex_lib[data_xref_simplex_complex_lib["ID_data_complex"] == id]
-            if "Order" in simplex_rows.columns:
-                simplex_rows = simplex_rows.sort_values("Order")
+            simplex_entries = _idx_xref_simplex_complex.get(id, [])
 
-            for _, srow in simplex_rows.iterrows():
-                simplex_id = srow["ID_data_simplex"]
+            for simplex_id, _ in simplex_entries:
                 simplex_name = _get_simplex_name(simplex_id)
                 text_value = get_text_value_simplex(simplex_id)
                 col_name = f"{complex_name} > {simplex_name}"
@@ -1883,29 +3112,16 @@ def higher_lower(inputDir, outputDir, complex_name, export_identifier=False):
         # Track the Order for column sorting (S-V-O)
         children_by_type = {}  # { "Participant-S": [child_id1], "Process": [child_id2, child_id3], ... }
         type_order = {}  # { "Participant-S": 1, "Process": 2, "Participant-O": 3 }
-        for index, row in filter_df.iterrows():
-            val = row["ID_data_complex_LOWER"]
-            child_type = row["Child name"]
+        for val, child_type in _all_children:
+            # Get Order and Required status via index — O(1)
+            cc_info = _idx_cc_order.get((id, val))
+            if cc_info is not None and child_type not in type_order:
+                type_order[child_type] = cc_info[0]  # Order
 
-            # Get the Order and Required status from data_xref_Complex_Complex_lib
-            xref_row = data_xref_Complex_Complex_lib[
-                (data_xref_Complex_Complex_lib["ID_data_complex_HIGHER"] == id) &
-                (data_xref_Complex_Complex_lib["ID_data_complex_LOWER"] == val)
-            ]
-            if len(xref_row) > 0 and child_type not in type_order:
-                order_val = xref_row["Order"].iloc[0] if "Order" in xref_row.columns else 999
-                type_order[child_type] = order_val
+            # Include ALL children that exist in the data, regardless of Required flag
+            # (e.g., Participant-O is optional in the grammar but should be shown when present)
 
-            # In expanded mode, skip non-required top-level children
-            if not export_identifier and len(xref_row) > 0:
-                xref_id = xref_row["ID_setup_xref_complex-complex"]
-                setup_match = setup_xref_Complex_Complex_lib[setup_xref_Complex_Complex_lib["ID_setup_xref_complex-complex"].isin(xref_id)]
-                if len(setup_match) > 0 and not setup_match["Required"].iloc[0]:
-                    print(f"  Skipping non-required top-level child: {child_type}, ID: {val}")
-                    continue
-
-            print('Row values', [val])
-            print("Complex name we're processing: ", child_type)
+            # print(f"  Complex name we're processing: {child_type}, child ID: {val}")
             if child_type not in children_by_type:
                 children_by_type[child_type] = []
             if val not in children_by_type[child_type]:
@@ -1959,7 +3175,7 @@ def higher_lower(inputDir, outputDir, complex_name, export_identifier=False):
                 child_ids = children_by_type[child_type]
                 partial_rows_by_type[child_type] = []
                 for child_id in child_ids:
-                    partials = _traverse_complex_to_simplex(child_id, required_only=True, col_prefix=child_type)
+                    partials = _traverse_complex_to_simplex(child_id, required_only=False, col_prefix=child_type)
                     partial_rows_by_type[child_type].extend(partials)
                 # Collect all column names from this type's partials
                 type_cols = set()
@@ -2110,7 +3326,7 @@ def _traverse_complex_to_simplex(start_complex_id, required_only=False, col_pref
         else:
             col_name = f"{parent_name} > {simplex_name}"
         text_value = str(get_text_value_simplex(simplex_id))
-        print(f"  Simplex name: {simplex_name}, parent complex: {parent_name}, ID: {simplex_id}")
+        # print(f"  Simplex name: {simplex_name}, parent complex: {parent_name}, ID: {simplex_id}")
         if col_name in base:
             existing_values = str(base[col_name]).split(", ")
             if text_value not in existing_values:
@@ -2137,7 +3353,6 @@ def _traverse_complex_to_simplex(start_complex_id, required_only=False, col_pref
     for child_type, child_ids in children_by_type.items():
         partial_rows_by_type[child_type] = []
         for child_id in child_ids:
-            print(f"Complex name we're processing  {child_type}")
             child_rows = _traverse_complex_to_simplex(child_id, required_only=required_only, col_prefix=col_prefix)
             partial_rows_by_type[child_type].extend(child_rows)
 
@@ -2158,38 +3373,204 @@ def _traverse_complex_to_simplex(start_complex_id, required_only=False, col_pref
     return combined_rows if combined_rows else [{}]
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# Fast lookup indexes — built once by _build_lookup_indexes(), used by all
+# helper functions below for O(1) access instead of DataFrame scans.
+# ═══════════════════════════════════════════════════════════════════════════
+
+_idx_complex_to_setup = {}      # data_complex_id → setup_complex_id
+_idx_setup_complex_name = {}    # setup_complex_id → Name
+_idx_simplex_to_setup = {}      # data_simplex_id → setup_simplex_id
+_idx_setup_simplex_name = {}    # setup_simplex_id → Name
+_idx_simplex_dnt = {}           # data_simplex_id → ID_data_date_number_text
+_idx_simplex_valuetype = {}     # setup_simplex_id → ValueType (int)
+_idx_text_value = {}            # ID_data_date_number_text → Value (from SimplexText)
+_idx_number_value = {}          # ID_data_date_number_text → Value (from SimplexNumber)
+_idx_date_value = {}            # ID_data_date_number_text → Value (from SimplexDate)
+_idx_complex_identifier = {}    # data_complex_id → Identifier string
+_idx_parent_of_lower = {}       # data_complex_id (LOWER) → (parent_id, Order)
+_idx_children_of_higher = {}    # data_complex_id (HIGHER) → list of LOWER ids
+_idx_xref_simplex_complex = {}  # data_complex_id → list of (simplex_id, setup_xref_id)
+_idx_complex_id_exists = set()  # set of all data_complex_ids that exist
+_idx_xref_cc_setup = {}         # ID_setup_xref_complex-complex → Required (bool)
+_idx_xref_sc_setup = {}         # ID_setup_xref_simplex-complex → Required (bool)
+_idx_all_lib_by_complex = {}    # ID_data_complex → list of (ID_data_complex_LOWER, Child_name) from ALL_lib
+_idx_cc_order = {}              # (HIGHER_id, LOWER_id) → (Order, setup_xref_id)
+_idx_dnt_to_simplex = {}        # ID_data_date_number_text → list of data_simplex_id (reverse of _idx_simplex_dnt)
+_idx_simplex_to_complexes = {}  # data_simplex_id → list of data_complex_id (reverse of _idx_xref_simplex_complex)
+
+
+def _build_lookup_indexes():
+    """Build dictionary indexes from the global DataFrames for O(1) lookups.
+    Called once at the end of build_libraries()."""
+    global _idx_complex_to_setup, _idx_setup_complex_name
+    global _idx_simplex_to_setup, _idx_setup_simplex_name
+    global _idx_simplex_dnt, _idx_simplex_valuetype
+    global _idx_text_value, _idx_number_value, _idx_date_value
+    global _idx_complex_identifier, _idx_parent_of_lower
+    global _idx_children_of_higher, _idx_xref_simplex_complex
+    global _idx_complex_id_exists, _idx_xref_cc_setup, _idx_xref_sc_setup
+    global _idx_all_lib_by_complex, _idx_cc_order
+    global _idx_dnt_to_simplex, _idx_simplex_to_complexes
+
+    print("Building fast lookup indexes...")
+
+    # data_complex_id → setup_complex_id
+    _idx_complex_to_setup = dict(zip(
+        data_Complex_lib["ID_data_complex"], data_Complex_lib["ID_setup_complex"]))
+
+    # data_complex_id → Identifier
+    if "Identifier" in data_Complex_lib.columns:
+        mask = data_Complex_lib["Identifier"].notna()
+        ids = data_Complex_lib.loc[mask, "ID_data_complex"]
+        idents = data_Complex_lib.loc[mask, "Identifier"].astype(str)
+        _idx_complex_identifier.update(dict(zip(ids, idents)))
+
+    # set of all existing data_complex_ids
+    _idx_complex_id_exists = set(data_Complex_lib["ID_data_complex"])
+
+    # setup_complex_id → Name
+    _idx_setup_complex_name = dict(zip(
+        setup_Complex_lib["ID_setup_complex"], setup_Complex_lib["Name"]))
+
+    # data_simplex_id → setup_simplex_id, ID_data_date_number_text
+    _idx_simplex_to_setup = dict(zip(
+        data_Simplex_lib["ID_data_simplex"], data_Simplex_lib["ID_setup_simplex"]))
+    _idx_simplex_dnt = dict(zip(
+        data_Simplex_lib["ID_data_simplex"], data_Simplex_lib["ID_data_date_number_text"]))
+
+    # setup_simplex_id → Name, ValueType
+    _idx_setup_simplex_name = dict(zip(
+        setup_Simplex_lib["ID_setup_simplex"], setup_Simplex_lib["Name"]))
+    if "ValueType" in setup_Simplex_lib.columns:
+        vt_series = pd.to_numeric(setup_Simplex_lib["ValueType"], errors='coerce').fillna(1).astype(int)
+        _idx_simplex_valuetype = dict(zip(setup_Simplex_lib["ID_setup_simplex"], vt_series))
+
+    # Value lookup tables
+    _idx_text_value = dict(zip(
+        data_SimplexText_lib["ID_data_date_number_text"], data_SimplexText_lib["Value"]))
+    _idx_number_value = dict(zip(
+        data_SimplexNumber_lib["ID_data_date_number_text"], data_SimplexNumber_lib["Value"]))
+    if data_SimplexDate_lib is not None and len(data_SimplexDate_lib) > 0:
+        _idx_date_value = dict(zip(
+            data_SimplexDate_lib["ID_data_date_number_text"], data_SimplexDate_lib["Value"]))
+
+    # data_xref_Complex-Complex: parent/child relationships (vectorized)
+    _idx_children_of_higher.clear()
+    _idx_parent_of_lower.clear()
+    cc_df = data_xref_Complex_Complex_lib
+    has_order = "Order" in cc_df.columns
+    has_setup_xref = "ID_setup_xref_complex-complex" in cc_df.columns
+    highs = cc_df["ID_data_complex_HIGHER"].values
+    lows = cc_df["ID_data_complex_LOWER"].values
+    orders = cc_df["Order"].values if has_order else [0] * len(cc_df)
+    for i in range(len(cc_df)):
+        h, l, o = highs[i], lows[i], orders[i]
+        _idx_parent_of_lower[l] = (h, o)
+        if h not in _idx_children_of_higher:
+            _idx_children_of_higher[h] = []
+        _idx_children_of_higher[h].append(l)
+
+    # setup_xref_complex-complex: Required flag
+    if has_setup_xref:
+        _idx_xref_cc_data_to_setup = {}
+        sxrefs = cc_df["ID_setup_xref_complex-complex"].values
+        for i in range(len(cc_df)):
+            _idx_xref_cc_data_to_setup[(highs[i], lows[i])] = sxrefs[i]
+    if "Required" in setup_xref_Complex_Complex_lib.columns:
+        _idx_xref_cc_setup = dict(zip(
+            setup_xref_Complex_Complex_lib["ID_setup_xref_complex-complex"],
+            setup_xref_Complex_Complex_lib["Required"]))
+
+    # data_xref_Simplex-Complex: simplex→complex links (vectorized)
+    _idx_xref_simplex_complex.clear()
+    sc_df = data_xref_simplex_complex_lib
+    sc_cids = sc_df["ID_data_complex"].values
+    sc_sids = sc_df["ID_data_simplex"].values
+    sc_xids = sc_df["ID_setup_xref_simplex-complex"].values
+    for i in range(len(sc_df)):
+        cid = sc_cids[i]
+        if cid not in _idx_xref_simplex_complex:
+            _idx_xref_simplex_complex[cid] = []
+        _idx_xref_simplex_complex[cid].append((sc_sids[i], sc_xids[i]))
+
+    # Reverse index: simplex_id → list of complex_ids (for search)
+    _idx_simplex_to_complexes.clear()
+    for i in range(len(sc_df)):
+        sid = sc_sids[i]
+        if sid not in _idx_simplex_to_complexes:
+            _idx_simplex_to_complexes[sid] = []
+        _idx_simplex_to_complexes[sid].append(sc_cids[i])
+
+    # Reverse index: dnt_id → list of simplex_ids (for search)
+    _idx_dnt_to_simplex.clear()
+    s_dnt_ids = data_Simplex_lib["ID_data_date_number_text"].values
+    s_ids = data_Simplex_lib["ID_data_simplex"].values
+    for i in range(len(data_Simplex_lib)):
+        dnt = s_dnt_ids[i]
+        if dnt not in _idx_dnt_to_simplex:
+            _idx_dnt_to_simplex[dnt] = []
+        _idx_dnt_to_simplex[dnt].append(s_ids[i])
+
+    # setup_xref_simplex-complex: Required flag
+    if "Required" in setup_xref_simplex_complex_lib.columns:
+        _idx_xref_sc_setup = dict(zip(
+            setup_xref_simplex_complex_lib["ID_setup_xref_simplex-complex"],
+            setup_xref_simplex_complex_lib["Required"]))
+
+    # data_xref_simplex_complex_ALL_lib: group by ID_data_complex for fast child lookup (vectorized)
+    _idx_all_lib_by_complex.clear()
+    if data_xref_simplex_complex_ALL_lib is not None and len(data_xref_simplex_complex_ALL_lib) > 0:
+        has_child_name = "Child name" in data_xref_simplex_complex_ALL_lib.columns
+        has_lower = "ID_data_complex_LOWER" in data_xref_simplex_complex_ALL_lib.columns
+        if has_child_name and has_lower:
+            al_cids = data_xref_simplex_complex_ALL_lib["ID_data_complex"].values
+            al_lowers = data_xref_simplex_complex_ALL_lib["ID_data_complex_LOWER"].values
+            al_names = data_xref_simplex_complex_ALL_lib["Child name"].values
+            for i in range(len(data_xref_simplex_complex_ALL_lib)):
+                cid = al_cids[i]
+                if cid not in _idx_all_lib_by_complex:
+                    _idx_all_lib_by_complex[cid] = []
+                _idx_all_lib_by_complex[cid].append((al_lowers[i], al_names[i]))
+
+    # data_xref_Complex-Complex: (HIGHER, LOWER) → (Order, setup_xref_id) for quick lookup (vectorized)
+    _idx_cc_order.clear()
+    # Reuse arrays already extracted above for cc_df
+    cc_sxrefs = cc_df["ID_setup_xref_complex-complex"].values if has_setup_xref else [None] * len(cc_df)
+    for i in range(len(cc_df)):
+        _idx_cc_order[(highs[i], lows[i])] = (orders[i] if has_order else 999, cc_sxrefs[i])
+
+    # Invalidate _get_role_name cache so it rebuilds on next call
+    if hasattr(_get_role_name, '_cache'):
+        del _get_role_name._cache
+
+    print("  Lookup indexes ready.")
+
+
 def _get_complex_name(data_complex_id):
-    """Helper to resolve a data complex ID to its setup name."""
-    setup_id = data_Complex_lib.loc[data_Complex_lib["ID_data_complex"] == data_complex_id, "ID_setup_complex"]
-    if len(setup_id) > 0:
-        name = setup_Complex_lib.loc[setup_Complex_lib["ID_setup_complex"] == setup_id.iloc[0], "Name"]
-        if len(name) > 0:
-            return name.iloc[0]
+    """Helper to resolve a data complex ID to its setup name — O(1)."""
+    setup_id = _idx_complex_to_setup.get(data_complex_id)
+    if setup_id is not None:
+        name = _idx_setup_complex_name.get(setup_id)
+        if name is not None:
+            return name
     return f"Complex_{data_complex_id}"
 
 
 def _get_ancestor_chain(data_complex_id):
-    """Walk up the complex-complex hierarchy from a data complex ID.
-    Returns a list of ancestor dicts from immediate parent up to the top-level root:
-        [{"data_id": parent_id, "name": "Evento", "order": 5},
-         {"data_id": grandparent_id, "name": "Macro evento", "order": 2}, ...]
-    where 'order' is the Order value of the child within that ancestor.
-    Works with any PC-ACE grammar regardless of language or hierarchy depth."""
+    """Walk up the complex-complex hierarchy from a data complex ID — O(depth).
+    Returns a list of ancestor dicts from immediate parent up to the top-level root."""
     ancestors = []
     current_id = data_complex_id
     visited = set()
     while current_id not in visited:
         visited.add(current_id)
-        parent_rows = data_xref_Complex_Complex_lib[
-            data_xref_Complex_Complex_lib["ID_data_complex_LOWER"] == current_id
-        ]
-        if len(parent_rows) == 0:
-            break  # reached the top-level root (no parent)
-        parent_id = parent_rows["ID_data_complex_HIGHER"].iloc[0]
-        # Stop if parent is a sentinel value (e.g., -1) or doesn't exist in data_Complex
-        if parent_id < 0 or len(data_Complex_lib[data_Complex_lib["ID_data_complex"] == parent_id]) == 0:
+        parent_info = _idx_parent_of_lower.get(current_id)
+        if parent_info is None:
             break
-        order = parent_rows["Order"].iloc[0] if "Order" in parent_rows.columns else 0
+        parent_id, order = parent_info
+        if parent_id < 0 or parent_id not in _idx_complex_id_exists:
+            break
         parent_name = _get_complex_name(parent_id)
         ancestors.append({"data_id": parent_id, "name": parent_name, "order": order})
         current_id = parent_id
@@ -2236,106 +3617,82 @@ def _add_ancestor_columns(row_dict, ancestors, complex_name):
 
 
 def _get_identifier(data_complex_id):
-    """Helper to retrieve the Identifier string for a data complex ID."""
-    match = data_Complex_lib.loc[data_Complex_lib["ID_data_complex"] == data_complex_id, "Identifier"]
-    if len(match) > 0:
-        val = match.iloc[0]
-        if pd.notna(val):
-            return str(val)
-    return ""
+    """Helper to retrieve the Identifier string for a data complex ID — O(1)."""
+    return _idx_complex_identifier.get(data_complex_id, "")
 
 
 def _get_simplex_name(data_simplex_id):
-    """Helper to resolve a data simplex ID to its setup name."""
-    simplex_setup_id = data_Simplex_lib.loc[data_Simplex_lib["ID_data_simplex"] == data_simplex_id, "ID_setup_simplex"]
-    if len(simplex_setup_id) > 0:
-        simplex_name = setup_Simplex_lib.loc[setup_Simplex_lib["ID_setup_simplex"] == simplex_setup_id.iloc[0], "Name"]
-        if len(simplex_name) > 0:
-            return simplex_name.iloc[0]
+    """Helper to resolve a data simplex ID to its setup name — O(1)."""
+    setup_id = _idx_simplex_to_setup.get(data_simplex_id)
+    if setup_id is not None:
+        name = _idx_setup_simplex_name.get(setup_id)
+        if name is not None:
+            return name
     return f"Simplex_{data_simplex_id}"
 
 
 def get_required_complex_objects(data_complex_id, required_only=False):
-    # Get complex children, optionally filtered by Required
-    children_data_complex_ids = data_xref_Complex_Complex_lib[data_xref_Complex_Complex_lib["ID_data_complex_HIGHER"] ==\
-        data_complex_id]["ID_data_complex_LOWER"].values
-
+    """Get complex children — O(1) lookup via index."""
+    children = _idx_children_of_higher.get(data_complex_id, [])
     if not required_only:
-        return list(children_data_complex_ids)
+        return list(children)
 
     res = []
-    for child_id in children_data_complex_ids:
-        xref_row = data_xref_Complex_Complex_lib[
+    for child_id in children:
+        # Look up the setup xref Required flag
+        xref_rows = data_xref_Complex_Complex_lib[
             (data_xref_Complex_Complex_lib["ID_data_complex_HIGHER"] == data_complex_id) &
             (data_xref_Complex_Complex_lib["ID_data_complex_LOWER"] == child_id)
         ]
-        xref_id = xref_row["ID_setup_xref_complex-complex"]
-        if len(xref_id) > 0:
-            setup_match = setup_xref_Complex_Complex_lib[setup_xref_Complex_Complex_lib["ID_setup_xref_complex-complex"].isin(xref_id)]
-            if len(setup_match) > 0 and setup_match["Required"].iloc[0]:
+        if len(xref_rows) > 0 and "ID_setup_xref_complex-complex" in xref_rows.columns:
+            setup_xref_id = xref_rows["ID_setup_xref_complex-complex"].iloc[0]
+            if _idx_xref_cc_setup.get(setup_xref_id, False):
                 res.append(child_id)
     return res
 
 def get_required_simplex_objects(data_complex_id, required_only=False):
-    # Get xref rows linking simplexes to this complex
-    xref_rows = data_xref_simplex_complex_lib[data_xref_simplex_complex_lib["ID_data_complex"] == data_complex_id]
+    """Get simplex objects for a complex — O(1) lookup via index."""
+    entries = _idx_xref_simplex_complex.get(data_complex_id, [])
+
+    if not required_only:
+        return [sid for sid, _ in entries]
 
     res = []
-
-    for _, row in xref_rows.iterrows():
-        simplex_id = row["ID_data_simplex"]
-        setup_xref_id = row["ID_setup_xref_simplex-complex"]
-        print(f"  Processing simplex ID: {simplex_id}, setup xref ID: {setup_xref_id}")
-
-        if required_only:
-            setup_match = setup_xref_simplex_complex_lib[setup_xref_simplex_complex_lib["ID_setup_xref_simplex-complex"] == setup_xref_id]
-            if len(setup_match) > 0 and setup_match["Required"].iloc[0]:
-                res.append(simplex_id)
-        else:
+    for simplex_id, setup_xref_id in entries:
+        # print(f"  Processing simplex ID: {simplex_id}, setup xref ID: {setup_xref_id}")
+        if _idx_xref_sc_setup.get(setup_xref_id, False):
             res.append(simplex_id)
-
     return res
 
 def get_text_value_simplex(data_simplex_id):
-
-    simplex_row = data_Simplex_lib[data_Simplex_lib["ID_data_simplex"] == data_simplex_id]
-    if len(simplex_row) == 0:
+    """Resolve a simplex ID to its text/number/date value — O(1) lookups."""
+    dnt_id = _idx_simplex_dnt.get(data_simplex_id)
+    if dnt_id is None:
         return ""
 
-    id_data_date_number_text = simplex_row["ID_data_date_number_text"].iloc[0]
+    setup_id = _idx_simplex_to_setup.get(data_simplex_id)
+    value_type = _idx_simplex_valuetype.get(setup_id, 1) if setup_id else 1
 
-    # Determine the value type (1=text, 2=number, 3=date, 4=boolean) from setup_Simplex_lib
-    setup_simplex_id = simplex_row["ID_setup_simplex"].iloc[0]
-    value_type = 1  # default to text
-    setup_row = setup_Simplex_lib[setup_Simplex_lib["ID_setup_simplex"] == setup_simplex_id]
-    if len(setup_row) > 0 and "ValueType" in setup_row.columns:
-        try:
-            value_type = int(setup_row["ValueType"].iloc[0])
-        except (ValueError, TypeError):
-            value_type = 1
+    if value_type == 2:
+        val = _idx_number_value.get(dnt_id)
+    elif value_type == 3:
+        val = _idx_date_value.get(dnt_id)
+    elif value_type == 4:
+        val = _idx_text_value.get(dnt_id)
+        if val is None:
+            val = _idx_number_value.get(dnt_id)
+    else:
+        val = _idx_text_value.get(dnt_id)
 
-    try:
-        if value_type == 2:
-            res = data_SimplexNumber_lib[data_SimplexNumber_lib["ID_data_date_number_text"] == id_data_date_number_text]["Value"].iloc[0]
-        elif value_type == 3:
-            res = data_SimplexDate_lib[data_SimplexDate_lib["ID_data_date_number_text"] == id_data_date_number_text]["Value"].iloc[0]
-        elif value_type == 4:
-            # Boolean — try text table first, fall back to number
-            try:
-                res = data_SimplexText_lib[data_SimplexText_lib["ID_data_date_number_text"] == id_data_date_number_text]["Value"].iloc[0]
-            except (IndexError, KeyError):
-                res = data_SimplexNumber_lib[data_SimplexNumber_lib["ID_data_date_number_text"] == id_data_date_number_text]["Value"].iloc[0]
-        else:
-            res = data_SimplexText_lib[data_SimplexText_lib["ID_data_date_number_text"] == id_data_date_number_text]["Value"].iloc[0]
-    except (IndexError, KeyError):
-        # Fallback: try all tables
-        for lib in [data_SimplexText_lib, data_SimplexNumber_lib, data_SimplexDate_lib]:
-            try:
-                res = lib[lib["ID_data_date_number_text"] == id_data_date_number_text]["Value"].iloc[0]
-                return str(res)
-            except (IndexError, KeyError):
-                continue
-        return ""
+    if val is not None:
+        return str(val)
+
+    # Fallback: try all tables
+    for idx in [_idx_text_value, _idx_number_value, _idx_date_value]:
+        val = idx.get(dnt_id)
+        if val is not None:
+            return str(val)
+    return ""
 
     return str(res)
 
@@ -2343,17 +3700,13 @@ def get_text_value_simplex(data_simplex_id):
 def compute_identifier(data_complex_id):
     """Recursively compute the Identifier string for a data complex.
     Format: (simplex_value1 simplex_value2 (child1_identifier) (child2_identifier) ...)
-    The Identifier provides a human-readable representation of the entire complex hierarchy."""
+    Uses O(1) lookup indexes instead of DataFrame scans for speed."""
 
     parts = []
 
-    # Get all simplex values attached to this complex (ordered by Order if available)
-    simplex_rows = data_xref_simplex_complex_lib[data_xref_simplex_complex_lib["ID_data_complex"] == data_complex_id]
-    if "Order" in simplex_rows.columns:
-        simplex_rows = simplex_rows.sort_values("Order")
-
-    for _, row in simplex_rows.iterrows():
-        simplex_id = row["ID_data_simplex"]
+    # Get all simplex values attached to this complex via fast lookup index
+    simplex_pairs = _idx_xref_simplex_complex.get(data_complex_id, [])
+    for simplex_id, xref_id in simplex_pairs:
         try:
             val = get_text_value_simplex(simplex_id)
             if val:
@@ -2361,18 +3714,15 @@ def compute_identifier(data_complex_id):
         except Exception:
             pass
 
-    # Get all complex children (ordered by Order)
-    children_rows = data_xref_Complex_Complex_lib[
-        data_xref_Complex_Complex_lib["ID_data_complex_HIGHER"] == data_complex_id
-    ]
-    if "Order" in children_rows.columns:
-        children_rows = children_rows.sort_values("Order")
-
-    for _, row in children_rows.iterrows():
-        child_id = row["ID_data_complex_LOWER"]
-        child_identifier = compute_identifier(child_id)
-        if child_identifier:
-            parts.append(child_identifier)
+    # Get all complex children via fast lookup index
+    child_ids = _idx_children_of_higher.get(data_complex_id, [])
+    # Sort children by order if available
+    if child_ids:
+        child_ids_sorted = sorted(child_ids, key=lambda cid: _idx_cc_order.get((data_complex_id, cid), (999, None))[0])
+        for child_id in child_ids_sorted:
+            child_identifier = compute_identifier(child_id)
+            if child_identifier:
+                parts.append(child_identifier)
 
     if parts:
         return "(" + " ".join(parts) + ")"
@@ -2384,24 +3734,32 @@ def update_all_identifiers(inputDir):
     Saves the updated table back to both .xlsx and .pkl."""
     global data_Complex_lib
 
-    print("Recomputing Identifiers for all complexes...")
+    # Drop any fully-empty rows (Excel padding)
+    data_Complex_lib = data_Complex_lib.dropna(how='all').reset_index(drop=True)
+
     total = len(data_Complex_lib)
+    print(f"Updating identifiers... {total} complexes to process.")
 
-    for idx, row in data_Complex_lib.iterrows():
-        data_complex_id = row["ID_data_complex"]
-        new_identifier = compute_identifier(data_complex_id)
-        data_Complex_lib.at[idx, "Identifier"] = new_identifier
+    # Pre-extract IDs as numpy array for fast iteration
+    complex_ids = data_Complex_lib["ID_data_complex"].values
+    new_identifiers = []
 
-        if (idx + 1) % 500 == 0:
-            print(f"  Processed {idx + 1}/{total} complexes...")
+    for i in range(total):
+        new_identifiers.append(compute_identifier(complex_ids[i]))
 
-    print(f"  Done. Processed {total} complexes.")
+        if (i + 1) % 500 == 0:
+            print(f"  Updating identifiers... Processed {i + 1}/{total} complexes...")
+
+    data_Complex_lib["Identifier"] = new_identifiers
+    print(f"  Updating identifiers... Done. Processed {total} complexes.")
 
     # Save updated data_Complex back to files
     output_xlsx = os.path.join(inputDir, "data_Complex.xlsx")
     output_pkl = os.path.join(inputDir, "data_Complex.pkl")
 
+    print(f"  Now saving data_Complex.xlsx file. Please be patient...")
     data_Complex_lib.to_excel(output_xlsx, index=False)
+    print(f"  Now saving data_Complex.pkl file. Please be patient...")
     data_Complex_lib.to_pickle(output_pkl)
 
     print(f"  Saved updated Identifiers to {output_xlsx} and {output_pkl}")
@@ -2418,17 +3776,24 @@ def update_all_identifiers(inputDir):
 
 def build_story_dropdown(complex_name):
     """Build a dropdown list of Identifiers for the given complex type.
-    Returns a list of strings in the format 'ID - Identifier'
-    (same format as build_macro_event_dropdown_menu)."""
+    Returns a list of strings in the format 'ID - ComplexTypeName: Identifier'.
+    If Identifier is empty, computes it on-the-fly."""
 
     setup_ids = setup_Complex_lib[setup_Complex_lib["Name"] == complex_name]["ID_setup_complex"]
     if len(setup_ids) == 0:
         return []
 
     instances = data_Complex_lib[data_Complex_lib["ID_setup_complex"].isin(setup_ids)]
-    dropdown_list = instances.apply(
-        lambda x: f"{x['ID_data_complex']} - {x['Identifier']}", axis=1
-    ).tolist()
+    dropdown_list = []
+    for _, row in instances.iterrows():
+        cid = row['ID_data_complex']
+        identifier = row.get('Identifier', '')
+        if pd.isna(identifier) or str(identifier).strip() == '':
+            identifier = compute_identifier(cid)
+        if identifier:
+            dropdown_list.append(f"{cid} - {complex_name}: {identifier}")
+        else:
+            dropdown_list.append(f"{cid} - {complex_name}")
 
     return dropdown_list
 
@@ -2445,35 +3810,42 @@ def story_form(data_complex_id, outputDir, filename="story_form.txt"):
     Returns:
         The story string and the output file path.
     """
+    print(f"  Building text story form for complex ID {data_complex_id}...")
     lines = []
     _story_recurse(data_complex_id, lines, indent=0)
     story_text = "\n".join(lines)
 
+    print(f"  Text story built ({len(lines)} lines). Now writing file...")
     output_path = os.path.join(outputDir, filename)
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(story_text)
 
-    print(f"Story form saved to {output_path}")
+    print(f"  Story form saved to {output_path}")
     return story_text, output_path
 
 
+def _get_role_name(setup_xref_id):
+    """Helper to resolve a setup_xref_complex-complex ID to its Name — O(1)."""
+    if not hasattr(_get_role_name, '_cache'):
+        # Build cache on first call
+        _get_role_name._cache = dict(zip(
+            setup_xref_Complex_Complex_lib["ID_setup_xref_complex-complex"],
+            setup_xref_Complex_Complex_lib["Name"]))
+    return _get_role_name._cache.get(setup_xref_id, "")
+
+
 def _story_recurse(data_complex_id, lines, indent=0):
-    """Recursively build indented story lines for a complex object."""
+    """Recursively build indented story lines for a complex object.
+    Uses O(1) lookup indexes for speed."""
     prefix = "    " * indent  # 4 spaces per level
 
     # Get this complex's type name
     complex_name = _get_complex_name(data_complex_id)
 
-    # Get simplex values directly attached to this complex
-    simplex_rows = data_xref_simplex_complex_lib[
-        data_xref_simplex_complex_lib["ID_data_complex"] == data_complex_id
-    ]
-    if "Order" in simplex_rows.columns:
-        simplex_rows = simplex_rows.sort_values("Order")
-
+    # Get simplex values directly attached to this complex via fast lookup
+    simplex_pairs = _idx_xref_simplex_complex.get(data_complex_id, [])
     simplex_values = []
-    for _, srow in simplex_rows.iterrows():
-        simplex_id = srow["ID_data_simplex"]
+    for simplex_id, xref_id in simplex_pairs:
         simplex_name = _get_simplex_name(simplex_id)
         text_value = get_text_value_simplex(simplex_id)
         if text_value:
@@ -2481,39 +3853,29 @@ def _story_recurse(data_complex_id, lines, indent=0):
 
     # Build the header line for this complex
     if simplex_values:
-        # Show the complex name with its simplex values on the same line or indented below
         lines.append(f"{prefix}{complex_name}")
         for s_name, s_value in simplex_values:
             lines.append(f"{prefix}    {s_name}: {s_value}")
     else:
         lines.append(f"{prefix}{complex_name}")
 
-    # Get complex children, with their role names and order
-    children_xref = data_xref_Complex_Complex_lib[
-        data_xref_Complex_Complex_lib["ID_data_complex_HIGHER"] == data_complex_id
-    ]
-    if "Order" in children_xref.columns:
-        children_xref = children_xref.sort_values("Order")
+    # Get complex children via fast lookup, sorted by order
+    child_ids = _idx_children_of_higher.get(data_complex_id, [])
+    if child_ids:
+        child_ids_sorted = sorted(child_ids,
+            key=lambda cid: _idx_cc_order.get((data_complex_id, cid), (999, None))[0])
+        for child_id in child_ids_sorted:
+            # Get the role name from setup_xref
+            order_info = _idx_cc_order.get((data_complex_id, child_id))
+            role_name = ""
+            if order_info and order_info[1] is not None:
+                role_name = _get_role_name(order_info[1])
 
-    for _, crow in children_xref.iterrows():
-        child_id = crow["ID_data_complex_LOWER"]
-
-        # Get the role name (e.g., "Participant-S", "Process") from setup_xref
-        role_name = ""
-        if "ID_setup_xref_complex-complex" in crow.index:
-            xref_id = crow["ID_setup_xref_complex-complex"]
-            setup_match = setup_xref_Complex_Complex_lib[
-                setup_xref_Complex_Complex_lib["ID_setup_xref_complex-complex"] == xref_id
-            ]
-            if len(setup_match) > 0:
-                role_name = setup_match["Name"].iloc[0]
-
-        # Add a role label line if we have one, then recurse into the child
-        if role_name:
-            lines.append(f"{prefix}    [{role_name}]")
-            _story_recurse(child_id, lines, indent=indent + 2)
-        else:
-            _story_recurse(child_id, lines, indent=indent + 1)
+            if role_name:
+                lines.append(f"{prefix}    [{role_name}]")
+                _story_recurse(child_id, lines, indent=indent + 2)
+            else:
+                _story_recurse(child_id, lines, indent=indent + 1)
 
 
 def story_form_from_dropdown(dropdown_value, outputDir):
@@ -2542,6 +3904,129 @@ def story_form_from_dropdown(dropdown_value, outputDir):
     return story_form(data_complex_id, outputDir, filename)
 
 
+def export_all_stories_for_type(complex_type_name, outputDir):
+    """Export story forms (txt) for ALL instances of a given complex type.
+    Saves all stories to a single text file.
+
+    Parameters:
+        complex_type_name: the setup complex type name (e.g., 'Tripletta semantica')
+        outputDir: directory to save the output text file
+
+    Returns:
+        The output file path, or empty string if no instances found.
+    """
+    import time as _time
+    t0 = _time.time()
+
+    setup_ids = setup_Complex_lib[setup_Complex_lib["Name"] == complex_type_name]["ID_setup_complex"]
+    if len(setup_ids) == 0:
+        print(f"  No setup IDs found for complex type '{complex_type_name}'")
+        return ""
+
+    instances = data_Complex_lib[data_Complex_lib["ID_setup_complex"].isin(setup_ids)]
+    if instances.empty:
+        print(f"  No data instances found for complex type '{complex_type_name}'")
+        return ""
+
+    all_ids = instances['ID_data_complex'].tolist()
+    print(f"  Exporting {len(all_ids)} story forms for '{complex_type_name}'...")
+
+    all_lines = []
+    all_lines.append(f"ALL STORY FORMS FOR: \"{complex_type_name}\"")
+    all_lines.append(f"{len(all_ids)} object(s)")
+    all_lines.append("=" * 80)
+
+    for i, cid in enumerate(all_ids):
+        if (i + 1) % 50 == 0:
+            print(f"    Processing story {i + 1} of {len(all_ids)}...")
+        all_lines.append("")
+        identifier = _get_identifier(cid)
+        all_lines.append(f"--- {complex_type_name} {cid}: {identifier} ---")
+        all_lines.append("")
+        _story_recurse(cid, all_lines, indent=0)
+        all_lines.append("")
+        all_lines.append("=" * 80)
+
+    story_text = "\n".join(all_lines)
+
+    clean_name = "".join(c if c.isalnum() or c in (' ', '-', '_') else '' for c in complex_type_name)[:30].strip()
+    filename = f"story_all_{clean_name}.txt"
+    output_path = os.path.join(outputDir, filename)
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(story_text)
+
+    elapsed = _time.time() - t0
+    print(f"  All story forms saved to {output_path}  ({elapsed:.1f}s)")
+    return output_path
+
+
+def export_all_stories_html_for_type(complex_type_name, outputDir):
+    """Export story forms (HTML) for ALL instances of a given complex type.
+    Saves all stories to a single HTML file with collapsible sections.
+
+    Parameters:
+        complex_type_name: the setup complex type name (e.g., 'Tripletta semantica')
+        outputDir: directory to save the output HTML file
+
+    Returns:
+        The output file path, or empty string if no instances found.
+    """
+    import time as _time
+    t0 = _time.time()
+
+    setup_ids = setup_Complex_lib[setup_Complex_lib["Name"] == complex_type_name]["ID_setup_complex"]
+    if len(setup_ids) == 0:
+        return ""
+
+    instances = data_Complex_lib[data_Complex_lib["ID_setup_complex"].isin(setup_ids)]
+    if instances.empty:
+        return ""
+
+    all_ids = instances['ID_data_complex'].tolist()
+
+    # Cap at 200 to prevent huge HTML files
+    capped = False
+    if len(all_ids) > 200:
+        all_ids = all_ids[:200]
+        capped = True
+
+    print(f"  Exporting {len(all_ids)} HTML story forms for '{complex_type_name}'...")
+
+    body_parts = []
+    for i, cid in enumerate(all_ids):
+        if (i + 1) % 50 == 0:
+            print(f"    Processing HTML story {i + 1} of {len(all_ids)}...")
+        identifier = _get_identifier(cid)
+        body_parts.append(f'\n<h2>{complex_type_name} (ID {cid}): {_html_escape(identifier)}</h2>')
+        body_parts.append('<div class="story-section">')
+        _story_recurse_html(cid, body_parts, indent=0, search_term=None)
+        body_parts.append('</div>')
+        if i < len(all_ids) - 1:
+            body_parts.append('<hr class="story-separator">')
+
+    subtitle = f'{len(all_ids)} object(s) of type "{_html_escape(complex_type_name)}"'
+    if capped:
+        subtitle += f' (showing first 200 of {instances.shape[0]})'
+
+    html = _STORY_HTML_TEMPLATE.format(
+        title=f'All Stories: {_html_escape(complex_type_name)}',
+        subtitle=subtitle,
+        body='\n'.join(body_parts)
+    )
+
+    clean_name = "".join(c if c.isalnum() or c in (' ', '-', '_') else '' for c in complex_type_name)[:30].strip()
+    filename = f"story_all_{clean_name}.html"
+    output_path = os.path.join(outputDir, filename)
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(html)
+
+    elapsed = _time.time() - t0
+    print(f"  All HTML story forms saved to {output_path}  ({elapsed:.1f}s)")
+    return output_path
+
+
 # ============================================================================
 # SIMPLEX VALUE SEARCH → STORY FORM
 # ============================================================================
@@ -2551,6 +4036,8 @@ def _walk_up_to_hierarchical(data_complex_id, visited=None):
     """Walk up the complex-complex hierarchy from a given data complex
     to find its top-level ancestor (e.g., Macro Event).
 
+    Uses O(1) _idx_parent_of_lower lookup instead of DataFrame scans.
+
     Many complex types in the grammar are marked ++ (hierarchical), including
     low-level ones like City, Actor, Participant-S.  This function walks past
     ALL of them and returns the root — the complex that has no parent in
@@ -2559,27 +4046,16 @@ def _walk_up_to_hierarchical(data_complex_id, visited=None):
     if visited is None:
         visited = set()
 
-    if data_complex_id in visited:
-        return None
-    visited.add(data_complex_id)
+    current = data_complex_id
+    while current not in visited:
+        visited.add(current)
+        parent_info = _idx_parent_of_lower.get(current)
+        if parent_info is None:
+            # No parent — this IS the top-level object
+            return current
+        current = parent_info[0]  # higher_id
 
-    # Find parents of this complex
-    parent_rows = data_xref_Complex_Complex_lib[
-        data_xref_Complex_Complex_lib["ID_data_complex_LOWER"] == data_complex_id
-    ]
-
-    if len(parent_rows) == 0:
-        # No parent — this IS the top-level object
-        return data_complex_id
-
-    # Keep walking up through the first available parent
-    for _, prow in parent_rows.iterrows():
-        parent_id = prow["ID_data_complex_HIGHER"]
-        result = _walk_up_to_hierarchical(parent_id, visited)
-        if result is not None:
-            return result
-
-    # Fallback (shouldn't normally reach here)
+    # Cycle detected — return what we have
     return data_complex_id
 
 
@@ -2587,14 +4063,21 @@ def search_simplex_value(search_term, case_sensitive=False):
     """Search for a simplex text value across all simplex tables.
     Returns a list of tuples: (data_simplex_id, value, data_complex_id, complex_name, hierarchical_id, hierarchical_identifier)
 
+    Uses O(1) lookup indexes for dnt→simplex and simplex→complex resolution
+    instead of DataFrame scans. Only the initial text search uses pandas
+    str.contains (unavoidable for substring matching).
+
     Parameters:
         search_term: the text to search for (e.g., 'Barnesville')
         case_sensitive: if False (default), searches case-insensitively
     """
+    import time as _time
+    t0 = _time.time()
 
     results = []
 
     # Search in data_SimplexText_lib for matching values
+    # (This pandas str.contains is unavoidable for substring matching)
     if case_sensitive:
         matching_text = data_SimplexText_lib[
             data_SimplexText_lib["Value"].astype(str).str.contains(search_term, na=False)
@@ -2608,30 +4091,35 @@ def search_simplex_value(search_term, case_sensitive=False):
         print(f"  No simplex values found matching '{search_term}'")
         return results
 
-    print(f"  Found {len(matching_text)} simplex text values matching '{search_term}'")
+    t1 = _time.time()
+    print(f"  Found {len(matching_text)} simplex text values matching '{search_term}' ({t1-t0:.1f}s)")
 
-    # For each matching text value, find which data_simplex it belongs to
-    for _, trow in matching_text.iterrows():
-        text_id = trow["ID_data_date_number_text"]
-        text_value = str(trow["Value"])
+    # Cache walk-up results so we don't re-walk the same complex multiple times
+    _hier_cache = {}
 
-        # Find data_simplex rows that reference this text
-        simplex_rows = data_Simplex_lib[data_Simplex_lib["ID_data_date_number_text"] == text_id]
+    # For each matching text value, resolve dnt→simplex→complex→hierarchical via indexes
+    text_ids = matching_text["ID_data_date_number_text"].values
+    text_values = matching_text["Value"].astype(str).values
 
-        for _, srow in simplex_rows.iterrows():
-            simplex_id = srow["ID_data_simplex"]
+    for i in range(len(matching_text)):
+        text_id = text_ids[i]
+        text_value = text_values[i]
 
-            # Find which complex this simplex belongs to
-            xref_rows = data_xref_simplex_complex_lib[
-                data_xref_simplex_complex_lib["ID_data_simplex"] == simplex_id
-            ]
+        # O(1): dnt_id → list of simplex_ids
+        simplex_ids = _idx_dnt_to_simplex.get(text_id, [])
 
-            for _, xrow in xref_rows.iterrows():
-                complex_id = xrow["ID_data_complex"]
+        for simplex_id in simplex_ids:
+            # O(1): simplex_id → list of complex_ids
+            complex_ids = _idx_simplex_to_complexes.get(simplex_id, [])
+
+            for complex_id in complex_ids:
                 complex_name = _get_complex_name(complex_id)
 
-                # Walk up to the nearest ++ ancestor
-                hierarchical_id = _walk_up_to_hierarchical(complex_id)
+                # Walk up to the root ancestor (cached)
+                if complex_id not in _hier_cache:
+                    _hier_cache[complex_id] = _walk_up_to_hierarchical(complex_id)
+                hierarchical_id = _hier_cache[complex_id]
+
                 hierarchical_identifier = ""
                 if hierarchical_id is not None:
                     hierarchical_identifier = _get_identifier(hierarchical_id)
@@ -2641,13 +4129,18 @@ def search_simplex_value(search_term, case_sensitive=False):
                     hierarchical_id, hierarchical_identifier
                 ))
 
+    t2 = _time.time()
+    print(f"  Resolved {len(results)} results in {t2-t1:.1f}s (total {t2-t0:.1f}s)")
     return results
 
 
 def build_search_results_dropdown(search_term):
     """Search for a simplex value and build a dropdown of ++ objects
-    that contain it. Returns a list of 'ID - Identifier' strings
+    that contain it. Returns a list of 'ID - ComplexTypeName: Identifier' strings
     for unique hierarchical objects.
+
+    Format: "12345 - Semantic Triplet: (mob lynched Negro)"
+    If Identifier is empty, computes it on-the-fly.
 
     Parameters:
         search_term: the text to search for (e.g., 'Barnesville')
@@ -2663,7 +4156,17 @@ def build_search_results_dropdown(search_term):
     for _, text_value, _, _, hier_id, hier_identifier in results:
         if hier_id is not None and hier_id not in seen:
             seen.add(hier_id)
-            dropdown_list.append(f"{hier_id} - {hier_identifier}")
+            # Get the complex type name (e.g., "Semantic Triplet", "Evento")
+            complex_type = _get_complex_name(hier_id)
+            # If identifier is empty, try to compute it on-the-fly
+            identifier = hier_identifier
+            if not identifier:
+                identifier = compute_identifier(hier_id)
+            # Format: "12345 - Semantic Triplet: (mob lynched Negro)"
+            if identifier:
+                dropdown_list.append(f"{hier_id} - {complex_type}: {identifier}")
+            else:
+                dropdown_list.append(f"{hier_id} - {complex_type}")
 
     dropdown_list.sort()
     return dropdown_list
@@ -2733,6 +4236,453 @@ def search_and_export_stories(search_term, outputDir):
 
 
 # ============================================================================
+# STORY FORM — HTML EXPORT WITH HIGHLIGHTED SIMPLEX VALUES
+# ============================================================================
+
+# Color palette for simplex value types in HTML story form
+_SIMPLEX_HTML_COLORS = {
+    'text':   '#2196F3',   # blue
+    'number': '#FF9800',   # orange
+    'date':   '#9C27B0',   # purple
+}
+
+# Color palette for SVO roles in HTML story form
+_ROLE_HTML_COLORS = {
+    'Participant-S': '#E04040',  # red
+    'Process':       '#4060E0',  # blue
+    'Participant-O': '#30A030',  # green
+    'Circumstance':  '#FF9800',  # orange
+}
+
+
+def _simplex_value_type_label(data_simplex_id):
+    """Return the value type label ('text', 'number', 'date') for a simplex."""
+    setup_id = _idx_simplex_to_setup.get(data_simplex_id)
+    if setup_id is None:
+        return 'text'
+    vt = _idx_simplex_valuetype.get(setup_id, 1)
+    if vt == 2:
+        return 'number'
+    elif vt == 3:
+        return 'date'
+    return 'text'
+
+
+def _html_escape(text):
+    """Escape HTML special characters."""
+    if text is None:
+        return ''
+    return (str(text)
+            .replace('&', '&amp;')
+            .replace('<', '&lt;')
+            .replace('>', '&gt;')
+            .replace('"', '&quot;'))
+
+
+def _highlight_search_term(text, search_term):
+    """Wrap occurrences of search_term in <mark> tags (case-insensitive)."""
+    if not search_term:
+        return text
+    import re
+    escaped = re.escape(_html_escape(search_term))
+    return re.sub(f'({escaped})', r'<mark>\1</mark>',
+                  _html_escape(text), flags=re.IGNORECASE)
+
+
+def _story_recurse_html(data_complex_id, parts, indent=0, search_term=''):
+    """Recursively build HTML story for a complex object.
+
+    Parameters:
+        data_complex_id: the complex to render
+        parts: list to append HTML fragments to
+        indent: nesting level (for visual indentation)
+        search_term: optional term to highlight in simplex values
+    """
+    complex_name = _get_complex_name(data_complex_id)
+    margin = indent * 24  # pixels
+
+    # Start a collapsible section
+    parts.append(f'<div class="complex-block" style="margin-left:{margin}px">')
+    parts.append(f'<div class="complex-header" onclick="this.parentElement.classList.toggle(\'collapsed\')">')
+    parts.append(f'<span class="toggle-icon">&#9660;</span> ')
+    parts.append(f'<span class="complex-name">{_html_escape(complex_name)}</span>')
+    parts.append(f'</div>')  # end header
+
+    # Simplex values
+    simplex_pairs = _idx_xref_simplex_complex.get(data_complex_id, [])
+    if simplex_pairs:
+        parts.append('<div class="simplex-list">')
+        for simplex_id, xref_id in simplex_pairs:
+            simplex_name = _get_simplex_name(simplex_id)
+            text_value = get_text_value_simplex(simplex_id)
+            if text_value:
+                vtype = _simplex_value_type_label(simplex_id)
+                color = _SIMPLEX_HTML_COLORS.get(vtype, '#2196F3')
+                if search_term:
+                    display_value = _highlight_search_term(text_value, search_term)
+                else:
+                    display_value = _html_escape(text_value)
+                parts.append(
+                    f'<div class="simplex-row">'
+                    f'<span class="simplex-name">{_html_escape(simplex_name)}:</span> '
+                    f'<span class="simplex-value" style="background-color:{color}20;'
+                    f'border-left:3px solid {color};padding:2px 6px">'
+                    f'{display_value}</span>'
+                    f'<span class="vtype-badge" style="color:{color}">[{vtype}]</span>'
+                    f'</div>')
+        parts.append('</div>')  # end simplex-list
+
+    # Children
+    child_ids = _idx_children_of_higher.get(data_complex_id, [])
+    if child_ids:
+        child_ids_sorted = sorted(child_ids,
+            key=lambda cid: _idx_cc_order.get((data_complex_id, cid), (999, None))[0])
+        parts.append('<div class="children-block">')
+        for child_id in child_ids_sorted:
+            order_info = _idx_cc_order.get((data_complex_id, child_id))
+            role_name = ""
+            if order_info and order_info[1] is not None:
+                role_name = _get_role_name(order_info[1])
+
+            if role_name:
+                role_color = _ROLE_HTML_COLORS.get(role_name, '#666')
+                parts.append(
+                    f'<div class="role-label" style="margin-left:{(indent+1)*24}px;'
+                    f'color:{role_color};border-left:3px solid {role_color};'
+                    f'padding-left:6px">[{_html_escape(role_name)}]</div>')
+                _story_recurse_html(child_id, parts, indent=indent + 2, search_term=search_term)
+            else:
+                _story_recurse_html(child_id, parts, indent=indent + 1, search_term=search_term)
+        parts.append('</div>')  # end children-block
+
+    parts.append('</div>')  # end complex-block
+
+
+_STORY_HTML_TEMPLATE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{title}</title>
+<style>
+  body {{
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 20px 40px;
+    background: #fafafa;
+    color: #333;
+    line-height: 1.5;
+  }}
+  h1 {{ color: #1a237e; font-size: 1.5em; border-bottom: 2px solid #1a237e; padding-bottom: 8px; }}
+  h2 {{ color: #37474f; font-size: 1.2em; margin-top: 24px; }}
+  .meta {{ color: #666; font-size: 0.9em; margin-bottom: 16px; }}
+  .story-section {{
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }}
+  .story-separator {{
+    border: none;
+    border-top: 2px solid #1a237e;
+    margin: 24px 0;
+  }}
+  .complex-block {{
+    margin-top: 4px;
+    margin-bottom: 2px;
+  }}
+  .complex-block.collapsed > .simplex-list,
+  .complex-block.collapsed > .children-block {{
+    display: none;
+  }}
+  .complex-block.collapsed > .complex-header .toggle-icon {{
+    transform: rotate(-90deg);
+    display: inline-block;
+  }}
+  .complex-header {{
+    cursor: pointer;
+    padding: 3px 0;
+    user-select: none;
+  }}
+  .complex-header:hover {{
+    background: #f5f5f5;
+    border-radius: 4px;
+  }}
+  .toggle-icon {{
+    font-size: 0.7em;
+    color: #999;
+    transition: transform 0.15s;
+    display: inline-block;
+    width: 14px;
+  }}
+  .complex-name {{
+    font-weight: 600;
+    color: #37474f;
+  }}
+  .simplex-list {{
+    margin: 2px 0 4px 20px;
+  }}
+  .simplex-row {{
+    margin: 2px 0;
+    font-size: 0.95em;
+  }}
+  .simplex-name {{
+    color: #555;
+    font-weight: 500;
+  }}
+  .simplex-value {{
+    border-radius: 3px;
+    font-weight: 500;
+  }}
+  .vtype-badge {{
+    font-size: 0.75em;
+    margin-left: 6px;
+    opacity: 0.7;
+  }}
+  .role-label {{
+    font-weight: 600;
+    font-size: 0.9em;
+    margin-top: 4px;
+    margin-bottom: 2px;
+  }}
+  .children-block {{
+    margin-top: 2px;
+  }}
+  mark {{
+    background: #fff176;
+    padding: 0 2px;
+    border-radius: 2px;
+  }}
+  .toolbar {{
+    position: sticky;
+    top: 0;
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 8px 0;
+    margin-bottom: 16px;
+    z-index: 100;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }}
+  .toolbar button {{
+    padding: 5px 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #f5f5f5;
+    cursor: pointer;
+    font-size: 0.9em;
+  }}
+  .toolbar button:hover {{ background: #e0e0e0; }}
+  .legend {{
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    font-size: 0.85em;
+  }}
+  .legend-item {{
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }}
+  .legend-swatch {{
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    display: inline-block;
+  }}
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <button onclick="expandAll()">Expand All</button>
+  <button onclick="collapseAll()">Collapse All</button>
+</div>
+<h1>{title}</h1>
+<div class="meta">{meta}</div>
+<div class="legend">
+  <strong>Simplex types:&nbsp;</strong>
+  <span class="legend-item"><span class="legend-swatch" style="background:#2196F320;border:2px solid #2196F3"></span> Text</span>
+  <span class="legend-item"><span class="legend-swatch" style="background:#FF980020;border:2px solid #FF9800"></span> Number</span>
+  <span class="legend-item"><span class="legend-swatch" style="background:#9C27B020;border:2px solid #9C27B0"></span> Date</span>
+  &nbsp;&nbsp;<strong>Roles:&nbsp;</strong>
+  <span class="legend-item" style="color:#E04040;font-weight:600">Participant-S</span>
+  <span class="legend-item" style="color:#4060E0;font-weight:600">Process</span>
+  <span class="legend-item" style="color:#30A030;font-weight:600">Participant-O</span>
+  <span class="legend-item" style="color:#FF9800;font-weight:600">Circumstance</span>
+</div>
+{body}
+<script>
+function expandAll() {{
+  document.querySelectorAll('.complex-block.collapsed').forEach(el => el.classList.remove('collapsed'));
+}}
+function collapseAll() {{
+  document.querySelectorAll('.complex-block').forEach(el => el.classList.add('collapsed'));
+  // Keep top-level expanded
+  document.querySelectorAll('body > .story-section > .complex-block').forEach(el => el.classList.remove('collapsed'));
+}}
+</script>
+</body>
+</html>"""
+
+
+def story_form_html(data_complex_id, outputDir, filename=None):
+    """Render a complex object as an interactive HTML file with highlighted simplex values.
+
+    Parameters:
+        data_complex_id: the ID_data_complex of the root complex to render
+        outputDir: directory to save the output HTML file
+        filename: output filename (auto-generated if None)
+
+    Returns:
+        The output file path, or empty string on failure.
+    """
+    import time as _time
+    t0 = _time.time()
+
+    complex_name = _get_complex_name(data_complex_id)
+    identifier = _get_identifier(data_complex_id)
+    print(f"  Building HTML story form for {complex_name} (ID {data_complex_id})...")
+
+    parts = []
+    parts.append('<div class="story-section">')
+    _story_recurse_html(data_complex_id, parts, indent=0)
+    parts.append('</div>')
+
+    t1 = _time.time()
+    print(f"  HTML tree built ({len(parts)} elements, {t1-t0:.1f}s). Now writing file...")
+
+    title = f"Story Form: {_html_escape(complex_name)} — {_html_escape(identifier)}"
+    meta = f"Complex ID: {data_complex_id}"
+    body_html = "\n".join(parts)
+
+    html = _STORY_HTML_TEMPLATE.format(title=title, meta=meta, body=body_html)
+
+    if filename is None:
+        clean_id = "".join(c if c.isalnum() or c in (' ', '-', '_') else ''
+                           for c in str(identifier))[:40].strip()
+        filename = f"story_form_{data_complex_id}_{clean_id}.html"
+
+    output_path = os.path.join(outputDir, filename)
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(html)
+
+    t2 = _time.time()
+    print(f"  HTML story form saved to {output_path} ({t2-t0:.1f}s total)")
+    return output_path
+
+
+def story_form_html_from_dropdown(dropdown_value, outputDir):
+    """Called from the GUI when the user selects an item from the story dropdown.
+    Parses the 'ID - ComplexTypeName: Identifier' string and calls story_form_html.
+
+    Returns:
+        The output file path, or empty string on failure.
+    """
+    print(f"  Now generating HTML story form... Please be patient.")
+    try:
+        id_str = dropdown_value.split(" - ")[0].strip()
+        data_complex_id = int(id_str)
+    except (ValueError, IndexError):
+        print(f"Could not parse complex ID from: {dropdown_value}")
+        return ""
+
+    identifier_part = dropdown_value.split(" - ", 1)[1] if " - " in dropdown_value else ""
+    clean_id = "".join(c if c.isalnum() or c in (' ', '-', '_') else ''
+                       for c in identifier_part)[:40].strip()
+    filename = f"story_form_{data_complex_id}_{clean_id}.html"
+
+    return story_form_html(data_complex_id, outputDir, filename)
+
+
+def search_and_export_stories_html(search_term, outputDir):
+    """Search for a simplex value and export story forms for all
+    ++ objects that contain it as an interactive HTML file with
+    the search term highlighted.
+
+    Parameters:
+        search_term: the text to search for (e.g., 'Barnesville')
+        outputDir: directory to save the output HTML file
+
+    Returns:
+        The output file path, or empty string if no results.
+    """
+    results = search_simplex_value(search_term)
+    if not results:
+        mb.showwarning(title='Search',
+                       message=f'No results found for "{search_term}".')
+        return ""
+
+    # Deduplicate by hierarchical_id
+    seen = set()
+    hierarchical_ids = []
+    for _, _, _, _, hier_id, _ in results:
+        if hier_id is not None and hier_id not in seen:
+            seen.add(hier_id)
+            hierarchical_ids.append(hier_id)
+
+    if not hierarchical_ids:
+        mb.showwarning(title='Search',
+                       message=f'Found simplex values matching "{search_term}" but could not find parent hierarchical objects.')
+        return ""
+
+    import time as _time
+    t0 = _time.time()
+
+    # Cap at 200 objects to avoid very long generation times
+    MAX_HTML_STORIES = 200
+    total_hier = len(hierarchical_ids)
+    if total_hier > MAX_HTML_STORIES:
+        print(f"  Limiting HTML export to first {MAX_HTML_STORIES} of {total_hier} objects")
+        hierarchical_ids = hierarchical_ids[:MAX_HTML_STORIES]
+
+    # Build all stories as HTML
+    body_parts = []
+    if total_hier > MAX_HTML_STORIES:
+        body_parts.append(f'<h2>Showing first {MAX_HTML_STORIES} of {total_hier} hierarchical object(s)</h2>')
+    else:
+        body_parts.append(f'<h2>Found in {total_hier} hierarchical object(s)</h2>')
+
+    for i, hier_id in enumerate(hierarchical_ids):
+        identifier = _get_identifier(hier_id)
+        complex_name = _get_complex_name(hier_id)
+
+        if (i + 1) % 50 == 0:
+            print(f"  Building HTML stories... {i + 1}/{len(hierarchical_ids)}")
+
+        if i > 0:
+            body_parts.append('<hr class="story-separator">')
+        body_parts.append(f'<h2>{_html_escape(complex_name)} (ID {hier_id}): '
+                          f'{_html_escape(identifier)}</h2>')
+        body_parts.append('<div class="story-section">')
+        _story_recurse_html(hier_id, body_parts, indent=0, search_term=search_term)
+        body_parts.append('</div>')
+
+    print(f"  HTML stories built in {_time.time()-t0:.1f}s. Now writing file...")
+
+    title = f'Story Search: "{_html_escape(search_term)}"'
+    meta = f'{len(hierarchical_ids)} hierarchical object(s) containing "{_html_escape(search_term)}"'
+    body_html = "\n".join(body_parts)
+
+    html = _STORY_HTML_TEMPLATE.format(title=title, meta=meta, body=body_html)
+
+    clean_term = "".join(c if c.isalnum() or c in (' ', '-', '_') else ''
+                         for c in search_term)[:30].strip()
+    filename = f"story_search_{clean_term}.html"
+    output_path = os.path.join(outputDir, filename)
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(html)
+
+    print(f"HTML story search saved to {output_path}")
+    print(f"  {len(hierarchical_ids)} hierarchical objects found for '{search_term}'")
+
+    return output_path
+
+
+# ============================================================================
 # DOCUMENT SOURCES FOR COMPLEX OBJECTS
 # ============================================================================
 
@@ -2763,14 +4713,29 @@ def get_document_sources_for_complex(inputDir, outputDir, complex_name):
         print(f"  data_Document columns: {list(data_Document_lib.columns)}")
         print(f"  data_xref_Complex_Document columns: {list(data_xref_Complex_Document_lib.columns)}")
 
-    # Build document name lookup: document ID → newspaper/source name
-    # Chain: data_xref_Simplex-Document → data_Simplex (filter by setup_simplex 68 = newspaper name) → data_SimplexText
-    doc_name_lookup = {}
+    # Build document simplex lookup: document ID → {Newspaper name, Newspaper date, Page number, Column number, ...}
+    # Chain: data_xref_Simplex-Document → data_Simplex (filter by setup simplex IDs linked to documents)
+    #        → data_SimplexText / data_SimplexDate / data_SimplexNumber (depending on ValueType)
+    #
+    # Instead of hardcoding simplex IDs, we dynamically read setup_xref_Simplex-Document
+    # to discover which simplexes are linked to documents and their Required flag.
+    # ValueType in setup_Simplex: 1=Text, 2=Number, 3=Date
+    doc_simplex_lookup = {}  # doc_id → {simplex_name: value, ...}
+    _doc_simplex_names = []  # ordered list of simplex names for column headers
     try:
-        # Get the simplex-document xref from library
+        # Load setup_xref_Simplex-Document to discover document-linked simplexes
+        sxsd_pkl = os.path.join(inputDir, "setup_xref_Simplex-Document.pkl")
+        sxsd_xlsx = os.path.join(inputDir, "setup_xref_Simplex-Document.xlsx")
+        if os.path.exists(sxsd_pkl):
+            setup_xref_sd = pd.read_pickle(sxsd_pkl)
+        elif os.path.exists(sxsd_xlsx):
+            setup_xref_sd = pd.read_excel(sxsd_xlsx)
+        else:
+            setup_xref_sd = pd.DataFrame()
+
+        # Get the data xref (Simplex-Document)
         xref_simplex_doc = library.get('data_xref_Simplex-Document.xlsx', pd.DataFrame())
         if len(xref_simplex_doc) == 0:
-            # Try loading directly
             sd_pkl = os.path.join(inputDir, "data_xref_Simplex-Document.pkl")
             sd_xlsx = os.path.join(inputDir, "data_xref_Simplex-Document.xlsx")
             if os.path.exists(sd_pkl):
@@ -2778,37 +4743,183 @@ def get_document_sources_for_complex(inputDir, outputDir, complex_name):
             elif os.path.exists(sd_xlsx):
                 xref_simplex_doc = pd.read_excel(sd_xlsx)
 
-        if len(xref_simplex_doc) > 0 and len(data_Simplex_lib) > 0 and len(data_SimplexText_lib) > 0:
-            # Determine the simplex ID column in xref (could be ID_datat_simplex or ID_data_simplex)
-            sd_simplex_col = 'ID_data_simplex' if 'ID_data_simplex' in xref_simplex_doc.columns else 'ID_datat_simplex'
-            sd_doc_col = 'ID_data_document'
+        if len(setup_xref_sd) > 0 and len(xref_simplex_doc) > 0 and len(data_Simplex_lib) > 0:
+            # Detect the simplex ID column in setup_xref_Simplex-Document
+            # (lynching DB uses 'ID_setup_simplex'; Italian DBs use 'Simplex')
+            if 'ID_setup_simplex' in setup_xref_sd.columns:
+                _sxsd_simplex_col = 'ID_setup_simplex'
+            elif 'Simplex' in setup_xref_sd.columns:
+                _sxsd_simplex_col = 'Simplex'
+            else:
+                _sxsd_simplex_col = setup_xref_sd.columns[3] if len(setup_xref_sd.columns) > 3 else 'Simplex'
 
-            # Filter data_Simplex for newspaper name type (setup_simplex 68) and source (69)
-            newspaper_simplexes = data_Simplex_lib[
-                data_Simplex_lib['ID_setup_simplex'].isin([68, 69])
-            ][['ID_data_simplex', 'ID_data_date_number_text']]
+            # Detect the simplex ID column in setup_Simplex_lib
+            # (lynching DB already renamed to 'ID_setup_simplex' via reading_list; Italian raw xlsx uses 'ID')
+            if 'ID_setup_simplex' in setup_Simplex_lib.columns:
+                _ss_id_col = 'ID_setup_simplex'
+            elif 'ID' in setup_Simplex_lib.columns:
+                _ss_id_col = 'ID'
+            else:
+                _ss_id_col = setup_Simplex_lib.columns[0]
 
-            # Join: xref_simplex_doc → newspaper_simplexes → SimplexText
-            doc_names = pd.merge(xref_simplex_doc, newspaper_simplexes,
-                                 left_on=sd_simplex_col, right_on='ID_data_simplex', how='inner')
-            doc_names = pd.merge(doc_names, data_SimplexText_lib,
-                                 on='ID_data_date_number_text', how='left')
+            # Determine which simplexes are Required for documents (prioritize those)
+            # Sort by Order column so columns appear in the natural order
+            if 'Order' in setup_xref_sd.columns:
+                setup_xref_sd = setup_xref_sd.sort_values('Order')
+            # Filter to Required simplexes first; if none, use all
+            required_sd = setup_xref_sd[setup_xref_sd.get('Required', pd.Series(dtype=bool)) == True]
+            if len(required_sd) == 0:
+                required_sd = setup_xref_sd
+            doc_simplex_ids = required_sd[_sxsd_simplex_col].tolist()
+            _doc_simplex_names = required_sd['Name'].tolist()
 
-            # Build lookup: doc_id → list of newspaper names
-            for _, row in doc_names.iterrows():
+            # Build a map: setup_simplex_id → (name, value_type, default_val)
+            simplex_info = {}
+            for _, srow in required_sd.iterrows():
+                sid = srow[_sxsd_simplex_col]
+                sname = srow['Name']
+                # Look up ValueType from setup_Simplex_lib
+                vtype_row = setup_Simplex_lib[setup_Simplex_lib[_ss_id_col] == sid]
+                vtype = int(vtype_row['ValueType'].iloc[0]) if len(vtype_row) > 0 else 1
+                # defaultVal from setup_xref_Simplex-Document (used when no explicit data exists)
+                default_ref = srow.get('defaultVal', 0)
+                if pd.isna(default_ref):
+                    default_ref = 0
+                else:
+                    default_ref = int(default_ref)
+                simplex_info[sid] = (sname, vtype, default_ref)
+
+            print(f"  Document simplex columns: {_doc_simplex_names}")
+
+            # Determine the simplex ID column in data_xref_Simplex-Document
+            # Renamed DBs: 'ID_data_simplex'; lynching raw: 'ID_datat_simplex'; Italian raw xlsx: 'Simplex'
+            print(f"  xref_simplex_doc columns: {list(xref_simplex_doc.columns)}")
+            if 'ID_data_simplex' in xref_simplex_doc.columns:
+                sd_simplex_col = 'ID_data_simplex'
+            elif 'ID_datat_simplex' in xref_simplex_doc.columns:
+                sd_simplex_col = 'ID_datat_simplex'
+            elif 'Simplex' in xref_simplex_doc.columns:
+                sd_simplex_col = 'Simplex'
+            else:
+                sd_simplex_col = xref_simplex_doc.columns[1] if len(xref_simplex_doc.columns) > 1 else 'Simplex'
+
+            # Determine the document ID column: 'ID_data_document' (renamed) or 'Document' (raw)
+            if 'ID_data_document' in xref_simplex_doc.columns:
+                sd_doc_col = 'ID_data_document'
+            elif 'Document' in xref_simplex_doc.columns:
+                sd_doc_col = 'Document'
+            else:
+                sd_doc_col = xref_simplex_doc.columns[2] if len(xref_simplex_doc.columns) > 2 else 'Document'
+
+            # Filter data_Simplex for the document-linked simplex types
+            doc_simplexes = data_Simplex_lib[
+                data_Simplex_lib['ID_setup_simplex'].isin(doc_simplex_ids)
+            ][['ID_data_simplex', 'ID_setup_simplex', 'ID_data_date_number_text']]
+
+            # Join xref_simplex_doc → doc_simplexes
+            doc_vals = pd.merge(xref_simplex_doc, doc_simplexes,
+                                left_on=sd_simplex_col, right_on='ID_data_simplex', how='inner')
+
+            # For each row, resolve the value from the appropriate value table
+            # Build value lookups for each type
+            text_lookup = {}
+            if data_SimplexText_lib is not None and len(data_SimplexText_lib) > 0:
+                text_lookup = dict(zip(
+                    data_SimplexText_lib['ID_data_date_number_text'],
+                    data_SimplexText_lib['Value']))
+            number_lookup = {}
+            if data_SimplexNumber_lib is not None and len(data_SimplexNumber_lib) > 0:
+                number_lookup = dict(zip(
+                    data_SimplexNumber_lib['ID_data_date_number_text'],
+                    data_SimplexNumber_lib['Value']))
+            date_lookup = {}
+            if data_SimplexDate_lib is not None and len(data_SimplexDate_lib) > 0:
+                date_lookup = dict(zip(
+                    data_SimplexDate_lib['ID_data_date_number_text'],
+                    data_SimplexDate_lib['Value']))
+
+            # Diagnostic: show lookup sizes and a sample for each simplex type
+            print(f"  Value lookup sizes: text={len(text_lookup)}, number={len(number_lookup)}, date={len(date_lookup)}")
+            print(f"  doc_vals shape: {doc_vals.shape}, columns: {list(doc_vals.columns)}")
+            # Show per-simplex-type counts in doc_vals
+            for sid, (sname, vtype, _defval) in simplex_info.items():
+                type_label = {1:'text', 2:'number', 3:'date'}.get(vtype, '?')
+                count = len(doc_vals[doc_vals['ID_setup_simplex'] == sid])
+                # Sample a ref_id for this type to check if it's in the lookup
+                sample_refs = doc_vals[doc_vals['ID_setup_simplex'] == sid]['ID_data_date_number_text'].head(3).tolist()
+                found = []
+                lookup = {1: text_lookup, 2: number_lookup, 3: date_lookup}.get(vtype, text_lookup)
+                for r in sample_refs:
+                    found.append(f"{r}→{lookup.get(r, '??MISSING??')}")
+                print(f"    {sname} (setup_id={sid}, type={type_label}): {count} rows, samples: {found}")
+
+            # Populate doc_simplex_lookup: doc_id → {simplex_name: value}
+            for _, row in doc_vals.iterrows():
                 doc_id = row[sd_doc_col]
-                name = row.get('Value', '')
-                if pd.notna(name) and name != '' and name != 'N/A':
-                    if doc_id not in doc_name_lookup:
-                        doc_name_lookup[doc_id] = []
-                    if name not in doc_name_lookup[doc_id]:
-                        doc_name_lookup[doc_id].append(name)
+                setup_sid = row['ID_setup_simplex']
+                ref_id = row['ID_data_date_number_text']
 
-            print(f"  Document name lookup built: {len(doc_name_lookup)} documents with names")
+                if setup_sid not in simplex_info:
+                    continue
+                sname, vtype, _ = simplex_info[setup_sid]
+
+                # Skip ref_id=0 — PC-ACE uses 0 as "no value" marker
+                if ref_id == 0 or (isinstance(ref_id, float) and ref_id == 0.0):
+                    continue
+
+                # Resolve value from the right table
+                if vtype == 1:  # Text
+                    val = text_lookup.get(ref_id, '')
+                elif vtype == 2:  # Number
+                    val = number_lookup.get(ref_id, '')
+                elif vtype == 3:  # Date
+                    val = date_lookup.get(ref_id, '')
+                else:
+                    val = text_lookup.get(ref_id, '')
+
+                if pd.isna(val) or val == '':
+                    continue  # Skip empty values — don't pollute with blanks
+
+                # Format values for clean display
+                if vtype == 3:  # Date — format as YYYY-MM-DD, stripping time component
+                    try:
+                        if hasattr(val, 'strftime'):
+                            val = val.strftime('%Y-%m-%d')
+                        else:
+                            val = str(val).split(' ')[0]  # Take date part before any space
+                    except Exception:
+                        val = str(val)
+                elif vtype == 2:  # Number — display as integer when possible (3.0 → 3)
+                    try:
+                        if float(val) == int(float(val)):
+                            val = int(float(val))
+                    except (ValueError, TypeError):
+                        pass
+
+                if doc_id not in doc_simplex_lookup:
+                    doc_simplex_lookup[doc_id] = {}
+                # Store as list of values — one entry per source article
+                if sname not in doc_simplex_lookup[doc_id]:
+                    doc_simplex_lookup[doc_id][sname] = []
+                # Deduplicate: only add if not already present
+                if str(val) not in [str(v) for v in doc_simplex_lookup[doc_id][sname]]:
+                    doc_simplex_lookup[doc_id][sname].append(val)
+
+            # For simplex types with 0 data rows but a known database-wide value
+            # (e.g., newspaper name when all documents are from the same source),
+            # the column will remain empty — the name is implied by the database itself.
+            _empty_types = [sname for sid, (sname, vtype, _) in simplex_info.items()
+                            if len(doc_vals[doc_vals['ID_setup_simplex'] == sid]) == 0]
+            if _empty_types:
+                print(f"  Note: no data found for: {_empty_types} (values may be implied by the database)")
+
+            print(f"  Document simplex lookup built: {len(doc_simplex_lookup)} documents with attributes")
         else:
-            print("  Warning: could not build document name lookup (missing tables)")
+            print("  Warning: could not build document simplex lookup (missing tables)")
     except Exception as e:
-        print(f"  Warning: could not build document name lookup: {e}")
+        print(f"  Warning: could not build document simplex lookup: {e}")
+        import traceback
+        traceback.print_exc()
 
     # Determine the document ID column name (could be 'ID' or 'ID_data_document')
     if 'ID_data_document' in data_Document_lib.columns:
@@ -2854,6 +4965,39 @@ def get_document_sources_for_complex(inputDir, outputDir, complex_name):
     # First: direct links from data_xref_Complex-Document
     results = []
 
+    # Helper to build result rows with document simplex values.
+    # Returns a LIST of rows: one per source article when a document has
+    # multiple values (e.g., 14 newspaper dates → 14 rows).
+    # Values are zipped positionally: the Nth date pairs with the Nth page number.
+    def _build_doc_rows(complex_name, complex_id, identifier, doc_id, link_level):
+        base = {
+            "Complex type": complex_name,
+            "Complex ID": complex_id,
+            "Identifier": identifier,
+            "Document ID": doc_id,
+            "Link level": link_level,
+        }
+        doc_attrs = doc_simplex_lookup.get(doc_id, {})
+        if not doc_attrs:
+            # No simplex data — single row with empty columns
+            row = dict(base)
+            for sname in _doc_simplex_names:
+                row[sname] = ''
+            return [row]
+
+        # Find the maximum number of values across all simplex columns
+        max_vals = max(len(vals) for vals in doc_attrs.values()) if doc_attrs else 1
+
+        rows = []
+        for i in range(max_vals):
+            row = dict(base)
+            for sname in _doc_simplex_names:
+                vals_list = doc_attrs.get(sname, [])
+                # Use the i-th value if available, otherwise leave blank
+                row[sname] = vals_list[i] if i < len(vals_list) else ''
+            rows.append(row)
+        return rows
+
     for _, inst in instances.iterrows():
         complex_id = inst["ID_data_complex"]
         identifier = inst["Identifier"] if pd.notna(inst.get("Identifier")) else ""
@@ -2866,54 +5010,25 @@ def get_document_sources_for_complex(inputDir, outputDir, complex_name):
         if len(doc_links) > 0:
             for _, dlink in doc_links.iterrows():
                 doc_id = dlink[xref_doc_col]
-                # Get document details
-                doc_row = data_Document_lib[data_Document_lib[doc_id_col] == doc_id]
-                doc_info = {}
-                if len(doc_row) > 0:
-                    for col in doc_row.columns:
-                        if col != doc_id_col:
-                            doc_info[f"Document {col}"] = doc_row[col].iloc[0]
-
-                results.append({
-                    "Complex type": complex_name,
-                    "Complex ID": complex_id,
-                    "Identifier": identifier,
-                    "Document ID": doc_id,
-                    "Document name": "; ".join(doc_name_lookup.get(doc_id, [""])),
-                    "Link level": "direct",
-                    **doc_info
-                })
+                results.extend(_build_doc_rows(complex_name, complex_id, identifier, doc_id, "direct"))
         else:
             # No direct link — try walking down to child complexes
             child_doc_ids = _find_documents_in_children(complex_id)
             if child_doc_ids:
                 for doc_id in child_doc_ids:
-                    doc_row = data_Document_lib[data_Document_lib[doc_id_col] == doc_id]
-                    doc_info = {}
-                    if len(doc_row) > 0:
-                        for col in doc_row.columns:
-                            if col != doc_id_col:
-                                doc_info[f"Document {col}"] = doc_row[col].iloc[0]
-
-                    results.append({
-                        "Complex type": complex_name,
-                        "Complex ID": complex_id,
-                        "Identifier": identifier,
-                        "Document ID": doc_id,
-                        "Document name": "; ".join(doc_name_lookup.get(doc_id, [""])),
-                        "Link level": "child",
-                        **doc_info
-                    })
+                    results.extend(_build_doc_rows(complex_name, complex_id, identifier, doc_id, "child"))
             else:
                 # No documents found at any level
-                results.append({
+                row = {
                     "Complex type": complex_name,
                     "Complex ID": complex_id,
                     "Identifier": identifier,
                     "Document ID": "",
-                    "Document name": "",
-                    "Link level": "none"
-                })
+                    "Link level": "none",
+                }
+                for sname in _doc_simplex_names:
+                    row[sname] = ''
+                results.append(row)
 
     df = pd.DataFrame(results)
 

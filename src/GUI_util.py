@@ -50,6 +50,18 @@ def set_window(size, label, config, config_option):
     window.geometry(size)
     window.title(label)
 
+    # Automatically update the window title when the input directory changes.
+    # Shows the selected folder name next to the GUI label for all NLP Suite GUIs.
+    def _update_title_on_input_change(*args):
+        import os
+        dir_path = input_main_dir_path.get()
+        if dir_path and os.path.isdir(dir_path):
+            folder_name = os.path.basename(os.path.normpath(dir_path))
+            window.title(GUI_label + '  —  ' + folder_name)
+        else:
+            window.title(GUI_label)
+    input_main_dir_path.trace('w', _update_title_on_input_change)
+
 # insert side bar
 # To connect a vertical scrollbar to such a widget, you have to do two things:
 # Set the widget’s yscrollcommand callbacks to the set method of the scrollbar.
@@ -1329,12 +1341,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
             if 'Wordcloud' in charts_type_options_widget.get():
                 call('python wordclouds_main.py', shell=True)
             if '_____________' in charts_type_options_widget.get():
-                # set to default value
                 charts_type_options_widget.set('Bar chart')
-            #if 'Bubble' in charts_type_options_widget.get() and 'Plotly' in charts_package_options_widget.get():
-             #   mb.showwarning(title='Warning',message='The Bubble chart is currently not supported in the NLP Suite.\n\nCheck back soon!')
-                # set to default value
-            #    charts_type_options_widget.set('Bar chart')
         charts_type_options_widget.trace('w', open_GUI)
 
         # if not 'data_manipulation_main.py' in scriptName and not 'data_visualization_1_main.py' in scriptName :
