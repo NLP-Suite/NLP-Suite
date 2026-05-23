@@ -100,16 +100,52 @@ def place_help_button(window,x_coordinate,y_coordinate,text_title,text_info):
 def display_help_button_info(text_title,text_info):
     mb.showinfo(title=text_title, message=text_info)
 
+_tooltip_window = None  # module-level reference to the current tooltip Toplevel
+
 def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hover_over, text_info):
-    # background = 'red' sets the whole widget in red
-    # TODO Must left justify rather than center the info displayed
-    display_window_lb = tk.Label(window, anchor='w', text=text_info, name='display_window_lb',
-                                 foreground='blue')
-    display_window_lb.place(anchor='w', x=x_coordinate_hover_over, y=y_coordinate)
+    global _tooltip_window
+    # Destroy any existing tooltip first
+    if _tooltip_window is not None:
+        try:
+            _tooltip_window.destroy()
+        except:
+            pass
+        _tooltip_window = None
+
+    # Create a Toplevel tooltip window (floats above, does not steal mouse events)
+    _tooltip_window = tk.Toplevel(window)
+    _tooltip_window.wm_overrideredirect(True)  # no window decorations
+    _tooltip_window.wm_attributes('-topmost', True)  # stay on top
+
+    tooltip_lb = tk.Label(_tooltip_window, text=text_info, foreground='blue',
+                          background='#FFFFDD', anchor='w', justify='left',
+                          relief='solid', borderwidth=1,
+                          padx=4, pady=2,
+                          font=('TkDefaultFont', 9))
+    tooltip_lb.pack()
+
+    # Position: use screen coordinates relative to the main window
+    # Place the tooltip above and to the left of the widget so it never overlaps
+    win_x = window.winfo_rootx()
+    win_y = window.winfo_rooty()
+    tip_x = win_x + x_coordinate_hover_over
+    tip_y = win_y + y_coordinate - 20
+
+    # After packing, adjust y upward by the tooltip's actual height so it doesn't overlap
+    _tooltip_window.update_idletasks()
+    tip_height = _tooltip_window.winfo_reqheight()
+    tip_y = win_y + y_coordinate - tip_height - 2  # 2px gap above widget
+
+    _tooltip_window.wm_geometry(f"+{int(tip_x)}+{int(tip_y)}")
 
 def delete_display_widget_lb(window, e, text_info):
-    if text_info != '':
-        window.nametowidget('display_window_lb').place_forget()
+    global _tooltip_window
+    if _tooltip_window is not None:
+        try:
+            _tooltip_window.destroy()
+        except:
+            pass
+        _tooltip_window = None
 
 # https://stackoverflow.com/questions/20399243/display-message-when-hovering-over-something-with-mouse-cursor-in-python
 # called by place_widget which is called in every GUI

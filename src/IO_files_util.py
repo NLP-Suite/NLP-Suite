@@ -716,12 +716,19 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
     nFiles=len(listOfFiles)
     nSubDirs = len(subDirs)
     subDirs="\n".join(subDirs)
-    wayTooMany = ''
     label = ''
     subsetLabel = ''
     opened_folder_label = ''
 
-    if nFiles > 10:
+    nFilesProduced = len(filesToOpen)
+    if nFilesProduced == 1:
+        produced_singular_plural = 'file'
+    else:
+        produced_singular_plural = 'files'
+
+    # WAY TOO MANY is based on the files produced by the CURRENT run, not the total in the directory
+    wayTooMany = ''
+    if nFilesProduced > 10:
         wayTooMany = "\n\nWAY TOO MANY TO BE OPENED AUTOMATICALLY."
 
     if nFiles == 1:
@@ -749,10 +756,15 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
     # always open outputDir
     openExplorer(window, temp_outputDir)
 
-    mb.showwarning(title="Output files",message="The " + scriptName + " has generated " +
-                str(nFiles) + " " + file_singular_plural + " in output." + wayTooMany + label + subsetLabel + opened_folder_label)
+    if nFiles > nFilesProduced:
+        total_label = "\n\nThe output folder contains " + str(nFiles) + " total " + file_singular_plural + " (including files from previous runs)."
+    else:
+        total_label = ""
+    mb.showwarning(title="Output files",message="The " + scriptName + " has produced " +
+                str(nFilesProduced) + " " + produced_singular_plural + " in output." + total_label + wayTooMany + label + subsetLabel + opened_folder_label)
 
-    if nFiles > 10 or len(filesToOpenSubset) > 10:
+    # Auto-open decision based on files produced by the CURRENT run, not total in directory
+    if nFilesProduced > 10 or len(filesToOpenSubset) > 10:
         return
 
     if len(filesToOpen) == 1:

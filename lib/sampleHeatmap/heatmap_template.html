@@ -57,15 +57,32 @@
   <div id="map"></div>
   <script>
 function initMap() {
+  var points = getPoints();
+  console.log("NLP Suite heatmap: " + points.length + " data points loaded");
+  if (points.length === 0) {
+    console.warn("NLP Suite heatmap: NO data points found in getPoints()! Check the generated HTML file.");
+  }
+  var center = {lat: 0, lng: 0};
+  var zoom = 2;
+  if (points.length > 0) {
+    var bounds = new google.maps.LatLngBounds();
+    points.forEach(function(p) { bounds.extend(p); });
+    center = bounds.getCenter();
+  }
   map = new google.maps.Map(document.getElementById("map"), {
-    zoom: 2,
-    center: { lat: 33.7490, lng: -84.3880 },
+    zoom: zoom,
+    center: center,
     mapTypeId: "satellite"
   });
+  if (points.length > 0) {
+    map.fitBounds(bounds);
+  }
   heatmap = new google.maps.visualization.HeatmapLayer({
-    data: getPoints(),
-    map: map
+    data: points,
+    map: map,
+    radius: 20
   });
+  console.log("NLP Suite heatmap: HeatmapLayer created successfully");
 }
 
 function toggleHeatmap() {
