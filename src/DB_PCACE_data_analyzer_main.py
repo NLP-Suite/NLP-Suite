@@ -167,6 +167,8 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                         IO_files_util.openFile(window, filepath)
         return
 
+    df = None  # initialize so auto-chart check doesn't fail on branches that don't produce a DataFrame
+
     if setup_complex != '':
         # Checkbox 2: display parents/children/simplex — fast setup-only lookup
         if parents_children_var.get() == 1:
@@ -174,7 +176,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         # Checkbox 3: extract document sources for the selected complex
         elif document_sources_var == 1:
             df = DB_PCACE_data_analyzer_util.get_document_sources_for_complex(inputDir, outputDir, setup_complex)
-            if len(df) > 0 and openOutputFiles:
+            if openOutputFiles:
                 output_file = os.path.join(outputDir, setup_complex + "_documents.xlsx")
                 if os.path.exists(output_file):
                     IO_files_util.openFile(window, output_file)
@@ -186,9 +188,17 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                 filesToOpen.extend(comment_files)
         elif identifiers == 1:
             # Export identifiers only (Actor_IDENTIFIER)
+            IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'IDENTIFIER mode',
+                f'Starting IDENTIFIER export for "{setup_complex}".\n\n'
+                f'This may take a while for large databases.\n'
+                f'Please be patient...')
             df = DB_PCACE_data_analyzer_util.higher_lower(inputDir, outputDir, setup_complex, export_identifier=True)
         elif extended_headers == 1:
             # Export expanded ALL headers (Actor_ALL)
+            IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'EXTENDED HEADERS mode',
+                f'Starting EXTENDED HEADERS export for "{setup_complex}".\n\n'
+                f'This may take a very long time for large databases (several minutes).\n'
+                f'Please be patient...')
             df = DB_PCACE_data_analyzer_util.higher_lower(inputDir, outputDir, setup_complex, export_identifier=False)
         else:
             # No checkbox selected: if identifier dropdown has items, export ALL story forms;
@@ -219,6 +229,9 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                 return
             else:
                 # No identifiers in dropdown — default tabular export
+                IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Tabular export',
+                    f'Starting tabular export for "{setup_complex}".\n\n'
+                    f'Please be patient...')
                 df = DB_PCACE_data_analyzer_util.higher_lower(inputDir, outputDir, setup_complex, export_identifier=False)
         # df = DB_PCACE_data_analyzer_util.call_get_expanded_complex(inputDir, outputDir, setup_complex)
 
@@ -275,6 +288,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                 filesToOpen.append(values_csv)
 
         # ── Spell-check (text simplexes only) ─────────────────────────────────
+        # When a simplex IS selected, check just that one (must be text-typed)
         if simplex_spell_check_var.get() == 1:
             if vtype == 1:  # text
                 try:
@@ -282,6 +296,18 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                         inputDir, outputDir, simplex_name=setup_simplex)
                     if dupes_csv and os.path.isfile(dupes_csv):
                         filesToOpen.append(dupes_csv)
+                        mb.showinfo(title='Spell-check review',
+                                    message=f'Spell-check found potential duplicates/misspellings for '
+                                            f'"{setup_simplex}".\n\n'
+                                            f'The review file has been saved to:\n{dupes_csv}\n\n'
+                                            f'To apply corrections:\n'
+                                            f'  1. Open the CSV and review each row.\n'
+                                            f'  2. Edit the "Suggested correction" column if needed.\n'
+                                            f'  3. Set "Accept?" to N for rows you want to skip.\n'
+                                            f'  4. Save the CSV, then click the APPLY CORRECTIONS button.')
+                    else:
+                        mb.showinfo(title='Spell-check',
+                                    message=f'No near-duplicate or misspelled values found for "{setup_simplex}".')
                 except Exception as e:
                     print(f"  Near-duplicate check skipped: {e}")
             else:
@@ -372,6 +398,27 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                             filesToOpen.extend(gis_output)
                     # Refresh GIS hover-over to show updated timestamp
                     _update_last_updated_hovers(inputDir, outputDir)
+
+    # ── Spell-check ALL text simplexes (when no specific simplex is selected) ──
+    if simplex_spell_check_var.get() == 1 and setup_simplex == '':
+        try:
+            dupes_csv = DB_PCACE_data_analyzer_util.find_near_duplicate_simplex_values(
+                inputDir, outputDir, simplex_name='')  # '' = check all
+            if dupes_csv and os.path.isfile(dupes_csv):
+                filesToOpen.append(dupes_csv)
+                mb.showinfo(title='Spell-check review',
+                            message='Spell-check scanned ALL text simplexes in the database.\n\n'
+                                    f'The review file has been saved to:\n{dupes_csv}\n\n'
+                                    'To apply corrections:\n'
+                                    '  1. Open the CSV and review each row.\n'
+                                    '  2. Edit the "Suggested correction" column if needed.\n'
+                                    '  3. Set "Accept?" to N for rows you want to skip.\n'
+                                    '  4. Save the CSV, then click the APPLY CORRECTIONS button.')
+            else:
+                mb.showinfo(title='Spell-check',
+                            message='No near-duplicate or misspelled values found across any text simplex.')
+        except Exception as e:
+            print(f"  Spell-check (all simplexes) skipped: {e}")
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -922,7 +969,10 @@ simplex_spell_check_checkbox = tk.Checkbutton(window, text='', variable=simplex_
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+10, y_multiplier_integer,
                                    simplex_spell_check_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "SPELL-CHECK mode: find near-duplicate and misspelled text values for the selected simplex.\nOnly available for text-typed simplexes (ValueType = 1).")
+                                   "SPELL-CHECK mode: find near-duplicate and misspelled text values.\n"
+                                   "If a simplex is selected, checks that simplex only (must be text-typed).\n"
+                                   "If no simplex is selected, checks ALL text simplexes in the database.\n"
+                                   "Produces a review CSV with suggested corrections and an Accept?/Reject column.")
 
 # THIRD simplex checkbox: Charts (bar/pie of frequencies)
 simplex_charts_var = tk.IntVar()
@@ -962,11 +1012,57 @@ simplex_values['values'] = []
 _simplex_val_y_row = y_multiplier_integer  # save for dynamic hover-over
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+150, y_multiplier_integer,
                                    simplex_values,
-                                   False, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
+                                   True, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
                                    "Auto-populated when a Simplex type is selected.\n"
                                    "Lists all data values for the selected simplex.\n"
                                    "Enter: export the values listing to a CSV file.\n"
                                    "RUN: perform the operation(s) selected via checkboxes or GIS map.")
+
+# "Apply corrections" button for spell-check workflow (same row as Simplex values)
+def _apply_spell_check_corrections():
+    """Open a file dialog for the reviewed spell-check CSV and apply accepted corrections."""
+    from tkinter import filedialog
+    inputDir_val = GUI_util.input_main_dir_path.get()
+    outputDir_val = GUI_util.output_dir_path.get()
+    if not inputDir_val:
+        mb.showwarning(title='Apply corrections',
+                       message='Please select a PC-ACE database directory first.')
+        return
+    csv_path = filedialog.askopenfilename(
+        title='Select the reviewed spell-check CSV',
+        initialdir=outputDir_val if outputDir_val else inputDir_val,
+        filetypes=[('CSV files', '*.csv'), ('All files', '*.*')])
+    if not csv_path:
+        return
+    # Confirm before applying
+    answer = mb.askyesno(title='Apply corrections',
+                         message=f'Apply accepted corrections from:\n{csv_path}\n\n'
+                                 f'This will modify data_SimplexText.xlsx and .pkl in:\n{inputDir_val}\n\n'
+                                 f'A backup of the original files is recommended.\n\nProceed?')
+    if not answer:
+        return
+    n_applied = DB_PCACE_data_analyzer_util.apply_spell_check_corrections(csv_path, inputDir_val)
+    if n_applied > 0:
+        mb.showinfo(title='Corrections applied',
+                    message=f'Successfully applied {n_applied} correction(s) to data_SimplexText.\n\n'
+                            f'The xlsx and pkl files have been updated.\n'
+                            f'The cached simplex data has been cleared and will rebuild on next run.')
+    elif n_applied == 0:
+        mb.showinfo(title='No corrections',
+                    message='No corrections were applied.\n\n'
+                            'Either all rows were marked Accept? = N, or the old values '
+                            'were not found in data_SimplexText.')
+    else:
+        mb.showerror(title='Error',
+                     message='An error occurred while applying corrections.\nCheck the console output for details.')
+
+apply_corrections_button = tk.Button(window, text='Spell update', command=_apply_spell_check_corrections, state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+100, y_multiplier_integer,
+                                   apply_corrections_button,
+                                   False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate+100,
+                                   "After running spell-check (second checkbox on the Simplex line),\n"
+                                   "review the CSV, then click here to apply accepted corrections\n"
+                                   "back to data_SimplexText.xlsx and .pkl.")
 
 simplex_values_var.set('')
 
@@ -1352,6 +1448,7 @@ def changed_filename(*args):
             simplex_timechart_checkbox.configure(state='normal')
             simplex_GIS_checkbox.configure(state='normal')
             simplex_values.configure(state='normal')
+            apply_corrections_button.configure(state='normal')
             search_simplex_entry.configure(state='normal')
             search_simplex_results.configure(state='normal')
             setup_name.configure(state='normal')
@@ -1390,6 +1487,7 @@ def changed_filename(*args):
             simplex_timechart_checkbox.configure(state='disabled')
             simplex_GIS_checkbox.configure(state='disabled')
             simplex_values.configure(state='disabled')
+            apply_corrections_button.configure(state='disabled')
             search_simplex_entry.configure(state='disabled')
             search_simplex_results.configure(state='disabled')
 

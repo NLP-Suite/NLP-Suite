@@ -2296,13 +2296,19 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
     candidate_cols = [c for c in df.columns if c not in skip_cols]
 
     # Further exclude columns that are purely numeric (IDs stored without _ID suffix)
+    # or that have only one unique value (e.g., "Complex type" always = "Vertenza")
     value_cols = []
     skipped_empty = []
     skipped_numeric = []
+    skipped_constant = []
     for c in candidate_cols:
         col_data = df[c].dropna()
         if col_data.empty:
             skipped_empty.append(c)
+            continue
+        # Skip constant columns — only one unique value, nothing to chart
+        if col_data.nunique() <= 1:
+            skipped_constant.append(c)
             continue
         # Check if all non-null values are numeric
         str_vals = col_data.astype(str)
@@ -2311,6 +2317,8 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
             value_cols.append(c)
         else:
             skipped_numeric.append(c)
+    if skipped_constant:
+        print(f"  Skipping constant columns (1 unique value): {skipped_constant}")
 
     if not value_cols:
         return
@@ -2372,16 +2380,23 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
         _v_keywords = ['verbal', 'verbale', 'frase', 'phrase']
 
         role_map = [
-            ('Subject', ['Participant-S', 'PARTECIPANTE-S', 'Subject', 'Source_Value'], _so_keywords),
-            ('Verb',    ['Process', 'PROCESSO'], _v_keywords),
-            ('Object',  ['Participant-O', 'PARTECIPANTE-O', 'Object', 'Target_Value'], _so_keywords),
+            ('Subject', ['Participant-S', 'PARTECIPANTE-S', 'Partecipante-S',
+                         'Subject', 'Source_Value'], _so_keywords),
+            ('Verb',    ['Process', 'PROCESSO', 'Processo',
+                         'Simple process', 'Processo semplice'], _v_keywords),
+            ('Object',  ['Participant-O', 'PARTECIPANTE-O', 'Partecipante-O',
+                         'Object', 'Target_Value'], _so_keywords),
         ]
         new_df = dataframe.copy()
         created = []
         for role_name, patterns, preferred_kw in role_map:
-            # Case-insensitive prefix matching to handle any language
+            # Case-insensitive prefix matching: startswith to handle
+            # variants like "Processo semplice" matching "Processo"
             role_cols = [c for c in all_cols
-                         if any(p.lower() == _prefix(c).lower() or p.lower() == c.lower() for p in patterns)]
+                         if any(p.lower() == _prefix(c).lower()
+                                or _prefix(c).lower().startswith(p.lower())
+                                or p.lower() == c.lower()
+                                for p in patterns)]
             if not role_cols:
                 continue
             # Sort: columns matching preferred keywords first
@@ -2400,7 +2415,12 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
         return new_df, created
 
     df_svo, svo_cols = _merge_svo(df_clean, value_cols)
-    print(f"  Merged SVO columns: {svo_cols}")
+    # Dynamic label: "SV" when only Subject+Verb, "SVO" when all three
+    _role_initials = {'Subject': 'S', 'Verb': 'V', 'Object': 'O'}
+    _svo_label = ''.join(_role_initials.get(c, c[0]) for c in svo_cols) or 'SV'
+    _role_arrow_label = ' → '.join(svo_cols)               # "Subject → Verb" or "Subject → Verb → Object"
+    _role_arrow_short = ' → '.join(_role_initials.get(c, c[0]) for c in svo_cols)  # "S → V" or "S → V → O"
+    print(f"  Merged {_svo_label} columns: {svo_cols}")
     if svo_cols:
         for sc in svo_cols:
             nn = df_svo[sc].dropna().shape[0]
@@ -2421,6 +2441,9 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
             try:
                 fig = _px.bar(freq_df, x=col, y='Frequency',
                              title='Top 30 Frequency: {}'.format(col))
+                # Force categorical x-axis so Plotly doesn't auto-detect
+                # city names or other text as dates
+                fig.update_xaxes(type='category')
                 bar_file = os.path.join(outputDir, '{}_{}_bar.html'.format(base_name, safe_col))
                 fig.write_html(bar_file)
                 filesToOpen.append(bar_file)
@@ -2520,7 +2543,7 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
                 top_per_role = {}
                 role_keys = ['S', 'V', 'O']
                 for idx_r, sc in enumerate(svo_cols):
-                    rk = role_keys[idx_r] if idx_r < 3 else 'O'
+                    rk = role_keys[idx_r] if idx_r < len(role_keys) else role_keys[-1]
                     top_vals = net_df[sc].value_counts().head(TOP_NET_PER_ROLE).index.tolist()
                     top_per_role[sc] = set(top_vals)
                     for v in top_vals:
@@ -2589,7 +2612,7 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
                     node_id_map = {n: i for i, n in enumerate(sorted(all_nodes))}
                     vis_nodes = []
                     for n, nid in node_id_map.items():
-                        rk = role_of.get(n, 'O')
+                        rk = role_of.get(n, role_keys[min(len(svo_cols), 3) - 1])
                         freq = node_freq.get(n, 1)
                         sz = round(_node_size(freq), 1)
                         # Font size scales with node: bigger nodes get bigger labels
@@ -2625,7 +2648,7 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
 
                     html = """<!DOCTYPE html>
 <html><head><meta charset="utf-8">
-<title>SVO Network</title>
+<title>{svo_label} Network</title>
 <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 <style>
   body {{ font-family: Arial, sans-serif; margin: 0; }}
@@ -2644,10 +2667,10 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
   .o {{ color: #30A030; font-weight: bold; }}
 </style>
 </head><body>
-<div id="title">SVO Network (top {top_n} per role) &mdash; click a node to see full Subject &rarr; Verb &rarr; Object chains</div>
+<div id="title">{svo_label} Network (top {top_n} per role) &mdash; click a node to see full {role_arrow_label} chains</div>
 <div id="legend">{legend_html} &nbsp;&nbsp;&nbsp; <span style="font-size:12px;color:#666">&#9679; Node size = frequency</span></div>
 <div id="network"></div>
-<div id="info">Click a node to see its S &rarr; V &rarr; O relationships.</div>
+<div id="info">Click a node to see its {role_arrow_short} relationships.</div>
 <script>
 var nodes = new vis.DataSet({nodes_json});
 var edges = new vis.DataSet({edges_json});
@@ -2691,7 +2714,7 @@ network.on("click", function(params) {{
   var infoDiv = document.getElementById('info');
   if (params.nodes.length === 0) {{
     resetAll();
-    infoDiv.innerHTML = 'Click a node to see its S &rarr; V &rarr; O relationships.';
+    infoDiv.innerHTML = 'Click a node to see its {info_click_msg} relationships.';
     return;
   }}
   var clickedId = params.nodes[0];
@@ -2735,20 +2758,16 @@ network.on("click", function(params) {{
     }}
   }});
 
-  // Build info table showing full S → V → O triplets
+  // Build info table showing full role tuples
   if (trips.length === 0) {{
-    infoDiv.innerHTML = '<b>' + clickedNode.label + '</b>: no full S→V→O triplets.';
+    infoDiv.innerHTML = '<b>' + clickedNode.label + '</b>: no full {no_triplets_msg} tuples.';
     return;
   }}
   var html = '<b>' + clickedNode.label + '</b> &mdash; '
-           + trips.length + ' triplet(s):<br>'
-           + '<table><tr><th>Subject</th><th></th><th>Verb</th><th></th><th>Object</th><th>Count</th></tr>';
+           + trips.length + ' tuple(s):<br>'
+           + '<table><tr>{table_header_html}</tr>';
   trips.forEach(function(t) {{
-    html += '<tr>'
-          + '<td class="s">' + t[0] + '</td><td>&rarr;</td>'
-          + '<td class="v">' + t[1] + '</td><td>&rarr;</td>'
-          + '<td class="o">' + t[2] + '</td>'
-          + '<td>' + t[3] + '</td></tr>';
+    html += '<tr>' + {table_row_js} + '</tr>';
   }});
   html += '</table>';
   infoDiv.innerHTML = html;
@@ -2763,7 +2782,39 @@ network.on("click", function(params) {{
                                 palette[rk], rl))
                     legend_html = '  '.join(legend_parts)
 
+                    # ── Build dynamic JS template fragments for the info panel ──
+                    _role_css = {'Subject': 's', 'Verb': 'v', 'Object': 'o'}
+                    # Table header:  <th>Subject</th><th></th><th>Verb</th><th>Count</th>
+                    _th = []
+                    for _i, _rc in enumerate(svo_cols):
+                        if _i > 0:
+                            _th.append('<th></th>')
+                        _th.append('<th>{}</th>'.format(_rc))
+                    _th.append('<th>Count</th>')
+                    _table_header_html = ''.join(_th)
+                    # Row expression (JS): '<td class="s">' + t[0] + '</td><td>→</td>...'
+                    _td = []
+                    for _i, _rc in enumerate(svo_cols):
+                        _css = _role_css.get(_rc, '')
+                        if _i > 0:
+                            _td.append("'<td>&rarr;</td>'")
+                        _td.append("'<td class=\"{}\">' + t[{}] + '</td>'".format(_css, _i))
+                    _td.append("'<td>' + t[{}] + '</td>'".format(len(svo_cols)))
+                    _table_row_js = ' + '.join(_td)
+                    # Info-panel messages
+                    _info_click = ' &rarr; '.join(
+                        _role_initials.get(c, c[0]) for c in svo_cols)
+                    _no_triplets = ' → '.join(
+                        _role_initials.get(c, c[0]) for c in svo_cols)
+
                     html = html.format(
+                        svo_label=_svo_label,
+                        role_arrow_label=_role_arrow_label,
+                        role_arrow_short=_role_arrow_short,
+                        info_click_msg=_info_click,
+                        no_triplets_msg=_no_triplets,
+                        table_header_html=_table_header_html,
+                        table_row_js=_table_row_js,
                         top_n=TOP_NET_PER_ROLE,
                         legend_html=legend_html,
                         nodes_json=_json.dumps(vis_nodes),
@@ -2777,7 +2828,7 @@ network.on("click", function(params) {{
                     print(f"  Network saved: {network_file}")
 
                     # ── 4b. Gephi .gexf export ──────────────────────────────
-                    # Export the same SVO network as a .gexf file for Gephi.
+                    # Export the same network as a .gexf file for Gephi.
                     # Uses the Gexf classes from Gephi_util directly (no Gephi
                     # install required — just produces the XML file).
                     try:
@@ -2789,14 +2840,15 @@ network.on("click", function(params) {{
                             'O': (48, 160, 48),    # green
                         }
 
-                        gexf = _gephi.Gexf("NLP Suite", "SVO Network")
-                        graph = gexf.addGraph("directed", "static", "SVO Network")
-                        # Node attribute: role (S/V/O)
-                        role_attr_id = graph.addNodeAttribute("Role", "O", "string", "static")
+                        gexf = _gephi.Gexf("NLP Suite", "{} Network".format(_svo_label))
+                        graph = gexf.addGraph("directed", "static", "{} Network".format(_svo_label))
+                        # Node attribute: role
+                        _default_role = role_keys[-1] if role_keys else 'S'
+                        role_attr_id = graph.addNodeAttribute("Role", _default_role, "string", "static")
 
-                        # Add nodes with SVO-colored dots and frequency-based size
+                        # Add nodes with role-colored dots and frequency-based size
                         for n, nid in node_id_map.items():
-                            rk = role_of.get(n, 'O')
+                            rk = role_of.get(n, role_keys[min(len(svo_cols), 3) - 1])
                             freq = node_freq.get(n, 1)
                             r, g_c, b = rgb_map.get(rk, (128, 128, 128))
                             node = graph.addNode(str(nid), n,
@@ -2827,7 +2879,7 @@ network.on("click", function(params) {{
             print(f"  WARNING: Network graph: {e}")
             traceback.print_exc()
 
-    # ── 5. Heatmap: cross-tabulation of first two SVO columns ────────────
+    # ── 5. Heatmap: cross-tabulation of first two role columns ────────────
     if _px and len(svo_cols) >= 2:
         try:
             heat_df = df_svo[[svo_cols[0], svo_cols[1]]].dropna(how='all').fillna('(none)').astype(str)
@@ -2846,7 +2898,7 @@ network.on("click", function(params) {{
         except Exception as e:
             print(f"  WARNING: Heatmap: {e}")
 
-    # ── 6. Word cloud: SVO colored (S=red, V=blue, O=green) ──────────────
+    # ── 6. Word cloud: role colored (S=red, V=blue, O=green) ──────────────
     # Reproduces the logic from wordclouds_util.SVOWordCloud inline so we
     # avoid importing wordclouds_util (which triggers stanza downloads).
     svo_wc_done = False
@@ -2935,20 +2987,24 @@ network.on("click", function(params) {{
                 wc.recolor(color_func=_GroupedColor(color_map_display, grey))
                 _plt.figure(figsize=(8, 8), facecolor=None)
                 _plt.imshow(wc, interpolation='bilinear')
-                _plt.title('SVO Word Cloud:  Subject (red)  —  Verb (blue)  —  Object (green)',
-                           fontsize=12, fontweight='bold', pad=20)
+                _wc_legend_parts = []
+                _wc_colors = {'Subject': 'red', 'Verb': 'blue', 'Object': 'green'}
+                for _rc in svo_cols:
+                    _wc_legend_parts.append('{} ({})'.format(_rc, _wc_colors.get(_rc, 'grey')))
+                _wc_title = '{} Word Cloud:  {}'.format(_svo_label, '  —  '.join(_wc_legend_parts))
+                _plt.title(_wc_title, fontsize=12, fontweight='bold', pad=20)
                 _plt.axis('off')
-                wc_file = os.path.join(outputDir, '{}_SVO_wordcloud.png'.format(base_name))
+                wc_file = os.path.join(outputDir, '{}_{}_wordcloud.png'.format(base_name, _svo_label))
                 wc.to_file(wc_file)
                 filesToOpen.append(wc_file)
                 _plt.close()
-                print(f"  SVO Word Cloud saved: {wc_file}")
+                print(f"  {_svo_label} Word Cloud saved: {wc_file}")
                 svo_wc_done = True
         except ImportError:
             pass
         except Exception as e:
             import traceback
-            print(f"  WARNING: SVO Word Cloud failed: {e}")
+            print(f"  WARNING: {_svo_label} Word Cloud failed: {e}")
             traceback.print_exc()
 
     # Fall back to plain word clouds if SVO word cloud was not produced
