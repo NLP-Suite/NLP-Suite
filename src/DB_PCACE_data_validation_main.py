@@ -41,12 +41,34 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_size = '1200x650'
+# the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
+#   just change the next statement to True or False IO_setup_display_brief=True
+IO_setup_display_brief=True
+GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
+                                                 GUI_width=GUI_IO_util.get_GUI_width(3),
+                                                 GUI_height_brief=680, # height at brief display
+                                                 GUI_height_full=720, # height at full display
+                                                 y_multiplier_integer=GUI_util.y_multiplier_integer,
+                                                 y_multiplier_integer_add=1, # to be added for full display
+                                                 increment=1)  # to be added for full display
+
 GUI_label = 'Graphical User Interface (GUI) for PC-ACE Data Validation & Cleaning'
-config_filename = 'NLP_default_IO_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
 
-config_input_output_numeric_options = [0, 1, 0, 0]
+config_filename = GUI_util.config_filename_selected_config.get()
+
+# The 4 values of config_option refer to:
+#   input file
+        # 1 for CoNLL file
+        # 2 for TXT file
+        # 3 for csv file
+        # 4 for any type of file
+        # 5 for txt or html
+        # 6 for txt or csv
+#   input dir 0 no dir 1 dir
+#   input secondary dir 0 no dir 1 dir
+#   output dir 0 no dir 1 dir
+config_input_output_numeric_options = [0, 1, 0, 1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
@@ -54,11 +76,10 @@ window = GUI_util.window
 config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
 config_filename = GUI_util.config_filename
 inputFilename = GUI_util.inputFilename
-
-GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief=False, scriptName=scriptName)
-
+inputDir = GUI_util.input_main_dir_path
 outputDir = GUI_util.output_dir_path
-y_multiplier_integer = GUI_util.y_multiplier_integer
+
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 # ── Open GUI dropdown (same pattern as DB_SQL_main) ─────────────────────────
 
