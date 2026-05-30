@@ -15,6 +15,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.messagebox as mb
 import pandas as pd
+import subprocess
 
 import IO_csv_util
 import IO_files_util
@@ -28,7 +29,8 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
-    if not inputFilename or not os.path.isfile(inputFilename):
+    csv_path = csv_file_var.get()
+    if not csv_path or not os.path.isfile(csv_path):
         mb.showwarning(title='Warning',
                        message='No CSV file selected.\n\nPlease, select an INPUT csv file and try again.')
         return
@@ -56,19 +58,94 @@ inputFilename = GUI_util.inputFilename
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief=False, scriptName=scriptName)
 
 outputDir = GUI_util.output_dir_path
+y_multiplier_integer = GUI_util.y_multiplier_integer
 
-# Variables
+# ── Open GUI dropdown (same pattern as DB_SQL_main) ─────────────────────────
+
+def _open_sql_gui():
+    """Launch the DB SQL GUI."""
+    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'DB_SQL_main.py')
+    cmd = [sys.executable, script_path]
+    out_dir = outputDir.get() if hasattr(outputDir, 'get') else outputDir
+    if out_dir:
+        cmd.extend(['--outputdir', out_dir])
+    subprocess.Popen(cmd)
+
+def _open_pcace_analyzer():
+    """Launch the PC-ACE data analyzer GUI."""
+    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'DB_PCACE_data_analyzer_main.py')
+    cmd = [sys.executable, script_path]
+    out_dir = outputDir.get() if hasattr(outputDir, 'get') else outputDir
+    if out_dir:
+        cmd.extend(['--outputdir', out_dir])
+    subprocess.Popen(cmd)
+
+def _on_open_gui_selected(choice):
+    if choice == 'Open DB SQL GUI':
+        _open_sql_gui()
+    elif choice == 'Open PC-ACE analyzer GUI':
+        _open_pcace_analyzer()
+
+_open_gui_var = tk.StringVar()
+_open_gui_var.set('Open DB SQL GUI')
+open_gui_menu = tk.OptionMenu(window, _open_gui_var,
+                              'Open DB SQL GUI',
+                              'Open PC-ACE analyzer GUI',
+                              command=_on_open_gui_selected)
+open_gui_menu.configure(width=25)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                   open_gui_menu,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Use the dropdown menu to open a related GUI.\n\n"
+                                   "   Open DB SQL GUI: opens the SQL query GUI.\n"
+                                   "   Open PC-ACE analyzer GUI: opens the PC-ACE data analyzer.")
+
+# ── Select INPUT CSV file row ───────────────────────────────────────────────
+
 csv_file_var = tk.StringVar()
 
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
-                                               GUI_util.y_multiplier_integer,
-                                               tk.Label(window, text='INPUT CSV file'),
-                                               True)
+def get_csv_file(window, title, fileType, annotate):
+    initialFolder = os.path.dirname(os.path.abspath(csv_file_var.get())) if csv_file_var.get() else os.path.dirname(os.path.abspath(__file__))
+    filePath = tk.filedialog.askopenfilename(title=title, initialdir=initialFolder, filetypes=fileType)
+    if len(filePath) > 0:
+        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(filePath, 'utf-8')
+        if nRecords == 0:
+            mb.showwarning(title='Warning',
+                           message="The selected input csv file is empty.\n\nPlease, select a different file and try again.")
+            filePath = ''
+        else:
+            csv_file_var.set(filePath)
+    return filePath
 
-csv_file_entry = tk.Entry(window, width=120, textvariable=csv_file_var, state='readonly')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 120,
-                                               y_multiplier_integer,
-                                               csv_file_entry, False)
+csv_file_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width,
+                            text='Select INPUT CSV file',
+                            command=lambda: get_csv_file(window, 'Select INPUT csv file', [("csv files", "*.csv")], True))
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                               csv_file_button, True)
+
+# Button to open the selected CSV file
+openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+                                 command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                               openInputFile_button,
+                                               True, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                               "Open INPUT csv file")
+
+# CSV file path entry
+csv_file_entry = tk.Entry(window, width=GUI_IO_util.csv_file_width - 8, textvariable=csv_file_var)
+csv_file_entry.config(state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
+                                               csv_file_entry, True)
+
+# Clear button
+def _clear_csv_file():
+    csv_file_var.set('')
+
+clear_csv_button = tk.Button(window, text='Clear', width=5, command=lambda: _clear_csv_file())
+y_multiplier_integer = GUI_IO_util.placeWidget(window, 1150, y_multiplier_integer,
+                                               clear_csv_button, False, False, True, False, 90,
+                                               GUI_IO_util.open_setup_x_coordinate,
+                                               "Click to clear the INPUT CSV file.")
 
 # ── Placeholder widgets for future validation features ──────────────────────
 
@@ -87,9 +164,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 def help_buttons(window, help_button_x_coordinate, increment):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,
         increment, "NLP Suite Help",
+        "Use the dropdown menu to open a related GUI." + GUI_IO_util.msg_Esc)
+
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,
+        y_multiplier_integer, "NLP Suite Help",
         "INPUT CSV file: the csv file to validate and clean.\n\n"
         "This GUI can be launched from the DB SQL GUI dropdown menu, which will "
-        "automatically pass the currently loaded csv file." + GUI_IO_util.msg_Esc)
+        "automatically pass the currently loaded csv file.\n\n"
+        "You can also select a csv file manually using the Select INPUT CSV file button." + GUI_IO_util.msg_Esc)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,
         y_multiplier_integer, "NLP Suite Help",
@@ -126,7 +208,7 @@ readMe_message = ("This GUI provides tools for validating and cleaning PC-ACE da
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 
 run_script_command = lambda: run(
-    GUI_util.inputFilename.get(),
+    csv_file_var.get(),
     GUI_util.output_dir_path.get(),
     GUI_util.open_csv_output_checkbox.get(),
     GUI_util.charts_package_options_widget.get(),
