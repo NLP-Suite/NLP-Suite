@@ -123,8 +123,13 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation, S
 
     if select_SQLite_DB_var.get() != "":
         if not SQL_query_var or SQL_query_var.strip() == "":
-            mb.showwarning(title='Warning',
-                           message='The SQL query area is empty. Please, create or import a query and try again.')
+            if source_complex_var.get() or target_complex_var.get() or _saved_pairs:
+                mb.showwarning(title='Warning',
+                               message='There are objects selected in the cross-complex query widgets. '
+                                       'Please, click on the Generate SQL query button first and then RUN.')
+            else:
+                mb.showwarning(title='Warning',
+                               message='The SQL query area is empty. Please, create or import a query and try again.')
             return
         print("SQL_query_var", SQL_query_var)
         dbVar = select_SQLite_DB_var.get()
@@ -199,13 +204,19 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation, S
                 outputDir = pcace_subdir
 
         if qname.startswith('Cross-complex:'):
-            # e.g. 'Cross-complex: Individual → Simple process' or
-            #      'Cross-complex: Individual → Simple process, City, Time'
-            parts = qname.replace('Cross-complex:', '').strip().split('→')
-            if len(parts) >= 2:
-                src_part = parts[0].strip()
-                tgt_part = parts[1].strip().replace(', ', '_').replace(' ', '_')
-                csv_name = 'SQL_{}_{}.csv'.format(src_part, tgt_part)
+            # Use only leaf complex names for a readable filename.
+            body = qname.replace('Cross-complex:', '').strip()
+            pair_strs = [p.strip() for p in body.split(';')]
+            leaf_parts = []
+            for pair_str in pair_strs:
+                arrow_parts = pair_str.split('→')
+                for ap in arrow_parts:
+                    for sub in ap.split(','):
+                        leaf = sub.strip().split('.')[-1].strip().replace(' ', '_')
+                        if leaf:
+                            leaf_parts.append(leaf)
+            if leaf_parts:
+                csv_name = 'SQL_{}.csv'.format('_'.join(leaf_parts))
             else:
                 csv_name = 'sql_result.csv'
         elif qname.startswith('Source-only:'):
@@ -295,11 +306,15 @@ outputDir=GUI_util.output_dir_path
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
-# Fix blue highlight on readonly Combobox widgets (Windows default paints
-# the entire field blue when empty and readonly).
+# Fix blue highlight on ttk.Combobox widgets (Windows theme paints
+# the field blue when the widget has focus or is selected).
 _style = ttk.Style()
-_style.map('TCombobox', selectbackground=[('readonly', 'white')],
-                        selectforeground=[('readonly', 'black')])
+_style.map('TCombobox', selectbackground=[('readonly', 'white'), ('disabled', 'white'),
+                                           ('focus', 'white'), ('!focus', 'white')],
+                        selectforeground=[('readonly', 'black'), ('disabled', 'black'),
+                                           ('focus', 'black'), ('!focus', 'black')])
+window.option_add('*TCombobox*Listbox.selectBackground', '#0078D7')
+window.option_add('*TCombobox*Listbox.selectForeground', 'white')
 
 select_SQLite_DB_var=tk.StringVar()
 csv_file_var= tk.StringVar()
@@ -1074,7 +1089,8 @@ def _update_extra_targets_label(*args):
         obj_num += 1
         sx_label = ssx or '*'
         if s_child:
-            sx_label = '{}.{}'.format(s_child, sx_label)
+            path_str = '.'.join(s_child) if isinstance(s_child, list) else s_child
+            sx_label = '{}.{}'.format(path_str, sx_label)
         if pi < len(_saved_extra_children):
             s_extras, _ = _saved_extra_children[pi]
             if s_extras:
@@ -1086,7 +1102,8 @@ def _update_extra_targets_label(*args):
             obj_num += 1
             tx_label = tsx or '*'
             if t_child:
-                tx_label = '{}.{}'.format(t_child, tx_label)
+                path_str = '.'.join(t_child) if isinstance(t_child, list) else t_child
+                tx_label = '{}.{}'.format(path_str, tx_label)
             if pi < len(_saved_extra_children):
                 _, t_extras = _saved_extra_children[pi]
                 if t_extras:
@@ -1099,13 +1116,13 @@ def _update_extra_targets_label(*args):
         parts.append('{}:{}'.format(obj_num, src))
         obj_num += 1
         src_sx = source_simplex_var.get() or '*'
-        # Show drilled child context if applicable
+        # Show drilled path context if applicable
         try:
             src_drilled = _drilled_child.get(id(source_simplex_menu))
         except NameError:
             src_drilled = None
         if src_drilled and not src_sx.startswith('> ') and not src_sx.startswith('<< '):
-            src_sx = '{}.{}'.format(src_drilled, src_sx)
+            src_sx = '{}.{}'.format('.'.join(src_drilled), src_sx)
         # Show extras indicator for current extra children
         cur_src_extras = _get_extra_children(source_simplex_menu)
         if cur_src_extras:
@@ -1123,7 +1140,7 @@ def _update_extra_targets_label(*args):
         except NameError:
             tgt_drilled = None
         if tgt_drilled and not tgt_sx.startswith('> ') and not tgt_sx.startswith('<< '):
-            tgt_sx = '{}.{}'.format(tgt_drilled, tgt_sx)
+            tgt_sx = '{}.{}'.format('.'.join(tgt_drilled), tgt_sx)
         cur_tgt_extras = _get_extra_children(target_simplex_menu)
         if cur_tgt_extras:
             _merge_tag = 'COALESCE' if _coalesce_tgt_var.get() else 'SEPARATE'
@@ -1132,18 +1149,24 @@ def _update_extra_targets_label(*args):
     text = ', '.join(parts) if parts else ''
     extra_targets_var.set(text)
     # Update the hover-over text of the Generate button to show the current selection
-    selection_line = 'Object selection: ' + text if text else 'No objects selected yet.'
+    if text:
+        wrapped_parts = []
+        for p in text.split(', '):
+            wrapped_parts.append(p)
+        selection_line = 'Object selection:\n  ' + '\n  '.join(wrapped_parts)
+    else:
+        selection_line = 'No objects selected yet.'
     _gen_btn_hover_text = ("Click to generate the SQL query for the selected objects.\n"
                            "Click RUN after the SQL query is displayed in the SQL query area.\n\n"
                            + selection_line)
-    # Re-bind hover-over with updated text
+    # Re-bind hover-over with updated text; position tooltip at left edge
     generate_cross_btn.bind('<Enter>',
         lambda e, t=_gen_btn_hover_text: (
             e.widget.config(background='red', foreground='black'),
             GUI_IO_util.display_widget_info(window, e,
                 GUI_IO_util.labels_x_coordinate + 960,
                 GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step * _gen_btn_y_row,
-                GUI_IO_util.open_TIPS_x_coordinate, t)))
+                GUI_IO_util.labels_x_coordinate, t)))
 
 
 def _add_object():
@@ -1228,7 +1251,7 @@ def _ensure_libraries_loaded():
 def _expand_if_no_simplex(complex_name, child_name=None):
     """If a complex has no simplex attributes, return its children that do.
     Returns a list of (parent_complex, child_complex, simplex) 3-tuples."""
-    effective = child_name or complex_name
+    effective = (child_name[-1] if isinstance(child_name, list) and child_name else child_name) or complex_name
     names = DB_PCACE_data_analyzer_util.get_cross_complex_simplex_names(effective)
     if names:
         return [(complex_name, child_name, None)]
@@ -1247,7 +1270,7 @@ def _expand_pairs(pairs):
         # Expand source if needed
         src_list = [(src, src_child, src_sx)]
         if not src_sx:
-            effective_src = src_child or src
+            effective_src = (src_child[-1] if isinstance(src_child, list) and src_child else src_child) or src
             src_names = DB_PCACE_data_analyzer_util.get_cross_complex_simplex_names(effective_src)
             if not src_names:
                 src_list = _expand_if_no_simplex(src, src_child)
@@ -1258,7 +1281,7 @@ def _expand_pairs(pairs):
         else:
             tgt_list = [(tgt, tgt_child, tgt_sx)]
             if not tgt_sx:
-                effective_tgt = tgt_child or tgt
+                effective_tgt = (tgt_child[-1] if isinstance(tgt_child, list) and tgt_child else tgt_child) or tgt
                 tgt_names = DB_PCACE_data_analyzer_util.get_cross_complex_simplex_names(effective_tgt)
                 if not tgt_names:
                     tgt_list = _expand_if_no_simplex(tgt, tgt_child)
@@ -1271,39 +1294,39 @@ def _expand_pairs(pairs):
 def _resolve_simplex_selection(complex_name, simplex_val, simplex_combo):
     """Resolve a simplex dropdown selection.
 
-    Returns a 3-tuple: (parent_complex, child_complex_or_None, simplex_or_None)
+    Returns a 3-tuple: (parent_complex, drill_path_or_None, simplex_or_None)
 
     The parent complex is ALWAYS the original complex shown in Object 1/3.
-    The child complex is set when the user drilled into a child (e.g., Individual
-    under Participant-S).  This preserves the hierarchical path so the query
-    generator can distinguish Participant-S→Individual from Participant-O→Individual.
+    The drill_path is a list of child complex names representing the drill
+    path (e.g., ['Individual', 'Personal Characteristics'] for a two-level
+    drill).  None when not drilled.
 
     Three cases:
-    1. Drilled into a child (e.g., Participant-S → Individual):
-       - '*'   → (Participant-S, Individual, None)  — all child simplexes
-       - 'Name'→ (Participant-S, Individual, Name)  — specific child simplex
+    1. Drilled into a child (e.g., Participant-S → Individual → Personal Characteristics):
+       - '*'   → (Participant-S, ['Individual', 'Personal Characteristics'], None)
+       - 'Race'→ (Participant-S, ['Individual', 'Personal Characteristics'], Race)
     2. Showing children (not drilled):
        - '*'       → (Participant-S, None, None) — expand all children
-       - '> Child' → (Participant-S, Child, None) — all simplexes of child
+       - '> Child' → (Participant-S, ['Child'], None) — all simplexes of child
     3. Showing simplexes directly (complex has its own simplexes):
        - '*'   → (Individual, None, None) — all simplexes
        - 'Name'→ (Individual, None, Name) — specific simplex
     """
-    # Case 1: drilled into a child complex
+    # Case 1: drilled into a child complex (path is a list)
     drilled = _drilled_child.get(id(simplex_combo))
     if drilled:
         if not simplex_val or simplex_val == '*':
-            return complex_name, drilled, None
+            return complex_name, list(drilled), None
         if simplex_val.startswith('<< '):
             return complex_name, None, None
-        return complex_name, drilled, simplex_val
+        return complex_name, list(drilled), simplex_val
 
     # Case 2: showing children (not drilled)
     if not simplex_val or simplex_val == '*':
         return complex_name, None, None
     if simplex_val.startswith('> ') or simplex_val.startswith('✓ '):
         child_name = simplex_val[2:]
-        return complex_name, child_name, None
+        return complex_name, [child_name], None
 
     # Case 3: normal simplex
     return complex_name, None, simplex_val
@@ -1319,8 +1342,17 @@ def _get_extra_children(simplex_combo):
     except NameError:
         return set()
     if drilled:
-        return sel - {drilled}
+        # Exclude the first child in the drill path (the primary drilled child
+        # at the same level as the selected siblings)
+        primary = drilled[0] if isinstance(drilled, list) else drilled
+        return sel - {primary}
     return set()
+
+def _child_str(child):
+    """Convert a drill-path list to the single child name the util functions expect."""
+    if isinstance(child, list):
+        return child[-1] if child else None
+    return child
 
 def _generate_cross_complex_query():
     # Collect all pairs: saved + current (if complete)
@@ -1398,7 +1430,7 @@ def _generate_cross_complex_query():
                 source_filter_value=_where_value,
                 source_filter_operator=_where_operator,
                 where_simplex=_where_simplex,
-                source_child=src_child,
+                source_child=_child_str(src_child),
                 source_extra_children=se or None)
             if query is None:
                 mb.showwarning(title='Warning', message=str(info))
@@ -1426,8 +1458,8 @@ def _generate_cross_complex_query():
             source_filter_operator=_where_operator,
             where_simplex=_where_simplex,
             target_simplex=tgt_simplex,
-            source_child=src_child,
-            target_child=tgt_child,
+            source_child=_child_str(src_child),
+            target_child=_child_str(tgt_child),
             source_extra_children=src_extras or None,
             target_extra_children=tgt_extras or None)
         if query is None:
@@ -1435,18 +1467,18 @@ def _generate_cross_complex_query():
             return
         SQL_query_entry.delete(0.1, tk.END)
         SQL_query_entry.insert("end", query)
-        src_label = '{}.{}'.format(src, src_child) if src_child else src
-        tgt_label = '{}.{}'.format(tgt_name, tgt_child) if tgt_child else tgt_name
-        query_name_var.set('Cross-complex: {} → {}'.format(src_label, tgt_label))
+        src_path_str = '.'.join([src] + src_child) if src_child else src
+        tgt_path_str = '.'.join([tgt_name] + tgt_child) if tgt_child else tgt_name
+        query_name_var.set('Cross-complex: {} → {}'.format(src_path_str, tgt_path_str))
         warnings = []
-        effective_src = src_child or src
+        effective_src = src_child[-1] if src_child else src
         if not DB_PCACE_data_analyzer_util.get_cross_complex_simplex_names(effective_src):
             children = DB_PCACE_data_analyzer_util.get_children_with_simplexes(effective_src)
             msg = "'{}' has no simplex attributes.".format(effective_src)
             if children:
                 msg += "\nTry: {}".format(', '.join(children))
             warnings.append(msg)
-        effective_tgt = tgt_child or tgt_name
+        effective_tgt = tgt_child[-1] if tgt_child else tgt_name
         if not DB_PCACE_data_analyzer_util.get_cross_complex_simplex_names(effective_tgt):
             children = DB_PCACE_data_analyzer_util.get_children_with_simplexes(effective_tgt)
             msg = "'{}' has no simplex attributes.".format(effective_tgt)
@@ -1466,17 +1498,17 @@ def _generate_cross_complex_query():
             if tgt is None:
                 q, info = DB_PCACE_data_analyzer_util.generate_source_only_query(
                     src, source_filter_simplex=src_sx,
-                    source_child=src_child,
+                    source_child=_child_str(src_child),
                     source_extra_children=se or None)
-                src_l = '{}.{}'.format(src, src_child) if src_child else src
+                src_l = '.'.join([src] + src_child) if src_child else src
                 pair_labels.append(src_l)
             else:
                 q, info = DB_PCACE_data_analyzer_util.generate_cross_complex_query(
                     src, tgt, source_filter_simplex=src_sx, target_simplex=tgt_sx,
-                    source_child=src_child, target_child=tgt_child,
+                    source_child=_child_str(src_child), target_child=_child_str(tgt_child),
                     source_extra_children=se or None, target_extra_children=te or None)
-                src_l = '{}.{}'.format(src, src_child) if src_child else src
-                tgt_l = '{}.{}'.format(tgt, tgt_child) if tgt_child else tgt
+                src_l = '.'.join([src] + src_child) if src_child else src
+                tgt_l = '.'.join([tgt] + tgt_child) if tgt_child else tgt
                 pair_labels.append('{} → {}'.format(src_l, tgt_l))
             if q:
                 all_queries.append(q)
@@ -1485,16 +1517,17 @@ def _generate_cross_complex_query():
             return
         # Check if all cross-pairs share the same source — use multi-target generator
         cross_only = [p for p in all_pairs if p[3] is not None]
-        cross_sources = set((s, sc, ssx) for s, sc, ssx, _, _, _ in cross_only) if cross_only else set()
+        cross_sources = set((s, tuple(sc) if sc else None, ssx) for s, sc, ssx, _, _, _ in cross_only) if cross_only else set()
         if not source_only_pairs and len(cross_sources) == 1 and len(cross_only) > 1:
-            src, src_child, src_simplex = list(cross_sources)[0]
+            src, src_child_tup, src_simplex = list(cross_sources)[0]
+            src_child = list(src_child_tup) if src_child_tup else None
             targets = [(t, tc, tsx) for _, _, _, t, tc, tsx in cross_only]
             se0 = all_extras[0][0] if all_extras else set()
             tgt_extras_list = [all_extras[i][1] if i < len(all_extras) else set()
                                for i in range(len(all_pairs))]
             query, info = DB_PCACE_data_analyzer_util.generate_multi_target_query(
                 src, source_simplex=src_simplex, targets=targets,
-                source_child=src_child,
+                source_child=_child_str(src_child),
                 source_extra_children=se0 or None,
                 target_extra_children_list=tgt_extras_list or None)
             if query is None:
@@ -1503,7 +1536,7 @@ def _generate_cross_complex_query():
             SQL_query_entry.delete(0.1, tk.END)
             SQL_query_entry.insert("end", query)
             tgt_names = [t[0] for t in targets]
-            src_label = '{}.{}'.format(src, src_child) if src_child else src
+            src_label = '.'.join([src] + src_child) if src_child else src
             query_name_var.set('Cross-complex: {} → {}'.format(src_label, ', '.join(tgt_names)))
             if info.get('warnings'):
                 mb.showinfo(title='Simplex attributes', message='\n\n'.join(info['warnings']))
@@ -1561,9 +1594,11 @@ def _populate_cross_complex_menus(*args):
 # Key = combo widget id, Value = True if showing children, False if showing simplexes.
 _simplex_showing_children = {}
 
-# Track which child complex was drilled into per simplex combo.
-# Key = combo widget id, Value = child complex name (e.g., 'Individual').
-# When set, the combo is showing that child's simplexes rather than the parent's children.
+# Track the drill-down path per simplex combo.
+# Key = combo widget id, Value = list of child complex names representing the
+# drill path (e.g., ['Individual', 'Personal Characteristics'] means
+# top-level → Individual → Personal Characteristics).
+# When set, the combo is showing the deepest child's simplexes.
 _drilled_child = {}
 
 # Track Enter-selected children for multi-child COALESCE.
@@ -1659,8 +1694,12 @@ def _populate_target_simplex(*args):
 
 def _drill_into_child(child_name, simplex_combo, simplex_var, complex_var):
     """Navigate into a child complex, showing its simplexes (or its children
-    if it has no simplexes).  Used by both click-drill and Enter-then-drill."""
-    _drilled_child[id(simplex_combo)] = child_name
+    if it has no simplexes).  Used by both click-drill and Enter-then-drill.
+    Supports arbitrary-depth drill: each call appends to the drill path."""
+    path = _drilled_child.get(id(simplex_combo), [])
+    path = list(path)  # copy
+    path.append(child_name)
+    _drilled_child[id(simplex_combo)] = path
     _simplex_showing_children[id(simplex_combo)] = False
     db_path = select_SQLite_DB_var.get()
     if not db_path or not os.path.exists(db_path):
@@ -1680,38 +1719,43 @@ def _drill_into_child(child_name, simplex_combo, simplex_var, complex_var):
                            WHERE sxsc.ID_setup_complex = ?
                            ORDER BY ss.Name""", (cid,))
             names = [r[0] for r in cur.fetchall()]
-            parent_name = complex_var.get()
-            # Show selected children count in the back label
+            # Back label shows the immediate parent (one level up)
+            if len(path) > 1:
+                back_parent = path[-2]
+            else:
+                back_parent = complex_var.get()
             sel = _selected_children.get(id(simplex_combo), set())
-            back_label = '<< ' + parent_name
+            back_label = '<< ' + back_parent
             if len(sel) > 1:
                 back_label += '  [{} children selected]'.format(len(sel))
-            if names:
+            # Always check for child complex types too
+            cur.execute("""SELECT DISTINCT sc2.Name
+                           FROM setup_xref_Complex_Complex sxcc
+                           JOIN setup_Complex sc2
+                               ON sc2.ID_setup_complex = sxcc.LowerComplex
+                           WHERE sxcc.HigherComplex = ?
+                           ORDER BY sc2.Name""", (cid,))
+            grandchildren = [r[0] for r in cur.fetchall()]
+            child_items = []
+            for c in grandchildren:
+                if c in sel:
+                    child_items.append('✓ ' + c)
+                else:
+                    child_items.append('> ' + c)
+            if names and child_items:
+                simplex_combo['values'] = [back_label, '*'] + names + child_items
+                simplex_var.set('*')
+                _simplex_showing_children[id(simplex_combo)] = True
+            elif names:
                 simplex_combo['values'] = [back_label, '*'] + names
                 simplex_var.set('*')
+            elif child_items:
+                simplex_combo['values'] = [back_label, '*'] + child_items
+                simplex_var.set('*')
+                _simplex_showing_children[id(simplex_combo)] = True
             else:
-                # Child has no simplexes — show ITS children
-                cur.execute("""SELECT DISTINCT sc2.Name
-                               FROM setup_xref_Complex_Complex sxcc
-                               JOIN setup_Complex sc2
-                                   ON sc2.ID_setup_complex = sxcc.LowerComplex
-                               WHERE sxcc.HigherComplex = ?
-                               ORDER BY sc2.Name""", (cid,))
-                grandchildren = [r[0] for r in cur.fetchall()]
-                if grandchildren:
-                    # Mark any already-selected children with ✓
-                    items = []
-                    for c in grandchildren:
-                        if c in sel:
-                            items.append('✓ ' + c)
-                        else:
-                            items.append('> ' + c)
-                    simplex_combo['values'] = [back_label, '*'] + items
-                    simplex_var.set('*')
-                    _simplex_showing_children[id(simplex_combo)] = True
-                else:
-                    simplex_combo['values'] = [back_label, '*']
-                    simplex_var.set('*')
+                simplex_combo['values'] = [back_label, '*']
+                simplex_var.set('*')
         cur.close()
         conn.close()
     except Exception as e:
@@ -1719,12 +1763,30 @@ def _drill_into_child(child_name, simplex_combo, simplex_var, complex_var):
 
 
 def _go_back_to_children(complex_var, simplex_combo, simplex_var):
-    """Go back from a drilled child to the children list, PRESERVING
-    accumulated _selected_children so the user can drill into another
-    sibling without losing previous selections."""
+    """Go back ONE level in the drill path, PRESERVING accumulated
+    _selected_children so the user can drill into another sibling
+    without losing previous selections.
+
+    Multi-level: if path is [Individual, Personal Characteristics],
+    going back pops to [Individual] and shows Individual's children+simplexes.
+    Going back from [Individual] pops to [] and shows the top-level complex's children."""
+    path = _drilled_child.get(id(simplex_combo), [])
     sel = _selected_children.get(id(simplex_combo), set())
-    cname = complex_var.get()
-    if not cname:
+
+    if path:
+        path = list(path)
+        path.pop()  # go up one level
+        if path:
+            _drilled_child[id(simplex_combo)] = path
+        else:
+            _drilled_child.pop(id(simplex_combo), None)
+
+    # Determine which complex to show children of
+    if path:
+        parent_name = path[-1]
+    else:
+        parent_name = complex_var.get()
+    if not parent_name:
         return
     db_path = select_SQLite_DB_var.get()
     if not db_path or not os.path.exists(db_path):
@@ -1732,13 +1794,13 @@ def _go_back_to_children(complex_var, simplex_combo, simplex_var):
     try:
         conn = sqlite3.connect(db_path)
         cur = conn.cursor()
-        cur.execute("SELECT ID_setup_complex FROM setup_Complex WHERE Name=?", (cname,))
+        cur.execute("SELECT ID_setup_complex FROM setup_Complex WHERE Name=?", (parent_name,))
         row = cur.fetchone()
         if not row:
             conn.close()
             return
         cid = row[0]
-        # Get direct simplexes of the parent complex
+        # Get direct simplexes of this complex
         cur.execute("""SELECT DISTINCT ss.Name
                        FROM setup_xref_Simplex_Complex sxsc
                        JOIN setup_Simplex ss ON ss.ID_setup_simplex = sxsc.ID_setup_simplex
@@ -1758,14 +1820,23 @@ def _go_back_to_children(complex_var, simplex_combo, simplex_var):
             conn.close()
             _populate_simplex_menu(complex_var, simplex_combo, simplex_var)
             return
-        # Rebuild list: direct simplexes + children with ✓/> marks
+        # Rebuild list: back label + direct simplexes + children with ✓/> marks
         child_items = []
         for c in children:
             if c in sel:
                 child_items.append('✓ ' + c)
             else:
                 child_items.append('> ' + c)
-        simplex_combo['values'] = ['*'] + parent_simplexes + child_items
+        # If we're still drilled (path not empty), show a back label
+        if path:
+            if len(path) > 1:
+                back_parent = path[-2]
+            else:
+                back_parent = complex_var.get()
+            back_label = '<< ' + back_parent
+            simplex_combo['values'] = [back_label, '*'] + parent_simplexes + child_items
+        else:
+            simplex_combo['values'] = ['*'] + parent_simplexes + child_items
         simplex_var.set('*')
         _simplex_showing_children[id(simplex_combo)] = True
         cur.close()
@@ -1783,15 +1854,15 @@ def _handle_simplex_drill(event, simplex_combo, simplex_var, complex_var):
     val = simplex_var.get()
     if val.startswith('> ') or val.startswith('✓ '):
         child_name = val[2:]
-        # Add this child to selected set (if not already there)
-        sel = _selected_children.setdefault(id(simplex_combo), set())
-        sel.add(child_name)
+        # Only track as sibling selection at the first drill level.
+        # Deeper drilling is navigation, not sibling selection for COALESCE.
+        path = _drilled_child.get(id(simplex_combo), [])
+        if not path:
+            sel = _selected_children.setdefault(id(simplex_combo), set())
+            sel.add(child_name)
         _drill_into_child(child_name, simplex_combo, simplex_var, complex_var)
     elif val.startswith('<< '):
-        # Go back to children list WITHOUT clearing accumulated selections.
-        # _populate_simplex_menu would clear _selected_children — avoid it.
-        _drilled_child.pop(id(simplex_combo), None)
-        # Clear the merge checkbox for this side
+        # Go back ONE level in the drill path WITHOUT clearing accumulated selections.
         if simplex_combo is source_simplex_menu:
             _coalesce_src_var.set(0)
         elif simplex_combo is target_simplex_menu:
@@ -1816,8 +1887,12 @@ def _handle_simplex_enter(event, simplex_combo, simplex_var, complex_var):
     val = simplex_var.get()
     if not val:
         return
-    # Only works on child items (> or ✓ prefix)
+    # Only works on child items (> or ✓ prefix), and only at the first
+    # drill level.  Deeper levels are navigation, not sibling selection.
     if val.startswith('> ') or val.startswith('✓ '):
+        path = _drilled_child.get(id(simplex_combo), [])
+        if path:
+            return  # Enter-selection only works at the top children level
         child_name = val[2:]
         sel = _selected_children.setdefault(id(simplex_combo), set())
         # Toggle

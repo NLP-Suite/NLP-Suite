@@ -2444,7 +2444,7 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
                 # Force categorical x-axis so Plotly doesn't auto-detect
                 # city names or other text as dates
                 fig.update_xaxes(type='category')
-                bar_file = os.path.join(outputDir, '{}_{}_bar.html'.format(base_name, safe_col))
+                bar_file = os.path.join(outputDir, 'SQL_{}_bar.html'.format(safe_col))
                 fig.write_html(bar_file)
                 filesToOpen.append(bar_file)
             except Exception as e:
@@ -2994,7 +2994,7 @@ network.on("click", function(params) {{
                 _wc_title = '{} Word Cloud:  {}'.format(_svo_label, '  —  '.join(_wc_legend_parts))
                 _plt.title(_wc_title, fontsize=12, fontweight='bold', pad=20)
                 _plt.axis('off')
-                wc_file = os.path.join(outputDir, '{}_{}_wordcloud.png'.format(base_name, _svo_label))
+                wc_file = os.path.join(outputDir, 'SQL_{}_wordcloud.png'.format(_svo_label))
                 wc.to_file(wc_file)
                 filesToOpen.append(wc_file)
                 _plt.close()
@@ -3038,7 +3038,7 @@ network.on("click", function(params) {{
                               regexp=r"[\w][\w ]+"
                               ).generate_from_frequencies(phrase_freq)
                     safe_col = _safe_filename(col)
-                    wc_file = os.path.join(outputDir, '{}_{}_wordcloud.png'.format(base_name, safe_col))
+                    wc_file = os.path.join(outputDir, 'SQL_{}_wordcloud.png'.format(safe_col))
                     wc.to_file(wc_file)
                     filesToOpen.append(wc_file)
                 except Exception as e:

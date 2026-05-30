@@ -65,6 +65,7 @@ import numpy as np
 
 import pandas as pd
 import os
+import re
 import tkinter.messagebox as mb
 
 import IO_files_util
@@ -955,30 +956,160 @@ def view_grammar(excel_file, column_name, output_file):
         column_data = column_data.str.replace('_x000d_', '', regex=False)
         column_data = column_data.str.replace('_x000D_', '', regex=False)
 
+        # Build a map from complex name to its grammar rule text
+        name_col = df['Name'] if 'Name' in df.columns else None
+        rule_map = {}
+        if name_col is not None:
+            for idx_r, row_val in column_data.items():
+                cname = df.at[idx_r, 'Name']
+                if pd.notna(cname):
+                    rule_map[str(cname)] = row_val
+
+        # Load hierarchy from xref table — use globals if available,
+        # otherwise read directly from the same directory as the Excel file
+        input_dir = os.path.dirname(excel_file)
+        xref_df = None
+        complex_df = df  # setup_Complex already loaded above
+        try:
+            xref_df = setup_xref_Complex_Complex_lib
+        except NameError:
+            pass
+        if xref_df is None:
+            for xref_name in ['setup_xref_Complex-Complex.pkl', 'setup_xref_Complex-Complex.xlsx']:
+                xref_path = os.path.join(input_dir, xref_name)
+                if os.path.exists(xref_path):
+                    xref_df = pd.read_pickle(xref_path) if xref_name.endswith('.pkl') else pd.read_excel(xref_path)
+                    break
+
+        children_of = {}
+        has_parent = set()
+        if xref_df is not None:
+            try:
+                for _, xrow in xref_df.iterrows():
+                    higher = xrow['HigherComplex']
+                    lower = xrow['LowerComplex']
+                    children_of.setdefault(higher, []).append(lower)
+                    has_parent.add(lower)
+            except Exception:
+                pass
+
+        # Map complex IDs to names
+        id_to_name = {}
+        name_to_id = {}
+        id_col = 'ID_setup_complex' if 'ID_setup_complex' in complex_df.columns else 'ID'
+        try:
+            for _, crow in complex_df.iterrows():
+                cid = crow[id_col]
+                cname = crow['Name']
+                id_to_name[cid] = cname
+                name_to_id[cname] = cid
+        except Exception:
+            pass
+
+        # Depth-first walk to produce hierarchical order
+        ordered_names = []
+        visited = set()
+        def walk(cid):
+            if cid in visited:
+                return
+            visited.add(cid)
+            cname = id_to_name.get(cid, '')
+            if cname:
+                ordered_names.append(cname)
+            for child_id in children_of.get(cid, []):
+                walk(child_id)
+
+        if id_to_name and children_of:
+            roots = [cid for cid in id_to_name if cid not in has_parent]
+            for root in roots:
+                walk(root)
+            # Append any complexes not reached by the tree walk
+            for cname in rule_map:
+                if cname not in ordered_names:
+                    ordered_names.append(cname)
+        else:
+            # Fallback: original Excel order
+            ordered_names = list(rule_map.keys())
+
+        # Collect all complex names referenced with + prefix in any rule
+        # but missing their own rewrite line
+        all_referenced = set()
+        for rule_text in rule_map.values():
+            for match in re.findall(r'<\+\+?([^>()]+?)(?:\s*\([^)]*\))?\s*>', rule_text):
+                all_referenced.add(match.strip())
+        missing = all_referenced - set(rule_map.keys())
+
         grammar ='LEGENDA\n\n   -->  Rewrite rule (the object to the left of --> can be rewritten in terms of the object(s) to the right)\n   ++   Hierarchical object (e.g., Macro event, Event, Semantic triplet)\n   +    Complex object (no + Simplex object)\n   <>   Can be rewritten\n   []   Optional object\n   {}   Multiples allowed\n   (1a) (1b) (1c)... mutually exclusive objects' \
                   '\n                      (e.g., <+Actor> rewritten as <+Individual (1a) <+Collective actor (1b). Both CANNOT be entered; it is one or the other).\n\n'
 
-
+        line_num = 0
         with open(output_file, 'w', encoding='utf-8') as f:
-            for i, row in enumerate(column_data, start=1):
-                # f.write(f"{i}    {row}\n")
-                # Aiden i is printed only the first time
-                # place row number right before each row object, since the row number is sometimes referred to in the rewrite rules for objcets already rewritten
-                row =row.replace(row,row[:1] + '\nLine ' + str(i) + ' ' + row[1:])
-                grammar= grammar+row
-            print('Grammar',grammar)
+            for cname in ordered_names:
+                rule = rule_map.get(cname, '')
+                if not rule or rule == 'nan':
+                    continue
+                line_num += 1
+                # Strip the leading < that is part of the grammar notation
+                display_rule = rule.lstrip('<')
+                grammar += 'Line ' + str(line_num) + ' ' + display_rule + '\n'
+            # Append missing objects that are referenced but have no rule
+            for cname in sorted(missing):
+                line_num += 1
+                cid = name_to_id.get(cname)
+                if cid and cid in children_of:
+                    prefix = '++'
+                else:
+                    prefix = '+'
+                grammar += 'Line ' + str(line_num) + ' ' + prefix + cname + '> --> (no rewrite rule defined)\n'
+            print('Grammar', grammar)
             f.write(grammar)
 
         IO_files_util.openFile('', output_file)
     except Exception as e:
          print(f"An error occurred: {e}")
 
+def _load_pcace_df(inputDir, base_name, id_renames=None):
+    """Load a PC-ACE table from pkl or xlsx, applying column renames."""
+    for ext in ('.pkl', '.xlsx'):
+        path = os.path.join(inputDir, base_name + ext)
+        if os.path.exists(path):
+            df = pd.read_pickle(path) if ext == '.pkl' else pd.read_excel(path)
+            if id_renames:
+                df = df.rename(columns={k: v for k, v in id_renames.items() if k in df.columns})
+            return df
+    return None
+
 def update_grammar_text(inputDir):
     """Auto-generate the GrammarRule_Text field in setup_Complex
     from the setup_xref tables. This reflects the current Required,
     AllowMultiple, and Group settings.
     Preserves existing +/++ prefixes from the original grammar when available."""
-    global setup_Complex_lib
+    global setup_Complex_lib, setup_xref_Complex_Complex_lib, setup_Simplex_lib, setup_xref_simplex_complex_lib
+
+    # Load globals from files if not already loaded
+    try:
+        setup_Complex_lib
+    except NameError:
+        setup_Complex_lib = _load_pcace_df(inputDir, 'setup_Complex', {'ID': 'ID_setup_complex'})
+    try:
+        setup_xref_Complex_Complex_lib
+    except NameError:
+        setup_xref_Complex_Complex_lib = _load_pcace_df(inputDir, 'setup_xref_Complex-Complex')
+    try:
+        setup_Simplex_lib
+    except NameError:
+        setup_Simplex_lib = _load_pcace_df(inputDir, 'setup_Simplex', {'ID': 'ID_setup_simplex'})
+    try:
+        setup_xref_simplex_complex_lib
+    except NameError:
+        setup_xref_simplex_complex_lib = _load_pcace_df(inputDir, 'setup_xref_Simplex-Complex',
+                                                         {'Complex': 'ID_setup_complex', 'Simplex': 'ID_setup_simplex'})
+
+    if setup_Complex_lib is None or setup_xref_Complex_Complex_lib is None:
+        mb.showwarning(title='Warning',
+                       message='Could not load setup_Complex or setup_xref_Complex-Complex files.\n\n'
+                               'Please make sure these files exist in the input directory.')
+        return
 
     # Parse existing prefixes from current GrammarRule_Text so we preserve
     # the original editorial +/++ markers instead of guessing from structure.
@@ -1606,12 +1737,14 @@ def generate_cross_complex_query(source_name, target_name,
     target_simplex : str, optional
         If given, only extract this simplex from the target.  Otherwise all
         target simplexes are returned.
-    source_child : str, optional
-        Child complex to drill into for source simplex extraction.
-        E.g. source_name='Participant-S', source_child='Individual' means
-        navigate Participant-S → Individual, then extract Individual's simplexes.
-    target_child : str, optional
-        Child complex to drill into for target simplex extraction.
+    source_child : str, list of str, or None
+        Child complex drill path for source simplex extraction.
+        Can be a single name (str) or a list for multi-level drill.
+        E.g. source_child=['Individual', 'Personal Characteristics'] means
+        navigate Participant-S → Individual → Personal Characteristics,
+        then extract Personal Characteristics' simplexes.
+    target_child : str, list of str, or None
+        Child complex drill path for target simplex extraction.
     source_extra_children : set or None
         Additional child complex names to COALESCE with the primary source child.
         Simplex matching is by Order position in setup_xref_Simplex_Complex.
@@ -1631,6 +1764,13 @@ def generate_cross_complex_query(source_name, target_name,
     target_id = id_lookup.get(target_name)
     if source_id is None or target_id is None:
         return None, "Unknown complex type name"
+
+    # Normalize child drill paths: accept list or string, use deepest child.
+    # The full drill path label is preserved for column naming.
+    source_child_path = source_child if isinstance(source_child, list) else ([source_child] if source_child else [])
+    target_child_path = target_child if isinstance(target_child, list) else ([target_child] if target_child else [])
+    source_child = source_child_path[-1] if source_child_path else None
+    target_child = target_child_path[-1] if target_child_path else None
 
     # Resolve child IDs if drilling down
     source_child_id = id_lookup.get(source_child) if source_child else None
@@ -1768,8 +1908,20 @@ def generate_cross_complex_query(source_name, target_name,
     # ---- SELECT ----
     # Embed complex type name into column alias so downstream charts can
     # detect the SVO role (e.g. "Participant-S > Name" → Subject role).
-    _src_label = source_child or source_name   # effective complex name
+    # Keep the parent complex name as prefix for SVO role detection,
+    # and show coalesced children in parentheses.
+    _src_label = source_child or source_name
+    if _src_has_extras and src_extra_info:
+        all_src_children = [source_child] + [n for n, _, _, _ in src_extra_info]
+        _src_label = '{}({})'.format(source_name, '+'.join(all_src_children))
+    elif source_child_path:
+        _src_label = '.'.join([source_name] + source_child_path)
     _tgt_label = target_child or target_name
+    if _tgt_has_extras and tgt_extra_info:
+        all_tgt_children = [target_child] + [n for n, _, _, _ in tgt_extra_info]
+        _tgt_label = '{}({})'.format(target_name, '+'.join(all_tgt_children))
+    elif target_child_path:
+        _tgt_label = '.'.join([target_name] + target_child_path)
     select_parts = ["    src_dc.ID_data_complex     AS Source_ID"]
     if source_has_simplexes:
         if source_filter_simplex:
@@ -1821,41 +1973,58 @@ def generate_cross_complex_query(source_name, target_name,
     # multi-hop chains (e.g., Participant-S → Actor → Individual = 2 hops).
     # When extra children are specified, use LEFT JOIN so rows where only
     # the extra child has data are not excluded.
+    # Build child navigation by chaining step-by-step through the user's
+    # drill path.  This ensures we follow the exact route the user chose
+    # (e.g., Individual → Personal Characteristics) rather than whatever
+    # BFS might find from source to the deepest child.
     src_child_jt = 'LEFT JOIN' if _src_has_extras else 'CROSS JOIN'
     if source_child:
-        child_path = find_cross_complex_path(source_name, source_child)
-        if child_path and len(child_path) > 1:
-            src_prev = 'src'
-            for ci in range(1, len(child_path)):
-                cp_id, cp_dir = child_path[ci]
-                xalias = 'src_ch_xref{}'.format(ci)
-                dcalias = 'src_ch{}_dc'.format(ci)
-                from_parts.append(
-                    "    {jt} data_xref_Complex_Complex {xref}\n"
-                    "        ON {xref}.ID_data_complex_HIGHER = {prev}_dc.ID_data_complex\n"
-                    "    {jt} data_Complex {dc}\n"
-                    "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_LOWER\n"
-                    "        AND {dc}.ID_setup_complex = {sid}".format(
-                        jt=src_child_jt, xref=xalias, prev=src_prev, dc=dcalias, sid=cp_id))
-                src_prev = 'src_ch{}'.format(ci)
-            src_sx_alias = src_prev  # final alias for simplex extraction
+        # Chain: source_name → path[0] → path[1] → ... → deepest child
+        chain_from = source_name
+        src_prev = 'src'
+        hop_num = 0
+        for step_name in source_child_path:
+            step_path = find_cross_complex_path(chain_from, step_name)
+            if step_path and len(step_path) > 1:
+                for ci in range(1, len(step_path)):
+                    hop_num += 1
+                    cp_id, cp_dir = step_path[ci]
+                    xalias = 'src_ch_xref{}'.format(hop_num)
+                    dcalias = 'src_ch{}_dc'.format(hop_num)
+                    from_parts.append(
+                        "    {jt} data_xref_Complex_Complex {xref}\n"
+                        "        ON {xref}.ID_data_complex_HIGHER = {prev}_dc.ID_data_complex\n"
+                        "    {jt} data_Complex {dc}\n"
+                        "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_LOWER\n"
+                        "        AND {dc}.ID_setup_complex = {sid}".format(
+                            jt=src_child_jt, xref=xalias, prev=src_prev, dc=dcalias, sid=cp_id))
+                    src_prev = 'src_ch{}'.format(hop_num)
+            chain_from = step_name
+        src_sx_alias = src_prev
     tgt_child_jt = 'LEFT JOIN' if _tgt_has_extras else 'CROSS JOIN'
     if target_child:
-        child_path = find_cross_complex_path(target_name, target_child)
-        if child_path and len(child_path) > 1:
-            tgt_prev = 'tgt'
-            for ci in range(1, len(child_path)):
-                cp_id, cp_dir = child_path[ci]
-                xalias = 'tgt_ch_xref{}'.format(ci)
-                dcalias = 'tgt_ch{}_dc'.format(ci)
-                from_parts.append(
-                    "    {jt} data_xref_Complex_Complex {xref}\n"
-                    "        ON {xref}.ID_data_complex_HIGHER = {prev}_dc.ID_data_complex\n"
-                    "    {jt} data_Complex {dc}\n"
-                    "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_LOWER\n"
-                    "        AND {dc}.ID_setup_complex = {sid}".format(
-                        jt=tgt_child_jt, xref=xalias, prev=tgt_prev, dc=dcalias, sid=cp_id))
-                tgt_prev = 'tgt_ch{}'.format(ci)
+        chain_from = target_name
+        tgt_prev = 'tgt'
+        hop_num = 0
+        for step_name in target_child_path:
+            step_path = find_cross_complex_path(chain_from, step_name)
+            if step_path and len(step_path) > 1:
+                for ci in range(1, len(step_path)):
+                    hop_num += 1
+                    cp_id, cp_dir = step_path[ci]
+                    xalias = 'tgt_ch_xref{}'.format(hop_num)
+                    dcalias = 'tgt_ch{}_dc'.format(hop_num)
+                    from_parts.append(
+                        "    {jt} data_xref_Complex_Complex {xref}\n"
+                        "        ON {xref}.ID_data_complex_HIGHER = {prev}_dc.ID_data_complex\n"
+                        "    {jt} data_Complex {dc}\n"
+                        "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_LOWER\n"
+                        "        AND {dc}.ID_setup_complex = {sid}".format(
+                            jt=tgt_child_jt, xref=xalias, prev=tgt_prev, dc=dcalias, sid=cp_id))
+                    tgt_prev = 'tgt_ch{}'.format(hop_num)
+            chain_from = step_name
+            tgt_sx_alias = tgt_prev
+            tgt_prev = 'tgt_ch{}'.format(ci)
             tgt_sx_alias = tgt_prev  # final alias for simplex extraction
 
     # ---- Extra child LEFT JOIN chains (source) ----
@@ -2000,8 +2169,8 @@ def generate_cross_complex_query(source_name, target_name,
     # ---- Comment header ----
     path_desc = ' -> '.join(
         '{}({})'.format(name_lookup.get(nid, nid), d) for nid, d in path)
-    src_desc = '{} -> {}'.format(source_name, source_child) if source_child else source_name
-    tgt_desc = '{} -> {}'.format(target_name, target_child) if target_child else target_name
+    src_desc = ' -> '.join([source_name] + source_child_path) if source_child_path else source_name
+    tgt_desc = ' -> '.join([target_name] + target_child_path) if target_child_path else target_name
     comment = (
         "-- Auto-generated cross-complex query\n"
         "-- Source: {src} (setup_complex={src_id})\n"
@@ -2369,7 +2538,9 @@ def generate_multi_target_query(source_name, source_simplex=None,
     if source_id is None:
         return None, "Unknown source complex type: {}".format(source_name)
 
-    # Resolve source child
+    # Normalize source child: accept list or string, use deepest child
+    if isinstance(source_child, list):
+        source_child = source_child[-1] if source_child else None
     source_child_id = id_lookup.get(source_child) if source_child else None
     effective_source = source_child or source_name
     source_has_simplexes = len(get_cross_complex_simplex_names(effective_source)) > 0
@@ -2387,6 +2558,9 @@ def generate_multi_target_query(source_name, source_simplex=None,
         else:
             tgt_name, tgt_simplex = target_tuple
             tgt_child = None
+        # Normalize: accept list or string, use deepest child
+        if isinstance(tgt_child, list):
+            tgt_child = tgt_child[-1] if tgt_child else None
         tgt_id = id_lookup.get(tgt_name)
         if tgt_id is None:
             return None, "Unknown target complex type: {}".format(tgt_name)
