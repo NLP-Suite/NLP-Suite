@@ -2067,6 +2067,264 @@ def generate_cross_complex_query(source_name, target_name,
     return query, path
 
 
+def generate_source_only_query(source_name,
+                               source_filter_simplex=None,
+                               source_filter_value=None,
+                               source_filter_operator='LIKE',
+                               where_simplex=None,
+                               source_child=None,
+                               source_extra_children=None):
+    """Generate a SQL query that extracts simplex attributes of a single complex type.
+
+    This is the \"no target\" variant — only Object 1 + Object 2, no Object 3/4.
+
+    Parameters
+    ----------
+    source_name : str
+        Name of the source complex type (e.g. 'Individual', 'Event').
+    source_filter_simplex : str, optional
+        Name of a simplex attribute to filter/display.
+    source_filter_value : str, optional
+        Value or pattern for the WHERE filter.
+    source_filter_operator : str, optional
+        SQL operator: 'LIKE', '=', '!=', 'NOT LIKE'. Default 'LIKE'.
+    where_simplex : str, optional
+        Simplex name to apply the WHERE filter on.
+    source_child : str, optional
+        Child complex to drill into for simplex extraction.
+    source_extra_children : set or None
+        Additional child complex names to COALESCE with the primary source child.
+
+    Returns
+    -------
+    (query_string, info_dict) or (None, error_message)
+    """
+    id_lookup = dict(zip(setup_Complex_lib['Name'],
+                         setup_Complex_lib['ID_setup_complex'].astype(int)))
+    name_lookup = dict(zip(setup_Complex_lib['ID_setup_complex'].astype(int),
+                           setup_Complex_lib['Name']))
+
+    source_id = id_lookup.get(source_name)
+    if source_id is None:
+        return None, "Unknown complex type: {}".format(source_name)
+
+    source_child_id = id_lookup.get(source_child) if source_child else None
+    if source_child and source_child_id is None:
+        return None, "Unknown source child complex: {}".format(source_child)
+
+    effective_source = source_child or source_name
+    source_has_simplexes = len(get_cross_complex_simplex_names(effective_source)) > 0
+
+    src_sx_alias = 'src_child' if source_child else 'src'
+
+    # ---- Extra-children COALESCE pre-processing ----
+    _src_has_extras = bool(source_extra_children and source_child and source_has_simplexes)
+    src_extra_info = []
+    src_primary_simplex_id = None
+    src_primary_order = None
+    if _src_has_extras:
+        source_child_id_val = id_lookup.get(source_child)
+        if source_filter_simplex and source_child_id_val is not None:
+            simplex_row = setup_Simplex_lib[setup_Simplex_lib['Name'] == source_filter_simplex]
+            if not simplex_row.empty:
+                src_primary_simplex_id = int(simplex_row['ID_setup_simplex'].iloc[0])
+                xref_match = setup_xref_simplex_complex_lib[
+                    (setup_xref_simplex_complex_lib['ID_setup_simplex'] == src_primary_simplex_id) &
+                    (setup_xref_simplex_complex_lib['ID_setup_complex'] == source_child_id_val)
+                ]
+                if not xref_match.empty and 'Order' in xref_match.columns:
+                    src_primary_order = int(xref_match['Order'].iloc[0])
+        for extra_child_name in sorted(source_extra_children):
+            ex_child_id = id_lookup.get(extra_child_name)
+            if ex_child_id is None:
+                continue
+            ex_path = find_cross_complex_path(source_name, extra_child_name)
+            if ex_path is None or len(ex_path) < 2:
+                continue
+            ex_simplex_id = None
+            if src_primary_order is not None:
+                ex_xref = setup_xref_simplex_complex_lib[
+                    (setup_xref_simplex_complex_lib['ID_setup_complex'] == ex_child_id) &
+                    (setup_xref_simplex_complex_lib['Order'] == src_primary_order)
+                ]
+                if not ex_xref.empty:
+                    ex_simplex_id = int(ex_xref['ID_setup_simplex'].iloc[0])
+            src_extra_info.append((extra_child_name, ex_child_id, ex_simplex_id, ex_path))
+
+    if _src_has_extras and src_primary_order is None:
+        _src_has_extras = False
+        src_extra_info = []
+
+    # ---- Value expression ----
+    src_primary_val = "COALESCE(src_vt.Value, src_vn.Value, src_vd.Value)"
+    if _src_has_extras and src_extra_info:
+        parts = [src_primary_val]
+        for ei, _ in enumerate(src_extra_info):
+            parts.append("COALESCE(src_ex{}_vt.Value, src_ex{}_vn.Value, src_ex{}_vd.Value)".format(ei, ei, ei))
+        src_value_expr = "COALESCE({})".format(', '.join(parts))
+    else:
+        src_value_expr = src_primary_val
+
+    # ---- SELECT ----
+    _src_label = source_child or source_name
+    select_parts = ["    src_dc.ID_data_complex     AS Source_ID"]
+    if source_has_simplexes:
+        if source_filter_simplex:
+            _src_alias = "{} > {}".format(_src_label, source_filter_simplex)
+            select_parts.append("    {} AS [{}]".format(src_value_expr, _src_alias))
+        else:
+            select_parts.append("    src_ss.Name                AS [{} > Simplex]".format(_src_label))
+            select_parts.append("    {} AS [{} > Value]".format(src_value_expr, _src_label))
+
+    # ---- FROM + JOINs ----
+    from_parts = ["    data_Complex src_dc"]
+
+    # Child navigation
+    src_child_jt = 'LEFT JOIN' if _src_has_extras else 'CROSS JOIN'
+    if source_child:
+        child_path = find_cross_complex_path(source_name, source_child)
+        if child_path and len(child_path) > 1:
+            src_prev = 'src'
+            for ci in range(1, len(child_path)):
+                cp_id, cp_dir = child_path[ci]
+                xalias = 'src_ch_xref{}'.format(ci)
+                dcalias = 'src_ch{}_dc'.format(ci)
+                from_parts.append(
+                    "    {jt} data_xref_Complex_Complex {xref}\n"
+                    "        ON {xref}.ID_data_complex_HIGHER = {prev}_dc.ID_data_complex\n"
+                    "    {jt} data_Complex {dc}\n"
+                    "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_LOWER\n"
+                    "        AND {dc}.ID_setup_complex = {sid}".format(
+                        jt=src_child_jt, xref=xalias, prev=src_prev, dc=dcalias, sid=cp_id))
+                src_prev = 'src_ch{}'.format(ci)
+            src_sx_alias = src_prev
+
+    # Extra child LEFT JOIN chains
+    for ei, (ex_name, ex_child_id, ex_simplex_id, ex_path) in enumerate(src_extra_info):
+        ex_prefix = 'src_ex{}'.format(ei)
+        ex_prev = 'src'
+        for ci in range(1, len(ex_path)):
+            cp_id, cp_dir = ex_path[ci]
+            xalias = '{}_xref{}'.format(ex_prefix, ci)
+            dcalias = '{}_ch{}_dc'.format(ex_prefix, ci)
+            from_parts.append(
+                "    LEFT JOIN data_xref_Complex_Complex {xref}\n"
+                "        ON {xref}.ID_data_complex_HIGHER = {prev}_dc.ID_data_complex\n"
+                "    LEFT JOIN data_Complex {dc}\n"
+                "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_LOWER\n"
+                "        AND {dc}.ID_setup_complex = {sid}".format(
+                    xref=xalias, prev=ex_prev, dc=dcalias, sid=cp_id))
+            ex_prev = '{}_ch{}'.format(ex_prefix, ci)
+        ex_sx_filter = ""
+        if ex_simplex_id is not None:
+            ex_sx_filter = "\n        AND {ex}_ds.ID_setup_simplex = {sxid}".format(
+                ex=ex_prefix, sxid=ex_simplex_id)
+        from_parts.append(
+            "    LEFT JOIN [data_xref_Simplex_Complex] {ex}_sxc\n"
+            "        ON {ex}_sxc.ID_data_complex = {alias}_dc.ID_data_complex\n"
+            "    LEFT JOIN data_Simplex {ex}_ds\n"
+            "        ON {ex}_ds.ID_data_simplex = {ex}_sxc.ID_data_simplex{sx_filter}\n"
+            "    LEFT JOIN setup_Simplex {ex}_ss\n"
+            "        ON {ex}_ss.ID_setup_simplex = {ex}_ds.ID_setup_simplex\n"
+            "    LEFT JOIN data_SimplexText   {ex}_vt ON {ex}_vt.ID_data_date_number_text = {ex}_ds.ID_data_date_number_text AND {ex}_ss.ValueType = 1\n"
+            "    LEFT JOIN data_SimplexNumber {ex}_vn ON {ex}_vn.ID_data_date_number_text = {ex}_ds.ID_data_date_number_text AND {ex}_ss.ValueType = 2\n"
+            "    LEFT JOIN data_SimplexDate   {ex}_vd ON {ex}_vd.ID_data_date_number_text = {ex}_ds.ID_data_date_number_text AND {ex}_ss.ValueType = 3".format(
+                ex=ex_prefix, alias=ex_prev, sx_filter=ex_sx_filter))
+
+    # Source simplex extraction
+    if source_has_simplexes:
+        src_sx_jt = 'LEFT JOIN' if _src_has_extras else 'JOIN'
+        src_ds_filter = ""
+        if _src_has_extras and src_primary_simplex_id is not None:
+            src_ds_filter = "\n        AND src_ds.ID_setup_simplex = {}".format(src_primary_simplex_id)
+        from_parts.append(
+            "    {jt} [data_xref_Simplex_Complex] src_sxc\n"
+            "        ON src_sxc.ID_data_complex = {alias}_dc.ID_data_complex\n"
+            "    {jt} data_Simplex src_ds\n"
+            "        ON src_ds.ID_data_simplex = src_sxc.ID_data_simplex{ds_filter}\n"
+            "    {jt} setup_Simplex src_ss\n"
+            "        ON src_ss.ID_setup_simplex = src_ds.ID_setup_simplex\n"
+            "    LEFT JOIN data_SimplexText   src_vt ON src_vt.ID_data_date_number_text = src_ds.ID_data_date_number_text AND src_ss.ValueType = 1\n"
+            "    LEFT JOIN data_SimplexNumber src_vn ON src_vn.ID_data_date_number_text = src_ds.ID_data_date_number_text AND src_ss.ValueType = 2\n"
+            "    LEFT JOIN data_SimplexDate   src_vd ON src_vd.ID_data_date_number_text = src_ds.ID_data_date_number_text AND src_ss.ValueType = 3".format(
+                jt=src_sx_jt, alias=src_sx_alias, ds_filter=src_ds_filter)
+        )
+
+    # ---- WHERE ----
+    where_parts = ["    src_dc.ID_setup_complex = {}".format(source_id)]
+    if source_filter_simplex and source_has_simplexes and not _src_has_extras:
+        where_parts.append("    AND src_ss.Name = '{}'".format(source_filter_simplex))
+    _filter_simplex = where_simplex or source_filter_simplex
+    if source_filter_value and _filter_simplex and source_has_simplexes:
+        _op = source_filter_operator.upper() if source_filter_operator else 'LIKE'
+        if _op in ('LIKE', 'NOT LIKE'):
+            where_parts.append("    AND LOWER({}) {} LOWER('{}')".format(
+                src_value_expr, _op, source_filter_value))
+        else:
+            where_parts.append("    AND {} {} '{}'".format(
+                src_value_expr, _op, source_filter_value))
+        if where_simplex and where_simplex != source_filter_simplex and not _src_has_extras:
+            where_parts.append("    AND src_ss.Name = '{}'".format(where_simplex))
+    if _src_has_extras and src_extra_info:
+        coalesce_check_parts = ["src_ds.ID_data_simplex"]
+        for ei in range(len(src_extra_info)):
+            coalesce_check_parts.append("src_ex{}_ds.ID_data_simplex".format(ei))
+        where_parts.append("    AND COALESCE({}) IS NOT NULL".format(', '.join(coalesce_check_parts)))
+
+    # ---- Comment header ----
+    src_desc = '{} -> {}'.format(source_name, source_child) if source_child else source_name
+    comment = (
+        "-- Auto-generated source-only query\n"
+        "-- Source: {src} (setup_complex={src_id})\n".format(
+            src=src_desc, src_id=source_id))
+    if source_child:
+        comment += "-- Source child: {} (setup_complex={})\n".format(source_child, source_child_id)
+    if _src_has_extras:
+        comment += "-- Source COALESCE children: {}\n".format(
+            ', '.join(n for n, _, _, _ in src_extra_info))
+        if src_primary_order is not None:
+            comment += "--   Matched by simplex Order={}\n".format(src_primary_order)
+    if _filter_simplex and source_filter_value:
+        comment += "-- WHERE: {} {} '{}'\n".format(
+            _filter_simplex, source_filter_operator or 'LIKE', source_filter_value)
+    elif source_filter_simplex:
+        comment += "-- Filter simplex: {}\n".format(source_filter_simplex)
+    if not source_has_simplexes:
+        children = get_children_with_simplexes(effective_source)
+        comment += "-- Note: {} has no simplex attributes; source IDs only\n".format(
+            effective_source)
+        if children:
+            comment += "--   Try drilling into: {}\n".format(', '.join(children))
+
+    # ---- ORDER BY ----
+    if source_has_simplexes:
+        order_by = "ORDER BY src_dc.ID_data_complex, src_ss.Name"
+    else:
+        order_by = "ORDER BY src_dc.ID_data_complex"
+
+    query = (
+        "{comment}\n"
+        "SELECT\n{select_}\n"
+        "FROM\n{from_}\n"
+        "WHERE\n{where}\n"
+        "{order_by}\n".format(
+            comment=comment,
+            select_=',\n'.join(select_parts),
+            from_='\n'.join(from_parts),
+            where='\n'.join(where_parts),
+            order_by=order_by))
+
+    warnings = []
+    if not source_has_simplexes:
+        children = get_children_with_simplexes(effective_source)
+        msg = "'{}' has no simplex attributes.".format(effective_source)
+        if children:
+            msg += "\nTry: {}".format(', '.join(children))
+        warnings.append(msg)
+
+    return query, {'warnings': warnings}
+
+
 def generate_multi_target_query(source_name, source_simplex=None,
                                 targets=None, source_child=None,
                                 source_extra_children=None,

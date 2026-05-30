@@ -1378,6 +1378,27 @@ if __name__ == '__main__':
 
     activate_all_options()
 
+    # CLI argument: --inputfile to pre-load a CSV file (e.g., from DB_SQL_main)
+    def _apply_cli_args():
+        if '--inputfile' in sys.argv:
+            try:
+                idx = sys.argv.index('--inputfile')
+                _file = sys.argv[idx + 1]
+                if os.path.isfile(_file):
+                    GUI_util.inputFilename.set(_file)
+            except (IndexError, ValueError):
+                pass
+        if '--outputdir' in sys.argv:
+            try:
+                idx = sys.argv.index('--outputdir')
+                _dir = sys.argv[idx + 1]
+                if os.path.isdir(_dir):
+                    GUI_util.output_dir_path.set(_dir)
+            except (IndexError, ValueError):
+                pass
+
+    GUI_util.window.after(200, _apply_cli_args)
+
     # GUI_util.window.attributes("-topmost", True)
     # GUI_util.window.focus_force()
     GUI_util.window.mainloop()
