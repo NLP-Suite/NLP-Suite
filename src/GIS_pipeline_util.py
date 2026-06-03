@@ -74,6 +74,51 @@ def getGoogleAPIkey(window,Google_config, display_key=False):
     return key.strip()
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# GIS settings — per-database country bias, area, restrict
+# Saved as GIS_settings.json in the INPUT directory alongside the Excel files.
+# This allows different databases (e.g., lynching/US vs fascism/Italy) to each
+# carry their own geocoding preferences.
+# ══════════════════════════════════════════════════════════════════════════════
+
+import json as _json
+
+_GIS_SETTINGS_FILENAME = 'GIS_settings.json'
+
+def save_GIS_settings(input_dir, country_bias='', area='', restrict=False):
+    """Save geocoding settings to GIS_settings.json in the input directory."""
+    if not input_dir or not os.path.isdir(input_dir):
+        return
+    settings = {
+        'country_bias': country_bias,
+        'area': area,
+        'restrict': bool(restrict)
+    }
+    path = os.path.join(input_dir, _GIS_SETTINGS_FILENAME)
+    try:
+        with open(path, 'w', encoding='utf-8') as f:
+            _json.dump(settings, f, indent=2)
+    except Exception as e:
+        print(f"  WARNING: Could not save GIS settings to {path}: {e}")
+
+def load_GIS_settings(input_dir):
+    """Load geocoding settings from GIS_settings.json in the input directory.
+    Returns (country_bias, area, restrict) — defaults to ('', '', False) if not found."""
+    if not input_dir or not os.path.isdir(input_dir):
+        return '', '', False
+    path = os.path.join(input_dir, _GIS_SETTINGS_FILENAME)
+    if not os.path.isfile(path):
+        return '', '', False
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            settings = _json.load(f)
+        return (settings.get('country_bias', ''),
+                settings.get('area', ''),
+                settings.get('restrict', False))
+    except Exception as e:
+        print(f"  WARNING: Could not read GIS settings from {path}: {e}")
+        return '', '', False
+
 # the list of arguments reflect the order of widgets in the Google_Earth_main GUI
 # processes one file at a time
 def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
