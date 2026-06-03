@@ -199,7 +199,7 @@ def run(inputFilename, outputDir, openOutputFiles,
 
         # import timechart_util
         # outputFiles = charts_util.timeline(inputFilename, outputFilename, csv_field_boxplot_color_var, date_format_var, cumulative_var, monthly, yearly)
-        outputFiles = charts_util.timechart(inputFilename, outputFilename, csv_field_visualization_var, date_format_var,
+        outputFiles = charts_util.TimeMapper(inputFilename, outputFilename, csv_field_visualization_var, date_format_var,
                                             cumulative_var, monthly, yearly)
 
         if outputFiles != None:

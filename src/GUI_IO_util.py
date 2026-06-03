@@ -179,7 +179,9 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
     #   or, for a menu, the item currently displayed in the menu, e.g., mm/dd/yyyy for a date menu)
     if 'scale' in str(widget_name) or \
         'text' in str(widget_name) or \
-        'combobox' in str(widget_name):
+        'combobox' in str(widget_name) or \
+        'listbox' in str(widget_name) or \
+        'entry' in str(widget_name):
         wording = ''
     else:
         wording = widget_name.cget('text')
