@@ -3046,6 +3046,494 @@ def get_simplex_value_type(simplex_name):
         return None
 
 
+def get_all_simplex_names():
+    """Return a list of all simplex names from setup_Simplex."""
+    if setup_Simplex_lib is None or setup_Simplex_lib.empty:
+        return []
+    if 'Name' not in setup_Simplex_lib.columns:
+        return []
+    return setup_Simplex_lib['Name'].dropna().unique().tolist()
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Aggregate code validation — multi-database comparison
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _load_table_from_dir(db_dir, table_name):
+    """Load a table (pkl preferred, xlsx fallback) from a DB directory.
+    Returns a DataFrame or empty DataFrame on failure."""
+    pkl_path = os.path.join(db_dir, table_name + '.pkl')
+    xlsx_path = os.path.join(db_dir, table_name + '.xlsx')
+    csv_path = os.path.join(db_dir, table_name + '.csv')
+    try:
+        if os.path.isfile(pkl_path):
+            return pd.read_pickle(pkl_path)
+        elif os.path.isfile(xlsx_path):
+            return pd.read_excel(xlsx_path)
+        elif os.path.isfile(csv_path):
+            return pd.read_csv(csv_path, encoding='utf-8', on_bad_lines='skip')
+    except Exception as e:
+        print(f"  WARNING: Could not load {table_name} from {db_dir}: {e}")
+    return pd.DataFrame()
+
+
+def compare_aggregate_codes_across_dbs(db_dirs, outputDir):
+    """Compare aggregate code vocabularies across multiple PC-ACE databases.
+
+    For each database, extracts:
+      - Which aggregate simplex types exist (names)
+      - The distinct code values used for each aggregate type
+      - Frequencies of each code value
+
+    Produces a CSV with columns:
+      Database | Aggregate simplex | Code value | Frequency
+
+    Also produces a "gaps" CSV showing codes that exist in some DBs but not others.
+
+    Parameters
+    ----------
+    db_dirs : list of str
+        Paths to PC-ACE database directories.
+    outputDir : str
+        Where to write output CSVs.
+
+    Returns
+    -------
+    list of str
+        Paths to output CSV files.
+    """
+    output_files = []
+
+    # ── 1. Collect all aggregate values per DB ────────────────────────────
+    all_rows = []
+    for db_dir in db_dirs:
+        db_name = os.path.basename(db_dir)
+        simplex_all = _load_table_from_dir(db_dir, 'NLP_data_Simplex_values_ALL')
+        if simplex_all.empty:
+            print(f"  WARNING: No NLP_data_Simplex_values_ALL in {db_name}")
+            continue
+
+        if 'Simplex name' not in simplex_all.columns or 'Value' not in simplex_all.columns:
+            print(f"  WARNING: Missing columns in {db_name}")
+            continue
+
+        # Filter to aggregate simplex types
+        agg_mask = simplex_all['Simplex name'].str.contains('aggregate', case=False, na=False)
+        agg_data = simplex_all[agg_mask].copy()
+
+        if agg_data.empty:
+            print(f"  {db_name}: no aggregate codes found")
+            all_rows.append({
+                'Database': db_name,
+                'Aggregate simplex': '(none)',
+                'Code value': '',
+                'Frequency': 0
+            })
+            continue
+
+        for sx_name, group in agg_data.groupby('Simplex name'):
+            freq = group['Value'].value_counts()
+            for val, cnt in freq.items():
+                all_rows.append({
+                    'Database': db_name,
+                    'Aggregate simplex': sx_name,
+                    'Code value': str(val),
+                    'Frequency': int(cnt)
+                })
+
+    if not all_rows:
+        print("  No aggregate data found in any database.")
+        return []
+
+    df_all = pd.DataFrame(all_rows)
+    df_all = df_all.sort_values(['Aggregate simplex', 'Code value', 'Database'])
+
+    # Save the full comparison
+    out_full = IO_files_util.generate_output_file_name(
+        '', db_dirs[0], outputDir, '.csv', 'aggregate_codes_cross_DB')
+    df_all.to_csv(out_full, encoding='utf-8', index=False)
+    output_files.append(out_full)
+    print(f"  Cross-DB aggregate comparison: {len(df_all)} rows saved to {out_full}")
+
+    # ── 2. Build the "gaps" report ────────────────────────────────────────
+    # For each aggregate simplex type, pivot by DB to show which codes
+    # are present in which DBs.
+    # Normalize aggregate simplex names for comparison (case-insensitive)
+    df_all['_norm_simplex'] = df_all['Aggregate simplex'].str.lower().str.replace('aggregated', 'aggregate')
+    # Categorize into Actor vs Action
+    df_all['Category'] = df_all['_norm_simplex'].apply(
+        lambda x: 'Actor' if 'actor' in x else ('Action' if 'action' in x else 'Other'))
+
+    gap_rows = []
+    db_names = sorted(df_all['Database'].unique())
+    for category in ['Actor', 'Action', 'Other']:
+        cat_data = df_all[df_all['Category'] == category]
+        if cat_data.empty:
+            continue
+        # Get all unique code values across all DBs for this category
+        all_codes = sorted(cat_data['Code value'].unique())
+        for code_val in all_codes:
+            row = {'Category': category, 'Code value': code_val}
+            for db_name in db_names:
+                db_cat = cat_data[cat_data['Database'] == db_name]
+                match = db_cat[db_cat['Code value'] == code_val]
+                if not match.empty:
+                    row[db_name] = int(match['Frequency'].sum())
+                else:
+                    row[db_name] = ''  # gap — not present in this DB
+            gap_rows.append(row)
+
+    if gap_rows:
+        df_gaps = pd.DataFrame(gap_rows)
+        # Reorder columns: Category, Code value, then DB names
+        col_order = ['Category', 'Code value'] + db_names
+        df_gaps = df_gaps[[c for c in col_order if c in df_gaps.columns]]
+        out_gaps = IO_files_util.generate_output_file_name(
+            '', db_dirs[0], outputDir, '.csv', 'aggregate_codes_gaps')
+        df_gaps.to_csv(out_gaps, encoding='utf-8', index=False)
+        output_files.append(out_gaps)
+        print(f"  Gaps report: {len(df_gaps)} code values saved to {out_gaps}")
+
+    return output_files
+
+
+def build_aggregate_side_by_side(db_dir, outputDir, category='Actor'):
+    """Build a side-by-side mapping of original simplex values to aggregate codes
+    for a single database.
+
+    For each complex instance (ID_data_complex), extracts:
+      - The original simplex value(s) (e.g., name of individual actor)
+      - All aggregate codes assigned to the same complex instance
+
+    Produces a CSV with one row per complex instance showing the original value
+    alongside each aggregate coding scheme.
+
+    Parameters
+    ----------
+    db_dir : str
+        Path to a PC-ACE database directory.
+    outputDir : str
+        Where to write the output CSV.
+    category : str
+        'Actor' or 'Action' — determines which simplex types to include.
+
+    Returns
+    -------
+    str or None
+        Path to the output CSV, or None on failure.
+    """
+    db_name = os.path.basename(db_dir)
+
+    xref_all = _load_table_from_dir(db_dir, 'NLP_data_xref_Simplex-Complex_ALL')
+    if xref_all.empty:
+        print(f"  WARNING: No NLP_data_xref_Simplex-Complex_ALL in {db_name}")
+        return None
+
+    required_cols = {'ID_data_complex', 'Simplex name', 'Value', 'Identifier'}
+    if not required_cols.issubset(set(xref_all.columns)):
+        # Try alternate column names
+        if 'Simplex name (xref)' in xref_all.columns and 'Simplex name' not in xref_all.columns:
+            xref_all['Simplex name'] = xref_all['Simplex name (xref)']
+        missing = required_cols - set(xref_all.columns)
+        if missing:
+            print(f"  WARNING: Missing columns {missing} in {db_name}")
+            return None
+
+    # Identify aggregate vs original simplex names
+    all_simplex_names = xref_all['Simplex name'].dropna().unique()
+    agg_names = [n for n in all_simplex_names if 'aggregate' in n.lower()]
+
+    if not agg_names:
+        print(f"  {db_name}: no aggregate simplex types found")
+        return None
+
+    # Filter by category
+    if category == 'Actor':
+        agg_names = [n for n in agg_names if 'actor' in n.lower()]
+        # Original value simplex names for actors
+        orig_keywords = ['name of individual', 'name of collective', 'name of organization',
+                         'nome attore', 'nome individuo', 'nome collettivo', 'nome organizzazione',
+                         'nome individuale', 'nome dell', 'attore',
+                         'name of actor', 'actor name', 'individual name']
+    else:  # Action
+        agg_names = [n for n in agg_names if 'action' in n.lower()]
+        orig_keywords = ['verbal phrase', 'frase verbale', 'processo', 'process',
+                         'simple process', 'complex process', 'processo semplice',
+                         'name of action', 'action name', 'azione']
+
+    if not agg_names:
+        print(f"  {db_name}: no {category} aggregate types found")
+        return None
+
+    # Find original value simplex names (non-aggregate simplex types)
+    orig_names = []
+    for n in all_simplex_names:
+        if 'aggregate' in n.lower():
+            continue
+        if any(kw in n.lower() for kw in orig_keywords):
+            orig_names.append(n)
+
+    print(f"  {db_name} {category}: aggregate types = {agg_names}")
+    print(f"  {db_name} {category}: original value types = {orig_names[:5]}{'...' if len(orig_names) > 5 else ''}")
+
+    # Build per-complex-instance mapping
+    # For each complex instance, get original values and all aggregate code values
+    agg_data = xref_all[xref_all['Simplex name'].isin(agg_names)]
+    orig_data = xref_all[xref_all['Simplex name'].isin(orig_names)] if orig_names else pd.DataFrame()
+
+    # Get unique complex IDs that have at least one aggregate code
+    complex_ids = agg_data['ID_data_complex'].unique()
+
+    results = []
+    for cid in complex_ids:
+        row = {'ID_data_complex': cid}
+
+        # Get identifier
+        id_match = xref_all[xref_all['ID_data_complex'] == cid]
+        if not id_match.empty and 'Identifier' in id_match.columns:
+            ids = id_match['Identifier'].dropna().unique()
+            if len(ids) > 0:
+                row['Identifier'] = str(ids[0])
+
+        # Get original simplex value(s)
+        if not orig_data.empty:
+            orig_match = orig_data[orig_data['ID_data_complex'] == cid]
+            if not orig_match.empty:
+                for _, r in orig_match.drop_duplicates(subset=['Simplex name', 'Value']).iterrows():
+                    col_name = r['Simplex name']
+                    row[col_name] = str(r['Value'])
+
+        # Get aggregate code values
+        cid_agg = agg_data[agg_data['ID_data_complex'] == cid]
+        for agg_name in agg_names:
+            match = cid_agg[cid_agg['Simplex name'] == agg_name]
+            if not match.empty:
+                vals = match['Value'].dropna().unique()
+                row[agg_name] = str(vals[0]) if len(vals) == 1 else ' | '.join(str(v) for v in vals)
+
+        results.append(row)
+
+    if not results:
+        print(f"  {db_name}: no side-by-side mappings built")
+        return None
+
+    df_result = pd.DataFrame(results)
+    # Reorder: ID, Identifier, original columns, then aggregate columns
+    front_cols = ['ID_data_complex', 'Identifier']
+    orig_cols_present = [c for c in df_result.columns if c not in front_cols and c not in agg_names]
+    col_order = [c for c in front_cols if c in df_result.columns] + \
+                sorted(orig_cols_present) + sorted(agg_names)
+    df_result = df_result[[c for c in col_order if c in df_result.columns]]
+
+    out_file = IO_files_util.generate_output_file_name(
+        '', db_dir, outputDir, '.csv',
+        db_name + '_' + category + '_aggregate_side_by_side')
+    df_result.to_csv(out_file, encoding='utf-8', index=False)
+    print(f"  Side-by-side: {len(df_result)} complex instances saved to {out_file}")
+
+    return out_file
+
+
+def lemmatize_simplex_values(inputDir, outputDir, simplex_name='', language='en',
+                            pos_filter=None):
+    """Lemmatize text simplex values using Stanza and produce a review CSV.
+
+    For each unique text value, the lemmatized form is computed. When the lemma
+    differs from the original, a row is added to the output CSV for user review.
+
+    Parameters
+    ----------
+    inputDir, outputDir : str
+    simplex_name : str
+        If specified, only lemmatize that simplex; if '', lemmatize all text simplexes.
+    language : str
+        Stanza language code ('en' for English, 'it' for Italian).
+    pos_filter : list or None
+        If provided, only lemmatize words whose POS tag is in this list
+        (e.g., ['NOUN', 'VERB']). If None, lemmatize all words.
+
+    Returns
+    -------
+    str or None
+        Path to the review CSV, or None if nothing to lemmatize.
+    """
+    import stanza
+
+    global data_simplex_values_ALL_lib
+    if data_simplex_values_ALL_lib is None or data_simplex_values_ALL_lib.empty:
+        print("  WARNING: data_simplex_values_ALL_lib not available for lemmatization.")
+        return None
+
+    # Filter to text-type simplexes (ValueType == 1)
+    if 'ValueType' in data_simplex_values_ALL_lib.columns:
+        text_data = data_simplex_values_ALL_lib[
+            data_simplex_values_ALL_lib['ValueType'].astype(float).fillna(0).astype(int) == 1].copy()
+    else:
+        text_data = data_simplex_values_ALL_lib.copy()
+
+    if simplex_name:
+        text_data = text_data[text_data['Simplex name'] == simplex_name]
+
+    if text_data.empty:
+        return None
+
+    # Initialize Stanza pipeline with lemma + POS processors
+    try:
+        stanza.download(language, processors='tokenize,pos,lemma', verbose=False)
+    except Exception:
+        pass
+    nlp = stanza.Pipeline(lang=language, processors='tokenize,mwt,pos,lemma', verbose=False)
+
+    results = []
+
+    for sx_name, group in text_data.groupby('Simplex name'):
+        values = group['Value'].dropna().astype(str).tolist()
+        if not values:
+            continue
+
+        # Build frequency map
+        freq_map = {}
+        for v in values:
+            v_stripped = v.strip()
+            if v_stripped:
+                freq_map[v_stripped] = freq_map.get(v_stripped, 0) + 1
+
+        # Lemmatize each unique value
+        for original, freq in freq_map.items():
+            try:
+                doc = nlp(original)
+                lemma_parts = []
+                for sent in doc.sentences:
+                    for word in sent.words:
+                        if pos_filter and word.upos not in pos_filter:
+                            lemma_parts.append(word.text)
+                        else:
+                            lemma_parts.append(word.lemma)
+                lemma = ' '.join(lemma_parts)
+            except Exception:
+                lemma = original
+
+            if lemma != original:
+                results.append({
+                    'Simplex name': sx_name,
+                    'Original value': original,
+                    'Frequency': freq,
+                    'Lemmatized form': lemma,
+                    'POS filter': ', '.join(pos_filter) if pos_filter else 'all',
+                    'Language': language,
+                    'Accept?': 'Y'
+                })
+
+    if not results:
+        print("  No values changed after lemmatization.")
+        return None
+
+    df = pd.DataFrame(results)
+    df = df.sort_values(['Simplex name', 'Original value'])
+    col_order = ['Simplex name', 'Original value', 'Frequency', 'Lemmatized form',
+                 'POS filter', 'Language', 'Accept?']
+    df = df[[c for c in col_order if c in df.columns]]
+
+    label = simplex_name + '_' if simplex_name else ''
+    output_file_name = IO_files_util.generate_output_file_name(
+        '', inputDir, outputDir, '.csv', label + 'lemmatize_review')
+    df.to_csv(output_file_name, encoding='utf-8', index=False)
+    print(f"  Found {len(results)} value(s) that change after lemmatization across "
+          f"{df['Simplex name'].nunique()} simplex(es). Saved to {output_file_name}")
+
+    return output_file_name
+
+
+def apply_lemmatization_corrections(review_csv_path, inputDir):
+    """Apply user-approved lemmatization corrections from the review CSV back to
+    data_SimplexText.xlsx and data_SimplexText.pkl.
+
+    Same logic as apply_spell_check_corrections but reads 'Original value'
+    and 'Lemmatized form' columns instead of 'Value' and 'Suggested correction'.
+    """
+    global data_SimplexText_lib, data_simplex_values_ALL_lib
+
+    if hasattr(inputDir, 'get'):
+        inputDir = inputDir.get()
+
+    if not os.path.isfile(review_csv_path):
+        print(f"  ERROR: Review CSV not found: {review_csv_path}")
+        return -1
+
+    review_df = pd.read_csv(review_csv_path, encoding='utf-8')
+
+    required = {'Original value', 'Lemmatized form', 'Accept?'}
+    if not required.issubset(set(review_df.columns)):
+        print(f"  ERROR: Review CSV missing required columns. Expected: {required}")
+        return -1
+
+    accepted = review_df[review_df['Accept?'].astype(str).str.strip().str.upper() == 'Y']
+    if accepted.empty:
+        print("  No corrections accepted (all rows marked N or empty).")
+        return 0
+
+    if data_SimplexText_lib is None or data_SimplexText_lib.empty:
+        xlsx_path = os.path.join(inputDir, 'data_SimplexText.xlsx')
+        pkl_path = os.path.join(inputDir, 'data_SimplexText.pkl')
+        if os.path.isfile(pkl_path):
+            data_SimplexText_lib = pd.read_pickle(pkl_path)
+        elif os.path.isfile(xlsx_path):
+            data_SimplexText_lib = pd.read_excel(xlsx_path)
+        else:
+            print("  ERROR: Cannot find data_SimplexText.xlsx or .pkl in input directory.")
+            return -1
+
+    corrections = {}
+    for _, row in accepted.iterrows():
+        old_val = str(row['Original value']).strip()
+        new_val = str(row['Lemmatized form']).strip()
+        if old_val and new_val and old_val != new_val:
+            corrections[old_val] = new_val
+
+    if not corrections:
+        print("  No effective corrections (original == lemma for all accepted rows).")
+        return 0
+
+    total_changed = 0
+    for old_val, new_val in corrections.items():
+        mask = data_SimplexText_lib['Value'].astype(str) == old_val
+        n_matches = mask.sum()
+        if n_matches > 0:
+            data_SimplexText_lib.loc[mask, 'Value'] = new_val
+            total_changed += n_matches
+            print(f"    Lemmatized: '{old_val}' -> '{new_val}' ({n_matches} occurrence(s))")
+
+    if total_changed == 0:
+        print("  No matching values found in data_SimplexText — nothing changed.")
+        return 0
+
+    import shutil
+    xlsx_path = os.path.join(inputDir, 'data_SimplexText.xlsx')
+    pkl_path = os.path.join(inputDir, 'data_SimplexText.pkl')
+    tmp_xlsx = xlsx_path + '.tmp'
+    tmp_pkl = pkl_path + '.tmp'
+
+    try:
+        data_SimplexText_lib.to_excel(tmp_xlsx, index=False)
+        data_SimplexText_lib.to_pickle(tmp_pkl)
+        shutil.move(tmp_xlsx, xlsx_path)
+        shutil.move(tmp_pkl, pkl_path)
+    except Exception as e:
+        print(f"  ERROR writing corrected files: {e}")
+        for f in [tmp_xlsx, tmp_pkl]:
+            if os.path.isfile(f):
+                os.remove(f)
+        return -1
+
+    data_simplex_values_ALL_lib = None
+    all_pkl = os.path.join(inputDir, 'NLP_data_Simplex_values_ALL.pkl')
+    if os.path.isfile(all_pkl):
+        os.remove(all_pkl)
+
+    print(f"  Applied {total_changed} lemmatization correction(s) across {len(corrections)} unique value(s).")
+    return total_changed
+
+
 def find_near_duplicate_simplex_values(inputDir, outputDir, simplex_name='', similarity_threshold=0.8):
     """Find near-duplicate (potentially misspelled) text values in data_SimplexText.
 

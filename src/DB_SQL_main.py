@@ -22,7 +22,7 @@ import IO_files_util
 import GUI_IO_util
 import IO_user_interface_util
 import TIPS_util
-import DB_PCACE_data_analyzer_util
+import DB_PCACE_data_analysis_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -40,7 +40,7 @@ def _build_sqlite(inpath_str, outpath_str):
     # Maps filename (e.g. 'data_Complex.xlsx') -> rename dict (e.g. {'ID':'ID_data_complex', ...})
     rename_lookup = {}
     try:
-        for fn, rename_cols in DB_PCACE_data_analyzer_util.reading_list:
+        for fn, rename_cols in DB_PCACE_data_analysis_util.reading_list:
             if rename_cols:
                 # Key by base name without extension for matching
                 base = os.path.splitext(fn)[0]
@@ -512,7 +512,7 @@ def view_grammar():
         mb.showwarning(title='Warning', message='No input directory selected.')
         return
     head, tail = os.path.split(inputDir.get())
-    DB_PCACE_data_analyzer_util.view_grammar(os.path.join(inputDir.get(), 'setup_Complex.xlsx'),
+    DB_PCACE_data_analysis_util.view_grammar(os.path.join(inputDir.get(), 'setup_Complex.xlsx'),
                                              'GrammarRule_Text', os.path.join(inputDir.get(),
                                                                               'PC-ACE grammar for database ' + tail + '.txt'))
 
@@ -520,7 +520,7 @@ def update_grammar():
     if inputDir.get() == '':
         mb.showwarning(title='Warning', message='No input directory selected.')
         return
-    DB_PCACE_data_analyzer_util.update_grammar_text(inputDir.get())
+    DB_PCACE_data_analysis_util.update_grammar_text(inputDir.get())
 
 def open_pcace_analyzer():
     """Launch the PC-ACE data analyzer GUI with the current input/output directories."""
@@ -529,7 +529,7 @@ def open_pcace_analyzer():
     if not in_dir or not os.path.isdir(in_dir):
         mb.showwarning(title='Warning', message='No input directory selected.\n\nPlease, select a PC-ACE input directory first.')
         return
-    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'DB_PCACE_data_analyzer_main.py')
+    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'DB_PCACE_data_analysis_main.py')
     cmd = [sys.executable, script_path]
     if in_dir:
         cmd.extend(['--inputdir', in_dir])
@@ -881,7 +881,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 
 # Get the setup names for the dropdowns (may be empty if no DB loaded yet)
 try:
-    _sql_setup_complex_menu, _sql_setup_simplex_menu = DB_PCACE_data_analyzer_util.get_setup_complex_simplex_names()
+    _sql_setup_complex_menu, _sql_setup_simplex_menu = DB_PCACE_data_analysis_util.get_setup_complex_simplex_names()
 except:
     _sql_setup_complex_menu, _sql_setup_simplex_menu = [], []
 
@@ -915,7 +915,7 @@ def _update_required_object_dropdown_sql(*args):
     obj_type = object_type_var_sql.get()
     _ensure_libraries_loaded()
     try:
-        c_menu, s_menu = DB_PCACE_data_analyzer_util.get_setup_complex_simplex_names()
+        c_menu, s_menu = DB_PCACE_data_analysis_util.get_setup_complex_simplex_names()
     except:
         c_menu, s_menu = [], []
     if obj_type == 'Complex':
@@ -952,7 +952,7 @@ def _toggle_required_sql():
         mb.showwarning(title='Warning',
                        message='Please select an object type (Complex or Simplex) and an object name from the dropdown menus.')
         return
-    current_val, xref_info = DB_PCACE_data_analyzer_util.get_required_value(obj_type, obj_name)
+    current_val, xref_info = DB_PCACE_data_analysis_util.get_required_value(obj_type, obj_name)
     if current_val is None:
         mb.showwarning(title='Warning',
                        message=f'Could not find "{obj_name}" in the {obj_type} xref table.\n\nMake sure the object exists in the setup_xref tables.')
@@ -969,7 +969,7 @@ def _toggle_required_sql():
         f'This will update the xlsx, pkl, and grammar files.\n\n'
         f'Are you sure you want to do that?')
     if proceed:
-        success = DB_PCACE_data_analyzer_util.toggle_required_value(obj_type, obj_name, new_val, GUI_util.input_main_dir_path.get())
+        success = DB_PCACE_data_analysis_util.toggle_required_value(obj_type, obj_name, new_val, GUI_util.input_main_dir_path.get())
         if success:
             mb.showwarning(title='REQUIRED updated',
                            message=f'The REQUIRED value for "{obj_name}" has been changed to {new_str}.\n\n'
@@ -1257,11 +1257,11 @@ def _ensure_libraries_loaded():
     input_dir = GUI_util.input_main_dir_path.get() if hasattr(GUI_util.input_main_dir_path, 'get') else ''
     if input_dir and os.path.isdir(input_dir):
         try:
-            if DB_PCACE_data_analyzer_util.setup_Complex_lib is None:
-                DB_PCACE_data_analyzer_util.build_libraries(input_dir, input_dir)
+            if DB_PCACE_data_analysis_util.setup_Complex_lib is None:
+                DB_PCACE_data_analysis_util.build_libraries(input_dir, input_dir)
         except (AttributeError, NameError):
             try:
-                DB_PCACE_data_analyzer_util.build_libraries(input_dir, input_dir)
+                DB_PCACE_data_analysis_util.build_libraries(input_dir, input_dir)
             except Exception as e:
                 print(f"  WARNING loading libraries: {e}")
 
@@ -1270,10 +1270,10 @@ def _expand_if_no_simplex(complex_name, child_name=None):
     """If a complex has no simplex attributes, return its children that do.
     Returns a list of (parent_complex, child_complex, simplex) 3-tuples."""
     effective = (child_name[-1] if isinstance(child_name, list) and child_name else child_name) or complex_name
-    names = DB_PCACE_data_analyzer_util.get_cross_complex_simplex_names(effective)
+    names = DB_PCACE_data_analysis_util.get_cross_complex_simplex_names(effective)
     if names:
         return [(complex_name, child_name, None)]
-    children = DB_PCACE_data_analyzer_util.get_children_with_simplexes(effective)
+    children = DB_PCACE_data_analysis_util.get_children_with_simplexes(effective)
     if children:
         return [(complex_name, c, None) for c in children]
     return [(complex_name, child_name, None)]
@@ -1289,7 +1289,7 @@ def _expand_pairs(pairs):
         src_list = [(src, src_child, src_sx)]
         if not src_sx:
             effective_src = (src_child[-1] if isinstance(src_child, list) and src_child else src_child) or src
-            src_names = DB_PCACE_data_analyzer_util.get_cross_complex_simplex_names(effective_src)
+            src_names = DB_PCACE_data_analysis_util.get_cross_complex_simplex_names(effective_src)
             if not src_names:
                 src_list = _expand_if_no_simplex(src, src_child)
         # Expand target if needed (skip for source-only pairs)
@@ -1300,7 +1300,7 @@ def _expand_pairs(pairs):
             tgt_list = [(tgt, tgt_child, tgt_sx)]
             if not tgt_sx:
                 effective_tgt = (tgt_child[-1] if isinstance(tgt_child, list) and tgt_child else tgt_child) or tgt
-                tgt_names = DB_PCACE_data_analyzer_util.get_cross_complex_simplex_names(effective_tgt)
+                tgt_names = DB_PCACE_data_analysis_util.get_cross_complex_simplex_names(effective_tgt)
                 if not tgt_names:
                     tgt_list = _expand_if_no_simplex(tgt, tgt_child)
             for s, sc, ssx in src_list:
@@ -1442,7 +1442,7 @@ def _generate_cross_complex_query():
         all_warnings = []
         for idx, (src, src_child, src_sx, _, _, _) in source_only_pairs:
             se = all_extras[idx][0] if idx < len(all_extras) else set()
-            query, info = DB_PCACE_data_analyzer_util.generate_source_only_query(
+            query, info = DB_PCACE_data_analysis_util.generate_source_only_query(
                 src,
                 source_filter_simplex=src_sx,
                 source_filter_value=_where_value,
@@ -1469,7 +1469,7 @@ def _generate_cross_complex_query():
         # Single cross-complex pair: use the original (faster) single-target generator
         idx, (src, src_child, src_simplex, tgt_name, tgt_child, tgt_simplex) = cross_pairs[0]
         src_extras, tgt_extras = all_extras[idx]
-        query, result = DB_PCACE_data_analyzer_util.generate_cross_complex_query(
+        query, result = DB_PCACE_data_analysis_util.generate_cross_complex_query(
             src, tgt_name,
             source_filter_simplex=src_simplex,
             source_filter_value=_where_value,
@@ -1490,15 +1490,15 @@ def _generate_cross_complex_query():
         query_name_var.set('Cross-complex: {} → {}'.format(src_path_str, tgt_path_str))
         warnings = []
         effective_src = src_child[-1] if src_child else src
-        if not DB_PCACE_data_analyzer_util.get_cross_complex_simplex_names(effective_src):
-            children = DB_PCACE_data_analyzer_util.get_children_with_simplexes(effective_src)
+        if not DB_PCACE_data_analysis_util.get_cross_complex_simplex_names(effective_src):
+            children = DB_PCACE_data_analysis_util.get_children_with_simplexes(effective_src)
             msg = "'{}' has no simplex attributes.".format(effective_src)
             if children:
                 msg += "\nTry: {}".format(', '.join(children))
             warnings.append(msg)
         effective_tgt = tgt_child[-1] if tgt_child else tgt_name
-        if not DB_PCACE_data_analyzer_util.get_cross_complex_simplex_names(effective_tgt):
-            children = DB_PCACE_data_analyzer_util.get_children_with_simplexes(effective_tgt)
+        if not DB_PCACE_data_analysis_util.get_cross_complex_simplex_names(effective_tgt):
+            children = DB_PCACE_data_analysis_util.get_children_with_simplexes(effective_tgt)
             msg = "'{}' has no simplex attributes.".format(effective_tgt)
             if children:
                 msg += "\nTry: {}".format(', '.join(children))
@@ -1514,14 +1514,14 @@ def _generate_cross_complex_query():
         for pi, (src, src_child, src_sx, tgt, tgt_child, tgt_sx) in enumerate(all_pairs):
             se, te = all_extras[pi] if pi < len(all_extras) else (set(), set())
             if tgt is None:
-                q, info = DB_PCACE_data_analyzer_util.generate_source_only_query(
+                q, info = DB_PCACE_data_analysis_util.generate_source_only_query(
                     src, source_filter_simplex=src_sx,
                     source_child=_child_str(src_child),
                     source_extra_children=se or None)
                 src_l = '.'.join([src] + src_child) if src_child else src
                 pair_labels.append(src_l)
             else:
-                q, info = DB_PCACE_data_analyzer_util.generate_cross_complex_query(
+                q, info = DB_PCACE_data_analysis_util.generate_cross_complex_query(
                     src, tgt, source_filter_simplex=src_sx, target_simplex=tgt_sx,
                     source_child=_child_str(src_child), target_child=_child_str(tgt_child),
                     source_extra_children=se or None, target_extra_children=te or None)
@@ -1543,7 +1543,7 @@ def _generate_cross_complex_query():
             se0 = all_extras[0][0] if all_extras else set()
             tgt_extras_list = [all_extras[i][1] if i < len(all_extras) else set()
                                for i in range(len(all_pairs))]
-            query, info = DB_PCACE_data_analyzer_util.generate_multi_target_query(
+            query, info = DB_PCACE_data_analysis_util.generate_multi_target_query(
                 src, source_simplex=src_simplex, targets=targets,
                 source_child=_child_str(src_child),
                 source_extra_children=se0 or None,

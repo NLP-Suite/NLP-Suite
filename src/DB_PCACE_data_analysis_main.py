@@ -22,7 +22,7 @@ import IO_csv_util
 import IO_files_util
 import GUI_IO_util
 import TIPS_util
-import DB_PCACE_data_analyzer_util
+import DB_PCACE_data_analysis_util
 import Gephi_util
 import GIS_pipeline_util
 import reminders_util
@@ -64,10 +64,10 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                        message='You must select the object type - complex or simplex - using the dropdown menu "From data ID to setup ID".\n\nPlease, select the object type and try again')
             return
         if from_dataID_setupID_objectType_var == 'Complex':
-            ID_setup_complex, complex_name = DB_PCACE_data_analyzer_util.get_setup_complex_ID_Name_from_data_complex_ID(int(enter_data_ID_var))
+            ID_setup_complex, complex_name = DB_PCACE_data_analysis_util.get_setup_complex_ID_Name_from_data_complex_ID(int(enter_data_ID_var))
             setup_name_var.set(complex_name)
         elif from_dataID_setupID_objectType_var == 'Simplex':
-            ID_setup_simplex, simplex_name = DB_PCACE_data_analyzer_util.get_setup_simplex_ID_Name_from_simplex_value_ID(int(enter_data_ID_var))
+            ID_setup_simplex, simplex_name = DB_PCACE_data_analysis_util.get_setup_simplex_ID_Name_from_simplex_value_ID(int(enter_data_ID_var))
             setup_name_var.set(simplex_name)
         return
 
@@ -87,7 +87,6 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
     # If user selected a specific identifier from the dropdown → export that one story form
     # But checkboxes, GIS, simplex operations, and search all take priority over auto-displayed identifier
     any_simplex_checkbox = (simplex_export_values_var.get() == 1 or
-                            simplex_spell_check_var.get() == 1 or
                             simplex_charts_var.get() == 1 or
                             simplex_timechart_var.get() == 1 or
                             simplex_GIS_var.get() == 1)
@@ -99,10 +98,10 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                            simplex_value != '')
     if primary_complex_var != '' and not any_other_operation:
         # User selected a specific identifier → export that one story form (txt + HTML)
-        story_text, filepath = DB_PCACE_data_analyzer_util.story_form_from_dropdown(primary_complex_var, outputDir)
+        story_text, filepath = DB_PCACE_data_analysis_util.story_form_from_dropdown(primary_complex_var, outputDir)
         if filepath:
             filesToOpen.append(filepath)
-        html_filepath = DB_PCACE_data_analyzer_util.story_form_html_from_dropdown(primary_complex_var, outputDir)
+        html_filepath = DB_PCACE_data_analysis_util.story_form_html_from_dropdown(primary_complex_var, outputDir)
         if html_filepath:
             filesToOpen.append(html_filepath)
             mb.showwarning(title='Story form',
@@ -119,17 +118,17 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
     # Search simplex value → story form export (txt + HTML) ______________________________________
     if search_simplex_value != '':
         # Populate search results dropdown (in case user clicked RUN without pressing Enter first)
-        dropdown_results = DB_PCACE_data_analyzer_util.build_search_results_dropdown(search_simplex_value)
+        dropdown_results = DB_PCACE_data_analysis_util.build_search_results_dropdown(search_simplex_value)
         search_simplex_results['values'] = dropdown_results
         # Do NOT auto-select first item — let user selection determine single vs. all export
 
         if search_simplex_result != '':
             # User selected a specific result → show its story form (txt + HTML)
-            story_text, filepath = DB_PCACE_data_analyzer_util.story_form_from_dropdown(search_simplex_result, outputDir)
+            story_text, filepath = DB_PCACE_data_analysis_util.story_form_from_dropdown(search_simplex_result, outputDir)
             if filepath:
                 filesToOpen.append(filepath)
             # Also export HTML version with highlighted simplex values
-            html_filepath = DB_PCACE_data_analyzer_util.story_form_html_from_dropdown(search_simplex_result, outputDir)
+            html_filepath = DB_PCACE_data_analysis_util.story_form_html_from_dropdown(search_simplex_result, outputDir)
             if html_filepath:
                 filesToOpen.append(html_filepath)
                 mb.showwarning(title='Story form',
@@ -154,10 +153,10 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                     f"(Tip: select a specific object from the dropdown and press Enter to view just that one.)",
                     default='no')
             if proceed:
-                filepath = DB_PCACE_data_analyzer_util.search_and_export_stories(search_simplex_value, outputDir)
+                filepath = DB_PCACE_data_analysis_util.search_and_export_stories(search_simplex_value, outputDir)
                 if filepath:
                     filesToOpen.append(filepath)
-                html_filepath = DB_PCACE_data_analyzer_util.search_and_export_stories_html(search_simplex_value, outputDir)
+                html_filepath = DB_PCACE_data_analysis_util.search_and_export_stories_html(search_simplex_value, outputDir)
                 if html_filepath:
                     filesToOpen.append(html_filepath)
                     if openOutputFiles:
@@ -175,7 +174,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
             activate_parents_children()
         # Checkbox 3: extract document sources for the selected complex
         elif document_sources_var == 1:
-            df = DB_PCACE_data_analyzer_util.get_document_sources_for_complex(inputDir, outputDir, setup_complex)
+            df = DB_PCACE_data_analysis_util.get_document_sources_for_complex(inputDir, outputDir, setup_complex)
             if openOutputFiles:
                 output_file = os.path.join(outputDir, setup_complex + "_documents.xlsx")
                 if os.path.exists(output_file):
@@ -183,7 +182,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         # Checkbox 4: export comments for the selected complex
         elif comments_var == 1:
             comment_type_str = comments_type if comments_type != '' else '*'
-            comment_files = DB_PCACE_data_analyzer_util.get_comment_info('', setup_complex, comment_type_str, inputDir, outputDir)
+            comment_files = DB_PCACE_data_analysis_util.get_comment_info('', setup_complex, comment_type_str, inputDir, outputDir)
             if comment_files:
                 filesToOpen.extend(comment_files)
         elif identifiers == 1:
@@ -192,14 +191,14 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                 f'Starting IDENTIFIER export for "{setup_complex}".\n\n'
                 f'This may take a while for large databases.\n'
                 f'Please be patient...')
-            df = DB_PCACE_data_analyzer_util.higher_lower(inputDir, outputDir, setup_complex, export_identifier=True)
+            df = DB_PCACE_data_analysis_util.higher_lower(inputDir, outputDir, setup_complex, export_identifier=True)
         elif extended_headers == 1:
             # Export expanded ALL headers (Actor_ALL)
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'EXTENDED HEADERS mode',
                 f'Starting EXTENDED HEADERS export for "{setup_complex}".\n\n'
                 f'This may take a very long time for large databases (several minutes).\n'
                 f'Please be patient...')
-            df = DB_PCACE_data_analyzer_util.higher_lower(inputDir, outputDir, setup_complex, export_identifier=False)
+            df = DB_PCACE_data_analysis_util.higher_lower(inputDir, outputDir, setup_complex, export_identifier=False)
         else:
             # No checkbox selected: if identifier dropdown has items, export ALL story forms;
             # otherwise fall back to default higher_lower tabular export
@@ -215,10 +214,10 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                         f'(Tip: select a specific object from the Complex identifier dropdown and click RUN to export just that one.)',
                         default='no')
                 if proceed:
-                    filepath = DB_PCACE_data_analyzer_util.export_all_stories_for_type(setup_complex, outputDir)
+                    filepath = DB_PCACE_data_analysis_util.export_all_stories_for_type(setup_complex, outputDir)
                     if filepath:
                         filesToOpen.append(filepath)
-                    html_filepath = DB_PCACE_data_analyzer_util.export_all_stories_html_for_type(setup_complex, outputDir)
+                    html_filepath = DB_PCACE_data_analysis_util.export_all_stories_html_for_type(setup_complex, outputDir)
                     if html_filepath:
                         filesToOpen.append(html_filepath)
                         if openOutputFiles:
@@ -232,8 +231,8 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                 IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Tabular export',
                     f'Starting tabular export for "{setup_complex}".\n\n'
                     f'Please be patient...')
-                df = DB_PCACE_data_analyzer_util.higher_lower(inputDir, outputDir, setup_complex, export_identifier=False)
-        # df = DB_PCACE_data_analyzer_util.call_get_expanded_complex(inputDir, outputDir, setup_complex)
+                df = DB_PCACE_data_analysis_util.higher_lower(inputDir, outputDir, setup_complex, export_identifier=False)
+        # df = DB_PCACE_data_analysis_util.call_get_expanded_complex(inputDir, outputDir, setup_complex)
 
         # ── Auto-chart the higher_lower output ──────────────────────────────
         if df is not None and not df.empty and chartPackage != 'No charts':
@@ -246,15 +245,15 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
 
     # get complex object identifier and values  ______________________________________________________________________________
     # if setup_complex != '':
-        # data = DB_PCACE_data_analyzer_util.get_complex_data_ID(setup_complex)
+        # data = DB_PCACE_data_analysis_util.get_complex_data_ID(setup_complex)
         # mb.showwarning(title='Warning',
         #                message="YOU HAVE ADDED A RETURN!!!!!!!!!!!!!!!!!!!!!!!!!!\n\nMUST REMOVE IT.")
         # return
 
         # the next lines are used to test the three functions; nothing to do with the function identified by # -------
-        # data_IDs = DB_PCACE_data_analyzer_util.get_complex_data_ID(setup_complex)
-        # lowerComplex_IDs = DB_PCACE_data_analyzer_util.get_lower_complex(setup_complex)
-        # lowestComplex_IDs = DB_PCACE_data_analyzer_util.get_lowest_complex(setup_complex)
+        # data_IDs = DB_PCACE_data_analysis_util.get_complex_data_ID(setup_complex)
+        # lowerComplex_IDs = DB_PCACE_data_analysis_util.get_lower_complex(setup_complex)
+        # lowestComplex_IDs = DB_PCACE_data_analysis_util.get_lowest_complex(setup_complex)
 
         # mb.showwarning(title='Warning',
         #                message="YOU HAVE ADDED A RETURN in _main!!!!!!!!!!!!!!!!!!!!!!!!!!\n\nMUST REMOVE IT.")
@@ -265,7 +264,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
     # display information about a specific simplex type and value (e.g., text type for "burley" value)
 
     if simplex_value!='' and value_parent_object_var:
-        outputFiles = DB_PCACE_data_analyzer_util.get_data_simplex_info(inputDir, outputDir, simplex_value)
+        outputFiles = DB_PCACE_data_analysis_util.get_data_simplex_info(inputDir, outputDir, simplex_value)
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -276,49 +275,21 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
     if setup_simplex != '':
         # Determine simplex value type once for checkbox-specific logic
         try:
-            vtype = DB_PCACE_data_analyzer_util.get_simplex_value_type(setup_simplex)
+            vtype = DB_PCACE_data_analysis_util.get_simplex_value_type(setup_simplex)
         except Exception:
             vtype = 0
 
         # ── Values CSV ────────────────────────────────────────────────────────
         if simplex_export_values_var.get() == 1:
-            values_csv = DB_PCACE_data_analyzer_util.get_data_simplex_values_listing(
+            values_csv = DB_PCACE_data_analysis_util.get_data_simplex_values_listing(
                 inputDir, outputDir, setup_simplex)
             if values_csv and os.path.isfile(values_csv):
                 filesToOpen.append(values_csv)
 
-        # ── Spell-check (text simplexes only) ─────────────────────────────────
-        # When a simplex IS selected, check just that one (must be text-typed)
-        if simplex_spell_check_var.get() == 1:
-            if vtype == 1:  # text
-                try:
-                    dupes_csv = DB_PCACE_data_analyzer_util.find_near_duplicate_simplex_values(
-                        inputDir, outputDir, simplex_name=setup_simplex)
-                    if dupes_csv and os.path.isfile(dupes_csv):
-                        filesToOpen.append(dupes_csv)
-                        mb.showinfo(title='Spell-check review',
-                                    message=f'Spell-check found potential duplicates/misspellings for '
-                                            f'"{setup_simplex}".\n\n'
-                                            f'The review file has been saved to:\n{dupes_csv}\n\n'
-                                            f'To apply corrections:\n'
-                                            f'  1. Open the CSV and review each row.\n'
-                                            f'  2. Edit the "Suggested correction" column if needed.\n'
-                                            f'  3. Set "Accept?" to N for rows you want to skip.\n'
-                                            f'  4. Save the CSV, then click the APPLY CORRECTIONS button.')
-                    else:
-                        mb.showinfo(title='Spell-check',
-                                    message=f'No near-duplicate or misspelled values found for "{setup_simplex}".')
-                except Exception as e:
-                    print(f"  Near-duplicate check skipped: {e}")
-            else:
-                mb.showwarning(title='Spell-check',
-                               message=f'Spell-check is only available for text-typed simplexes.\n\n'
-                                       f'The selected simplex "{setup_simplex}" is not text-typed.')
-
         # ── Charts (bar/pie of value frequencies) ─────────────────────────────
         if simplex_charts_var.get() == 1:
             # First ensure we have the values CSV to chart from
-            values_csv = DB_PCACE_data_analyzer_util.get_data_simplex_values_listing(
+            values_csv = DB_PCACE_data_analysis_util.get_data_simplex_values_listing(
                 inputDir, outputDir, setup_simplex)
             if values_csv and os.path.isfile(values_csv):
                 chart_outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
@@ -339,14 +310,14 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         if simplex_timechart_var.get() == 1:
             if vtype == 3:  # date
                 try:
-                    timechart_csv, date_fmt = DB_PCACE_data_analyzer_util.prepare_timechart_csv(
+                    timechart_csv, date_fmt = DB_PCACE_data_analysis_util.prepare_timechart_csv(
                         inputDir, outputDir, setup_simplex)
                     if timechart_csv and os.path.isfile(timechart_csv):
                         timechart_output = IO_files_util.generate_output_file_name(
                             '', inputDir, outputDir, '.html', setup_simplex + '_timechart')
-                        parent_names = DB_PCACE_data_analyzer_util.get_setup_simplex_parent(setup_simplex)
+                        parent_names = DB_PCACE_data_analysis_util.get_setup_simplex_parent(setup_simplex)
                         var_name = parent_names[0] if parent_names else 'Object'
-                        charts_util.timechart(timechart_csv, timechart_output, var_name,
+                        charts_util.TimeMapper(timechart_csv, timechart_output, var_name,
                                               date_fmt, cumulative=False, yearly=True)
                         if os.path.isfile(timechart_output):
                             filesToOpen.append(timechart_output)
@@ -359,7 +330,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
 
         # ── GIS maps (5th checkbox) ──────────────────────────────────────────
         if simplex_GIS_var.get() == 1:
-            gis_csv = DB_PCACE_data_analyzer_util.prepare_gis_locations_csv(
+            gis_csv = DB_PCACE_data_analysis_util.prepare_gis_locations_csv(
                 inputDir, outputDir, setup_simplex)
             if gis_csv and os.path.isfile(gis_csv):
                 proceed = mb.askyesno(
@@ -398,27 +369,6 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                             filesToOpen.extend(gis_output)
                     # Refresh GIS hover-over to show updated timestamp
                     _update_last_updated_hovers(inputDir, outputDir)
-
-    # ── Spell-check ALL text simplexes (when no specific simplex is selected) ──
-    if simplex_spell_check_var.get() == 1 and setup_simplex == '':
-        try:
-            dupes_csv = DB_PCACE_data_analyzer_util.find_near_duplicate_simplex_values(
-                inputDir, outputDir, simplex_name='')  # '' = check all
-            if dupes_csv and os.path.isfile(dupes_csv):
-                filesToOpen.append(dupes_csv)
-                mb.showinfo(title='Spell-check review',
-                            message='Spell-check scanned ALL text simplexes in the database.\n\n'
-                                    f'The review file has been saved to:\n{dupes_csv}\n\n'
-                                    'To apply corrections:\n'
-                                    '  1. Open the CSV and review each row.\n'
-                                    '  2. Edit the "Suggested correction" column if needed.\n'
-                                    '  3. Set "Accept?" to N for rows you want to skip.\n'
-                                    '  4. Save the CSV, then click the APPLY CORRECTIONS button.')
-            else:
-                mb.showinfo(title='Spell-check',
-                            message='No near-duplicate or misspelled values found across any text simplex.')
-        except Exception as e:
-            print(f"  Spell-check (all simplexes) skipped: {e}")
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -463,7 +413,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                                                  increment=1)  # to be added for full display
 
 GUI_label='Graphical User Interface (GUI) for PC-ACE Tables Analyzer (via Pandas)'
-config_filename = 'DB_PCACE_data_analyzer_config.csv'
+config_filename = 'DB_PCACE_data_analysis_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
 
 # The 4 values of config_option refer to:
@@ -544,7 +494,6 @@ def clear(e):
     complex_children_var.set('')
 
     simplex_export_values_var.set(0)
-    simplex_spell_check_var.set(0)
     simplex_charts_var.set(0)
     simplex_timechart_var.set(0)
     simplex_GIS_var.set(0)
@@ -569,7 +518,7 @@ def open_sql_query():
     if inputDir.get() == '':
         mb.showwarning(title='Warning', message='No input directory selected.\n\nPlease, select a PC-ACE input directory first.')
         return
-    db_path = DB_PCACE_data_analyzer_util.create_sqlite_from_pcace(inputDir.get(), outputDir.get())
+    db_path = DB_PCACE_data_analysis_util.create_sqlite_from_pcace(inputDir.get(), outputDir.get())
     if db_path:
         mb.showwarning(title='SQLite database created',
                        message=f'PC-ACE tables have been exported to SQLite:\n\n{db_path}\n\nThe SQL query GUI will now open with this database pre-selected.')
@@ -631,7 +580,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
                                    True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "Use the dropdown menu to select the type of object (complex or simplex) for which to obtain a list of values.\nThe object list will then be displayed in the right-hand menu widget.")
 
-setup_complex_menu, setup_simplex_menu = DB_PCACE_data_analyzer_util.get_setup_complex_simplex_names() # os.path.join(inputDir.get())
+setup_complex_menu, setup_simplex_menu = DB_PCACE_data_analysis_util.get_setup_complex_simplex_names() # os.path.join(inputDir.get())
 
 required_object_var=tk.StringVar()
 required_object = ttk.Combobox(window, textvariable = required_object_var, width=GUI_IO_util.widget_width_short)
@@ -652,7 +601,7 @@ def _update_required_object_dropdown(*args):
     Re-fetches from the util each time to ensure values are current after DB load."""
     obj_type = object_type_var.get()
     try:
-        c_menu, s_menu = DB_PCACE_data_analyzer_util.get_setup_complex_simplex_names()
+        c_menu, s_menu = DB_PCACE_data_analysis_util.get_setup_complex_simplex_names()
     except:
         c_menu, s_menu = [], []
     if obj_type == 'Complex':
@@ -687,7 +636,7 @@ def _toggle_required():
         mb.showwarning(title='Warning',
                        message='Please select an object type (Complex or Simplex) and an object name from the dropdown menus.')
         return
-    current_val, xref_info = DB_PCACE_data_analyzer_util.get_required_value(obj_type, obj_name)
+    current_val, xref_info = DB_PCACE_data_analysis_util.get_required_value(obj_type, obj_name)
     if current_val is None:
         mb.showwarning(title='Warning',
                        message=f'Could not find "{obj_name}" in the {obj_type} xref table.\n\nMake sure the object exists in the setup_xref tables.')
@@ -704,7 +653,7 @@ def _toggle_required():
         f'This will update the xlsx, pkl, and grammar files.\n\n'
         f'Are you sure you want to do that?')
     if proceed:
-        success = DB_PCACE_data_analyzer_util.toggle_required_value(obj_type, obj_name, new_val, inputDir.get())
+        success = DB_PCACE_data_analysis_util.toggle_required_value(obj_type, obj_name, new_val, inputDir.get())
         if success:
             mb.showwarning(title='REQUIRED updated',
                            message=f'The REQUIRED value for "{obj_name}" has been changed to {new_str}.\n\n'
@@ -724,7 +673,7 @@ required_object.bind('<Return>', lambda e: _toggle_required())
 # table_menu_values = ''
 # table_list=[]
 # if os.path.isdir(inputDir.get()):
-#     table_list = DB_PCACE_data_analyzer_util.import_PCACE_tables(inputDir.get(), outputDir.get())
+#     table_list = DB_PCACE_data_analysis_util.import_PCACE_tables(inputDir.get(), outputDir.get())
 #     table_menu_values = ", ".join(table_list)
 # select_DB_tables = ttk.Combobox(window, width=GUI_IO_util.widget_width_short, textvariable=select_DB_tables_var)
 # select_DB_tables.configure(state='disabled')
@@ -775,7 +724,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
 complex_objects_lb = tk.Label(window, text='Complex ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,complex_objects_lb,True)
 
-# setup_complex_menu, setup_simplex_menu = DB_PCACE_data_analyzer_util.get_setup_complex_simplex_names() # os.path.join(inputDir.get())
+# setup_complex_menu, setup_simplex_menu = DB_PCACE_data_analysis_util.get_setup_complex_simplex_names() # os.path.join(inputDir.get())
 
 setup_complex_var=tk.StringVar()
 setup_complex = ttk.Combobox(window, textvariable = setup_complex_var, width=GUI_IO_util.widget_width_short)
@@ -850,7 +799,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
 complex_identifiers_lb = tk.Label(window, text='Complex identifier')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,y_multiplier_integer,complex_identifiers_lb,True)
 
-complex_identifiers_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(inputDir.get())
+complex_identifiers_menu = DB_PCACE_data_analysis_util.build_macro_event_dropdown_menu(inputDir.get())
 
 complex_identifiers_var=tk.StringVar()
 complex_identifiers = ttk.Combobox(window, textvariable = complex_identifiers_var, width=GUI_IO_util.widget_width_short)
@@ -876,8 +825,8 @@ def _complex_identifier_enter(event):
     if not selected:
         return
     outputDir_val = GUI_util.output_dir_path.get()
-    story_text, filepath = DB_PCACE_data_analyzer_util.story_form_from_dropdown(selected, outputDir_val)
-    html_filepath = DB_PCACE_data_analyzer_util.story_form_html_from_dropdown(selected, outputDir_val)
+    story_text, filepath = DB_PCACE_data_analysis_util.story_form_from_dropdown(selected, outputDir_val)
+    html_filepath = DB_PCACE_data_analysis_util.story_form_html_from_dropdown(selected, outputDir_val)
     if html_filepath:
         IO_files_util.openFile(window, html_filepath)
     elif filepath:
@@ -909,7 +858,7 @@ def update_complex_identifier_dropdown(*args):
     'export all' (nothing selected) vs 'export selected one'."""
     selected_type = setup_complex_var.get()
     if selected_type:
-        identifier_list = DB_PCACE_data_analyzer_util.build_story_dropdown(selected_type)
+        identifier_list = DB_PCACE_data_analysis_util.build_story_dropdown(selected_type)
         complex_identifiers['values'] = identifier_list
         if identifier_list:
             complex_identifiers_var.set(identifier_list[0])
@@ -917,7 +866,7 @@ def update_complex_identifier_dropdown(*args):
             complex_identifiers_var.set('')
     else:
         # Reset to macro event list
-        macro_list = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(inputDir.get())
+        macro_list = DB_PCACE_data_analysis_util.build_macro_event_dropdown_menu(inputDir.get())
         complex_identifiers['values'] = macro_list
         if macro_list:
             complex_identifiers_var.set(macro_list[0])
@@ -936,7 +885,7 @@ setup_complex_var.trace('w', update_complex_identifier_dropdown)
 simplex_objects_lb = tk.Label(window, text='Simplex ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,simplex_objects_lb, True)
 
-# setup_simplex_menu = DB_PCACE_data_analyzer_util.get_complex_simplex_names(os.path.join(inputDir.get()))
+# setup_simplex_menu = DB_PCACE_data_analysis_util.get_complex_simplex_names(os.path.join(inputDir.get()))
 #
 setup_simplex_var = tk.StringVar()
 
@@ -950,7 +899,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    True, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
                                    "Select a simplex object type from the dropdown.\n"
                                    "The Simplex values dropdown (right) auto-populates with all data values.\n\n"
-                                   "Checkboxes: Values, Spell-check, Charts, Timechart, GIS map.\n"
+                                   "Checkboxes: Values, Charts, Timechart, GIS map.\n"
                                    "Tick a checkbox and click RUN to perform that operation.")
 
 # Simplex operation checkboxes (mirror the Complex checkbox pattern) ─────────────
@@ -963,18 +912,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminder
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "VALUES mode: export all data values for the selected simplex to a CSV file with frequencies.")
 
-# SECOND simplex checkbox: Spell-check (text simplexes)
-simplex_spell_check_var = tk.IntVar()
-simplex_spell_check_checkbox = tk.Checkbutton(window, text='', variable=simplex_spell_check_var, onvalue=1, offvalue=0, state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+10, y_multiplier_integer,
-                                   simplex_spell_check_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "SPELL-CHECK mode: find near-duplicate and misspelled text values.\n"
-                                   "If a simplex is selected, checks that simplex only (must be text-typed).\n"
-                                   "If no simplex is selected, checks ALL text simplexes in the database.\n"
-                                   "Produces a review CSV with suggested corrections and an Accept?/Reject column.")
-
-# THIRD simplex checkbox: Charts (bar/pie of frequencies)
+# SECOND simplex checkbox: Charts (bar/pie of frequencies)
 simplex_charts_var = tk.IntVar()
 simplex_charts_checkbox = tk.Checkbutton(window, text='', variable=simplex_charts_var, onvalue=1, offvalue=0, state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+30, y_multiplier_integer,
@@ -1018,52 +956,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
                                    "Enter: export the values listing to a CSV file.\n"
                                    "RUN: perform the operation(s) selected via checkboxes or GIS map.")
 
-# "Apply corrections" button for spell-check workflow (same row as Simplex values)
-def _apply_spell_check_corrections():
-    """Open a file dialog for the reviewed spell-check CSV and apply accepted corrections."""
-    from tkinter import filedialog
-    inputDir_val = GUI_util.input_main_dir_path.get()
-    outputDir_val = GUI_util.output_dir_path.get()
-    if not inputDir_val:
-        mb.showwarning(title='Apply corrections',
-                       message='Please select a PC-ACE database directory first.')
-        return
-    csv_path = filedialog.askopenfilename(
-        title='Select the reviewed spell-check CSV',
-        initialdir=outputDir_val if outputDir_val else inputDir_val,
-        filetypes=[('CSV files', '*.csv'), ('All files', '*.*')])
-    if not csv_path:
-        return
-    # Confirm before applying
-    answer = mb.askyesno(title='Apply corrections',
-                         message=f'Apply accepted corrections from:\n{csv_path}\n\n'
-                                 f'This will modify data_SimplexText.xlsx and .pkl in:\n{inputDir_val}\n\n'
-                                 f'A backup of the original files is recommended.\n\nProceed?')
-    if not answer:
-        return
-    n_applied = DB_PCACE_data_analyzer_util.apply_spell_check_corrections(csv_path, inputDir_val)
-    if n_applied > 0:
-        mb.showinfo(title='Corrections applied',
-                    message=f'Successfully applied {n_applied} correction(s) to data_SimplexText.\n\n'
-                            f'The xlsx and pkl files have been updated.\n'
-                            f'The cached simplex data has been cleared and will rebuild on next run.')
-    elif n_applied == 0:
-        mb.showinfo(title='No corrections',
-                    message='No corrections were applied.\n\n'
-                            'Either all rows were marked Accept? = N, or the old values '
-                            'were not found in data_SimplexText.')
-    else:
-        mb.showerror(title='Error',
-                     message='An error occurred while applying corrections.\nCheck the console output for details.')
-
-apply_corrections_button = tk.Button(window, text='Spell update', command=_apply_spell_check_corrections, state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+100, y_multiplier_integer,
-                                   apply_corrections_button,
-                                   False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate+100,
-                                   "After running spell-check (second checkbox on the Simplex line),\n"
-                                   "review the CSV, then click here to apply accepted corrections\n"
-                                   "back to data_SimplexText.xlsx and .pkl.")
-
 simplex_values_var.set('')
 
 def _simplex_values_enter(event):
@@ -1073,7 +965,7 @@ def _simplex_values_enter(event):
         return
     outputDir_val = GUI_util.output_dir_path.get()
     inputDir_val = GUI_util.input_main_dir_path.get()
-    values_csv = DB_PCACE_data_analyzer_util.get_data_simplex_values_listing(
+    values_csv = DB_PCACE_data_analysis_util.get_data_simplex_values_listing(
         inputDir_val, outputDir_val, simplex_name)
     if values_csv and os.path.isfile(values_csv):
         IO_files_util.openFile(window, values_csv)
@@ -1088,7 +980,7 @@ def _populate_simplex_values(*args):
         simplex_values_var.set('')
         return
     try:
-        vals = DB_PCACE_data_analyzer_util.get_simplex_values_by_name(simplex_name)
+        vals = DB_PCACE_data_analysis_util.get_simplex_values_by_name(simplex_name)
         simplex_values['values'] = vals
         if vals:
             simplex_values_var.set(vals[0])
@@ -1131,7 +1023,7 @@ simplex_value = ttk.Combobox(window, textvariable = simplex_value_var, width=GUI
 simplex_value.configure(state='disabled')
 
 try:
-    simplex_list = DB_PCACE_data_analyzer_util.get_data_simplex_text_date_number(simplex_value_type_var.get())
+    simplex_list = DB_PCACE_data_analysis_util.get_data_simplex_text_date_number(simplex_value_type_var.get())
 except:
     simplex_list=[]
 simplex_value_menu = simplex_list
@@ -1154,7 +1046,7 @@ def activate_date_number_text(*args):
         simplex_value.configure(state='normal')
     else:
         simplex_value.configure(state='disabled')
-    simplex_list = DB_PCACE_data_analyzer_util.get_data_simplex_text_date_number(simplex_value_type_var.get())
+    simplex_list = DB_PCACE_data_analysis_util.get_data_simplex_text_date_number(simplex_value_type_var.get())
     simplex_value['values'] = simplex_list
     if simplex_list:
         simplex_value_var.set(simplex_list[0])
@@ -1200,8 +1092,8 @@ def _search_results_enter(event):
     if not selected:
         return
     outputDir_val = GUI_util.output_dir_path.get()
-    story_text, filepath = DB_PCACE_data_analyzer_util.story_form_from_dropdown(selected, outputDir_val)
-    html_filepath = DB_PCACE_data_analyzer_util.story_form_html_from_dropdown(selected, outputDir_val)
+    story_text, filepath = DB_PCACE_data_analysis_util.story_form_from_dropdown(selected, outputDir_val)
+    html_filepath = DB_PCACE_data_analysis_util.story_form_html_from_dropdown(selected, outputDir_val)
     if html_filepath:
         IO_files_util.openFile(window, html_filepath)
     elif filepath:
@@ -1215,7 +1107,7 @@ def run_simplex_search(*args):
     print(f"  run_simplex_search triggered with: '{search_term}'")
     if not search_term:
         return
-    results = DB_PCACE_data_analyzer_util.build_search_results_dropdown(search_term)
+    results = DB_PCACE_data_analysis_util.build_search_results_dropdown(search_term)
     print(f"  build_search_results_dropdown returned {len(results)} results: {results[:3]}")
     search_simplex_results['values'] = results
     if results:
@@ -1349,7 +1241,7 @@ def changed_filename(*args):
                            message="The PC-ACE table analyzer scripts require in input a directory of Excel (xlsx) files. But the selected directory\n\n" + inputDir.get() + "\n\ndoes not contain the required PC-ACE Excel files.\n\nPlease, select a PC-ACE directory and try again")
             return
         GUI_util.run_button.configure(state='normal')
-        table_list = DB_PCACE_data_analyzer_util.import_PCACE_tables(inputDir.get(), outputDir.get())
+        table_list = DB_PCACE_data_analysis_util.import_PCACE_tables(inputDir.get(), outputDir.get())
         # 25 files including all comments files
         if (len(table_list) == 0) or ((len(table_list) > 18) and (not "data_Document.xlsx" in str(table_list) and not "data_Complex.xlsx" in str(table_list))):
                 GUI_util.run_button.configure(state='disabled')
@@ -1374,12 +1266,12 @@ def changed_filename(*args):
 
         if currentInputDir != inputDir.get() or not readDir:
             # load all Excel sheets and store in data
-            # DB_PCACE_data_analyzer_util.load_lib(inputDir.get(), outputDir.get())
-            DB_PCACE_data_analyzer_util.build_libraries(inputDir.get(), outputDir.get())
+            # DB_PCACE_data_analysis_util.load_lib(inputDir.get(), outputDir.get())
+            DB_PCACE_data_analysis_util.build_libraries(inputDir.get(), outputDir.get())
             currentInputDir = inputDir.get()
             readDir = True
 
-        setup_complex_menu, setup_simplex_menu = DB_PCACE_data_analyzer_util.get_setup_complex_simplex_names() # os.path.join(inputDir.get())
+        setup_complex_menu, setup_simplex_menu = DB_PCACE_data_analysis_util.get_setup_complex_simplex_names() # os.path.join(inputDir.get())
         setup_complex['values'] = setup_complex_menu
         # Populate the Simplex dropdown immediately (before identifier building which can fail)
         setup_simplex['values'] = setup_simplex_menu
@@ -1403,7 +1295,7 @@ def changed_filename(*args):
             len(setup_simplex_menu),
             "Select a simplex object type from the dropdown.\n"
             "The Simplex values dropdown (right) auto-populates with all data values.\n\n"
-            "Checkboxes: Values, Spell-check, Charts, Timechart, GIS map.\n"
+            "Checkboxes: Values, Charts, Timechart, GIS map.\n"
             "Tick a checkbox and click RUN to perform that operation.")
 
         # Refresh the REQUIRED object dropdown based on current Object type selection.
@@ -1443,12 +1335,10 @@ def changed_filename(*args):
             document_sources_checkbox.configure(state='normal')
             comments_checkbox.configure(state='normal')
             simplex_export_values_checkbox.configure(state='normal')
-            simplex_spell_check_checkbox.configure(state='normal')
             simplex_charts_checkbox.configure(state='normal')
             simplex_timechart_checkbox.configure(state='normal')
             simplex_GIS_checkbox.configure(state='normal')
             simplex_values.configure(state='normal')
-            apply_corrections_button.configure(state='normal')
             search_simplex_entry.configure(state='normal')
             search_simplex_results.configure(state='normal')
             setup_name.configure(state='normal')
@@ -1458,12 +1348,12 @@ def changed_filename(*args):
             setup_complex.set('')
             if not database_already_loaded:
                 try:
-                    complex_identifiers_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(inputDir.get())
+                    complex_identifiers_menu = DB_PCACE_data_analysis_util.build_macro_event_dropdown_menu(inputDir.get())
                     complex_identifiers['values'] = complex_identifiers_menu
                     if complex_identifiers_menu:
                         complex_identifiers_var.set(complex_identifiers_menu[0])
                     # Populate hierarchical complex dropdown
-                    hierarchical_complex_menu = DB_PCACE_data_analyzer_util.build_hierarchical_complex_dropdown_menu(inputDir.get())
+                    hierarchical_complex_menu = DB_PCACE_data_analysis_util.build_hierarchical_complex_dropdown_menu(inputDir.get())
                     complex_identifiers['values'] = complex_identifiers_menu
                 except Exception as e:
                     print(f"  WARNING: Could not build identifier/hierarchical menus: {e}")
@@ -1482,12 +1372,10 @@ def changed_filename(*args):
             comments_checkbox.configure(state='disabled')
             setup_simplex.configure(state='disabled')
             simplex_export_values_checkbox.configure(state='disabled')
-            simplex_spell_check_checkbox.configure(state='disabled')
             simplex_charts_checkbox.configure(state='disabled')
             simplex_timechart_checkbox.configure(state='disabled')
             simplex_GIS_checkbox.configure(state='disabled')
             simplex_values.configure(state='disabled')
-            apply_corrections_button.configure(state='disabled')
             search_simplex_entry.configure(state='disabled')
             search_simplex_results.configure(state='disabled')
 
@@ -1514,13 +1402,13 @@ def activate_parents_children(*args):
     simplex_children_required_list = []
     # Guard: skip if libraries not loaded yet
     try:
-        if DB_PCACE_data_analyzer_util.setup_Complex_lib is None:
+        if DB_PCACE_data_analysis_util.setup_Complex_lib is None:
             return
     except (AttributeError, NameError):
         return
     if setup_complex_var.get()!='':
-        parents_complex_list = DB_PCACE_data_analyzer_util.get_setup_complex_parents(setup_complex_var.get())
-        children_complex_list_all, children_complex_list_required = DB_PCACE_data_analyzer_util.get_setup_complex_children(setup_complex_var.get())
+        parents_complex_list = DB_PCACE_data_analysis_util.get_setup_complex_parents(setup_complex_var.get())
+        children_complex_list_all, children_complex_list_required = DB_PCACE_data_analysis_util.get_setup_complex_children(setup_complex_var.get())
         if len(parents_complex_list)>0:
             complex_parents_var.set(str(parents_complex_list[0]))
             # if len(parents_complex_list) > 1:
@@ -1540,7 +1428,7 @@ def activate_parents_children(*args):
         #                                            "The selected complex '" + str(setup_complex_var.get()) + "' has " + str(len(parents_complex_list)) + " complex parents. Only the first one is displayed. Use the dropdown menu to scroll through all available complex parent names.",
         #                                            False, '', True, '', False)
         #
-        simplex_children_all_list, simplex_children_required_list = DB_PCACE_data_analyzer_util.get_setup_complex_simplex_children(setup_complex_var.get())
+        simplex_children_all_list, simplex_children_required_list = DB_PCACE_data_analysis_util.get_setup_complex_simplex_children(setup_complex_var.get())
         setup_simplex_menu = simplex_children_all_list
         setup_simplex['values'] = setup_simplex_menu
         if len(setup_simplex_menu)>0:
@@ -1586,12 +1474,12 @@ def activate_parents_children(*args):
             len(setup_simplex_menu),
             "Select a simplex object type from the dropdown.\n"
             "The Simplex values dropdown (right) auto-populates with all data values.\n\n"
-            "Checkboxes: Values, Spell-check, Charts, Timechart, GIS map.\n"
+            "Checkboxes: Values, Charts, Timechart, GIS map.\n"
             "Tick a checkbox and click RUN to perform that operation.")
 
     if setup_simplex_var.get()!='':
         # setup_simplex_var.set(str(setup_simplex_menu[0]))
-        parents_complex_list = DB_PCACE_data_analyzer_util.get_setup_simplex_parent(setup_simplex_var.get())
+        parents_complex_list = DB_PCACE_data_analysis_util.get_setup_simplex_parent(setup_simplex_var.get())
         if len(parents_complex_list) > 0:
             complex_parents_var.set(str(parents_complex_list[0]))
             # if len(parents_complex_list) > 1:
@@ -1617,16 +1505,16 @@ def view_relations():
 
 def view_grammar():
     head, tail = os.path.split(inputDir.get())
-    DB_PCACE_data_analyzer_util.view_grammar(os.path.join(inputDir.get(), 'setup_Complex.xlsx'),
+    DB_PCACE_data_analysis_util.view_grammar(os.path.join(inputDir.get(), 'setup_Complex.xlsx'),
                                              'GrammarRule_Text', os.path.join(inputDir.get(),
                                                                               'PC-ACE grammar for database ' + tail + '.txt'))
 def update_grammar():
     head, tail = os.path.split(inputDir.get())
-    DB_PCACE_data_analyzer_util.update_grammar_text(inputDir.get())
+    DB_PCACE_data_analysis_util.update_grammar_text(inputDir.get())
 
 def update_identifiers():
     head, tail = os.path.split(inputDir.get())
-    DB_PCACE_data_analyzer_util.update_all_identifiers(inputDir.get())
+    DB_PCACE_data_analysis_util.update_all_identifiers(inputDir.get())
     # Refresh hover-over to show updated timestamp
     _update_last_updated_hovers(inputDir.get(), outputDir.get())
 
@@ -1680,10 +1568,9 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                                          "SIMPLEX: select a simplex object type from the dropdown.\n\n"
                                                          "Checkboxes (left to right):\n"
                                                          "  1. VALUES: export all data values with frequencies to CSV.\n"
-                                                         "  2. SPELL-CHECK: find near-duplicate and misspelled values (text simplexes only).\n"
-                                                         "  3. CHARTS: produce bar and pie charts of value frequencies.\n"
-                                                         "  4. TIMECHART: generate a timeline chart (date simplexes only).\n"
-                                                         "  5. GIS MAP: geocode location values and display on Google Earth Pro, Google Maps, and Folium.\n"
+                                                         "  2. CHARTS: produce bar and pie charts of value frequencies.\n"
+                                                         "  3. TIMECHART: generate a timeline chart (date simplexes only).\n"
+                                                         "  4. GIS MAP: geocode location values and display on Google Earth Pro, Google Maps, and Folium.\n"
                                                          "     The first geocoding run is slow (~1 request/second for Nominatim).\n"
                                                          "     Subsequent runs are fast because results are saved to a disk cache (GIS_geocode_cache.json in the output directory).\n"
                                                          "     Hover over the GIS checkbox to see the cache location and when it was last updated.\n\n"
@@ -1737,7 +1624,7 @@ if error and GUI_util.input_main_dir_path.get()!='':
         database_already_loaded = False
 
 # if inputDir.get()!='' and not error:
-#     primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(inputDir.get())
+#     primary_complex_menu = DB_PCACE_data_analysis_util.build_macro_event_dropdown_menu(inputDir.get())
 #     primary_complex['values'] = primary_complex_menu
 
 # Auto-set input/output directories when launched from the SQL GUI.
