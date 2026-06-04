@@ -99,6 +99,36 @@ def _check_pkl_version(inputDir):
     with open(version_file, 'w') as f:
         f.write(str(_PKL_VERSION))
 
+# ── Module-level globals ────────────────────────────────────────────────────
+# These are populated by build_libraries(). Initialized to None so that
+# functions like get_setup_complex_simplex_names() don't crash with
+# "name not defined" if called before the database is loaded.
+
+setup_Complex_lib = None
+setup_Simplex_lib = None
+setup_xref_Complex_Complex_lib = None
+setup_xref_simplex_complex_lib = None
+crossref = None
+data_Simplex_lib = None
+data_SimplexText_lib = None
+data_SimplexNumber_lib = None
+data_SimplexDate_lib = None
+data_Complex_lib = None
+data_xref_Complex_Complex_lib = None
+data_xref_AnyComplex_Complex_lib = None
+data_xref_simplex_complex_lib = None
+data_xref_Document_lib = None
+data_xref_Simplex_Simplex_Document_lib = None
+data_xref_Complex_Document_lib = None
+data_xref_comment_complex_lib = None
+data_xref_Comment_Document_lib = None
+data_xref_VComment_lib = None
+data_xref_VComment_Document_lib = None
+utility_Security_lib = None
+data_simplex_values_ALL_lib = None
+data_xref_simplex_complex_ALL_lib = None
+data_Document_lib = None
+
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 ## OK Pass test of import PCACE
