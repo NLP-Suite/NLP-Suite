@@ -1108,7 +1108,7 @@ simplex_values['values'] = []
 _simplex_val_y_row = y_multiplier_integer  # save for dynamic hover-over
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+150, y_multiplier_integer,
                                    simplex_values,
-                                   True, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
+                                   False, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
                                    "Auto-populated when a Simplex type is selected.\n"
                                    "Lists all data values for the selected simplex.\n"
                                    "Enter: export the values listing to a CSV file.\n"
