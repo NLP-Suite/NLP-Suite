@@ -1292,13 +1292,8 @@ def update_grammar_text(inputDir):
         setup_Complex_lib.at[idx, "GrammarRule_Text"] = rule
 
     # Save updated setup_Complex back to files
-    output_xlsx = os.path.join(inputDir, "setup_Complex.xlsx")
-    output_pkl = os.path.join(inputDir, "setup_Complex.pkl")
-
-    setup_Complex_lib.to_excel(output_xlsx, index=False)
-    setup_Complex_lib.to_pickle(output_pkl)
-
-    print(f"Grammar rules updated and saved to {output_xlsx}")
+    _save_setup_table(inputDir, 'setup_Complex', setup_Complex_lib)
+    print(f"Grammar rules updated and saved to setup_Complex.xlsx")
     mb.showwarning(title='Warning',
                    message='All grammar rules have been updated and saved to setup_Complex.xlsx and setup_Complex.pkl')
 
@@ -1487,27 +1482,15 @@ def toggle_required_value(object_type, object_name, new_value, inputDir):
             # Update all rows where this complex appears as LowerComplex
             for idx in info['indices']:
                 setup_xref_Complex_Complex_lib.at[idx, 'Required'] = new_value
-            # Save xlsx and pkl
-            table_name = 'setup_xref_Complex-Complex'
-            xlsx_path = os.path.join(inputDir, f"{table_name}.xlsx")
-            pkl_path = os.path.join(inputDir, f"{table_name}.pkl")
-            setup_xref_Complex_Complex_lib.to_excel(xlsx_path, index=False)
-            setup_xref_Complex_Complex_lib.to_pickle(pkl_path)
-            print(f"  Updated REQUIRED for '{object_name}' to {new_value} in {table_name}")
-            print(f"  Saved {xlsx_path} and {pkl_path}")
+            _save_setup_table(inputDir, 'setup_xref_Complex-Complex', setup_xref_Complex_Complex_lib)
+            print(f"  Updated REQUIRED for '{object_name}' to {new_value}")
 
         elif object_type == 'Simplex':
             # Update all rows where this simplex appears
             for idx in info['indices']:
                 setup_xref_simplex_complex_lib.at[idx, 'Required'] = new_value
-            # Save xlsx and pkl
-            table_name = 'setup_xref_Simplex-Complex'
-            xlsx_path = os.path.join(inputDir, f"{table_name}.xlsx")
-            pkl_path = os.path.join(inputDir, f"{table_name}.pkl")
-            setup_xref_simplex_complex_lib.to_excel(xlsx_path, index=False)
-            setup_xref_simplex_complex_lib.to_pickle(pkl_path)
-            print(f"  Updated REQUIRED for '{object_name}' to {new_value} in {table_name}")
-            print(f"  Saved {xlsx_path} and {pkl_path}")
+            _save_setup_table(inputDir, 'setup_xref_Simplex-Complex', setup_xref_simplex_complex_lib)
+            print(f"  Updated REQUIRED for '{object_name}' to {new_value}")
 
         # Rebuild the Required-flag indexes
         if "Required" in setup_xref_Complex_Complex_lib.columns:
@@ -1538,12 +1521,32 @@ def toggle_required_value(object_type, object_name, new_value, inputDir):
 # Grammar object management: Rename, Remove, Merge
 # ══════════════════════════════════════════════════════════════════════════════
 
+def _reverse_column_renames(table_base_name, df):
+    """Reverse the reading_list renames so xlsx files keep original ACCESS column names.
+    This prevents xlsx files from being saved with internal renamed columns
+    (e.g., 'ID_setup_xref_complex_complex' instead of 'ID')."""
+    xlsx_name = table_base_name + '.xlsx'
+    for fn, rename_map in reading_list:
+        if fn == xlsx_name:
+            reverse = {v: k for k, v in rename_map.items()}
+            cols_to_reverse = {c: reverse[c] for c in df.columns if c in reverse}
+            if cols_to_reverse:
+                df = df.rename(columns=cols_to_reverse)
+            break
+    return df
+
 def _save_setup_table(inputDir, table_base_name, df):
-    """Save a setup DataFrame to both xlsx and pkl."""
+    """Save a setup DataFrame to both xlsx and pkl.
+    The xlsx is saved with ORIGINAL column names (reversing reading_list renames)
+    so that future loads via reading_list work correctly.
+    The pkl is saved with RENAMED columns for fast in-memory use."""
     xlsx_path = os.path.join(inputDir, f"{table_base_name}.xlsx")
     pkl_path = os.path.join(inputDir, f"{table_base_name}.pkl")
-    df.to_excel(xlsx_path, index=False)
+    # Save pkl with renamed columns (for fast in-memory use)
     df.to_pickle(pkl_path)
+    # Save xlsx with ORIGINAL column names
+    df_original = _reverse_column_renames(table_base_name, df.copy())
+    df_original.to_excel(xlsx_path, index=False)
     print(f"  Saved {xlsx_path} and {pkl_path}")
 
 def rename_grammar_object(object_type, old_name, new_name, inputDir):
@@ -5517,11 +5520,8 @@ def update_all_identifiers(inputDir):
     output_pkl = os.path.join(inputDir, "data_Complex.pkl")
 
     print(f"  Now saving data_Complex.xlsx file. Please be patient...")
-    data_Complex_lib.to_excel(output_xlsx, index=False)
-    print(f"  Now saving data_Complex.pkl file. Please be patient...")
-    data_Complex_lib.to_pickle(output_pkl)
-
-    print(f"  Saved updated Identifiers to {output_xlsx} and {output_pkl}")
+    _save_setup_table(inputDir, 'data_Complex', data_Complex_lib)
+    print(f"  Saved updated Identifiers to data_Complex.xlsx and data_Complex.pkl")
 
     mb.showwarning(title='Warning',
                    message='ALL complex objects identifiers in both data_Complex.xlsx and data_Complex.pkl have been updated')
