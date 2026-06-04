@@ -87,7 +87,6 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
     # If user selected a specific identifier from the dropdown → export that one story form
     # But checkboxes, GIS, simplex operations, and search all take priority over auto-displayed identifier
     any_simplex_checkbox = (simplex_export_values_var.get() == 1 or
-                            simplex_spell_check_var.get() == 1 or
                             simplex_charts_var.get() == 1 or
                             simplex_timechart_var.get() == 1 or
                             simplex_GIS_var.get() == 1)
@@ -287,34 +286,6 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
             if values_csv and os.path.isfile(values_csv):
                 filesToOpen.append(values_csv)
 
-        # ── Spell-check (text simplexes only) ─────────────────────────────────
-        # When a simplex IS selected, check just that one (must be text-typed)
-        if simplex_spell_check_var.get() == 1:
-            if vtype == 1:  # text
-                try:
-                    dupes_csv = DB_PCACE_data_analysis_util.find_near_duplicate_simplex_values(
-                        inputDir, outputDir, simplex_name=setup_simplex)
-                    if dupes_csv and os.path.isfile(dupes_csv):
-                        filesToOpen.append(dupes_csv)
-                        mb.showinfo(title='Spell-check review',
-                                    message=f'Spell-check found potential duplicates/misspellings for '
-                                            f'"{setup_simplex}".\n\n'
-                                            f'The review file has been saved to:\n{dupes_csv}\n\n'
-                                            f'To apply corrections:\n'
-                                            f'  1. Open the CSV and review each row.\n'
-                                            f'  2. Edit the "Suggested correction" column if needed.\n'
-                                            f'  3. Set "Accept?" to N for rows you want to skip.\n'
-                                            f'  4. Save the CSV, then click the APPLY CORRECTIONS button.')
-                    else:
-                        mb.showinfo(title='Spell-check',
-                                    message=f'No near-duplicate or misspelled values found for "{setup_simplex}".')
-                except Exception as e:
-                    print(f"  Near-duplicate check skipped: {e}")
-            else:
-                mb.showwarning(title='Spell-check',
-                               message=f'Spell-check is only available for text-typed simplexes.\n\n'
-                                       f'The selected simplex "{setup_simplex}" is not text-typed.')
-
         # ── Charts (bar/pie of value frequencies) ─────────────────────────────
         if simplex_charts_var.get() == 1:
             # First ensure we have the values CSV to chart from
@@ -400,27 +371,6 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
                             filesToOpen.extend(gis_output)
                     # Refresh GIS hover-over to show updated timestamp
                     _update_last_updated_hovers(inputDir, outputDir)
-
-    # ── Spell-check ALL text simplexes (when no specific simplex is selected) ──
-    if simplex_spell_check_var.get() == 1 and setup_simplex == '':
-        try:
-            dupes_csv = DB_PCACE_data_analysis_util.find_near_duplicate_simplex_values(
-                inputDir, outputDir, simplex_name='')  # '' = check all
-            if dupes_csv and os.path.isfile(dupes_csv):
-                filesToOpen.append(dupes_csv)
-                mb.showinfo(title='Spell-check review',
-                            message='Spell-check scanned ALL text simplexes in the database.\n\n'
-                                    f'The review file has been saved to:\n{dupes_csv}\n\n'
-                                    'To apply corrections:\n'
-                                    '  1. Open the CSV and review each row.\n'
-                                    '  2. Edit the "Suggested correction" column if needed.\n'
-                                    '  3. Set "Accept?" to N for rows you want to skip.\n'
-                                    '  4. Save the CSV, then click the APPLY CORRECTIONS button.')
-            else:
-                mb.showinfo(title='Spell-check',
-                            message='No near-duplicate or misspelled values found across any text simplex.')
-        except Exception as e:
-            print(f"  Spell-check (all simplexes) skipped: {e}")
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -546,7 +496,6 @@ def clear(e):
     complex_children_var.set('')
 
     simplex_export_values_var.set(0)
-    simplex_spell_check_var.set(0)
     simplex_charts_var.set(0)
     simplex_timechart_var.set(0)
     simplex_GIS_var.set(0)
@@ -1121,38 +1070,27 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminder
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "VALUES mode: export all data values for the selected simplex to a CSV file with frequencies.")
 
-# SECOND simplex checkbox: Spell-check (text simplexes)
-simplex_spell_check_var = tk.IntVar()
-simplex_spell_check_checkbox = tk.Checkbutton(window, text='', variable=simplex_spell_check_var, onvalue=1, offvalue=0, state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+10, y_multiplier_integer,
-                                   simplex_spell_check_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "SPELL-CHECK mode: find near-duplicate and misspelled text values.\n"
-                                   "If a simplex is selected, checks that simplex only (must be text-typed).\n"
-                                   "If no simplex is selected, checks ALL text simplexes in the database.\n"
-                                   "Produces a review CSV with suggested corrections and an Accept?/Reject column.")
-
-# THIRD simplex checkbox: Charts (bar/pie of frequencies)
+# SECOND simplex checkbox: Charts (bar/pie of frequencies)
 simplex_charts_var = tk.IntVar()
 simplex_charts_checkbox = tk.Checkbutton(window, text='', variable=simplex_charts_var, onvalue=1, offvalue=0, state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+30, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+10, y_multiplier_integer,
                                    simplex_charts_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "CHARTS mode: produce bar and pie charts of value frequencies for the selected simplex.")
 
-# FOURTH simplex checkbox: Timechart (date simplexes)
+# THIRD simplex checkbox: Timechart (date simplexes)
 simplex_timechart_var = tk.IntVar()
 simplex_timechart_checkbox = tk.Checkbutton(window, text='', variable=simplex_timechart_var, onvalue=1, offvalue=0, state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+50, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+30, y_multiplier_integer,
                                    simplex_timechart_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "TIMECHART mode: generate a timeline chart for date-typed simplexes (ValueType = 3).")
 
-# FIFTH simplex checkbox: GIS map (geocode + map location simplexes)
+# FOURTH simplex checkbox: GIS map (geocode + map location simplexes)
 simplex_GIS_var = tk.IntVar()
 simplex_GIS_checkbox = tk.Checkbutton(window, text='', variable=simplex_GIS_var, onvalue=1, offvalue=0, state='disabled')
 _gis_checkbox_y_row = y_multiplier_integer  # save for dynamic hover-over
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+70, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+50, y_multiplier_integer,
                                    simplex_GIS_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "GIS MAPS mode: geocode location values and display on Google Earth Pro, Google Maps, and Folium.\n"
@@ -1175,52 +1113,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
                                    "Lists all data values for the selected simplex.\n"
                                    "Enter: export the values listing to a CSV file.\n"
                                    "RUN: perform the operation(s) selected via checkboxes or GIS map.")
-
-# "Apply corrections" button for spell-check workflow (same row as Simplex values)
-def _apply_spell_check_corrections():
-    """Open a file dialog for the reviewed spell-check CSV and apply accepted corrections."""
-    from tkinter import filedialog
-    inputDir_val = GUI_util.input_main_dir_path.get()
-    outputDir_val = GUI_util.output_dir_path.get()
-    if not inputDir_val:
-        mb.showwarning(title='Apply corrections',
-                       message='Please select a PC-ACE database directory first.')
-        return
-    csv_path = filedialog.askopenfilename(
-        title='Select the reviewed spell-check CSV',
-        initialdir=outputDir_val if outputDir_val else inputDir_val,
-        filetypes=[('CSV files', '*.csv'), ('All files', '*.*')])
-    if not csv_path:
-        return
-    # Confirm before applying
-    answer = mb.askyesno(title='Apply corrections',
-                         message=f'Apply accepted corrections from:\n{csv_path}\n\n'
-                                 f'This will modify data_SimplexText.xlsx and .pkl in:\n{inputDir_val}\n\n'
-                                 f'A backup of the original files is recommended.\n\nProceed?')
-    if not answer:
-        return
-    n_applied = DB_PCACE_data_analysis_util.apply_spell_check_corrections(csv_path, inputDir_val)
-    if n_applied > 0:
-        mb.showinfo(title='Corrections applied',
-                    message=f'Successfully applied {n_applied} correction(s) to data_SimplexText.\n\n'
-                            f'The xlsx and pkl files have been updated.\n'
-                            f'The cached simplex data has been cleared and will rebuild on next run.')
-    elif n_applied == 0:
-        mb.showinfo(title='No corrections',
-                    message='No corrections were applied.\n\n'
-                            'Either all rows were marked Accept? = N, or the old values '
-                            'were not found in data_SimplexText.')
-    else:
-        mb.showerror(title='Error',
-                     message='An error occurred while applying corrections.\nCheck the console output for details.')
-
-apply_corrections_button = tk.Button(window, text='Spell update', command=_apply_spell_check_corrections, state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+100, y_multiplier_integer,
-                                   apply_corrections_button,
-                                   False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate+100,
-                                   "After running spell-check (second checkbox on the Simplex line),\n"
-                                   "review the CSV, then click here to apply accepted corrections\n"
-                                   "back to data_SimplexText.xlsx and .pkl.")
 
 simplex_values_var.set('')
 
@@ -1604,12 +1496,10 @@ def changed_filename(*args):
             document_sources_checkbox.configure(state='normal')
             comments_checkbox.configure(state='normal')
             simplex_export_values_checkbox.configure(state='normal')
-            simplex_spell_check_checkbox.configure(state='normal')
             simplex_charts_checkbox.configure(state='normal')
             simplex_timechart_checkbox.configure(state='normal')
             simplex_GIS_checkbox.configure(state='normal')
             simplex_values.configure(state='normal')
-            apply_corrections_button.configure(state='normal')
             search_simplex_entry.configure(state='normal')
             search_simplex_results.configure(state='normal')
             setup_name.configure(state='normal')
@@ -1643,12 +1533,10 @@ def changed_filename(*args):
             comments_checkbox.configure(state='disabled')
             setup_simplex.configure(state='disabled')
             simplex_export_values_checkbox.configure(state='disabled')
-            simplex_spell_check_checkbox.configure(state='disabled')
             simplex_charts_checkbox.configure(state='disabled')
             simplex_timechart_checkbox.configure(state='disabled')
             simplex_GIS_checkbox.configure(state='disabled')
             simplex_values.configure(state='disabled')
-            apply_corrections_button.configure(state='disabled')
             search_simplex_entry.configure(state='disabled')
             search_simplex_results.configure(state='disabled')
 
