@@ -229,8 +229,8 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=640, # height at brief display
-                                                 GUI_height_full=680, # height at full display
+                                                 GUI_height_brief=560, # height at brief display
+                                                 GUI_height_full=600, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -780,8 +780,8 @@ def help_buttons(window, help_button_x_coordinate, increment):
         "  simplex value alongside all aggregate coding schemes.\n"
         "  Select Actor or Action to choose which codes to inspect." + GUI_IO_util.msg_Esc)
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,
-        y_multiplier_integer + 4.5, "NLP Suite Help", GUI_IO_util.msg_openOutputFiles)
+    # y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,
+    #     y_multiplier_integer + 4.5, "NLP Suite Help", GUI_IO_util.msg_openOutputFiles)
 
     return y_multiplier_integer - 1
 
