@@ -56,26 +56,24 @@ jobs:
         run: python -m PyInstaller NLP_Suite.spec --noconfirm
 
       - name: Copy data directories to dist (all platforms)
+        shell: python
         run: |
-          python -c "
           import shutil, os, glob
           dist = 'dist/NLP_Suite'
-          # Copy data directories that the app needs at runtime
           for d in ['lib', 'config', 'TIPS', 'reminders']:
-              src = d
-              dst = os.path.join(dist, d)
-              if os.path.isdir(src):
+              if os.path.isdir(d):
+                  dst = os.path.join(dist, d)
                   if os.path.exists(dst):
                       shutil.rmtree(dst)
-                  shutil.copytree(src, dst)
-                  print(f'Copied {src} -> {dst}')
-          # Copy src/*.py files
+                  shutil.copytree(d, dst)
+                  print(f'Copied {d} -> {dst}')
           src_dst = os.path.join(dist, 'src')
           os.makedirs(src_dst, exist_ok=True)
+          count = 0
           for f in glob.glob('src/*.py'):
               shutil.copy2(f, src_dst)
-          print(f'Copied {len(glob.glob(\"src/*.py\"))} .py files to {src_dst}')
-          "
+              count += 1
+          print(f'Copied {count} .py files to {src_dst}')
 
       - name: Copy platform-specific DLLs (Windows only)
         if: runner.os == 'Windows'
