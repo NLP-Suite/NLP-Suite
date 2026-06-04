@@ -1746,15 +1746,6 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                                          "  4. GIS MAP: geocode location values and display on Google Earth Pro, Google Maps, and Folium.\n\n"
                                                          "Spell-check and lemmatization have been moved to the Data Validation GUI."
                                                          + GUI_IO_util.msg_Esc)
-    # Row: Simplex values
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
-                                                         "NLP Suite Help",
-                                                         "Simplex values: auto-populated when a Simplex type is selected.\n"
-                                                         "Press Enter to export values to CSV."
-                                                         + GUI_IO_util.msg_Esc)
-    # Row: Simplex data type
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                "Select the simplex data type (text, date, or number) to filter available values." + GUI_IO_util.msg_Esc)
     # Row: Complex identifier
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                                          "NLP Suite Help",
@@ -1771,9 +1762,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     # Row: Parents / Complex children
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                 "Select the PARENT object and/or CHILD object." + GUI_IO_util.msg_Esc)
-    # Row: Open output files
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                GUI_IO_util.msg_openOutputFiles)
+    # Remaining rows (Open output files, etc.) are handled by GUI_bottom
 
     return y_multiplier_integer -1
 "COUNT Display a template SQL COUNT query."
