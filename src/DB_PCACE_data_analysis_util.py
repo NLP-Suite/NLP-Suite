@@ -713,7 +713,9 @@ def build_data_xref_simplex_complex_ALL_lib(inputDir, outputDir):
 # EXPORT simplex file ------------------------------------------------------------------------------
         # outputFilenametemp defined a few lines above to check if it exists to avoid re-computing
         # check and OK
-        xref_simplex_complex = export_df_to_excel(xref_simplex_complex, inputDir, outputDir, 'NLP_data_xref_Simplex') # simplex
+        # Save pkl cache only (no xlsx export — intermediate library file)
+        library['NLP_data_xref_Simplex'] = xref_simplex_complex
+        xref_simplex_complex.to_pickle(os.path.join(inputDir, 'NLP_data_xref_Simplex.pkl'))
 
 # COMPLEX
 

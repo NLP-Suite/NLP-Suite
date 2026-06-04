@@ -717,9 +717,16 @@ if hasattr(inputDir, 'trace'):
 # ── Help buttons ────────────────────────────────────────────────────────────
 
 def help_buttons(window, help_button_x_coordinate, increment):
-    # Row 1: Open GUI dropdown
+    if not IO_setup_display_brief:
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, increment, "NLP Suite Help", GUI_IO_util.msg_corpusData)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_outputDirectory)
+    else:
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, increment, "NLP Suite Help",
+                                      GUI_IO_util.msg_IO_setup)
+
+    # Row: Open GUI dropdown
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,
-        increment, "NLP Suite Help",
+        y_multiplier_integer, "NLP Suite Help",
         "Use the dropdown menu to open a related GUI." + GUI_IO_util.msg_Esc)
 
     # Row 2: Spell-check checkbox + simplex dropdown

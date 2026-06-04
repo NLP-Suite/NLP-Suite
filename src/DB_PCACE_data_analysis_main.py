@@ -533,11 +533,35 @@ def open_sql_query():
             os.makedirs(query_dir)
         subprocess.Popen([sys.executable, script_path, '--db', db_path, '--querydir', query_dir, '--inputdir', inputDir.get(), '--outputdir', outputDir.get()])
 
-open_sql_button = tk.Button(window, text='Open SQL query GUI', width=17,height=1,state='normal', command=lambda: open_sql_query())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   open_sql_button,
+def _open_validation_gui():
+    """Launch the PC-ACE data validation GUI."""
+    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'DB_PCACE_data_validation_main.py')
+    cmd = [sys.executable, script_path]
+    if inputDir.get():
+        cmd.extend(['--inputdir', inputDir.get()])
+    if outputDir.get():
+        cmd.extend(['--outputdir', outputDir.get()])
+    subprocess.Popen(cmd)
+
+def _on_open_gui_selected(choice):
+    if choice == 'Open DB SQL GUI':
+        open_sql_query()
+    elif choice == 'Open data validation GUI':
+        _open_validation_gui()
+
+_open_gui_var = tk.StringVar()
+_open_gui_var.set('Open DB SQL GUI')
+open_gui_menu = tk.OptionMenu(window, _open_gui_var,
+                              'Open DB SQL GUI',
+                              'Open data validation GUI',
+                              command=_on_open_gui_selected)
+open_gui_menu.configure(width=25)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                   open_gui_menu,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Click to export all PC-ACE tables to an SQLite database and open the SQL query GUI.\nYou can then run any SQL query against the PC-ACE data.")
+                                   "Use the dropdown menu to open a related GUI.\n\n"
+                                   "   Open DB SQL GUI: export tables to SQLite and open the SQL query GUI.\n"
+                                   "   Open data validation GUI: spell-check, lemmatization, aggregate code validation.")
 
 view_relations_button = tk.Button(window, text='View table relations', width=17,height=1,state='disabled', command=lambda: view_relations())
 # place widget with hover-over info
@@ -1698,7 +1722,6 @@ TIPS_options='PC-ACE tables analyzer via Pandas', 'PC-ACE - Export ACCESS tables
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
-    y_multiplier_integer = y_multiplier_integer + 1
     if not IO_setup_display_brief:
         y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", GUI_IO_util.msg_corpusData)
         y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", GUI_IO_util.msg_outputDirectory)
