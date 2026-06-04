@@ -408,8 +408,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=560, # height at brief display
-                                                 GUI_height_full=600, # height at full display
+                                                 GUI_height_brief=600, # height at brief display
+                                                 GUI_height_full=640, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -1698,6 +1698,7 @@ TIPS_options='PC-ACE tables analyzer via Pandas', 'PC-ACE - Export ACCESS tables
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
+    y_multiplier_integer = y_multiplier_integer + 1
     if not IO_setup_display_brief:
         y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", GUI_IO_util.msg_corpusData)
         y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", GUI_IO_util.msg_outputDirectory)
@@ -1705,14 +1706,24 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click on the View table relations button to open a pdf file visualizing PC-ACE table relations." +
-                                "\n\nUse the dropdown menu to open a selected table file." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click on the View table relations button to open a pdf file visualizing PC-ACE table relations." +
-                                "\n\nUse the dropdown menu to open a selected table file." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the simplex data value (text, date, or number) "
-                            "for which you want to see its usage among parent simplex and complex."
-                            "\n\nThe available values will be displayed in the next dropdown menu widget where you can select a specific value."
-                            "\n\nYou can then tick the 'Get simplex/complex objects...' checkbox if you wish to visualize all simplex and complex objects that use the selected value (e.g.,'police') " + GUI_IO_util.msg_Esc)
+    # Row: Open SQL query GUI
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                "Click to export all PC-ACE tables to an SQLite database and open the SQL query GUI." + GUI_IO_util.msg_Esc)
+    # Row: View table relations / View grammar / Update grammar / Update identifiers / Object type / required object
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                "Click View table relations to see PC-ACE table relations.\n"
+                                "Click View grammar / Update grammar to see or regenerate the grammar rules.\n"
+                                "Select Object type (Complex/Simplex) and an object name, then press Enter to toggle its REQUIRED value." + GUI_IO_util.msg_Esc)
+    # Row: Rename / Remove / Merge
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                "RENAME: change the name of a Complex or Simplex grammar object.\n"
+                                "REMOVE: delete an empty grammar object (must have 0 data instances).\n"
+                                "MERGE: consolidate a grammar object into another — all data is reassigned.\n\n"
+                                "Select the Object type and name in the row above first." + GUI_IO_util.msg_Esc)
+    # Row: From data ID to setup ID
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                "Enter a data ID to look up the corresponding setup Complex or Simplex name." + GUI_IO_util.msg_Esc)
+    # Row: Complex
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                                          "NLP Suite Help",
                                                          "COMPLEX: select a complex object type from the dropdown.\n\n"
@@ -1724,41 +1735,45 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                                          "  5. COMMENTS: extract comments left by users and/or verifiers.\n\n"
                                                          "When no checkbox is ticked, RUN exports the story form for the identifier shown in the right-hand dropdown."
                                                          + GUI_IO_util.msg_Esc)
+    # Row: Simplex
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                                          "NLP Suite Help",
                                                          "SIMPLEX: select a simplex object type from the dropdown.\n\n"
                                                          "Checkboxes (left to right):\n"
                                                          "  1. VALUES: export all data values with frequencies to CSV.\n"
-                                                         "  2. SPELL-CHECK: find near-duplicate and misspelled values (text simplexes only).\n"
-                                                         "  3. CHARTS: produce bar and pie charts of value frequencies.\n"
-                                                         "  4. TIMECHART: generate a timeline chart (date simplexes only).\n"
-                                                         "  5. GIS MAP: geocode location values and display on Google Earth Pro, Google Maps, and Folium.\n"
-                                                         "     The first geocoding run is slow (~1 request/second for Nominatim).\n"
-                                                         "     Subsequent runs are fast because results are saved to a disk cache (GIS_geocode_cache.json in the output directory).\n"
-                                                         "     Hover over the GIS checkbox to see the cache location and when it was last updated.\n\n"
-                                                         "The right-hand Simplex values widget auto-populates when a simplex is selected. Press Enter in that widget to export values to CSV."
+                                                         "  2. CHARTS: produce bar and pie charts of value frequencies.\n"
+                                                         "  3. TIMECHART: generate a timeline chart (date simplexes only).\n"
+                                                         "  4. GIS MAP: geocode location values and display on Google Earth Pro, Google Maps, and Folium.\n\n"
+                                                         "Spell-check and lemmatization have been moved to the Data Validation GUI."
                                                          + GUI_IO_util.msg_Esc)
+    # Row: Simplex values
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                                          "NLP Suite Help",
-                                                         "COMPLEX IDENTIFIER: auto-populated when a Complex type is selected above. Lists all instances of the selected complex type (ID - Identifier).\n"
+                                                         "Simplex values: auto-populated when a Simplex type is selected.\n"
+                                                         "Press Enter to export values to CSV."
+                                                         + GUI_IO_util.msg_Esc)
+    # Row: Simplex data type
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                "Select the simplex data type (text, date, or number) to filter available values." + GUI_IO_util.msg_Esc)
+    # Row: Complex identifier
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                                         "NLP Suite Help",
+                                                         "COMPLEX IDENTIFIER: auto-populated when a Complex type is selected.\n"
                                                          "Enter: export the story form for the selected object.\n"
-                                                         "RUN: export the story form, or perform a checkbox operation if a checkbox is ticked above."
+                                                         "RUN: export the story form, or perform a checkbox operation."
                                                          + GUI_IO_util.msg_Esc)
+    # Row: Search simplex value
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                                          "NLP Suite Help",
-                                                         "SEARCH SIMPLEX VALUE: type a simplex value (e.g., a city name, a person name) and press Enter to search.\n"
-                                                         "The search is case-insensitive and finds all hierarchical objects (++) containing that value.\n"
-                                                         "SEARCH RESULTS: auto-populated after a search. Lists the matching hierarchical objects.\n"
-                                                         "Enter (in results dropdown): export the story form for the selected object.\n"
-                                                         "RUN: export the selected story form, or ALL story forms if none selected."
+                                                         "SEARCH: type a simplex value and press Enter to search.\n"
+                                                         "RESULTS: select a match and press Enter to export its story form."
                                                          + GUI_IO_util.msg_Esc)
-
-    # y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
-    #                                                      "NLP Suite Help",
-    #                                                      "Please, tick the 'Get value frequencies for ALL objects' checkbox to compute the frequencies of all available complex and simplex objects."
-    #                                                      "\n\nTick the 'Get value frequencies for SELECTED object' checkbox to compute the frequencies of the selected Complex or Simplex object." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the PARENT object and/or the CHILD object." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","COMMENT mode: Please, use the dropdown menu to select the type of comments to extract (users and/or verifiers) for specific objects (e.g., Semantic triplets (SVO)).\n\nTick the checkbox to extract the documents (e.g., newspaper articles) that are the sources of information for specific objects." + GUI_IO_util.msg_Esc)
+    # Row: Parents / Complex children
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                "Select the PARENT object and/or CHILD object." + GUI_IO_util.msg_Esc)
+    # Row: Open output files
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                GUI_IO_util.msg_openOutputFiles)
 
     return y_multiplier_integer -1
 "COUNT Display a template SQL COUNT query."
