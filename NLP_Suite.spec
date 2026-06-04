@@ -205,12 +205,16 @@ for f in os.listdir(SRC_DIR):
         _project_datas.append((os.path.join(SRC_DIR, f), 'src'))
 
 # Library data (recursive)
-_project_datas += _collect_tree(os.path.join(PROJECT_ROOT, 'lib'), 'lib')
+_lib_dir = os.path.join(PROJECT_ROOT, 'lib')
+if os.path.isdir(_lib_dir):
+    _project_datas += _collect_tree(_lib_dir, 'lib')
 
 # Config files
-for f in os.listdir(os.path.join(PROJECT_ROOT, 'config')):
-    if f.endswith('.csv'):
-        _project_datas.append((os.path.join(PROJECT_ROOT, 'config', f), 'config'))
+_config_dir = os.path.join(PROJECT_ROOT, 'config')
+if os.path.isdir(_config_dir):
+    for f in os.listdir(_config_dir):
+        if f.endswith('.csv'):
+            _project_datas.append((os.path.join(_config_dir, f), 'config'))
 
 # TIPS (PDF help files)
 _tips_dir = os.path.join(PROJECT_ROOT, 'TIPS')
