@@ -1,0 +1,65 @@
+# NLP Suite Python dependencies
+# Used by GitHub Actions CI for PyInstaller builds
+
+# Core data science
+pandas
+numpy
+scipy
+scikit-learn
+openpyxl
+xlrd
+
+# NLP
+stanza
+spacy
+nltk
+gensim
+textblob
+textstat
+langdetect
+langid
+autocorrect
+pyspellchecker
+fuzzywuzzy[speedup]
+
+# Transformers (optional — large)
+# transformers
+# sentence-transformers
+
+# Visualization
+matplotlib
+plotly
+seaborn
+wordcloud
+mpld3
+kaleido
+
+# GIS / Maps
+folium
+geopy
+simplekml
+shapely
+geopandas
+
+# Web / parsing
+requests
+beautifulsoup4
+lxml
+chardet
+tqdm
+psutil
+
+# PDF / document
+pdfminer.six
+python-docx
+striprtf
+
+# Stanford CoreNLP client
+pycorenlp
+stanfordcorenlp
+
+# Image
+Pillow
+
+# Knowledge graphs
+SPARQLWrapper

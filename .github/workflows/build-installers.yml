@@ -1,0 +1,106 @@
+name: Build NLP Suite Installers
+
+# Trigger: manually from the Actions tab, or on tagged releases
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact: NLP-Suite-windows-x64
+            python-version: '3.10'
+          - os: macos-13          # Intel Mac
+            artifact: NLP-Suite-mac-intel
+            python-version: '3.10'
+          - os: macos-14          # Apple Silicon (M1+)
+            artifact: NLP-Suite-mac-arm64
+            python-version: '3.10'
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: roberto
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pip install pandas numpy scipy scikit-learn openpyxl xlrd
+          pip install stanza spacy nltk gensim textblob textstat
+          pip install langdetect langid autocorrect pyspellchecker fuzzywuzzy
+          pip install transformers sentence-transformers
+          pip install matplotlib plotly seaborn wordcloud mpld3 kaleido
+          pip install folium geopy simplekml shapely geopandas
+          pip install requests beautifulsoup4 lxml chardet tqdm psutil
+          pip install pdfminer.six python-docx striprtf
+          pip install pycorenlp stanfordcorenlp
+          pip install Pillow
+          pip install SPARQLWrapper
+
+      - name: Build with PyInstaller
+        run: python -m PyInstaller NLP_Suite.spec --noconfirm
+
+      - name: Copy platform-specific DLLs (Windows only)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $pythonDir = Split-Path (Get-Command python).Source
+          $dist = "dist/NLP_Suite"
+          # Copy any missing DLLs that PyInstaller warns about
+          $dlls = @("tk86t.dll", "tcl86t.dll", "sqlite3.dll")
+          foreach ($dll in $dlls) {
+            $found = Get-ChildItem $pythonDir -Recurse -Filter $dll -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($found) {
+              Copy-Item $found.FullName $dist -ErrorAction SilentlyContinue
+              Write-Host "Copied $dll"
+            }
+          }
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/NLP_Suite/
+          retention-days: 30
+
+  # Create a GitHub Release with all three builds when triggered by a tag
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Zip artifacts
+        run: |
+          cd NLP-Suite-windows-x64 && zip -r ../NLP-Suite-windows-x64.zip . && cd ..
+          cd NLP-Suite-mac-intel && zip -r ../NLP-Suite-mac-intel.zip . && cd ..
+          cd NLP-Suite-mac-arm64 && zip -r ../NLP-Suite-mac-arm64.zip . && cd ..
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            NLP-Suite-windows-x64.zip
+            NLP-Suite-mac-intel.zip
+            NLP-Suite-mac-arm64.zip
+          generate_release_notes: true
