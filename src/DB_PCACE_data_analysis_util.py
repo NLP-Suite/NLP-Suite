@@ -1534,6 +1534,229 @@ def toggle_required_value(object_type, object_name, new_value, inputDir):
         return False
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# Grammar object management: Rename, Remove, Merge
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _save_setup_table(inputDir, table_base_name, df):
+    """Save a setup DataFrame to both xlsx and pkl."""
+    xlsx_path = os.path.join(inputDir, f"{table_base_name}.xlsx")
+    pkl_path = os.path.join(inputDir, f"{table_base_name}.pkl")
+    df.to_excel(xlsx_path, index=False)
+    df.to_pickle(pkl_path)
+    print(f"  Saved {xlsx_path} and {pkl_path}")
+
+def rename_grammar_object(object_type, old_name, new_name, inputDir):
+    """Rename a complex or simplex grammar object.
+    Only changes the Name column in the setup table — xref/data tables use IDs,
+    so nothing else needs updating.
+
+    Returns: (True, message) on success, (False, message) on failure.
+    """
+    global setup_Complex_lib, setup_Simplex_lib
+
+    if not new_name or not new_name.strip():
+        return False, "New name cannot be empty."
+    new_name = new_name.strip()
+
+    if object_type == 'Complex':
+        if setup_Complex_lib is None:
+            return False, "Database not loaded."
+        mask = setup_Complex_lib['Name'] == old_name
+        if mask.sum() == 0:
+            return False, f"Complex '{old_name}' not found in setup_Complex."
+        # Check if new name already exists
+        if (setup_Complex_lib['Name'] == new_name).any():
+            return False, f"Complex '{new_name}' already exists. Use Merge to combine."
+        setup_Complex_lib.loc[mask, 'Name'] = new_name
+        _save_setup_table(inputDir, 'setup_Complex', setup_Complex_lib)
+
+    elif object_type == 'Simplex':
+        if setup_Simplex_lib is None:
+            return False, "Database not loaded."
+        mask = setup_Simplex_lib['Name'] == old_name
+        if mask.sum() == 0:
+            return False, f"Simplex '{old_name}' not found in setup_Simplex."
+        if (setup_Simplex_lib['Name'] == new_name).any():
+            return False, f"Simplex '{new_name}' already exists. Use Merge to combine."
+        setup_Simplex_lib.loc[mask, 'Name'] = new_name
+        _save_setup_table(inputDir, 'setup_Simplex', setup_Simplex_lib)
+    else:
+        return False, f"Unknown object type: {object_type}"
+
+    # Regenerate grammar text to reflect the name change
+    update_grammar_text(inputDir)
+    return True, f"Renamed {object_type} '{old_name}' → '{new_name}'."
+
+
+def get_grammar_object_data_count(object_type, object_name):
+    """Count how many data instances reference a setup object.
+    Returns (count, details_string) or (-1, error_string) on failure.
+    """
+    if object_type == 'Complex':
+        if setup_Complex_lib is None or data_Complex_lib is None:
+            return -1, "Database not loaded."
+        match = setup_Complex_lib[setup_Complex_lib['Name'] == object_name]
+        if match.empty:
+            return -1, f"Complex '{object_name}' not found."
+        setup_id = match['ID_setup_complex'].iloc[0]
+        count = (data_Complex_lib['ID_setup_complex'] == setup_id).sum()
+        return count, f"Complex '{object_name}' (setup ID {setup_id}) has {count} data instance(s)."
+
+    elif object_type == 'Simplex':
+        if setup_Simplex_lib is None or data_Simplex_lib is None:
+            return -1, "Database not loaded."
+        match = setup_Simplex_lib[setup_Simplex_lib['Name'] == object_name]
+        if match.empty:
+            return -1, f"Simplex '{object_name}' not found."
+        setup_id = match['ID_setup_simplex'].iloc[0]
+        count = (data_Simplex_lib['ID_setup_simplex'] == setup_id).sum()
+        return count, f"Simplex '{object_name}' (setup ID {setup_id}) has {count} data instance(s)."
+
+    return -1, f"Unknown object type: {object_type}"
+
+
+def remove_grammar_object(object_type, object_name, inputDir):
+    """Remove a grammar object from setup tables IF it has no data instances.
+
+    Returns: (True, message) on success, (False, message) on failure.
+    """
+    global setup_Complex_lib, setup_Simplex_lib
+    global setup_xref_Complex_Complex_lib, setup_xref_simplex_complex_lib
+
+    # Safety check: count data references
+    count, info = get_grammar_object_data_count(object_type, object_name)
+    if count < 0:
+        return False, info
+    if count > 0:
+        return False, (f"Cannot remove {object_type} '{object_name}': it has {count} data instance(s).\n\n"
+                       f"Removing it would cause data loss.\n"
+                       f"If you want to consolidate, use Merge instead.")
+
+    if object_type == 'Complex':
+        setup_id = setup_Complex_lib[setup_Complex_lib['Name'] == object_name]['ID_setup_complex'].iloc[0]
+
+        # Remove from setup_Complex
+        setup_Complex_lib = setup_Complex_lib[setup_Complex_lib['Name'] != object_name]
+        _save_setup_table(inputDir, 'setup_Complex', setup_Complex_lib)
+
+        # Remove from setup_xref_Complex-Complex (as child or parent)
+        if setup_xref_Complex_Complex_lib is not None:
+            before = len(setup_xref_Complex_Complex_lib)
+            setup_xref_Complex_Complex_lib = setup_xref_Complex_Complex_lib[
+                ~setup_xref_Complex_Complex_lib['ID_setup_complex'].isin([setup_id]) if 'ID_setup_complex' in setup_xref_Complex_Complex_lib.columns
+                else True]
+            after = len(setup_xref_Complex_Complex_lib)
+            if before != after:
+                _save_setup_table(inputDir, 'setup_xref_Complex-Complex', setup_xref_Complex_Complex_lib)
+
+    elif object_type == 'Simplex':
+        setup_id = setup_Simplex_lib[setup_Simplex_lib['Name'] == object_name]['ID_setup_simplex'].iloc[0]
+
+        # Remove from setup_Simplex
+        setup_Simplex_lib = setup_Simplex_lib[setup_Simplex_lib['Name'] != object_name]
+        _save_setup_table(inputDir, 'setup_Simplex', setup_Simplex_lib)
+
+        # Remove from setup_xref_Simplex-Complex
+        if setup_xref_simplex_complex_lib is not None:
+            before = len(setup_xref_simplex_complex_lib)
+            setup_xref_simplex_complex_lib = setup_xref_simplex_complex_lib[
+                setup_xref_simplex_complex_lib['ID_setup_simplex'] != setup_id]
+            after = len(setup_xref_simplex_complex_lib)
+            if before != after:
+                _save_setup_table(inputDir, 'setup_xref_Simplex-Complex', setup_xref_simplex_complex_lib)
+    else:
+        return False, f"Unknown object type: {object_type}"
+
+    # Regenerate grammar
+    update_grammar_text(inputDir)
+    return True, f"Removed {object_type} '{object_name}' (setup ID {setup_id}) from grammar."
+
+
+def merge_grammar_objects(object_type, source_name, target_name, inputDir):
+    """Merge a source grammar object into a target. All data references to source
+    are reassigned to target, then source is removed from setup tables.
+
+    Returns: (True, message) on success, (False, message) on failure.
+    """
+    global setup_Complex_lib, setup_Simplex_lib
+    global data_Complex_lib, data_Simplex_lib
+    global setup_xref_Complex_Complex_lib, setup_xref_simplex_complex_lib
+
+    if source_name == target_name:
+        return False, "Source and target are the same object."
+
+    if object_type == 'Complex':
+        if setup_Complex_lib is None or data_Complex_lib is None:
+            return False, "Database not loaded."
+        src_match = setup_Complex_lib[setup_Complex_lib['Name'] == source_name]
+        tgt_match = setup_Complex_lib[setup_Complex_lib['Name'] == target_name]
+        if src_match.empty:
+            return False, f"Source complex '{source_name}' not found."
+        if tgt_match.empty:
+            return False, f"Target complex '{target_name}' not found."
+        src_id = src_match['ID_setup_complex'].iloc[0]
+        tgt_id = tgt_match['ID_setup_complex'].iloc[0]
+
+        # Reassign data_Complex rows from source to target
+        n_reassigned = (data_Complex_lib['ID_setup_complex'] == src_id).sum()
+        data_Complex_lib.loc[data_Complex_lib['ID_setup_complex'] == src_id, 'ID_setup_complex'] = tgt_id
+        _save_setup_table(inputDir, 'data_Complex', data_Complex_lib)
+
+        # Reassign xref_Complex-Complex references
+        if setup_xref_Complex_Complex_lib is not None:
+            # Update any xref rows that reference the source complex
+            for col in setup_xref_Complex_Complex_lib.columns:
+                if 'complex' in col.lower() and setup_xref_Complex_Complex_lib[col].dtype in ['int64', 'float64']:
+                    mask = setup_xref_Complex_Complex_lib[col] == src_id
+                    if mask.any():
+                        setup_xref_Complex_Complex_lib.loc[mask, col] = tgt_id
+            # Remove duplicate xref rows that may result from the merge
+            setup_xref_Complex_Complex_lib = setup_xref_Complex_Complex_lib.drop_duplicates()
+            _save_setup_table(inputDir, 'setup_xref_Complex-Complex', setup_xref_Complex_Complex_lib)
+
+        # Remove source from setup_Complex
+        setup_Complex_lib = setup_Complex_lib[setup_Complex_lib['Name'] != source_name]
+        _save_setup_table(inputDir, 'setup_Complex', setup_Complex_lib)
+
+    elif object_type == 'Simplex':
+        if setup_Simplex_lib is None or data_Simplex_lib is None:
+            return False, "Database not loaded."
+        src_match = setup_Simplex_lib[setup_Simplex_lib['Name'] == source_name]
+        tgt_match = setup_Simplex_lib[setup_Simplex_lib['Name'] == target_name]
+        if src_match.empty:
+            return False, f"Source simplex '{source_name}' not found."
+        if tgt_match.empty:
+            return False, f"Target simplex '{target_name}' not found."
+        src_id = src_match['ID_setup_simplex'].iloc[0]
+        tgt_id = tgt_match['ID_setup_simplex'].iloc[0]
+
+        # Reassign data_Simplex rows from source to target
+        n_reassigned = (data_Simplex_lib['ID_setup_simplex'] == src_id).sum()
+        data_Simplex_lib.loc[data_Simplex_lib['ID_setup_simplex'] == src_id, 'ID_setup_simplex'] = tgt_id
+        _save_setup_table(inputDir, 'data_Simplex', data_Simplex_lib)
+
+        # Reassign xref_Simplex-Complex references
+        if setup_xref_simplex_complex_lib is not None:
+            mask = setup_xref_simplex_complex_lib['ID_setup_simplex'] == src_id
+            if mask.any():
+                setup_xref_simplex_complex_lib.loc[mask, 'ID_setup_simplex'] = tgt_id
+            # Remove duplicate xref rows
+            setup_xref_simplex_complex_lib = setup_xref_simplex_complex_lib.drop_duplicates()
+            _save_setup_table(inputDir, 'setup_xref_Simplex-Complex', setup_xref_simplex_complex_lib)
+
+        # Remove source from setup_Simplex
+        setup_Simplex_lib = setup_Simplex_lib[setup_Simplex_lib['Name'] != source_name]
+        _save_setup_table(inputDir, 'setup_Simplex', setup_Simplex_lib)
+    else:
+        return False, f"Unknown object type: {object_type}"
+
+    # Regenerate grammar
+    update_grammar_text(inputDir)
+    return True, (f"Merged {object_type} '{source_name}' → '{target_name}'.\n"
+                  f"{n_reassigned} data instance(s) reassigned.")
+
+
 # given a setup simplex name, the function returns a list of all the complex parents that have the simplex amo0ng its children, regardless of whether required
 
 # find the one level higher setup complex of the input setup complex name

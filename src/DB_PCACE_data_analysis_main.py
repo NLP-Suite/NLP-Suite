@@ -718,6 +718,162 @@ def _toggle_required():
 # Enter on the required_object dropdown or RUN triggers the toggle with confirmation
 required_object.bind('<Return>', lambda e: _toggle_required())
 
+# ── Grammar object management: Rename, Remove, Merge ────────────────────────
+
+def _rename_grammar_object():
+    """Rename the selected grammar object."""
+    obj_type = object_type_var.get()
+    obj_name = required_object_var.get()
+    if not obj_type or not obj_name:
+        mb.showwarning(title='Rename',
+                       message='Please select an Object type (Complex or Simplex) and an object name from the dropdown above.')
+        return
+    new_name = tk.simpledialog.askstring("Rename " + obj_type,
+        f"Current name: {obj_name}\n\nEnter new name:",
+        initialvalue=obj_name)
+    if not new_name or new_name.strip() == obj_name:
+        return
+    proceed = mb.askyesno("Confirm rename",
+        f"Rename {obj_type}:\n\n"
+        f"  '{obj_name}'  →  '{new_name.strip()}'\n\n"
+        f"This will update setup files and regenerate the grammar.\n\nProceed?")
+    if proceed:
+        success, msg = DB_PCACE_data_analysis_util.rename_grammar_object(obj_type, obj_name, new_name.strip(), inputDir.get())
+        if success:
+            mb.showinfo(title='Renamed', message=msg)
+            _update_required_object_dropdown()
+        else:
+            mb.showwarning(title='Rename failed', message=msg)
+
+def _remove_grammar_object():
+    """Remove the selected grammar object (only if empty)."""
+    obj_type = object_type_var.get()
+    obj_name = required_object_var.get()
+    if not obj_type or not obj_name:
+        mb.showwarning(title='Remove',
+                       message='Please select an Object type (Complex or Simplex) and an object name from the dropdown above.')
+        return
+    # Show data count first
+    count, info = DB_PCACE_data_analysis_util.get_grammar_object_data_count(obj_type, obj_name)
+    if count < 0:
+        mb.showwarning(title='Remove', message=info)
+        return
+    if count > 0:
+        mb.showwarning(title='Cannot remove',
+                       message=f"{obj_type} '{obj_name}' has {count} data instance(s).\n\n"
+                               f"Removing it would cause data loss.\n\n"
+                               f"Use Merge to reassign the data to another {obj_type} first.")
+        return
+    proceed = mb.askyesno("Confirm remove",
+        f"Remove {obj_type} '{obj_name}' from the grammar?\n\n"
+        f"This object has 0 data instances, so no data will be lost.\n"
+        f"It will be removed from setup tables and xref tables.\n\nProceed?")
+    if proceed:
+        success, msg = DB_PCACE_data_analysis_util.remove_grammar_object(obj_type, obj_name, inputDir.get())
+        if success:
+            mb.showinfo(title='Removed', message=msg)
+            _update_required_object_dropdown()
+        else:
+            mb.showwarning(title='Remove failed', message=msg)
+
+def _merge_grammar_objects():
+    """Merge the selected grammar object into another (reassign all data)."""
+    obj_type = object_type_var.get()
+    source_name = required_object_var.get()
+    if not obj_type or not source_name:
+        mb.showwarning(title='Merge',
+                       message='Please select an Object type (Complex or Simplex) and the SOURCE object to merge FROM in the dropdown above.')
+        return
+    # Get the list of possible targets (all objects of same type except source)
+    try:
+        c_menu, s_menu = DB_PCACE_data_analysis_util.get_setup_complex_simplex_names()
+    except:
+        c_menu, s_menu = [], []
+    if obj_type == 'Complex':
+        targets = [n for n in c_menu if n != source_name]
+    else:
+        targets = [n for n in s_menu if n != source_name]
+    if not targets:
+        mb.showwarning(title='Merge', message=f'No other {obj_type} objects to merge into.')
+        return
+
+    # Show data count for source
+    count, info = DB_PCACE_data_analysis_util.get_grammar_object_data_count(obj_type, source_name)
+    count_str = f"{count} data instance(s)" if count >= 0 else "unknown"
+
+    # Ask user to pick target
+    merge_win = tk.Toplevel(window)
+    merge_win.title(f"Merge {obj_type}: {source_name}")
+    merge_win.geometry("450x200")
+    merge_win.resizable(False, False)
+
+    tk.Label(merge_win, text=f"Merge '{source_name}' ({count_str}) INTO:", font=('', 10, 'bold')).pack(pady=(15, 5))
+
+    target_var = tk.StringVar()
+    target_var.set(targets[0])
+    target_combo = ttk.Combobox(merge_win, textvariable=target_var, values=targets, state='readonly', width=40)
+    target_combo.pack(pady=5)
+
+    tk.Label(merge_win, text=f"All data from '{source_name}' will be reassigned\n"
+                              f"to the selected target. '{source_name}' will then\n"
+                              f"be removed from the grammar.", fg='gray').pack(pady=5)
+
+    def _do_merge():
+        target_name = target_var.get()
+        if not target_name:
+            return
+        proceed = mb.askyesno("Confirm merge",
+            f"Merge {obj_type}:\n\n"
+            f"  '{source_name}' → '{target_name}'\n\n"
+            f"  {count_str} will be reassigned.\n"
+            f"  '{source_name}' will be removed from the grammar.\n\n"
+            f"This cannot be undone. Proceed?",
+            parent=merge_win)
+        if proceed:
+            merge_win.destroy()
+            success, msg = DB_PCACE_data_analysis_util.merge_grammar_objects(obj_type, source_name, target_name, inputDir.get())
+            if success:
+                mb.showinfo(title='Merged', message=msg)
+                _update_required_object_dropdown()
+            else:
+                mb.showwarning(title='Merge failed', message=msg)
+
+    tk.Button(merge_win, text='Merge', width=10, command=_do_merge).pack(pady=10)
+
+import tkinter.simpledialog
+
+rename_button = tk.Button(window, text='Rename', width=8, height=1, state='disabled', command=_rename_grammar_object)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                   rename_button,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Rename the selected Complex or Simplex grammar object.\n"
+                                   "Select the object type and name in the row above, then click Rename.\n\n"
+                                   "Only the name in the setup table is changed — data references use IDs\n"
+                                   "and are not affected.")
+
+remove_button = tk.Button(window, text='Remove', width=8, height=1, state='disabled', command=_remove_grammar_object)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 80, y_multiplier_integer,
+                                   remove_button,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Remove the selected Complex or Simplex grammar object.\n\n"
+                                   "SAFETY: the object must have 0 data instances to be removed.\n"
+                                   "If it has data, use Merge first to reassign data to another object.")
+
+merge_button = tk.Button(window, text='Merge', width=8, height=1, state='disabled', command=_merge_grammar_objects)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 160, y_multiplier_integer,
+                                   merge_button,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Merge the selected grammar object INTO another object of the same type.\n\n"
+                                   "All data instances are reassigned from the source to the target.\n"
+                                   "The source object is then removed from the grammar.\n\n"
+                                   "Use this to consolidate duplicates (e.g., 'City', 'City 2', 'Comune' → 'City').")
+
+merge_info_lb = tk.Label(window, text='Select Object type and name above, then click Rename / Remove / Merge',
+                         font=('', 8), fg='gray')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 240, y_multiplier_integer,
+                                   merge_info_lb,
+                                   False, True, False, False, 90, GUI_IO_util.labels_x_coordinate, '')
+
 # select_DB_tables_lb = tk.Label(window, text='PC-ACE table ')
 # # open_setup_x_coordinate
 # # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate,y_multiplier_integer,select_DB_tables_lb,True)
@@ -1433,6 +1589,9 @@ def changed_filename(*args):
             view_grammar_button.configure(state='normal')
             update_grammar_button.configure(state='normal')
             update_identifier_button.configure(state='normal')
+            rename_button.configure(state='normal')
+            remove_button.configure(state='normal')
+            merge_button.configure(state='normal')
             object_type_var_menu.configure(state='normal')
             required_object.configure(state='readonly')
             from_dataID_setupID_menu.configure(state='normal')
