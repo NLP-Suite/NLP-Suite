@@ -161,37 +161,68 @@ _third_party_hiddenimports = [
 ]
 
 # Collect stanza and spacy data files (language models etc.)
-_stanza_datas = collect_data_files('stanza', include_py_files=True)
-_spacy_datas = collect_data_files('spacy', include_py_files=True)
-_nltk_datas = collect_data_files('nltk')
+# NOTE: nltk data files are downloaded at runtime, not bundled.
+try:
+    _stanza_datas = collect_data_files('stanza', include_py_files=True)
+except Exception:
+    _stanza_datas = []
+try:
+    _spacy_datas = collect_data_files('spacy', include_py_files=True)
+except Exception:
+    _spacy_datas = []
+_nltk_datas = []  # nltk downloads data at runtime
 
 # ── Data files to bundle ────────────────────────────────────────────────────
 # These are copied alongside the executable so the app can find them at runtime.
 # Format: (source_path, destination_folder_in_bundle)
+#
+# IMPORTANT: PyInstaller places data files inside _internal/ by default.
+# The NLP Suite code resolves paths via __file__ → parent → NLPPath, which
+# maps to the exe root folder (dist/NLP_Suite/), NOT _internal/.
+# Therefore data directories (src, lib, config, TIPS, reminders) must be
+# at the exe root level.
+#
+# After building, run the post-build script (or the CI workflow) to copy
+# data files to the correct location. See post_build_fixup() below.
 
-_project_datas = [
-    # All src/*.py files (needed because some GUIs launch scripts via subprocess)
-    (os.path.join(SRC_DIR, '*.py'), 'src'),
-    # Library data
-    (os.path.join(PROJECT_ROOT, 'lib', 'concretenessLib', '*'), os.path.join('lib', 'concretenessLib')),
-    (os.path.join(PROJECT_ROOT, 'lib', 'CoreNLP_enhanced_dependencies', '*'), os.path.join('lib', 'CoreNLP_enhanced_dependencies')),
-    (os.path.join(PROJECT_ROOT, 'lib', 'iconicityLib', '*'), os.path.join('lib', 'iconicityLib')),
-    (os.path.join(PROJECT_ROOT, 'lib', 'images', '*'), os.path.join('lib', 'images')),
-    (os.path.join(PROJECT_ROOT, 'lib', 'namesGender', '*'), os.path.join('lib', 'namesGender')),
-    (os.path.join(PROJECT_ROOT, 'lib', 'sampleData', '*'), os.path.join('lib', 'sampleData')),
-    (os.path.join(PROJECT_ROOT, 'lib', 'sentimentLib', '*'), os.path.join('lib', 'sentimentLib')),
-    (os.path.join(PROJECT_ROOT, 'lib', 'wordLists', '*'), os.path.join('lib', 'wordLists')),
-    (os.path.join(PROJECT_ROOT, 'lib', 'sampleCharts', '*'), os.path.join('lib', 'sampleCharts')),
-    (os.path.join(PROJECT_ROOT, 'lib', 'sampleHeatmap', '*'), os.path.join('lib', 'sampleHeatmap')),
-    (os.path.join(PROJECT_ROOT, 'lib', 'LICENSE-NLP-Suite-1.0.txt'), 'lib'),
-    (os.path.join(PROJECT_ROOT, 'lib', 'release_version.txt'), 'lib'),
-    # Config files
-    (os.path.join(PROJECT_ROOT, 'config', '*.csv'), 'config'),
-    # TIPS (PDF help files)
-    (os.path.join(PROJECT_ROOT, 'TIPS', '*.pdf'), 'TIPS'),
-    # Reminders
-    (os.path.join(PROJECT_ROOT, 'reminders', '*'), 'reminders'),
-]
+def _collect_tree(src_dir, dest_prefix):
+    """Recursively collect all files under src_dir into dest_prefix."""
+    result = []
+    for dirpath, dirnames, filenames in os.walk(src_dir):
+        if '__pycache__' in dirpath or '.git' in dirpath:
+            continue
+        for f in filenames:
+            src_file = os.path.join(dirpath, f)
+            rel_dir = os.path.relpath(dirpath, os.path.dirname(src_dir))
+            result.append((src_file, rel_dir))
+    return result
+
+_project_datas = []
+
+# All src/*.py files (needed because GUIs check for .py files and some launch via subprocess)
+for f in os.listdir(SRC_DIR):
+    if f.endswith('.py') and not f.startswith('_'):
+        _project_datas.append((os.path.join(SRC_DIR, f), 'src'))
+
+# Library data (recursive)
+_project_datas += _collect_tree(os.path.join(PROJECT_ROOT, 'lib'), 'lib')
+
+# Config files
+for f in os.listdir(os.path.join(PROJECT_ROOT, 'config')):
+    if f.endswith('.csv'):
+        _project_datas.append((os.path.join(PROJECT_ROOT, 'config', f), 'config'))
+
+# TIPS (PDF help files)
+_tips_dir = os.path.join(PROJECT_ROOT, 'TIPS')
+if os.path.isdir(_tips_dir):
+    for f in os.listdir(_tips_dir):
+        if f.endswith('.pdf'):
+            _project_datas.append((os.path.join(_tips_dir, f), 'TIPS'))
+
+# Reminders
+_reminders_dir = os.path.join(PROJECT_ROOT, 'reminders')
+if os.path.isdir(_reminders_dir):
+    _project_datas += _collect_tree(_reminders_dir, 'reminders')
 
 # ── Analysis ────────────────────────────────────────────────────────────────
 
@@ -207,11 +238,13 @@ a = Analysis(
     excludes=[
         # Exclude heavy optional packages to reduce size on first build.
         # Uncomment any line below to re-include if needed.
-        'tensorflow', 'tensorflow_hub',
+        'tensorflow', 'tensorflow_hub', 'tensorflow_intel',
         'torch',
         'bertopic',
         'pyLDAvis',
         'gmaps',
+        'nltk',      # hook incompatible with Python 3.8; nltk downloads data at runtime
+        'spacy_langdetect', 'contextualSpellCheck',  # optional, may not be installed
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
