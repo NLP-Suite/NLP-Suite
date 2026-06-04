@@ -374,8 +374,8 @@ def _write_sqlite_version(in_dir):
 _INDEX_STMTS = [
     "CREATE INDEX IF NOT EXISTS idx_dc_setup ON data_Complex(ID_setup_complex)",
     "CREATE INDEX IF NOT EXISTS idx_dc_id ON data_Complex(ID_data_complex)",
-    "CREATE INDEX IF NOT EXISTS idx_xcc_higher ON data_xref_Complex_Complex(ID_data_complex_HIGHER)",
-    "CREATE INDEX IF NOT EXISTS idx_xcc_lower ON data_xref_Complex_Complex(ID_data_complex_LOWER)",
+    "CREATE INDEX IF NOT EXISTS idx_xcc_higher ON data_xref_Complex_Complex(ID_data_complex_higher)",
+    "CREATE INDEX IF NOT EXISTS idx_xcc_lower ON data_xref_Complex_Complex(ID_data_complex_lower)",
     "CREATE INDEX IF NOT EXISTS idx_xsc_complex ON [data_xref_Simplex_Complex](ID_data_complex)",
     "CREATE INDEX IF NOT EXISTS idx_xsc_simplex ON [data_xref_Simplex_Complex](ID_data_simplex)",
     "CREATE INDEX IF NOT EXISTS idx_ds_id ON data_Simplex(ID_data_simplex)",
@@ -388,8 +388,8 @@ _INDEX_STMTS = [
     # Composite covering indexes for cross-complex query performance
     "CREATE INDEX IF NOT EXISTS idx_dc_setup_id ON data_Complex(ID_setup_complex, ID_data_complex)",
     "CREATE INDEX IF NOT EXISTS idx_dc_id_setup ON data_Complex(ID_data_complex, ID_setup_complex)",
-    "CREATE INDEX IF NOT EXISTS idx_xcc_lower_higher ON data_xref_Complex_Complex(ID_data_complex_LOWER, ID_data_complex_HIGHER)",
-    "CREATE INDEX IF NOT EXISTS idx_xcc_higher_lower ON data_xref_Complex_Complex(ID_data_complex_HIGHER, ID_data_complex_LOWER)",
+    "CREATE INDEX IF NOT EXISTS idx_xcc_lower_higher ON data_xref_Complex_Complex(ID_data_complex_lower, ID_data_complex_higher)",
+    "CREATE INDEX IF NOT EXISTS idx_xcc_higher_lower ON data_xref_Complex_Complex(ID_data_complex_higher, ID_data_complex_lower)",
 ]
 
 def _ensure_indexes(db_path):

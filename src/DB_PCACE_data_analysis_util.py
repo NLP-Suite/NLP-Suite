@@ -72,7 +72,7 @@ import IO_files_util
 
 # pkl version: bump this whenever reading_list rename mappings change.
 # build_libraries() checks this version and deletes stale pkl files automatically.
-_PKL_VERSION = 4
+_PKL_VERSION = 5  # bumped: standardized all column IDs to lowercase underscores
 
 def _check_pkl_version(inputDir):
     """Check if pkl files in inputDir match the current _PKL_VERSION.
@@ -131,32 +131,32 @@ def import_PCACE_tables(inputDir, outputDir):
 
 # rename the ID fields of each table to a more meaningful value
 #   e,g. The ID in setup_Complex.xlsx is renamed ID_setup_complex
-#   The ID in setup_xref_complex-complex.xlsx is renamed ID_setup_xref_complex-complex
+#   The ID in setup_xref_complex-complex.xlsx is renamed ID_setup_xref_complex_complex
 
 # 22 tables
 reading_list = [
     ('setup_Complex.xlsx', {'ID':'ID_setup_complex'}),
     ('setup_Simplex.xlsx', {'ID':'ID_setup_simplex'}),
     ('setup_Document.xlsx', {'ID':'ID_setup_document'}),
-    ('setup_xref_Complex-Complex.xlsx', {'ID':'ID_setup_xref_complex-complex'}),
-    ('setup_xref_Simplex-Complex.xlsx', {'ID':'ID_setup_xref_simplex-complex', 'Complex':'ID_setup_complex', 'Simplex':'ID_setup_simplex'}),
+    ('setup_xref_Complex-Complex.xlsx', {'ID':'ID_setup_xref_complex_complex'}),
+    ('setup_xref_Simplex-Complex.xlsx', {'ID':'ID_setup_xref_simplex_complex', 'Complex':'ID_setup_complex', 'Simplex':'ID_setup_simplex'}),
     ('data_Complex.xlsx', {"ID":"ID_data_complex", "ComplexType":"ID_setup_complex"}),
     ('data_Simplex.xlsx', {"ID":"ID_data_simplex", "SimplexType":"ID_setup_simplex", "refValue":"ID_data_date_number_text"}),
     ('data_SimplexText.xlsx', {"ID":"ID_data_date_number_text"}),
     ('data_SimplexNumber.xlsx', {"ID":"ID_data_date_number_text"}),
     ('data_SimplexDate.xlsx', {"ID":"ID_data_date_number_text"}),
-    ('data_xref_Simplex-Complex.xlsx', {'ID':'ID_data_xref_simplex-complex', 'xrefID':'ID_setup_xref_simplex-complex', 'Simplex':'ID_data_simplex', 'Complex':'ID_data_complex'}),
-    ('data_xref_Complex-Complex.xlsx', {'ID':'ID_data_xref_complex-complex', 'HigherComplex':'ID_data_complex_HIGHER', 'xrefID':'ID_setup_xref_complex-complex', 'LowerComplex':'ID_data_complex_LOWER'}),
-    ('data_xref_AnyComplex-Complex.xlsx', {'ID':'ID_data_xref_Anycomplex-complex', 'Complex':'ID_data_complex', 'AnyComplex':'ID_data_complex'}),
+    ('data_xref_Simplex-Complex.xlsx', {'ID':'ID_data_xref_simplex_complex', 'xrefID':'ID_setup_xref_simplex_complex', 'Simplex':'ID_data_simplex', 'Complex':'ID_data_complex'}),
+    ('data_xref_Complex-Complex.xlsx', {'ID':'ID_data_xref_complex_complex', 'HigherComplex':'ID_data_complex_higher', 'xrefID':'ID_setup_xref_complex_complex', 'LowerComplex':'ID_data_complex_lower'}),
+    ('data_xref_AnyComplex-Complex.xlsx', {'ID':'ID_data_xref_anycomplex_complex', 'Complex':'ID_data_complex', 'AnyComplex':'ID_data_complex'}),
     ('data_Document.xlsx', {'ID':'ID_data_document'}),
-    ('data_xref_Complex-Document.xlsx', {'ID':'ID_data_xref_complex-document', 'Complex':'ID_data_complex', 'Document':'ID_data_document'}),
-    ('data_xref_Simplex-Document.xlsx', {'ID':'ID_data_xref_simplex-document', 'ID_datat_simplex':'ID_data_simplex', 'Simplex':'ID_data_simplex', 'Document':'ID_data_document'}),
-    ('data_xref_comment-complex.xlsx', {'ID':'ID_data_xref_comment-complex', 'Complex':'ID_data_complex'}),
-    ('data_xref_Comment-Simplex.xlsx', {'ID':'ID_data_xref_comment-simplex', 'Simplex':'ID_data_simplex'}),
-    ('data_xref_Comment-Document.xlsx', {'ID':'ID_data_xref_comment-document', 'Document':'ID_data_document'}),
-    ('data_xref_VComment.xlsx', {'ID':'ID_data_xref_Vcomment'}),
-    ('data_xref_VComment-Document.xlsx', {'ID':'ID_data_xref_Vcomment-document'}),
-    ('data_VCommentArchive.xlsx', {'ID':'ID_data_Vcomment_archive'}),
+    ('data_xref_Complex-Document.xlsx', {'ID':'ID_data_xref_complex_document', 'Complex':'ID_data_complex', 'Document':'ID_data_document'}),
+    ('data_xref_Simplex-Document.xlsx', {'ID':'ID_data_xref_simplex_document', 'ID_data_simplex':'ID_data_simplex', 'Simplex':'ID_data_simplex', 'Document':'ID_data_document'}),
+    ('data_xref_comment-complex.xlsx', {'ID':'ID_data_xref_comment_complex', 'Complex':'ID_data_complex'}),
+    ('data_xref_Comment-Simplex.xlsx', {'ID':'ID_data_xref_comment_simplex', 'Simplex':'ID_data_simplex'}),
+    ('data_xref_Comment-Document.xlsx', {'ID':'ID_data_xref_comment_document', 'Document':'ID_data_document'}),
+    ('data_xref_VComment.xlsx', {'ID':'ID_data_xref_vcomment'}),
+    ('data_xref_VComment-Document.xlsx', {'ID':'ID_data_xref_vcomment_document'}),
+    ('data_VCommentArchive.xlsx', {'ID':'ID_data_vcomment_archive'}),
     ('utility_Security.xlsx', {})
     # ('NLP_data_Simplex_values_ALL.xlsx', {}),
     # ('NLP_data_xref_Simplex-Complex_ALL.xlsx', {})
@@ -651,9 +651,9 @@ def build_data_xref_simplex_complex_ALL_lib(inputDir, outputDir):
         # do NOT add the simplex setup name; already in xref_simplex_complex_value
         # add the setup XREF simplex name
         # output OK
-        if 'ID_setup_xref_simplex-complex' in xref_simplex_complex.columns and 'ID_setup_xref_simplex-complex' in setup_xref_simplex_complex_lib.columns:
+        if 'ID_setup_xref_simplex_complex' in xref_simplex_complex.columns and 'ID_setup_xref_simplex_complex' in setup_xref_simplex_complex_lib.columns:
             xref_simplex_complex = pd.merge(xref_simplex_complex, setup_xref_simplex_complex_lib, how='left',
-                                                  left_on='ID_setup_xref_simplex-complex', right_on='ID_setup_xref_simplex-complex')
+                                                  left_on='ID_setup_xref_simplex_complex', right_on='ID_setup_xref_simplex_complex')
 
             # delete columns _y (Order_y, ID_setup_simplex_y)
             try:  # in some cases Locked_y is not created :-(
@@ -669,10 +669,10 @@ def build_data_xref_simplex_complex_ALL_lib(inputDir, outputDir):
             xref_simplex_complex = xref_simplex_complex.rename(columns={'Name': 'Simplex name (xref)'})
             xref_simplex_complex = xref_simplex_complex.rename(columns={'Required': 'Simplex required'})
         else:
-            print(f"  WARNING: 'ID_setup_xref_simplex-complex' column not found. Skipping setup xref simplex merge.")
+            print(f"  WARNING: 'ID_setup_xref_simplex_complex' column not found. Skipping setup xref simplex merge.")
 
         # select columns (only those that exist — some databases may not have all columns)
-        desired_simplex_cols = ['ID_setup_simplex', 'Simplex name', 'Simplex required', 'ID_setup_xref_simplex-complex', 'Simplex name (xref)', 'ID_data_complex', 'ID_data_simplex', 'ID_data_xref_simplex-complex', 'Value']
+        desired_simplex_cols = ['ID_setup_simplex', 'Simplex name', 'Simplex required', 'ID_setup_xref_simplex_complex', 'Simplex name (xref)', 'ID_data_complex', 'ID_data_simplex', 'ID_data_xref_simplex_complex', 'Value']
         available_simplex_cols = [c for c in desired_simplex_cols if c in xref_simplex_complex.columns]
         xref_simplex_complex = xref_simplex_complex[available_simplex_cols]
 
@@ -698,20 +698,20 @@ def build_data_xref_simplex_complex_ALL_lib(inputDir, outputDir):
         # 'inner'???
 
 
-        if 'ID_data_complex_HIGHER' not in data_xref_Complex_Complex_lib.columns or 'ID_data_complex_LOWER' not in data_xref_Complex_Complex_lib.columns:
+        if 'ID_data_complex_higher' not in data_xref_Complex_Complex_lib.columns or 'ID_data_complex_lower' not in data_xref_Complex_Complex_lib.columns:
             print(f"  WARNING: data_xref_Complex_Complex_lib missing expected columns. Has: {list(data_xref_Complex_Complex_lib.columns)}")
             print(f"  Skipping complex-complex merge. Try deleting pkl files in the input directory and reloading.")
             xref_complex_complex_step1 = data_Complex_lib.copy()
         else:
-            m1 = data_Complex_lib.merge(data_xref_Complex_Complex_lib, left_on="ID_data_complex", right_on='ID_data_complex_HIGHER')
+            m1 = data_Complex_lib.merge(data_xref_Complex_Complex_lib, left_on="ID_data_complex", right_on='ID_data_complex_higher')
 
-            m2 = data_Complex_lib.merge(data_xref_Complex_Complex_lib, left_on="ID_data_complex", right_on='ID_data_complex_LOWER')
+            m2 = data_Complex_lib.merge(data_xref_Complex_Complex_lib, left_on="ID_data_complex", right_on='ID_data_complex_lower')
 
             xref_complex_complex_step1 = pd.concat([m1, m2], ignore_index=True)
 
         xref_complex_complex_step1.drop_duplicates(inplace=True)
 
-        # should 'ID_data_xref_complex-complex' be ID_data_complex_HIGHER or LOWER?
+        # should 'ID_data_xref_complex_complex' be ID_data_complex_higher or LOWER?
 
         # drop all rows of blank ID_setup_simplex because the parent complex has no required simplex, but perhaps mutually exclusive complex (e.g. Number in the lynching DB)
         # this causes problems in subsequent pd.merge
@@ -736,19 +736,19 @@ def build_data_xref_simplex_complex_ALL_lib(inputDir, outputDir):
 #         xref_complex_complex_step2 = export_df_to_excel(xref_complex_complex_step2, inputDir, inputDir, 'NLP_data_xref_Complex_step2', False)
 
 # STEP 3 add the setup XREF complex name, and setup higher and lower
-        if 'ID_setup_xref_complex-complex' in xref_complex_complex_step2.columns and 'ID_setup_xref_complex-complex' in setup_xref_Complex_Complex_lib.columns:
+        if 'ID_setup_xref_complex_complex' in xref_complex_complex_step2.columns and 'ID_setup_xref_complex_complex' in setup_xref_Complex_Complex_lib.columns:
             xref_complex_complex_step3 = pd.merge(xref_complex_complex_step2, setup_xref_Complex_Complex_lib,
-                                                  left_on='ID_setup_xref_complex-complex', right_on='ID_setup_xref_complex-complex')
+                                                  left_on='ID_setup_xref_complex_complex', right_on='ID_setup_xref_complex_complex')
 
             xref_complex_complex_step3 = xref_complex_complex_step3.rename(columns={'Name': "Child name"})
             xref_complex_complex_step3 = xref_complex_complex_step3.rename(columns={'Required': "Complex required"})
             xref_complex_complex_step3 = xref_complex_complex_step3.rename(columns={'Group': "Complex mutually exclusive"})
         else:
-            print(f"  WARNING: 'ID_setup_xref_complex-complex' column not found. Skipping setup xref complex merge.")
+            print(f"  WARNING: 'ID_setup_xref_complex_complex' column not found. Skipping setup xref complex merge.")
             xref_complex_complex_step3 = xref_complex_complex_step2
 
 # select and rearrange columns
-        desired_step3_cols = ['ID_setup_complex', 'Complex name', 'ID_setup_xref_complex-complex', 'Child name', 'Complex required', 'Complex mutually exclusive', 'ID_data_complex', 'ID_data_xref_complex-complex', 'ID_data_complex_HIGHER', 'ID_data_complex_LOWER', 'Identifier']
+        desired_step3_cols = ['ID_setup_complex', 'Complex name', 'ID_setup_xref_complex_complex', 'Child name', 'Complex required', 'Complex mutually exclusive', 'ID_data_complex', 'ID_data_xref_complex_complex', 'ID_data_complex_higher', 'ID_data_complex_lower', 'Identifier']
         available_step3_cols = [c for c in desired_step3_cols if c in xref_complex_complex_step3.columns]
         xref_complex_complex_step3 = xref_complex_complex_step3[available_step3_cols]
 
@@ -770,8 +770,8 @@ def build_data_xref_simplex_complex_ALL_lib(inputDir, outputDir):
                                               left_on='ID_data_complex', right_on='ID_data_complex', how='left')
 
         # select and rearrange columns
-        # need 'ID_data_xref_complex-complex' -----------------------------------------
-        desired_all_cols = ['ID_setup_complex','Complex name', 'ID_setup_xref_complex-complex', 'Child name', 'Complex required', 'Complex mutually exclusive', 'ID_setup_simplex', 'Simplex name', 'ID_setup_xref_simplex-complex','Simplex name (xref)', 'Simplex required', 'ID_data_complex', 'ID_data_xref_complex-complex', 'ID_data_complex_HIGHER', 'ID_data_complex_LOWER', 'Identifier', 'ID_data_simplex', 'ID_data_xref_simplex-complex', 'Value']
+        # need 'ID_data_xref_complex_complex' -----------------------------------------
+        desired_all_cols = ['ID_setup_complex','Complex name', 'ID_setup_xref_complex_complex', 'Child name', 'Complex required', 'Complex mutually exclusive', 'ID_setup_simplex', 'Simplex name', 'ID_setup_xref_simplex_complex','Simplex name (xref)', 'Simplex required', 'ID_data_complex', 'ID_data_xref_complex_complex', 'ID_data_complex_higher', 'ID_data_complex_lower', 'Identifier', 'ID_data_simplex', 'ID_data_xref_simplex_complex', 'Value']
         available_all_cols = [c for c in desired_all_cols if c in xref_simplex_complex_step4.columns]
         xref_simplex_complex_step4 = xref_simplex_complex_step4[available_all_cols]
 
@@ -1483,12 +1483,12 @@ def toggle_required_value(object_type, object_name, new_value, inputDir):
         if "Required" in setup_xref_Complex_Complex_lib.columns:
             _idx_xref_cc_setup.clear()
             _idx_xref_cc_setup.update(dict(zip(
-                setup_xref_Complex_Complex_lib["ID_setup_xref_complex-complex"],
+                setup_xref_Complex_Complex_lib["ID_setup_xref_complex_complex"],
                 setup_xref_Complex_Complex_lib["Required"])))
         if "Required" in setup_xref_simplex_complex_lib.columns:
             _idx_xref_sc_setup.clear()
             _idx_xref_sc_setup.update(dict(zip(
-                setup_xref_simplex_complex_lib["ID_setup_xref_simplex-complex"],
+                setup_xref_simplex_complex_lib["ID_setup_xref_simplex_complex"],
                 setup_xref_simplex_complex_lib["Required"])))
 
         # Regenerate grammar to reflect the new Required status
@@ -1952,17 +1952,17 @@ def generate_cross_complex_query(source_name, target_name,
         if direction == 'down':
             from_parts.append(
                 "    CROSS JOIN data_xref_Complex_Complex {xref}\n"
-                "        ON {xref}.ID_data_complex_HIGHER = {prev}_dc.ID_data_complex\n"
+                "        ON {xref}.ID_data_complex_higher = {prev}_dc.ID_data_complex\n"
                 "    CROSS JOIN data_Complex {dc}\n"
-                "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_LOWER\n"
+                "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_lower\n"
                 "        AND {dc}.ID_setup_complex = {setup_id}".format(
                     xref=xref_alias, prev=prev_alias, dc=dc_alias, setup_id=node_id))
         else:  # up
             from_parts.append(
                 "    CROSS JOIN data_xref_Complex_Complex {xref}\n"
-                "        ON {xref}.ID_data_complex_LOWER = {prev}_dc.ID_data_complex\n"
+                "        ON {xref}.ID_data_complex_lower = {prev}_dc.ID_data_complex\n"
                 "    CROSS JOIN data_Complex {dc}\n"
-                "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_HIGHER\n"
+                "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_higher\n"
                 "        AND {dc}.ID_setup_complex = {setup_id}".format(
                     xref=xref_alias, prev=prev_alias, dc=dc_alias, setup_id=node_id))
         prev_alias = alias
@@ -1993,9 +1993,9 @@ def generate_cross_complex_query(source_name, target_name,
                     dcalias = 'src_ch{}_dc'.format(hop_num)
                     from_parts.append(
                         "    {jt} data_xref_Complex_Complex {xref}\n"
-                        "        ON {xref}.ID_data_complex_HIGHER = {prev}_dc.ID_data_complex\n"
+                        "        ON {xref}.ID_data_complex_higher = {prev}_dc.ID_data_complex\n"
                         "    {jt} data_Complex {dc}\n"
-                        "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_LOWER\n"
+                        "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_lower\n"
                         "        AND {dc}.ID_setup_complex = {sid}".format(
                             jt=src_child_jt, xref=xalias, prev=src_prev, dc=dcalias, sid=cp_id))
                     src_prev = 'src_ch{}'.format(hop_num)
@@ -2016,9 +2016,9 @@ def generate_cross_complex_query(source_name, target_name,
                     dcalias = 'tgt_ch{}_dc'.format(hop_num)
                     from_parts.append(
                         "    {jt} data_xref_Complex_Complex {xref}\n"
-                        "        ON {xref}.ID_data_complex_HIGHER = {prev}_dc.ID_data_complex\n"
+                        "        ON {xref}.ID_data_complex_higher = {prev}_dc.ID_data_complex\n"
                         "    {jt} data_Complex {dc}\n"
-                        "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_LOWER\n"
+                        "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_lower\n"
                         "        AND {dc}.ID_setup_complex = {sid}".format(
                             jt=tgt_child_jt, xref=xalias, prev=tgt_prev, dc=dcalias, sid=cp_id))
                     tgt_prev = 'tgt_ch{}'.format(hop_num)
@@ -2037,9 +2037,9 @@ def generate_cross_complex_query(source_name, target_name,
             dcalias = '{}_ch{}_dc'.format(ex_prefix, ci)
             from_parts.append(
                 "    LEFT JOIN data_xref_Complex_Complex {xref}\n"
-                "        ON {xref}.ID_data_complex_HIGHER = {prev}_dc.ID_data_complex\n"
+                "        ON {xref}.ID_data_complex_higher = {prev}_dc.ID_data_complex\n"
                 "    LEFT JOIN data_Complex {dc}\n"
-                "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_LOWER\n"
+                "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_lower\n"
                 "        AND {dc}.ID_setup_complex = {sid}".format(
                     xref=xalias, prev=ex_prev, dc=dcalias, sid=cp_id))
             ex_prev = '{}_ch{}'.format(ex_prefix, ci)
@@ -2070,9 +2070,9 @@ def generate_cross_complex_query(source_name, target_name,
             dcalias = '{}_ch{}_dc'.format(ex_prefix, ci)
             from_parts.append(
                 "    LEFT JOIN data_xref_Complex_Complex {xref}\n"
-                "        ON {xref}.ID_data_complex_HIGHER = {prev}_dc.ID_data_complex\n"
+                "        ON {xref}.ID_data_complex_higher = {prev}_dc.ID_data_complex\n"
                 "    LEFT JOIN data_Complex {dc}\n"
-                "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_LOWER\n"
+                "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_lower\n"
                 "        AND {dc}.ID_setup_complex = {sid}".format(
                     xref=xalias, prev=ex_prev, dc=dcalias, sid=cp_id))
             ex_prev = '{}_ch{}'.format(ex_prefix, ci)
@@ -2360,9 +2360,9 @@ def generate_source_only_query(source_name,
                 dcalias = 'src_ch{}_dc'.format(ci)
                 from_parts.append(
                     "    {jt} data_xref_Complex_Complex {xref}\n"
-                    "        ON {xref}.ID_data_complex_HIGHER = {prev}_dc.ID_data_complex\n"
+                    "        ON {xref}.ID_data_complex_higher = {prev}_dc.ID_data_complex\n"
                     "    {jt} data_Complex {dc}\n"
-                    "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_LOWER\n"
+                    "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_lower\n"
                     "        AND {dc}.ID_setup_complex = {sid}".format(
                         jt=src_child_jt, xref=xalias, prev=src_prev, dc=dcalias, sid=cp_id))
                 src_prev = 'src_ch{}'.format(ci)
@@ -2378,9 +2378,9 @@ def generate_source_only_query(source_name,
             dcalias = '{}_ch{}_dc'.format(ex_prefix, ci)
             from_parts.append(
                 "    LEFT JOIN data_xref_Complex_Complex {xref}\n"
-                "        ON {xref}.ID_data_complex_HIGHER = {prev}_dc.ID_data_complex\n"
+                "        ON {xref}.ID_data_complex_higher = {prev}_dc.ID_data_complex\n"
                 "    LEFT JOIN data_Complex {dc}\n"
-                "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_LOWER\n"
+                "        ON {dc}.ID_data_complex = {xref}.ID_data_complex_lower\n"
                 "        AND {dc}.ID_setup_complex = {sid}".format(
                     xref=xalias, prev=ex_prev, dc=dcalias, sid=cp_id))
             ex_prev = '{}_ch{}'.format(ex_prefix, ci)
@@ -2610,17 +2610,17 @@ def generate_multi_target_query(source_name, source_simplex=None,
             if direction == 'down':
                 cte_from.append(
                     "        CROSS JOIN data_xref_Complex_Complex {xref}\n"
-                    "            ON {xref}.ID_data_complex_HIGHER = {prev}_dc.ID_data_complex\n"
+                    "            ON {xref}.ID_data_complex_higher = {prev}_dc.ID_data_complex\n"
                     "        CROSS JOIN data_Complex {dc}\n"
-                    "            ON {dc}.ID_data_complex = {xref}.ID_data_complex_LOWER\n"
+                    "            ON {dc}.ID_data_complex = {xref}.ID_data_complex_lower\n"
                     "            AND {dc}.ID_setup_complex = {sid}".format(
                         xref=xref_alias, prev=prev, dc=dc_alias, sid=node_id))
             else:
                 cte_from.append(
                     "        CROSS JOIN data_xref_Complex_Complex {xref}\n"
-                    "            ON {xref}.ID_data_complex_LOWER = {prev}_dc.ID_data_complex\n"
+                    "            ON {xref}.ID_data_complex_lower = {prev}_dc.ID_data_complex\n"
                     "        CROSS JOIN data_Complex {dc}\n"
-                    "            ON {dc}.ID_data_complex = {xref}.ID_data_complex_HIGHER\n"
+                    "            ON {dc}.ID_data_complex = {xref}.ID_data_complex_higher\n"
                     "            AND {dc}.ID_setup_complex = {sid}".format(
                         xref=xref_alias, prev=prev, dc=dc_alias, sid=node_id))
             prev = alias
@@ -2637,9 +2637,9 @@ def generate_multi_target_query(source_name, source_simplex=None,
                     dcalias = 'tgt_ch{}_dc'.format(ci)
                     cte_from.append(
                         "        CROSS JOIN data_xref_Complex_Complex {xref}\n"
-                        "            ON {xref}.ID_data_complex_HIGHER = {prev}_dc.ID_data_complex\n"
+                        "            ON {xref}.ID_data_complex_higher = {prev}_dc.ID_data_complex\n"
                         "        CROSS JOIN data_Complex {dc}\n"
-                        "            ON {dc}.ID_data_complex = {xref}.ID_data_complex_LOWER\n"
+                        "            ON {dc}.ID_data_complex = {xref}.ID_data_complex_lower\n"
                         "            AND {dc}.ID_setup_complex = {sid}".format(
                             xref=xalias, prev=tgt_ch_prev, dc=dcalias, sid=cp_id))
                     tgt_ch_prev = 'tgt_ch{}'.format(ci)
@@ -2701,9 +2701,9 @@ def generate_multi_target_query(source_name, source_simplex=None,
                 dcalias = 'src_ch{}_dc'.format(ci)
                 src_from.append(
                     "        CROSS JOIN data_xref_Complex_Complex {xref}\n"
-                    "            ON {xref}.ID_data_complex_HIGHER = {prev}_dc.ID_data_complex\n"
+                    "            ON {xref}.ID_data_complex_higher = {prev}_dc.ID_data_complex\n"
                     "        CROSS JOIN data_Complex {dc}\n"
-                    "            ON {dc}.ID_data_complex = {xref}.ID_data_complex_LOWER\n"
+                    "            ON {dc}.ID_data_complex = {xref}.ID_data_complex_lower\n"
                     "            AND {dc}.ID_setup_complex = {sid}".format(
                         xref=xalias, prev=src_ch_prev, dc=dcalias, sid=cp_id))
                 src_ch_prev = 'src_ch{}'.format(ci)
@@ -2868,7 +2868,7 @@ def get_data_complex_frequencies(inputDir, outputDir, complex_name):
             output_file_type = complex_name + '_complex_freq'
 
     # merged_data = pd.merge(data_xref_Complex_Complex_lib, data_Complex_lib, how='left', on='ID_data_complex')
-    merged_data = pd.merge(data_xref_Complex_Complex_lib, data_Complex_lib, how='inner', left_on= ['ID_data_xref_complex-complex'], right_on= ['ID_data_complex'])
+    merged_data = pd.merge(data_xref_Complex_Complex_lib, data_Complex_lib, how='inner', left_on= ['ID_data_xref_complex_complex'], right_on= ['ID_data_complex'])
 
     all_rows = []
     for name in list_complex_name:
@@ -2945,8 +2945,8 @@ def get_setup_complex_setup_ID(complex_name):
 #     select =merged_data[merged_data['ID_setup_complex'] == complex_ID]
 #
 #     # Group and count the frequencies
-#     count = select.groupby('ID_data_complex_LOWER').size().reset_index(name='Frequency')
-#     result = pd.merge(count, data_Complex_lib, how ='left', left_on ='ID_data_complex_LOWER', right_on ='ID_data_complex')
+#     count = select.groupby('ID_data_complex_lower').size().reset_index(name='Frequency')
+#     result = pd.merge(count, data_Complex_lib, how ='left', left_on ='ID_data_complex_lower', right_on ='ID_data_complex')
 #
 #     result =result[['Identifier', 'Frequency']].rename(columns={'Identifier': name}).sort_values(by='Frequency', ascending=False)
 #     # extension ='.xlsx' # change to '.csv' if necessary
@@ -4120,9 +4120,9 @@ def get_data_complex_ID(complex_name):
     # search_complex_setup_xref_ID df with
     #   the first element has the xref setup value and the second element as the ID for the complex name
     #   e.g., in the lynching DB actor has left values ID 35 and right values 30, 35, 36, 45, 48, 49
-    search_complex_setup_xref_ID = setup_xref_Complex_Complex_lib.loc[(setup_xref_Complex_Complex_lib["Name"] == complex_name),  ["ID_setup_xref_complex-complex", "LowerComplex"]]
+    search_complex_setup_xref_ID = setup_xref_Complex_Complex_lib.loc[(setup_xref_Complex_Complex_lib["Name"] == complex_name),  ["ID_setup_xref_complex_complex", "LowerComplex"]]
 
-    complex_data_xref_ID_df = search_complex_setup_xref_ID.merge(data_xref_Complex_Complex_lib, left_on="ID_setup_xref_complex-complex", right_on="ID_setup_xref_complex-complex", how="left")
+    complex_data_xref_ID_df = search_complex_setup_xref_ID.merge(data_xref_Complex_Complex_lib, left_on="ID_setup_xref_complex_complex", right_on="ID_setup_xref_complex_complex", how="left")
 
     # print('\n\nNumber of xref records for complex ' + complex_name + ': ' + str(len(complex_data_xref_ID_df)))
 
@@ -4898,9 +4898,9 @@ _idx_parent_of_lower = {}       # data_complex_id (LOWER) → (parent_id, Order)
 _idx_children_of_higher = {}    # data_complex_id (HIGHER) → list of LOWER ids
 _idx_xref_simplex_complex = {}  # data_complex_id → list of (simplex_id, setup_xref_id)
 _idx_complex_id_exists = set()  # set of all data_complex_ids that exist
-_idx_xref_cc_setup = {}         # ID_setup_xref_complex-complex → Required (bool)
-_idx_xref_sc_setup = {}         # ID_setup_xref_simplex-complex → Required (bool)
-_idx_all_lib_by_complex = {}    # ID_data_complex → list of (ID_data_complex_LOWER, Child_name) from ALL_lib
+_idx_xref_cc_setup = {}         # ID_setup_xref_complex_complex → Required (bool)
+_idx_xref_sc_setup = {}         # ID_setup_xref_simplex_complex → Required (bool)
+_idx_all_lib_by_complex = {}    # ID_data_complex → list of (ID_data_complex_lower, Child_name) from ALL_lib
 _idx_cc_order = {}              # (HIGHER_id, LOWER_id) → (Order, setup_xref_id)
 _idx_dnt_to_simplex = {}        # ID_data_date_number_text → list of data_simplex_id (reverse of _idx_simplex_dnt)
 _idx_simplex_to_complexes = {}  # data_simplex_id → list of data_complex_id (reverse of _idx_xref_simplex_complex)
@@ -4966,9 +4966,9 @@ def _build_lookup_indexes():
     _idx_parent_of_lower.clear()
     cc_df = data_xref_Complex_Complex_lib
     has_order = "Order" in cc_df.columns
-    has_setup_xref = "ID_setup_xref_complex-complex" in cc_df.columns
-    highs = cc_df["ID_data_complex_HIGHER"].values
-    lows = cc_df["ID_data_complex_LOWER"].values
+    has_setup_xref = "ID_setup_xref_complex_complex" in cc_df.columns
+    highs = cc_df["ID_data_complex_higher"].values
+    lows = cc_df["ID_data_complex_lower"].values
     orders = cc_df["Order"].values if has_order else [0] * len(cc_df)
     for i in range(len(cc_df)):
         h, l, o = highs[i], lows[i], orders[i]
@@ -4980,12 +4980,12 @@ def _build_lookup_indexes():
     # setup_xref_complex-complex: Required flag
     if has_setup_xref:
         _idx_xref_cc_data_to_setup = {}
-        sxrefs = cc_df["ID_setup_xref_complex-complex"].values
+        sxrefs = cc_df["ID_setup_xref_complex_complex"].values
         for i in range(len(cc_df)):
             _idx_xref_cc_data_to_setup[(highs[i], lows[i])] = sxrefs[i]
     if "Required" in setup_xref_Complex_Complex_lib.columns:
         _idx_xref_cc_setup = dict(zip(
-            setup_xref_Complex_Complex_lib["ID_setup_xref_complex-complex"],
+            setup_xref_Complex_Complex_lib["ID_setup_xref_complex_complex"],
             setup_xref_Complex_Complex_lib["Required"]))
 
     # data_xref_Simplex-Complex: simplex→complex links (vectorized)
@@ -4993,7 +4993,7 @@ def _build_lookup_indexes():
     sc_df = data_xref_simplex_complex_lib
     sc_cids = sc_df["ID_data_complex"].values
     sc_sids = sc_df["ID_data_simplex"].values
-    sc_xids = sc_df["ID_setup_xref_simplex-complex"].values
+    sc_xids = sc_df["ID_setup_xref_simplex_complex"].values
     for i in range(len(sc_df)):
         cid = sc_cids[i]
         if cid not in _idx_xref_simplex_complex:
@@ -5021,17 +5021,17 @@ def _build_lookup_indexes():
     # setup_xref_simplex-complex: Required flag
     if "Required" in setup_xref_simplex_complex_lib.columns:
         _idx_xref_sc_setup = dict(zip(
-            setup_xref_simplex_complex_lib["ID_setup_xref_simplex-complex"],
+            setup_xref_simplex_complex_lib["ID_setup_xref_simplex_complex"],
             setup_xref_simplex_complex_lib["Required"]))
 
     # data_xref_simplex_complex_ALL_lib: group by ID_data_complex for fast child lookup (vectorized)
     _idx_all_lib_by_complex.clear()
     if data_xref_simplex_complex_ALL_lib is not None and len(data_xref_simplex_complex_ALL_lib) > 0:
         has_child_name = "Child name" in data_xref_simplex_complex_ALL_lib.columns
-        has_lower = "ID_data_complex_LOWER" in data_xref_simplex_complex_ALL_lib.columns
+        has_lower = "ID_data_complex_lower" in data_xref_simplex_complex_ALL_lib.columns
         if has_child_name and has_lower:
             al_cids = data_xref_simplex_complex_ALL_lib["ID_data_complex"].values
-            al_lowers = data_xref_simplex_complex_ALL_lib["ID_data_complex_LOWER"].values
+            al_lowers = data_xref_simplex_complex_ALL_lib["ID_data_complex_lower"].values
             al_names = data_xref_simplex_complex_ALL_lib["Child name"].values
             for i in range(len(data_xref_simplex_complex_ALL_lib)):
                 cid = al_cids[i]
@@ -5042,7 +5042,7 @@ def _build_lookup_indexes():
     # data_xref_Complex-Complex: (HIGHER, LOWER) → (Order, setup_xref_id) for quick lookup (vectorized)
     _idx_cc_order.clear()
     # Reuse arrays already extracted above for cc_df
-    cc_sxrefs = cc_df["ID_setup_xref_complex-complex"].values if has_setup_xref else [None] * len(cc_df)
+    cc_sxrefs = cc_df["ID_setup_xref_complex_complex"].values if has_setup_xref else [None] * len(cc_df)
     for i in range(len(cc_df)):
         _idx_cc_order[(highs[i], lows[i])] = (orders[i] if has_order else 999, cc_sxrefs[i])
 
@@ -5147,11 +5147,11 @@ def get_required_complex_objects(data_complex_id, required_only=False):
     for child_id in children:
         # Look up the setup xref Required flag
         xref_rows = data_xref_Complex_Complex_lib[
-            (data_xref_Complex_Complex_lib["ID_data_complex_HIGHER"] == data_complex_id) &
-            (data_xref_Complex_Complex_lib["ID_data_complex_LOWER"] == child_id)
+            (data_xref_Complex_Complex_lib["ID_data_complex_higher"] == data_complex_id) &
+            (data_xref_Complex_Complex_lib["ID_data_complex_lower"] == child_id)
         ]
-        if len(xref_rows) > 0 and "ID_setup_xref_complex-complex" in xref_rows.columns:
-            setup_xref_id = xref_rows["ID_setup_xref_complex-complex"].iloc[0]
+        if len(xref_rows) > 0 and "ID_setup_xref_complex_complex" in xref_rows.columns:
+            setup_xref_id = xref_rows["ID_setup_xref_complex_complex"].iloc[0]
             if _idx_xref_cc_setup.get(setup_xref_id, False):
                 res.append(child_id)
     return res
@@ -5335,7 +5335,7 @@ def _get_role_name(setup_xref_id):
     if not hasattr(_get_role_name, '_cache'):
         # Build cache on first call
         _get_role_name._cache = dict(zip(
-            setup_xref_Complex_Complex_lib["ID_setup_xref_complex-complex"],
+            setup_xref_Complex_Complex_lib["ID_setup_xref_complex_complex"],
             setup_xref_Complex_Complex_lib["Name"]))
     return _get_role_name._cache.get(setup_xref_id, "")
 
@@ -6298,12 +6298,12 @@ def get_document_sources_for_complex(inputDir, outputDir, complex_name):
             print(f"  Document simplex columns: {_doc_simplex_names}")
 
             # Determine the simplex ID column in data_xref_Simplex-Document
-            # Renamed DBs: 'ID_data_simplex'; lynching raw: 'ID_datat_simplex'; Italian raw xlsx: 'Simplex'
+            # Renamed DBs: 'ID_data_simplex'; lynching raw: 'ID_data_simplex'; Italian raw xlsx: 'Simplex'
             print(f"  xref_simplex_doc columns: {list(xref_simplex_doc.columns)}")
             if 'ID_data_simplex' in xref_simplex_doc.columns:
                 sd_simplex_col = 'ID_data_simplex'
-            elif 'ID_datat_simplex' in xref_simplex_doc.columns:
-                sd_simplex_col = 'ID_datat_simplex'
+            elif 'ID_data_simplex' in xref_simplex_doc.columns:
+                sd_simplex_col = 'ID_data_simplex'
             elif 'Simplex' in xref_simplex_doc.columns:
                 sd_simplex_col = 'Simplex'
             else:
@@ -6609,10 +6609,10 @@ def _find_documents_in_children(data_complex_id, visited=None):
 
     # Recurse into children
     children = data_xref_Complex_Complex_lib[
-        data_xref_Complex_Complex_lib["ID_data_complex_HIGHER"] == data_complex_id
+        data_xref_Complex_Complex_lib["ID_data_complex_higher"] == data_complex_id
     ]
     for _, crow in children.iterrows():
-        child_id = crow["ID_data_complex_LOWER"]
+        child_id = crow["ID_data_complex_lower"]
         doc_ids.update(_find_documents_in_children(child_id, visited))
 
     return doc_ids
