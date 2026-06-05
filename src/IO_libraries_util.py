@@ -595,8 +595,18 @@ def update_software_config(softwareDir, software_name, existing_software_config)
 
 def save_software_config(existing_software_config, missing_software_string, silent=False):
     software_config = GUI_IO_util.configPath + os.sep + 'NLP_setup_external_software_config.csv'
+    # Ensure config directory exists (may not exist in PyInstaller bundles)
+    try:
+        os.makedirs(GUI_IO_util.configPath, exist_ok=True)
+    except OSError:
+        pass
     # overwrite the csv file with updated csv_fields
-    with open(software_config, 'w+', newline='') as csv_file:
+    try:
+        csv_file = open(software_config, 'w+', newline='')
+    except OSError as e:
+        print(f"  WARNING: Could not write config file {software_config}: {e}")
+        return
+    with csv_file:
         writer = csv.writer(csv_file)
         writer.writerows(existing_software_config)
         message="The config file 'NLP_setup_external_software_config.csv' was successfully saved to\n\n" + software_config
