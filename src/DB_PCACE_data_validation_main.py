@@ -25,6 +25,7 @@ import IO_user_interface_util
 import TIPS_util
 import DB_PCACE_data_analysis_util
 import Stanza_util
+import file_filename_util
 
 # Track whether the database has been loaded
 _database_loaded = False
@@ -229,8 +230,8 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=560, # height at brief display
-                                                 GUI_height_full=600, # height at full display
+                                                 GUI_height_brief=480, # height at brief display
+                                                 GUI_height_full=520, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -328,7 +329,7 @@ spell_check_simplex_menu = ttk.Combobox(window, textvariable=spell_check_simplex
 spell_check_simplex_menu['values'] = ['ALL text simplexes']
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 200, y_multiplier_integer,
                                    spell_check_simplex_menu,
-                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 200,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 200,
                                    "Select which simplex to spell-check.\n"
                                    "'ALL text simplexes' checks every text-typed simplex in the database.")
 
@@ -352,12 +353,10 @@ def _apply_spell_check_corrections():
         filetypes=[('CSV files', '*.csv'), ('All files', '*.*')])
     if not csv_path:
         return
-    answer = mb.askyesno(title='Apply corrections',
-                         message=f'Apply accepted corrections from:\n{csv_path}\n\n'
-                                 f'This will modify data_SimplexText.xlsx and .pkl in:\n{inputDir_val}\n\n'
-                                 f'A backup of the original files is recommended.\n\nProceed?')
-    if not answer:
-        return
+    # Backup data_SimplexText files before applying corrections
+    proceed = file_filename_util.backup_files('', inputDir_val, 'Apply spell-check corrections', fileType='.xlsx')
+    if not proceed:
+        return  # User cancelled
     n_applied = DB_PCACE_data_analysis_util.apply_spell_check_corrections(csv_path, inputDir_val)
     if n_applied > 0:
         mb.showinfo(title='Corrections applied',
@@ -374,9 +373,9 @@ def _apply_spell_check_corrections():
                      message='An error occurred while applying corrections.\nCheck the console output for details.')
 
 apply_corrections_button = tk.Button(window, text='Apply corrections', command=_apply_spell_check_corrections)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                    apply_corrections_button,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "After running spell-check, review the CSV output, then click here\n"
                                    "to apply accepted corrections back to data_SimplexText.xlsx and .pkl.\n\n"
                                    "Steps:\n"
@@ -413,9 +412,54 @@ lemmatize_lang_menu = ttk.Combobox(window, textvariable=lemmatize_lang_var, widt
                                     values=_stanza_languages, state='readonly')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 200, y_multiplier_integer,
                                    lemmatize_lang_menu,
-                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 200,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 200,
                                    "Select the language for Stanza lemmatization.\n"
                                    "All languages supported by Stanza are listed.")
+
+# Apply lemmatization corrections button
+def _apply_lemmatization_corrections():
+    """Open a file dialog for the reviewed lemmatization CSV and apply accepted corrections."""
+    inputDir_val = inputDir.get() if hasattr(inputDir, 'get') else inputDir
+    outputDir_val = outputDir.get() if hasattr(outputDir, 'get') else outputDir
+    if not inputDir_val:
+        mb.showwarning(title='Apply lemmatization',
+                       message='Please select a PC-ACE database directory first.')
+        return
+    if not _ensure_database_loaded(inputDir_val):
+        mb.showwarning(title='Apply lemmatization',
+                       message='Could not load the PC-ACE database. Please check the input directory.')
+        return
+    csv_path = filedialog.askopenfilename(
+        title='Select the reviewed lemmatization CSV',
+        initialdir=outputDir_val if outputDir_val else inputDir_val,
+        filetypes=[('CSV files', '*.csv'), ('All files', '*.*')])
+    if not csv_path:
+        return
+    # Backup data_SimplexText files before applying lemmatization
+    proceed = file_filename_util.backup_files('', inputDir_val, 'Apply lemmatization corrections', fileType='.xlsx')
+    if not proceed:
+        return  # User cancelled
+    n_applied = DB_PCACE_data_analysis_util.apply_lemmatization_corrections(csv_path, inputDir_val)
+    if n_applied > 0:
+        mb.showinfo(title='Lemmatization applied',
+                    message=f'Successfully applied {n_applied} lemmatization correction(s) to data_SimplexText.\n\n'
+                            f'The xlsx and pkl files have been updated.')
+    elif n_applied == 0:
+        mb.showinfo(title='No changes',
+                    message='No lemmatization corrections were applied.\n\n'
+                            'Either all rows were marked Accept? = N, or the original values '
+                            'were not found in data_SimplexText.')
+    else:
+        mb.showerror(title='Error',
+                     message='An error occurred while applying lemmatization.\nCheck the console output for details.')
+
+apply_lemma_button = tk.Button(window, text='Apply lemmatization', command=_apply_lemmatization_corrections)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
+                                   apply_lemma_button,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "After running lemmatization, review the CSV output, then click here\n"
+                                   "to apply accepted lemmatizations back to data_SimplexText.xlsx and .pkl.")
+
 
 # ── Noun simplex types (combobox + add) ──────────────────────────────────────
 
@@ -462,13 +506,13 @@ def _reset_noun_simplexes():
 
 add_noun_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, command=_add_noun_simplex)
 _noun_btn_y = y_multiplier_integer
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 280, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 230, y_multiplier_integer,
                                    add_noun_button,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 280,
                                    "Click + to add the selected simplex type to the NOUN lemmatization list.")
 
 reset_noun_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width, height=1, command=_reset_noun_simplexes)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 320, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 270, y_multiplier_integer,
                                    reset_noun_button,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 320,
                                    "Click Reset to clear the NOUN simplex list and start fresh.")
@@ -478,12 +522,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_c
 _verb_simplex_list = []
 
 lemmatize_verbs_lb = tk.Label(window, text='as VERBS')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 400, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 380, y_multiplier_integer,
                                    lemmatize_verbs_lb, True)
 
 lemmatize_verbs_var = tk.StringVar()
 lemmatize_verbs_menu = ttk.Combobox(window, textvariable=lemmatize_verbs_var, width=30, state='readonly')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 470, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 450, y_multiplier_integer,
                                    lemmatize_verbs_menu,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 470,
                                    "Select a simplex type that contains VERB values, then click + to add it.\n\n"
@@ -501,8 +545,8 @@ def _update_verb_hover():
     add_verb_button.bind('<Enter>',
         lambda e, t=tip: (e.widget.config(background='red', foreground='black'),
                           GUI_IO_util.display_widget_info(window, e,
-                              GUI_IO_util.open_TIPS_x_coordinate + 740, y_pos - 20,
-                              GUI_IO_util.open_TIPS_x_coordinate + 740, t)))
+                              GUI_IO_util.open_TIPS_x_coordinate + 700, y_pos - 20,
+                              GUI_IO_util.open_TIPS_x_coordinate + 700, t)))
 
 def _add_verb_simplex():
     val = lemmatize_verbs_var.get()
@@ -517,62 +561,16 @@ def _reset_verb_simplexes():
 
 add_verb_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, command=_add_verb_simplex)
 _verb_btn_y = y_multiplier_integer
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 740, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 680, y_multiplier_integer,
                                    add_verb_button,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 740,
                                    "Click + to add the selected simplex type to the VERB lemmatization list.")
 
 reset_verb_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width, height=1, command=_reset_verb_simplexes)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 780, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 720, y_multiplier_integer,
                                    reset_verb_button,
                                    False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 780,
                                    "Click Reset to clear the VERB simplex list and start fresh.")
-
-# Apply lemmatization corrections button
-def _apply_lemmatization_corrections():
-    """Open a file dialog for the reviewed lemmatization CSV and apply accepted corrections."""
-    inputDir_val = inputDir.get() if hasattr(inputDir, 'get') else inputDir
-    outputDir_val = outputDir.get() if hasattr(outputDir, 'get') else outputDir
-    if not inputDir_val:
-        mb.showwarning(title='Apply lemmatization',
-                       message='Please select a PC-ACE database directory first.')
-        return
-    if not _ensure_database_loaded(inputDir_val):
-        mb.showwarning(title='Apply lemmatization',
-                       message='Could not load the PC-ACE database. Please check the input directory.')
-        return
-    csv_path = filedialog.askopenfilename(
-        title='Select the reviewed lemmatization CSV',
-        initialdir=outputDir_val if outputDir_val else inputDir_val,
-        filetypes=[('CSV files', '*.csv'), ('All files', '*.*')])
-    if not csv_path:
-        return
-    answer = mb.askyesno(title='Apply lemmatization',
-                         message=f'Apply accepted lemmatization from:\n{csv_path}\n\n'
-                                 f'This will modify data_SimplexText.xlsx and .pkl in:\n{inputDir_val}\n\n'
-                                 f'A backup of the original files is recommended.\n\nProceed?')
-    if not answer:
-        return
-    n_applied = DB_PCACE_data_analysis_util.apply_lemmatization_corrections(csv_path, inputDir_val)
-    if n_applied > 0:
-        mb.showinfo(title='Lemmatization applied',
-                    message=f'Successfully applied {n_applied} lemmatization correction(s) to data_SimplexText.\n\n'
-                            f'The xlsx and pkl files have been updated.')
-    elif n_applied == 0:
-        mb.showinfo(title='No changes',
-                    message='No lemmatization corrections were applied.\n\n'
-                            'Either all rows were marked Accept? = N, or the original values '
-                            'were not found in data_SimplexText.')
-    else:
-        mb.showerror(title='Error',
-                     message='An error occurred while applying lemmatization.\nCheck the console output for details.')
-
-apply_lemma_button = tk.Button(window, text='Apply lemmatization', command=_apply_lemmatization_corrections)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   apply_lemma_button,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "After running lemmatization, review the CSV output, then click here\n"
-                                   "to apply accepted lemmatizations back to data_SimplexText.xlsx and .pkl.")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # ── Aggregate code validation ─────────────────────────────────────────────────
@@ -716,12 +714,12 @@ if hasattr(inputDir, 'trace'):
 
 # ── Help buttons ────────────────────────────────────────────────────────────
 
-def help_buttons(window, help_button_x_coordinate, increment):
+def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     if not IO_setup_display_brief:
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, increment, "NLP Suite Help", GUI_IO_util.msg_corpusData)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_corpusData)
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_outputDirectory)
     else:
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, increment, "NLP Suite Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
     # Row: Open GUI dropdown
@@ -737,14 +735,15 @@ def help_buttons(window, help_button_x_coordinate, increment):
         "  2. Select a specific simplex or leave as 'ALL text simplexes'.\n"
         "  3. Click RUN to produce a review CSV.\n"
         "  4. Review the CSV, edit corrections, set Accept? to N for rows to skip.\n"
-        "  5. Click 'Apply corrections' to write accepted changes back to the database." + GUI_IO_util.msg_Esc)
+        "  5. Click 'Apply corrections' to write accepted changes back to the database.\n\n"
+        "A BACKUP OF THE ORIGINAL FILES IS RECOMMENDED BEFORE APPLYING." + GUI_IO_util.msg_Esc)
 
-    # Row 3: Apply corrections button
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,
-        y_multiplier_integer, "NLP Suite Help",
-        "APPLY CORRECTIONS: apply reviewed spell-check corrections.\n\n"
-        "Modifies data_SimplexText.xlsx and .pkl in the PC-ACE database directory.\n"
-        "A backup of the original files is recommended before applying." + GUI_IO_util.msg_Esc)
+    # # Row 3: Apply corrections button
+    # y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,
+    #     y_multiplier_integer, "NLP Suite Help",
+    #     "APPLY CORRECTIONS: apply reviewed spell-check corrections.\n\n"
+    #     "Modifies data_SimplexText.xlsx and .pkl in the PC-ACE database directory.\n\n"
+    #     "A BACKUP OF THE ORIGINAL FILES IS RECOMMENDED BEFORE APPLYING." + GUI_IO_util.msg_Esc)
 
     # Row 4: Lemmatize checkbox + language
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,
@@ -752,7 +751,11 @@ def help_buttons(window, help_button_x_coordinate, increment):
         "LEMMATIZE: reduce inflected forms to base forms using Stanza.\n\n"
         "  Examples: 'went' → 'go', 'colpirono' → 'colpire', 'cities' → 'city'.\n\n"
         "  Select the language, then assign your database's simplex types\n"
-        "  in the NOUNS and VERBS lists below." + GUI_IO_util.msg_Esc)
+        "  in the NOUNS and VERBS lists below.\n\n"
+        "APPLY LEMMATIZATION: apply reviewed lemmatization corrections.\n\n"
+        "Modifies data_SimplexText.xlsx and .pkl in the PC-ACE database directory.\n\n"
+        "A BACKUP OF THE ORIGINAL FILES IS RECOMMENDED BEFORE APPLYING.\n"
+                                                         + GUI_IO_util.msg_Esc)
 
     # Row 5: Noun/Verb simplex listboxes (taller row due to listbox height=3)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,
@@ -761,23 +764,16 @@ def help_buttons(window, help_button_x_coordinate, increment):
         "  NOUNS list: e.g., Name of individual actor, Physical objects, Nome attore\n"
         "  VERBS list: e.g., Verbal phrase, Nominalization, Frase verbale\n\n"
         "  The lists auto-populate from your database and auto-select likely matches.\n"
-        "  Hold Ctrl to select/deselect multiple items." + GUI_IO_util.msg_Esc)
+        "  Hold Ctrl to select/deselect multiple items.\n" + GUI_IO_util.msg_Esc)
 
-    # Row 6: Apply lemmatization button
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,
-        y_multiplier_integer, "NLP Suite Help",
-        "APPLY LEMMATIZATION: apply reviewed lemmatization corrections.\n\n"
-        "Modifies data_SimplexText.xlsx and .pkl in the PC-ACE database directory.\n"
-        "A backup of the original files is recommended before applying." + GUI_IO_util.msg_Esc)
-
-    # Row 7: Aggregate code validation label + DB list
+    # Row 6: Aggregate code validation label + DB list
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,
         y_multiplier_integer, "NLP Suite Help",
         "AGGREGATE CODE VALIDATION: compare and inspect aggregate codes.\n\n"
         "  Use + / − to add/remove PC-ACE database directories.\n"
         "  The INPUT directory is automatically included." + GUI_IO_util.msg_Esc)
 
-    # Row 8: Cross-DB comparison + Side-by-side mapping + Actor/Action
+    # Row 7: Cross-DB comparison + Side-by-side mapping + Actor/Action
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,
         y_multiplier_integer, "NLP Suite Help",
         "Cross-DB comparison: compares aggregate code vocabularies across databases.\n"
@@ -787,15 +783,16 @@ def help_buttons(window, help_button_x_coordinate, increment):
         "  simplex value alongside all aggregate coding schemes.\n"
         "  Select Actor or Action to choose which codes to inspect." + GUI_IO_util.msg_Esc)
 
-    # y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,
-    #     y_multiplier_integer + 4.5, "NLP Suite Help", GUI_IO_util.msg_openOutputFiles)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
 
     return y_multiplier_integer - 1
 
-increment = GUI_util.y_multiplier_integer
-content_y_multiplier_integer = y_multiplier_integer
-y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, increment)
-y_multiplier_integer = max(y_multiplier_integer, content_y_multiplier_integer)
+y_multiplier_integer = y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,increment)
+
+# increment = GUI_util.y_multiplier_integer
+# content_y_multiplier_integer = y_multiplier_integer
+# y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, increment)
+# y_multiplier_integer = max(y_multiplier_integer, content_y_multiplier_integer)
 
 # ── Videos / TIPS ───────────────────────────────────────────────────────────
 
