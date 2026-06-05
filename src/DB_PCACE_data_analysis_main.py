@@ -1755,8 +1755,11 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                                          "  2. EXTENDED HEADERS: fully expanded table with every simplex in its own column.\n"
                                                          "  3. PARENTS/CHILDREN: display parents and children of the selected object.\n"
                                                          "  4. DOCUMENT SOURCES: extract the documents (e.g., newspapers) for the selected object.\n"
-                                                         "  5. COMMENTS: extract comments left by users and/or verifiers.\n\n"
-                                                         "When no checkbox is ticked, RUN exports the story form for the identifier shown in the right-hand dropdown."
+                                                         "  5. COMMENTS: extract comments left by users and/or verifiers. Use the dropdown mnu to select the type of comment.\n\n"
+                                                         "When no checkbox is ticked, RUN exports the story form for the identifier shown in the right-hand dropdown.\n\n"
+                                                         "COMPLEX IDENTIFIER: auto-populated when a Complex type is selected.\n"
+                                                         "Enter: export the story form for the selected object.\n"
+                                                         "RUN: export the story form, or perform a checkbox operation."
                                                          + GUI_IO_util.msg_Esc)
     # Row: Simplex
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
@@ -1769,12 +1772,10 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                                          "  4. GIS MAP: geocode location values and display on Google Earth Pro, Google Maps, and Folium.\n\n"
                                                          "Spell-check and lemmatization have been moved to the Data Validation GUI."
                                                          + GUI_IO_util.msg_Esc)
-    # Row: Complex identifier
+    # Row: simplex data type
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                                          "NLP Suite Help",
-                                                         "COMPLEX IDENTIFIER: auto-populated when a Complex type is selected.\n"
-                                                         "Enter: export the story form for the selected object.\n"
-                                                         "RUN: export the story form, or perform a checkbox operation."
+                                                         "Please, using the dropdown menu, select the simplex data value (text, date, or number) for which you want to see its usage among parent simplex and complex.\n\nThe available values will be displayed in the next dropdown menu widget where you can select a specific value.\n\nYou can then tick the 'Get simplex/complex objects...' checkbox if you wish to visualize all simplex and complex objects that use the selected value (e.g.,'police')."
                                                          + GUI_IO_util.msg_Esc)
     # Row: Search simplex value
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
@@ -1785,7 +1786,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     # Row: Parents / Complex children
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                 "Select the PARENT object and/or CHILD object." + GUI_IO_util.msg_Esc)
-    # Remaining rows (Open output files, etc.) are handled by GUI_bottom
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
 
     return y_multiplier_integer -1
 "COUNT Display a template SQL COUNT query."
