@@ -277,7 +277,7 @@ def _open_sql_gui():
     subprocess.Popen(cmd)
 
 def _open_pcace_analyzer():
-    """Launch the PC-ACE data analyzer GUI."""
+    """Launch the PC-ACE data analysis GUI."""
     script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'DB_PCACE_data_analysis_main.py')
     cmd = [sys.executable, script_path]
     out_dir = outputDir.get() if hasattr(outputDir, 'get') else outputDir
@@ -297,7 +297,7 @@ def _open_data_manipulation():
 def _on_open_gui_selected(choice):
     if choice == 'Open DB SQL GUI':
         _open_sql_gui()
-    elif choice == 'Open PC-ACE analyzer GUI':
+    elif choice == 'Open PC-ACE data analysis GUI':
         _open_pcace_analyzer()
     elif choice == 'Open data manipulation GUI':
         _open_data_manipulation()
@@ -306,7 +306,7 @@ _open_gui_var = tk.StringVar()
 _open_gui_var.set('Open DB SQL GUI')
 open_gui_menu = tk.OptionMenu(window, _open_gui_var,
                               'Open DB SQL GUI',
-                              'Open PC-ACE analyzer GUI',
+                              'Open PC-ACE data analysis GUI',
                               'Open data manipulation GUI',
                               command=_on_open_gui_selected)
 open_gui_menu.configure(width=25)
@@ -315,7 +315,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Use the dropdown menu to open a related GUI.\n\n"
                                    "   Open DB SQL GUI: opens the SQL query GUI.\n"
-                                   "   Open PC-ACE analyzer GUI: opens the PC-ACE data analyzer.\n"
+                                   "   Open PC-ACE data analysis GUI: opens the PC-ACE data analysis.\n"
                                    "   Open data manipulation GUI: opens the data manipulation GUI.")
 
 # ── Select INPUT CSV file row ───────────────────────────────────────────────

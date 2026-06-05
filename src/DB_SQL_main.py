@@ -523,7 +523,7 @@ def update_grammar():
     DB_PCACE_data_analysis_util.update_grammar_text(inputDir.get())
 
 def open_pcace_analyzer():
-    """Launch the PC-ACE data analyzer GUI with the current input/output directories."""
+    """Launch the PC-ACE data analysis GUI with the current input/output directories."""
     in_dir = inputDir.get() if hasattr(inputDir, 'get') else inputDir
     out_dir = outputDir.get() if hasattr(outputDir, 'get') else outputDir
     if not in_dir or not os.path.isdir(in_dir):
@@ -566,7 +566,7 @@ def open_data_validation():
     subprocess.Popen(cmd)
 
 def _on_open_gui_selected(choice):
-    if choice == 'Open PC-ACE analyzer GUI':
+    if choice == 'Open PC-ACE data analysis GUI':
         open_pcace_analyzer()
     elif choice == 'Open data manipulation GUI':
         open_data_manipulation()
@@ -574,9 +574,9 @@ def _on_open_gui_selected(choice):
         open_data_validation()
 
 _open_gui_var = tk.StringVar()
-_open_gui_var.set('Open PC-ACE analyzer GUI')
+_open_gui_var.set('Open PC-ACE data analysis GUI')
 open_gui_menu = tk.OptionMenu(window, _open_gui_var,
-                              'Open PC-ACE analyzer GUI',
+                              'Open PC-ACE data analysis GUI',
                               'Open data manipulation GUI',
                               'Open data validation GUI',
                               command=_on_open_gui_selected)
@@ -585,7 +585,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                    open_gui_menu,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Use the dropdown menu to open a related GUI.\n\n"
-                                   "   Open PC-ACE analyzer GUI: opens the PC-ACE data analyzer with the current input directory.\n"
+                                   "   Open PC-ACE data analysis GUI: opens the PC-ACE data analysis with the current input directory.\n"
                                    "   Open data manipulation GUI: opens the data manipulation GUI with the current CSV file.\n"
                                    "   Open data validation GUI: opens the data validation and cleaning GUI with the current CSV file.")
 
@@ -2302,7 +2302,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Use the dropdown menu to open a related GUI.\n\n   Open PC-ACE analyzer GUI: opens the PC-ACE data analyzer with the current input directory.\n   Open data manipulation GUI: opens the data manipulation GUI with the current CSV file.\n   Open data validation GUI: opens the data validation and cleaning GUI with the current CSV file." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Use the dropdown menu to open a related GUI.\n\n   Open PC-ACE data analysis GUI: opens the PC-ACE data analysis with the current input directory.\n   Open data manipulation GUI: opens the data manipulation GUI with the current CSV file.\n   Open data validation GUI: opens the data validation and cleaning GUI with the current CSV file." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                   "The INPUT csv file widget displays a csv filename. There are two ways of entering a filename.\n\n   1. Click on the button 'Select INPUT csv file' to select a file of your choice.\n\n   2. The text widget is filled automatically as soon as produced by the query Generator.\n\nClick the small button between the 'Select...' button and the text widget to open the file and visualize its content.\n\nClick the 'Clear' button to remove the loaded CSV and reset the WHERE filter." + GUI_IO_util.msg_openFile)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "WHERE filter (requires an INPUT CSV file): select a column, then enter a filter value and click Filter to extract matching rows.\n\n"
