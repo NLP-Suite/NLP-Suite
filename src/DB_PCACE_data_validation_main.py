@@ -305,6 +305,53 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                    "   Open DB SQL GUI: opens the SQL query GUI.\n"
                                    "   Open PC-ACE analyzer GUI: opens the PC-ACE data analyzer.")
 
+# ── Select INPUT CSV file row ───────────────────────────────────────────────
+
+csv_file_var = tk.StringVar()
+
+def get_csv_file(window, title, fileType, annotate):
+    initialFolder = os.path.dirname(os.path.abspath(csv_file_var.get())) if csv_file_var.get() else os.path.dirname(os.path.abspath(__file__))
+    filePath = tk.filedialog.askopenfilename(title=title, initialdir=initialFolder, filetypes=fileType)
+    if len(filePath) > 0:
+        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(filePath, 'utf-8')
+        if nRecords == 0:
+            mb.showwarning(title='Warning',
+                           message="The selected input csv file is empty.\n\nPlease, select a different file and try again.")
+            filePath = ''
+        else:
+            csv_file_var.set(filePath)
+    return filePath
+
+csv_file_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width,
+                            text='Select INPUT CSV file',
+                            command=lambda: get_csv_file(window, 'Select INPUT csv file', [("csv files", "*.csv")], True))
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                               csv_file_button, True)
+
+# Button to open the selected CSV file
+openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+                                 command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                               openInputFile_button,
+                                               True, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                               "Open INPUT csv file")
+
+# CSV file path entry
+csv_file_entry = tk.Entry(window, width=GUI_IO_util.csv_file_width - 8, textvariable=csv_file_var)
+csv_file_entry.config(state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
+                                               csv_file_entry, True)
+
+# Clear button
+def _clear_csv_file():
+    csv_file_var.set('')
+
+clear_csv_button = tk.Button(window, text='Clear', width=5, command=lambda: _clear_csv_file())
+y_multiplier_integer = GUI_IO_util.placeWidget(window, 1150, y_multiplier_integer,
+                                               clear_csv_button, False, False, True, False, 90,
+                                               GUI_IO_util.open_setup_x_coordinate,
+                                               "Click to clear the INPUT CSV file.")
+
 # ══════════════════════════════════════════════════════════════════════════════
 # ── Spell-check / near-duplicate detection ────────────────────────────────────
 # ══════════════════════════════════════════════════════════════════════════════
