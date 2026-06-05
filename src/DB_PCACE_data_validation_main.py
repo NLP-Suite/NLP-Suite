@@ -230,8 +230,8 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=480, # height at brief display
-                                                 GUI_height_full=520, # height at full display
+                                                 GUI_height_brief=520, # height at brief display
+                                                 GUI_height_full=560, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -773,6 +773,10 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,
         y_multiplier_integer, "NLP Suite Help",
         "Use the dropdown menu to open a related GUI." + GUI_IO_util.msg_Esc)
+
+    # Row: Open csv file
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                  "The INPUT csv file widget displays a csv filename. There are two ways of entering a filename.\n\n   1. Click on the button 'Select INPUT csv file' to select a file of your choice.\n\n   2. The text widget is filled automatically as soon as produced by the query Generator.\n\nClick the small button between the 'Select...' button and the text widget to open the file and visualize its content.\n\nClick the 'Clear' button to remove the loaded CSV and reset the WHERE filter." + GUI_IO_util.msg_openFile)
 
     # Row 2: Spell-check checkbox + simplex dropdown
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,
