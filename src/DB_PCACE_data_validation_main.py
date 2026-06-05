@@ -456,7 +456,7 @@ _stanza_languages = Stanza_util.list_all_languages()
 lemmatize_lang_var = tk.StringVar()
 lemmatize_lang_var.set('English')
 lemmatize_lang_menu = ttk.Combobox(window, textvariable=lemmatize_lang_var, width=20,
-                                    values=_stanza_languages, state='readonly')
+                                    values=_stanza_languages, state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 200, y_multiplier_integer,
                                    lemmatize_lang_menu,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 200,
@@ -500,7 +500,7 @@ def _apply_lemmatization_corrections():
         mb.showerror(title='Error',
                      message='An error occurred while applying lemmatization.\nCheck the console output for details.')
 
-apply_lemma_button = tk.Button(window, text='Apply lemmatization', command=_apply_lemmatization_corrections)
+apply_lemma_button = tk.Button(window, text='Apply lemmatization', state='disabled', command=_apply_lemmatization_corrections)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                    apply_lemma_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
@@ -513,11 +513,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_
 _noun_simplex_list = []
 
 lemmatize_nouns_lb = tk.Label(window, text='Simplex types to lemmatize as NOUNS')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    lemmatize_nouns_lb, True)
 
 lemmatize_nouns_var = tk.StringVar()
-lemmatize_nouns_menu = ttk.Combobox(window, textvariable=lemmatize_nouns_var, width=30, state='readonly')
+lemmatize_nouns_menu = ttk.Combobox(window, textvariable=lemmatize_nouns_var, width=30, state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    lemmatize_nouns_menu,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
@@ -551,14 +551,14 @@ def _reset_noun_simplexes():
     lemmatize_nouns_var.set('')
     _update_noun_hover()
 
-add_noun_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, command=_add_noun_simplex)
+add_noun_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled', command=_add_noun_simplex)
 _noun_btn_y = y_multiplier_integer
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 230, y_multiplier_integer,
                                    add_noun_button,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 280,
                                    "Click + to add the selected simplex type to the NOUN lemmatization list.")
 
-reset_noun_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width, height=1, command=_reset_noun_simplexes)
+reset_noun_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width, height=1, state='disabled', command=_reset_noun_simplexes)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 270, y_multiplier_integer,
                                    reset_noun_button,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 320,
@@ -573,7 +573,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_c
                                    lemmatize_verbs_lb, True)
 
 lemmatize_verbs_var = tk.StringVar()
-lemmatize_verbs_menu = ttk.Combobox(window, textvariable=lemmatize_verbs_var, width=30, state='readonly')
+lemmatize_verbs_menu = ttk.Combobox(window, textvariable=lemmatize_verbs_var, width=30, state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 450, y_multiplier_integer,
                                    lemmatize_verbs_menu,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 470,
@@ -606,14 +606,37 @@ def _reset_verb_simplexes():
     lemmatize_verbs_var.set('')
     _update_verb_hover()
 
-add_verb_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, command=_add_verb_simplex)
+add_verb_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled', command=_add_verb_simplex)
 _verb_btn_y = y_multiplier_integer
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 680, y_multiplier_integer,
                                    add_verb_button,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 740,
                                    "Click + to add the selected simplex type to the VERB lemmatization list.")
 
-reset_verb_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width, height=1, command=_reset_verb_simplexes)
+reset_verb_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width, height=1, state='disabled', command=_reset_verb_simplexes)
+
+# Enable/disable NOUN/VERB widgets based on Run lemmatization checkbox
+def _toggle_lemmatize_widgets(*args):
+    if lemmatize_var.get() == 1:
+        lemmatize_nouns_menu.configure(state='readonly')
+        add_noun_button.configure(state='normal')
+        reset_noun_button.configure(state='normal')
+        lemmatize_verbs_menu.configure(state='readonly')
+        add_verb_button.configure(state='normal')
+        reset_verb_button.configure(state='normal')
+        lemmatize_lang_menu.configure(state='readonly')
+        apply_lemma_button.configure(state='normal')
+    else:
+        lemmatize_nouns_menu.configure(state='disabled')
+        add_noun_button.configure(state='disabled')
+        reset_noun_button.configure(state='disabled')
+        lemmatize_verbs_menu.configure(state='disabled')
+        add_verb_button.configure(state='disabled')
+        reset_verb_button.configure(state='disabled')
+        lemmatize_lang_menu.configure(state='disabled')
+        apply_lemma_button.configure(state='disabled')
+
+lemmatize_var.trace('w', _toggle_lemmatize_widgets)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 720, y_multiplier_integer,
                                    reset_verb_button,
                                    False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 780,
