@@ -28,6 +28,7 @@ import file_checker_util
 import file_cleaner_util
 import file_spell_checker_util
 import style_analysis_abstract_concreteness_analysis_util
+import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -327,7 +328,7 @@ def run(inputFilename,inputDir, outputDir,
 
     if wordclouds_var==True:
         if open_wordclouds_GUI_var == True:
-            call("python wordclouds_main.py", shell=True)
+            run_script_util.run_script("wordclouds_main.py")
         else:
             # run with all default values;
             use_contour_only = False
@@ -368,7 +369,7 @@ def run(inputFilename,inputDir, outputDir,
             routine_options = reminders_util.getReminders_list(scriptName)
 
             if open_tm_GUI_var == True:
-                call("python topic_modeling_main.py", shell=True)
+                run_script_util.run_script("topic_modeling_main.py")
             else:
                 if language_var != 'English':
                     reminders_util.checkReminder(
@@ -388,7 +389,7 @@ def run(inputFilename,inputDir, outputDir,
 
         if topics_Mallet_var==True:
             if open_tm_GUI_var == True:
-                call("python topic_modeling_mallet_util.py", shell=True)
+                run_script_util.run_script("topic_modeling_mallet_util.py")
             else:
                 if language_var != 'English':
                     reminders_util.checkReminder(
@@ -608,7 +609,7 @@ def run(inputFilename,inputDir, outputDir,
 # GIS --------------------------------------------------------------------------------
     if GIS_var==True:
         if open_GIS_GUI_var == True:
-            call("python GIS_main.py", shell=True)
+            run_script_util.run_script("GIS_main.py")
         else:
             # run with all default values;
             # checking for txt: NER=='LOCATION', provide a csv output with column: [Locations]
@@ -680,7 +681,7 @@ def run(inputFilename,inputDir, outputDir,
 
         outputLocations = []
         if open_SVO_GUI_var == True:
-            call("python SVO_main.py", shell=True)
+            run_script_util.run_script("SVO_main.py")
         else:
             # run with all default values;
             location_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir_SVO, '.csv',

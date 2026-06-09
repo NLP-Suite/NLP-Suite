@@ -4,6 +4,7 @@
 # xref_simplex_complex["ID_data_simplex"] = xref_simplex_complex["ID_data_simplex"].fillna(-1).astype(int)
 # xref_simplex_complex["ID_data_complex"] = xref_simplex_complex["ID_data_complex"].fillna(-1).astype(int)
 # xref_simplex_complex["Order"] = xref_simplex_complex["Order"].fillna(-1).astype(int)
+# xref_simplex_complex["Order"] = xref_simplex_complex["Order"].fillna(-1).astype(int)
 # xref_simplex_complex["ID_data_date_number_text"] = xref_simplex_complex["ID_data_date_number_text"].fillna(-1).astype(int)
 
 # restrict records to Value date to remove any unwanted duplicates from Number or Text tables
@@ -119,6 +120,7 @@ data_xref_AnyComplex_Complex_lib = None
 data_xref_simplex_complex_lib = None
 data_xref_Document_lib = None
 data_xref_Simplex_Simplex_Document_lib = None
+setup_xref_Simplex_Document_lib = None
 data_xref_Complex_Document_lib = None
 data_xref_comment_complex_lib = None
 data_xref_Comment_Document_lib = None
@@ -170,6 +172,7 @@ reading_list = [
     ('setup_Document.xlsx', {'ID':'ID_setup_document'}),
     ('setup_xref_Complex-Complex.xlsx', {'ID':'ID_setup_xref_complex_complex'}),
     ('setup_xref_Simplex-Complex.xlsx', {'ID':'ID_setup_xref_simplex_complex', 'Complex':'ID_setup_complex', 'Simplex':'ID_setup_simplex'}),
+    ('setup_xref_Simplex-Document.xlsx', {'ID':'ID_setup_xref_simplex_document', 'Simplex':'ID_setup_simplex'}),
     ('data_Complex.xlsx', {"ID":"ID_data_complex", "ComplexType":"ID_setup_complex"}),
     ('data_Simplex.xlsx', {"ID":"ID_data_simplex", "SimplexType":"ID_setup_simplex", "refValue":"ID_data_date_number_text"}),
     ('data_SimplexText.xlsx', {"ID":"ID_data_date_number_text"}),
@@ -181,6 +184,7 @@ reading_list = [
     ('data_Document.xlsx', {'ID':'ID_data_document'}),
     ('data_xref_Complex-Document.xlsx', {'ID':'ID_data_xref_complex_document', 'Complex':'ID_data_complex', 'Document':'ID_data_document'}),
     ('data_xref_Simplex-Document.xlsx', {'ID':'ID_data_xref_simplex_document', 'ID_data_simplex':'ID_data_simplex', 'Simplex':'ID_data_simplex', 'Document':'ID_data_document'}),
+    ('data_xref_Simplex-Simplex-Document.xlsx', {'ID':'ID_data_xref_simplex_simplex_document', 'Simplex':'ID_data_simplex', 'Document':'ID_data_document'}),
     ('data_xref_comment-complex.xlsx', {'ID':'ID_data_xref_comment_complex', 'Complex':'ID_data_complex'}),
     ('data_xref_Comment-Simplex.xlsx', {'ID':'ID_data_xref_comment_simplex', 'Simplex':'ID_data_simplex'}),
     ('data_xref_Comment-Document.xlsx', {'ID':'ID_data_xref_comment_document', 'Document':'ID_data_document'}),
@@ -313,7 +317,7 @@ def build_NLP_libraries(inputDir, outputDir):
 # builds pkl files from Excel files
 # pkl files are MUCH faster to open and read
 def build_libraries(inputDir, outputDir):
-    global setup_Complex_lib, setup_Simplex_lib, setup_xref_Complex_Complex_lib, crossref, setup_xref_simplex_complex_lib, data_Simplex_lib, data_SimplexText_lib, data_SimplexNumber_lib, data_SimplexDate_lib, data_Complex_lib, data_xref_Complex_Complex_lib, data_xref_AnyComplex_Complex_lib, data_xref_simplex_complex_lib, data_xref_Document_lib, data_xref_Simplex_Simplex_Document_lib, data_xref_Complex_Document_lib, data_xref_comment_complex_lib, data_xref_Comment_Document_lib, data_xref_VComment_lib, data_xref_VComment_Document_lib, utility_Security_lib, data_simplex_values_ALL_lib, data_xref_simplex_complex_ALL_lib, data_Document_lib
+    global setup_Complex_lib, setup_Simplex_lib, setup_xref_Complex_Complex_lib, crossref, setup_xref_simplex_complex_lib, setup_xref_Simplex_Document_lib, data_Simplex_lib, data_SimplexText_lib, data_SimplexNumber_lib, data_SimplexDate_lib, data_Complex_lib, data_xref_Complex_Complex_lib, data_xref_AnyComplex_Complex_lib, data_xref_simplex_complex_lib, data_xref_Document_lib, data_xref_Simplex_Simplex_Document_lib, data_xref_Complex_Document_lib, data_xref_comment_complex_lib, data_xref_Comment_Document_lib, data_xref_VComment_lib, data_xref_VComment_Document_lib, utility_Security_lib, data_simplex_values_ALL_lib, data_xref_simplex_complex_ALL_lib, data_Document_lib
     # global dfs_df
     # headers = ['Parent (search) complex name', 'Parent (search) complex ID (data ID)', 'Complex child name', 'Complex child ID (data ID)', 'Simplex name', 'Value']
     # dfs_df = pd.DataFrame(columns=headers)
@@ -376,6 +380,14 @@ def build_libraries(inputDir, outputDir):
         setup_xref_simplex_complex_lib = library[name+'.xlsx']
     else:
         setup_xref_simplex_complex_lib = create_pkl_file(inputDir, name)
+
+    name='setup_xref_Simplex-Document'
+    if os.path.exists(f"{inputDir}/{name}.pkl"):
+        df = pd.read_pickle(f"{inputDir}/{name}.pkl")
+        library[name+'.xlsx'] = df
+        setup_xref_Simplex_Document_lib = library[name+'.xlsx']
+    else:
+        setup_xref_Simplex_Document_lib = create_pkl_file(inputDir, name)
 
     name='data_Simplex'
     if os.path.exists(f"{inputDir}/{name}.pkl"):
@@ -1074,6 +1086,28 @@ def view_grammar(excel_file, column_name, output_file):
         grammar ='LEGENDA\n\n   -->  Rewrite rule (the object to the left of --> can be rewritten in terms of the object(s) to the right)\n   ++   Hierarchical object (e.g., Macro event, Event, Semantic triplet)\n   +    Complex object (no + Simplex object)\n   <>   Can be rewritten\n   []   Optional object\n   {}   Multiples allowed\n   (1a) (1b) (1c)... mutually exclusive objects' \
                   '\n                      (e.g., <+Actor> rewritten as <+Individual (1a) <+Collective actor (1b). Both CANNOT be entered; it is one or the other).\n\n'
 
+        # Determine which complexes link to documents via data_xref_Complex-Document
+        complexes_with_docs = set()
+        try:
+            xcd = _load_pcace_df(input_dir, 'data_xref_Complex-Document',
+                                 {'Complex': 'ID_data_complex'})
+            if xcd is not None and len(xcd) > 0:
+                dc = _load_pcace_df(input_dir, 'data_Complex',
+                                    {'ID': 'ID_data_complex', 'ComplexType': 'ID_setup_complex'})
+                if dc is not None:
+                    col = 'ID_data_complex' if 'ID_data_complex' in xcd.columns else 'Complex'
+                    linked_data_ids = set(xcd[col].dropna().unique())
+                    type_col = 'ID_setup_complex' if 'ID_setup_complex' in dc.columns else 'ComplexType'
+                    linked_setup_ids = set(dc[dc[
+                        'ID_data_complex' if 'ID_data_complex' in dc.columns else 'ID'
+                    ].isin(linked_data_ids)][type_col].unique())
+                    for sid in linked_setup_ids:
+                        n = id_to_name.get(sid)
+                        if n:
+                            complexes_with_docs.add(n)
+        except Exception:
+            pass
+
         line_num = 0
         with open(output_file, 'w', encoding='utf-8') as f:
             for cname in ordered_names:
@@ -1083,6 +1117,8 @@ def view_grammar(excel_file, column_name, output_file):
                 line_num += 1
                 # Strip the leading < that is part of the grammar notation
                 display_rule = rule.lstrip('<')
+                if cname in complexes_with_docs:
+                    display_rule = display_rule.rstrip('\n').rstrip() + ' [{Document>}]\n'
                 grammar += 'Line ' + str(line_num) + ' ' + display_rule + '\n'
             # Append missing objects that are referenced but have no rule
             for cname in sorted(missing):
@@ -1093,6 +1129,27 @@ def view_grammar(excel_file, column_name, output_file):
                 else:
                     prefix = '+'
                 grammar += 'Line ' + str(line_num) + ' ' + prefix + cname + '> --> (no rewrite rule defined)\n'
+            # Append Document rule from setup_xref_Simplex-Document
+            try:
+                sxsd = _load_pcace_df(input_dir, 'setup_xref_Simplex-Document', {'Simplex': 'ID_setup_simplex'})
+                if sxsd is not None and len(sxsd) > 0:
+                    doc_names = sxsd['Name'].dropna().tolist() if 'Name' in sxsd.columns else []
+                    if doc_names:
+                        line_num += 1
+                        doc_parts = []
+                        for dn in doc_names:
+                            req = True
+                            if 'Required' in sxsd.columns and 'Name' in sxsd.columns:
+                                rr = sxsd[sxsd['Name'] == dn]
+                                if not rr.empty:
+                                    req = bool(rr['Required'].iloc[0])
+                            token = "<{}>".format(dn)
+                            if not req:
+                                token = "[{}]".format(token)
+                            doc_parts.append(token)
+                        grammar += '\nLine ' + str(line_num) + ' Document> --> ' + ' '.join(doc_parts) + '\n'
+            except Exception:
+                pass
             print('Grammar', grammar)
             f.write(grammar)
 
@@ -1116,7 +1173,7 @@ def update_grammar_text(inputDir):
     from the setup_xref tables. This reflects the current Required,
     AllowMultiple, and Group settings.
     Preserves existing +/++ prefixes from the original grammar when available."""
-    global setup_Complex_lib, setup_xref_Complex_Complex_lib, setup_Simplex_lib, setup_xref_simplex_complex_lib
+    global setup_Complex_lib, setup_xref_Complex_Complex_lib, setup_Simplex_lib, setup_xref_simplex_complex_lib, setup_xref_Simplex_Document_lib
 
     # Load globals from files if not already loaded
     try:
@@ -1292,6 +1349,39 @@ def update_grammar_text(inputDir):
 
         # Update GrammarRule_Text
         setup_Complex_lib.at[idx, "GrammarRule_Text"] = rule
+
+    # Load setup_xref_Simplex-Document if available and add Document rule
+    try:
+        if setup_xref_Simplex_Document_lib is None:
+            setup_xref_Simplex_Document_lib = _load_pcace_df(inputDir, 'setup_xref_Simplex-Document',
+                                                              {'Simplex': 'ID_setup_simplex'})
+        if setup_xref_Simplex_Document_lib is not None and len(setup_xref_Simplex_Document_lib) > 0:
+            doc_simplex_names = []
+            if 'Name' in setup_xref_Simplex_Document_lib.columns:
+                doc_simplex_names = setup_xref_Simplex_Document_lib['Name'].dropna().tolist()
+            elif 'ID_setup_simplex' in setup_xref_Simplex_Document_lib.columns:
+                doc_sx_ids = setup_xref_Simplex_Document_lib['ID_setup_simplex'].tolist()
+                doc_simplex_names = setup_Simplex_lib[
+                    setup_Simplex_lib['ID_setup_simplex'].isin(doc_sx_ids)]['Name'].tolist()
+            if doc_simplex_names:
+                doc_parts = []
+                for ds_name in doc_simplex_names:
+                    req = True
+                    if 'Required' in setup_xref_Simplex_Document_lib.columns:
+                        req_row = setup_xref_Simplex_Document_lib[
+                            setup_xref_Simplex_Document_lib['Name'] == ds_name] if 'Name' in setup_xref_Simplex_Document_lib.columns else pd.DataFrame()
+                        if not req_row.empty:
+                            req = bool(req_row['Required'].iloc[0])
+                    token = "<{}>".format(ds_name)
+                    if not req:
+                        token = "[{}]".format(token)
+                    doc_parts.append(token)
+                doc_rule = "<Document> --> " + " ".join(doc_parts)
+                last_idx = setup_Complex_lib.index[-1]
+                setup_Complex_lib.at[last_idx, "GrammarRule_Text_Document"] = doc_rule
+                print(f"Document grammar rule: {doc_rule}")
+    except Exception as e:
+        print(f"  Note: Could not add document grammar rule: {e}")
 
     # Save updated setup_Complex back to files
     _save_setup_table(inputDir, 'setup_Complex', setup_Complex_lib)
@@ -1974,7 +2064,9 @@ def generate_cross_complex_query(source_name, target_name,
                                  source_child=None,
                                  target_child=None,
                                  source_extra_children=None,
-                                 target_extra_children=None):
+                                 target_extra_children=None,
+                                 source_document_simplex=None,
+                                 target_document_simplex=None):
     """Generate a SQL query that navigates from one complex type to another.
 
     Parameters
@@ -2146,19 +2238,19 @@ def generate_cross_complex_query(source_name, target_name,
         tgt_extra_info = []
 
     # ---- Build value expressions (may include COALESCE with extras) ----
-    src_primary_val = "COALESCE(src_vt.Value, src_vn.Value, src_vd.Value)"
-    tgt_primary_val = "COALESCE(tgt_vt.Value, tgt_vn.Value, tgt_vd.Value)"
+    src_primary_val = "COALESCE(src_vt.Value, src_vn.Value, DATE(src_vd.Value))"
+    tgt_primary_val = "COALESCE(tgt_vt.Value, tgt_vn.Value, DATE(tgt_vd.Value))"
     if _src_has_extras and src_extra_info:
         parts = [src_primary_val]
         for ei, (_, _, _, _) in enumerate(src_extra_info):
-            parts.append("COALESCE(src_ex{}_vt.Value, src_ex{}_vn.Value, src_ex{}_vd.Value)".format(ei, ei, ei))
+            parts.append("COALESCE(src_ex{}_vt.Value, src_ex{}_vn.Value, DATE(src_ex{}_vd.Value))".format(ei, ei, ei))
         src_value_expr = "COALESCE({})".format(', '.join(parts))
     else:
         src_value_expr = src_primary_val
     if _tgt_has_extras and tgt_extra_info:
         parts = [tgt_primary_val]
         for ei, (_, _, _, _) in enumerate(tgt_extra_info):
-            parts.append("COALESCE(tgt_ex{}_vt.Value, tgt_ex{}_vn.Value, tgt_ex{}_vd.Value)".format(ei, ei, ei))
+            parts.append("COALESCE(tgt_ex{}_vt.Value, tgt_ex{}_vn.Value, DATE(tgt_ex{}_vd.Value))".format(ei, ei, ei))
         tgt_value_expr = "COALESCE({})".format(', '.join(parts))
     else:
         tgt_value_expr = tgt_primary_val
@@ -2391,6 +2483,70 @@ def generate_cross_complex_query(source_name, target_name,
                 jt=tgt_sx_jt, alias=tgt_sx_alias, ds_filter=tgt_ds_filter)
         )
 
+    # ---- Document simplex JOINs ----
+    # Path: Complex → data_xref_Complex_Document → data_xref_Simplex_Simplex_Document
+    #   → setup_xref_Simplex_Document (filter by simplex name) → data_Simplex → value tables
+    # Note: data_xref_Simplex_Document is empty in most DBs; the actual data lives in
+    # data_xref_Simplex_Simplex_Document which links simplex values to documents.
+    if source_document_simplex:
+        _src_doc_sx_row = setup_Simplex_lib[setup_Simplex_lib['Name'] == source_document_simplex]
+        if not _src_doc_sx_row.empty:
+            _src_doc_sx_id = int(_src_doc_sx_row['ID_setup_simplex'].iloc[0])
+            # Find the setup_xref_Simplex_Document row for this simplex to get its xref ID
+            _src_doc_xref_filter = ""
+            if setup_xref_Simplex_Document_lib is not None:
+                _sxsd_col = 'ID_setup_simplex' if 'ID_setup_simplex' in setup_xref_Simplex_Document_lib.columns else 'Simplex'
+                _xref_row = setup_xref_Simplex_Document_lib[
+                    setup_xref_Simplex_Document_lib[_sxsd_col] == _src_doc_sx_id]
+                if not _xref_row.empty:
+                    _id_col = 'ID_setup_xref_simplex_document' if 'ID_setup_xref_simplex_document' in _xref_row.columns else 'ID'
+                    _xref_id = int(_xref_row[_id_col].iloc[0])
+                    _src_doc_xref_filter = "\n        AND src_doc_ssd.ID_setup_xref_simplex_document = {}".format(_xref_id)
+            from_parts.append(
+                "    LEFT JOIN data_xref_Complex_Document src_doc_xcd\n"
+                "        ON src_doc_xcd.ID_data_complex = src_dc.ID_data_complex\n"
+                "    LEFT JOIN data_xref_Simplex_Simplex_Document src_doc_ssd\n"
+                "        ON src_doc_ssd.ID_data_document = src_doc_xcd.ID_data_document{xref_filter}\n"
+                "    LEFT JOIN data_Simplex src_doc_ds\n"
+                "        ON src_doc_ds.ID_data_simplex = src_doc_ssd.ID_data_simplex\n"
+                "    LEFT JOIN setup_Simplex src_doc_ss\n"
+                "        ON src_doc_ss.ID_setup_simplex = src_doc_ds.ID_setup_simplex\n"
+                "    LEFT JOIN data_SimplexText   src_doc_vt ON src_doc_vt.ID_data_date_number_text = src_doc_ds.ID_data_date_number_text AND src_doc_ss.ValueType = 1\n"
+                "    LEFT JOIN data_SimplexNumber src_doc_vn ON src_doc_vn.ID_data_date_number_text = src_doc_ds.ID_data_date_number_text AND src_doc_ss.ValueType = 2\n"
+                "    LEFT JOIN data_SimplexDate   src_doc_vd ON src_doc_vd.ID_data_date_number_text = src_doc_ds.ID_data_date_number_text AND src_doc_ss.ValueType = 3".format(
+                    xref_filter=_src_doc_xref_filter))
+            _src_doc_val = "COALESCE(src_doc_vt.Value, src_doc_vn.Value, DATE(src_doc_vd.Value))"
+            select_parts.append("    {} AS [Doc > {}]".format(_src_doc_val, source_document_simplex))
+
+    if target_document_simplex:
+        _tgt_doc_sx_row = setup_Simplex_lib[setup_Simplex_lib['Name'] == target_document_simplex]
+        if not _tgt_doc_sx_row.empty:
+            _tgt_doc_sx_id = int(_tgt_doc_sx_row['ID_setup_simplex'].iloc[0])
+            _tgt_doc_xref_filter = ""
+            if setup_xref_Simplex_Document_lib is not None:
+                _sxsd_col = 'ID_setup_simplex' if 'ID_setup_simplex' in setup_xref_Simplex_Document_lib.columns else 'Simplex'
+                _xref_row = setup_xref_Simplex_Document_lib[
+                    setup_xref_Simplex_Document_lib[_sxsd_col] == _tgt_doc_sx_id]
+                if not _xref_row.empty:
+                    _id_col = 'ID_setup_xref_simplex_document' if 'ID_setup_xref_simplex_document' in _xref_row.columns else 'ID'
+                    _xref_id = int(_xref_row[_id_col].iloc[0])
+                    _tgt_doc_xref_filter = "\n        AND tgt_doc_ssd.ID_setup_xref_simplex_document = {}".format(_xref_id)
+            from_parts.append(
+                "    LEFT JOIN data_xref_Complex_Document tgt_doc_xcd\n"
+                "        ON tgt_doc_xcd.ID_data_complex = tgt_dc.ID_data_complex\n"
+                "    LEFT JOIN data_xref_Simplex_Simplex_Document tgt_doc_ssd\n"
+                "        ON tgt_doc_ssd.ID_data_document = tgt_doc_xcd.ID_data_document{xref_filter}\n"
+                "    LEFT JOIN data_Simplex tgt_doc_ds\n"
+                "        ON tgt_doc_ds.ID_data_simplex = tgt_doc_ssd.ID_data_simplex\n"
+                "    LEFT JOIN setup_Simplex tgt_doc_ss\n"
+                "        ON tgt_doc_ss.ID_setup_simplex = tgt_doc_ds.ID_setup_simplex\n"
+                "    LEFT JOIN data_SimplexText   tgt_doc_vt ON tgt_doc_vt.ID_data_date_number_text = tgt_doc_ds.ID_data_date_number_text AND tgt_doc_ss.ValueType = 1\n"
+                "    LEFT JOIN data_SimplexNumber tgt_doc_vn ON tgt_doc_vn.ID_data_date_number_text = tgt_doc_ds.ID_data_date_number_text AND tgt_doc_ss.ValueType = 2\n"
+                "    LEFT JOIN data_SimplexDate   tgt_doc_vd ON tgt_doc_vd.ID_data_date_number_text = tgt_doc_ds.ID_data_date_number_text AND tgt_doc_ss.ValueType = 3".format(
+                    xref_filter=_tgt_doc_xref_filter))
+            _tgt_doc_val = "COALESCE(tgt_doc_vt.Value, tgt_doc_vn.Value, DATE(tgt_doc_vd.Value))"
+            select_parts.append("    {} AS [Doc > {}]".format(_tgt_doc_val, target_document_simplex))
+
     # ---- WHERE ----
     where_parts = ["    src_dc.ID_setup_complex = {}".format(source_id)]
     # Source simplex name filter: skip when extras are present (filter is baked into JOINs)
@@ -2500,7 +2656,8 @@ def generate_source_only_query(source_name,
                                source_filter_operator='LIKE',
                                where_simplex=None,
                                source_child=None,
-                               source_extra_children=None):
+                               source_extra_children=None,
+                               source_document_simplex=None):
     """Generate a SQL query that extracts simplex attributes of a single complex type.
 
     This is the \"no target\" variant — only Object 1 + Object 2, no Object 3/4.
@@ -2583,11 +2740,11 @@ def generate_source_only_query(source_name,
         src_extra_info = []
 
     # ---- Value expression ----
-    src_primary_val = "COALESCE(src_vt.Value, src_vn.Value, src_vd.Value)"
+    src_primary_val = "COALESCE(src_vt.Value, src_vn.Value, DATE(src_vd.Value))"
     if _src_has_extras and src_extra_info:
         parts = [src_primary_val]
         for ei, _ in enumerate(src_extra_info):
-            parts.append("COALESCE(src_ex{}_vt.Value, src_ex{}_vn.Value, src_ex{}_vd.Value)".format(ei, ei, ei))
+            parts.append("COALESCE(src_ex{}_vt.Value, src_ex{}_vn.Value, DATE(src_ex{}_vd.Value))".format(ei, ei, ei))
         src_value_expr = "COALESCE({})".format(', '.join(parts))
     else:
         src_value_expr = src_primary_val
@@ -2676,6 +2833,37 @@ def generate_source_only_query(source_name,
             "    LEFT JOIN data_SimplexDate   src_vd ON src_vd.ID_data_date_number_text = src_ds.ID_data_date_number_text AND src_ss.ValueType = 3".format(
                 jt=src_sx_jt, alias=src_sx_alias, ds_filter=src_ds_filter)
         )
+
+    # ---- Document simplex JOINs ----
+    # Uses data_xref_Simplex_Simplex_Document (not data_xref_Simplex_Document which is empty in most DBs)
+    if source_document_simplex:
+        _src_doc_sx_row = setup_Simplex_lib[setup_Simplex_lib['Name'] == source_document_simplex]
+        if not _src_doc_sx_row.empty:
+            _src_doc_sx_id = int(_src_doc_sx_row['ID_setup_simplex'].iloc[0])
+            _src_doc_xref_filter = ""
+            if setup_xref_Simplex_Document_lib is not None:
+                _sxsd_col = 'ID_setup_simplex' if 'ID_setup_simplex' in setup_xref_Simplex_Document_lib.columns else 'Simplex'
+                _xref_row = setup_xref_Simplex_Document_lib[
+                    setup_xref_Simplex_Document_lib[_sxsd_col] == _src_doc_sx_id]
+                if not _xref_row.empty:
+                    _id_col = 'ID_setup_xref_simplex_document' if 'ID_setup_xref_simplex_document' in _xref_row.columns else 'ID'
+                    _xref_id = int(_xref_row[_id_col].iloc[0])
+                    _src_doc_xref_filter = "\n        AND src_doc_ssd.ID_setup_xref_simplex_document = {}".format(_xref_id)
+            from_parts.append(
+                "    LEFT JOIN data_xref_Complex_Document src_doc_xcd\n"
+                "        ON src_doc_xcd.ID_data_complex = src_dc.ID_data_complex\n"
+                "    LEFT JOIN data_xref_Simplex_Simplex_Document src_doc_ssd\n"
+                "        ON src_doc_ssd.ID_data_document = src_doc_xcd.ID_data_document{xref_filter}\n"
+                "    LEFT JOIN data_Simplex src_doc_ds\n"
+                "        ON src_doc_ds.ID_data_simplex = src_doc_ssd.ID_data_simplex\n"
+                "    LEFT JOIN setup_Simplex src_doc_ss\n"
+                "        ON src_doc_ss.ID_setup_simplex = src_doc_ds.ID_setup_simplex\n"
+                "    LEFT JOIN data_SimplexText   src_doc_vt ON src_doc_vt.ID_data_date_number_text = src_doc_ds.ID_data_date_number_text AND src_doc_ss.ValueType = 1\n"
+                "    LEFT JOIN data_SimplexNumber src_doc_vn ON src_doc_vn.ID_data_date_number_text = src_doc_ds.ID_data_date_number_text AND src_doc_ss.ValueType = 2\n"
+                "    LEFT JOIN data_SimplexDate   src_doc_vd ON src_doc_vd.ID_data_date_number_text = src_doc_ds.ID_data_date_number_text AND src_doc_ss.ValueType = 3".format(
+                    xref_filter=_src_doc_xref_filter))
+            _src_doc_val = "COALESCE(src_doc_vt.Value, src_doc_vn.Value, DATE(src_doc_vd.Value))"
+            select_parts.append("    {} AS [Doc > {}]".format(_src_doc_val, source_document_simplex))
 
     # ---- WHERE ----
     where_parts = ["    src_dc.ID_setup_complex = {}".format(source_id)]
@@ -2848,7 +3036,7 @@ def generate_multi_target_query(source_name, source_simplex=None,
         _cte_tgt_label = tgt_child or tgt_name
         cte_select = ["        src_dc.ID_data_complex AS Source_ID"]
         if tgt_has_simplexes:
-            val_expr = "COALESCE(tgt_vt.Value, tgt_vn.Value, tgt_vd.Value)"
+            val_expr = "COALESCE(tgt_vt.Value, tgt_vn.Value, DATE(tgt_vd.Value))"
             if tgt_simplex:
                 cte_select.append("        {} AS [{}]".format(
                     val_expr, "{} > {}".format(_cte_tgt_label, tgt_simplex)))
@@ -2969,7 +3157,7 @@ def generate_multi_target_query(source_name, source_simplex=None,
 
     _mt_src_label = source_child or source_name
     if source_has_simplexes:
-        src_value_expr = "COALESCE(src_vt.Value, src_vn.Value, src_vd.Value)"
+        src_value_expr = "COALESCE(src_vt.Value, src_vn.Value, DATE(src_vd.Value))"
         if source_simplex:
             _src_alias = "{} > {}".format(_mt_src_label, source_simplex)
             src_select.append("        {} AS [{}]".format(src_value_expr, _src_alias))
@@ -3455,16 +3643,8 @@ def compare_aggregate_codes_across_dbs(db_dirs, outputDir):
     return output_files
 
 
-def build_aggregate_side_by_side(db_dir, outputDir, category='Actor'):
-    """Build a side-by-side mapping of original simplex values to aggregate codes
-    for a single database.
-
-    For each complex instance (ID_data_complex), extracts:
-      - The original simplex value(s) (e.g., name of individual actor)
-      - All aggregate codes assigned to the same complex instance
-
-    Produces a CSV with one row per complex instance showing the original value
-    alongside each aggregate coding scheme.
+def build_aggregate_side_by_side(db_dir, outputDir, category='Actor', simplex_names=None):
+    """Build a side-by-side mapping of original simplex values to aggregate codes.
 
     Parameters
     ----------
@@ -3473,7 +3653,10 @@ def build_aggregate_side_by_side(db_dir, outputDir, category='Actor'):
     outputDir : str
         Where to write the output CSV.
     category : str
-        'Actor' or 'Action' — determines which simplex types to include.
+        Legacy parameter, used in output filename.
+    simplex_names : list of str, optional
+        Explicit list of simplex names to include. If provided, these are
+        used directly (no keyword filtering). All listed names become columns.
 
     Returns
     -------
@@ -3489,7 +3672,6 @@ def build_aggregate_side_by_side(db_dir, outputDir, category='Actor'):
 
     required_cols = {'ID_data_complex', 'Simplex name', 'Value', 'Identifier'}
     if not required_cols.issubset(set(xref_all.columns)):
-        # Try alternate column names
         if 'Simplex name (xref)' in xref_all.columns and 'Simplex name' not in xref_all.columns:
             xref_all['Simplex name'] = xref_all['Simplex name (xref)']
         missing = required_cols - set(xref_all.columns)
@@ -3497,42 +3679,23 @@ def build_aggregate_side_by_side(db_dir, outputDir, category='Actor'):
             print(f"  WARNING: Missing columns {missing} in {db_name}")
             return None
 
-    # Identify aggregate vs original simplex names
-    all_simplex_names = xref_all['Simplex name'].dropna().unique()
-    agg_names = [n for n in all_simplex_names if 'aggregate' in n.lower()]
+    all_simplex_names_in_db = xref_all['Simplex name'].dropna().unique()
 
-    if not agg_names:
-        print(f"  {db_name}: no aggregate simplex types found")
-        return None
+    if simplex_names:
+        agg_names = [n for n in simplex_names if n in all_simplex_names_in_db]
+        if not agg_names:
+            print(f"  {db_name}: none of the selected simplexes found in data")
+            return None
+        orig_names = [n for n in all_simplex_names_in_db if n not in agg_names]
+    else:
+        agg_names = [n for n in all_simplex_names_in_db if 'aggregate' in n.lower()]
+        if not agg_names:
+            print(f"  {db_name}: no aggregate simplex types found")
+            return None
+        orig_names = [n for n in all_simplex_names_in_db if n not in agg_names]
 
-    # Filter by category
-    if category == 'Actor':
-        agg_names = [n for n in agg_names if 'actor' in n.lower()]
-        # Original value simplex names for actors
-        orig_keywords = ['name of individual', 'name of collective', 'name of organization',
-                         'nome attore', 'nome individuo', 'nome collettivo', 'nome organizzazione',
-                         'nome individuale', 'nome dell', 'attore',
-                         'name of actor', 'actor name', 'individual name']
-    else:  # Action
-        agg_names = [n for n in agg_names if 'action' in n.lower()]
-        orig_keywords = ['verbal phrase', 'frase verbale', 'processo', 'process',
-                         'simple process', 'complex process', 'processo semplice',
-                         'name of action', 'action name', 'azione']
-
-    if not agg_names:
-        print(f"  {db_name}: no {category} aggregate types found")
-        return None
-
-    # Find original value simplex names (non-aggregate simplex types)
-    orig_names = []
-    for n in all_simplex_names:
-        if 'aggregate' in n.lower():
-            continue
-        if any(kw in n.lower() for kw in orig_keywords):
-            orig_names.append(n)
-
-    print(f"  {db_name} {category}: aggregate types = {agg_names}")
-    print(f"  {db_name} {category}: original value types = {orig_names[:5]}{'...' if len(orig_names) > 5 else ''}")
+    print(f"  {db_name}: selected simplex types = {agg_names}")
+    print(f"  {db_name}: other simplex types = {orig_names[:5]}{'...' if len(orig_names) > 5 else ''}")
 
     # Build per-complex-instance mapping
     # For each complex instance, get original values and all aggregate code values
@@ -3583,9 +3746,10 @@ def build_aggregate_side_by_side(db_dir, outputDir, category='Actor'):
                 sorted(orig_cols_present) + sorted(agg_names)
     df_result = df_result[[c for c in col_order if c in df_result.columns]]
 
+    label = '_'.join(agg_names[:3]).replace(' ', '_') if simplex_names else category
     out_file = IO_files_util.generate_output_file_name(
         '', db_dir, outputDir, '.csv',
-        db_name + '_' + category + '_aggregate_side_by_side')
+        db_name + '_' + label + '_side_by_side')
     df_result.to_csv(out_file, encoding='utf-8', index=False)
     print(f"  Side-by-side: {len(df_result)} complex instances saved to {out_file}")
 

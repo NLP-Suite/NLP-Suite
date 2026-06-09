@@ -20,6 +20,7 @@ import style_analysis_abstract_concreteness_analysis_util
 import Stanza_util
 import reminders_util
 import config_util
+import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -405,17 +406,17 @@ def open_GUI(*args):
         extra_GUIs_menu.configure(state='normal')
     if extra_GUIs_menu_var.get():
         if 'Spelling' in extra_GUIs_menu_var.get():
-            call('python file_spell_checker_main.py', shell=True)
+            run_script_util.run_script("file_spell_checker_main.py")
         if 'statistics' in extra_GUIs_menu_var.get():
-            call('python statistics_txt_main.py', shell=True)
+            run_script_util.run_script("statistics_txt_main.py")
         if 'N-grams' in extra_GUIs_menu_var.get():
-            call('python NGrams_CoOccurrences_main.py', shell=True)
+            run_script_util.run_script("NGrams_CoOccurrences_main.py")
         if 'Nominalization' in extra_GUIs_menu_var.get():
-            call('python nominalization_main.py', shell=True)
+            run_script_util.run_script("nominalization_main.py")
         if 'CoNLL' in extra_GUIs_menu_var.get():
-            call('python CoNLL_table_analyzer_main.py', shell=True)
+            run_script_util.run_script("CoNLL_table_analyzer_main.py")
         if 'WordNet' in extra_GUIs_menu_var.get():
-            call('python knowledge_graphs_WordNet_main.py', shell=True)
+            run_script_util.run_script("knowledge_graphs_WordNet_main.py")
 extra_GUIs_menu_var.trace('w',open_GUI)
 
 complexity_readability_analysis_var.set(0)
@@ -586,7 +587,7 @@ activate_NLP_options()
 if error:
     mb.showwarning(title='Warning',
                message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.")
-    call("python NLP_setup_package_language_main.py", shell=True)
+    run_script_util.run_script("NLP_setup_package_language_main.py")
     # this will display the correct hover-over info after the python call, in case options were changed
     error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 

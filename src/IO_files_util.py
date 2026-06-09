@@ -168,6 +168,7 @@ def getFileList_SubDir(inputFilename, inputDir, fileType='.*', silent=False):
 import functools
 from datetime import datetime
 import os
+import run_script_util
 
 
 # the below is to convert from self-defined date format to the correct datetime format
@@ -1069,7 +1070,7 @@ def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, inputDir,
     elif script_to_run.endswith('.py'):  # with GUI
         if IO_libraries_util.check_inputPythonJavaProgramFile(script_to_run) == False:
             return filesToOpen
-        call("python " + script_to_run, shell=True)
+        run_script_util.run_script(script_to_run)
     elif script_to_run.endswith('.jar'):  # with GUI
         run_jar_script(script_to_run, inputFilename, inputDir, outputDir, openOutputFiles,
                        chartPackage, dataTransformation)

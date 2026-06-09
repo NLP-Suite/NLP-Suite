@@ -1839,6 +1839,7 @@ def _apply_cli_dirs():
             _dir = sys.argv[idx + 1]
             if os.path.isdir(_dir):
                 GUI_util.input_main_dir_path.set(_dir)
+                GUI_util.config_input_output_alphabetic_options[1][1] = _dir
         except (IndexError, ValueError):
             pass
     if '--outputdir' in sys.argv:
@@ -1847,8 +1848,20 @@ def _apply_cli_dirs():
             _dir = sys.argv[idx + 1]
             if os.path.isdir(_dir):
                 GUI_util.output_dir_path.set(_dir)
+                GUI_util.config_input_output_alphabetic_options[3][1] = _dir
         except (IndexError, ValueError):
             pass
+    _refresh_io_display()
+
+def _refresh_io_display():
+    in_dir = GUI_util.input_main_dir_path.get()
+    out_dir = GUI_util.output_dir_path.get()
+    display = "INPUT DIR: " + os.path.basename(os.path.normpath(in_dir)) if in_dir else "INPUT DIR:"
+    display += "\nOUTPUT DIR: " + os.path.basename(out_dir) if out_dir else "\nOUTPUT DIR:"
+    try:
+        GUI_util.update_display_area(display, GUI_util.IO_setup_brief_display_area)
+    except Exception:
+        pass
 
 GUI_util.window.after(200, _apply_cli_dirs)
 

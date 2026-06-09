@@ -14,6 +14,7 @@ from subprocess import call
 import GUI_IO_util
 import IO_files_util
 import statistics_txt_util
+import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -220,14 +221,14 @@ def clear(e):
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
-style_analysis_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Style analysis (Open GUI)',command=lambda: call('python style_analysis_main.py', shell=True))
+style_analysis_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Style analysis (Open GUI)',command=lambda: run_script_util.run_script("style_analysis_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    style_analysis_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the style analysis GUI")
 
-extract_sentences_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Search/Extract sentences from corpus (Open GUI)',command=lambda: call('python file_search_byWord_main.py', shell=True))
+extract_sentences_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Search/Extract sentences from corpus (Open GUI)',command=lambda: run_script_util.run_script("file_search_byWord_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    extract_sentences_button,

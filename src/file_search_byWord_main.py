@@ -20,6 +20,7 @@ import IO_user_interface_util
 import reminders_util
 import constants_util
 import config_util
+import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -54,13 +55,13 @@ def run(inputFilename,inputDir, outputDir,
 
     # if extra_GUIs_var.get():
     #     if 'CoNLL' in extra_GUIs_menu_var.get():
-    #         call("python CoNLL_table_analyzer_main.py", shell=True)
+    #         run_script_util.run_script("CoNLL_table_analyzer_main.py")
     #     if 'Style' in extra_GUIs_menu_var.get():
-    #         call("python style_analysis_main.py", shell=True)
+    #         run_script_util.run_script("style_analysis_main.py")
     #     if 'Ngrams searches' in extra_GUIs_menu_var.get():
-    #         call("python NGrams_CoOccurrences_main.py", shell=True)
+    #         run_script_util.run_script("NGrams_CoOccurrences_main.py")
     #     if 'Wordnet' in extra_GUIs_menu_var.get():
-    #         call("python knowledge_graphs_WordNet_main.py", shell=True)
+    #         run_script_util.run_script("knowledge_graphs_WordNet_main.py")
 
     # # create a subdirectory of the output directory
     # outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='search',
@@ -280,15 +281,15 @@ def open_GUI(*args):
         return
     if extra_GUIs_var.get():
         if 'Spell' in extra_GUIs_menu_var.get():
-            call("python file_spell_checker_main.py", shell=True)
+            run_script_util.run_script("file_spell_checker_main.py")
         if 'CoNLL' in extra_GUIs_menu_var.get():
-            call("python CoNLL_table_analyzer_main.py", shell=True)
+            run_script_util.run_script("CoNLL_table_analyzer_main.py")
         if 'Style' in extra_GUIs_menu_var.get():
-            call("python style_analysis_main.py", shell=True)
+            run_script_util.run_script("style_analysis_main.py")
         if 'searches & VIEWER' in extra_GUIs_menu_var.get():
-            call("python NGrams_CoOccurrences_main.py", shell=True)
+            run_script_util.run_script("NGrams_CoOccurrences_main.py")
         if 'Wordnet' in extra_GUIs_menu_var.get():
-            call("python knowledge_graphs_WordNet_main.py", shell=True)
+            run_script_util.run_script("knowledge_graphs_WordNet_main.py")
 extra_GUIs_menu_var.trace('w',open_GUI)
 
 search_options_menu_var.set('Case sensitive (default)')
@@ -602,7 +603,7 @@ activate_NLP_options()
 if error:
     mb.showwarning(title='Warning',
                message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.")
-    call("python NLP_setup_package_language_main.py", shell=True)
+    run_script_util.run_script("NLP_setup_package_language_main.py")
     # this will display the correct hover-over info after the python call, in case options were changed
     error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 

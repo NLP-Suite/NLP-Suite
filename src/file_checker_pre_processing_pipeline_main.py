@@ -21,6 +21,7 @@ import statistics_txt_util
 import file_checker_util
 import file_cleaner_util
 import file_spell_checker_util
+import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -255,13 +256,13 @@ window.bind("<Escape>", clear)
 
 def open_GUI(*args):
     if 'checker/converter/cleaner' in extra_GUIs_menu_var.get():
-        call("python file_checker_converter_cleaner_main.py", shell=True)
+        run_script_util.run_script("file_checker_converter_cleaner_main.py")
     if 'spell' in extra_GUIs_menu_var.get():
-        call("python file_spell_checker_main.py", shell=True)
+        run_script_util.run_script("file_spell_checker_main.py")
     elif 'splitter' in extra_GUIs_menu_var.get():
-        call("python file_splitter_main.py", shell=True)
+        run_script_util.run_script("file_splitter_main.py")
     elif 'search' in extra_GUIs_menu_var.get():
-        call("python file_search_byWord_main.py", shell=True)
+        run_script_util.run_script("file_search_byWord_main.py")
 extra_GUIs_menu_var.trace('w',open_GUI)
 
 

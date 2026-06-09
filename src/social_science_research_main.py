@@ -27,6 +27,7 @@ import charts_util
 import reminders_util
 import file_summary_checker_util
 import file_find_non_related_documents_util
+import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -35,7 +36,7 @@ def check_filename(outputDir):
     if IO_libraries_util.check_inputPythonJavaProgramFile('file_checker_converter_cleaner_main.py') == False:
         return
     if platform == "win32":
-        subprocess.call("python file_manager_main.py", shell=True)
+        run_script_util.run_script("file_manager_main.py")
     # linux # OS X
     elif platform == "linux" or platform == "linux2" or platform == "darwin":
         subprocess.call("sudo Python file_manager_main.py", shell=True)
@@ -46,7 +47,7 @@ def character(outputDir):
     if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_WordNet_main.py') == False:
         return
     if platform == "win32":
-        subprocess.call("python knowledge_graphs_WordNet_main.py character", shell=True)
+        run_script_util.run_script("knowledge_graphs_WordNet_main.py", "character")
     # linux # OS X
     elif platform == "linux" or platform == "linux2" or platform == "darwin":
         subprocess.call("sudo Python knowledge_graphs_WordNet_main.py character", shell=True)
@@ -56,7 +57,7 @@ def find_character_home(outputDir):
     if IO_libraries_util.check_inputPythonJavaProgramFile('file_classifier_main.py') == False:
         return
     if platform == "win32":
-        subprocess.call("python file_classifier_main.py character home", shell=True)
+        run_script_util.run_script("file_classifier_main.py", "character", "home")
     # linux # OS X
     elif platform == "linux" or platform == "linux2" or platform == "darwin":
         subprocess.call("sudo Python file_classifier_main.py character home", shell=True)
@@ -87,7 +88,7 @@ def ancestor(inputDir, outputDir):
     if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_WordNet_main.py') == False:
         return
     if platform == "win32":
-        subprocess.call("python WordNet.py ancestor", shell=True)
+        run_script_util.run_script("WordNet.py", "ancestor")
     # linux # OS X
     elif platform == "linux" or platform == "linux2" or platform == "darwin":
         subprocess.call("sudo Python knowledge_graphs_WordNet_main.py ancestor", shell=True)
@@ -257,7 +258,7 @@ def Levenshtein():
     if IO_libraries_util.check_inputPythonJavaProgramFile('file_spell_checker_main.py') == False:
         return
     if platform == "win32":
-        subprocess.call("python file_spell_checker_main.py", shell=True)
+        run_script_util.run_script("file_spell_checker_main.py")
     # linux # OS X
     elif platform == "linux" or platform == "linux2" or platform == "darwin":
         subprocess.call("sudo Python file_spell_checker_main.py", shell=True)

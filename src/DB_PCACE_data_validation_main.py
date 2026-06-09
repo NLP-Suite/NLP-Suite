@@ -204,21 +204,25 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
                         traceback.print_exc()
 
             if agg_side_by_side_var.get() == 1:
-                category = agg_category_var.get()
-                for db_dir in db_dirs:
-                    try:
-                        side_file = DB_PCACE_data_analysis_util.build_aggregate_side_by_side(
-                            db_dir, outputDir, category=category)
-                        if side_file:
-                            filesToOpen.append(side_file)
-                    except Exception as e:
-                        print(f"  Side-by-side error for {os.path.basename(db_dir)}: {e}")
-                        import traceback
-                        traceback.print_exc()
-                if filesToOpen:
-                    mb.showinfo(title='Side-by-side mapping',
-                                message=f'Side-by-side mapping produced files for {len(db_dirs)} database(s).\n\n'
-                                        f'Each CSV shows original values alongside their aggregate codes.')
+                if not _agg_simplex_list:
+                    mb.showwarning(title='Side-by-side mapping',
+                                   message='No aggregate simplexes selected.\n\n'
+                                           'Use the dropdown and + button to select simplexes to compare.')
+                else:
+                    for db_dir in db_dirs:
+                        try:
+                            side_file = DB_PCACE_data_analysis_util.build_aggregate_side_by_side(
+                                db_dir, outputDir, simplex_names=list(_agg_simplex_list))
+                            if side_file:
+                                filesToOpen.append(side_file)
+                        except Exception as e:
+                            print(f"  Side-by-side error for {os.path.basename(db_dir)}: {e}")
+                            import traceback
+                            traceback.print_exc()
+                    if filesToOpen:
+                        mb.showinfo(title='Side-by-side mapping',
+                                    message=f'Side-by-side mapping produced files for {len(db_dirs)} database(s).\n\n'
+                                            f'Each CSV shows original values alongside their aggregate codes.')
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -271,6 +275,9 @@ def _open_sql_gui():
     """Launch the DB SQL GUI."""
     script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'DB_SQL_main.py')
     cmd = [sys.executable, script_path]
+    in_dir = inputDir.get() if hasattr(inputDir, 'get') else inputDir
+    if in_dir:
+        cmd.extend(['--inputdir', in_dir])
     out_dir = outputDir.get() if hasattr(outputDir, 'get') else outputDir
     if out_dir:
         cmd.extend(['--outputdir', out_dir])
@@ -280,6 +287,9 @@ def _open_pcace_analyzer():
     """Launch the PC-ACE data analysis GUI."""
     script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'DB_PCACE_data_analysis_main.py')
     cmd = [sys.executable, script_path]
+    in_dir = inputDir.get() if hasattr(inputDir, 'get') else inputDir
+    if in_dir:
+        cmd.extend(['--inputdir', in_dir])
     out_dir = outputDir.get() if hasattr(outputDir, 'get') else outputDir
     if out_dir:
         cmd.extend(['--outputdir', out_dir])
@@ -289,6 +299,9 @@ def _open_data_manipulation():
     """Launch the data manipulation GUI."""
     script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data_manipulation_main.py')
     cmd = [sys.executable, script_path]
+    in_dir = inputDir.get() if hasattr(inputDir, 'get') else inputDir
+    if in_dir:
+        cmd.extend(['--inputdir', in_dir])
     out_dir = outputDir.get() if hasattr(outputDir, 'get') else outputDir
     if out_dir:
         cmd.extend(['--outputdir', out_dir])
@@ -714,6 +727,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_c
                                    "Use + to add directories, − to remove.\n"
                                    "The INPUT directory (if set) is automatically included.")
 
+_init_input = GUI_util.input_main_dir_path.get() if hasattr(GUI_util.input_main_dir_path, 'get') else GUI_util.input_main_dir_path
+if _init_input and os.path.isdir(str(_init_input)) and os.path.isfile(os.path.join(str(_init_input), 'data_Complex.xlsx')):
+    _agg_db_dirs.append(str(_init_input))
+    _refresh_db_listbox()
+
 # ── Comparison controls ──────────────────────────────────────────────────────
 
 agg_cross_db_var = tk.IntVar()
@@ -736,17 +754,51 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_c
                                    "One row per complex instance, so you can see how each original value\n"
                                    "maps through the different coding schemes.")
 
-# Category selection (Actor vs Action)
-agg_category_var = tk.StringVar()
-agg_category_var.set('Actor')
-agg_category_menu = ttk.Combobox(window, textvariable=agg_category_var, width=10,
-                                  values=['Actor', 'Action'], state='readonly')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 400, y_multiplier_integer,
-                                   agg_category_menu,
-                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 400,
-                                   "Select the category for side-by-side mapping:\n"
-                                   "  Actor: individual, collective, organization aggregate codes\n"
-                                   "  Action: simple/complex process aggregate codes")
+# Aggregate simplex selection (dynamic, like NOUN/VERB lemmatize pattern)
+_agg_simplex_list = []
+
+agg_simplex_var = tk.StringVar()
+agg_simplex_menu = ttk.Combobox(window, textvariable=agg_simplex_var, width=40, state='readonly')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 200, y_multiplier_integer,
+                                   agg_simplex_menu,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 200,
+                                   "Select an aggregate simplex to add to the comparison list.\n"
+                                   "Use + to add, Reset to clear the list.")
+
+def _add_agg_simplex():
+    sel = agg_simplex_var.get()
+    if sel and sel not in _agg_simplex_list:
+        _agg_simplex_list.append(sel)
+        _refresh_agg_simplex_display()
+
+def _reset_agg_simplex():
+    _agg_simplex_list.clear()
+    _refresh_agg_simplex_display()
+
+def _refresh_agg_simplex_display():
+    if _agg_simplex_list:
+        agg_simplex_selected_var.set(', '.join(_agg_simplex_list))
+    else:
+        agg_simplex_selected_var.set('')
+
+agg_add_button = tk.Button(window, text='+', width=2, command=_add_agg_simplex)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 510, y_multiplier_integer,
+                                   agg_add_button,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 510,
+                                   "Add the selected simplex to the comparison list.")
+
+agg_reset_button = tk.Button(window, text='Reset', width=5, command=_reset_agg_simplex)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 545, y_multiplier_integer,
+                                   agg_reset_button,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 545,
+                                   "Clear the aggregate simplex list and start fresh.")
+
+agg_simplex_selected_var = tk.StringVar()
+agg_simplex_selected_label = tk.Entry(window, textvariable=agg_simplex_selected_var, width=40, state='readonly')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 620, y_multiplier_integer,
+                                   agg_simplex_selected_label,
+                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 620,
+                                   "Currently selected aggregate simplexes for comparison.")
 
 # ── Populate simplex dropdown when database directory changes ─────────────────
 
@@ -788,6 +840,12 @@ def _on_inputDir_change(*args):
                     _noun_simplex_list.append(sn)
                 if any(kw in sn_lower for kw in _verb_keywords):
                     _verb_simplex_list.append(sn)
+            _agg_db_dirs.clear()
+            _agg_db_dirs.append(dir_val)
+            _refresh_db_listbox()
+            agg_simplex_menu['values'] = sorted_text + [sn for sn in simplex_names if sn not in sorted_text]
+            _agg_simplex_list.clear()
+            _refresh_agg_simplex_display()
         except Exception as e:
             print(f"  Could not populate simplex dropdown: {e}")
             spell_check_simplex_menu['values'] = ['ALL text simplexes']

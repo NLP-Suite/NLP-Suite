@@ -22,6 +22,7 @@ import IO_user_interface_util
 import Stanford_CoreNLP_tags_util
 import CoNLL_k_sentences_util
 import reminders_util
+import run_script_util
 
 # from data_manager_main import extract_from_csv
 
@@ -54,15 +55,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
 
     # if extra_GUIs_var.get():
     #     if 'Data manipulation' in extra_GUIs_menu_var.get():
-    #         call("python data_manipulation_main.py", shell=True)
+    #         run_script_util.run_script("data_manipulation_main.py")
     #     elif 'Style' in extra_GUIs_menu_var.get():
-    #         call("python style_analysis_main.py", shell=True)
+    #         run_script_util.run_script("style_analysis_main.py")
     #     if 'Ngrams searches' in extra_GUIs_menu_var.get():
-    #         call("python NGrams_CoOccurrences_main.py", shell=True)
+    #         run_script_util.run_script("NGrams_CoOccurrences_main.py")
     #     if 'Word searches' in extra_GUIs_menu_var.get():
-    #         call("python file_search_byWord_main.py", shell=True)
+    #         run_script_util.run_script("file_search_byWord_main.py")
     #     if 'Wordnet' in extra_GUIs_menu_var.get():
-    #         call("python knowledge_graphs_WordNet_main.py", shell=True)
+    #         run_script_util.run_script("knowledge_graphs_WordNet_main.py")
 
 # Ngrams searches & VIEWER','Word searches
 
@@ -515,17 +516,17 @@ def open_GUI(*args):
         return
     if extra_GUIs_var.get():
         if 'Data manipulation' in extra_GUIs_menu_var.get():
-            call("python data_manipulation_main.py", shell=True)
+            run_script_util.run_script("data_manipulation_main.py")
         elif 'Style' in extra_GUIs_menu_var.get():
-            call("python style_analysis_main.py", shell=True)
+            run_script_util.run_script("style_analysis_main.py")
         if 'Ngrams searches' in extra_GUIs_menu_var.get():
-            call("python NGrams_CoOccurrences_main.py", shell=True)
+            run_script_util.run_script("NGrams_CoOccurrences_main.py")
         if 'Word searches' in extra_GUIs_menu_var.get():
-            call("python file_search_byWord_main.py", shell=True)
+            run_script_util.run_script("file_search_byWord_main.py")
         if 'Wordnet' in extra_GUIs_menu_var.get():
-            call("python knowledge_graphs_WordNet_main.py", shell=True)
+            run_script_util.run_script("knowledge_graphs_WordNet_main.py")
         if 'statistics' in extra_GUIs_menu_var.get():
-            call("python statistics_txt_main.py", shell=True)
+            run_script_util.run_script("statistics_txt_main.py")
 extra_GUIs_menu_var.trace('w',open_GUI)
 
 all_analyses_var = tk.IntVar()

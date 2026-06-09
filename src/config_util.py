@@ -22,6 +22,7 @@ from subprocess import call
 
 import IO_user_interface_util
 import GUI_IO_util
+import run_script_util
 import csv
 
 defaultConfigFilename = 'NLP_default_IO_config.csv'
@@ -350,9 +351,10 @@ def read_config_file(config_filename, config_input_output_numeric_options):
             # repeat until the user has entered the appropriate information in NLP_setup_IO_main.py
             while os.path.isfile(configFilePath) == False:
                 # blanks in the config_filename will break the argparse algorithm
-                call("python NLP_setup_IO_main.py --config_option " +
-                     str(config_input_output_numeric_options).replace('[','"').replace(
-                    ']', '"') + " --config_filename " + config_filename, shell=True)
+                run_script_util.run_script("NLP_setup_IO_main.py",
+                    "--config_option",
+                    str(config_input_output_numeric_options).replace('[','"').replace(']', '"'),
+                    "--config_filename", config_filename)
                 if os.path.isfile(configFilePath) == False:
                     mb.showwarning(title='Missing IO configuration data ',
                                    message="You must enter the appropriate Input/output configuration options in NLP_setup_IO_main.py and SAVE them to exit this loop.")

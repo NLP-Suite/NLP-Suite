@@ -16,6 +16,7 @@ import reminders_util
 import TIPS_util
 import IO_internet_util
 import IO_user_interface_util
+import run_script_util
 
 # import pip not used
 # def install(software_name):
@@ -562,7 +563,7 @@ def get_missing_external_software_list(calling_script, external_software_config_
                 missing_software = missing_software + str(software_name).upper() + '\n\n'
                 # missing_software = missing_software + ',  ' + str(software_name).upper() + '\n\n'
         # if calling_script!='NLP_setup_external_software_main.py' and missing_software!='':
-        #     call("python NLP_setup_external_software_main.py", shell=True)
+        #     run_script_util.run_script("NLP_setup_external_software_main.py")
 
     return missing_software
 
@@ -863,7 +864,7 @@ def display_download_installation_messages(download_install, software_name, soft
                     answer = tk.messagebox.askyesno(software_name + " installation", opening_message)
                     if answer:
                         download_message = ''
-                        call("python NLP_setup_external_software_main.py", shell=False)
+                        run_script_util.run_script("NLP_setup_external_software_main.py")
                         # must get software_dir in case it was changed in the NLP_setup_external_software_main GUI
                         software_dir, software_url, missing_software, error_found = get_external_software_dir(calling_script,
                                                                                                  software_name,

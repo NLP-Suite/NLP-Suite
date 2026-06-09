@@ -78,7 +78,7 @@ _local_modules = [
     'NLP_menu_main', 'NLP_setup_download_jars',
     'NLP_setup_external_software_main', 'NLP_setup_IO_main',
     'NLP_setup_package_language_main', 'NLP_setup_shortcut_add',
-    'NLP_setup_shortcut_remove', 'NLP_setup_update_util',
+    'NLP_setup_shortcut_remove', 'NLP_setup_update_util', 'run_script_util',
     'NLP_welcome_main',
     'nominalization_main', 'nominalization_util',
     'parsers_annotators_main', 'parsers_annotators_visualization_util',
@@ -249,6 +249,7 @@ a = Analysis(
         'gmaps',
         'nltk',      # hook incompatible with Python 3.8; nltk downloads data at runtime
         'spacy_langdetect', 'contextualSpellCheck',  # optional, may not be installed
+        'pygit2',    # not needed in bundled app; auto-update disabled when frozen
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,

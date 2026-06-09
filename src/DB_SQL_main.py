@@ -352,7 +352,7 @@ def clear(e):
     _refresh_csv_columns()
 window.bind("<Escape>", clear)
 
-_SQLITE_VERSION = 3  # bump when _build_sqlite column mappings change (3 = added indexes)
+_SQLITE_VERSION = 4  # bump when _build_sqlite column mappings change (4 = added setup_xref_Simplex_Document rename)
 
 def _check_sqlite_version(in_dir):
     """Check if the SQLite database was built with the current column-rename version.
@@ -390,6 +390,11 @@ _INDEX_STMTS = [
     "CREATE INDEX IF NOT EXISTS idx_dc_id_setup ON data_Complex(ID_data_complex, ID_setup_complex)",
     "CREATE INDEX IF NOT EXISTS idx_xcc_lower_higher ON data_xref_Complex_Complex(ID_data_complex_lower, ID_data_complex_higher)",
     "CREATE INDEX IF NOT EXISTS idx_xcc_higher_lower ON data_xref_Complex_Complex(ID_data_complex_higher, ID_data_complex_lower)",
+    # Document cross-reference indexes for document simplex queries
+    "CREATE INDEX IF NOT EXISTS idx_xcd_complex ON data_xref_Complex_Document(ID_data_complex)",
+    "CREATE INDEX IF NOT EXISTS idx_xcd_document ON data_xref_Complex_Document(ID_data_document)",
+    "CREATE INDEX IF NOT EXISTS idx_xssd_document ON data_xref_Simplex_Simplex_Document(ID_data_document)",
+    "CREATE INDEX IF NOT EXISTS idx_xssd_xrefid ON data_xref_Simplex_Simplex_Document(ID_setup_xref_simplex_document)",
 ]
 
 def _ensure_indexes(db_path):
@@ -1346,7 +1351,7 @@ def _resolve_simplex_selection(complex_name, simplex_val, simplex_combo):
         child_name = simplex_val[2:]
         return complex_name, [child_name], None
 
-    # Case 3: normal simplex
+    # Case 3: normal simplex (including Doc > prefixed document simplex names)
     return complex_name, None, simplex_val
 
 
@@ -1442,6 +1447,11 @@ def _generate_cross_complex_query():
         all_warnings = []
         for idx, (src, src_child, src_sx, _, _, _) in source_only_pairs:
             se = all_extras[idx][0] if idx < len(all_extras) else set()
+            # Detect document simplex selections (prefixed with "Doc > ")
+            src_doc_simplex = None
+            if src_sx and src_sx.startswith('Doc > '):
+                src_doc_simplex = src_sx[6:]
+                src_sx = None
             query, info = DB_PCACE_data_analysis_util.generate_source_only_query(
                 src,
                 source_filter_simplex=src_sx,
@@ -1449,7 +1459,8 @@ def _generate_cross_complex_query():
                 source_filter_operator=_where_operator,
                 where_simplex=_where_simplex,
                 source_child=_child_str(src_child),
-                source_extra_children=se or None)
+                source_extra_children=se or None,
+                source_document_simplex=src_doc_simplex)
             if query is None:
                 mb.showwarning(title='Warning', message=str(info))
                 return
@@ -1469,6 +1480,15 @@ def _generate_cross_complex_query():
         # Single cross-complex pair: use the original (faster) single-target generator
         idx, (src, src_child, src_simplex, tgt_name, tgt_child, tgt_simplex) = cross_pairs[0]
         src_extras, tgt_extras = all_extras[idx]
+        # Detect document simplex selections (prefixed with "Doc > ")
+        src_doc_simplex = None
+        tgt_doc_simplex = None
+        if src_simplex and src_simplex.startswith('Doc > '):
+            src_doc_simplex = src_simplex[6:]
+            src_simplex = None
+        if tgt_simplex and tgt_simplex.startswith('Doc > '):
+            tgt_doc_simplex = tgt_simplex[6:]
+            tgt_simplex = None
         query, result = DB_PCACE_data_analysis_util.generate_cross_complex_query(
             src, tgt_name,
             source_filter_simplex=src_simplex,
@@ -1479,7 +1499,9 @@ def _generate_cross_complex_query():
             source_child=_child_str(src_child),
             target_child=_child_str(tgt_child),
             source_extra_children=src_extras or None,
-            target_extra_children=tgt_extras or None)
+            target_extra_children=tgt_extras or None,
+            source_document_simplex=src_doc_simplex,
+            target_document_simplex=tgt_doc_simplex)
         if query is None:
             mb.showwarning(title='Warning', message=str(result))
             return
@@ -1513,18 +1535,29 @@ def _generate_cross_complex_query():
         pair_labels = []
         for pi, (src, src_child, src_sx, tgt, tgt_child, tgt_sx) in enumerate(all_pairs):
             se, te = all_extras[pi] if pi < len(all_extras) else (set(), set())
+            # Detect document simplex selections
+            src_doc_sx = None
+            tgt_doc_sx = None
+            if src_sx and src_sx.startswith('Doc > '):
+                src_doc_sx = src_sx[6:]
+                src_sx = None
+            if tgt_sx and tgt_sx.startswith('Doc > '):
+                tgt_doc_sx = tgt_sx[6:]
+                tgt_sx = None
             if tgt is None:
                 q, info = DB_PCACE_data_analysis_util.generate_source_only_query(
                     src, source_filter_simplex=src_sx,
                     source_child=_child_str(src_child),
-                    source_extra_children=se or None)
+                    source_extra_children=se or None,
+                    source_document_simplex=src_doc_sx)
                 src_l = '.'.join([src] + src_child) if src_child else src
                 pair_labels.append(src_l)
             else:
                 q, info = DB_PCACE_data_analysis_util.generate_cross_complex_query(
                     src, tgt, source_filter_simplex=src_sx, target_simplex=tgt_sx,
                     source_child=_child_str(src_child), target_child=_child_str(tgt_child),
-                    source_extra_children=se or None, target_extra_children=te or None)
+                    source_extra_children=se or None, target_extra_children=te or None,
+                    source_document_simplex=src_doc_sx, target_document_simplex=tgt_doc_sx)
                 src_l = '.'.join([src] + src_child) if src_child else src
                 tgt_l = '.'.join([tgt] + tgt_child) if tgt_child else tgt
                 pair_labels.append('{} → {}'.format(src_l, tgt_l))
@@ -1663,19 +1696,38 @@ def _populate_simplex_menu(complex_var, simplex_combo, simplex_var):
                            WHERE sxcc.HigherComplex = ?
                            ORDER BY sc_child.Name""", (cid,))
             children = [r[0] for r in cur.fetchall()]
+            # Get document-level simplex attributes (date, newspaper name, etc.)
+            doc_names = []
+            try:
+                cur.execute('SELECT DISTINCT ss.Name'
+                           ' FROM setup_xref_Simplex_Document sxsd'
+                           ' JOIN setup_Simplex ss ON ss.ID_setup_simplex = sxsd.ID_setup_simplex'
+                           ' ORDER BY sxsd."Order"')
+                doc_names = [r[0] for r in cur.fetchall()]
+            except Exception as e1:
+                try:
+                    cur.execute('SELECT DISTINCT ss.Name'
+                               ' FROM setup_xref_Simplex_Document sxsd'
+                               ' JOIN setup_Simplex ss ON ss.ID_setup_simplex = sxsd.Simplex'
+                               ' ORDER BY sxsd."Order"')
+                    doc_names = [r[0] for r in cur.fetchall()]
+                except Exception as e2:
+                    print(f"  WARNING: Could not query document simplex names: {e1} / {e2}")
+            doc_entries = ['Doc > ' + n for n in doc_names]
             if names and children:
-                # Has BOTH direct simplexes and drillable children —
-                # show simplexes (no prefix) then children (> prefix).
-                simplex_combo['values'] = ['*'] + names + ['> ' + c for c in children]
+                simplex_combo['values'] = ['*'] + names + ['> ' + c for c in children] + doc_entries
                 simplex_var.set('*')
                 _simplex_showing_children[id(simplex_combo)] = True
             elif names:
-                simplex_combo['values'] = ['*'] + names
+                simplex_combo['values'] = ['*'] + names + doc_entries
                 simplex_var.set('*')
             elif children:
-                simplex_combo['values'] = ['*'] + ['> ' + c for c in children]
+                simplex_combo['values'] = ['*'] + ['> ' + c for c in children] + doc_entries
                 simplex_var.set('*')
                 _simplex_showing_children[id(simplex_combo)] = True
+            elif doc_entries:
+                simplex_combo['values'] = ['*'] + doc_entries
+                simplex_var.set('*')
         cur.close()
         conn.close()
     except Exception as e:
@@ -1760,19 +1812,36 @@ def _drill_into_child(child_name, simplex_combo, simplex_var, complex_var):
                     child_items.append('✓ ' + c)
                 else:
                     child_items.append('> ' + c)
+            # Get document-level simplex attributes
+            doc_entries = []
+            try:
+                cur.execute('SELECT DISTINCT ss.Name'
+                           ' FROM setup_xref_Simplex_Document sxsd'
+                           ' JOIN setup_Simplex ss ON ss.ID_setup_simplex = sxsd.ID_setup_simplex'
+                           ' ORDER BY sxsd."Order"')
+                doc_entries = ['Doc > ' + r[0] for r in cur.fetchall()]
+            except Exception:
+                try:
+                    cur.execute('SELECT DISTINCT ss.Name'
+                               ' FROM setup_xref_Simplex_Document sxsd'
+                               ' JOIN setup_Simplex ss ON ss.ID_setup_simplex = sxsd.Simplex'
+                               ' ORDER BY sxsd."Order"')
+                    doc_entries = ['Doc > ' + r[0] for r in cur.fetchall()]
+                except Exception:
+                    pass
             if names and child_items:
-                simplex_combo['values'] = [back_label, '*'] + names + child_items
+                simplex_combo['values'] = [back_label, '*'] + names + child_items + doc_entries
                 simplex_var.set('*')
                 _simplex_showing_children[id(simplex_combo)] = True
             elif names:
-                simplex_combo['values'] = [back_label, '*'] + names
+                simplex_combo['values'] = [back_label, '*'] + names + doc_entries
                 simplex_var.set('*')
             elif child_items:
-                simplex_combo['values'] = [back_label, '*'] + child_items
+                simplex_combo['values'] = [back_label, '*'] + child_items + doc_entries
                 simplex_var.set('*')
                 _simplex_showing_children[id(simplex_combo)] = True
             else:
-                simplex_combo['values'] = [back_label, '*']
+                simplex_combo['values'] = [back_label, '*'] + doc_entries
                 simplex_var.set('*')
         cur.close()
         conn.close()

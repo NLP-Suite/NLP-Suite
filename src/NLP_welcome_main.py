@@ -23,6 +23,7 @@ import GUI_IO_util
 # TODO RF
 # import videos_util
 import NLP_setup_update_util
+import run_script_util
 
 GUI_size = str(GUI_IO_util.get_GUI_width(2)) + 'x600'
 
@@ -62,7 +63,7 @@ window = GUI_util.window
 def run_NLP():
     if IO_libraries_util.check_inputPythonJavaProgramFile('NLP_menu_main.py') == False:
         return
-    call("python NLP_menu_main.py", shell=True)
+    run_script_util.run_script("NLP_menu_main.py")
 
 def close_NLP():
     global local_release_version, GitHub_release_version

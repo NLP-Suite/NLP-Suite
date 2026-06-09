@@ -28,6 +28,7 @@ import Stanford_CoreNLP_coreference_util
 import file_splitter_merged_txt_util
 import reminders_util
 import config_util
+import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -225,7 +226,7 @@ continue_manual_Coref_var = tk.IntVar()
 corefed_txt_file_var= tk.StringVar()
 
 def open_GUI():
-    call("python file_checker_converter_cleaner_main.py", shell=True)
+    run_script_util.run_script("file_checker_converter_cleaner_main.py")
 
 pre_processing_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Pre-processing tools (file checking & cleaning GUI)',command=open_GUI)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,

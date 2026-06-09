@@ -20,6 +20,7 @@ import Stanford_CoreNLP_util
 import Stanford_CoreNLP_coreference_util
 import Stanza_util
 import spaCy_util
+import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -71,9 +72,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
 
     # if extra_GUIs_var and extra_GUIs_menu_var!='':
     #     if 'checking' in extra_GUIs_menu_var:
-    #         call('python file_checker_converter_cleaner_main.py', shell=True)
+    #         run_script_util.run_script("file_checker_converter_cleaner_main.py")
     #     elif 'coref' in extra_GUIs_menu_var:
-    #         call('python coreference_main.py', shell=True)
+    #         run_script_util.run_script("coreference_main.py")
 
     if parser_var == 0 and CoNLL_table_analyzer_var == 1:
         mb.showinfo("Warning", "You have selected to open the CoNLL table analyser GUI. This option expects to run the parser first.\n\nPlease, tick the CoreNLP parser checkbox and try again.")
@@ -107,7 +108,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                     #     annotator = 'NER'
                     #     if IO_libraries_util.check_inputPythonJavaProgramFile('NER_main.py') == False:
                     #         return
-                    #     call("python NER_main.py", shell=True)
+                    #     run_script_util.run_script("NER_main.py")
                     elif 'Sentence splitter (with sentence length)' in annotators_menu_var:
                         annotator = 'Sentence'
                     elif 'Lemma annotator' in annotators_menu_var:
@@ -333,7 +334,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                                      reminders_util.message_CoNLL_analyzer,
                                      True)
 
-        call("python CoNLL_table_analyzer_main.py", shell=True)
+        run_script_util.run_script("CoNLL_table_analyzer_main.py")
 
     if openOutputFiles:
         filesToOpenSubset = []
@@ -447,9 +448,9 @@ def open_GUI(*args):
         extra_GUIs_menu.configure(state='normal')
     if extra_GUIs_menu_var.get()!='':
         if 'checking' in extra_GUIs_menu_var.get():
-            call('python file_checker_converter_cleaner_main.py', shell=True)
+            run_script_util.run_script("file_checker_converter_cleaner_main.py")
         elif 'Coref' in extra_GUIs_menu_var.get():
-            call('python coreference_main.py', shell=True)
+            run_script_util.run_script("coreference_main.py")
 extra_GUIs_menu_var.trace('w',open_GUI)
 
 extra_GUIs_var.set(0)
@@ -774,7 +775,7 @@ activate_NLP_options()
 if error:
     mb.showwarning(title='Warning',
                message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.")
-    call("python NLP_setup_package_language_main.py", shell=True)
+    run_script_util.run_script("NLP_setup_package_language_main.py")
     # this will display the correct hover-over info after the python call, in case options were changed
     error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 

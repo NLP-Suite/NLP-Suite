@@ -27,6 +27,7 @@ import GIS_pipeline_util
 import GIS_file_check_util
 import IO_files_util
 import Stanford_CoreNLP_util
+import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -228,7 +229,7 @@ def run(inputFilename,
             return
 
     if Google_Earth_OpenGUI:
-        call('python GIS_Google_Earth_main.py', shell=True)
+        run_script_util.run_script("GIS_Google_Earth_main.py")
         return
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated

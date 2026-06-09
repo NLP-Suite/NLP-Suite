@@ -268,13 +268,13 @@ def open_GUI(*args):
         return
     if extra_GUIs_var.get():
         if 'Statistics' in extra_GUIs_menu_var.get():
-            call("python statistics_csv_main.py", shell=True)
+            run_script_util.run_script("statistics_csv_main.py")
         if 'visualization 1' in extra_GUIs_menu_var.get():
-            call("python data_visualization_1_main.py", shell=True)
+            run_script_util.run_script("data_visualization_1_main.py")
         if 'visualization 2' in extra_GUIs_menu_var.get():
-            call("python data_visualization_2_main.py", shell=True)
+            run_script_util.run_script("data_visualization_2_main.py")
         elif 'Parsers' in extra_GUIs_menu_var.get():
-            call("python parsers_annotators_main.py", shell=True)
+            run_script_util.run_script("parsers_annotators_main.py")
 extra_GUIs_menu_var.trace('w',open_GUI)
 
 def activate_GUI_options():
@@ -740,7 +740,7 @@ activate_NLP_options()
 if error:
     mb.showwarning(title='Warning',
                message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.")
-    call("python NLP_setup_package_language_main.py", shell=True)
+    run_script_util.run_script("NLP_setup_package_language_main.py")
     # this will display the correct hover-over info after the python call, in case options were changed
     error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 
@@ -751,6 +751,7 @@ message = "Some of the algorithms behind this GUI rely on a specific NLP package
 reminders_util.checkReminder(scriptName, title, message)
 
 import wordclouds_util
+import run_script_util
 font_list = wordclouds_util.get_font_list()
 font['values'] = font_list
 

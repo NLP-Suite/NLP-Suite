@@ -6,6 +6,9 @@
 #output: directory name
 
 import sys
+import multiprocessing
+multiprocessing.freeze_support()
+
 import GUI_util
 import IO_libraries_util
 
@@ -25,6 +28,7 @@ import IO_files_util
 import reminders_util
 import constants_util
 import config_util
+import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -365,7 +369,11 @@ setup_parsers_annotators_OK_checkbox_var.trace('w', lambda x, y, z: setup_parser
 
 setup_parsers_annotators_checkbox(NLP_package_language_config)
 
-NLP_package_language_setup_button = tk.Button(window, text='SETUP default NLP parsers & annotators package and default corpus language', width=95, font=("Courier", 10, "bold"), command=lambda: call("python NLP_setup_package_language_main.py", shell=True))
+def _setup_parsers_and_recheck():
+    run_script_util.run_script("NLP_setup_package_language_main.py")
+    setup_parsers_annotators_checkbox(NLP_package_language_config)
+
+NLP_package_language_setup_button = tk.Button(window, text='SETUP default NLP parsers & annotators package and default corpus language', width=95, font=("Courier", 10, "bold"), command=_setup_parsers_and_recheck)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+30,
                                                y_multiplier_integer,
@@ -389,6 +397,11 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 software_dir = ''
 
 def setup_external_programs_checkbox():
+    # If the config file doesn't exist, external software is not set up
+    ext_config = GUI_IO_util.configPath + os.sep + 'NLP_setup_external_software_config.csv'
+    if not os.path.isfile(ext_config):
+        setup_external_software_OK_checkbox_var.set(0)
+        return ''
     # get the software_dir and software_url for the selected software_name from the config file
     software_dir, software_url, missing_software, error_found = IO_libraries_util.get_external_software_dir('NLP_menu_main', '',
                                                         silent=True, only_check_missing=True, install_download='download')
@@ -412,7 +425,7 @@ def setup_external_software_warning():
         setup_external_programs_checkbox()
 
 def setup_external_software():
-    call("python NLP_setup_external_software_main.py", shell=True)
+    run_script_util.run_script("NLP_setup_external_software_main.py")
     setup_external_programs_checkbox()
 
 # software_setup_button = tk.Button(window, text='Setup external software', width=95, font=("Courier", 10, "bold"), command=lambda: setup_external_software_warning())

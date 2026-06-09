@@ -7,13 +7,13 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window, "NLP_setup_update_util.py",
-                                          ['pygit2']) == False:
-    sys.exit(0)
-
 import atexit  # a Python module
 # from NLP_setup_update_util import update_self
-from pygit2 import Repository
+try:
+    from pygit2 import Repository
+    _has_pygit2 = True
+except ImportError:
+    _has_pygit2 = False
 import sys
 import os
 import stat
@@ -107,6 +107,20 @@ def update_self(GitHub_release_version):
     except:
         if not IO_libraries_util.open_url('Git', url, ask_to_open=True, message_title='Git installation', message=message_Git):
             return True
+    if not _has_pygit2:
+        answer = mb.askyesno(title='Warning',
+                       message="The pygit2 library is not available. Auto-update is disabled.\n\nYou can update the NLP Suite manually by downloading the latest release from GitHub.\n\nDo you want to see instructions on how to install pygit2?")
+        if answer:
+            mb.showinfo(title='How to install pygit2',
+                        message="To install pygit2:\n\n"
+                                "1. Open a command prompt / terminal\n"
+                                "2. Activate the NLP environment:\n"
+                                "       conda activate NLP\n"
+                                "3. Install pygit2:\n"
+                                "       pip install pygit2\n"
+                                "4. Restart the NLP Suite\n\n"
+                                "With pygit2 installed, the NLP Suite will automatically check for and pull updates from GitHub when you close the application.")
+        return True
     try:
         if Repository('.').head.shorthand == 'current-stable':
             print("Updating the NLP Suite...")

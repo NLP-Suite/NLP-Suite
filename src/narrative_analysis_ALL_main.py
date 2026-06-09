@@ -14,6 +14,7 @@ import tkinter as tk
 import tkinter.messagebox as mb
 
 import GUI_IO_util
+import run_script_util
 
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -70,47 +71,47 @@ def run(inputFilename,inputdirname, outdirname,
 
     # if IO_libraries_util.check_inputPythonJavaProgramFile('parsers_annotators_main.py')==False:
     #     return
-    #     call("python parsers_annotators_main.py", shell=True)
+    #     run_script_util.run_script("parsers_annotators_main.py")
 
     if characters_NER_var==True or time_NER_var==True or space_NER_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('NER_main.py')==False:
             return
-        call("python NER_main.py", shell=True)
+        run_script_util.run_script("NER_main.py")
 
     if characters_WordNet_var==True or space_WordNet_var == True or action_WordNet_var == True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_WordNet_main.py')==False:
             return
-        call("python knowledge_graphs_WordNet_main.py", shell=True)
+        run_script_util.run_script("knowledge_graphs_WordNet_main.py")
 
     if characters_DBpedia_YAGO_var == True or characters_DBpedia_YAGO_var == True or space_DBpedia_YAGO_var==True or action_DBpedia_YAGO_var == True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_DBpedia_YAGO_main.py') == False:
             return
-        call("python knowledge_graphs_DBpedia_YAGO_main.py", shell=True)
+        run_script_util.run_script("knowledge_graphs_DBpedia_YAGO_main.py")
 
     if characters_byGender_CoreNLP_var == True or characters_DBpedia_YAGO_var == True or characters_byGender_dict_var == True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_gender_main.py') == False:
             return
-        call("python html_annotator_gender_main.py", shell=True)
+        run_script_util.run_script("html_annotator_gender_main.py")
 
     if story_plot_var==True or action_POS_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('parsers_annotators_main.py') == False:
             return
-        call("python parsers_annotators_main.py", shell=True)
+        run_script_util.run_script("parsers_annotators_main.py")
 
     if space_GIS_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('GIS_main.py')==False:
             return
-        call("python GIS_main.py", shell=True)
+        run_script_util.run_script("GIS_main.py")
 
     if SVO_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('SVO_main.py')==False:
             return
-        call("python SVO_main.py", shell=True)
+        run_script_util.run_script("SVO_main.py")
 
     if shape_stories_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('shape_of_stories_main.py')==False:
             return
-        call("python shape_of_stories_main.py", shell=True)
+        run_script_util.run_script("shape_of_stories_main.py")
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
