@@ -635,100 +635,678 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
 
 # extract SVO from Stanza doc (depparse)
 # input: Stanza Document
+# ─────────────────────────────────────────────────────────────────────
+# Enhanced SVO extraction for Stanza
+# Ported from Stanford_CoreNLP_SVO_enhanced_dependencies_util.py
+# ─────────────────────────────────────────────────────────────────────
+
+# Negation words recognised by the SVO extractor
+_NEGATION_TOKENS = {"no", "not", "n't", "seldom", "without", "never", "hardly", "neither", "nor"}
+# Dependency relations whose children may carry negation
+_NEGATION_DEPS = {"advmod", "det", "cc:preconj", "cc", "mark", "aux"}
+
+
+def _build_govern_dict(sentence):
+    """Build a CoreNLP-style govern_dict from a Stanza sentence.
+
+    For each word in *sentence* we produce a dict keyed by word.id
+    containing:
+        word, pos, lemma, ner, deprel, id, govern_dict
+
+    govern_dict maps  dep_label → child_id  (or list of child_ids when
+    multiple children share the same label).
+
+    Stanza uses Universal Dependencies (UD) labels which map almost 1-to-1
+    to CoreNLP enhanced++ dependencies.  Key differences handled here:
+        UD  obl          → CoreNLP obl:<case>     (we attach the case marker)
+        UD  nmod         → CoreNLP nmod:<case>
+        UD  conj         → CoreNLP conj:<cc>
+    """
+    sent_data = {}
+    # First pass: basic per-word info
+    for word in sentence.words:
+        ner_tag = 'O'
+        # Stanza stores NER on tokens, not words.  Map via start_char.
+        if hasattr(word, 'parent') and hasattr(word.parent, 'ner'):
+            ner_tag = word.parent.ner if word.parent.ner else 'O'
+        sent_data[word.id] = {
+            'id': word.id,
+            'word': word.text,
+            'pos': word.xpos if word.xpos else word.upos,
+            'upos': word.upos,
+            'lemma': word.lemma,
+            'ner': ner_tag,
+            'deprel': word.deprel,
+            'head': word.head,
+            'govern_dict': {},
+        }
+
+    # Second pass: build govern_dict (children grouped under their head)
+    # Also refine dep labels by attaching case/cc markers
+    for word in sentence.words:
+        head_id = word.head
+        if head_id == 0:
+            continue  # ROOT — no governor
+        dep = word.deprel
+        gd = sent_data[head_id]['govern_dict']
+        # For obl / nmod attach the case marker to the label
+        if dep in ('obl', 'nmod'):
+            case_word = _find_case_marker(word.id, sentence)
+            if case_word:
+                dep = dep + ':' + case_word
+        # For conj attach the cc word
+        elif dep == 'conj':
+            cc_word = _find_cc_marker(word.id, head_id, sentence)
+            if cc_word:
+                dep = 'conj:' + cc_word
+        # nsubj:pass  (Stanza already uses this label)
+        # obl:agent   (Stanza uses obl + "by" case — already handled above → obl:by)
+        # We remap obl:by when it looks like a passive agent
+        if dep == 'obl:by':
+            # If the head verb has a nsubj:pass child, then obl:by is the agent
+            head_has_pass = any(
+                w.deprel == 'nsubj:pass' and w.head == head_id
+                for w in sentence.words
+            )
+            if head_has_pass:
+                dep = 'obl:agent'
+
+        # Store in govern_dict
+        if dep in gd:
+            existing = gd[dep]
+            if isinstance(existing, list):
+                existing.append(word.id)
+            else:
+                gd[dep] = [existing, word.id]
+        else:
+            gd[dep] = word.id
+
+    return sent_data
+
+
+def _find_case_marker(word_id, sentence):
+    """Find the case/mark dependent of word_id to refine obl/nmod labels."""
+    for w in sentence.words:
+        if w.head == word_id and w.deprel in ('case', 'mark'):
+            return w.lemma.lower()
+    return None
+
+
+def _find_cc_marker(conj_id, head_id, sentence):
+    """Find the coordinating conjunction between head and conjunct."""
+    for w in sentence.words:
+        if w.head == head_id and w.deprel == 'cc':
+            return w.lemma.lower()
+        # Sometimes cc attaches to the conjunct itself
+        if w.head == conj_id and w.deprel == 'cc':
+            return w.lemma.lower()
+    return None
+
+
+# ── Negation detection (recursive, mirrors CoreNLP version) ────────
+
+def _negation_detect(token, sent_data):
+    """Return True if negation is associated with this token."""
+    gd = token['govern_dict']
+    if not gd:
+        return False
+    for dep in _NEGATION_DEPS:
+        if dep not in gd:
+            continue
+        ids = gd[dep] if isinstance(gd[dep], list) else [gd[dep]]
+        for idx in ids:
+            if sent_data[idx]['word'].lower() in _NEGATION_TOKENS:
+                return True
+            if _negation_detect(sent_data[idx], sent_data):
+                return True
+    return False
+
+
+def _content_negation(content, sent_data):
+    """Check negation within a subject or object span."""
+    if isinstance(content, list):
+        for idx in content:
+            if _negation_detect(sent_data[idx], sent_data):
+                return True
+        return False
+    return _negation_detect(sent_data[content], sent_data)
+
+
+# ── Multi-token formation (conjuncts, compounds) ──────────────────
+
+def _token_connect(keys, sent_data):
+    """Join multiple tokens with spaces."""
+    if isinstance(keys, list):
+        return ' '.join(sent_data[k]['word'] for k in keys)
+    return sent_data[keys]['word']
+
+
+def _conj_string(subjects, sent_data):
+    """Connect conjugate subjects/objects into 'A, B, and C'."""
+    subj = subjects[0]
+    result = sent_data[subj]['word']
+    start_result = result
+    gd = sent_data[subj]['govern_dict']
+    for key in gd:
+        if 'conj' in key:
+            conj = key[5:] if len(key) > 5 else 'and'
+            dep_val = gd[key]
+            if isinstance(dep_val, list):
+                if dep_val == subjects[1:]:
+                    for i in range(1, len(subjects) - 1):
+                        result += ', ' + sent_data[subjects[i]]['word']
+                    result += ', ' + conj + ' ' + sent_data[subjects[-1]]['word']
+                    break
+            else:
+                if len(subjects) == 2 and subjects[-1] == dep_val:
+                    result += ' ' + conj + ' ' + sent_data[subjects[-1]]['word']
+                    break
+    if result == start_result:
+        result = _token_connect(subjects, sent_data)
+    return result
+
+
+def _s_o_formation(subjects, sent_data):
+    """Process subject/object — may be single word or conjunct list."""
+    if isinstance(subjects, list):
+        return _conj_string(subjects, sent_data), subjects[0]
+    return sent_data[subjects]['word'], subjects
+
+
+# ── Verb helpers ──────────────────────────────────────────────────
+
+def _verb_index_conj(key, token, gov_dict, sent_data):
+    """Extract conjunct verbs and the conjunction word."""
+    verb_list = [key]
+    conj_word = ''
+    dep = ''
+    for label in ('conj:or', 'conj:and', 'conj:nor'):
+        if label in gov_dict:
+            dep = label
+            conj_word = label[5:]
+            break
+    if dep:
+        val = gov_dict[dep]
+        if isinstance(val, list):
+            verb_list.extend(val)
+        else:
+            verb_list.append(val)
+    return verb_list, conj_word
+
+
+def _load_lvc_json(filename):
+    """Load an LVC / verb-prep JSON dictionary from lib."""
+    filepath = os.path.join(GUI_IO_util.CoreNLP_enhanced_dependencies_libPath, filename)
+    if not os.path.isfile(filepath):
+        return {}
+    with open(filepath) as f:
+        try:
+            return json.load(f)
+        except ValueError:
+            return {}
+
+
+def _verb_obj_obl(token, sent_data, v_obj_obl_json):
+    """Check if verb is part of a Light Verb Construction (LVC).
+
+    Handles both CoreNLP-style (obl on verb) and Stanza-style (nmod on object noun)
+    dependency structures.
+    """
+    new_v, new_o, key = '', '', ''
+    gd = token['govern_dict']
+    lemma = token['lemma']
+    if lemma not in v_obj_obl_json or 'obj' not in gd:
+        return new_v, new_o, key
+    obj_text = _s_o_formation(gd['obj'], sent_data)[0]
+    obj_id = gd['obj'][0] if isinstance(gd['obj'], list) else gd['obj']
+    obj_gd = sent_data[obj_id]['govern_dict']  # object noun's govern_dict
+
+    for conb in v_obj_obl_json[lemma]:
+        if conb.get('obj', '').lower() != obj_text.lower():
+            continue
+        obl_key = 'obl' if 'obl' in conb else ('nmod' if 'nmod' in conb else None)
+        if obl_key is None:
+            continue
+        obl_prep = obl_key + ':' + conb[obl_key]
+        # Also try alternate key forms (Stanza may use nmod where CoreNLP uses obl)
+        alt_prep = ('nmod:' + conb[obl_key]) if obl_key == 'obl' else ('obl:' + conb[obl_key])
+
+        start_idx = token['id']
+        end_idx = obj_id
+        new_v = ''
+        for i in range(start_idx, end_idx + 1):
+            if i in sent_data:
+                new_v += sent_data[i]['word'] + ' '
+        new_v += conb[obl_key]
+
+        # Look for the real object: first on verb's govern_dict, then on object noun's
+        found = False
+        for search_gd, search_key in [(gd, obl_prep), (gd, alt_prep),
+                                       (obj_gd, obl_prep), (obj_gd, alt_prep)]:
+            if search_key in search_gd:
+                new_o = _s_o_formation(search_gd[search_key], sent_data)[0]
+                key = search_key
+                found = True
+                break
+        if not found and 'downwards' in conb:
+            dkey = conb['downwards']
+            if dkey in gd:
+                dval = gd[dkey]
+                if isinstance(dval, int) and dval in sent_data:
+                    new_gd = sent_data[dval]['govern_dict']
+                    for try_key in (obl_prep, alt_prep):
+                        if try_key in new_gd:
+                            new_o = _s_o_formation(new_gd[try_key], sent_data)[0]
+                            found = True
+                            break
+            key = dkey
+    return new_v, new_o, key
+
+
+def _linking_verb_LVC_extraction(token, gov_dict, sent_data, linking_verb_LVC_json):
+    """Extract LVCs starting with a linking verb (e.g. 'be responsible for')."""
+    s, v, o = '', '', ''
+    negation = _negation_detect(token, sent_data)
+    lemma = token['lemma']
+    if lemma not in linking_verb_LVC_json:
+        return s, v, o, negation
+    for conb in linking_verb_LVC_json[lemma]:
+        start_idx = end_idx = token['id']
+        matched = True
+        for key in conb:
+            if key == 'prep':
+                continue
+            dep = conb[key]
+            if dep not in gov_dict or isinstance(gov_dict[dep], list):
+                matched = False
+                break
+            negation = negation or _content_negation(gov_dict[dep], sent_data)
+            current = sent_data[gov_dict[dep]]
+            if current['lemma'] != key:
+                matched = False
+                break
+            start_idx = min(start_idx, current['id'])
+            end_idx = max(end_idx, current['id'])
+        if not matched:
+            continue
+        if 'prep' in conb:
+            for prep_dep in conb['prep']:
+                if prep_dep in gov_dict:
+                    for i in range(start_idx, end_idx + 1):
+                        if i in sent_data:
+                            v += sent_data[i]['word'] + ' '
+                    v += prep_dep.split(':')[1] if ':' in prep_dep else prep_dep
+                    o = _s_o_formation(gov_dict[prep_dep], sent_data)[0]
+                    negation = negation or _content_negation(gov_dict[prep_dep], sent_data)
+                    if 'nsubj' in gov_dict:
+                        s = _s_o_formation(gov_dict['nsubj'], sent_data)[0]
+                        negation = negation or _content_negation(gov_dict['nsubj'], sent_data)
+                    break
+    return s, v, o, negation
+
+
+def _pred_root(token, gov_dict, sent_data):
+    """Extract subject–linking verb–predicative nominative."""
+    s = 'Inferred_Subject_Passive'
+    v, o = '', ''
+    negation = _negation_detect(token, sent_data)
+    if 'nsubj' in gov_dict:
+        s = _s_o_formation(gov_dict['nsubj'], sent_data)[0]
+        negation = negation or _content_negation(gov_dict['nsubj'], sent_data)
+    if 'cop' in gov_dict:
+        v = _token_connect(gov_dict['cop'], sent_data) + ' ' + v
+        negation = negation or _content_negation(gov_dict['cop'], sent_data)
+    if 'aux' in gov_dict and v:
+        v = _token_connect(gov_dict['aux'], sent_data) + ' ' + v
+        negation = negation or _content_negation(gov_dict['aux'], sent_data)
+    o = token['word']
+    if 'case' in gov_dict and v:
+        v = v + ' ' + _token_connect(gov_dict['case'], sent_data)
+    return s, v, o, negation
+
+
+# ── Single-verb SVO building ─────────────────────────────────────
+
+def _verb_root_svo_building(verb_id, sent_data, v_obj_obl_json, v_prep_json):
+    """Extract S, V, O for a single verb token."""
+    s = 'Inferred_Subject_Passive'
+    o = ''
+    s_idx = -1
+    o_idx = -1
+    vtoken = sent_data[verb_id]
+    v_string = vtoken['word']
+    v_lemma = vtoken['lemma']
+    vgd = vtoken['govern_dict']
+
+    negation = _negation_detect(vtoken, sent_data)
+
+    # Phrasal verbs: compound:prt
+    if 'compound:prt' in vgd:
+        v_string += ' ' + _token_connect(vgd['compound:prt'], sent_data)
+
+    # ── Subject extraction ──
+    s_dep = ''
+    if 'nsubj' in vgd:
+        s, s_idx = _s_o_formation(vgd['nsubj'], sent_data)
+        s_dep = 'nsubj'
+    elif 'obl:agent' in vgd:
+        s, s_idx = _s_o_formation(vgd['obl:agent'], sent_data)
+        s_dep = 'obl:agent'
+    elif 'nsubj:xsubj' in vgd:
+        s, s_idx = _s_o_formation(vgd['nsubj:xsubj'], sent_data)
+        s_dep = 'nsubj:xsubj'
+
+    if s_dep:
+        negation = negation or _content_negation(vgd[s_dep], sent_data)
+
+    # ── Object extraction ──
+    o_dep = ''
+    if 'nsubj:pass' in vgd:
+        o_dep = 'nsubj:pass'
+        o, o_idx = _s_o_formation(vgd['nsubj:pass'], sent_data)
+    elif 'iobj' in vgd:
+        o_dep = 'iobj'
+        o, o_idx = _s_o_formation(vgd['iobj'], sent_data)
+    elif 'obj' in vgd:
+        new_v, new_o, new_o_dep = _verb_obj_obl(vtoken, sent_data, v_obj_obl_json)
+        if new_v:
+            v_string = new_v
+            o = new_o
+            o_dep = new_o_dep
+        else:
+            o_dep = 'obj'
+            o, o_idx = _s_o_formation(vgd['obj'], sent_data)
+    else:
+        # Object via preposition (obl:*)
+        obl_preps = [k for k in vgd if k.startswith('obl:')
+                     and k[4:] not in ('tmod', 'agent', 'by')]
+        if len(obl_preps) == 1:
+            o_dep = obl_preps[0]
+            o, o_idx = _s_o_formation(vgd[obl_preps[0]], sent_data)
+            v_string += ' ' + obl_preps[0][4:].replace('_', ' ')
+        elif len(obl_preps) > 1:
+            for oblp in obl_preps:
+                prep = oblp[4:]
+                if prep in v_prep_json and v_lemma.lower() in v_prep_json[prep]:
+                    o_dep = oblp
+                    o, o_idx = _s_o_formation(vgd[oblp], sent_data)
+                    v_string += ' ' + prep
+                    break
+            if not o_dep:
+                for oblp in obl_preps:
+                    if '_' in oblp[4:]:
+                        o_dep = oblp
+                        o, o_idx = _s_o_formation(vgd[oblp], sent_data)
+                        v_string += ' ' + oblp[4:].replace('_', ' ')
+                        break
+
+    if o_dep:
+        negation = negation or _content_negation(vgd.get(o_dep, []), sent_data) if o_dep in vgd else negation
+
+    return s, v_string, o, negation, o_idx
+
+
+# ── Adverbial / clausal modifiers ────────────────────────────────
+
+def _advcl_extraction(token, sent_data, p_s, p_o, v_obj_obl_json, v_prep_json):
+    """Recursively extract SVO from adverbial clause modifiers."""
+    result = []
+    negation_result = []
+    gd = token['govern_dict']
+    for dep in list(gd.keys()):
+        if 'advcl' in dep or 'xcomp' in dep or dep == 'dep':
+            advcl_ids = gd[dep] if isinstance(gd[dep], list) else [gd[dep]]
+            for idx in advcl_ids:
+                advcl_token = sent_data[idx]
+                if 'VB' not in advcl_token['pos'] and advcl_token['upos'] != 'VERB':
+                    continue
+                s, v, o, neg, o_idx = _verb_root_svo_building(idx, sent_data, v_obj_obl_json, v_prep_json)
+                # Passive advcl: parent subject becomes default object
+                if advcl_token['pos'] in ('VBN',) and o == '':
+                    o = p_s
+                elif s == 'Inferred_Subject_Passive':
+                    s = p_s
+                result.append([s, v, o])
+                negation_result.append(neg)
+                # Recurse
+                sub_r, sub_n = _advcl_extraction(advcl_token, sent_data, s, o, v_obj_obl_json, v_prep_json)
+                result.extend(sub_r)
+                negation_result.extend(sub_n)
+    return result, negation_result
+
+
+# ── Conjunct verb processing ─────────────────────────────────────
+
+def _verb_root(verb_list, conj_word, token, sent_data, v_obj_obl_json, v_prep_json):
+    """Extract SVO for a verb and its conjuncts (shared arguments)."""
+    svo = []
+    negation_list = []
+    s_set = False
+    o_set = False
+    o_share_idx = -1
+    s_share = 'Inferred_Subject_Passive'
+    o_share = ''
+    for verb_id in verb_list:
+        s, v, o, negation, o_idx = _verb_root_svo_building(verb_id, sent_data, v_obj_obl_json, v_prep_json)
+        if verb_id > o_share_idx:
+            o_set = False
+        if negation_list and negation_list[0] and conj_word == 'or':
+            negation = True
+        if not s_set and s != 'Inferred_Subject_Passive':
+            s_set = True
+            s_share = s
+        if not o_set and o != '':
+            o_set = True
+            o_share = o
+            o_share_idx = o_idx
+        if s == 'Inferred_Subject_Passive':
+            s = s_share
+        if o == '' and verb_id < o_share_idx:
+            o = o_share
+        negation_list.append(negation)
+        svo.append([s, v, o])
+        # Extract adverbial clause modifiers
+        vtok = sent_data[verb_id]
+        advcl_svo, advcl_neg = _advcl_extraction(vtok, sent_data, s, o, v_obj_obl_json, v_prep_json)
+        svo.extend(advcl_svo)
+        negation_list.extend(advcl_neg)
+    return svo, negation_list
+
+
+# ── MWE replacement (multi-word entity names) ────────────────────
+
+def _replace_words_with_full_names(sentence, full_names):
+    """Replace single tokens with full NER names (e.g. 'shek' → 'Chiang Kai-shek')."""
+    if not full_names:
+        return sentence
+    words = sentence.split()
+    available = full_names.copy()
+    result = []
+    for word in words:
+        replaced = False
+        for name in available:
+            if word in str(name.split()):
+                result.append(name)
+                available.remove(name)
+                replaced = True
+                break
+        if not replaced:
+            result.append(word)
+    return ' '.join(result)
+
+
+# ── NER extraction from Stanza entities ──────────────────────────
+
+def _extract_ner_entities(sentence):
+    """Extract location, person, organization, time entities from a Stanza sentence."""
+    locations, persons, organizations = [], [], []
+    loc_ner, per_ner, org_ner = [], [], []
+    # Use sentence.entities if available (Stanza NER)
+    if hasattr(sentence, 'entities'):
+        for ent in sentence.entities:
+            if ent.type in ('GPE', 'LOC', 'STATE_OR_PROVINCE', 'COUNTRY', 'CITY', 'LOCATION'):
+                if ent.text not in locations:
+                    locations.append(ent.text)
+                    loc_ner.append([ent.text, ent.type, ent.start_char, ent.end_char])
+            elif ent.type == 'PERSON':
+                if ent.text not in persons:
+                    persons.append(ent.text)
+                    per_ner.append([ent.text, ent.type, ent.start_char, ent.end_char])
+            elif ent.type in ('ORG', 'ORGANIZATION'):
+                if ent.text not in organizations:
+                    organizations.append(ent.text)
+                    org_ner.append([ent.text, ent.type, ent.start_char, ent.end_char])
+    return locations, persons, organizations, loc_ner, per_ner, org_ner
+
+
+# ── Main SVO extraction function (enhanced) ──────────────────────
+
 def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_var, NER_available):
-    # check if the input is a single file or directory
+    """Enhanced SVO extraction from a Stanza document.
+
+    Mirrors the logic of Stanford_CoreNLP_SVO_enhanced_dependencies_util:
+      - Negation detection (recursive)
+      - Conjunction handling (shared S/O across conjunct verbs)
+      - Phrasal verbs (compound:prt)
+      - Light verb constructions (3 LVC dictionaries)
+      - Relative/adverbial clause recursion
+      - Copular/predicative nominative constructions
+      - Oblique objects with preposition disambiguation
+      - MWE name replacement from NER
+    """
     if inputDir != '':
         inputFilename = inputDir + os.sep + tail
 
-    # output: svo_df
+    # Load LVC dictionaries (same ones used by CoreNLP SVO)
+    v_obj_obl_json = _load_lvc_json('LVC_verb_obj_obl_json.txt')
+    v_prep_json = _load_lvc_json('verb_prep_json.txt')
+    linking_verb_LVC_json = _load_lvc_json('linking_verb_LVC_json.txt')
+
+    # Output columns
+    base_cols = ['Subject (S)', 'Verb (V)', 'Object (O)', 'Negation',
+                 'Location', 'Person', 'Organization', 'Time',
+                 'Sentence ID', 'Sentence', 'Document ID', 'Document']
     if filename_embeds_date_var:
-        svo_df = pd.DataFrame(columns=['Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Organization', 'Time', 'Sentence ID', 'Sentence', 'Date'])
-    else:
-        svo_df = pd.DataFrame(columns=['Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Organization', 'Time', 'Sentence ID', 'Sentence'])
-    empty_verb_idx = []
-    SVO_found = False
-    NER_found = False # boolean value for NER tags
+        base_cols.append('Date')
 
-    # object and subject constants
-    OBJECT_DEPS = {"obj", "iobj", "dobj", "dative", "attr", "oprd"}
-    SUBJECT_DEPS = {"nsubj", "nsubj:pass", "csubj", "agent"} #, "expl"}
-    # NER tags dictionary for location, person and time
-    NER_LOCATION = {"S-GPE", "B-GPE", "I-GPE", "E-GPE", "S-LOC", "B-LOC", "I-LOC", "E-LOC"}
-    NER_PERSON = {"S-PERSON", "B-PERSON", "I-PERSON", "E-PERSON"}
-    NER_ORGANIZATION = {"S-ORG", "B-ORG", "I-ORG", "E-ORG"}
-    NER_TIME = {"S-TIME", "B-TIME", "I-TIME", "E-TIME", "S-DATE", "B-DATE", "I-DATE", "E-DATE",}
+    rows = []
 
-    # extraction of SVOs
-    SVO_found = False
-    S_found = False
-    V_found = False
-    O_found = False
-    c = 0 #sentence index
-    for sentence in doc.sentences:
-        sent_dict = sentence.to_dict()
-        for w,word in enumerate(sentence.words):
-            # tmp_head = sentence.words[word.head-1].deprel if word.head > 0 else "root"
-            # if (word.deprel in SUBJECT_DEPS or tmp_head in SUBJECT_DEPS) and (SVO_found):
-            if (word.deprel in SUBJECT_DEPS): # and (O_found):
-                svo_df.at[c, 'Subject (S)'] = word.text
-                S_found = True
-            if word.pos=='VERB':
-                if S_found:
-                    svo_df.at[c, 'Verb (V)'] = word.text
-                    V_found = True
-                    SVO_found = True
-            # if word.deprel in OBJECT_DEPS or tmp_head in OBJECT_DEPS:
-            if word.deprel in OBJECT_DEPS:
-                if SVO_found:
-                    svo_df.at[c, 'Object (O)'] = word.text
-                    O_found = True
-            # extract NER values
-            if (SVO_found or NER_found) and NER_available:
-                token = sent_dict[w]
-                try:
-                    if token['ner'] in NER_LOCATION:
-                        svo_df, NER_found = extractNER(token, svo_df, c, 'Location', NER_found)
-                    elif token['ner'] in NER_PERSON:
-                        svo_df, NER_found = extractNER(token, svo_df, c, 'Person', NER_found)
-                    elif token['ner'] in NER_ORGANIZATION:
-                        svo_df, NER_found = extractNER(token, svo_df, c, 'Organization', NER_found)
-                    elif token['ner'] in NER_TIME:
-                        svo_df, NER_found = extractNER(token, svo_df, c, 'Time', NER_found)
-                except:
-                    print('ERROR! No ner header in sentence number: ' + str(w) + ": " + str(sent_dict[w]))
-        # check if SVO is found, then add Sentence ID
-        if SVO_found:
-            svo_df.at[c, 'Sentence'] = sentence.text
-            svo_df.at[c, 'Sentence ID'] = c+1
-            SVO_found = False
-            S_found = False
-            V_found = False
-            O_found = False
-        c+=1
+    for sent_idx, sentence in enumerate(doc.sentences):
+        # Build CoreNLP-style govern_dict from Stanza deps
+        sent_data = _build_govern_dict(sentence)
 
-    # csv output columns
-    svo_df['Document ID'] = docID
-    svo_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
+        # Extract NER entities for this sentence
+        locations, persons, organizations = [], [], []
+        if NER_available:
+            locations, persons, organizations, _, _, _ = _extract_ner_entities(sentence)
 
-    # replace nan values accordingly
-    for index, row in svo_df.iterrows():
-        svo_df.at[index, 'Subject (S)'] = '?' if pd.isna(row['Subject (S)']) else row['Subject (S)']
-        svo_df.at[index, 'Verb (V)'] = '' if pd.isna(row['Verb (V)']) else row['Verb (V)']
-        svo_df.at[index, 'Object (O)'] = '' if pd.isna(row['Object (O)']) else row['Object (O)']
-        # save empty verb indices
-        if pd.isna(row['Verb (V)']):
-            empty_verb_idx.append(index)
-    # drop empty Verb rows
-    svo_df = svo_df.drop(empty_verb_idx)
+        # Collect NER text for columns
+        loc_str = '; '.join(locations) if locations else ''
+        per_str = '; '.join(persons) if persons else ''
+        org_str = '; '.join(organizations) if organizations else ''
+        time_words = []
+        for wid in sent_data:
+            tok = sent_data[wid]
+            if tok['ner'] in ('TIME', 'DATE', 'S-TIME', 'B-TIME', 'I-TIME', 'E-TIME',
+                              'S-DATE', 'B-DATE', 'I-DATE', 'E-DATE'):
+                time_words.append(tok['word'])
+        time_str = '; '.join(time_words) if time_words else ''
 
-    # set the S-V-O sequence in order
-    # add date from filename
-    if filename_embeds_date_var:
-        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Organization', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document', 'Date']]
-        svo_df['Date'] = date_str
-    else:
-        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Organization', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
+        collected_verbs = []
+        SVO = []
+        N = []
 
+        for wid in sent_data:
+            token = sent_data[wid]
+            gd = token['govern_dict']
+            pos = token['pos']
+            upos = token['upos']
+            deprel = token['deprel']
+
+            # ── Process verbs (skip advcl/xcomp/acl — handled recursively) ──
+            is_verb = 'VB' in pos or upos == 'VERB'
+            is_special_dep = any(x in deprel for x in ('advcl', 'xcomp', 'acl')) or deprel == 'dep'
+
+            if is_verb and not is_special_dep and wid not in collected_verbs:
+                verb_list, conj_word = _verb_index_conj(wid, token, gd, sent_data)
+                collected_verbs.extend(verb_list)
+                svo_list, neg_list = _verb_root(verb_list, conj_word, token, sent_data,
+                                                v_obj_obl_json, v_prep_json)
+                for i, triple in enumerate(svo_list):
+                    s, v, o = triple
+                    if s != 'Inferred_Subject_Passive' or o != '':
+                        SVO.append([s, v, o])
+                        N.append(neg_list[i])
+
+            elif not is_verb:
+                # ── Linking verb LVC ──
+                s, v, o, neg = _linking_verb_LVC_extraction(token, gd, sent_data, linking_verb_LVC_json)
+                if v and (s != 'Inferred_Subject_Passive' or o != ''):
+                    if [s, v, o] not in SVO:
+                        SVO.append([s, v, o])
+                        N.append(neg)
+                # ── Predicative nominative ──
+                elif deprel in ('root', 'parataxis', 'ROOT') and \
+                        ('NN' in pos or pos == 'PRP' or upos == 'NOUN' or upos == 'PRON'):
+                    s, v, o, neg = _pred_root(token, gd, sent_data)
+                    if v and (s != 'Inferred_Subject_Passive' or o != ''):
+                        if [s, v, o] not in SVO:
+                            SVO.append([s, v, o])
+                            N.append(neg)
+
+            # ── Clausal modifier (acl / acl:relcl) ──
+            acl_key = ''
+            if 'acl' in gd:
+                acl_key = 'acl'
+            elif 'acl:relcl' in gd:
+                acl_key = 'acl:relcl'
+            elif 'dep' in gd:
+                acl_key = 'dep'
+            if acl_key:
+                acl_ids = gd[acl_key] if isinstance(gd[acl_key], list) else [gd[acl_key]]
+                for v_id in acl_ids:
+                    vtok = sent_data[v_id]
+                    if 'VB' in vtok['pos'] or vtok['upos'] == 'VERB':
+                        collected_verbs.append(v_id)
+                        acl_svo, acl_neg = _verb_root([v_id], '', vtok, sent_data,
+                                                       v_obj_obl_json, v_prep_json)
+                        if acl_svo and acl_svo[0][0] == 'Inferred_Subject_Passive':
+                            acl_svo[0][0] = token['word']
+                        SVO.extend(acl_svo)
+                        N.extend(acl_neg)
+
+        # ── MWE name replacement ──
+        for idx, triple in enumerate(SVO):
+            SVO[idx][0] = _replace_words_with_full_names(triple[0], persons)
+            SVO[idx][0] = _replace_words_with_full_names(SVO[idx][0], organizations)
+            SVO[idx][0] = _replace_words_with_full_names(SVO[idx][0], locations)
+            SVO[idx][2] = _replace_words_with_full_names(triple[2], persons)
+            SVO[idx][2] = _replace_words_with_full_names(SVO[idx][2], organizations)
+            SVO[idx][2] = _replace_words_with_full_names(SVO[idx][2], locations)
+
+        # ── Build output rows ──
+        for i, triple in enumerate(SVO):
+            row = {
+                'Subject (S)': triple[0] if triple[0] != 'Inferred_Subject_Passive' else '?',
+                'Verb (V)': triple[1],
+                'Object (O)': triple[2],
+                'Negation': N[i] if i < len(N) else False,
+                'Location': loc_str,
+                'Person': per_str,
+                'Organization': org_str,
+                'Time': time_str,
+                'Sentence ID': sent_idx + 1,
+                'Sentence': sentence.text,
+                'Document ID': docID,
+                'Document': IO_csv_util.dressFilenameForCSVHyperlink(inputFilename),
+            }
+            if filename_embeds_date_var:
+                row['Date'] = date_str
+            rows.append(row)
+
+    svo_df = pd.DataFrame(rows, columns=base_cols)
+    # Drop rows with empty verbs
+    svo_df = svo_df[svo_df['Verb (V)'].str.strip() != '']
     return svo_df
 
 # only different word will be separated by semi-colon
@@ -776,7 +1354,7 @@ def extractSVOMultilingual(stanza_doc, docID, inputFilename, inputDir, tail, fil
     # stanza doc to dict
     for doc in stanza_doc:
         temp_svo = extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_var, NER_available)
-        out_df = out_df.append(temp_svo)
+        out_df = pd.concat([out_df, temp_svo], ignore_index=True)
 
     return out_df
 
@@ -806,6 +1384,226 @@ def date_in_filename(document, **kwargs):
     if filename_embeds_date_var:
         date, date_str, month, day, year = IO_files_util.getDateFromFileName(document,  date_format, items_separator_var, date_position_var)
     return date_str
+
+# ─────────────────────────────────────────────────────────────────────
+# Stanza Coreference Resolution
+# Requires Stanza >= 1.7.0 (coref processor)
+# ─────────────────────────────────────────────────────────────────────
+
+# Pronouns handled (same set as CoreNLP coref in NLP Suite):
+#   nominative: I, you, he, she, it, we, they
+#   possessive: my, mine, our, ours, his, her, hers, their, its, yours
+#   objective:  me, you, him, her, it, them
+#   reflexive:  myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves
+
+_PRONOUNS = {
+    # nominative
+    'i', 'you', 'he', 'she', 'it', 'we', 'they',
+    # possessive
+    'my', 'mine', 'our', 'ours', 'his', 'her', 'hers', 'their', 'theirs', 'its', 'yours',
+    # objective
+    'me', 'him', 'them',
+    # reflexive
+    'myself', 'yourself', 'himself', 'herself', 'oneself', 'itself',
+    'ourselves', 'yourselves', 'themselves',
+}
+
+
+def _check_coref_available():
+    """Return True if the installed Stanza version supports the coref processor."""
+    import stanza
+    major, minor = 0, 0
+    try:
+        parts = stanza.__version__.split('.')
+        major, minor = int(parts[0]), int(parts[1])
+    except Exception:
+        pass
+    if major < 1 or (major == 1 and minor < 7):
+        mb.showerror(title='Stanza version too old',
+                     message='Stanza coreference resolution requires Stanza 1.7.0 or later.\n\n'
+                             'Your installed version is ' + stanza.__version__ + '.\n\n'
+                             'To upgrade, open a terminal and run:\n'
+                             '   conda activate NLP\n'
+                             '   pip install --upgrade stanza')
+        return False
+    return True
+
+
+def Stanza_coref(config_filename, inputFilename, inputDir, outputDir,
+                 openOutputFiles, chartPackage, dataTransformation,
+                 language_var, manual_Coref):
+    """
+    Run Stanza coreference resolution on input txt file(s).
+
+    Returns (corefed_files, errorFound) to match the signature expected
+    by coreference_main.run().
+
+    For each input txt file the function produces:
+      1.  A coreferenced txt file with pronouns replaced by their referent.
+      2.  A coref_table csv with antecedent–referent pairs.
+
+    If manual_Coref is True, the CoreNLP split-screen editor is reused
+    for manual editing (single-file input only).
+    """
+    if not _check_coref_available():
+        return [], True
+
+    corefed_files = []
+    errorFound = False
+
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir,
+                                          fileType='.txt', silent=False,
+                                          configFileName=config_filename)
+    if len(inputDocs) == 0:
+        return [], True
+
+    # Determine language code
+    short_lang_list, long_lang_list = get_language_list([language_var])
+    if len(short_lang_list) == 0:
+        mb.showerror(title='Language error',
+                     message='The selected language "' + language_var +
+                             '" is not supported by Stanza.\n\nPlease check your language settings.')
+        return [], True
+    short_lang = short_lang_list[0]
+
+    # Currently Stanza coref is only available for English
+    if short_lang != 'en':
+        mb.showwarning(title='Language not supported',
+                       message='Stanza coreference resolution is currently available only for English.\n\n'
+                               'The selected language is ' + language_var + '.')
+        return [], True
+
+    # Build output subdirectory
+    if inputFilename != '':
+        inputBaseName = os.path.basename(inputFilename)[0:-4]
+    else:
+        inputBaseName = os.path.basename(inputDir)
+    outputCorefDir = os.path.join(outputDir, 'coref_Stanza_' + inputBaseName)
+    outputCorefedDir = IO_files_util.make_output_subdirectory('', '', outputCorefDir, '', silent=False)
+    if outputCorefedDir == '':
+        return [], True
+
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, 'Analysis start',
+        'Started running Stanza coreference resolution at', True, '', True, '', False)
+
+    # Build pipeline with coref
+    try:
+        nlp = stanza.Pipeline(lang='en', processors='tokenize,mwt,pos,lemma,depparse,coref', verbose=False)
+    except Exception as e:
+        mb.showerror(title='Stanza coref pipeline error',
+                     message='Failed to create the Stanza coreference pipeline.\n\n' + str(e))
+        return [], True
+
+    # Coref table rows: [Pronoun, Referent, Sentence ID, Sentence, Document ID, Document]
+    coref_rows = []
+
+    nDocs = len(inputDocs)
+    for docID, doc_path in enumerate(inputDocs, 1):
+        head, tail = os.path.split(doc_path)
+        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
+
+        text = open(doc_path, 'r', encoding='utf-8', errors='ignore').read()
+        if text.strip() == '':
+            print("  Skipping empty file: " + tail)
+            continue
+
+        try:
+            doc = nlp(text)
+        except Exception as e:
+            print("  Error processing " + tail + ": " + str(e))
+            errorFound = True
+            continue
+
+        # ── Build coreferenced text ──────────────────────────────
+        # Collect pronoun → referent replacements from coref chains
+        # Each chain: list of mentions; the first mention with a non-pronoun
+        # head is the canonical referent.
+        replacements = {}  # token key (sent_idx, word_idx) → replacement string
+
+        if hasattr(doc, 'coref') and doc.coref is not None:
+            for chain in doc.coref:
+                # Find the canonical (non-pronoun) mention
+                canonical = None
+                for mention in chain.mentions:
+                    # CorefMention has start_word, end_word, sentence (indices)
+                    sent = doc.sentences[mention.sentence]
+                    mention_text = ' '.join(
+                        w.text for w in sent.words[mention.start_word:mention.end_word])
+                    if mention_text and mention_text.lower() not in _PRONOUNS:
+                        canonical = mention_text
+                        break
+                if canonical is None:
+                    continue  # all mentions are pronouns; nothing to resolve
+
+                # Mark each pronoun mention for replacement
+                for mention in chain.mentions:
+                    sent = doc.sentences[mention.sentence]
+                    mention_text = ' '.join(
+                        w.text for w in sent.words[mention.start_word:mention.end_word])
+                    if mention_text and mention_text.lower() in _PRONOUNS:
+                        # Record for coref table
+                        sent_idx = mention.sentence
+                        sent_text = sent.text
+                        coref_rows.append([mention_text, canonical,
+                                           sent_idx + 1, sent_text,
+                                           docID, doc_path])
+
+                        # Collect token-level replacements
+                        for wi in range(mention.start_word, mention.end_word):
+                            replacements[(sent_idx, wi)] = \
+                                (canonical if wi == mention.start_word else '')
+
+        # Reconstruct text with replacements
+        corefed_tokens = []
+        for si, sent in enumerate(doc.sentences):
+            sent_tokens = []
+            for wi, word in enumerate(sent.words):
+                key = (si, wi)
+                if key in replacements:
+                    rep = replacements[key]
+                    if rep:  # first token of replaced mention
+                        sent_tokens.append(rep)
+                    # else: subsequent tokens of multi-word pronoun mention → skip
+                else:
+                    sent_tokens.append(word.text)
+            corefed_tokens.append(' '.join(sent_tokens))
+        corefed_text = ' '.join(corefed_tokens)
+
+        # Save coreferenced txt file
+        corefed_filename = os.path.join(outputCorefedDir, tail)
+        with open(corefed_filename, 'w', encoding='utf-8') as f:
+            f.write(corefed_text)
+        corefed_files.append(corefed_filename)
+
+    # Save coref table csv
+    if len(coref_rows) > 0:
+        coref_table_filename = os.path.join(outputCorefedDir, 'coref_table_Stanza.csv')
+        coref_df = pd.DataFrame(coref_rows,
+                                columns=['Pronoun (antecedent)', 'Referent',
+                                         'Sentence ID', 'Sentence',
+                                         'Document ID', 'Document'])
+        coref_df.to_csv(coref_table_filename, index=False, encoding='utf-8')
+        corefed_files.append(coref_table_filename)
+
+    IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, 'Analysis end',
+        'Finished running Stanza coreference resolution at', True, '', True, startTime, False)
+
+    # Manual editing (reuse CoreNLP split-screen editor)
+    if manual_Coref:
+        if len(inputDir) == 0 and len(inputFilename) > 0:
+            import Stanford_CoreNLP_coreference_util
+            for file in corefed_files:
+                if file.endswith('.txt'):
+                    Stanford_CoreNLP_coreference_util.manualCoref(inputFilename, file, file)
+        else:
+            IO_user_interface_util.timed_alert(
+                GUI_util.window, 2000, 'Feature Not Available',
+                'Manual coreference is only available when processing a single file, not an input directory.')
+
+    return corefed_files, errorFound
+
 
 # create locations file for GIS
 def visualize_GIS_maps_Stanza(svo_df):

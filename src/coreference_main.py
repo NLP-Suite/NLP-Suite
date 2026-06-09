@@ -25,6 +25,7 @@ import GUI_IO_util
 import IO_files_util
 import GUI_util
 import Stanford_CoreNLP_coreference_util
+import Stanza_util
 import file_splitter_merged_txt_util
 import reminders_util
 import config_util
@@ -71,40 +72,62 @@ def run(inputFilename, inputDir, outputDir,
     inputDirBase = ""
 
 
-    if  Coref==False and split_coreferenced_files_var==False and continue_manual_Coref_var==False:
+    if  (not Coref or Coref == '') and split_coreferenced_files_var==False and continue_manual_Coref_var==False:
         mb.showerror(title='Missing required information', message="No options have been selected.\n\nPlease, tick one of the available options and try again.")
         return False
 
     # CoRef _____________________________________________________
 
     if Coref:
-        if language_var!='English' and language_var!='Chinese':
-            mb.showwarning(title='Language',message='The Stanford CoreNLP coreference resolution annotator is only available for English and Chinese.')
-            return
+        if 'Stanza' in Coref:
+            # ── Stanza coreference path ──
+            if language_var != 'English':
+                mb.showwarning(title='Language',
+                               message='Stanza coreference resolution is currently available only for English.')
+                return
 
-        label = 'coref_CoreNLP'
-        if inputFilename != '':
-            inputBaseName = os.path.basename(inputFilename)[0:-4]  # without .txt
+            files_to_open, error_indicator = Stanza_util.Stanza_coref(
+                config_filename, inputFilename, inputDir, outputDir,
+                openOutputFiles, chartPackage, dataTransformation,
+                language_var, Manual_Coref_var)
+            if error_indicator:
+                return
+
+            # determine outputCorefedDir from the first returned file
+            outputCorefedDir = ''
+            if len(files_to_open) > 0:
+                outputCorefedDir = os.path.dirname(files_to_open[0])
+
         else:
-            inputBaseName = os.path.basename(inputDir)
-        outputCorefDir = os.path.join(outputDir, label + "_" + inputBaseName)
+            # ── Stanford CoreNLP coreference path (default) ──
+            if language_var != 'English' and language_var != 'Chinese':
+                mb.showwarning(title='Language',
+                               message='The Stanford CoreNLP coreference resolution annotator is only available for English and Chinese.')
+                return
 
-        # create a subdirectory of the output directory
-        outputCorefedDir = IO_files_util.make_output_subdirectory('', '', outputCorefDir, '',
-                                                            silent=False)
-        if outputCorefedDir == '':
-            return
+            label = 'coref_CoreNLP'
+            if inputFilename != '':
+                inputBaseName = os.path.basename(inputFilename)[0:-4]  # without .txt
+            else:
+                inputBaseName = os.path.basename(inputDir)
+            outputCorefDir = os.path.join(outputDir, label + "_" + inputBaseName)
 
-        # inputFilename and inputDir are the original txt files to be coreferenced
-        # 2 items are returned: filename string and true/False for error
-        files_to_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir,
-                                       outputCorefedDir,
-                                       openOutputFiles, chartPackage, dataTransformation,
-                                       language_var,
-                                       memory_var, export_json_var,
-                                       Manual_Coref_var)
-        if error_indicator != 0:
-            return
+            # create a subdirectory of the output directory
+            outputCorefedDir = IO_files_util.make_output_subdirectory('', '', outputCorefDir, '',
+                                                                silent=False)
+            if outputCorefedDir == '':
+                return
+
+            # inputFilename and inputDir are the original txt files to be coreferenced
+            # 2 items are returned: filename string and true/False for error
+            files_to_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir,
+                                           outputCorefedDir,
+                                           openOutputFiles, chartPackage, dataTransformation,
+                                           language_var,
+                                           memory_var, export_json_var,
+                                           Manual_Coref_var)
+            if error_indicator != 0:
+                return
 
         if inputFilename!='':
             inputFilename = str(files_to_open)
@@ -170,7 +193,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
 
-GUI_label = 'Graphical User Interface (GUI) for Coreference PRONOMINAL Resolution (via CoreNLP) and Manual Editing'
+GUI_label = 'Graphical User Interface (GUI) for Coreference PRONOMINAL Resolution (via CoreNLP/Stanza) and Manual Editing'
 config_filename = 'NLP_default_IO_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
 
@@ -235,17 +258,18 @@ CoRef_lb = tk.Label(window, text='Coreference resolution')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,CoRef_lb,True)
 
 CoRef_var.set('Stanford CoreNLP')
-CoRef_var_menu = tk.OptionMenu(window,CoRef_var,'BERT','spaCy','Stanford CoreNLP')
+CoRef_var_menu = tk.OptionMenu(window,CoRef_var,'Stanford CoreNLP','Stanza','BERT','spaCy')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.coreference_CoRef_var_menu_pos, y_multiplier_integer,
                     CoRef_var_menu, False, False, True, False,
                     90, GUI_IO_util.labels_x_coordinate,
-                    "Options currently available only for Stanford CoreNLP.\nSelect the NER tag(s) you wish to search for. Click on the + or Reset buttons when the widget is disabled to add new NER tags or to start fresh.")
+                    "Select the NLP package for coreference resolution.\n\nStanford CoreNLP: requires Java and CoreNLP installed; supports English and Chinese.\nStanza: pure Python, no Java needed; currently supports English only.")
 
 def activate_options(*args):
-    if not 'CoreNLP' in CoRef_var.get():
+    selected = CoRef_var.get()
+    if selected not in ('Stanford CoreNLP', 'Stanza'):
         mb.showwarning(title='Option not available',
-                       message="The selected " + CoRef_var.get() + " coreference option is not available yet. Sorry!\n\nCheck back soon...")
+                       message="The selected " + selected + " coreference option is not available yet. Sorry!\n\nCheck back soon...")
 CoRef_var.trace('w',activate_options)
 
 # CoRef_var.set(1)
@@ -349,11 +373,12 @@ videos_options='No videos available'
 TIPS_lookup = {'Stanford CoreNLP supported languages': 'TIPS_NLP_Stanford CoreNLP supported languages.pdf',
                'Stanford CoreNLP performance & accuracy': 'TIPS_NLP_Stanford CoreNLP performance and accuracy.pdf',
                'Stanford CoreNLP coreference resolution': "TIPS_NLP_Stanford CoreNLP coreference resolution.pdf",
+               'Stanza coreference resolution': "TIPS_NLP_Stanza coreference resolution.pdf",
                'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                'Stanford CoreNLP memory issues':'TIPS_NLP_Stanford CoreNLP memory issues.pdf',
                'csv files - Problems & solutions': 'TIPS_NLP_csv files - Problems & solutions.pdf'}
 
-TIPS_options = 'Stanford CoreNLP coreference resolution','Stanford CoreNLP supported languages','Stanford CoreNLP performance & accuracy', 'utf-8 encoding', 'Stanford CoreNLP memory issues', 'csv files - Problems & solutions'
+TIPS_options = 'Stanford CoreNLP coreference resolution','Stanza coreference resolution','Stanford CoreNLP supported languages','Stanford CoreNLP performance & accuracy', 'utf-8 encoding', 'Stanford CoreNLP memory issues', 'csv files - Problems & solutions'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
