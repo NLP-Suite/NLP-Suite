@@ -233,3 +233,50 @@ and renamed "spaCy (TextBlob)". Added informational popup.
 ### Stanza Sentiment Fix
 
 Replaced cell-by-cell `.at[]` loop with list-of-dicts pattern (same optimization as spaCy).
+
+---
+
+## 9. GIS Pipeline — Multi-Package NER Extraction (2026-06-09)
+
+### Problem
+
+The GIS pipeline (text → NER → geocode → map) was hardcoded to Stanford CoreNLP for
+NER location extraction. CoreNLP requires Java, supports limited languages, and uses
+an older CRF architecture.
+
+### NER Quality Comparison for Location Tagging
+
+| | CoreNLP NER | Stanza NER | spaCy NER |
+|--|-------------|------------|-----------|
+| Architecture | CRF (2014) | BiLSTM-CRF + char embeddings (2020) | Transformer/CNN |
+| English F1 (OntoNotes) | ~86% | ~89% | ~86% |
+| Location tag granularity | CITY, STATE_OR_PROVINCE, COUNTRY, LOCATION (4 classes) | GPE, LOC (2 classes) | GPE, LOC (2 classes) |
+| Languages with NER | ~7 | 30+ | 20+ |
+| Multi-word entities | Requires 70+ lines of custom joining logic in Suite | Pre-joined by model (single entity span) | Pre-joined via IOB tags |
+| Java required | Yes | No | No |
+
+### Key Insight
+
+The 4-class CoreNLP granularity (CITY vs COUNTRY vs STATE_OR_PROVINCE) is **not used
+downstream** — the geocoder (Nominatim/Google) geocodes the location string regardless
+of its sub-type. All location tags are treated identically in the GIS pipeline.
+
+Stanza's biggest practical advantage: multi-word entities like "United States of America"
+come pre-joined from the model. CoreNLP returns individual tokens that must be stitched
+together with error-prone custom logic.
+
+### Changes Made (GIS_main.py)
+
+1. Added NER package dropdown: **Stanza** (default), spaCy, Stanford CoreNLP
+2. Stanza/spaCy NER tags (GPE, LOC) are mapped to LOCATION for uniform downstream processing
+3. Multi-Word Expression column from Stanza/spaCy is used when available (pre-joined entities)
+4. Help text updated to explain the three options and recommend Stanza
+5. Default set to Stanza (best accuracy + multilingual + no Java dependency)
+
+### Column Normalization
+
+| Source | Word column | NER tags | Entity joining |
+|--------|-------------|----------|----------------|
+| CoreNLP | `Word` | CITY, STATE_OR_PROVINCE, COUNTRY, LOCATION | Custom logic in `Stanford_CoreNLP_util.py` |
+| Stanza | `Form` → renamed `Word` | GPE, LOC → mapped to LOCATION | `Multi-Word Expression` column |
+| spaCy | `Form` → renamed `Word` | GPE, LOC → mapped to LOCATION | `Multi-Word Expression` column |

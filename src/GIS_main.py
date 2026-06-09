@@ -28,6 +28,8 @@ import GIS_file_check_util
 import IO_files_util
 import Stanford_CoreNLP_util
 import run_script_util
+import Stanza_util
+import spaCy_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -36,11 +38,12 @@ def run(inputFilename,
         inputDir,
         outputDir,
         openOutputFiles,
-        
+
         chartPackage,
         dataTransformation,
         csv_file,
         NER_extractor,
+        NER_package,
         location_menu,
         geocoder,
         geocode_locations,
@@ -134,7 +137,7 @@ def run(inputFilename,
     # START PROCESSING ---------------------------------------------------------------------------------------------------
 
     # ----------------------------------------------------------------------------------------------------------------------------------------------
-    # NER extraction via CoreNLP
+    # NER extraction via CoreNLP, Stanza, or spaCy
 
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='GIS',
@@ -144,41 +147,86 @@ def run(inputFilename,
 
     # checking for txt: NER=='LOCATION', provide a csv output with column: [Locations]
     if NER_extractor and csv_file=='':
-        NERs = ['COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION']
 
-        locationFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                outputDir, openOutputFiles, chartPackage, dataTransformation,
-                                                                'NER', False,
-                                                                language_var,
-                                                                export_json_var,
-                                                                memory_var,
-                                                                NERs=NERs,
-                                                                extract_date_from_text_var=0,
-                                                                filename_embeds_date_var=filename_embeds_date_var,
-                                                                date_format=date_format_var,
-                                                                items_separator_var=items_separator_var,
-                                                                date_position_var=date_position_var)
+        if 'Stanza' in NER_package:
+            # --- Stanza NER extraction ---
+            locationFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
+                                                        outputDir, openOutputFiles, chartPackage, dataTransformation,
+                                                        'NER', False,
+                                                        [language_var],
+                                                        memory_var, 90000, 1000,
+                                                        filename_embeds_date_var=filename_embeds_date_var,
+                                                        date_format=date_format_var,
+                                                        items_separator_var=items_separator_var,
+                                                        date_position_var=date_position_var)
+        elif 'spaCy' in NER_package:
+            # --- spaCy NER extraction ---
+            locationFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
+                                                      outputDir, openOutputFiles, chartPackage, dataTransformation,
+                                                      ['NER'], False,
+                                                      language_var,
+                                                      memory_var, 90000, 1000,
+                                                      filename_embeds_date_var=filename_embeds_date_var,
+                                                      date_format=date_format_var,
+                                                      items_separator_var=items_separator_var,
+                                                      date_position_var=date_position_var)
+        else:
+            # --- Stanford CoreNLP NER extraction (default) ---
+            NERs = ['COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION']
+            locationFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+                                                                    outputDir, openOutputFiles, chartPackage, dataTransformation,
+                                                                    'NER', False,
+                                                                    language_var,
+                                                                    export_json_var,
+                                                                    memory_var,
+                                                                    NERs=NERs,
+                                                                    extract_date_from_text_var=0,
+                                                                    filename_embeds_date_var=filename_embeds_date_var,
+                                                                    date_format=date_format_var,
+                                                                    items_separator_var=items_separator_var,
+                                                                    date_position_var=date_position_var)
 
-        if len(locationFiles)==0:
+        if locationFiles is None or len(locationFiles)==0:
             mb.showwarning("No locations","There are no NER locations to be geocoded and mapped in the selected input txt file.\n\nPlease, select a different txt file and try again.")
             return
         else:
             filesToOpen.extend(locationFiles)
             NER_outputFilename = locationFiles[0]
 
-        # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location'
-        # if IO_csv_util.rename_header(inputFilename, "Word", "Location") == False:
-        #     return
-        df = pd.read_csv(locationFiles[0], encoding='utf-8', on_bad_lines='skip').rename(columns={"Word": "Location"})
-        location_menu_var.set('Location')
-        # 'NER': ['Word', 'NER', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID', 'Document'],
+        df = pd.read_csv(NER_outputFilename, encoding='utf-8', on_bad_lines='skip')
 
-        # Clean dataframe, remove any 'DATE' or non-location rows
-        del_list = []
-        for index, row in df.iterrows():
-            if df['NER'][index] not in ['COUNTRY','STATE_OR_PROVINCE','CITY','LOCATION']:
-                del_list.append(index)
-        df = df.drop(del_list)
+        # Normalize column names: Stanza/spaCy use 'Form', CoreNLP uses 'Word'
+        if 'Form' in df.columns and 'Word' not in df.columns:
+            df = df.rename(columns={'Form': 'Word'})
+
+        # Rename 'Word' to 'Location' for the GIS pipeline
+        if 'Word' in df.columns:
+            df = df.rename(columns={'Word': 'Location'})
+        location_menu_var.set('Location')
+
+        # Normalize NER tags: map Stanza/spaCy GPE/LOC to LOCATION for GIS filtering
+        location_tags = {'COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION', 'GPE', 'LOC'}
+        if 'NER' in df.columns:
+            # Map GPE/LOC → LOCATION so downstream GIS code works uniformly
+            df['NER'] = df['NER'].replace({'GPE': 'LOCATION', 'LOC': 'LOCATION'})
+            # Keep only location rows
+            df = df[df['NER'].isin({'COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION'})]
+        else:
+            df = pd.DataFrame()  # empty — no NER column
+
+        # For Stanza/spaCy: use Multi-Word Expression when available (pre-joined entities)
+        if 'Multi-Word Expression' in df.columns:
+            # Multi-Word Expression holds the full entity (e.g., "United States of America")
+            # Use it instead of the single-token 'Location' when available
+            mwe_mask = df['Multi-Word Expression'].notna() & (df['Multi-Word Expression'] != '') & (df['Multi-Word Expression'] != 'O')
+            df.loc[mwe_mask, 'Location'] = df.loc[mwe_mask, 'Multi-Word Expression']
+            # Drop duplicate rows from multi-token entities (keep first occurrence)
+            df = df[mwe_mask | ~df.duplicated(subset=['Location', 'Sentence ID', 'Document ID'], keep='first')]
+
+        if df.empty:
+            mb.showwarning("No locations","There are no NER locations to be geocoded and mapped in the selected input txt file.\n\nPlease, select a different txt file and try again.")
+            return
+
         df.to_csv(NER_outputFilename, encoding='utf-8', index=False)
         csv_file_var.set(NER_outputFilename)
         filesToOpen.append(NER_outputFilename)
@@ -241,6 +289,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.data_transformation_options_widget.get(),
                             csv_file_var.get(),
                             NER_extractor_var.get(),
+                            NER_package_var.get(),
                             location_menu_var.get(),
                             geocoder_var.get(),
                             geocode_locations_var.get(),
@@ -313,6 +362,7 @@ def clear(e):
     csv_file_var.set('')
     NER_extractor_var.set(1)
     NER_extractor_checkbox.config(state='disabled')
+    NER_package_var.set('Stanza')
     location_menu_var.set('')
     geocode_locations_var.set(1)
     geocode_locations_checkbox.configure(state='normal')
@@ -460,9 +510,22 @@ csv_file.config(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,csv_file)
 
 NER_extractor_var.set(0)
+NER_package_var = tk.StringVar()
+NER_package_var.set('Stanza')
+
 NER_extractor_checkbox = tk.Checkbutton(window, variable=NER_extractor_var, onvalue=1, offvalue=0)
-NER_extractor_checkbox.config(text="EXTRACT locations (via Stanford CoreNLP NER) - Default parameters")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,NER_extractor_checkbox)
+NER_extractor_checkbox.config(text="EXTRACT locations (via NER)")
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,NER_extractor_checkbox, True)
+
+NER_package_menu = tk.OptionMenu(window, NER_package_var, 'Stanza', 'spaCy', 'Stanford CoreNLP')
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                NER_package_menu,
+                                False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                "Select the NLP package for NER location extraction.\n\n"
+                                "Stanza (recommended): modern BiLSTM-CRF neural network, 30+ languages, multi-word entities pre-joined.\n"
+                                "spaCy: fast, 20+ languages.\n"
+                                "Stanford CoreNLP: fine-grained location types (CITY, STATE, COUNTRY), English-focused, requires Java.")
 
 if os.path.isfile(inputFilename.get()):
     menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
@@ -714,7 +777,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                   "The INPUT csv file widget displays the csv LOCATION file as soon as produced by the Stanford CoreNLP NER annotator.\n\nEdit the file and rerun the algorithm to geocode from scratch.\n\nYou can also use the 'Select INPUT CSV file' button to select\n   1. a csv file, however created (e.g., CoreNLP NER annotator), containing a list of locations, i.e., a column header 'Location' and different locations in each row (e.g., Atlanta, New York City, Paris, South Korea); when a DATE field is present, the GIS algorithms will create dynamic maps;\n   2. a csv file of geocoded locations (with fields LATITUDE and LONGITUDE) previosuly created either by this algorithm or externally; if a 'Document' field, or 'Sentence' field, or 'Summary' field or 'Date' field are presnt in the csv file, they will be displayed when clicking on a pin; when a 'Date' field is present, the GIS algorithms will create dynamic maps;\n   3. a csv CoNLL table file with NER location tags; this last option, however, is highly discouraged since the CoNLL table currently available n the NLP Suite has one record per word/token and such country location like 'United States of America' would then not be taken as a single entity for geocoding, but as separate entities.\n\nDifferent options will be available depending upon what the csv file widget displays.\n\nTO RERUN THE PIPELINE, FROM SCRATCH, FROM TEXT TO MAPS, PRESS ESC TO CLEAR THE CSV FILE WIDGET.\n\nYou can also select a geocoded csv file and run the 'MAP locations' option." + GUI_IO_util.msg_openFile)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to EXTRACT locations from a text file using Stanford CoreNLP NER extractor.\n\nThe option is available ONLY when input txt file(s) is selected.\n\nTo improve the geocoding of those locations that can take multiple names (e.g., 'United States', 'US', 'USA'), the NLP Suite Stanford CoreNLP algorithm uses the entries of the multi_name_locations.csv file stored in the lib\wordLists subdirectory of the NLP Suite installation folder. Locations known under different names can be all geocoded under a single name (e.g., 'United States'). You can edit the multi_name_locations.csv file to suit your specific needs and improve geocoding."+GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to EXTRACT locations from a text file using NER (Named Entity Recognition).\n\nUse the dropdown menu to select the NER package:\n\n   Stanza (recommended): modern neural network (BiLSTM-CRF), supports 30+ languages, multi-word entities are pre-joined (e.g., 'United States of America' is returned as a single entity).\n\n   spaCy: fast, supports 20+ languages.\n\n   Stanford CoreNLP: fine-grained location types (CITY, STATE_OR_PROVINCE, COUNTRY, LOCATION), primarily English, requires Java.\n\nThe option is available ONLY when input txt file(s) is selected.\n\nTo improve the geocoding of those locations that can take multiple names (e.g., 'United States', 'US', 'USA'), the NLP Suite Stanford CoreNLP algorithm uses the entries of the multi_name_locations.csv file stored in the lib\\wordLists subdirectory of the NLP Suite installation folder. Locations known under different names can be all geocoded under a single name (e.g., 'United States'). You can edit the multi_name_locations.csv file to suit your specific needs and improve geocoding."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the column containing the location names (e.g., New York) to be geocoded and mapped.\n\nTHE OPTION IS NOT AVAILABLE WHEN SELECTING A CONLL INPUT CSV FILE. NER IS THE COLUMN AUTOMATICALLY USED WHEN WORKING WITH A CONLL FILE IN INPUT."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to GEOCODE a list of locations.\n\n'Split' locations (e.g. South America, Atlantic City) will be joined together for geocoding using the following prefix values:\n  south, north, west, east, los, new, san, las, la, hong\nand suffix values:\n  city, island\n\nWHEN USING THE CoNLL TABLE AS INPUT, ONLY TWO CONSECUTIVE VALUES WILL BE JOINED TOGETHER (thus, 'New South Wales' would not be joined).\n\nThe geocoding option is available ONLY when a csv file of locations NOT yet geocoded is selected."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","To obtain more accurate geocoded results, select a country where most locations are expected to be. Locations falling in the selected country of bias will be given PREFERENCE by the geocoder over locations with the same name in other countries. Thus, if you select United States as your country bias, the geocoder will geocode locations such as Florence, Rome, or Venice in the United States rather than in Italy.\n\nIf you want to geocode locations mostly located in a specific area, enter the latitude and longitude for the upper left-hand and lower right-hand corners of a rectangle that will be used for finding the locations.\n\nTick the Restrict checkbox if you wish to restrict the search area to the selected area ONLY (otherwise, it is just a preference).\n\nAREA AND RESTRICT WIDGETS ARE AVAILABLE ONLY FOR NOMINATIM."+GUI_IO_util.msg_Esc)
