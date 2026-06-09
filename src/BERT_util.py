@@ -70,27 +70,29 @@ def NER_tags_BERT(window, inputFilename, inputDir, outputDir, configFileName, mo
                                                        label='NER_BERT',
                                                        silent=True)
 
+    # Create the NER pipeline ONCE (not per sentence — was a major performance bug)
+    # aggregation_strategy="simple" pre-joins multi-word entities (e.g., "New York" → single LOC)
+    nlp = pipeline("ner", model=model, tokenizer=tokenizer, aggregation_strategy="simple")
+
+    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
+
     documentID = 0
     for doc in inputDocs:
         head, tail = os.path.split(doc)
         documentID = documentID + 1
         # NER
-        print("`Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
+        print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
 
         header = ["Word", "NER", "Sentence ID", "Sentence", "Document ID", "Document"]
         with open(doc, "r", encoding="utf-8", errors="ignore") as f:
             fullText = f.read()
             fullText = fullText.replace('\n', ' ')
 
-        from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
         sentences = sentence_split_stanza_text(stanzaPipeLine(fullText))
         sentenceID = 0
 
         for s in sentences:
             sentenceID = sentenceID + 1
-            #this model does not use BIEOS
-            #aggregation_strategy="simple" ensures that multi word entities are looked at as one entity and instead of being tagged as B-LOC and I-LOC spearately, they are just tagged as LOC together
-            nlp = pipeline("ner", model=model, tokenizer=tokenizer, aggregation_strategy="simple")
             ner_result = nlp(s)
 
             for el in ner_result:
