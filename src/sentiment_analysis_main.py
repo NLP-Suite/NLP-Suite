@@ -512,12 +512,18 @@ def display_reminder(*args):
                                     reminders_util.title_options_SA_SentiWordNet,
                                     reminders_util.message_SA_SentiWordNet,
                                     True)
+    elif 'spaCy' in SA_algorithm_var.get():
+        mb.showinfo('spaCy (TextBlob) Sentiment',
+                    "spaCy sentiment analysis uses TextBlob under the hood, which is a pattern-based dictionary approach (not a neural network).\n\n"
+                    "It computes polarity scores on a scale of -1.0 (most negative) to +1.0 (most positive).\n\n"
+                    "For more accurate neural-network-based sentiment analysis, consider using Stanford CoreNLP or Stanza.\n\n"
+                    "For dictionary-based sentiment analysis, VADER generally outperforms TextBlob on most benchmarks.")
 
     else:
         return
 SA_algorithm_var.trace('w',display_reminder)
 
-SA_algorithms=['*','Large Language Models (LLM):','   BERT (English model)','   BERT (Multilingual model)','','Neural network approaches:', '   spaCy','   Stanford CoreNLP','   Stanza','','Dictionary approaches:','   ANEW','   hedonometer','   SentiWordNet','   VADER']
+SA_algorithms=['*','Large Language Models (LLM):','   BERT (English model)','   BERT (Multilingual model)','','Neural network approaches:','   Stanford CoreNLP','   Stanza','','Dictionary approaches:','   ANEW','   hedonometer','   spaCy (TextBlob)','   SentiWordNet','   VADER']
 
 SA_algorithm_var.set('*')
 SA_algorithm_lb = tk.Label(window, text='Select sentiment analysis algorithm')
@@ -546,7 +552,7 @@ def activate_all_options(*args):
 
 def activate_SOS(*args):
     # the Shape of Stories is only available when processing a directory and using CoreNLP
-    if input_main_dir_path.get()=='' or (not 'BERT' in SA_algorithm_var.get().strip() and SA_algorithm_var.get().strip()!='spaCy' and SA_algorithm_var.get().strip()!='Stanza' and SA_algorithm_var.get().strip()!='Stanford CoreNLP'):
+    if input_main_dir_path.get()=='' or (not 'BERT' in SA_algorithm_var.get().strip() and 'spaCy' not in SA_algorithm_var.get().strip() and SA_algorithm_var.get().strip()!='Stanza' and SA_algorithm_var.get().strip()!='Stanford CoreNLP'):
         shape_of_stories_checkbox.config(state='disabled')
     else:
         shape_of_stories_checkbox.config(state='normal')
