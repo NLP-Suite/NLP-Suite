@@ -267,16 +267,83 @@ together with error-prone custom logic.
 
 ### Changes Made (GIS_main.py)
 
-1. Added NER package dropdown: **Stanza** (default), spaCy, Stanford CoreNLP
-2. Stanza/spaCy NER tags (GPE, LOC) are mapped to LOCATION for uniform downstream processing
+1. Added NER package dropdown: BERT, **Stanza** (default), spaCy, Stanford CoreNLP
+2. All NER tags (GPE, LOC) are mapped to LOCATION for uniform downstream processing
 3. Multi-Word Expression column from Stanza/spaCy is used when available (pre-joined entities)
-4. Help text updated to explain the three options and recommend Stanza
-5. Default set to Stanza (best accuracy + multilingual + no Java dependency)
+4. BERT uses `aggregation_strategy="simple"` which also pre-joins entities
+5. Help text updated with package comparison and accuracy/speed tradeoffs
+6. Default set to Stanza (best accuracy/speed tradeoff + multilingual + no Java dependency)
 
 ### Column Normalization
 
 | Source | Word column | NER tags | Entity joining |
 |--------|-------------|----------|----------------|
+| BERT | `Word` | LOC → mapped to LOCATION | Pre-joined by `aggregation_strategy="simple"` |
 | CoreNLP | `Word` | CITY, STATE_OR_PROVINCE, COUNTRY, LOCATION | Custom logic in `Stanford_CoreNLP_util.py` |
 | Stanza | `Form` → renamed `Word` | GPE, LOC → mapped to LOCATION | `Multi-Word Expression` column |
 | spaCy | `Form` → renamed `Word` | GPE, LOC → mapped to LOCATION | `Multi-Word Expression` column |
+
+---
+
+## 10. NLP Package Performance Comparison (2026-06-09)
+
+### NER Accuracy (English, OntoNotes/CoNLL benchmarks)
+
+| Package | Architecture | F1 Score | Speed (relative) | Languages | Java? |
+|---------|-------------|----------|-------------------|-----------|-------|
+| **BERT** (`xlm-roberta-large-finetuned-conll03-english`) | Transformer (XLM-RoBERTa) | ~92% | Slowest (5-10x Stanza) | Multilingual (102 langs) | No |
+| **Stanza** | BiLSTM-CRF + char embeddings | ~89% | Fast | 30+ | No |
+| **spaCy** (`_core_web_sm`) | CNN | ~86% | Fastest | 20+ | No |
+| **spaCy** (`_core_web_trf`) | Transformer | ~90% | Slow | ~5 | No |
+| **Stanford CoreNLP** | CRF | ~86% | Medium | ~7 | Yes |
+
+### Sentiment Analysis Quality
+
+| Package | Architecture | Scale | Quality | Speed |
+|---------|-------------|-------|---------|-------|
+| **BERT** (cardiffnlp models) | RoBERTa transformer | 3-class | Best on most benchmarks | Slow |
+| **Stanford CoreNLP** | Recursive Neural Tensor Network | 5-class (finest granularity) | Very good | Medium (Java) |
+| **Stanza** | CNN classifier | 3-class (0/1/2) | Good, but coarse | Fast |
+| **spaCy (TextBlob)** | Dictionary (pattern-based) | -1.0 to +1.0 | Mediocre (not neural) | Fast |
+| **VADER** | Dictionary (rule-based) | -1.0 to +1.0 | Good for social media | Fastest |
+
+### Coreference Resolution
+
+| Package | Architecture | Quality | Notes |
+|---------|-------------|---------|-------|
+| **Stanza** (v1.7+) | XLM-RoBERTa with LoRA | State of the art | Already transformer-based; adding BERT coref would be redundant |
+| **Stanford CoreNLP** | Statistical model (2017) | Good but dated | Java required |
+
+### Performance Bugs Fixed (2026-06-09)
+
+**spaCy_util.py** — 8 fixes (see Section 7):
+- `spacy download` subprocess on every run (5-15s waste)
+- `get_mwe()` in sentence loop (O(n^2))
+- Cell-by-cell `df.at[]` instead of list-of-dicts
+- `pd.concat` in document loop (O(n^2))
+- SVO CSV rewritten per document
+- `iterrows()` instead of vectorized ops
+- Full-column assignment per token
+- Duplicate files in visualization list
+
+**BERT_util.py** — 1 critical fix:
+- `pipeline("ner", ...)` was called inside the **sentence loop**, recreating the
+  entire NER pipeline per sentence. This is extremely expensive — each call
+  reinitializes the model. Moved to a single call before the loop.
+
+**Stanza_util.py** — 1 fix:
+- Sentiment output built cell-by-cell with `df.at[]`; replaced with list-of-dicts.
+
+### Recommendations by Use Case
+
+| Task | Best Choice | Why |
+|------|-------------|-----|
+| **NER (small corpus, max accuracy)** | BERT | ~92% F1, pre-joined entities |
+| **NER (large corpus, multilingual)** | Stanza | ~89% F1, fast, 30+ languages, no Java |
+| **NER (speed priority)** | spaCy (`_core_web_sm`) | Fastest, ~86% F1 |
+| **Sentiment (accuracy)** | BERT | Best on benchmarks |
+| **Sentiment (granularity)** | CoreNLP | 5-class scale (only option with "very positive/negative") |
+| **Sentiment (speed + multilingual)** | Stanza | Fast, 3-class, many languages |
+| **Coreference** | Stanza | Already uses transformer (XLM-RoBERTa); no need for separate BERT coref |
+| **SVO extraction** | Stanza (enhanced) | Full port of CoreNLP logic; no Java needed |
+| **GIS pipeline** | Stanza (default) or BERT (precision) | Stanza for speed+multilingual; BERT for max accuracy |

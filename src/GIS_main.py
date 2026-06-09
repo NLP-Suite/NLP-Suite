@@ -30,6 +30,7 @@ import Stanford_CoreNLP_util
 import run_script_util
 import Stanza_util
 import spaCy_util
+import BERT_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -148,7 +149,11 @@ def run(inputFilename,
     # checking for txt: NER=='LOCATION', provide a csv output with column: [Locations]
     if NER_extractor and csv_file=='':
 
-        if 'Stanza' in NER_package:
+        if 'BERT' in NER_package:
+            # --- BERT NER extraction (highest accuracy, slowest) ---
+            locationFiles = BERT_util.NER_tags_BERT(GUI_util.window, inputFilename, inputDir,
+                                                     outputDir, config_filename, '', chartPackage, dataTransformation)
+        elif 'Stanza' in NER_package:
             # --- Stanza NER extraction ---
             locationFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                         outputDir, openOutputFiles, chartPackage, dataTransformation,
@@ -517,14 +522,15 @@ NER_extractor_checkbox = tk.Checkbutton(window, variable=NER_extractor_var, onva
 NER_extractor_checkbox.config(text="EXTRACT locations (via NER)")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,NER_extractor_checkbox, True)
 
-NER_package_menu = tk.OptionMenu(window, NER_package_var, 'Stanza', 'spaCy', 'Stanford CoreNLP')
+NER_package_menu = tk.OptionMenu(window, NER_package_var, 'BERT', 'Stanza', 'spaCy', 'Stanford CoreNLP')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                 NER_package_menu,
                                 False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
                                 "Select the NLP package for NER location extraction.\n\n"
-                                "Stanza (recommended): modern BiLSTM-CRF neural network, 30+ languages, multi-word entities pre-joined.\n"
-                                "spaCy: fast, 20+ languages.\n"
+                                "BERT: highest accuracy (~92% F1), uses XLM-RoBERTa transformer; slowest but best for small corpora.\n"
+                                "Stanza (recommended): modern BiLSTM-CRF neural network (~89% F1), 30+ languages, good speed/accuracy tradeoff.\n"
+                                "spaCy: fast (~86-90% F1), 20+ languages.\n"
                                 "Stanford CoreNLP: fine-grained location types (CITY, STATE, COUNTRY), English-focused, requires Java.")
 
 if os.path.isfile(inputFilename.get()):
