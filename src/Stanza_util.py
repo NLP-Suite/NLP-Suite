@@ -509,13 +509,21 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
             out_df = out_df.append(temp_df)
 
     if annotator_params=='sentiment':
+        # Stanza sentiment returns 0 (negative), 1 (neutral), 2 (positive) — a coarse 3-class scale
+        doc_hyperlink = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
+        sent_rows = []
         for i, sentence in enumerate(stanza_doc.sentences):
-            out_df.at[i, 'Sentiment score'] = sentence.sentiment
-            out_df.at[i, 'Sentiment label'] = 'positive' if sentence.sentiment > 1 else 'negative' if sentence.sentiment < 1 else 'neutral'
-            out_df.at[i, 'Sentence ID'] = i+1
-            out_df.at[i, 'Sentence'] = sentence.text
-        out_df['Document ID'] = docID
-        out_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
+            s = sentence.sentiment
+            sent_rows.append({
+                'Sentiment score': s,
+                'Sentiment label': 'positive' if s > 1 else ('negative' if s < 1 else 'neutral'),
+                'Sentence ID': i + 1,
+                'Sentence': sentence.text,
+                'Document ID': docID,
+                'Document': doc_hyperlink
+            })
+        out_df = pd.DataFrame(sent_rows, columns=[
+            'Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
 
     else:
         # drop the columns that don't correspond to Stanford CoreNLP output
