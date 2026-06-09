@@ -149,17 +149,27 @@ def spaCy_annotate(configFilename, inputFilename, inputDir,
         outputDir = create_output_directory(inputFilename, inputDir, outputDir, annotator)
 
     # set up spaCy pipeline
-    # download selected spaCy language models
+    # load selected spaCy language model (download only if not already installed)
     model_default = "_core_web_sm"
+    model_name = lang + model_default
     try:
-        subprocess.check_call([sys.executable, "-m", "spacy", "download", lang+model_default])
-        nlp = spacy.load(lang+model_default)
+        nlp = spacy.load(model_name)
+    except OSError:
+        # model not installed yet — download once
+        try:
+            subprocess.check_call([sys.executable, "-m", "spacy", "download", model_name])
+            nlp = spacy.load(model_name)
+        except Exception:
+            mb.showinfo("Warning",
+                         "spaCy encountered an error trying to download the language pack " + str(language) + "\n\nCheck if this language is available in spaCy.")
+            return filesToOpen
+    try:
         if "sentiment" in annotator_params:
             nlp.add_pipe('spacytextblob')
-    except:
+    except Exception:
         mb.showinfo("Warning",
-                     "spaCy encountered an error trying to download the language pack " + str(language) + "\n\nCheck if this language is available in spaCy.")
-        return
+                     "spaCy encountered an error adding the sentiment pipeline for " + str(language) + ".")
+        return filesToOpen
 
     # different outputFilename if SVO is selected
     if "SVO" in annotator_params:
@@ -176,8 +186,9 @@ def spaCy_annotate(configFilename, inputFilename, inputDir,
             annotator_label=annotator
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                  annotator_label+'_SpaCy')
-    # create output df
-    df = pd.DataFrame()
+    # collect per-document DataFrames in lists, concat once at the end (avoids O(n²) concat)
+    all_dfs = []
+    all_svo_dfs = []
 
     # iterate corpus
     for doc in inputDocs:
@@ -195,44 +206,43 @@ def spaCy_annotate(configFilename, inputFilename, inputDir,
         # process given text with spaCy annotator
         try:
             Spacy_output = nlp(text)
-        except:
+        except Exception:
             mb.showinfo("Warning",
-                        "spaCy encountered an error trying to download the language pack " + str(language) + "\n\nTry manually selecting the appropriate language rather than multilingual.")
-            return
+                        "spaCy encountered an error processing " + tail + " with language " + str(language) + "\n\nTry manually selecting the appropriate language rather than multilingual.")
+            return filesToOpen
 
-        # if 'NER' in str(annotator_params) or 'parse' in str(annotator_params) or 'sentiment' in str(annotator_params) or 'SVO' in str(annotator_params):
         # convert Doc to DataFrame
         temp_df = convertSpacyDoctoDf(Spacy_output, inputFilename, inputDir, tail, int(docID), annotator_params, lang_list)
-        df = pd.concat([df, temp_df], ignore_index=True, axis=0)
-
-        # the dt dataframe when running SVO is the CoNLL table, saved later, after processing all input files
-        # it needs to be added here so as to know exactly the place of the CoNLL table in the output files list
-        filesToOpen.append(outputFilename)
+        all_dfs.append(temp_df)
 
         # SVO extraction if selected
         if "SVO" in annotator_params:
             temp_svo_df = extractSVO(Spacy_output, int(docID), inputFilename, inputDir, tail, filename_embeds_date_var)
-            svo_df = pd.concat([svo_df, temp_svo_df], ignore_index=True, axis=0)
-            # save dataframe to csv
-            svo_df.to_csv(svo_df_outputFilename, index=False, encoding=language_encoding)
-            filesToOpen.append(svo_df_outputFilename)
+            all_svo_dfs.append(temp_svo_df)
 
-            # create locations file if GIS visualization is selected
-            if google_earth_var is True:
-                loc_df = visualize_GIS_maps_spaCy(svo_df)
-                loc_df_outputFilename = kwargs["location_filename"]
-                loc_df.to_csv(loc_df_outputFilename, index=False, encoding=language_encoding)
-                filesToOpen.append(loc_df_outputFilename)
-
-    # save dataframe to csv
+    # concatenate all results at once and save
+    df = pd.concat(all_dfs, ignore_index=True) if all_dfs else pd.DataFrame()
     df.to_csv(outputFilename, index=False, encoding=language_encoding)
-    # filesToOpen.append(outputFilename)
+    filesToOpen.append(outputFilename)
+
+    if "SVO" in annotator_params and all_svo_dfs:
+        svo_df = pd.concat(all_svo_dfs, ignore_index=True)
+        svo_df.to_csv(svo_df_outputFilename, index=False, encoding=language_encoding)
+        filesToOpen.append(svo_df_outputFilename)
+
+        # create locations file if GIS visualization is selected
+        if google_earth_var is True:
+            loc_df = visualize_GIS_maps_spaCy(svo_df)
+            loc_df_outputFilename = kwargs["location_filename"]
+            loc_df.to_csv(loc_df_outputFilename, index=False, encoding=language_encoding)
+            filesToOpen.append(loc_df_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
                                        'Finished running spaCy ' + str(annotator_params[0]) + ' annotator at',
                                        True,'',True, startTime)
 
-    filesToVisualize=filesToOpen
+    # deduplicate before visualization (each file only needs to be visualized once)
+    filesToVisualize = list(dict.fromkeys(filesToOpen))
     for j in range(len(filesToVisualize)):
         #02/27/2021; eliminate the value error when there's no information from certain annotators
         if filesToVisualize[j][-4:] == ".csv":
@@ -307,86 +317,81 @@ def get_mwe(out_df):
 # Convert spaCy doc to pandas dataframe
 def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotator_params, language):
 
-    # output dataframe
-    out_df = pd.DataFrame()
-
     # check if the input is a single file or directory
     if inputDir != '':
         inputFilename = inputDir + os.sep + tail
 
+    doc_hyperlink = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
+
     if "sentiment" in str(annotator_params):
-        c = 0
-        for sent in spacy_doc.sents:
-            out_df.at[c, 'Sentiment score'] = round(sent._.blob.polarity,2)
-            out_df.at[c, 'Sentiment label'] = 'positive' if out_df.at[c, 'Sentiment score'] > 0 else 'negative' if out_df.at[c, 'Sentiment score'] < 0 else 'neutral'
-            out_df.at[c, 'Sentence ID'] = int(c+1)
-            out_df.at[c, 'Sentence'] = sent.text
-            out_df.at[c, 'Document ID'] = int(docID)
-            out_df.at[c, 'Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
-            c+=1
-        out_df = out_df[[
-            'Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
+        rows = []
+        for c, sent in enumerate(spacy_doc.sents):
+            score = round(sent._.blob.polarity, 2)
+            label = 'positive' if score > 0 else ('negative' if score < 0 else 'neutral')
+            rows.append({
+                'Sentiment score': score,
+                'Sentiment label': label,
+                'Sentence ID': int(c + 1),
+                'Sentence': sent.text,
+                'Document ID': int(docID),
+                'Document': doc_hyperlink
+            })
+        out_df = pd.DataFrame(rows, columns=[
+            'Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
+        return out_df
 
     if "NER" in str(annotator_params):
-        out_df = pd.DataFrame()
-        rec_ID = 0
+        rows = []
         sent_ID = 1
         for sent in spacy_doc.sents:
-            for i, token in enumerate(sent):
-                out_df.at[rec_ID,'Form'] = token.text
-                out_df.at[rec_ID, 'NER'] = token.ent_type_
-                out_df.at[rec_ID, 'is_sent_start'] = token.is_sent_start
-                out_df.at[rec_ID,'Multi-Word Expression'] = token.ent_iob_ # add IOB tag of NERs to process later
-
-
-                # add necessary columns after the loop
-                out_df.at[rec_ID, 'Sentence ID'] = sent_ID
-                out_df.at[rec_ID, 'Sentence'] = sent.text
-                out_df['Document ID'] = docID
-                out_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
-                rec_ID+=1
-            sent_ID+=1
-            out_df = get_mwe(out_df)
-
-        # out_df = out_df[['ID', 'Form', 'NER', 'Multi-Word Expression','Record ID', 'Sentence ID', 'Document ID', 'Document']]
+            sent_text = sent.text
+            for token in sent:
+                rows.append({
+                    'Form': token.text,
+                    'NER': token.ent_type_,
+                    'is_sent_start': token.is_sent_start,
+                    'Multi-Word Expression': token.ent_iob_,
+                    'Sentence ID': sent_ID,
+                    'Sentence': sent_text,
+                    'Document ID': docID,
+                    'Document': doc_hyperlink
+                })
+            sent_ID += 1
+        out_df = pd.DataFrame(rows)
+        # process MWE IOB tags once on the complete DataFrame (not per-sentence)
+        out_df = get_mwe(out_df)
         out_df = out_df[['Form', 'NER', 'Multi-Word Expression', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
+        return out_df
 
     if "parse" in str(annotator_params) or "SVO" in str(annotator_params):
-
-        out_df = pd.DataFrame()
-        rec_ID = 0
+        rows = []
         for i, sent in enumerate(spacy_doc.sents):
-            sent_ID = 1
+            sent_text = sent.text
             for j, token in enumerate(sent):
-                out_df.at[rec_ID, 'ID'] = int(j)
-                out_df.at[rec_ID,'Form'] = token.text
-                out_df.at[rec_ID,'Lemma'] = token.lemma_
-                out_df.at[rec_ID,'POS'] = token.pos_
-                out_df.at[rec_ID,'Head'] = token.head.i # add Head index
-                out_df.at[rec_ID,'DepRel'] = token.dep_
-                out_df.at[rec_ID, 'is_sent_start'] = token.is_sent_start
-                # if hasattr(token, 'ent_type_'): # check if NER is annotated for each token
-                out_df.at[rec_ID,'NER'] = token.ent_type_
-                out_df.at[rec_ID,'Multi-Word Expression'] = token.ent_iob_ # add IOB tag of NERs to process later
-
-                # add necessary columns after the loop
-                out_df.at[rec_ID, 'Sentence ID'] = i+1
-                out_df.at[rec_ID, 'Sentence'] = sent.text
-                out_df.at[rec_ID, 'Document ID'] = docID
-                out_df.at[rec_ID, 'Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
-                rec_ID += 1
-            sent_ID += 1
-
-            out_df = get_mwe(out_df)
-
-        # extract list of identified token language
-        # tmp_lang_lst = [lang_dict[token.lang_] for token in spacy_doc]
-        # out_df['Language'] = tmp_lang_lst
+                rows.append({
+                    'ID': int(j),
+                    'Form': token.text,
+                    'Lemma': token.lemma_,
+                    'POS': token.pos_,
+                    'Head': token.head.i,
+                    'DepRel': token.dep_,
+                    'is_sent_start': token.is_sent_start,
+                    'NER': token.ent_type_,
+                    'Multi-Word Expression': token.ent_iob_,
+                    'Sentence ID': i + 1,
+                    'Sentence': sent_text,
+                    'Document ID': docID,
+                    'Document': doc_hyperlink
+                })
+        out_df = pd.DataFrame(rows)
+        # process MWE IOB tags once on the complete DataFrame (not per-sentence)
+        out_df = get_mwe(out_df)
         out_df = out_df[
             ['ID', 'Form', 'Lemma', 'POS', 'NER', 'Multi-Word Expression', 'Head', 'DepRel', 'Sentence ID', 'Sentence',
              'Document ID', 'Document']]
+        return out_df
 
-    return out_df
+    return pd.DataFrame()
 
 # extract and returns SVO from spaCy doc
 # input: spaCy Document
@@ -394,12 +399,6 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
     # check if the input is a single file or directory
     if inputDir != '':
         inputFilename = inputDir + os.sep + tail
-
-    # output: svo_df
-    if filename_embeds_date_var:
-        svo_df = pd.DataFrame(columns=['Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Organization', 'Time', 'Sentence ID', 'Date'])
-    else:
-        svo_df = pd.DataFrame(columns=['Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Organization', 'Time', 'Sentence ID'])
 
     # subject,verb and object constants
     SUBJECT_DEPS = {"nsubj", "nsubjpass", "csubj", "agent", "expl"}
@@ -411,77 +410,83 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
     NER_ORGANIZATION = {"ORG"}
     NER_TIME = {"TIME", "DATE"}
 
-    # set-ups to extract SVOs
+    # collect SVO rows as list of dicts (much faster than cell-by-cell df.at[])
+    svo_rows = []
     c = 0
-    SVO_found = False
-    NER_found = False
-    loc_ent_iob_= ''
-    per_ent_iob_ = ''
-    tim_ent_iob_ = ''
-    empty_verb_idx = []
-    # extract SVOs
     for sent in doc.sents:
+        row = {}
+        SVO_found = False
+        loc_ent_iob_ = ''
+        per_ent_iob_ = ''
+        org_ent_iob_ = ''
+        tim_ent_iob_ = ''
         for token in sent:
             if token.dep_ in SUBJECT_DEPS or token.head.dep_ in SUBJECT_DEPS:
-                svo_df.at[c, 'Subject (S)'] = token.text
+                row['Subject (S)'] = token.text
                 SVO_found = True
             if token.pos_ in VERB_POS:
-                svo_df.at[c, 'Verb (V)'] = token.text
+                row['Verb (V)'] = token.text
                 SVO_found = True
             if token.dep_ in OBJECT_DEPS or token.head.dep_ in OBJECT_DEPS:
-                svo_df.at[c, 'Object (O)'] = token.text
+                row['Object (O)'] = token.text
                 SVO_found = True
             # extract NER tags
-            if SVO_found or NER_found:
-                if token.ent_type_ in NER_LOCATION:
-                    svo_df, NER_found, loc_ent_iob_ = extractNER(token, svo_df, c, 'Location', NER_found, loc_ent_iob_)
-                elif token.ent_type_ in NER_PERSON:
-                    svo_df, NER_found, per_ent_iob_ = extractNER(token, svo_df, c, 'Person', NER_found, per_ent_iob_)
-                elif token.ent_type_ in NER_ORGANIZATION:
-                    svo_df, NER_found, per_ent_iob_ = extractNER(token, svo_df, c, 'Organization', NER_found, per_ent_iob_)
-                elif token.ent_type_ in  NER_TIME:
-                    svo_df, NER_found, tim_ent_iob_ = extractNER(token, svo_df, c, 'Time', NER_found, tim_ent_iob_)
-        # check if SVO is found, then add Sentence ID
-        if SVO_found:
-            svo_df.at[c, 'Sentence ID'] = c+1
-            svo_df.at[c, 'Sentence'] = sent.text
-            SVO_found = False
-        c+=1
+            if SVO_found:
+                ent = token.ent_type_
+                iob = token.ent_iob_
+                if ent in NER_LOCATION:
+                    row['Location'], loc_ent_iob_ = _append_ner(row.get('Location'), token.text, iob, loc_ent_iob_)
+                elif ent in NER_PERSON:
+                    row['Person'], per_ent_iob_ = _append_ner(row.get('Person'), token.text, iob, per_ent_iob_)
+                elif ent in NER_ORGANIZATION:
+                    row['Organization'], org_ent_iob_ = _append_ner(row.get('Organization'), token.text, iob, org_ent_iob_)
+                elif ent in NER_TIME:
+                    row['Time'], tim_ent_iob_ = _append_ner(row.get('Time'), token.text, iob, tim_ent_iob_)
+        # only keep sentences where an SVO was found and a verb is present
+        if SVO_found and 'Verb (V)' in row:
+            row.setdefault('Subject (S)', '?')
+            row.setdefault('Object (O)', '')
+            row['Sentence ID'] = c + 1
+            row['Sentence'] = sent.text
+            row['Document ID'] = docID
+            row['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
+            svo_rows.append(row)
+        c += 1
 
-    # add semi-colon for each NERs to process for GIS visualization
-    for _,row in svo_df.iterrows():
-        if isinstance(row['Location'], str) and row['Location'].endswith(';') is False:
-            row['Location'] = row['Location'] + ';'
-        if isinstance(row['Person'], str) and row['Person'].endswith(';') is False:
-            row['Person'] = row['Person'] + ';'
-        if isinstance(row['Organization'], str) and row['Organization'].endswith(';') is False:
-            row['Organization'] = row['Organization'] + ';'
-        if isinstance(row['Time'], str) and row['Time'].endswith(';') is False:
-            row['Time'] = row['Time'] + ';'
+    # build DataFrame from collected rows
+    base_cols = ['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Organization', 'Time',
+                 'Sentence ID', 'Sentence', 'Document ID', 'Document']
+    svo_df = pd.DataFrame(svo_rows, columns=base_cols) if svo_rows else pd.DataFrame(columns=base_cols)
 
+    # add trailing semicolons to NER columns for GIS visualization (vectorized)
+    for col in ('Location', 'Person', 'Organization', 'Time'):
+        mask = svo_df[col].notna() & svo_df[col].astype(str).str.len().gt(0)
+        svo_df.loc[mask, col] = svo_df.loc[mask, col].astype(str).where(
+            svo_df.loc[mask, col].astype(str).str.endswith(';'),
+            svo_df.loc[mask, col].astype(str) + ';')
 
-    # csv output columns
-    svo_df['Document ID'] = docID
-    svo_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
-    # replace NaN values accordingly
-    for index, row in svo_df.iterrows():
-        svo_df.at[index, 'Subject (S)'] = '?' if pd.isna(row['Subject (S)']) else row['Subject (S)']
-        svo_df.at[index, 'Verb (V)'] = '' if pd.isna(row['Verb (V)']) else row['Verb (V)']
-        svo_df.at[index, 'Object (O)'] = '' if pd.isna(row['Object (O)']) else row['Object (O)']
-        # save empty verb indices
-        if pd.isna(row['Verb (V)']):
-            empty_verb_idx.append(index)
-    # drop empty Verb rows
-    svo_df = svo_df.drop(empty_verb_idx)
-    # set the S-V-O sequence in order
     # add date from filename
     if filename_embeds_date_var:
-        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Organization', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document', 'Date']]
         svo_df['Date'] = date_str
+        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Organization', 'Time',
+                          'Sentence ID', 'Sentence', 'Document ID', 'Document', 'Date']]
     else:
-        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Organization', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
+        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Organization', 'Time',
+                          'Sentence ID', 'Sentence', 'Document ID', 'Document']]
 
     return svo_df
+
+
+# Helper: accumulate NER text using IOB tags (replaces the old extractNER + iterrows approach)
+def _append_ner(current_val, text, iob, prev_iob):
+    """Append a NER token to the running value, respecting IOB boundaries."""
+    if current_val is None or (not isinstance(current_val, str)):
+        return text, iob
+    if iob == 'B':
+        return current_val + '; ' + text, iob
+    elif iob == 'I':
+        return current_val + ' ' + text, iob
+    return current_val, iob
 
 # extract NERs
 # spaCy uses IOB tags for entities (Inside-Outside-Beginning)
