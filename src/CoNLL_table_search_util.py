@@ -67,10 +67,14 @@ def deps_index(deps):
     -------
     deps_list: all the index in the deps
     """
-    deps_str = deps.split("|")
+    if not deps or not str(deps).strip():
+        return []
+    deps_str = str(deps).split("|")
     deps_list = []
     for dep in deps_str:
-        deps_list.append(int(dep.split(":")[0]))
+        parts = dep.split(":")
+        if parts[0].strip().isdigit():
+            deps_list.append(int(parts[0]))
     return deps_list
 
 
