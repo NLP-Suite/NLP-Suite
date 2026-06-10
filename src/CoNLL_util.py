@@ -24,6 +24,73 @@ sentenceID_position = 10  # NEW CoNLL_U
 documentID_position = 11  # NEW CoNLL_U
 document_position = 12 # NEW CoNLL_U
 
+# Canonical column order — all CoNLL tables are normalized to this layout
+# so that positional indexing works regardless of source package
+CANONICAL_COLUMNS = ["ID", "Form", "Lemma", "POS", "NER", "Head", "DepRel",
+                     "Deps", "Clause Tag", "Record ID", "Sentence ID",
+                     "Document ID", "Document"]
+# Minimum columns every valid CoNLL table must have
+REQUIRED_COLUMNS = {'ID', 'Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel',
+                    'Sentence ID', 'Document ID', 'Document'}
+
+
+def detect_CoNLL_package(headers):
+    """Detect which NLP package generated the CoNLL table."""
+    if 'Clause Tag' in headers or 'Deps' in headers:
+        return 'CoreNLP'
+    elif 'feats' in headers:
+        return 'Stanza'
+    elif 'Sentence' in headers and 'Multi-Word Expression' in headers:
+        return 'spaCy'
+    return 'unknown'
+
+
+def normalize_to_canonical(headers, data):
+    """Reorder columns from any CoNLL format to canonical (CoreNLP) order.
+
+    Missing columns (Deps, Clause Tag, Record ID) are filled with empty
+    strings.  Record ID is auto-generated when absent so that downstream
+    sorts by Record ID still work.
+
+    An optional 14th column (Year/Date) is preserved if present.
+
+    Returns (canonical_headers, normalized_data).
+    """
+    source_positions = {h: i for i, h in enumerate(headers)}
+
+    # Build target column list — canonical + optional Date/Year
+    target_cols = list(CANONICAL_COLUMNS)
+    # Check for optional Year/Date column (some CoreNLP tables have it)
+    extra_col = None
+    for candidate in ('Year', 'Date'):
+        if candidate in source_positions:
+            extra_col = candidate
+            target_cols.append(candidate)
+            break
+
+    # Build mapping: for each target column, the source column index (or None)
+    mapping = []
+    for col in target_cols:
+        mapping.append(source_positions.get(col))
+
+    record_id_canon_idx = CANONICAL_COLUMNS.index('Record ID')  # 9
+    need_record_id = mapping[record_id_canon_idx] is None
+
+    normalized = []
+    for row_num, row in enumerate(data):
+        new_row = []
+        for src_pos in mapping:
+            if src_pos is not None and src_pos < len(row):
+                new_row.append(row[src_pos])
+            else:
+                new_row.append('')
+        # Auto-generate Record ID when missing (e.g. spaCy tables)
+        if need_record_id:
+            new_row[record_id_canon_idx] = str(row_num + 1)
+        normalized.append(new_row)
+
+    return target_cols, normalized
+
 def find_full_postag(__form__, __postag__):
     if __postag__ in Stanford_CoreNLP_tags_util.dict_POSTAG:
         return Stanford_CoreNLP_tags_util.dict_POSTAG[__postag__]
@@ -46,25 +113,23 @@ def find_full_clausalTag(__form__, __clausalTag__):
         #return __form__
         return "Not found in CoNLL CLausal_Tag list"
 
-#check the number of columns in a csv file to ensure that a conll table is used in input
-#conll tables will have either 13 or 14 columns (14 if a date field is included)
+# Check that a csv file is a valid CoNLL table.
+# Accepts tables produced by CoreNLP, Stanza, or spaCy.
 # returns False if filename is NOT CoNLL
-def check_CoNLL(filename,skipWarning=False):
-    wrongFile=False
-    headers=IO_csv_util.get_csvfile_headers(filename)
-    numColumns=len(headers)
-    #check the headers; 13 or 14 if date is available
-    if ('ID' and 'Form' and 'Lemma' not in headers):
-        wrongFile = True
-    else:
-        if (numColumns!=13 and numColumns!=14):
-            wrongFile=True
-    if wrongFile==True and skipWarning==False:
-        mb.showwarning(title='Input file error', message='The script expects in input a CoNLL table with the headers ID, Form, and Lemma and either 14 or 13 columns (with/without date field).\n\nThe selected file does not have these expected characteristics (number of columns = ' + str(numColumns) + ').\n\nPlease, select a CoNLL file and try again.')
-    if wrongFile==True:
+def check_CoNLL(filename, skipWarning=False):
+    headers = IO_csv_util.get_csvfile_headers(filename)
+    header_set = set(headers)
+    missing = REQUIRED_COLUMNS - header_set
+    if missing:
+        if not skipWarning:
+            mb.showwarning(title='Input file error',
+                           message='The CoNLL table is missing required columns: '
+                                   + ', '.join(sorted(missing))
+                                   + '.\n\nRequired columns are: '
+                                   + ', '.join(sorted(REQUIRED_COLUMNS))
+                                   + '.\n\nPlease, select a valid CoNLL file and try again.')
         return False
-    else:
-        return True
+    return True
 
 # The function builds a double list of all records in the CoNLL table
 def CoNLL_record_division(list_csv_rows):
@@ -99,9 +164,9 @@ def CoNLL_record_division(list_csv_rows):
         return list_sentences
     except:
         print(
-            "FATAL ERROR: INPUT MUST BE A CoNLL TABLE, generated by the Stanford_CoreNLP.py routine (parser option). Please, select a CoNLL table and try again.")
+            "FATAL ERROR: INPUT MUST BE A CoNLL TABLE generated by Stanford CoreNLP, Stanza, or spaCy. Please, select a CoNLL table and try again.")
         mb.showinfo("Fatal error",
-                    "INPUT MUST BE A CoNLL TABLE, generated by the Stanford_CoreNLP.py routine (parser option).\n\nPlease, select a CoNLL table and try again.")
+                    "INPUT MUST BE A CoNLL TABLE generated by Stanford CoreNLP, Stanza, or spaCy.\n\nPlease, select a CoNLL table and try again.")
 
 # The function builds a double list of each sentence in the CoNLL table
 # [['The','President',...]['Ladies','and','Gentlemen']...]]
@@ -144,9 +209,9 @@ def sentence_division(list_csv_rows,searchedCoNLLField):
         return list_sentences
     except:
         print(
-            "FATAL ERROR: INPUT MUST BE A CoNLL TABLE, generated by the Stanford_CoreNLP.py routine (parser option). Please, select a CoNLL table and try again.")
+            "FATAL ERROR: INPUT MUST BE A CoNLL TABLE generated by Stanford CoreNLP, Stanza, or spaCy. Please, select a CoNLL table and try again.")
         mb.showinfo("Fatal error",
-                    "INPUT MUST BE A CoNLL TABLE, generated by the Stanford_CoreNLP.py routine (parser option).\n\nPlease, select a CoNLL table and try again.")
+                    "INPUT MUST BE A CoNLL TABLE generated by Stanford CoreNLP, Stanza, or spaCy.\n\nPlease, select a CoNLL table and try again.")
 
 # searching for a specific sentence sent_id in a specific document Document_ID
 def Sentence_searcher(list_all_sents, Document_ID, sent_id):
@@ -240,15 +305,13 @@ def compute_sentence(CoNLL_table, recordID, sentenceID, documentID):
     index = recordID
     for recordID in range(df.shape[0]):  # For every row in the ConLL table starting from RecordID
         row = df.iloc[recordID, :]
-        # print ("sentenceID: ", sentenceID, " documentID: ", documentID, " recordID: ",recordID)
-        # print("index: ",index)
-        if sentenceID == row[sentenceID_position] and documentID == row[documentID_position]:  # Build the sentence if we are on the same document and sentence
-            if row[6] == "punct":
-                sent_str = sent_str + str(row[1])
+        if sentenceID == row['Sentence ID'] and documentID == row['Document ID']:
+            if row['DepRel'] == "punct":
+                sent_str = sent_str + str(row['Form'])
             else:
-                sent_str = sent_str + " " + str(row[1])
+                sent_str = sent_str + " " + str(row['Form'])
         else:
-            if row[sentenceID_position] > sentenceID or row[documentID_position] > documentID:
+            if row['Sentence ID'] > sentenceID or row['Document ID'] > documentID:
                 break
         index = index + 1
     return index, sent_str
@@ -268,25 +331,25 @@ def compute_sentence_table(CoNLL_table, output_path):
     df = pd.read_csv(io.open(os.path.join(output_path, CoNLL_table), 'rb'), sep=',', index_col=False, encoding='utf-8',on_bad_lines='skip')  # Open ConLL
     rows = []  # Store data
     sent_str = ""  # Build string
-    # Keep track of variables
-    sent_index = df.iloc[0][sentenceID_position]
-    doc_id = df.iloc[0][documentID_position]
-    current_file = df.iloc[0][document_position]
+    # Keep track of variables — use column names for package-independence
+    sent_index = df.iloc[0]['Sentence ID']
+    doc_id = df.iloc[0]['Document ID']
+    current_file = df.iloc[0]['Document']
 
     for index, row in df.iterrows():  # For every row in the ConLL
-        if sent_index == row[sentenceID_position] and doc_id == row[documentID_position]:  # Build the sentence if we are on the same document and sentence
-            if row[6] == "punct":
-                sent_str = sent_str + str(row[1])
+        if sent_index == row['Sentence ID'] and doc_id == row['Document ID']:
+            if row['DepRel'] == "punct":
+                sent_str = sent_str + str(row['Form'])
             else:
-                sent_str = sent_str + " " + str(row[1])
+                sent_str = sent_str + " " + str(row['Form'])
         else:  # End the sentence, add it to the array and move onto the next one
             arr = [len(sent_str.split(" ")),
-                   len(list(sent_str)), sent_index, sent_str, doc_id, current_file]  # Save the data
+                   len(list(sent_str)), sent_index, sent_str, doc_id, current_file]
             rows.append(arr)
-            sent_index = row[sentenceID_position]
-            sent_str = row[1]
-            current_file = row[document_position]
-            doc_id = row[documentID_position]
+            sent_index = row['Sentence ID']
+            sent_str = row['Form']
+            current_file = row['Document']
+            doc_id = row['Document ID']
 
     # Construct and save the table
     col_names = ['Sentence length (Number of words/tokens)',
