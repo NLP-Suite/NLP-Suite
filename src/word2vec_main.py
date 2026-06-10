@@ -72,7 +72,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, chartPackage, dataTr
                                      reminders_util.message_BERT_Word2Vec_timing,
                                      True)
         import BERT_util
-        BERT_output = BERT_util.word_embeddings_BERT(window, inputFilename, inputDir, Word2Vec_Dir, openOutputFiles, 
+        BERT_output = BERT_util.word_embeddings_BERT(GUI_util.window, inputFilename, inputDir, Word2Vec_Dir, openOutputFiles,
                                                    chartPackage, dataTransformation, vis_menu_var, dim_menu_var, compute_distances_var,
                                                      top_words_var, keywords_var, lemmatize_var, remove_stopwords_var, config_filename)
         filesToOpen.append(BERT_output)
@@ -94,8 +94,6 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, chartPackage, dataTr
                                  vis_menu_var, dim_menu_var)
 
 
-    if word_distance_file_var.get()!='':
-        print('')
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, Word2Vec_Dir, scriptName)
 

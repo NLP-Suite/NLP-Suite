@@ -69,20 +69,9 @@ def search_within_sentence_coOccurences(inputFilename, inputDir, search_keywords
     hashOutputDir = os.path.dirname(outputDir+"_sentence")
     # SIMON cache
     # hashmap = hashfile.getcache(hashOutputDir) if hashfile.checkOut(hashOutputDir) else {}
-    all_results = pd.DataFrame() # Initialize an empty DataFrame to store all results
+    all_rows = []
     for doc_index, file in enumerate(files):
-        # checksum = hashfile.calculate_checksum(file)
-        # head, tail = os.path.split(file)
-        # # SIMON cache
-        # if checksum in hashmap:
-        #     sentences = hashmap[checksum]
-        #     print(f" Using cache :  Processing file {doc_index + 1}/{len(files)} {tail}")
-        # else:
-        #     print(f" Building cache:  Processing file {doc_index + 1}/{len(files)} {tail}")
         sentences = sentence_split_stanza_text(stanzaPipeLine(readfile(file)))
-            # # SIMON cache
-            # hashfile.storehash(hashmap, checksum, sentences)
-            # hashfile.writehash(hashmap, hashOutputDir)
         for sentence in sentences:
             co_occurring = False
             sentIndex += 1
@@ -91,12 +80,9 @@ def search_within_sentence_coOccurences(inputFilename, inputDir, search_keywords
                 if keywords_co_occurr(search_keywords_list, sentence):
                     co_occurring = True
             search_keywords_str = str(', '.join(search_keywords_list))
-            results.append((search_keywords_str, co_occurring, sentIndex, sentence, doc_index, IO_csv_util.dressFilenameForCSVHyperlink(file)))
-        df = pd.DataFrame(results, columns=['Search word(s)', 'Co-Occurring in Sentence', 'Sentence ID', 'Sentence',
-                                              'Document ID', 'Document'])
-
-        # df = one_text_res(sentences, search_keywords_list, index+1, IO_csv_util.dressFilenameForCSVHyperlink(file))
-        all_results = pd.concat([all_results, df]) # Append the results to the all_results DataFrame
+            all_rows.append((search_keywords_str, co_occurring, sentIndex, sentence, doc_index, IO_csv_util.dressFilenameForCSVHyperlink(file)))
+    all_results = pd.DataFrame(all_rows, columns=['Search word(s)', 'Co-Occurring in Sentence', 'Sentence ID', 'Sentence',
+                                          'Document ID', 'Document'])
     all_results.to_csv(outputFilename,index=False)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
@@ -1085,9 +1071,9 @@ def save_ngrams(NgramsFileName, ngram_results, aggregateBy, temporal_aggregation
         dfList = []  # create a list of dataframes: one df for one search word
         if aggregateBy == 'year':
             for word, yearDict in ngram_results.items():
-                df = pd.DataFrame(columns=[word, temporal_aggregation])
-                for year, freqDict in yearDict.items():
-                    df = df.append({word: freqDict["Frequency"], temporal_aggregation: year}, ignore_index=True)
+                rows = [{word: freqDict["Frequency"], temporal_aggregation: year}
+                        for year, freqDict in yearDict.items()]
+                df = pd.DataFrame(rows, columns=[word, temporal_aggregation])
                 dfList.append(df)
             newdfCur = dfList[0].copy()  # let newdfCur be the first df in the dfList
             newdf = newdfCur.copy()
@@ -1104,16 +1090,16 @@ def save_ngrams(NgramsFileName, ngram_results, aggregateBy, temporal_aggregation
         else:
             # aggregating by quarter or month
             for word, yearDict in ngram_results.items():
-                df = pd.DataFrame(columns=[word, 'year', temporal_aggregation, "year-" + temporal_aggregation])
+                rows = []
                 for year, monthDict in yearDict.items():
                     for month, freqDict in monthDict.items():
                         if temporal_aggregation == 'quarter':
-                            df = df.append({word: freqDict["Frequency"], "year": year, temporal_aggregation: month,
-                                            "year-" + temporal_aggregation: str(year) + "-Q" + month[-1]},
-                                           ignore_index=True)
+                            rows.append({word: freqDict["Frequency"], "year": year, temporal_aggregation: month,
+                                         "year-" + temporal_aggregation: str(year) + "-Q" + month[-1]})
                         else:
-                            df = df.append({word: freqDict["Frequency"], "year": year, temporal_aggregation: month,
-                                            "year-" + temporal_aggregation: str(year) + "-" + month}, ignore_index=True)
+                            rows.append({word: freqDict["Frequency"], "year": year, temporal_aggregation: month,
+                                         "year-" + temporal_aggregation: str(year) + "-" + month})
+                df = pd.DataFrame(rows, columns=[word, 'year', temporal_aggregation, "year-" + temporal_aggregation])
                 dfList.append(df)
             newdfCur = dfList[0].copy()
             newdf = newdfCur.copy()
