@@ -291,11 +291,11 @@ def compute_consensus_matrix(Ct_all, St_all):
 
 def compute_dispersion_coeff(consensus_matrix):
     n = consensus_matrix.shape[0]
-    sum = 0
+    total = 0
     for i in range(n):
         for j in range(n):
-            sum += 4 * (consensus_matrix[i][j] - 0.5) ** 2
-    return sum / (n ** 2)
+            total += 4 * (consensus_matrix[i][j] - 0.5) ** 2
+    return total / (n ** 2)
 
 
 def estimate_best_k(document_matrix, output_dir, filesToOpen):
@@ -343,19 +343,18 @@ def estimate_best_k(document_matrix, output_dir, filesToOpen):
         disp_coeff = compute_dispersion_coeff(C_k)
         disp_coeff_by_top_num[groups_number] = disp_coeff
 
-    f = open(os.path.join(output_dir, 'best_topic_estimation_stats.csv'), "w", newline='', encoding='utf-8',errors='surrogateescape')
-    field_names = ["topic number", "dispersion coefficient", "avg. number of empty clusters over total"]
-    writer = csv.DictWriter(f, fieldnames = field_names)
-    writer.writeheader()
     x_val = []
     d_coeff_vals = []
     avg_empty_cluster = []
-    for t_num, d_coeff in disp_coeff_by_top_num.items():
-        x_val.append(t_num)
-        d_coeff_vals.append(d_coeff)
-        avg_empty_cluster.append(avg_n_empty_clust_by_top_num[t_num] / t_num)
-        writer.writerow({"topic number": t_num, "dispersion coefficient": d_coeff, "avg. number of empty clusters over total": avg_n_empty_clust_by_top_num[t_num] / t_num})
-    f.close()
+    with open(os.path.join(output_dir, 'best_topic_estimation_stats.csv'), "w", newline='', encoding='utf-8', errors='surrogateescape') as f:
+        field_names = ["topic number", "dispersion coefficient", "avg. number of empty clusters over total"]
+        writer = csv.DictWriter(f, fieldnames=field_names)
+        writer.writeheader()
+        for t_num, d_coeff in disp_coeff_by_top_num.items():
+            x_val.append(t_num)
+            d_coeff_vals.append(d_coeff)
+            avg_empty_cluster.append(avg_n_empty_clust_by_top_num[t_num] / t_num)
+            writer.writerow({"topic number": t_num, "dispersion coefficient": d_coeff, "avg. number of empty clusters over total": avg_n_empty_clust_by_top_num[t_num] / t_num})
     # plot figures
     plt.scatter(x_val, d_coeff_vals, color = "black", s=15)
     plt.title("dispersion coefficient vs topic number")

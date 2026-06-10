@@ -53,8 +53,9 @@ import IO_csv_util
 import charts_util
 import statistics_csv_util
 
-fin = open('../lib/wordLists/stopwords.txt', 'r')
-stops = set(fin.read().splitlines())
+_stopwords_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'lib', 'wordLists', 'stopwords.txt')
+with open(_stopwords_path, 'r') as _fin:
+	stops = set(_fin.read().splitlines())
 
 # a 7-point rating scale going from (1) “Not iconic at all” and (7) “Very iconic.”
 ratings = GUI_IO_util.iconicity_libPath + os.sep + "iconicity_ratings.csv"
