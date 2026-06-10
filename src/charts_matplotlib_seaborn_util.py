@@ -29,41 +29,30 @@ def MALLET_heatmap(composition_file, topics_file, outputDir, fig_set={"figure.fi
         heatmap (object): Seaborn heatmap plot object.
     """
 
-    # Try-except for encoding error with scientific notation
     try:
-        topics = pd.read_csv(topics_file, names=["Topic", "Weight", "Keys"], encoding='utf-8',
-                             on_bad_lines='skip')  # Topic keys file
+        topics = pd.read_csv(topics_file, encoding='utf-8', on_bad_lines='skip')
     except:
-        topics = pd.read_csv(topics_file, names=["Topic", "Weight", "Keys"], encoding="ISO-8859-1",
-                             on_bad_lines='skip')  # Topic keys file
+        topics = pd.read_csv(topics_file, encoding="ISO-8859-1", on_bad_lines='skip')
+    topics.columns = ["Topic", "Weight", "Keys"]
 
-    # Add column names to topic composition file before reading
-    composition_names = ["Document ID", "Document"]
-    for topic_num in range(1, len(topics.index) + 1):
-        composition_names.append(f"Topic {topic_num}")
-    composition = pd.read_csv(composition_file, names=composition_names, encoding='utf-8', on_bad_lines='skip')
+    try:
+        composition = pd.read_csv(composition_file, encoding='utf-8', on_bad_lines='skip')
+    except:
+        composition = pd.read_csv(composition_file, encoding="ISO-8859-1", on_bad_lines='skip')
+    num_topics = len(composition.columns) - 2
+    composition.columns = ["Document ID", "Document"] + [f"Topic {i}" for i in range(1, num_topics + 1)]
 
-    # Checking for existing column names in input file
-    for index, row in composition.iterrows():
-        try:
-            temp = int(row["Document ID"])
-        except:
-            composition.drop(index=index, inplace=True)
+    composition.drop(["Document ID"], axis=1, inplace=True)
+    composition.reset_index(drop=True, inplace=True)
 
-    composition.drop(["Document ID"], axis=1, inplace=True)  # Drop ID, DataFrames are already indexed
-    composition.reset_index(drop=True, inplace=True)  # Resetting index as some rows could have been removed
-
-    for index, row in composition.iterrows():
-        updated_document = row["Document"].replace('file:' + os.sep, '')
-        head, tail = os.path.split(updated_document)
-        composition.loc[index, "Document"] = tail
+    composition["Document"] = composition["Document"].apply(
+        lambda d: os.path.split(d.replace('file:' + os.sep, ''))[1])
 
     document_titles = composition["Document"]  # Clean hyperlinks function here
 
     sns.set(rc=fig_set)  # Set figure dimensions and resolution
 
-    heatmap = sns.heatmap(composition.iloc[:, 1:].applymap(float),  # Select all columns excluding index column
-                          # NOTE: 'applymap' has been deprecated, replaced with 'map' for newer versions. Sticking with 'applymap' for compatibility.
+    heatmap = sns.heatmap(composition.iloc[:, 1:].apply(pd.to_numeric, errors='coerce').fillna(0),
                           vmin=0, vmax=1,  # Range 0-1
                           annot=True,  # Display values inside heatmap
                           yticklabels=document_titles,  # Document name labels
@@ -92,10 +81,10 @@ def MALLET_heatmap(composition_file, topics_file, outputDir, fig_set={"figure.fi
                      ha="left", va="bottom")  # Align text on left
             topic_num += 1
 
-    outputFilename = outputDir + os.sep + "MALLET_topics.png"
+    outputFilename = os.path.join(outputDir, "MALLET_topics.png")
     plt.savefig(outputFilename, bbox_inches="tight")
-    # should return the saved filename
-    return outputFilename  # heatmap
+    plt.close()
+    return outputFilename
 
 # seaborn
 # https://seaborn.pydata.org/examples/different_scatter_variables.html
