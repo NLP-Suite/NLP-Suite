@@ -212,10 +212,10 @@ class Vectorizer:
             return None
         pca.fit(sentiment_vectors)
         expl_vars = -np.sort(-pca.explained_variance_ratio_)
-        sum = 0
+        cumulative = 0
         for i in range(len(expl_vars)):
-            sum += expl_vars[i]
-            if sum >= expl_var_thr:
+            cumulative += expl_vars[i]
+            if cumulative >= expl_var_thr:
                 return i
         print(n_features)
         return n_features
