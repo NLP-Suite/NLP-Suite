@@ -15,9 +15,9 @@ to the repo so it is never lost.
 6. [CoreNLP to Stanza Migration](#6-corenlp-to-stanza-migration-2026-06-09)
 7. [spaCy Performance Fixes](#7-spacy-performance-fixes-2026-06-09)
 8. [Sentiment Analysis Review](#8-sentiment-analysis-review-2026-06-09)
-9. [GIS Multi-Package NER](#9-gis-multi-package-ner-2026-06-09)
+9. [GIS Pipeline — Multi-Package NER Extraction](#9-gis-pipeline--multi-package-ner-extraction-2026-06-09)
 10. [NLP Package Performance Comparison](#10-nlp-package-performance-comparison-2026-06-09)
-11. [CoNLL Table Multi-Package Support](#11-conll-table-multi-package-support-2026-06-09)
+11. [Code Quality Review](#11-code-quality-review-2026-06-10)
 
 ---
 
@@ -180,20 +180,6 @@ All 8 SVO test cases pass: basic S/V/O, negation, conjunction, passive voice, li
 
 - Python 3.8 -> 3.10+ upgrade (deferred; would resolve all version pinning)
 - Remove CoreNLP subprocess calls once Stanza fully validated in production
-
-### CoreNLP-Only Annotators Not Available in Stanza (verified 2026-06-10)
-
-As of Stanza v1.11, the following CoreNLP annotators have **no native Stanza equivalent**:
-
-| Annotator | CoreNLP | Stanza native | Stanza via CoreNLPClient |
-|---|---|---|---|
-| **Quote attribution** | Yes (quote annotator) | No | Yes (requires Java + CoreNLP server) |
-| **Gender** | Yes (gender annotator) | No | Yes (requires Java + CoreNLP server) |
-| **NER normalized date (SUTime)** | Yes (via ner annotator) | No | Yes (requires Java + CoreNLP server) |
-
-Stanza's native processors (v1.11): tokenize, MWT, POS, lemma, depparse, NER, sentiment, constituency, coref.
-
-These three annotators can only be accessed through Stanza's `CoreNLPClient` wrapper, which still requires Java and the CoreNLP server running — not a true migration away from CoreNLP. Until Stanza adds native support, any NLP Suite features using quote attribution, gender, or normalized dates must continue to call CoreNLP.
 
 ---
 
@@ -367,60 +353,79 @@ together with error-prone custom logic.
 
 ---
 
-## 11. CoNLL Table Multi-Package Support (2026-06-09)
+## 11. Code Quality Review (2026-06-10)
 
-### Problem
+Systematic review of ~30 scripts across the codebase. The same anti-patterns appeared
+repeatedly — this section catalogs them so future development avoids reintroducing them.
 
-The CoNLL Table Analyzer GUI (`CoNLL_table_analyzer_main.py`) was locked to Stanford
-CoreNLP CoNLL tables only. The GUI explicitly blocked Stanza and spaCy tables, and
-`check_CoNLL()` enforced exactly 13-14 columns. This was unnecessary because:
+### Common Anti-Patterns Found and Fixed
 
-1. All analysis scripts (noun, verb, adjective, adverb, function words, k-sentences,
-   ratio) use only the **common** columns: Form, Lemma, POS, NER, Head, DepRel,
-   Sentence ID, Document ID, Document — all present in every package's output.
-2. No analysis script uses `Clause Tag` or `Deps` (CoreNLP-specific columns).
-3. Clause analysis is the **only** script that requires CoreNLP (needs Clause Tag).
+| # | Anti-Pattern | Why It's Bad | Correct Pattern |
+|---|-------------|--------------|-----------------|
+| 1 | `fin = open(path)` without `.close()` or `with` | File handle leak — exhausts OS file descriptors on large corpora | `with open(path) as f:` |
+| 2 | `open('../lib/wordLists/stopwords.txt')` (relative path) | Breaks when working directory differs from script location | `os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'lib', ...)` |
+| 3 | `sum = 0` / `dict = {}` / `str = ...` | Shadows Python builtins — hides bugs, confuses tools | Use `total`, `data_dict`, `text`, etc. |
+| 4 | `pd.concat([df, new_row])` inside a loop | O(n²) — copies the entire DataFrame every iteration | Collect rows as list-of-dicts, single `pd.DataFrame(rows)` at end |
+| 5 | `df.append(row)` | Deprecated since pandas 1.4, removed in 2.0 | Same as #4: list-of-dicts + single construction |
+| 6 | `df.at[i, col] = value` cell-by-cell in a loop | Extreme Python overhead per cell | Build row as dict, append to list, single DataFrame at end |
+| 7 | `iterrows()` for mutation or aggregation | Slow Python loop, returns copies not views | Vectorized pandas ops (`.apply()`, boolean indexing) |
+| 8 | `applymap()` | Deprecated since pandas 2.1 | `.apply(pd.to_numeric, errors='coerce')` or `.map()` |
+| 9 | `nltk.download('resource')` at module level | Runs on every import (5-10s), blocks startup | Use `import_nltk_resource()` which checks before downloading |
+| 10 | `file.close()` after `with open(...) as file:` | Redundant — `with` already closes on exit | Remove the extra `.close()` |
+| 11 | CSV write inside document loop | Rewrites ALL accumulated rows every iteration | Move write after the loop |
+| 12 | Debug `print()` left in production code | Clutters output, confuses users | Remove |
+| 13 | `pd.read_csv(path, names=[...])` on files WITH headers | Overrides existing headers, turns the real header into a data row | Use default `header=0`, then rename columns |
 
-### Column Layout Differences
+### Files Fixed — Batch 1 (commit 961fb5d)
 
-| Position | CoreNLP (13 cols) | Stanza (13 cols) | spaCy (12 cols) |
-|----------|-------------------|-------------------|-----------------|
-| 0-4 | ID, Form, Lemma, POS, NER | ID, Form, Lemma, POS, NER | ID, Form, Lemma, POS, NER |
-| 5 | Head | feats | Multi-Word Expression |
-| 6 | DepRel | Multi-Word Expression | Head |
-| 7 | Deps | Head | DepRel |
-| 8 | Clause Tag | DepRel | Sentence ID |
-| 9 | Record ID | Record ID | Sentence |
-| 10 | Sentence ID | Sentence ID | Document ID |
-| 11 | Document ID | Document ID | Document |
-| 12 | Document | Document | — |
+| File | Fixes |
+|------|-------|
+| `word2vec_util.py` | File handle leaks (×3), `pd.concat` in loop, `df.append` |
+| `html_annotator_dictionary_util.py` | File handle leak |
+| `html_annotator_main.py` | File handle leak |
+| `html_annotator_util.py` | File handle leaks (×2), `pd.concat` in loop |
+| `html_annotator_gender_guesser_util.py` | File handle leak |
+| `html_annotator_BERT_util.py` | File handle leak |
+| `NGrams_util.py` | `pd.concat` in loop, `df.append` |
+| `NGrams_CoOccurrences_util.py` | `df.at[]` cell-by-cell in loop |
+| `knowledge_graphs_WordNet_util.py` | File handle leak |
+| `knowledge_graphs_OpenIE_util.py` | File handle leak |
+| `knowledge_graphs_DBpedia_util.py` | File handle leak |
 
-### Solution: Column Normalization
+### Files Fixed — Batch 2 (commit abe46fd)
 
-Added `normalize_to_canonical(headers, data)` in `CoNLL_util.py`. This function:
+| File | Fixes |
+|------|-------|
+| `charts_matplotlib_seaborn_util.py` | `pd.read_csv(names=)` overriding headers (#13), `applymap` (#8), `iterrows` hack, missing `plt.close()` |
+| `topic_modeling_gensim_util.py` | `df.append` (#5), `pd.concat` in loop (#4), redundant `file.close()` (#10), bug: `optimal_coherence` never updated |
+| `sentence_analysis_util.py` | File handle leaks (×2, `open().read()` without close) |
+| `nominalization_util.py` | Module-level `nltk.download` (×2, #9), file handle leak (#1), CSV write inside loop (#11), debug `print('wrong')` (#12) |
 
-1. Detects which package generated the table (via `detect_CoNLL_package()`)
-2. Reorders all columns to the **canonical (CoreNLP) layout** at read time
-3. Fills missing columns (Deps, Clause Tag) with empty strings
-4. Auto-generates Record ID when absent (e.g., spaCy tables)
+### Files Fixed — Batch 3 (commit e91d53d)
 
-After normalization, all existing positional code works unchanged — `row[3]` is
-always POS, `row[6]` is always DepRel, `row[10]` is always Sentence ID, etc.
+| File | Fixes |
+|------|-------|
+| `style_analysis_abstract_concreteness_analysis_util.py` | File handle leak + relative path (#1, #2) for stopwords.txt |
+| `style_analysis_iconicity_analysis_util.py` | File handle leak + relative path (#1, #2) for stopwords.txt |
+| `shape_of_stories_clustering_util.py` | File handle leak (#1), `sum` shadows builtin (#3) |
+| `shape_of_stories_vectorizer_util.py` | `sum` shadows builtin (#3) |
 
-### Files Modified
+### Files Reviewed — No Fixes Needed
 
-- **`CoNLL_util.py`**: Added `CANONICAL_COLUMNS`, `REQUIRED_COLUMNS`,
-  `detect_CoNLL_package()`, `normalize_to_canonical()`. Updated `check_CoNLL()`
-  to validate required columns (not column count). Updated `compute_sentence()`
-  and `compute_sentence_table()` to use column names instead of positions.
-- **`CoNLL_table_analyzer_main.py`**: Calls `normalize_to_canonical()` after
-  reading data. Clause analysis auto-skipped for non-CoreNLP tables. GUI
-  restriction removed — accepts CoreNLP, Stanza, spaCy tables.
-- **`CoNLL_adjective_analysis_util.py`**, **`CoNLL_adverb_analysis_util.py`**,
-  **`CoNLL_noun_analysis_util.py`**, **`CoNLL_ratio_analysis_util.py`**: Updated
-  DataFrame column names to reference `CoNLL_util.CANONICAL_COLUMNS`.
+GUI boilerplate (main.py files) and clean utility code:
+`topic_modeling_mallet_util.py`, `topic_modeling_bert_util.py`, `topic_modeling_main.py`,
+`sentence_analysis_main.py`, `sentence_complexity_node_util.py`, `nominalization_main.py`,
+`style_analysis_main.py`, `shape_of_stories_main.py`, `shape_of_stories_visualization_util.py`,
+all `knowledge_graphs_*_main.py`, `html_annotator_annotator_main.py`
 
-### Remaining Limitation
+### Checklist for Future Scripts
 
-- **Clause analysis** remains CoreNLP-only (requires Clause Tag column from PCFG parser).
-  Auto-skipped with an informative message when a non-CoreNLP table is used.
+Before committing new code, verify:
+- [ ] No `open()` without `with` (or explicit close in a `finally`)
+- [ ] No relative paths like `../lib/` — use `os.path.dirname(os.path.abspath(__file__))`
+- [ ] No variable names that shadow builtins (`sum`, `dict`, `list`, `str`, `type`, `id`, `input`, `map`, `filter`)
+- [ ] No `pd.concat` or `df.append` inside loops — collect then build
+- [ ] No `df.at[]` cell-by-cell — use list-of-dicts
+- [ ] No module-level `nltk.download()` — use `import_nltk_resource()`
+- [ ] No `applymap()` — use `.map()` or `.apply()`
+- [ ] CSV/Excel writes happen AFTER the processing loop, not inside it
