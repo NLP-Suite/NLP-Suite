@@ -181,6 +181,20 @@ All 8 SVO test cases pass: basic S/V/O, negation, conjunction, passive voice, li
 - Python 3.8 -> 3.10+ upgrade (deferred; would resolve all version pinning)
 - Remove CoreNLP subprocess calls once Stanza fully validated in production
 
+### CoreNLP-Only Annotators Not Available in Stanza (verified 2026-06-10)
+
+As of Stanza v1.11, the following CoreNLP annotators have **no native Stanza equivalent**:
+
+| Annotator | CoreNLP | Stanza native | Stanza via CoreNLPClient |
+|---|---|---|---|
+| **Quote attribution** | Yes (quote annotator) | No | Yes (requires Java + CoreNLP server) |
+| **Gender** | Yes (gender annotator) | No | Yes (requires Java + CoreNLP server) |
+| **NER normalized date (SUTime)** | Yes (via ner annotator) | No | Yes (requires Java + CoreNLP server) |
+
+Stanza's native processors (v1.11): tokenize, MWT, POS, lemma, depparse, NER, sentiment, constituency, coref.
+
+These three annotators can only be accessed through Stanza's `CoreNLPClient` wrapper, which still requires Java and the CoreNLP server running — not a true migration away from CoreNLP. Until Stanza adds native support, any NLP Suite features using quote attribution, gender, or normalized dates must continue to call CoreNLP.
+
 ---
 
 ## 7. spaCy Performance Fixes (2026-06-09)
