@@ -19,10 +19,7 @@ import os
 import tkinter as tk
 import tkinter.messagebox as mb
 import nltk
-nltk.download('averaged_perceptron_tagger_eng')
-nltk.download('punkt_tab')
 
-# all nltk resources are stored in C:\Users\rfranzo\AppData\Roaming then nltk_data
 # check averaged_perceptron_tagger
 IO_libraries_util.import_nltk_resource(GUI_util.window,'taggers/averaged_perceptron_tagger','averaged_perceptron_tagger')
 # check punkt
@@ -168,8 +165,6 @@ def nominalized_verb_detection(docID,doc,dateStr, sent,check_ending,nominalized_
                             deriv_str = str(deriv[0])[7:-2].split('.')[3]
                         except:
                             deriv_str = str([deriv][0])[7:-2].split('.')[3]
-                        if word=='lights':
-                            print('wrong')
                         print('   NOUN/NOMINALIZED VERB:', word, ' VERB:',deriv_str)
                         try:
                             deriv_str = str(deriv[0])[7:-2].split('.')[3]
@@ -319,30 +314,24 @@ def nominalization(inputFilename,inputDir, outputDir, config_filename, config_in
         docID=docID+1
         head, tail = os.path.split(doc)
         print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
-        #open the doc and create the list of result_true_false_each_noun (words, T/F)
-        fin = open(doc, 'r',encoding='utf-8',errors='ignore')
-        # result_true_false_each_noun contains for each word the False/True nominalization boolean
-        # result_specific_document contains the sentence and nominalized values for a specific document
-        result_true_false_each_noun, result_specific_document, noun_cnt, nominalized_cnt = nominalized_verb_detection(docID,doc,dateStr, fin.read(),check_ending, nominalized_verbs_list)
-        # result_all_documents contains the sentence and nominalized values for all documents
+        with open(doc, 'r', encoding='utf-8', errors='ignore') as fin:
+            doc_text = fin.read()
+        result_true_false_each_noun, result_specific_document, noun_cnt, nominalized_cnt = nominalized_verb_detection(docID,doc,dateStr, doc_text,check_ending, nominalized_verbs_list)
         result_all_documents.extend(result_specific_document)
         result_true_false_each_noun_all_documents.extend(result_true_false_each_noun)
-        fin.close()
 
-        IO_csv_util.list_to_csv(GUI_util.window, result_all_documents,
-                                outputFilename_nom_verb_freq_bySentence)  # outputFilename_bySentenceIndex)
-        filesToOpen.append(outputFilename_nom_verb_freq_bySentence)
-
-        # export individual nouns/nominalized verbs
-        IO_csv_util.list_to_csv(GUI_util.window,result_true_false_each_noun_all_documents, outputFilename_TRUE_FALSE)
-        filesToOpen.append(outputFilename_TRUE_FALSE)
-
-        # compute frequency of most common nouns/nominalized verbs
         for word, freq in nominalized_cnt.most_common():
             counter_nominalized_list.append([word, freq])
-        IO_csv_util.list_to_csv(GUI_util.window, counter_nominalized_list,outputFilename_nom_verb_frequencies)
-        filesToOpen.append(outputFilename_nom_verb_frequencies)
 
+    IO_csv_util.list_to_csv(GUI_util.window, result_all_documents,
+                            outputFilename_nom_verb_freq_bySentence)
+    filesToOpen.append(outputFilename_nom_verb_freq_bySentence)
+
+    IO_csv_util.list_to_csv(GUI_util.window, result_true_false_each_noun_all_documents, outputFilename_TRUE_FALSE)
+    filesToOpen.append(outputFilename_TRUE_FALSE)
+
+    IO_csv_util.list_to_csv(GUI_util.window, counter_nominalized_list, outputFilename_nom_verb_frequencies)
+    filesToOpen.append(outputFilename_nom_verb_frequencies)
 
     if chartPackage!='No charts':
         # bar chart of nominalized verbs

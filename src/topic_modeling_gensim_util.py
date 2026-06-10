@@ -106,21 +106,17 @@ def compute_coherence_values(MalletDir, dictionary, corpus, texts, start, limit,
 
 # Finding the Dominance Topic in each sentence
 def format_topics_sentences(ldamodel, corpus, texts):
-    # Init output
-    sent_topics_df = pd.DataFrame()
-
-    # Get main topic in each document
+    rows = []
     for i, row in enumerate(ldamodel[corpus]):
         row = sorted(row, key=lambda x: (x[1]), reverse=True)
-        # Get the Dominant topic, Perc Contribution and Keywords for each document
         for j, (topic_num, prop_topic) in enumerate(row):
-            if j == 0:  # =>  topic
+            if j == 0:
                 wp = ldamodel.show_topic(topic_num)
                 topic_keywords = ", ".join([word for word, prop in wp])
-                sent_topics_df = sent_topics_df.append(pd.Series([int(topic_num), round(prop_topic,4), topic_keywords]), ignore_index=True)
+                rows.append({'Dominant topic': int(topic_num), '% contribution': round(prop_topic, 4), 'Topic keywords': topic_keywords})
             else:
                 break
-    sent_topics_df.columns = ['Dominant topic', '% contribution', 'Topic keywords']
+    sent_topics_df = pd.DataFrame(rows)
 
     # Add original text to the end of the output
 # 	    print("Type of texts: ",type(texts))
@@ -158,7 +154,7 @@ def malletModelling(MalletDir, outputDir, corpus,num_topics, id2word,data_lemmat
     print('\nCoherence value: ', coherence_ldamallet)
     model_list, coherence_values = compute_coherence_values(MalletDir, dictionary=id2word, corpus=corpus, texts=data_lemmatized, start=2, limit=limit, step=6)
     startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Compute graph of optimal topics number.')
-    limit=limit; start=2; step=6;
+    start=2; step=6
     x = range(start, limit, step)
     plt.plot(x, coherence_values)
     plt.xlabel("Number of topics")
@@ -177,6 +173,7 @@ def malletModelling(MalletDir, outputDir, corpus,num_topics, id2word,data_lemmat
     for m, cv in zip(x, coherence_values):
         coherence_value = round(cv, 4)
         if coherence_value > optimal_coherence:
+            optimal_coherence = coherence_value
             optimal_index = index
         print("Topic number", m, "has coherence value ", coherence_value)
         index += 1
@@ -217,16 +214,12 @@ def malletModelling(MalletDir, outputDir, corpus,num_topics, id2word,data_lemmat
     # if outputFiles!=None:
     #     filesToOpen.append(chart_outputFilename)
 
-    # Find the most representative document for each topic
-    # Group top 5 sentences under each topic
-    sent_topics_sorteddf_mallet = pd.DataFrame()
-
     sent_topics_outdf_grpd = df_topic_sents_keywords.groupby('Dominant topic')
 
+    top_per_group = []
     for i, grp in sent_topics_outdf_grpd:
-        sent_topics_sorteddf_mallet = pd.concat([sent_topics_sorteddf_mallet,
-                                             grp.sort_values(['% contribution'], ascending=[0]).head(1)],
-                                            axis=0)
+        top_per_group.append(grp.sort_values(['% contribution'], ascending=[0]).head(1))
+    sent_topics_sorteddf_mallet = pd.concat(top_per_group, axis=0)
 
     # Reset Index
     sent_topics_sorteddf_mallet.reset_index(drop=True, inplace=True)
@@ -367,7 +360,6 @@ def run_Gensim(window, inputDir, outputDir, config_filename, num_topics, remove_
         if fileName.endswith('.txt'):
             with open(os.path.join(inputDir, fileName), 'r', encoding='utf-8', errors='ignore') as file:
                 content.append(file.read())
-            file.close()
 
     # TODO: read in the article title in stead of an arbitrary number (1 here)
     raw_data = {"title": 1, "content": content}

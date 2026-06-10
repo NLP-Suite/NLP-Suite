@@ -53,7 +53,8 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, co
 			documentID += 1
 			head, tail = os.path.split(file)
 			print("Processing file ", str(documentID), "\\", str(nFile), tail)
-			text = (open(file, "r", encoding="utf-8", errors='ignore').read())
+			with open(file, "r", encoding="utf-8", errors='ignore') as _f:
+				text = _f.read()
 			# Process each word in txt
 			Sentence_ID = 0
 			# sentences = tokenize.sent_tokenize(text)
@@ -92,7 +93,8 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, co
 			documentID += 1
 			head, tail = os.path.split(file)
 			print("Processing file ", str(documentID), "\\", str(nFile), tail)
-			text = (open(file, "r", encoding="utf-8", errors='ignore').read())
+			with open(file, "r", encoding="utf-8", errors='ignore') as _f:
+				text = _f.read()
 			# Process each word in txt
 			Sentence_ID = 0
 			# sentences = tokenize.sent_tokenize(text)
