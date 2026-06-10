@@ -15,6 +15,9 @@ to the repo so it is never lost.
 6. [CoreNLP to Stanza Migration](#6-corenlp-to-stanza-migration-2026-06-09)
 7. [spaCy Performance Fixes](#7-spacy-performance-fixes-2026-06-09)
 8. [Sentiment Analysis Review](#8-sentiment-analysis-review-2026-06-09)
+9. [GIS Multi-Package NER](#9-gis-multi-package-ner-2026-06-09)
+10. [NLP Package Performance Comparison](#10-nlp-package-performance-comparison-2026-06-09)
+11. [CoNLL Table Multi-Package Support](#11-conll-table-multi-package-support-2026-06-09)
 
 ---
 
@@ -347,3 +350,63 @@ together with error-prone custom logic.
 | **Coreference** | Stanza | Already uses transformer (XLM-RoBERTa); no need for separate BERT coref |
 | **SVO extraction** | Stanza (enhanced) | Full port of CoreNLP logic; no Java needed |
 | **GIS pipeline** | Stanza (default) or BERT (precision) | Stanza for speed+multilingual; BERT for max accuracy |
+
+---
+
+## 11. CoNLL Table Multi-Package Support (2026-06-09)
+
+### Problem
+
+The CoNLL Table Analyzer GUI (`CoNLL_table_analyzer_main.py`) was locked to Stanford
+CoreNLP CoNLL tables only. The GUI explicitly blocked Stanza and spaCy tables, and
+`check_CoNLL()` enforced exactly 13-14 columns. This was unnecessary because:
+
+1. All analysis scripts (noun, verb, adjective, adverb, function words, k-sentences,
+   ratio) use only the **common** columns: Form, Lemma, POS, NER, Head, DepRel,
+   Sentence ID, Document ID, Document — all present in every package's output.
+2. No analysis script uses `Clause Tag` or `Deps` (CoreNLP-specific columns).
+3. Clause analysis is the **only** script that requires CoreNLP (needs Clause Tag).
+
+### Column Layout Differences
+
+| Position | CoreNLP (13 cols) | Stanza (13 cols) | spaCy (12 cols) |
+|----------|-------------------|-------------------|-----------------|
+| 0-4 | ID, Form, Lemma, POS, NER | ID, Form, Lemma, POS, NER | ID, Form, Lemma, POS, NER |
+| 5 | Head | feats | Multi-Word Expression |
+| 6 | DepRel | Multi-Word Expression | Head |
+| 7 | Deps | Head | DepRel |
+| 8 | Clause Tag | DepRel | Sentence ID |
+| 9 | Record ID | Record ID | Sentence |
+| 10 | Sentence ID | Sentence ID | Document ID |
+| 11 | Document ID | Document ID | Document |
+| 12 | Document | Document | — |
+
+### Solution: Column Normalization
+
+Added `normalize_to_canonical(headers, data)` in `CoNLL_util.py`. This function:
+
+1. Detects which package generated the table (via `detect_CoNLL_package()`)
+2. Reorders all columns to the **canonical (CoreNLP) layout** at read time
+3. Fills missing columns (Deps, Clause Tag) with empty strings
+4. Auto-generates Record ID when absent (e.g., spaCy tables)
+
+After normalization, all existing positional code works unchanged — `row[3]` is
+always POS, `row[6]` is always DepRel, `row[10]` is always Sentence ID, etc.
+
+### Files Modified
+
+- **`CoNLL_util.py`**: Added `CANONICAL_COLUMNS`, `REQUIRED_COLUMNS`,
+  `detect_CoNLL_package()`, `normalize_to_canonical()`. Updated `check_CoNLL()`
+  to validate required columns (not column count). Updated `compute_sentence()`
+  and `compute_sentence_table()` to use column names instead of positions.
+- **`CoNLL_table_analyzer_main.py`**: Calls `normalize_to_canonical()` after
+  reading data. Clause analysis auto-skipped for non-CoreNLP tables. GUI
+  restriction removed — accepts CoreNLP, Stanza, spaCy tables.
+- **`CoNLL_adjective_analysis_util.py`**, **`CoNLL_adverb_analysis_util.py`**,
+  **`CoNLL_noun_analysis_util.py`**, **`CoNLL_ratio_analysis_util.py`**: Updated
+  DataFrame column names to reference `CoNLL_util.CANONICAL_COLUMNS`.
+
+### Remaining Limitation
+
+- **Clause analysis** remains CoreNLP-only (requires Clause Tag column from PCFG parser).
+  Auto-skipped with an informative message when a non-CoreNLP table is used.

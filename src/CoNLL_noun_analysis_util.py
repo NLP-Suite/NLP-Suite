@@ -108,12 +108,11 @@ def noun_POSTAG_NER_DEPREL_compute_lists_frequencies(data, data_divided_sents):
     #     ['ORGANIZATION', ner_counter['ORGANIZATION']],
     #     ['STATE_OR_PROVINCE', ner_counter['STATE_OR_PROVINCE']]]
 
-    if len(data[0])==14:
-        tl = ['ID', 'Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel', 'Deps', 'Clause Tag', 'Record ID', 'Sentence ID',
-              'Document ID', 'Document', 'Date']
+    # Use canonical column names; data is normalized to canonical order
+    if len(data[0]) == 14:
+        tl = CoNLL_util.CANONICAL_COLUMNS + ['Date']
     else:
-        tl = ['ID', 'Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel', 'Deps', 'Clause Tag', 'Record ID', 'Sentence ID',
-              'Document ID', 'Document']
+        tl = list(CoNLL_util.CANONICAL_COLUMNS)
     included_tags = ['NN', 'NNPS', 'NNP', 'NNS']
     df = pd.DataFrame(data, columns=tl)
     filtered_df = df[df['POS'].isin(included_tags)]

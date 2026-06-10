@@ -63,15 +63,12 @@ def compute_stats(data):
 def adjective_POSTAG_NER_DEPREL_compute_lists_frequencies(data, data_divided_sents):
     column_count = len(data[0])  # Get number of columns from first row
 
-    # Define column names dynamically based on detected column count
+    # Use canonical column names; data is normalized to canonical order
+    # by CoNLL_util.normalize_to_canonical before reaching here
     if column_count == 14:
-        column_names = ["ID", "Form", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag",
-                        "Record ID", "Sentence ID", "Document ID", "Document", "Year"]
-    elif column_count == 13:
-        column_names = ["ID", "Form", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag",
-                        "Record ID", "Sentence ID", "Document ID", "Document"]
+        column_names = CoNLL_util.CANONICAL_COLUMNS + ["Year"]
     else:
-        raise ValueError(f"❌ Unexpected number of columns: {column_count}")
+        column_names = list(CoNLL_util.CANONICAL_COLUMNS)
 
     df = pd.DataFrame(data, columns=column_names)
 

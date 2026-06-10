@@ -1,5 +1,6 @@
 import pandas as pd
 from collections import Counter
+import CoNLL_util
 
 
 def compute_word_class_frequencies(inputFilename, outputDir, data, all_CoNLL_records, openOutputFiles, chartPackage,
@@ -21,21 +22,13 @@ def compute_word_class_frequencies(inputFilename, outputDir, data, all_CoNLL_rec
         "Determinants": ['DT']
     }
 
-    # Read data into DataFrame
-    # Get the correct number of columns
-    column_count = len(data[0])  # Detect the number of columns dynamically
-
-    # Define column names based on detected column count
+    # Read data into DataFrame — data is normalized to canonical column order
+    column_count = len(data[0])
     if column_count == 14:
-        column_names = ["ID", "Form", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag",
-                        "Record ID", "Sentence ID", "Document ID", "Document", "Year"]
-    elif column_count == 13:
-        column_names = ["ID", "Form", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag",
-                        "Record ID", "Sentence ID", "Document ID", "Document"]
+        column_names = CoNLL_util.CANONICAL_COLUMNS + ["Year"]
     else:
-        raise ValueError(f"❌ Unexpected number of columns: {column_count}")
+        column_names = list(CoNLL_util.CANONICAL_COLUMNS)
 
-    # Create DataFrame with correct column names
     df = pd.DataFrame(data, columns=column_names)
 
     # Ensure POS column exists
