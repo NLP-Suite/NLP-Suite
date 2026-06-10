@@ -86,6 +86,16 @@ def run(inputFilename,
             return
         box_tuple=area_var
 
+    # Save GIS settings to the input directory so other GUIs (analyzer, SQL)
+    # can pick them up automatically when geocoding from that database.
+    _save_dir = inputDir if inputDir else (os.path.dirname(inputFilename) if inputFilename else '')
+    if _save_dir and os.path.isdir(_save_dir):
+        GIS_pipeline_util.save_GIS_settings(
+            _save_dir,
+            country_bias=country_bias_var,
+            area=area_var if 'e.g.,' not in area_var else '',
+            restrict=bool(restrict_var))
+
     if NER_extractor==False and geocode_locations_var==False and GIS_package_var=='':
         mb.showwarning("Warning",
                        "No options have been selected.\n\nPlease, select an option to run and try again.")
@@ -272,7 +282,7 @@ def run(inputFilename,
             return
 
     if Google_Earth_OpenGUI:
-        call('python GIS_Google_Earth_main.py', shell=True)
+        run_script_util.run_script("GIS_Google_Earth_main.py")
         return
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated

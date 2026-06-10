@@ -29,6 +29,7 @@ import TIPS_util
 import GUI_IO_util
 import IO_files_util
 import IO_internet_util
+import run_script_util
 
 y_multiplier_integer = 1
 noLicenceError=False
@@ -93,6 +94,7 @@ window.bind("<Escape>", clear)
 ### TODO Roby commented
 # config_filename =''
 config_input_output_numeric_options=[]
+config_input_output_alphabetic_options=[]
 
 setup_IO_menu_var = tk.StringVar()
 # https://stackoverflow.com/questions/42222626/tkinter-option-menu-widget-add-command-lambda-does-not-produce-expected-command
@@ -100,6 +102,7 @@ setup_IO_menu_var = tk.StringVar()
 setup_IO_menu = tk.OptionMenu(window, setup_IO_menu_var, 'Default I/O configuration', 'Select any I/O csv config file')
 
 IO_setup_var = tk.StringVar()
+IO_setup_brief_display_area = None
 
 select_inputFilename_button=tk.Button()
 select_input_main_dir_button=tk.Button()
@@ -215,7 +218,7 @@ GitHub_newest_release = '0.0.0'
 
 def get_local_release_version():
     release_version_file = GUI_IO_util.libPath + os.sep + "release_version.txt"
-
+    local_release_version = '0.0.0'
     if os.path.isfile(release_version_file):
         with open(release_version_file,'r', encoding='utf-8', errors='ignore') as file:
             local_release_version = file.read()
@@ -512,7 +515,7 @@ def activateRunButton(config_filename,IO_setup_display_brief,scriptName, missing
 #__________________________________________________________________________________________________________________
 
 def set_IO_brief_values(config_filename, y_multiplier_integer):
-    global config_input_output_alphabetic_options
+    global config_input_output_alphabetic_options, IO_setup_brief_display_area
     missing_IO = ''
     if config_filename != "":
         config_input_output_alphabetic_options, missing_IO, config_file_exists = \
@@ -631,6 +634,7 @@ def openConfigFile(config_filename):
 
 # this is the Setup INPUT/OUTPUT configuration
 def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptName, silent):
+    global IO_setup_brief_display_area
     IO_setup_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Setup INPUT/OUTPUT configuration',
                 command=lambda: setup_IO_configuration_options(True, scriptName, silent=True, open_setup_IO_GUI=True))
     # place widget with hover-over info
@@ -857,10 +861,10 @@ def open_NLP_setup_IO_main(config_input_output_numeric_options, config_filename)
                        message='The config file\n\n' + config_filename + '\n\ncontains blanks. The argparse algorithm in NLP_setup_IO_main will break.\n\nPlease, remove all blanks from the selected config filename and try again.')
         error_found = True
     if not error_found:
-        call(
-            "python NLP_setup_IO_main.py --config_option " + str(config_input_output_numeric_options).replace('[', '"').replace(
-                ']', '"')
-            + " --config_filename " + config_filename, shell=True)
+        run_script_util.run_script("NLP_setup_IO_main.py",
+            "--config_option",
+            str(config_input_output_numeric_options).replace('[', '').replace(']', ''),
+            "--config_filename", config_filename)
 
         # https://stackoverflow.com/questions/39327032/how-to-get-the-latest-file-in-a-folder
         import glob
@@ -885,7 +889,7 @@ def open_NLP_setup_IO_main(config_input_output_numeric_options, config_filename)
 
 # called when clicking on the IO configuration button
 def setup_IO_configuration_options(IO_setup_display_brief, scriptName, silent, open_setup_IO_GUI):
-    global config_input_output_numeric_options
+    global config_input_output_numeric_options, config_input_output_alphabetic_options
     #@@@
     config_filename=''
     missing_IO=''
@@ -927,6 +931,7 @@ def setup_IO_configuration_options(IO_setup_display_brief, scriptName, silent, o
     #   2. temp_config_filename, either as default or GUI-specific config
 
     missing_IO=''
+    config_input_output_alphabetic_options = []
     # GUIs with _ALL_ in the scriptName are designated as having a set of clickable buttons for various options but have no run options
     #   so no IO info should be displayed
     if not '_ALL_' in scriptName and not 'package_language' in scriptName:
@@ -1077,7 +1082,7 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
 
     if (os.path.isfile(os.path.join(GUI_IO_util.libPath, 'LICENSE-NLP-Suite-1.0.txt')) and (IO_libraries_util.check_inputPythonJavaProgramFile('license_GUI.py'))):
         if not os.path.isfile(GUI_IO_util.configPath + os.sep + 'license_config.csv'):
-            call("python " + "license_GUI.py", shell=True)
+            run_script_util.run_script("license_GUI.py")
     else:
         # The error message is displayed at the end of the script after the whole GUI has been displayed
         global noLicenceError
@@ -1138,7 +1143,7 @@ def setup_parsers_annotators(y_multiplier_integer, scriptName):
     if setup_menu.get()=='Setup preferences':
         mb.showwarning(title='Warning',message='The "Setup preferences" option is not available yet.\n\nSorry!')
     if setup_menu.get()=='Setup NLP package (parsers & annotators) and corpus language':
-        call("python NLP_setup_package_language_main.py", shell=True)
+        run_script_util.run_script("NLP_setup_package_language_main.py")
         # this will display the correct hover-over info after the python call, in case options were changed
         y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json, memory_var, document_length_var, limit_sentence_length_var = display_setup_hover_over(y_multiplier_integer)
         setup_menu.set('Setup')
@@ -1147,7 +1152,7 @@ def setup_parsers_annotators(y_multiplier_integer, scriptName):
         # GUI_IO_util.hover_over_widget(window, hover_over_x_coordinate, y_multiplier_integer_SV, setup_menu_lb, False,
         #                               False, 90, hover_over_info)
     if setup_menu.get()=='Setup external software':
-        call("python NLP_setup_external_software_main.py", shell=True)
+        run_script_util.run_script("NLP_setup_external_software_main.py")
 
     # currently not used
     if setup_menu.get() == 'I/O configuration':
@@ -1196,7 +1201,7 @@ def watch_video(videos_lookup,scriptName):
 # setup_IO_menu_var contains 'Default I/O configuration', 'GUI-specific I/O configuration'
 
 def changed_setup_IO_config(scriptName, IO_setup_display_brief, silent=False, open_setup_IO_GUI=False):
-    global IO_setup_config_SV, config_filename
+    global IO_setup_config_SV, config_filename, config_input_output_alphabetic_options
     config_filename = config_filename_selected_config.get()
     # if setup_IO_menu_var.get() == 'Default I/O configuration' or setup_IO_menu_var.get() == '':
     #     config_filename = 'NLP_default_IO_config.csv'
@@ -1327,19 +1332,19 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
         def open_GUI(*args):
             if 'Bubble' in charts_type_options_widget.get() or 'Comparative' in charts_type_options_widget.get() or 'Box' in charts_type_options_widget.get() or 'Time' in charts_type_options_widget.get():
-                call('python data_visualization_2_main.py', shell=True)
+                run_script_util.run_script("data_visualization_2_main.py")
             if 'Geographic' in charts_type_options_widget.get():
-                call('python GIS_main.py', shell=True)
+                run_script_util.run_script("GIS_main.py")
             if 'Colormap' in charts_type_options_widget.get():
-                call('python data_visualization_1_main.py', shell=True)
+                run_script_util.run_script("data_visualization_1_main.py")
             if 'Sankey' in charts_type_options_widget.get():
-                call('python data_visualization_1_main.py', shell=True)
+                run_script_util.run_script("data_visualization_1_main.py")
             if 'Sunburst' in charts_type_options_widget.get():
-                call('python data_visualization_1_main.py', shell=True)
+                run_script_util.run_script("data_visualization_1_main.py")
             if 'Treemap' in charts_type_options_widget.get():
-                call('python data_visualization_1_main.py', shell=True)
+                run_script_util.run_script("data_visualization_1_main.py")
             if 'Wordcloud' in charts_type_options_widget.get():
-                call('python wordclouds_main.py', shell=True)
+                run_script_util.run_script("wordclouds_main.py")
             if '_____________' in charts_type_options_widget.get():
                 charts_type_options_widget.set('Bar chart')
         charts_type_options_widget.trace('w', open_GUI)
@@ -1357,15 +1362,15 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        "Select the option to open the GUI that will allow you to perform selected data sampling (corpus sampling), manipulation, statistics, and visualization.")
         def run_data_tool(*args):
             if not 'data_manipulation_main.py' in scriptName and 'manipulation' in data_tools_options_widget.get():
-                call("python data_manipulation_main.py", shell=True)
+                run_script_util.run_script("data_manipulation_main.py")
             if not 'statistics_csv_main.py' in scriptName and 'statistics' in data_tools_options_widget.get():
-                call("python statistics_csv_main.py", shell=True)
+                run_script_util.run_script("statistics_csv_main.py")
             if not 'data_visualization_1_main.py' in scriptName and 'visualization 1' in data_tools_options_widget.get():
-                call("python data_visualization_1_main.py", shell=True)
+                run_script_util.run_script("data_visualization_1_main.py")
             if not 'data_visualization_2_main.py' in scriptName and 'visualization 2' in data_tools_options_widget.get():
-                call("python data_visualization_2_main.py", shell=True)
+                run_script_util.run_script("data_visualization_2_main.py")
             if not 'sample_corpus_main.py' in scriptName and 'sampling' in data_tools_options_widget.get():
-                call("python sample_corpus_main.py", shell=True)
+                run_script_util.run_script("sample_corpus_main.py")
         data_tools_options_widget.trace('w',run_data_tool)
     # else:
     #     y_multiplier_integer += 1

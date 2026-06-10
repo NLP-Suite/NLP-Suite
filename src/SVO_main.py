@@ -38,6 +38,7 @@ import Stanford_CoreNLP_util
 import spaCy_util
 import reminders_util
 import knowledge_graphs_WordNet_util
+import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -829,7 +830,7 @@ google_earth_var = tk.IntVar()
 language=''
 
 def open_GUI():
-    call("python file_checker_converter_cleaner_main.py", shell=True)
+    run_script_util.run_script("file_checker_converter_cleaner_main.py")
 
 pre_processing_button = tk.Button(window, text='Pre-processing tools (Open file checking & cleaning GUI) ',command=lambda:open_GUI())
 # place widget with hover-over info
@@ -1333,7 +1334,7 @@ activate_NLP_options()
 if error:
     mb.showwarning(title='Warning',
                message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.")
-    call("python NLP_setup_package_language_main.py", shell=True)
+    run_script_util.run_script("NLP_setup_package_language_main.py")
 
 # this will display the correct hover-over info after the python call, in case options were changed
 error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()

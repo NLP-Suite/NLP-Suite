@@ -17,6 +17,7 @@ import GUI_IO_util
 import IO_csv_util
 import IO_files_util
 import charts_util
+import run_script_util
 
 def runGephi(inputFilename, outputDir, csv_file_relational_field_list, dynamic_network_field_var):
     import Gephi_util
@@ -436,19 +437,19 @@ error = False
 
 def open_GUI(*args):
     if 'manipulation' in extra_GUIs_menu_var.get():
-        call("python data_manipulation_main.py", shell=True)
+        run_script_util.run_script("data_manipulation_main.py")
     elif 'Excel' in extra_GUIs_menu_var.get() or 'Boxplot' in extra_GUIs_menu_var.get() or 'Time' in extra_GUIs_menu_var.get() or 'Comparative' in extra_GUIs_menu_var.get():
-        call("python data_visualization_2_main.py", shell=True)
+        run_script_util.run_script("data_visualization_2_main.py")
     # if 'Excel' in extra_GUIs_menu_var.get():
-    #     call("python charts_Excel_main.py", shell=True)
+    #     run_script_util.run_script("charts_Excel_main.py")
     elif 'Texts to maps' in extra_GUIs_menu_var.get():
-        call("python GIS_main.py", shell=True)
+        run_script_util.run_script("GIS_main.py")
     elif 'Google Earth' in extra_GUIs_menu_var.get():
-        call("python GIS_Google_Earth_main.py", shell=True)
+        run_script_util.run_script("GIS_Google_Earth_main.py")
     elif 'HTML' in extra_GUIs_menu_var.get():
-        call("python html_annotator_main.py", shell = True)
+        run_script_util.run_script("html_annotator_main.py")
     elif 'Wordclouds' in extra_GUIs_menu_var.get():
-        call("python wordclouds_main.py", shell=True)
+        run_script_util.run_script("wordclouds_main.py")
 extra_GUIs_menu_var.trace('w',open_GUI)
 
 

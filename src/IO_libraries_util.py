@@ -16,6 +16,7 @@ import reminders_util
 import TIPS_util
 import IO_internet_util
 import IO_user_interface_util
+import run_script_util
 
 # import pip not used
 # def install(software_name):
@@ -562,7 +563,7 @@ def get_missing_external_software_list(calling_script, external_software_config_
                 missing_software = missing_software + str(software_name).upper() + '\n\n'
                 # missing_software = missing_software + ',  ' + str(software_name).upper() + '\n\n'
         # if calling_script!='NLP_setup_external_software_main.py' and missing_software!='':
-        #     call("python NLP_setup_external_software_main.py", shell=True)
+        #     run_script_util.run_script("NLP_setup_external_software_main.py")
 
     return missing_software
 
@@ -595,8 +596,18 @@ def update_software_config(softwareDir, software_name, existing_software_config)
 
 def save_software_config(existing_software_config, missing_software_string, silent=False):
     software_config = GUI_IO_util.configPath + os.sep + 'NLP_setup_external_software_config.csv'
+    # Ensure config directory exists (may not exist in PyInstaller bundles)
+    try:
+        os.makedirs(GUI_IO_util.configPath, exist_ok=True)
+    except OSError:
+        pass
     # overwrite the csv file with updated csv_fields
-    with open(software_config, 'w+', newline='') as csv_file:
+    try:
+        csv_file = open(software_config, 'w+', newline='')
+    except OSError as e:
+        print(f"  WARNING: Could not write config file {software_config}: {e}")
+        return
+    with csv_file:
         writer = csv.writer(csv_file)
         writer.writerows(existing_software_config)
         message="The config file 'NLP_setup_external_software_config.csv' was successfully saved to\n\n" + software_config
@@ -853,7 +864,7 @@ def display_download_installation_messages(download_install, software_name, soft
                     answer = tk.messagebox.askyesno(software_name + " installation", opening_message)
                     if answer:
                         download_message = ''
-                        call("python NLP_setup_external_software_main.py", shell=False)
+                        run_script_util.run_script("NLP_setup_external_software_main.py")
                         # must get software_dir in case it was changed in the NLP_setup_external_software_main GUI
                         software_dir, software_url, missing_software, error_found = get_external_software_dir(calling_script,
                                                                                                  software_name,

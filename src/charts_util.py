@@ -1611,7 +1611,7 @@ def Treemap(data, outputFilename, interest, csv_file_field, extra_dimension_aver
 # import numpy as np
 # import Plotly.express as px
 
-def timechart(data, outputFilename, var, date_format_var, cumulative, monthly=None, yearly=None):
+def TimeMapper(data, outputFilename, var, date_format_var, cumulative, monthly=None, yearly=None):
     # convert csv to pandas
     headers = IO_csv_util.get_csvfile_headers(data)
     if 'Date' in headers:
@@ -1710,139 +1710,68 @@ def timechart(data, outputFilename, var, date_format_var, cumulative, monthly=No
         data['month'] = month
         data['day'] = day
 
+    # Compute a fixed Y-axis category order from the full dataset so that
+    # bar positions stay stable as the animation slider moves.
+    _total_freq = data[var].value_counts()
+    _fixed_categories = _total_freq.sort_values(ascending=True).index.tolist()
+
+    def _build_finalframe(data, var, time_col, cumulative):
+        """Build the animation dataframe for a given time granularity."""
+        data = data.sort_values(time_col)
+        finalframe = pd.DataFrame()
+        for period in sorted(set(data[time_col])):
+            if cumulative:
+                subset = data[data[time_col] <= period]
+            else:
+                subset = data[data[time_col] == period]
+            tester = pd.DataFrame(
+                subset[var].value_counts()
+            ).reset_index().rename(columns={'index': var, var: 'Frequency'})
+            # Ensure all categories are present in every frame
+            for j in set(data[var]):
+                if j not in set(tester[var]):
+                    temp = pd.DataFrame(
+                        [[j, 0]], columns=[var, 'Frequency'])
+                    tester = pd.concat([tester, temp])
+            tester = tester.sort_values(var).reset_index(drop=True)
+            tester['date'] = period
+            finalframe = pd.concat([finalframe, tester])
+        return finalframe
+
+    def _make_fig(finalframe, var, fixed_cats):
+        """Create the animated bar chart with a locked Y-axis."""
+        max_freq = finalframe['Frequency'].max() if len(finalframe) > 0 else 1
+        fig = px.bar(finalframe, y=var, x='Frequency',
+                     animation_frame='date', orientation='h',
+                     range_x=[0, max_freq])
+        fig.update_yaxes(categoryorder='array', categoryarray=fixed_cats)
+        return fig
+
     # Plot corresponding graph depending on the options
     if cumulative == False:
         if monthly == True and yearly == True:
             return "Choose one of the following: daily graph, monthly graph, yearly graph"
         elif monthly == True:
-            data = data.sort_values('month')
-            finalframe = pd.DataFrame()
-            for i in sorted(set(data['month'])):
-                tester = pd.DataFrame(data[data['month'] == i][var].value_counts()).reset_index().rename(
-                    columns={'index': var, var: 'Frequency'})
-                for j in set(data[var]):
-                    if j not in set(tester[var]):
-                        temp = pd.DataFrame([j, 0]).T.rename(columns={0: var}).rename(columns={0: var, 1: 'Frequency'})
-                        tester = pd.concat([tester, temp])
-                tester = tester.sort_values(var)
-                tester
-                date = np.repeat(i, len(tester))
-                tester['date'] = date
-                tester = tester.reset_index(drop=True)
-                finalframe = pd.concat([finalframe, tester])
-                value = []
-                for i in list(set(finalframe[var])):
-                    value.append(max(finalframe[finalframe[var] == i]['Frequency']))
-            fig = px.bar(finalframe, y=var, x='Frequency', animation_frame='date', orientation='h',
-                         range_x=[0, max(value)]).update_yaxes(categoryorder='total ascending')
+            finalframe = _build_finalframe(data, var, 'month', False)
+            fig = _make_fig(finalframe, var, _fixed_categories)
         elif yearly == True:
-            data = data.sort_values('year')
-            finalframe = pd.DataFrame()
-            for i in sorted(set(data['year'])):
-                tester = pd.DataFrame(data[data['year'] == i][var].value_counts()).reset_index().rename(
-                    columns={'index': var, var: 'Frequency'})
-                for j in set(data[var]):
-                    if j not in set(tester[var]):
-                        temp = pd.DataFrame([j, 0]).T.rename(columns={0: var}).rename(columns={0: var, 1: 'Frequency'})
-                        tester = pd.concat([tester, temp])
-                tester = tester.sort_values(var)
-                tester
-                date = np.repeat(i, len(tester))
-                tester['date'] = date
-                tester = tester.reset_index(drop=True)
-                finalframe = pd.concat([finalframe, tester])
-                value = []
-                for i in list(set(finalframe[var])):
-                    value.append(max(finalframe[finalframe[var] == i]['Frequency']))
-            fig = px.bar(finalframe, y=var, x='Frequency', animation_frame='date', orientation='h',
-                         range_x=[0, max(value)]).update_yaxes(categoryorder='total ascending')
+            finalframe = _build_finalframe(data, var, 'year', False)
+            fig = _make_fig(finalframe, var, _fixed_categories)
         else:
-            data = data.sort_values('day')
-            finalframe = pd.DataFrame()
-            for i in sorted(set(data['day'])):
-                tester = pd.DataFrame(data[data['day'] == i][var].value_counts()).reset_index().rename(
-                    columns={'index': var, var: 'Frequency'})
-                for j in set(data[var]):
-                    if j not in set(tester[var]):
-                        temp = pd.DataFrame([j, 0]).T.rename(columns={0: var}).rename(columns={0: var, 1: 'Frequency'})
-                        tester = pd.concat([tester, temp])
-                tester = tester.sort_values(var)
-                tester
-                date = np.repeat(i, len(tester))
-                tester['date'] = date
-                tester = tester.reset_index(drop=True)
-                finalframe = pd.concat([finalframe, tester])
-                value = []
-                for i in list(set(finalframe[var])):
-                    value.append(max(finalframe[finalframe[var] == i]['Frequency']))
-            fig = px.bar(finalframe, y=var, x='Frequency', animation_frame='date', orientation='h',
-                         range_x=[0, max(value)]).update_yaxes(categoryorder='total ascending')
+            finalframe = _build_finalframe(data, var, 'day', False)
+            fig = _make_fig(finalframe, var, _fixed_categories)
     else:
         if monthly == True and yearly == True:
             return "Choose one of the following: daily graph, monthly graph, yearly graph"
         elif yearly == True:
-            data = data.sort_values('year')
-            finalframe = pd.DataFrame()
-            for i in sorted(set(data['year'])):
-                tester = pd.DataFrame(data[data['year'] <= i][var].value_counts()).reset_index().rename(
-                    columns={'index': var, var: 'Frequency'})
-                for j in set(data[var]):
-                    if j not in set(tester[var]):
-                        temp = pd.DataFrame([j, 0]).T.rename(columns={0: var}).rename(columns={0: var, 1: 'Frequency'})
-                        tester = pd.concat([tester, temp])
-                tester = tester.sort_values(var)
-                tester
-                date = np.repeat(i, len(tester))
-                tester['date'] = date
-                tester = tester.reset_index(drop=True)
-                finalframe = pd.concat([finalframe, tester])
-                value = []
-                for i in list(set(finalframe[var])):
-                    value.append(max(finalframe[finalframe[var] == i]['Frequency']))
-            fig = px.bar(finalframe, y=var, x='Frequency', animation_frame='date', orientation='h',
-                         range_x=[0, max(value)]).update_yaxes(categoryorder='total ascending')
+            finalframe = _build_finalframe(data, var, 'year', True)
+            fig = _make_fig(finalframe, var, _fixed_categories)
         elif monthly == True:
-            data = data.sort_values('month')
-            finalframe = pd.DataFrame()
-            for i in sorted(set(data['month'])):
-                tester = pd.DataFrame(data[data['month'] <= i][var].value_counts()).reset_index().rename(
-                    columns={'index': var, var: 'Frequency'})
-                for j in set(data[var]):
-                    if j not in set(tester[var]):
-                        temp = pd.DataFrame([j, 0]).T.rename(columns={0: var}).rename(columns={0: var, 1: 'Frequency'})
-                        tester = pd.concat([tester, temp])
-                tester = tester.sort_values(var)
-                tester
-                date = np.repeat(i, len(tester))
-                tester['date'] = date
-                tester = tester.reset_index(drop=True)
-                finalframe = pd.concat([finalframe, tester])
-                value = []
-                for i in list(set(finalframe[var])):
-                    value.append(max(finalframe[finalframe[var] == i]['Frequency']))
-            fig = px.bar(finalframe, y=var, x='Frequency', animation_frame='date', orientation='h',
-                         range_x=[0, max(value)]).update_yaxes(categoryorder='total ascending')
+            finalframe = _build_finalframe(data, var, 'month', True)
+            fig = _make_fig(finalframe, var, _fixed_categories)
         else:
-            data = data.sort_values('day')
-            finalframe = pd.DataFrame()
-            for i in sorted(set(data['day'])):
-                tester = pd.DataFrame(data[data['day'] <= i][var].value_counts()).reset_index().rename(
-                    columns={'index': var, var: 'Frequency'})
-                for j in set(data[var]):
-                    if j not in set(tester[var]):
-                        temp = pd.DataFrame([j, 0]).T.rename(columns={0: var}).rename(columns={0: var, 1: 'Frequency'})
-                        tester = pd.concat([tester, temp])
-                tester = tester.sort_values(var)
-                tester
-                date = np.repeat(i, len(tester))
-                tester['date'] = date
-                tester = tester.reset_index(drop=True)
-                finalframe = pd.concat([finalframe, tester])
-                value = []
-                for i in list(set(finalframe[var])):
-                    value.append(max(finalframe[finalframe[var] == i]['Frequency']))
-            fig = px.bar(finalframe, y=var, x='Frequency', animation_frame='date', orientation='h',
-                         range_x=[0, max(value)]).update_yaxes(categoryorder='total ascending')
+            finalframe = _build_finalframe(data, var, 'day', True)
+            fig = _make_fig(finalframe, var, _fixed_categories)
     fig = fig.update_geos(projection_type="equirectangular", visible=True, resolution=110)
     fig.write_html(outputFilename)
 
@@ -2252,7 +2181,7 @@ def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categori
 
 # ═══════════════════════════════════════════════════════════════════════
 # Auto-charting for cross-complex / SVO query results
-# Shared by DB_SQL_main.py and DB_PCACE_data_analyzer_main.py
+# Shared by DB_SQL_main.py and DB_PCACE_data_analysis_main.py
 # ═══════════════════════════════════════════════════════════════════════
 
 def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
@@ -2296,13 +2225,19 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
     candidate_cols = [c for c in df.columns if c not in skip_cols]
 
     # Further exclude columns that are purely numeric (IDs stored without _ID suffix)
+    # or that have only one unique value (e.g., "Complex type" always = "Vertenza")
     value_cols = []
     skipped_empty = []
     skipped_numeric = []
+    skipped_constant = []
     for c in candidate_cols:
         col_data = df[c].dropna()
         if col_data.empty:
             skipped_empty.append(c)
+            continue
+        # Skip constant columns — only one unique value, nothing to chart
+        if col_data.nunique() <= 1:
+            skipped_constant.append(c)
             continue
         # Check if all non-null values are numeric
         str_vals = col_data.astype(str)
@@ -2311,6 +2246,8 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
             value_cols.append(c)
         else:
             skipped_numeric.append(c)
+    if skipped_constant:
+        print(f"  Skipping constant columns (1 unique value): {skipped_constant}")
 
     if not value_cols:
         return
@@ -2372,16 +2309,23 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
         _v_keywords = ['verbal', 'verbale', 'frase', 'phrase']
 
         role_map = [
-            ('Subject', ['Participant-S', 'PARTECIPANTE-S', 'Subject', 'Source_Value'], _so_keywords),
-            ('Verb',    ['Process', 'PROCESSO'], _v_keywords),
-            ('Object',  ['Participant-O', 'PARTECIPANTE-O', 'Object', 'Target_Value'], _so_keywords),
+            ('Subject', ['Participant-S', 'PARTECIPANTE-S', 'Partecipante-S',
+                         'Subject', 'Source_Value'], _so_keywords),
+            ('Verb',    ['Process', 'PROCESSO', 'Processo',
+                         'Simple process', 'Processo semplice'], _v_keywords),
+            ('Object',  ['Participant-O', 'PARTECIPANTE-O', 'Partecipante-O',
+                         'Object', 'Target_Value'], _so_keywords),
         ]
         new_df = dataframe.copy()
         created = []
         for role_name, patterns, preferred_kw in role_map:
-            # Case-insensitive prefix matching to handle any language
+            # Case-insensitive prefix matching: startswith to handle
+            # variants like "Processo semplice" matching "Processo"
             role_cols = [c for c in all_cols
-                         if any(p.lower() == _prefix(c).lower() or p.lower() == c.lower() for p in patterns)]
+                         if any(p.lower() == _prefix(c).lower()
+                                or _prefix(c).lower().startswith(p.lower())
+                                or p.lower() == c.lower()
+                                for p in patterns)]
             if not role_cols:
                 continue
             # Sort: columns matching preferred keywords first
@@ -2400,7 +2344,12 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
         return new_df, created
 
     df_svo, svo_cols = _merge_svo(df_clean, value_cols)
-    print(f"  Merged SVO columns: {svo_cols}")
+    # Dynamic label: "SV" when only Subject+Verb, "SVO" when all three
+    _role_initials = {'Subject': 'S', 'Verb': 'V', 'Object': 'O'}
+    _svo_label = ''.join(_role_initials.get(c, c[0]) for c in svo_cols) or 'SV'
+    _role_arrow_label = ' → '.join(svo_cols)               # "Subject → Verb" or "Subject → Verb → Object"
+    _role_arrow_short = ' → '.join(_role_initials.get(c, c[0]) for c in svo_cols)  # "S → V" or "S → V → O"
+    print(f"  Merged {_svo_label} columns: {svo_cols}")
     if svo_cols:
         for sc in svo_cols:
             nn = df_svo[sc].dropna().shape[0]
@@ -2421,7 +2370,10 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
             try:
                 fig = _px.bar(freq_df, x=col, y='Frequency',
                              title='Top 30 Frequency: {}'.format(col))
-                bar_file = os.path.join(outputDir, '{}_{}_bar.html'.format(base_name, safe_col))
+                # Force categorical x-axis so Plotly doesn't auto-detect
+                # city names or other text as dates
+                fig.update_xaxes(type='category')
+                bar_file = os.path.join(outputDir, 'SQL_{}_bar.html'.format(safe_col))
                 fig.write_html(bar_file)
                 filesToOpen.append(bar_file)
             except Exception as e:
@@ -2507,20 +2459,38 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
         else:
             print(f"  Sunburst/Treemap skipped: no rows after filtering on {svo_cols}")
 
+    # ── Detect a date column for time-dependent visualizations ───────────
+    _date_col = None
+    _date_candidates = ['Date', 'Newspaper date', 'Newspaper Date',
+                        'Data giornale', 'Data del giornale', 'Action date']
+    for _dc in _date_candidates:
+        if _dc in df.columns:
+            _parsed = pd.to_datetime(df[_dc], errors='coerce')
+            if _parsed.notna().sum() > 0:
+                _date_col = _dc
+                break
+    if _date_col:
+        print(f"  Date column for time slider: '{_date_col}'")
+
     # ── 4. Interactive network graph (vis.js) ─────────────────────────────
     # Click a node → highlight the full S→V→O chains that pass through it
     # and list them in the info panel (e.g. "mob → shot → Negro (12)").
     TOP_NET_PER_ROLE = 15
     if len(svo_cols) >= 2:
         try:
-            net_df = df_svo[svo_cols].dropna(how='all').fillna('').astype(str)
+            _net_cols = list(svo_cols)
+            if _date_col and _date_col in df_svo.columns:
+                _net_cols.append(_date_col)
+            net_df = df_svo[_net_cols].dropna(subset=svo_cols, how='all').copy()
+            for _sc in svo_cols:
+                net_df[_sc] = net_df[_sc].fillna('').astype(str)
             if not net_df.empty:
                 palette = {'S': '#E04040', 'V': '#4060E0', 'O': '#30A030'}
                 role_of = {}
                 top_per_role = {}
                 role_keys = ['S', 'V', 'O']
                 for idx_r, sc in enumerate(svo_cols):
-                    rk = role_keys[idx_r] if idx_r < 3 else 'O'
+                    rk = role_keys[idx_r] if idx_r < len(role_keys) else role_keys[-1]
                     top_vals = net_df[sc].value_counts().head(TOP_NET_PER_ROLE).index.tolist()
                     top_per_role[sc] = set(top_vals)
                     for v in top_vals:
@@ -2532,22 +2502,40 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
                                     for c in svo_cols), axis=1)
                 net_df = net_df[mask]
 
-                # Build edge dict with weights
+                # Build edge dict with weights and date lists
                 edges = {}
+                edge_dates = {}
+                _has_dates = _date_col and _date_col in net_df.columns
                 for _, row in net_df.iterrows():
                     vals = [row[c] for c in svo_cols if row[c]]
+                    row_date = None
+                    if _has_dates and pd.notna(row.get(_date_col)):
+                        row_date = pd.to_datetime(row[_date_col], errors='coerce')
+                        if pd.isna(row_date):
+                            row_date = None
                     for i in range(len(vals) - 1):
                         key = (vals[i], vals[i + 1])
                         edges[key] = edges.get(key, 0) + 1
+                        if row_date is not None:
+                            edge_dates.setdefault(key, []).append(row_date)
 
                 # Build triplet counts for the info panel
                 # triplet_counts["mob|shot|Negro"] = 12
                 triplet_counts = {}
+                triplet_dates = {}
                 for _, row in net_df.iterrows():
                     vals = tuple(row[c] for c in svo_cols)
                     if any(v == '' for v in vals):
                         continue
                     triplet_counts[vals] = triplet_counts.get(vals, 0) + 1
+                    if _has_dates:
+                        row_date = None
+                        if pd.notna(row.get(_date_col)):
+                            row_date = pd.to_datetime(row[_date_col], errors='coerce')
+                            if pd.isna(row_date):
+                                row_date = None
+                        if row_date is not None:
+                            triplet_dates.setdefault(vals, []).append(row_date)
 
                 # Index: for each node label, which triplets contain it?
                 # node_triplets["mob"] = [["mob","shot","Negro",12], ...]
@@ -2589,7 +2577,7 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
                     node_id_map = {n: i for i, n in enumerate(sorted(all_nodes))}
                     vis_nodes = []
                     for n, nid in node_id_map.items():
-                        rk = role_of.get(n, 'O')
+                        rk = role_of.get(n, role_keys[min(len(svo_cols), 3) - 1])
                         freq = node_freq.get(n, 1)
                         sz = round(_node_size(freq), 1)
                         # Font size scales with node: bigger nodes get bigger labels
@@ -2604,12 +2592,35 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
                             'role': rk})
                     vis_edges = []
                     for (s, t), w in edges.items():
-                        vis_edges.append({
+                        e_entry = {
                             'from': node_id_map[s],
                             'to': node_id_map[t],
                             'value': w,
                             'title': '{} → {} ({})'.format(s, t, w),
-                            'color': {'color': '#aaaaaa', 'highlight': '#333333'}})
+                            'color': {'color': '#aaaaaa', 'highlight': '#333333'}}
+                        if _has_dates and (s, t) in edge_dates:
+                            e_entry['dates'] = sorted(set(
+                                d.strftime('%Y-%m-%d') for d in edge_dates[(s, t)]))
+                        vis_edges.append(e_entry)
+
+                    # Collect all unique dates across the dataset for the time slider
+                    _all_dates_set = set()
+                    if _has_dates:
+                        for dlist in edge_dates.values():
+                            for d in dlist:
+                                _all_dates_set.add(d.strftime('%Y-%m-%d'))
+                        # Also attach dates to nodes
+                        node_dates = {}
+                        for (s, t), dlist in edge_dates.items():
+                            for d in dlist:
+                                ds = d.strftime('%Y-%m-%d')
+                                node_dates.setdefault(node_id_map[s], set()).add(ds)
+                                node_dates.setdefault(node_id_map[t], set()).add(ds)
+                        for vn in vis_nodes:
+                            nid = vn['id']
+                            if nid in node_dates:
+                                vn['dates'] = sorted(node_dates[nid])
+                    _all_dates_sorted = sorted(_all_dates_set) if _all_dates_set else []
 
                     # Build JS-friendly triplet index keyed by node id
                     # nodeTriplets[nodeId] = [[s,v,o,count], ...]
@@ -2625,15 +2636,23 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
 
                     html = """<!DOCTYPE html>
 <html><head><meta charset="utf-8">
-<title>SVO Network</title>
+<title>{svo_label} Network</title>
 <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 <style>
   body {{ font-family: Arial, sans-serif; margin: 0; }}
-  #network {{ width: 100%; height: 75vh; border: 1px solid #ccc; }}
+  #network {{ width: 100%; height: {network_height}; border: 1px solid #ccc; }}
   #title {{ text-align: center; padding: 8px; font-size: 16px; font-weight: bold; }}
   #legend {{ text-align: center; padding: 4px; font-size: 13px; }}
   .leg {{ display: inline-block; width: 14px; height: 14px; border-radius: 50%;
           vertical-align: middle; margin: 0 3px 0 12px; }}
+  #time-slider-container {{ display: {slider_display}; padding: 6px 20px;
+           background: #f8f8f8; border-top: 1px solid #ddd; text-align: center; }}
+  #time-slider-container label {{ font-size: 13px; margin-right: 8px; }}
+  #time-slider {{ width: 60%; vertical-align: middle; }}
+  #time-label {{ font-weight: bold; font-size: 13px; margin-left: 8px; min-width: 100px;
+                 display: inline-block; }}
+  #time-slider-container button {{ margin-left: 12px; font-size: 12px; padding: 2px 10px;
+                                    cursor: pointer; }}
   #info {{ padding: 8px 16px; font-size: 13px; color: #333;
            max-height: 18vh; overflow-y: auto; border-top: 1px solid #ccc; }}
   #info table {{ border-collapse: collapse; margin: 4px auto; }}
@@ -2644,11 +2663,19 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
   .o {{ color: #30A030; font-weight: bold; }}
 </style>
 </head><body>
-<div id="title">SVO Network (top {top_n} per role) &mdash; click a node to see full Subject &rarr; Verb &rarr; Object chains</div>
+<div id="title">{svo_label} Network (top {top_n} per role) &mdash; click a node to see full {role_arrow_label} chains</div>
 <div id="legend">{legend_html} &nbsp;&nbsp;&nbsp; <span style="font-size:12px;color:#666">&#9679; Node size = frequency</span></div>
+<div id="time-slider-container">
+  <label>Timeline:</label>
+  <input type="range" id="time-slider" min="0" max="0" value="0" step="1">
+  <span id="time-label">All dates</span>
+  <button id="time-play">&#9654; Play</button>
+  <button id="time-reset">Show All</button>
+</div>
 <div id="network"></div>
-<div id="info">Click a node to see its S &rarr; V &rarr; O relationships.</div>
+<div id="info">Click a node to see its {role_arrow_short} relationships.</div>
 <script>
+var allDates = {all_dates_json};
 var nodes = new vis.DataSet({nodes_json});
 var edges = new vis.DataSet({edges_json});
 var nodeTriplets = {triplets_json};
@@ -2683,6 +2710,65 @@ function resetAll() {{
   }});
 }}
 
+// ── Time slider logic ──
+var slider = document.getElementById('time-slider');
+var timeLabel = document.getElementById('time-label');
+var playBtn = document.getElementById('time-play');
+var resetBtn = document.getElementById('time-reset');
+var playInterval = null;
+if (allDates.length > 0) {{
+  // Slider range: 0 = "all", 1..N = each date
+  slider.max = allDates.length;
+  slider.value = 0;
+  slider.addEventListener('input', function() {{ applyTimeFilter(parseInt(this.value)); }});
+  resetBtn.addEventListener('click', function() {{ slider.value = 0; applyTimeFilter(0); stopPlay(); }});
+  playBtn.addEventListener('click', function() {{
+    if (playInterval) {{ stopPlay(); return; }}
+    if (parseInt(slider.value) >= allDates.length) slider.value = 0;
+    playInterval = setInterval(function() {{
+      var v = parseInt(slider.value) + 1;
+      if (v > allDates.length) {{ stopPlay(); return; }}
+      slider.value = v;
+      applyTimeFilter(v);
+    }}, 800);
+    playBtn.textContent = '\\u275A\\u275A Pause';
+  }});
+}}
+function stopPlay() {{
+  if (playInterval) {{ clearInterval(playInterval); playInterval = null; }}
+  playBtn.textContent = '\\u25B6 Play';
+}}
+function applyTimeFilter(idx) {{
+  if (idx === 0 || allDates.length === 0) {{
+    timeLabel.textContent = 'All dates';
+    resetAll();
+    return;
+  }}
+  var cutoff = allDates[idx - 1];
+  timeLabel.textContent = cutoff;
+  nodes.forEach(function(n) {{
+    var orig = origNodeProps[n.id] || {{ size: 12, fontSize: 14 }};
+    var dates = n.dates || [];
+    var visible = dates.length === 0 || dates.some(function(d) {{ return d <= cutoff; }});
+    if (visible) {{
+      nodes.update({{ id: n.id, opacity: 1.0, size: orig.size,
+                      font: {{ size: orig.fontSize, color: '#333' }} }});
+    }} else {{
+      nodes.update({{ id: n.id, opacity: 0.05, size: Math.max(4, orig.size * 0.3),
+                      font: {{ size: 6, color: '#ddd' }} }});
+    }}
+  }});
+  edges.forEach(function(e) {{
+    var dates = e.dates || [];
+    var visible = dates.length === 0 || dates.some(function(d) {{ return d <= cutoff; }});
+    if (visible) {{
+      edges.update({{ id: e.id, color: {{ color: '#aaaaaa', opacity: 1.0 }} }});
+    }} else {{
+      edges.update({{ id: e.id, color: {{ color: '#eee', opacity: 0.03 }} }});
+    }}
+  }});
+}}
+
 // Build a lookup: label → id
 var labelToId = {{}};
 nodes.forEach(function(n) {{ labelToId[n.label] = n.id; }});
@@ -2691,7 +2777,7 @@ network.on("click", function(params) {{
   var infoDiv = document.getElementById('info');
   if (params.nodes.length === 0) {{
     resetAll();
-    infoDiv.innerHTML = 'Click a node to see its S &rarr; V &rarr; O relationships.';
+    infoDiv.innerHTML = 'Click a node to see its {info_click_msg} relationships.';
     return;
   }}
   var clickedId = params.nodes[0];
@@ -2735,20 +2821,16 @@ network.on("click", function(params) {{
     }}
   }});
 
-  // Build info table showing full S → V → O triplets
+  // Build info table showing full role tuples
   if (trips.length === 0) {{
-    infoDiv.innerHTML = '<b>' + clickedNode.label + '</b>: no full S→V→O triplets.';
+    infoDiv.innerHTML = '<b>' + clickedNode.label + '</b>: no full {no_triplets_msg} tuples.';
     return;
   }}
   var html = '<b>' + clickedNode.label + '</b> &mdash; '
-           + trips.length + ' triplet(s):<br>'
-           + '<table><tr><th>Subject</th><th></th><th>Verb</th><th></th><th>Object</th><th>Count</th></tr>';
+           + trips.length + ' tuple(s):<br>'
+           + '<table><tr>{table_header_html}</tr>';
   trips.forEach(function(t) {{
-    html += '<tr>'
-          + '<td class="s">' + t[0] + '</td><td>&rarr;</td>'
-          + '<td class="v">' + t[1] + '</td><td>&rarr;</td>'
-          + '<td class="o">' + t[2] + '</td>'
-          + '<td>' + t[3] + '</td></tr>';
+    html += '<tr>' + {table_row_js} + '</tr>';
   }});
   html += '</table>';
   infoDiv.innerHTML = html;
@@ -2763,12 +2845,47 @@ network.on("click", function(params) {{
                                 palette[rk], rl))
                     legend_html = '  '.join(legend_parts)
 
+                    # ── Build dynamic JS template fragments for the info panel ──
+                    _role_css = {'Subject': 's', 'Verb': 'v', 'Object': 'o'}
+                    # Table header:  <th>Subject</th><th></th><th>Verb</th><th>Count</th>
+                    _th = []
+                    for _i, _rc in enumerate(svo_cols):
+                        if _i > 0:
+                            _th.append('<th></th>')
+                        _th.append('<th>{}</th>'.format(_rc))
+                    _th.append('<th>Count</th>')
+                    _table_header_html = ''.join(_th)
+                    # Row expression (JS): '<td class="s">' + t[0] + '</td><td>→</td>...'
+                    _td = []
+                    for _i, _rc in enumerate(svo_cols):
+                        _css = _role_css.get(_rc, '')
+                        if _i > 0:
+                            _td.append("'<td>&rarr;</td>'")
+                        _td.append("'<td class=\"{}\">' + t[{}] + '</td>'".format(_css, _i))
+                    _td.append("'<td>' + t[{}] + '</td>'".format(len(svo_cols)))
+                    _table_row_js = ' + '.join(_td)
+                    # Info-panel messages
+                    _info_click = ' &rarr; '.join(
+                        _role_initials.get(c, c[0]) for c in svo_cols)
+                    _no_triplets = ' → '.join(
+                        _role_initials.get(c, c[0]) for c in svo_cols)
+
                     html = html.format(
+                        svo_label=_svo_label,
+                        role_arrow_label=_role_arrow_label,
+                        role_arrow_short=_role_arrow_short,
+                        info_click_msg=_info_click,
+                        no_triplets_msg=_no_triplets,
+                        table_header_html=_table_header_html,
+                        table_row_js=_table_row_js,
                         top_n=TOP_NET_PER_ROLE,
                         legend_html=legend_html,
                         nodes_json=_json.dumps(vis_nodes),
                         edges_json=_json.dumps(vis_edges),
-                        triplets_json=_json.dumps(js_node_triplets))
+                        triplets_json=_json.dumps(js_node_triplets),
+                        all_dates_json=_json.dumps(_all_dates_sorted),
+                        network_height='70vh' if _all_dates_sorted else '75vh',
+                        slider_display='block' if _all_dates_sorted else 'none')
 
                     network_file = os.path.join(outputDir, '{}_network.html'.format(base_name))
                     with open(network_file, 'w', encoding='utf-8') as fh:
@@ -2777,7 +2894,7 @@ network.on("click", function(params) {{
                     print(f"  Network saved: {network_file}")
 
                     # ── 4b. Gephi .gexf export ──────────────────────────────
-                    # Export the same SVO network as a .gexf file for Gephi.
+                    # Export the same network as a .gexf file for Gephi.
                     # Uses the Gexf classes from Gephi_util directly (no Gephi
                     # install required — just produces the XML file).
                     try:
@@ -2789,28 +2906,54 @@ network.on("click", function(params) {{
                             'O': (48, 160, 48),    # green
                         }
 
-                        gexf = _gephi.Gexf("NLP Suite", "SVO Network")
-                        graph = gexf.addGraph("directed", "static", "SVO Network")
-                        # Node attribute: role (S/V/O)
-                        role_attr_id = graph.addNodeAttribute("Role", "O", "string", "static")
+                        _gexf_dynamic = _has_dates and len(edge_dates) > 0
+                        _gexf_mode = "dynamic" if _gexf_dynamic else "static"
+                        _gexf_tf = "date" if _gexf_dynamic else ""
 
-                        # Add nodes with SVO-colored dots and frequency-based size
+                        gexf = _gephi.Gexf("NLP Suite", "{} Network".format(_svo_label))
+                        graph = gexf.addGraph("directed", _gexf_mode,
+                                              "{} Network".format(_svo_label),
+                                              timeformat=_gexf_tf)
+                        # Node attribute: role
+                        _default_role = role_keys[-1] if role_keys else 'S'
+                        role_attr_id = graph.addNodeAttribute("Role", _default_role, "string", "static")
+
+                        # Build node spells from edge_dates
+                        _node_spells = {}
+                        if _gexf_dynamic:
+                            for (s, t), dlist in edge_dates.items():
+                                for d in dlist:
+                                    ds = d.strftime('%Y-%m-%d')
+                                    _node_spells.setdefault(s, []).append(
+                                        {"start": ds, "end": ds})
+                                    _node_spells.setdefault(t, []).append(
+                                        {"start": ds, "end": ds})
+
+                        # Add nodes with role-colored dots and frequency-based size
                         for n, nid in node_id_map.items():
-                            rk = role_of.get(n, 'O')
+                            rk = role_of.get(n, role_keys[min(len(svo_cols), 3) - 1])
                             freq = node_freq.get(n, 1)
                             r, g_c, b = rgb_map.get(rk, (128, 128, 128))
+                            spells = _node_spells.get(n, []) if _gexf_dynamic else []
                             node = graph.addNode(str(nid), n,
                                                  r=str(r), g=str(g_c), b=str(b),
-                                                 size=str(max(10, freq)))
+                                                 size=str(max(10, freq)),
+                                                 spells=spells)
                             node.addAttribute(role_attr_id, rk)
 
-                        # Add edges with weight
+                        # Add edges with weight and spells
                         for eidx, ((s, t), w) in enumerate(edges.items()):
+                            espells = []
+                            if _gexf_dynamic and (s, t) in edge_dates:
+                                for d in edge_dates[(s, t)]:
+                                    ds = d.strftime('%Y-%m-%d')
+                                    espells.append({"start": ds, "end": ds})
                             graph.addEdge(str(eidx),
                                           str(node_id_map[s]),
                                           str(node_id_map[t]),
                                           weight=str(w),
-                                          label='{} → {}'.format(s, t))
+                                          label='{} → {}'.format(s, t),
+                                          spells=espells)
 
                         gexf_file = os.path.join(outputDir, '{}_network.gexf'.format(base_name))
                         with open(gexf_file, 'wb') as gf:
@@ -2827,7 +2970,7 @@ network.on("click", function(params) {{
             print(f"  WARNING: Network graph: {e}")
             traceback.print_exc()
 
-    # ── 5. Heatmap: cross-tabulation of first two SVO columns ────────────
+    # ── 5. Heatmap: cross-tabulation of first two role columns ────────────
     if _px and len(svo_cols) >= 2:
         try:
             heat_df = df_svo[[svo_cols[0], svo_cols[1]]].dropna(how='all').fillna('(none)').astype(str)
@@ -2846,7 +2989,7 @@ network.on("click", function(params) {{
         except Exception as e:
             print(f"  WARNING: Heatmap: {e}")
 
-    # ── 6. Word cloud: SVO colored (S=red, V=blue, O=green) ──────────────
+    # ── 6. Word cloud: role colored (S=red, V=blue, O=green) ──────────────
     # Reproduces the logic from wordclouds_util.SVOWordCloud inline so we
     # avoid importing wordclouds_util (which triggers stanza downloads).
     svo_wc_done = False
@@ -2935,20 +3078,24 @@ network.on("click", function(params) {{
                 wc.recolor(color_func=_GroupedColor(color_map_display, grey))
                 _plt.figure(figsize=(8, 8), facecolor=None)
                 _plt.imshow(wc, interpolation='bilinear')
-                _plt.title('SVO Word Cloud:  Subject (red)  —  Verb (blue)  —  Object (green)',
-                           fontsize=12, fontweight='bold', pad=20)
+                _wc_legend_parts = []
+                _wc_colors = {'Subject': 'red', 'Verb': 'blue', 'Object': 'green'}
+                for _rc in svo_cols:
+                    _wc_legend_parts.append('{} ({})'.format(_rc, _wc_colors.get(_rc, 'grey')))
+                _wc_title = '{} Word Cloud:  {}'.format(_svo_label, '  —  '.join(_wc_legend_parts))
+                _plt.title(_wc_title, fontsize=12, fontweight='bold', pad=20)
                 _plt.axis('off')
-                wc_file = os.path.join(outputDir, '{}_SVO_wordcloud.png'.format(base_name))
+                wc_file = os.path.join(outputDir, 'SQL_{}_wordcloud.png'.format(_svo_label))
                 wc.to_file(wc_file)
                 filesToOpen.append(wc_file)
                 _plt.close()
-                print(f"  SVO Word Cloud saved: {wc_file}")
+                print(f"  {_svo_label} Word Cloud saved: {wc_file}")
                 svo_wc_done = True
         except ImportError:
             pass
         except Exception as e:
             import traceback
-            print(f"  WARNING: SVO Word Cloud failed: {e}")
+            print(f"  WARNING: {_svo_label} Word Cloud failed: {e}")
             traceback.print_exc()
 
     # Fall back to plain word clouds if SVO word cloud was not produced
@@ -2982,7 +3129,7 @@ network.on("click", function(params) {{
                               regexp=r"[\w][\w ]+"
                               ).generate_from_frequencies(phrase_freq)
                     safe_col = _safe_filename(col)
-                    wc_file = os.path.join(outputDir, '{}_{}_wordcloud.png'.format(base_name, safe_col))
+                    wc_file = os.path.join(outputDir, 'SQL_{}_wordcloud.png'.format(safe_col))
                     wc.to_file(wc_file)
                     filesToOpen.append(wc_file)
                 except Exception as e:

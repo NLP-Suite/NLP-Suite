@@ -63,8 +63,14 @@ msg_multipleDocsCoNLL="\n\nFOR CONLL FILES THAT INCLUDE MULTIPLE DOCUMENTS, THE 
 #global TIPSPath
 #subdirectory of script directory where reminders file is saved
 
-scriptPath = os.path.dirname(os.path.abspath(__file__))
-NLPPath=os.path.normpath(os.path.dirname(os.path.abspath(__file__)) + os.sep + os.pardir)
+if getattr(sys, 'frozen', False):
+    # PyInstaller bundle: exe is at dist/NLP_Suite/NLP_Suite.exe
+    # Data dirs (src, lib, config, etc.) are siblings of the exe
+    scriptPath = os.path.join(os.path.dirname(sys.executable), 'src')
+    NLPPath = os.path.dirname(sys.executable)
+else:
+    scriptPath = os.path.dirname(os.path.abspath(__file__))
+    NLPPath = os.path.normpath(os.path.dirname(os.path.abspath(__file__)) + os.sep + os.pardir)
 configPath = os.path.join(NLPPath,'config')
 libPath = os.path.join(NLPPath,'lib')
 image_libPath = os.path.join(NLPPath,'lib'+os.sep+'images')
@@ -179,7 +185,9 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
     #   or, for a menu, the item currently displayed in the menu, e.g., mm/dd/yyyy for a date menu)
     if 'scale' in str(widget_name) or \
         'text' in str(widget_name) or \
-        'combobox' in str(widget_name):
+        'combobox' in str(widget_name) or \
+        'listbox' in str(widget_name) or \
+        'entry' in str(widget_name):
         wording = ''
     else:
         wording = widget_name.cget('text')

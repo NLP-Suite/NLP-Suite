@@ -55,6 +55,26 @@ jobs:
       - name: Build with PyInstaller
         run: python -m PyInstaller NLP_Suite.spec --noconfirm
 
+      - name: Copy data directories to dist (all platforms)
+        shell: python
+        run: |
+          import shutil, os, glob
+          dist = 'dist/NLP_Suite'
+          for d in ['lib', 'config', 'TIPS', 'reminders']:
+              if os.path.isdir(d):
+                  dst = os.path.join(dist, d)
+                  if os.path.exists(dst):
+                      shutil.rmtree(dst)
+                  shutil.copytree(d, dst)
+                  print(f'Copied {d} -> {dst}')
+          src_dst = os.path.join(dist, 'src')
+          os.makedirs(src_dst, exist_ok=True)
+          count = 0
+          for f in glob.glob('src/*.py'):
+              shutil.copy2(f, src_dst)
+              count += 1
+          print(f'Copied {count} .py files to {src_dst}')
+
       - name: Copy platform-specific DLLs (Windows only)
         if: runner.os == 'Windows'
         shell: pwsh

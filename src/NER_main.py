@@ -20,6 +20,7 @@ import config_util
 import spaCy_util
 import Stanford_CoreNLP_util
 import Stanza_util
+import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -221,7 +222,7 @@ coming_from_reset = False
 GUI=''
 
 def open_GUI1():
-    call("python file_checker_converter_cleaner_main.py", shell=True)
+    run_script_util.run_script("file_checker_converter_cleaner_main.py")
 
 pre_processing_button = tk.Button(window, text='Pre-processing tools (file checking & cleaning GUI)',command=open_GUI1)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,

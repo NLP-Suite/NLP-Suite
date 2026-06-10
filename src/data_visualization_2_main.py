@@ -16,6 +16,7 @@ import GUI_IO_util
 import IO_csv_util
 import IO_files_util
 import charts_util
+import run_script_util
 
 def run(inputFilename, outputDir, openOutputFiles,
         visualizations_menu_var,
@@ -199,7 +200,7 @@ def run(inputFilename, outputDir, openOutputFiles,
 
         # import timechart_util
         # outputFiles = charts_util.timeline(inputFilename, outputFilename, csv_field_boxplot_color_var, date_format_var, cumulative_var, monthly, yearly)
-        outputFiles = charts_util.timechart(inputFilename, outputFilename, csv_field_visualization_var, date_format_var,
+        outputFiles = charts_util.TimeMapper(inputFilename, outputFilename, csv_field_visualization_var, date_format_var,
                                             cumulative_var, monthly, yearly)
 
         if outputFiles != None:
@@ -338,19 +339,19 @@ def open_GUI(*args):
     if extra_GUIs_var.get():
         extra_GUIs_menu.configure(state='normal')
     if 'manipulation' in extra_GUIs_menu_var.get():
-        call("python data_manipulation_main.py", shell=True)
+        run_script_util.run_script("data_manipulation_main.py")
     elif 'Excel' in extra_GUIs_menu_var.get():
-        call("python charts_Excel_main.py", shell=True)
+        run_script_util.run_script("charts_Excel_main.py")
     elif 'Google' in extra_GUIs_menu_var.get():
-        call("python GIS_main.py", shell=True)
+        run_script_util.run_script("GIS_main.py")
     elif 'Texts to maps' in extra_GUIs_menu_var.get():
-        call("python GIS_main.py", shell=True)
+        run_script_util.run_script("GIS_main.py")
     elif 'HTML' in extra_GUIs_menu_var.get():
-        call("python html_annotator_main.py", shell = True)
+        run_script_util.run_script("html_annotator_main.py")
     elif 'Visualize categorical' in extra_GUIs_menu_var.get():
-        call("python data_visualization_1_main.py", shell=True)
+        run_script_util.run_script("data_visualization_1_main.py")
     elif 'Wordclouds' in extra_GUIs_menu_var.get():
-        call("python wordclouds_main.py", shell=True)
+        run_script_util.run_script("wordclouds_main.py")
 extra_GUIs_menu_var.trace('w',open_GUI)
 
 if GUI_util.inputFilename.get() != '' and GUI_util.inputFilename.get()[-4:] == ".csv":

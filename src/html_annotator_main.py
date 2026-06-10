@@ -17,6 +17,7 @@ import IO_csv_util
 import reminders_util
 import constants_util
 import html_annotator_dictionary_util
+import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -40,12 +41,12 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, chartPacka
     if knowledge_graphs_DBpedia_YAGO_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_DBpedia_YAGO_main.py') == False:
             return
-        call("python knowledge_graphs_DBpedia_YAGO_main.py", shell=True)
+        run_script_util.run_script("knowledge_graphs_DBpedia_YAGO_main.py")
 
     if knowledge_graphs_WordNet_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_WordNet_main.py') == False:
             return
-        call("python knowledge_graphs_WordNet_main.py", shell=True)
+        run_script_util.run_script("knowledge_graphs_WordNet_main.py")
 
     if html_annotator_add_dictionary_var==True or html_annotator_extractor==True:
         if inputFilename!='' and inputFilename[-5:]!='.html':
@@ -83,7 +84,7 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, chartPacka
     elif html_gender_annotator_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_gender_main.py')==False:
             return
-        call("python html_annotator_gender_main.py", shell=True)
+        run_script_util.run_script("html_annotator_gender_main.py")
     else:
         mb.showwarning(title='Warning', message='There are no options selected.\n\nPlease, select one of the available options and try again.')
         return
@@ -182,14 +183,14 @@ html_annotator_add_dictionary_var=tk.IntVar() # to add new annotations via dicti
 html_annotator_dictionary_file_var=tk.StringVar() # dictionary file used to annotate
 html_annotator_extractor_var=tk.IntVar() # to extract annotations in csv format from an annotated file
 
-knowledge_graphs_DBpedia_YAGO_button = tk.Button(window, width=GUI_IO_util.widget_width_long, text='HTML annotate corpus using the DBpedia & YAGO knowledge graphs (Open GUI)', command=lambda: call("python knowledge_graphs_DBpedia_YAGO_main.py", shell=True))
+knowledge_graphs_DBpedia_YAGO_button = tk.Button(window, width=GUI_IO_util.widget_width_long, text='HTML annotate corpus using the DBpedia & YAGO knowledge graphs (Open GUI)', command=lambda: run_script_util.run_script("knowledge_graphs_DBpedia_YAGO_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    knowledge_graphs_DBpedia_YAGO_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-knowledge_graphs_WordNet_button = tk.Button(window, width=GUI_IO_util.widget_width_long, text='HTML annotate corpus using the WordNet knowledge graphs (Open GUI)', command=lambda: call("python knowledge_graphs_WordNet_main.py", shell=True))
+knowledge_graphs_WordNet_button = tk.Button(window, width=GUI_IO_util.widget_width_long, text='HTML annotate corpus using the WordNet knowledge graphs (Open GUI)', command=lambda: run_script_util.run_script("knowledge_graphs_WordNet_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    knowledge_graphs_WordNet_button,
@@ -208,7 +209,7 @@ def clear_dictionary_list():
     csv_field_value_menu.configure(state='normal')
     csvValue_color_list.clear()
 
-html_gender_annotator_button = tk.Button(window, width=GUI_IO_util.widget_width_long, text='HTML gender annotator (Open GUI)',  command=lambda: call("python html_annotator_gender_main.py", shell=True))
+html_gender_annotator_button = tk.Button(window, width=GUI_IO_util.widget_width_long, text='HTML gender annotator (Open GUI)',  command=lambda: run_script_util.run_script("html_annotator_gender_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    html_gender_annotator_button,

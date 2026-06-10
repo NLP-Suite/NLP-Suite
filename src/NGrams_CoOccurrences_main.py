@@ -22,6 +22,7 @@ import config_util
 import reminders_util
 import IO_csv_util
 import NGrams_CoOccurrences_util
+import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -77,11 +78,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
 
     # if extra_GUIs_var.get() and extra_GUIs_menu_var.get()!='':
     #     if 'CoNLL' in extra_GUIs_menu_var.get():
-    #         call('python CoNLL_table_analyzer_main.py', shell=True)
+    #         run_script_util.run_script("CoNLL_table_analyzer_main.py")
     #     if 'WordNet' in extra_GUIs_menu_var.get():
-    #         call('python knowledge_graphs_WordNet_main.py', shell=True)
+    #         run_script_util.run_script("knowledge_graphs_WordNet_main.py")
     #     if 'Word search' in extra_GUIs_menu_var.get():
-    #         call("python file_search_byWord_main.py", shell=True)
+    #         run_script_util.run_script("file_search_byWord_main.py")
 
     # get the date options from filename
     filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = config_util.get_date_options(
@@ -499,15 +500,15 @@ def open_GUI(*args):
         return
     if extra_GUIs_var.get():
         if 'CoNLL' in extra_GUIs_menu_var.get():
-            call("python CoNLL_table_analyzer_main.py", shell=True)
+            run_script_util.run_script("CoNLL_table_analyzer_main.py")
         if 'statistics' in extra_GUIs_menu_var.get():
-            call("python statistics_txt_main.py", shell=True)
+            run_script_util.run_script("statistics_txt_main.py")
         if 'Style' in extra_GUIs_menu_var.get():
-            call("python style_analysis_main.py", shell=True)
+            run_script_util.run_script("style_analysis_main.py")
         if 'WordNet' in extra_GUIs_menu_var.get():
-            call('python knowledge_graphs_WordNet_main.py', shell=True)
+            run_script_util.run_script("knowledge_graphs_WordNet_main.py")
         if 'Word search' in extra_GUIs_menu_var.get():
-            call("python file_search_byWord_main.py", shell=True)
+            run_script_util.run_script("file_search_byWord_main.py")
 
 extra_GUIs_menu_var.trace('w',open_GUI)
 
@@ -957,7 +958,7 @@ def activate_all_options():
 
 activate_all_options()
 
-# open_GUI_search_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Search words/collocations (multi-word expressions) (Open GUI)',command=lambda: call("python file_search_byWord_main.py", shell=True))
+# open_GUI_search_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Search words/collocations (multi-word expressions) (Open GUI)',command=lambda: run_script_util.run_script("file_search_byWord_main.py"))
 # # place widget with hover-over info
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
 #                                    open_GUI_search_button,
@@ -1048,7 +1049,7 @@ activate_NLP_options()
 if error:
     mb.showwarning(title='Warning',
                message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.")
-    call("python NLP_setup_package_language_main.py", shell=True)
+    run_script_util.run_script("NLP_setup_package_language_main.py")
     # this will display the correct hover-over info after the python call, in case options were changed
     error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 

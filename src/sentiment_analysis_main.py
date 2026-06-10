@@ -22,6 +22,7 @@ import sentiment_analysis_SentiWordNet_util
 import sentiment_analysis_VADER_util
 import sentiment_analysis_ANEW_util
 import config_util
+import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -265,7 +266,7 @@ def run(inputFilename,inputDir,outputDir,
                                      reminders_util.title_options_shape_of_stories,
                                      reminders_util.message_shape_of_stories,
                                      True)
-        call("python shape_of_stories_main.py", shell=True)
+        run_script_util.run_script("shape_of_stories_main.py")
 
 # DICTIONARY APPROACHES -------------------------------------------------------------------
 
@@ -474,9 +475,9 @@ def open_GUI(*args):
         return
     if extra_GUIs_var.get():
         if 'statistics' in extra_GUIs_menu_var.get():
-            call("python statistics_txt_main.py", shell=True)
+            run_script_util.run_script("statistics_txt_main.py")
         if 'pre-processing' in extra_GUIs_menu_var.get():
-            call("python file_checker_pre_processing_pipeline_main.py", shell=True)
+            run_script_util.run_script("file_checker_pre_processing_pipeline_main.py")
 extra_GUIs_menu_var.trace('w',open_GUI)
 
 mean_checkbox = tk.Checkbutton(window, text='Calculate sentence mean', variable=mean_var, onvalue=1, offvalue=0)
@@ -542,7 +543,7 @@ shape_of_stories_var.set(0)
 shape_of_stories_checkbox = tk.Checkbutton(window, text='Do sentiments fluctuate across documents (Open \'Shape of stories\' GUI)', variable=shape_of_stories_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,shape_of_stories_checkbox)
 
-ALL_options_button = tk.Button(window, text='Sentiments/emotions (ALL options GUI)', command=lambda: call("python sentiments_emotions_ALL_main.py", shell=True))
+ALL_options_button = tk.Button(window, text='Sentiments/emotions (ALL options GUI)', command=lambda: run_script_util.run_script("sentiments_emotions_ALL_main.py"))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,ALL_options_button)
 
 def activate_all_options(*args):
@@ -635,7 +636,7 @@ activate_NLP_options()
 if error:
     mb.showwarning(title='Warning',
                    message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.")
-    call("python NLP_setup_package_language_main.py", shell=True)
+    run_script_util.run_script("NLP_setup_package_language_main.py")
     # this will display the correct hover-over info after the python call, in case options were changed
     error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 

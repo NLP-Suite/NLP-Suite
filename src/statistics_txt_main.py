@@ -13,6 +13,7 @@ import tkinter as tk
 from subprocess import call
 
 import GUI_IO_util
+import run_script_util
 
 
 extra_GUIs_var = tk.IntVar()
@@ -220,11 +221,11 @@ def open_GUI(*args):
         return
     if extra_GUIs_var.get():
         if 'CoNLL' in extra_GUIs_menu_var.get():
-            call("python CoNLL_table_analyzer_main.py", shell=True)
+            run_script_util.run_script("CoNLL_table_analyzer_main.py")
         if 'Style' in extra_GUIs_menu_var.get():
-            call("python style_analysis_main.py", shell=True)
+            run_script_util.run_script("style_analysis_main.py")
         if 'grams' in extra_GUIs_menu_var.get():
-            call("python NGrams_CoOccurrences_main.py", shell=True)
+            run_script_util.run_script("NGrams_CoOccurrences_main.py")
 extra_GUIs_menu_var.trace('w',open_GUI)
 
 corpus_statistics_var.set(0)

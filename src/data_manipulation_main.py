@@ -16,6 +16,7 @@ import GUI_IO_util
 import IO_csv_util
 import data_manipulation_util
 import reminders_util
+import run_script_util
 
 # RUN section ________________________________________________________________________________________________________
 
@@ -1274,7 +1275,7 @@ if __name__ == '__main__':
     SQL_GUI_button = tk.Button(window,
                                             text='Manipulate csv data with SQL (Open GUI)',
                                             width=GUI_IO_util.widget_width_medium,
-                                            command=lambda: call("python DB_SQL_main.py", shell=True))
+                                            command=lambda: run_script_util.run_script("DB_SQL_main.py"))
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                    SQL_GUI_button,
@@ -1284,7 +1285,7 @@ if __name__ == '__main__':
     visualize_csv_data_GUI_button = tk.Button(window,
                                             text='Visualize csv data (Open GUI)',
                                             width=GUI_IO_util.widget_width_medium,
-                                            command=lambda: call("python data_visualization_1_main.py", shell=True))
+                                            command=lambda: run_script_util.run_script("data_visualization_1_main.py"))
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                    visualize_csv_data_GUI_button,
@@ -1377,6 +1378,27 @@ if __name__ == '__main__':
         GUI_util.run_button.configure(state='normal')
 
     activate_all_options()
+
+    # CLI argument: --inputfile to pre-load a CSV file (e.g., from DB_SQL_main)
+    def _apply_cli_args():
+        if '--inputfile' in sys.argv:
+            try:
+                idx = sys.argv.index('--inputfile')
+                _file = sys.argv[idx + 1]
+                if os.path.isfile(_file):
+                    GUI_util.inputFilename.set(_file)
+            except (IndexError, ValueError):
+                pass
+        if '--outputdir' in sys.argv:
+            try:
+                idx = sys.argv.index('--outputdir')
+                _dir = sys.argv[idx + 1]
+                if os.path.isdir(_dir):
+                    GUI_util.output_dir_path.set(_dir)
+            except (IndexError, ValueError):
+                pass
+
+    GUI_util.window.after(200, _apply_cli_args)
 
     # GUI_util.window.attributes("-topmost", True)
     # GUI_util.window.focus_force()
