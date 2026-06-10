@@ -184,7 +184,7 @@ reading_list = [
     ('data_Document.xlsx', {'ID':'ID_data_document'}),
     ('data_xref_Complex-Document.xlsx', {'ID':'ID_data_xref_complex_document', 'Complex':'ID_data_complex', 'Document':'ID_data_document'}),
     ('data_xref_Simplex-Document.xlsx', {'ID':'ID_data_xref_simplex_document', 'ID_data_simplex':'ID_data_simplex', 'Simplex':'ID_data_simplex', 'Document':'ID_data_document'}),
-    ('data_xref_Simplex-Simplex-Document.xlsx', {'ID':'ID_data_xref_simplex_simplex_document', 'Simplex':'ID_data_simplex', 'Document':'ID_data_document'}),
+    ('data_xref_Simplex-Simplex-Document.xlsx', {'ID':'ID_data_xref_simplex_simplex_document', 'xrefID':'ID_setup_xref_simplex_document', 'Simplex':'ID_data_simplex', 'Document':'ID_data_document'}),
     ('data_xref_comment-complex.xlsx', {'ID':'ID_data_xref_comment_complex', 'Complex':'ID_data_complex'}),
     ('data_xref_Comment-Simplex.xlsx', {'ID':'ID_data_xref_comment_simplex', 'Simplex':'ID_data_simplex'}),
     ('data_xref_Comment-Document.xlsx', {'ID':'ID_data_xref_comment_document', 'Document':'ID_data_document'}),
@@ -1026,14 +1026,16 @@ def view_grammar(excel_file, column_name, output_file):
                     break
 
         children_of = {}
-        has_parent = set()
+        sentinel_roots = []
         if xref_df is not None:
             try:
                 for _, xrow in xref_df.iterrows():
                     higher = xrow['HigherComplex']
                     lower = xrow['LowerComplex']
+                    if higher == -1:
+                        sentinel_roots.append(lower)
+                        continue
                     children_of.setdefault(higher, []).append(lower)
-                    has_parent.add(lower)
             except Exception:
                 pass
 
@@ -1064,7 +1066,21 @@ def view_grammar(excel_file, column_name, output_file):
                 walk(child_id)
 
         if id_to_name and children_of:
-            roots = [cid for cid in id_to_name if cid not in has_parent]
+            if sentinel_roots:
+                roots = sentinel_roots
+            else:
+                has_parent = set()
+                for kids in children_of.values():
+                    has_parent.update(kids)
+                roots = [cid for cid in id_to_name if cid not in has_parent]
+            def _subtree_size(cid, seen=None):
+                if seen is None:
+                    seen = set()
+                if cid in seen:
+                    return 0
+                seen.add(cid)
+                return 1 + sum(_subtree_size(c, seen) for c in children_of.get(cid, []))
+            roots.sort(key=lambda cid: _subtree_size(cid), reverse=True)
             for root in roots:
                 walk(root)
             # Append any complexes not reached by the tree walk
@@ -1175,24 +1191,12 @@ def update_grammar_text(inputDir):
     Preserves existing +/++ prefixes from the original grammar when available."""
     global setup_Complex_lib, setup_xref_Complex_Complex_lib, setup_Simplex_lib, setup_xref_simplex_complex_lib, setup_xref_Simplex_Document_lib
 
-    # Load globals from files if not already loaded
-    try:
-        setup_Complex_lib
-    except NameError:
-        setup_Complex_lib = _load_pcace_df(inputDir, 'setup_Complex', {'ID': 'ID_setup_complex'})
-    try:
-        setup_xref_Complex_Complex_lib
-    except NameError:
-        setup_xref_Complex_Complex_lib = _load_pcace_df(inputDir, 'setup_xref_Complex-Complex')
-    try:
-        setup_Simplex_lib
-    except NameError:
-        setup_Simplex_lib = _load_pcace_df(inputDir, 'setup_Simplex', {'ID': 'ID_setup_simplex'})
-    try:
-        setup_xref_simplex_complex_lib
-    except NameError:
-        setup_xref_simplex_complex_lib = _load_pcace_df(inputDir, 'setup_xref_Simplex-Complex',
-                                                         {'Complex': 'ID_setup_complex', 'Simplex': 'ID_setup_simplex'})
+    # Always reload from current inputDir to avoid stale globals from a different database
+    setup_Complex_lib = _load_pcace_df(inputDir, 'setup_Complex', {'ID': 'ID_setup_complex'})
+    setup_xref_Complex_Complex_lib = _load_pcace_df(inputDir, 'setup_xref_Complex-Complex')
+    setup_Simplex_lib = _load_pcace_df(inputDir, 'setup_Simplex', {'ID': 'ID_setup_simplex'})
+    setup_xref_simplex_complex_lib = _load_pcace_df(inputDir, 'setup_xref_Simplex-Complex',
+                                                     {'Complex': 'ID_setup_complex', 'Simplex': 'ID_setup_simplex'})
 
     if setup_Complex_lib is None or setup_xref_Complex_Complex_lib is None:
         mb.showwarning(title='Warning',
@@ -1217,6 +1221,8 @@ def update_grammar_text(inputDir):
     # Build children lookup for structural fallback
     _children_of = {}
     for _, xrow in setup_xref_Complex_Complex_lib.iterrows():
+        if xrow["HigherComplex"] == -1:
+            continue
         _children_of.setdefault(xrow["HigherComplex"], set()).add(xrow["LowerComplex"])
 
     # ++ detection using the Relationship field in setup_xref_Complex-Complex.
@@ -1386,8 +1392,13 @@ def update_grammar_text(inputDir):
     # Save updated setup_Complex back to files
     _save_setup_table(inputDir, 'setup_Complex', setup_Complex_lib)
     print(f"Grammar rules updated and saved to setup_Complex.xlsx")
-    mb.showwarning(title='Warning',
-                   message='All grammar rules have been updated and saved to setup_Complex.xlsx and setup_Complex.pkl')
+    head, tail = os.path.split(inputDir)
+    open_grammar = mb.askyesno(title='Grammar updated',
+                               message='All grammar rules have been updated and saved to setup_Complex.xlsx and setup_Complex.pkl\n\nDo you want to view the grammar?')
+    if open_grammar:
+        view_grammar(os.path.join(inputDir, 'setup_Complex.xlsx'),
+                     'GrammarRule_Text',
+                     os.path.join(inputDir, 'PC-ACE grammar for database ' + tail + '.txt'))
 
     return setup_Complex_lib
 
@@ -3643,7 +3654,8 @@ def compare_aggregate_codes_across_dbs(db_dirs, outputDir):
     return output_files
 
 
-def build_aggregate_side_by_side(db_dir, outputDir, category='Actor', simplex_names=None):
+def build_aggregate_side_by_side(db_dir, outputDir, category='Actor',
+                                 original_simplex=None, simplex_names=None):
     """Build a side-by-side mapping of original simplex values to aggregate codes.
 
     Parameters
@@ -3654,9 +3666,10 @@ def build_aggregate_side_by_side(db_dir, outputDir, category='Actor', simplex_na
         Where to write the output CSV.
     category : str
         Legacy parameter, used in output filename.
+    original_simplex : str, optional
+        Name of the simplex holding the original (non-aggregated) values.
     simplex_names : list of str, optional
-        Explicit list of simplex names to include. If provided, these are
-        used directly (no keyword filtering). All listed names become columns.
+        Explicit list of aggregate code simplex names.
 
     Returns
     -------
@@ -3681,7 +3694,16 @@ def build_aggregate_side_by_side(db_dir, outputDir, category='Actor', simplex_na
 
     all_simplex_names_in_db = xref_all['Simplex name'].dropna().unique()
 
-    if simplex_names:
+    if original_simplex and simplex_names:
+        orig_names = [original_simplex] if original_simplex in all_simplex_names_in_db else []
+        agg_names = [n for n in simplex_names if n in all_simplex_names_in_db]
+        if not orig_names:
+            print(f"  {db_name}: original simplex '{original_simplex}' not found in data")
+            return None
+        if not agg_names:
+            print(f"  {db_name}: none of the selected aggregate simplexes found in data")
+            return None
+    elif simplex_names:
         agg_names = [n for n in simplex_names if n in all_simplex_names_in_db]
         if not agg_names:
             print(f"  {db_name}: none of the selected simplexes found in data")
@@ -3694,8 +3716,21 @@ def build_aggregate_side_by_side(db_dir, outputDir, category='Actor', simplex_na
             return None
         orig_names = [n for n in all_simplex_names_in_db if n not in agg_names]
 
-    print(f"  {db_name}: selected simplex types = {agg_names}")
-    print(f"  {db_name}: other simplex types = {orig_names[:5]}{'...' if len(orig_names) > 5 else ''}")
+    print(f"  {db_name}: original simplex = {orig_names}")
+    print(f"  {db_name}: aggregate code simplexes = {agg_names}")
+
+    # Build complex type name lookup: ID_data_complex -> setup_Complex.Name
+    complex_type_name = {}
+    dc = _load_table_from_dir(db_dir, 'data_Complex')
+    sc = _load_table_from_dir(db_dir, 'setup_Complex')
+    if not dc.empty and not sc.empty:
+        dc_id = 'ID_data_complex' if 'ID_data_complex' in dc.columns else 'ID'
+        dc_type = 'ID_setup_complex' if 'ID_setup_complex' in dc.columns else 'ComplexType'
+        sc_id = 'ID_setup_complex' if 'ID_setup_complex' in sc.columns else 'ID'
+        if dc_type in dc.columns and sc_id in sc.columns and 'Name' in sc.columns:
+            sc_map = dict(zip(sc[sc_id], sc['Name']))
+            for _, r in dc[[dc_id, dc_type]].drop_duplicates().iterrows():
+                complex_type_name[r[dc_id]] = sc_map.get(r[dc_type], '')
 
     # Build per-complex-instance mapping
     # For each complex instance, get original values and all aggregate code values
@@ -3707,7 +3742,7 @@ def build_aggregate_side_by_side(db_dir, outputDir, category='Actor', simplex_na
 
     results = []
     for cid in complex_ids:
-        row = {'ID_data_complex': cid}
+        row = {'Complex': complex_type_name.get(cid, ''), 'ID_data_complex': cid}
 
         # Get identifier
         id_match = xref_all[xref_all['ID_data_complex'] == cid]
@@ -3740,7 +3775,7 @@ def build_aggregate_side_by_side(db_dir, outputDir, category='Actor', simplex_na
 
     df_result = pd.DataFrame(results)
     # Reorder: ID, Identifier, original columns, then aggregate columns
-    front_cols = ['ID_data_complex', 'Identifier']
+    front_cols = ['Complex', 'ID_data_complex', 'Identifier']
     orig_cols_present = [c for c in df_result.columns if c not in front_cols and c not in agg_names]
     col_order = [c for c in front_cols if c in df_result.columns] + \
                 sorted(orig_cols_present) + sorted(agg_names)
@@ -4787,6 +4822,8 @@ def _get_structural_hierarchical_types():
     if not hierarchical_ids:
         _children_of = {}
         for _, xrow in setup_xref_Complex_Complex_lib.iterrows():
+            if xrow["HigherComplex"] == -1:
+                continue
             _children_of.setdefault(xrow["HigherComplex"], set()).add(xrow["LowerComplex"])
         for higher_id, children in _children_of.items():
             if len(children) >= 3:

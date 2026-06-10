@@ -62,10 +62,37 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
                        message='No INPUT directory selected.\n\nPlease, select the PC-ACE database directory and try again.')
         return
 
+    GUI_util.window.focus_set()
+    GUI_util.window.config(cursor='watch')
+    GUI_util.window.update()
+
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+        'Started running PC-ACE data validation at',
+        True, '', True, '', False)
+
     if not _ensure_database_loaded(inputDir):
         mb.showwarning(title='Warning',
                        message='Could not load the PC-ACE database from the selected directory.\n\n'
                                'Please, check that the directory contains the expected Excel/pkl files.')
+        return
+
+    has_agg_simplexes = len(_agg_simplex_list) > 0
+    agg_mode = agg_mode_var.get()
+    run_cross_db = agg_mode in (_AGG_MODE_CROSS_DB, _AGG_MODE_BOTH)
+    run_side_by_side = agg_mode in (_AGG_MODE_SIDE_BY_SIDE, _AGG_MODE_BOTH)
+    nothing_selected = (spell_check_var.get() == 0
+                        and lemmatize_var.get() == 0
+                        and not run_cross_db
+                        and not run_side_by_side
+                        and not has_agg_simplexes)
+    if nothing_selected:
+        mb.showwarning(title='Nothing selected',
+                       message='No validation task selected.\n\n'
+                               'Please select at least one option:\n'
+                               '  - Run spell-check\n'
+                               '  - Run lemmatization\n'
+                               '  - Cross-DB comparison\n'
+                               '  - Side-by-side mapping with aggregate simplexes')
         return
 
     # ── Spell-check ──────────────────────────────────────────────────────────
@@ -97,7 +124,8 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
                         mb.showinfo(title='Spell-check',
                                     message=f'No near-duplicate or misspelled values found for "{simplex_name}".')
                 except Exception as e:
-                    print(f"  Near-duplicate check skipped: {e}")
+                    mb.showerror(title='Spell-check error',
+                                 message=f'Spell-check failed for "{simplex_name}":\n\n{e}')
         else:
             # Check ALL text simplexes
             try:
@@ -117,7 +145,8 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
                     mb.showinfo(title='Spell-check',
                                 message='No near-duplicate or misspelled values found across any text simplex.')
             except Exception as e:
-                print(f"  Spell-check (all simplexes) skipped: {e}")
+                mb.showerror(title='Spell-check error',
+                             message=f'Spell-check failed:\n\n{e}')
 
     # ── Lemmatization ──────────────────────────────────────────────────────────
     if lemmatize_var.get() == 1:
@@ -125,8 +154,15 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
         lang_code = Stanza_util.lang_dict_rev.get(lang_name, 'en')
 
         # Get selected simplex types from the + button lists
+        # Also include the currently selected dropdown value if not already added
         noun_simplexes = list(_noun_simplex_list)
+        cur_noun = lemmatize_nouns_var.get()
+        if cur_noun and cur_noun not in noun_simplexes:
+            noun_simplexes.append(cur_noun)
         verb_simplexes = list(_verb_simplex_list)
+        cur_verb = lemmatize_verbs_var.get()
+        if cur_verb and cur_verb not in verb_simplexes:
+            verb_simplexes.append(cur_verb)
 
         if not noun_simplexes and not verb_simplexes:
             mb.showwarning(title='Lemmatization',
@@ -144,7 +180,8 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
                     if lemma_csv and os.path.isfile(lemma_csv):
                         all_lemma_files.append(lemma_csv)
                 except Exception as e:
-                    print(f"  Lemmatization of '{sx_name}' (noun) skipped: {e}")
+                    mb.showerror(title='Lemmatization error',
+                                 message=f'Lemmatization failed for "{sx_name}" (noun):\n\n{e}')
 
             # Lemmatize verb-type simplexes (POS filter: VERB, AUX)
             for sx_name in verb_simplexes:
@@ -155,7 +192,8 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
                     if lemma_csv and os.path.isfile(lemma_csv):
                         all_lemma_files.append(lemma_csv)
                 except Exception as e:
-                    print(f"  Lemmatization of '{sx_name}' (verb) skipped: {e}")
+                    mb.showerror(title='Lemmatization error',
+                                 message=f'Lemmatization failed for "{sx_name}" (verb):\n\n{e}')
 
             if all_lemma_files:
                 filesToOpen.extend(all_lemma_files)
@@ -172,7 +210,7 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
                                     'All text values in the selected simplexes are already in their base form.')
 
     # ── Aggregate code validation ───────────────────────────────────────────────
-    if agg_cross_db_var.get() == 1 or agg_side_by_side_var.get() == 1:
+    if run_cross_db or run_side_by_side or has_agg_simplexes:
         # Build the list of DB directories
         db_dirs = list(_agg_db_dirs)
         # Include the current inputDir if not already in the list
@@ -184,7 +222,7 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
                            message='No PC-ACE database directories selected.\n\n'
                                    'Use the + button to add database directories, or set an INPUT directory.')
         else:
-            if agg_cross_db_var.get() == 1:
+            if run_cross_db:
                 if len(db_dirs) < 2:
                     mb.showwarning(title='Cross-DB comparison',
                                    message='Cross-DB comparison requires at least 2 databases.\n\n'
@@ -199,30 +237,43 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
                                         message=f'Cross-DB comparison produced {len(cross_files)} file(s).\n\n'
                                                 f'Check the output files for aggregate code differences across databases.')
                     except Exception as e:
-                        print(f"  Cross-DB comparison error: {e}")
-                        import traceback
-                        traceback.print_exc()
+                        mb.showerror(title='Cross-DB comparison error',
+                                     message=f'Cross-DB comparison failed:\n\n{e}')
 
-            if agg_side_by_side_var.get() == 1:
-                if not _agg_simplex_list:
+            if run_side_by_side or has_agg_simplexes:
+                orig_name = agg_orig_var.get()
+                if not orig_name:
                     mb.showwarning(title='Side-by-side mapping',
-                                   message='No aggregate simplexes selected.\n\n'
-                                           'Use the dropdown and + button to select simplexes to compare.')
+                                   message='No original simplex selected.\n\n'
+                                           'Please select the simplex containing the original (non-aggregated) values\n'
+                                           'in the "Original values" dropdown.')
+                elif not _agg_simplex_list:
+                    mb.showwarning(title='Side-by-side mapping',
+                                   message='No aggregate code simplexes selected.\n\n'
+                                           'Use the "Aggregate codes" dropdown and + button to select\n'
+                                           'one or more aggregate code simplexes.')
                 else:
                     for db_dir in db_dirs:
                         try:
                             side_file = DB_PCACE_data_analysis_util.build_aggregate_side_by_side(
-                                db_dir, outputDir, simplex_names=list(_agg_simplex_list))
+                                db_dir, outputDir,
+                                original_simplex=orig_name,
+                                simplex_names=list(_agg_simplex_list))
                             if side_file:
                                 filesToOpen.append(side_file)
                         except Exception as e:
-                            print(f"  Side-by-side error for {os.path.basename(db_dir)}: {e}")
-                            import traceback
-                            traceback.print_exc()
+                            mb.showerror(title='Side-by-side error',
+                                         message=f'Side-by-side mapping failed for {os.path.basename(db_dir)}:\n\n{e}')
                     if filesToOpen:
                         mb.showinfo(title='Side-by-side mapping',
                                     message=f'Side-by-side mapping produced files for {len(db_dirs)} database(s).\n\n'
                                             f'Each CSV shows original values alongside their aggregate codes.')
+
+    GUI_util.window.config(cursor='')
+
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+        'Finished running PC-ACE data validation at',
+        True, '', True, startTime, False)
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -234,8 +285,8 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=520, # height at brief display
-                                                 GUI_height_full=560, # height at full display
+                                                 GUI_height_brief=560, # height at brief display
+                                                 GUI_height_full=600, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -396,10 +447,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_c
                                    "to scan every text simplex in the database.\n\n"
                                    "Produces a review CSV with suggested corrections and an Accept?/Reject column.")
 
+def _combobox_release_focus(event):
+    window.focus_set()
+
 spell_check_simplex_var = tk.StringVar()
 spell_check_simplex_var.set('ALL text simplexes')
 spell_check_simplex_menu = ttk.Combobox(window, textvariable=spell_check_simplex_var, width=30, state='readonly')
 spell_check_simplex_menu['values'] = ['ALL text simplexes']
+spell_check_simplex_menu.bind('<<ComboboxSelected>>', _combobox_release_focus)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 200, y_multiplier_integer,
                                    spell_check_simplex_menu,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 200,
@@ -488,6 +543,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_c
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 200,
                                    "Select the language for Stanza lemmatization.\n"
                                    "All languages supported by Stanza are listed.")
+lemmatize_lang_menu.bind('<<ComboboxSelected>>', _combobox_release_focus)
 
 # Apply lemmatization corrections button
 def _apply_lemmatization_corrections():
@@ -551,6 +607,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_c
                                    "Examples: Name of individual actor, Name of collective actor,\n"
                                    "Physical objects, Role in organizations, Nome attore, etc.\n\n"
                                    "Stanza will apply NOUN lemmatization to values from these simplexes.")
+lemmatize_nouns_menu.bind('<<ComboboxSelected>>', _combobox_release_focus)
 
 def _update_noun_hover():
     """Update the + button hover-over to show current NOUN selections."""
@@ -571,6 +628,7 @@ def _add_noun_simplex():
     if val and val not in _noun_simplex_list:
         _noun_simplex_list.append(val)
     _update_noun_hover()
+    lemmatize_nouns_menu.event_generate('<Button-1>')
 
 def _reset_noun_simplexes():
     _noun_simplex_list.clear()
@@ -606,6 +664,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_c
                                    "Select a simplex type that contains VERB values, then click + to add it.\n\n"
                                    "Examples: Verbal phrase, Nominalization, Frase verbale, etc.\n\n"
                                    "Stanza will apply VERB lemmatization to values from these simplexes.")
+lemmatize_verbs_menu.bind('<<ComboboxSelected>>', _combobox_release_focus)
 
 def _update_verb_hover():
     """Update the + button hover-over to show current VERB selections."""
@@ -626,6 +685,7 @@ def _add_verb_simplex():
     if val and val not in _verb_simplex_list:
         _verb_simplex_list.append(val)
     _update_verb_hover()
+    lemmatize_verbs_menu.event_generate('<Button-1>')
 
 def _reset_verb_simplexes():
     _verb_simplex_list.clear()
@@ -705,100 +765,140 @@ def _refresh_db_listbox():
     else:
         agg_db_var.set('')
 
-add_db_button = tk.Button(window, text='+', width=2, command=_add_db_dir)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
-                                   add_db_button,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "Click to add a PC-ACE database directory for cross-DB comparison.\n"
-                                   "Add 2 or more databases to compare aggregate codes across them.")
-
-remove_db_button = tk.Button(window, text='−', width=2, command=_remove_db_dir)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 35, y_multiplier_integer,
-                                   remove_db_button,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 35,
-                                   "Remove the selected database from the list.")
-
 agg_db_var = tk.StringVar()
 agg_db_menu = ttk.Combobox(window, textvariable=agg_db_var, width=80, state='readonly')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 70, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    agg_db_menu,
-                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 70,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 70,
                                    "List of PC-ACE database directories to compare.\n"
                                    "Use + to add directories, − to remove.\n"
                                    "The INPUT directory (if set) is automatically included.")
+agg_db_menu.bind('<<ComboboxSelected>>', _combobox_release_focus)
 
 _init_input = GUI_util.input_main_dir_path.get() if hasattr(GUI_util.input_main_dir_path, 'get') else GUI_util.input_main_dir_path
 if _init_input and os.path.isdir(str(_init_input)) and os.path.isfile(os.path.join(str(_init_input), 'data_Complex.xlsx')):
     _agg_db_dirs.append(str(_init_input))
     _refresh_db_listbox()
 
+add_db_button = tk.Button(window, text='+', width=2, command=_add_db_dir)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
+                                   add_db_button,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   "Click to add a PC-ACE database directory for cross-DB comparison.\n"
+                                   "Add 2 or more databases to compare aggregate codes across them.")
+
+remove_db_button = tk.Button(window, text='−', width=2, command=_remove_db_dir)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate + 35, y_multiplier_integer,
+                                   remove_db_button,
+                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 35,
+                                   "Remove the selected database from the list.")
+
 # ── Comparison controls ──────────────────────────────────────────────────────
 
-agg_cross_db_var = tk.IntVar()
-agg_cross_db_cb = tk.Checkbutton(window, text='Cross-DB comparison', variable=agg_cross_db_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   agg_cross_db_cb,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Compare aggregate code vocabularies across all databases in the list.\n\n"
-                                   "Produces two CSVs:\n"
-                                   "  1. Full comparison: Database | Aggregate simplex | Code value | Frequency\n"
-                                   "  2. Gaps report: shows which codes exist in which DBs (empty = missing)")
+_AGG_MODE_NONE = ''
+_AGG_MODE_CROSS_DB = 'Cross-DB code comparison'
+_AGG_MODE_SIDE_BY_SIDE = 'Side-by-side code mapping'
+_AGG_MODE_BOTH = '*'
 
-agg_side_by_side_var = tk.IntVar()
-agg_side_by_side_cb = tk.Checkbutton(window, text='Side-by-side mapping', variable=agg_side_by_side_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 200, y_multiplier_integer,
-                                   agg_side_by_side_cb,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 200,
-                                   "For each database, produce a side-by-side CSV showing:\n"
-                                   "  Original simplex value | Aggregate code | Aggregate code NEW | COLIN code\n\n"
-                                   "One row per complex instance, so you can see how each original value\n"
-                                   "maps through the different coding schemes.")
+agg_mode_var = tk.StringVar()
+agg_mode_menu = ttk.Combobox(window, textvariable=agg_mode_var, width=25, state='readonly',
+                              values=[_AGG_MODE_BOTH, _AGG_MODE_CROSS_DB, _AGG_MODE_SIDE_BY_SIDE])
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+                                   agg_mode_menu,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "Select the aggregate code validation task:\n\n"
+                                   "  * = run BOTH Cross-DB comparison AND Side-by-side mapping\n\n"
+                                   "  Cross-DB code comparison: compares aggregate code vocabularies\n"
+                                   "    across all databases in the list. Requires 2+ databases.\n"
+                                   "    Produces a full comparison CSV and a gaps report.\n\n"
+                                   "  Side-by-side code mapping: for each complex instance, shows\n"
+                                   "    original values alongside aggregate codes.")
 
-# Aggregate simplex selection (dynamic, like NOUN/VERB lemmatize pattern)
+def _on_agg_mode_change(*args):
+    mode = agg_mode_var.get()
+    if mode in (_AGG_MODE_CROSS_DB, _AGG_MODE_BOTH) and len(_agg_db_dirs) < 2:
+        mb.showwarning(title='Cross-DB comparison',
+                       message='Cross-DB comparison requires at least 2 databases.\n\n'
+                               'Use the + / − buttons above to add more PC-ACE database directories.')
+
+agg_mode_var.trace('w', _on_agg_mode_change)
+
+agg_mode_menu.bind('<<ComboboxSelected>>', _combobox_release_focus)
+
+# ── Original simplex + Aggregate code simplexes (same row as checkboxes) ────
+
+agg_orig_var = tk.StringVar()
+agg_orig_menu = ttk.Combobox(window, textvariable=agg_orig_var, width=30, state='readonly')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+                                   agg_orig_menu,
+                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
+                                   "ORIGINAL VALUES: select the simplex containing the original (non-aggregated) values.\n\n"
+                                   "This is the simplex whose values were coded into aggregate categories.\n"
+                                   "e.g., 'Name of individual actor', 'Verbal phrase', 'Nome attore'.")
+
+agg_orig_menu.bind('<<ComboboxSelected>>', _combobox_release_focus)
+
 _agg_simplex_list = []
 
 agg_simplex_var = tk.StringVar()
-agg_simplex_menu = ttk.Combobox(window, textvariable=agg_simplex_var, width=40, state='readonly')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 200, y_multiplier_integer,
+agg_simplex_menu = ttk.Combobox(window, textvariable=agg_simplex_var, width=30, state='readonly')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate + 220, y_multiplier_integer,
                                    agg_simplex_menu,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 200,
-                                   "Select an aggregate simplex to add to the comparison list.\n"
-                                   "Use + to add, Reset to clear the list.")
+                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate + 220,
+                                   "AGGREGATE CODES: select an aggregate code simplex, then click + to add it.\n"
+                                   "You can add multiple aggregate code simplexes.\n"
+                                   "Use Reset to clear the list and start over.")
+
+agg_simplex_menu.bind('<<ComboboxSelected>>', _combobox_release_focus)
 
 def _add_agg_simplex():
     sel = agg_simplex_var.get()
     if sel and sel not in _agg_simplex_list:
         _agg_simplex_list.append(sel)
         _refresh_agg_simplex_display()
+    agg_simplex_menu.event_generate('<Button-1>')
 
 def _reset_agg_simplex():
     _agg_simplex_list.clear()
+    agg_simplex_var.set('')
     _refresh_agg_simplex_display()
 
 def _refresh_agg_simplex_display():
     if _agg_simplex_list:
-        agg_simplex_selected_var.set(', '.join(_agg_simplex_list))
+        agg_simplex_selected_var.set(f'{len(_agg_simplex_list)} selected: ' + ', '.join(_agg_simplex_list))
+        tip = f'{len(_agg_simplex_list)} selected aggregate code simplexes:\n\n  ' + \
+              '\n  '.join(_agg_simplex_list)
     else:
         agg_simplex_selected_var.set('')
+        tip = 'No aggregate code simplexes selected yet.'
+    agg_simplex_selected_label.unbind('<Enter>')
+    agg_simplex_selected_label.bind('<Enter>',
+        lambda e, t=tip: GUI_IO_util.display_widget_info(window, e,
+            GUI_IO_util.labels_x_indented_coordinate,
+            agg_simplex_selected_label.winfo_y() - 20,
+            GUI_IO_util.labels_x_indented_coordinate, t))
 
 agg_add_button = tk.Button(window, text='+', width=2, command=_add_agg_simplex)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 510, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate + 440, y_multiplier_integer,
                                    agg_add_button,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 510,
-                                   "Add the selected simplex to the comparison list.")
+                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate + 440,
+                                   "Add the selected aggregate code simplex to the list.")
 
 agg_reset_button = tk.Button(window, text='Reset', width=5, command=_reset_agg_simplex)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 545, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate + 475, y_multiplier_integer,
                                    agg_reset_button,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 545,
-                                   "Clear the aggregate simplex list and start fresh.")
+                                   False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate + 475,
+                                   "Clear the aggregate code list and start fresh.")
 
 agg_simplex_selected_var = tk.StringVar()
-agg_simplex_selected_label = tk.Entry(window, textvariable=agg_simplex_selected_var, width=40, state='readonly')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 620, y_multiplier_integer,
+_entry_width = max(120, (GUI_IO_util.close_button_x_coordinate + 70 - GUI_IO_util.labels_x_indented_coordinate) // 7)
+agg_simplex_selected_label = tk.Entry(window, textvariable=agg_simplex_selected_var, width=_entry_width, state='readonly')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    agg_simplex_selected_label,
-                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 620,
-                                   "Currently selected aggregate simplexes for comparison.")
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "Shows the aggregate code simplexes you have selected.\n"
+                                   "Hover over for the full list.")
+
 
 # ── Populate simplex dropdown when database directory changes ─────────────────
 
@@ -843,7 +943,10 @@ def _on_inputDir_change(*args):
             _agg_db_dirs.clear()
             _agg_db_dirs.append(dir_val)
             _refresh_db_listbox()
-            agg_simplex_menu['values'] = sorted_text + [sn for sn in simplex_names if sn not in sorted_text]
+            all_sorted = sorted(simplex_names)
+            agg_orig_menu['values'] = all_sorted
+            agg_simplex_menu['values'] = all_sorted
+            agg_orig_var.set('')
             _agg_simplex_list.clear()
             _refresh_agg_simplex_display()
         except Exception as e:
@@ -918,15 +1021,23 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         "  Use + / − to add/remove PC-ACE database directories.\n"
         "  The INPUT directory is automatically included." + GUI_IO_util.msg_Esc)
 
-    # Row 7: Cross-DB comparison + Side-by-side mapping + Actor/Action
+    # Row 7: Cross-DB + Side-by-side + Original values + Aggregate codes + Reset
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,
         y_multiplier_integer, "NLP Suite Help",
         "Cross-DB comparison: compares aggregate code vocabularies across databases.\n"
-        "  Produces a full comparison CSV and a gaps report showing codes\n"
-        "  that exist in some DBs but not others.\n\n"
-        "Side-by-side mapping: for each complex instance, shows the original\n"
-        "  simplex value alongside all aggregate coding schemes.\n"
-        "  Select Actor or Action to choose which codes to inspect." + GUI_IO_util.msg_Esc)
+        "  Produces a full comparison CSV and a gaps report. Requires 2+ databases.\n\n"
+        "Side-by-side mapping: for each complex instance, shows original values\n"
+        "  alongside aggregate codes.\n\n"
+        "  1st dropdown (Original values): the simplex with the raw values\n"
+        "     e.g., 'Name of individual actor', 'Verbal phrase'\n"
+        "  2nd dropdown (Aggregate codes): select aggregate code simplexes with +\n"
+        "     e.g., 'Actor aggregate code', 'Action aggregate code NEW'" + GUI_IO_util.msg_Esc)
+
+    # Row 8: Selected aggregate codes display
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,
+        y_multiplier_integer, "NLP Suite Help",
+        "Shows the aggregate code simplexes you have selected.\n"
+        "Hover over the text field for the full list." + GUI_IO_util.msg_Esc)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
 
@@ -967,11 +1078,34 @@ run_script_command = lambda: run(
     GUI_util.charts_package_options_widget.get(),
     GUI_util.data_transformation_options_widget.get())
 
+GUI_util.run_button.configure(command=run_script_command)
+
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options,
                     y_multiplier_integer, readMe_command,
                     videos_lookup, videos_options,
                     TIPS_lookup, TIPS_options,
                     IO_setup_display_brief, scriptName)
+
+# ── ESC key resets all selections ─────────────────────────────────────────────
+
+def _reset_all(e=None):
+    """Clear all selections and restore default dropdown values."""
+    spell_check_var.set(0)
+    spell_check_simplex_var.set('ALL text simplexes')
+    lemmatize_var.set(0)
+    lemmatize_lang_var.set('English')
+    lemmatize_nouns_var.set('')
+    lemmatize_verbs_var.set('')
+    _noun_simplex_list.clear()
+    _verb_simplex_list.clear()
+    agg_mode_var.set('')
+    agg_orig_var.set('')
+    agg_simplex_var.set('')
+    _agg_simplex_list.clear()
+    _refresh_agg_simplex_display()
+    csv_file_var.set('')
+
+window.bind("<Escape>", _reset_all)
 
 # ── CLI arguments (launched from DB_SQL_main or analyzer dropdown) ────────────
 

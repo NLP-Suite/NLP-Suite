@@ -22,7 +22,7 @@ import IO_files_util
 import GUI_IO_util
 import IO_user_interface_util
 import TIPS_util
-import DB_PCACE_data_analysis_util
+import DB_PCACE_data_analyzer_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -40,7 +40,7 @@ def _build_sqlite(inpath_str, outpath_str):
     # Maps filename (e.g. 'data_Complex.xlsx') -> rename dict (e.g. {'ID':'ID_data_complex', ...})
     rename_lookup = {}
     try:
-        for fn, rename_cols in DB_PCACE_data_analysis_util.reading_list:
+        for fn, rename_cols in DB_PCACE_data_analyzer_util.reading_list:
             if rename_cols:
                 # Key by base name without extension for matching
                 base = os.path.splitext(fn)[0]
@@ -85,10 +85,6 @@ def _build_sqlite(inpath_str, outpath_str):
             # so that SQL queries are compatible across both paths
             if table_name in rename_lookup:
                 df.rename(columns=rename_lookup[table_name], inplace=True)
-            # Deduplicate column names: if pandas added .1, .2 suffixes
-            # for duplicate columns, keep only the first occurrence
-            if df.columns.duplicated().any():
-                df = df.loc[:, ~df.columns.duplicated()]
             df.to_sql(name=sqlTableName, con=conn, index=False, if_exists='replace')
         except Exception as e:
             print(f"  WARNING: Could not import '{filename}': {e}")
@@ -123,13 +119,8 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation, S
 
     if select_SQLite_DB_var.get() != "":
         if not SQL_query_var or SQL_query_var.strip() == "":
-            if source_complex_var.get() or target_complex_var.get() or _saved_pairs:
-                mb.showwarning(title='Warning',
-                               message='There are objects selected in the cross-complex query widgets. '
-                                       'Please, click on the Generate SQL query button first and then RUN.')
-            else:
-                mb.showwarning(title='Warning',
-                               message='The SQL query area is empty. Please, create or import a query and try again.')
+            mb.showwarning(title='Warning',
+                           message='The SQL query area is empty. Please, create or import a query and try again.')
             return
         print("SQL_query_var", SQL_query_var)
         dbVar = select_SQLite_DB_var.get()
@@ -141,18 +132,9 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation, S
         _sql_verb = SQL_query_var.strip().split()[0].upper() if SQL_query_var.strip() else ''
         _is_modify = _sql_verb in ('UPDATE', 'INSERT', 'DELETE')
 
-        # Split on unique marker to handle multiple queries (e.g. different-source pairs)
-        _QUERY_SEP = '-- @@NEXT_QUERY@@'
-        if _QUERY_SEP in SQL_query_var:
-            _raw_queries = [q.strip() for q in SQL_query_var.split(_QUERY_SEP) if q.strip()]
-        else:
-            _raw_queries = [SQL_query_var.strip()]
-        if not _raw_queries:
-            mb.showwarning(title='Warning', message='The SQL query area is empty.')
-            return
-
         try:
-            sql_rows = cur.execute(_raw_queries[0])
+            # SQL_query_var contains the query a user has entered
+            sql_rows = cur.execute(SQL_query_var)
         except Exception as e:
             mb.showwarning(title='SQL Error',
                            message=f'The query did not execute properly.\n\nError: {e}\n\nIf you are running a template query, you will need to change the table and column names to match your database.\n\nPlease, check your query and try again.')
@@ -169,28 +151,17 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation, S
             return
 
         for col in cur.description:
+            # .description returns column names from the resulting SQL query
+            # Each column is a 7-tuple, but we just need the first index to get it's name
             colNames.append(col[0])
         results.append(colNames)
         for row in sql_rows:
             results.append(row)
-
-        # Execute any additional queries (different-source pairs)
-        _extra_results_list = []
-        for _qi in range(1, len(_raw_queries)):
-            try:
-                _extra_rows = cur.execute(_raw_queries[_qi])
-                _extra_cols = [col[0] for col in cur.description]
-                _extra_data = [_extra_cols]
-                for row in _extra_rows:
-                    _extra_data.append(row)
-                _extra_results_list.append(_extra_data)
-            except Exception as e:
-                print(f"  WARNING: additional query {_qi+1} failed: {e}")
         # Build meaningful output filename from cross-complex query name if available
         qname = query_name_var.get() if query_name_var.get() else ''
 
-        # For PC-ACE cross-complex/source-only queries, use a PCACE subfolder (same as analyzer GUI)
-        if (qname.startswith('Cross-complex:') or qname.startswith('Source-only:')) and inputDir:
+        # For PC-ACE cross-complex queries, use a PCACE subfolder (same as analyzer GUI)
+        if qname.startswith('Cross-complex:') and inputDir:
             head, tail = os.path.split(inputDir)
             if tail.endswith('_xlsx') or tail.endswith('_XLSX'):
                 pcace_subdir = os.path.join(outputDir, tail[:-5])
@@ -204,43 +175,23 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation, S
                 outputDir = pcace_subdir
 
         if qname.startswith('Cross-complex:'):
-            # Use only leaf complex names for a readable filename.
-            body = qname.replace('Cross-complex:', '').strip()
-            pair_strs = [p.strip() for p in body.split(';')]
-            leaf_parts = []
-            for pair_str in pair_strs:
-                arrow_parts = pair_str.split('→')
-                for ap in arrow_parts:
-                    for sub in ap.split(','):
-                        leaf = sub.strip().split('.')[-1].strip().replace(' ', '_')
-                        if leaf:
-                            leaf_parts.append(leaf)
-            if leaf_parts:
-                csv_name = 'SQL_{}.csv'.format('_'.join(leaf_parts))
+            # e.g. 'Cross-complex: Individual → Simple process' or
+            #      'Cross-complex: Individual → Simple process, City, Time'
+            parts = qname.replace('Cross-complex:', '').strip().split('→')
+            if len(parts) >= 2:
+                src_part = parts[0].strip()
+                tgt_part = parts[1].strip().replace(', ', '_').replace(' ', '_')
+                csv_name = 'SQL_{}_{}.csv'.format(src_part, tgt_part)
             else:
                 csv_name = 'sql_result.csv'
-        elif qname.startswith('Source-only:'):
-            src_part = qname.replace('Source-only:', '').strip().replace(', ', '_').replace(' ', '_')
-            csv_name = 'SQL_{}.csv'.format(src_part)
         else:
             csv_name = 'sql_result.csv'
         csv_full_path = outputDir + os.sep + csv_name
         filesToOpen = [csv_full_path]
         IO_csv_util.list_to_csv(GUI_util.window, results, csv_full_path, colnum=0)
 
-        # Write extra query results (different-source pairs) as separate CSVs
-        for _ei, _extra_data in enumerate(_extra_results_list):
-            _extra_name = csv_name.replace('.csv', '_{}.csv'.format(_ei + 2))
-            _extra_path = outputDir + os.sep + _extra_name
-            IO_csv_util.list_to_csv(GUI_util.window, _extra_data, _extra_path, colnum=0)
-            filesToOpen.append(_extra_path)
-
-        # Auto-populate the INPUT CSV file widget with the output CSV
-        csv_file_var.set(csv_full_path)
-        _refresh_csv_columns()
-
         # Auto-generate charts for cross-complex query results
-        if (qname.startswith('Cross-complex:') or qname.startswith('Source-only:')) and chartPackage != 'No charts':
+        if qname.startswith('Cross-complex:') and chartPackage != 'No charts':
             _auto_chart_cross_complex(csv_full_path, outputDir, chartPackage, filesToOpen)
 
         if openOutputFiles:
@@ -306,18 +257,7 @@ outputDir=GUI_util.output_dir_path
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
-# Fix blue highlight on ttk.Combobox widgets (Windows theme paints
-# the field blue when the widget has focus or is selected).
-_style = ttk.Style()
-_style.map('TCombobox', selectbackground=[('readonly', 'white'), ('disabled', 'white'),
-                                           ('focus', 'white'), ('!focus', 'white')],
-                        selectforeground=[('readonly', 'black'), ('disabled', 'black'),
-                                           ('focus', 'black'), ('!focus', 'black')])
-window.option_add('*TCombobox*Listbox.selectBackground', '#0078D7')
-window.option_add('*TCombobox*Listbox.selectForeground', 'white')
-
 select_SQLite_DB_var=tk.StringVar()
-csv_file_var= tk.StringVar()
 select_DB_tables_var=tk.StringVar()
 select_DB_table_fields_var=tk.StringVar()
 SQL_query_var=tk.StringVar()
@@ -325,15 +265,13 @@ distinct_var=tk.IntVar()
 view_relations_var=tk.IntVar()
 
 def clear(e):
-    where_simplex_var.set('')
-    where_operator_var.set('LIKE')
-    where_value_var.set('')
+    # complex_objects_var.set('')
+    # simplex_objects_var.set('')
     source_complex_var.set('')
     source_simplex_var.set('')
     target_complex_var.set('')
     target_simplex_var.set('')
     _saved_pairs.clear()
-    _saved_extra_children.clear()
     _update_extra_targets_label()
     auto_SQL_var.set('')
     distinct_var.set(0)
@@ -348,11 +286,9 @@ def clear(e):
     object_type_var_sql.set('')
     required_object_var_sql.set('')
     GUI_util.tips_dropdown_field.set('Open TIPS files')
-    # Re-populate WHERE filter dropdown from the CSV that is still loaded
-    _refresh_csv_columns()
 window.bind("<Escape>", clear)
 
-_SQLITE_VERSION = 4  # bump when _build_sqlite column mappings change (4 = added setup_xref_Simplex_Document rename)
+_SQLITE_VERSION = 3  # bump when _build_sqlite column mappings change (3 = added indexes)
 
 def _check_sqlite_version(in_dir):
     """Check if the SQLite database was built with the current column-rename version.
@@ -374,8 +310,8 @@ def _write_sqlite_version(in_dir):
 _INDEX_STMTS = [
     "CREATE INDEX IF NOT EXISTS idx_dc_setup ON data_Complex(ID_setup_complex)",
     "CREATE INDEX IF NOT EXISTS idx_dc_id ON data_Complex(ID_data_complex)",
-    "CREATE INDEX IF NOT EXISTS idx_xcc_higher ON data_xref_Complex_Complex(ID_data_complex_higher)",
-    "CREATE INDEX IF NOT EXISTS idx_xcc_lower ON data_xref_Complex_Complex(ID_data_complex_lower)",
+    "CREATE INDEX IF NOT EXISTS idx_xcc_higher ON data_xref_Complex_Complex(ID_data_complex_HIGHER)",
+    "CREATE INDEX IF NOT EXISTS idx_xcc_lower ON data_xref_Complex_Complex(ID_data_complex_LOWER)",
     "CREATE INDEX IF NOT EXISTS idx_xsc_complex ON [data_xref_Simplex_Complex](ID_data_complex)",
     "CREATE INDEX IF NOT EXISTS idx_xsc_simplex ON [data_xref_Simplex_Complex](ID_data_simplex)",
     "CREATE INDEX IF NOT EXISTS idx_ds_id ON data_Simplex(ID_data_simplex)",
@@ -388,13 +324,8 @@ _INDEX_STMTS = [
     # Composite covering indexes for cross-complex query performance
     "CREATE INDEX IF NOT EXISTS idx_dc_setup_id ON data_Complex(ID_setup_complex, ID_data_complex)",
     "CREATE INDEX IF NOT EXISTS idx_dc_id_setup ON data_Complex(ID_data_complex, ID_setup_complex)",
-    "CREATE INDEX IF NOT EXISTS idx_xcc_lower_higher ON data_xref_Complex_Complex(ID_data_complex_lower, ID_data_complex_higher)",
-    "CREATE INDEX IF NOT EXISTS idx_xcc_higher_lower ON data_xref_Complex_Complex(ID_data_complex_higher, ID_data_complex_lower)",
-    # Document cross-reference indexes for document simplex queries
-    "CREATE INDEX IF NOT EXISTS idx_xcd_complex ON data_xref_Complex_Document(ID_data_complex)",
-    "CREATE INDEX IF NOT EXISTS idx_xcd_document ON data_xref_Complex_Document(ID_data_document)",
-    "CREATE INDEX IF NOT EXISTS idx_xssd_document ON data_xref_Simplex_Simplex_Document(ID_data_document)",
-    "CREATE INDEX IF NOT EXISTS idx_xssd_xrefid ON data_xref_Simplex_Simplex_Document(ID_setup_xref_simplex_document)",
+    "CREATE INDEX IF NOT EXISTS idx_xcc_lower_higher ON data_xref_Complex_Complex(ID_data_complex_LOWER, ID_data_complex_HIGHER)",
+    "CREATE INDEX IF NOT EXISTS idx_xcc_higher_lower ON data_xref_Complex_Complex(ID_data_complex_HIGHER, ID_data_complex_LOWER)",
 ]
 
 def _ensure_indexes(db_path):
@@ -413,12 +344,12 @@ def _ensure_indexes(db_path):
 def _disable_all_widgets():
     """Disable all data-dependent widgets (called when input is invalid)."""
     try:
-        for btn in (open_gui_menu, view_relations_button,
+        for btn in (open_analyzer_button, view_relations_button,
                     view_grammar_button, update_grammar_button,
                     add_object_btn, generate_cross_btn,
                     import_query_button, save_query_button):
             btn.configure(state='disabled')
-        for cb in (expand_complex_cb, _coalesce_src_cb, _coalesce_tgt_cb, distinct_checkbox):
+        for cb in (expand_complex_cb, distinct_checkbox):
             cb.configure(state='disabled')
         for combo in (source_complex_menu, source_simplex_menu,
                       target_complex_menu, target_simplex_menu,
@@ -435,19 +366,18 @@ def _disable_all_widgets():
 def _enable_all_widgets():
     """Enable all data-dependent widgets (called when database loads)."""
     try:
-        for btn in (open_gui_menu, view_relations_button,
+        for btn in (open_analyzer_button, view_relations_button,
                     view_grammar_button, update_grammar_button,
                     add_object_btn, generate_cross_btn,
                     import_query_button, save_query_button):
             btn.configure(state='normal')
-        for cb in (expand_complex_cb, _coalesce_src_cb, _coalesce_tgt_cb, distinct_checkbox):
+        for cb in (expand_complex_cb, distinct_checkbox):
             cb.configure(state='normal')
         for combo in (source_complex_menu, source_simplex_menu,
-                      target_complex_menu, target_simplex_menu):
+                      target_complex_menu, target_simplex_menu,
+                      where_simplex_menu, where_operator_menu):
             combo.configure(state='readonly')
-        # NOTE: WHERE filter widgets (where_simplex_menu, where_operator_menu,
-        # where_value_entry, filter_csv_button) are NOT enabled here — they are
-        # controlled exclusively by _refresh_csv_columns() when a CSV is loaded.
+        where_value_entry.configure(state='normal')
         object_type_var_sql_menu.configure(state='normal')
         required_object_sql.configure(state='normal')
         auto_SQL_value.configure(state='normal')
@@ -517,7 +447,7 @@ def view_grammar():
         mb.showwarning(title='Warning', message='No input directory selected.')
         return
     head, tail = os.path.split(inputDir.get())
-    DB_PCACE_data_analysis_util.view_grammar(os.path.join(inputDir.get(), 'setup_Complex.xlsx'),
+    DB_PCACE_data_analyzer_util.view_grammar(os.path.join(inputDir.get(), 'setup_Complex.xlsx'),
                                              'GrammarRule_Text', os.path.join(inputDir.get(),
                                                                               'PC-ACE grammar for database ' + tail + '.txt'))
 
@@ -525,16 +455,16 @@ def update_grammar():
     if inputDir.get() == '':
         mb.showwarning(title='Warning', message='No input directory selected.')
         return
-    DB_PCACE_data_analysis_util.update_grammar_text(inputDir.get())
+    DB_PCACE_data_analyzer_util.update_grammar_text(inputDir.get())
 
 def open_pcace_analyzer():
-    """Launch the PC-ACE data analysis GUI with the current input/output directories."""
+    """Launch the PC-ACE data analyzer GUI with the current input/output directories."""
     in_dir = inputDir.get() if hasattr(inputDir, 'get') else inputDir
     out_dir = outputDir.get() if hasattr(outputDir, 'get') else outputDir
     if not in_dir or not os.path.isdir(in_dir):
         mb.showwarning(title='Warning', message='No input directory selected.\n\nPlease, select a PC-ACE input directory first.')
         return
-    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'DB_PCACE_data_analysis_main.py')
+    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'DB_PCACE_data_analyzer_main.py')
     cmd = [sys.executable, script_path]
     if in_dir:
         cmd.extend(['--inputdir', in_dir])
@@ -542,314 +472,11 @@ def open_pcace_analyzer():
         cmd.extend(['--outputdir', out_dir])
     subprocess.Popen(cmd)
 
-def open_data_manipulation():
-    """Launch the data manipulation GUI with the current CSV file."""
-    csv_path = csv_file_var.get()
-    out_dir = outputDir.get() if hasattr(outputDir, 'get') else outputDir
-    if not csv_path or not os.path.isfile(csv_path):
-        mb.showwarning(title='Warning',
-                       message='No CSV file currently loaded.\n\nPlease, run a query first or select an INPUT csv file.')
-        return
-    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data_manipulation_main.py')
-    cmd = [sys.executable, script_path, '--inputfile', csv_path]
-    if out_dir:
-        cmd.extend(['--outputdir', out_dir])
-    subprocess.Popen(cmd)
-
-def open_data_validation():
-    """Launch the data validation GUI with the current CSV file."""
-    csv_path = csv_file_var.get()
-    out_dir = outputDir.get() if hasattr(outputDir, 'get') else outputDir
-    if not csv_path or not os.path.isfile(csv_path):
-        mb.showwarning(title='Warning',
-                       message='No CSV file currently loaded.\n\nPlease, run a query first or select an INPUT csv file.')
-        return
-    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'DB_PCACE_data_validation_main.py')
-    cmd = [sys.executable, script_path, '--inputfile', csv_path]
-    if out_dir:
-        cmd.extend(['--outputdir', out_dir])
-    subprocess.Popen(cmd)
-
-def _on_open_gui_selected(choice):
-    if choice == 'Open PC-ACE data analysis GUI':
-        open_pcace_analyzer()
-    elif choice == 'Open data manipulation GUI':
-        open_data_manipulation()
-    elif choice == 'Open data validation GUI':
-        open_data_validation()
-
-_open_gui_var = tk.StringVar()
-_open_gui_var.set('Open PC-ACE data analysis GUI')
-open_gui_menu = tk.OptionMenu(window, _open_gui_var,
-                              'Open PC-ACE data analysis GUI',
-                              'Open data manipulation GUI',
-                              'Open data validation GUI',
-                              command=_on_open_gui_selected)
-open_gui_menu.configure(width=25, state='disabled')
+open_analyzer_button = tk.Button(window, text='Open PC-ACE analyzer GUI', width=25, height=1, state='disabled', command=lambda: open_pcace_analyzer())
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   open_gui_menu,
+                                   open_analyzer_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Use the dropdown menu to open a related GUI.\n\n"
-                                   "   Open PC-ACE data analysis GUI: opens the PC-ACE data analysis with the current input directory.\n"
-                                   "   Open data manipulation GUI: opens the data manipulation GUI with the current CSV file.\n"
-                                   "   Open data validation GUI: opens the data validation and cleaning GUI with the current CSV file.")
-
-def get_csv_file(window,title,fileType,annotate):
-    #csv_file_var.set('')
-    if csv_file!='':
-        initialFolder=os.path.dirname(os.path.abspath(csv_file_var.get()))
-    else:
-        initialFolder = os.path.dirname(os.path.abspath(__file__))
-    filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
-
-    if len(filePath)>0:
-        nRecords, nColumns =IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(filePath, 'utf-8')
-        if nRecords==0:
-            mb.showwarning(title='Warning',
-                           message="The selected input csv file is empty.\n\nPlease, select a different file and try again.")
-            filePath=''
-        else:
-            csv_file_var.set(filePath)
-    return filePath
-
-csv_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: get_csv_file(window,'Select INPUT csv file', [("csv files", "*.csv")],True))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               csv_file_button, True)
-
-#setup a button to open Windows Explorer on the selected input directory
-openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,openInputFile_button,
-                    True, False, True,False, 90, GUI_IO_util.IO_configuration_menu, "Open INPUT csv file")
-
-csv_file=tk.Entry(window, width=GUI_IO_util.csv_file_width - 8, textvariable=csv_file_var)
-csv_file.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,csv_file, True)
-
-def _clear_csv_file():
-    """Clear the INPUT CSV file and reset the WHERE filter widgets."""
-    csv_file_var.set('')
-    where_simplex_var.set('')
-    where_operator_var.set('LIKE')
-    where_value_var.set('')
-
-clear_csv_button = tk.Button(window, text='Clear', width=5, command=lambda: _clear_csv_file())
-y_multiplier_integer = GUI_IO_util.placeWidget(window, 1150, y_multiplier_integer,
-                                               clear_csv_button, False, False, True, False, 90,
-                                               GUI_IO_util.open_setup_x_coordinate,
-                                               "Click to clear the INPUT CSV file and reset the WHERE filter.")
-
-headers = IO_csv_util.get_csvfile_headers(csv_file_var.get()) if csv_file_var.get() else []
-
-def _refresh_csv_columns(*args):
-    """Populate the WHERE-filter column dropdown from the headers of
-    the currently selected CSV file."""
-    csv_path = csv_file_var.get()
-    if csv_path and os.path.isfile(csv_path):
-        hdrs = IO_csv_util.get_csvfile_headers(csv_path)
-        if hdrs:
-            where_simplex_menu['values'] = [''] + hdrs
-            where_simplex_menu.config(state='readonly')
-            where_operator_menu.config(state='readonly')
-            where_value_entry.config(state='normal')
-            filter_csv_button.config(state='normal')
-            return
-    # No valid CSV — disable
-    where_simplex_menu['values'] = []
-    where_simplex_menu.config(state='disabled')
-    where_operator_menu.config(state='disabled')
-    where_value_entry.config(state='disabled')
-    filter_csv_button.config(state='disabled')
-
-## NOTE: csv_file_var trace is registered AFTER all widgets are created (see below)
-
-def _apply_csv_filter():
-    """Apply the WHERE filter to the current INPUT CSV file, or generate
-    a frequency chart if no filter value is entered.
-
-    - Column selected + value entered → filter rows and save filtered CSV
-    - Column selected + no value → frequency distribution (bar chart + wordcloud)
-    """
-    csv_path = csv_file_var.get()
-    if not csv_path or not os.path.isfile(csv_path):
-        mb.showwarning(title='Warning', message='No INPUT CSV file selected.\n\nPlease select a CSV file first.')
-        return
-
-    col = where_simplex_var.get()
-    val = where_value_var.get().strip()
-    op = where_operator_var.get() or 'LIKE'
-
-    if not col:
-        mb.showwarning(title='Warning', message='Please select a column first.')
-        return
-
-    try:
-        df = pd.read_csv(csv_path, encoding='utf-8')
-    except Exception as e:
-        mb.showwarning(title='Error', message=f'Could not read CSV file.\n\n{e}')
-        return
-
-    if col not in df.columns:
-        mb.showwarning(title='Warning', message=f'Column "{col}" not found in the CSV file.')
-        return
-
-    # No value → frequency distribution chart for the selected column
-    if not val:
-        _chart_column_frequency(df, col, csv_path)
-        return
-
-    # Value entered → filter rows
-    col_series = df[col].astype(str)
-    if op == 'LIKE':
-        pattern = val.replace('%', '.*')
-        mask = col_series.str.contains(pattern, case=False, na=False, regex=True)
-    elif op == 'NOT LIKE':
-        pattern = val.replace('%', '.*')
-        mask = ~col_series.str.contains(pattern, case=False, na=False, regex=True)
-    elif op == '=':
-        mask = col_series.str.lower() == val.lower()
-    elif op == '!=':
-        mask = col_series.str.lower() != val.lower()
-    else:
-        mask = col_series.str.contains(val, case=False, na=False)
-
-    filtered = df[mask]
-    if len(filtered) == 0:
-        mb.showinfo(title='Filter result', message=f'No rows match the filter:\n{col} {op} {val}\n\n({len(df)} rows checked)')
-        return
-
-    # Save filtered CSV with _filtered suffix
-    base, ext = os.path.splitext(csv_path)
-    out_path = base + '_filtered' + ext
-    filtered.to_csv(out_path, index=False, encoding='utf-8')
-    csv_file_var.set(out_path)
-
-    mb.showinfo(title='Filter result',
-                message=f'Filtered {len(filtered)} of {len(df)} rows where:\n{col} {op} {val}\n\nSaved to:\n{os.path.basename(out_path)}')
-    IO_files_util.openFile(window, out_path)
-
-
-def _chart_column_frequency(df, col, csv_path):
-    """Generate a frequency bar chart and wordcloud for a single column."""
-    import re as _re
-    def _safe_fn(s):
-        return _re.sub(r'[<>:"/\\|?*]', '_', s).replace(' ', '_')
-
-    col_data = df[col].dropna().astype(str)
-    col_data = col_data[col_data != '']
-    if col_data.empty:
-        mb.showinfo(title='Frequency', message=f'Column "{col}" has no non-empty values.')
-        return
-
-    out_dir = GUI_util.output_dir_path.get()
-    if not out_dir or not os.path.isdir(out_dir):
-        out_dir = os.path.dirname(csv_path)
-
-    base_name = _safe_fn(os.path.splitext(os.path.basename(csv_path))[0])
-    safe_col = _safe_fn(col)
-    filesToOpen = []
-
-    # Bar chart (top 30)
-    try:
-        import plotly.express as px
-        freq = col_data.value_counts().head(30)
-        freq_df = freq.reset_index()
-        freq_df.columns = [col, 'Frequency']
-        fig = px.bar(freq_df, x=col, y='Frequency',
-                     title=f'Top 30 Frequency: {col}')
-        fig.update_xaxes(type='category')
-        bar_file = os.path.join(out_dir, f'{base_name}_{safe_col}_bar.html')
-        fig.write_html(bar_file)
-        filesToOpen.append(bar_file)
-    except Exception as e:
-        print(f"  WARNING: Bar chart: {e}")
-
-    # Wordcloud
-    try:
-        from wordcloud import WordCloud
-        word_freq = col_data.value_counts().to_dict()
-        wc = WordCloud(width=1200, height=600, background_color='white',
-                       max_words=200).generate_from_frequencies(word_freq)
-        wc_file = os.path.join(out_dir, f'{base_name}_{safe_col}_wordcloud.png')
-        wc.to_file(wc_file)
-        filesToOpen.append(wc_file)
-    except Exception as e:
-        print(f"  WARNING: Wordcloud: {e}")
-
-    if filesToOpen:
-        IO_files_util.OpenOutputFiles(window, True, filesToOpen, out_dir, '')
-    else:
-        mb.showinfo(title='Frequency',
-                    message=f'Column "{col}": {col_data.nunique()} unique values, {len(col_data)} total')
-
-# ── WHERE filter row ──────────────────────────────────────────────────────
-def _add_typeahead(combo):
-    """Add keyboard typeahead to a ttk.Combobox: type a letter to jump to
-    the first matching item."""
-    def _on_key(event):
-        ch = event.char.lower()
-        if not ch or not ch.isalpha():
-            return
-        values = combo['values']
-        if not values:
-            return
-        for val in values:
-            if val.lower().startswith(ch):
-                combo.set(val)
-                combo.event_generate('<<ComboboxSelected>>')
-                return
-    combo.bind('<KeyPress>', _on_key)
-
-
-# drop_column_lb = tk.Label(window, text='Select columns')
-# y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+20, y_multiplier_integer,
-#                                                drop_column_lb, True)
-#
-where_filter_lb = tk.Label(window, text='Select CSV file column')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 20, y_multiplier_integer,
-                                               where_filter_lb, True)
-
-where_simplex_var = tk.StringVar()
-where_simplex_menu = ttk.Combobox(window, textvariable=where_simplex_var, state='disabled', width=35)
-_add_typeahead(where_simplex_menu)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 150, y_multiplier_integer,
-                                               where_simplex_menu, True, False, True, False, 90,
-                                               GUI_IO_util.labels_x_coordinate + 150,
-                                               "Select a CSV file column to filter or chart (requires an INPUT CSV file).\nWith a value: filters rows matching the condition.\nWithout a value: generates frequency bar chart and wordcloud.")
-
-# Operator (=, LIKE, !=)
-where_operator_var = tk.StringVar()
-where_operator_menu = ttk.Combobox(window, textvariable=where_operator_var, state='disabled', width=5,
-                                    values=['LIKE', '=', '!=', 'NOT LIKE'])
-where_operator_var.set('LIKE')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 430, y_multiplier_integer,
-                                               where_operator_menu, True, False, True, False, 90,
-                                               GUI_IO_util.labels_x_coordinate + 430,
-                                               "SQL comparison operator.\nLIKE supports wildcards: %woman% matches any value containing 'woman'.\n= requires exact match.\n!= excludes exact match.\nNOT LIKE excludes pattern.")
-
-# Value entry
-where_value_var = tk.StringVar()
-where_value_entry = tk.Entry(window, textvariable=where_value_var, width=20, state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 520, y_multiplier_integer,
-                                               where_value_entry, True, False, True, False, 90,
-                                               GUI_IO_util.labels_x_coordinate + 520,
-                                               "Enter the filter value or pattern (requires an INPUT CSV file).\nFor LIKE, use % as wildcard (e.g., %lynching%, %woman%).\nFor =, enter the exact value.\nLeave empty and click Filter for frequency chart.")
-
-add_filter_btn = tk.Button(window, width=2, text='+', state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 670, y_multiplier_integer,
-                                               add_filter_btn, True, False, True, False, 90,
-                                               GUI_IO_util.labels_x_coordinate + 647,
-                                               "Click to add another filter condition.")
-
-# Filter button — applies the WHERE filter or charts frequency if no value
-filter_csv_button = tk.Button(window, text='Filter', width=6, state='disabled', command=lambda: _apply_csv_filter())
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 710, y_multiplier_integer,
-                                               filter_csv_button, False, False, True, False, 90,
-                                               GUI_IO_util.labels_x_coordinate + 710,
-                                               "Click to apply the WHERE filter to the INPUT CSV file (requires an INPUT CSV file).\nThe filtered result is saved as a new CSV with '_filtered' suffix.")
-
-# Register trace AFTER all CSV/WHERE widgets exist to avoid NameError
-csv_file_var.trace('w', _refresh_csv_columns)
+                                   "Click to open the PC-ACE data analyzer GUI with the current input directory.")
 
 view_relations_button = tk.Button(window, text='View table relations', width=17, height=1, state='disabled', command=lambda: view_relations())
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -886,7 +513,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 
 # Get the setup names for the dropdowns (may be empty if no DB loaded yet)
 try:
-    _sql_setup_complex_menu, _sql_setup_simplex_menu = DB_PCACE_data_analysis_util.get_setup_complex_simplex_names()
+    _sql_setup_complex_menu, _sql_setup_simplex_menu = DB_PCACE_data_analyzer_util.get_setup_complex_simplex_names()
 except:
     _sql_setup_complex_menu, _sql_setup_simplex_menu = [], []
 
@@ -920,7 +547,7 @@ def _update_required_object_dropdown_sql(*args):
     obj_type = object_type_var_sql.get()
     _ensure_libraries_loaded()
     try:
-        c_menu, s_menu = DB_PCACE_data_analysis_util.get_setup_complex_simplex_names()
+        c_menu, s_menu = DB_PCACE_data_analyzer_util.get_setup_complex_simplex_names()
     except:
         c_menu, s_menu = [], []
     if obj_type == 'Complex':
@@ -957,7 +584,7 @@ def _toggle_required_sql():
         mb.showwarning(title='Warning',
                        message='Please select an object type (Complex or Simplex) and an object name from the dropdown menus.')
         return
-    current_val, xref_info = DB_PCACE_data_analysis_util.get_required_value(obj_type, obj_name)
+    current_val, xref_info = DB_PCACE_data_analyzer_util.get_required_value(obj_type, obj_name)
     if current_val is None:
         mb.showwarning(title='Warning',
                        message=f'Could not find "{obj_name}" in the {obj_type} xref table.\n\nMake sure the object exists in the setup_xref tables.')
@@ -974,7 +601,7 @@ def _toggle_required_sql():
         f'This will update the xlsx, pkl, and grammar files.\n\n'
         f'Are you sure you want to do that?')
     if proceed:
-        success = DB_PCACE_data_analysis_util.toggle_required_value(obj_type, obj_name, new_val, GUI_util.input_main_dir_path.get())
+        success = DB_PCACE_data_analyzer_util.toggle_required_value(obj_type, obj_name, new_val, GUI_util.input_main_dir_path.get())
         if success:
             mb.showwarning(title='REQUIRED updated',
                            message=f'The REQUIRED value for "{obj_name}" has been changed to {new_str}.\n\n'
@@ -1016,6 +643,23 @@ def get_table_list(*args):
 select_SQLite_DB_var.trace('w',get_table_list)
 
 
+def _add_typeahead(combo):
+    """Add keyboard typeahead to a ttk.Combobox: type a letter to jump to
+    the first matching item."""
+    def _on_key(event):
+        ch = event.char.lower()
+        if not ch or not ch.isalpha():
+            return
+        values = combo['values']
+        if not values:
+            return
+        for val in values:
+            if val.lower().startswith(ch):
+                combo.set(val)
+                combo.event_generate('<<ComboboxSelected>>')
+                return
+    combo.bind('<KeyPress>', _on_key)
+
 # ── Cross-complex query generator ─────────────────────────────────────────
 cross_complex_lb = tk.Label(window, text='Cross-complex query')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer, cross_complex_lb, True)
@@ -1027,23 +671,16 @@ _add_typeahead(source_complex_menu)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 130, y_multiplier_integer,
                                                source_complex_menu, True, False, True, False, 90,
                                                GUI_IO_util.labels_x_coordinate + 130,
-                                               "Object 1 (COMPLEX): select a source complex type (e.g., Individual, Event, Participant-S).\n\nObject 1 can be used alone (source-only query) or paired with Object 3 (cross-complex query).\nWhen used alone, the query extracts the simplex attributes of this complex type.\nWhen paired with Object 3, the query joins Object 1 to Object 3 across the PC-ACE hierarchy.")
+                                               "Object 1 (COMPLEX): select a complex type (e.g. Individual, Event).")
 
 # OBJECT 2 ---------------------------------------------------------------------------------------
 source_simplex_var = tk.StringVar()
-source_simplex_menu = ttk.Combobox(window, textvariable=source_simplex_var, state='disabled', width=17)
+source_simplex_menu = ttk.Combobox(window, textvariable=source_simplex_var, state='disabled', width=20)
 _add_typeahead(source_simplex_menu)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 310, y_multiplier_integer,
                                                source_simplex_menu, True, False, True, False, 90,
                                                GUI_IO_util.labels_x_coordinate + 310,
-                                               "Object 2 (SIMPLEX): select the simplex attribute of Object 1 (e.g., Name; * for all).\n\nIf Object 1 has no direct simplexes (e.g., Participant-S), this dropdown shows child complex types prefixed with '>'.\nClick a child (e.g., > Individual) to drill into its simplexes and pick one (e.g., Name).\nUse '<< back' to return to the children list.\n\nObject 2 works the same whether or not Object 3 is selected.")
-# MERGE (COALESCE) CHECKBOX — source side (next to Object 2) ─────────────
-_coalesce_src_var = tk.IntVar(value=0)
-_coalesce_src_cb = tk.Checkbutton(window, text='', variable=_coalesce_src_var, onvalue=1, offvalue=0, state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 468, y_multiplier_integer,
-                                               _coalesce_src_cb, True, False, True, False, 90,
-                                               GUI_IO_util.labels_x_coordinate + 468,
-                                               "Merge (COALESCE) source children.\n\nWhen checked: Enter-selected sibling children of Object 2 are MERGED into ONE column\n(e.g. Individual.Name + Collective.Name → one Actor Name column).\n\nWhen unchecked: Enter-selected siblings produce SEPARATE columns\n(e.g. Individual.Name column + Collective.Name column side by side).")
+                                               "Object 2 (SIMPLEX): select the simplex to be displayed for Object 1 (e.g., Name of individual; * for all simplex)")
 
 # OBJECT 3 ---------------------------------------------------------------------------------------
 target_complex_var = tk.StringVar()
@@ -1052,32 +689,26 @@ _add_typeahead(target_complex_menu)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 500, y_multiplier_integer,
                                                target_complex_menu, True, False, True, False, 90,
                                                GUI_IO_util.labels_x_coordinate+500,
-                                               "Object 3 (COMPLEX, optional): select a target complex type to join with Object 1 (e.g., Simple process, City).\n\nLeave Object 3 empty for a source-only query that extracts only Object 1's simplex attributes.\nWhen filled, the query navigates the PC-ACE hierarchy from Object 1 to Object 3 and returns both.\n\nYou can select ANY complex type as the target — Object 1 and Object 3 do not need to share a common parent.\nThe query generator uses a breadth-first search to find a path through the hierarchy, navigating up and down\nthrough any number of intermediate nodes (e.g., up to the Semantic Triplet hub, then down to the target branch).\n\nClick + to save the current selection and add more pairs.")
+                                               "Object 3 (COMPLEX): select a complex type to be joined with Object 1 (e.g. Simple process, City). Click + to add more.")
 # OBJECT 4 ---------------------------------------------------------------------------------------
 target_simplex_var = tk.StringVar()
-target_simplex_menu = ttk.Combobox(window, textvariable=target_simplex_var, state='disabled', width=17)
+target_simplex_menu = ttk.Combobox(window, textvariable=target_simplex_var, state='disabled', width=20)
 _add_typeahead(target_simplex_menu)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 680, y_multiplier_integer,
                                                target_simplex_menu, True, False, True, False, 90,
                                                GUI_IO_util.labels_x_coordinate+500,
-                                               "Object 4 (SIMPLEX): select the simplex attribute of Object 3 (e.g., Verbal phrase; * for all).\n\nIf Object 3 has no direct simplexes, this dropdown shows child complex types prefixed with '>'.\nClick a child to drill into its simplexes and pick one.\nUse '<< back' to return to the children list.\n\nObject 4 is only used when Object 3 is selected. Leave both empty for a source-only query.")
-# MERGE (COALESCE) CHECKBOX — target side (next to Object 4) ─────────────
-_coalesce_tgt_var = tk.IntVar(value=0)
-_coalesce_tgt_cb = tk.Checkbutton(window, text='', variable=_coalesce_tgt_var, onvalue=1, offvalue=0, state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 838, y_multiplier_integer,
-                                               _coalesce_tgt_cb, True, False, True, False, 90,
-                                               GUI_IO_util.labels_x_coordinate + 838,
-                                               "Merge (COALESCE) target children.\n\nWhen checked: Enter-selected sibling children of Object 4 are MERGED into ONE column\n(e.g. Individual.Name + Collective.Name → one Actor Name column).\n\nWhen unchecked: Enter-selected siblings produce SEPARATE columns\n(e.g. Individual.Name column + Collective.Name column side by side).")
+                                               "Object 4 (SIMPLEX): select the simplex to be displayed for Object 3 (e.g., Verbal phrase; * for all simplex)")
+
 # + ADD OBJECTS ---------------------------------------------------------------------------------------
 add_object_btn = tk.Button(window, width=2, text='+', state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 865, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 840, y_multiplier_integer,
                                                add_object_btn, True, False, True, False, 90,
                                                GUI_IO_util.labels_x_coordinate+400,
-                                               "Click + to save the current selection and add more pairs.\n\nYou can save a cross-complex pair (Object 1 + Object 3) or a source-only pair (Object 1 only, no Object 3).\nEach + resets the dropdowns so you can build the next pair.\n\nExample: Participant-S → Process (+), then Participant-O alone (Generate).")
+                                               "Click on + to add another set of objects.\nEach + saves the current 4-object selection and resets the dropdowns for the next set (Object 5, 6, 7, 8...).")
 # EXPAND OBJECTS ---------------------------------------------------------------------------------------
 expand_complex_var = tk.IntVar(value=1)
 expand_complex_cb = tk.Checkbutton(window, text='', variable=expand_complex_var, onvalue=1, offvalue=0, state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 900, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 880, y_multiplier_integer,
                                                expand_complex_cb, True, False, True, False, 90,
                                                GUI_IO_util.open_reminders_x_coordinate,
                                                "Expand any complex object with no simplex attributes to its lowest complex with available simplex children.")
@@ -1086,13 +717,43 @@ generate_cross_btn = tk.Button(window, width=15, text='Generate SQL query', stat
 _gen_btn_y_row = y_multiplier_integer  # save for dynamic hover-over re-binding
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 960, y_multiplier_integer,
                                                generate_cross_btn, False, False, True, False, 90,
-                                               GUI_IO_util.open_TIPS_x_coordinate,
+                                               GUI_IO_util.open_setup_x_coordinate,
                                                "Click to generate the SQL query for the selected objects.\nClick RUN after the SQL query is displayed in the SQL query area.")
 
+# ── WHERE filter row ──────────────────────────────────────────────────────
+where_filter_lb = tk.Label(window, text='WHERE filter')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                               where_filter_lb, True)
+
+# Simplex to filter on (populated dynamically when source complex is selected)
+where_simplex_var = tk.StringVar()
+where_simplex_menu = ttk.Combobox(window, textvariable=where_simplex_var, state='disabled', width=20)
+_add_typeahead(where_simplex_menu)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 130, y_multiplier_integer,
+                                               where_simplex_menu, True, False, True, False, 90,
+                                               GUI_IO_util.labels_x_coordinate + 130,
+                                               "Select a simplex attribute to filter on (e.g., Type of actor, Verbal phrase).\nLeave empty for no filter.")
+
+# Operator (=, LIKE, !=)
+where_operator_var = tk.StringVar()
+where_operator_menu = ttk.Combobox(window, textvariable=where_operator_var, state='disabled', width=5,
+                                    values=['LIKE', '=', '!=', 'NOT LIKE'])
+where_operator_var.set('LIKE')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 310, y_multiplier_integer,
+                                               where_operator_menu, True, False, True, False, 90,
+                                               GUI_IO_util.labels_x_coordinate + 310,
+                                               "SQL comparison operator.\nLIKE supports wildcards: %woman% matches any value containing 'woman'.\n= requires exact match.\n!= excludes exact match.\nNOT LIKE excludes pattern.")
+
+# Value entry
+where_value_var = tk.StringVar()
+where_value_entry = tk.Entry(window, textvariable=where_value_var, width=25, state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 400, y_multiplier_integer,
+                                               where_value_entry, False, False, True, False, 90,
+                                               GUI_IO_util.labels_x_coordinate + 400,
+                                               "Enter the filter value or pattern.\nFor LIKE, use % as wildcard (e.g., %lynching%, %woman%).\nFor =, enter the exact value.")
 
 # ── Extra objects (accumulated via the + button) ─────────────────────────
-_saved_pairs = []  # list of 6-tuples: (src, src_child, src_sx, tgt, tgt_child, tgt_sx)
-_saved_extra_children = []  # parallel list of (src_extras_set, tgt_extras_set)
+_saved_pairs = []  # list of (src_name, src_simplex, tgt_name, tgt_simplex)
 _complex_names_cache = []
 
 # Object selection summary — no longer on a separate row.
@@ -1106,51 +767,22 @@ def _update_extra_targets_label(*args):
     hover-over text of the 'Generate SQL query' button."""
     parts = []
     obj_num = 1
-    # Saved pairs (6-tuples: src, src_child, src_sx, tgt, tgt_child, tgt_sx)
-    for pi, (s, s_child, ssx, t, t_child, tsx) in enumerate(_saved_pairs):
+    # Saved pairs
+    for s, ssx, t, tsx in _saved_pairs:
         parts.append('{}:{}'.format(obj_num, s))
         obj_num += 1
-        sx_label = ssx or '*'
-        if s_child:
-            path_str = '.'.join(s_child) if isinstance(s_child, list) else s_child
-            sx_label = '{}.{}'.format(path_str, sx_label)
-        if pi < len(_saved_extra_children):
-            s_extras, _ = _saved_extra_children[pi]
-            if s_extras:
-                sx_label += '+COALESCE({})'.format(','.join(sorted(s_extras)))
-        parts.append('{}:{}'.format(obj_num, sx_label))
+        parts.append('{}:{}'.format(obj_num, ssx or '*'))
         obj_num += 1
-        if t is not None:
-            parts.append('{}:{}'.format(obj_num, t))
-            obj_num += 1
-            tx_label = tsx or '*'
-            if t_child:
-                path_str = '.'.join(t_child) if isinstance(t_child, list) else t_child
-                tx_label = '{}.{}'.format(path_str, tx_label)
-            if pi < len(_saved_extra_children):
-                _, t_extras = _saved_extra_children[pi]
-                if t_extras:
-                    tx_label += '+COALESCE({})'.format(','.join(sorted(t_extras)))
-            parts.append('{}:{}'.format(obj_num, tx_label))
-            obj_num += 1
+        parts.append('{}:{}'.format(obj_num, t))
+        obj_num += 1
+        parts.append('{}:{}'.format(obj_num, tsx or '*'))
+        obj_num += 1
     # Current (unsaved) selection
     src = source_complex_var.get()
     if src:
         parts.append('{}:{}'.format(obj_num, src))
         obj_num += 1
         src_sx = source_simplex_var.get() or '*'
-        # Show drilled path context if applicable
-        try:
-            src_drilled = _drilled_child.get(id(source_simplex_menu))
-        except NameError:
-            src_drilled = None
-        if src_drilled and not src_sx.startswith('> ') and not src_sx.startswith('<< '):
-            src_sx = '{}.{}'.format('.'.join(src_drilled), src_sx)
-        # Show extras indicator for current extra children
-        cur_src_extras = _get_extra_children(source_simplex_menu)
-        if cur_src_extras:
-            _merge_tag = 'COALESCE' if _coalesce_src_var.get() else 'SEPARATE'
-            src_sx += '+{}({})'.format(_merge_tag, ','.join(sorted(cur_src_extras)))
         parts.append('{}:{}'.format(obj_num, src_sx))
         obj_num += 1
     tgt = target_complex_var.get()
@@ -1158,93 +790,43 @@ def _update_extra_targets_label(*args):
         parts.append('{}:{}'.format(obj_num, tgt))
         obj_num += 1
         tgt_sx = target_simplex_var.get() or '*'
-        try:
-            tgt_drilled = _drilled_child.get(id(target_simplex_menu))
-        except NameError:
-            tgt_drilled = None
-        if tgt_drilled and not tgt_sx.startswith('> ') and not tgt_sx.startswith('<< '):
-            tgt_sx = '{}.{}'.format('.'.join(tgt_drilled), tgt_sx)
-        cur_tgt_extras = _get_extra_children(target_simplex_menu)
-        if cur_tgt_extras:
-            _merge_tag = 'COALESCE' if _coalesce_tgt_var.get() else 'SEPARATE'
-            tgt_sx += '+{}({})'.format(_merge_tag, ','.join(sorted(cur_tgt_extras)))
         parts.append('{}:{}'.format(obj_num, tgt_sx))
     text = ', '.join(parts) if parts else ''
     extra_targets_var.set(text)
     # Update the hover-over text of the Generate button to show the current selection
-    if text:
-        wrapped_parts = []
-        for p in text.split(', '):
-            wrapped_parts.append(p)
-        selection_line = 'Object selection:\n  ' + '\n  '.join(wrapped_parts)
-    else:
-        selection_line = 'No objects selected yet.'
+    selection_line = 'Object selection: ' + text if text else 'No objects selected yet.'
     _gen_btn_hover_text = ("Click to generate the SQL query for the selected objects.\n"
                            "Click RUN after the SQL query is displayed in the SQL query area.\n\n"
                            + selection_line)
-    # Re-bind hover-over with updated text; position tooltip at left edge
+    # Re-bind hover-over with updated text
     generate_cross_btn.bind('<Enter>',
         lambda e, t=_gen_btn_hover_text: (
             e.widget.config(background='red', foreground='black'),
             GUI_IO_util.display_widget_info(window, e,
                 GUI_IO_util.labels_x_coordinate + 960,
                 GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step * _gen_btn_y_row,
-                GUI_IO_util.labels_x_coordinate, t)))
+                GUI_IO_util.open_setup_x_coordinate, t)))
 
 
 def _add_object():
-    """Save current Object 1 + Object 2 pair and reset all 4 dropdowns.
-    Pairs are stored as 6-tuples:
-        (src, src_child, src_sx, tgt, tgt_child, tgt_sx)
-    where src_child/tgt_child is the drilled child complex (or None).
-    Target fields are None for source-only pairs (Object 1 without Object 3).
-
-    Behavior depends on the 'Merge' checkbox:
-      - Checked (COALESCE mode): extra Enter-selected children are stored in
-        _saved_extra_children for merging into one column.
-      - Unchecked (separate columns): extra children produce additional pairs
-        (one per selected child), each as its own column."""
+    """Save current Object 1 + Object 2 pair and reset all 4 dropdowns."""
     src = source_complex_var.get()
     tgt = target_complex_var.get()
-    if not src:
-        mb.showwarning(title='Warning', message='Please select at least Object 1 before clicking +.')
+    if not src or not tgt:
+        mb.showwarning(title='Warning', message='Please select both Object 1 and Object 2 before clicking +.')
         return
-    src, src_child, src_sx = _resolve_simplex_selection(src, source_simplex_var.get(), source_simplex_menu)
-    if tgt:
-        tgt, tgt_child, tgt_sx = _resolve_simplex_selection(tgt, target_simplex_var.get(), target_simplex_menu)
-    else:
-        tgt, tgt_child, tgt_sx = None, None, None
-
-    src_extras = set(_get_extra_children(source_simplex_menu))
-    tgt_extras = set(_get_extra_children(target_simplex_menu)) if tgt else set()
-    src_merge = _coalesce_src_var.get()   # per-side merge checkbox
-    tgt_merge = _coalesce_tgt_var.get() if tgt else 0
-
-    # Determine what goes into COALESCE vs separate pairs
-    src_coalesce = src_extras if src_merge else set()
-    tgt_coalesce = tgt_extras if tgt_merge else set()
-    src_separate = set() if src_merge else src_extras
-    tgt_separate = set() if tgt_merge else tgt_extras
-
-    # Primary pair (with any COALESCE extras)
-    _saved_pairs.append((src, src_child, src_sx, tgt, tgt_child, tgt_sx))
-    _saved_extra_children.append((src_coalesce, tgt_coalesce))
-    # Expand separate source extras into individual pairs
-    for extra_src in sorted(src_separate):
-        _saved_pairs.append((src, extra_src, src_sx, tgt, tgt_child, tgt_sx))
-        _saved_extra_children.append((set(), set()))
-    # Expand separate target extras into individual pairs
-    for extra_tgt in sorted(tgt_separate):
-        _saved_pairs.append((src, src_child, src_sx, tgt, extra_tgt, tgt_sx))
-        _saved_extra_children.append((set(), set()))
-
-    # Reset all 4 dropdowns and merge checkboxes for next pair
+    src_sx = source_simplex_var.get() or None
+    if src_sx == '*':
+        src_sx = None
+    tgt_sx = target_simplex_var.get() or None
+    if tgt_sx == '*':
+        tgt_sx = None
+    _saved_pairs.append((src, src_sx, tgt, tgt_sx))
+    # Reset all 4 dropdowns for next pair
     source_complex_var.set('')
     source_simplex_var.set('')
     target_complex_var.set('')
     target_simplex_var.set('')
-    _coalesce_src_var.set(0)
-    _coalesce_tgt_var.set(0)
     # Label updates automatically via trace
 
 
@@ -1253,8 +835,6 @@ source_complex_var.trace('w', _update_extra_targets_label)
 source_simplex_var.trace('w', _update_extra_targets_label)
 target_complex_var.trace('w', _update_extra_targets_label)
 target_simplex_var.trace('w', _update_extra_targets_label)
-_coalesce_src_var.trace('w', _update_extra_targets_label)
-_coalesce_tgt_var.trace('w', _update_extra_targets_label)
 
 
 def _ensure_libraries_loaded():
@@ -1262,164 +842,66 @@ def _ensure_libraries_loaded():
     input_dir = GUI_util.input_main_dir_path.get() if hasattr(GUI_util.input_main_dir_path, 'get') else ''
     if input_dir and os.path.isdir(input_dir):
         try:
-            if DB_PCACE_data_analysis_util.setup_Complex_lib is None:
-                DB_PCACE_data_analysis_util.build_libraries(input_dir, input_dir)
+            if DB_PCACE_data_analyzer_util.setup_Complex_lib is None:
+                DB_PCACE_data_analyzer_util.build_libraries(input_dir, input_dir)
         except (AttributeError, NameError):
             try:
-                DB_PCACE_data_analysis_util.build_libraries(input_dir, input_dir)
+                DB_PCACE_data_analyzer_util.build_libraries(input_dir, input_dir)
             except Exception as e:
                 print(f"  WARNING loading libraries: {e}")
 
 
-def _expand_if_no_simplex(complex_name, child_name=None):
+def _expand_if_no_simplex(complex_name):
     """If a complex has no simplex attributes, return its children that do.
-    Returns a list of (parent_complex, child_complex, simplex) 3-tuples."""
-    effective = (child_name[-1] if isinstance(child_name, list) and child_name else child_name) or complex_name
-    names = DB_PCACE_data_analysis_util.get_cross_complex_simplex_names(effective)
+    Returns a list of (child_name, None) tuples, or [(complex_name, None)] if it has simplexes."""
+    names = DB_PCACE_data_analyzer_util.get_cross_complex_simplex_names(complex_name)
     if names:
-        return [(complex_name, child_name, None)]
-    children = DB_PCACE_data_analysis_util.get_children_with_simplexes(effective)
+        return [(complex_name, None)]
+    children = DB_PCACE_data_analyzer_util.get_children_with_simplexes(complex_name)
     if children:
-        return [(complex_name, c, None) for c in children]
-    return [(complex_name, child_name, None)]
+        return [(c, None) for c in children]
+    return [(complex_name, None)]
 
 
 def _expand_pairs(pairs):
-    """Expand pairs where source or target has no simplexes (replace with children).
-    Input and output are 6-tuples: (src, src_child, src_sx, tgt, tgt_child, tgt_sx).
-    Target fields may be None for source-only pairs."""
+    """Expand pairs where source or target has no simplexes (replace with children)."""
     expanded = []
-    for src, src_child, src_sx, tgt, tgt_child, tgt_sx in pairs:
+    for src, src_sx, tgt, tgt_sx in pairs:
         # Expand source if needed
-        src_list = [(src, src_child, src_sx)]
+        src_list = [(src, src_sx)]
         if not src_sx:
-            effective_src = (src_child[-1] if isinstance(src_child, list) and src_child else src_child) or src
-            src_names = DB_PCACE_data_analysis_util.get_cross_complex_simplex_names(effective_src)
+            src_names = DB_PCACE_data_analyzer_util.get_cross_complex_simplex_names(src)
             if not src_names:
-                src_list = _expand_if_no_simplex(src, src_child)
-        # Expand target if needed (skip for source-only pairs)
-        if tgt is None:
-            for s, sc, ssx in src_list:
-                expanded.append((s, sc, ssx, None, None, None))
-        else:
-            tgt_list = [(tgt, tgt_child, tgt_sx)]
-            if not tgt_sx:
-                effective_tgt = (tgt_child[-1] if isinstance(tgt_child, list) and tgt_child else tgt_child) or tgt
-                tgt_names = DB_PCACE_data_analysis_util.get_cross_complex_simplex_names(effective_tgt)
-                if not tgt_names:
-                    tgt_list = _expand_if_no_simplex(tgt, tgt_child)
-            for s, sc, ssx in src_list:
-                for t, tc, tsx in tgt_list:
-                    expanded.append((s, sc, ssx, t, tc, tsx))
+                src_list = _expand_if_no_simplex(src)
+        # Expand target if needed
+        tgt_list = [(tgt, tgt_sx)]
+        if not tgt_sx:
+            tgt_names = DB_PCACE_data_analyzer_util.get_cross_complex_simplex_names(tgt)
+            if not tgt_names:
+                tgt_list = _expand_if_no_simplex(tgt)
+        # Cross-product of expanded sources and targets
+        for s, ssx in src_list:
+            for t, tsx in tgt_list:
+                expanded.append((s, ssx, t, tsx))
     return expanded
 
-
-def _resolve_simplex_selection(complex_name, simplex_val, simplex_combo):
-    """Resolve a simplex dropdown selection.
-
-    Returns a 3-tuple: (parent_complex, drill_path_or_None, simplex_or_None)
-
-    The parent complex is ALWAYS the original complex shown in Object 1/3.
-    The drill_path is a list of child complex names representing the drill
-    path (e.g., ['Individual', 'Personal Characteristics'] for a two-level
-    drill).  None when not drilled.
-
-    Three cases:
-    1. Drilled into a child (e.g., Participant-S → Individual → Personal Characteristics):
-       - '*'   → (Participant-S, ['Individual', 'Personal Characteristics'], None)
-       - 'Race'→ (Participant-S, ['Individual', 'Personal Characteristics'], Race)
-    2. Showing children (not drilled):
-       - '*'       → (Participant-S, None, None) — expand all children
-       - '> Child' → (Participant-S, ['Child'], None) — all simplexes of child
-    3. Showing simplexes directly (complex has its own simplexes):
-       - '*'   → (Individual, None, None) — all simplexes
-       - 'Name'→ (Individual, None, Name) — specific simplex
-    """
-    # Case 1: drilled into a child complex (path is a list)
-    drilled = _drilled_child.get(id(simplex_combo))
-    if drilled:
-        if not simplex_val or simplex_val == '*':
-            return complex_name, list(drilled), None
-        if simplex_val.startswith('<< '):
-            return complex_name, None, None
-        return complex_name, list(drilled), simplex_val
-
-    # Case 2: showing children (not drilled)
-    if not simplex_val or simplex_val == '*':
-        return complex_name, None, None
-    if simplex_val.startswith('> ') or simplex_val.startswith('✓ '):
-        child_name = simplex_val[2:]
-        return complex_name, [child_name], None
-
-    # Case 3: normal simplex (including Doc > prefixed document simplex names)
-    return complex_name, None, simplex_val
-
-
-def _get_extra_children(simplex_combo):
-    """Return the set of Enter-selected children for multi-child COALESCE,
-    EXCLUDING the primary drilled child (which is already handled).
-    Returns an empty set if no extra children were selected."""
-    try:
-        sel = _selected_children.get(id(simplex_combo), set())
-        drilled = _drilled_child.get(id(simplex_combo))
-    except NameError:
-        return set()
-    if drilled:
-        # Exclude the first child in the drill path (the primary drilled child
-        # at the same level as the selected siblings)
-        primary = drilled[0] if isinstance(drilled, list) else drilled
-        return sel - {primary}
-    return set()
-
-def _child_str(child):
-    """Convert a drill-path list to the single child name the util functions expect."""
-    if isinstance(child, list):
-        return child[-1] if child else None
-    return child
 
 def _generate_cross_complex_query():
     # Collect all pairs: saved + current (if complete)
     all_pairs = list(_saved_pairs)
-    all_extras = list(_saved_extra_children)  # parallel list of (src_extras, tgt_extras)
     cur_src = source_complex_var.get()
     cur_tgt = target_complex_var.get()
     if cur_src and cur_tgt:
-        src, src_child, src_sx = _resolve_simplex_selection(cur_src, source_simplex_var.get(), source_simplex_menu)
-        tgt, tgt_child, tgt_sx = _resolve_simplex_selection(cur_tgt, target_simplex_var.get(), target_simplex_menu)
-        cur_src_extras = set(_get_extra_children(source_simplex_menu))
-        cur_tgt_extras = set(_get_extra_children(target_simplex_menu))
-        src_merge = _coalesce_src_var.get()
-        tgt_merge = _coalesce_tgt_var.get()
-
-        src_coalesce = cur_src_extras if src_merge else set()
-        tgt_coalesce = cur_tgt_extras if tgt_merge else set()
-        src_separate = set() if src_merge else cur_src_extras
-        tgt_separate = set() if tgt_merge else cur_tgt_extras
-
-        # Primary pair (with any COALESCE extras)
-        all_pairs.append((src, src_child, src_sx, tgt, tgt_child, tgt_sx))
-        all_extras.append((src_coalesce, tgt_coalesce))
-        # Expand separate extras into individual pairs
-        for extra_src in sorted(src_separate):
-            all_pairs.append((src, extra_src, src_sx, tgt, tgt_child, tgt_sx))
-            all_extras.append((set(), set()))
-        for extra_tgt in sorted(tgt_separate):
-            all_pairs.append((src, src_child, src_sx, tgt, extra_tgt, tgt_sx))
-            all_extras.append((set(), set()))
-    elif cur_src and not cur_tgt:
-        src, src_child, src_sx = _resolve_simplex_selection(cur_src, source_simplex_var.get(), source_simplex_menu)
-        cur_src_extras = set(_get_extra_children(source_simplex_menu))
-        src_merge = _coalesce_src_var.get()
-        src_coalesce = cur_src_extras if src_merge else set()
-        src_separate = set() if src_merge else cur_src_extras
-        all_pairs.append((src, src_child, src_sx, None, None, None))
-        all_extras.append((src_coalesce, set()))
-        for extra_src in sorted(src_separate):
-            all_pairs.append((src, extra_src, src_sx, None, None, None))
-            all_extras.append((set(), set()))
+        src_sx = source_simplex_var.get() or None
+        if src_sx == '*':
+            src_sx = None
+        tgt_sx = target_simplex_var.get() or None
+        if tgt_sx == '*':
+            tgt_sx = None
+        all_pairs.append((cur_src, src_sx, cur_tgt, tgt_sx))
 
     if not all_pairs:
-        mb.showwarning(title='Warning', message='Please select at least Object 1.')
+        mb.showwarning(title='Warning', message='Please select Object 1 and Object 2.')
         return
 
     # Collect WHERE filter (optional)
@@ -1433,168 +915,72 @@ def _generate_cross_complex_query():
     if expand_complex_var.get():
         all_pairs = _expand_pairs(all_pairs)
 
-    # Pad all_extras to match all_pairs length (expansion may have changed count)
-    while len(all_extras) < len(all_pairs):
-        all_extras.append((set(), set()))
-
-    # Separate source-only pairs (no target) from cross-complex pairs
-    source_only_pairs = [(i, p) for i, p in enumerate(all_pairs) if p[3] is None]
-    cross_pairs = [(i, p) for i, p in enumerate(all_pairs) if p[3] is not None]
-
-    if source_only_pairs and not cross_pairs:
-        # All pairs are source-only — generate source-only queries
-        all_queries = []
-        all_warnings = []
-        for idx, (src, src_child, src_sx, _, _, _) in source_only_pairs:
-            se = all_extras[idx][0] if idx < len(all_extras) else set()
-            # Detect document simplex selections (prefixed with "Doc > ")
-            src_doc_simplex = None
-            if src_sx and src_sx.startswith('Doc > '):
-                src_doc_simplex = src_sx[6:]
-                src_sx = None
-            query, info = DB_PCACE_data_analysis_util.generate_source_only_query(
-                src,
-                source_filter_simplex=src_sx,
-                source_filter_value=_where_value,
-                source_filter_operator=_where_operator,
-                where_simplex=_where_simplex,
-                source_child=_child_str(src_child),
-                source_extra_children=se or None,
-                source_document_simplex=src_doc_simplex)
-            if query is None:
-                mb.showwarning(title='Warning', message=str(info))
-                return
-            all_queries.append(query)
-            if isinstance(info, dict) and info.get('warnings'):
-                all_warnings.extend(info['warnings'])
-        SQL_query_entry.delete(0.1, tk.END)
-        SQL_query_entry.insert("end", '\n\n-- @@NEXT_QUERY@@\n\n'.join(all_queries))
-        src_labels = []
-        for _, (src, src_child, _, _, _, _) in source_only_pairs:
-            src_labels.append('{}.{}'.format(src, src_child) if src_child else src)
-        query_name_var.set('Source-only: {}'.format(', '.join(src_labels)))
-        if all_warnings:
-            mb.showinfo(title='Simplex attributes', message='\n\n'.join(all_warnings))
-
-    elif not source_only_pairs and len(cross_pairs) == 1:
-        # Single cross-complex pair: use the original (faster) single-target generator
-        idx, (src, src_child, src_simplex, tgt_name, tgt_child, tgt_simplex) = cross_pairs[0]
-        src_extras, tgt_extras = all_extras[idx]
-        # Detect document simplex selections (prefixed with "Doc > ")
-        src_doc_simplex = None
-        tgt_doc_simplex = None
-        if src_simplex and src_simplex.startswith('Doc > '):
-            src_doc_simplex = src_simplex[6:]
-            src_simplex = None
-        if tgt_simplex and tgt_simplex.startswith('Doc > '):
-            tgt_doc_simplex = tgt_simplex[6:]
-            tgt_simplex = None
-        query, result = DB_PCACE_data_analysis_util.generate_cross_complex_query(
+    if len(all_pairs) == 1:
+        # Single pair: use the original (faster) single-target generator
+        src, src_simplex, tgt_name, tgt_simplex = all_pairs[0]
+        query, result = DB_PCACE_data_analyzer_util.generate_cross_complex_query(
             src, tgt_name,
             source_filter_simplex=src_simplex,
             source_filter_value=_where_value,
             source_filter_operator=_where_operator,
             where_simplex=_where_simplex,
-            target_simplex=tgt_simplex,
-            source_child=_child_str(src_child),
-            target_child=_child_str(tgt_child),
-            source_extra_children=src_extras or None,
-            target_extra_children=tgt_extras or None,
-            source_document_simplex=src_doc_simplex,
-            target_document_simplex=tgt_doc_simplex)
+            target_simplex=tgt_simplex)
         if query is None:
             mb.showwarning(title='Warning', message=str(result))
             return
         SQL_query_entry.delete(0.1, tk.END)
         SQL_query_entry.insert("end", query)
-        src_path_str = '.'.join([src] + src_child) if src_child else src
-        tgt_path_str = '.'.join([tgt_name] + tgt_child) if tgt_child else tgt_name
-        query_name_var.set('Cross-complex: {} → {}'.format(src_path_str, tgt_path_str))
+        query_name_var.set('Cross-complex: {} → {}'.format(src, tgt_name))
+        # Warn about missing simplexes
         warnings = []
-        effective_src = src_child[-1] if src_child else src
-        if not DB_PCACE_data_analysis_util.get_cross_complex_simplex_names(effective_src):
-            children = DB_PCACE_data_analysis_util.get_children_with_simplexes(effective_src)
-            msg = "'{}' has no simplex attributes.".format(effective_src)
+        if not DB_PCACE_data_analyzer_util.get_cross_complex_simplex_names(src):
+            children = DB_PCACE_data_analyzer_util.get_children_with_simplexes(src)
+            msg = "'{}' has no simplex attributes.".format(src)
             if children:
                 msg += "\nTry: {}".format(', '.join(children))
             warnings.append(msg)
-        effective_tgt = tgt_child[-1] if tgt_child else tgt_name
-        if not DB_PCACE_data_analysis_util.get_cross_complex_simplex_names(effective_tgt):
-            children = DB_PCACE_data_analysis_util.get_children_with_simplexes(effective_tgt)
-            msg = "'{}' has no simplex attributes.".format(effective_tgt)
+        if not DB_PCACE_data_analyzer_util.get_cross_complex_simplex_names(tgt_name):
+            children = DB_PCACE_data_analyzer_util.get_children_with_simplexes(tgt_name)
+            msg = "'{}' has no simplex attributes.".format(tgt_name)
             if children:
                 msg += "\nTry: {}".format(', '.join(children))
             warnings.append(msg)
         if warnings:
             mb.showinfo(title='Simplex attributes', message='\n\n'.join(warnings))
-
     else:
-        # Multiple pairs (possibly mixed source-only and cross-complex)
-        # Generate each pair individually and concatenate
-        all_queries = []
-        pair_labels = []
-        for pi, (src, src_child, src_sx, tgt, tgt_child, tgt_sx) in enumerate(all_pairs):
-            se, te = all_extras[pi] if pi < len(all_extras) else (set(), set())
-            # Detect document simplex selections
-            src_doc_sx = None
-            tgt_doc_sx = None
-            if src_sx and src_sx.startswith('Doc > '):
-                src_doc_sx = src_sx[6:]
-                src_sx = None
-            if tgt_sx and tgt_sx.startswith('Doc > '):
-                tgt_doc_sx = tgt_sx[6:]
-                tgt_sx = None
-            if tgt is None:
-                q, info = DB_PCACE_data_analysis_util.generate_source_only_query(
-                    src, source_filter_simplex=src_sx,
-                    source_child=_child_str(src_child),
-                    source_extra_children=se or None,
-                    source_document_simplex=src_doc_sx)
-                src_l = '.'.join([src] + src_child) if src_child else src
-                pair_labels.append(src_l)
-            else:
-                q, info = DB_PCACE_data_analysis_util.generate_cross_complex_query(
-                    src, tgt, source_filter_simplex=src_sx, target_simplex=tgt_sx,
-                    source_child=_child_str(src_child), target_child=_child_str(tgt_child),
-                    source_extra_children=se or None, target_extra_children=te or None,
-                    source_document_simplex=src_doc_sx, target_document_simplex=tgt_doc_sx)
-                src_l = '.'.join([src] + src_child) if src_child else src
-                tgt_l = '.'.join([tgt] + tgt_child) if tgt_child else tgt
-                pair_labels.append('{} → {}'.format(src_l, tgt_l))
-            if q:
-                all_queries.append(q)
-        if not all_queries:
-            mb.showwarning(title='Warning', message='Could not generate queries for the selected pairs.')
-            return
-        # Check if all cross-pairs share the same source — use multi-target generator
-        cross_only = [p for p in all_pairs if p[3] is not None]
-        cross_sources = set((s, tuple(sc) if sc else None, ssx) for s, sc, ssx, _, _, _ in cross_only) if cross_only else set()
-        if not source_only_pairs and len(cross_sources) == 1 and len(cross_only) > 1:
-            src, src_child_tup, src_simplex = list(cross_sources)[0]
-            src_child = list(src_child_tup) if src_child_tup else None
-            targets = [(t, tc, tsx) for _, _, _, t, tc, tsx in cross_only]
-            se0 = all_extras[0][0] if all_extras else set()
-            tgt_extras_list = [all_extras[i][1] if i < len(all_extras) else set()
-                               for i in range(len(all_pairs))]
-            query, info = DB_PCACE_data_analysis_util.generate_multi_target_query(
-                src, source_simplex=src_simplex, targets=targets,
-                source_child=_child_str(src_child),
-                source_extra_children=se0 or None,
-                target_extra_children_list=tgt_extras_list or None)
+        # Multiple pairs: group by source, generate one query per unique source
+        # For now, all pairs must share the same Object 1 for multi-target CTE query
+        sources = set((s, ssx) for s, ssx, _, _ in all_pairs)
+        if len(sources) > 1:
+            # Different sources — generate separate queries concatenated
+            all_queries = []
+            for src, src_sx, tgt, tgt_sx in all_pairs:
+                q, res = DB_PCACE_data_analyzer_util.generate_cross_complex_query(
+                    src, tgt, source_filter_simplex=src_sx, target_simplex=tgt_sx)
+                if q:
+                    all_queries.append(q)
+            if not all_queries:
+                mb.showwarning(title='Warning', message='Could not generate queries for the selected pairs.')
+                return
+            SQL_query_entry.delete(0.1, tk.END)
+            SQL_query_entry.insert("end", '\n\n'.join(all_queries))
+            pair_labels = ['{} → {}'.format(s, t) for s, _, t, _ in all_pairs]
+            query_name_var.set('Cross-complex: {}'.format('; '.join(pair_labels)))
+        else:
+            # Same source — use CTE multi-target generator
+            src, src_simplex = list(sources)[0]
+            targets = [(t, tsx) for _, _, t, tsx in all_pairs]
+            query, info = DB_PCACE_data_analyzer_util.generate_multi_target_query(
+                src, source_simplex=src_simplex, targets=targets)
             if query is None:
                 mb.showwarning(title='Warning', message=str(info))
                 return
             SQL_query_entry.delete(0.1, tk.END)
             SQL_query_entry.insert("end", query)
             tgt_names = [t[0] for t in targets]
-            src_label = '.'.join([src] + src_child) if src_child else src
-            query_name_var.set('Cross-complex: {} → {}'.format(src_label, ', '.join(tgt_names)))
+            query_name_var.set('Cross-complex: {} → {}'.format(src, ', '.join(tgt_names)))
             if info.get('warnings'):
                 mb.showinfo(title='Simplex attributes', message='\n\n'.join(info['warnings']))
-        else:
-            SQL_query_entry.delete(0.1, tk.END)
-            SQL_query_entry.insert("end", '\n\n-- @@NEXT_QUERY@@\n\n'.join(all_queries))
-            query_name_var.set('Query: {}'.format('; '.join(pair_labels)))
 
 
 generate_cross_btn.configure(command=_generate_cross_complex_query)
@@ -1612,16 +998,8 @@ def _populate_cross_complex_menus(*args):
         combo['values'] = ()
         var.set('')
     _saved_pairs.clear()
-    _saved_extra_children.clear()
     _update_extra_targets_label()
     _complex_names_cache = []
-    # Clear SQL query area and query name
-    try:
-        SQL_query_entry.delete("1.0", tk.END)
-        SQL_query_var.set('')
-        query_name_var.set('')
-    except (NameError, tk.TclError):
-        pass
     if not db_path or not os.path.exists(db_path):
         return
     try:
@@ -1641,33 +1019,10 @@ def _populate_cross_complex_menus(*args):
         print(f"  WARNING populating cross-complex menus: {e}")
 
 
-# Track which simplex dropdowns are showing child complex names instead of simplex names.
-# Key = combo widget id, Value = True if showing children, False if showing simplexes.
-_simplex_showing_children = {}
-
-# Track the drill-down path per simplex combo.
-# Key = combo widget id, Value = list of child complex names representing the
-# drill path (e.g., ['Individual', 'Personal Characteristics'] means
-# top-level → Individual → Personal Characteristics).
-# When set, the combo is showing the deepest child's simplexes.
-_drilled_child = {}
-
-# Track Enter-selected children for multi-child COALESCE.
-# Key = combo widget id, Value = set of child complex names.
-# When multiple children are selected, the SQL merges their simplex values
-# into one column using COALESCE (matched by simplex Order position).
-_selected_children = {}
-
 def _populate_simplex_menu(complex_var, simplex_combo, simplex_var):
-    """Populate a simplex Combobox based on the selected complex type.
-    If the complex has no direct simplex attributes, show child complex
-    names instead (prefixed with '> ') so the user can pick which child
-    to drill into."""
+    """Populate a simplex Combobox based on the selected complex type."""
     simplex_combo['values'] = ()
     simplex_var.set('')
-    _simplex_showing_children[id(simplex_combo)] = False
-    _drilled_child.pop(id(simplex_combo), None)
-    _selected_children.pop(id(simplex_combo), None)
     cname = complex_var.get()
     if not cname:
         return
@@ -1681,52 +1036,14 @@ def _populate_simplex_menu(complex_var, simplex_combo, simplex_var):
         row = cur.fetchone()
         if row:
             cid = row[0]
-            # Get direct simplex attributes
             cur.execute("""SELECT DISTINCT ss.Name
                            FROM setup_xref_Simplex_Complex sxsc
                            JOIN setup_Simplex ss ON ss.ID_setup_simplex = sxsc.ID_setup_simplex
                            WHERE sxsc.ID_setup_complex = ?
                            ORDER BY ss.Name""", (cid,))
             names = [r[0] for r in cur.fetchall()]
-            # Always check for child complex types too
-            cur.execute("""SELECT DISTINCT sc_child.Name
-                           FROM setup_xref_Complex_Complex sxcc
-                           JOIN setup_Complex sc_child
-                               ON sc_child.ID_setup_complex = sxcc.LowerComplex
-                           WHERE sxcc.HigherComplex = ?
-                           ORDER BY sc_child.Name""", (cid,))
-            children = [r[0] for r in cur.fetchall()]
-            # Get document-level simplex attributes (date, newspaper name, etc.)
-            doc_names = []
-            try:
-                cur.execute('SELECT DISTINCT ss.Name'
-                           ' FROM setup_xref_Simplex_Document sxsd'
-                           ' JOIN setup_Simplex ss ON ss.ID_setup_simplex = sxsd.ID_setup_simplex'
-                           ' ORDER BY sxsd."Order"')
-                doc_names = [r[0] for r in cur.fetchall()]
-            except Exception as e1:
-                try:
-                    cur.execute('SELECT DISTINCT ss.Name'
-                               ' FROM setup_xref_Simplex_Document sxsd'
-                               ' JOIN setup_Simplex ss ON ss.ID_setup_simplex = sxsd.Simplex'
-                               ' ORDER BY sxsd."Order"')
-                    doc_names = [r[0] for r in cur.fetchall()]
-                except Exception as e2:
-                    print(f"  WARNING: Could not query document simplex names: {e1} / {e2}")
-            doc_entries = ['Doc > ' + n for n in doc_names]
-            if names and children:
-                simplex_combo['values'] = ['*'] + names + ['> ' + c for c in children] + doc_entries
-                simplex_var.set('*')
-                _simplex_showing_children[id(simplex_combo)] = True
-            elif names:
-                simplex_combo['values'] = ['*'] + names + doc_entries
-                simplex_var.set('*')
-            elif children:
-                simplex_combo['values'] = ['*'] + ['> ' + c for c in children] + doc_entries
-                simplex_var.set('*')
-                _simplex_showing_children[id(simplex_combo)] = True
-            elif doc_entries:
-                simplex_combo['values'] = ['*'] + doc_entries
+            if names:
+                simplex_combo['values'] = ['*'] + names
                 simplex_var.set('*')
         cur.close()
         conn.close()
@@ -1735,289 +1052,11 @@ def _populate_simplex_menu(complex_var, simplex_combo, simplex_var):
 
 def _populate_source_simplex(*args):
     _populate_simplex_menu(source_complex_var, source_simplex_menu, source_simplex_var)
-    # NOTE: WHERE filter dropdown is populated from CSV headers by
-    # _refresh_csv_columns(), NOT from grammar simplex names.
-    # Warn if showing children instead of simplexes
-    cname = source_complex_var.get()
-    if cname and _simplex_showing_children.get(id(source_simplex_menu), False):
-        children = [v[2:] for v in source_simplex_menu['values'] if v.startswith('> ')]
-        mb.showinfo(title='No simplex attributes',
-                    message="'{}' has no direct simplex attributes.\n\n"
-                            "Object 2 shows child complex types instead:\n{}\n\n"
-                            "Click a child (e.g., > Individual) to drill into its "
-                            "simplexes and pick one (e.g., Name).\n"
-                            "Or select * for all children and all simplexes.".format(
-                                cname, ', '.join(children)))
+    # Also populate WHERE filter simplex with the same list
+    _populate_simplex_menu(source_complex_var, where_simplex_menu, where_simplex_var)
 
 def _populate_target_simplex(*args):
     _populate_simplex_menu(target_complex_var, target_simplex_menu, target_simplex_var)
-    # Warn if showing children instead of simplexes
-    cname = target_complex_var.get()
-    if cname and _simplex_showing_children.get(id(target_simplex_menu), False):
-        children = [v[2:] for v in target_simplex_menu['values'] if v.startswith('> ')]
-        mb.showinfo(title='No simplex attributes',
-                    message="'{}' has no direct simplex attributes.\n\n"
-                            "Object 4 shows child complex types instead:\n{}\n\n"
-                            "Click a child to drill into its simplexes and pick one.\n"
-                            "Or select * for all children and all simplexes.".format(
-                                cname, ', '.join(children)))
-
-def _drill_into_child(child_name, simplex_combo, simplex_var, complex_var):
-    """Navigate into a child complex, showing its simplexes (or its children
-    if it has no simplexes).  Used by both click-drill and Enter-then-drill.
-    Supports arbitrary-depth drill: each call appends to the drill path."""
-    path = _drilled_child.get(id(simplex_combo), [])
-    path = list(path)  # copy
-    path.append(child_name)
-    _drilled_child[id(simplex_combo)] = path
-    _simplex_showing_children[id(simplex_combo)] = False
-    db_path = select_SQLite_DB_var.get()
-    if not db_path or not os.path.exists(db_path):
-        return
-    try:
-        conn = sqlite3.connect(db_path)
-        cur = conn.cursor()
-        cur.execute("SELECT ID_setup_complex FROM setup_Complex WHERE Name=?",
-                    (child_name,))
-        row = cur.fetchone()
-        if row:
-            cid = row[0]
-            cur.execute("""SELECT DISTINCT ss.Name
-                           FROM setup_xref_Simplex_Complex sxsc
-                           JOIN setup_Simplex ss
-                                ON ss.ID_setup_simplex = sxsc.ID_setup_simplex
-                           WHERE sxsc.ID_setup_complex = ?
-                           ORDER BY ss.Name""", (cid,))
-            names = [r[0] for r in cur.fetchall()]
-            # Back label shows the immediate parent (one level up)
-            if len(path) > 1:
-                back_parent = path[-2]
-            else:
-                back_parent = complex_var.get()
-            sel = _selected_children.get(id(simplex_combo), set())
-            back_label = '<< ' + back_parent
-            if len(sel) > 1:
-                back_label += '  [{} children selected]'.format(len(sel))
-            # Always check for child complex types too
-            cur.execute("""SELECT DISTINCT sc2.Name
-                           FROM setup_xref_Complex_Complex sxcc
-                           JOIN setup_Complex sc2
-                               ON sc2.ID_setup_complex = sxcc.LowerComplex
-                           WHERE sxcc.HigherComplex = ?
-                           ORDER BY sc2.Name""", (cid,))
-            grandchildren = [r[0] for r in cur.fetchall()]
-            child_items = []
-            for c in grandchildren:
-                if c in sel:
-                    child_items.append('✓ ' + c)
-                else:
-                    child_items.append('> ' + c)
-            # Get document-level simplex attributes
-            doc_entries = []
-            try:
-                cur.execute('SELECT DISTINCT ss.Name'
-                           ' FROM setup_xref_Simplex_Document sxsd'
-                           ' JOIN setup_Simplex ss ON ss.ID_setup_simplex = sxsd.ID_setup_simplex'
-                           ' ORDER BY sxsd."Order"')
-                doc_entries = ['Doc > ' + r[0] for r in cur.fetchall()]
-            except Exception:
-                try:
-                    cur.execute('SELECT DISTINCT ss.Name'
-                               ' FROM setup_xref_Simplex_Document sxsd'
-                               ' JOIN setup_Simplex ss ON ss.ID_setup_simplex = sxsd.Simplex'
-                               ' ORDER BY sxsd."Order"')
-                    doc_entries = ['Doc > ' + r[0] for r in cur.fetchall()]
-                except Exception:
-                    pass
-            if names and child_items:
-                simplex_combo['values'] = [back_label, '*'] + names + child_items + doc_entries
-                simplex_var.set('*')
-                _simplex_showing_children[id(simplex_combo)] = True
-            elif names:
-                simplex_combo['values'] = [back_label, '*'] + names + doc_entries
-                simplex_var.set('*')
-            elif child_items:
-                simplex_combo['values'] = [back_label, '*'] + child_items + doc_entries
-                simplex_var.set('*')
-                _simplex_showing_children[id(simplex_combo)] = True
-            else:
-                simplex_combo['values'] = [back_label, '*'] + doc_entries
-                simplex_var.set('*')
-        cur.close()
-        conn.close()
-    except Exception as e:
-        print(f"  WARNING drill-down: {e}")
-
-
-def _go_back_to_children(complex_var, simplex_combo, simplex_var):
-    """Go back ONE level in the drill path, PRESERVING accumulated
-    _selected_children so the user can drill into another sibling
-    without losing previous selections.
-
-    Multi-level: if path is [Individual, Personal Characteristics],
-    going back pops to [Individual] and shows Individual's children+simplexes.
-    Going back from [Individual] pops to [] and shows the top-level complex's children."""
-    path = _drilled_child.get(id(simplex_combo), [])
-    sel = _selected_children.get(id(simplex_combo), set())
-
-    if path:
-        path = list(path)
-        path.pop()  # go up one level
-        if path:
-            _drilled_child[id(simplex_combo)] = path
-        else:
-            _drilled_child.pop(id(simplex_combo), None)
-
-    # Determine which complex to show children of
-    if path:
-        parent_name = path[-1]
-    else:
-        parent_name = complex_var.get()
-    if not parent_name:
-        return
-    db_path = select_SQLite_DB_var.get()
-    if not db_path or not os.path.exists(db_path):
-        return
-    try:
-        conn = sqlite3.connect(db_path)
-        cur = conn.cursor()
-        cur.execute("SELECT ID_setup_complex FROM setup_Complex WHERE Name=?", (parent_name,))
-        row = cur.fetchone()
-        if not row:
-            conn.close()
-            return
-        cid = row[0]
-        # Get direct simplexes of this complex
-        cur.execute("""SELECT DISTINCT ss.Name
-                       FROM setup_xref_Simplex_Complex sxsc
-                       JOIN setup_Simplex ss ON ss.ID_setup_simplex = sxsc.ID_setup_simplex
-                       WHERE sxsc.ID_setup_complex = ?
-                       ORDER BY ss.Name""", (cid,))
-        parent_simplexes = [r[0] for r in cur.fetchall()]
-        # Get child complex types
-        cur.execute("""SELECT DISTINCT sc_child.Name
-                       FROM setup_xref_Complex_Complex sxcc
-                       JOIN setup_Complex sc_child
-                           ON sc_child.ID_setup_complex = sxcc.LowerComplex
-                       WHERE sxcc.HigherComplex = ?
-                       ORDER BY sc_child.Name""", (cid,))
-        children = [r[0] for r in cur.fetchall()]
-        if not children and not parent_simplexes:
-            cur.close()
-            conn.close()
-            _populate_simplex_menu(complex_var, simplex_combo, simplex_var)
-            return
-        # Rebuild list: back label + direct simplexes + children with ✓/> marks
-        child_items = []
-        for c in children:
-            if c in sel:
-                child_items.append('✓ ' + c)
-            else:
-                child_items.append('> ' + c)
-        # If we're still drilled (path not empty), show a back label
-        if path:
-            if len(path) > 1:
-                back_parent = path[-2]
-            else:
-                back_parent = complex_var.get()
-            back_label = '<< ' + back_parent
-            simplex_combo['values'] = [back_label, '*'] + parent_simplexes + child_items
-        else:
-            simplex_combo['values'] = ['*'] + parent_simplexes + child_items
-        simplex_var.set('*')
-        _simplex_showing_children[id(simplex_combo)] = True
-        cur.close()
-        conn.close()
-    except Exception as e:
-        print(f"  WARNING go-back: {e}")
-
-
-def _handle_simplex_drill(event, simplex_combo, simplex_var, complex_var):
-    """Handle CLICK on a simplex dropdown item.
-
-    - '> Child' or '✓ Child': drill into that child's simplexes
-    - '<< Parent': go back to top level
-    - Anything else: normal simplex selection (no action needed)"""
-    val = simplex_var.get()
-    if val.startswith('> ') or val.startswith('✓ '):
-        child_name = val[2:]
-        # Only track as sibling selection at the first drill level.
-        # Deeper drilling is navigation, not sibling selection for COALESCE.
-        path = _drilled_child.get(id(simplex_combo), [])
-        if not path:
-            sel = _selected_children.setdefault(id(simplex_combo), set())
-            sel.add(child_name)
-        _drill_into_child(child_name, simplex_combo, simplex_var, complex_var)
-    elif val.startswith('<< '):
-        # Go back ONE level in the drill path WITHOUT clearing accumulated selections.
-        if simplex_combo is source_simplex_menu:
-            _coalesce_src_var.set(0)
-        elif simplex_combo is target_simplex_menu:
-            _coalesce_tgt_var.set(0)
-        _go_back_to_children(complex_var, simplex_combo, simplex_var)
-
-
-def _handle_simplex_enter(event, simplex_combo, simplex_var, complex_var):
-    """Handle ENTER key on a simplex dropdown item.
-
-    At the children level, Enter TOGGLES selection of a child without
-    drilling.  This lets the user select multiple children (e.g., both
-    Individual and Collective actor).
-
-    What happens with Enter-selected children depends on the 'Merge' checkbox:
-      - Checked: children are MERGED via COALESCE into one column.
-      - Unchecked: children produce SEPARATE columns (one per child).
-
-    After selecting children with Enter, click one to drill into its
-    simplexes — the chosen simplex will be extracted from ALL selected
-    children."""
-    val = simplex_var.get()
-    if not val:
-        return
-    # Only works on child items (> or ✓ prefix), and only at the first
-    # drill level.  Deeper levels are navigation, not sibling selection.
-    if val.startswith('> ') or val.startswith('✓ '):
-        path = _drilled_child.get(id(simplex_combo), [])
-        if path:
-            return  # Enter-selection only works at the top children level
-        child_name = val[2:]
-        sel = _selected_children.setdefault(id(simplex_combo), set())
-        # Toggle
-        if child_name in sel:
-            sel.discard(child_name)
-        else:
-            sel.add(child_name)
-        # Rebuild the dropdown values with updated ✓ marks
-        current_values = list(simplex_combo['values'])
-        new_values = []
-        for v in current_values:
-            if v.startswith('> ') or v.startswith('✓ '):
-                cname = v[2:]
-                if cname in sel:
-                    new_values.append('✓ ' + cname)
-                else:
-                    new_values.append('> ' + cname)
-            else:
-                new_values.append(v)
-        simplex_combo['values'] = new_values
-        # Update the display to show the toggled state
-        if child_name in sel:
-            simplex_var.set('✓ ' + child_name)
-        else:
-            simplex_var.set('> ' + child_name)
-        # Show feedback
-        if sel:
-            print("  Selected children: {}".format(', '.join(sorted(sel))))
-
-
-source_simplex_menu.bind('<<ComboboxSelected>>',
-    lambda e: _handle_simplex_drill(e, source_simplex_menu, source_simplex_var, source_complex_var))
-target_simplex_menu.bind('<<ComboboxSelected>>',
-    lambda e: _handle_simplex_drill(e, target_simplex_menu, target_simplex_var, target_complex_var))
-source_simplex_menu.bind('<Return>',
-    lambda e: _handle_simplex_enter(e, source_simplex_menu, source_simplex_var, source_complex_var))
-target_simplex_menu.bind('<Return>',
-    lambda e: _handle_simplex_enter(e, target_simplex_menu, target_simplex_var, target_complex_var))
 
 select_SQLite_DB_var.trace('w', _populate_cross_complex_menus)
 source_complex_var.trace('w', _populate_source_simplex)
@@ -2371,39 +1410,13 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Use the dropdown menu to open a related GUI.\n\n   Open PC-ACE data analysis GUI: opens the PC-ACE data analysis with the current input directory.\n   Open data manipulation GUI: opens the data manipulation GUI with the current CSV file.\n   Open data validation GUI: opens the data validation and cleaning GUI with the current CSV file." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                  "The INPUT csv file widget displays a csv filename. There are two ways of entering a filename.\n\n   1. Click on the button 'Select INPUT csv file' to select a file of your choice.\n\n   2. The text widget is filled automatically as soon as produced by the query Generator.\n\nClick the small button between the 'Select...' button and the text widget to open the file and visualize its content.\n\nClick the 'Clear' button to remove the loaded CSV and reset the WHERE filter." + GUI_IO_util.msg_openFile)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "WHERE filter (requires an INPUT CSV file): select a column, then enter a filter value and click Filter to extract matching rows.\n\n"
-                   "Leave the value empty and click Filter to generate a frequency bar chart and wordcloud for the selected column.\n\n"
-                   "Operators: LIKE (with % wildcard), =, !=, NOT LIKE."+ GUI_IO_util.msg_Esc)
-
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Click View table relations to open the PC-ACE table relations diagram.\nClick View grammar to export the grammar.\nClick Update grammar to refresh the grammar in setup_complex.\nUse the Object dropdown to toggle the REQUIRED boolean for complex or simplex objects." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Click View table relations to open the PC-ACE table relations diagram.\nClick View grammar to export the grammar.\nClick Update grammar to refresh the grammar in setup_complex.\nClick Open PC-ACE analyzer to open the PC-ACE data analyzer GUI with the current input directory." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                                          "NLP Suite Help",
-                                                         "Cross-complex query generator: build SQL queries that extract or join complex types across the PC-ACE hierarchy.\n\n"
-                                                         "WIDGETS:\n"
-                                                         "   Object 1 (COMPLEX): the source complex type (e.g., Individual, Event, Participant-S).\n"
-                                                         "   Object 2 (SIMPLEX): the simplex attribute of Object 1 to display (e.g., Name; * for all).\n"
-                                                         "      If Object 1 has no direct simplexes (e.g., Participant-S), this dropdown shows child complex types\n"
-                                                         "      prefixed with '>' — click a child (e.g., > Individual) to drill into its simplexes and pick one\n"
-                                                         "      (e.g., Name for actor names). Use '<< back' to return to the children list.\n"
-                                                         "   Object 3 (COMPLEX, optional): the target complex type to join with Object 1. Leave empty for a source-only query.\n"
-                                                         "      You can select ANY complex type — Object 1 and Object 3 do not need to share a common parent.\n"
-                                                         "      The query generator finds a path through the hierarchy automatically (up and down through\n"
-                                                         "      intermediate nodes, e.g., up to the Semantic Triplet hub, then down to the target branch).\n"
-                                                         "   Object 4 (SIMPLEX): same as Object 2 but for Object 3. Only used when Object 3 is selected.\n\n"
-                                                         "TWO MODES:\n"
-                                                         "   Cross-complex: fill Object 1 + Object 3 to join two complex types (e.g., Participant-S → Process).\n"
-                                                         "   Source-only: fill only Object 1 + Object 2 (leave Object 3/4 empty) to extract simplex attributes of one complex type.\n\n"
-                                                         "MIXING MODES with the + button:\n"
-                                                         "   You can mix cross-complex and source-only pairs. For example:\n"
-                                                         "   1. Set Object 1=Participant-S, Object 3=Process, click +\n"
-                                                         "   2. Set Object 1=Participant-O (leave Object 3 empty), click Generate\n"
-                                                         "   This produces two queries: one joining Participant-S to Process, one extracting Participant-O's attributes.\n\n"
-                                                         "Example SVO: Object 1=Participant-S, Object 2=drill into > Individual then pick Name,\n"
-                                                         "   Object 3=Process, Object 4=drill into > Simple process then pick Verbal phrase.\n\n"
-                                                         "Hover over the Generate SQL query button to see the current object selection." + GUI_IO_util.msg_Esc)
+                                                         "Use the Complex object and Simplex object dropdown menus to insert object names into your SQL query.\n\nThe SQLite database is constructed automatically when the input directory is selected." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                                         "NLP Suite Help",
+                                                         "Cross-complex query generator: select a SOURCE and TARGET complex type, then click Generate to automatically build a SQL query that navigates the PC-ACE hierarchy.\n\nOptionally filter the source by selecting a simplex name and entering a LIKE pattern (e.g. %woman% or lynching).\n\nHover over the Generate SQL query button to see the current object selection." + GUI_IO_util.msg_Esc)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, using the 'Select DB table' dropdown menu, select the table available in the SQLite database.\n\nOnce an SQLite table has been selected, use the 'Select DB table field' dropdown menu to select a specific field available in the selected table.\n\nUsing the Templates dropdown menu select the type of SQL query for which to display a standard template (e.g., UNION, JOIN). You will need to change table names and field names to the appropriate names in your database.\n\nTick the Distinct checkbox to display the SQL query as distinct\n\nClick Import SQL query to load a previously saved query.\nClick Save SQL query to save the current query to a file." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Enter an SQL query in the form SELECT ...\n\nYou can also generate a new SQL query, import a saved query or use a template from the dropdown menu.\n\nHover over the query area to see the name of the currently loaded query."+ GUI_IO_util.msg_Esc)
