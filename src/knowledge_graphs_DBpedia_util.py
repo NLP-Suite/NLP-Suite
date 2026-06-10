@@ -3,7 +3,6 @@
 # rewritten by Roberto Franzosi October 2021
 
 import sys
-from tracemalloc import start
 import GUI_util
 import IO_libraries_util
 
@@ -136,7 +135,8 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, configFileName, openOutputF
         # https://stackoverflow.com/questions/3205027/maximum-length-of-command-line-string
         # https://stackoverflow.com/questions/55969620/how-do-i-fix-the-error-the-command-line-is-too-long-if-i-want-to-have-the-outp
         # https://stackoverflow.com/questions/49607998/the-command-line-is-too-longwindows
-        contents = open(file, 'r', encoding='utf-8', errors='ignore').read()
+        with open(file, 'r', encoding='utf-8', errors='ignore') as _f:
+            contents = _f.read()
         while j < len(listOfSplitFiles):
             doc=listOfSplitFiles[j]
             head, tail = os.path.split(doc)
@@ -147,7 +147,8 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, configFileName, openOutputF
                     continue
                 print('   Processing split file ' + str(j+1) + "/" + str(len(listOfSplitFiles)) + ' ' + tail + ' with DBpedia size ' + str(defaultSize))
                 splitHtmlFileList.append(outFilename)
-            contents = open(doc, 'r', encoding='utf-8', errors='ignore').read()
+            with open(doc, 'r', encoding='utf-8', errors='ignore') as _f:
+                contents = _f.read()
 
             contents = preprocessing(contents)
             REQUEST, HEADERS = spotlight_request(contents, annotationOpts, confidence_level)
@@ -194,7 +195,6 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, configFileName, openOutputF
                         # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Warning',
                         #                                    'An error was encountered saving the file\n\n' + outFilename +'\n\nThe file will be ignored.\n\nPlease, check your input txt file and try again.')
                         print('Error saving file ' + outFilename + ' File ignored. Check your input txt file.')
-                outfile.close()
             else:
                 if r.status_code == 414: # line too long
                     if sizeErrorDisplayed == False: # avoid repeating message
@@ -233,12 +233,10 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, configFileName, openOutputF
                         with open(htmlDoc,'r', encoding="utf-8",errors='ignore') as infile:
                             for line in infile:
                                 outfile.write(line)
-                            infile.close()
                     try:
                         os.remove(htmlDoc)  # delete temporary split html file from output directory
                     except:
                         continue
-                outfile.close()
                 # remove directory of split files
                 if os.path.exists(splitFilesDir):
                     shutil.rmtree(splitFilesDir)

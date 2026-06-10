@@ -112,7 +112,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         return filesToOpen
 
     head, scriptName = os.path.split(os.path.basename(__file__))
-    if language_var=='' and language_var!='English':
+    if language_var=='' or language_var!='English':
         reminders_util.checkReminder(
             scriptName,
             reminders_util.title_options_English_language_WordNet,
@@ -261,7 +261,7 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, nou
     # read in the dictionary file to be used to filter CoNLL values
     # The file is expected to have 2 columns with headers: Word, WordNet Category
     try:
-        dict = pd.read_csv(wordnetDict,encoding='utf-8',on_bad_lines='skip')
+        wn_dict = pd.read_csv(wordnetDict,encoding='utf-8',on_bad_lines='skip')
     except:
         mb.showwarning("Warning",
                        "The file \n\n" + wordnetDict + "\n\ndoes not have the expected 2 columns: Word, WordNet Category. You may have selected the wrong input file.\n\nPlease, select the right input file and try again.")
@@ -277,9 +277,8 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, nou
     connl = connl[connl['POS'].isin(checklist)]
     # eliminate any duplicate value in Word (Form))
     # Term is exported by the WordNet java script and cannot be modifiied
-    dict = dict.drop_duplicates().rename(columns={'Term': 'Lemma', 'WordNet Category': 'Category'})
-    # ?
-    connl = connl.merge(dict, how='left', on='Lemma')
+    wn_dict = wn_dict.drop_duplicates().rename(columns={'Term': 'Lemma', 'WordNet Category': 'Category'})
+    connl = connl.merge(wn_dict, how='left', on='Lemma')
     # the CoNLL table value is not found in the dictionary Word value
     connl.fillna('Not in INPUT dictionary for ' + noun_verb, inplace=True)
     # add the WordNet category to the conll list
@@ -329,10 +328,10 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, nou
 
 def get_case_initial_row(inputFilename,outputDir,check_column, firstLetterCapitalized=True):
     if firstLetterCapitalized:
-        str='Upper'
+        case_label='Upper'
     else:
-        str='Lower'
-    outputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'filter_' + str)
+        case_label='Lower'
+    outputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'filter_' + case_label)
     filesToOpen.append(outputFilename)
     data = pd.read_csv(inputFilename,encoding='utf-8',on_bad_lines='skip')
     if firstLetterCapitalized:

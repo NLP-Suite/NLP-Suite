@@ -14,9 +14,16 @@ import pandas as pd
 import re
 from re import split
 import stanza
-stanza.download('en')
-stannlp = stanza.Pipeline(lang='en', processors='tokenize,ner,mwt,pos,lemma')
 from fuzzywuzzy import fuzz
+
+_stannlp = None
+
+def _get_stanza_pipeline():
+    global _stannlp
+    if _stannlp is None:
+        stanza.download('en')
+        _stannlp = stanza.Pipeline(lang='en', processors='tokenize,ner,mwt,pos,lemma')
+    return _stannlp
 import time
 import ssl
 
@@ -30,7 +37,7 @@ time1=[]
 ##
 word_bag=[]
 ##global dataframe
-dict={}
+yago_cache={}
 
 
 DocumentID = []
@@ -94,7 +101,8 @@ def YAGO_annotate(inputFile, inputDir, outputDir, configFileName, annotationType
                 head, tail = os.path.split(subFilename)
                 print("   Processing split-file " + str(subFile) + "/" + str(len(listOfFiles)) + " " + tail)
 
-                contents = open(doc, 'r', encoding='utf-8', errors='ignore').read()
+                with open(doc, 'r', encoding='utf-8', errors='ignore') as _f:
+                    contents = _f.read()
                 contents =' '.join(contents.split()) #reformat content
                 contents = contents.replace('\0', '')  # remove null bytes
                 contents = contents.replace('\'', '')  # remove quotation marks
@@ -111,7 +119,6 @@ def YAGO_annotate(inputFile, inputDir, outputDir, configFileName, annotationType
                 # print("Annotation for the current document took: " + str(time_diff//60) + " mins and " + str(time_diff%60) + " secs")
                 with open(subFilename, 'w+', encoding='utf-8', errors='ignore') as f:
                     f.write(html_content)
-                f.close()
 
             if subFile > 0:
                 # outFilename here is the combined html file from the split files
@@ -121,9 +128,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, configFileName, annotationType
                         with open(htmlDoc, 'r', encoding="utf-8", errors='ignore') as infile:
                             for line in infile:
                                 outfile.write(line)
-                        infile.close()
                         os.remove(htmlDoc)  # delete temporary split html file from output directory
-                outfile.close()
 
             filesToOpen.append(outFilename)
             for i in range(len(Document) - len(Html_Doc)):
@@ -171,7 +176,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, configFileName, annotationType
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running YAGO Knowledge Graph at',
                                        True, '', True, startTime, False)
-    dict.clear()
+    yago_cache.clear()
     return filesToOpen
 
 def estimate_time(parsed_doc,num_cats,word_bag):
@@ -197,13 +202,9 @@ def annotate_default(contents,cats,color1,color2,document_name):
     html_str='<html>\n<body>\n<div>\n'
     tA1 = ['<span style=\"color: ' + color1 + '\">', '</span> ']
     tA2 = ['<a style=\"color:' + color2 + '\" href=\"', '\">', '</a> ']
-    doc = stannlp(contents)
-    # if inputDir == '':
-        # too slow; skip time estimate
-        # estimate_time(doc, len(cats),word_bag)
+    doc = _get_stanza_pipeline()(contents)
     for sent_id in range(len(doc.sentences)):
         sent=doc.sentences[sent_id]
-        #sent_ner=nerdoc.sentences[sent_id]
         prev_og = ""
         prev_tr = ""
         pos=True
@@ -213,8 +214,6 @@ def annotate_default(contents,cats,color1,color2,document_name):
             if((word.pos=="VERB")or (word.pos=="DET")or(word.pos=="ADP")or (word.pos=="PRON") or (word.pos=="AUX")):
                 pos=False
 
-            #word_ner=sent_ner.tokens[i]
-            #if((word.id==1 and word_ner.ner!="o")|(word.id!=1 and (word.text[0]).isupper())):
             if(word.xpos=="NNP"or word.xpos=="NNPS"):
                 prev_tr=prev_tr+word.lemma+" "
                 prev_og=prev_og+word.text+" "
@@ -234,10 +233,7 @@ def annotate_default(contents,cats,color1,color2,document_name):
 def annotate_multiple(contents,cats,color1,colorls,document_name):
     html_str = '<html>\n<body>\n<div>\n'
     tA1 = ['<span style=\"color: ' + color1 + '\">', '</span> ']
-    doc = stannlp(contents)
-    # if inputDir == '':
-        # too slow; skip time estimate
-        # estimate_time(doc, len(cats),word_bag)
+    doc = _get_stanza_pipeline()(contents)
     for sent_id in range(len(doc.sentences)):
         sent = doc.sentences[sent_id]
         prev_og = ""
@@ -264,7 +260,7 @@ def annotate_multiple(contents,cats,color1,colorls,document_name):
     return html_str
 
 def search_dict(phrase_tr,phrase_og,sent_id,curr_html,tA1,documentname,sentence):
-    if (phrase_tr in dict.keys()):
+    if (phrase_tr in yago_cache.keys()):
         values = dict[phrase_tr]
         if (values[0] == ""):##searched for, without annotation
             return (curr_html + tA1[0] + phrase_og + tA1[1])
@@ -300,7 +296,7 @@ def update_html(curr_html,phrase_og,phrase_tr,cats,tA1,tA2,pos,sent_id,color1,co
                 phrase.append(phrase_og)
                 link.append(str(IO_csv_util.dressFilenameForCSVHyperlink(temp[0])))
                 ont.append("schema:Thing")
-                dict.update({phrase_tr: [str(temp[0]), "schema:Thing",color2]})
+                yago_cache.update({phrase_tr: [str(temp[0]), "schema:Thing",color2]})
                 return (curr_html + tA2[0] + str(temp[0]) + tA2[1] + phrase_og + tA2[2])
             else:
                 temp = select_best_link(temp, phrase_tr)  ##sort by levenstein's distance
@@ -313,13 +309,13 @@ def update_html(curr_html,phrase_og,phrase_tr,cats,tA1,tA2,pos,sent_id,color1,co
                     phrase.append(phrase_og)
                     link.append(str(IO_csv_util.dressFilenameForCSVHyperlink(temp)))
                     ont.append("schema:Thing")
-                    dict.update({phrase_tr: [str(temp), "schema:Thing",color2]})
+                    yago_cache.update({phrase_tr: [str(temp), "schema:Thing",color2]})
                     return (curr_html +tA2[0] + str(temp) + tA2[1] + phrase_og + tA2[2])
         else:##without annotation
             updated_html = curr_html + tA1[0] + phrase_og + tA1[1]
     else:##without annotation
         updated_html = curr_html + tA1[0] + phrase_og + tA1[1]
-    dict.update({phrase_tr: ["", "",color1]})
+    yago_cache.update({phrase_tr: ["", "",color1]})
     return updated_html
 
 
@@ -345,7 +341,7 @@ def update_html_colorful(curr_html,phrase_og,phrase_tr,cats,tA1,color_ls,pos,sen
                     phrase.append(phrase_og)
                     link.append(str(IO_csv_util.dressFilenameForCSVHyperlink(temp[0])))
                     ont.append(str(cats[cat_id]))
-                    dict.update({phrase_tr: [str(temp[0]), str(cats[cat_id]),color2]})
+                    yago_cache.update({phrase_tr: [str(temp[0]), str(cats[cat_id]),color2]})
                     return (curr_html + tA2[0] + str(temp[0]) + tA2[1] + phrase_og + tA2[2])
                 else:
                     temp=select_best_link(temp,phrase_tr)##rank by levenstein's distance
@@ -358,13 +354,13 @@ def update_html_colorful(curr_html,phrase_og,phrase_tr,cats,tA1,color_ls,pos,sen
                         phrase.append(phrase_og)
                         link.append(str(IO_csv_util.dressFilenameForCSVHyperlink(temp)))
                         ont.append(str(cats[cat_id]))
-                        dict.update({phrase_tr: [str(temp), str(cats[cat_id]),color2]})
+                        yago_cache.update({phrase_tr: [str(temp), str(cats[cat_id]),color2]})
                         return (curr_html +tA2[0] + str(temp) + tA2[1] + phrase_og + tA2[2])
             else:##without annotation
                 updated_html = curr_html + tA1[0] + phrase_og + tA1[1]
     else:##without annotation
         updated_html = curr_html + tA1[0] + phrase_og + tA1[1]
-    dict.update({phrase_tr: ["", "",color1]})##only those without annotation will get to this line
+    yago_cache.update({phrase_tr: ["", "",color1]})##only those without annotation will get to this line
     return updated_html
 
 def select_best_link(temp,phrase_tr):

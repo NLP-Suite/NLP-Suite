@@ -110,7 +110,8 @@ def dictionary_annotate(inputFile, inputDir, outputDir, configFileName, dict_fil
         head, tail = os.path.split(file)
         i += 1
         print("Processing file " + str(i) + "/" + str(nFile) + " " + tail)
-        text=open(file, 'r', encoding='utf-8',errors='ignore').read()
+        with open(file, 'r', encoding='utf-8',errors='ignore') as _f:
+            text = _f.read()
         # put filename in bold
         tail='<b>' + tail + '</b>'
         writeout.append('<@#' + tail +'#@>' +'<br />\n')  # add the embedded filename (embedded  in <@# so that the merged file can be split) and a hard return
@@ -209,7 +210,6 @@ def dictionary_annotate(inputFile, inputDir, outputDir, configFileName, dict_fil
         for s in writeout:
             f.write(s)
         f.write('\n</div>\n</body>\n</html>')
-    f.close()
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Dictionary annotator at', True, '', True, startTime)
     return filesToOpen

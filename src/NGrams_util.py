@@ -1,5 +1,6 @@
 ##not needed
 
+import os
 import IO_csv_util
 import string
 punctuation = string.punctuation
@@ -33,8 +34,9 @@ import re
 
 
 def removeart(original_sentence):
-    fin = open('../lib/wordLists/articles.txt', 'r')
-    articles = list(set(fin.read().splitlines()))
+    articles_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'lib', 'wordLists', 'articles.txt')
+    with open(articles_path, 'r') as fin:
+        articles = list(set(fin.read().splitlines()))
     # from Stanford CoreNLP calculation
     # Create a regex pattern for the determiners, case-insensitive
     # The \b ensures the match is for whole words only, avoiding partial matches within words
@@ -60,8 +62,9 @@ def removeart(original_sentence):
 
 # determiners typically include numbers such as one, two, three,... but we cannot list them all and should use a function
 def removedt(original_sentence):
-    fin = open('../lib/wordLists/determiners.txt', 'r')
-    determiners = list(set(fin.read().splitlines()))
+    determiners_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'lib', 'wordLists', 'determiners.txt')
+    with open(determiners_path, 'r') as fin:
+        determiners = list(set(fin.read().splitlines()))
 
     # from Stanford CoreNLP calculation
     # Create a regex pattern for the determiners, case-insensitive
@@ -75,8 +78,9 @@ def removedt(original_sentence):
     return final_sentence
 
 def removestop(original_sentence):
-    fin = open('../lib/wordLists/stopwords.txt', 'r')
-    stops = list(set(fin.read().splitlines()))
+    stopwords_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'lib', 'wordLists', 'stopwords.txt')
+    with open(stopwords_path, 'r') as fin:
+        stops = list(set(fin.read().splitlines()))
     dets_pattern = r'\b(?:' + '|'.join(map(re.escape, stops)) + r')\b\s*'
     filtered_sentence = re.sub(dets_pattern, "", original_sentence, flags=re.IGNORECASE)
     final_sentence = filtered_sentence.strip()

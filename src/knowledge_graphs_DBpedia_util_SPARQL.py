@@ -14,19 +14,18 @@ from SPARQLWrapper import SPARQLWrapper, JSON, XML
 import IO_files_util
 
 sparql = SPARQLWrapper("http://dbpedia.org/sparql")
-# this will avoid an SSL certificate error ONLY for a specific url file
-import ssl
-url_certificate = ssl.SSLContext()  # Only for url
 ssl._create_default_https_context = ssl._create_unverified_context
-# this will renew the SSL certificate indefinitely
-# pip install pyOpenSSL
-# pip install requests[security]
 
 sparql.setTimeout(30) # query timeout after 30s
 
+_stannlp = None
 
-stanza.download('en')
-stannlp = stanza.Pipeline(lang='en', processors='tokenize,ner,mwt,pos,lemma')
+def _get_stanza_pipeline():
+    global _stannlp
+    if _stannlp is None:
+        stanza.download('en')
+        _stannlp = stanza.Pipeline(lang='en', processors='tokenize,ner,mwt,pos,lemma')
+    return _stannlp
 
 punksAndNum = string.punctuation + '1' + '2' + '3' + '4' + '5' + '6' + '7' + '8' + '9' + '0'
 
@@ -78,19 +77,17 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, configFileName, annotationT
     for file in files:
         fileName = file.split('/')[-1]
         print("processing file:", fileName, "\nFile: ", file_count, "/", nFile)
-        contents = open(file, 'r', encoding='utf-8', errors='ignore').read()
+        with open(file, 'r', encoding='utf-8', errors='ignore') as _f:
+            contents = _f.read()
         contents = preprocessing(contents)
-
 
         html_str = annotate(contents, ontology_type)  # the annotation function. make queries and generate html str
 
-
         outFilename = os.path.join(outputDir,
                                    "NLP_DBpedia_annotated_" + str(fileName.split('.txt')[0]) + '.html')
-        out = open(outFilename, 'w+', encoding="utf-8", errors='ignore')
-        out.write(html_str)
+        with open(outFilename, 'w+', encoding="utf-8", errors='ignore') as out:
+            out.write(html_str)
         filesToOpen.append(outFilename)
-        out.close()
 
     return filesToOpen
 
@@ -408,7 +405,7 @@ def preprocessing(contents):
 
 
 def stanford_annotator(content):
-    return stannlp(content)
+    return _get_stanza_pipeline()(content)
 
 
 # Testing
