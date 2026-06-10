@@ -18,6 +18,7 @@ to the repo so it is never lost.
 9. [GIS Pipeline — Multi-Package NER Extraction](#9-gis-pipeline--multi-package-ner-extraction-2026-06-09)
 10. [NLP Package Performance Comparison](#10-nlp-package-performance-comparison-2026-06-09)
 11. [Code Quality Review](#11-code-quality-review-2026-06-10)
+12. [Strategic Direction — Traditional NLP vs LLMs](#12-strategic-direction--traditional-nlp-vs-llms-2026-06-10)
 
 ---
 
@@ -429,3 +430,74 @@ Before committing new code, verify:
 - [ ] No module-level `nltk.download()` — use `import_nltk_resource()`
 - [ ] No `applymap()` — use `.map()` or `.apply()`
 - [ ] CSV/Excel writes happen AFTER the processing loop, not inside it
+
+---
+
+## 12. Strategic Direction — Traditional NLP vs LLMs (2026-06-10)
+
+### Why the Suite Still Matters
+
+1. **Reproducibility.** When a researcher publishes "we used Stanza NER (BiLSTM-CRF,
+   F1 ~89%) with VADER sentiment," that is a citable, deterministic method another lab
+   can replicate exactly. An LLM prompt gives different results across runs, model
+   versions, and temperature settings. Peer-reviewed research requires method transparency.
+
+2. **Structured, auditable output.** The Suite produces tabular CSV/Excel data that feeds
+   directly into statistical analysis — every token tagged, every score traceable. LLMs
+   produce prose; extracting structured data from prose adds a fragile extra step.
+
+3. **Specific measurement scales.** ANEW (1–9), CoreNLP sentiment (5-class), Brysbaert
+   concreteness (1–5), iconicity (1–7) — these are published psycholinguistic instruments
+   with known properties. LLMs cannot produce scores on these scales without the underlying
+   dictionaries and models the Suite already integrates.
+
+4. **Cost and access.** The Suite runs offline on student laptops with no API fees. A class
+   of 30 students processing 10,000 documents each would cost hundreds of dollars in API
+   calls. Local models (Stanza, spaCy) cost nothing per token.
+
+5. **Teaching value.** Students learn what NER, SVO, sentiment, and coreference actually
+   are by seeing each step. An LLM that returns "positive sentiment" teaches nothing about
+   how sentiment is measured.
+
+### Where LLMs Are Genuinely Better
+
+- **Judgment and context:** Sarcasm, irony, implicit meaning, pragmatic inference
+- **Zero-shot classification:** Tasks you haven't built a pipeline for
+- **Summarization and narrative analysis:** Thematic coding, discourse structure
+- **Flexible multilingual:** One model handles any language without separate downloads
+- **Ambiguity:** When the task doesn't fit neat categories or requires world knowledge
+
+### Strategic Path Forward
+
+The Suite's real value is not any single algorithm — it is the **framework**: file handling,
+batch processing, CSV/Excel output, visualization, PC-ACE database integration, and the
+GUI that makes NLP accessible to non-programmers. That infrastructure does not become
+obsolete; it becomes the scaffolding that LLMs plug into.
+
+**Concrete next step:** Add an LLM-based annotator option (local models like Llama/Mistral,
+or API-based like GPT-4/Claude) as another choice in existing dropdowns — so a user can
+run sentiment analysis with VADER, Stanza, *or* an LLM and compare the outputs in the
+same CSV format. The Suite already does this with BERT vs Stanza vs spaCy vs CoreNLP;
+an LLM option is a natural extension of the same multi-engine architecture.
+
+### Decision Matrix
+
+| Criterion | Traditional NLP (Stanza/spaCy/dictionaries) | LLMs |
+|-----------|----------------------------------------------|------|
+| Reproducibility | Deterministic, citable | Non-deterministic across runs |
+| Cost per token | Zero (local) | $0.01–$0.06 per 1K tokens (API) |
+| Offline use | Yes | Only with local models (hardware-intensive) |
+| Structured output | Native (CSV rows per token) | Requires prompt engineering + parsing |
+| Specific scales | Yes (ANEW, concreteness, iconicity, etc.) | No — cannot replicate validated instruments |
+| Speed on large corpora | Fast (thousands of docs/minute) | Slow and expensive at scale |
+| Contextual understanding | Limited (sentence-level) | Excellent (document-level) |
+| Zero-shot flexibility | None — needs a pipeline | Excellent |
+| Teaching transparency | High — each step visible | Black box |
+| Multilingual | Per-model (Stanza 30+, spaCy 20+) | Universal |
+
+### Conclusion
+
+**Not Suite OR LLMs — Suite AND LLMs.** Keep the deterministic pipelines for reproducible
+research. Add LLM options for exploratory analysis and tasks that need judgment. Let the
+user compare both approaches on the same data, in the same output format. The Suite is the
+chassis; algorithms (traditional and LLM) are interchangeable engines.
