@@ -24,6 +24,7 @@ import GUI_IO_util
 import IO_user_interface_util
 import TIPS_util
 import DB_PCACE_data_analysis_util
+import statistics_csv_util
 import Stanza_util
 import file_filename_util
 
@@ -60,6 +61,10 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
     if not inputDir or not os.path.isdir(inputDir):
         mb.showwarning(title='Warning',
                        message='No INPUT directory selected.\n\nPlease, select the PC-ACE database directory and try again.')
+        return
+
+    outputDir = IO_files_util.make_output_subdirectory('', inputDir, outputDir, label='PCACE')
+    if not outputDir:
         return
 
     GUI_util.window.focus_set()
@@ -261,6 +266,43 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
                                 simplex_names=list(_agg_simplex_list))
                             if side_file:
                                 filesToOpen.append(side_file)
+                                plot_cols = []
+                                if orig_name:
+                                    plot_cols.append(orig_name)
+                                plot_cols.extend(_agg_simplex_list)
+                                db_short = os.path.basename(db_dir)
+                                short_csv = os.path.join(outputDir, db_short + '_codes.csv')
+                                import shutil
+                                shutil.copy2(side_file, short_csv)
+                                for pc in plot_cols:
+                                    cf = statistics_csv_util.compute_csv_column_frequencies(
+                                        GUI_util.window, short_csv, None, outputDir,
+                                        False, chartPackage, dataTransformation,
+                                        [pc], [], [],
+                                        False, chart_title=f'Distribution: {pc}',
+                                        fileNameType='', chartType='bar', pivot=False)
+                                    if cf:
+                                        if isinstance(cf, str):
+                                            cf = [cf]
+                                        for f in cf:
+                                            if f.endswith('.xlsx'):
+                                                filesToOpen.append(f)
+                                try:
+                                    os.remove(short_csv)
+                                except OSError:
+                                    pass
+                                if orig_name:
+                                    crosstab_files = DB_PCACE_data_analysis_util.build_crosstab(
+                                        side_file, outputDir, orig_name, list(_agg_simplex_list))
+                                    filesToOpen.extend(crosstab_files)
+                                all_simplex_cols = []
+                                if orig_name:
+                                    all_simplex_cols.append(orig_name)
+                                all_simplex_cols.extend(_agg_simplex_list)
+                                heatmap_file = DB_PCACE_data_analysis_util.build_coverage_heatmap(
+                                    side_file, outputDir, all_simplex_cols)
+                                if heatmap_file:
+                                    filesToOpen.append(heatmap_file)
                         except Exception as e:
                             mb.showerror(title='Side-by-side error',
                                          message=f'Side-by-side mapping failed for {os.path.basename(db_dir)}:\n\n{e}')

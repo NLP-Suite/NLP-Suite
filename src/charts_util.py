@@ -1860,6 +1860,44 @@ def visualize_colormap_data(data, top_n=60, figsize=(15, 10), y_label='Lemma', x
     # plt.show() // we don't need to show it because we have that other option
 
 
+def visualize_stacked_bar(crosstab_data, top_n=20, figsize=(12, 6),
+                          x_label='Category', y_label='Count',
+                          title='Stacked bar chart', outputname='output_stacked_bar'):
+    """Horizontal stacked bar chart from a crosstab DataFrame.
+
+    Parameters
+    ----------
+    crosstab_data : pd.DataFrame
+        Rows = group labels, columns = segment labels, values = counts.
+    top_n : int
+        Show only the top N groups by total count.
+    x_label, y_label, title : str
+    outputname : str
+        Output path without extension (.png appended automatically).
+    """
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+
+    totals = crosstab_data.sum(axis=1).sort_values(ascending=False)
+    plot_data = crosstab_data.loc[totals.head(top_n).index]
+
+    fig_w = max(figsize[0], len(plot_data) * 0.6 + 4)
+    fig_h = max(figsize[1], len(plot_data) * 0.3 + 2)
+    ax = plot_data.plot.barh(stacked=True, figsize=(fig_w, fig_h), width=0.8)
+    ax.set_xlabel(y_label)
+    ax.set_ylabel(x_label)
+    ax.set_title(title)
+    ax.legend(title=crosstab_data.columns.name or '',
+              bbox_to_anchor=(1.02, 1), loc='upper left',
+              fontsize=7, title_fontsize=8)
+    plt.tight_layout()
+    fig_obj = ax.get_figure()
+    fig_obj.savefig(outputname + '.png', dpi=150, bbox_inches='tight')
+    plt.close(fig_obj)
+    print(f"Data visualization saved as {outputname}.png.")
+
+
 def extract_file_name(link_string):
     import re
     match = re.search(r'\/([^\/]+)\.txt', link_string)

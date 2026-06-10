@@ -3791,6 +3791,166 @@ def build_aggregate_side_by_side(db_dir, outputDir, category='Actor',
     return out_file
 
 
+def build_crosstab(side_by_side_csv, outputDir, original_col, aggregate_cols):
+    """Build a crosstab (original value × aggregate code) with counts.
+
+    Parameters
+    ----------
+    side_by_side_csv : str
+        Path to the side-by-side CSV produced by build_aggregate_side_by_side.
+    outputDir : str
+    original_col : str
+        Column name of the original simplex values.
+    aggregate_cols : list of str
+        Column names of aggregate code simplexes.
+
+    Returns
+    -------
+    list of str
+        Paths to output CSV files.
+    """
+    df = pd.read_csv(side_by_side_csv, encoding='utf-8', on_bad_lines='skip')
+    if original_col not in df.columns:
+        print(f"  Crosstab: column '{original_col}' not found")
+        return []
+
+    import charts_util
+    import plotly.graph_objects as go
+
+    output_files = []
+    top_n = 20
+
+    for agg_col in aggregate_cols:
+        if agg_col not in df.columns:
+            continue
+
+        short_orig = original_col.replace(' ', '_')[:20]
+        short_agg = agg_col.replace(' ', '_')[:30]
+
+        pairs = df[[original_col, agg_col]].dropna()
+        pairs.columns = ['orig', 'agg']
+
+        orig_top = pairs['orig'].value_counts().head(top_n).index.tolist()
+        agg_top = pairs['agg'].value_counts().head(top_n).index.tolist()
+        pairs_top = pairs[pairs['orig'].isin(orig_top) & pairs['agg'].isin(agg_top)]
+
+        # ── 1. Sankey diagram ──
+        flow = pairs_top.groupby(['orig', 'agg']).size().reset_index(name='count')
+        orig_labels = sorted(flow['orig'].unique())
+        agg_labels = sorted(flow['agg'].unique())
+        all_labels = orig_labels + agg_labels
+        orig_idx = {v: i for i, v in enumerate(orig_labels)}
+        agg_idx = {v: i + len(orig_labels) for i, v in enumerate(agg_labels)}
+
+        fig = go.Figure(go.Sankey(
+            node=dict(label=all_labels, pad=15, thickness=20),
+            link=dict(
+                source=[orig_idx[r['orig']] for _, r in flow.iterrows()],
+                target=[agg_idx[r['agg']] for _, r in flow.iterrows()],
+                value=flow['count'].tolist()
+            )
+        ))
+        fig.update_layout(
+            title_text=f'{original_col} -> {agg_col}',
+            font_size=10, width=900, height=600)
+        sankey_file = os.path.join(outputDir,
+            'sankey_' + short_orig + '_to_' + short_agg + '.html')
+        fig.write_html(sankey_file)
+        print(f"  Sankey: {original_col} -> {agg_col} saved to {sankey_file}")
+        output_files.append(sankey_file)
+
+        # ── 2. Top-N heatmap ──
+        ct = pd.crosstab(pairs_top['orig'], pairs_top['agg'])
+        ct = ct.loc[ct.sum(axis=1).sort_values(ascending=False).index]
+        ct_nonzero = ct.loc[:, ct.sum(axis=0) > 0]
+        out_base = os.path.join(outputDir,
+            'crosstab_top_' + short_orig + '_x_' + short_agg)
+        charts_util.visualize_colormap_data(ct_nonzero,
+                                            top_n=min(top_n, len(ct_nonzero)),
+                                            y_label=original_col,
+                                            x_label=agg_col,
+                                            normalize='count',
+                                            color='YlOrRd',
+                                            outputname=out_base)
+        png_file = out_base + '.png'
+        if os.path.isfile(png_file):
+            print(f"  Top-N heatmap: {original_col} × {agg_col} saved to {png_file}")
+            output_files.append(png_file)
+
+        # ── 3. Grouped bar chart ──
+        agg_groups = pairs_top.groupby('agg')['orig'].value_counts().unstack(fill_value=0)
+        agg_groups.columns.name = original_col
+        bar_base = os.path.join(outputDir,
+            'grouped_bar_' + short_orig + '_by_' + short_agg)
+        charts_util.visualize_stacked_bar(agg_groups, top_n=top_n,
+                                          x_label=agg_col, y_label='Count',
+                                          title=f'Original values per aggregate code (top {top_n})',
+                                          outputname=bar_base)
+        bar_file = bar_base + '.png'
+        if os.path.isfile(bar_file):
+            output_files.append(bar_file)
+
+    return output_files
+
+
+def build_coverage_heatmap(side_by_side_csv, outputDir, simplex_cols):
+    """Build a coverage heatmap showing which complex instances have values in each simplex.
+
+    Parameters
+    ----------
+    side_by_side_csv : str
+        Path to the side-by-side CSV.
+    outputDir : str
+    simplex_cols : list of str
+        Simplex column names to include in the heatmap.
+
+    Returns
+    -------
+    str or None
+        Path to the output PNG file, or None on failure.
+    """
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
+    df = pd.read_csv(side_by_side_csv, encoding='utf-8', on_bad_lines='skip')
+    cols_present = [c for c in simplex_cols if c in df.columns]
+    if not cols_present:
+        print(f"  Coverage heatmap: none of the simplex columns found")
+        return None
+
+    coverage = df[cols_present].notna().astype(int)
+    row_labels = df['Identifier'].fillna(df['ID_data_complex'].astype(str)) if 'Identifier' in df.columns \
+        else df['ID_data_complex'].astype(str)
+    coverage.index = row_labels
+
+    max_rows = 80
+    if len(coverage) > max_rows:
+        coverage = coverage.head(max_rows)
+
+    fig_height = max(4, len(coverage) * 0.25)
+    fig_width = max(8, len(cols_present) * 2 + 4)
+    fig, ax = plt.subplots(figsize=(fig_width, fig_height))
+    sns.heatmap(coverage, cmap=['#f0f0f0', '#4c72b0'], cbar=False,
+                linewidths=0.5, linecolor='white', ax=ax,
+                xticklabels=True, yticklabels=True)
+    ax.set_title('Simplex coverage by complex instance', fontsize=12, pad=10)
+    ax.set_xlabel('')
+    ax.set_ylabel('')
+    plt.xticks(rotation=30, ha='right', fontsize=8)
+    plt.yticks(fontsize=7)
+    plt.tight_layout()
+
+    out_file = IO_files_util.generate_output_file_name(
+        '', '', outputDir, '.png', 'coverage_heatmap')
+    fig.savefig(out_file, dpi=150)
+    plt.close(fig)
+    print(f"  Coverage heatmap: {len(coverage)} instances × {len(cols_present)} simplexes saved to {out_file}")
+
+    return out_file
+
+
 def lemmatize_simplex_values(inputDir, outputDir, simplex_name='', language='en',
                             pos_filter=None):
     """Lemmatize text simplex values using Stanza and produce a review CSV.
