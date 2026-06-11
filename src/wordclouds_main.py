@@ -251,7 +251,7 @@ extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analy
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Statistics csv file','Data visualization 1','Data visualization 2','Parsers & annotators')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Statistics csv file','Data visualization','Parsers & annotators')
 extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -269,10 +269,8 @@ def open_GUI(*args):
     if extra_GUIs_var.get():
         if 'Statistics' in extra_GUIs_menu_var.get():
             run_script_util.run_script("statistics_csv_main.py")
-        if 'visualization 1' in extra_GUIs_menu_var.get():
-            run_script_util.run_script("data_visualization_1_main.py")
-        if 'visualization 2' in extra_GUIs_menu_var.get():
-            run_script_util.run_script("data_visualization_2_main.py")
+        if 'visualization' in extra_GUIs_menu_var.get():
+            run_script_util.run_script("data_visualization_main.py")
         elif 'Parsers' in extra_GUIs_menu_var.get():
             run_script_util.run_script("parsers_annotators_main.py")
 extra_GUIs_menu_var.trace('w',open_GUI)

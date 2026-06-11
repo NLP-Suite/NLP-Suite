@@ -1290,15 +1290,9 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        "Select the package you wish to use to visualize charts: Excel or Plotly (dynamic/static).\nSelect the 'No charts' option if you do not wish to compute and visualize charts.")
 
         # TODO chart type widget (same as setup)
-        # 'Bubble chart', 'Radar chart', 'Scatter plot' require more than one variable and data_visualization_2_main.py should be used
-        if scriptName=='data_visualization_1_main.py':
-            charts_type_options = ['Excel & Python options: Bar, Bubble, Line, Pie, Radar, and Scatter charts (OPEN GUI)', 'Boxplot (Open GUI)', 'Comparative bar charts (Open GUI)', 'Time mapper (Open GUI)', 'Geographic maps (Open GUI)', 'Wordcloud (Open GUI)']
-        elif scriptName == 'data_visualization_2_main.py':
-            charts_type_options = ['_________________ Excel & Python options', 'Bar chart', 'Bubble chart',
-                                   'Line chart', 'Pie chart', 'Radar chart', 'Scatter plot',
-                                   '_________________ Open GUI', 'Colormap (Open GUI)', 'Geographic maps (Open GUI)',
-                                   'Gephi (Open GUI)', 'Sankey flowchart (Open GUI)', 'Sunburst chart (Open GUI)',
-                                   'Treemap chart (Open GUI)', 'Wordcloud (Open GUI)']
+        if scriptName=='data_visualization_main.py' or scriptName=='data_visualization_1_main.py' or scriptName=='data_visualization_2_main.py':
+            charts_type_options = ['_________________ Excel & Python options', 'Bar chart', 'Line chart', 'Pie chart',
+                                   '_________________ Open GUI', 'Geographic maps (Open GUI)', 'Wordcloud (Open GUI)']
         else:
             charts_type_options = ['_________________ Excel & Python options', 'Bar chart', 'Line chart', 'Pie chart',
                                    '_________________ Open GUI', 'Bubble, Radar, Scatter plots (Open GUI)', 'Boxplot (Open GUI)', 'Colormap (Open GUI)',
@@ -1312,7 +1306,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        charts_type_menu_lb,
                                                        True,False,False,False,90,
                                                        GUI_IO_util.open_TIPS_x_coordinate,
-                                                       "Charts can be visualized automatically as bar, line, or pie charts. Select your preferred option.\nMany more chart types are available in the specialized GUIs data_visualization_1_main.py and data_visualization_2_main.py.\nOpen those GUIs and select the csv file and variable you wish to chart.")
+                                                       "Charts can be visualized automatically as bar, line, or pie charts. Select your preferred option.\nMany more chart types are available in the specialized GUI data_visualization_main.py.\nOpen that GUI and select the csv file and variable you wish to chart.")
 
         data_transformation_options=['No transformation','Normalize by document size', 'Ln','Log','Square rooot','Z score']
         data_transformation_options_widget.set('No transformation')
@@ -1331,18 +1325,8 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         data_transformation_options_widget.trace('w',run_data_transformation)
 
         def open_GUI(*args):
-            if 'Bubble' in charts_type_options_widget.get() or 'Comparative' in charts_type_options_widget.get() or 'Box' in charts_type_options_widget.get() or 'Time' in charts_type_options_widget.get():
-                run_script_util.run_script("data_visualization_2_main.py")
             if 'Geographic' in charts_type_options_widget.get():
                 run_script_util.run_script("GIS_main.py")
-            if 'Colormap' in charts_type_options_widget.get():
-                run_script_util.run_script("data_visualization_1_main.py")
-            if 'Sankey' in charts_type_options_widget.get():
-                run_script_util.run_script("data_visualization_1_main.py")
-            if 'Sunburst' in charts_type_options_widget.get():
-                run_script_util.run_script("data_visualization_1_main.py")
-            if 'Treemap' in charts_type_options_widget.get():
-                run_script_util.run_script("data_visualization_1_main.py")
             if 'Wordcloud' in charts_type_options_widget.get():
                 run_script_util.run_script("wordclouds_main.py")
             if '_____________' in charts_type_options_widget.get():
@@ -1350,7 +1334,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         charts_type_options_widget.trace('w', open_GUI)
 
         # if not 'data_manipulation_main.py' in scriptName and not 'data_visualization_1_main.py' in scriptName :
-        data_tools_options = ['Data/corpus sampling', 'Data manipulation', 'Data statistics', 'Data visualization 1', 'Data visualization 2']
+        data_tools_options = ['Data/corpus sampling', 'Data manipulation', 'Data statistics', 'Data visualization']
         data_tools_options_widget.set('Data tools')
         data_tools_menu_lb = tk.OptionMenu(window, data_tools_options_widget, *data_tools_options)
         # place widget with hover-over info
@@ -1365,10 +1349,8 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                 run_script_util.run_script("data_manipulation_main.py")
             if not 'statistics_csv_main.py' in scriptName and 'statistics' in data_tools_options_widget.get():
                 run_script_util.run_script("statistics_csv_main.py")
-            if not 'data_visualization_1_main.py' in scriptName and 'visualization 1' in data_tools_options_widget.get():
-                run_script_util.run_script("data_visualization_1_main.py")
-            if not 'data_visualization_2_main.py' in scriptName and 'visualization 2' in data_tools_options_widget.get():
-                run_script_util.run_script("data_visualization_2_main.py")
+            if not 'data_visualization_main.py' in scriptName and 'visualization' in data_tools_options_widget.get():
+                run_script_util.run_script("data_visualization_main.py")
             if not 'sample_corpus_main.py' in scriptName and 'sampling' in data_tools_options_widget.get():
                 run_script_util.run_script("sample_corpus_main.py")
         data_tools_options_widget.trace('w',run_data_tool)
