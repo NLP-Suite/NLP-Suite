@@ -424,9 +424,8 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
             output_dir_path = inputDir + os.sep + "search_result_csv"
             if file[-4:] != '.txt':
                 continue
-        f_doc = open(file, "r", encoding='utf-8', errors='ignore')
-        docText = f_doc.read()
-        f_doc.close()
+        with open(file, "r", encoding='utf-8', errors='ignore') as f_doc:
+            docText = f_doc.read()
         import NGrams_CoOccurrences_util
         docText = NGrams_CoOccurrences_util.prepare_text_with_options(docText, case_sensitive, exact_word_match, lemmatize, lang)
 
@@ -572,7 +571,6 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                         # writer.writerow(all_found_csv_sentences_records_allDocs[i][0])
                     except:
                         continue
-        f_csv.close()
 
 # search in sentence
     else:
@@ -626,7 +624,6 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                             writer.writerow(all_found_csv_sentences_records_allDocs[i][j])
                         except:
                             continue
-            f_csv.close()
 
             if extract_sentences:
 
@@ -635,13 +632,11 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                 with open(outputFilename_extract_w_searchword, 'w', encoding='utf-8',
                           errors='ignore') as outputFile_extract_w_searchword:
                     outputFile_extract_w_searchword.write(
-                        all_found_sentences_allDocs)  # write out all the sentences containing the search word
-                outputFile_extract_w_searchword.close()
+                        all_found_sentences_allDocs)
                 with open(outputFilename_extract_wo_searchword, 'w', encoding='utf-8',
                           errors='ignore') as outputFile_extract_wo_searchword:
                     outputFile_extract_wo_searchword.write(
-                        all_adjacent_sentences_allDocs)  # write out all the sentences NOT containing the search word
-                outputFile_extract_wo_searchword.close()
+                        all_adjacent_sentences_allDocs)
 
     # when creating a subcorpus copy all the files in the set to a subdirectory 'subcorpus_search' of the input directory
     if create_subcorpus_var and len(corpus_to_copy) > 0:
@@ -766,9 +761,8 @@ def visualize_wordcloud(textToProcess, search_keywords_str, label, inputFilename
     # write to text file textToProcess for wordcloud
     outputFilenameTxt = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt', label)
     filesToOpen.append(outputFilenameTxt)
-    outputTxtFile = open(outputFilenameTxt, "w", encoding="utf-8", errors="ignore")
-    outputTxtFile.write(textToProcess)
-    outputTxtFile.close()
+    with open(outputFilenameTxt, "w", encoding="utf-8", errors="ignore") as outputTxtFile:
+        outputTxtFile.write(textToProcess)
 
     # run with all default values;
     use_contour_only = False

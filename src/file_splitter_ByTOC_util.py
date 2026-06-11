@@ -62,7 +62,8 @@ def splitDocument_byTOC(window,inputDocumentTobeSplit,inputTOCfile,outputDir,ope
             headings.append(heading.strip())
 
     # Read text file
-    fileContent = io.open(inputDocumentTobeSplit, "r", encoding="utf-8", errors='ignore').read()
+    with io.open(inputDocumentTobeSplit, "r", encoding="utf-8", errors='ignore') as f_toc:
+        fileContent = f_toc.read()
 
     # Extract text content for each heading
     for i in range(len(headings)):

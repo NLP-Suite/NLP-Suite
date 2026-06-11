@@ -14,6 +14,7 @@ def extract_fileContent_and_fileName(outputDir, fileContent, separator_begin, se
     lines = fileContent.splitlines()
     begin_len = len(separator_begin)
     file_to_save = ""
+    open_handles = {}
     for l in lines:
         if l[0:begin_len] == separator_begin:
             ID+=1
@@ -22,9 +23,11 @@ def extract_fileContent_and_fileName(outputDir, fileContent, separator_begin, se
         else:
             if file_to_save != "" and l!="":
                 subfilePath = os.path.join(outputDir, file_to_save)
-                subfile = open(subfilePath, "a", encoding='utf-8', errors='ignore')
-                subfile.write(l+"\n")
-                subfile.close()
+                if subfilePath not in open_handles:
+                    open_handles[subfilePath] = open(subfilePath, "a", encoding='utf-8', errors='ignore')
+                open_handles[subfilePath].write(l+"\n")
+    for fh in open_handles.values():
+        fh.close()
     return ID
 
 def run(inputFilename, separator_begin, separator_end, outputDir):
@@ -32,12 +35,11 @@ def run(inputFilename, separator_begin, separator_end, outputDir):
     nFiles=0
     head, tail = os.path.split(inputFilename)
     tail=tail[:-4]
-    file = open(inputFilename, "r", encoding="utf-8", errors='ignore')
-    fileContent = file.read()
+    with open(inputFilename, "r", encoding="utf-8", errors='ignore') as file:
+        fileContent = file.read()
     count_begin = fileContent.count(separator_begin)
-    if count_begin == 0: # not a merged file with separators; return silently the inputfile
+    if count_begin == 0:
         return [inputFilename]
-    # create a subdirectory in the output directory
     inputDir = ''
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='split', silent=True)
     if outputDir == '':
@@ -47,7 +49,6 @@ def run(inputFilename, separator_begin, separator_end, outputDir):
     count_end = fileContent.count(separator_end)
     if separator_begin==separator_end:
         count_end = count_end / 2
-    file.close()
     if count_begin>0 and count_end>0:
         nFiles = extract_fileContent_and_fileName(outputDir, fileContent, separator_begin, separator_end)
     else:

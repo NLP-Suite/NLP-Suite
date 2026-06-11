@@ -369,7 +369,6 @@ def getDocLength():
     with open(GUI_util.inputFilename.get(), 'r', encoding='utf-8', errors='ignore') as F:
         text = F.read()
         length = len(text.split())
-    F.close()
     current_docLength_var.set(length)
 
 getDocLength()

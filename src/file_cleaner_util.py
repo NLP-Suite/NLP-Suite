@@ -135,16 +135,16 @@ def check_typesetting_hyphenation(window,inputFilename,inputDir, outputDir='',co
         print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
         hyphenated_lines=0
         lines=[]
-    with open(infile, encoding='utf-8', errors='ignore') as source:
-        for line in source.readlines():
-            line = line.rstrip("\n")
-            if line.endswith("-"):
-                if len(line)>=2:
-                    if line[-2]==' ':
-                        continue
-                hyphenated_lines += 1
-                lin, _, e = line.rpartition(" ")
-                lines.append(line)
+        with open(infile, encoding='utf-8', errors='ignore') as source:
+            for line in source.readlines():
+                line = line.rstrip("\n")
+                if line.endswith("-"):
+                    if len(line)>=2:
+                        if line[-2]==' ':
+                            continue
+                    hyphenated_lines += 1
+                    lin, _, e = line.rpartition(" ")
+                    lines.append(line)
 
     if hyphenated_lines > 0:
         mb.showwarning('Warning', 'There are ' + str(
@@ -264,7 +264,6 @@ def remove_hard_carriage_returns(window,inputFilename,inputDir, outputDir='', co
                     new_paragraph = new_paragraph + paragraph + ' '
                     removed_hard_returns += 1
                 out.write(new_paragraph)
-        out.close()
     if removed_hard_returns > 0:
         if inputDir!='':
             save_msg = '\n\nOutput files saved in the subdirectory ' + outputDir + ' of the same directory of input files.'
@@ -319,14 +318,13 @@ def add_missing_blank_after_punctuation(window,inputFilename,inputDir, outputDir
             outfile = head + os.sep + tail.replace('.txt', label + '.txt')
         # outfile = outputDir + os.sep + tail.replace('.txt',label+'.txt')
         split_sentences=''
-        with open(infile,'r', encoding='utf-8', errors='ignore') as infile:
-            text = infile.read()
+        with open(infile,'r', encoding='utf-8', errors='ignore') as f_in:
+            text = f_in.read()
             processed_text = process_text_add_blank(text)
             if processed_text!=text:
                 blanks_added += 1
-                with open(outfile, 'w', encoding='utf-8',errors='ignore') as outfile:
-                    outfile.write(processed_text)
-                outfile.close()
+                with open(outfile, 'w', encoding='utf-8',errors='ignore') as f_out:
+                    f_out.write(processed_text)
     if blanks_added > 0:
         if inputDir!='':
             save_msg = '\n\nOutput files saved in the subdirectory ' + outputDir + ' of the same directory of input files.'
@@ -768,7 +766,6 @@ def convert_2_ASCII(window,inputFilename, inputDir, outputDir, configFileName):
                 docError = docError + 1
                 file.seek(0)
                 file.write(fullText)
-                file.close()
 
     if docError>0:
         if docError==1:
@@ -870,7 +867,6 @@ def find_replace_string(window,inputFilename, inputDir, outputDir, configFileNam
                     file.truncate(0)
                     file.write(fullText)
                     changed_values.append([[string_IN[i],string_OUT[i],index, IO_csv_util.dressFilenameForCSVHyperlink(doc)]])
-            file.close()
 
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'find_replace')
     header = ['Find string', 'Replace string', 'Document ID', 'Document']

@@ -48,8 +48,8 @@ def get_article_soc_actors(dir_path, soc_acts, nlp):
         print("      No documents found in folder")
     for file in my_files:
         print("      Processing document: "+file.split(os.path.sep)[-1])
-        fcontent = open(file, encoding='utf-8',errors='ignore').read()
-        # nouns to store all nouns in article
+        with open(file, encoding='utf-8', errors='ignore') as fh:
+            fcontent = fh.read()
         nouns = []
         #tokenize the article into words, and also filter out all the nouns and store them into "nouns"
         for word, pos in nlp.pos_tag(fcontent):
@@ -79,8 +79,8 @@ def get_article_soc_actors_NER(dir_path, soc_acts, nlp):
         print("      No documents found in folder")
     for file in my_files:
         print("      Processing document: "+file.split(os.path.sep)[-1])
-        fcontent = open(file, encoding='utf-8',errors='ignore').read()
-        # store the file name
+        with open(file, encoding='utf-8', errors='ignore') as fh:
+            fcontent = fh.read()
         fileName = file.split(os.path.sep)[-1]
         #tokenize the article into words, and also filter out all the nouns and store them into "nouns"
         for word, pos in nlp.pos_tag(fcontent):
@@ -114,7 +114,8 @@ def get_comp_soc_actors(id, soc_acts, c_path, nlp, checkNER):
     print("   Processing compilation: "+id + '.txt')
     #read the compilation, and check that it is not an empty folder
     try:
-        fcontent =open(my_path,'r',encoding="utf-8",errors='ignore').read()
+        with open(my_path, 'r', encoding="utf-8", errors='ignore') as fh:
+            fcontent = fh.read()
     except IOError:
         print("")
         print("   Error: There is no compilation for event ID",id)

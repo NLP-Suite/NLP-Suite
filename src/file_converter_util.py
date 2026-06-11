@@ -87,13 +87,11 @@ def pdf_converter(window,inputFilename, inputDir, outputDir,config_filename,open
                 except OSError as exc:
                     if exc.errno != errno.EEXIST:
                         raise
-            f = open(outputFilename, "w+", encoding="utf-8")
-            for page in PDFPage.get_pages(fp):
-                interpreter.process_page(page)
-                data = retstr.getvalue()
-            f.write(data)
-
-            f.close()
+            with open(outputFilename, "w", encoding="utf-8") as f:
+                for page in PDFPage.get_pages(fp):
+                    interpreter.process_page(page)
+                    data = retstr.getvalue()
+                f.write(data)
     IO_user_interface_util.timed_alert(window, 4000, 'Analysis end', 'Finished running pdf converter at', True, str(numberOfDocs) + ' files were successfully converted from pdf to txt format and saved in directory ' + os.path.dirname(outputFilename))
     if openOutputFiles and len(inputFilename)>0:
         IO_files_util.openFile(window, outputFilename)
@@ -223,7 +221,8 @@ def rtf_converter(window,inputFilename,inputDir,outputDir,config_filename, openO
         #fileExtension = os.path.splitext(doc)[1]
         if fileExtension =="rtf":
             lines = []#list of each line in the txt files
-            fullText = open(doc, 'r', encoding='utf-8',errors='ignore').read()
+            with open(doc, 'r', encoding='utf-8', errors='ignore') as rtf_fh:
+                fullText = rtf_fh.read()
             # https://stackoverflow.com/questions/60897366/how-to-read-rtf-file-and-convert-into-python3-strings-and-can-be-stored-in-pyth
             # https://stackoverflow.com/questions/44580580/how-to-convert-rtf-string-to-plain-text-in-python-using-any-library
             # https://stackoverflow.com/questions/188545/regular-expression-for-extracting-text-from-an-rtf-string/188877#188877

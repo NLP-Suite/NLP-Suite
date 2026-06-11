@@ -1,5 +1,4 @@
 import sys
-from tabnanny import verbose
 import GUI_util
 import IO_libraries_util
 
@@ -128,7 +127,8 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, 
         NLTK_english_vocab_lemmatized.insert(0, 'NLTK corpus lemmatized words')
         if IO_csv_util.list_to_csv(window, NLTK_english_vocab_lemmatized, outputFilename_NLTK_corpus): return
     else:
-        NLTK_english_vocab = open(NLTK_corpus_lemmatized, "r", encoding="utf-8", errors="ignore").read()
+        with open(NLTK_corpus_lemmatized, "r", encoding="utf-8", errors="ignore") as f:
+            NLTK_english_vocab = f.read()
         NLTK_english_vocab_lemmatized = NLTK_english_vocab.split('\n') # '\n'.english_vocab()
     NLTK_english_vocab_lemmatized.pop(0)
     # NLTK_english_vocab_lemmatized are distinct values
@@ -142,7 +142,8 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, 
         documentID=documentID+1
         head, tail = os.path.split(file)
         print("Processing file " + str(documentID) + "/" + str(nFile) + ' ' + tail)
-        text = (open(file, "r", encoding="utf-8", errors="ignore").read())
+        with open(file, "r", encoding="utf-8", errors="ignore") as f:
+            text = f.read()
         # text = text.lower()
         # text_list = text.split(" ")
         # the NLTK vocab is lowercase, lemmatized; must lemmatize your input
@@ -655,7 +656,7 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
     # word_list contains all the first element - token - of each row, i.e., a list of all words
     word_list = [elmt[0] for elmt in header_row_list_to_check]
     distinct_word_list = set(word_list)
-    word_freq_dict = {i: word_list.count(i) for i in set(word_list)}
+    word_freq_dict = dict(collections.Counter(word_list))
     # convert word_list to set to obtain a list of DISTINCT words
     # for each element in list_to_check, it is in this format:
     # word, NamedEntity, sentenceID, documentID, fileName
@@ -1013,7 +1014,7 @@ def spellchecking_text_blob(text: str, inputFilename) -> (str, DataFrame):
 #
 #         list_to_check = header_rows
 #         word_list = [elmt[0] for elmt in list_to_check]
-#         word_freq_dict = {i: word_list.count(i) for i in set(word_list)}
+#         word_freq_dict = dict(collections.Counter(word_list))
 #         for word in list_to_check:
 #             word.insert(1, word_freq_dict.get(word[0]))
 #             if 'pyspellchecker' in checker_package:
@@ -1164,7 +1165,8 @@ def language_detection(window, inputFilename, inputDir, outputDir, configFileNam
             fileID = fileID + 1
             head, tail = os.path.split(filename)
             print("Processing file " + str(fileID) + "/" + str(len(files)) + ' ' + tail)
-            text = open(filename, 'r', encoding='utf-8', errors='ignore').read()
+            with open(filename, 'r', encoding='utf-8', errors='ignore') as f_lang:
+                text = f_lang.read()
             if len(text)==0:
                 print("  The file is empty. It will be discarded from processing.")
                 docErrors_empty=docErrors_empty+1
@@ -1266,7 +1268,6 @@ def language_detection(window, inputFilename, inputDir, outputDir, configFileNam
             writer = csv.writer(csvfile)
             writer.writerows(currentLine)
             filenameSV=filename
-    csvfile.close()
     msg=''
     if docErrors_empty==0 and docErrors_unknown==0:
         msg=str(fileID) + ' documents successfully processed for language detection.'

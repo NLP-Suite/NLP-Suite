@@ -46,7 +46,8 @@ def get_article_soc_actors_NER(dir_path, soc_acts, nlp, keywords, printing):
     num_doc = 0
     for file in my_files:
         num_doc += 1
-        fcontent=open(file, encoding='utf-8',errors='ignore').read()
+        with open(file, encoding='utf-8', errors='ignore') as fh:
+            fcontent = fh.read()
         # store the file name
         fileName = file.split(os.path.sep)[-1]
         if printing:

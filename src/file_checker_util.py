@@ -172,7 +172,6 @@ def check_empty_file(inputFilename, inputDir, configFileName):
                 # mb.showerror(title='File empty',
                 #              message='The file ' + filename + ' is empty.')
                 print('   Empty file', tail)
-            myfile.close()
     if nDocs==1:
         if emptyFiles == 0:
             msg='The file "' + tail + '" is not empty'

@@ -111,26 +111,20 @@ def purge_duplicate_rows_byFilename(window, inputFilename, outputDir, openOutput
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 
-def fill_dictionary(row, dict, nameColNum=0, filenameColNum=2):
+def fill_dictionary(row, file_dict, nameColNum=0, filenameColNum=2):
     name = row[nameColNum]
     head, fName = os.path.split(row[filenameColNum])
-    # Add this file to the pdf dictionary
-    if name in dict:
-        # File exists in the dictionary, compare its length and date
-        dhead, dfName = os.path.split(dict.get(name)[filenameColNum])
+    if name in file_dict:
+        dhead, dfName = os.path.split(file_dict.get(name)[filenameColNum])
         if len(fName) > len(dfName):
-            # Len is greater, replace value in dictionary
-            dict[name] = row
+            file_dict[name] = row
         elif len(fName) == len(dfName):
-            # Lens are equal, take the one with most recent mod date
-            dictDate = get_creation_date(dict.get(name)[filenameColNum])[1]
+            dictDate = get_creation_date(file_dict.get(name)[filenameColNum])[1]
             testDate = get_creation_date(row[filenameColNum])[1]
             if dateGreater(testDate, dictDate):
-                # The current row has a newer file, update the value in dictionary to this row
-                dict[name] = row
+                file_dict[name] = row
     else:
-        # Not yet in dict, add it in
-        dict[name] = row
+        file_dict[name] = row
 
 
 def purge_partial_matches(window, inputFilename, outputDir, openOutputFiles, nameCol, filenameCol):
@@ -494,18 +488,10 @@ def get_author(path_to_file):
     import zipfile, lxml.etree
     # open zipfile
     try:
-        zf = zipfile.ZipFile(path_to_file)
-    except:
-        zf = ""
-    # use lxml to parse the xml file we are interested in
-    try:
-        doc = lxml.etree.fromstring(zf.read('docProps/core.xml'))
-    except:
-        doc = ""
-    # retrieve creator
-    ns = {'dc': 'http://purl.org/dc/elements/1.1/'}
-    try:
-        creator = doc.xpath('//dc:creator', namespaces=ns)[0].text
+        with zipfile.ZipFile(path_to_file) as zf:
+            doc = lxml.etree.fromstring(zf.read('docProps/core.xml'))
+            ns = {'dc': 'http://purl.org/dc/elements/1.1/'}
+            creator = doc.xpath('//dc:creator', namespaces=ns)[0].text
     except:
         creator = ""
     return creator
@@ -551,8 +537,8 @@ def get_creation_date(path_to_file):
             modification_date = datetime.fromtimestamp(os.path.getmtime(path_to_file)).strftime("%m/%d/%Y")
         except:
             modification_date = ''
-        if creation_date == None or modification_date == None:
-            creation_date, modification_date = ''
+        if creation_date is None or modification_date is None:
+            creation_date = modification_date = ''
         return creation_date, modification_date
     else:
         stat = os.stat(path_to_file)
