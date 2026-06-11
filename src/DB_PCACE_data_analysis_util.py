@@ -4062,11 +4062,11 @@ def lemmatize_simplex_values(inputDir, outputDir, simplex_name='', language='en'
 
 
 def apply_lemmatization_corrections(review_csv_path, inputDir):
-    """Apply user-approved lemmatization corrections from the review CSV back to
-    data_SimplexText.xlsx and data_SimplexText.pkl.
+    """Apply user-approved lemmatization corrections from the review CSV.
 
-    Same logic as apply_spell_check_corrections but reads 'Original value'
-    and 'Lemmatized form' columns instead of 'Value' and 'Suggested correction'.
+    Adds a 'Lemma' column to data_SimplexText (preserving the original 'Value').
+    Updates data_SimplexText.xlsx, data_SimplexText.pkl, and invalidates
+    NLP_data_Simplex_values_ALL.pkl so it rebuilds on next run.
     """
     global data_SimplexText_lib, data_simplex_values_ALL_lib
 
@@ -4111,14 +4111,17 @@ def apply_lemmatization_corrections(review_csv_path, inputDir):
         print("  No effective corrections (original == lemma for all accepted rows).")
         return 0
 
+    if 'Lemma' not in data_SimplexText_lib.columns:
+        data_SimplexText_lib['Lemma'] = ''
+
     total_changed = 0
     for old_val, new_val in corrections.items():
         mask = data_SimplexText_lib['Value'].astype(str) == old_val
         n_matches = mask.sum()
         if n_matches > 0:
-            data_SimplexText_lib.loc[mask, 'Value'] = new_val
+            data_SimplexText_lib.loc[mask, 'Lemma'] = new_val
             total_changed += n_matches
-            print(f"    Lemmatized: '{old_val}' -> '{new_val}' ({n_matches} occurrence(s))")
+            print(f"    Lemma added: '{old_val}' -> '{new_val}' ({n_matches} occurrence(s))")
 
     if total_changed == 0:
         print("  No matching values found in data_SimplexText — nothing changed.")
@@ -4147,8 +4150,27 @@ def apply_lemmatization_corrections(review_csv_path, inputDir):
     if os.path.isfile(all_pkl):
         os.remove(all_pkl)
 
-    print(f"  Applied {total_changed} lemmatization correction(s) across {len(corrections)} unique value(s).")
+    print(f"  Added Lemma for {total_changed} row(s) across {len(corrections)} unique value(s). Original values preserved.")
     return total_changed
+
+
+def get_spell_check_estimate(simplex_name=''):
+    """Return (total_unique_values, estimated_seconds) for the spell-check run."""
+    global data_simplex_values_ALL_lib
+    if data_simplex_values_ALL_lib is None or data_simplex_values_ALL_lib.empty:
+        return 0, 0
+    if 'ValueType' in data_simplex_values_ALL_lib.columns:
+        text_data = data_simplex_values_ALL_lib[
+            data_simplex_values_ALL_lib['ValueType'].astype(float).fillna(0).astype(int) == 1]
+    else:
+        text_data = data_simplex_values_ALL_lib
+    if simplex_name:
+        text_data = text_data[text_data['Simplex name'] == simplex_name]
+    total_unique = 0
+    for _, grp in text_data.groupby('Simplex name'):
+        total_unique += grp['Value'].dropna().astype(str).nunique()
+    est_seconds = max(1, int(total_unique * total_unique * 0.000002))
+    return total_unique, est_seconds
 
 
 def find_near_duplicate_simplex_values(inputDir, outputDir, simplex_name='', similarity_threshold=0.8):
@@ -4231,25 +4253,22 @@ def find_near_duplicate_simplex_values(inputDir, outputDir, simplex_name='', sim
                     })
 
         # Find fuzzy near-duplicates using SequenceMatcher
-        checked = set()
-        for i, v1 in enumerate(unique_vals):
-            v1_lower = v1.strip().lower()
-            if len(v1_lower) < 3:
-                continue  # Skip very short strings (too many false positives)
-            for j, v2 in enumerate(unique_vals):
-                if j <= i:
-                    continue
-                v2_lower = v2.strip().lower()
-                if len(v2_lower) < 3:
-                    continue
+        # Pre-sort by normalized form for faster length-based pruning
+        norm_vals = [(v, v.strip().lower()) for v in unique_vals if len(v.strip()) >= 3]
+        norm_vals.sort(key=lambda x: len(x[1]))
+        for i, (v1, v1_lower) in enumerate(norm_vals):
+            len1 = len(v1_lower)
+            for j in range(i + 1, len(norm_vals)):
+                v2, v2_lower = norm_vals[j]
+                len2 = len(v2_lower)
+                if len2 > len1 / similarity_threshold:
+                    break
                 if v1_lower == v2_lower:
-                    continue  # Already handled as case variants
-                pair_key = (min(v1, v2), max(v1, v2))
-                if pair_key in checked:
                     continue
-                checked.add(pair_key)
-
-                ratio = difflib.SequenceMatcher(None, v1_lower, v2_lower).ratio()
+                sm = difflib.SequenceMatcher(None, v1_lower, v2_lower)
+                if sm.quick_ratio() < similarity_threshold:
+                    continue
+                ratio = sm.ratio()
                 if ratio >= similarity_threshold:
                     # The more frequent one is likely the correct spelling
                     if freq_map.get(v1, 0) >= freq_map.get(v2, 0):
@@ -4405,6 +4424,149 @@ def apply_spell_check_corrections(review_csv_path, inputDir):
     print(f"  Updated: {xlsx_path}")
     print(f"  Updated: {pkl_path}")
 
+    return total_changed
+
+
+def apply_aggregate_corrections(edited_csv_path, inputDir, original_csv_path=None):
+    """Apply user edits from a modified side-by-side CSV back to data_SimplexText.
+
+    Compares the edited CSV against the original (or against the database) to find
+    changed aggregate code values. Updates data_SimplexText.xlsx and .pkl.
+
+    Parameters
+    ----------
+    edited_csv_path : str
+        Path to the user-edited side-by-side CSV.
+    inputDir : str
+        PC-ACE database directory.
+    original_csv_path : str, optional
+        Path to the original side-by-side CSV for diff. If None, diffs against DB values.
+
+    Returns
+    -------
+    int
+        Number of corrections applied, or -1 on error.
+    """
+    global data_SimplexText_lib, data_simplex_values_ALL_lib
+
+    if hasattr(inputDir, 'get'):
+        inputDir = inputDir.get()
+
+    edited_df = pd.read_csv(edited_csv_path, encoding='utf-8')
+    if 'ID_data_complex' not in edited_df.columns:
+        print("  ERROR: edited CSV missing ID_data_complex column")
+        return -1
+
+    meta_cols = {'Complex', 'ID_data_complex', 'Identifier'}
+    simplex_cols = [c for c in edited_df.columns if c not in meta_cols]
+    if not simplex_cols:
+        print("  ERROR: no simplex columns found in edited CSV")
+        return -1
+
+    if original_csv_path and os.path.isfile(original_csv_path):
+        orig_df = pd.read_csv(original_csv_path, encoding='utf-8')
+    else:
+        orig_df = None
+
+    ds = _load_table_from_dir(inputDir, 'data_Simplex')
+    ss = _load_table_from_dir(inputDir, 'setup_Simplex')
+    if ds.empty or ss.empty:
+        print("  ERROR: could not load data_Simplex or setup_Simplex")
+        return -1
+
+    ds_id_col = 'ID_data_simplex' if 'ID_data_simplex' in ds.columns else 'ID'
+    ds_ref_col = 'ID_data_date_number_text' if 'ID_data_date_number_text' in ds.columns else 'refValue'
+    ds_setup_col = 'ID_setup_simplex' if 'ID_setup_simplex' in ds.columns else 'SimplexType'
+    ss_id_col = 'ID_setup_simplex' if 'ID_setup_simplex' in ss.columns else 'ID'
+
+    simplex_name_to_setup_id = dict(zip(ss['Name'], ss[ss_id_col]))
+
+    xref_sc = _load_table_from_dir(inputDir, 'data_xref_Simplex-Complex')
+    if xref_sc.empty:
+        print("  ERROR: could not load data_xref_Simplex-Complex")
+        return -1
+    xref_simplex_col = 'ID_data_simplex' if 'ID_data_simplex' in xref_sc.columns else 'Simplex'
+    xref_complex_col = 'ID_data_complex' if 'ID_data_complex' in xref_sc.columns else 'Complex'
+
+    if data_SimplexText_lib is None or data_SimplexText_lib.empty:
+        xlsx_path = os.path.join(inputDir, 'data_SimplexText.xlsx')
+        pkl_path = os.path.join(inputDir, 'data_SimplexText.pkl')
+        if os.path.isfile(pkl_path):
+            data_SimplexText_lib = pd.read_pickle(pkl_path)
+        elif os.path.isfile(xlsx_path):
+            data_SimplexText_lib = pd.read_excel(xlsx_path)
+        else:
+            print("  ERROR: cannot find data_SimplexText")
+            return -1
+
+    total_changed = 0
+    for _, row in edited_df.iterrows():
+        cid = row['ID_data_complex']
+        for scol in simplex_cols:
+            new_val = str(row.get(scol, '')).strip()
+            if not new_val or new_val == 'nan':
+                continue
+
+            if orig_df is not None:
+                orig_row = orig_df[orig_df['ID_data_complex'] == cid]
+                if not orig_row.empty:
+                    old_val = str(orig_row.iloc[0].get(scol, '')).strip()
+                    if old_val == new_val:
+                        continue
+                else:
+                    continue
+            setup_id = simplex_name_to_setup_id.get(scol)
+            if setup_id is None:
+                continue
+
+            simplex_ids_for_setup = ds[ds[ds_setup_col] == setup_id][ds_id_col].tolist()
+            simplex_ids_for_complex = xref_sc[xref_sc[xref_complex_col] == cid][xref_simplex_col].tolist()
+            matching_simplex_ids = set(simplex_ids_for_setup) & set(simplex_ids_for_complex)
+
+            for sid in matching_simplex_ids:
+                ref_rows = ds[ds[ds_id_col] == sid]
+                if ref_rows.empty:
+                    continue
+                text_id = ref_rows.iloc[0][ds_ref_col]
+                mask = data_SimplexText_lib['ID_data_date_number_text'] == text_id
+                if mask.any():
+                    old = str(data_SimplexText_lib.loc[mask, 'Value'].iloc[0])
+                    if old != new_val:
+                        data_SimplexText_lib.loc[mask, 'Value'] = new_val
+                        total_changed += 1
+                        print(f"    Updated: complex {cid}, {scol}: '{old}' -> '{new_val}'")
+
+    if total_changed == 0:
+        print("  No changes detected.")
+        return 0
+
+    import shutil
+    xlsx_path = os.path.join(inputDir, 'data_SimplexText.xlsx')
+    pkl_path = os.path.join(inputDir, 'data_SimplexText.pkl')
+    tmp_xlsx = xlsx_path + '.tmp'
+    tmp_pkl = pkl_path + '.tmp'
+
+    try:
+        data_SimplexText_lib.to_excel(tmp_xlsx, index=False)
+        data_SimplexText_lib.to_pickle(tmp_pkl)
+        shutil.move(tmp_xlsx, xlsx_path)
+        shutil.move(tmp_pkl, pkl_path)
+    except Exception as e:
+        print(f"  ERROR writing corrected files: {e}")
+        for f in [tmp_xlsx, tmp_pkl]:
+            if os.path.isfile(f):
+                os.remove(f)
+        return -1
+
+    data_simplex_values_ALL_lib = None
+    all_pkl = os.path.join(inputDir, 'NLP_data_Simplex_values_ALL.pkl')
+    if os.path.isfile(all_pkl):
+        os.remove(all_pkl)
+    xref_pkl = os.path.join(inputDir, 'NLP_data_xref_Simplex-Complex_ALL.pkl')
+    if os.path.isfile(xref_pkl):
+        os.remove(xref_pkl)
+
+    print(f"  Applied {total_changed} aggregate code correction(s).")
     return total_changed
 
 

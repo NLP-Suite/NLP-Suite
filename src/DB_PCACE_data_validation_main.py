@@ -71,10 +71,6 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
     GUI_util.window.config(cursor='watch')
     GUI_util.window.update()
 
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-        'Started running PC-ACE data validation at',
-        True, '', True, '', False)
-
     if not _ensure_database_loaded(inputDir):
         mb.showwarning(title='Warning',
                        message='Could not load the PC-ACE database from the selected directory.\n\n'
@@ -100,9 +96,44 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
                                '  - Side-by-side mapping with aggregate simplexes')
         return
 
+    def _spell_check_bar_chart(dupes_csv, n_total, outputDir):
+        """Create a bar chart: flagged vs correct unique text values."""
+        try:
+            import matplotlib
+            matplotlib.use('Agg')
+            import matplotlib.pyplot as plt
+            dupes_df = pd.read_csv(dupes_csv)
+            n_flagged = dupes_df['Value'].nunique() if 'Value' in dupes_df.columns else len(dupes_df)
+            n_correct = max(0, n_total - n_flagged)
+            fig, ax = plt.subplots(figsize=(6, 4))
+            bars = ax.bar(['Flagged for review', 'No issues'], [n_flagged, n_correct],
+                          color=['#e74c3c', '#2ecc71'])
+            for bar in bars:
+                ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.5,
+                        str(int(bar.get_height())), ha='center', va='bottom', fontweight='bold')
+            ax.set_ylabel('Unique text values')
+            ax.set_title('Spell-check results')
+            chart_path = os.path.join(outputDir, 'spell_check_summary.png')
+            plt.tight_layout()
+            plt.savefig(chart_path, dpi=150)
+            plt.close()
+            return chart_path
+        except Exception as e:
+            print(f"  WARNING: Could not create spell-check bar chart: {e}")
+            return None
+
     # ── Spell-check ──────────────────────────────────────────────────────────
     if spell_check_var.get() == 1:
         simplex_name = spell_check_simplex_var.get()
+        sx_for_est = simplex_name if (simplex_name and simplex_name != 'ALL text simplexes') else ''
+        n_vals, est_sec = DB_PCACE_data_analysis_util.get_spell_check_estimate(sx_for_est)
+        if est_sec >= 60:
+            est_msg = f'\n\n{n_vals} unique text values to compare. Estimated time: ~{est_sec // 60} minute(s).'
+        else:
+            est_msg = f'\n\n{n_vals} unique text values to compare. Estimated time: ~{est_sec} second(s).'
+        startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+            'Started running PC-ACE data validation spell check at',
+            True, est_msg, True, '', False)
         if simplex_name and simplex_name != 'ALL text simplexes':
             # Check specific simplex — verify it's text-typed
             vtype = DB_PCACE_data_analysis_util.get_simplex_value_type(simplex_name)
@@ -116,6 +147,10 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
                         inputDir, outputDir, simplex_name=simplex_name)
                     if dupes_csv and os.path.isfile(dupes_csv):
                         filesToOpen.append(dupes_csv)
+                        csv_file_var.set(dupes_csv)
+                        chart = _spell_check_bar_chart(dupes_csv, n_vals, outputDir)
+                        if chart:
+                            filesToOpen.append(chart)
                         mb.showinfo(title='Spell-check review',
                                     message=f'Spell-check found potential duplicates/misspellings for '
                                             f'"{simplex_name}".\n\n'
@@ -124,7 +159,7 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
                                             f'  1. Open the CSV and review each row.\n'
                                             f'  2. Edit the "Suggested correction" column if needed.\n'
                                             f'  3. Set "Accept?" to N for rows you want to skip.\n'
-                                            f'  4. Save the CSV, then click the APPLY CORRECTIONS button.')
+                                            f'  4. Save the CSV, then click the "Apply changes" button.')
                     else:
                         mb.showinfo(title='Spell-check',
                                     message=f'No near-duplicate or misspelled values found for "{simplex_name}".')
@@ -138,6 +173,10 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
                     inputDir, outputDir, simplex_name='')
                 if dupes_csv and os.path.isfile(dupes_csv):
                     filesToOpen.append(dupes_csv)
+                    csv_file_var.set(dupes_csv)
+                    chart = _spell_check_bar_chart(dupes_csv, n_vals, outputDir)
+                    if chart:
+                        filesToOpen.append(chart)
                     mb.showinfo(title='Spell-check review',
                                 message='Spell-check scanned ALL text simplexes in the database.\n\n'
                                         f'The review file has been saved to:\n{dupes_csv}\n\n'
@@ -145,7 +184,7 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
                                         '  1. Open the CSV and review each row.\n'
                                         '  2. Edit the "Suggested correction" column if needed.\n'
                                         '  3. Set "Accept?" to N for rows you want to skip.\n'
-                                        '  4. Save the CSV, then click the APPLY CORRECTIONS button.')
+                                        '  4. Save the CSV, then click the "Apply changes" button.')
                 else:
                     mb.showinfo(title='Spell-check',
                                 message='No near-duplicate or misspelled values found across any text simplex.')
@@ -153,8 +192,15 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
                 mb.showerror(title='Spell-check error',
                              message=f'Spell-check failed:\n\n{e}')
 
+        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+            'Finished running PC-ACE data validation spell check at',
+            True, '', True, startTime, False)
+
     # ── Lemmatization ──────────────────────────────────────────────────────────
     if lemmatize_var.get() == 1:
+        startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+            'Started running PC-ACE data validation lemmatization at',
+            True, '', True, '', False)
         lang_name = lemmatize_lang_var.get()
         lang_code = Stanza_util.lang_dict_rev.get(lang_name, 'en')
 
@@ -202,20 +248,28 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
 
             if all_lemma_files:
                 filesToOpen.extend(all_lemma_files)
+                csv_file_var.set(all_lemma_files[-1])
                 mb.showinfo(title='Lemmatization review',
                             message=f'Lemmatization produced {len(all_lemma_files)} review file(s).\n\n'
                                     f'To apply:\n'
                                     f'  1. Open each CSV and review the rows.\n'
                                     f'  2. Edit the "Lemmatized form" column if needed.\n'
                                     f'  3. Set "Accept?" to N for rows you want to skip.\n'
-                                    f'  4. Save the CSV, then click APPLY LEMMATIZATION.')
+                                    f'  4. Save the CSV, then click the "Apply changes" button.')
             else:
                 mb.showinfo(title='Lemmatization',
                             message='No values changed after lemmatization.\n\n'
                                     'All text values in the selected simplexes are already in their base form.')
 
+        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+            'Finished running PC-ACE data validation lemmatization at',
+            True, '', True, startTime, False)
+
     # ── Aggregate code validation ───────────────────────────────────────────────
     if run_cross_db or run_side_by_side or has_agg_simplexes:
+        startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+            'Started running PC-ACE data validation aggregate code assessment at',
+            True, '', True, '', False)
         # Build the list of DB directories
         db_dirs = list(_agg_db_dirs)
         # Include the current inputDir if not already in the list
@@ -307,15 +361,22 @@ def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformat
                             mb.showerror(title='Side-by-side error',
                                          message=f'Side-by-side mapping failed for {os.path.basename(db_dir)}:\n\n{e}')
                     if filesToOpen:
+                        side_csvs = [f for f in filesToOpen if f.endswith('.csv')]
+                        if side_csvs:
+                            csv_file_var.set(side_csvs[-1])
+                            _original_side_by_side_csv[0] = side_csvs[-1] + '.orig'
+                            import shutil
+                            shutil.copy2(side_csvs[-1], _original_side_by_side_csv[0])
                         mb.showinfo(title='Side-by-side mapping',
                                     message=f'Side-by-side mapping produced files for {len(db_dirs)} database(s).\n\n'
-                                            f'Each CSV shows original values alongside their aggregate codes.')
+                                            f'Each CSV shows original values alongside their aggregate codes.\n\n'
+                                            f'To update aggregate codes: edit the CSV, then click the "Apply changes" button.')
+
+        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+            'Finished running PC-ACE data validation aggregate code assessment at',
+            True, '', True, startTime, False)
 
     GUI_util.window.config(cursor='')
-
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-        'Finished running PC-ACE data validation at',
-        True, '', True, startTime, False)
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -456,7 +517,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configurat
                                                "Open INPUT csv file")
 
 # CSV file path entry
-csv_file_entry = tk.Entry(window, width=GUI_IO_util.csv_file_width - 8, textvariable=csv_file_var)
+# GUI_IO_util.csv_file_width - 8
+csv_file_entry = tk.Entry(window, width=115, textvariable=csv_file_var)
 csv_file_entry.config(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                                csv_file_entry, True)
@@ -466,10 +528,66 @@ def _clear_csv_file():
     csv_file_var.set('')
 
 clear_csv_button = tk.Button(window, text='Clear', width=5, command=lambda: _clear_csv_file())
-y_multiplier_integer = GUI_IO_util.placeWidget(window, 1150, y_multiplier_integer,
-                                               clear_csv_button, False, False, True, False, 90,
-                                               GUI_IO_util.open_setup_x_coordinate,
+clear_csv_button.config(state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_file_button_brief, y_multiplier_integer,
+                                               clear_csv_button, True, False, True, False, 90,
+                                               GUI_IO_util.run_button_x_coordinate,
                                                "Click to clear the INPUT CSV file.")
+
+def _on_csv_file_changed(*args):
+    if csv_file_var.get():
+        clear_csv_button.config(state='normal')
+        apply_changes_button.config(state='normal')
+    else:
+        clear_csv_button.config(state='disabled')
+        apply_changes_button.config(state='disabled')
+
+def _apply_changes():
+    """Detect CSV type from column headers and dispatch to the right apply function."""
+    csv_path = csv_file_var.get()
+    if not csv_path or not os.path.isfile(csv_path):
+        mb.showwarning(title='Apply changes',
+                       message='No CSV file loaded.\n\n'
+                               'Run a validation task first, then load or select the output CSV.')
+        return
+    inputDir_val = inputDir.get() if hasattr(inputDir, 'get') else inputDir
+    if not inputDir_val:
+        mb.showwarning(title='Apply changes',
+                       message='Please select a PC-ACE database directory first.')
+        return
+    if not _ensure_database_loaded(inputDir_val):
+        mb.showwarning(title='Apply changes',
+                       message='Could not load the PC-ACE database. Please check the input directory.')
+        return
+    import pandas as pd
+    try:
+        cols = set(pd.read_csv(csv_path, nrows=0).columns)
+    except Exception as e:
+        mb.showerror(title='Apply changes', message=f'Could not read CSV headers:\n\n{e}')
+        return
+    if 'Suggested correction' in cols:
+        _apply_spell_check_corrections(csv_path)
+    elif 'Lemmatized form' in cols:
+        _apply_lemmatization_corrections(csv_path)
+    else:
+        _apply_aggregate_corrections()
+
+apply_changes_button = tk.Button(window, text='Apply changes', width=12, command=_apply_changes)
+apply_changes_button.config(state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_file_button_brief+60, y_multiplier_integer,
+                                               apply_changes_button, False, False, True, False, 90,
+                                               GUI_IO_util.open_reminders_x_coordinate,
+                                               "Apply corrections from the loaded CSV back to the PC-ACE database.\n\n"
+                                               "Automatically detects the CSV type:\n"
+                                               "  - Spell-check (has 'Suggested correction' column)\n"
+                                               "  - Lemmatization (has 'Lemmatized form' column)\n"
+                                               "  - Aggregate codes (side-by-side mapping CSV)\n\n"
+                                               "Steps:\n"
+                                               "  1. Run a validation task to produce a review CSV.\n"
+                                               "  2. Open and edit the CSV as needed.\n"
+                                               "  3. Save it, then click this button.")
+
+csv_file_var.trace_add('write', _on_csv_file_changed)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # ── Spell-check / near-duplicate detection ────────────────────────────────────
@@ -484,7 +602,8 @@ spell_check_checkbox = tk.Checkbutton(window, text='Run spell-check', variable=s
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    spell_check_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "Find near-duplicate and misspelled text values in the PC-ACE database.\n"
+                                   "Find near-duplicate and misspelled text values in the PC-ACE database\n"
+                                   "using language-independent character similarity.\n\n"
                                    "Select a specific simplex from the dropdown or leave as 'ALL text simplexes'\n"
                                    "to scan every text simplex in the database.\n\n"
                                    "Produces a review CSV with suggested corrections and an Accept?/Reject column.")
@@ -499,34 +618,24 @@ spell_check_simplex_menu['values'] = ['ALL text simplexes']
 spell_check_simplex_menu.bind('<<ComboboxSelected>>', _combobox_release_focus)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 200, y_multiplier_integer,
                                    spell_check_simplex_menu,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 200,
+                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 200,
                                    "Select which simplex to spell-check.\n"
                                    "'ALL text simplexes' checks every text-typed simplex in the database.")
 
-# ── Apply corrections button ─────────────────────────────────────────────────
-
-def _apply_spell_check_corrections():
-    """Open a file dialog for the reviewed spell-check CSV and apply accepted corrections."""
+def _apply_spell_check_corrections(csv_path=None):
+    """Apply accepted spell-check corrections from the CSV back to data_SimplexText."""
     inputDir_val = inputDir.get() if hasattr(inputDir, 'get') else inputDir
-    outputDir_val = outputDir.get() if hasattr(outputDir, 'get') else outputDir
-    if not inputDir_val:
-        mb.showwarning(title='Apply corrections',
-                       message='Please select a PC-ACE database directory first.')
-        return
-    if not _ensure_database_loaded(inputDir_val):
-        mb.showwarning(title='Apply corrections',
-                       message='Could not load the PC-ACE database. Please check the input directory.')
-        return
-    csv_path = filedialog.askopenfilename(
-        title='Select the reviewed spell-check CSV',
-        initialdir=outputDir_val if outputDir_val else inputDir_val,
-        filetypes=[('CSV files', '*.csv'), ('All files', '*.*')])
     if not csv_path:
-        return
-    # Backup data_SimplexText files before applying corrections
+        outputDir_val = outputDir.get() if hasattr(outputDir, 'get') else outputDir
+        csv_path = filedialog.askopenfilename(
+            title='Select the reviewed spell-check CSV',
+            initialdir=outputDir_val if outputDir_val else inputDir_val,
+            filetypes=[('CSV files', '*.csv'), ('All files', '*.*')])
+        if not csv_path:
+            return
     proceed = file_filename_util.backup_files('', inputDir_val, 'Apply spell-check corrections', fileType='.xlsx')
     if not proceed:
-        return  # User cancelled
+        return
     n_applied = DB_PCACE_data_analysis_util.apply_spell_check_corrections(csv_path, inputDir_val)
     if n_applied > 0:
         mb.showinfo(title='Corrections applied',
@@ -541,19 +650,6 @@ def _apply_spell_check_corrections():
     else:
         mb.showerror(title='Error',
                      message='An error occurred while applying corrections.\nCheck the console output for details.')
-
-apply_corrections_button = tk.Button(window, text='Apply corrections', command=_apply_spell_check_corrections)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
-                                   apply_corrections_button,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "After running spell-check, review the CSV output, then click here\n"
-                                   "to apply accepted corrections back to data_SimplexText.xlsx and .pkl.\n\n"
-                                   "Steps:\n"
-                                   "  1. Run spell-check (checkbox above) to produce the review CSV.\n"
-                                   "  2. Open the CSV and review each row.\n"
-                                   "  3. Edit 'Suggested correction' if needed.\n"
-                                   "  4. Set 'Accept?' to N for rows you want to skip.\n"
-                                   "  5. Save the CSV, then click this button.")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # ── Lemmatize simplex values (Stanza) ─────────────────────────────────────────
@@ -582,39 +678,30 @@ lemmatize_lang_menu = ttk.Combobox(window, textvariable=lemmatize_lang_var, widt
                                     values=_stanza_languages, state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 200, y_multiplier_integer,
                                    lemmatize_lang_menu,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 200,
+                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 200,
                                    "Select the language for Stanza lemmatization.\n"
                                    "All languages supported by Stanza are listed.")
 lemmatize_lang_menu.bind('<<ComboboxSelected>>', _combobox_release_focus)
 
-# Apply lemmatization corrections button
-def _apply_lemmatization_corrections():
-    """Open a file dialog for the reviewed lemmatization CSV and apply accepted corrections."""
+def _apply_lemmatization_corrections(csv_path=None):
+    """Apply accepted lemmatization corrections from the CSV back to data_SimplexText."""
     inputDir_val = inputDir.get() if hasattr(inputDir, 'get') else inputDir
-    outputDir_val = outputDir.get() if hasattr(outputDir, 'get') else outputDir
-    if not inputDir_val:
-        mb.showwarning(title='Apply lemmatization',
-                       message='Please select a PC-ACE database directory first.')
-        return
-    if not _ensure_database_loaded(inputDir_val):
-        mb.showwarning(title='Apply lemmatization',
-                       message='Could not load the PC-ACE database. Please check the input directory.')
-        return
-    csv_path = filedialog.askopenfilename(
-        title='Select the reviewed lemmatization CSV',
-        initialdir=outputDir_val if outputDir_val else inputDir_val,
-        filetypes=[('CSV files', '*.csv'), ('All files', '*.*')])
     if not csv_path:
-        return
-    # Backup data_SimplexText files before applying lemmatization
+        outputDir_val = outputDir.get() if hasattr(outputDir, 'get') else outputDir
+        csv_path = filedialog.askopenfilename(
+            title='Select the reviewed lemmatization CSV',
+            initialdir=outputDir_val if outputDir_val else inputDir_val,
+            filetypes=[('CSV files', '*.csv'), ('All files', '*.*')])
+        if not csv_path:
+            return
     proceed = file_filename_util.backup_files('', inputDir_val, 'Apply lemmatization corrections', fileType='.xlsx')
     if not proceed:
-        return  # User cancelled
+        return
     n_applied = DB_PCACE_data_analysis_util.apply_lemmatization_corrections(csv_path, inputDir_val)
     if n_applied > 0:
         mb.showinfo(title='Lemmatization applied',
-                    message=f'Successfully applied {n_applied} lemmatization correction(s) to data_SimplexText.\n\n'
-                            f'The xlsx and pkl files have been updated.')
+                    message=f'Added Lemma column for {n_applied} row(s) in data_SimplexText.\n\n'
+                            f'Original values are preserved. The xlsx and pkl files have been updated.')
     elif n_applied == 0:
         mb.showinfo(title='No changes',
                     message='No lemmatization corrections were applied.\n\n'
@@ -623,13 +710,6 @@ def _apply_lemmatization_corrections():
     else:
         mb.showerror(title='Error',
                      message='An error occurred while applying lemmatization.\nCheck the console output for details.')
-
-apply_lemma_button = tk.Button(window, text='Apply lemmatization', state='disabled', command=_apply_lemmatization_corrections)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
-                                   apply_lemma_button,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "After running lemmatization, review the CSV output, then click here\n"
-                                   "to apply accepted lemmatizations back to data_SimplexText.xlsx and .pkl.")
 
 
 # ── Noun simplex types (combobox + add) ──────────────────────────────────────
@@ -652,18 +732,27 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_c
 lemmatize_nouns_menu.bind('<<ComboboxSelected>>', _combobox_release_focus)
 
 def _update_noun_hover():
-    """Update the + button hover-over to show current NOUN selections."""
+    """Update hover-overs for the NOUN combobox and + button to show current selections."""
     if _noun_simplex_list:
-        tip = 'Click + to add another NOUN simplex.\n\nCurrent NOUN selections:\n  ' + \
-              ', '.join(_noun_simplex_list)
+        selected = '\n\nSelected NOUN simplexes:\n  ' + '\n  '.join(_noun_simplex_list)
+        btn_tip = 'Click + to add another NOUN simplex.' + selected
     else:
-        tip = 'Click + to add the selected simplex type to the NOUN lemmatization list.'
+        selected = ''
+        btn_tip = 'Click + to add the selected simplex type to the NOUN lemmatization list.'
+    combo_tip = ("Select a simplex type that contains NOUN values, then click + to add it.\n\n"
+                 "Examples: Name of individual actor, Name of collective actor,\n"
+                 "Physical objects, Role in organizations, Nome attore, etc.\n\n"
+                 "Stanza will apply NOUN lemmatization to values from these simplexes." + selected)
     y_pos = GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step * _noun_btn_y
     add_noun_button.bind('<Enter>',
-        lambda e, t=tip: (e.widget.config(background='red', foreground='black'),
+        lambda e, t=btn_tip: (e.widget.config(background='red', foreground='black'),
                           GUI_IO_util.display_widget_info(window, e,
                               GUI_IO_util.open_TIPS_x_coordinate + 280, y_pos - 20,
                               GUI_IO_util.open_TIPS_x_coordinate + 280, t)))
+    lemmatize_nouns_menu.bind('<Enter>',
+        lambda e, t=combo_tip: GUI_IO_util.display_widget_info(window, e,
+            GUI_IO_util.open_TIPS_x_coordinate, y_pos - 20,
+            GUI_IO_util.open_TIPS_x_coordinate, t))
 
 def _add_noun_simplex():
     val = lemmatize_nouns_var.get()
@@ -709,18 +798,26 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_c
 lemmatize_verbs_menu.bind('<<ComboboxSelected>>', _combobox_release_focus)
 
 def _update_verb_hover():
-    """Update the + button hover-over to show current VERB selections."""
+    """Update hover-overs for the VERB combobox and + button to show current selections."""
     if _verb_simplex_list:
-        tip = 'Click + to add another VERB simplex.\n\nCurrent VERB selections:\n  ' + \
-              ', '.join(_verb_simplex_list)
+        selected = '\n\nSelected VERB simplexes:\n  ' + '\n  '.join(_verb_simplex_list)
+        btn_tip = 'Click + to add another VERB simplex.' + selected
     else:
-        tip = 'Click + to add the selected simplex type to the VERB lemmatization list.'
+        selected = ''
+        btn_tip = 'Click + to add the selected simplex type to the VERB lemmatization list.'
+    combo_tip = ("Select a simplex type that contains VERB values, then click + to add it.\n\n"
+                 "Examples: Verbal phrase, Nominalization, Frase verbale, etc.\n\n"
+                 "Stanza will apply VERB lemmatization to values from these simplexes." + selected)
     y_pos = GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step * _verb_btn_y
     add_verb_button.bind('<Enter>',
-        lambda e, t=tip: (e.widget.config(background='red', foreground='black'),
+        lambda e, t=btn_tip: (e.widget.config(background='red', foreground='black'),
                           GUI_IO_util.display_widget_info(window, e,
                               GUI_IO_util.open_TIPS_x_coordinate + 700, y_pos - 20,
                               GUI_IO_util.open_TIPS_x_coordinate + 700, t)))
+    lemmatize_verbs_menu.bind('<Enter>',
+        lambda e, t=combo_tip: GUI_IO_util.display_widget_info(window, e,
+            GUI_IO_util.open_TIPS_x_coordinate + 470, y_pos - 20,
+            GUI_IO_util.open_TIPS_x_coordinate + 470, t))
 
 def _add_verb_simplex():
     val = lemmatize_verbs_var.get()
@@ -736,9 +833,9 @@ def _reset_verb_simplexes():
 
 add_verb_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled', command=_add_verb_simplex)
 _verb_btn_y = y_multiplier_integer
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 680, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate, y_multiplier_integer,
                                    add_verb_button,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 740,
+                                   True, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
                                    "Click + to add the selected simplex type to the VERB lemmatization list.")
 
 reset_verb_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width, height=1, state='disabled', command=_reset_verb_simplexes)
@@ -753,7 +850,6 @@ def _toggle_lemmatize_widgets(*args):
         add_verb_button.configure(state='normal')
         reset_verb_button.configure(state='normal')
         lemmatize_lang_menu.configure(state='readonly')
-        apply_lemma_button.configure(state='normal')
     else:
         lemmatize_nouns_menu.configure(state='disabled')
         add_noun_button.configure(state='disabled')
@@ -762,12 +858,11 @@ def _toggle_lemmatize_widgets(*args):
         add_verb_button.configure(state='disabled')
         reset_verb_button.configure(state='disabled')
         lemmatize_lang_menu.configure(state='disabled')
-        apply_lemma_button.configure(state='disabled')
 
 lemmatize_var.trace('w', _toggle_lemmatize_widgets)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 720, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate + 35, y_multiplier_integer,
                                    reset_verb_button,
-                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 780,
+                                   False, False, True, False, 90, GUI_IO_util.run_button_x_coordinate,
                                    "Click Reset to clear the VERB simplex list and start fresh.")
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -811,7 +906,7 @@ agg_db_var = tk.StringVar()
 agg_db_menu = ttk.Combobox(window, textvariable=agg_db_var, width=80, state='readonly')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    agg_db_menu,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 70,
+                                   True, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
                                    "List of PC-ACE database directories to compare.\n"
                                    "Use + to add directories, − to remove.\n"
                                    "The INPUT directory (if set) is automatically included.")
@@ -823,16 +918,16 @@ if _init_input and os.path.isdir(str(_init_input)) and os.path.isfile(os.path.jo
     _refresh_db_listbox()
 
 add_db_button = tk.Button(window, text='+', width=2, command=_add_db_dir)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate, y_multiplier_integer,
                                    add_db_button,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "Click to add a PC-ACE database directory for cross-DB comparison.\n"
+                                   True, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
+                                   "Click + to add a PC-ACE database directory for cross-DB comparison.\n"
                                    "Add 2 or more databases to compare aggregate codes across them.")
 
 remove_db_button = tk.Button(window, text='−', width=2, command=_remove_db_dir)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate + 35, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate + 35, y_multiplier_integer,
                                    remove_db_button,
-                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 35,
+                                   False, False, True, False, 90, GUI_IO_util.run_button_x_coordinate,
                                    "Remove the selected database from the list.")
 
 # ── Comparison controls ──────────────────────────────────────────────────────
@@ -871,9 +966,9 @@ agg_mode_menu.bind('<<ComboboxSelected>>', _combobox_release_focus)
 
 agg_orig_var = tk.StringVar()
 agg_orig_menu = ttk.Combobox(window, textvariable=agg_orig_var, width=30, state='readonly')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    agg_orig_menu,
-                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "ORIGINAL VALUES: select the simplex containing the original (non-aggregated) values.\n\n"
                                    "This is the simplex whose values were coded into aggregate categories.\n"
                                    "e.g., 'Name of individual actor', 'Verbal phrase', 'Nome attore'.")
@@ -884,9 +979,9 @@ _agg_simplex_list = []
 
 agg_simplex_var = tk.StringVar()
 agg_simplex_menu = ttk.Combobox(window, textvariable=agg_simplex_var, width=30, state='readonly')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate + 220, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 230, y_multiplier_integer,
                                    agg_simplex_menu,
-                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate + 220,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 230,
                                    "AGGREGATE CODES: select an aggregate code simplex, then click + to add it.\n"
                                    "You can add multiple aggregate code simplexes.\n"
                                    "Use Reset to clear the list and start over.")
@@ -921,19 +1016,20 @@ def _refresh_agg_simplex_display():
             GUI_IO_util.labels_x_indented_coordinate, t))
 
 agg_add_button = tk.Button(window, text='+', width=2, command=_add_agg_simplex)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate + 440, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate, y_multiplier_integer,
                                    agg_add_button,
-                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate + 440,
-                                   "Add the selected aggregate code simplex to the list.")
+                                   True, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
+                                   "Click + to add the selected aggregate code simplex to the list.")
 
 agg_reset_button = tk.Button(window, text='Reset', width=5, command=_reset_agg_simplex)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate + 475, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate+35, y_multiplier_integer,
                                    agg_reset_button,
-                                   False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate + 475,
+                                   False, False, True, False, 90, GUI_IO_util.run_button_x_coordinate,
                                    "Clear the aggregate code list and start fresh.")
 
 agg_simplex_selected_var = tk.StringVar()
-_entry_width = max(120, (GUI_IO_util.close_button_x_coordinate + 70 - GUI_IO_util.labels_x_indented_coordinate) // 7)
+_entry_width = (GUI_IO_util.close_button_x_coordinate + 80 - GUI_IO_util.labels_x_indented_coordinate) * 2 // 11
+_entry_width = 165
 agg_simplex_selected_label = tk.Entry(window, textvariable=agg_simplex_selected_var, width=_entry_width, state='readonly')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    agg_simplex_selected_label,
@@ -941,6 +1037,78 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_inde
                                    "Shows the aggregate code simplexes you have selected.\n"
                                    "Hover over for the full list.")
 
+
+# ── Apply aggregate corrections ─────────────────────────────────────────────
+
+_original_side_by_side_csv = [None]
+
+def _apply_aggregate_corrections():
+    """Read the CSV from the file widget, diff against original, write corrections back."""
+    edited_path = csv_file_var.get()
+    if not edited_path or not os.path.isfile(edited_path):
+        mb.showwarning(title='Apply corrections',
+                       message='No CSV file selected.\n\n'
+                               'Run side-by-side mapping first, edit the output CSV,\n'
+                               'then click this button.')
+        return
+    inputDir_val = inputDir.get() if hasattr(inputDir, 'get') else inputDir
+    if not inputDir_val or not os.path.isdir(inputDir_val):
+        mb.showwarning(title='Apply corrections',
+                       message='Please select a PC-ACE database directory first.')
+        return
+    if not _ensure_database_loaded(inputDir_val):
+        mb.showwarning(title='Apply corrections',
+                       message='Could not load the PC-ACE database.')
+        return
+    proceed = file_filename_util.backup_files('', inputDir_val, 'Apply aggregate corrections', fileType='.xlsx')
+    if not proceed:
+        return
+    GUI_util.window.config(cursor='watch')
+    GUI_util.window.update()
+    try:
+        n_applied = DB_PCACE_data_analysis_util.apply_aggregate_corrections(
+            edited_path, inputDir_val,
+            original_csv_path=_original_side_by_side_csv[0])
+        if n_applied > 0:
+            mb.showinfo(title='Corrections applied',
+                        message=f'Applied {n_applied} aggregate code correction(s).\n\n'
+                                f'The xlsx and pkl files have been updated.\n'
+                                f'Cached xref data has been cleared and will rebuild on next run.')
+        elif n_applied == 0:
+            mb.showinfo(title='No changes',
+                        message='No changes detected between the edited CSV and the original values.')
+        else:
+            mb.showerror(title='Error',
+                         message='An error occurred. Check the console output for details.')
+    except Exception as e:
+        mb.showerror(title='Apply corrections error', message=f'Failed:\n\n{e}')
+    finally:
+        GUI_util.window.config(cursor='')
+
+
+
+# ── Enable/disable all widgets based on DB state ────────────────────────────
+
+def _set_all_widgets_state(state):
+    """Enable or disable all validation widgets. state='normal' or 'disabled'."""
+    combo_state = 'readonly' if state == 'normal' else 'disabled'
+    for w in [spell_check_checkbox,
+              lemmatize_checkbox,
+              agg_mode_menu, agg_orig_menu, agg_simplex_menu,
+              agg_add_button, agg_reset_button,
+              add_db_button, remove_db_button,
+              csv_file_button]:
+        try:
+            w.configure(state=state)
+        except Exception:
+            pass
+    for w in [spell_check_simplex_menu, agg_db_menu]:
+        try:
+            w.configure(state=combo_state)
+        except Exception:
+            pass
+
+_set_all_widgets_state('disabled')
 
 # ── Populate simplex dropdown when database directory changes ─────────────────
 
@@ -950,9 +1118,14 @@ def _on_inputDir_change(*args):
     _database_loaded = False
     dir_val = inputDir.get() if hasattr(inputDir, 'get') else inputDir
     if not dir_val or not os.path.isdir(dir_val):
+        _set_all_widgets_state('disabled')
         spell_check_simplex_menu['values'] = ['ALL text simplexes']
         spell_check_simplex_var.set('ALL text simplexes')
         return
+    if not os.path.isfile(os.path.join(dir_val, 'data_Complex.xlsx')):
+        _set_all_widgets_state('disabled')
+        return
+    _set_all_widgets_state('normal')
     if _ensure_database_loaded(dir_val):
         try:
             simplex_names = DB_PCACE_data_analysis_util.get_all_simplex_names()
@@ -1013,19 +1186,36 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         y_multiplier_integer, "NLP Suite Help",
         "Use the dropdown menu to open a related GUI." + GUI_IO_util.msg_Esc)
 
-    # Row: Open csv file
+    # Row: Open csv file + Clear + Apply changes
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                  "The INPUT csv file widget displays a csv filename. There are two ways of entering a filename.\n\n   1. Click on the button 'Select INPUT csv file' to select a file of your choice.\n\n   2. The text widget is filled automatically as soon as produced by the query Generator.\n\nClick the small button between the 'Select...' button and the text widget to open the file and visualize its content.\n\nClick the 'Clear' button to remove the loaded CSV and reset the WHERE filter." + GUI_IO_util.msg_openFile)
+                                  "The INPUT csv file widget displays a csv filename. There are two ways of entering a filename.\n\n"
+                                  "   1. Click on the button 'Select INPUT csv file' to select a file of your choice.\n\n"
+                                  "   2. The text widget is filled automatically after running a validation task.\n\n"
+                                  "Click the small button between the 'Select...' button and the text widget to open the file.\n\n"
+                                  "Click 'Clear' to remove the loaded CSV.\n\n"
+                                  "APPLY CHANGES: writes corrections from the loaded CSV back to the PC-ACE database.\n"
+                                  "   The button auto-detects the CSV type and applies the appropriate corrections:\n\n"
+                                  "   - Spell-check CSV (has 'Suggested correction' column):\n"
+                                  "       Overwrites misspelled/duplicate values in data_SimplexText.\n\n"
+                                  "   - Lemmatization CSV (has 'Lemmatized form' column):\n"
+                                  "       Adds a 'Lemma' column to data_SimplexText (original Value is preserved).\n\n"
+                                  "   - Side-by-side mapping CSV (aggregate code corrections):\n"
+                                  "       Overwrites aggregate code values in data_SimplexText.\n\n"
+                                  "All three modify data_SimplexText.xlsx and data_SimplexText.pkl.\n"
+                                  "NLP_data_Simplex_values_ALL.pkl is also invalidated and will rebuild on next run.\n\n"
+                                  "A backup of the database files is created before applying any changes." + GUI_IO_util.msg_Esc)
 
     # Row 2: Spell-check checkbox + simplex dropdown
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,
         y_multiplier_integer, "NLP Suite Help",
         "SPELL-CHECK: find near-duplicate and misspelled values in text simplexes.\n\n"
+        "Uses difflib.SequenceMatcher, a purely character-based string similarity "
+        "algorithm (Ratcliff/Obershelp) that is independent of any specific language.\n\n"
         "  1. Tick the 'Run spell-check' checkbox.\n"
         "  2. Select a specific simplex or leave as 'ALL text simplexes'.\n"
         "  3. Click RUN to produce a review CSV.\n"
         "  4. Review the CSV, edit corrections, set Accept? to N for rows to skip.\n"
-        "  5. Click 'Apply corrections' to write accepted changes back to the database.\n\n"
+        "  5. Click 'Apply changes' to write accepted changes back to the database.\n\n"
         "A BACKUP OF THE ORIGINAL FILES IS RECOMMENDED BEFORE APPLYING." + GUI_IO_util.msg_Esc)
 
     # # Row 3: Apply corrections button
@@ -1042,8 +1232,9 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         "  Examples: 'went' → 'go', 'colpirono' → 'colpire', 'cities' → 'city'.\n\n"
         "  Select the language, then assign your database's simplex types\n"
         "  in the NOUNS and VERBS lists below.\n\n"
-        "APPLY LEMMATIZATION: apply reviewed lemmatization corrections.\n\n"
-        "Modifies data_SimplexText.xlsx and .pkl in the PC-ACE database directory.\n\n"
+        "APPLY LEMMATIZATION: adds a 'Lemma' column to data_SimplexText\n"
+        "(the original Value column is preserved).\n"
+        "Modifies data_SimplexText.xlsx and .pkl; invalidates NLP_data_Simplex_values_ALL.pkl.\n\n"
         "A BACKUP OF THE ORIGINAL FILES IS RECOMMENDED BEFORE APPLYING.\n"
                                                          + GUI_IO_util.msg_Esc)
 
@@ -1102,7 +1293,8 @@ IO_setup_display_brief = False
 
 readMe_message = ("This GUI provides tools for validating and cleaning PC-ACE data.\n\n"
                   "IN INPUT, select the PC-ACE database directory (containing the Excel/pkl files).\n\n"
-                  "SPELL-CHECK: finds near-duplicate and misspelled text values in simplexes.\n"
+                  "SPELL-CHECK: finds near-duplicate and misspelled text values in simplexes\n"
+                  "  using difflib.SequenceMatcher (language-independent character similarity).\n"
                   "  Select a specific simplex or check ALL text simplexes.\n"
                   "  Review the output CSV, then apply accepted corrections.\n\n"
                   "LEMMATIZE: reduces inflected forms to base forms using Stanza (English & Italian).\n"
