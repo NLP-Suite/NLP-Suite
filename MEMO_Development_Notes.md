@@ -19,6 +19,8 @@ to the repo so it is never lost.
 10. [NLP Package Performance Comparison](#10-nlp-package-performance-comparison-2026-06-09)
 11. [Code Quality Review](#11-code-quality-review-2026-06-10)
 12. [Strategic Direction — Traditional NLP vs LLMs](#12-strategic-direction--traditional-nlp-vs-llms-2026-06-10)
+13. [WordNet Java→NLTK Migration](#13-wordnet-javanltk-migration-2026-06-12)
+14. [NRC Emotion Wheel Integration](#14-nrc-emotion-wheel-integration-2026-06-12)
 
 ---
 
@@ -501,3 +503,78 @@ an LLM option is a natural extension of the same multi-engine architecture.
 research. Add LLM options for exploratory analysis and tasks that need judgment. Let the
 user compare both approaches on the same data, in the same output format. The Suite is the
 chassis; algorithms (traditional and LLM) are interchangeable engines.
+
+---
+
+## 13. WordNet Java→NLTK Migration (2026-06-12)
+
+### What Changed
+
+Replaced two Java JAR files (`WordNet_Search_DOWN.jar`, `WordNet_Search_UP.jar`) with pure Python implementations using `nltk.corpus.wordnet`.
+
+**Before:** Users needed Java JDK installed + standalone WordNet downloaded (Mac 3.0 or Windows 2.1) + JAR files in `src/`. Functions called Java via `subprocess.call()`.
+
+**After:** NLTK bundles WordNet 3.0 as a corpus. First run calls `nltk.download('wordnet')` automatically (a few MB). No Java, no standalone WordNet installer, no platform-specific paths.
+
+### Functions Rewritten
+
+| Function | Old (Java) | New (NLTK) |
+|----------|-----------|------------|
+| `disaggregate_GoingDOWN()` | `subprocess.call(['java', '-jar', 'WordNet_Search_DOWN.jar', ...])` | Recursive `synset.hyponyms()` traversal |
+| `aggregate_GoingUP()` | `subprocess.call(['java', '-jar', 'WordNet_Search_UP.jar', ...])` | `synset.hypernyms()` climbing via `lexname()` to 25 noun / 15 verb top-level synsets |
+
+### CSV Output Format (unchanged)
+
+- **DOWN simple:** Term, WordNet Category
+- **DOWN verbose:** Term, WordNet Category, Definition, Frequency, Examples
+- **UP synsets:** Word, WordNet Category, Intermediate synset 1, 2, ...
+- **UP frequency:** WordNet Category, Frequency
+
+### Files Modified
+
+- `knowledge_graphs_WordNet_util.py` — core rewrite
+- `knowledge_graphs_WordNet_main.py` — removed `external_software_install('WordNet')` gate
+
+### Files Deleted
+
+- `src/WordNet_Search_DOWN.jar` (170 KB)
+- `src/WordNet_Search_UP.jar` (171 KB)
+
+### Callers (no changes needed)
+
+All pass `WordNetDir=''` (parameter kept for signature compatibility):
+- `CoNLL_table_analyzer_main.py`
+- `SVO_main.py`
+- `whats_in_your_corpus_main.py`
+- `knowledge_graphs_WordNet_main.py`
+
+### TODO
+
+- Update TIPS PDF for WordNet (remove Java/download instructions)
+- Update ? HELP messages in `knowledge_graphs_WordNet_main.py` (remove references to Java, JAR files, WordNet install)
+
+---
+
+## 14. NRC Emotion Wheel Integration (2026-06-12)
+
+### What Was Added
+
+New dictionary-based sentiment analysis option: **NRC (emotion wheel)** using the `nrclex` Python package (bundles the NRC Emotion Lexicon).
+
+Scores text for Plutchik's 8 basic emotions: anger, anticipation, disgust, fear, joy, sadness, surprise, trust.
+
+### Output
+
+1. **CSV** — per-sentence scores for all 8 emotions + dominant emotion label
+2. **NRC radar chart** (PNG) — polar plot of average emotion proportions
+3. **Plutchik wheel** (PNG) — 8-petal intensity wheel (mild/basic/intense) with scores overlaid
+
+### Files
+
+- `sentiment_analysis_NRC_util.py` — new util (scoring, radar chart, Plutchik wheel)
+- `sentiment_analysis_main.py` — added `NRC (emotion wheel)` to dictionary approaches dropdown
+- `.github/workflows/build-installers.yml` — added `nrclex` to pip installs
+
+### Origin
+
+Based on two student homework scripts (NRC emotion wheel + Plutchik wheel), refactored into a proper util following the VADER/ANEW/hedonometer pattern.
