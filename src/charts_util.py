@@ -1289,6 +1289,279 @@ def boxplot(data, outputFilename, var, points, bycategory=None, category=None, c
     return outputFilename
 
 
+def histogram(data, outputFilename, var, nbins=0, category=None, color=None, marginal=None):
+    if type(data) == str:
+        data = pd.read_csv(data, encoding='utf-8', on_bad_lines='skip')
+
+    if not 'int' in str(type(data[var].dropna().iloc[0])) and not 'float' in str(type(data[var].dropna().iloc[0])):
+        mb.showwarning(title='Warning',
+                       message='The "Histogram" option requires a numeric field.\n\nPlease, select a numeric csv file field and try again.')
+        return
+
+    kwargs = {'x': var}
+    if nbins > 0:
+        kwargs['nbins'] = nbins
+    if category and category in data.columns:
+        kwargs['color'] = category
+    if marginal:
+        kwargs['marginal'] = marginal
+
+    fig = px.histogram(data, **kwargs)
+    fig.update_layout(bargap=0.05)
+    fig.write_html(outputFilename)
+    return outputFilename
+
+
+def violin_plot(data, outputFilename, var, points='all', category=None, color=None):
+    if points == 'None' or points == '':
+        points = False
+
+    if type(data) == str:
+        data = pd.read_csv(data, encoding='utf-8', on_bad_lines='skip')
+
+    if not 'int' in str(type(data[var].dropna().iloc[0])) and not 'float' in str(type(data[var].dropna().iloc[0])):
+        mb.showwarning(title='Warning',
+                       message='The "Violin plot" option requires a numeric field.\n\nPlease, select a numeric csv file field and try again.')
+        return
+
+    if color == '':
+        color = None
+
+    if category and category in data.columns:
+        fig = px.violin(data, x=category, y=var, points=points, color=color, box=True)
+    else:
+        fig = px.violin(data, y=var, points=points, box=True)
+    fig.write_html(outputFilename)
+    return outputFilename
+
+
+def correlation_heatmap(inputFilename, outputDir, columns=None):
+    """Build an interactive correlation heatmap for numeric columns.
+
+    Parameters
+    ----------
+    inputFilename : str   CSV file path.
+    outputDir : str
+    columns : list or None   Specific columns to include. If None, all numeric columns are used.
+
+    Returns
+    -------
+    str or ''   Path to output HTML file.
+    """
+    try:
+        df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+    except Exception as e:
+        print(f"  WARNING: Could not read CSV: {e}")
+        return ''
+
+    if columns:
+        numeric_df = df[columns].select_dtypes(include='number')
+    else:
+        numeric_df = df.select_dtypes(include='number')
+
+    if numeric_df.shape[1] < 2:
+        mb.showwarning('Warning', 'The correlation heatmap requires at least 2 numeric columns.\n\nPlease, select a csv file with numeric data and try again.')
+        return ''
+
+    corr = numeric_df.corr()
+
+    fig = px.imshow(corr, text_auto='.2f', color_continuous_scale='RdBu_r',
+                    zmin=-1, zmax=1, aspect='auto',
+                    labels=dict(color='Correlation'))
+    fig.update_layout(title=f'Correlation heatmap ({numeric_df.shape[1]} variables)',
+                      width=max(600, numeric_df.shape[1] * 60 + 200),
+                      height=max(500, numeric_df.shape[1] * 50 + 200))
+
+    import re as _re
+    base = _re.sub(r'[<>:"/\\|?*]', '_',
+                   os.path.splitext(os.path.basename(inputFilename))[0]).replace(' ', '_')
+    out_path = os.path.join(outputDir, f'{base}_correlation_heatmap.html')
+    fig.write_html(out_path)
+    print(f"Data visualization saved as {out_path}")
+    return out_path
+
+
+def heatmap_calendar(inputFilename, outputDir, date_col, value_col=None, date_format='mm-dd-yyyy'):
+    """Build a calendar heatmap showing daily values or event counts.
+
+    Parameters
+    ----------
+    inputFilename : str   CSV file path.
+    outputDir : str
+    date_col : str   Column containing dates.
+    value_col : str or None   Numeric column for values. If None, counts events per day.
+    date_format : str   Date format string (mm-dd-yyyy, dd-mm-yyyy, yyyy-mm-dd, etc.)
+
+    Returns
+    -------
+    str or ''   Path to output HTML file.
+    """
+    try:
+        df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+    except Exception as e:
+        print(f"  WARNING: Could not read CSV: {e}")
+        return ''
+
+    if date_col not in df.columns:
+        mb.showwarning('Warning', f'Column "{date_col}" not found in the csv file.')
+        return ''
+
+    fmt_map = {
+        'mm-dd-yyyy': '%m-%d-%Y', 'mm/dd/yyyy': '%m/%d/%Y',
+        'dd-mm-yyyy': '%d-%m-%Y', 'dd/mm/yyyy': '%d/%m/%Y',
+        'yyyy-mm-dd': '%Y-%m-%d', 'yyyy/mm/dd': '%Y/%m/%d',
+        'yyyy-dd-mm': '%Y-%d-%m', 'yyyy-mm': '%Y-%m',
+    }
+    py_fmt = fmt_map.get(date_format, None)
+
+    dates = pd.to_datetime(df[date_col], format=py_fmt, errors='coerce')
+    valid_mask = dates.notna()
+    if valid_mask.sum() == 0:
+        mb.showwarning('Warning', f'No valid dates found in column "{date_col}" with format "{date_format}".\n\nPlease, check the date format and try again.')
+        return ''
+
+    df_work = pd.DataFrame({'date': dates[valid_mask]})
+
+    if value_col and value_col in df.columns and value_col != '':
+        df_work['value'] = df[value_col][valid_mask].values
+        daily = df_work.groupby(df_work['date'].dt.date)['value'].sum().reset_index()
+        daily.columns = ['date', 'value']
+        color_label = value_col
+    else:
+        daily = df_work.groupby(df_work['date'].dt.date).size().reset_index()
+        daily.columns = ['date', 'value']
+        color_label = 'Count'
+
+    daily['date'] = pd.to_datetime(daily['date'])
+    daily['weekday'] = daily['date'].dt.weekday
+    daily['week'] = daily['date'].dt.isocalendar().week.astype(int)
+    daily['year'] = daily['date'].dt.year
+    daily['month'] = daily['date'].dt.month
+    daily['day_name'] = daily['date'].dt.strftime('%a')
+    daily['date_str'] = daily['date'].dt.strftime('%Y-%m-%d')
+
+    years = sorted(daily['year'].unique())
+
+    import plotly.graph_objects as go
+    from plotly.subplots import make_subplots
+
+    fig = make_subplots(rows=len(years), cols=1,
+                        subplot_titles=[str(y) for y in years],
+                        vertical_spacing=0.08)
+
+    for row_idx, year in enumerate(years, 1):
+        yr_data = daily[daily['year'] == year].copy()
+        yr_data['week_of_year'] = (yr_data['date'] - pd.Timestamp(f'{year}-01-01')).dt.days // 7
+
+        fig.add_trace(
+            go.Heatmap(
+                x=yr_data['week_of_year'],
+                y=yr_data['weekday'],
+                z=yr_data['value'],
+                text=yr_data['date_str'],
+                hovertemplate='%{text}<br>' + color_label + ': %{z}<extra></extra>',
+                colorscale='YlOrRd',
+                showscale=(row_idx == 1),
+                colorbar=dict(title=color_label) if row_idx == 1 else None,
+            ),
+            row=row_idx, col=1
+        )
+        fig.update_yaxes(
+            tickvals=[0, 1, 2, 3, 4, 5, 6],
+            ticktext=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            row=row_idx, col=1
+        )
+        fig.update_xaxes(
+            tickvals=list(range(0, 53, 4)),
+            ticktext=[f'W{w}' for w in range(0, 53, 4)],
+            row=row_idx, col=1
+        )
+
+    fig.update_layout(
+        title=f'Calendar heatmap: {color_label} by date',
+        height=max(300, 250 * len(years)),
+        width=900
+    )
+
+    import re as _re
+    base = _re.sub(r'[<>:"/\\|?*]', '_',
+                   os.path.splitext(os.path.basename(inputFilename))[0]).replace(' ', '_')
+    safe_col = _re.sub(r'[<>:"/\\|?*]', '_', date_col).replace(' ', '_')
+    out_path = os.path.join(outputDir, f'{base}_calendar_{safe_col}.html')
+    fig.write_html(out_path)
+    print(f"Data visualization saved as {out_path}")
+    return out_path
+
+
+def waffle_chart(inputFilename, outputDir, category_col, top_n=10, grid_size=10):
+    """Build a waffle chart showing proportions of a categorical variable.
+
+    Each square in a 10x10 grid represents 1% of the total.
+    """
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    import matplotlib.patches as mpatches
+    import numpy as np
+
+    try:
+        df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+    except Exception as e:
+        print(f"  WARNING: Could not read CSV: {e}")
+        return ''
+
+    if category_col not in df.columns:
+        mb.showwarning('Warning', f'Column "{category_col}" not found in the csv file.')
+        return ''
+
+    counts = df[category_col].value_counts().head(top_n)
+    total = counts.sum()
+    if total == 0:
+        return ''
+
+    proportions = (counts / total * grid_size * grid_size).round().astype(int)
+    diff = grid_size * grid_size - proportions.sum()
+    if diff != 0:
+        proportions.iloc[0] += diff
+
+    colors = plt.cm.tab10(np.linspace(0, 1, len(proportions)))
+    grid = np.zeros(grid_size * grid_size, dtype=int)
+    idx = 0
+    for i, count in enumerate(proportions):
+        grid[idx:idx + count] = i
+        idx += count
+    grid = grid.reshape(grid_size, grid_size)
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+    for i in range(grid_size):
+        for j in range(grid_size):
+            rect = plt.Rectangle((j, grid_size - 1 - i), 0.9, 0.9,
+                                  facecolor=colors[grid[i, j]], edgecolor='white', linewidth=1)
+            ax.add_patch(rect)
+
+    ax.set_xlim(-0.1, grid_size)
+    ax.set_ylim(-0.1, grid_size)
+    ax.set_aspect('equal')
+    ax.axis('off')
+    ax.set_title(f'Waffle chart: {category_col} (top {len(proportions)})', fontsize=14)
+
+    legend_patches = [mpatches.Patch(color=colors[i],
+                      label=f'{proportions.index[i]} ({counts.iloc[i]})')
+                      for i in range(len(proportions))]
+    ax.legend(handles=legend_patches, loc='upper left', bbox_to_anchor=(1.02, 1),
+              fontsize=9, title=category_col, title_fontsize=10)
+
+    import re as _re
+    safe = _re.sub(r'[<>:"/\\|?*]', '_', category_col).replace(' ', '_')
+    base = _re.sub(r'[<>:"/\\|?*]', '_',
+                   os.path.splitext(os.path.basename(inputFilename))[0]).replace(' ', '_')
+    out_path = os.path.join(outputDir, f'{base}_waffle_{safe}.png')
+    fig.savefig(out_path, dpi=150, bbox_inches='tight')
+    plt.close(fig)
+    print(f"Data visualization saved as {out_path}")
+    return out_path
+
+
 # written by Samir Kaddoura, March 2023
 
 # var1 is the first categorical variable, lengthvar1 is the amount of var 1: should take values of 5 or 10
@@ -1863,8 +2136,9 @@ def visualize_colormap_data(data, top_n=60, figsize=(15, 10), y_label='Lemma', x
 
 def visualize_stacked_bar(crosstab_data, top_n=20, figsize=(12, 6),
                           x_label='Category', y_label='Count',
-                          title='Stacked bar chart', outputname='output_stacked_bar'):
-    """Horizontal stacked bar chart from a crosstab DataFrame.
+                          title='Stacked bar chart', outputname='output_stacked_bar',
+                          grouped=False):
+    """Horizontal stacked or grouped bar chart from a crosstab DataFrame.
 
     Parameters
     ----------
@@ -1875,6 +2149,8 @@ def visualize_stacked_bar(crosstab_data, top_n=20, figsize=(12, 6),
     x_label, y_label, title : str
     outputname : str
         Output path without extension (.png appended automatically).
+    grouped : bool
+        If True, draw side-by-side (grouped) bars instead of stacked.
     """
     import matplotlib
     matplotlib.use('Agg')
@@ -1885,7 +2161,7 @@ def visualize_stacked_bar(crosstab_data, top_n=20, figsize=(12, 6),
 
     fig_w = max(figsize[0], len(plot_data) * 0.6 + 4)
     fig_h = max(figsize[1], len(plot_data) * 0.3 + 2)
-    ax = plot_data.plot.barh(stacked=True, figsize=(fig_w, fig_h), width=0.8)
+    ax = plot_data.plot.barh(stacked=not grouped, figsize=(fig_w, fig_h), width=0.8)
     ax.set_xlabel(y_label)
     ax.set_ylabel(x_label)
     ax.set_title(title)
@@ -2804,7 +3080,7 @@ def proportional_circle_map(inputFilename, outputDir, location_col):
     return map_file
 
 
-def stacked_bar_from_csv(inputFilename, outputDir, group_col, segment_col, top_n=20):
+def stacked_bar_from_csv(inputFilename, outputDir, group_col, segment_col, top_n=20, grouped=False):
     """Build a stacked bar chart from two categorical CSV columns.
 
     Parameters
@@ -2844,12 +3120,14 @@ def stacked_bar_from_csv(inputFilename, outputDir, group_col, segment_col, top_n
     base = _safe_fn(os.path.splitext(os.path.basename(inputFilename))[0])
     safe_g = _safe_fn(group_col)
     safe_s = _safe_fn(segment_col)
+    mode = 'grouped' if grouped else 'stacked'
     out_base = os.path.join(outputDir,
-        '{}_stacked_{}_{}'.format(base, safe_g, safe_s))
+        '{}_{}_{}_{}'.format(base, mode, safe_g, safe_s))
+    chart_title = '{} bar: {} by {}'.format('Grouped' if grouped else 'Stacked', group_col, segment_col)
     visualize_stacked_bar(ct, top_n=top_n,
                           x_label=group_col, y_label='Count',
-                          title='Stacked bar: {} by {}'.format(group_col, segment_col),
-                          outputname=out_base)
+                          title=chart_title,
+                          outputname=out_base, grouped=grouped)
     png_file = out_base + '.png'
     if os.path.isfile(png_file):
         return png_file

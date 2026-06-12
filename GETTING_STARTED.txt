@@ -1,0 +1,51 @@
+======================================================
+  NLP Suite — Getting Started
+======================================================
+
+WINDOWS
+-------
+1. Extract the zip file to any folder (e.g. Desktop).
+2. Open the extracted folder and double-click NLP_Suite.exe.
+3. If Windows shows "Windows protected your PC":
+   - Click "More info"
+   - Click "Run anyway"
+   This only happens the first time.
+
+macOS (Apple Silicon)
+---------------------
+1. Extract the zip file (double-click it in Finder).
+2. Open the extracted folder and double-click NLP_Suite.
+3. macOS will block it with "NLP_Suite cannot be opened because
+   it is from an unidentified developer." This is normal.
+4. To allow it:
+   a. Open System Settings (Apple menu > System Settings)
+   b. Go to Privacy & Security
+   c. Scroll down — you will see a message about NLP_Suite
+      being blocked
+   d. Click "Open Anyway"
+   e. Enter your password if prompted
+   f. Click "Open" in the confirmation dialog
+   This only happens the first time. After that, NLP_Suite
+   will open normally.
+
+   Alternative (quicker): right-click NLP_Suite in Finder,
+   choose "Open", then click "Open" in the dialog.
+
+FIRST RUN
+---------
+On the very first launch, NLP Suite creates two default
+configuration files so you can start testing right away:
+
+  - Input folder  : lib/sampleData/newspaperArticles
+  - Output folder : ~/Documents/NLP_output (your Documents folder)
+  - NLP package   : Stanza
+  - Language       : English
+
+You can change these at any time via the I/O Configuration
+options at the top of the main window.
+
+NEED HELP?
+----------
+- Click the ? buttons next to each option for explanations
+- Use the TIPS and README buttons at the bottom of each GUI
+- Report issues: https://github.com/NLP-Suite/NLP-Suite/issues

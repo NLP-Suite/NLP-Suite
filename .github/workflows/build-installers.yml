@@ -72,6 +72,13 @@ jobs:
               count += 1
           print(f'Copied {count} .py files to {src_dst}')
 
+      - name: Copy getting-started guide
+        shell: python
+        run: |
+          import shutil
+          shutil.copy2('GETTING_STARTED.txt', 'dist/NLP_Suite/GETTING_STARTED.txt')
+          print('Copied GETTING_STARTED.txt')
+
       - name: Copy platform-specific DLLs (Windows only)
         if: runner.os == 'Windows'
         shell: pwsh

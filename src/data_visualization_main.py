@@ -204,14 +204,29 @@ def run_categorical(inputFilename, outputDir, openOutputFiles,
             else:
                 filesToOpen.extend(outputFiles)
 
-    # Stacked bar
-    if '*' in categorical_menu_var or 'Stacked bar' in categorical_menu_var:
+    # Stacked bar / Grouped bar
+    if '*' in categorical_menu_var or 'Stacked bar' in categorical_menu_var or 'Grouped bar' in categorical_menu_var:
         if len(csv_file_categorical_field_list) < 2:
-            mb.showwarning("Warning", "The stacked bar chart requires at least 2 csv file fields: one for the groups (rows) and one for the segments (stacked colors).\n\nPlease, select at least 2 fields and try again.")
+            mb.showwarning("Warning", "The bar chart requires at least 2 csv file fields: one for the groups (rows) and one for the segments (colors).\n\nPlease, select at least 2 fields and try again.")
         else:
             group_field = csv_file_categorical_field_list[0][0].split('|')[0]
             segment_field = csv_file_categorical_field_list[1][0].split('|')[0]
-            outputFile = charts_util.stacked_bar_from_csv(inputFilename, outputDir, group_field, segment_field)
+            is_grouped = 'Grouped' in categorical_menu_var
+            outputFile = charts_util.stacked_bar_from_csv(inputFilename, outputDir, group_field, segment_field, grouped=is_grouped)
+            if outputFile:
+                filesToOpen.append(outputFile)
+            if '*' in categorical_menu_var:
+                outputFile2 = charts_util.stacked_bar_from_csv(inputFilename, outputDir, group_field, segment_field, grouped=not is_grouped)
+                if outputFile2:
+                    filesToOpen.append(outputFile2)
+
+    # Waffle chart
+    if '*' in categorical_menu_var or 'Waffle' in categorical_menu_var:
+        if len(csv_file_categorical_field_list) < 1:
+            mb.showwarning("Warning", "The waffle chart requires at least 1 csv file field.\n\nPlease, select a categorical field and try again.")
+        else:
+            category_field = csv_file_categorical_field_list[0][0].split('|')[0]
+            outputFile = charts_util.waffle_chart(inputFilename, outputDir, category_field)
             if outputFile:
                 filesToOpen.append(outputFile)
 
@@ -234,7 +249,8 @@ def run_categorical(inputFilename, outputDir, openOutputFiles,
 def run_temporal(inputFilename, outputDir, openOutputFiles,
                  temporal_menu_var, csv_field_relational_var, time_mapper_field_var,
                  date_format_var, time_var, cumulative_var,
-                 timeline_Y_axis_var, timeline_date_var):
+                 timeline_Y_axis_var, timeline_date_var,
+                 calendar_date_var, calendar_value_var):
     filesToOpen = []
     if inputFilename == '' or os.path.basename(inputFilename)[-4:] != ".csv":
         mb.showwarning("Warning", "The visualization options require a csv file in input.\n\nPlease, select a csv file and try again.")
@@ -257,6 +273,16 @@ def run_temporal(inputFilename, outputDir, openOutputFiles,
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
+
+    elif 'Calendar' in temporal_menu_var:
+        if calendar_date_var == '':
+            mb.showwarning("Warning", "No date field has been selected.\n\nPlease, select a date field and try again.")
+            return
+        value_col = calendar_value_var if calendar_value_var else None
+        outputFile = charts_util.heatmap_calendar(inputFilename, outputDir, calendar_date_var,
+                                                   value_col=value_col, date_format=date_format_var)
+        if outputFile:
+            filesToOpen.append(outputFile)
 
     elif 'Timeline' in temporal_menu_var:
         if timeline_Y_axis_var == '':
@@ -295,7 +321,9 @@ def run_numeric(inputFilename, outputDir, openOutputFiles,
                 X_axis_var, csv_file_field_Y_axis_list, points_var,
                 split_data_byCategory_var, csv_field_boxplot_var,
                 csv_field_boxplot_color_var, X_axis_bubble_var,
-                color_1_style_var):
+                color_1_style_var,
+                histogram_nbins_var, histogram_category_var, histogram_marginal_var,
+                violin_points_var, violin_category_var):
     filesToOpen = []
     if inputFilename == '' or os.path.basename(inputFilename)[-4:] != ".csv":
         mb.showwarning("Warning", "The visualization options require a csv file in input.\n\nPlease, select a csv file and try again.")
@@ -346,6 +374,39 @@ def run_numeric(inputFilename, outputDir, openOutputFiles,
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
+
+    elif 'Correlation' in visualizations_menu_var:
+        outputFile = charts_util.correlation_heatmap(inputFilename, outputDir)
+        if outputFile:
+            filesToOpen.append(outputFile)
+
+    elif 'Histogram' in visualizations_menu_var:
+        if csv_field_visualization_var == '':
+            mb.showwarning("Warning", "No Y-axis variable has been selected.\n\nPlease, select a numeric csv file field and try again.")
+            return
+        outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
+                                                                  '.html', 'histogram',
+                                                                  csv_field_visualization_var)
+        nbins = int(histogram_nbins_var) if histogram_nbins_var.isdigit() and int(histogram_nbins_var) > 0 else 0
+        marginal = histogram_marginal_var if histogram_marginal_var else None
+        category = histogram_category_var if histogram_category_var else None
+        outputFile = charts_util.histogram(inputFilename, outputFilename, csv_field_visualization_var,
+                                           nbins=nbins, category=category, marginal=marginal)
+        if outputFile:
+            filesToOpen.append(outputFile)
+
+    elif 'Violin' in visualizations_menu_var:
+        if csv_field_visualization_var == '':
+            mb.showwarning("Warning", "No Y-axis variable has been selected.\n\nPlease, select a numeric csv file field and try again.")
+            return
+        outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
+                                                                  '.html', 'violin',
+                                                                  csv_field_visualization_var)
+        category = violin_category_var if violin_category_var else None
+        outputFile = charts_util.violin_plot(inputFilename, outputFilename, csv_field_visualization_var,
+                                             points=violin_points_var, category=category)
+        if outputFile:
+            filesToOpen.append(outputFile)
 
     if openOutputFiles and len(filesToOpen) > 0:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -413,6 +474,8 @@ temporal_menu_var = tk.StringVar()
 temporal_menu_var.set('Time mapper')
 timeline_Y_axis_var = tk.StringVar()
 time_mapper_field_var = tk.StringVar()
+calendar_date_var = tk.StringVar()
+calendar_value_var = tk.StringVar()
 date_format_var = tk.StringVar()
 date_format_var.set('mm-dd-yyyy')
 time_var = tk.StringVar()
@@ -429,6 +492,11 @@ csv_field_boxplot_var = tk.StringVar()
 csv_field_boxplot_color_var = tk.StringVar()
 X_axis_bubble_var = tk.StringVar()
 points_var = tk.StringVar()
+histogram_nbins_var = tk.StringVar()
+histogram_category_var = tk.StringVar()
+histogram_marginal_var = tk.StringVar()
+violin_points_var = tk.StringVar()
+violin_category_var = tk.StringVar()
 csv_file_var = tk.StringVar()
 
 # Shared lists
@@ -555,7 +623,7 @@ notebook_y = 90 + 40 * y_multiplier_integer
 
 notebook = ttk.Notebook(window, style='Viz.TNotebook')
 notebook.place(x=GUI_IO_util.labels_x_coordinate, y=notebook_y,
-               width=GUI_IO_util.get_GUI_width(3) - GUI_IO_util.labels_x_coordinate - 20, height=280)
+               width=GUI_IO_util.get_GUI_width(3) - GUI_IO_util.labels_x_coordinate - 20, height=310)
 
 tab_relational = ttk.Frame(notebook)
 tab_categorical = ttk.Frame(notebook)
@@ -701,8 +769,8 @@ dynamic_network_field_var.trace('w', callback=lambda x,y,z: activate_csv_fields_
 # ── Tab 2: Categorical ───────────────────────────────────────────────────────
 
 tab_help(tab_categorical, 10,
-    "Select a chart type from the dropdown menu: * (all), Colormap/heatmap, Comparative bar charts, Stacked bar, Sunburst, or Treemap.\n\n"
-    "STACKED BAR / SUNBURST / TREEMAP: just select the chart type and press RUN — no extra options needed.\n\n"
+    "Select a chart type from the dropdown menu: * (all), Colormap/heatmap, Comparative bar charts, Grouped bar, Stacked bar, Sunburst, Treemap, or Waffle chart.\n\n"
+    "STACKED BAR / GROUPED BAR / SUNBURST / TREEMAP / WAFFLE CHART: just select the chart type and press RUN — no extra options needed.\n\n"
     "COLORMAP/HEATMAP: configure Max rows, colors, and normalization on the Colormap row below.\n\n"
     "COMPARATIVE BAR CHARTS: select csv files to compare on the Comparative row below.\n\n"
     "Select * to run all available options.")
@@ -711,7 +779,7 @@ categorical_lb = tk.Label(tab_categorical, text='Visualize categorical data')
 categorical_lb.place(x=10, y=10)
 
 categorical_menu_var.set('Sunburst')
-categorical_menu = tk.OptionMenu(tab_categorical, categorical_menu_var, '*', 'Colormap/heatmap', 'Comparative bar charts', 'Stacked bar', 'Sunburst', 'Treemap')
+categorical_menu = tk.OptionMenu(tab_categorical, categorical_menu_var, '*', 'Colormap/heatmap', 'Comparative bar charts', 'Grouped bar', 'Stacked bar', 'Sunburst', 'Treemap', 'Waffle chart')
 categorical_menu.place(x=200, y=7)
 
 tab_help(tab_categorical, 45,
@@ -964,13 +1032,13 @@ categorical_menu_var.trace('w', callback=lambda x,y,z: activate_csv_fields_categ
 # ── Tab 3: Temporal ───────────────────────────────────────────────────────────
 
 tab_help(tab_temporal, 10,
-    "Select a visualization type: Time mapper (interactive HTML timeline) or Timeline plot (line chart via Excel/Plotly).")
+    "Select a visualization type:\n  Calendar heatmap — days × weeks grid colored by value; reveals seasonal patterns.\n  Time mapper — interactive HTML timeline.\n  Timeline plot — line chart via Excel/Plotly.")
 
 temporal_options_lb = tk.Label(tab_temporal, text='Visualize temporal data')
 temporal_options_lb.place(x=10, y=10)
 
 temporal_menu_var.set('Time mapper')
-temporal_menu = tk.OptionMenu(tab_temporal, temporal_menu_var, 'Time mapper', 'Timeline plot')
+temporal_menu = tk.OptionMenu(tab_temporal, temporal_menu_var, 'Calendar heatmap', 'Time mapper', 'Timeline plot')
 temporal_menu.place(x=180, y=7)
 
 # Time mapper row
@@ -1033,17 +1101,39 @@ timeline_date_var = tk.StringVar()
 timeline_date_menu = tk.OptionMenu(tab_temporal, timeline_date_var, *menu_values)
 timeline_date_menu.place(x=560, y=115)
 
+# Calendar heatmap row
+tab_help(tab_temporal, 150,
+    "CALENDAR HEATMAP: shows daily values or event counts as a colored grid (days x weeks).\n"
+    "Select the Date field. Optionally select a Value field (numeric); if blank, counts events per day.\n"
+    "Date format is shared with the Time mapper row above.")
+
+calendar_lb = tk.Label(tab_temporal, text='Calendar heatmap', foreground="red", font=("Courier", 12, "bold"))
+calendar_lb.place(x=10, y=150)
+
+calendar_date_lb = tk.Label(tab_temporal, text='Date field')
+calendar_date_lb.place(x=190, y=153)
+
+calendar_date_menu = tk.OptionMenu(tab_temporal, calendar_date_var, *menu_values)
+calendar_date_menu.place(x=265, y=150)
+
+calendar_value_lb = tk.Label(tab_temporal, text='Value field (optional)')
+calendar_value_lb.place(x=450, y=153)
+
+calendar_value_menu = tk.OptionMenu(tab_temporal, calendar_value_var, '', *menu_values)
+calendar_value_menu.place(x=600, y=150)
+
 
 # ── Tab 4: Numeric ────────────────────────────────────────────────────────────
 
 tab_help(tab_numeric, 10,
-    "Select a visualization type: Excel/Plotly charts, Boxplots, or Bubble chart.")
+    "Select a visualization type: Boxplots, Bubble chart, Correlation heatmap, Excel/Plotly charts, Histogram, or Violin plot.\n\n"
+    "CORRELATION HEATMAP uses all numeric columns automatically — no Y-axis selection needed.")
 
 visualization_basic_options_lb = tk.Label(tab_numeric, text='Visualization options')
 visualization_basic_options_lb.place(x=10, y=10)
 
 visualizations_menu_var.set('Excel/Plotly charts')
-visualizations_menu = tk.OptionMenu(tab_numeric, visualizations_menu_var, 'Boxplots', 'Bubble chart', 'Excel/Plotly charts')
+visualizations_menu = tk.OptionMenu(tab_numeric, visualizations_menu_var, 'Boxplots', 'Bubble chart', 'Correlation heatmap', 'Excel/Plotly charts', 'Histogram', 'Violin plot')
 visualizations_menu.place(x=170, y=7)
 
 tab_help(tab_numeric, 45,
@@ -1184,6 +1274,55 @@ num_color_1_entry = tk.Entry(tab_numeric, width=10, textvariable=num_color_1_sty
 num_color_1_entry.configure(state='disabled')
 num_color_1_entry.place(x=440, y=153)
 
+# Histogram row
+tab_help(tab_numeric, 185,
+    "HISTOGRAM: Shows the frequency distribution of a numeric variable.\n"
+    "Optionally select a category field to color bars by group, and a marginal plot (rug, box, or violin).")
+
+histogram_lb = tk.Label(tab_numeric, text='Histogram', foreground="red", font=("Courier", 12, "bold"))
+histogram_lb.place(x=10, y=185)
+
+histogram_nbins_lb = tk.Label(tab_numeric, text='Bins')
+histogram_nbins_lb.place(x=130, y=188)
+
+histogram_nbins_var.set('0')
+histogram_nbins_entry = tk.Entry(tab_numeric, width=4, textvariable=histogram_nbins_var)
+histogram_nbins_entry.place(x=170, y=188)
+
+histogram_category_lb = tk.Label(tab_numeric, text='Group by')
+histogram_category_lb.place(x=220, y=188)
+
+histogram_category_menu = tk.OptionMenu(tab_numeric, histogram_category_var, *menu_values)
+histogram_category_menu.place(x=290, y=185)
+
+histogram_marginal_lb = tk.Label(tab_numeric, text='Marginal')
+histogram_marginal_lb.place(x=480, y=188)
+
+histogram_marginal_var.set('')
+histogram_marginal_menu = tk.OptionMenu(tab_numeric, histogram_marginal_var, '', 'rug', 'box', 'violin')
+histogram_marginal_menu.place(x=545, y=185)
+
+# Violin plot row
+tab_help(tab_numeric, 220,
+    "VIOLIN PLOT: Shows the full distribution shape of a numeric variable.\n"
+    "A box plot is drawn inside the violin. Select data points (all, None, outliers).\n"
+    "Optionally split by a category field.")
+
+violin_lb = tk.Label(tab_numeric, text='Violin plot', foreground="red", font=("Courier", 12, "bold"))
+violin_lb.place(x=10, y=220)
+
+violin_points_lb = tk.Label(tab_numeric, text='Data')
+violin_points_lb.place(x=130, y=223)
+
+violin_points_var.set('all')
+violin_points_menu = tk.OptionMenu(tab_numeric, violin_points_var, 'all', 'None', 'outliers')
+violin_points_menu.place(x=170, y=220)
+
+violin_category_lb = tk.Label(tab_numeric, text='Group by')
+violin_category_lb.place(x=290, y=223)
+
+violin_category_menu = tk.OptionMenu(tab_numeric, violin_category_var, *menu_values)
+violin_category_menu.place(x=360, y=220)
 
 
 # ── changed_filename (populates all menus across all tabs) ────────────────────
@@ -1283,6 +1422,30 @@ def changed_filename(tracedInputFile):
     for s in menu_values_local:
         m9.add_command(label=s, command=lambda value=s: X_axis_bubble_var.set(value))
 
+    m10 = histogram_category_menu["menu"]
+    m10.delete(0, "end")
+    m10.add_command(label='', command=lambda: histogram_category_var.set(''))
+    for s in menu_values_local:
+        m10.add_command(label=s, command=lambda value=s: histogram_category_var.set(value))
+
+    m11 = violin_category_menu["menu"]
+    m11.delete(0, "end")
+    m11.add_command(label='', command=lambda: violin_category_var.set(''))
+    for s in menu_values_local:
+        m11.add_command(label=s, command=lambda value=s: violin_category_var.set(value))
+
+    # Calendar heatmap menus (Temporal tab)
+    m_cd = calendar_date_menu["menu"]
+    m_cd.delete(0, "end")
+    for s in menu_values_local:
+        m_cd.add_command(label=s, command=lambda value=s: calendar_date_var.set(value))
+
+    m_cv = calendar_value_menu["menu"]
+    m_cv.delete(0, "end")
+    m_cv.add_command(label='', command=lambda: calendar_value_var.set(''))
+    for s in menu_values_local:
+        m_cv.add_command(label=s, command=lambda value=s: calendar_value_var.set(value))
+
     clear("<Escape>")
 
 def on_inputFilename_change(*args):
@@ -1372,17 +1535,23 @@ def activate_all_options(*args):
     # Temporal tab state
     is_time_mapper = 'Time mapper' in temporal_menu_var.get()
     is_timeline_plot = 'Timeline' in temporal_menu_var.get()
+    is_calendar = 'Calendar' in temporal_menu_var.get()
 
     csv_field_temporal_menu.configure(state='normal' if is_time_mapper else 'disabled')
     time_mapper_field_menu.configure(state='normal' if is_time_mapper else 'disabled')
-    date_format_menu.configure(state='normal' if is_time_mapper else 'disabled')
+    date_format_menu.configure(state='normal' if (is_time_mapper or is_calendar) else 'disabled')
     select_time_menu.configure(state='normal' if is_time_mapper else 'disabled')
     cumulative_checkbox.configure(state='normal' if is_time_mapper else 'disabled')
 
     timeline_Y_axis_menu.configure(state='normal' if is_timeline_plot else 'disabled')
     timeline_date_menu.configure(state='normal' if is_timeline_plot else 'disabled')
 
-    # Numeric tab state
+    calendar_date_menu.configure(state='normal' if is_calendar else 'disabled')
+    calendar_value_menu.configure(state='normal' if is_calendar else 'disabled')
+
+    # Numeric tab state — disable all, then enable per selection
+    num_sel = visualizations_menu_var.get().lower()
+
     X_axis_menu.configure(state='disabled')
     Y_axis_menu.configure(state='disabled')
     add_Y_axis.configure(state='disabled')
@@ -1393,20 +1562,32 @@ def activate_all_options(*args):
     csv_field_boxplot_menu.configure(state='disabled')
     csv_field_boxplot_color_menu.configure(state='disabled')
     X_axis_bubble_menu.configure(state='disabled')
+    histogram_nbins_entry.configure(state='disabled')
+    histogram_category_menu.configure(state='disabled')
+    histogram_marginal_menu.configure(state='disabled')
+    violin_points_menu.configure(state='disabled')
+    violin_category_menu.configure(state='disabled')
 
-    if 'plotly' in visualizations_menu_var.get().lower():
+    if 'plotly' in num_sel:
         X_axis_menu.configure(state='normal')
         Y_axis_menu.configure(state='normal')
         add_Y_axis.configure(state='normal')
         reset_Y_axis_button.configure(state='normal')
         show_Y_axis_button.configure(state='normal')
-    if 'boxplot' in visualizations_menu_var.get().lower():
+    if 'boxplot' in num_sel:
         points_menu.configure(state='normal')
         split_data_byCategory_checkbox.configure(state='normal')
         csv_field_boxplot_menu.configure(state='normal')
         csv_field_boxplot_color_menu.configure(state='normal')
-    if 'bubble' in visualizations_menu_var.get().lower():
+    if 'bubble' in num_sel:
         X_axis_bubble_menu.configure(state='normal')
+    if 'histogram' in num_sel:
+        histogram_nbins_entry.configure(state='normal')
+        histogram_category_menu.configure(state='normal')
+        histogram_marginal_menu.configure(state='normal')
+    if 'violin' in num_sel:
+        violin_points_menu.configure(state='normal')
+        violin_category_menu.configure(state='normal')
 
 activate_all_options()
 
@@ -1440,14 +1621,17 @@ def run_command():
         run_temporal(inputFile, outputDir, openOutputFiles,
                      temporal_menu_var.get(), csv_field_relational_var.get(), time_mapper_field_var.get(),
                      date_format_var.get(), time_var.get(), cumulative_var.get(),
-                     timeline_Y_axis_var.get(), timeline_date_var.get())
+                     timeline_Y_axis_var.get(), timeline_date_var.get(),
+                     calendar_date_var.get(), calendar_value_var.get())
     elif active_tab == 3:  # Numeric
         run_numeric(inputFile, outputDir, openOutputFiles,
                     visualizations_menu_var.get(), csv_field_visualization_var.get(),
                     X_axis_var.get(), csv_file_field_Y_axis_list, points_var.get(),
                     split_data_byCategory_var.get(), csv_field_boxplot_var.get(),
                     csv_field_boxplot_color_var.get(), X_axis_bubble_var.get(),
-                    color_1_style_var.get())
+                    color_1_style_var.get(),
+                    histogram_nbins_var.get(), histogram_category_var.get(), histogram_marginal_var.get(),
+                    violin_points_var.get(), violin_category_var.get())
 
 run_script_command = lambda: run_command()
 GUI_util.run_button.configure(command=run_script_command)
@@ -1540,7 +1724,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                                          "Select a tab to choose the type of visualization you wish to produce.\n\n"
                                                          "RELATIONAL tab: Network graphs (Gephi, vis.js) and Sankey charts to visualize relationships between entities (e.g., Subject-Verb-Object).\n\n"
-                                                         "CATEGORICAL tab: Colormap/heatmap, Comparative bar charts, Stacked bar, Sunburst, and Treemap charts to visualize categorical data.\n\n"
+                                                         "CATEGORICAL tab: Colormap/heatmap, Comparative bar charts, Grouped bar, Stacked bar, Sunburst, Treemap, and Waffle charts to visualize categorical data.\n\n"
                                                          "TEMPORAL tab: Time mapper to visualize temporal data along a timeline.\n\n"
                                                          "NUMERIC tab: Excel/Plotly charts, Boxplots, and Bubble charts to visualize numeric/statistical data.")
     y_multiplier_integer += 6

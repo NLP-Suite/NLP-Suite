@@ -162,10 +162,14 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         GoogleEarthProDir, existing_software_config, errorFound = IO_libraries_util.external_software_install('GIS_pipeline_util',
                                                                                              'Google Earth Pro',
                                                                                              '',
-                                                                                             silent=False, errorFound=False)
+                                                                                             silent=True, errorFound=False)
 
         if GoogleEarthProDir == None or GoogleEarthProDir == '':
-            return
+            mb.showwarning('Google Earth Pro not found',
+                           'Google Earth Pro is not installed on this machine.\n\n'
+                           'The NLP Suite will use Python Folium instead to produce pin maps and heatmaps.\n\n'
+                           'You can install Google Earth Pro at any time from the Setup menu.')
+            mapping_package = 'Python folium pin map & heatmap'
 
     startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start', 'Started running GIS pipeline at',
                                                    True, '', True, '', False)
@@ -487,6 +491,12 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
             print(f"  Google Maps heatmap: SKIPPED - mapping_package='{mapping_package}' does not contain 'Google'")
         elif Google_Maps_API == '':
             print(f"  Google Maps heatmap: SKIPPED - Google_Maps_API is empty")
+            mb.showwarning('Google Maps API key missing',
+                           'No Google Maps API key was found.\n\n'
+                           'The NLP Suite will use Python Folium instead to produce pin maps and heatmaps.\n\n'
+                           'You can set up a Google Maps API key at any time from the GIS GUI.\n'
+                           'Read the TIPS file TIPS_NLP_GIS_Google API Key.pdf for instructions.')
+            mapping_package = 'Python folium pin map & heatmap'
 
     # ------------------------------------------------------------------------------------
     # Folium pin map and heat map (no API key required)
