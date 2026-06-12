@@ -693,6 +693,61 @@ if sys.platform == 'darwin':
                                  True)
     routine_options = reminders_util.getReminders_list(scriptName)
 
+# Auto-generate default config files on first run so the user can test immediately
+def ensure_default_configs():
+    import csv as _csv
+    config_dir = GUI_IO_util.configPath
+    if not os.path.isdir(config_dir):
+        try:
+            os.mkdir(config_dir)
+        except Exception:
+            return False
+
+    created = []
+
+    io_config = os.path.join(config_dir, 'NLP_default_IO_config.csv')
+    if not os.path.isfile(io_config):
+        sample_dir = os.path.join(GUI_IO_util.NLPPath, 'lib', 'sampleData', 'newspaperArticles')
+        output_dir = os.path.join(os.path.expanduser('~'), 'Documents', 'NLP_output')
+        if not os.path.isdir(output_dir):
+            try:
+                os.makedirs(output_dir, exist_ok=True)
+            except Exception:
+                output_dir = ''
+        sample_dir_path = sample_dir.replace('\\', '/')
+        output_dir_path = output_dir.replace('\\', '/')
+        with open(io_config, 'w', newline='', encoding='utf-8') as f:
+            w = _csv.writer(f)
+            w.writerow(['I/O configuration label', 'Path', 'Sort order', 'Item separator character(s)', 'Date format', 'Date position'])
+            w.writerow(['Input txt filename with path', '', '', '', '', ''])
+            w.writerow(['Input files directory', sample_dir_path, '0', '_', 'mm-dd-yyyy', '4'])
+            w.writerow(['Input files secondary directory', '', '', '', '', ''])
+            w.writerow(['Output files directory', output_dir_path, '', '', '', ''])
+        created.append('I/O configuration (input: lib/sampleData/newspaperArticles, output: ~/Documents/NLP_output)')
+
+    pkg_config = os.path.join(config_dir, 'NLP_default_package_language_config.csv')
+    if not os.path.isfile(pkg_config):
+        with open(pkg_config, 'w', newline='', encoding='utf-8') as f:
+            w = _csv.writer(f)
+            w.writerow(['Parser & annotators', 'Parsers', 'Basic functions (tokenizer/lemmatizer)',
+                         'Corpus language', 'Language encoding', 'Export Json',
+                         'CoreNLP memory', 'CoreNLP document length', 'CoreNLP sentence-length limit'])
+            w.writerow(['Stanza', "Dependency parser, Constituency parser", 'Stanza',
+                         'English', 'utf-8', '0.0', '0.0', '0.0', '0.0'])
+        created.append('NLP package & language (Stanza, English)')
+
+    if created:
+        msg = ('The NLP Suite has automatically created default configuration files '
+               'so you can start testing right away:\n\n')
+        for item in created:
+            msg += '  • ' + item + '\n'
+        msg += ('\nYou can change these options at any time using the SETUP buttons above.')
+        mb.showinfo('Default configuration created', msg)
+        return True
+    return False
+
+configs_created = ensure_default_configs()
+
 # check for missing I/O configuration options
 setup_IO_checkbox()
 

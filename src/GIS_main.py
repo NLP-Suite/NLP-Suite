@@ -247,7 +247,16 @@ def run(inputFilename,
     #
     # ----------------------------------------------------------------------------------------------------------------------------------------------
 
-    if 'folium' in GIS_package_var or 'Google' in GIS_package_var:
+    if 'Proportional' in GIS_package_var:
+        import charts_util
+        outputfilename = charts_util.proportional_circle_map(
+            NER_outputFilename, outputDir, locationColumnName)
+        if outputfilename:
+            filesToOpen.append(outputfilename)
+        if len(filesToOpen) > 0:
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
+
+    elif 'folium' in GIS_package_var or 'Google' in GIS_package_var:
         # if GIS_package_var=='Google Earth Pro': # check installation
             # locationColumnName where locations to be geocoded (or geocoded) are stored in the csv file;
         #   any changes to the columns will result in error
@@ -685,7 +694,7 @@ GIS_package_lb = tk.Label(window, text='Software')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.label_columns,y_multiplier_integer,GIS_package_lb,True)
 
 GIS_package_var.set('Python folium pin map & heatmap')
-GIS_package = tk.OptionMenu(window,GIS_package_var,'Python folium pin map & heatmap','Google Earth Pro & Google Maps','Google Earth Pro','Google Maps','QGIS','Tableau','TimeMapper')
+GIS_package = tk.OptionMenu(window,GIS_package_var,'Python folium pin map & heatmap','Proportional circle map','Google Earth Pro & Google Maps','Google Earth Pro','Google Maps','QGIS','Tableau','TimeMapper')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                     GIS_package, True, False, True, False,

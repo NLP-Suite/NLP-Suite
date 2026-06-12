@@ -1611,16 +1611,17 @@ def Treemap(data, outputFilename, interest, csv_file_field, extra_dimension_aver
 # import numpy as np
 # import Plotly.express as px
 
-def TimeMapper(data, outputFilename, var, date_format_var, cumulative, monthly=None, yearly=None):
-    # convert csv to pandas
+def TimeMapper(data, outputFilename, var, date_format_var, cumulative, monthly=None, yearly=None, date_col=None):
     headers = IO_csv_util.get_csvfile_headers(data)
-    if 'Date' in headers:
+    if date_col and date_col in headers:
+        date_field = date_col
+    elif 'Date' in headers:
         date_field = 'Date'
     elif 'Document' in headers:
         date_field = 'Document'
     else:
         mb.showwarning(title="Warning",
-                       message="The time mapper algorithm requires a csv input file with either a Date or a Document field in the headers.\n\nPlease, select the expected csv file and try again.")
+                       message="The time mapper algorithm requires a csv input file with a date column.\n\nYou can select the date column using the 'csv file field for dynamic graph' dropdown, or the csv file must have a 'Date' or 'Document' column.\n\nPlease, try again.")
         return
     if type(data) == str:
         data = pd.read_csv(data, encoding='utf-8', on_bad_lines='skip')
@@ -2215,6 +2216,644 @@ def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categori
         fig.write_html(outputFilename)
         filesToOpen.append(outputFilename)
     return filesToOpen
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Standalone visualization functions
+# Extracted from auto_chart_cross_complex for use in data_visualization GUIs
+# ═══════════════════════════════════════════════════════════════════════
+
+def network_graph_visjs(inputFilename, outputDir, col1, col2, col3,
+                        date_col=None, top_n_per_role=15):
+    """Build an interactive vis.js network graph from three relational CSV columns.
+
+    Parameters
+    ----------
+    inputFilename : str   CSV file path.
+    outputDir : str
+    col1, col2, col3 : str   Column names for node1, edge, node2 (e.g. S, V, O).
+    date_col : str or None   Optional date column for time-slider animation.
+    top_n_per_role : int     Max values per role column to keep the graph readable.
+
+    Returns
+    -------
+    list of str   Paths to output files (HTML + optional .gexf).
+    """
+    import json as _json
+    import math as _math
+
+    try:
+        df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+    except Exception as e:
+        print(f"  WARNING: Could not read CSV: {e}")
+        return []
+
+    svo_cols = [col1, col2, col3]
+    for c in svo_cols:
+        if c not in df.columns:
+            print(f"  WARNING: Column '{c}' not found in {inputFilename}")
+            return []
+
+    _has_dates = date_col and date_col in df.columns
+    _net_cols = list(svo_cols)
+    if _has_dates:
+        _net_cols.append(date_col)
+
+    net_df = df[_net_cols].dropna(subset=svo_cols, how='all').copy()
+    for sc in svo_cols:
+        net_df[sc] = net_df[sc].fillna('').astype(str)
+    if net_df.empty:
+        return []
+
+    palette = {'S': '#E04040', 'V': '#4060E0', 'O': '#30A030'}
+    role_keys = ['S', 'V', 'O']
+    role_labels = [col1, col2, col3]
+    role_of = {}
+    top_per_role = {}
+    for idx_r, sc in enumerate(svo_cols):
+        rk = role_keys[idx_r]
+        top_vals = net_df[sc].value_counts().head(top_n_per_role).index.tolist()
+        top_per_role[sc] = set(top_vals)
+        for v in top_vals:
+            if v and v not in role_of:
+                role_of[v] = rk
+
+    mask = net_df.apply(
+        lambda row: all(row[c] in top_per_role[c] or row[c] == ''
+                        for c in svo_cols), axis=1)
+    net_df = net_df[mask]
+    if net_df.empty:
+        return []
+
+    edges = {}
+    edge_dates = {}
+    for _, row in net_df.iterrows():
+        vals = [row[c] for c in svo_cols if row[c]]
+        row_date = None
+        if _has_dates and pd.notna(row.get(date_col)):
+            row_date = pd.to_datetime(row[date_col], errors='coerce')
+            if pd.isna(row_date):
+                row_date = None
+        for i in range(len(vals) - 1):
+            key = (vals[i], vals[i + 1])
+            edges[key] = edges.get(key, 0) + 1
+            if row_date is not None:
+                edge_dates.setdefault(key, []).append(row_date)
+
+    triplet_counts = {}
+    for _, row in net_df.iterrows():
+        vals = tuple(row[c] for c in svo_cols)
+        if any(v == '' for v in vals):
+            continue
+        triplet_counts[vals] = triplet_counts.get(vals, 0) + 1
+
+    node_triplets = {}
+    for triplet, cnt in triplet_counts.items():
+        for val in triplet:
+            node_triplets.setdefault(val, []).append(list(triplet) + [cnt])
+
+    all_nodes = set()
+    for (s, t) in edges:
+        all_nodes.add(s)
+        all_nodes.add(t)
+
+    node_freq = {}
+    for sc in svo_cols:
+        for val, cnt in net_df[sc].value_counts().items():
+            if val:
+                node_freq[val] = node_freq.get(val, 0) + cnt
+
+    if not all_nodes:
+        return []
+
+    print(f"  Network graph: {len(all_nodes)} nodes, {len(edges)} edges, {len(triplet_counts)} unique triplets")
+
+    freq_vals = [node_freq.get(n, 1) for n in all_nodes]
+    max_freq = max(freq_vals)
+    min_freq = min(freq_vals)
+    SIZE_MIN, SIZE_MAX = 8, 45
+
+    def _node_size(freq):
+        if max_freq == min_freq:
+            return (SIZE_MIN + SIZE_MAX) / 2
+        log_ratio = _math.log(1 + freq - min_freq) / _math.log(1 + max_freq - min_freq)
+        return SIZE_MIN + log_ratio * (SIZE_MAX - SIZE_MIN)
+
+    node_id_map = {n: i for i, n in enumerate(sorted(all_nodes))}
+    vis_nodes = []
+    for n, nid in node_id_map.items():
+        rk = role_of.get(n, role_keys[-1])
+        freq = node_freq.get(n, 1)
+        sz = round(_node_size(freq), 1)
+        fsz = max(10, min(22, int(10 + (sz - SIZE_MIN) / (SIZE_MAX - SIZE_MIN) * 12)))
+        vis_nodes.append({
+            'id': nid, 'label': n,
+            'color': palette.get(rk, '#888'),
+            'font': {'size': fsz},
+            'shape': 'dot', 'size': sz,
+            'title': '{} (freq: {})'.format(n, freq),
+            'role': rk})
+
+    vis_edges = []
+    for (s, t), w in edges.items():
+        e_entry = {
+            'from': node_id_map[s], 'to': node_id_map[t],
+            'value': w,
+            'title': '{} → {} ({})'.format(s, t, w),
+            'color': {'color': '#aaaaaa', 'highlight': '#333333'}}
+        if _has_dates and (s, t) in edge_dates:
+            e_entry['dates'] = sorted(set(
+                d.strftime('%Y-%m-%d') for d in edge_dates[(s, t)]))
+        vis_edges.append(e_entry)
+
+    _all_dates_set = set()
+    if _has_dates:
+        for dlist in edge_dates.values():
+            for d in dlist:
+                _all_dates_set.add(d.strftime('%Y-%m-%d'))
+        node_dates = {}
+        for (s, t), dlist in edge_dates.items():
+            for d in dlist:
+                ds = d.strftime('%Y-%m-%d')
+                node_dates.setdefault(node_id_map[s], set()).add(ds)
+                node_dates.setdefault(node_id_map[t], set()).add(ds)
+        for vn in vis_nodes:
+            nid = vn['id']
+            if nid in node_dates:
+                vn['dates'] = sorted(node_dates[nid])
+    _all_dates_sorted = sorted(_all_dates_set) if _all_dates_set else []
+
+    js_node_triplets = {}
+    for label, trips in node_triplets.items():
+        nid = node_id_map.get(label)
+        if nid is not None:
+            trips_sorted = sorted(trips, key=lambda x: -x[-1])[:30]
+            js_node_triplets[nid] = trips_sorted
+
+    _role_initials = {'S': 'S', 'V': 'V', 'O': 'O'}
+    _svo_label = 'Network'
+    _role_arrow_label = ' → '.join(role_labels)
+    _role_arrow_short = ' → '.join(role_keys)
+
+    _role_css = {}
+    for idx_r, rl in enumerate(role_labels):
+        _role_css[rl] = role_keys[idx_r].lower()
+
+    _th = []
+    for _i, _rc in enumerate(role_labels):
+        if _i > 0:
+            _th.append('<th></th>')
+        _th.append('<th>{}</th>'.format(_rc))
+    _th.append('<th>Count</th>')
+    _table_header_html = ''.join(_th)
+
+    _td = []
+    for _i, _rc in enumerate(role_labels):
+        _css = _role_css.get(_rc, '')
+        if _i > 0:
+            _td.append("'<td>&rarr;</td>'")
+        _td.append("'<td class=\"{}\">' + t[{}] + '</td>'".format(_css, _i))
+    _td.append("'<td>' + t[{}] + '</td>'".format(len(svo_cols)))
+    _table_row_js = ' + '.join(_td)
+
+    _info_click = ' &rarr; '.join(role_keys)
+    _no_triplets = ' → '.join(role_keys)
+
+    legend_parts = []
+    for rk, rl in zip(role_keys, role_labels):
+        legend_parts.append(
+            '<span class="leg" style="background:{}"></span>{}'.format(palette[rk], rl))
+    legend_html = '  '.join(legend_parts)
+
+    html = """<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<title>{svo_label} Network</title>
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<style>
+  body {{ font-family: Arial, sans-serif; margin: 0; }}
+  #network {{ width: 100%; height: {network_height}; border: 1px solid #ccc; }}
+  #title {{ text-align: center; padding: 8px; font-size: 16px; font-weight: bold; }}
+  #legend {{ text-align: center; padding: 4px; font-size: 13px; }}
+  .leg {{ display: inline-block; width: 14px; height: 14px; border-radius: 50%;
+          vertical-align: middle; margin: 0 3px 0 12px; }}
+  #time-slider-container {{ display: {slider_display}; padding: 6px 20px;
+           background: #f8f8f8; border-top: 1px solid #ddd; text-align: center; }}
+  #time-slider-container label {{ font-size: 13px; margin-right: 8px; }}
+  #time-slider {{ width: 60%; vertical-align: middle; }}
+  #time-label {{ font-weight: bold; font-size: 13px; margin-left: 8px; min-width: 100px;
+                 display: inline-block; }}
+  #time-slider-container button {{ margin-left: 12px; font-size: 12px; padding: 2px 10px;
+                                    cursor: pointer; }}
+  #info {{ padding: 8px 16px; font-size: 13px; color: #333;
+           max-height: 18vh; overflow-y: auto; border-top: 1px solid #ccc; }}
+  #info table {{ border-collapse: collapse; margin: 4px auto; }}
+  #info th, #info td {{ padding: 2px 10px; text-align: left; }}
+  #info th {{ border-bottom: 1px solid #999; }}
+  .s {{ color: #E04040; font-weight: bold; }}
+  .v {{ color: #4060E0; font-weight: bold; }}
+  .o {{ color: #30A030; font-weight: bold; }}
+</style>
+</head><body>
+<div id="title">{svo_label} (top {top_n} per role) &mdash; click a node to see full {role_arrow_label} chains</div>
+<div id="legend">{legend_html} &nbsp;&nbsp;&nbsp; <span style="font-size:12px;color:#666">&#9679; Node size = frequency</span></div>
+<div id="time-slider-container">
+  <label>Timeline:</label>
+  <input type="range" id="time-slider" min="0" max="0" value="0" step="1">
+  <span id="time-label">All dates</span>
+  <button id="time-play">&#9654; Play</button>
+  <button id="time-reset">Show All</button>
+</div>
+<div id="network"></div>
+<div id="info">Click a node to see its {role_arrow_short} relationships.</div>
+<script>
+var allDates = {all_dates_json};
+var nodes = new vis.DataSet({nodes_json});
+var edges = new vis.DataSet({edges_json});
+var nodeTriplets = {triplets_json};
+var container = document.getElementById('network');
+var gdata = {{ nodes: nodes, edges: edges }};
+var options = {{
+  physics: {{ solver: 'forceAtlas2Based',
+              forceAtlas2Based: {{ gravitationalConstant: -60, springLength: 150,
+                                  springConstant: 0.04, damping: 0.5 }},
+              stabilization: {{ iterations: 200 }} }},
+  interaction: {{ hover: true, tooltipDelay: 100 }},
+  nodes: {{ scaling: {{ min: 8, max: 45 }} }},
+  edges: {{ arrows: {{ to: {{ enabled: true, scaleFactor: 0.5 }} }},
+            smooth: {{ type: 'continuous' }}, scaling: {{ min: 1, max: 6 }} }}
+}};
+var network = new vis.Network(container, gdata, options);
+var origNodeProps = {{}};
+nodes.forEach(function(n) {{
+  origNodeProps[n.id] = {{ size: n.size, fontSize: n.font ? n.font.size : 14 }};
+}});
+function resetAll() {{
+  nodes.forEach(function(n) {{
+    var orig = origNodeProps[n.id] || {{ size: 12, fontSize: 14 }};
+    nodes.update({{ id: n.id, opacity: 1.0, size: orig.size,
+                    font: {{ size: orig.fontSize, color: '#333' }} }});
+  }});
+  edges.forEach(function(e) {{
+    edges.update({{ id: e.id, color: {{ color: '#aaaaaa', opacity: 1.0 }} }});
+  }});
+}}
+var slider = document.getElementById('time-slider');
+var timeLabel = document.getElementById('time-label');
+var playBtn = document.getElementById('time-play');
+var resetBtn = document.getElementById('time-reset');
+var playInterval = null;
+if (allDates.length > 0) {{
+  slider.max = allDates.length;
+  slider.value = 0;
+  slider.addEventListener('input', function() {{ applyTimeFilter(parseInt(this.value)); }});
+  resetBtn.addEventListener('click', function() {{ slider.value = 0; applyTimeFilter(0); stopPlay(); }});
+  playBtn.addEventListener('click', function() {{
+    if (playInterval) {{ stopPlay(); return; }}
+    if (parseInt(slider.value) >= allDates.length) slider.value = 0;
+    playInterval = setInterval(function() {{
+      var v = parseInt(slider.value) + 1;
+      if (v > allDates.length) {{ stopPlay(); return; }}
+      slider.value = v;
+      applyTimeFilter(v);
+    }}, 800);
+    playBtn.textContent = '\\u275A\\u275A Pause';
+  }});
+}}
+function stopPlay() {{
+  if (playInterval) {{ clearInterval(playInterval); playInterval = null; }}
+  playBtn.textContent = '\\u25B6 Play';
+}}
+function applyTimeFilter(idx) {{
+  if (idx === 0 || allDates.length === 0) {{
+    timeLabel.textContent = 'All dates';
+    resetAll();
+    return;
+  }}
+  var cutoff = allDates[idx - 1];
+  timeLabel.textContent = cutoff;
+  nodes.forEach(function(n) {{
+    var orig = origNodeProps[n.id] || {{ size: 12, fontSize: 14 }};
+    var dates = n.dates || [];
+    var visible = dates.length === 0 || dates.some(function(d) {{ return d <= cutoff; }});
+    if (visible) {{
+      nodes.update({{ id: n.id, opacity: 1.0, size: orig.size,
+                      font: {{ size: orig.fontSize, color: '#333' }} }});
+    }} else {{
+      nodes.update({{ id: n.id, opacity: 0.05, size: Math.max(4, orig.size * 0.3),
+                      font: {{ size: 6, color: '#ddd' }} }});
+    }}
+  }});
+  edges.forEach(function(e) {{
+    var dates = e.dates || [];
+    var visible = dates.length === 0 || dates.some(function(d) {{ return d <= cutoff; }});
+    if (visible) {{
+      edges.update({{ id: e.id, color: {{ color: '#aaaaaa', opacity: 1.0 }} }});
+    }} else {{
+      edges.update({{ id: e.id, color: {{ color: '#eee', opacity: 0.03 }} }});
+    }}
+  }});
+}}
+var labelToId = {{}};
+nodes.forEach(function(n) {{ labelToId[n.label] = n.id; }});
+network.on("click", function(params) {{
+  var infoDiv = document.getElementById('info');
+  if (params.nodes.length === 0) {{
+    resetAll();
+    infoDiv.innerHTML = 'Click a node to see its {info_click_msg} relationships.';
+    return;
+  }}
+  var clickedId = params.nodes[0];
+  var clickedNode = nodes.get(clickedId);
+  var trips = nodeTriplets[clickedId] || [];
+  var involvedIds = new Set();
+  involvedIds.add(clickedId);
+  trips.forEach(function(t) {{
+    for (var i = 0; i < t.length - 1; i++) {{
+      var nid = labelToId[t[i]];
+      if (nid !== undefined) involvedIds.add(nid);
+    }}
+  }});
+  var involvedEdgeIds = new Set();
+  edges.forEach(function(e) {{
+    if (involvedIds.has(e.from) && involvedIds.has(e.to)) {{
+      involvedEdgeIds.add(e.id);
+    }}
+  }});
+  nodes.forEach(function(n) {{
+    var orig = origNodeProps[n.id] || {{ size: 12, fontSize: 14 }};
+    if (involvedIds.has(n.id)) {{
+      nodes.update({{ id: n.id, opacity: 1.0, size: orig.size,
+                      font: {{ size: Math.max(orig.fontSize, 14), color: '#000' }} }});
+    }} else {{
+      nodes.update({{ id: n.id, opacity: 0.10, size: Math.max(6, orig.size * 0.5),
+                      font: {{ size: 8, color: '#ccc' }} }});
+    }}
+  }});
+  edges.forEach(function(e) {{
+    if (involvedEdgeIds.has(e.id)) {{
+      edges.update({{ id: e.id, color: {{ color: '#333', opacity: 1.0 }} }});
+    }} else {{
+      edges.update({{ id: e.id, color: {{ color: '#eee', opacity: 0.08 }} }});
+    }}
+  }});
+  if (trips.length === 0) {{
+    infoDiv.innerHTML = '<b>' + clickedNode.label + '</b>: no full {no_triplets_msg} tuples.';
+    return;
+  }}
+  var html = '<b>' + clickedNode.label + '</b> &mdash; '
+           + trips.length + ' tuple(s):<br>'
+           + '<table><tr>{table_header_html}</tr>';
+  trips.forEach(function(t) {{
+    html += '<tr>' + {table_row_js} + '</tr>';
+  }});
+  html += '</table>';
+  infoDiv.innerHTML = html;
+}});
+</script>
+</body></html>"""
+
+    html = html.format(
+        svo_label=_svo_label,
+        role_arrow_label=_role_arrow_label,
+        role_arrow_short=_role_arrow_short,
+        info_click_msg=_info_click,
+        no_triplets_msg=_no_triplets,
+        table_header_html=_table_header_html,
+        table_row_js=_table_row_js,
+        top_n=top_n_per_role,
+        legend_html=legend_html,
+        nodes_json=_json.dumps(vis_nodes),
+        edges_json=_json.dumps(vis_edges),
+        triplets_json=_json.dumps(js_node_triplets),
+        all_dates_json=_json.dumps(_all_dates_sorted),
+        network_height='70vh' if _all_dates_sorted else '75vh',
+        slider_display='block' if _all_dates_sorted else 'none')
+
+    import re as _re
+    def _safe_fn(s):
+        return _re.sub(r'[<>:"/\\|?*]', '_', s).replace(' ', '_')
+
+    base = _safe_fn(os.path.splitext(os.path.basename(inputFilename))[0])
+    output_files = []
+    network_file = os.path.join(outputDir, '{}_network.html'.format(base))
+    with open(network_file, 'w', encoding='utf-8') as fh:
+        fh.write(html)
+    output_files.append(network_file)
+    print(f"  Network saved: {network_file}")
+
+    # Gephi .gexf export
+    try:
+        import Gephi_util as _gephi
+
+        rgb_map = {'S': (224, 64, 64), 'V': (64, 96, 224), 'O': (48, 160, 48)}
+        _gexf_dynamic = _has_dates and len(edge_dates) > 0
+        _gexf_mode = "dynamic" if _gexf_dynamic else "static"
+        _gexf_tf = "date" if _gexf_dynamic else ""
+
+        gexf = _gephi.Gexf("NLP Suite", "Network")
+        graph = gexf.addGraph("directed", _gexf_mode, "Network", timeformat=_gexf_tf)
+        role_attr_id = graph.addNodeAttribute("Role", role_keys[-1], "string", "static")
+
+        _node_spells = {}
+        if _gexf_dynamic:
+            for (s, t), dlist in edge_dates.items():
+                for d in dlist:
+                    ds = d.strftime('%Y-%m-%d')
+                    _node_spells.setdefault(s, []).append({"start": ds, "end": ds})
+                    _node_spells.setdefault(t, []).append({"start": ds, "end": ds})
+
+        for n, nid in node_id_map.items():
+            rk = role_of.get(n, role_keys[-1])
+            freq = node_freq.get(n, 1)
+            r, g_c, b = rgb_map.get(rk, (128, 128, 128))
+            spells = _node_spells.get(n, []) if _gexf_dynamic else []
+            node = graph.addNode(str(nid), n,
+                                 r=str(r), g=str(g_c), b=str(b),
+                                 size=str(max(10, freq)), spells=spells)
+            node.addAttribute(role_attr_id, rk)
+
+        for eidx, ((s, t), w) in enumerate(edges.items()):
+            espells = []
+            if _gexf_dynamic and (s, t) in edge_dates:
+                for d in edge_dates[(s, t)]:
+                    ds = d.strftime('%Y-%m-%d')
+                    espells.append({"start": ds, "end": ds})
+            graph.addEdge(str(eidx), str(node_id_map[s]), str(node_id_map[t]),
+                          weight=str(w), label='{} → {}'.format(s, t), spells=espells)
+
+        gexf_file = os.path.join(outputDir, '{}_network.gexf'.format(base))
+        with open(gexf_file, 'wb') as gf:
+            gexf.write(gf, print_stat=False)
+        output_files.append(gexf_file)
+        print(f"  Gephi .gexf saved: {gexf_file}")
+    except ImportError:
+        pass
+    except Exception as ge:
+        print(f"  WARNING: Gephi .gexf export: {ge}")
+
+    return output_files
+
+
+def proportional_circle_map(inputFilename, outputDir, location_col):
+    """Build a Leaflet.js proportional circle map for a location column.
+
+    Parameters
+    ----------
+    inputFilename : str   CSV file path.
+    outputDir : str
+    location_col : str    Column containing location names to geocode.
+
+    Returns
+    -------
+    str or ''   Path to output HTML file, or empty string on failure.
+    """
+    try:
+        import folium
+        from geopy.geocoders import Nominatim
+        import time as _time
+    except ImportError as e:
+        print(f"  Note: folium/geopy not available for map generation: {e}")
+        return ''
+
+    try:
+        df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+    except Exception as e:
+        print(f"  WARNING: Could not read CSV: {e}")
+        return ''
+
+    if location_col not in df.columns:
+        print(f"  WARNING: Column '{location_col}' not found")
+        return ''
+
+    lat_col = None
+    lon_col = None
+    for c in df.columns:
+        cl = c.lower().strip()
+        if cl in ('latitude', 'lat'):
+            lat_col = c
+        elif cl in ('longitude', 'lon', 'lng'):
+            lon_col = c
+
+    geo_rows = []
+
+    if lat_col and lon_col:
+        subset = df[[location_col, lat_col, lon_col]].dropna()
+        if subset.empty:
+            return ''
+        freq = subset[location_col].value_counts().head(50)
+        for loc_name, count in freq.items():
+            row = subset[subset[location_col] == loc_name].iloc[0]
+            try:
+                lat, lon = float(row[lat_col]), float(row[lon_col])
+            except (ValueError, TypeError):
+                continue
+            geo_rows.append((loc_name, lat, lon, count))
+    else:
+        loc_data = df[location_col].dropna().astype(str)
+        if loc_data.empty:
+            return ''
+        freq = loc_data.value_counts().head(50)
+        if freq.empty:
+            return ''
+        geolocator = Nominatim(user_agent='NLP_Suite_visualization')
+        _geo_cache = {}
+        for loc_name, count in freq.items():
+            if loc_name in _geo_cache:
+                lat, lon = _geo_cache[loc_name]
+            else:
+                try:
+                    result = geolocator.geocode(loc_name, timeout=5)
+                    if result:
+                        lat, lon = result.latitude, result.longitude
+                        _geo_cache[loc_name] = (lat, lon)
+                    else:
+                        continue
+                    _time.sleep(1.1)
+                except Exception:
+                    continue
+            geo_rows.append((loc_name, lat, lon, count))
+
+    if not geo_rows:
+        print("  No locations could be geocoded")
+        return ''
+
+    avg_lat = sum(r[1] for r in geo_rows) / len(geo_rows)
+    avg_lon = sum(r[2] for r in geo_rows) / len(geo_rows)
+    m = folium.Map(location=[avg_lat, avg_lon], zoom_start=4,
+                   tiles='CartoDB positron')
+    max_count = max(r[3] for r in geo_rows)
+    for loc_name, lat, lon, count in geo_rows:
+        radius = max(5, (count / max_count) * 40)
+        folium.CircleMarker(
+            location=[lat, lon], radius=radius,
+            color='#3388ff', fill=True,
+            fill_color='#3388ff', fill_opacity=0.6,
+            popup='{}: {}'.format(loc_name, count),
+            tooltip='{} ({})'.format(loc_name, count)
+        ).add_to(m)
+
+    import re as _re
+    def _safe_fn(s):
+        return _re.sub(r'[<>:"/\\|?*]', '_', s).replace(' ', '_')
+
+    base = _safe_fn(os.path.splitext(os.path.basename(inputFilename))[0])
+    safe_col = _safe_fn(location_col)
+    map_file = os.path.join(outputDir, '{}_{}_map.html'.format(base, safe_col))
+    m.save(map_file)
+    print(f"  Proportional circle map: {len(geo_rows)} locations geocoded for {location_col}")
+    return map_file
+
+
+def stacked_bar_from_csv(inputFilename, outputDir, group_col, segment_col, top_n=20):
+    """Build a stacked bar chart from two categorical CSV columns.
+
+    Parameters
+    ----------
+    inputFilename : str   CSV file path.
+    outputDir : str
+    group_col : str       Column for bar groups (Y-axis labels).
+    segment_col : str     Column for bar segments (stacked colors).
+    top_n : int           Show only the top N groups by total count.
+
+    Returns
+    -------
+    str or ''   Path to output PNG file, or empty string on failure.
+    """
+    try:
+        df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+    except Exception as e:
+        print(f"  WARNING: Could not read CSV: {e}")
+        return ''
+
+    for c in [group_col, segment_col]:
+        if c not in df.columns:
+            print(f"  WARNING: Column '{c}' not found")
+            return ''
+
+    pairs = df[[group_col, segment_col]].dropna()
+    if pairs.empty:
+        return ''
+
+    ct = pd.crosstab(pairs[group_col], pairs[segment_col])
+    ct.columns.name = segment_col
+
+    import re as _re
+    def _safe_fn(s):
+        return _re.sub(r'[<>:"/\\|?*]', '_', s).replace(' ', '_')
+
+    base = _safe_fn(os.path.splitext(os.path.basename(inputFilename))[0])
+    safe_g = _safe_fn(group_col)
+    safe_s = _safe_fn(segment_col)
+    out_base = os.path.join(outputDir,
+        '{}_stacked_{}_{}'.format(base, safe_g, safe_s))
+    visualize_stacked_bar(ct, top_n=top_n,
+                          x_label=group_col, y_label='Count',
+                          title='Stacked bar: {} by {}'.format(group_col, segment_col),
+                          outputname=out_base)
+    png_file = out_base + '.png'
+    if os.path.isfile(png_file):
+        return png_file
+    return ''
 
 
 # ═══════════════════════════════════════════════════════════════════════
