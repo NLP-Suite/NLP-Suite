@@ -232,29 +232,59 @@ def run_categorical(inputFilename, outputDir, openOutputFiles,
 
 
 def run_temporal(inputFilename, outputDir, openOutputFiles,
-                 csv_field_relational_var, time_mapper_field_var,
-                 date_format_var, time_var, cumulative_var):
+                 temporal_menu_var, csv_field_relational_var, time_mapper_field_var,
+                 date_format_var, time_var, cumulative_var,
+                 timeline_Y_axis_var, timeline_date_var):
     filesToOpen = []
     if inputFilename == '' or os.path.basename(inputFilename)[-4:] != ".csv":
         mb.showwarning("Warning", "The visualization options require a csv file in input.\n\nPlease, select a csv file and try again.")
         return
 
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.html', 'timeMapper')
-    monthly = False
-    yearly = False
-    if time_var == 'Monthly':
-        monthly = True
-    elif time_var == 'Yearly':
-        yearly = True
+    if 'Time mapper' in temporal_menu_var:
+        outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.html', 'timeMapper')
+        monthly = False
+        yearly = False
+        if time_var == 'Monthly':
+            monthly = True
+        elif time_var == 'Yearly':
+            yearly = True
 
-    date_col = time_mapper_field_var if time_mapper_field_var else None
-    outputFiles = charts_util.TimeMapper(inputFilename, outputFilename, csv_field_relational_var, date_format_var,
-                                        cumulative_var, monthly, yearly, date_col=date_col)
-    if outputFiles != None:
-        if isinstance(outputFiles, str):
-            filesToOpen.append(outputFiles)
-        else:
-            filesToOpen.extend(outputFiles)
+        date_col = time_mapper_field_var if time_mapper_field_var else None
+        outputFiles = charts_util.TimeMapper(inputFilename, outputFilename, csv_field_relational_var, date_format_var,
+                                            cumulative_var, monthly, yearly, date_col=date_col)
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+
+    elif 'Timeline' in temporal_menu_var:
+        if timeline_Y_axis_var == '':
+            mb.showwarning("Warning", "No Y-axis variable has been selected.\n\nPlease, select a Y-axis variable and try again.")
+            return
+        if timeline_date_var == '':
+            mb.showwarning("Warning", "No date field has been selected for the X-axis.\n\nPlease, select a date field and try again.")
+            return
+
+        headers = IO_csv_util.get_csvfile_headers(inputFilename)
+        col_num = IO_csv_util.get_columnNumber_from_headerValue(headers, timeline_Y_axis_var, inputFilename)
+        columns_to_be_plotted_yAxis = [[col_num, col_num]]
+
+        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
+                                          outputFileLabel='',
+                                          chartPackage=GUI_util.charts_package_options_widget.get(),
+                                          dataTransformation=GUI_util.data_transformation_options_widget.get(),
+                                          chart_type_list=['Line'],
+                                          chart_title=timeline_Y_axis_var + " over Time",
+                                          column_xAxis_label_var=timeline_date_var,
+                                          hover_info_column_list=[],
+                                          count_var=1,
+                                          complete_sid=False)
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     if openOutputFiles and len(filesToOpen) > 0:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -379,6 +409,9 @@ color_2_style_var = tk.StringVar()
 data_transformation_var = tk.StringVar()
 
 # Temporal tab variables
+temporal_menu_var = tk.StringVar()
+temporal_menu_var.set('Time mapper')
+timeline_Y_axis_var = tk.StringVar()
 time_mapper_field_var = tk.StringVar()
 date_format_var = tk.StringVar()
 date_format_var.set('mm-dd-yyyy')
@@ -500,11 +533,22 @@ if GUI_util.inputFilename.get() != '' and GUI_util.inputFilename.get()[-4:] == "
 else:
     file_menu_values = " "
 
+tab_help_x = GUI_IO_util.close_button_x_coordinate - GUI_IO_util.labels_x_coordinate
+
+def tab_help(parent, y, message):
+    btn = tk.Button(parent, text='? HELP',
+                    command=lambda: mb.showinfo("NLP Suite Help", message))
+    btn.place(x=tab_help_x, y=y)
+
 # ── Notebook ──────────────────────────────────────────────────────────────────
 
 # Style the notebook tabs: bold red text, extra padding
 nb_style = ttk.Style()
+nb_style.theme_use('clam')
 nb_style.configure('Viz.TNotebook.Tab', font=('Courier', 11, 'bold'), foreground='red', padding=[12, 4])
+nb_style.map('Viz.TNotebook.Tab',
+             background=[('selected', '#d0e0f0'), ('!selected', '#e8e8e8')],
+             foreground=[('selected', 'red'), ('!selected', '#999999')])
 
 # Save the current y position for the notebook
 notebook_y = 90 + 40 * y_multiplier_integer
@@ -530,12 +574,22 @@ y_multiplier_integer = y_multiplier_integer + 7
 
 r_y = 0  # each tab starts at y=0
 
+tab_help(tab_relational, 10,
+    "Select a visualization type from the dropdown menu: * (all), Gephi network graph, Network graph (vis.js), or Sankey flowchart.\n\n"
+    "Select * to run all available options.")
+
 relations_lb = tk.Label(tab_relational, text='Visualize relations')
 relations_lb.place(x=10, y=10)
 
 relations_menu_var.set('Gephi')
 relations_menu = tk.OptionMenu(tab_relational, relations_menu_var, '*', 'Gephi', 'Network graph (vis.js)', 'Sankey')
 relations_menu.place(x=160, y=7)
+
+tab_help(tab_relational, 45,
+    "Select a csv file field from the dropdown menu, then press the + button to add it.\n\n"
+    "For Gephi/vis.js: select 3 fields in the order node, edge, node (e.g., Subject, Verb, Object).\n\n"
+    "For Sankey: select 2 or 3 fields.\n\n"
+    "Press Reset to clear your selections. The selected fields are shown in the entry area.")
 
 csv_field_lb = tk.Label(tab_relational, text='csv file field')
 csv_field_lb.place(x=10, y=45)
@@ -577,6 +631,10 @@ def show_Gephi_options_list():
         mb.showwarning(title='Warning', message='The currently selected Gephi options are:\n\n  ' + '\n  '.join(csv_file_relational_field_list) + '\n\nPlease, press the Reset button (or ESCape) to start fresh.')
 
 # Gephi/vis.js row
+tab_help(tab_relational, 80,
+    "Optionally select a date field to create a DYNAMIC (time-varying) network graph.\n\n"
+    "If no date field is selected, a static network graph will be produced.")
+
 Gephi_lb = tk.Label(tab_relational, text='Gephi/vis.js', foreground="red", font=("Courier", 12, "bold"))
 Gephi_lb.place(x=10, y=80)
 
@@ -588,6 +646,10 @@ dynamic_network_field_menu.configure(state='disabled')
 dynamic_network_field_menu.place(x=360, y=80)
 
 # Sankey row
+tab_help(tab_relational, 115,
+    "Adjust the maximum number of items displayed for each variable in the Sankey chart.\n\n"
+    "Variable 1, 2, and 3 correspond to the csv fields selected above in order.")
+
 Sankey_lb = tk.Label(tab_relational, text='Sankey', foreground="red", font=("Courier", 12, "bold"))
 Sankey_lb.place(x=10, y=115)
 
@@ -638,12 +700,25 @@ dynamic_network_field_var.trace('w', callback=lambda x,y,z: activate_csv_fields_
 
 # ── Tab 2: Categorical ───────────────────────────────────────────────────────
 
+tab_help(tab_categorical, 10,
+    "Select a chart type from the dropdown menu: * (all), Colormap/heatmap, Comparative bar charts, Stacked bar, Sunburst, or Treemap.\n\n"
+    "STACKED BAR / SUNBURST / TREEMAP: just select the chart type and press RUN — no extra options needed.\n\n"
+    "COLORMAP/HEATMAP: configure Max rows, colors, and normalization on the Colormap row below.\n\n"
+    "COMPARATIVE BAR CHARTS: select csv files to compare on the Comparative row below.\n\n"
+    "Select * to run all available options.")
+
 categorical_lb = tk.Label(tab_categorical, text='Visualize categorical data')
 categorical_lb.place(x=10, y=10)
 
 categorical_menu_var.set('Sunburst')
 categorical_menu = tk.OptionMenu(tab_categorical, categorical_menu_var, '*', 'Colormap/heatmap', 'Comparative bar charts', 'Stacked bar', 'Sunburst', 'Treemap')
 categorical_menu.place(x=200, y=7)
+
+tab_help(tab_categorical, 45,
+    "Select a csv file field from the dropdown, optionally enter search values (comma-separated), "
+    "then press the + button to add the combination.\n\n"
+    "Repeat for at least one more field. You need at least 2 field/value combinations.\n\n"
+    "Use Reset to clear and Show to display your current selections.")
 
 csv_field_categorical_lb = tk.Label(tab_categorical, text='Search field')
 csv_field_categorical_lb.place(x=10, y=45)
@@ -698,6 +773,12 @@ show_button_categorical = tk.Button(tab_categorical, text='Show', width=4, heigh
 show_button_categorical.place(x=730, y=42)
 
 # Filtering row
+tab_help(tab_categorical, 80,
+    "Select a filtering option for Sunburst/Treemap charts.\n\n"
+    "No filtering: display all data.\n"
+    "Fixed parameter: filter items below a fixed frequency threshold.\n"
+    "Propagating parameter: filter using a rate and base that propagate through hierarchy levels.")
+
 filter_lb = tk.Label(tab_categorical, text='Filtering options')
 filter_lb.place(x=10, y=80)
 
@@ -738,6 +819,12 @@ def activate_filtering_options(*args):
 filter_options_var.trace('w', activate_filtering_options)
 
 # Colormap row
+tab_help(tab_categorical, 115,
+    "Colormap/heatmap options (only active when Colormap/heatmap is selected).\n\n"
+    "Max rows: maximum number of rows to display.\n"
+    "Color: click the checkbox to pick a custom color for the start/end of the color gradient.\n"
+    "Normalize: apply a data transformation (Min-Max, Z-score, etc.) before plotting.")
+
 colormap_lb = tk.Label(tab_categorical, text='Colormap/heatmap', foreground="red", font=("Courier", 12, "bold"))
 colormap_lb.place(x=10, y=115)
 
@@ -804,6 +891,12 @@ data_transformation_menu = tk.OptionMenu(tab_categorical, data_transformation_va
 data_transformation_menu.place(x=710, y=115)
 
 # Comparative bar charts row
+tab_help(tab_categorical, 150,
+    "Comparative bar charts compare the same variable across multiple csv files.\n\n"
+    "Use the + button to add csv files (at least 2 required).\n"
+    "Select a Y-axis field from the main Y-axis dropdown above.\n"
+    "Press Reset to clear the file list.")
+
 comparative_bar_lb = tk.Label(tab_categorical, text='Comparative bar charts', foreground="red", font=("Courier", 12, "bold"))
 comparative_bar_lb.place(x=10, y=150)
 
@@ -870,42 +963,81 @@ categorical_menu_var.trace('w', callback=lambda x,y,z: activate_csv_fields_categ
 
 # ── Tab 3: Temporal ───────────────────────────────────────────────────────────
 
+tab_help(tab_temporal, 10,
+    "Select a visualization type: Time mapper (interactive HTML timeline) or Timeline plot (line chart via Excel/Plotly).")
+
+temporal_options_lb = tk.Label(tab_temporal, text='Visualize temporal data')
+temporal_options_lb.place(x=10, y=10)
+
+temporal_menu_var.set('Time mapper')
+temporal_menu = tk.OptionMenu(tab_temporal, temporal_menu_var, 'Time mapper', 'Timeline plot')
+temporal_menu.place(x=180, y=7)
+
+# Time mapper row
+tab_help(tab_temporal, 45,
+    "TIME MAPPER: creates an interactive HTML timeline.\nSelect the Y-axis field (the variable to display over time).")
+
 temporal_lb = tk.Label(tab_temporal, text='Time mapper', foreground="red", font=("Courier", 12, "bold"))
-temporal_lb.place(x=10, y=10)
+temporal_lb.place(x=10, y=45)
 
 csv_field_time_mapper_lb = tk.Label(tab_temporal, text='Y-axis field')
-csv_field_time_mapper_lb.place(x=130, y=13)
+csv_field_time_mapper_lb.place(x=140, y=48)
 
-# Reuse relational field menu for Y-axis in temporal tab
 csv_field_temporal_menu = tk.OptionMenu(tab_temporal, csv_field_relational_var, *menu_values)
-csv_field_temporal_menu.place(x=220, y=10)
+csv_field_temporal_menu.place(x=230, y=45)
+
+tab_help(tab_temporal, 80,
+    "Select the Date field, date Format, Timeline granularity (Daily/Monthly/Yearly), and optionally check Cumulative.")
 
 date_field_lb = tk.Label(tab_temporal, text='Date field')
-date_field_lb.place(x=10, y=50)
+date_field_lb.place(x=10, y=80)
 
 time_mapper_field_menu = tk.OptionMenu(tab_temporal, time_mapper_field_var, *menu_values)
-time_mapper_field_menu.place(x=100, y=47)
+time_mapper_field_menu.place(x=100, y=77)
 
 date_format_lb = tk.Label(tab_temporal, text='Format')
-date_format_lb.place(x=320, y=50)
+date_format_lb.place(x=320, y=80)
 
 date_format_var.set('mm-dd-yyyy')
 date_format_menu = tk.OptionMenu(tab_temporal, date_format_var, 'mm-dd-yyyy', 'dd-mm-yyyy', 'yyyy-mm-dd', 'yyyy-dd-mm', 'yyyy-mm', 'yyyy')
-date_format_menu.place(x=380, y=47)
+date_format_menu.place(x=380, y=77)
 
 select_time_lb = tk.Label(tab_temporal, text='Timeline')
-select_time_lb.place(x=520, y=50)
+select_time_lb.place(x=520, y=80)
 
 time_var.set('Daily')
 select_time_menu = tk.OptionMenu(tab_temporal, time_var, 'Daily', 'Monthly', 'Yearly')
-select_time_menu.place(x=585, y=47)
+select_time_menu.place(x=585, y=77)
 
 cumulative_var.set(0)
 cumulative_checkbox = tk.Checkbutton(tab_temporal, text='Cumulative', variable=cumulative_var, onvalue=1, offvalue=0)
-cumulative_checkbox.place(x=680, y=50)
+cumulative_checkbox.place(x=680, y=77)
+
+# Timeline plot row
+tab_help(tab_temporal, 115,
+    "TIMELINE PLOT: creates a line chart (Excel or Plotly).\nSelect the Y-axis field and the Date field for the X-axis.\nChart package is controlled by the Charts package option at the bottom of the GUI.")
+
+timeline_plot_lb = tk.Label(tab_temporal, text='Timeline plot', foreground="red", font=("Courier", 12, "bold"))
+timeline_plot_lb.place(x=10, y=115)
+
+timeline_Y_axis_lb = tk.Label(tab_temporal, text='Y-axis field')
+timeline_Y_axis_lb.place(x=140, y=118)
+
+timeline_Y_axis_menu = tk.OptionMenu(tab_temporal, timeline_Y_axis_var, *menu_values)
+timeline_Y_axis_menu.place(x=230, y=115)
+
+timeline_date_lb = tk.Label(tab_temporal, text='Date field (X-axis)')
+timeline_date_lb.place(x=420, y=118)
+
+timeline_date_var = tk.StringVar()
+timeline_date_menu = tk.OptionMenu(tab_temporal, timeline_date_var, *menu_values)
+timeline_date_menu.place(x=560, y=115)
 
 
 # ── Tab 4: Numeric ────────────────────────────────────────────────────────────
+
+tab_help(tab_numeric, 10,
+    "Select a visualization type: Excel/Plotly charts, Boxplots, or Bubble chart.")
 
 visualization_basic_options_lb = tk.Label(tab_numeric, text='Visualization options')
 visualization_basic_options_lb.place(x=10, y=10)
@@ -913,6 +1045,9 @@ visualization_basic_options_lb.place(x=10, y=10)
 visualizations_menu_var.set('Excel/Plotly charts')
 visualizations_menu = tk.OptionMenu(tab_numeric, visualizations_menu_var, 'Boxplots', 'Bubble chart', 'Excel/Plotly charts')
 visualizations_menu.place(x=170, y=7)
+
+tab_help(tab_numeric, 45,
+    "Select the csv file field to use as the Y-axis for charts, boxplots, or bubble charts.")
 
 csv_field_visualization_lb = tk.Label(tab_numeric, text='csv file field for visualization (Y-axis)')
 csv_field_visualization_lb.place(x=10, y=45)
@@ -945,6 +1080,9 @@ def check_selected_csv_file_field_Y_axis_list(main_Y_axis):
 csv_field_visualization_var.trace('w', lambda x, y, z: check_selected_csv_file_field_Y_axis_list(True))
 
 # Excel/Plotly row
+tab_help(tab_numeric, 80,
+    "EXCEL/PLOTLY CHARTS: Select an X-axis field. Use + to add additional Y-axis fields, Reset to clear, Show to view current selections.")
+
 Excel_Plotly_lb = tk.Label(tab_numeric, text='Excel/Plotly', foreground="red", font=("Courier", 12, "bold"))
 Excel_Plotly_lb.place(x=10, y=80)
 
@@ -982,6 +1120,9 @@ show_Y_axis_button = tk.Button(tab_numeric, text='Show', width=4, height=1, comm
 show_Y_axis_button.place(x=730, y=80)
 
 # Boxplot row
+tab_help(tab_numeric, 115,
+    "BOXPLOT: Select data points to display (all, None, outliers). Optionally split by category and pick a category field and color field.")
+
 boxplot_lb = tk.Label(tab_numeric, text='Boxplot', foreground="red", font=("Courier", 12, "bold"))
 boxplot_lb.place(x=10, y=115)
 
@@ -1021,6 +1162,9 @@ def activate_split_options(*args):
 split_data_byCategory_var.trace('w', activate_split_options)
 
 # Bubble chart row
+tab_help(tab_numeric, 150,
+    "BUBBLE CHART: Select an X-axis field. Optionally enable Color and enter an RGB value (e.g., 135, 207, 236).")
+
 bubble_chart_lb = tk.Label(tab_numeric, text='Bubble chart', foreground="red", font=("Courier", 12, "bold"))
 bubble_chart_lb.place(x=10, y=150)
 
@@ -1097,6 +1241,16 @@ def changed_filename(tracedInputFile):
     m_tc.delete(0, "end")
     for s in menu_values_local:
         m_tc.add_command(label=s, command=lambda value=s: csv_field_relational_var.set(value))
+
+    m_tly = timeline_Y_axis_menu["menu"]
+    m_tly.delete(0, "end")
+    for s in menu_values_local:
+        m_tly.add_command(label=s, command=lambda value=s: timeline_Y_axis_var.set(value))
+
+    m_tld = timeline_date_menu["menu"]
+    m_tld.delete(0, "end")
+    for s in menu_values_local:
+        m_tld.add_command(label=s, command=lambda value=s: timeline_date_var.set(value))
 
     # Numeric tab menus
     m4 = csv_field_visualization_menu["menu"]
@@ -1176,27 +1330,57 @@ def activate_all_options(*args):
         Sankey_limit3_menu.configure(state='normal')
 
     # Categorical tab state
-    add_file.configure(state='disabled')
-    reset_file_button.configure(state='disabled')
-    openInputFile_button_comparative.configure(state='disabled')
-    csv_file_menu_comparative.configure(state='disabled')
+    cat_sel = categorical_menu_var.get()
+    is_all = '*' in cat_sel
+    is_colormap = 'Colormap' in cat_sel
+    is_comparative = 'Comparative' in cat_sel
+    is_sunburst_treemap = 'Sunburst' in cat_sel or 'Treemap' in cat_sel
 
-    if categorical_menu_var.get() == 'Colormap/heatmap':
-        max_rows.configure(state='normal')
-        color_1_checkbox.configure(state='normal')
-        color_2_checkbox.configure(state='normal')
-        data_transformation_menu.configure(state='normal')
+    # Search field row — needed for all except Colormap (which uses its own row)
+    search_state = 'normal' if (not is_colormap or is_all) else 'disabled'
+    csv_field_categorical_menu.configure(state=search_state)
+    case_sensitive_checkbox.configure(state=search_state)
+    search_values_categorical.configure(state=search_state)
+    add_button_categorical.configure(state=search_state)
+    reset_button_categorical.configure(state=search_state)
+    show_button_categorical.configure(state=search_state)
+
+    # Filtering row — only for Sunburst/Treemap/*
+    filter_state = 'normal' if (is_sunburst_treemap or is_all) else 'disabled'
+    filter_options_menu.configure(state=filter_state)
+    if filter_state == 'disabled':
+        fixed_param.configure(state='disabled')
+        rate_param.configure(state='disabled')
+        base_param.configure(state='disabled')
     else:
-        max_rows.configure(state='disabled')
-        color_1_checkbox.configure(state='disabled')
-        color_2_checkbox.configure(state='disabled')
-        data_transformation_menu.configure(state='disabled')
+        activate_filtering_options()
 
-    if 'Comparative' in categorical_menu_var.get() or '*' in categorical_menu_var.get():
-        add_file.configure(state='normal')
-        reset_file_button.configure(state='normal')
-        openInputFile_button_comparative.configure(state='normal')
-        csv_file_menu_comparative.configure(state='normal')
+    # Colormap row
+    colormap_state = 'normal' if (is_colormap or is_all) else 'disabled'
+    max_rows.configure(state=colormap_state)
+    color_1_checkbox.configure(state=colormap_state)
+    color_2_checkbox.configure(state=colormap_state)
+    data_transformation_menu.configure(state=colormap_state)
+
+    # Comparative row
+    comp_state = 'normal' if (is_comparative or is_all) else 'disabled'
+    add_file.configure(state=comp_state)
+    reset_file_button.configure(state=comp_state)
+    openInputFile_button_comparative.configure(state=comp_state)
+    csv_file_menu_comparative.configure(state=comp_state)
+
+    # Temporal tab state
+    is_time_mapper = 'Time mapper' in temporal_menu_var.get()
+    is_timeline_plot = 'Timeline' in temporal_menu_var.get()
+
+    csv_field_temporal_menu.configure(state='normal' if is_time_mapper else 'disabled')
+    time_mapper_field_menu.configure(state='normal' if is_time_mapper else 'disabled')
+    date_format_menu.configure(state='normal' if is_time_mapper else 'disabled')
+    select_time_menu.configure(state='normal' if is_time_mapper else 'disabled')
+    cumulative_checkbox.configure(state='normal' if is_time_mapper else 'disabled')
+
+    timeline_Y_axis_menu.configure(state='normal' if is_timeline_plot else 'disabled')
+    timeline_date_menu.configure(state='normal' if is_timeline_plot else 'disabled')
 
     # Numeric tab state
     X_axis_menu.configure(state='disabled')
@@ -1229,6 +1413,7 @@ activate_all_options()
 relations_menu_var.trace('w', activate_all_options)
 visualizations_menu_var.trace('w', activate_all_options)
 categorical_menu_var.trace('w', activate_all_options)
+temporal_menu_var.trace('w', activate_all_options)
 
 
 # ── Run command (tab-aware) ───────────────────────────────────────────────────
@@ -1253,8 +1438,9 @@ def run_command():
                         csv_files_list, csv_field_visualization_var.get())
     elif active_tab == 2:  # Temporal
         run_temporal(inputFile, outputDir, openOutputFiles,
-                     csv_field_relational_var.get(), time_mapper_field_var.get(),
-                     date_format_var.get(), time_var.get(), cumulative_var.get())
+                     temporal_menu_var.get(), csv_field_relational_var.get(), time_mapper_field_var.get(),
+                     date_format_var.get(), time_var.get(), cumulative_var.get(),
+                     timeline_Y_axis_var.get(), timeline_date_var.get())
     elif active_tab == 3:  # Numeric
         run_numeric(inputFile, outputDir, openOutputFiles,
                     visualizations_menu_var.get(), csv_field_visualization_var.get(),
@@ -1287,10 +1473,13 @@ def clear(e):
     fixed_param_var.set(15)
     rate_param_var.set(3)
     base_param_var.set(15)
+    temporal_menu_var.set('Time mapper')
     time_mapper_field_var.set('')
     date_format_var.set('mm-dd-yyyy')
     time_var.set('Daily')
     cumulative_var.set(0)
+    timeline_Y_axis_var.set('')
+    timeline_date_var.set('')
     visualizations_menu_var.set('Excel/Plotly charts')
     X_axis_var.set('')
     Y_axis_var.set('')

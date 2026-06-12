@@ -1290,7 +1290,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        "Select the package you wish to use to visualize charts: Excel or Plotly (dynamic/static).\nSelect the 'No charts' option if you do not wish to compute and visualize charts.")
 
         # TODO chart type widget (same as setup)
-        if scriptName=='data_visualization_main.py' or scriptName=='data_visualization_1_main.py' or scriptName=='data_visualization_2_main.py':
+        if scriptName=='data_visualization_main.py':
             charts_type_options = ['_________________ Excel & Python options', 'Bar chart', 'Line chart', 'Pie chart',
                                    '_________________ Open GUI', 'Geographic maps (Open GUI)', 'Wordcloud (Open GUI)']
         else:
