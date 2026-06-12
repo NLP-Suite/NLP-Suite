@@ -54,14 +54,8 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
 
     language_var='English' # WordNet works only for English language
 
-    # check that the WordNet has been setup
-    WordNetDir, existing_software_config, errorFound = IO_libraries_util.external_software_install('knowledge_graphs_WordNet_util',
-                                                                                         'WordNet',
-                                                                                         '',
-                                                                                         silent=False, errorFound=False)
-
-    if WordNetDir == None:
-        return
+    # NLTK bundles WordNet — no external install needed
+    WordNetDir = ''
 
     # print("noun_verb",noun_verb)
 

@@ -6,15 +6,14 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"WordNet",['os','csv','tkinter','subprocess','nltk','pandas'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"WordNet",['os','csv','tkinter','nltk','pandas'])==False:
     sys.exit(0)
 
 import os
-import subprocess
 import pandas as pd
 import csv
 import tkinter.messagebox as mb
-
+from collections import defaultdict
 
 import reminders_util
 import charts_util
@@ -24,95 +23,133 @@ import data_manipulation_util
 import IO_csv_util
 import statistics_csv_util
 
+IO_libraries_util.import_nltk_resource(GUI_util.window, 'corpora/wordnet', 'wordnet')
+from nltk.corpus import wordnet as wn
+
 filesToOpen=[]
 
-def process_keyword(wordNet_keyword_list, noun_verb, wn):
-    for keyword in wordNet_keyword_list:
-        if noun_verb == "VERB":
-            synset = wn.synsets(keyword, pos = wn.VERB)
-            if len(synset) == 0:
-                continue
-            else:
-                synset = synset[0]# get the synset of word with its most frequent meaning
-        else:
-            synset = wn.synsets(keyword, pos = wn.NOUN)
-            if len(synset) == 0:
-                continue
-            else:
-                synset = synset[0]# get the synset of word with its most frequent meaning
-        hyponynms = synset.hyponyms()
-        print ("=======sub groups are: ======")
-        # find the direct hyponynms
-        for each in hyponynms:
-            print (each.lemmas()[0].name())
+NOUN_TOP_SYNSETS = {
+    'act', 'animal', 'artifact', 'attribute', 'body', 'cognition',
+    'communication', 'event', 'feeling', 'food', 'group', 'location',
+    'motive', 'object', 'person', 'phenomenon', 'plant', 'possession',
+    'process', 'quantity', 'relation', 'shape', 'state', 'substance', 'time'
+}
 
-def disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb):
-    # check WordNet
-    IO_libraries_util.import_nltk_resource(GUI_util.window, 'corpora/WordNet', 'WordNet')
-    from nltk.corpus import wordnet as wn
+VERB_TOP_SYNSETS = {
+    'body', 'change', 'cognition', 'communication', 'competition',
+    'consumption', 'contact', 'creation', 'emotion', 'motion',
+    'perception', 'possession', 'social', 'stative', 'weather'
+}
 
-    filesToOpen=[]
-    if IO_libraries_util.check_inputPythonJavaProgramFile('WordNet_Search_DOWN.jar') == False:
-        return filesToOpen
 
-    # check that external software WordNet has been setup
-    WordNetDir, existing_software_config, errorFound = IO_libraries_util.external_software_install('knowledge_graphs_WordNet_util',
-                                                                                         'WordNet',
-                                                                                         '',
-                                                                                         silent=False, errorFound=False)
+def _get_wn_pos(noun_verb):
+    return wn.VERB if noun_verb == 'VERB' else wn.NOUN
 
-    if WordNetDir == None or WordNetDir == '':
-        return filesToOpen
 
-    errorFound, error_code, system_output, java_version = IO_libraries_util.check_java_installation('WordNet downward search')
-    if errorFound:
-        return filesToOpen
-    process_keyword(wordNet_keyword_list, noun_verb, wn)
+def _get_all_hyponyms(synset):
+    result = []
+    queue = [synset]
+    seen = set()
+    while queue:
+        s = queue.pop(0)
+        if s in seen:
+            continue
+        seen.add(s)
+        for lemma in s.lemmas():
+            result.append((lemma.name().replace('_', ' '), s))
+        queue.extend(s.hyponyms())
+    return result
+
+
+def _climb_to_top(synset, top_synsets):
+    visited = set()
+    queue = [([synset.name()], synset)]
+    while queue:
+        path, current = queue.pop(0)
+        if current in visited:
+            continue
+        visited.add(current)
+        lexname = current.lexname().split('.')[-1] if '.' in current.lexname() else current.lexname()
+        if lexname in top_synsets:
+            return lexname, path
+        for parent in current.hypernyms():
+            queue.append((path + [parent.name()], parent))
+    return 'unknown', [synset.name()]
+
+
+def disaggregate_GoingDOWN(WordNetDir, outputDir, wordNet_keyword_list, noun_verb):
+    filesToOpen = []
+    pos = _get_wn_pos(noun_verb)
+
     if len(wordNet_keyword_list) > 1:
         fileName = wordNet_keyword_list[0] + "-plus-list"
     else:
         fileName = wordNet_keyword_list[0] + "-list"
-    call_list = ['java', '-jar', 'WordNet_Search_DOWN.jar', outputDir, os.path.join(WordNetDir, "dict"), fileName, noun_verb]
-    for each in wordNet_keyword_list:
-        call_list.append(each)
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start', 'Started running WordNet (Zoom IN/DOWN) at', True, 'Running WordNet with the ' + noun_verb + ' option with following keywords:\n\n' + str(wordNet_keyword_list))
-    warning = subprocess.call(call_list)
-    if warning == 1:
+
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start',
+        'Started running WordNet (Zoom IN/DOWN) at', True,
+        'Running WordNet with the ' + noun_verb + ' option with following keywords:\n\n' + str(wordNet_keyword_list))
+
+    simple_file = os.path.join(outputDir, "NLP_WordNet_DOWN_" + fileName + ".csv")
+    verbose_file = os.path.join(outputDir, "NLP_WordNet_DOWN_" + fileName + "-verbose.csv")
+
+    all_terms = []
+    not_found = []
+
+    for keyword in wordNet_keyword_list:
+        synsets = wn.synsets(keyword, pos=pos)
+        if not synsets:
+            not_found.append(keyword)
+            continue
+        synset = synsets[0]
+        hyponyms = _get_all_hyponyms(synset)
+        for term, syn in hyponyms:
+            definition = syn.definition()
+            examples = '; '.join(syn.examples()) if syn.examples() else ''
+            freq = sum(l.count() for l in syn.lemmas())
+            all_terms.append({
+                'Term': term,
+                'WordNet Category': keyword,
+                'Definition': definition,
+                'Frequency': freq,
+                'Examples': examples
+            })
+
+    if len(all_terms) == 0:
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Warning',
-                'The script WordNet_Search_DOWN.jar did not find any of the synset(s) in your search list:\n' + str(wordNet_keyword_list) + '\nin the WordNet lexical database for ' + noun_verb + '.\n\nPlease, make sure to have downloaded the correct version of WordNet (Mac WordNet-3.0.tar.gz or Windows  WordNet-2.1.exe) and check your synset list and try again.')
+            'WordNet did not find any of the synset(s) in your search list:\n' + str(wordNet_keyword_list) +
+            '\nin the WordNet lexical database for ' + noun_verb + '.\n\nPlease, check your synset list and try again.')
         return filesToOpen
-    elif warning == 2:
+
+    if not_found:
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Warning',
-                'The script WordNet_Search_DOWN.jar did not find some of the synset(s) in your search list:\n' + str(wordNet_keyword_list) + '\nin the WordNet lexical database for ' + noun_verb + '.\n\nPlease, check your synset list (or your Java JDK version) and try again.')
-    filesToOpen.append(os.path.join(outputDir, "NLP_WordNet_DOWN_" + fileName + ".csv"))
-    filesToOpen.append(os.path.join(outputDir, "NLP_WordNet_DOWN_" + fileName + "-verbose.csv"))
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running WordNet (Zoom IN/DOWN) at', True, '', True, startTime)
+            'WordNet did not find some of the synset(s) in your search list:\n' + str(not_found) +
+            '\nin the WordNet lexical database for ' + noun_verb + '.')
+
+    with open(simple_file, 'w', encoding='utf-8', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=['Term', 'WordNet Category'])
+        writer.writeheader()
+        for row in all_terms:
+            writer.writerow({'Term': row['Term'], 'WordNet Category': row['WordNet Category']})
+
+    with open(verbose_file, 'w', encoding='utf-8', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=['Term', 'WordNet Category', 'Definition', 'Frequency', 'Examples'])
+        writer.writeheader()
+        writer.writerows(all_terms)
+
+    filesToOpen.append(simple_file)
+    filesToOpen.append(verbose_file)
+
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+        'Finished running WordNet (Zoom IN/DOWN) at', True, '', True, startTime)
     return filesToOpen
 
-# the header does not matter, it can be NOUN or VERB or anything else
-# what matters is the first column; and there can be multiple columns that will not be processed
-def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_verb,openOutputFiles,chartPackage, dataTransformation, language_var=''):
-    # check WordNet
-    IO_libraries_util.import_nltk_resource(GUI_util.window, 'corpora/WordNet', 'WordNet')
-    from nltk.corpus import wordnet as wn
 
-    filesToOpen=[]
-
-    # check that external software WordNet has been setup
-    WordNetDir, existing_software_config, errorFound = IO_libraries_util.external_software_install('knowledge_graphs_WordNet_util',
-                                                                                         'WordNet',
-                                                                                         '',
-                                                                                         silent=False, errorFound=False)
-
-    if WordNetDir == None or WordNetDir == '':
-        return filesToOpen
-
-    errorFound, error_code, system_output, java_version = IO_libraries_util.check_java_installation('WordNet upward search')
-    if errorFound:
-        return filesToOpen
+def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_verb, openOutputFiles, chartPackage, dataTransformation, language_var=''):
+    filesToOpen = []
 
     head, scriptName = os.path.split(os.path.basename(__file__))
-    if language_var=='' or language_var!='English':
+    if language_var == '' or language_var != 'English':
         reminders_util.checkReminder(
             scriptName,
             reminders_util.title_options_English_language_WordNet,
@@ -126,110 +163,105 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
             reminders_util.message_WordNet_verb_aggregation,
             True)
 
-    # for noun_verb == 'VERB' we should provide the user with two different outputs; with and without be, have
-    # the aggregated 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get')
+    pos = _get_wn_pos(noun_verb)
+    top_synsets = VERB_TOP_SYNSETS if noun_verb == 'VERB' else NOUN_TOP_SYNSETS
 
-    if IO_libraries_util.check_inputPythonJavaProgramFile('WordNet_Search_UP.jar') == False:
-        return filesToOpen
-    errorFound, error_code, system_output, java_version = IO_libraries_util.check_java_installation('WordNet upward search')
-    if errorFound:
-        return filesToOpen
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start', 'Started running WordNet (Zoom OUT/UP) with the ' + noun_verb + ' option at', True, '',True,'',True)
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start',
+        'Started running WordNet (Zoom OUT/UP) with the ' + noun_verb + ' option at', True, '', True, '', True)
 
-    # the java script produces two files: a file containing the intermediate synsets and with _output in the filename and a frequency file
-    warning = subprocess.call(['java', '-jar', 'WordNet_Search_UP.jar', '-wordNetPath', os.path.join(WordNetDir, "dict"), '-wordList', inputFile, "-pos" , noun_verb, '-outputDir', outputDir])
-    if warning == 1:
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Invalid Input',
-                                           "WordNet " + noun_verb + " aggregation.\n\nWordNet cannot find any word in Wordnet in the input csv file \n" + inputFile + "\nfor " + noun_verb + ".\n\nPlease, make sure to have downloaded the correct version of WordNet (Mac WordNet-3.0.tar.gz or Windows  WordNet-2.1.exe).\n\nThis error can also occur if any of the files previously generated by WordNet are open. Please, check your files, close them, and try again.")
-        return filesToOpen
-    elif warning == 2:
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Invalid Input',
-                                           "WordNet " + noun_verb + " aggregation.\n\nSome words in the list to be aggregated do not exist in Wordnet for " + noun_verb + ".\n\nPlease, check in command line the list of words not found in WordNet.")
-    # the Java script returns the filenames without VERB or NOUN in the filename
-    # the next two lines reconstruct the filename as exported by the JAVA script
+    data = pd.read_csv(inputFile, encoding='utf-8', on_bad_lines='skip')
+    words = data.iloc[:, 0].dropna().unique().tolist()
+
     fileName = os.path.basename(inputFile).split(".")[0]
-    outputFilenameCSV1=os.path.join(outputDir, "NLP_WordNet_UP_" + fileName+"_output.csv")
-    outputFilenameCSV2=os.path.join(outputDir, "NLP_WordNet_UP_" + fileName+"_frequency.csv")
-    # remove _output from the Java output
-    outputFilenameCSV1_new = outputFilenameCSV1.replace("_output.csv", ".csv")
-    # the Java script returns the filenames without VERB or NOUN in the filename
-    #   one for # intermediate synsets, the other of frequencies
-    if (not 'VERB' in outputFilenameCSV1_new) and (not 'NOUN' in outputFilenameCSV1_new):
-        outputFilenameCSV1_new = outputFilenameCSV1_new.replace("NLP_WordNet_UP_","NLP_WordNet_UP_"+noun_verb+"_")
-        outputFilenameCSV2_new = outputFilenameCSV2.replace("NLP_WordNet_UP_","NLP_WordNet_UP_"+noun_verb+"_")
-        # the synsets file already exists and must be removed
-        if os.path.isfile(outputFilenameCSV1_new):
-            os.remove(outputFilenameCSV1_new)
-        # the frequency file already exists and must be removed
-        if os.path.isfile(outputFilenameCSV2_new):
-            os.remove(outputFilenameCSV2_new)
-        # rename the output file of synsets values created by JAVA script (outputFilenameCSV1)
-        #   to the new filename (outputFilenameCSV1_new) containing either NOUN or VERB in the filename
-        os.rename(outputFilenameCSV1, outputFilenameCSV1_new)
-        # rename the output file of frequency values created by JAVA script (outputFilenameCSV2) to the new filename (outputFilenameCSV2_new)
-        os.rename(outputFilenameCSV2, outputFilenameCSV2_new)
-    else:
-        outputFilenameCSV1_new = outputFilenameCSV1 # intermediate synsets
-        outputFilenameCSV2_new = outputFilenameCSV2 # frequency
-    filesToOpen.append(outputFilenameCSV1_new)
-    complete_csv_header(outputFilenameCSV1_new,"Intermediate synset")
-    # outputFilenameCSV2 - with frequency in the filename - is the file with the handful of WordNett aggregated synsets and their frequency
-    outputFilenameCSV2 = os.path.join(outputDir, "NLP_WordNet_UP_" + noun_verb + '_' + fileName + "_frequency.csv")
-    # Since the original output file returned by the JAVA script WordNet_Search_UP.jar contains
-    #   the header Intermediate Synsets, this must be renamed to Intermediate synset 1
-    IO_csv_util.rename_header(outputFilenameCSV1_new, "Intermediate Synsets","Intermediate synset 1")
-    if (not 'VERB' in outputFilenameCSV2) and (not 'NOUN' in outputFilenameCSV2):
-        outputFilenameCSV2_new = outputFilenameCSV1.replace("NLP_WordNet_UP_","NLP_WordNet_UP_"+noun_verb+"_")
-        # the file already exists and must be removed
-        if os.path.isfile(outputFilenameCSV2_new):
-            os.remove(outputFilenameCSV2_new)
-        os.rename(outputFilenameCSV2, outputFilenameCSV2_new)
-    else:
-        outputFilenameCSV2_new = outputFilenameCSV2
-    filesToOpen.append(outputFilenameCSV2_new)
+    outputFilenameCSV1 = os.path.join(outputDir, "NLP_WordNet_UP_" + noun_verb + "_" + fileName + ".csv")
+    outputFilenameCSV2 = os.path.join(outputDir, "NLP_WordNet_UP_" + noun_verb + "_" + fileName + "_frequency.csv")
 
-    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilenameCSV1_new, outputDir,
-                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['WordNet Category'],
-                                                       chart_title='Frequency of WordNet Aggregate Categories for ' + noun_verb,
-                                                       count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
-                                                       hover_label=[],
-                                                       outputFileNameType='',
-                                                       column_xAxis_label='WordNet ' + noun_verb + ' category',
-                                                       groupByList=[],
-                                                       plotList=[],
-                                                       chart_title_label='')
-    if outputFiles!=None:
+    rows = []
+    not_found_count = 0
+    category_counts = defaultdict(int)
+
+    for word in words:
+        word_clean = str(word).strip().lower()
+        synsets = wn.synsets(word_clean, pos=pos)
+        if not synsets:
+            not_found_count += 1
+            rows.append({'Word': word_clean, 'WordNet Category': 'Not found',
+                         'Intermediate synset 1': ''})
+            continue
+        synset = synsets[0]
+        category, path = _climb_to_top(synset, top_synsets)
+        category_counts[category] += 1
+        intermediate_dict = {'Word': word_clean, 'WordNet Category': category}
+        for idx, step in enumerate(path):
+            intermediate_dict['Intermediate synset ' + str(idx + 1)] = step
+        rows.append(intermediate_dict)
+
+    if len(rows) == 0 or all(r['WordNet Category'] == 'Not found' for r in rows):
+        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Invalid Input',
+            "WordNet " + noun_verb + " aggregation.\n\nWordNet cannot find any word in the input csv file \n" +
+            inputFile + "\nfor " + noun_verb + ".")
+        return filesToOpen
+
+    if not_found_count > 0:
+        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Invalid Input',
+            "WordNet " + noun_verb + " aggregation.\n\nSome words in the list to be aggregated do not exist in WordNet for " +
+            noun_verb + ".\n\n" + str(not_found_count) + " word(s) not found.")
+
+    all_keys = set()
+    for r in rows:
+        all_keys.update(r.keys())
+    intermediate_cols = sorted([k for k in all_keys if k.startswith('Intermediate synset')],
+                                key=lambda x: int(x.split()[-1]))
+    fieldnames = ['Word', 'WordNet Category'] + intermediate_cols
+
+    with open(outputFilenameCSV1, 'w', encoding='utf-8', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
+        writer.writeheader()
+        writer.writerows(rows)
+
+    with open(outputFilenameCSV2, 'w', encoding='utf-8', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=['WordNet Category', 'Frequency'])
+        writer.writeheader()
+        for cat, count in sorted(category_counts.items(), key=lambda x: -x[1]):
+            writer.writerow({'WordNet Category': cat, 'Frequency': count})
+
+    filesToOpen.append(outputFilenameCSV1)
+    filesToOpen.append(outputFilenameCSV2)
+
+    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilenameCSV1, outputDir,
+                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['WordNet Category'],
+                                               chart_title='Frequency of WordNet Aggregate Categories for ' + noun_verb,
+                                               count_var=1,
+                                               hover_label=[],
+                                               outputFileNameType='',
+                                               column_xAxis_label='WordNet ' + noun_verb + ' category',
+                                               groupByList=[],
+                                               plotList=[],
+                                               chart_title_label='')
+    if outputFiles is not None:
         if isinstance(outputFiles, str):
             filesToOpen.append(outputFiles)
         else:
             filesToOpen.extend(outputFiles)
 
     if noun_verb == 'VERB':
-        operation_results_text_list=[]
-        outputFilenameCSV3_new = inputFile.replace("VERB","VERB_no_auxil")
-        # outputFilenameCSV3_new = outputFilenameCSV3_new.replace("_output", "")
-        # # the file already exists and must be removed
-        # if os.path.isfile(outputFilenameCSV3_new):
-        #     os.remove(outputFilenameCSV3_new)
-        # os.rename(outputFilenameCSV1_new, outputFilenameCSV3_new)
-        # Word is the header from the _output file created by the Java WordNet script
-        operation_results_text_list.append(str(outputFilenameCSV1_new) + ',Word,<>,be,and')
-        operation_results_text_list.append(str(outputFilenameCSV1_new) + ',Word,<>,have,and')
-        # outputFilenameCSV3_new = data_manipulation_util.export_csv_to_csv_txt(outputFilenameCSV3_new, operation_results_text_list,'.csv',[0,1])
-        outputFilenameCSV3_new = data_manipulation_util.export_csv_to_csv_txt(outputDir,operation_results_text_list,'.csv',[0,1])
+        operation_results_text_list = []
+        operation_results_text_list.append(str(outputFilenameCSV1) + ',Word,<>,be,and')
+        operation_results_text_list.append(str(outputFilenameCSV1) + ',Word,<>,have,and')
+        outputFilenameCSV3_new = data_manipulation_util.export_csv_to_csv_txt(outputDir, operation_results_text_list, '.csv', [0, 1])
 
         outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilenameCSV3_new,
-                                                           outputDir,
-                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['WordNet Category'],
-                                                           chart_title='Frequency of WordNet Aggregate Categories for ' + noun_verb + ' (No Auxiliaries)',
-                                                           count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
-                                                           hover_label=[],
-                                                           outputFileNameType='',
-                                                           column_xAxis_label='WordNet ' + noun_verb + ' category',
-                                                           groupByList=[],
-                                                           plotList=[],
-                                                           chart_title_label='')
-        if outputFiles!=None:
+                                                   outputDir,
+                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['WordNet Category'],
+                                                   chart_title='Frequency of WordNet Aggregate Categories for ' + noun_verb + ' (No Auxiliaries)',
+                                                   count_var=1,
+                                                   hover_label=[],
+                                                   outputFileNameType='',
+                                                   column_xAxis_label='WordNet ' + noun_verb + ' category',
+                                                   groupByList=[],
+                                                   plotList=[],
+                                                   chart_title_label='')
+        if outputFiles is not None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
             else:
@@ -238,7 +270,8 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         if outputFilenameCSV3_new != "":
             os.remove(outputFilenameCSV3_new)
 
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running WordNet (Zoom OUT/UP) at', True, '', True, startTime, True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+        'Finished running WordNet (Zoom OUT/UP) at', True, '', True, startTime, True)
 
     return filesToOpen
 
