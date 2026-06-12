@@ -38,7 +38,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install --no-cache-dir pyinstaller
           pip install --no-cache-dir pandas numpy scipy scikit-learn openpyxl xlrd
-          pip install --no-cache-dir stanza spacy nltk gensim textblob textstat
+          pip install --no-cache-dir stanza spacy nltk gensim textblob textstat nrclex
           pip install --no-cache-dir langdetect langid autocorrect pyspellchecker fuzzywuzzy
           pip install --no-cache-dir transformers sentence-transformers
           pip install --no-cache-dir matplotlib plotly seaborn wordcloud mpld3 kaleido

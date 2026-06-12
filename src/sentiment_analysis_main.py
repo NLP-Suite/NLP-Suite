@@ -21,6 +21,7 @@ import sentiment_analysis_hedonometer_util
 import sentiment_analysis_SentiWordNet_util
 import sentiment_analysis_VADER_util
 import sentiment_analysis_ANEW_util
+import sentiment_analysis_NRC_util
 import config_util
 import run_script_util
 
@@ -84,6 +85,7 @@ def run(inputFilename,inputDir,outputDir,
     hedonometer_var=0
     vader_var=0
     anew_var=0
+    nrc_var=0
 
     if SA_algorithm_var=='*':
         if inputFilename != '':
@@ -104,6 +106,7 @@ def run(inputFilename,inputDir,outputDir,
         Stanza_var=1
         anew_var=1
         hedonometer_var=1
+        nrc_var=1
         SentiWordNet_var=1
         vader_var=1
     elif 'BERT' in SA_algorithm_var:
@@ -118,6 +121,8 @@ def run(inputFilename,inputDir,outputDir,
         SentiWordNet_var=1
     elif 'ANEW' in SA_algorithm_var:
         anew_var=1
+    elif 'NRC' in SA_algorithm_var:
+        nrc_var=1
     elif 'hedonometer' in SA_algorithm_var:
         hedonometer_var=1
     elif 'VADER' in SA_algorithm_var:
@@ -298,6 +303,28 @@ def run(inputFilename,inputDir,outputDir,
         else:
             IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Warning',
                                                'The ANEW algorithm is available only for the English language.\n\nYour currently selected language is ' + language + '.\n\nYou can change the language using the Setup dropdownmenu at the bottom of this GUI and selecting "Setup NLP package and corpus language."')
+
+# NRC (emotion wheel) _______________________________________________________
+
+    if SA_algorithm_var=='*' or nrc_var==1:
+        if language=='English':
+            startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                                           'Started running NRC Emotion Analysis at',
+                                                           True, '', True, '', False)
+
+            outputFiles = sentiment_analysis_NRC_util.main(inputFilename, inputDir, outputDir,
+                                                            chartPackage, dataTransformation)
+            if outputFiles is not None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
+            IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+                                               'Finished running NRC Emotion Analysis at', True, '', True, startTime)
+        else:
+            IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Warning',
+                                               'The NRC Emotion Lexicon algorithm is available only for the English language.\n\nYour currently selected language is ' + language + '.\n\nYou can change the language using the Setup dropdownmenu at the bottom of this GUI and selecting "Setup NLP package and corpus language."')
 
 # HEDONOMETER _______________________________________________________
 
@@ -524,7 +551,7 @@ def display_reminder(*args):
         return
 SA_algorithm_var.trace('w',display_reminder)
 
-SA_algorithms=['*','Large Language Models (LLM):','   BERT (English model)','   BERT (Multilingual model)','','Neural network approaches:','   Stanford CoreNLP','   Stanza','','Dictionary approaches:','   ANEW','   hedonometer','   spaCy (TextBlob)','   SentiWordNet','   VADER']
+SA_algorithms=['*','Large Language Models (LLM):','   BERT (English model)','   BERT (Multilingual model)','','Neural network approaches:','   Stanford CoreNLP','   Stanza','','Dictionary approaches:','   ANEW','   hedonometer','   NRC (emotion wheel)','   spaCy (TextBlob)','   SentiWordNet','   VADER']
 
 SA_algorithm_var.set('*')
 SA_algorithm_lb = tk.Label(window, text='Select sentiment analysis algorithm')
