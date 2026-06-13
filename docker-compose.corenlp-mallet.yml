@@ -1,0 +1,22 @@
+services:
+  corenlp:
+    build: ./corenlp
+    image: nlpsuite/corenlp:local
+    ports:
+      - "9000:9000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  mallet:
+    build: ./mallet
+    image: nlpsuite/mallet:local
+    ports:
+      - "8081:5050"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5050/openapi.json"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
