@@ -66,6 +66,10 @@ def _ari(n_sentences, n_words, n_chars):
     return 4.71 * (n_chars / n_words) + 0.5 * (n_words / n_sentences) - 21.43
 
 
+def _clamp(value, lo, hi):
+    return max(lo, min(hi, value))
+
+
 def _interpret_fre(score):
     if score >= 90:
         return "Very Easy (5th grade)"
@@ -108,11 +112,11 @@ def compute_readability(inputFilename, inputDir, outputDir, chartPackage='Excel'
                 'Syllables': n_syll,
                 'Polysyllabic Words': n_poly,
                 'Characters': n_chars,
-                'Flesch Reading Ease': round(_flesch_reading_ease(n_sent, n_words, n_syll), 2),
-                'Flesch-Kincaid Grade': round(_flesch_kincaid_grade(n_sent, n_words, n_syll), 2),
-                'Gunning Fog Index': round(_gunning_fog(n_sent, n_words, n_poly), 2),
-                'Coleman-Liau Index': round(_coleman_liau(n_sent, n_words, n_chars), 2),
-                'Automated Readability Index': round(_ari(n_sent, n_words, n_chars), 2),
+                'Flesch Reading Ease': round(_clamp(_flesch_reading_ease(n_sent, n_words, n_syll), 0, 121), 2),
+                'Flesch-Kincaid Grade': round(_clamp(_flesch_kincaid_grade(n_sent, n_words, n_syll), 0, 30), 2),
+                'Gunning Fog Index': round(_clamp(_gunning_fog(n_sent, n_words, n_poly), 0, 30), 2),
+                'Coleman-Liau Index': round(_clamp(_coleman_liau(n_sent, n_words, n_chars), 0, 30), 2),
+                'Automated Readability Index': round(_clamp(_ari(n_sent, n_words, n_chars), 0, 30), 2),
             })
     elif inputDir and os.path.isdir(inputDir):
         txt_files = sorted([f for f in os.listdir(inputDir) if f.endswith('.txt')])
@@ -130,11 +134,11 @@ def compute_readability(inputFilename, inputDir, outputDir, chartPackage='Excel'
                 'Syllables': n_syll,
                 'Polysyllabic Words': n_poly,
                 'Characters': n_chars,
-                'Flesch Reading Ease': round(_flesch_reading_ease(n_sent, n_words, n_syll), 2),
-                'Flesch-Kincaid Grade': round(_flesch_kincaid_grade(n_sent, n_words, n_syll), 2),
-                'Gunning Fog Index': round(_gunning_fog(n_sent, n_words, n_poly), 2),
-                'Coleman-Liau Index': round(_coleman_liau(n_sent, n_words, n_chars), 2),
-                'Automated Readability Index': round(_ari(n_sent, n_words, n_chars), 2),
+                'Flesch Reading Ease': round(_clamp(_flesch_reading_ease(n_sent, n_words, n_syll), 0, 121), 2),
+                'Flesch-Kincaid Grade': round(_clamp(_flesch_kincaid_grade(n_sent, n_words, n_syll), 0, 30), 2),
+                'Gunning Fog Index': round(_clamp(_gunning_fog(n_sent, n_words, n_poly), 0, 30), 2),
+                'Coleman-Liau Index': round(_clamp(_coleman_liau(n_sent, n_words, n_chars), 0, 30), 2),
+                'Automated Readability Index': round(_clamp(_ari(n_sent, n_words, n_chars), 0, 30), 2),
             })
 
     if not rows:
