@@ -154,7 +154,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         if 'Stanza' not in NER_package and NER_package != '*':
             mb.showwarning(title='NER Entity Timeline',
                            message='The NER Entity Timeline always uses Stanza as its NER engine, regardless of the NER package selected above (' + NER_package + ').\n\nThe NER extraction selected above will still run with ' + NER_package + '.')
-        outputFiles = NER_entity_timeline_util.main(inputFilename, inputDir, outputDir,
+        outputFiles = NER_entity_timeline_util.main(GUI_util.inputFilename.get(),
+                                                     GUI_util.input_main_dir_path.get(),
+                                                     GUI_util.output_dir_path.get(),
                                                      chartPackage, dataTransformation)
         if outputFiles is not None:
             if isinstance(outputFiles, str):
