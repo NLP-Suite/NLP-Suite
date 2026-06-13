@@ -64,3 +64,8 @@ buck-out/
 
 # Test data (junction to local PC-ACE databases)
 test_data/
+
+# Local env files (docker-compose, agent, ui)
+.env
+.env.*
+!.env.example
