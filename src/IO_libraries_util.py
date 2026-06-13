@@ -44,6 +44,10 @@ def which_shell():
 
 # return false if missing modules
 def install_all_Python_packages(window, calling_script, modules_to_try):
+    # In a PyInstaller frozen build all packages are already bundled;
+    # skip the import check to avoid picking up stale system packages.
+    if getattr(sys, 'frozen', False):
+        return True
     errorFound = False
     missingModules = []
     for module in modules_to_try:
