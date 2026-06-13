@@ -1,6 +1,8 @@
 import sys
 from sys import platform
 import os
+
+os.environ['HF_HUB_DISABLE_SYMLINKS_WARNING'] = '1'
 import tkinter as tk
 import tkinter.messagebox as mb
 import subprocess
