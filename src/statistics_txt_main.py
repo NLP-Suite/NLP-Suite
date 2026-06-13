@@ -349,10 +349,10 @@ TIPS_lookup = {'Style analysis':'TIPS_NLP_Style analysis.pdf',
                'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
                'Statistical measures': 'TIPS_NLP_Statistical measures.pdf',
-               'Readability scores': 'TIPS_NLP_Readability scores.pdf',
+               'Text readability': 'TIPS_NLP_Text readability.pdf',
                'TF-IDF, Lexical diversity, Word frequency': 'TIPS_NLP_Corpus text analysis tools.pdf'}
 
-TIPS_options='Style analysis', 'English Language Benchmarks', 'N-Grams (word & character)','NLP Ngram and Word Co-Occurrence VIEWER','Google Ngram Viewer','Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures', 'Readability scores', 'TF-IDF, Lexical diversity, Word frequency'
+TIPS_options='Style analysis', 'English Language Benchmarks', 'N-Grams (word & character)','NLP Ngram and Word Co-Occurrence VIEWER','Google Ngram Viewer','Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures', 'Text readability', 'TF-IDF, Lexical diversity, Word frequency'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
