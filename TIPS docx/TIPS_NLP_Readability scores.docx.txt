@@ -1,0 +1,83 @@
+TIPS — Readability Scores
+
+The NLP Suite computes five standard readability indices for each document in your corpus. These formulas estimate the reading difficulty of a text, typically expressed as a US school grade level.
+
+=== The Five Measures ===
+
+1. FLESCH READING EASE (Rudolf Flesch, 1948)
+
+   Formula: 206.835 - 1.015 * (total words / total sentences) - 84.6 * (total syllables / total words)
+
+   Score range: 0 to ~120 (higher = easier to read)
+
+   Interpretation:
+      100-90  Very Easy        (5th grade)
+       90-80  Easy             (6th grade)
+       80-70  Fairly Easy      (7th grade)
+       70-60  Standard         (8th-9th grade)
+       60-50  Fairly Difficult (10th-12th grade)
+       50-30  Difficult        (College level)
+       30-0   Very Difficult   (Graduate level)
+
+2. FLESCH-KINCAID GRADE LEVEL (J. Peter Kincaid, 1975)
+
+   Formula: 0.39 * (total words / total sentences) + 11.8 * (total syllables / total words) - 15.59
+
+   Output: US school grade level (e.g., 8.2 means an 8th-grader can understand the text)
+
+3. GUNNING FOG INDEX (Robert Gunning, 1952)
+
+   Formula: 0.4 * [(total words / total sentences) + 100 * (polysyllabic words / total words)]
+
+   Output: Years of formal education needed. A Fog Index of 12 requires high-school-senior reading level.
+   Polysyllabic = 3 or more syllables.
+
+4. COLEMAN-LIAU INDEX (Meri Coleman & T.L. Liau, 1975)
+
+   Formula: 0.0588 * L - 0.296 * S - 15.8
+   where L = average number of characters per 100 words, S = average number of sentences per 100 words
+
+   Unlike the other formulas, Coleman-Liau uses character counts instead of syllable counts, making it easier to compute automatically.
+
+5. AUTOMATED READABILITY INDEX (ARI) (Senter & Smith, 1967)
+
+   Formula: 4.71 * (characters / words) + 0.5 * (words / sentences) - 21.43
+
+   Like Coleman-Liau, ARI avoids syllable counting and uses character counts instead.
+
+
+=== Why Scores Can Be Extreme ===
+
+These formulas were calibrated in the 1940s-1970s for typical English prose (newspapers, textbooks, government documents). They can produce unexpected values for edge cases:
+
+NEGATIVE OR ZERO SCORES:
+- Flesch Reading Ease goes negative when texts have very long sentences with many polysyllabic words. Academic papers, legal documents, and scientific writing routinely produce raw scores below zero.
+- Flesch-Kincaid Grade can go negative for extremely short, simple texts (e.g., single-word sentences like "Stop. Go. Run.").
+- The NLP Suite clamps all scores to sensible ranges: Flesch Reading Ease to 0-121, and all grade-level indices to 0-30. A score of 0 may indicate the raw formula produced a negative value.
+
+VERY HIGH SCORES:
+- Gunning Fog is especially sensitive to technical vocabulary. Scientific writing with terms like "electromagnetic" or "photosynthesis" (3+ syllables) produces Fog scores above 20, even when the prose is clear.
+- A Fog score of 20+ does not necessarily mean the text is badly written — it means it contains specialized vocabulary.
+
+SYLLABLE COUNTING LIMITATIONS:
+- The NLP Suite estimates syllable counts using a regex-based heuristic (counting vowel groups). This is approximately 85-90% accurate for English. Proper names, abbreviations, and non-English words may be miscounted.
+- Coleman-Liau and ARI avoid this issue entirely by using character counts.
+
+
+=== Interpreting Results Across Documents ===
+
+Readability scores are most useful for COMPARING documents within a corpus, not for absolute judgments. If Document A has a Flesch-Kincaid Grade of 12 and Document B has a grade of 8, Document B is meaningfully simpler — even if you disagree with the specific grade number.
+
+For corpus-level analysis, look at:
+- The RANGE of scores across documents (are some documents much harder than others?)
+- The TREND if documents are ordered chronologically (does the writing get simpler or more complex over time?)
+- OUTLIERS — documents with scores far from the corpus mean may warrant closer inspection.
+
+
+=== References ===
+
+Flesch, R. (1948). "A new readability yardstick." Journal of Applied Psychology, 32(3), 221-233.
+Kincaid, J.P., et al. (1975). "Derivation of new readability formulas for Navy enlisted personnel." Research Branch Report 8-75.
+Gunning, R. (1952). The Technique of Clear Writing. McGraw-Hill.
+Coleman, M., & Liau, T.L. (1975). "A computer readability formula designed for machine scoring." Journal of Applied Psychology, 60(2), 283-284.
+Senter, R.J., & Smith, E.A. (1967). "Automated Readability Index." AMRL-TR-66-220.
