@@ -22,6 +22,7 @@ to the repo so it is never lost.
 13. [WordNet Java→NLTK Migration](#13-wordnet-javanltk-migration-2026-06-12)
 14. [NRC Emotion Wheel Integration](#14-nrc-emotion-wheel-integration-2026-06-12)
 15. [Character Emotion Arcs](#15-character-emotion-arcs-2026-06-13)
+16. [TF-IDF, Lexical Diversity, Collocation Statistics](#16-tf-idf-lexical-diversity-collocation-statistics-2026-06-13)
 
 ---
 
@@ -615,3 +616,53 @@ New tool that combines **NER (person extraction)** with **NRC emotion scoring** 
 - English only (NRC Emotion Lexicon is English; Stanza NER works best in English)
 - No coreference resolution yet — pronoun-only sentences are attributed to NARRATOR. Adding Stanza coref would improve attribution but significantly increase processing time.
 - Character name normalization is heuristic (substring matching), not ML-based
+
+---
+
+## 16. TF-IDF, Lexical Diversity, Collocation Statistics (2026-06-13)
+
+Three new corpus analysis tools, all pure Python with no new dependencies.
+
+### TF-IDF (Term Frequency–Inverse Document Frequency)
+
+Identifies the **most distinctive words per document** — words that are frequent in a document but rare across the corpus. Uses scikit-learn's `TfidfVectorizer`.
+
+**Output:**
+- TF-IDF score matrix (documents × words) CSV
+- Top 20 most distinctive words per document CSV
+- Top 20 distinctive words bar chart (PNG)
+- Document similarity matrix CSV + heatmap (PNG) — cosine similarity from TF-IDF vectors
+
+**Location:** `statistics_corpus_tfidf_util.py`, wired into `statistics_txt_main.py` dropdown
+
+### Lexical Diversity
+
+Measures how varied the vocabulary is in each document. Implements five standard measures:
+
+| Measure | Formula |
+|---------|---------|
+| **TTR** (Type-Token Ratio) | unique_types / total_tokens |
+| **Root TTR** (Guiraud) | unique_types / √total_tokens |
+| **Log TTR** (Herdan) | log(unique_types) / log(total_tokens) |
+| **MTLD** | Measure of Textual Lexical Diversity — sequential TTR factoring |
+| **vocd-D** | Curve-fitting approach to vocabulary diversity |
+
+**Output:** CSV with all measures per document + comparison bar charts (PNG)
+
+**Location:** `statistics_corpus_lexical_diversity_util.py`, wired into `statistics_txt_main.py` dropdown
+
+### Collocation Statistics
+
+Identifies **statistically significant word pairs** beyond raw co-occurrence counts. Computes five association measures:
+
+| Measure | What it captures |
+|---------|-----------------|
+| **PMI** (Pointwise Mutual Information) | How much more often words co-occur than expected by chance |
+| **Log-Likelihood** | Statistical significance of the association |
+| **Chi-Squared** | Independence test between the two words |
+| **T-Score** | Association strength adjusted for frequency |
+| **Dice Coefficient** | Overlap coefficient |
+
+**Output:** Full collocation table CSV + top-N CSV per measure + 4-panel bar chart (PNG)
+
+**Location:** `NGrams_collocation_statistics_util.py`, wired into `NGrams_CoOccurrences_main.py` compute options dropdown

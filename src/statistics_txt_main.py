@@ -87,6 +87,30 @@ def run(inputFilename, inputDir, outputDir,
                 else:
                     filesToOpen.extend(outputFiles)
 
+    # TF-IDF --------------------------------------------------------------------
+
+    if corpus_statistics_var and ('TF-IDF' in corpus_statistics_options_menu_var or '*' in corpus_statistics_options_menu_var):
+        import statistics_corpus_tfidf_util
+        outputFiles = statistics_corpus_tfidf_util.compute_tfidf(inputFilename, inputDir, outputDir,
+                                                                   chartPackage, dataTransformation)
+        if outputFiles is not None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+
+    # Lexical Diversity --------------------------------------------------------
+
+    if corpus_statistics_var and ('Lexical diversity' in corpus_statistics_options_menu_var or '*' in corpus_statistics_options_menu_var):
+        import statistics_corpus_lexical_diversity_util
+        outputFiles = statistics_corpus_lexical_diversity_util.compute_lexical_diversity(
+            inputFilename, inputDir, outputDir, chartPackage, dataTransformation)
+        if outputFiles is not None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+
     if corpus_statistics_byPOS_var:
         import Stanza_util
         import config_util
@@ -239,6 +263,8 @@ corpus_statistics_options_menu = tk.OptionMenu(window,corpus_statistics_options_
                                                'Compute frequencies of sentences, words, syllables, and top-20 words',
                                                'Compute sentence length',
                                                'Compute line length',
+                                               'Compute TF-IDF (most distinctive words per document)',
+                                               'Compute Lexical diversity (TTR, MTLD, vocd-D)',
                                                )
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
