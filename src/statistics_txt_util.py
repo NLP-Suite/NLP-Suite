@@ -75,6 +75,7 @@ import GUI_IO_util
 import charts_util
 import IO_files_util
 import IO_csv_util
+import statistics_statistical_tests_util
 import reminders_util
 import TIPS_util
 import statistics_csv_util
@@ -1225,6 +1226,29 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
+
+    if 'Repetition' in processType and chartPackage != 'No charts':
+        import pandas as _pd
+        try:
+            _df = _pd.read_csv(outputFilename, encoding='utf-8', on_bad_lines='skip')
+            if 'First/Last Sentence' in _df.columns and 'Word' in _df.columns:
+                grouped_png = charts_util.stacked_bar_from_csv(
+                    outputFilename, outputDir, 'Word', 'First/Last Sentence',
+                    top_n=25, grouped=True)
+                if grouped_png:
+                    filesToOpen.append(grouped_png)
+
+                stacked_png = charts_util.stacked_bar_from_csv(
+                    outputFilename, outputDir, 'Word', 'First/Last Sentence',
+                    top_n=25, grouped=False)
+                if stacked_png:
+                    filesToOpen.append(stacked_png)
+        except Exception:
+            pass
+
+    stat_files = statistics_statistical_tests_util.run_automatic_tests(
+        outputFilename, outputDir, chartPackage, dataTransformation)
+    filesToOpen.extend(stat_files)
 
     # ngrams already display the started running... No need to duplicate
     if not 'unigrams' in processType:
