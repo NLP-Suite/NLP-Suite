@@ -1,0 +1,191 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="tool-container">
+    <h1>File Manager</h1>
+
+    <form method="POST" action="{% url 'file_manager' %}" class="file-manager-form">
+        {% csrf_token %}
+
+        <fieldset class="form-section">
+            <legend>Input &amp; output</legend>
+
+            <div class="field">
+                <label for="inputDirectory">Input directory</label>
+                <input type="text" id="inputDirectory" name="inputDirectory" value="~/nlp-suite/input">
+            </div>
+
+            <div class="field">
+                <label for="outputDirectory">Output directory</label>
+                <input type="text" id="outputDirectory" name="outputDirectory" value="~/nlp-suite/output">
+            </div>
+
+            <div class="field">
+                <label for="selectedCsvFile_var">CSV File</label>
+                <input type="text" id="selectedCsvFile_var" name="selectedCsvFile_var" placeholder="Optional csv file path">
+            </div>
+
+            <div class="field">
+                <label for="selectedCsvFile_colName">CSV Column Name</label>
+                <input type="text" id="selectedCsvFile_colName" name="selectedCsvFile_colName" placeholder="Column name">
+            </div>
+
+            <div class="field-row">
+                <div class="field">
+                    <label for="chartPackage">Chart Package</label>
+                    <select id="chartPackage" name="chartPackage">
+                        <option value="Excel">Excel</option>
+                        <option value="No charts">No charts</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="dataTransformation">Data Transformation</label>
+                    <select id="dataTransformation" name="dataTransformation">
+                        <option value="No transformation">No transformation</option>
+                        <option value="Ln">Ln</option>
+                        <option value="Log">Log</option>
+                        <option value="Square root">Square root</option>
+                        <option value="Z score">Z score</option>
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Operation</legend>
+
+            <div class="field-row">
+                <div class="field field-check"><label><input type="checkbox" name="list_var"> List</label></div>
+                <div class="field field-check"><label><input type="checkbox" name="rename_var"> Rename</label></div>
+                <div class="field field-check"><label><input type="checkbox" name="copy_var"> Copy</label></div>
+                <div class="field field-check"><label><input type="checkbox" name="move_var"> Move</label></div>
+                <div class="field field-check"><label><input type="checkbox" name="delete_var"> Delete</label></div>
+                <div class="field field-check"><label><input type="checkbox" name="count_file_manager_var"> Count</label></div>
+                <div class="field field-check"><label><input type="checkbox" name="split_var"> Split</label></div>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Filters &amp; options</legend>
+
+            <div class="field field-check">
+                <label><input type="checkbox" name="by_file_type_var"> By file type</label>
+            </div>
+            <div class="field sub-option">
+                <select name="file_type_menu_var">
+                    <option value="">-- Select file type --</option>
+                    <option value="txt">txt</option>
+                    <option value="csv">csv</option>
+                    <option value="docx">docx</option>
+                    <option value="pdf">pdf</option>
+                </select>
+            </div>
+
+            <div class="field-row">
+                <div class="field field-check">
+                    <label><input type="checkbox" name="by_creation_date_var"> By creation &amp; modification date</label>
+                </div>
+                <div class="field field-check">
+                    <label><input type="checkbox" name="by_author_var"> By author</label>
+                </div>
+            </div>
+
+            <div class="field-row">
+                <div class="field field-check">
+                    <label><input type="checkbox" name="by_prefix_var"> By prefix value</label>
+                </div>
+                <div class="field field-check">
+                    <label><input type="checkbox" name="by_substring_var"> By sub-string value</label>
+                </div>
+            </div>
+            <div class="field-row sub-option">
+                <div class="field">
+                    <label for="string_entry_var">Old value</label>
+                    <input type="text" id="string_entry_var" name="string_entry_var">
+                </div>
+                <div class="field">
+                    <label for="rename_new_entry">New value</label>
+                    <input type="text" id="rename_new_entry" name="rename_new_entry">
+                </div>
+            </div>
+
+            <div class="field field-check">
+                <label><input type="checkbox" name="by_foldername_var"> By subfolder name</label>
+            </div>
+            <div class="field sub-option">
+                <label for="folder_character_separator_var">Separator character(s)</label>
+                <input type="text" id="folder_character_separator_var" name="folder_character_separator_var">
+            </div>
+
+            <div class="field field-check">
+                <label><input type="checkbox" name="by_embedded_items_var"> By number of embedded items</label>
+            </div>
+            <div class="field-row sub-option">
+                <div class="field">
+                    <label for="comparison_var">Comparison</label>
+                    <select id="comparison_var" name="comparison_var">
+                        <option value="=">=</option>
+                        <option value=">">></option>
+                        <option value="<"><</option>
+                        <option value=">=">>=</option>
+                        <option value="<="><=</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="number_of_items_var">Number of items</label>
+                    <input type="number" id="number_of_items_var" name="number_of_items_var" value="0">
+                </div>
+                <div class="field">
+                    <label for="embedded_item_character_value_var">Separator</label>
+                    <input type="text" id="embedded_item_character_value_var" name="embedded_item_character_value_var">
+                </div>
+                <div class="field field-check">
+                    <label><input type="checkbox" name="include_exclude_var" value="include"> Include first # items only</label>
+                </div>
+            </div>
+
+            <div class="field field-check">
+                <label><input type="checkbox" name="character_count_file_manager_var"> By number of embedded character(s)</label>
+            </div>
+            <div class="field sub-option">
+                <label for="character_entry_var">Enter character(s)</label>
+                <input type="text" id="character_entry_var" name="character_entry_var">
+            </div>
+
+            <div class="field field-check">
+                <label><input type="checkbox" name="fileName_embeds_date"> Filename embeds date</label>
+            </div>
+            <div class="field-row sub-option">
+                <div class="field">
+                    <label for="date_format">Date format</label>
+                    <select id="date_format" name="date_format">
+                        <option value="mm-dd-yyyy">mm-dd-yyyy</option>
+                        <option value="dd-mm-yyyy">dd-mm-yyyy</option>
+                        <option value="yyyy-mm-dd">yyyy-mm-dd</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="date_separator">Date separator</label>
+                    <input type="text" id="date_separator" name="date_separator" value="-">
+                </div>
+                <div class="field">
+                    <label for="date_position">Date position</label>
+                    <input type="number" id="date_position" name="date_position" value="0">
+                </div>
+            </div>
+
+            <div class="field field-check">
+                <label><input type="checkbox" name="include_subdir_var"> Include subdirectories</label>
+            </div>
+
+            <!-- currently unused in backend logic, but can still be passed -->
+            <input type="hidden" name="before_date_var" value="">
+            <input type="hidden" name="after_date_var" value="">
+        </fieldset>
+
+        {% include "partials/form_buttons.html" with tips_url="https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/TIPS/TIPS_NLP_File%20manager.pdf" %}
+    </form>
+</div>
+
+{% endblock %}

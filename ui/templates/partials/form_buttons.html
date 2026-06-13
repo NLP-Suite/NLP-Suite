@@ -1,0 +1,15 @@
+{# Form footer — Reset / Tips File / Run. Params: tips_url (the tool's TIPS PDF; omit to hide the button) #}
+<div class="buttons-section">
+    <button type="reset" class="reset-button" onclick="window.location.reload();">Reset</button>
+
+    {% if tips_url %}
+    <a href="{{ tips_url }}" target="_blank" rel="noopener noreferrer" class="tipsfile-button">
+        <div class="tipsfile-mask">
+            <div class="tipsfile-glow"></div>
+        </div>
+        Tips File
+    </a>
+    {% endif %}
+
+    <button type="submit" class="run-button"{% if run_onclick %} onclick="{{ run_onclick }}"{% endif %}>Run</button>
+</div>

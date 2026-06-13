@@ -1,0 +1,19 @@
+{# Input/output directory pair. Params: output_readonly (truthy → output path is fixed) #}
+<fieldset class="form-section">
+    <legend>Input &amp; output</legend>
+
+    <div class="field">
+        <label for="inputDirectory">Input directory</label>
+        <select name="inputDirectory" id="inputDirectory">
+            <option value="~/nlp-suite/input" selected>~/nlp-suite/input</option>
+            <option value="~/nlp-suite/csvInput">~/nlp-suite/csvInput</option>
+        </select>
+        <p class="field-help">Folder with the TXT or csv files to analyze. On Mac it is in your home folder, on Windows in your Users folder.</p>
+    </div>
+
+    <div class="field">
+        <label for="outputDirectory">Output directory</label>
+        <input type="text" name="outputDirectory" id="outputDirectory" value="~/nlp-suite/output"{% if output_readonly %} readonly{% endif %}>
+        <p class="field-help">All output files (txt, csv, png, html) are saved here; most tools organize results into their own subdirectories inside it.</p>
+    </div>
+</fieldset>

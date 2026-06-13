@@ -1,0 +1,100 @@
+{% extends 'index.html' %}
+
+{% block content %}
+{% load static %}
+
+<div class="tool-container">
+    <h1>Topic Modeling</h1>
+    <form method="post" class="topic-modeling-form">
+        {% csrf_token %}
+
+        {% include "partials/io_directories.html" with output_readonly=True %}
+
+        <fieldset class="form-section">
+            <legend>Topics</legend>
+
+            <div class="field">
+                <label for="numberOfTopics">Number of topics</label>
+                <input type="number" id="numberOfTopics" name="numberOfTopics" value="20" min="1">
+                <p class="field-help">Try different numbers of topics for better results.</p>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Algorithms</legend>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="topicModelingBERT" name="topicModelingBERT">
+                    Topic Modeling (via BERTopic)
+                </label>
+                <p class="field-help">LLM topic modeling based on BERT (Google, 2018); BERTopic was developed by Maarten Grootendorst in 2022.</p>
+            </div>
+            <div class="field field-check sub-option">
+                <label>
+                    <input type="checkbox" id="splitToSentence" name="splitToSentence">
+                    Split documents into sentences
+                </label>
+                <p class="field-help">Recommended for datasets consisting of a small number of long documents.</p>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="topicModelingMALLET" name="topicModelingMALLET">
+                    Topic Modeling (via MALLET)
+                </label>
+                <p class="field-help">Java-based LDA (Latent Dirichlet Allocation) topic modeling, first released in 2002 by Andrew McCallum (UMass Amherst). MALLET does not come with any visual displays of its own.</p>
+            </div>
+            <div class="field field-check sub-option">
+                <label>
+                    <input type="hidden" name="optimizeTopicIntervals" value="0" />
+                    <input type="checkbox" id="optimizeTopicIntervals" name="optimizeTopicIntervals" value="1">
+                    Optimize topic intervals
+                </label>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="topicModelingGensim" name="topicModelingGensim">
+                    Topic Modeling (via GENSIM)
+                </label>
+                <p class="field-help">Gensim LDA (Latent Dirichlet Allocation) topic modeling, with interactive visuals of the results.</p>
+            </div>
+            <div class="field field-check sub-option">
+                <label>
+                    <input type="checkbox" id="removeStopwords" name="removeStopwords">
+                    Remove stopwords
+                </label>
+            </div>
+            <div class="field field-check sub-option">
+                <label>
+                    <input type="checkbox" id="lemmatizeWords" name="lemmatizeWords">
+                    Lemmatize words (nouns, verbs, adverbs, adjectives)
+                </label>
+            </div>
+            <div class="field field-check sub-option">
+                <label>
+                    <input type="checkbox" id="nounsOnly" name="nounsOnly_var">
+                    Use nouns only (lemmatized)
+                </label>
+            </div>
+            <div class="field field-check sub-option">
+                <label>
+                    <input type="checkbox" id="topicCoherenceMALLET" name="Gensim_MALLET_var">
+                    Run MALLET (topic coherence values and plot visualization)
+                </label>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Visualization</legend>
+            {% include "partials/data_transformation.html" %}
+        </fieldset>
+
+        {% include "partials/form_buttons.html" with tips_url="https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/TIPS/TIPS_NLP_Topic%20modeling.pdf" %}
+    </form>
+</div>
+
+<script src="{% static 'js/topic_modeling.js' %}"></script>
+<script src="{% static 'js/onlyone.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends 'index.html' %}
+
+{% block content %}
+{% load static %}
+<div class="tool-container">
+    <h1>Shape of Stories</h1>
+    <form method="post" class="shape-of-stories-form">
+        {% csrf_token %}
+
+        {% include "partials/io_directories.html" %}
+
+        <fieldset class="form-section">
+            <legend>Sentiment analysis</legend>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="sentiment_analysis" name="sentimentAnalysis" checked>
+                    Sentiment Analysis
+                </label>
+            </div>
+            <div class="field sub-option">
+                <label for="algorithm">Sentiment analysis algorithm</label>
+                <select id="algorithm" name="sentimentAnalysisMethod">
+                    <optgroup label="Neural network approaches:">
+                        <option value="BERT English">BERT (English model)</option>
+                        <option value="BERT Multilingual">BERT (Multilingual model)</option>
+                        <option value="spaCy">spaCy</option>
+                        <option value="Stanford CoreNLP">Stanford CoreNLP</option>
+                        <option value="Stanza">Stanza</option>
+                    </optgroup>
+                </select>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Data reduction methods</legend>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="compute-visualize" name="corpus_analysis">
+                    Compute &amp; visualize corpus statistics
+                </label>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="hierarchical-clustering" name="hierarchical_clustering">
+                    Hierarchical Clustering (HC)
+                </label>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="singular-value-decomp" name="SVD">
+                    Singular Value Decomposition (SVD)
+                </label>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="non-negative-matrix-fact" name="NMF">
+                    Non-Negative Matrix Factorization (NMF)
+                </label>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="best-topic-est" name="best_topic_estimation">
+                    Best topic estimation
+                </label>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Visualization</legend>
+            {% include "partials/data_transformation.html" %}
+        </fieldset>
+
+        {% include "partials/form_buttons.html" with tips_url="https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/TIPS/TIPS_NLP_Shape%20of%20stories.pdf" %}
+    </form>
+</div>
+
+{% endblock %}

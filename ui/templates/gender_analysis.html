@@ -1,0 +1,81 @@
+{% extends 'index.html' %}
+
+{% block content %}
+{% load static %}
+
+
+<div class="tool-container">
+    <h1>Gender Analysis</h1>
+    <form method="post" class="gender-analysis-form">
+        {% csrf_token %}
+
+        {% include "partials/io_directories.html" %}
+
+        <fieldset class="form-section">
+            <legend>Gender annotation</legend>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="CoreNLP_gender_annotator_var" name="CoreNLP_gender_annotator_var">
+                    Annotate nouns &amp; pronouns gender (via CoreNLP Gender annotator - Neural Network)
+                </label>
+                <p class="field-help">The CoreNLP gender annotator uses a neural network (coref) approach with roughly 60% accuracy; it requires a great deal of memory.</p>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="annotator_dictionary_var" name="annotator_dictionary_var">
+                    Annotate first names by gender (via selected dictionary file)
+                </label>
+                <p class="field-help">The dictionary csv must have at least two columns labeled 'Name' and 'Gender' (case-sensitive values 'Male'/'Female', or 'F'/'M' for US Social Security files).</p>
+            </div>
+            <div class="field sub-option">
+                <label for="select-dic-file">Dictionary file path</label>
+                <input type="text" id="select-dic-file" name="annotator_dictionary_file_var" placeholder="~/nlp-suite/csvInput/...csv" disabled>
+            </div>
+            <div class="field-check sub-option">
+                <label>
+                    <input type="checkbox" id="personal_pronouns_var" name="personal_pronouns_var" disabled>
+                    Also process personal pronouns (he/him/his, she/her)
+                </label>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>US Social Security names</legend>
+
+            <div class="field field-check">
+                <label>
+                    <input disabled type="checkbox" id="plot_var" name="plot_var">
+                    (Coming soon!) Process names via US SS
+                </label>
+                <p class="field-help">Plots the use of first names by US state/year of birth from the US Social Security databases. Not yet available: the lib/namesGender data files have not been ported from the desktop NLP Suite.</p>
+            </div>
+            <div class="field-row sub-option">
+                <div class="field">
+                    <label for="year_state_var">By US/State/Year</label>
+                    <select id="year_state_var" name="year_state_var" disabled>
+                        <option value="State">State</option>
+                        <option value="Year of birth">Year of birth</option>
+                        <option value="State &amp; Year of birth">State &amp; Year of birth</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="firstName_entry_var">Enter Name</label>
+                    <input type="text" id="firstName_entry_var" name="firstName_entry_var" disabled>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Visualization</legend>
+            {% include "partials/data_transformation.html" %}
+        </fieldset>
+
+        {% include "partials/form_buttons.html" with tips_url="https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/TIPS/TIPS_NLP_Stanford%20CoreNLP%20gender%20annotator.pdf" %}
+    </form>
+</div>
+
+<script src="{% static 'js/gender_analysis.js' %}"></script>
+<script src="{% static 'js/onlyone.js' %}"></script>
+{% endblock %}

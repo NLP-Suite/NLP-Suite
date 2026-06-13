@@ -1,0 +1,117 @@
+{% extends 'index.html' %}
+
+{% block content %}
+{% load static %}
+
+<div class="tool-container">
+    <h1>Wordnet</h1>
+    <form method="post" class="wordnet-form">
+        {% csrf_token %}
+
+        {% include "partials/io_directories.html" %}
+
+        <fieldset class="form-section">
+            <legend>Input csv file</legend>
+
+            <div class="field">
+                <label for="csv_file">csv file path</label>
+                <input type="text" id="csv_file" name="csv_file" placeholder="~/nlp-suite/output/...csv">
+                <p class="field-help">Path to the csv file used by the csv-based options below (WordNet output file, lemma file, or CoNLL table, depending on the option).</p>
+            </div>
+
+            <div class="field">
+                <label for="noun_verb">Process nouns or verbs</label>
+                <select id="noun_verb" name="noun_verb">
+                    <option value="NOUN">NOUN</option>
+                    <option value="VERB">VERB</option>
+                </select>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Zoom IN/DOWN</legend>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="zoom-in-related-words" name="disaggregate_var">
+                    Zoom IN/DOWN to find related words
+                </label>
+            </div>
+            <div class="field sub-option">
+                <label for="your-synset">Your synsets</label>
+                <input type="text" id="your-synset" name="wordNet_keyword_list" disabled>
+                <p class="field-help">Comma-separated keywords (e.g. dog, cat) to expand via WordNet.</p>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="annotate-corpus-checkbox" name="annotate_file_var">
+                    Annotate corpus (using Wordnet csv output file from Zoom IN/DOWN)
+                </label>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="extract-proper-noun-checkbox" name="extract_proper_nouns">
+                    Extract PROPER nouns (using Wordnet csv output file from Zoom IN/DOWN)
+                </label>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="extract-improper-noun-checkbox" name="extract_improper_nouns">
+                    Extract IMPROPER nouns (using Wordnet csv output file from Zoom IN/DOWN)
+                </label>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Zoom OUT/UP</legend>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="zoom-out-up" name="aggregate_lemmatized_var">
+                    Zoom OUT/UP (classify/aggregate lemmatized words in csv file)
+                </label>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="extract-noun-verb-conll" name="extract_nouns_verbs_from_CoNLL_var">
+                    Extract nouns &amp; verbs from CoNLL table (for Zoom OUT/UP)
+                </label>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="zoom-out-classify-aggregate-input" name="aggregate_POS_var">
+                    Zoom OUT/UP (classify/aggregate input text documents by CoreNLP NOUN &amp; VERB POS tags and WordNet NOUN &amp; VERB synsets)
+                </label>
+                <p class="field-help">Uses the txt files in the input directory; requires Stanford CoreNLP.</p>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="zoom-out-sentenceID" name="aggregate_bySentenceID_var">
+                    Zoom OUT/UP by Sentence ID
+                </label>
+            </div>
+            <div class="field sub-option">
+                <label for="wordnet-classified-aggregated-csv">csv file of WordNet classified/aggregated words</label>
+                <input type="text" id="wordnet-classified-aggregated-csv" name="dict_WordNet_filename_var" placeholder="~/nlp-suite/output/...csv" disabled>
+                <p class="field-help">The csv file path above must point to a CoNLL table for this option.</p>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Visualization</legend>
+            {% include "partials/data_transformation.html" %}
+        </fieldset>
+
+        {% include "partials/form_buttons.html" with tips_url="https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/TIPS/TIPS_NLP_WordNet.pdf" %}
+    </form>
+</div>
+
+<script src="{% static 'js/wordnet.js' %}"></script>
+<script src="{% static 'js/onlyone.js' %}"></script>
+{% endblock %}

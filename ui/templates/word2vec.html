@@ -1,0 +1,159 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+<div class="tool-container">
+<h1>Word2Vec and Word Embeddings</h1>
+<form method="post" class="topic-modeling-form">
+    {% csrf_token %}
+
+    {% include "partials/io_directories.html" %}
+
+    <fieldset class="form-section">
+        <legend>Text preparation</legend>
+
+        <div class="field-row">
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="remove_stopwords_var" name="remove_stopwords_var" checked>
+                    Remove stopwords &amp; punctuation
+                </label>
+            </div>
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="lemmatize_var" name="lemmatize_var" checked>
+                    Lemmatize
+                </label>
+            </div>
+        </div>
+
+        <div class="field-row">
+            <div class="field">
+                <label for="vis_menu_var">Visualization option</label>
+                <select id="vis_menu_var" name="vis_menu_var">
+                    <option value="Plot word vectors">Plot word vectors</option>
+                    <option value="Do not plot">Do not plot word vectors</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="dim_menu_var">Dimensions</label>
+                <select id="dim_menu_var" name="dim_menu_var">
+                    <option value="2D">2D</option>
+                    <option value="3D">3D</option>
+                </select>
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset class="form-section">
+        <legend>Word sense induction</legend>
+
+        <div class="field field-check">
+            <label>
+                <input type="checkbox" id="WSI_var" name="WSI_var">
+                Word sense induction (via BERT (English language model))
+            </label>
+        </div>
+
+        <div class="field sub-option">
+            <label for="keywordInput">Keywords (WSI)</label>
+            <input type="text" id="keywordInput" name="keywordInput">
+        </div>
+
+        <div class="field-row sub-option">
+            <div class="field">
+                <label for="range4">K Means Minimum Value</label>
+                <input type="range" id="range4" name="range4" min="2" max="9" value="4" oninput="document.getElementById('range4Value').innerHTML = this.value">
+                <span id="range4Value">4</span>
+            </div>
+            <div class="field">
+                <label for="range6">K Means Maximum Value</label>
+                <input type="range" id="range6" name="range6" min="3" max="15" value="6" oninput="document.getElementById('range6Value').innerHTML = this.value">
+                <span id="range6Value">6</span>
+            </div>
+            <div class="field">
+                <label for="ngramsDropDown">N-grams</label>
+                <select id="ngramsDropDown" name="ngramsDropDown">
+                    <option value="1-grams (unigrams)">1-grams</option>
+                    <option value="2-grams (bigrams)">2-grams</option>
+                    <option value="3-grams (trigrams)">3-grams</option>
+                    <option value="4-grams (quadgrams)">4-grams</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="range20">Top Keywords</label>
+                <input type="range" id="range20" name="range20" min="5" max="20" value="10" oninput="document.getElementById('range10Value').innerHTML = this.value">
+                <span id="range10Value">10</span>
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset class="form-section">
+        <legend>Word embeddings</legend>
+
+        <div class="field-row">
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="BERT_var" name="BERT_var">
+                    Word embeddings (via BERT (English language model))
+                </label>
+            </div>
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="Gensim_var" name="Gensim_var">
+                    Word2Vec (via Gensim)
+                </label>
+            </div>
+        </div>
+
+        <div class="field sub-option">
+            <label for="sg_menu_var">Training model architecture</label>
+            <select id="sg_menu_var" name="sg_menu_var">
+                <option value="Skip-Gram">Skip-Gram</option>
+                <option value="CBOW">CBOW</option>
+            </select>
+        </div>
+
+        <div class="field-row sub-option">
+            <div class="field">
+                <label for="vector_size_var">Vector size</label>
+                <input type="number" id="vector_size_var" name="vector_size_var" value="100">
+            </div>
+            <div class="field">
+                <label for="window_var">Window size</label>
+                <input type="number" id="window_var" name="window_var" value="5">
+            </div>
+            <div class="field">
+                <label for="min_count_var">Minimum count</label>
+                <input type="number" id="min_count_var" name="min_count_var" value="5">
+            </div>
+        </div>
+
+        <div class="field field-check">
+            <label>
+                <input type="checkbox" id="compute_distances_var" name="compute_distances_var" checked>
+                Compute word distances
+            </label>
+        </div>
+        <div class="field sub-option">
+            <label for="top_words_var">Number of top words for Euclidean distance &amp; cosine similarity combinations</label>
+            <input type="number" id="top_words_var" name="top_words_var" value="200">
+        </div>
+
+        <div class="field">
+            <label for="keywords_var">Keywords</label>
+            <input type="text" id="keywords_var" name="keywords_var">
+        </div>
+    </fieldset>
+
+    <fieldset class="form-section">
+        <legend>Visualization</legend>
+        {% include "partials/data_transformation.html" %}
+    </fieldset>
+
+    {% include "partials/form_buttons.html" with tips_url="https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/TIPS/TIPS_NLP_BERT%20word%20embeddings.pdf" %}
+</form>
+</div>
+
+<script src="{% static 'js/word2vec.js' %}"></script>
+<script src="{% static 'js/onlyone.js' %}"></script>
+{% endblock %}

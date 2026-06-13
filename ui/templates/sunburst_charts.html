@@ -1,0 +1,106 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="tool-container">
+
+    <h1>Sunburst Charts</h1>
+    <form method="post" class="sentiment-analysis-form" action="{% url 'sunburst' %}">
+        {% csrf_token %}
+
+        <fieldset class="form-section">
+            <legend>Input &amp; output</legend>
+
+            <div class="field">
+                <label for="inputDirectory">Input directory</label>
+                <select name="inputDirectory" id="inputDirectory">
+                    <option value="~/nlp-suite/csvInput">~/nlp-suite/csvInput</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="outputDirectory">Output directory</label>
+                <input type="text" name="outputDirectory" id="outputDirectory" value="~/nlp-suite/output">
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Chart data</legend>
+
+            <div class="field">
+                <label for="sunburst_file_input">Input CSV</label>
+                <div class="options">
+                    <input type="file" id="sunburst_file_input" name="sunburst_file_input" accept=".csv" required>
+                    <select id="search_field" name="search_field">
+                        <option value="" disabled selected hidden>Select a field</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Visualize Full Field</label>
+                <button type="button" id="visualize_full_field" name="visualize_full_field">Add Full Field</button>
+            </div>
+
+            <div class="field">
+                <label for="keywordInput">Search Values</label>
+                <input type="text" id="keywordInput" name="keywordInput" autocomplete="off">
+                <div id="suggestion_dropdown" class="suggestion-dropdown"></div>
+                <p class="field-help">Enter a comma-separated list of specific words or values for the selected Column/Search Field (minimum of 3), e.g.: the, three, little, pigs.</p>
+            </div>
+            <div class="field-row">
+                <div class="field">
+                    <button type="button" id="add_pair_button">Add Pair</button>
+                </div>
+                <div class="field">
+                    <label for="search_value_dropdown">Search Value Options</label>
+                    <select name="search_value_dropdown" id="search_value_dropdown">
+                    </select>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="saved_pairs">Saved Pairs:</label>
+                <div id="saved_pairs_container">
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="filter_options_var">Filter Options</label>
+                <select id="filter_options_var" name="filter_options_var">
+                    <option value="no_filtering">No filtering</option>
+                    <option value="fixed_parameter">Fixed parameter</option>
+                    <option value="propagating_parameter">Propagating Parameter</option>
+                </select>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Chart types</legend>
+
+            <div class="field-row">
+                <div class="field field-check">
+                    <label>
+                        <input type="checkbox" name="piechart_var" checked>
+                        Pie chart
+                    </label>
+                </div>
+                <div class="field field-check">
+                    <label>
+                        <input type="checkbox" name="treemap_var">
+                        Tree map chart
+                    </label>
+                </div>
+            </div>
+        </fieldset>
+
+        {% include "partials/form_buttons.html" with tips_url="https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/TIPS/TIPS_NLP_Charts%20-%20Sunburst%20pie%20chart.pdf" %}
+
+        <input type="hidden" id="savedPairsToSend" name="savedPairsToSend">
+    </form>
+</div>
+
+<script src="{% static 'js/sunburst_charts.js' %}"></script>
+
+
+{% endblock %}

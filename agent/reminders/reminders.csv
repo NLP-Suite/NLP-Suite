@@ -1,0 +1,21 @@
+Routine,Title,Message,Status
+spaCy,spaCy annotators,"Contrary to Stanford CoreNLP and Stanza, spaCy does not process specific annotators (e.g., POS, NER). Regardless of selected annotator, spaCy will also process the corpus with its full parser.",ON
+NLP_default_IO,NER tags frequency,"O is likely to be the most frequent NER tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the row containing the O tag in the Data worksheet of the Excel chart file to have a better view of all other tags.",ON
+statistics_txt,Line length,"Line length only makes sense for poetry or song lyrics (or perhaps for newspaper articles to gauge the importance of the article by the column width).
+
+For your typical document line length depends on the vaguaries of typesetting and sentence length may provide a better measure of style.",ON
+statistics_txt,Open TIPS file,"You will be asked next if you want to open a TIPS file for help.
+
+If you do not want to be asked again to open the TIPS file, just hit 'No' below.",ON
+word2vec.py,BERT Word2Vec timing,"Beware that BERT Word2Vec on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, with the tokenizing, lemmatzing, and Eucledian distance options, takes approximately 2 hours on a standard laptop. Eucledian distance is the item taking the longest.",ON
+NLP_default_IO,DepRel tags frequency,"punct (punctuation) and det (determiner/article) are likely to be the most frequent DepRel tags in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete in the Data worksheet of the Excel chart file the rows containing the 'punct' and 'det' tags to have a better view of all other tags.",ON
+GIS_pipeline,GIS timing,"Beware that geocoding some 30,000 locations via Nominatim and preparing the KML file for map visualization in Goodgle Earth Pro takes approximately 15 minutes on a standard laptop.",ON
+GIS_pipeline,GIS Multi-name Locations,"Locations known under different names (e.g., 'United States', 'US', 'USA'), can be all geocoded under a single name (e.g., 'United States'). The multiple name locations are listed in the csv file multi_name_locations.csv.You can edit that file to your specific needs and improve geocoding.",ON
+Stanford_CoreNLP,CoreNLP gender timing,"Beware that the CoreNLP gender algortithm on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 3 hours on a standard laptop.",ON
+Stanford_CoreNLP,CoreNLP neural network parser timing,"Beware that the CoreNLP neural network parser algortithm on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 1 hour and 40 minutes on a standard laptop.",ON
+Stanford_CoreNLP,Clause tags with CoreNLP neural network parser,The CoreNLP neural network parser does not produce clause tags in output. The column 'Clause Tag' in the output csv CoNLL table would contain all blank values.,ON
+Stanford_CoreNLP,CoreNLP SVO timing,"Beware that the CoreNLP SVO algorithms on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 1 hour and 20 minutes on a standard laptop.",ON
+Stanford_CoreNLP,CoreNLP NER annotator timing,"Beware that the CoreNLP NER annotator on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 50 minutes on a standard laptop.",ON
+Stanford_CoreNLP,CoreNLP POS/NER max sentence length,"The CoreNLP POS/NER annotators set a maximum sentence length for processing.
+
+Sentences longer than your selected max length will be cut and some POS/NER tags in those long sentences may be lost.",ON

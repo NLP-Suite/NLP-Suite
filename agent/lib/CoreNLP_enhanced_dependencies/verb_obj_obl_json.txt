@@ -1,0 +1,13 @@
+{
+    "take": [
+        {
+            "obj": "care",
+            "obl": "of"
+        },
+        {
+            "obj": "advantage",
+            "obl": "of"
+        }
+    ]
+
+}

@@ -1,0 +1,68 @@
+networks:
+  nlp-suite-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.0.0/16
+
+services:
+  ui:
+    build: ./ui
+    ports:
+      - "8000:8000"
+    networks:
+      nlp-suite-network:
+        ipv4_address: 172.16.0.10
+    environment:
+      - AGENT_SERVER_URL=http://172.16.0.11:3000
+    depends_on:
+      agent:
+        condition: service_healthy
+
+  agent:
+    build: ./agent
+    ports:
+      - "8080:3000"
+    networks:
+      nlp-suite-network:
+        ipv4_address: 172.16.0.11
+    volumes:
+      - ${NLP_SUITE_DIR:-~/nlp-suite}:/root/nlp-suite
+    env_file:
+      - path: ${NLP_SUITE_DIR:-~/nlp-suite}/.env
+        required: false
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 120s
+
+  corenlp:
+    build: ./corenlp
+    ports:
+      - "9000:9000"
+    networks:
+      nlp-suite-network:
+        ipv4_address: 172.16.0.12
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  mallet:
+    build: ./mallet
+    ports:
+      - "8081:5050"
+    networks:
+      nlp-suite-network:
+        ipv4_address: 172.16.0.13
+    volumes:
+      - ${NLP_SUITE_DIR:-~/nlp-suite}:/app
+    healthcheck:
+      # the mallet api only exposes POST /run; use FastAPI's schema route as a liveness probe
+      test: ["CMD", "curl", "-f", "http://localhost:5050/openapi.json"]
+      interval: 10s
+      timeout: 5s
+      retries: 6

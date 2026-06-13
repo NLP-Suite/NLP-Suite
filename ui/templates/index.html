@@ -1,0 +1,62 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}NLP Suite{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+
+  <link rel="stylesheet" href="{% static 'css/header.css' %}">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/homepage.css' %}">
+  <link rel="stylesheet" href="{% static 'css/tipsfile.css' %}">
+
+
+  <link rel="stylesheet" href="{% static 'toastr/toastr.min.css' %}">
+  <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+  <script src="{% static 'toastr/toastr.min.js' %}"></script>
+
+  {% block extra_head %}
+  {% endblock %}
+</head>
+
+<body>
+  <header class="site-header" id="siteHeader">
+    <div class="container header-inner">
+      <a class="logo" href="{% url 'index' %}">
+        <img src="https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/lib/images/logo.jpg?raw=True" style="height: 36px">
+        <span>NLP Suite</span>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a class="nav-link" href="https://github.com/NLP-Suite/NLP-Suite/wiki" target="_blank" rel="noopener noreferrer">Wiki</a>
+        <a class="nav-link" href="https://www.youtube.com/@NLPsuite" target="_blank" rel="noopener noreferrer">YouTube</a>
+        <a class="nav-link" href="{% url 'contact' %}">Contact</a>
+        <a class="nav-link settings" href="{% url 'settings' %}">Settings</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    {% block content %}
+    {% include "homepage.html" %}
+    {% endblock %}
+  </main>
+
+  {% if messages %}
+    {% for message in messages %}
+      {% if message.tags == 'success' %}
+        <script type="text/javascript">toastr.success('{{ message }}')</script>
+      {% elif message.tags == 'info' %}
+        <script type="text/javascript">toastr.info('{{ message }}')</script>
+      {% elif message.tags == 'warning' %}
+        <script type="text/javascript">toastr.warning('{{ message }}')</script>
+      {% elif message.tags == 'error' %}
+        <script type="text/javascript">toastr.error('{{ message }}')</script>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

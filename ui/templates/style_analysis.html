@@ -1,0 +1,103 @@
+{% extends 'index.html' %}
+
+{% block content %}
+{% load static %}
+
+<div class="tool-container">
+    <h1>Style analysis (ALL options GUI)</h1>
+    <form method="post" class="style-analysis-form">
+        {% csrf_token %}
+
+        {% include "partials/io_directories.html" %}
+
+        <fieldset class="form-section">
+            <legend>Analyses</legend>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="complexity_analysis" name="complexity_analysis">
+                    Complexity/readability analysis
+                </label>
+            </div>
+            <div class="field sub-option">
+                <select id="analysis_dropdown" name="analysis_dropdown">
+                    <option value="*">*</option>
+                    <option value="Sentence">Sentence complexity</option>
+                    <option value="Text">Text readability</option>
+                </select>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="vocabulary_analysis" name="vocabulary_analysis">
+                    Vocabulary analysis
+                </label>
+            </div>
+            <div class="field sub-option">
+                <select id="voc_options" name="voc_options">
+                    <option value="*">*</option>
+                    <option value="Iconic">Iconicity Analysis</option>
+                    <option value="Vocabulary (via unigrams)">Vocabulary (via unigrams) - List of all words/tokens in input document(s)</option>
+                    <option value="Hapax legomena">Vocabulary (via Hapax legomena, once-occurring words)</option>
+                    <option value="hapax-legomena-unigrams">Vocabulary (via Hapax legomena, once-occurring unigrams)</option>
+                    <option value="Stanza">Vocabulary (via Stanza multilanguage lemmatizer) - List of all words/tokens in input document(s)</option>
+                    <option value="NLTK">Vocabulary (via NLTK unusual words)</option>
+                    <option value="Yule">Vocabulary richness (word type/token ratio or Yule’s K)</option>
+                    <option value="Abstract">Abstract/concrete vocabulary</option>
+                    <option value="Objectivity/subjectivity (via spaCy)">Objectivity/subjectivity (via spaCy)</option>
+                    <option value="pathos">Punctuation as figures of pathos(?!)</option>
+                    <option value="Word length">Word length</option>
+                    <option value="Vowel">Vowel words</option>
+                    <option value="capital">Words with capital initial (proper nouns)</option>
+                    <option value="detection">Language detection</option>
+                    <option value="Repetition: Words">Repetition: Words in first K and last K sentences</option>
+                    <option value="Repetition: Last">Repetition: Last K words of a sentence/First K words of next sentence</option>
+                    <option value="repetition-accross-sentences">Repetition across sentences (special ngrams)</option>
+                </select>
+            </div>
+
+            <div class="field-row sub-option">
+                <div class="field">
+                    <label for="min_rating">Min Rating</label>
+                    <input type="range" id="min_rating" name="min_rating" min="1" max="7" value="5">
+                    <span id="minRatingValue">5</span>
+                    <p class="field-help">Minimum iconicity rating. Suggested value 5, range 1 to 7.</p>
+                </div>
+                <div class="field">
+                    <label for="max_rating_sd">Max Rating SD</label>
+                    <input type="range" id="max_rating_sd" name="max_rating_sd" min="0" max="3" value="2">
+                    <span id="maxRatingSDValue">2</span>
+                    <p class="field-help">Maximum iconicity rating standard deviation. Suggested value 2, range 0 to 3.</p>
+                </div>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="gender_guesser" name="gender_guesser" onclick="showGenderGuesserWarning()">
+                    Who wrote the text - Gender guesser
+                </label>
+            </div>
+            <script>
+                var checkbox = document.getElementById("gender_guesser").addEventListener("click", function() {
+                    if (this.checked) {
+                        window.open("https://www.hackerfactor.com/GenderGuesser.php#About");
+                        if(window.open) {
+                            let checkbox = document.getElementById("gender_guesser");
+                        }
+                    }
+                });
+            </script>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Visualization</legend>
+            {% include "partials/data_transformation.html" %}
+        </fieldset>
+
+        {% include "partials/form_buttons.html" with tips_url="https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/TIPS/TIPS_NLP_Style%20analysis.pdf" %}
+    </form>
+</div>
+
+<script src="{% static 'js/style_analysis.js' %}"></script>
+<script src="{% static 'js/onlyone.js' %}"></script>
+{% endblock %}

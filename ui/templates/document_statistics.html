@@ -1,0 +1,63 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="tool-container">
+
+    <h1>Document and Corpus Statistics</h1>
+    <form method="post" class="sentiment-analysis-form" action="{% url 'statistics' %}">
+        {% csrf_token %}
+
+        {% include "partials/io_directories.html" %}
+
+        <fieldset class="form-section">
+            <legend>Statistics</legend>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="corpus_statistics_var" name="corpus_statistics_var">
+                    Compute document(s) statistics
+                </label>
+                <p class="field-help">Basic statistics on your corpus: frequencies of sentences, words, syllables, top-20 words, sentence length, line length.</p>
+            </div>
+
+            <div class="field sub-option">
+                <label for="corpus_text_options_menu_var">Text options</label>
+                <select id="corpus_text_options_menu_var" name="corpus_text_options_menu_var">
+                    <option value="*">*</option>
+                    <option value="Lemmatize">Lemmatize Words</option>
+                    <option value="stopwords">Exclude Stopwords &amp; Puncutation</option>
+                </select>
+                <p class="field-help">Lemmatize words or exclude stopwords/punctuation (* for all).</p>
+            </div>
+
+            <div class="field sub-option">
+                <label for="corpus_statistics_options_menu_var">Computation options</label>
+                <select id="corpus_statistics_options_menu_var" name="corpus_statistics_options_menu_var">
+                    <option value="*">*</option>
+                    <option value="frequencies">Compute frequencies of sentences, words, syllables, and top-20 words</option>
+                    <option value="Compute sentence length">Compute sentence length</option>
+                    <option value="Compute line length">Compute line length</option>
+                </select>
+                <p class="field-help">Select the computation option (* for all).</p>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="corpus_statistics_byPOS_var" name="corpus_statistics_byPOS_var">
+                    Compute document(s) statistics by POS (Part of Speech) tag value
+                </label>
+                <p class="field-help">Relies on the Stanza POS annotator; outputs csv files with the words in your corpus by POS value (e.g., nouns, verbs, adjectives) and their frequencies, plus charts.</p>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Visualization</legend>
+            {% include "partials/data_transformation.html" %}
+        </fieldset>
+
+        {% include "partials/form_buttons.html" with tips_url="https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/TIPS/TIPS_NLP_Charts%20-%20Sunburst%20pie%20chart.pdf" %}
+    </form>
+</div>
+<script src="{% static 'js/onlyone.js' %}"></script>
+{% endblock %}

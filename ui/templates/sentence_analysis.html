@@ -1,0 +1,59 @@
+{% extends 'index.html' %}
+
+{% block content %}
+{% load static %}
+
+<div class="tool-container">
+    <h1>Sentence Analysis</h1>
+    <form method="post" class="sentiment-analysis-form">
+        {% csrf_token %}
+
+        {% include "partials/io_directories.html" %}
+
+        <fieldset class="form-section">
+            <legend>Analyses</legend>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" name="compute_sentence_length_var" id="compute_sentence_length_var">
+                    Compute Sentence Length
+                </label>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" name="sentence_complexity_var" id="sentence_complexity_var">
+                    Sentence complexity
+                </label>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" name="text_readability_var" id="text_readability_var">
+                    Sentence/text readability (via textstat)
+                </label>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" name="visualize_sentence_structure_var" id="visualize_sentence_structure_var">
+                    Visualize sentence structure (via dependency tree)
+                </label>
+            </div>
+            <div class="field sub-option">
+                <label for="num_sentences">Number of Sentences to be Visualized</label>
+                <input type="number" id="num_sentences" name="num_sentences" min="1" max="10">
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Visualization</legend>
+            {% include "partials/data_transformation.html" %}
+        </fieldset>
+
+        {% include "partials/form_buttons.html" with tips_url="https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/TIPS/TIPS_NLP_Sentiment%20analysis.pdf" %}
+
+    </form>
+</div>
+
+{% endblock %}

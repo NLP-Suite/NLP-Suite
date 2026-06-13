@@ -1,0 +1,115 @@
+{% extends 'index.html' %}
+
+{% block content %}
+{% load static %}
+
+<div class="tool-container">
+<h1>NER (Named Entity Recognition) Annotator</h1>
+<form method="post" class="ner-form">
+    {% csrf_token %}
+
+    {% include "partials/io_directories.html" %}
+
+    <fieldset class="form-section">
+        <legend>Pre-processing</legend>
+
+        <div class="field">
+            <a href="{% url 'file_manager' %}">Pre-processing tools (file checking &amp; cleaning)</a>
+            <p class="field-help">Check and clean your corpus before annotating (utf-8 compliance, sentence length, non-ASCII apostrophes &amp; quotes, % signs).</p>
+            <details class="field-more">
+                <summary>Why pre-process</summary>
+                <div class="more-body">
+                    <p>Non utf-8 compliant texts are likely to lead to code breakdown in various algorithms.</p>
+                    <p>Non-ASCII apostrophes &amp; quotes (the slanted punctuation symbols of Microsoft Word) will not break any code but they will display in a csv document as weird characters. % signs will lead to code breakdown of Stanford CoreNLP.</p>
+                    <p>Sentences without an end-of-sentence marker (. ! ?) in Stanford CoreNLP will be processed together with the next sentence, potentially leading to very long sentences. Sentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.</p>
+                </div>
+            </details>
+        </div>
+    </fieldset>
+
+    <fieldset class="form-section">
+        <legend>Annotation</legend>
+
+        <div class="field">
+            <label for="ner_algorithm">NER package</label>
+            <select id="ner_algorithm" name="NER_package">
+                <optgroup label="ner_packages_approaches">
+                    <option value="*">*</option>
+                    <option value="BERT English">BERT (English model)</option>
+                    <option value="spaCy">spaCy</option>
+                    <option value="Stanford CoreNLP">Stanford CoreNLP</option>
+                    <option value="Stanza">Stanza</option>
+                </optgroup>
+            </select>
+            <p class="field-help">NLP package used as NER annotator (* runs all).</p>
+        </div>
+
+        <div class="field">
+            <label for="ner_tags">NER tags</label>
+            <div class="options">
+                <select id="ner_tags" disabled>
+                    <optgroup label="ner_tags">
+                        <option value="NUMBER,ORDINAL,PERCENT,PERSON,ORGANIZATION,CITY,STATE_OR_PROVINCE,COUNTRY,LOCATION,DATE,TIME,DURATION,SET,CAUSE_OF_DEATH,CRIMINAL_CHARGE,EMAIL,IDEOLOGY,MISC,MONEY,NATIONALITY,RELIGION,TITLE,URL">All NER tags</option>
+                        <option value="NUMBER,ORDINAL,PERCENT">--- All quantitative expressions</option>
+                        <option value="NUMBER">NUMBER</option>
+                        <option value="ORDINAL">ORDINAL</option>
+                        <option value="PERCENT">PERCENT</option>
+                        <option value="PERSON,ORGANIZATION">--- All social actors</option>
+                        <option value="PERSON">PERSON</option>
+                        <option value="ORGANIZATION">ORGANIZATION</option>
+                        <option value="CITY,STATE_OR_PROVINCE,COUNTRY,LOCATION">--- All spatial expressions</option>
+                        <option value="CITY">CITY</option>
+                        <option value="STATE_OR_PROVINCE">STATE_OR_PROVINCE</option>
+                        <option value="COUNTRY">COUNTRY</option>
+                        <option value="LOCATION">LOCATION</option>
+                        <option value="DATE,TIME,DURATION,SET">--- All temporal expressions</option>
+                        <option value="DATE">DATE</option>
+                        <option value="TIME">TIME</option>
+                        <option value="DURATION">DURATION</option>
+                        <option value="SET">SET</option>
+                        <option value="CAUSE_OF_DEATH,CRIMINAL_CHARGE,EMAIL,IDEOLOGY,MISC,MONEY,NATIONALITY,RELIGION,TITLE,URL">--- All other expressions</option>
+                        <option value="CAUSE_OF_DEATH">CAUSE_OF_DEATH</option>
+                        <option value="CRIMINAL_CHARGE">CRIMINAL_CHARGE</option>
+                        <option value="EMAIL">EMAIL</option>
+                        <option value="IDEOLOGY">IDEOLOGY</option>
+                        <option value="MISC">MISC</option>
+                        <option value="MONEY">MONEY</option>
+                        <option value="NATIONALITY">NATIONALITY</option>
+                        <option value="RELIGION">RELIGION</option>
+                        <option value="TITLE">TITLE</option>
+                        <option value="URL">URL</option>
+                    </optgroup>
+                </select>
+                <button type="button" id="button_id">+</button>
+                <button type="button" id="reset_id">Reset</button>
+            </div>
+            <p class="field-help">Click + to add a NER tag to the list; Reset (or ESCape) cancels all selected options.</p>
+            <details class="field-more">
+                <summary>More about NER tags</summary>
+                <div class="more-body">
+                    <p>For English, Stanford CoreNLP, by default through the NERClassifierCombiner annotator, recognizes the following NER values: named (PERSON, LOCATION, ORGANIZATION, MISC); numerical (MONEY, NUMBER, ORDINAL, PERCENT); temporal (DATE, TIME, DURATION, SET).</p>
+                    <p>In addition, via regexner, the following entity classes are tagged: EMAIL, URL, CITY, STATE_OR_PROVINCE, COUNTRY, NATIONALITY, RELIGION, (job) TITLE, IDEOLOGY, CRIMINAL_CHARGE, CAUSE_OF_DEATH.</p>
+                </div>
+            </details>
+        </div>
+
+        <div class="field">
+            <label for="ner_list">NER list</label>
+            <input type="text" id="ner_list" name="NER_list" disabled>
+            <p class="field-help">NER tags added with the + button appear here, comma-separated.</p>
+        </div>
+    </fieldset>
+
+    <fieldset class="form-section">
+        <legend>Visualization</legend>
+        {% include "partials/data_transformation.html" %}
+    </fieldset>
+
+    {% include "partials/form_buttons.html" with tips_url="https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/TIPS/TIPS_NLP_NER%20(Named%20Entity%20Recognition).pdf" %}
+</form>
+</div>
+
+
+<script src="{% static 'js/NER.js' %}"></script>
+<script src="{% static 'js/onlyone.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,462 @@
+{% load static %}
+
+<div class="container">
+
+  <!-- ── Tab bar ────────────────────────────────────────────── -->
+  <div class="tabBar">
+    <button class="tabBtn active" id="btnTools" onclick="nlpSwitchTab('tools')">Tools</button>
+    <button class="tabBtn" id="btnReadings" onclick="nlpSwitchTab('readings')">Readings</button>
+  </div>
+
+  <!-- ── Tools panel ────────────────────────────────────────── -->
+  <div id="tabTools" class="tabPanel active">
+    <div class="filterBar">
+      <input class="filterSearch" id="toolSearch" placeholder="Search tools…" oninput="nlpFilterTools()">
+      <div class="chipGroup" id="toolChips">
+        <button class="chip active" data-tag="all"          onclick="nlpSetToolTag(this)">All</button>
+        <button class="chip" data-tag="corpus"              onclick="nlpSetToolTag(this)">Corpus</button>
+        <button class="chip" data-tag="visualization"       onclick="nlpSetToolTag(this)">Visualization</button>
+        <button class="chip" data-tag="parsing"             onclick="nlpSetToolTag(this)">Parsing</button>
+        <button class="chip" data-tag="annotation"          onclick="nlpSetToolTag(this)">Annotation</button>
+        <button class="chip" data-tag="vocabulary"          onclick="nlpSetToolTag(this)">Vocabulary</button>
+        <button class="chip" data-tag="embeddings"          onclick="nlpSetToolTag(this)">Embeddings</button>
+        <button class="chip" data-tag="gis"                 onclick="nlpSetToolTag(this)">GIS</button>
+        <button class="chip" data-tag="sentiment"           onclick="nlpSetToolTag(this)">Sentiment</button>
+        <button class="chip" data-tag="statistics"          onclick="nlpSetToolTag(this)">Statistics</button>
+        <button class="chip" data-tag="files"               onclick="nlpSetToolTag(this)">Files</button>
+      </div>
+    </div>
+
+    <div class="toolsGrid" id="toolsGrid">
+      <a href="{% url 'ngrams' %}" class="toolCard" data-name="n-grams and word co-occurrences" data-tags="corpus text-analysis">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">N-Grams &amp; Co-Occurrences</div></div>
+        <p class="toolDescription">Frequency and co-occurrence patterns in a corpus</p>
+        <div class="cardTags"><span class="cardTag t-corpus">corpus</span><span class="cardTag t-text-analysis">text-analysis</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+
+      <a href="{% url 'topic_modeling' %}" class="toolCard" data-name="topic modeling" data-tags="corpus">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Topic Modeling</div></div>
+        <p class="toolDescription">Discover latent topics using MALLET LDA</p>
+        <div class="cardTags"><span class="cardTag t-corpus">corpus</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+
+      <a href="{% url 'stories' %}" class="toolCard" data-name="shape of stories" data-tags="corpus visualization">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Shape of Stories</div></div>
+        <p class="toolDescription">Visualize the emotional arc of narratives</p>
+        <div class="cardTags"><span class="cardTag t-corpus">corpus</span><span class="cardTag t-visualization">visualization</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+
+      <a href="{% url 'statistics' %}" class="toolCard" data-name="document statistics" data-tags="corpus statistics">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Document Statistics</div></div>
+        <p class="toolDescription">Word counts, sentence lengths, and readability</p>
+        <div class="cardTags"><span class="cardTag t-corpus">corpus</span><span class="cardTag t-statistics">statistics</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+
+      <a href="{% url 'file_search' %}" class="toolCard" data-name="file search words" data-tags="corpus search">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">File Search: Words</div></div>
+        <p class="toolDescription">Search your corpus for words or phrases</p>
+        <div class="cardTags"><span class="cardTag t-corpus">corpus</span><span class="cardTag t-search">search</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+
+      <a href="{% url 'wordnet' %}" class="toolCard" data-name="wordnet" data-tags="vocabulary">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">WordNet</div></div>
+        <p class="toolDescription">Explore synonyms, antonyms, and semantic relations</p>
+        <div class="cardTags"><span class="cardTag t-vocabulary">vocabulary</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+
+      <a href="{% url 'word2vec' %}" class="toolCard" data-name="word2vec word embeddings wsi" data-tags="embeddings vocabulary">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Word2Vec &amp; Embeddings / WSI</div></div>
+        <p class="toolDescription">Vector space models and word sense induction</p>
+        <div class="cardTags"><span class="cardTag t-embeddings">embeddings</span><span class="cardTag t-vocabulary">vocabulary</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+
+      <a href="{% url 'style_analysis' %}" class="toolCard" data-name="style analysis" data-tags="corpus stylistics">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Style Analysis</div></div>
+        <p class="toolDescription">Comprehensive stylometric analysis</p>
+        <div class="cardTags"><span class="cardTag t-corpus">corpus</span><span class="cardTag t-stylistics">stylistics</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+
+      <a href="{% url 'gender_analysis' %}" class="toolCard" data-name="gender analysis" data-tags="corpus social">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Gender Analysis</div></div>
+        <p class="toolDescription">Examine gendered language patterns</p>
+        <div class="cardTags"><span class="cardTag t-corpus">corpus</span><span class="cardTag t-social">social</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+
+      <a href="{% url 'sentence_analysis' %}" class="toolCard" data-name="sentence analysis" data-tags="parsing">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Sentence Analysis</div></div>
+        <p class="toolDescription">Parse and analyze sentence-level features</p>
+        <div class="cardTags"><span class="cardTag t-parsing">parsing</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+
+      <a href="{% url 'parse' %}" class="toolCard" data-name="parsers annotators bert corenlp spacy stanza" data-tags="parsing annotation">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Parsers &amp; Annotators</div></div>
+        <p class="toolDescription">BERT, CoreNLP, spaCy, and Stanza pipelines</p>
+        <div class="cardTags"><span class="cardTag t-parsing">parsing</span><span class="cardTag t-annotation">annotation</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+
+      <a href="{% url 'conll_table' %}" class="toolCard" data-name="conll table analyzer" data-tags="parsing annotation">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">CoNLL Table Analyzer</div></div>
+        <p class="toolDescription">Analyze CoNLL-format parsed output files</p>
+        <div class="cardTags"><span class="cardTag t-parsing">parsing</span><span class="cardTag t-annotation">annotation</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+
+      <a href="{% url 'svo' %}" class="toolCard" data-name="svo subject verb object" data-tags="parsing syntax">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">SVO</div></div>
+        <p class="toolDescription">Extract subject–verb–object triples</p>
+        <div class="cardTags"><span class="cardTag t-parsing">parsing</span><span class="cardTag t-syntax">syntax</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+
+      <a href="{% url 'NER' %}" class="toolCard" data-name="ner named entity recognition" data-tags="annotation entities">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">NER</div></div>
+        <p class="toolDescription">Named entity recognition across 23 entity types</p>
+        <div class="cardTags"><span class="cardTag t-annotation">annotation</span><span class="cardTag t-entities">entities</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+
+      <a href="{% url 'gis' %}" class="toolCard" data-name="gis geographic information system maps" data-tags="gis visualization">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">GIS</div></div>
+        <p class="toolDescription">Geocode locations and generate interactive maps</p>
+        <div class="cardTags"><span class="cardTag t-gis">gis</span><span class="cardTag t-visualization">visualization</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+
+      <a href="{% url 'sentiment_analysis' %}" class="toolCard" data-name="sentiment analysis" data-tags="sentiment">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Sentiment Analysis</div></div>
+        <p class="toolDescription">Sentence and document-level sentiment scoring</p>
+        <div class="cardTags"><span class="cardTag t-sentiment">sentiment</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+
+      <a href="{% url 'file_manager' %}" class="toolCard" data-name="file manager" data-tags="files">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">File Manager</div></div>
+        <p class="toolDescription">Organize input and output corpus files</p>
+        <div class="cardTags"><span class="cardTag t-files">files</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+
+      <a href="{% url 'wordcloud' %}" class="toolCard" data-name="wordclouds" data-tags="visualization">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Word Clouds</div></div>
+        <p class="toolDescription">Generate frequency-based word cloud images</p>
+        <div class="cardTags"><span class="cardTag t-visualization">visualization</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+
+      <a href="{% url 'sunburst' %}" class="toolCard" data-name="sunburst charts" data-tags="visualization">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Sunburst Charts</div></div>
+        <p class="toolDescription">Hierarchical category visualizations</p>
+        <div class="cardTags"><span class="cardTag t-visualization">visualization</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+
+      <a href="{% url 'boxplot' %}" class="toolCard" data-name="boxplot" data-tags="visualization statistics">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Box Plot</div></div>
+        <p class="toolDescription">Distribution plots for numerical data</p>
+        <div class="cardTags"><span class="cardTag t-visualization">visualization</span><span class="cardTag t-statistics">statistics</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+
+      <a href="{% url 'colormap' %}" class="toolCard" data-name="color heat map colormap" data-tags="visualization">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Color &amp; Heat Map</div></div>
+        <p class="toolDescription">Color-coded matrix and heatmap charts</p>
+        <div class="cardTags"><span class="cardTag t-visualization">visualization</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+
+      <a href="{% url 'sankey' %}" class="toolCard" data-name="sankey flowchart" data-tags="visualization">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Sankey Flowchart</div></div>
+        <p class="toolDescription">Flow diagrams for relational data</p>
+        <div class="cardTags"><span class="cardTag t-visualization">visualization</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+
+      <a href="{% url 'excel_charts' %}" class="toolCard" data-name="excel plotly charts" data-tags="visualization">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Excel / Plotly Charts</div></div>
+        <p class="toolDescription">Export-ready charts for Excel and Plotly</p>
+        <div class="cardTags"><span class="cardTag t-visualization">visualization</span></div></div>
+        <div class="toolCta">Open →</div>
+      </a>
+    </div>
+    <div class="emptyState" id="toolsEmpty">No tools match your search.</div>
+  </div>
+
+  <!-- ── Readings panel ─────────────────────────────────────── -->
+  <div id="tabReadings" class="tabPanel">
+    <div class="filterBar">
+      <input class="filterSearch" id="readingSearch" placeholder="Search readings…" oninput="nlpFilterReadings()">
+      <div class="chipGroup" id="readingChips">
+        <button class="chip active" data-tag="all"        onclick="nlpSetReadingTag(this)">All</button>
+        <button class="chip" data-tag="overview"          onclick="nlpSetReadingTag(this)">Overview</button>
+        <button class="chip" data-tag="install"           onclick="nlpSetReadingTag(this)">Install</button>
+        <button class="chip" data-tag="setup"             onclick="nlpSetReadingTag(this)">Setup</button>
+        <button class="chip" data-tag="statistics"        onclick="nlpSetReadingTag(this)">Statistics</button>
+        <button class="chip" data-tag="analysis"          onclick="nlpSetReadingTag(this)">Analysis</button>
+      </div>
+    </div>
+
+    <div class="toolsGrid" id="readingsGrid">
+      <div class="toolCard reading" data-name="nlp suite package description" data-tags="overview"
+           data-url="https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/TIPS/TIPS_NLP_NLP%20Suite%20Package%20description.pdf"
+           data-title="NLP Suite: Package Description" onclick="nlpOpenPdf(this)">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">NLP Suite: Package Description</div></div>
+        <div class="cardTags"><span class="cardTag t-overview">overview</span></div></div>
+        <div class="toolCta">Read →</div>
+      </div>
+
+      <div class="toolCard reading" data-name="pip install anaconda environments" data-tags="install"
+           data-url="https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/TIPS/TIPS_NLP_Anaconda%20NLP%20environment%20pip.pdf"
+           data-title="pip Install &amp; Anaconda Environments" onclick="nlpOpenPdf(this)">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">pip Install &amp; Anaconda Environments</div></div>
+        <div class="cardTags"><span class="cardTag t-install">install</span></div></div>
+        <div class="toolCta">Read →</div>
+      </div>
+
+      <div class="toolCard reading" data-name="text encoding utf-8" data-tags="install"
+           data-url="https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/TIPS/TIPS_NLP_Text%20encoding%20(utf-8).pdf"
+           data-title="Text Encoding (UTF-8)" onclick="nlpOpenPdf(this)">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Text Encoding (UTF-8)</div></div>
+        <div class="cardTags"><span class="cardTag t-install">install</span></div></div>
+        <div class="toolCta">Read →</div>
+      </div>
+
+      <div class="toolCard reading" data-name="excel enabling macros" data-tags="install"
+           data-url="https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/TIPS/TIPS_NLP_Excel%20Enabling%20macros.pdf"
+           data-title="Excel: Enabling Macros" onclick="nlpOpenPdf(this)">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Excel: Enabling Macros</div></div>
+        <div class="cardTags"><span class="cardTag t-install">install</span></div></div>
+        <div class="toolCta">Read →</div>
+      </div>
+
+      <div class="toolCard reading" data-name="csv files problems solutions" data-tags="install"
+           data-url="https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/TIPS/TIPS_NLP_csv%20files%20-%20Problems%20%26%20solutions.pdf"
+           data-title="CSV Files: Problems &amp; Solutions" onclick="nlpOpenPdf(this)">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">CSV Files: Problems &amp; Solutions</div></div>
+        <div class="cardTags"><span class="cardTag t-install">install</span></div></div>
+        <div class="toolCta">Read →</div>
+      </div>
+
+      <div class="toolCard reading" data-name="statistical measures" data-tags="statistics"
+           data-url="https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/TIPS/TIPS_NLP_Statistical%20measures.pdf"
+           data-title="Statistical Measures" onclick="nlpOpenPdf(this)">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Statistical Measures</div></div>
+        <div class="cardTags"><span class="cardTag t-statistics">statistics</span></div></div>
+        <div class="toolCta">Read →</div>
+      </div>
+
+      <div class="toolCard reading" data-name="setup input output configuration" data-tags="setup"
+           data-url="https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/TIPS/TIPS_NLP_Setup%20INPUT-OUTPUT%20options.pdf"
+           data-title="Setup: Input/Output Configuration" onclick="nlpOpenPdf(this)">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Setup: Input/Output Configuration</div></div>
+        <div class="cardTags"><span class="cardTag t-setup">setup</span></div></div>
+        <div class="toolCta">Read →</div>
+      </div>
+
+      <div class="toolCard reading" data-name="setup external software mallet" data-tags="setup"
+           data-url="https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/TIPS/TIPS_NLP_Setup%20external%20software.pdf"
+           data-title="Setup: External Software (MALLET)" onclick="nlpOpenPdf(this)">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Setup: External Software (MALLET)</div></div>
+        <div class="cardTags"><span class="cardTag t-setup">setup</span></div></div>
+        <div class="toolCta">Read →</div>
+      </div>
+
+      <div class="toolCard reading" data-name="things to do with words nlp approach" data-tags="overview"
+           data-url="https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/TIPS/TIPS_NLP_Things%20to%20do%20with%20words%20NLP%20approach.pdf"
+           data-title="Things to Do with Words: NLP Approach" onclick="nlpOpenPdf(this)">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Things to Do with Words: NLP Approach</div></div>
+        <div class="cardTags"><span class="cardTag t-overview">overview</span></div></div>
+        <div class="toolCta">Read →</div>
+      </div>
+
+      <div class="toolCard reading" data-name="english language benchmarks" data-tags="overview"
+           data-url="https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/TIPS/TIPS_NLP_English%20Language%20Benchmarks.pdf"
+           data-title="English Language Benchmarks" onclick="nlpOpenPdf(this)">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">English Language Benchmarks</div></div>
+        <div class="cardTags"><span class="cardTag t-overview">overview</span></div></div>
+        <div class="toolCta">Read →</div>
+      </div>
+
+      <div class="toolCard reading" data-name="nlp suite general tools" data-tags="overview"
+           data-url="https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/TIPS/TIPS_NLP_NLP%20Suite%20General%20tools.pdf"
+           data-title="NLP Suite: General Tools" onclick="nlpOpenPdf(this)">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">NLP Suite: General Tools</div></div>
+        <div class="cardTags"><span class="cardTag t-overview">overview</span></div></div>
+        <div class="toolCta">Read →</div>
+      </div>
+
+      <div class="toolCard reading" data-name="nlp suite tools of linguistic analysis" data-tags="overview"
+           data-url="https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/TIPS/TIPS_NLP_NLP%20Suite%20Tools%20of%20linguistic%20analysis.pdf"
+           data-title="NLP Suite: Tools of Linguistic Analysis" onclick="nlpOpenPdf(this)">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">NLP Suite: Tools of Linguistic Analysis</div></div>
+        <div class="cardTags"><span class="cardTag t-overview">overview</span></div></div>
+        <div class="toolCta">Read →</div>
+      </div>
+
+      <div class="toolCard reading" data-name="nlp basic language" data-tags="overview"
+           data-url="https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/TIPS/TIPS_NLP_NLP%20Basic%20language.pdf"
+           data-title="NLP Basic Language" onclick="nlpOpenPdf(this)">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">NLP Basic Language</div></div>
+        <div class="cardTags"><span class="cardTag t-overview">overview</span></div></div>
+        <div class="toolCta">Read →</div>
+      </div>
+
+      <div class="toolCard reading" data-name="things to do with words overall view" data-tags="overview"
+           data-url="https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/TIPS/TIPS_NLP_Things%20to%20do%20with%20words%20Overall%20view.pdf"
+           data-title="Things to Do with Words: Overall View" onclick="nlpOpenPdf(this)">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Things to Do with Words: Overall View</div></div>
+        <div class="cardTags"><span class="cardTag t-overview">overview</span></div></div>
+        <div class="toolCta">Read →</div>
+      </div>
+
+      <div class="toolCard reading" data-name="things to do with words content analysis" data-tags="analysis"
+           data-url="https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/TIPS/TIPS_NLP_Things%20to%20do%20with%20words%20Content%20analysis.pdf"
+           data-title="Things to Do with Words: Content Analysis" onclick="nlpOpenPdf(this)">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Things to Do with Words: Content Analysis</div></div>
+        <div class="cardTags"><span class="cardTag t-analysis">analysis</span></div></div>
+        <div class="toolCta">Read →</div>
+      </div>
+
+      <div class="toolCard reading" data-name="things to do with words frame analysis" data-tags="analysis"
+           data-url="https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/TIPS/TIPS_NLP_Things%20to%20do%20with%20words%20Frame%20analysis.pdf"
+           data-title="Things to Do with Words: Frame Analysis" onclick="nlpOpenPdf(this)">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Things to Do with Words: Frame Analysis</div></div>
+        <div class="cardTags"><span class="cardTag t-analysis">analysis</span></div></div>
+        <div class="toolCta">Read →</div>
+      </div>
+
+      <div class="toolCard reading" data-name="things to do with words narrative analysis" data-tags="analysis"
+           data-url="https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/TIPS/TIPS_NLP_Things%20to%20do%20with%20words%20Narrative%20analysis.pdf"
+           data-title="Things to Do with Words: Narrative Analysis" onclick="nlpOpenPdf(this)">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Things to Do with Words: Narrative Analysis</div></div>
+        <div class="cardTags"><span class="cardTag t-analysis">analysis</span></div></div>
+        <div class="toolCta">Read →</div>
+      </div>
+
+      <div class="toolCard reading" data-name="things to do with words rhetoric arguments" data-tags="analysis"
+           data-url="https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/TIPS/TIPS_NLP_Things%20to%20do%20with%20words%20Rhetorical%20analysis%20Arguments.pdf"
+           data-title="Things to Do with Words: Rhetoric (Arguments)" onclick="nlpOpenPdf(this)">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Things to Do with Words: Rhetoric (Arguments)</div></div>
+        <div class="cardTags"><span class="cardTag t-analysis">analysis</span></div></div>
+        <div class="toolCta">Read →</div>
+      </div>
+
+      <div class="toolCard reading" data-name="things to do with words rhetoric tropes figures" data-tags="analysis"
+           data-url="https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/TIPS/TIPS_NLP_Things%20to%20do%20with%20words%20Rhetorical%20analysis%20Tropes%20and%20Figures.pdf"
+           data-title="Things to Do with Words: Rhetoric (Tropes &amp; Figures)" onclick="nlpOpenPdf(this)">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Things to Do with Words: Rhetoric (Tropes &amp; Figures)</div></div>
+        <div class="cardTags"><span class="cardTag t-analysis">analysis</span></div></div>
+        <div class="toolCta">Read →</div>
+      </div>
+
+      <div class="toolCard reading" data-name="style analysis" data-tags="analysis"
+           data-url="https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/TIPS/TIPS_NLP_Style%20analysis.pdf"
+           data-title="Style Analysis" onclick="nlpOpenPdf(this)">
+        <div><div class="toolTop"><div class="toolDot"></div><div class="toolName">Style Analysis</div></div>
+        <div class="cardTags"><span class="cardTag t-analysis">analysis</span></div></div>
+        <div class="toolCta">Read →</div>
+      </div>
+    </div>
+    <div class="emptyState" id="readingsEmpty">No readings match your search.</div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- ── PDF modal ──────────────────────────────────────────────── -->
+<div class="pdfOverlay" id="pdfOverlay" onclick="nlpHandleOverlayClick(event)">
+  <div class="pdfModal">
+    <div class="pdfModalHeader">
+      <h2 class="pdfModalTitle" id="pdfModalTitle"></h2>
+      <button class="pdfModalClose" onclick="nlpClosePdf()" aria-label="Close">×</button>
+    </div>
+    <iframe class="pdfModalFrame" id="pdfModalFrame" src="" title="PDF viewer"></iframe>
+  </div>
+</div>
+
+<script>
+(function () {
+  var activeToolTag    = 'all';
+  var activeReadingTag = 'all';
+
+  window.nlpSwitchTab = function (tab) {
+    document.getElementById('tabTools').classList.toggle('active', tab === 'tools');
+    document.getElementById('tabReadings').classList.toggle('active', tab === 'readings');
+    document.getElementById('btnTools').classList.toggle('active', tab === 'tools');
+    document.getElementById('btnReadings').classList.toggle('active', tab === 'readings');
+  };
+
+  window.nlpSetToolTag = function (chip) {
+    document.querySelectorAll('#toolChips .chip').forEach(function (c) { c.classList.remove('active'); });
+    chip.classList.add('active');
+    activeToolTag = chip.dataset.tag;
+    nlpFilterTools();
+  };
+
+  window.nlpSetReadingTag = function (chip) {
+    document.querySelectorAll('#readingChips .chip').forEach(function (c) { c.classList.remove('active'); });
+    chip.classList.add('active');
+    activeReadingTag = chip.dataset.tag;
+    nlpFilterReadings();
+  };
+
+  window.nlpFilterTools = function () {
+    var q = document.getElementById('toolSearch').value.trim().toLowerCase();
+    var cards = document.querySelectorAll('#toolsGrid .toolCard');
+    var n = 0;
+    cards.forEach(function (card) {
+      var show = (!q || card.dataset.name.includes(q)) &&
+                 (activeToolTag === 'all' || card.dataset.tags.split(' ').includes(activeToolTag));
+      card.style.display = show ? '' : 'none';
+      if (show) n++;
+    });
+    document.getElementById('toolsEmpty').classList.toggle('visible', n === 0);
+  };
+
+  window.nlpFilterReadings = function () {
+    var q = document.getElementById('readingSearch').value.trim().toLowerCase();
+    var cards = document.querySelectorAll('#readingsGrid .toolCard');
+    var n = 0;
+    cards.forEach(function (card) {
+      var show = (!q || card.dataset.name.includes(q)) &&
+                 (activeReadingTag === 'all' || card.dataset.tags.split(' ').includes(activeReadingTag));
+      card.style.display = show ? '' : 'none';
+      if (show) n++;
+    });
+    document.getElementById('readingsEmpty').classList.toggle('visible', n === 0);
+  };
+
+  window.nlpOpenPdf = function (card) {
+    var viewerUrl = 'https://docs.google.com/viewer?url=' + encodeURIComponent(card.dataset.url) + '&embedded=true';
+    document.getElementById('pdfModalTitle').textContent = card.dataset.title;
+    document.getElementById('pdfModalFrame').src = viewerUrl;
+    document.getElementById('pdfOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.nlpClosePdf = function () {
+    document.getElementById('pdfOverlay').classList.remove('open');
+    document.getElementById('pdfModalFrame').src = '';
+    document.body.style.overflow = '';
+  };
+
+  window.nlpHandleOverlayClick = function (e) {
+    if (e.target === document.getElementById('pdfOverlay')) nlpClosePdf();
+  };
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && document.getElementById('pdfOverlay').classList.contains('open')) {
+      nlpClosePdf();
+    }
+  });
+}());
+</script>

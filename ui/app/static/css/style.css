@@ -1,0 +1,454 @@
+/* Tool input page styles — matches header.css / homepage.css design system */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  overflow-y: scroll;
+}
+
+/* ── Page container ──────────────────────────────────────────── */
+
+.tool-container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 40px 24px 72px;
+}
+
+.tool-container h1 {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: rgba(15, 23, 42, 0.92);
+  margin: 0 0 28px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.09);
+}
+
+/* ── Sections ────────────────────────────────────────────────── */
+
+fieldset.form-section {
+  border: 1px solid rgba(15, 23, 42, 0.09);
+  border-radius: 16px;
+  background: #fff;
+  padding: 18px 22px 20px;
+  margin: 0 0 20px;
+  min-width: 0;
+}
+
+fieldset.form-section legend {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(15, 23, 42, 0.55);
+  padding: 0 8px;
+  margin-left: -8px;
+}
+
+/* ── Fields ──────────────────────────────────────────────────── */
+
+.field {
+  margin-bottom: 16px;
+}
+
+.field:last-child {
+  margin-bottom: 0;
+}
+
+.field > label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(15, 23, 42, 0.75);
+  margin-bottom: 6px;
+}
+
+/* short fields side by side (e.g. paired checkboxes) */
+.field-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.field-row:last-child {
+  margin-bottom: 0;
+}
+
+.field-row > .field {
+  margin-bottom: 0;
+}
+
+/* dependent option, indented under its parent control */
+.sub-option {
+  margin-left: 14px;
+  padding-left: 14px;
+  border-left: 2px solid rgba(37, 99, 235, 0.18);
+}
+
+/* ── Form controls ───────────────────────────────────────────── */
+
+.field input[type="text"],
+.field input[type="password"],
+.field input[type="number"],
+.field select {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  border-radius: 10px;
+  font-size: 13px;
+  color: rgba(15, 23, 42, 0.85);
+  background: #fff;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  outline: none;
+}
+
+.field input[type="number"] {
+  width: 140px;
+}
+
+.field select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' fill='none' stroke='%2364748b' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+
+.field select[multiple] {
+  height: auto;
+  min-height: 120px;
+  padding: 6px;
+  background-image: none;
+}
+
+.field input[type="file"] {
+  display: block;
+  font-size: 13px;
+  color: rgba(15, 23, 42, 0.70);
+}
+
+.field input[type="file"]::file-selector-button {
+  height: 32px;
+  padding: 0 14px;
+  margin-right: 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #fff;
+  color: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  transition: background 0.15s ease;
+}
+
+.field input[type="file"]::file-selector-button:hover {
+  background: rgba(15, 23, 42, 0.05);
+}
+
+.field input[type="file"]:disabled::file-selector-button {
+  background: rgba(15, 23, 42, 0.06);
+  color: rgba(15, 23, 42, 0.40);
+  cursor: not-allowed;
+}
+
+/* disabled file inputs: grey the text only, not a full-width box */
+.field input[type="file"]:disabled {
+  background: transparent;
+  color: rgba(15, 23, 42, 0.40);
+  cursor: not-allowed;
+}
+
+.field input[type="range"] {
+  accent-color: #2563eb;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+.field input[type="text"]:focus,
+.field input[type="password"]:focus,
+.field input[type="number"]:focus,
+.field select:focus {
+  border-color: rgba(37, 99, 235, 0.50);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+}
+
+.field input[type="text"]:read-only {
+  background: rgba(15, 23, 42, 0.03);
+  color: rgba(15, 23, 42, 0.60);
+}
+
+.field input:disabled,
+.field select:disabled {
+  background: rgba(15, 23, 42, 0.06);
+  color: rgba(15, 23, 42, 0.45);
+  cursor: not-allowed;
+}
+
+/* ── Checkboxes ──────────────────────────────────────────────── */
+
+input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #2563eb;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+}
+
+.field-check > label {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: rgba(15, 23, 42, 0.80);
+  cursor: pointer;
+  margin-bottom: 0;
+}
+
+.field-check > label input[type="checkbox"] {
+  margin-top: 2px;
+}
+
+.field-check > label:has(input:disabled) {
+  color: rgba(15, 23, 42, 0.40);
+  cursor: not-allowed;
+}
+
+.field-check .field-help,
+.field-check .field-more {
+  margin-left: 25px;
+}
+
+/* ── Help text ───────────────────────────────────────────────── */
+
+.field-help {
+  font-size: 12px;
+  line-height: 1.55;
+  color: rgba(15, 23, 42, 0.55);
+  margin: 6px 0 0;
+}
+
+details.field-more {
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+details.field-more summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  color: rgba(37, 99, 235, 0.85);
+  user-select: none;
+  list-style: none;
+}
+
+details.field-more summary::-webkit-details-marker {
+  display: none;
+}
+
+details.field-more summary::before {
+  content: "▸";
+  font-size: 10px;
+  transition: transform 0.15s ease;
+}
+
+details.field-more[open] summary::before {
+  transform: rotate(90deg);
+}
+
+details.field-more .more-body {
+  margin-top: 8px;
+  padding: 12px 14px;
+  background: rgba(15, 23, 42, 0.03);
+  border-radius: 10px;
+  color: rgba(15, 23, 42, 0.70);
+  line-height: 1.6;
+}
+
+details.field-more .more-body p {
+  margin: 0 0 10px;
+}
+
+details.field-more .more-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* section-level intro help followed by fields */
+.field-help + .field,
+details.field-more + .field,
+details.field-more + .field-row {
+  margin-top: 16px;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+
+.buttons-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(15, 23, 42, 0.09);
+  gap: 10px;
+}
+
+.run-button,
+.reset-button {
+  height: 40px;
+  padding: 0 24px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.run-button {
+  background: rgba(37, 99, 235, 0.96);
+  color: #ffffff;
+  border: 1px solid rgba(37, 99, 235, 0.20);
+}
+
+.run-button:hover {
+  background: rgb(29, 78, 216);
+}
+
+.run-button:disabled {
+  background: rgba(15, 23, 42, 0.15);
+  border-color: transparent;
+  cursor: not-allowed;
+}
+
+.reset-button {
+  background: #ffffff;
+  color: rgba(15, 23, 42, 0.80);
+  border: 1px solid rgba(15, 23, 42, 0.18);
+}
+
+.reset-button:hover {
+  background: rgba(15, 23, 42, 0.05);
+  color: rgba(15, 23, 42, 0.90);
+}
+
+/* standalone secondary buttons inside a field (e.g. pre-processing tools) */
+.field button:not(.reset-button):not(.run-button) {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  background: #fff;
+  color: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.field button:not(.reset-button):not(.run-button):hover {
+  background: rgba(15, 23, 42, 0.05);
+}
+
+/* small +/−/Reset action buttons beside multi-selects */
+button#button_id,
+button#reset_id,
+.field input[type="button"] {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  background: #fff;
+  color: rgba(37, 99, 235, 0.85);
+  border: 1.5px solid rgba(37, 99, 235, 0.35);
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+}
+
+button#button_id:hover:enabled,
+button#reset_id:hover:enabled,
+.field input[type="button"]:hover:enabled {
+  background: rgba(37, 99, 235, 0.07);
+}
+
+button#button_id:disabled,
+button#reset_id:disabled,
+.field input[type="button"]:disabled {
+  color: rgba(15, 23, 42, 0.35);
+  border-color: rgba(15, 23, 42, 0.15);
+  cursor: not-allowed;
+}
+
+/* ── Color picker ────────────────────────────────────────────── */
+
+.color-picker-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.color-display {
+  width: 100px;
+  height: 100px;
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  border-radius: 8px;
+}
+
+/* ── Options row (multi-select widgets, common.js) ───────────── */
+
+.options {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.options select {
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  fieldset.form-section {
+    padding: 16px 16px 18px;
+  }
+
+  .field-row {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .buttons-section {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .run-button,
+  .reset-button {
+    width: 100%;
+    justify-content: center;
+  }
+}

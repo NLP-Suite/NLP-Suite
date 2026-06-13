@@ -1,0 +1,67 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="tool-container">
+    <h1>Boxplot</h1>
+    <form method="post" class="boxplot-form">
+        {% csrf_token %}
+
+        <fieldset class="form-section">
+            <legend>Chart data</legend>
+
+            <div class="field">
+                <label for="boxplot_input_yaxis">CSV file</label>
+                <input type="file" id="boxplot_input_yaxis" name="inputFilename" accept=".csv" required>
+                <p class="field-help">The csv file whose numeric field you want to visualize as a boxplot.</p>
+            </div>
+
+            <div class="field">
+                <label for="csv_field_visualization">Select a field for visualization (y-axis)</label>
+                <select id="csv_field_visualization" name="csv_field_visualization_var" required>
+                    <option value="" disabled selected>Select an option</option>
+                </select>
+                <p class="field-help">Must be a numeric field.</p>
+            </div>
+
+            <div class="field">
+                <label for="data_field">Data points</label>
+                <select id="data_field" name="points_var">
+                    <option value="All points">All points</option>
+                    <option value="no points">No points</option>
+                    <option value="outliers only">Outliers only</option>
+                </select>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="split_data" name="split_data_byCategory_var">
+                    Split data by categories
+                </label>
+            </div>
+            <div class="field sub-option">
+                <label for="boxplot_csv_split">CSV field to split the data</label>
+                <select id="boxplot_csv_split" name="csv_field_boxplot_var">
+                    <option value="" disabled selected>Select an option</option>
+                </select>
+                <p class="field-help">Must be a categorical (text) field.</p>
+            </div>
+            <div class="field sub-option">
+                <label for="boxplot_csv_color">CSV field for coloring split categories</label>
+                <select id="boxplot_csv_color" name="csv_field_boxplot_color_var">
+                    <option value="" disabled selected>Select an option</option>
+                </select>
+                <p class="field-help">Optional; must be a categorical (text) field.</p>
+            </div>
+
+            <input type="hidden" name="inputFileData" id="inputFileData">
+        </fieldset>
+
+        {% include "partials/form_buttons.html" with tips_url="https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/TIPS/TIPS_NLP_Charts%20-%20Boxplots.pdf" %}
+    </form>
+</div>
+
+<script src="{% static 'js/boxplot.js' %}"></script>
+<script src="{% static 'js/onlyone.js' %}"></script>
+
+{% endblock %}

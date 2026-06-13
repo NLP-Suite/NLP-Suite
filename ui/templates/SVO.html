@@ -1,0 +1,153 @@
+{% extends 'index.html' %}
+
+{% block content %}
+{% load static %}
+<div class="tool-container">
+    <h1>SVO (Subject-Verb-Object) extractor &amp; visualization</h1>
+    <form method="post" class="sentiment-analysis-form" action="{% url 'svo' %}">
+    {% csrf_token %}
+
+        {% include "partials/io_directories.html" %}
+
+        <fieldset class="form-section">
+            <legend>Coreference resolution</legend>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="coreferenceResolution" name="coreferenceResolution">
+                    Coreference resolution, PRONOMINAL (via Stanford CoreNLP - Neural Network)
+                </label>
+                <p class="field-help">Resolves pronouns to the nouns they refer to before extracting SVOs. Be patient: depending on the size and number of documents, this may take a long time.</p>
+                <details class="field-more">
+                    <summary>More about coreference resolution</summary>
+                    <div class="more-body">
+                        <p>Only pronominal, and not nominal, coreference resolution is implemented, for four different types of pronouns: nominative (I, you, he/she, it, we, they); possessive (my, mine, our(s), his/her(s), their, its, yours); objective (me, you, him, her, it, them); reflexive (myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves).</p>
+                        <p>In INPUT the algorithm expects a single txt file or a directory of txt files. In OUTPUT it produces txt-format copies of the same input files, co-referenced.</p>
+                    </div>
+                </details>
+            </div>
+
+            <div class="field field-check sub-option">
+                <label>
+                    <input type="checkbox" id="manualCoreference" name="manualCoreference" disabled>
+                    (Coming soon!) Manually edit coreferenced document
+                </label>
+                <p class="field-help">Fix missed or wrongly coreferenced pronouns by hand. Requires the interactive split-screen editor not yet ported from the desktop app.</p>
+                <details class="field-more">
+                    <summary>More about manual editing</summary>
+                    <div class="more-body">
+                        <p>If manual edit is selected, the script displays a split-screen file for manual editing. On the left-hand side, pronouns cross-referenced by CoreNLP are tagged in YELLOW; pronouns NOT cross-referenced by CoreNLP are tagged in BLUE. On the right-hand side, pronouns cross-referenced by CoreNLP are tagged in RED, with the pronouns replaced by the referenced nouns.</p>
+                        <p>Manual editing requires a lot of memory since both original and co-referenced file are brought in memory; depending on file sizes, you may not have enough memory for this step. You can always use the 'coreference_main' GUI to open or split merged coreferenced files.</p>
+                    </div>
+                </details>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Extraction</legend>
+
+            <div class="field">
+                <label for="package">SVO package</label>
+                <select id="package" name="package">
+                    <option value="spaCy">spaCy</option>
+                    <option value="Stanford CoreNLP" selected>Stanford CoreNLP</option>
+                    <option value="stanza">Stanza</option>
+                    <option value="openIE">OpenIE (via Stanford CoreNLP)</option>
+                </select>
+                <p class="field-help">NLP package used to extract SVO triplets from your corpus.</p>
+            </div>
+
+            <div class="field-row">
+                <div class="field field-check">
+                    <label>
+                        <input type="checkbox" id="so_gender" name="so_gender">
+                        S &amp; O gender
+                    </label>
+                </div>
+                <div class="field field-check">
+                    <label>
+                        <input type="checkbox" id="so_quote" name="so_quote">
+                        S &amp; O quote/speaker
+                    </label>
+                </div>
+            </div>
+            <p class="field-help">Annotate the gender (female, male) and/or the speaker involved in direct discourse for every extracted Subject and Object. Both neural network annotators are available only via Stanford CoreNLP and for the English language only.</p>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Lemmatize &amp; filter</legend>
+
+            <p class="field-help">Lemmatizing aggregates words into WordNet top synset categories (e.g., 'run' into 'motion'). Filtering keeps only SVO triplets that match dictionary filter files; when S, V, and O filters are all selected, all conditions must be met. WordNet-based filtering is available for the English language only.</p>
+            <details class="field-more">
+                <summary>More about filter files</summary>
+                <div class="more-body">
+                    <p>The widgets below display the currently selected dictionary filter files for Subjects, Verbs, and Objects (Objects share the same file as Subjects and you may wish to change that). The file 'social-actor-list.csv', created via WordNet with the multiple keywords act, group, person and saved in the 'lib/wordLists' subfolder, is automatically set as the DEFAULT filter for subjects; the file 'social-action-list.csv' is similarly created via WordNet (keywords: change, cognition, communication, contact, emotion, motion, social) and automatically loaded as the DEFAULT dictionary file for verbs.</p>
+                    <p>The file widgets are disabled because you are not allowed to tamper with these values.</p>
+                </div>
+            </details>
+
+            <div class="field">
+                <label>Subjects — csv file containing SUBJECT filters</label>
+                <input type="text" value="~/nlp-suite/input" readonly>
+            </div>
+            <div class="field-row sub-option">
+                <div class="field field-check">
+                    <label><input type="checkbox" id="lemmatize_subjects" name="lemmatize_subjects" checked>Lemmatize</label>
+                </div>
+                <div class="field field-check">
+                    <label><input type="checkbox" id="filter_subjects" name="filter_subjects" checked>Filter</label>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Verbs — csv file containing VERB filters</label>
+                <input type="text" value="social-action-list.csv" readonly>
+            </div>
+            <div class="field-row sub-option">
+                <div class="field field-check">
+                    <label><input type="checkbox" id="lemmatize_verbs" name="lemmatize_verbs" checked>Lemmatize</label>
+                </div>
+                <div class="field field-check">
+                    <label><input type="checkbox" id="filter_verbs" name="filter_verbs" checked>Filter</label>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Objects — csv file containing OBJECT filters</label>
+                <input type="text" value="" readonly>
+            </div>
+            <div class="field-row sub-option">
+                <div class="field field-check">
+                    <label><input type="checkbox" id="lemmatize_objects" name="lemmatize_objects" checked>Lemmatize</label>
+                </div>
+                <div class="field field-check">
+                    <label><input type="checkbox" id="filter_objects" name="filter_objects">Filter</label>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Visualization</legend>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="wordcloud_var" name="wordcloud_var">
+                    Visualize SVO relations in wordcloud
+                </label>
+            </div>
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="google_earth_var" name="google_earth_var">
+                    Visualize Where (via Google Earth Pro &amp; Google Maps)
+                </label>
+            </div>
+
+            {% include "partials/data_transformation.html" %}
+        </fieldset>
+
+        {% include "partials/form_buttons.html" with tips_url="https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/TIPS/TIPS_NLP_SVO%20extraction%20and%20visualization.pdf" %}
+    </form>
+</div>
+<script src="{% static 'js/SVO.js' %}"></script>
+
+{% endblock %}

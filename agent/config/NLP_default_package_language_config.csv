@@ -1,0 +1,2 @@
+Parser & annotators,Parsers,Basic functions (tokenizer/lemmatizer),Corpus language,Language encoding,Export Json,CoreNLP memory,CoreNLP document length,CoreNLP sentence length
+Stanford CoreNLP,Neural Network,Stanza,English,utf-8,0,4,90000,100

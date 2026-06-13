@@ -1,0 +1,130 @@
+{% extends 'index.html' %}
+
+{% block content %}
+{% load static %}
+
+<div class="tool-container">
+
+    <h1>Parsers &amp; Annotators (BERT, CoreNLP, spaCy, Stanza)</h1>
+    <form method="POST" class="sentiment-analysis-form" action="{% url 'parse' %}">
+
+        {% csrf_token %}
+
+        <fieldset class="form-section">
+            <legend>Input &amp; output</legend>
+
+            <div class="field">
+                <label for="inputDirectory">Input directory</label>
+                <select name="inputDirectory" id="inputDirectory">
+                    <option value="~/nlp-suite/input" selected>~/nlp-suite/input</option>
+                    <option value="~/nlp-suite/csvInput">~/nlp-suite/csvInput</option>
+                </select>
+                <p class="field-help">The script expects a single txt file or a directory containing a set of txt files.</p>
+            </div>
+
+            <div class="field">
+                <label for="outputDirectory">Output directory</label>
+                <input type="text" name="outputDir" id="outputDirectory" value="~/nlp-suite/output">
+                <p class="field-help">The algorithms produce different file types here: txt-format coreferenced copies of input files, csv files (HTML for gender annotator), and different types of visuals.</p>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Parsers</legend>
+
+            <div class="field">
+                <label for="package">Package</label>
+                <select id="package" name="package">
+                    <option value="Stanford CoreNLP">Stanford CoreNLP</option>
+                    <option value="spaCy">spaCy</option>
+                    <option value="Stanza">Stanza</option>
+                </select>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="parsers_var" name="parser_var">
+                    Parsers for Stanford CoreNLP
+                </label>
+                <p class="field-help">Produces a CoNLL table (CoNLL U format) — the basis of many NLP analyses: noun &amp; verb analysis, function words, clause analysis, query CoNLL.</p>
+            </div>
+            <div class="field sub-option">
+                <label for="parser_menu_var">Parser type</label>
+                <select id="parser_menu_var" name="parser_menu_var">
+                    <option value="PCFG (Probabilistic Context Free Grammar)">PCFG (Probabilistic Context Free Grammar)</option>
+                    <option value="Neural Network">Neural Network</option>
+                </select>
+                <p class="field-help">PCFG is the recommended default; the neural network parser is more accurate but much slower.</p>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="conll-table-analyzer" name="CoNLL_table_analyzer_var">
+                    CoNLL Table Analyzer
+                </label>
+                <p class="field-help">Opens the CoNLL table analyzer to analyze the Stanford CoreNLP parser results contained in the CoNLL table.</p>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Annotators</legend>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="annotators_var" name="annotators_var">
+                    Annotators
+                </label>
+            </div>
+            <div class="field sub-option">
+                <label for="annotators_menu_var">Annotator</label>
+                <select id="annotators_menu_var" name="annotators_menu_var">
+                    <optgroup label="Fundamental NLP tools">
+                        <option value="Sentence splitter">Sentence splitter</option>
+                        <option value="Lemma annotator">Lemma annotator</option>
+                        <option value="POS annotator">POS annotator</option>
+                        <option value="NER">NER</option>
+                    </optgroup>
+                    <optgroup label="Special annotators">
+                        <option value="Coreference PRONOMINAL resolution">Coreference PRONOMINAL resolution</option>
+                        <option value="Sentiment analysis">Sentiment analysis</option>
+                        <option value="OpenIE - Relation triples extractor">OpenIE - Relation triples extractor</option>
+                        <option value="SVO extraction">SVO extraction</option>
+                    </optgroup>
+                    <optgroup label="More special annotators (CoreNLP only)">
+                        <option value="Gender annotator">Gender annotator</option>
+                        <option value="Normalized NER date annotator">Normalized NER date annotator</option>
+                        <option value="Quote/dialogue annotator">Quote/dialouge annotator</option>
+                    </optgroup>
+                </select>
+                <p class="field-help">Click the Tips File for more information on the different annotators.</p>
+            </div>
+
+            <div class="field field-check">
+                <label for="manual-coref">
+                    <input type="checkbox" id="manual_Coref" name="manual_Coref">
+                    Enable Manual Coreference Resolution
+                </label>
+                <p class="field-help">Resolve unresolved or wrongly resolved coreferences by hand. Manual editing requires a lot of memory since both original and co-referenced file are brought in memory.</p>
+            </div>
+
+            <div class="field field-check">
+                <label for="single-quote">
+                    <input type="checkbox" id="single-quote" name="single_quote">
+                    Single Quote Handling
+                </label>
+                <p class="field-help">The CoreNLP Quote annotator attributes quotes to speakers; double quotes is the default. Tick to process both double and single quotes.</p>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Visualization</legend>
+            {% include "partials/data_transformation.html" %}
+        </fieldset>
+
+        {% include "partials/form_buttons.html" with tips_url="https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/TIPS/TIPS_NLP_Sentiment%20analysis.pdf" %}
+    </form>
+</div>
+
+<script src="{% static 'js/parsers_annotators.js' %}"></script>
+<script src="{% static 'js/onlyone.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends 'index.html' %}
+
+{% block content %}
+{% load static %}
+
+<div class="tool-container">
+<h1>File Search: Words</h1>
+    <form method="POST" class="sentiment-analysis-form" action="{% url 'file_search' %}">
+    {% csrf_token %}
+
+    {% include "partials/io_directories.html" %}
+
+    <fieldset class="form-section">
+        <legend>Search options</legend>
+
+        <div class="field">
+            <label for="search_options">Search options</label>
+            <div class="options">
+                <select id="search_options">
+                    <option value="Case sensitive (default)">Case sensitive (Default)</option>
+                    <option value="Case insensitive">Case insensitive</option>
+                    <option value="Lemmatize">Lemmatize</option>
+                    <option value="Exact match (default)">Exact match (Default)</option>
+                    <option value="Partial match">Partial match</option>
+                    <option value="Search within sentence (default)">Search within sentence (Default)</option>
+                    <option value="Search within document">Search within document</option>
+                </select>
+                <input type="button" name="search-options-+" value="+">
+                <input type="button" name="search-options-show" value="-">
+                <input type="button" name="search-options-reset" value="Reset">
+            </div>
+            <p class="field-help">Click + to add an option to the selected list, - to remove the highlighted one, Reset to start over.</p>
+        </div>
+
+        <div id="optionPicked" class="field">
+            <label for="optionss">Selected</label>
+            <select id="optionss" name="options"></select>
+        </div>
+
+        <input type="hidden" id="search_options_hidden_list" name="search_options" value="">
+    </fieldset>
+
+    <fieldset class="form-section">
+        <legend>Search by</legend>
+
+        <div class="field field-check">
+            <label>
+                <input type="checkbox" id="search_by_dictionary" name="search_by_dictionary">
+                Search corpus by dictionary value
+            </label>
+        </div>
+        <div class="field sub-option">
+            <label for="selectedCsvFile">Dictionary file</label>
+            <div class="options">
+                <button type="button" id="selectDictionaryFile" onclick="document.getElementById('file').click();">Select dictionary file</button>
+                <input type="file" id="file" name="file" accept=".csv" style="display: none;" onchange="document.getElementById('selectedCsvFile').value = this.value;">
+                <input type="text" id="selectedCsvFile" name="selectedCsvFile" placeholder="No file selected" value="">
+            </div>
+        </div>
+
+        <div class="field field-check">
+            <label>
+                <input type="checkbox" id="search_by_keyword" name="search_by_keyword">
+                Search corpus by word(s)
+            </label>
+        </div>
+        <div class="field sub-option">
+            <label for="search_keyword_values">Search term</label>
+            <input type="text" id="search_keyword_values" name="search_keyword_values" placeholder="Enter your search term" value="">
+        </div>
+        <div class="field-row sub-option">
+            <div class="field">
+                <label for="minus_K_words_sentences_var">-K</label>
+                <input type="number" id="minus_K_words_sentences_var" name="minus_K_words_sentences_var" value="0">
+            </div>
+            <div class="field">
+                <label for="plus_K_words_sentences_var">+K</label>
+                <input type="number" id="plus_K_words_sentences_var" name="plus_K_words_sentences_var" value="0">
+            </div>
+        </div>
+
+        <div class="field-row">
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="extract_sentences_var" name="extract_sentences_var">
+                    Extract sentences
+                </label>
+            </div>
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="coOccurring_keywords_var" name="coOccurring_keywords_var">
+                    Co-occurring words
+                </label>
+            </div>
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="create_subcorpus_var" name="create_subcorpus_var">
+                    Create sub corpus
+                </label>
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset class="form-section">
+        <legend>Visualization</legend>
+        {% include "partials/data_transformation.html" %}
+    </fieldset>
+
+    {% include "partials/form_buttons.html" with tips_url="https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/TIPS/TIPS_NLP_Sentiment%20analysis.pdf" run_onclick="return submitbutton2();" %}
+</form>
+</div>
+
+
+<script src="{% static 'js/filesearchword.js' %}"></script>
+<script src="{% static 'js/onlyone.js' %}"></script>
+
+{% endblock %}

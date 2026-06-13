@@ -1,0 +1,179 @@
+{% extends 'index.html' %}
+
+{% block content %}
+{% load static %}
+
+
+<div class="tool-container">
+    <h1>N-Grams and Word Co-Occurrences</h1>
+    <form method="POST" action="{% url 'ngrams' %}">
+        {% csrf_token %}
+
+        {% include "partials/io_directories.html" %}
+
+        <fieldset class="form-section">
+            <legend>N-Grams</legend>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="Ngrams_compute_var" name="Ngrams_compute_var">
+                    Compute N-Grams
+                </label>
+            </div>
+            <div class="field-row sub-option">
+                <div class="field">
+                    <label for="ngrams_menu_var">N-gram type</label>
+                    <select id="ngrams_menu_var" name="ngrams_menu_var">
+                        <option value="Word">Word</option>
+                        <option value="Character">Character</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="ngrams_size">N-gram size</label>
+                    <select id="ngrams_size" name="ngrams_size">
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="ngrams_options_list">Options</label>
+                <div class="options">
+                    <select id="ngrams_options_list" name="ngrams_options_list">
+                        <option value="sensitive">Case sensitive (default)</option>
+                        <option value="insensitive">Case insensitive</option>
+                        <option value="Hapax">Hapax legomena (once-occurring words)</option>
+                        <option value="Hapax">Hapax legomena (once-occurring unigrams)</option>
+                        <option value="Lemmatize">Lemmatize</option>
+                        <option value="Normalize N-grams">Normalize N-grams</option>
+                        <option value="punctuation">Exclude punctuation (word N-grams only)</option>
+                        <option value="articles">Exclude articles (word N-grams only)</option>
+                        <option value="determiners">Exclude determiners (word N-grams only)</option>
+                        <option value="stopwords">Exclude ALL stopwords (word N-grams only)</option>
+                        <option value="sentence index">By sentence index</option>
+                    </select>
+                    <input type="button" name="options-+" value="+">
+                    <input type="button" name="options-show" value="-">
+                    <input type="button" name="options-reset" value="Reset">
+                </div>
+                <p class="field-help">Click + to add an option to the selected list, - to remove the highlighted one, Reset to start over.</p>
+            </div>
+
+            <div id="optionPicked" class="field">
+                <label for="options">Selected</label>
+                <select id="options" name="options"></select>
+            </div>
+
+            <input type="hidden" id="ngrams_options_list_hidden" name="ngrams_options_list" value="">
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Search &amp; viewers</legend>
+
+            <div class="field">
+                <label for="search_words">Search word(s)</label>
+                <input type="text" id="search_words" name="search_words" size="50">
+            </div>
+            <div class="field-row">
+                <div class="field">
+                    <label for="minus_K_words_var">-K</label>
+                    <input type="text" id="minus_K_words_var" name="minus_K_words_var" size="3">
+                </div>
+                <div class="field">
+                    <label for="plus_K_words_var">+K</label>
+                    <input type="text" id="plus_K_words_var" name="plus_K_words_var" size="3">
+                </div>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" name="Ngrams_search_var" id="Ngrams_search_var">
+                    Search options
+                </label>
+            </div>
+            <div class="field sub-option">
+                <div class="options">
+                    <select id="viewer_options_list" name="viewer_options_list">
+                        <option value="sensitive">Case sensitive (default)</option>
+                        <option value="insensitive">Case insensitive</option>
+                        <option value="Exact match (default)">Exact match</option>
+                        <option value="Partial">Partial Match</option>
+                        <option value="Normalize">Normalize results</option>
+                        <option value="Scale">Scale results</option>
+                        <option value="Lemmatize">Lemmatize words</option>
+                    </select>
+                    <input type="button" name="search-options-+" value="+">
+                    <input type="button" name="search-options-show" value="-">
+                    <input type="button" name="search-options-reset" value="Reset">
+                </div>
+            </div>
+
+            <div id="optionPicked2" class="field sub-option">
+                <label for="optionss">Selected</label>
+                <select id="optionss" name="optionss"></select>
+            </div>
+            <input type="hidden" id="viewer_options_list_hidden" name="viewer_options_list" value="">
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="csv_file_var" name="csv_file_var" disabled>
+                    (Coming soon!) Search N-grams csv file
+                </label>
+                <p class="field-help">Searches a previously computed N-grams csv file instead of the corpus; the csv-file picker has not been ported from the desktop app yet.</p>
+            </div>
+
+            <div class="field-row">
+                <div class="field field-check">
+                    <label>
+                        <input type="checkbox" id="ngrams_viewer_var" name="ngrams_viewer_var">
+                        N-Grams VIEWER
+                    </label>
+                </div>
+                <div class="field field-check">
+                    <label>
+                        <input type="checkbox" id="CoOcc_Viewer_var" name="CoOcc_Viewer_var">
+                        Co-Occurrences VIEWER
+                    </label>
+                </div>
+            </div>
+            <div class="field field-check sub-option">
+                <label>
+                    <input type="checkbox" id="within_sentence_co_occurrence_search_var" name="within_sentence_co_occurrence_search_var" disabled>
+                    Co-Occurrence within sentence (Default: within document)
+                </label>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Dates &amp; visualization</legend>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="date_options" name="date_options">
+                    Date options
+                </label>
+            </div>
+            <div class="field sub-option">
+                <label for="temporal_aggregation_var">Aggregate by</label>
+                <select id="temporal_aggregation_var" name="temporal_aggregation_var">
+                    <option value="year"> year</option>
+                    <option value="group-of-years">group of years</option>
+                    <option value="quarter"> quarter</option>
+                    <option value="month">month</option>
+                </select>
+            </div>
+
+            {% include "partials/data_transformation.html" %}
+        </fieldset>
+
+        {% include "partials/form_buttons.html" with tips_url="https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/TIPS/TIPS_NLP_Ngram%20and%20Word%20Co-Occurrence%20VIEWER.pdf" run_onclick="return submitbutton();" %}
+    </form>
+</div>
+<script src="{% static 'js/NGrams_CoOccurrences.js' %}"></script>
+<script src="{% static 'js/common.js' %}"></script>
+<script src="{% static 'js/onlyone.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,11 @@
+[project]
+name = "nlp-suite-agent"
+version = "0.1.0"
+requires-python = ">=3.9"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["integration: requires CoreNLP service on port 9000"]

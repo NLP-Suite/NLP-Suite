@@ -1,0 +1,217 @@
+{% extends 'index.html' %}
+
+{% block content %}
+{% load static %}
+
+<div class="tool-container">
+    <h1>Geographic Information System</h1>
+    <form method="POST" class="sentiment-analysis-form" action="{% url 'gis' %}">
+        {% csrf_token %}
+
+        {% include "partials/io_directories.html" %}
+
+        <fieldset class="form-section">
+            <legend>Location extraction</legend>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="NER_extractor" name="NER_extractor" checked>
+                    Extract Locations (via Stanford CoreNLP NER) - Default Parameters
+                </label>
+                <p class="field-help">Extract locations from txt file(s) using the Stanford CoreNLP NER extractor. Only available when input txt file(s) are selected.</p>
+                <details class="field-more">
+                    <summary>More about input files and multi-name locations</summary>
+                    <div class="more-body">
+                        <p>Two types of input files are acceptable: txt or csv. When a txt file is selected, the script uses the NER values from Stanford CoreNLP to obtain a list of locations saved as a csv file, then processes that file like any csv of location names.</p>
+                        <p>When a csv file is selected it can be: 1. a file containing a column of location names that need to be geocoded (e.g., New York); 2. a file of previously geocoded locations with at least three columns: location names, latitude, longitude; 3. a CoNLL table that may contain NER Location values.</p>
+                        <p>To improve the geocoding of locations that can take multiple names (e.g., 'United States', 'US', 'USA'), the algorithm uses the entries of the multi_name_locations.csv file stored in the lib\wordLists subdirectory of the NLP Suite installation folder. You can edit that file to suit your specific needs.</p>
+                    </div>
+                </details>
+            </div>
+
+            <div class="field">
+                <label for="columnLocationName">Column containing location names</label>
+                <select id="columnLocationName" name="algorithm">
+                    <option value="fillerColumn">Filler</option>
+                </select>
+                <p class="field-help">Not available when selecting a CoNLL input csv file: the NER column is automatically used for CoNLL files.</p>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Geocoding</legend>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="geocodeLocations" name="geocodeLocations" checked>
+                    Geocode Locations
+                </label>
+                <p class="field-help">Only available when a csv file of locations NOT yet geocoded is selected.</p>
+                <details class="field-more">
+                    <summary>More about geocoding</summary>
+                    <div class="more-body">
+                        <p>'Split' locations (e.g., South America, Atlantic City) will be joined together for geocoding using the prefix values south, north, west, east, los, new, san, las, la, hong and the suffix values city, island. When using the CoNLL table as input, only two consecutive values will be joined together (thus, 'New South Wales' would not be joined).</p>
+                        <p>To obtain more accurate results, select a country where most locations are expected to be: locations in the selected country of bias are PREFERRED by the geocoder over same-name locations in other countries (e.g., with United States selected, Florence, Rome, or Venice geocode in the United States rather than Italy).</p>
+                        <p>Area and Restrict widgets are available only for Nominatim.</p>
+                    </div>
+                </details>
+            </div>
+
+            <div class="field-row sub-option">
+                <div class="field">
+                    <label for="geocoderSelect">Geocoder</label>
+                    <select id="geocoderSelect" name="geocoderSelect">
+                        <option value="nominatim">Nominatim</option>
+                        <option value="Google">Google</option>
+                    </select>
+                    <p class="field-help">Nominatim is less accurate than Google, but Google requires an API key (see the Tips file).</p>
+                </div>
+                <div class="field">
+                    <label for="countryBias">Country bias</label>
+                    <select id="countryBias" name="countryBias">
+                        <option value="nominatim">Afghanistan - af </option>
+                        <option value="Google">Albania - al</option>
+                        <!-- Add the rest of the countries-->
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="area">Area</label>
+                    <input type="text" id="area" name="area">
+                </div>
+            </div>
+
+            <div class="field-row sub-option">
+                <div class="field">
+                    <label for="geocoder">Geocoder</label>
+                    <select id="geocoder" name="geocoder">
+                        <option value="Nominatim">Nominatim</option>
+                        <option value="Google">Google</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="country_bias_var">Country bias</label>
+                    <select id="country_bias_var" name="country_bias_var">
+                        <option value="">Select a country</option>
+                        <option value="af">Afghanistan</option>
+                        <option value="al">Albania</option>
+                        <option value="dz">Algeria</option>
+                        <option value="ar">Argentina</option>
+                        <option value="au">Australia</option>
+                        <option value="at">Austria</option>
+                        <option value="bd">Bangladesh</option>
+                        <option value="be">Belgium</option>
+                        <option value="br">Brazil</option>
+                        <option value="ca">Canada</option>
+                        <option value="cn">China</option>
+                        <option value="co">Colombia</option>
+                        <option value="dk">Denmark</option>
+                        <option value="eg">Egypt</option>
+                        <option value="fi">Finland</option>
+                        <option value="fr">France</option>
+                        <option value="de">Germany</option>
+                        <option value="gr">Greece</option>
+                        <option value="in">India</option>
+                        <option value="id">Indonesia</option>
+                        <option value="ie">Ireland</option>
+                        <option value="il">Israel</option>
+                        <option value="it">Italy</option>
+                        <option value="jp">Japan</option>
+                        <option value="mx">Mexico</option>
+                        <option value="nl">Netherlands</option>
+                        <option value="nz">New Zealand</option>
+                        <option value="ng">Nigeria</option>
+                        <option value="no">Norway</option>
+                        <option value="pk">Pakistan</option>
+                        <option value="ph">Philippines</option>
+                        <option value="pl">Poland</option>
+                        <option value="pt">Portugal</option>
+                        <option value="ru">Russia</option>
+                        <option value="sa">Saudi Arabia</option>
+                        <option value="sg">Singapore</option>
+                        <option value="za">South Africa</option>
+                        <option value="kr">South Korea</option>
+                        <option value="es">Spain</option>
+                        <option value="se">Sweden</option>
+                        <option value="ch">Switzerland</option>
+                        <option value="th">Thailand</option>
+                        <option value="tr">Turkey</option>
+                        <option value="ae">United Arab Emirates</option>
+                        <option value="gb">United Kingdom</option>
+                        <option value="us">United States</option>
+                        <option value="vn">Vietnam</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="field sub-option">
+                <label for="area_var">Area</label>
+                <input type="text" id="area_var" name="area_var" placeholder="e.g., (34.98527, -85.59790), (30.770444, -81.521974)">
+                <p class="field-help">For Nominatim, enter the latitude and longitude of the upper left-hand and lower right-hand corners of a rectangular area to privilege locations in that area (e.g., Rome, Georgia, vs. Rome, New York).</p>
+            </div>
+            <div class="field field-check sub-option">
+                <label>
+                    <input type="checkbox" id="restrict_var" name="restrict_var">
+                    Restrict
+                </label>
+                <p class="field-help">Restrict locations to the entered area only (otherwise it is just a preference).</p>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Mapping</legend>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="mapLocations" name="mapLocations" checked>
+                    Map Locations
+                </label>
+            </div>
+            <div class="field sub-option">
+                <label for="mapLocationsSoftware">Software</label>
+                <select id="mapLocationsSoftware" name="mapLocationsSoftware">
+                    <option value="pythonFoil">Python folium pin map &amp; heatmap</option>
+                    <option value="googleEarthProplusMaps">Google Earth Pro &amp; Google Maps</option>
+                    <option value="googleEarthPro">Google Earth Pro</option>
+                    <option value="googleMaps">Google Maps</option>
+                    <option value="QGIS">QGIS</option>
+                    <option value="tableau">Tableau</option>
+                    <option value="timeMapper">timeMapper</option>
+                </select>
+                <p class="field-help">Default is Python folium pin map &amp; heatmap. Google Maps requires a free API key with billing information (you are very unlikely to be charged at this scale).</p>
+                <details class="field-more">
+                    <summary>More about Google API keys</summary>
+                    <div class="more-body">
+                        <p>You will need to get the API key from the Google console: https://developers.google.com/maps/documentation/embed/get-api-key. When selecting Google Maps, the API key field will become available. After entering the Google API key, click OK to save it and the key will be read in automatically next time around.</p>
+                    </div>
+                </details>
+            </div>
+            <div class="field field-check sub-option">
+                <label>
+                    <input type="checkbox" id="earthPro" name="earthPro">
+                    GIS Package - Open GUI
+                </label>
+                <p class="field-help">Opens the GIS_Google_Earth_main GUI after running the NER location extractor (and geocoder); you will then select as input the csv file produced by the extractor or geocoder.</p>
+            </div>
+
+            <div class="field">
+                <label for="viewGoogleApi">View Google Api Key</label>
+                <select id="viewGoogleApi" name="viewGoogleApi">
+                    <option value="viewGoogleMapsApi">Google Maps</option>
+                    <option value="viewGoogleGeocoding">Google Geocoding</option>
+                    <!--Could use a text box to display/change key-->
+                </select>
+                <p class="field-help">Select the Google API key you wish to view, then click the button to open the config file to view/change the key.</p>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Visualization</legend>
+            {% include "partials/data_transformation.html" %}
+        </fieldset>
+
+        {% include "partials/form_buttons.html" with tips_url="https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/TIPS/TIPS_NLP_GIS%20(Geographic%20Information%20System).pdf" %}
+
+    </form>
+</div>
+{% comment %} <script src="{% static 'js/gis.js' %}"></script> {% endcomment %}
+{% endblock %}

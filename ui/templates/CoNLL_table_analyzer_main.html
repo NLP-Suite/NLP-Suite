@@ -1,0 +1,418 @@
+{% extends 'index.html' %}
+
+{% block content %}
+{% load static %}
+
+<div class="tool-container">
+
+    <h1>CoNLL Table Analyzer</h1>
+    <form method="post" class="sentiment-analysis-form" action="{% url 'conll_table' %}">
+        {% csrf_token %}
+
+        <fieldset class="form-section">
+            <legend>Input &amp; output</legend>
+
+            <div class="field">
+                <label for="inputDirectory">Input directory</label>
+                <select name="inputDirectory" id="inputDirectory">
+                    <option value="~/nlp-suite/csvInput">~/nlp-suite/csvInput</option>
+                </select>
+                <p class="field-help">The script expects a single CoNLL csv file or a directory containing a set of csv files.</p>
+            </div>
+
+            <div class="field">
+                <label for="outputDirectory">Output directory</label>
+                <input type="text" name="outputDirectory" id="outputDirectory" value="~/nlp-suite/output">
+                <p class="field-help">All output files (txt, csv, png, html) are saved here; most tools organize results into their own subdirectories inside it.</p>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Analyses</legend>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="clause_noun_verb_function" name="clause_noun_verb_function">
+                    Clause, noun, verb, function word
+                </label>
+                <p class="field-help">Analyzes the CoNLL table for clause types (e.g., noun-phrase NP, verb phrase VP), nouns (singular, plural, proper, subject and object), verbs (modality, tense, voice), function words (articles/determinants, auxiliaries, conjunctions, prepositions, pronouns), adjectives, adverbs, and ratios of word classes (e.g., content vs. junk words).</p>
+            </div>
+            <div class="field sub-option">
+                <select name="clause_noun_verb_function_options">
+                    <option value="*">*</option>
+                    <option value="clause-analysis">Clause Analysis</option>
+                    <option value="noun-analysis">Noun Analysis</option>
+                    <option value="verb-analysis">Verb Analysis</option>
+                    <option value="function-words-jump/stop-analysis">Function(junk/stop) Words Analysis</option>
+                </select>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="k_sentences_var" name="k_sentences_var">
+                    Begin-End K sentences analyzer (repetition finder)
+                </label>
+                <p class="field-help">Computes counts and proportions of nouns, verbs, adjectives, and proper nouns across the selected K beginning and ending sentences.</p>
+            </div>
+            <div class="field-row sub-option">
+                <div class="field">
+                    <label for="Begin_K_sent_var">Begin K-sentences</label>
+                    <input type="Begin_K_sent_var" id="Begin_K_sent_var" size="50">
+                </div>
+                <div class="field">
+                    <label for="End_K_sent_var">End K-sentences</label>
+                    <input type="number" name="End_K_sent_var" id="End_K_sent_var" size="50">
+                </div>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="compute_sentence_var" name="compute_sentence_var">
+                    Compute sentence Table
+                </label>
+                <p class="field-help">Computes a sentence table with various sentence statistics.</p>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Token search</legend>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="search_token_var" name="search_token_var">
+                    Search Token/Word(s)
+                </label>
+                <p class="field-help">Searches the CoNLL table for a specific case-sensitive token (one word only; * for any word). In output, the algorithm produces several charts and a Gephi network graph of the relationship between searched and co-occurring words.</p>
+                <details class="field-more">
+                    <summary>More about token search</summary>
+                    <div class="more-body">
+                        <p>The EXACT word will be searched (e.g., if you enter 'American', any instances of 'America' will not be found). DO NOT USE QUOTES WHEN ENTERING A SEARCH TOKEN.</p>
+                        <p>The algorithm will search all the tokens related to this token in the CoNLL table. For example, if the token wife is entered, the algorithm will search in each dependency tree (i.e., each sentence).</p>
+                    </div>
+                </details>
+            </div>
+            <div class="field sub-option">
+                <label for="searchField_kw">Searched word</label>
+                <input type="text" placeholder="e.g.: father" id="searchField_kw" name="searchField_kw" size="50">
+            </div>
+
+            <div class="field">
+                <label for="searchedCoNLLField">CoNLL search field</label>
+                <select id="searchedCoNLLField" name="searchedCoNLLField">
+                    <option value="form">FORM</option>
+                    <option value="lemma">LEMMA</option>
+                </select>
+                <p class="field-help">FORM matches the exact token (brother only); LEMMA also matches inflected forms (brother and brothers).</p>
+            </div>
+
+            <div class="field-row">
+                <div class="field">
+                    <label for="postag_var">Searched token — POSTAG</label>
+                    <select id="postag_var" name="postag_var">
+                        <option value="*">*</option>
+
+                        <option value="AFX">Affix</option>
+                        <option value="CC">Coordinating conjunction</option>
+                        <option value="CD">Cardinal number</option>
+                        <option value="DT">Determinant</option>
+                        <option value="EX">Existential there</option>
+                        <option value="FW">Foreign word</option>
+                        <option value="HYPH">Punctuation Mark, hyphen</option>
+                        <option value="IN">Preposition or subordinating conjunction</option>
+                        <option value="JJ">Adjective</option>
+                        <option value="JJR">Adjective, comparative</option>
+                        <option value="JJS">Adjective, superlative</option>
+                        <option value="LS">List marker</option>
+                        <option value="MD">Modal verb</option>
+                        <option value="NFP">Superfluous punctuation</option>
+                        <option value="NN">Noun, singular or mass</option>
+                        <option value="NNS">Noun, plural</option>
+                        <option value="NNP">Proper noun, singular</option>
+                        <option value="NNPS">Proper noun, plural</option>
+                        <option value="PDT">Predeterminer</option>
+                        <option value="POS">Possessive ending</option>
+                        <option value="PRP">Personal pronoun</option>
+                        <option value="PRP$">Possessive pronoun</option>
+                        <option value="RB">Adverb</option>
+                        <option value="RBR">Adverb, comparative</option>
+                        <option value="RBS">Adverb, superlative</option>
+                        <option value="RP">Particle</option>
+                        <option value="SYM">Symbol</option>
+                        <option value="TO">To</option>
+                        <option value="UH">Interjection</option>
+                        <option value="VB">Verb, base form</option>
+                        <option value="VBD">Verb, past tense</option>
+                        <option value="VBG">Verb, gerund or present participle</option>
+                        <option value="VBN">Verb, past participle</option>
+                        <option value="VBP">Verb, non-3rd person singular present</option>
+                        <option value="VBZ">Verb, 3rd person singular present</option>
+                        <option value="WDT">Wh-determiner (what, which, whose)</option>
+                        <option value="WP">Wh-pronoun (how, what, which, where, when, who, whom, whose, whether)</option>
+                        <option value="WP$">Possessive wh-pronoun</option>
+                        <option value="WRB">Wh-adverb (when, where, how, and why)</option>
+
+                        <option value="-LRB-">Left round bracket</option>
+                        <option value="-RRB-">Right round bracket</option>
+                        <option value="(">(</option>
+                        <option value=")">)</option>
+                        <option value=".">.</option>
+                        <option value=",">,</option>
+                        <option value=":">:</option>
+                        <option value="'">'</option>
+                        <option value="``">``</option>
+                        <option value="&quot;">"</option>
+                        <option value="#">#</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="deprel">Searched token — DEPREL</label>
+                    <select id="deprel" name="deprel">
+                        <option value="*">*</option>
+
+                        <option value="acl">clausal modifier of noun (adjectival clause)</option>
+                        <option value="acl:relcl">relative clause modifier</option>
+                        <option value="acomp">adjectival complement</option>
+                        <option value="advcl">adverbial clause modifier</option>
+                        <option value="advmod">adverbial modifier</option>
+                        <option value="agent">agent</option>
+                        <option value="amod">adjectival modifier</option>
+                        <option value="appos">appositional modifier</option>
+                        <option value="arg">argument</option>
+                        <option value="aux">auxiliary</option>
+                        <option value="aux:pass">passive auxiliary</option>
+                        <option value="case">case marking</option>
+                        <option value="cc">coordinating conjunction</option>
+                        <option value="ccomp">clausal complement with internal subject</option>
+                        <option value="cc:preconj">preconjunct</option>
+                        <option value="compound">compound</option>
+                        <option value="compound:prt">phrasal verb particle</option>
+                        <option value="conj">conjunct</option>
+                        <option value="cop">copula conjunction</option>
+                        <option value="csubj">clausal subject</option>
+                        <option value="csubj:pass">clausal passive subject</option>
+                        <option value="dep">unspecified dependency</option>
+                        <option value="det">determiner</option>
+                        <option value="det:predet">predeterminer</option>
+                        <option value="discourse">discourse element</option>
+                        <option value="dislocated">dislocated element</option>
+                        <option value="obj">object</option>
+                        <option value="expl">expletive</option>
+                        <option value="fixed">fixed multiword expression (MWE)</option>
+                        <option value="flat">flat: flat multiword expression (MWE)</option>
+                        <option value="flat:foreign">foreign words</option>
+                        <option value="goeswith">goes with</option>
+                        <option value="iobj">indirect object</option>
+                        <option value="list">list</option>
+                        <option value="mark">marker</option>
+                        <option value="mod">modifier</option>
+                        <option value="mwe">multi-word expression</option>
+                        <option value="name">name</option>
+                        <option value="neg">negation modifier</option>
+                        <option value="nn">noun compound modifier</option>
+                        <option value="nmod">nominal modifier</option>
+                        <option value="nmod:agent">agents of passive sentences</option>
+                        <option value="nmod:npmod">noun phrase as adverbial modifier</option>
+                        <option value="nmod:poss">possessive nominal modifier</option>
+                        <option value="nmod:tmod">temporal modifier</option>
+                        <option value="nummod">numeric modifier</option>
+                        <option value="npadvmod">noun phrase adverbial modifier</option>
+                        <option value="nsubj">nominal subject</option>
+                        <option value="nsubj:pass">passive nominal subject</option>
+                        <option value="nsubj:xsubj">nominal subject of controlled verbs</option>
+                        <option value="nsubj:pass:xsubj">passive nominal subject of controlled verbs</option>
+                        <option value="num">numeric modifier</option>
+                        <option value="number">element of compound number</option>
+                        <option value="obl">oblique nominal</option>
+                        <option value="parataxis">parataxis</option>
+                        <option value="pcomp">prepositional complement</option>
+                        <option value="pobj">object of a preposition</option>
+                        <option value="poss">possession modifier</option>
+                        <option value="possessive">possessive modifier</option>
+                        <option value="preconj">preconjunct</option>
+                        <option value="predet">predeterminer</option>
+                        <option value="prep">prepositional modifier</option>
+                        <option value="prepc">prepositional clausal modifier</option>
+                        <option value="prt">phrasal verb particle</option>
+                        <option value="punct">punctuation</option>
+                        <option value="quantmod">quantifier phrase modifier</option>
+                        <option value="rcmod">relative clause modifier</option>
+                        <option value="ref">referent</option>
+                        <option value="remnant">remnant in ellipsis</option>
+                        <option value="reparandum">overridden disfluency</option>
+                        <option value="root">root of the tree</option>
+                        <option value="ROOT">root of the tree</option>
+                        <option value="sdep">semantic dependent</option>
+                        <option value="subj">subject</option>
+                        <option value="tmod">temporal modifier</option>
+                        <option value="vmod">reduced non-finite verbal modifier</option>
+                        <option value="vocative">vocative</option>
+                        <option value="xcomp">clausal complement with external subject</option>
+                        <option value="xsubj">controlling subject</option>
+                        <option value="#">#</option>
+                    </select>
+                </div>
+            </div>
+            <p class="field-help">POSTAG value for the searched token (e.g., NN for noun; * for any). DEPREL value for the searched token (e.g., nsubjpass for passive nouns that are subjects; * for any).</p>
+
+            <div class="field-row">
+                <div class="field">
+                    <label for="co_postag">Co-occurring tokens — POSTAG</label>
+                    <select id="co_postag" name="co_postag">
+                        <option value="*">*</option>
+
+                        <option value="AFX">Affix</option>
+                        <option value="CC">Coordinating conjunction</option>
+                        <option value="CD">Cardinal number</option>
+                        <option value="DT">Determinant</option>
+                        <option value="EX">Existential there</option>
+                        <option value="FW">Foreign word</option>
+                        <option value="HYPH">Punctuation Mark, hyphen</option>
+                        <option value="IN">Preposition or subordinating conjunction</option>
+                        <option value="JJ">Adjective</option>
+                        <option value="JJR">Adjective, comparative</option>
+                        <option value="JJS">Adjective, superlative</option>
+                        <option value="LS">List marker</option>
+                        <option value="MD">Modal verb</option>
+                        <option value="NFP">Superfluous punctuation</option>
+                        <option value="NN">Noun, singular or mass</option>
+                        <option value="NNS">Noun, plural</option>
+                        <option value="NNP">Proper noun, singular</option>
+                        <option value="NNPS">Proper noun, plural</option>
+                        <option value="PDT">Predeterminer</option>
+                        <option value="POS">Possessive ending</option>
+                        <option value="PRP">Personal pronoun</option>
+                        <option value="PRP$">Possessive pronoun</option>
+                        <option value="RB">Adverb</option>
+                        <option value="RBR">Adverb, comparative</option>
+                        <option value="RBS">Adverb, superlative</option>
+                        <option value="RP">Particle</option>
+                        <option value="SYM">Symbol</option>
+                        <option value="TO">To</option>
+                        <option value="UH">Interjection</option>
+                        <option value="VB">Verb, base form</option>
+                        <option value="VBD">Verb, past tense</option>
+                        <option value="VBG">Verb, gerund or present participle</option>
+                        <option value="VBN">Verb, past participle</option>
+                        <option value="VBP">Verb, non-3rd person singular present</option>
+                        <option value="VBZ">Verb, 3rd person singular present</option>
+                        <option value="WDT">Wh-determiner (what, which, whose)</option>
+                        <option value="WP">Wh-pronoun (how, what, which, where, when, who, whom, whose, whether)</option>
+                        <option value="WP$">Possessive wh-pronoun</option>
+                        <option value="WRB">Wh-adverb (when, where, how, and why)</option>
+
+                        <option value="-LRB-">Left round bracket</option>
+                        <option value="-RRB-">Right round bracket</option>
+                        <option value="(">(</option>
+                        <option value=")">)</option>
+                        <option value=".">.</option>
+                        <option value=",">,</option>
+                        <option value=":">:</option>
+                        <option value="'">'</option>
+                        <option value="``">``</option>
+                        <option value="&quot;">"</option>
+                        <option value="#">#</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="co_deprel">Co-occurring tokens — DEPREL</label>
+                    <select id="co_deprel" name="co_deprel">
+                        <option value="*">*</option>
+
+                        <option value="acl">clausal modifier of noun (adjectival clause)</option>
+                        <option value="acl:relcl">relative clause modifier</option>
+                        <option value="acomp">adjectival complement</option>
+                        <option value="advcl">adverbial clause modifier</option>
+                        <option value="advmod">adverbial modifier</option>
+                        <option value="agent">agent</option>
+                        <option value="amod">adjectival modifier</option>
+                        <option value="appos">appositional modifier</option>
+                        <option value="arg">argument</option>
+                        <option value="aux">auxiliary</option>
+                        <option value="aux:pass">passive auxiliary</option>
+                        <option value="case">case marking</option>
+                        <option value="cc">coordinating conjunction</option>
+                        <option value="ccomp">clausal complement with internal subject</option>
+                        <option value="cc:preconj">preconjunct</option>
+                        <option value="compound">compound</option>
+                        <option value="compound:prt">phrasal verb particle</option>
+                        <option value="conj">conjunct</option>
+                        <option value="cop">copula conjunction</option>
+                        <option value="csubj">clausal subject</option>
+                        <option value="csubj:pass">clausal passive subject</option>
+                        <option value="dep">unspecified dependency</option>
+                        <option value="det">determiner</option>
+                        <option value="det:predet">predeterminer</option>
+                        <option value="discourse">discourse element</option>
+                        <option value="dislocated">dislocated element</option>
+                        <option value="obj">object</option>
+                        <option value="expl">expletive</option>
+                        <option value="fixed">fixed multiword expression (MWE)</option>
+                        <option value="flat">flat: flat multiword expression (MWE)</option>
+                        <option value="flat:foreign">foreign words</option>
+                        <option value="goeswith">goes with</option>
+                        <option value="iobj">indirect object</option>
+                        <option value="list">list</option>
+                        <option value="mark">marker</option>
+                        <option value="mod">modifier</option>
+                        <option value="mwe">multi-word expression</option>
+                        <option value="name">name</option>
+                        <option value="neg">negation modifier</option>
+                        <option value="nn">noun compound modifier</option>
+                        <option value="nmod">nominal modifier</option>
+                        <option value="nmod:agent">agents of passive sentences</option>
+                        <option value="nmod:npmod">noun phrase as adverbial modifier</option>
+                        <option value="nmod:poss">possessive nominal modifier</option>
+                        <option value="nmod:tmod">temporal modifier</option>
+                        <option value="nummod">numeric modifier</option>
+                        <option value="npadvmod">noun phrase adverbial modifier</option>
+                        <option value="nsubj">nominal subject</option>
+                        <option value="nsubj:pass">passive nominal subject</option>
+                        <option value="nsubj:xsubj">nominal subject of controlled verbs</option>
+                        <option value="nsubj:pass:xsubj">passive nominal subject of controlled verbs</option>
+                        <option value="num">numeric modifier</option>
+                        <option value="number">element of compound number</option>
+                        <option value="obl">oblique nominal</option>
+                        <option value="parataxis">parataxis</option>
+                        <option value="pcomp">prepositional complement</option>
+                        <option value="pobj">object of a preposition</option>
+                        <option value="poss">possession modifier</option>
+                        <option value="possessive">possessive modifier</option>
+                        <option value="preconj">preconjunct</option>
+                        <option value="predet">predeterminer</option>
+                        <option value="prep">prepositional modifier</option>
+                        <option value="prepc">prepositional clausal modifier</option>
+                        <option value="prt">phrasal verb particle</option>
+                        <option value="punct">punctuation</option>
+                        <option value="quantmod">quantifier phrase modifier</option>
+                        <option value="rcmod">relative clause modifier</option>
+                        <option value="ref">referent</option>
+                        <option value="remnant">remnant in ellipsis</option>
+                        <option value="reparandum">overridden disfluency</option>
+                        <option value="root">root of the tree</option>
+                        <option value="ROOT">root of the tree</option>
+                        <option value="sdep">semantic dependent</option>
+                        <option value="subj">subject</option>
+                        <option value="tmod">temporal modifier</option>
+                        <option value="vmod">reduced non-finite verbal modifier</option>
+                        <option value="vocative">vocative</option>
+                        <option value="xcomp">clausal complement with external subject</option>
+                        <option value="xsubj">controlling subject</option>
+                        <option value="#">#</option>
+                    </select>
+                </div>
+            </div>
+            <p class="field-help">POSTAG and DEPREL values for tokens co-occurring in the same sentence (* for any).</p>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Visualization</legend>
+            {% include "partials/data_transformation.html" %}
+        </fieldset>
+
+        {% include "partials/form_buttons.html" with tips_url="https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/TIPS/TIPS_NLP_Stanford%20CoreNLP%20CoNLL%20table.pdf" %}
+
+    </form>
+
+
+</div>
+{% endblock %}

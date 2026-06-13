@@ -1,0 +1,96 @@
+{% extends 'index.html' %}
+
+{% block content %}
+{% load static %}
+
+<div class="tool-container">
+    <h1>Sentiment Analysis</h1>
+    <form method="post" class="sentiment-analysis-form">
+        {% csrf_token %}
+
+        {% include "partials/io_directories.html" %}
+
+        <fieldset class="form-section">
+            <legend>Analysis options</legend>
+
+            <div class="field">
+                <label for="algorithm">Sentiment analysis algorithm</label>
+                <select id="algorithm" name="algorithm">
+                    <optgroup label="Neural network approaches:">
+                        <option value="BERT English">BERT (English model)</option>
+                        <option value="BERT Multilingual">BERT (Multilingual model)</option>
+                        <option value="spaCy">spaCy</option>
+                        <option value="Stanford CoreNLP">Stanford CoreNLP</option>
+                        <option value="Stanza">Stanza</option>
+                    </optgroup>
+                    <optgroup label="Dictionary approaches:">
+                        <option value="ANEW">ANEW</option>
+                        <option value="hedonometer">Hedonometer</option>
+                        <option value="SentiWordNet">SentiWordNet</option>
+                        <option value="VADER">VADER</option>
+                    </optgroup>
+                </select>
+                <p class="field-help">Neural network approaches typically achieve better results than dictionary-based approaches.</p>
+                <details class="field-more">
+                    <summary>More about the algorithms</summary>
+                    <div class="more-body">
+                        <p>BERT, spaCy, Stanford CoreNLP, and Stanza compute mean values only for each sentence on a scale 0-4 (minimum-maximum).</p>
+                        <p>ANEW (Affective Norms for English Words) computes sentiment/arousal/dominance mean/median values for each sentence using the ANEW ratings for SENTIMENT (VALENCE), AROUSAL, and DOMINANCE (CONTROL) by Bradley, M.M. &amp; Lang, P.J. (2017). Affective Norms for English Words (ANEW): Instruction manual and affective ratings. Technical Report C-3. Gainesville, FL: UF Center for the Study of Emotion and Attention. Contrary to all other approaches, ANEW computes three different measures: SENTIMENT or VALENCE measures how pleasant/unpleasant a word makes us feel; AROUSAL measures how calm/excited a word makes us feel; DOMINANCE or CONTROL measures how dominated/in control a word makes us feel. Values are classified on a scale 0-9, grouped in 5 categories: &lt;3, &gt;=3 and &lt;5, 5 (neutral), &gt;5 and &lt;8, &gt;=8 and &lt;=9.</p>
+                        <p>The Hedonometer algorithm uses the hedonometer.org rated dictionary to compute sentiment mean/median values for each sentence. It works best with social media texts (e.g., Twitter), New York Times editorials, movie reviews, and product reviews. Sentiment values are classified on a scale 0-10, grouped in 3 categories: negative (&gt;=0 and &lt;4), neutral (&gt;=4 and &lt;=6), and positive (&gt;6 and &lt;=10).</p>
+                        <p>The NLTK VADER (Valence Aware Dictionary and sEntiment Reasoner) uses the NLTK rated dictionary to compute 'compound' sentiment values for each sentence (mean and median are not available). It works best with social media texts. Values are classified on a scale -1 (most negative) to 1 (most positive), grouped in 3 categories: negative (&lt;-0.05), neutral (&gt;=-0.05 and &lt;=0.05), and positive (&gt;0.05 and &lt;=1). VADER relies on several NLTK libraries; if it fails to run, run <code>python -m nltk.downloader all</code> in a command line.</p>
+                    </div>
+                </details>
+            </div>
+
+            <div class="field-row">
+                <div class="field field-check">
+                    <label>
+                        <input type="checkbox" id="calculateMean" name="calculateMean" checked>
+                        Calculate sentence mean
+                    </label>
+                </div>
+                <div class="field field-check">
+                    <label>
+                        <input type="checkbox" id="calculateMedian" name="calculateMedian" checked>
+                        Calculate sentence median
+                    </label>
+                </div>
+            </div>
+            <p class="field-help">By default both values are computed.</p>
+            <details class="field-more">
+                <summary>More about mean &amp; median</summary>
+                <div class="more-body">
+                    <p>BERT, spaCy, Stanford CoreNLP, and Stanza Sentiment Analysis algorithms only compute mean values for each sentence, rather than each word.</p>
+                    <p>VADER only computes 'compound' values for each sentence. SentiWordNet as well does not provide sentence mean/median values.</p>
+                </div>
+            </details>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Visualization</legend>
+
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="fluctuateDocument" name="fluctuateDocument" checked>
+                    Do sentiments fluctuate across a document (sentiment scores by sentence index)
+                </label>
+                <p class="field-help">Displays a line plot of sentiment scores by sentence index across a specific document.</p>
+            </div>
+
+            <div class="field field-check">
+                <label>
+                    <input disabled type="checkbox" id="fluctuateDocuments" name="fluctuateDocuments">
+                    (Coming soon!) Do sentiments fluctuate across documents (open 'Shape of stories' GUI)
+                </label>
+                <p class="field-help">Computes and visualizes the 'shape of stories' of sentiment scores across documents using Hierarchical Clustering, Singular Value Decomposition, or Non-Negative Matrix Factorization. Only available when computing sentiment via BERT, spaCy, Stanford CoreNLP, or Stanza on a corpus of txt files.</p>
+            </div>
+
+            {% include "partials/data_transformation.html" %}
+        </fieldset>
+
+        {% include "partials/form_buttons.html" with tips_url="https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/TIPS/TIPS_NLP_Sentiment%20analysis.pdf" %}
+
+    </form>
+</div>
+
+{% endblock %}

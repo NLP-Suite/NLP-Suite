@@ -1,0 +1,140 @@
+{% extends 'index.html' %}
+
+{% block content %}
+{% load static %}
+
+<div class="tool-container">
+<h1>Wordclouds</h1>
+<form method="post" class="worldclouds-form">
+    {% csrf_token %}
+
+    {% include "partials/io_directories.html" %}
+
+    <fieldset class="form-section">
+        <legend>Wordcloud options</legend>
+
+        <div class="field">
+            <label for="wordcloud_service">Wordcloud service (txt file(s)/CoNLL table)</label>
+            <select id="wordcloud_service" name="wordcloudservice">
+                <option value="Python WordCloud">Python WordCloud</option>
+                <option value="tagcrowd">TagCrowd</option>
+                <option value="tagul">Tagul</option>
+                <option value="Tagxedo">Tagxedo</option>
+                <option value="wordclouds-service">Wordclouds</option>
+                <option value="wordle">Wordle</option>
+            </select>
+        </div>
+
+        <div class="field-row">
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="horizontal" name="horizontal">
+                    Horizontal (visualize words horizontally)
+                </label>
+            </div>
+            <div class="field">
+                <label for="font_name">Font</label>
+                <select id="font_name" name="font_name">
+                    <option value="Default"> Default </option>
+                    <option value="Arial Unicode">Arial</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="maxNumberOfWords">Max no. of words</label>
+                <input type="number" id="maxNumberOfWords" name="maxNumberOfWords" value="100" min="1">
+            </div>
+        </div>
+
+        <div class="field-row">
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="stopwords" name="stopwords" checked>
+                    Stopwords
+                </label>
+            </div>
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="lemmas" name="lemmas" checked>
+                    Lemmas
+                </label>
+            </div>
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="punctuation" name="punctuation" checked>
+                    Punctuation
+                </label>
+            </div>
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="lowercase_checkbox" name="lowercase_checkbox" checked>
+                    Lowercase
+                </label>
+            </div>
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="collocation" name="collocation">
+                    Collocation
+                </label>
+            </div>
+            <div class="field field-check">
+                <label>
+                    <input type="checkbox" id="differentColorsByPOS" name="differentColorsByPOS">
+                    Different colors by POS tags
+                </label>
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset class="form-section">
+        <legend>Image options</legend>
+
+        <div class="field field-check">
+            <label>
+                <input type="checkbox" id="prepareImage" name="prepareImage" disabled>
+                (Coming soon!) Prepare image
+            </label>
+            <p class="field-help">Shape the wordcloud with an image mask; the image-upload workflow has not been ported from the desktop app yet.</p>
+        </div>
+
+        <div class="field field-check">
+            <label>
+                <input type="checkbox" id="usePNGFile" name="usePNGFile" disabled>
+                (Coming soon!) Use PNG file
+            </label>
+        </div>
+        <div class="field sub-option">
+            <label for="PNGinput">Input PNG file</label>
+            <input type="text" name="PNGinput" id="PNGinput" value="~/nlp-suite/foofoo.png" disabled>
+        </div>
+        <div class="field field-check sub-option">
+            <label>
+                <input type="checkbox" id="imageContour" name="imageContour" disabled>
+                (Coming soon!) Use image contour only
+            </label>
+        </div>
+
+        <div class="field field-check">
+            <label>
+                <input type="checkbox" id="useColorsForCsvColumns" name="useColorsForCsvColumns" disabled>
+                (Coming soon!) Use different colors for different csv columns (csv file)
+            </label>
+        </div>
+    </fieldset>
+
+    <fieldset class="form-section">
+        <legend>Output</legend>
+
+        <div class="field field-check">
+            <label>
+                <input type="checkbox" id="intermediateWordcloudFiles" name="intermediateWordcloudFiles" checked>
+                Do NOT produce intermediate word cloud files when processing all txt files in a directory
+            </label>
+        </div>
+    </fieldset>
+
+    {% include "partials/form_buttons.html" with tips_url="https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/TIPS/TIPS_NLP_Wordclouds%20Visualizing%20word%20clouds.pdf" %}
+</form>
+</div>
+
+<script src="{% static 'js/wordclouds.js' %}"></script>
+{% endblock %}

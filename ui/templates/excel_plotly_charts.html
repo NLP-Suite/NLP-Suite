@@ -1,0 +1,87 @@
+{% extends 'index.html' %}
+
+{% block content %}
+{% load static %}
+
+<div class="tool-container">
+    <h1>Excel/Plotly Charts</h1>
+    <form method="post" class="excel-plotly-charts-form">
+        {% csrf_token %}
+
+        <fieldset class="form-section">
+            <legend>Chart data</legend>
+
+            <div class="field">
+                <label for="excel_charts_file_input">CSV file</label>
+                <input type="file" id="excel_charts_file_input" name="inputFilename" accept=".csv" required>
+                <p class="field-help">The csv file whose fields you want to chart.</p>
+            </div>
+
+            <div class="field">
+                <label for="csv_field_visualization">Field to visualize</label>
+                <select id="csv_field_visualization" name="csv_field_visualization_var">
+                    <option value="" disabled selected>Select an option</option>
+                </select>
+                <p class="field-help">The csv field plotted when no Y-axis fields are added below.</p>
+            </div>
+
+            <div class="field">
+                <label for="charts_type_options">Chart type</label>
+                <select id="charts_type_options" name="charts_type_options">
+                    <option value="bar">Bar</option>
+                    <option value="line">Line</option>
+                    <option value="scatter">Scatter</option>
+                </select>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Axes</legend>
+
+            <div class="field">
+                <label for="x-axis">X-axis</label>
+                <select id="x-axis" name="X_axis_var" required>
+                    <option value="" disabled selected>Select an option</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="addY-axis">Y-axis field(s)</label>
+                <div class="options">
+                    <select id="addY-axis">
+                        <option value="" disabled selected>Select an option</option>
+                    </select>
+                    <button type="button" id="add_y_axis_button">+</button>
+                    <button type="button" id="reset_y_axis_button">Reset</button>
+                </div>
+                <p class="field-help">Click + to add a Y-axis field to the list; Reset clears it.</p>
+            </div>
+
+            <div class="field">
+                <label for="y_axis_display">Selected Y-axis fields</label>
+                <input type="text" id="y_axis_display" readonly>
+            </div>
+
+            <input type="hidden" name="csv_file_field_Y_axis_list" id="csv_file_field_Y_axis_list" value="[]">
+            <input type="hidden" name="inputFileData" id="inputFileData">
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Visualization</legend>
+            <div class="field">
+                <label for="chartPackage">Chart Package</label>
+                <select id="chartPackage" name="chartPackage">
+                    <option value="Plotly">Plotly</option>
+                    <option value="Excel">Excel</option>
+                </select>
+            </div>
+            {% include "partials/data_transformation.html" %}
+        </fieldset>
+
+        {% include "partials/form_buttons.html" with tips_url="https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/TIPS/TIPS_NLP_Excel%20Charts.pdf" %}
+
+    </form>
+</div>
+
+<script src="{% static 'js/excel_plotly_charts.js' %}"></script>
+{% endblock %}
