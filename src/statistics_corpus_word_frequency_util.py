@@ -15,6 +15,7 @@ import tkinter.messagebox as mb
 import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
+import statistics_statistical_tests_util
 
 
 def compute_word_frequency(inputFilename, inputDir, outputDir, chartPackage='Excel',
@@ -144,5 +145,9 @@ def compute_word_frequency(inputFilename, inputDir, outputDir, chartPackage='Exc
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
                                         'Finished running Word Frequency Distribution at', True, '', True, startTime)
+
+    stat_files = statistics_statistical_tests_util.run_automatic_tests(
+        outputFilename, outputDir, chartPackage, dataTransformation)
+    filesToOpen.extend(stat_files)
 
     return filesToOpen

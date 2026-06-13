@@ -56,6 +56,7 @@ import GUI_IO_util
 import IO_csv_util
 import IO_files_util
 import charts_util
+import statistics_statistical_tests_util
 
 # if VADER fails, run: "python -m nltk.downloader all"
 
@@ -310,6 +311,10 @@ def main(inputFilename, inputDir, outputDir, mode,  chartPackage='Excel', dataTr
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
+
+    stat_files = statistics_statistical_tests_util.run_automatic_tests(
+        outputFilename, outputDir, chartPackage, dataTransformation)
+    filesToOpen.extend(stat_files)
 
     return filesToOpen
 

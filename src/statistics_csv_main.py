@@ -8,18 +8,22 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Statistics_csv
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
+import tkinter.filedialog
 
 import GUI_IO_util
 import IO_csv_util
 import IO_user_interface_util
 import IO_files_util
 import statistics_csv_util
+import statistics_statistical_tests_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputFilename,inputDir,outputDir,openOutputFiles,chartPackage,dataTransformation,
         all_csv_stats,csv_field_freq,
-        csv_list,hover_over_list, groupBy_list, script_to_run):
+        csv_list,hover_over_list, groupBy_list, script_to_run,
+        stat_test, stat_test_option,
+        stat_value_col, stat_group_col, stat_word_col, stat_freq_col1, stat_freq_col2, stat_corpus_col):
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -76,6 +80,49 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,chartPackage,dataTransf
             else:
                 filesToOpen.extend(outputFiles)
 
+    # --- Statistical hypothesis tests ---
+    if stat_test:
+        csv_file = input_csv_file_var.get() if input_csv_file_var.get() else inputFilename
+        if csv_file == '' or not csv_file.endswith('.csv'):
+            mb.showwarning(title='Input error',
+                           message='Statistical hypothesis tests require a csv file in input.\n\nPlease, select a csv input file and try again.')
+        else:
+            run_mw_kw = stat_test_option in ('*', 'Mann-Whitney U / Kruskal-Wallis')
+            run_ll = stat_test_option in ('*', 'Log-likelihood (corpus comparison)')
+
+            if run_mw_kw:
+                if stat_value_col == '' or stat_group_col == '':
+                    mb.showwarning(title='Missing fields',
+                                   message='Mann-Whitney / Kruskal-Wallis requires a numeric value column and a group column.\n\nPlease, select both fields and try again.')
+                else:
+                    import pandas as _pd
+                    _df = _pd.read_csv(csv_file, encoding='utf-8', on_bad_lines='skip')
+                    n_groups = _df[stat_group_col].nunique() if stat_group_col in _df.columns else 0
+                    if n_groups >= 3:
+                        outputFiles = statistics_statistical_tests_util.run_kruskal_wallis_test(
+                            csv_file, outputDir, stat_value_col, stat_group_col,
+                            chartPackage, dataTransformation)
+                    else:
+                        outputFiles = statistics_statistical_tests_util.run_mann_whitney_test(
+                            csv_file, outputDir, stat_value_col, stat_group_col,
+                            chartPackage, dataTransformation)
+                    if outputFiles:
+                        filesToOpen.extend(outputFiles)
+
+            if run_ll:
+                if stat_word_col == '':
+                    mb.showwarning(title='Missing fields',
+                                   message='Log-likelihood requires at least a word column and either two frequency columns or a corpus identifier column.\n\nPlease, select the required fields and try again.')
+                else:
+                    outputFiles = statistics_statistical_tests_util.run_log_likelihood_test(
+                        csv_file, outputDir, stat_word_col,
+                        stat_freq_col1 if stat_freq_col1 != '' else None,
+                        stat_freq_col2 if stat_freq_col2 != '' else None,
+                        stat_corpus_col if stat_corpus_col != '' else None,
+                        chartPackage, dataTransformation)
+                    if outputFiles:
+                        filesToOpen.extend(outputFiles)
+
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
@@ -93,7 +140,15 @@ run_script_command=lambda: run(
                 csv_list,
                 hover_over_list,
                 groupBy_list,
-                script_to_run)
+                script_to_run,
+                stat_test_var.get(),
+                stat_test_menu_var.get(),
+                stat_value_col_var.get(),
+                stat_group_col_var.get(),
+                stat_word_col_var.get(),
+                stat_freq_col1_var.get(),
+                stat_freq_col2_var.get(),
+                stat_corpus_col_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -104,8 +159,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=360, # height at brief display
-                             GUI_height_full=440, # height at full display
+                             GUI_height_brief=560, # height at brief display
+                             GUI_height_full=640, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -148,6 +203,42 @@ csv_field_var = tk.StringVar()
 csv_hover_over_field_var = tk.StringVar()
 csv_groupBy_field_var = tk.StringVar()
 
+# CSV file display row ─────────────────────────────────────────────────────────
+input_csv_file_var = tk.StringVar()
+
+def get_input_csv_file(window_ref, title, fileType):
+    if input_csv_file_var.get() != '':
+        initialFolder = os.path.dirname(os.path.abspath(input_csv_file_var.get()))
+    else:
+        initialFolder = os.path.dirname(os.path.abspath(__file__))
+    filePath = tk.filedialog.askopenfilename(title=title, initialdir=initialFolder, filetypes=fileType)
+    if len(filePath) > 0:
+        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(filePath, 'utf-8')
+        if nRecords == 0:
+            mb.showwarning(title='Warning', message="The selected input csv file is empty.\n\nPlease, select a different file and try again.")
+            filePath = ''
+        else:
+            input_csv_file_var.set(filePath)
+            changed_filename()
+    return filePath
+
+input_csv_file_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',
+                                  command=lambda: get_input_csv_file(window, 'Select INPUT csv file', [("csv files", "*.csv")]))
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                               input_csv_file_button, True)
+
+open_input_csv_file_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+                                       command=lambda: IO_files_util.openFile(window, input_csv_file_var.get()))
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                               open_input_csv_file_button,
+                                               True, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                               "Open INPUT csv file")
+
+input_csv_file_entry = tk.Entry(window, width=GUI_IO_util.csv_file_width, textvariable=input_csv_file_var)
+input_csv_file_entry.config(state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
+                                               input_csv_file_entry)
+
 # corpus_statistics_var = tk.IntVar()
 # corpus_statistics_options_menu_var = tk.StringVar()
 # corpus_text_options_menu_var = tk.StringVar()
@@ -171,6 +262,14 @@ def clear(e):
     # corpus_text_options_menu_var.set('')
     all_csv_stats_var.set(0)
     csv_field_freq_var.set(0)
+    stat_test_var.set(0)
+    stat_test_menu_var.set('*')
+    stat_value_col_var.set('')
+    stat_group_col_var.set('')
+    stat_word_col_var.set('')
+    stat_freq_col1_var.set('')
+    stat_freq_col2_var.set('')
+    stat_corpus_col_var.set('')
     # n_grams_menu_var.set('Word')
     # reset_n_grams_list()
     reset_csv_list()
@@ -467,9 +566,9 @@ activate_all_options(menu_values)
 def changed_filename(*args):
     clear('Escape')
     global menu_values
-    if inputFilename.get()[-4:] == '.csv':
-        # continue only if the input file is csv
-        menu_values = IO_csv_util.get_csvfile_headers(inputFilename.get())
+    csv_file = input_csv_file_var.get() if input_csv_file_var.get() else inputFilename.get()
+    if csv_file != '' and csv_file[-4:] == '.csv':
+        menu_values = IO_csv_util.get_csvfile_headers(csv_file)
         m = csv_field_menu["menu"]
         m1 = csv_hover_over_field_menu["menu"]
         m2 = csv_groupBy_field_menu["menu"]
@@ -480,11 +579,138 @@ def changed_filename(*args):
             m.add_command(label=s, command=lambda value=s: csv_field_var.set(value))
             m1.add_command(label=s, command=lambda value=s: csv_hover_over_field_var.set(value))
             m2.add_command(label=s, command=lambda value=s: csv_groupBy_field_var.set(value))
+        # populate stat test column menus
+        for stat_menu, stat_var in [
+            (stat_value_col_menu, stat_value_col_var),
+            (stat_group_col_menu, stat_group_col_var),
+            (stat_word_col_menu, stat_word_col_var),
+            (stat_freq_col1_menu, stat_freq_col1_var),
+            (stat_freq_col2_menu, stat_freq_col2_var),
+            (stat_corpus_col_menu, stat_corpus_col_var)]:
+            sm = stat_menu["menu"]
+            sm.delete(0, "end")
+            for s in menu_values:
+                sm.add_command(label=s, command=lambda value=s, sv=stat_var: sv.set(value))
     activate_all_options(menu_values)
 
 # at the bottom of the script after laying out the GUI
 # inputFilename.trace('w',changed_filename)
 # changed_filename()
+
+# Statistical hypothesis tests row ─────────────────────────────────────────────
+stat_test_var = tk.IntVar()
+stat_test_menu_var = tk.StringVar()
+stat_test_menu_var.set('*')
+
+stat_value_col_var = tk.StringVar()
+stat_group_col_var = tk.StringVar()
+stat_word_col_var = tk.StringVar()
+stat_freq_col1_var = tk.StringVar()
+stat_freq_col2_var = tk.StringVar()
+stat_corpus_col_var = tk.StringVar()
+
+stat_test_checkbox = tk.Checkbutton(window, text='Hypothesis tests',
+                                    variable=stat_test_var, onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                               stat_test_checkbox,
+                                               True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                               "Tick the checkbox to run statistical hypothesis tests on the selected csv file.\n\n"
+                                               "Use the dropdown menu to select a specific test or * for all available tests.")
+
+stat_test_options = ['*', 'Mann-Whitney U / Kruskal-Wallis', 'Log-likelihood (corpus comparison)']
+stat_test_menu = tk.OptionMenu(window, stat_test_menu_var, *stat_test_options)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.statistics_csv_csv_groupBy_field_menu_pos, y_multiplier_integer,
+                                               stat_test_menu,
+                                               False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                               "Select which hypothesis test to run:\n\n"
+                                               "* = run both tests\n\n"
+                                               "Mann-Whitney U / Kruskal-Wallis: compare a numeric variable across groups "
+                                               "(2 groups → Mann-Whitney; 3+ groups → Kruskal-Wallis with Dunn's post-hoc).\n\n"
+                                               "Log-likelihood (corpus comparison): identify words statistically over/under-represented in one corpus vs another.")
+
+# Mann-Whitney / Kruskal-Wallis field selectors
+stat_value_col_lb = tk.Label(window, text='Value column')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+                                               stat_value_col_lb, True)
+stat_value_col_menu = tk.OptionMenu(window, stat_value_col_var, *menu_values)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.statistics_csv_csv_groupBy_field_menu_pos, y_multiplier_integer,
+                                               stat_value_col_menu,
+                                               True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                               "Select the numeric column to compare across groups (e.g., Sentiment score, Frequency)")
+
+stat_group_col_lb = tk.Label(window, text='Group column')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+                                               stat_group_col_lb, True)
+stat_group_col_menu = tk.OptionMenu(window, stat_group_col_var, *menu_values)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+110, y_multiplier_integer,
+                                               stat_group_col_menu,
+                                               False, False, True, False, 90, GUI_IO_util.statistics_csv_csv_groupBy_field_lb_pos,
+                                               "Select the categorical column that defines groups to compare (e.g., Document, Corpus)")
+
+# Log-likelihood field selectors
+stat_word_col_lb = tk.Label(window, text='Word column')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+                                               stat_word_col_lb, True)
+stat_word_col_menu = tk.OptionMenu(window, stat_word_col_var, *menu_values)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.statistics_csv_csv_groupBy_field_menu_pos, y_multiplier_integer,
+                                               stat_word_col_menu,
+                                               True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                               "Select the column containing words/tokens for corpus comparison")
+
+stat_freq_col1_lb = tk.Label(window, text='Freq column 1')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+                                               stat_freq_col1_lb, True)
+stat_freq_col1_menu = tk.OptionMenu(window, stat_freq_col1_var, *menu_values)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+110, y_multiplier_integer,
+                                               stat_freq_col1_menu,
+                                               False, False, True, False, 90, GUI_IO_util.statistics_csv_csv_groupBy_field_lb_pos,
+                                               "Select the frequency column for corpus 1 (or the shared frequency column when using a corpus identifier)")
+
+stat_freq_col2_lb = tk.Label(window, text='Freq column 2')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+                                               stat_freq_col2_lb, True)
+stat_freq_col2_menu = tk.OptionMenu(window, stat_freq_col2_var, *menu_values)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+110, y_multiplier_integer,
+                                               stat_freq_col2_menu,
+                                               True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                               "Select the frequency column for corpus 2 (leave empty if using a corpus identifier column)")
+
+stat_corpus_col_lb = tk.Label(window, text='Corpus ID column')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+                                               stat_corpus_col_lb, True)
+stat_corpus_col_menu = tk.OptionMenu(window, stat_corpus_col_var, *menu_values)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.statistics_csv_csv_groupBy_field_menu_pos, y_multiplier_integer,
+                                               stat_corpus_col_menu,
+                                               False, False, True, False, 90, GUI_IO_util.statistics_csv_csv_groupBy_field_lb_pos,
+                                               "Select the column identifying which corpus each row belongs to (alternative to two separate frequency columns)")
+
+
+def activate_stat_test_options(*args):
+    if stat_test_var.get() == 1:
+        stat_test_menu.configure(state='normal')
+        option = stat_test_menu_var.get()
+        run_mw = option in ('*', 'Mann-Whitney U / Kruskal-Wallis')
+        run_ll = option in ('*', 'Log-likelihood (corpus comparison)')
+        state_mw = 'normal' if run_mw else 'disabled'
+        state_ll = 'normal' if run_ll else 'disabled'
+        stat_value_col_menu.configure(state=state_mw)
+        stat_group_col_menu.configure(state=state_mw)
+        stat_word_col_menu.configure(state=state_ll)
+        stat_freq_col1_menu.configure(state=state_ll)
+        stat_freq_col2_menu.configure(state=state_ll)
+        stat_corpus_col_menu.configure(state=state_ll)
+    else:
+        stat_test_menu.configure(state='disabled')
+        stat_value_col_menu.configure(state='disabled')
+        stat_group_col_menu.configure(state='disabled')
+        stat_word_col_menu.configure(state='disabled')
+        stat_freq_col1_menu.configure(state='disabled')
+        stat_freq_col2_menu.configure(state='disabled')
+        stat_corpus_col_menu.configure(state='disabled')
+
+stat_test_var.trace('w', activate_stat_test_options)
+stat_test_menu_var.trace('w', activate_stat_test_options)
+activate_stat_test_options()
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
@@ -516,11 +742,29 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                       GUI_IO_util.msg_IO_setup)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                  "Please, click the 'Select INPUT CSV file' button to select a csv file to analyze.\n\nThe csv file headers will be used to populate the dropdown menus for selecting the fields to be used for statistical analyses.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   'Please, tick the checkbox if you wish to compute basic statistics on all the numeric fields of a csv file.\n\nIn INPUT the script expects a csv file.\n\nIn OUTPUT, the script generates a csv file of statistics for each numeric field in the input csv file: Count, Mean, Mode, Median, Standard deviation, Minimum, Maximum, Skewness, Kurtosis, 25% quantile, 50% quantile; 75% quantile.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   'Please, tick the checkbox if you wish to compute the frequency of a specific field of a csv file. ONLY ONE FIELD CAN BE CURRENTLY SELECTED. But multiple group-by fields and hover-over fields can be selected.\n\nYou can select to group the frequencies by specific field(s) and/or have hover-over field(s) if you wish to display information in an Excel chart.\n\nIn INPUT the script expects a csv file.\n\nIn OUTPUT, the script generates a csv file of frequencies for the selected field.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   'Please, using the dropdown menu, for the selected csv field, selected  one or more group-by fields (e.g., compute the frequencies of POSTAG values by DocumentID in a CoNLL table displaying both words and lemmas in hover over.) \n\nMultiple fields can be selected by pressing the + button.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                  "Please, tick the checkbox to run statistical hypothesis tests.\n\n"
+                                  "Use the dropdown menu to select:\n"
+                                  "   * = run both tests\n"
+                                  "   Mann-Whitney U / Kruskal-Wallis: compare a numeric variable across groups "
+                                  "(2 groups → Mann-Whitney U; 3+ groups → Kruskal-Wallis with Dunn's post-hoc).\n"
+                                  "   Log-likelihood (corpus comparison): identify words statistically over/under-represented in one corpus vs another.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                  "Mann-Whitney / Kruskal-Wallis fields: select the numeric Value column (e.g., Sentiment score) and the categorical Group column (e.g., Document, Corpus).")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                  "Log-likelihood fields: select the Word column and the Freq column 1.\n\n"
+                                  "Then EITHER select Freq column 2 (pre-computed frequencies for a second corpus) OR select a Corpus ID column (to split one frequency column by corpus).")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                  "Log-likelihood fields (continued): Freq column 2 and Corpus ID column.\n\n"
+                                  "Use Freq column 2 when your csv has separate frequency columns for each corpus.\n"
+                                  "Use Corpus ID column when your csv has one frequency column and a column identifying which corpus each row belongs to.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

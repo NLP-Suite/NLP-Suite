@@ -34,6 +34,7 @@ import tkinter.messagebox as mb
 import IO_csv_util
 import IO_files_util
 import charts_util
+import statistics_statistical_tests_util
 
 # all nltk resources are stored in C:\Users\rfranzo\AppData\Roaming then nltk_data
 # check averaged_perceptron_tagger
@@ -243,6 +244,10 @@ def main(inputFilename, inputDir, outputDir, configFileName, mode,  chartPackage
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
+
+    stat_files = statistics_statistical_tests_util.run_automatic_tests(
+        outputFilename, outputDir, chartPackage, dataTransformation)
+    filesToOpen.extend(stat_files)
 
     return filesToOpen
 

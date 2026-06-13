@@ -15,6 +15,7 @@ import tkinter.messagebox as mb
 import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
+import statistics_statistical_tests_util
 
 
 def _count_syllables(word):
@@ -198,5 +199,9 @@ def compute_readability(inputFilename, inputDir, outputDir, chartPackage='Excel'
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
                                         'Finished running Readability Analysis at', True, '', True, startTime)
+
+    stat_files = statistics_statistical_tests_util.run_automatic_tests(
+        outputFilename, outputDir, chartPackage, dataTransformation)
+    filesToOpen.extend(stat_files)
 
     return filesToOpen
