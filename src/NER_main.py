@@ -20,6 +20,7 @@ import config_util
 import spaCy_util
 import Stanford_CoreNLP_util
 import Stanza_util
+import NER_entity_timeline_util
 import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -147,6 +148,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
             else:
                 filesToOpen.extend(outputFiles)
 
+# NER Entity Timeline (Stanza) -------------------------------------------------------------------------
+
+    if 'Entity Timeline' in NER_package:
+        outputFiles = NER_entity_timeline_util.main(inputFilename, inputDir, outputDir,
+                                                     chartPackage, dataTransformation)
+        if outputFiles is not None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
@@ -234,7 +246,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 NER_packages_var = tk.StringVar()
 NER_packages_var.set('BERT (English language model)')
 # IBM https://ibm.github.io/zshot/ "pip install zshot"
-NER_packages_menu = tk.OptionMenu(window,NER_packages_var,'*', 'BERT (English language model)','IBM','spaCy','Stanford CoreNLP','Stanza')
+NER_packages_menu = tk.OptionMenu(window,NER_packages_var,'*', 'BERT (English language model)','IBM','spaCy','Stanford CoreNLP','Stanza','NER Entity Timeline (Stanza)')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_packages_menu_pos, y_multiplier_integer,
                     NER_packages_menu, False, False, True, False,

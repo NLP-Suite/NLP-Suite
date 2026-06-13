@@ -23,6 +23,7 @@ to the repo so it is never lost.
 14. [NRC Emotion Wheel Integration](#14-nrc-emotion-wheel-integration-2026-06-12)
 15. [Character Emotion Arcs](#15-character-emotion-arcs-2026-06-13)
 16. [TF-IDF, Lexical Diversity, Collocation Statistics](#16-tf-idf-lexical-diversity-collocation-statistics-2026-06-13)
+17. [NER Entity Timeline](#17-ner-entity-timeline-2026-06-13)
 
 ---
 
@@ -666,3 +667,18 @@ Identifies **statistically significant word pairs** beyond raw co-occurrence cou
 **Output:** Full collocation table CSV + top-N CSV per measure + 4-panel bar chart (PNG)
 
 **Location:** `NGrams_collocation_statistics_util.py`, wired into `NGrams_CoOccurrences_main.py` compute options dropdown
+
+---
+
+## 17. NER Entity Timeline (2026-06-13)
+
+Tracks **when and where named entities appear** across a narrative or corpus. Uses Stanza NER to extract PERSON, GPE, LOC, ORG, DATE, EVENT, NORP, FAC entities with narrative position (0=beginning, 1=end).
+
+**Outputs:**
+- Entity timeline CSV (every mention with document, sentence, position)
+- Frequency bar chart (top 20 entities across all types, color-coded)
+- Per-type scatter timelines (PERSON, GPE, ORG, LOC — when each entity appears)
+- Entity presence heatmap (top 15 entities binned across 10 narrative segments)
+- Per-document entity counts (multi-document mode only)
+
+**Location:** `NER_entity_timeline_util.py`, wired into `NER_main.py` via "NER Entity Timeline (Stanza)" dropdown option
