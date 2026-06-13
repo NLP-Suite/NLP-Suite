@@ -24,6 +24,7 @@ to the repo so it is never lost.
 15. [Character Emotion Arcs](#15-character-emotion-arcs-2026-06-13)
 16. [TF-IDF, Lexical Diversity, Collocation Statistics](#16-tf-idf-lexical-diversity-collocation-statistics-2026-06-13)
 17. [NER Entity Timeline](#17-ner-entity-timeline-2026-06-13)
+18. [Readability Scores](#18-readability-scores-2026-06-13)
 
 ---
 
@@ -682,3 +683,23 @@ Tracks **when and where named entities appear** across a narrative or corpus. Us
 - Per-document entity counts (multi-document mode only)
 
 **Location:** `NER_entity_timeline_util.py`, wired into `NER_main.py` via "NER Entity Timeline (Stanza)" dropdown option
+
+---
+
+## 18. Readability Scores (2026-06-13)
+
+Computes five standard readability indices per document:
+
+| Measure | What it captures |
+|---------|-----------------|
+| **Flesch Reading Ease** | 0–100 score (higher = easier); maps to grade level |
+| **Flesch-Kincaid Grade** | US school grade level needed to understand the text |
+| **Gunning Fog Index** | Years of education needed; penalizes polysyllabic words |
+| **Coleman-Liau Index** | Grade level based on character counts (no syllable counting) |
+| **Automated Readability Index** | Grade level based on characters-per-word and words-per-sentence |
+
+Uses regex-based syllable counting (no external NLP dependencies).
+
+**Output:** CSV with all five scores per document + interpretation + bar chart comparison (PNG)
+
+**Location:** `statistics_corpus_readability_util.py`, wired into `statistics_txt_main.py` dropdown
