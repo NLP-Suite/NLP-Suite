@@ -25,6 +25,7 @@ to the repo so it is never lost.
 16. [TF-IDF, Lexical Diversity, Collocation Statistics](#16-tf-idf-lexical-diversity-collocation-statistics-2026-06-13)
 17. [NER Entity Timeline](#17-ner-entity-timeline-2026-06-13)
 18. [Readability Scores](#18-readability-scores-2026-06-13)
+19. [Word Frequency Distribution](#19-word-frequency-distribution-2026-06-13)
 
 ---
 
@@ -703,3 +704,19 @@ Uses regex-based syllable counting (no external NLP dependencies).
 **Output:** CSV with all five scores per document + interpretation + bar chart comparison (PNG)
 
 **Location:** `statistics_corpus_readability_util.py`, wired into `statistics_txt_main.py` dropdown
+
+---
+
+## 19. Word Frequency Distribution (2026-06-13)
+
+Computes rank-frequency distribution for all words in the corpus and visualizes **Zipf's Law** compliance. Produces three charts:
+
+1. **Top N bar chart** — most frequent words
+2. **Log-log rank-frequency scatter** — with Zipf's ideal slope=-1 line overlay
+3. **Cumulative coverage curve** — how many unique words cover 50%/90% of all tokens
+
+Also outputs a summary CSV with total tokens, types, hapax legomena count, and coverage thresholds.
+
+No external NLP dependencies — uses regex tokenization only.
+
+**Location:** `statistics_corpus_word_frequency_util.py`, wired into `statistics_txt_main.py` dropdown

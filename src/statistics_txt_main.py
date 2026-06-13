@@ -123,6 +123,18 @@ def run(inputFilename, inputDir, outputDir,
             else:
                 filesToOpen.extend(outputFiles)
 
+    # Word Frequency Distribution (Zipf's Law) ------------------------------------
+
+    if corpus_statistics_var and ('Word frequency' in corpus_statistics_options_menu_var or '*' in corpus_statistics_options_menu_var):
+        import statistics_corpus_word_frequency_util
+        outputFiles = statistics_corpus_word_frequency_util.compute_word_frequency(
+            inputFilename, inputDir, outputDir, chartPackage, dataTransformation)
+        if outputFiles is not None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+
     if corpus_statistics_byPOS_var:
         import Stanza_util
         import config_util
@@ -278,6 +290,7 @@ corpus_statistics_options_menu = tk.OptionMenu(window,corpus_statistics_options_
                                                'Compute TF-IDF (most distinctive words per document)',
                                                'Compute Lexical diversity (TTR, MTLD, vocd-D)',
                                                'Compute Readability scores (Flesch, Gunning Fog, Coleman-Liau)',
+                                               "Compute Word frequency distribution (Zipf's Law)",
                                                )
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
