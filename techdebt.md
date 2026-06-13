@@ -1,3 +1,9 @@
+---
+id: TECHDEBT
+aliases: []
+tags: []
+---
+
 # Tech Debt
 
 Known issues in the fork, deliberately not fixed yet. Entries tagged by
@@ -10,9 +16,10 @@ Dockerized agent + Django UI under `/agent/`, `/ui/`, `/corenlp/`, `/mallet/`
 those two — what got ported, what didn't, and what's duplicated.
 
 **Next up:**
+
 1. **[P1] Decide the fate of `/src/`** — the legacy desktop tree is still
    shipped alongside the new agent. Either remove it or document it as a
-   reference-only archive (see *Two parallel codebases* below).
+   reference-only archive (see _Two parallel codebases_ below).
 2. **[P2] Port the `/word2vec` backends** (`word2vec_Gensim_util`, `WSI_*`)
    from `/src/` into `agent/src/analysis/` — endpoint crashes on every real
    option; tests in `agent/tests/test_word2vec.py` document the breakage.
@@ -23,9 +30,9 @@ those two — what got ported, what didn't, and what's duplicated.
 - **[P1] `/src/` (legacy desktop) and `/agent/src/` coexist with no clear
   contract.** ~199 modules under `/src/` are the tkinter desktop app; the
   Dockerized agent re-ports a subset into `agent/src/{analysis,charts,core,
-  gis,io,nlp,stories,topic_modeling,file_ops}`. There is no mapping doc, no
+gis,io,nlp,stories,topic_modeling,file_ops}`. There is no mapping doc, no
   CI check that the two stay in sync, and several agent modules were ported
-  partially (see *Functional gaps*). Pick one of: (a) delete `/src/` and
+  partially (see _Functional gaps_). Pick one of: (a) delete `/src/` and
   archive it on a tag, (b) move it to `legacy/src/` with a README declaring
   it read-only, or (c) commit to keeping them in sync with a manifest.
 - **[P2] Debug-script litter in `/src/`.** Eight `_*.py` files
@@ -98,8 +105,8 @@ same ported code:
   string when the area value is malformed.
 - **[P3] CoNLL k-sentences crashes on short documents.**
   `CoNLL_k_sentences_util.k_sent` truth-tests a pandas Series whenever a
-  document has <= 2*K sentences (`ValueError: truth value of a Series is
-  ambiguous`); fine for K=1 on real documents, but any short document kills
+  document has <= 2\*K sentences (`ValueError: truth value of a Series is
+ambiguous`); fine for K=1 on real documents, but any short document kills
   the whole run.
 - **[P3] `BERT_util` is a partial port.** Sentiment backend was ported.
   Upstream `NER_tags_BERT`, `doc_summary_BERT`, `word_embeddings_BERT`
