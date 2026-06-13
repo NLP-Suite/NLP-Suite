@@ -1,0 +1,22 @@
+[tool.ruff]
+# Lint only the new web stack — leave the existing tkinter src/ untouched.
+include = ["agent/**/*.py", "ui/**/*.py"]
+exclude = [
+    ".venv",
+    "venv",
+    "__pycache__",
+    "build/",
+    "dist/",
+]
+line-length = 120
+# agent container runs Python 3.9 (ubuntu:20.04); ui container runs 3.12.
+# Target the lower bound so UP rules don't suggest 3.10+ syntax for the agent.
+target-version = "py39"
+
+[tool.ruff.lint]
+# E/W = pycodestyle  F = pyflakes  I = isort  UP = pyupgrade  B = bugbear
+select = ["E", "W", "F", "I", "UP", "B"]
+ignore = [
+    "E501",  # line too long — reported but not a blocker for research code
+    "E402",  # module import not at top — legacy pattern preserved in vendored modules
+]
