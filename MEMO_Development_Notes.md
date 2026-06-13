@@ -21,6 +21,7 @@ to the repo so it is never lost.
 12. [Strategic Direction — Traditional NLP vs LLMs](#12-strategic-direction--traditional-nlp-vs-llms-2026-06-10)
 13. [WordNet Java→NLTK Migration](#13-wordnet-javanltk-migration-2026-06-12)
 14. [NRC Emotion Wheel Integration](#14-nrc-emotion-wheel-integration-2026-06-12)
+15. [Character Emotion Arcs](#15-character-emotion-arcs-2026-06-13)
 
 ---
 
@@ -578,3 +579,39 @@ Scores text for Plutchik's 8 basic emotions: anger, anticipation, disgust, fear,
 ### Origin
 
 Based on two student homework scripts (NRC emotion wheel + Plutchik wheel), refactored into a proper util following the VADER/ANEW/hedonometer pattern.
+
+---
+
+## 15. Character Emotion Arcs (2026-06-13)
+
+### What Was Added
+
+New tool that combines **NER (person extraction)** with **NRC emotion scoring** to track per-character emotion arcs across narratives.
+
+### How It Works
+
+1. **Stanza NER** (`tokenize,ner` pipeline) extracts PERSON entities from each sentence
+2. **NRC emotion scoring** (via `nrclex`) scores each sentence for Plutchik's 8 basic emotions
+3. Emotions are **attributed to the characters** mentioned in each sentence
+4. Character names are **normalized** (e.g., "Mr. Smith" and "Smith" merge to same entity)
+5. Sentences with no named character are attributed to `_NARRATOR/UNATTRIBUTED_`
+6. Results are **smoothed** with a rolling window and plotted as arcs
+
+### Output
+
+1. **CSV** — per-sentence, per-character emotion scores (8 emotions)
+2. **Character emotion arcs** (PNG) — per-character line plots of all 8 emotions across narrative position
+3. **Dominant emotion timeline** (PNG) — horizontal bar showing which emotion dominates at each sentence
+4. **Character comparison plots** (PNG) — overlay of multiple characters on the same emotion (joy, anger, fear, sadness)
+5. **Character summary CSV** — average emotion scores and dominant emotion per character
+
+### Files
+
+- `character_emotion_arcs_util.py` — new util (NER extraction, NRC scoring, arc plotting, comparison charts)
+- `sentiment_analysis_main.py` — added `Character Emotion Arcs (NER + NRC)` to dropdown under new "Character-level" category
+
+### Limitations
+
+- English only (NRC Emotion Lexicon is English; Stanza NER works best in English)
+- No coreference resolution yet — pronoun-only sentences are attributed to NARRATOR. Adding Stanza coref would improve attribution but significantly increase processing time.
+- Character name normalization is heuristic (substring matching), not ML-based
