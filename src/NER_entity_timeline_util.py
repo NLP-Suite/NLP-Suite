@@ -164,16 +164,20 @@ def main(inputFilename, inputDir, outputDir, chartPackage='Excel',
     if outputDir == '':
         return filesToOpen
 
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                                    'Started running NER Entity Timeline at', True)
+
     import stanza
     try:
-        nlp = stanza.Pipeline(lang='en', processors='tokenize,ner', use_gpu=False)
+        stanza.download(lang='en', processors='tokenize,ner', logging_level='WARNING')
+    except Exception:
+        pass
+    try:
+        nlp = stanza.Pipeline(lang='en', processors='tokenize,ner', use_gpu=False, logging_level='WARNING')
     except Exception as e:
         mb.showerror(title='Stanza Error',
                      message=f'Could not initialize Stanza NER pipeline.\n\n{str(e)}')
         return filesToOpen
-
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                                    'Started running NER Entity Timeline at', True)
 
     all_rows = []
     if inputFilename and os.path.exists(inputFilename):
