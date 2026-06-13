@@ -47,13 +47,20 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                        message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
         return
 
+    if NER_entry_var.get().strip() == '' and not NER_entity_timeline:
+        mb.showwarning(title='No options selected',
+                       message='No options have been selected.\n\nPlease, select an option and try again.')
+        return
+
     if len(NER_list)==0 and 'CoreNLP' in NER_packages_var.get():
         mb.showwarning(title='No NER tag selected', message='No NER tag has been selected.\n\nPlease, select an NER tag and try again.')
         return
 
+    skip_NER_extraction = NER_entity_timeline and NER_entry_var.get().strip() == ''
+
 # BERT -------------------------------------------------------------------------
 
-    if '*' in NER_package or 'BERT' in NER_package:
+    if not skip_NER_extraction and ('*' in NER_package or 'BERT' in NER_package):
         if language!='English':
             mb.showwarning(title='Warning', message='NER in BERT is only available for the English language. Your currently selected language is ' + language + '.' \
             "\n\nYou can change the selected language using the Setup dropdown menu at the bottom of this GUI, select the 'Setup NLP package and corpus language' to open the GUI where you can change the language option.")
@@ -70,7 +77,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
 
 # spaCy -------------------------------------------------------------------------
 
-    if '*' in NER_package or 'spaCy' in NER_package:
+    if not skip_NER_extraction and ('*' in NER_package or 'spaCy' in NER_package):
         document_length_var = 1
         limit_sentence_length_var = 1000
         NER_list = spaCy_util.NER_dict
@@ -96,7 +103,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
 
 # Stanford CoreNLP -------------------------------------------------------------------------
 
-    if '*' in NER_package or 'CoreNLP' in NER_package:
+    if not skip_NER_extraction and ('*' in NER_package or 'CoreNLP' in NER_package):
         NER_list = NER_entry_var.get() #Stanford_CoreNLP_util.NER_list
         outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
                                                             openOutputFiles, chartPackage, dataTransformation,
@@ -122,7 +129,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
 
 # Stanza -------------------------------------------------------------------------
 
-    if '*' in NER_package or 'Stanza' in NER_package:
+    if not skip_NER_extraction and ('*' in NER_package or 'Stanza' in NER_package):
         document_length_var = 1
         limit_sentence_length_var = 1000
 

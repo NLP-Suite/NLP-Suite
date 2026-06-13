@@ -169,10 +169,6 @@ def main(inputFilename, inputDir, outputDir, chartPackage='Excel',
 
     import stanza
     try:
-        stanza.download(lang='en', processors='tokenize,ner', logging_level='WARNING')
-    except Exception:
-        pass
-    try:
         nlp = stanza.Pipeline(lang='en', processors='tokenize,ner', use_gpu=False, logging_level='WARNING')
     except Exception as e:
         mb.showerror(title='Stanza Error',

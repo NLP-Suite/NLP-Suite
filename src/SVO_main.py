@@ -31,6 +31,7 @@ import GIS_pipeline_util
 # import wordclouds_util
 import IO_csv_util
 import SVO_util
+import SVO_compare_util
 import Stanza_util
 import Stanford_CoreNLP_coreference_util
 import Stanford_CoreNLP_util
@@ -60,7 +61,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         lemmatize_objects,
         gephi_var,
         wordcloud_var,
-        google_earth_var):
+        google_earth_var,
+        compare_svo_var=False):
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -98,6 +100,34 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
     if package_display_area_value == '':
         mb.showwarning(title='No setup for NLP package and language',
                        message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
+        return
+
+    if package_var == '*':
+        svo_files = {}
+        for pkg in ['spaCy', 'Stanford CoreNLP', 'Stanza']:
+            run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation,
+                coref_var, manual_coref_var, normalized_NER_date_extractor_var,
+                pkg, gender_var, quote_var,
+                subjects_dict_path_var, verbs_dict_path_var, objects_dict_path_var,
+                filter_subjects, filter_verbs, filter_objects,
+                lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
+                gephi_var, wordcloud_var, google_earth_var, False)
+            pkg_label = 'CoreNLP' if pkg == 'Stanford CoreNLP' else pkg
+            if inputFilename != '':
+                base = os.path.basename(inputFilename)[0:-4]
+            else:
+                base = os.path.basename(inputDir)
+            svo_dir = os.path.join(outputDir, 'SVO_' + pkg_label + '_' + base)
+            for f in os.listdir(svo_dir) if os.path.isdir(svo_dir) else []:
+                if f.endswith('.csv') and 'SVO' in f and 'comparison' not in f:
+                    svo_files[pkg_label] = os.path.join(svo_dir, f)
+                    break
+        labels = list(svo_files.keys())
+        for i in range(len(labels)):
+            for j in range(i + 1, len(labels)):
+                SVO_compare_util.compare(svo_files[labels[i]], svo_files[labels[j]], outputDir)
+        mb.showinfo(title='SVO comparison complete',
+                    message='All three parsers have been run and their SVO results compared.\n\nComparison files are in the output directory.')
         return
 
     # the merge option refers to merging the txt files into one
@@ -665,6 +695,26 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                             else:
                                 filesToOpen.extend(outputFiles)
 
+    if compare_svo_var:
+        compare_initialdir = GUI_util.output_dir_path.get()
+        file_a = tk.filedialog.askopenfilename(title='Select FIRST SVO csv file (e.g., CoreNLP)',
+                                                initialdir=compare_initialdir, filetypes=[("csv files", "*.csv")])
+        if file_a:
+            if 'SVO' not in os.path.basename(file_a):
+                mb.showwarning(title='Wrong file',
+                               message='The selected file does not appear to be an SVO csv file. SVO output filenames contain "SVO" (e.g., SVO_spaCy, SVO_Stanza, SVO_CoreNLP).\n\nPlease, select an SVO csv file and try again.')
+            else:
+                file_b = tk.filedialog.askopenfilename(title='Select SECOND SVO csv file (e.g., Stanza)',
+                                                        initialdir=os.path.dirname(file_a), filetypes=[("csv files", "*.csv")])
+                if file_b:
+                    if 'SVO' not in os.path.basename(file_b):
+                        mb.showwarning(title='Wrong file',
+                                       message='The selected file does not appear to be an SVO csv file. SVO output filenames contain "SVO" (e.g., SVO_spaCy, SVO_Stanza, SVO_CoreNLP).\n\nPlease, select an SVO csv file and try again.')
+                    else:
+                        compareFiles = SVO_compare_util.compare(file_a, file_b, GUI_util.output_dir_path.get())
+                        if compareFiles:
+                            filesToOpen.extend(compareFiles)
+
     # generate subset of files to be opened
 
     if openOutputFiles == True and len(filesToOpen) > 0:
@@ -716,7 +766,8 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  lemmatize_objects_var.get(),
                                  gephi_var.get(),
                                  wordcloud_var.get(),
-                                 google_earth_var.get())
+                                 google_earth_var.get(),
+                                 compare_svo_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -727,8 +778,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=560, # height at brief display
-                             GUI_height_full=600, # height at full display
+                             GUI_height_brief=600, # height at brief display
+                             GUI_height_full=640, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -792,6 +843,7 @@ def clear(e):
     gephi_checkbox.configure(state='normal')
     wordcloud_checkbox.configure(state='normal')
     google_earth_checkbox.configure(state='normal')
+    compare_svo_var.set(0)
 
     global subject_filePath, verb_filePath, object_filePath
 
@@ -894,12 +946,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                                package_lb, True)
 
 # removed SENNA from the list; way too slow the NLP Suite implementation of SENNA SVO
-package_menu = tk.OptionMenu(window, package_var, 'spaCy','Stanford CoreNLP', 'Stanza', 'OpenIE (via Stanford CoreNLP)')
+package_menu = tk.OptionMenu(window, package_var, '*', 'spaCy','Stanford CoreNLP', 'Stanza', 'OpenIE (via Stanford CoreNLP)')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_S_dictionary, y_multiplier_integer,
                                    package_menu,
                                    False, False, True, False, 90, GUI_IO_util.open_S_dictionary,
-                                   "Use the dropdown menu to select the NLP package you wish to use to extract SVO information from your corpus.\nYour package selection is independent of the NLP package currently selected in Setup.")
+                                   "Use the dropdown menu to select the NLP package you wish to use to extract SVO information from your corpus.\nYour package selection is independent of the NLP package currently selected in Setup.\n\nSelecting * will run all three main parsers (spaCy, Stanford CoreNLP, Stanza) on your corpus and automatically compare the SVO results across parsers. This may take a long time.")
 
 def activate_filter_dictionaries(lemmatize_var, filter_var, dict_path_var, filter_object):
     if not lemmatize_var.get():
@@ -1153,7 +1205,23 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_c
                                    False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "Visualize GIS maps as pin and heat maps. Google Earth Pro and Google Maps will be used as mapping software if you have obtained a free Google API key. Otherwise, Python folium will be used.\n"
                                    "Read the TIPS file 'Google API Key' on how to get the API key.\nMaps are exported to the SVO subdirectory only, whether filtering or lemmatizing to avoid missing locations.")
+compare_svo_var = tk.IntVar()
+compare_svo_checkbox = tk.Checkbutton(window, text='Compare SVO results across parsers',
+                                       variable=compare_svo_var, onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+                                   compare_svo_checkbox,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "Compare two SVO csv files produced by different parsers (e.g., CoreNLP vs Stanza). Produces a summary of triple overlap and a list of differences.")
+
 def activateFilters(*args):
+    if package_var.get() == '*':
+        answer = mb.askyesno(title='Run all parsers',
+                             message='Selecting * will run all three main parsers (spaCy, Stanford CoreNLP, Stanza) on your corpus and automatically compare the SVO results.\n\nThis may take a very long time depending on corpus size.\n\nAre you sure you want to continue?',
+                             default='no')
+        if not answer:
+            package_var.set('Stanford CoreNLP')
+            return
+
     if language!='English':
         filter_subjects_var.set(0)
         filter_verbs_var.set(0)
@@ -1247,7 +1315,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to resolve manually cases of unresolved or wrongly resolved coreferences.\n\nThe option is not available when processing a directory of files. You can always use the 'coreference_main' GUI to\n   1. open a merged coreferenced file;\n   2. split merged coreferenced files.\n\nIf manual edit is selected, the script will also display a split-screen file for manual editing. On the left-hand side, pronouns cross-referenced by CoreNLP are tagged in YELLOW; pronouns NOT cross-referenced by CoreNLP are tagged in BLUE. On the right-hand side, pronouns cross-referenced by CoreNLP are tagged in RED, with the pronouns replaced by the referenced nouns.\n\nMANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, using the dropdown menu, select the NLP package to be used to extract SVOs from your corpus."+GUI_IO_util.msg_Esc)
+                                  "Please, using the dropdown menu, select the NLP package to be used to extract SVOs from your corpus.\nYour package selection is independent of the NLP package currently selected in Setup.\n\nSelecting * will run all three main parsers (spaCy, Stanford CoreNLP, Stanza) on your corpus and automatically compare the SVO results across all pairs of parsers. This may take a very long time depending on corpus size.\n\nThe comparison produces:\n  1. A summary csv with triple overlap percentage (Jaccard), unique triple counts, and recall rates.\n  2. A differences csv listing all (S, V, O) triples found by one parser but not the other.\n  3. A shared csv listing all triples found by both parsers.\n\nIMPORTANT: Do not expect a perfect match across parsers. Different NLP packages build different dependency trees from the same sentence, so they will naturally extract different SVO triples. A low overlap rate does not necessarily mean one parser is wrong — it reflects genuine differences in how each parser analyzes syntax. The comparison is meant to highlight the differences for manual review, not to produce a pass/fail score.\n\nYou can also compare any two existing SVO csv files using the 'Compare SVO results' checkbox below. When you tick that checkbox and click RUN, two file dialogs will prompt you to select the first and second SVO csv files to compare."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the 'Lemmatize' checkboxes to produce lemmatized subjects, verbs, or objects. When SVOs are lemmatized, the algorithm will aggregate the Subjects and Objects (nouns) and Verbs (verbs) into WordNet top synset categories (e.g., 'run' into 'motion').\n\nTick the 'Filter' checkboxes to filter all SVO extracted triplets for Subjects, Verbs, and Objects via dictionary filter files.\n\nDictionary filter files can be created via WordNet and saved in the \'lib/wordLists\' subfolder.\n\nFor instance, you can filter SVO by social actors and social action. In fact, the file \'social-actor-list.csv\', created via WordNet with multiple keywords (act, group, person) and saved in the \'lib/wordLists\' subfolder, will be automatically loaded as the DEFAULT dictionary file (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly created via WordNet using multiple keywords (change, cognition, communication, contact, emotion, motion, social), saved in the \'lib/wordLists\' subfolder, and automatically loaded as the DEFAULT dictionary file for verbs.\n\nWhen working on folktales, animals, or even plants, may also act and speak. You may use the animal_list.csv filter file, based on the multiple multiple keywords (act, group, person, animal) or (act, group, person, animal, plants) and saved in the \'lib/wordLists\' subfolder.\n\nYou can edit these lists, adding and deleting entries at any time, using any text editor.\n\nWordNet produces thousands of entries for nouns and verbs. For more limited domains, you way want to pair down the number to a few hundred entries.\n\nFILTER FILES BASED ON WordNet MUST CONTAIN LEMMATIZED ENTRIES, SINCE WordNet IS BASED ON LEMMATIZED ENTRIES."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -1260,6 +1328,8 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in Gephi and Sankey network graphs, and Sunburst, Treemap charts (Sankey graphs display only top 10 Subject (S), 20 Verb (V), 20 Object (O)); Sunburst and Treemap charts display only top 15 values; to change these default values, open the Data visualization GUI and change the parameters;\n\n  2. to visualize SVO relations in a wordcloud (Subjects in red; Verbs in blue; Objects in green);\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Google or Nominatim to geocode locations. If the Google-geocode-API_config.csv file is present in the config subdirectory, Google will be used to geocode, as perhaps more accurate than Nominatim. Otherwise, Nominatim will be used. If you wish to chose between Google and Nominatim, for geocoding, please, use the GIS_main script.\n\nTo improve the geocoding of those locations that can take multiple names (e.g., 'United States', 'US', 'USA'), the NLP Suite Stanford CoreNLP algorithm uses the entries of the multi_name_locations.csv file stored in the lib\wordLists subdirectory of the NLP Suite installation folder. Locations known under different names can be all geocoded under a single name (e.g., 'United States'). You can edit the multi_name_locations.csv file to suit your specific needs and improve geocoding."+GUI_IO_util.msg_Esc)
                                    # "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi;\n\n  2. to visualize SVO relations in a wordcloud (Subjects in red; Verbs in blue; Objects in green);\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.\n\nThe GIS mapping option is not available for SENNA or CoreNLP OpenIE." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                  "Please, tick the checkbox to compare two existing SVO csv files produced by different NLP packages (e.g., CoreNLP vs Stanza vs spaCy).\n\nWhen you click RUN with this option checked, two file dialogs will prompt you to select the first SVO csv file (e.g., from CoreNLP) and the second SVO csv file (e.g., from Stanza).\n\nThe comparison produces:\n  1. A summary csv with triple overlap percentage (Jaccard), unique triple counts, and recall rates.\n  2. A differences csv listing all (S, V, O) triples found by one parser but not the other.\n  3. A shared csv listing all triples found by both parsers.\n\nTriples are normalized (lowercase, trimmed) before comparison.\n\nIMPORTANT: Do not expect a perfect match. Different parsers build different dependency trees, so they will naturally extract different SVO triples. A low overlap rate does not mean one parser is wrong — it reflects genuine differences in syntactic analysis. Use the differences file to review the most significant discrepancies manually."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
