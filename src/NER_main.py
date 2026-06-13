@@ -26,7 +26,7 @@ import run_script_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, config_filename,
-        NER_package, NER_list):
+        NER_package, NER_list, NER_entity_timeline):
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -150,7 +150,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
 
 # NER Entity Timeline (Stanza) -------------------------------------------------------------------------
 
-    if 'Entity Timeline' in NER_package:
+    if NER_entity_timeline:
         outputFiles = NER_entity_timeline_util.main(inputFilename, inputDir, outputDir,
                                                      chartPackage, dataTransformation)
         if outputFiles is not None:
@@ -177,7 +177,8 @@ run_script_command=lambda: run(
                             GUI_util.data_transformation_options_widget.get(),
                             config_filename,
                             NER_packages_var.get(),
-                            NER_list)
+                            NER_list,
+                            NER_entity_timeline_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -188,8 +189,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=360, # height at brief display
-                             GUI_height_full=430, # height at full display
+                             GUI_height_brief=390, # height at brief display
+                             GUI_height_full=460, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -246,7 +247,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 NER_packages_var = tk.StringVar()
 NER_packages_var.set('BERT (English language model)')
 # IBM https://ibm.github.io/zshot/ "pip install zshot"
-NER_packages_menu = tk.OptionMenu(window,NER_packages_var,'*', 'BERT (English language model)','IBM','spaCy','Stanford CoreNLP','Stanza','NER Entity Timeline (Stanza)')
+NER_packages_menu = tk.OptionMenu(window,NER_packages_var,'*', 'BERT (English language model)','IBM','spaCy','Stanford CoreNLP','Stanza')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_packages_menu_pos, y_multiplier_integer,
                     NER_packages_menu, False, False, True, False,
@@ -294,7 +295,12 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_entry_po
                     "The widget, always disabled, displays all the NER tags available for the selected package")
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_entry_pos,y_multiplier_integer,NER_entry)
 
+NER_entity_timeline_var = tk.IntVar()
+NER_entity_timeline_checkbox = tk.Checkbutton(window, text='NER Entity Timeline (when people/places/organizations appear across narrative, via Stanza)', variable=NER_entity_timeline_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,NER_entity_timeline_checkbox)
+
 def clear(e):
+    NER_entity_timeline_var.set(0)
     clear_NER_list(coming_from_add=False,coming_from_reset=True)
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
@@ -453,6 +459,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                   "Please, click on the 'Pre-processing tools' button to open the GUI where you will be able to perform a variety of\n   file checking options (e.g., utf-8 encoding compliance of your corpus or sentence length);\n   file cleaning options (e.g., convert non-ASCII apostrophes & quotes and % to percent).\n\nNon utf-8 compliant texts are likely to lead to code breakdown in various algorithms.\n\nASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n\n% signs will lead to code breakdon of Stanford CoreNLP.\n\nSentences without an end-of-sentence marker (. ! ?) in Stanford CoreNLP will be processed together with the next sentence, potentially leading to very long sentences.\n\nSentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the 23 NER tags that you would like to extract.\n\nFor English, the Stanford CoreNLP, by default through the NERClassifierCombiner annotator, recognizes the following NER values:\n  named (PERSON, LOCATION, ORGANIZATION, MISC);\n  numerical (MONEY, NUMBER, ORDINAL, PERCENT);\n  temporal (DATE, TIME, DURATION, SET).\n  In addition, via regexner, the following entity classes are tagged: EMAIL, URL, CITY, STATE_OR_PROVINCE, COUNTRY, NATIONALITY, RELIGION, (job) TITLE, IDEOLOGY, CRIMINAL_CHARGE, CAUSE_OF_DEATH.\n\nClick on the + button to add more NER tags.\nClick on the Reset button (or ESCape) to cancel all selected options and start over."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","The Stanford CoreNLP NER annotator uses entitymentions to process multi-word-expressions (MWE), such as 'Harry Potter' for PERSON or 'United States of America' for COUNTRY."+GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to run the NER Entity Timeline tool.\n\nThis tool uses Stanza NER to extract named entities (PERSON, GPE, LOC, ORG, etc.) and track WHEN they appear across the narrative.\n\nThe tool produces:\n   - Entity timeline CSV with every mention, its sentence, and narrative position (0 = beginning, 1 = end)\n   - Frequency bar chart of the top 20 entities across all types\n   - Per-type scatter timelines showing when each PERSON, GPE, ORG, or LOC appears\n   - Entity presence heatmap showing the density of mentions across 10 narrative segments\n   - Per-document entity counts (when processing multiple documents)\n\nThis tool runs independently of the NER package selected above — it always uses Stanza."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
