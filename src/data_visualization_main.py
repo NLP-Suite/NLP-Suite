@@ -632,7 +632,6 @@ tab_numeric = ttk.Frame(notebook)
 tab_geographic = ttk.Frame(notebook)
 tab_wordclouds = ttk.Frame(notebook)
 tab_tree = ttk.Frame(notebook)
-tab_migration = ttk.Frame(notebook)
 
 notebook.add(tab_relational, text=' Relational ')
 notebook.add(tab_categorical, text=' Categorical ')
@@ -641,7 +640,6 @@ notebook.add(tab_numeric, text=' Numeric ')
 notebook.add(tab_geographic, text=' Geographic ')
 notebook.add(tab_wordclouds, text=' Wordclouds ')
 notebook.add(tab_tree, text=' Hierarchical tree ')
-notebook.add(tab_migration, text=' Migration map ')
 
 # Advance y_multiplier_integer past the notebook area (280px / 40px per row = 7 rows)
 y_multiplier_integer = y_multiplier_integer + 7
@@ -1336,29 +1334,59 @@ violin_category_menu.place(x=360, y=220)
 # ── Tab 5: Geographic ───────────────────────────────────────────────────────
 
 tab_help(tab_geographic, 10,
-    "Map locations extracted from your corpus using the GIS (Geographic Information System) pipeline.\n\n"
-    "The GIS GUI provides tools to geocode locations (via Nominatim or Google), "
-    "map them in Google Earth Pro and Google Maps, and produce KML files.\n\n"
-    "Click 'Open GIS GUI' to access the full set of GIS options.")
+    "Geographic visualization tools: GIS mapping and animated movement maps.\n\n"
+    "GIS: Map locations extracted from your corpus via Stanza NER. Open the GIS GUI\n"
+    "or Google Earth GUI for full options.\n\n"
+    "Animated movement map: Visualize how entities (people, characters) move across\n"
+    "locations over time. Select entity, location, and optional date/sequence columns\n"
+    "from a CSV file, then click RUN. Locations are auto-geocoded via Nominatim,\n"
+    "or you can provide pre-geocoded latitude/longitude columns.")
 
 geo_description = tk.Label(tab_geographic, text='Geographic visualization',
                            font=("Courier", 12, "bold"), foreground="red")
 geo_description.place(x=10, y=10)
 
-geo_info = tk.Label(tab_geographic, justify='left', wraplength=700,
-    text="Map locations mentioned in your texts using the GIS pipeline.\n\n"
-         "The GIS GUI extracts location names via Stanza NER, geocodes them,\n"
-         "and produces interactive maps (Google Earth Pro, Google Maps, Folium).\n\n"
-         "You can also visualize pre-existing CSV files with latitude/longitude columns.")
-geo_info.place(x=10, y=45)
-
 geo_open_button = tk.Button(tab_geographic, text='Open GIS GUI', width=20,
                             command=lambda: run_script_util.run_script("GIS_main.py"))
-geo_open_button.place(x=10, y=160)
+geo_open_button.place(x=10, y=40)
 
 geo_open_ge_button = tk.Button(tab_geographic, text='Open Google Earth GUI', width=22,
                                command=lambda: run_script_util.run_script("GIS_Google_Earth_main.py"))
-geo_open_ge_button.place(x=200, y=160)
+geo_open_ge_button.place(x=200, y=40)
+
+geo_sep = tk.Label(tab_geographic, text='─── Animated movement map ───',
+                   font=("Courier", 10, "bold"), foreground="#555")
+geo_sep.place(x=10, y=75)
+
+mig_entity_label = tk.Label(tab_geographic, text='Entity/person column:')
+mig_entity_label.place(x=10, y=105)
+mig_entity_var = tk.StringVar()
+mig_entity_menu = ttk.Combobox(tab_geographic, textvariable=mig_entity_var, width=25, state='readonly')
+mig_entity_menu.place(x=160, y=105)
+
+mig_location_label = tk.Label(tab_geographic, text='Location column:')
+mig_location_label.place(x=370, y=105)
+mig_location_var = tk.StringVar()
+mig_location_menu = ttk.Combobox(tab_geographic, textvariable=mig_location_var, width=25, state='readonly')
+mig_location_menu.place(x=490, y=105)
+
+mig_date_label = tk.Label(tab_geographic, text='Date/sequence column (optional):')
+mig_date_label.place(x=10, y=140)
+mig_date_var = tk.StringVar()
+mig_date_menu = ttk.Combobox(tab_geographic, textvariable=mig_date_var, width=25, state='readonly')
+mig_date_menu.place(x=220, y=140)
+
+mig_lat_label = tk.Label(tab_geographic, text='Latitude col (optional):')
+mig_lat_label.place(x=10, y=175)
+mig_lat_var = tk.StringVar()
+mig_lat_menu = ttk.Combobox(tab_geographic, textvariable=mig_lat_var, width=20, state='readonly')
+mig_lat_menu.place(x=165, y=175)
+
+mig_lon_label = tk.Label(tab_geographic, text='Longitude col (optional):')
+mig_lon_label.place(x=370, y=175)
+mig_lon_var = tk.StringVar()
+mig_lon_menu = ttk.Combobox(tab_geographic, textvariable=mig_lon_var, width=20, state='readonly')
+mig_lon_menu.place(x=535, y=175)
 
 
 # ── Tab 6: Wordclouds ──────────────────────────────────────────────────────
@@ -1429,51 +1457,6 @@ tree_color_label.place(x=10, y=155)
 tree_color_var = tk.StringVar()
 tree_color_menu = ttk.Combobox(tab_tree, textvariable=tree_color_var, width=25, state='readonly')
 tree_color_menu.place(x=200, y=155)
-
-
-# ── Tab 8: Migration map ─────────────────────────────────────────────────────
-
-tab_help(tab_migration, 10,
-    "Build an animated migration map showing how entities move across locations over time.\n\n"
-    "Use cases: character movement in novels, historical migration patterns, NER-extracted\n"
-    "location sequences, biographical research.\n\n"
-    "Select the entity (person/character) column and location column from the dropdowns.\n"
-    "Optionally select a date or sequence column for temporal ordering.\n"
-    "If your CSV has pre-geocoded coordinates, select the latitude/longitude columns.")
-
-mig_description = tk.Label(tab_migration, text='Animated migration map',
-                           font=("Courier", 12, "bold"), foreground="red")
-mig_description.place(x=10, y=10)
-
-mig_entity_label = tk.Label(tab_migration, text='Entity/person column:')
-mig_entity_label.place(x=10, y=50)
-mig_entity_var = tk.StringVar()
-mig_entity_menu = ttk.Combobox(tab_migration, textvariable=mig_entity_var, width=25, state='readonly')
-mig_entity_menu.place(x=160, y=50)
-
-mig_location_label = tk.Label(tab_migration, text='Location column:')
-mig_location_label.place(x=370, y=50)
-mig_location_var = tk.StringVar()
-mig_location_menu = ttk.Combobox(tab_migration, textvariable=mig_location_var, width=25, state='readonly')
-mig_location_menu.place(x=490, y=50)
-
-mig_date_label = tk.Label(tab_migration, text='Date/sequence column (optional):')
-mig_date_label.place(x=10, y=85)
-mig_date_var = tk.StringVar()
-mig_date_menu = ttk.Combobox(tab_migration, textvariable=mig_date_var, width=25, state='readonly')
-mig_date_menu.place(x=220, y=85)
-
-mig_lat_label = tk.Label(tab_migration, text='Latitude column (optional):')
-mig_lat_label.place(x=10, y=120)
-mig_lat_var = tk.StringVar()
-mig_lat_menu = ttk.Combobox(tab_migration, textvariable=mig_lat_var, width=25, state='readonly')
-mig_lat_menu.place(x=190, y=120)
-
-mig_lon_label = tk.Label(tab_migration, text='Longitude column (optional):')
-mig_lon_label.place(x=400, y=120)
-mig_lon_var = tk.StringVar()
-mig_lon_menu = ttk.Combobox(tab_migration, textvariable=mig_lon_var, width=25, state='readonly')
-mig_lon_menu.place(x=580, y=120)
 
 
 # ── changed_filename (populates all menus across all tabs) ────────────────────
@@ -1800,7 +1783,19 @@ def run_command():
                     histogram_nbins_var.get(), histogram_category_var.get(), histogram_marginal_var.get(),
                     violin_points_var.get(), violin_category_var.get())
     elif active_tab == 4:  # Geographic
-        run_script_util.run_script("GIS_main.py")
+        if mig_entity_var.get() and mig_location_var.get():
+            outputFiles = charts_util.animated_migration_map(
+                inputFile, outputDir,
+                mig_entity_var.get(), mig_location_var.get(),
+                date_col=mig_date_var.get() or None,
+                lat_col=mig_lat_var.get() or None,
+                lon_col=mig_lon_var.get() or None)
+            if outputFiles:
+                filesToOpen = outputFiles if isinstance(outputFiles, list) else [outputFiles]
+                if openOutputFiles:
+                    IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        else:
+            run_script_util.run_script("GIS_main.py")
     elif active_tab == 5:  # Wordclouds
         run_script_util.run_script("wordclouds_main.py")
     elif active_tab == 6:  # Hierarchical tree
@@ -1813,20 +1808,6 @@ def run_command():
             label_col=tree_label_var.get() or None,
             info_col=tree_info_var.get() or None,
             color_col=tree_color_var.get() or None)
-        if outputFiles:
-            filesToOpen = outputFiles if isinstance(outputFiles, list) else [outputFiles]
-            if openOutputFiles:
-                IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
-    elif active_tab == 7:  # Migration map
-        if not mig_entity_var.get() or not mig_location_var.get():
-            mb.showwarning("Warning", "Please select at least the Entity/person and Location columns for the migration map.")
-            return
-        outputFiles = charts_util.animated_migration_map(
-            inputFile, outputDir,
-            mig_entity_var.get(), mig_location_var.get(),
-            date_col=mig_date_var.get() or None,
-            lat_col=mig_lat_var.get() or None,
-            lon_col=mig_lon_var.get() or None)
         if outputFiles:
             filesToOpen = outputFiles if isinstance(outputFiles, list) else [outputFiles]
             if openOutputFiles:
@@ -1926,10 +1907,9 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                                          "CATEGORICAL tab: Colormap/heatmap, Comparative bar charts, Grouped bar, Stacked bar, Sunburst, Treemap, and Waffle charts to visualize categorical data.\n\n"
                                                          "TEMPORAL tab: Time mapper, Calendar heatmap, and Timeline plot to visualize temporal data.\n\n"
                                                          "NUMERIC tab: Excel/Plotly charts, Boxplots, Bubble charts, Correlation heatmap, Histogram, and Violin plot to visualize numeric/statistical data.\n\n"
-                                                         "GEOGRAPHIC tab: Open the GIS GUI to map locations extracted from your corpus.\n\n"
+                                                         "GEOGRAPHIC tab: Open the GIS GUI to map locations, or build an animated movement map showing how entities move across locations over time.\n\n"
                                                          "WORDCLOUDS tab: Open the Wordclouds GUI to generate word clouds from text or CSV data.\n\n"
-                                                         "HIERARCHICAL TREE tab: Build an interactive tree from parent-child CSV data (genealogy, grammar hierarchies, org charts).\n\n"
-                                                         "MIGRATION MAP tab: Animate entity movement across locations over time (character tracking, historical migration, NER-extracted paths).")
+                                                         "HIERARCHICAL TREE tab: Build an interactive tree from parent-child CSV data (genealogy, grammar hierarchies, org charts).")
     y_multiplier_integer += 6
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer - 1
