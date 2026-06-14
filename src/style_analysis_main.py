@@ -289,6 +289,36 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
                     else:
                         filesToOpen.extend(outputFiles)
 
+        if '*' in vocabulary_analysis_menu_var or 'TF-IDF' in vocabulary_analysis_menu_var:
+            import statistics_corpus_tfidf_util
+            outputFiles = statistics_corpus_tfidf_util.compute_tfidf(inputFilename, inputDir, outputDir_style,
+                                                                       chartPackage, dataTransformation)
+            if outputFiles is not None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
+        if '*' in vocabulary_analysis_menu_var or 'Lexical diversity' in vocabulary_analysis_menu_var:
+            import statistics_corpus_lexical_diversity_util
+            outputFiles = statistics_corpus_lexical_diversity_util.compute_lexical_diversity(
+                inputFilename, inputDir, outputDir_style, chartPackage, dataTransformation)
+            if outputFiles is not None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
+        if '*' in vocabulary_analysis_menu_var or 'Word frequency distribution' in vocabulary_analysis_menu_var:
+            import statistics_corpus_word_frequency_util
+            outputFiles = statistics_corpus_word_frequency_util.compute_word_frequency(
+                inputFilename, inputDir, outputDir_style, chartPackage, dataTransformation)
+            if outputFiles is not None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
     if gender_guesser_var==True:
         mb.showwarning('Warning',
                        'When the Gender Guesser (Hacker Factor) webpage opens, make sure to read carefully the page content in order to understand:\n1. how this sophisticated neural network Java tool can guess the gender identity of a text writer (male or female);\n2. the difference between formal and informal text genre;\n3. the meaning of the gender estimate as "Weak emphasis could indicate European";\n4. the limits of the algorithms (about 60-70% accuraracy).\n\nYou can also read Argamon, Shlomo, Moshe Koppel, Jonathan Fine, and Anat Rachel Shimoni. 2003. "Gender, Genre, and Writing Style in Formal Written Texts," Text, Vol. 23, No. 3, pp. 321–346.')
@@ -456,6 +486,9 @@ vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*'
                                          'Vowel words',
                                          'Words with capital initial (proper nouns)',
                                          'Language detection',
+                                         'TF-IDF (most distinctive words per document)',
+                                         'Lexical diversity (TTR, MTLD, vocd-D)',
+                                         "Word frequency distribution (Zipf's Law)",
                                          'Repetition: Words in first K and last K sentences',
                                          'Repetition: Last K words of a sentence/First K words of next sentence',
                                          'Repetition across sentences (special ngrams)')
