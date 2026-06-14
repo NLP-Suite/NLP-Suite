@@ -974,7 +974,7 @@ activate_what_else_menu()
 
 open_sentiment_GUI_var = tk.IntVar()
 open_sentiment_GUI_var.set(0)
-sentiment_checkbox = tk.Checkbutton(window,text="Sentiment analysis (via BERT, VADER, NRC, SentiWordNet, ANEW, hedonometer) (Open GUI)", variable=open_sentiment_GUI_var, onvalue=1, offvalue=0)
+sentiment_checkbox = tk.Checkbutton(window,text="Sentiment analysis (via BERT, Stanza, spaCy, VADER, NRC, SentiWordNet, ANEW, hedonometer) (Open GUI)", variable=open_sentiment_GUI_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,sentiment_checkbox)
 
 GIS_var.set(1)
