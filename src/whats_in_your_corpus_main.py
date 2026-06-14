@@ -379,6 +379,10 @@ def run(inputFilename,inputDir, outputDir,
         nouns_var = True
         verbs_var = True
 
+    if 'coreference' in what_else_menu_var.lower():
+        run_script_util.run_script("coreference_main.py")
+        return
+
     if 'noun' in what_else_menu_var.lower():
         nouns_var = True
     if 'verb' in what_else_menu_var.lower():
@@ -930,15 +934,15 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                                language_var_lb, True)
 
 what_else_var.set(1)
-what_else_checkbox = tk.Checkbutton(window,text="What else is in your document(s)? (via CoreNLP and WordNet)", variable=what_else_var, onvalue=1, offvalue=0)
+what_else_checkbox = tk.Checkbutton(window,text="What else is in your document(s)? (via Stanza, CoreNLP, and WordNet)", variable=what_else_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,what_else_checkbox,True)
 
 what_else_menu_var.set('*')
-what_else_menu = tk.OptionMenu(window,  what_else_menu_var, '*', 'Dialogues (CoreNLP quote annotator)','Noun and verb classes (CoreNLP NER & WordNet)', 'People & organizations (CoreNLP NER)', 'Females & males (CoreNLP gender annotator)',
+what_else_menu = tk.OptionMenu(window,  what_else_menu_var, '*', 'Coreference resolution (CoreNLP)', 'Dialogues (CoreNLP quote annotator)','Noun and verb classes (Stanza NER & WordNet)', 'People & organizations (Stanza NER)', 'Females & males (CoreNLP gender annotator)',
                                'References to date & time (CoreNLP normalized NER dates)',
-                               'References to geographical locations (CoreNLP NER)',
-                               'References to nature (CoreNLP NER & WordNet)',
-                               'Sentiments expressed (CoreNLP sentiment annotator)')
+                               'References to geographical locations (Stanza NER)',
+                               'References to nature (Stanza NER & WordNet)',
+                               'Sentiments expressed (Stanza)')
 what_else_menu.config(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_what_else_menu_pos, y_multiplier_integer,
                                                what_else_menu, True)
@@ -1040,7 +1044,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox for visualization options.\n\nWith the checkbox ticked, a default wordcloud will be generated. Tick 'Open visualizations GUI' to access the full data visualization GUI with options for wordclouds, network graphs (Gephi, vis.js), Sankey charts, sunburst, treemap, colormap/heatmap, boxplots, bubble charts, GIS maps, and more.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox to open the topic modeling GUI.\n\nThe topic modeling GUI provides access to three approaches:\n  - BERTopic (transformer-based, best for 100+ documents)\n  - Gensim LDA (fast, works well on small corpora)\n  - MALLET LDA (Java-based, requires separate installation)")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox to open the Word embeddings GUI.\n\nThe GUI provides three tools:\n  - Word embeddings via BERT (contextual embeddings from a pre-trained English language model)\n  - Word2Vec via Gensim (static embeddings trained on your corpus, Skip-Gram or CBOW)\n  - Word sense disambiguation via BERT (automatically identifies different senses of a word in your corpus)")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox to analyze your corpus for a variety of tools. Select the default \'*\' to run all options. Alternatively, select the specific option to run.\n\nAll options in this section use Stanford CoreNLP (Java). CoreNLP must be installed and configured.\n\nThe NLP tools will allow you to answer questions such as:\n  1. Are there dialogues in your corpus? (CoreNLP quote annotator — extracts quotes and attributes them to speakers. Default is DOUBLE quotes; tick 'Include single quotes' for both.)\n  2. Do nouns and verbs cluster in specific aggregates, e.g., communication, movement? (CoreNLP NER + WordNet)\n  3. Does the corpus contain references to people (by gender) and organizations? (CoreNLP NER and gender annotator)\n  4. References to dates and times? (CoreNLP SUTime normalized date extraction)\n  5. References to geographical locations that could be placed on a map? (CoreNLP NER)\n  6. References to nature, e.g., weather, seasons, animals, plants? (CoreNLP NER + WordNet)\n  7. Sentiments expressed? (CoreNLP sentiment annotator)")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox to analyze your corpus for a variety of tools. Select the default \'*\' to run all options. Alternatively, select the specific option to run.\n\nMost options use Stanza (Python). Four options require Stanford CoreNLP (Java): coreference resolution, dialogues, gender, and normalized dates.\n\nThe NLP tools will allow you to answer questions such as:\n  1. Who refers to whom? (CoreNLP coreference resolution — opens the coreference GUI)\n  2. Are there dialogues in your corpus? (CoreNLP quote annotator — extracts quotes and attributes them to speakers. Default is DOUBLE quotes; tick 'Include single quotes' for both.)\n  3. Do nouns and verbs cluster in specific aggregates, e.g., communication, movement? (Stanza NER + WordNet)\n  4. Does the corpus contain references to people and organizations? (Stanza NER)\n  5. Are there references to females and males? (CoreNLP gender annotator)\n  6. References to dates and times? (CoreNLP SUTime normalized date extraction)\n  7. References to geographical locations that could be placed on a map? (Stanza NER)\n  8. References to nature, e.g., weather, seasons, animals, plants? (Stanza NER + WordNet)\n  9. Sentiments expressed? (Stanza)")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox to open the Sentiment Analysis GUI.\n\nThe GUI provides multiple approaches:\n  - Large Language Models: BERT (English and Multilingual)\n  - Neural network: Stanford CoreNLP, Stanza\n  - Dictionary-based: ANEW, hedonometer, NRC (emotion wheel), spaCy/TextBlob, SentiWordNet, VADER\n  - Character-level: Character Emotion Arcs (NER + NRC)")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to run the GIS pipeline to extract locations from your input document(s) and map them in Google Earth Pro and Google Maps.\n\nThe GIS function in this GUI is based on the following default options:" \
             "\n  use Nominatim for geocoding "\
