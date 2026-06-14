@@ -1337,6 +1337,9 @@ tab_help(tab_geographic, 10,
     "Geographic visualization tools: GIS mapping and animated movement maps.\n\n"
     "GIS: Map locations extracted from your corpus via Stanza NER. Open the GIS GUI\n"
     "or Google Earth GUI for full options.\n\n"
+    "Extract entity-location CSV: Runs Stanza NER on your text files and pairs every\n"
+    "PERSON with every LOCATION mentioned in the same sentence. Produces a CSV ready\n"
+    "for the animated movement map below.\n\n"
     "Animated movement map: Visualize how entities (people, characters) move across\n"
     "locations over time. Select entity, location, and optional date/sequence columns\n"
     "from a CSV file, then click RUN. Locations are auto-geocoded via Nominatim,\n"
@@ -1354,39 +1357,54 @@ geo_open_ge_button = tk.Button(tab_geographic, text='Open Google Earth GUI', wid
                                command=lambda: run_script_util.run_script("GIS_Google_Earth_main.py"))
 geo_open_ge_button.place(x=200, y=40)
 
-geo_sep = tk.Label(tab_geographic, text='─── Animated movement map ───',
+def run_entity_location_tracking():
+    inputFile = GUI_util.inputFilename.get()
+    inputDir = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    import NER_location_tracking_util
+    filesToOpen = NER_location_tracking_util.main(inputFile, inputDir, outputDir)
+    if filesToOpen:
+        if openOutputFiles:
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+
+geo_gen_button = tk.Button(tab_geographic, text='Extract entity-location CSV from text (Stanza NER)', width=50,
+                           command=run_entity_location_tracking)
+geo_gen_button.place(x=10, y=75)
+
+geo_sep = tk.Label(tab_geographic, text='─── Animated movement map (from CSV) ───',
                    font=("Courier", 10, "bold"), foreground="#555")
-geo_sep.place(x=10, y=75)
+geo_sep.place(x=10, y=110)
 
 mig_entity_label = tk.Label(tab_geographic, text='Entity/person column:')
-mig_entity_label.place(x=10, y=105)
+mig_entity_label.place(x=10, y=140)
 mig_entity_var = tk.StringVar()
 mig_entity_menu = ttk.Combobox(tab_geographic, textvariable=mig_entity_var, width=25, state='readonly')
-mig_entity_menu.place(x=160, y=105)
+mig_entity_menu.place(x=160, y=140)
 
 mig_location_label = tk.Label(tab_geographic, text='Location column:')
-mig_location_label.place(x=370, y=105)
+mig_location_label.place(x=370, y=140)
 mig_location_var = tk.StringVar()
 mig_location_menu = ttk.Combobox(tab_geographic, textvariable=mig_location_var, width=25, state='readonly')
-mig_location_menu.place(x=490, y=105)
+mig_location_menu.place(x=490, y=140)
 
 mig_date_label = tk.Label(tab_geographic, text='Date/sequence column (optional):')
-mig_date_label.place(x=10, y=140)
+mig_date_label.place(x=10, y=175)
 mig_date_var = tk.StringVar()
 mig_date_menu = ttk.Combobox(tab_geographic, textvariable=mig_date_var, width=25, state='readonly')
-mig_date_menu.place(x=220, y=140)
+mig_date_menu.place(x=220, y=175)
 
 mig_lat_label = tk.Label(tab_geographic, text='Latitude col (optional):')
-mig_lat_label.place(x=10, y=175)
+mig_lat_label.place(x=10, y=210)
 mig_lat_var = tk.StringVar()
 mig_lat_menu = ttk.Combobox(tab_geographic, textvariable=mig_lat_var, width=20, state='readonly')
-mig_lat_menu.place(x=165, y=175)
+mig_lat_menu.place(x=165, y=210)
 
 mig_lon_label = tk.Label(tab_geographic, text='Longitude col (optional):')
-mig_lon_label.place(x=370, y=175)
+mig_lon_label.place(x=370, y=210)
 mig_lon_var = tk.StringVar()
 mig_lon_menu = ttk.Combobox(tab_geographic, textvariable=mig_lon_var, width=20, state='readonly')
-mig_lon_menu.place(x=535, y=175)
+mig_lon_menu.place(x=535, y=210)
 
 
 # ── Tab 6: Wordclouds ──────────────────────────────────────────────────────
