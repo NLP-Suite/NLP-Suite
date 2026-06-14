@@ -55,7 +55,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GIS_var.get(),
                             open_GIS_GUI_var.get(),
                             SVO_var.get(),
-                            open_SVO_GUI_var.get())
+                            open_SVO_GUI_var.get(),
+                            open_word2vec_GUI_var.get())
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 def run(inputFilename,inputDir, outputDir,
@@ -80,7 +81,8 @@ def run(inputFilename,inputDir, outputDir,
         GIS_var,
         open_GIS_GUI_var,
         SVO_var,
-        open_SVO_GUI_var):
+        open_SVO_GUI_var,
+        open_word2vec_GUI_var):
 
     config_filename = GUI_util.config_filename_selected_config.get()
     filesToOpen=[]
@@ -115,7 +117,8 @@ def run(inputFilename,inputDir, outputDir,
         # ((GIS_var == False) or (GIS_var == True and open_GIS_GUI_var == False)) and \
         GIS_var == False and \
         # ((SVO_var == False) or (SVO_var == True and open_SVO_GUI_var == False))):
-        SVO_var == False):
+        SVO_var == False and \
+        open_word2vec_GUI_var == False):
             mb.showwarning(title='No options selected', message='No options have been selected.\n\nPlease, select an option and try again.')
             return
 
@@ -405,6 +408,10 @@ def run(inputFilename,inputDir, outputDir,
                             filesToOpen.append(outputFiles)
                         else:
                             filesToOpen.extend(outputFiles)
+
+    # Word2Vec
+    if open_word2vec_GUI_var:
+        run_script_util.run_script("word2vec_main.py")
 
     #  what else ---------------------------------------------------------------------------------
     nouns_var=False
@@ -737,8 +744,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=590, # height at brief display
-                             GUI_height_full=630, # height at full display
+                             GUI_height_brief=630, # height at brief display
+                             GUI_height_full=670, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=1, # to be added for full display
                              increment=1)  # to be added for full display
@@ -946,8 +953,13 @@ topics_Gensim_checkbox = tk.Checkbutton(window,text="via Gensim", variable=topic
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_topics_Gensim_pos,y_multiplier_integer,topics_Gensim_checkbox,True)
 
 open_tm_GUI_var.set(0) # topic modeling GUI
-open_GUI_checkbox = tk.Checkbutton(window,text="Open Gensim/MALLET GUI", variable=open_tm_GUI_var, onvalue=1, offvalue=0)
+open_GUI_checkbox = tk.Checkbutton(window,text="Open topic modeling GUI", variable=open_tm_GUI_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate,y_multiplier_integer,open_GUI_checkbox)
+
+open_word2vec_GUI_var = tk.IntVar()
+open_word2vec_GUI_var.set(0)
+word2vec_checkbox = tk.Checkbutton(window,text="Word2Vec (Open GUI)", variable=open_word2vec_GUI_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,word2vec_checkbox)
 
 def activate_topics(*args):
     if topics_var.get()==True:
@@ -1125,6 +1137,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
             \n  do not list individual files when processing a directory \
             \n\nTo set different options, use the wordclouds GUI.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer, "NLP Suite Help","Please, tick the MALLET or Gensim checkboxes to run run LDA Topic Modeling to find out the main topics of your corpus.\n\nTick the \'open GUI\' checkbox to open the specialized Gensim topic modeling GUI that offers more options. MALLET can only be run via its GUI")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox to open the Word2Vec GUI.\n\nWord2Vec learns word embeddings from your corpus and lets you explore semantic relationships between words (e.g., similarity, analogies).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox to analyze your corpus for a variety of tools. Select the default \'*\' to run all options. Allternatively, select the specific option to run.\n\nThe NLP tools will allow you to answer questions such as:\n  1. Are there dialogues in your corpus? The CoreNLP QUOTE annotator extracts quotes from text and attributes the quote to the speaker. The default CoreNLP parameter is DOUBLE quotes. If you want to process both DOUBLE and SINGLE quotes, plase tick the checkbox 'Include single quotes.'\n  .2 Do nouns and verbs cluster in specific aggregates (e.g., communication, movement)?\n  3. Does the corpus contain references to people (by gender) and organizations?\n  4.  References to dates and times?\n  5. References to geographical locations that could be placed on a map?\n  6. References to nature (e.g., weather, seasons, animals, plants)?")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to run the GIS pipeline to extract locations from your input document(s) and map them in Google Earth Pro and Google Maps.\n\nThe GIS function in this GUI is based on the following default options:" \
             "\n  use Nominatim for geocoding "\
