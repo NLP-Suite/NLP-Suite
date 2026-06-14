@@ -737,8 +737,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=550, # height at brief display
-                             GUI_height_full=590, # height at full display
+                             GUI_height_brief=590, # height at brief display
+                             GUI_height_full=630, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=1, # to be added for full display
                              increment=1)  # to be added for full display
@@ -769,6 +769,9 @@ inputFilename=GUI_util.inputFilename
 input_main_dir_path=GUI_util.input_main_dir_path
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
+
+extra_GUIs_var = tk.IntVar()
+extra_GUIs_menu_var = tk.StringVar()
 
 utf8_var= tk.IntVar()
 ASCII_var= tk.IntVar()
@@ -820,6 +823,37 @@ def clear(e):
     open_SVO_GUI_checkbox.configure(state='normal')
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
+
+extra_GUIs_var.set(0)
+extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses', variable=extra_GUIs_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
+
+extra_GUIs_menu_var.set('')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Corpus statistics (Open GUI)','Style Analysis (Open GUI)','N-grams & Co-Occurrences (Open GUI)','CoNLL table analyzer (Open GUI)')
+extra_GUIs_menu.configure(state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                   extra_GUIs_menu,
+                                   False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                   "Select other related types of analysis you wish to perform" \
+                                    "\nThe selected GUI will open without having to press RUN")
+
+def open_GUI(*args):
+    if extra_GUIs_var.get():
+        extra_GUIs_menu.configure(state='normal')
+    else:
+        extra_GUIs_menu.configure(state='disabled')
+        return
+    if extra_GUIs_menu_var.get():
+        if 'statistics' in extra_GUIs_menu_var.get():
+            run_script_util.run_script("statistics_txt_main.py")
+        if 'Style' in extra_GUIs_menu_var.get():
+            run_script_util.run_script("style_analysis_main.py")
+        if 'N-grams' in extra_GUIs_menu_var.get():
+            run_script_util.run_script("NGrams_CoOccurrences_main.py")
+        if 'CoNLL' in extra_GUIs_menu_var.get():
+            run_script_util.run_script("CoNLL_table_analyzer_main.py")
+extra_GUIs_menu_var.trace('w',open_GUI)
+extra_GUIs_var.trace('w',open_GUI)
 
 utf8_var.set(1)
 utf8_checkbox = tk.Checkbutton(window, text='Check input document(s) for utf-8 encoding', variable=utf8_var, onvalue=1, offvalue=0)
@@ -974,15 +1008,15 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                                language_var_lb, True)
 
 what_else_var.set(1)
-what_else_checkbox = tk.Checkbutton(window,text="What else is in your document(s)? (via Stanford CoreNLP and WordNet)", variable=what_else_var, onvalue=1, offvalue=0)
+what_else_checkbox = tk.Checkbutton(window,text="What else is in your document(s)? (via Stanza and WordNet)", variable=what_else_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,what_else_checkbox,True)
 
 what_else_menu_var.set('*')
-what_else_menu = tk.OptionMenu(window,  what_else_menu_var, '*', 'Dialogues (CoreNLP Neural Network)','Noun and verb classes (CoreNLP NER & WordNet)', 'People & organizations (CoreNLP NER)', 'Females & males (CoreNLP Neural Network)',
-                               'References to date & time (CoreNLP normalized NER dates)',
-                               'References to geographical locations (CoreNLP NER)',
-                               'References to nature (CoreNLP & WordNet)',
-                               'Sentiments expressed (CoreNLP)')
+what_else_menu = tk.OptionMenu(window,  what_else_menu_var, '*', 'Dialogues (Stanza Neural Network)','Noun and verb classes (Stanza NER & WordNet)', 'People & organizations (Stanza NER)', 'Females & males (Stanza Neural Network)',
+                               'References to date & time (Stanza normalized NER dates)',
+                               'References to geographical locations (Stanza NER)',
+                               'References to nature (Stanza & WordNet)',
+                               'Sentiments expressed (Stanza)')
 what_else_menu.config(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_what_else_menu_pos, y_multiplier_integer,
                                                what_else_menu, True)
@@ -1069,6 +1103,8 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                      "Please, tick the checkbox to open other related GUIs (e.g., Corpus statistics, Style Analysis, N-grams, CoNLL table analyzer).\n\nThe selected GUI will open without having to press RUN.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "Please, tick the checkbox to check your input corpus for utf-8 encoding.\n   Non utf-8 compliant texts are likely to lead to code breakdown.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
