@@ -629,11 +629,15 @@ tab_relational = ttk.Frame(notebook)
 tab_categorical = ttk.Frame(notebook)
 tab_temporal = ttk.Frame(notebook)
 tab_numeric = ttk.Frame(notebook)
+tab_geographic = ttk.Frame(notebook)
+tab_wordclouds = ttk.Frame(notebook)
 
 notebook.add(tab_relational, text=' Relational ')
 notebook.add(tab_categorical, text=' Categorical ')
 notebook.add(tab_temporal, text=' Temporal ')
 notebook.add(tab_numeric, text=' Numeric ')
+notebook.add(tab_geographic, text=' Geographic ')
+notebook.add(tab_wordclouds, text=' Wordclouds ')
 
 # Advance y_multiplier_integer past the notebook area (280px / 40px per row = 7 rows)
 y_multiplier_integer = y_multiplier_integer + 7
@@ -1325,6 +1329,59 @@ violin_category_menu = tk.OptionMenu(tab_numeric, violin_category_var, *menu_val
 violin_category_menu.place(x=360, y=220)
 
 
+# ── Tab 5: Geographic ───────────────────────────────────────────────────────
+
+tab_help(tab_geographic, 10,
+    "Map locations extracted from your corpus using the GIS (Geographic Information System) pipeline.\n\n"
+    "The GIS GUI provides tools to geocode locations (via Nominatim or Google), "
+    "map them in Google Earth Pro and Google Maps, and produce KML files.\n\n"
+    "Click 'Open GIS GUI' to access the full set of GIS options.")
+
+geo_description = tk.Label(tab_geographic, text='Geographic visualization',
+                           font=("Courier", 12, "bold"), foreground="red")
+geo_description.place(x=10, y=10)
+
+geo_info = tk.Label(tab_geographic, justify='left', wraplength=700,
+    text="Map locations mentioned in your texts using the GIS pipeline.\n\n"
+         "The GIS GUI extracts location names via Stanza NER, geocodes them,\n"
+         "and produces interactive maps (Google Earth Pro, Google Maps, Folium).\n\n"
+         "You can also visualize pre-existing CSV files with latitude/longitude columns.")
+geo_info.place(x=10, y=45)
+
+geo_open_button = tk.Button(tab_geographic, text='Open GIS GUI', width=20,
+                            command=lambda: run_script_util.run_script("GIS_main.py"))
+geo_open_button.place(x=10, y=160)
+
+geo_open_ge_button = tk.Button(tab_geographic, text='Open Google Earth GUI', width=22,
+                               command=lambda: run_script_util.run_script("GIS_Google_Earth_main.py"))
+geo_open_ge_button.place(x=200, y=160)
+
+
+# ── Tab 6: Wordclouds ──────────────────────────────────────────────────────
+
+tab_help(tab_wordclouds, 10,
+    "Generate word clouds from text files or CSV word-frequency data.\n\n"
+    "The Wordclouds GUI provides options for customizing the cloud: max words, font, layout,\n"
+    "lemmatization, stopword removal, POS-tag coloring, and more.\n\n"
+    "Click 'Open Wordclouds GUI' to access the full set of options.")
+
+wc_description = tk.Label(tab_wordclouds, text='Wordcloud visualization',
+                          font=("Courier", 12, "bold"), foreground="red")
+wc_description.place(x=10, y=10)
+
+wc_info = tk.Label(tab_wordclouds, justify='left', wraplength=700,
+    text="Generate word clouds to visualize word frequency and prominence.\n\n"
+         "Wordclouds can be produced from raw text files or from CSV files\n"
+         "containing word-frequency data.\n\n"
+         "Options include: max number of words, font selection, horizontal/free layout,\n"
+         "lemmatization, stopword/punctuation exclusion, POS-tag coloring, and MWE handling.")
+wc_info.place(x=10, y=45)
+
+wc_open_button = tk.Button(tab_wordclouds, text='Open Wordclouds GUI', width=20,
+                           command=lambda: run_script_util.run_script("wordclouds_main.py"))
+wc_open_button.place(x=10, y=170)
+
+
 # ── changed_filename (populates all menus across all tabs) ────────────────────
 
 def changed_filename(tracedInputFile):
@@ -1632,6 +1689,10 @@ def run_command():
                     color_1_style_var.get(),
                     histogram_nbins_var.get(), histogram_category_var.get(), histogram_marginal_var.get(),
                     violin_points_var.get(), violin_category_var.get())
+    elif active_tab == 4:  # Geographic
+        run_script_util.run_script("GIS_main.py")
+    elif active_tab == 5:  # Wordclouds
+        run_script_util.run_script("wordclouds_main.py")
 
 run_script_command = lambda: run_command()
 GUI_util.run_button.configure(command=run_script_command)
@@ -1725,8 +1786,10 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                                          "Select a tab to choose the type of visualization you wish to produce.\n\n"
                                                          "RELATIONAL tab: Network graphs (Gephi, vis.js) and Sankey charts to visualize relationships between entities (e.g., Subject-Verb-Object).\n\n"
                                                          "CATEGORICAL tab: Colormap/heatmap, Comparative bar charts, Grouped bar, Stacked bar, Sunburst, Treemap, and Waffle charts to visualize categorical data.\n\n"
-                                                         "TEMPORAL tab: Time mapper to visualize temporal data along a timeline.\n\n"
-                                                         "NUMERIC tab: Excel/Plotly charts, Boxplots, and Bubble charts to visualize numeric/statistical data.")
+                                                         "TEMPORAL tab: Time mapper, Calendar heatmap, and Timeline plot to visualize temporal data.\n\n"
+                                                         "NUMERIC tab: Excel/Plotly charts, Boxplots, Bubble charts, Correlation heatmap, Histogram, and Violin plot to visualize numeric/statistical data.\n\n"
+                                                         "GEOGRAPHIC tab: Open the GIS GUI to map locations extracted from your corpus.\n\n"
+                                                         "WORDCLOUDS tab: Open the Wordclouds GUI to generate word clouds from text or CSV data.")
     y_multiplier_integer += 6
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer - 1
