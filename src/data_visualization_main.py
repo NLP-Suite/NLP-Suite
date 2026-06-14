@@ -631,6 +631,8 @@ tab_temporal = ttk.Frame(notebook)
 tab_numeric = ttk.Frame(notebook)
 tab_geographic = ttk.Frame(notebook)
 tab_wordclouds = ttk.Frame(notebook)
+tab_tree = ttk.Frame(notebook)
+tab_migration = ttk.Frame(notebook)
 
 notebook.add(tab_relational, text=' Relational ')
 notebook.add(tab_categorical, text=' Categorical ')
@@ -638,6 +640,8 @@ notebook.add(tab_temporal, text=' Temporal ')
 notebook.add(tab_numeric, text=' Numeric ')
 notebook.add(tab_geographic, text=' Geographic ')
 notebook.add(tab_wordclouds, text=' Wordclouds ')
+notebook.add(tab_tree, text=' Hierarchical tree ')
+notebook.add(tab_migration, text=' Migration map ')
 
 # Advance y_multiplier_integer past the notebook area (280px / 40px per row = 7 rows)
 y_multiplier_integer = y_multiplier_integer + 7
@@ -1382,6 +1386,96 @@ wc_open_button = tk.Button(tab_wordclouds, text='Open Wordclouds GUI', width=20,
 wc_open_button.place(x=10, y=170)
 
 
+# ── Tab 7: Hierarchical tree ──────────────────────────────────────────────────
+
+tab_help(tab_tree, 10,
+    "Build an interactive hierarchical tree from a CSV file with parent-child columns.\n\n"
+    "Use cases: family trees/genealogy, organizational charts, PC-ACE grammar hierarchies,\n"
+    "narrative structure, dependency trees.\n\n"
+    "Select the parent and child columns from the dropdown menus below, then click RUN.\n"
+    "Optionally select a label column (display name), info column (tooltip details),\n"
+    "and color column (group nodes by category).")
+
+tree_description = tk.Label(tab_tree, text='Hierarchical tree visualization',
+                            font=("Courier", 12, "bold"), foreground="red")
+tree_description.place(x=10, y=10)
+
+tree_parent_label = tk.Label(tab_tree, text='Parent column:')
+tree_parent_label.place(x=10, y=50)
+tree_parent_var = tk.StringVar()
+tree_parent_menu = ttk.Combobox(tab_tree, textvariable=tree_parent_var, width=25, state='readonly')
+tree_parent_menu.place(x=120, y=50)
+
+tree_child_label = tk.Label(tab_tree, text='Child column:')
+tree_child_label.place(x=310, y=50)
+tree_child_var = tk.StringVar()
+tree_child_menu = ttk.Combobox(tab_tree, textvariable=tree_child_var, width=25, state='readonly')
+tree_child_menu.place(x=410, y=50)
+
+tree_label_label = tk.Label(tab_tree, text='Label column (optional):')
+tree_label_label.place(x=10, y=85)
+tree_label_var = tk.StringVar()
+tree_label_menu = ttk.Combobox(tab_tree, textvariable=tree_label_var, width=25, state='readonly')
+tree_label_menu.place(x=170, y=85)
+
+tree_info_label = tk.Label(tab_tree, text='Info/tooltip column (optional):')
+tree_info_label.place(x=10, y=120)
+tree_info_var = tk.StringVar()
+tree_info_menu = ttk.Combobox(tab_tree, textvariable=tree_info_var, width=25, state='readonly')
+tree_info_menu.place(x=200, y=120)
+
+tree_color_label = tk.Label(tab_tree, text='Color-group column (optional):')
+tree_color_label.place(x=10, y=155)
+tree_color_var = tk.StringVar()
+tree_color_menu = ttk.Combobox(tab_tree, textvariable=tree_color_var, width=25, state='readonly')
+tree_color_menu.place(x=200, y=155)
+
+
+# ── Tab 8: Migration map ─────────────────────────────────────────────────────
+
+tab_help(tab_migration, 10,
+    "Build an animated migration map showing how entities move across locations over time.\n\n"
+    "Use cases: character movement in novels, historical migration patterns, NER-extracted\n"
+    "location sequences, biographical research.\n\n"
+    "Select the entity (person/character) column and location column from the dropdowns.\n"
+    "Optionally select a date or sequence column for temporal ordering.\n"
+    "If your CSV has pre-geocoded coordinates, select the latitude/longitude columns.")
+
+mig_description = tk.Label(tab_migration, text='Animated migration map',
+                           font=("Courier", 12, "bold"), foreground="red")
+mig_description.place(x=10, y=10)
+
+mig_entity_label = tk.Label(tab_migration, text='Entity/person column:')
+mig_entity_label.place(x=10, y=50)
+mig_entity_var = tk.StringVar()
+mig_entity_menu = ttk.Combobox(tab_migration, textvariable=mig_entity_var, width=25, state='readonly')
+mig_entity_menu.place(x=160, y=50)
+
+mig_location_label = tk.Label(tab_migration, text='Location column:')
+mig_location_label.place(x=370, y=50)
+mig_location_var = tk.StringVar()
+mig_location_menu = ttk.Combobox(tab_migration, textvariable=mig_location_var, width=25, state='readonly')
+mig_location_menu.place(x=490, y=50)
+
+mig_date_label = tk.Label(tab_migration, text='Date/sequence column (optional):')
+mig_date_label.place(x=10, y=85)
+mig_date_var = tk.StringVar()
+mig_date_menu = ttk.Combobox(tab_migration, textvariable=mig_date_var, width=25, state='readonly')
+mig_date_menu.place(x=220, y=85)
+
+mig_lat_label = tk.Label(tab_migration, text='Latitude column (optional):')
+mig_lat_label.place(x=10, y=120)
+mig_lat_var = tk.StringVar()
+mig_lat_menu = ttk.Combobox(tab_migration, textvariable=mig_lat_var, width=25, state='readonly')
+mig_lat_menu.place(x=190, y=120)
+
+mig_lon_label = tk.Label(tab_migration, text='Longitude column (optional):')
+mig_lon_label.place(x=400, y=120)
+mig_lon_var = tk.StringVar()
+mig_lon_menu = ttk.Combobox(tab_migration, textvariable=mig_lon_var, width=25, state='readonly')
+mig_lon_menu.place(x=580, y=120)
+
+
 # ── changed_filename (populates all menus across all tabs) ────────────────────
 
 def changed_filename(tracedInputFile):
@@ -1502,6 +1596,22 @@ def changed_filename(tracedInputFile):
     m_cv.add_command(label='', command=lambda: calendar_value_var.set(''))
     for s in menu_values_local:
         m_cv.add_command(label=s, command=lambda value=s: calendar_value_var.set(value))
+
+    # Hierarchical tree tab menus
+    tree_vals = [''] + list(menu_values_local)
+    tree_parent_menu['values'] = tree_vals
+    tree_child_menu['values'] = tree_vals
+    tree_label_menu['values'] = tree_vals
+    tree_info_menu['values'] = tree_vals
+    tree_color_menu['values'] = tree_vals
+
+    # Migration map tab menus
+    mig_vals = [''] + list(menu_values_local)
+    mig_entity_menu['values'] = mig_vals
+    mig_location_menu['values'] = mig_vals
+    mig_date_menu['values'] = mig_vals
+    mig_lat_menu['values'] = mig_vals
+    mig_lon_menu['values'] = mig_vals
 
     clear("<Escape>")
 
@@ -1693,6 +1803,34 @@ def run_command():
         run_script_util.run_script("GIS_main.py")
     elif active_tab == 5:  # Wordclouds
         run_script_util.run_script("wordclouds_main.py")
+    elif active_tab == 6:  # Hierarchical tree
+        if not tree_parent_var.get() or not tree_child_var.get():
+            mb.showwarning("Warning", "Please select at least the Parent and Child columns for the hierarchical tree.")
+            return
+        outputFiles = charts_util.hierarchical_tree(
+            inputFile, outputDir,
+            tree_parent_var.get(), tree_child_var.get(),
+            label_col=tree_label_var.get() or None,
+            info_col=tree_info_var.get() or None,
+            color_col=tree_color_var.get() or None)
+        if outputFiles:
+            filesToOpen = outputFiles if isinstance(outputFiles, list) else [outputFiles]
+            if openOutputFiles:
+                IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+    elif active_tab == 7:  # Migration map
+        if not mig_entity_var.get() or not mig_location_var.get():
+            mb.showwarning("Warning", "Please select at least the Entity/person and Location columns for the migration map.")
+            return
+        outputFiles = charts_util.animated_migration_map(
+            inputFile, outputDir,
+            mig_entity_var.get(), mig_location_var.get(),
+            date_col=mig_date_var.get() or None,
+            lat_col=mig_lat_var.get() or None,
+            lon_col=mig_lon_var.get() or None)
+        if outputFiles:
+            filesToOpen = outputFiles if isinstance(outputFiles, list) else [outputFiles]
+            if openOutputFiles:
+                IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 run_script_command = lambda: run_command()
 GUI_util.run_button.configure(command=run_script_command)
@@ -1789,7 +1927,9 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                                          "TEMPORAL tab: Time mapper, Calendar heatmap, and Timeline plot to visualize temporal data.\n\n"
                                                          "NUMERIC tab: Excel/Plotly charts, Boxplots, Bubble charts, Correlation heatmap, Histogram, and Violin plot to visualize numeric/statistical data.\n\n"
                                                          "GEOGRAPHIC tab: Open the GIS GUI to map locations extracted from your corpus.\n\n"
-                                                         "WORDCLOUDS tab: Open the Wordclouds GUI to generate word clouds from text or CSV data.")
+                                                         "WORDCLOUDS tab: Open the Wordclouds GUI to generate word clouds from text or CSV data.\n\n"
+                                                         "HIERARCHICAL TREE tab: Build an interactive tree from parent-child CSV data (genealogy, grammar hierarchies, org charts).\n\n"
+                                                         "MIGRATION MAP tab: Animate entity movement across locations over time (character tracking, historical migration, NER-extracted paths).")
     y_multiplier_integer += 6
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer - 1
