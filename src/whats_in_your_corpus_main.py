@@ -53,7 +53,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             open_GIS_GUI_var.get(),
                             SVO_var.get(),
                             open_SVO_GUI_var.get(),
-                            open_word2vec_GUI_var.get())
+                            open_word2vec_GUI_var.get(),
+                            open_sentiment_GUI_var.get())
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 def run(inputFilename,inputDir, outputDir,
@@ -76,7 +77,8 @@ def run(inputFilename,inputDir, outputDir,
         open_GIS_GUI_var,
         SVO_var,
         open_SVO_GUI_var,
-        open_word2vec_GUI_var):
+        open_word2vec_GUI_var,
+        open_sentiment_GUI_var):
 
     config_filename = GUI_util.config_filename_selected_config.get()
     filesToOpen=[]
@@ -112,7 +114,8 @@ def run(inputFilename,inputDir, outputDir,
         GIS_var == False and \
         # ((SVO_var == False) or (SVO_var == True and open_SVO_GUI_var == False))):
         SVO_var == False and \
-        open_word2vec_GUI_var == False):
+        open_word2vec_GUI_var == False and \
+        open_sentiment_GUI_var == False):
             mb.showwarning(title='No options selected', message='No options have been selected.\n\nPlease, select an option and try again.')
             return
 
@@ -356,6 +359,10 @@ def run(inputFilename,inputDir, outputDir,
     # Word2Vec
     if open_word2vec_GUI_var:
         run_script_util.run_script("word2vec_main.py")
+
+    # Sentiment analysis
+    if open_sentiment_GUI_var:
+        run_script_util.run_script("sentiment_analysis_main.py")
 
     #  what else ---------------------------------------------------------------------------------
     nouns_var=False
@@ -688,8 +695,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=590, # height at brief display
-                             GUI_height_full=630, # height at full display
+                             GUI_height_brief=630, # height at brief display
+                             GUI_height_full=670, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=1, # to be added for full display
                              increment=1)  # to be added for full display
@@ -965,6 +972,11 @@ what_else_menu_var.trace('w',activate_what_else_menu)
 
 activate_what_else_menu()
 
+open_sentiment_GUI_var = tk.IntVar()
+open_sentiment_GUI_var.set(0)
+sentiment_checkbox = tk.Checkbutton(window,text="Sentiment analysis (via BERT, VADER, NRC, SentiWordNet, ANEW, hedonometer) (Open GUI)", variable=open_sentiment_GUI_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,sentiment_checkbox)
+
 GIS_var.set(1)
 GIS_checkbox = tk.Checkbutton(window,text="GIS (Geographic Information System) pipeline", variable=GIS_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,GIS_checkbox, True)
@@ -1029,6 +1041,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox to open the topic modeling GUI.\n\nThe topic modeling GUI provides access to three approaches:\n  - BERTopic (transformer-based, best for 100+ documents)\n  - Gensim LDA (fast, works well on small corpora)\n  - MALLET LDA (Java-based, requires separate installation)")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox to open the Word embeddings GUI.\n\nThe GUI provides three tools:\n  - Word embeddings via BERT (contextual embeddings from a pre-trained English language model)\n  - Word2Vec via Gensim (static embeddings trained on your corpus, Skip-Gram or CBOW)\n  - Word sense disambiguation via BERT (automatically identifies different senses of a word in your corpus)")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox to analyze your corpus for a variety of tools. Select the default \'*\' to run all options. Allternatively, select the specific option to run.\n\nThe NLP tools will allow you to answer questions such as:\n  1. Are there dialogues in your corpus? The CoreNLP QUOTE annotator extracts quotes from text and attributes the quote to the speaker. The default CoreNLP parameter is DOUBLE quotes. If you want to process both DOUBLE and SINGLE quotes, plase tick the checkbox 'Include single quotes.'\n  .2 Do nouns and verbs cluster in specific aggregates (e.g., communication, movement)?\n  3. Does the corpus contain references to people (by gender) and organizations?\n  4.  References to dates and times?\n  5. References to geographical locations that could be placed on a map?\n  6. References to nature (e.g., weather, seasons, animals, plants)?")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox to open the Sentiment Analysis GUI.\n\nThe GUI provides multiple approaches:\n  - Large Language Models: BERT (English and Multilingual)\n  - Neural network: Stanford CoreNLP, Stanza\n  - Dictionary-based: ANEW, hedonometer, NRC (emotion wheel), spaCy/TextBlob, SentiWordNet, VADER\n  - Character-level: Character Emotion Arcs (NER + NRC)")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to run the GIS pipeline to extract locations from your input document(s) and map them in Google Earth Pro and Google Maps.\n\nThe GIS function in this GUI is based on the following default options:" \
             "\n  use Nominatim for geocoding "\
             "\n  use Google Earth Pro & Google Maps for mapping "\
