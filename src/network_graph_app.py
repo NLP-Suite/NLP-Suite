@@ -1,8 +1,13 @@
 """Standalone vis.js Network Graph Viewer.
 
-A lightweight tkinter application that opens a CSV file and generates
-an interactive vis.js network graph in the browser.  Designed to be
-bundled with PyInstaller as a self-contained executable.
+Double-click the executable (or run from source) to pick a CSV file.
+The app auto-detects columns and immediately opens an interactive
+vis.js network graph in your default browser.
+
+Expected CSV columns (auto-detected, case-insensitive):
+  - Node columns: Subject/S, Object/O (or first and third columns)
+  - Edge column:  Verb/V (or second column)
+  - Optional:     Date, Image/Photo (URL or local path for node portraits)
 
 Usage (source):  python network_graph_app.py
 Usage (exe):     NetworkGraphViewer.exe
@@ -11,19 +16,44 @@ Usage (exe):     NetworkGraphViewer.exe
 import os
 import sys
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from tkinter import filedialog
 import webbrowser
 
 import pandas as pd
 
-# ---------------------------------------------------------------------------
-# Inline the network-graph builder so the standalone exe has zero dependency
-# on the NLP Suite codebase.  This is a trimmed copy of
-# charts_util.network_graph_visjs() — kept in sync manually.
-# ---------------------------------------------------------------------------
+
+def _detect_columns(df):
+    """Auto-detect SVO, date, and image columns from a DataFrame."""
+    cols = list(df.columns)
+    col_lower = {c: c.lower().strip() for c in cols}
+
+    col1 = col2 = col3 = date_col = image_col = None
+
+    for c, cl in col_lower.items():
+        if col1 is None and ('subject' in cl or cl in ('s', 'source', 'node1', 'from')):
+            col1 = c
+        elif col3 is None and ('object' in cl or cl in ('o', 'target', 'node2', 'to')):
+            col3 = c
+        elif col2 is None and ('verb' in cl or cl in ('v', 'edge', 'relation', 'link', 'relationship')):
+            col2 = c
+        if date_col is None and ('date' in cl or 'time' in cl or 'year' in cl):
+            date_col = c
+        if image_col is None and cl in ('image', 'photo', 'picture', 'img', 'portrait',
+                                         'image_url', 'photo_url', 'picture_url'):
+            image_col = c
+
+    if not col1 and len(cols) >= 3:
+        col1 = cols[0]
+    if not col2 and len(cols) >= 3:
+        col2 = cols[1]
+    if not col3 and len(cols) >= 3:
+        col3 = cols[2]
+
+    return col1, col2, col3, date_col, image_col
+
 
 def _build_network_html(inputFilename, outputDir, col1, col2, col3,
-                        date_col=None, top_n_per_role=15):
+                        date_col=None, image_col=None, top_n_per_role=15):
     """Build an interactive vis.js network graph and return the HTML path."""
     import json as _json
     import math as _math
@@ -39,6 +69,19 @@ def _build_network_html(inputFilename, outputDir, col1, col2, col3,
             raise ValueError(f"Column '{c}' not found in CSV")
 
     _has_dates = date_col and date_col in df.columns
+    _has_images = image_col and image_col in df.columns
+
+    # Build image lookup: node label -> image URL
+    node_image = {}
+    if _has_images:
+        for _, row in df.iterrows():
+            img = str(row.get(image_col, '')).strip()
+            if img and img != 'nan':
+                for sc in [col1, col3]:
+                    val = str(row.get(sc, '')).strip()
+                    if val and val != 'nan' and val not in node_image:
+                        node_image[val] = img
+
     _net_cols = list(svo_cols)
     if _has_dates:
         _net_cols.append(date_col)
@@ -135,13 +178,23 @@ def _build_network_html(inputFilename, outputDir, col1, col2, col3,
         freq = node_freq.get(n, 1)
         sz = round(_node_size(freq), 1)
         fsz = max(10, min(22, int(10 + (sz - SIZE_MIN) / (SIZE_MAX - SIZE_MIN) * 12)))
-        vis_nodes.append({
+        node_entry = {
             'id': nid, 'label': n,
             'color': palette.get(rk, '#888'),
             'font': {'size': fsz},
-            'shape': 'dot', 'size': sz,
+            'size': sz,
             'title': '{} (freq: {})'.format(n, freq),
-            'role': rk})
+            'role': rk}
+        if n in node_image:
+            node_entry['shape'] = 'circularImage'
+            node_entry['image'] = node_image[n]
+            node_entry['brokenImage'] = ''
+            node_entry['borderWidth'] = 3
+            node_entry['color'] = {'border': palette.get(rk, '#888'),
+                                   'background': palette.get(rk, '#888')}
+        else:
+            node_entry['shape'] = 'dot'
+        vis_nodes.append(node_entry)
 
     all_verbs = sorted(set(v for labels in edge_labels.values() for v in labels))
     edge_color_palette = [
@@ -220,8 +273,6 @@ def _build_network_html(inputFilename, outputDir, col1, col2, col3,
     slider_display = 'block' if _has_dates else 'none'
     network_height = '78vh' if not _has_dates else '70vh'
 
-    _table_header_html = ''
-    _table_row_js = ''
     _th = []
     for _i, _rc in enumerate(role_labels):
         if _i > 0:
@@ -239,9 +290,11 @@ def _build_network_html(inputFilename, outputDir, col1, col2, col3,
     _td.append("'<td>' + t[{}] + '</td>'".format(len(svo_cols)))
     _table_row_js = ' + '.join(_td)
 
+    csv_name = os.path.splitext(os.path.basename(inputFilename))[0]
+
     html = """<!DOCTYPE html>
 <html><head><meta charset="utf-8">
-<title>Network Graph</title>
+<title>{csv_name} — Network Graph</title>
 <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 <style>
   body {{ font-family: Arial, sans-serif; margin: 0; }}
@@ -270,7 +323,7 @@ def _build_network_html(inputFilename, outputDir, col1, col2, col3,
   .o {{ color: #30A030; font-weight: bold; }}
 </style>
 </head><body>
-<div id="title">Network (top {top_n} per role) &mdash; click a node to see {role_arrow_label} chains</div>
+<div id="title">{csv_name} (top {top_n} per role) &mdash; click a node to see {role_arrow_label} chains</div>
 <div id="legend">{legend_html} &nbsp;&nbsp;&nbsp; <span style="font-size:12px;color:#666">&#9679; Node size = frequency</span></div>
 <div id="time-slider-container">
   <label>Timeline:</label>
@@ -422,6 +475,7 @@ network.on('click', function(params) {{
 </body></html>"""
 
     html = html.format(
+        csv_name=csv_name,
         network_height=network_height,
         slider_display=slider_display,
         top_n=top_n_per_role,
@@ -443,150 +497,43 @@ network.on('click', function(params) {{
 
 
 # ---------------------------------------------------------------------------
-# Tkinter GUI
+# Entry point — no GUI, just file picker → instant graph
 # ---------------------------------------------------------------------------
-
-class NetworkGraphApp:
-    def __init__(self, master):
-        self.master = master
-        master.title('Network Graph Viewer')
-        master.geometry('600x420')
-        master.resizable(False, False)
-
-        self.csv_path = tk.StringVar()
-        self.col1_var = tk.StringVar()
-        self.col2_var = tk.StringVar()
-        self.col3_var = tk.StringVar()
-        self.date_var = tk.StringVar(value='(none)')
-        self.topn_var = tk.IntVar(value=15)
-        self.columns = []
-
-        pad = {'padx': 12, 'pady': 4}
-
-        # Title
-        ttk.Label(master, text='Network Graph Viewer',
-                  font=('Segoe UI', 16, 'bold')).pack(pady=(12, 4))
-        ttk.Label(master, text='Generate interactive vis.js network graphs from CSV data',
-                  font=('Segoe UI', 9)).pack(pady=(0, 8))
-
-        # CSV file
-        f1 = ttk.Frame(master)
-        f1.pack(fill='x', **pad)
-        ttk.Label(f1, text='CSV file:').pack(side='left')
-        ttk.Entry(f1, textvariable=self.csv_path, width=45).pack(side='left', padx=4)
-        ttk.Button(f1, text='Browse…', command=self._browse).pack(side='left')
-
-        # Column selectors
-        f2 = ttk.LabelFrame(master, text='Column mapping')
-        f2.pack(fill='x', **pad)
-
-        for label, var in [('Node 1 (e.g. Subject):', self.col1_var),
-                           ('Edge label (e.g. Verb):', self.col2_var),
-                           ('Node 2 (e.g. Object):', self.col3_var),
-                           ('Date column (optional):', self.date_var)]:
-            row = ttk.Frame(f2)
-            row.pack(fill='x', padx=8, pady=2)
-            ttk.Label(row, text=label, width=26).pack(side='left')
-            cb = ttk.Combobox(row, textvariable=var, width=28, state='readonly')
-            cb.pack(side='left')
-            if var is self.date_var:
-                self._date_cb = cb
-            elif var is self.col1_var:
-                self._col1_cb = cb
-            elif var is self.col2_var:
-                self._col2_cb = cb
-            elif var is self.col3_var:
-                self._col3_cb = cb
-
-        # Top N
-        f3 = ttk.Frame(master)
-        f3.pack(fill='x', **pad)
-        ttk.Label(f3, text='Top N values per role:').pack(side='left')
-        ttk.Spinbox(f3, from_=5, to=100, textvariable=self.topn_var,
-                     width=6).pack(side='left', padx=4)
-
-        # Generate button
-        self.gen_btn = ttk.Button(master, text='Generate Network Graph',
-                                  command=self._generate, state='disabled')
-        self.gen_btn.pack(pady=12)
-
-        # Status
-        self.status_var = tk.StringVar(value='Select a CSV file to begin.')
-        ttk.Label(master, textvariable=self.status_var,
-                  font=('Segoe UI', 9), foreground='#666').pack(pady=(0, 8))
-
-    def _browse(self):
-        path = filedialog.askopenfilename(
-            title='Select CSV file',
-            filetypes=[('CSV files', '*.csv'), ('All files', '*.*')])
-        if not path:
-            return
-        self.csv_path.set(path)
-        try:
-            df = pd.read_csv(path, nrows=5, encoding='utf-8', on_bad_lines='skip')
-        except UnicodeDecodeError:
-            df = pd.read_csv(path, nrows=5, encoding='ISO-8859-1', on_bad_lines='skip')
-        self.columns = list(df.columns)
-        cols_with_none = ['(none)'] + self.columns
-        self._col1_cb['values'] = self.columns
-        self._col2_cb['values'] = self.columns
-        self._col3_cb['values'] = self.columns
-        self._date_cb['values'] = cols_with_none
-
-        # Auto-detect SVO columns
-        for c in self.columns:
-            cl = c.lower().strip()
-            if 'subject' in cl or cl == 's':
-                self.col1_var.set(c)
-            elif 'verb' in cl or cl == 'v':
-                self.col2_var.set(c)
-            elif 'object' in cl or cl == 'o':
-                self.col3_var.set(c)
-            elif 'date' in cl:
-                self.date_var.set(c)
-
-        if not self.col1_var.get() and len(self.columns) >= 3:
-            self.col1_var.set(self.columns[0])
-            self.col2_var.set(self.columns[1])
-            self.col3_var.set(self.columns[2])
-
-        self.gen_btn.configure(state='normal')
-        self.status_var.set(f'Loaded {len(self.columns)} columns. Map them and click Generate.')
-
-    def _generate(self):
-        csv_path = self.csv_path.get()
-        if not csv_path or not os.path.isfile(csv_path):
-            messagebox.showerror('Error', 'Please select a valid CSV file.')
-            return
-        c1 = self.col1_var.get()
-        c2 = self.col2_var.get()
-        c3 = self.col3_var.get()
-        if not c1 or not c2 or not c3:
-            messagebox.showerror('Error', 'Please select all three column mappings.')
-            return
-        date_col = self.date_var.get()
-        if date_col == '(none)':
-            date_col = None
-        top_n = self.topn_var.get()
-        output_dir = os.path.dirname(csv_path)
-
-        self.status_var.set('Generating network graph…')
-        self.master.update()
-
-        try:
-            html_path = _build_network_html(csv_path, output_dir, c1, c2, c3,
-                                            date_col=date_col, top_n_per_role=top_n)
-            self.status_var.set(f'Saved: {os.path.basename(html_path)}')
-            webbrowser.open('file://' + os.path.abspath(html_path))
-        except Exception as e:
-            messagebox.showerror('Error', str(e))
-            self.status_var.set('Error generating graph.')
-
 
 def main():
     root = tk.Tk()
-    NetworkGraphApp(root)
-    root.mainloop()
+    root.withdraw()
+
+    csv_path = filedialog.askopenfilename(
+        title='Select CSV file for Network Graph',
+        filetypes=[('CSV files', '*.csv'), ('All files', '*.*')])
+
+    if not csv_path:
+        sys.exit(0)
+
+    try:
+        df = pd.read_csv(csv_path, encoding='utf-8', on_bad_lines='skip')
+    except UnicodeDecodeError:
+        df = pd.read_csv(csv_path, encoding='ISO-8859-1', on_bad_lines='skip')
+
+    col1, col2, col3, date_col, image_col = _detect_columns(df)
+
+    if not col1 or not col2 or not col3:
+        from tkinter import messagebox
+        messagebox.showerror('Error',
+            f'Could not detect 3 columns in CSV.\n'
+            f'Found columns: {list(df.columns)}\n\n'
+            f'Expected: Subject/S, Verb/V, Object/O (or at least 3 columns).')
+        sys.exit(1)
+
+    output_dir = os.path.dirname(csv_path)
+
+    html_path = _build_network_html(
+        csv_path, output_dir, col1, col2, col3,
+        date_col=date_col, image_col=image_col)
+
+    webbrowser.open('file://' + os.path.abspath(html_path))
+    root.destroy()
 
 
 if __name__ == '__main__':
