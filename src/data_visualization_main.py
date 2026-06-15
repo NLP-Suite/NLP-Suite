@@ -1366,6 +1366,11 @@ def run_entity_location_tracking():
     import NER_location_tracking_util
     filesToOpen = NER_location_tracking_util.main(inputFile, inputDir, outputDir)
     if filesToOpen:
+        csv_files = [f for f in filesToOpen if f.endswith('.csv')]
+        if csv_files:
+            GUI_util.inputFilename.set(csv_files[0])
+            mig_entity_var.set('Entity')
+            mig_location_var.set('Location')
         if openOutputFiles:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
