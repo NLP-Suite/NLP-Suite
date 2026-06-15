@@ -53,7 +53,8 @@ def run(inputFilename,
         restrict_var,
         map_locations,
         GIS_package_var,
-        Google_Earth_OpenGUI):
+        Google_Earth_OpenGUI,
+        map_characters):
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -290,6 +291,24 @@ def run(inputFilename,
             mb.showwarning("Option not available","The " + GIS_package_var + " option is not available yet.\n\nSorry! Please, check back soon...")
             return
 
+    if map_characters:
+        import NER_location_tracking_util
+        import charts_util
+        trackingFiles = NER_location_tracking_util.main(inputFilename, inputDir, outputDir)
+        if trackingFiles:
+            csv_files = [f for f in trackingFiles if f.endswith('.csv')]
+            if csv_files:
+                mapFiles = charts_util.animated_migration_map(
+                    csv_files[0], outputDir, 'Entity', 'Location')
+                if mapFiles:
+                    filesToOpen.extend(mapFiles if isinstance(mapFiles, list) else [mapFiles])
+            filesToOpen.extend(trackingFiles)
+            if openOutputFiles:
+                IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
+        else:
+            mb.showwarning("No results", "No person-location pairs were found in the input text.\n\nThe animated character movement map requires text that mentions both people and places.")
+        return
+
     if Google_Earth_OpenGUI:
         run_script_util.run_script("GIS_Google_Earth_main.py")
         return
@@ -312,7 +331,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             restrict_var.get(),
                             map_locations_var.get(),
                             GIS_package_var.get(),
-                            Google_Earth_OpenGUI.get())
+                            Google_Earth_OpenGUI.get(),
+                            map_characters_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -323,8 +343,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=520, # height at brief display
-                                                 GUI_height_full=600, # height at full display
+                                                 GUI_height_brief=560, # height at brief display
+                                                 GUI_height_full=640, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=2, # to be added for full display
                                                  increment=2)  # to be added for full display
@@ -386,6 +406,7 @@ def clear(e):
     geocoder_var.set('Nominatim')
     country_bias_var.set('')
     area_var.set('e.g., (34.98527, -85.59790), (30.770444, -81.521974)')
+    map_characters_var.set(0)
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -709,6 +730,24 @@ GIS_package2_checkbox.config(text="Google Earth Pro - Open GUI")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                     GIS_package2_checkbox, False, False, True, False,
                     90, GUI_IO_util.open_reminders_x_coordinate, "Open the GIS_Google_Earth_main GUI.\nGUI opened automatically after running the NER location extractor (and geocoder).\nAfter the GUI opens, you will need to select as input the csv file produced by either the NER location extractor or the geocoder.")
+
+map_characters_var = tk.IntVar()
+map_characters_checkbox = tk.Checkbutton(window, variable=map_characters_var, onvalue=1, offvalue=0)
+map_characters_checkbox.config(text="MAP characters moving in time and space")
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                    map_characters_checkbox, True)
+
+map_characters_help_button = tk.Button(window, text='? HELP', width=5,
+    command=lambda: mb.showinfo("Map character movement",
+        "This option extracts person entities and locations from your text files using Stanza NER, "
+        "then produces an animated map showing how characters move across locations over the course of the narrative.\n\n"
+        "The map shows dashed lines connecting successive locations for each person, with a timeline slider "
+        "when dates or document sequence are available.\n\n"
+        "REQUIREMENT: Text file(s) in input (not a csv file).\n\n"
+        "The option uses the same NER extraction as the GIS pipeline but focuses on PERSON entities "
+        "and their co-occurring locations rather than geocoding all location mentions."))
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
+                    map_characters_help_button, False)
 
 open_API_config_lb = tk.Label(window, text='View Google API key')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,open_API_config_lb,True)
