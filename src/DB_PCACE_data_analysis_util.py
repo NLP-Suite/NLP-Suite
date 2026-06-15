@@ -7428,27 +7428,35 @@ def export_grammar_tree_csv(inputDir, outputDir):
             if k is not None and pd.notna(row.get('Name')):
                 simplex_name_map[k] = str(row['Name'])
 
+    db_name = os.path.basename(inputDir) if inputDir else 'Grammar'
     rows = []
 
-    # Complex-Complex hierarchy (Macro event → Event → Semantic triplet, etc.)
+    # Complex-Complex hierarchy (e.g., Macro event → Event → Semantic triplet)
+    # HigherComplex=-1 means the complex is a root (top-level object)
     if setup_xref_Complex_Complex_lib is not None and not setup_xref_Complex_Complex_lib.empty:
         for _, xrow in setup_xref_Complex_Complex_lib.iterrows():
             higher_id = _safe_int(xrow.get('HigherComplex'))
             lower_id = _safe_int(xrow.get('LowerComplex'))
-            if higher_id is None or lower_id is None:
+            if lower_id is None:
                 continue
-            parent_name = complex_name_map.get(higher_id, '')
             child_name = complex_name_map.get(lower_id, '')
-            if parent_name and child_name:
-                required = xrow.get('Required', '')
-                rows.append({
-                    'Parent': parent_name,
-                    'Child': child_name,
-                    'Type': 'Complex',
-                    'Required': str(required) if pd.notna(required) else ''
-                })
+            if not child_name:
+                continue
+            if higher_id is not None and higher_id == -1:
+                parent_name = db_name
+            else:
+                parent_name = complex_name_map.get(higher_id, '') if higher_id is not None else ''
+            if not parent_name:
+                continue
+            required = xrow.get('Required', '')
+            rows.append({
+                'Parent': parent_name,
+                'Child': child_name,
+                'Type': 'Complex',
+                'Required': str(required) if pd.notna(required) else ''
+            })
 
-    # Simplex-Complex: simplex children of each complex (Participant S, Process, etc.)
+    # Simplex-Complex: simplex children of each complex (e.g., Participant S, Process)
     if setup_xref_simplex_complex_lib is not None and not setup_xref_simplex_complex_lib.empty:
         for _, xrow in setup_xref_simplex_complex_lib.iterrows():
             complex_id = _safe_int(xrow.get('ID_setup_complex'))
@@ -7465,19 +7473,6 @@ def export_grammar_tree_csv(inputDir, outputDir):
                     'Type': 'Simplex',
                     'Required': str(required) if pd.notna(required) else ''
                 })
-
-    # Find root complexes (parents that are never children)
-    all_parents = {r['Parent'] for r in rows}
-    all_children = {r['Child'] for r in rows}
-    roots = all_parents - all_children
-    db_name = os.path.basename(inputDir) if inputDir else 'Grammar'
-    for root in roots:
-        rows.append({
-            'Parent': db_name,
-            'Child': root,
-            'Type': 'Complex',
-            'Required': ''
-        })
 
     if not rows:
         return ''
