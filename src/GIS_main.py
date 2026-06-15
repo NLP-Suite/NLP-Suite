@@ -97,6 +97,28 @@ def run(inputFilename,
             area=area_var if 'e.g.,' not in area_var else '',
             restrict=bool(restrict_var))
 
+    if map_characters:
+        outputDir_mc = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='GIS',
+                                                              silent=True)
+        if outputDir_mc == '':
+            return
+        import NER_location_tracking_util
+        import charts_util
+        trackingFiles = NER_location_tracking_util.main(inputFilename, inputDir, outputDir_mc)
+        if trackingFiles:
+            csv_files = [f for f in trackingFiles if f.endswith('.csv')]
+            if csv_files:
+                mapFiles = charts_util.animated_migration_map(
+                    csv_files[0], outputDir_mc, 'Entity', 'Location')
+                if mapFiles:
+                    filesToOpen.extend(mapFiles if isinstance(mapFiles, list) else [mapFiles])
+            filesToOpen.extend(trackingFiles)
+            if openOutputFiles:
+                IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir_mc, scriptName)
+        else:
+            mb.showwarning("No results", "No person-location pairs were found in the input text.\n\nThe animated character movement map requires text that mentions both people and places.")
+        return
+
     if NER_extractor==False and geocode_locations_var==False and GIS_package_var=='':
         mb.showwarning("Warning",
                        "No options have been selected.\n\nPlease, select an option to run and try again.")
@@ -290,24 +312,6 @@ def run(inputFilename,
         if GIS_package_var!='':
             mb.showwarning("Option not available","The " + GIS_package_var + " option is not available yet.\n\nSorry! Please, check back soon...")
             return
-
-    if map_characters:
-        import NER_location_tracking_util
-        import charts_util
-        trackingFiles = NER_location_tracking_util.main(inputFilename, inputDir, outputDir)
-        if trackingFiles:
-            csv_files = [f for f in trackingFiles if f.endswith('.csv')]
-            if csv_files:
-                mapFiles = charts_util.animated_migration_map(
-                    csv_files[0], outputDir, 'Entity', 'Location')
-                if mapFiles:
-                    filesToOpen.extend(mapFiles if isinstance(mapFiles, list) else [mapFiles])
-            filesToOpen.extend(trackingFiles)
-            if openOutputFiles:
-                IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
-        else:
-            mb.showwarning("No results", "No person-location pairs were found in the input text.\n\nThe animated character movement map requires text that mentions both people and places.")
-        return
 
     if Google_Earth_OpenGUI:
         run_script_util.run_script("GIS_Google_Earth_main.py")
