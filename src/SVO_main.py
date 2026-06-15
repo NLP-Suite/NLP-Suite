@@ -62,7 +62,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         gephi_var,
         wordcloud_var,
         google_earth_var,
-        compare_svo_var=False):
+        compare_svo_var=False,
+        map_characters_var=False):
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -111,7 +112,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                 subjects_dict_path_var, verbs_dict_path_var, objects_dict_path_var,
                 filter_subjects, filter_verbs, filter_objects,
                 lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
-                gephi_var, wordcloud_var, google_earth_var, False)
+                gephi_var, wordcloud_var, google_earth_var, False, map_characters_var)
             pkg_label = 'CoreNLP' if pkg == 'Stanford CoreNLP' else pkg
             if inputFilename != '':
                 base = os.path.basename(inputFilename)[0:-4]
@@ -695,6 +696,40 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                             else:
                                 filesToOpen.extend(outputFiles)
 
+    if map_characters_var and len(svo_result_list) > 0:
+        import charts_util as charts_util_mc
+        svo_file = svo_result_list[0]
+        try:
+            svo_df = pd.read_csv(svo_file, encoding='utf-8', on_bad_lines='skip')
+        except Exception:
+            svo_df = pd.DataFrame()
+        if 'Subject (S)' in svo_df.columns and 'Location' in svo_df.columns:
+            pairs = []
+            for _, row in svo_df.iterrows():
+                subj = str(row.get('Subject (S)', '')).strip()
+                locs = str(row.get('Location', '')).strip()
+                if subj and subj != 'nan' and subj != '?' and locs and locs != 'nan':
+                    doc = row.get('Document', '')
+                    sent_id = row.get('Sentence ID', '')
+                    for loc in locs.split(';'):
+                        loc = loc.strip()
+                        if loc:
+                            pairs.append({'Entity': subj, 'Location': loc,
+                                          'Document': doc, 'Sentence ID': sent_id})
+            if pairs:
+                pair_df = pd.DataFrame(pairs)
+                mc_output = IO_files_util.generate_output_file_name(inputFilename, inputDir,
+                                outputSVODir, '.csv', 'SVO_character-movement')
+                pair_df.to_csv(mc_output, index=False, encoding='utf-8')
+                filesToOpen.append(mc_output)
+                mapFiles = charts_util_mc.animated_migration_map(
+                    mc_output, outputSVODir, 'Entity', 'Location')
+                if mapFiles:
+                    filesToOpen.extend(mapFiles if isinstance(mapFiles, list) else [mapFiles])
+            else:
+                mb.showwarning("No character movement",
+                    "No SVO rows have both a Subject and a Location.\n\nThe animated character movement map requires sentences where a social actor appears with a location.")
+
     if compare_svo_var:
         compare_initialdir = GUI_util.output_dir_path.get()
         file_a = tk.filedialog.askopenfilename(title='Select FIRST SVO csv file (e.g., CoreNLP)',
@@ -767,7 +802,8 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  gephi_var.get(),
                                  wordcloud_var.get(),
                                  google_earth_var.get(),
-                                 compare_svo_var.get())
+                                 compare_svo_var.get(),
+                                 map_characters_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -778,8 +814,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=600, # height at brief display
-                             GUI_height_full=640, # height at full display
+                             GUI_height_brief=640, # height at brief display
+                             GUI_height_full=680, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -844,6 +880,7 @@ def clear(e):
     wordcloud_checkbox.configure(state='normal')
     google_earth_checkbox.configure(state='normal')
     compare_svo_var.set(0)
+    map_characters_var.set(0)
 
     global subject_filePath, verb_filePath, object_filePath
 
@@ -1205,6 +1242,15 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_c
                                    False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "Visualize GIS maps as pin and heat maps. Google Earth Pro and Google Maps will be used as mapping software if you have obtained a free Google API key. Otherwise, Python folium will be used.\n"
                                    "Read the TIPS file 'Google API Key' on how to get the API key.\nMaps are exported to the SVO subdirectory only, whether filtering or lemmatizing to avoid missing locations.")
+map_characters_var = tk.IntVar()
+map_characters_checkbox = tk.Checkbutton(window, text='MAP S(ubjects) moving in time and space',
+                                       variable=map_characters_var, onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
+                                   map_characters_checkbox,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "Produce an animated map showing how SVO subjects (social actors) move across locations over the course of the narrative.\n"
+                                   "Uses the Subject (S) column as the moving entity and the Location column from the SVO output to track movement.\n"
+                                   "Unlike the GIS NER approach, this captures common-noun actors (e.g., 'the mob', 'soldiers') not just proper names.")
 compare_svo_var = tk.IntVar()
 compare_svo_checkbox = tk.Checkbutton(window, text='Compare SVO results across parsers',
                                        variable=compare_svo_var, onvalue=1, offvalue=0)
