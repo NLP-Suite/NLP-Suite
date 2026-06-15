@@ -7395,3 +7395,81 @@ def _find_documents_in_children(data_complex_id, visited=None):
 
     return doc_ids
 
+
+def export_grammar_tree_csv(inputDir, outputDir):
+    """Export the PC-ACE grammar structure as a parent-child CSV for hierarchical tree visualization.
+
+    Builds rows from setup_Complex, setup_Simplex, setup_xref_Complex-Complex,
+    and setup_xref_Simplex-Complex tables.
+
+    Returns the output CSV path, or '' on failure.
+    """
+    global setup_Complex_lib, setup_Simplex_lib, setup_xref_Complex_Complex_lib, setup_xref_simplex_complex_lib
+
+    if setup_Complex_lib is None or setup_Complex_lib.empty:
+        return ''
+
+    complex_name_map = {}
+    for _, row in setup_Complex_lib.iterrows():
+        complex_name_map[row['ID_setup_complex']] = row['Name']
+
+    simplex_name_map = {}
+    if setup_Simplex_lib is not None and not setup_Simplex_lib.empty:
+        for _, row in setup_Simplex_lib.iterrows():
+            simplex_name_map[row['ID_setup_simplex']] = row['Name']
+
+    rows = []
+
+    # Complex-Complex hierarchy
+    if setup_xref_Complex_Complex_lib is not None and not setup_xref_Complex_Complex_lib.empty:
+        for _, xrow in setup_xref_Complex_Complex_lib.iterrows():
+            higher_id = xrow.get('HigherComplex')
+            lower_id = xrow.get('LowerComplex')
+            parent_name = complex_name_map.get(higher_id, '')
+            child_name = complex_name_map.get(lower_id, '')
+            if parent_name and child_name:
+                required = xrow.get('Required', '')
+                rows.append({
+                    'Parent': parent_name,
+                    'Child': child_name,
+                    'Type': 'Complex',
+                    'Required': str(required) if pd.notna(required) else ''
+                })
+
+    # Simplex-Complex: simplex children of each complex
+    if setup_xref_simplex_complex_lib is not None and not setup_xref_simplex_complex_lib.empty:
+        for _, xrow in setup_xref_simplex_complex_lib.iterrows():
+            complex_id = xrow.get('ID_setup_complex')
+            simplex_id = xrow.get('ID_setup_simplex')
+            parent_name = complex_name_map.get(complex_id, '')
+            child_name = simplex_name_map.get(simplex_id, '')
+            if parent_name and child_name:
+                required = xrow.get('Required', '')
+                rows.append({
+                    'Parent': parent_name,
+                    'Child': child_name,
+                    'Type': 'Simplex',
+                    'Required': str(required) if pd.notna(required) else ''
+                })
+
+    # Find root complexes (parents that are never children)
+    all_parents = {r['Parent'] for r in rows}
+    all_children = {r['Child'] for r in rows}
+    roots = all_parents - all_children
+    db_name = os.path.basename(inputDir) if inputDir else 'Grammar'
+    for root in roots:
+        rows.append({
+            'Parent': db_name,
+            'Child': root,
+            'Type': 'Complex',
+            'Required': ''
+        })
+
+    if not rows:
+        return ''
+
+    df = pd.DataFrame(rows)
+    outputFilename = os.path.join(outputDir, 'PC-ACE_grammar_tree.csv')
+    df.to_csv(outputFilename, index=False, encoding='utf-8')
+    return outputFilename
+

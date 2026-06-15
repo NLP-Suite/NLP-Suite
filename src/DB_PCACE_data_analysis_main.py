@@ -605,6 +605,29 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "Click to update the current complex objects identifiers saved in the table data_Complex.xlsx and data_Complex.pkl")
 
+def visualize_grammar_tree():
+    outputDir_val = GUI_util.output_dir_path.get()
+    inputDir_val = inputDir.get()
+    if not inputDir_val:
+        mb.showwarning(title='Warning', message='Please, select an input directory containing PC-ACE xlsx tables.')
+        return
+    csv_path = DB_PCACE_data_analysis_util.export_grammar_tree_csv(inputDir_val, outputDir_val)
+    if csv_path:
+        import charts_util
+        outputFiles = charts_util.hierarchical_tree(csv_path, outputDir_val,
+            parent_col='Parent', child_col='Child', color_col='Type')
+        if outputFiles:
+            IO_files_util.OpenOutputFiles(GUI_util.window, True, outputFiles, outputDir_val)
+    else:
+        mb.showwarning(title='Warning', message='No grammar structure found.\n\nPlease, make sure the PC-ACE database is loaded.')
+
+visualize_grammar_tree_button = tk.Button(window, text='Visualize grammar tree', width=20, height=1, state='disabled',
+    command=lambda: visualize_grammar_tree())
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate+20, y_multiplier_integer,
+                                   visualize_grammar_tree_button,
+                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   "Click to export the grammar as a parent-child CSV and visualize it as an interactive D3.js hierarchical tree.\nThe tree shows complex objects and their simplex children, color-coded by type.")
+
 object_type_lb = tk.Label(window, text='Object ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,y_multiplier_integer,object_type_lb,True)
 
@@ -1517,6 +1540,7 @@ def changed_filename(*args):
             view_grammar_button.configure(state='normal')
             update_grammar_button.configure(state='normal')
             update_identifier_button.configure(state='normal')
+            visualize_grammar_tree_button.configure(state='normal')
             rename_button.configure(state='normal')
             remove_button.configure(state='normal')
             merge_button.configure(state='normal')
