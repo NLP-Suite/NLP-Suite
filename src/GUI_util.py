@@ -1141,6 +1141,19 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
         else:
             IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptName, silent)
 
+    if inputFilename.get().endswith('_test_text.txt') and os.path.isfile(inputFilename.get()):
+        import tkinter.messagebox as mb
+        keep = mb.askyesno("Quick test text still active",
+                           "The INPUT file is currently set to the quick-test text file:\n\n"
+                           + inputFilename.get() +
+                           "\n\nThis was pasted in a previous session via the paste-text button. "
+                           "It will remain in effect for this GUI unless you clear it."
+                           "\n\nDo you want to keep using this test text?\n\n"
+                           "Click YES to keep using it.\n"
+                           "Click NO to clear it and revert to your I/O configuration.")
+        if not keep:
+            inputFilename.set('')
+
     old_license_file=os.path.join(GUI_IO_util.libPath, 'LICENSE-NLP-1.0.txt')
     if os.path.isfile(old_license_file):
         # rename the file to the new standard
