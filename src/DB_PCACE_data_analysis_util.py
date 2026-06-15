@@ -7409,22 +7409,34 @@ def export_grammar_tree_csv(inputDir, outputDir):
     if setup_Complex_lib is None or setup_Complex_lib.empty:
         return ''
 
+    def _safe_int(v):
+        try:
+            return int(v)
+        except (ValueError, TypeError):
+            return None
+
     complex_name_map = {}
     for _, row in setup_Complex_lib.iterrows():
-        complex_name_map[row['ID_setup_complex']] = row['Name']
+        k = _safe_int(row['ID_setup_complex'])
+        if k is not None and pd.notna(row.get('Name')):
+            complex_name_map[k] = str(row['Name'])
 
     simplex_name_map = {}
     if setup_Simplex_lib is not None and not setup_Simplex_lib.empty:
         for _, row in setup_Simplex_lib.iterrows():
-            simplex_name_map[row['ID_setup_simplex']] = row['Name']
+            k = _safe_int(row['ID_setup_simplex'])
+            if k is not None and pd.notna(row.get('Name')):
+                simplex_name_map[k] = str(row['Name'])
 
     rows = []
 
-    # Complex-Complex hierarchy
+    # Complex-Complex hierarchy (Macro event → Event → Semantic triplet, etc.)
     if setup_xref_Complex_Complex_lib is not None and not setup_xref_Complex_Complex_lib.empty:
         for _, xrow in setup_xref_Complex_Complex_lib.iterrows():
-            higher_id = xrow.get('HigherComplex')
-            lower_id = xrow.get('LowerComplex')
+            higher_id = _safe_int(xrow.get('HigherComplex'))
+            lower_id = _safe_int(xrow.get('LowerComplex'))
+            if higher_id is None or lower_id is None:
+                continue
             parent_name = complex_name_map.get(higher_id, '')
             child_name = complex_name_map.get(lower_id, '')
             if parent_name and child_name:
@@ -7436,11 +7448,13 @@ def export_grammar_tree_csv(inputDir, outputDir):
                     'Required': str(required) if pd.notna(required) else ''
                 })
 
-    # Simplex-Complex: simplex children of each complex
+    # Simplex-Complex: simplex children of each complex (Participant S, Process, etc.)
     if setup_xref_simplex_complex_lib is not None and not setup_xref_simplex_complex_lib.empty:
         for _, xrow in setup_xref_simplex_complex_lib.iterrows():
-            complex_id = xrow.get('ID_setup_complex')
-            simplex_id = xrow.get('ID_setup_simplex')
+            complex_id = _safe_int(xrow.get('ID_setup_complex'))
+            simplex_id = _safe_int(xrow.get('ID_setup_simplex'))
+            if complex_id is None or simplex_id is None:
+                continue
             parent_name = complex_name_map.get(complex_id, '')
             child_name = simplex_name_map.get(simplex_id, '')
             if parent_name and child_name:
