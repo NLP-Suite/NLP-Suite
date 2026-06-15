@@ -544,6 +544,12 @@ csv_file=tk.Entry(window, width=GUI_IO_util.csv_file_width,textvariable=csv_file
 csv_file.config(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,csv_file)
 
+map_characters_var = tk.IntVar()
+map_characters_checkbox = tk.Checkbutton(window, variable=map_characters_var, onvalue=1, offvalue=0)
+map_characters_checkbox.config(text="MAP characters moving in time and space")
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                    map_characters_checkbox, False)
+
 NER_extractor_var.set(0)
 NER_package_var = tk.StringVar()
 NER_package_var.set('Stanza')
@@ -731,23 +737,19 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coo
                     GIS_package2_checkbox, False, False, True, False,
                     90, GUI_IO_util.open_reminders_x_coordinate, "Open the GIS_Google_Earth_main GUI.\nGUI opened automatically after running the NER location extractor (and geocoder).\nAfter the GUI opens, you will need to select as input the csv file produced by either the NER location extractor or the geocoder.")
 
-map_characters_var = tk.IntVar()
-map_characters_checkbox = tk.Checkbutton(window, variable=map_characters_var, onvalue=1, offvalue=0)
-map_characters_checkbox.config(text="MAP characters moving in time and space")
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                    map_characters_checkbox, True)
 
-map_characters_help_button = tk.Button(window, text='? HELP', width=5,
-    command=lambda: mb.showinfo("Map character movement",
-        "This option extracts person entities and locations from your text files using Stanza NER, "
-        "then produces an animated map showing how characters move across locations over the course of the narrative.\n\n"
-        "The map shows dashed lines connecting successive locations for each person, with a timeline slider "
-        "when dates or document sequence are available.\n\n"
-        "REQUIREMENT: Text file(s) in input (not a csv file).\n\n"
-        "The option uses the same NER extraction as the GIS pipeline but focuses on PERSON entities "
-        "and their co-occurring locations rather than geocoding all location mentions."))
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
-                    map_characters_help_button, False)
+
+# map_characters_help_button = tk.Button(window, text='? HELP', width=5,
+#     command=lambda: mb.showinfo("Map character movement",
+#         "This option extracts person entities and locations from your text files using Stanza NER, "
+#         "then produces an animated map showing how characters move across locations over the course of the narrative.\n\n"
+#         "The map shows dashed lines connecting successive locations for each person, with a timeline slider "
+#         "when dates or document sequence are available.\n\n"
+#         "REQUIREMENT: Text file(s) in input (not a csv file).\n\n"
+#         "The option uses the same NER extraction as the GIS pipeline but focuses on PERSON entities "
+#         "and their co-occurring locations rather than geocoding all location mentions."))
+# y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
+#                     map_characters_help_button, False)
 
 open_API_config_lb = tk.Label(window, text='View Google API key')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,open_API_config_lb,True)
@@ -836,6 +838,13 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to GEOCODE a list of locations.\n\n'Split' locations (e.g. South America, Atlantic City) will be joined together for geocoding using the following prefix values:\n  south, north, west, east, los, new, san, las, la, hong\nand suffix values:\n  city, island\n\nWHEN USING THE CoNLL TABLE AS INPUT, ONLY TWO CONSECUTIVE VALUES WILL BE JOINED TOGETHER (thus, 'New South Wales' would not be joined).\n\nThe geocoding option is available ONLY when a csv file of locations NOT yet geocoded is selected."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","To obtain more accurate geocoded results, select a country where most locations are expected to be. Locations falling in the selected country of bias will be given PREFERENCE by the geocoder over locations with the same name in other countries. Thus, if you select United States as your country bias, the geocoder will geocode locations such as Florence, Rome, or Venice in the United States rather than in Italy.\n\nIf you want to geocode locations mostly located in a specific area, enter the latitude and longitude for the upper left-hand and lower right-hand corners of a rectangle that will be used for finding the locations.\n\nTick the Restrict checkbox if you wish to restrict the search area to the selected area ONLY (otherwise, it is just a preference).\n\nAREA AND RESTRICT WIDGETS ARE AVAILABLE ONLY FOR NOMINATIM."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to MAP a list of geocoded locations.\n\nUsing the dropdown menu, select the GIS (Geographic Information System) package you wish to use to produce maps.\n\nGoogle Maps requires an API key that you obtain from registering.\n\nWhen selecting Google Maps, the API key field will become available.\n\nYou will need to get the API key from the Google console and entering it there. REMEMBER! When applying for an API key you will need to enter billing information; billing information is required although it is VERY unlikely you will be charged since you are not producing maps on a massive scale.\n https://developers.google.com/maps/documentation/embed/get-api-key.\n\nAfter entering the Google API key, click OK to save it and the key will be read in automatically next time around.\n\nTick the Open GUI checkbox ONLY if you wish to open the Google Earth Pro GUI for more options after running the NER location extractor (and, perhaps, the geocoder)."+GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","This option extracts person entities and locations from your text files using Stanza NER, "
+                                                                       "then produces an animated map showing how characters move across locations over the course of the narrative.\n\n"
+                                                                       "The map shows dashed lines connecting successive locations for each person, with a timeline slider "
+                                                                       "when dates or document sequence are available.\n\n"
+                                                                       "REQUIREMENT: Text file(s) in input (not a csv file).\n\n"
+                                                                       "The option uses the same NER extraction as the GIS pipeline but focuses on PERSON entities "
+                                                                       "and their co-occurring locations rather than geocoding all location mentions."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the Google Api key you wish to visualize, then click on the button to open the config file to view/change the key."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
 
