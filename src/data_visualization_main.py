@@ -1369,15 +1369,11 @@ def run_entity_location_tracking():
         csv_files = [f for f in filesToOpen if f.endswith('.csv')]
         if csv_files:
             csv_path = csv_files[0]
+            GUI_util.inputFilename.set(csv_path)
             input_csv_file_var.set(csv_path)
-            changed_filename(csv_path)
-            data, headers = IO_csv_util.get_csv_data(csv_path, True)
-            for combo in (mig_entity_menu, mig_location_menu, mig_date_menu, mig_lat_menu, mig_lon_menu):
-                combo['values'] = headers
-            if 'Entity' in headers:
-                mig_entity_var.set('Entity')
-            if 'Location' in headers:
-                mig_location_var.set('Location')
+            GUI_util.run_button.configure(state='normal')
+            mig_entity_var.set('Entity')
+            mig_location_var.set('Location')
         if openOutputFiles:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
