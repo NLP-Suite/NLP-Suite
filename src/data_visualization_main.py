@@ -664,7 +664,8 @@ tab_help(tab_relational, 45,
     "Select a csv file field from the dropdown menu, then press the + button to add it.\n\n"
     "For Gephi/vis.js: select 3 fields in the order node, edge, node (e.g., Subject, Verb, Object).\n\n"
     "For Sankey: select 2 or 3 fields.\n\n"
-    "Press Reset to clear your selections. The selected fields are shown in the entry area.")
+    "Press Reset to clear your selections. The selected fields are shown in the entry area.\n\n"
+    "vis.js supports the display of images for nodes. If the CSV has an Image or Photo column with URLs, nodes render as circular portraits instead of colored dots.")
 
 csv_field_lb = tk.Label(tab_relational, text='csv file field')
 csv_field_lb.place(x=10, y=45)
