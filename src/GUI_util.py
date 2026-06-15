@@ -933,8 +933,8 @@ def setup_IO_configuration_options(IO_setup_display_brief, scriptName, silent, o
     missing_IO=''
     config_input_output_alphabetic_options = []
     # GUIs with _ALL_ in the scriptName are designated as having a set of clickable buttons for various options but have no run options
-    #   so no IO info should be displayed
-    if not '_ALL_' in scriptName and not 'package_language' in scriptName:
+    #   so no IO info should be displayed (unless they explicitly set non-zero IO config)
+    if (not '_ALL_' in scriptName or config_input_output_numeric_options != [0,0,0,0]) and not 'package_language' in scriptName:
         try:
             config_input_output_numeric_options = [6, 1, 0, 1]
             config_input_output_alphabetic_options = config_util.get_template_config_csv_file(config_input_output_numeric_options, '')
