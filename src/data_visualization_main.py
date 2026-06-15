@@ -349,7 +349,8 @@ def run_numeric(inputFilename, outputDir, openOutputFiles,
             mb.showwarning("Warning", "No Y-axis variable has been selected.\n\nPlease, select a Y-axis variable and try again.")
             return
         outputFiles = charts_util.bubble_chart(inputFilename, outputDir, csv_field_visualization_var,
-                                               X_axis_var=X_axis_bubble_var)
+                                               X_axis_var=X_axis_bubble_var,
+                                               color_column=color_1_style_var)
         if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)

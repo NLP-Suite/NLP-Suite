@@ -1562,6 +1562,11 @@ def waffle_chart(inputFilename, outputDir, category_col, top_n=10, grid_size=10)
     return out_path
 
 
+def bubble_chart(inputFilename, outputDir, y_column, X_axis_var='', color_column=''):
+    import charts_Plotly_util
+    return charts_Plotly_util.bubble_chart(inputFilename, outputDir, y_column, X_axis_var, color_column)
+
+
 # written by Samir Kaddoura, March 2023
 
 # var1 is the first categorical variable, lengthvar1 is the amount of var 1: should take values of 5 or 10
