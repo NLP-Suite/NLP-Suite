@@ -635,28 +635,14 @@ def open_paste_text_popup():
     popup = tk.Toplevel(window)
     popup.title("Paste text for quick test run")
     popup.geometry("700x450")
+    popup.resizable(True, True)
     popup.transient(window)
     popup.grab_set()
 
-    tk.Label(popup, text="Paste or type your text below, then click 'Use this text' to run.",
-             wraplength=660, justify='left').pack(padx=10, pady=(10, 5))
-
-    text_frame = tk.Frame(popup)
-    text_frame.pack(fill='both', expand=True, padx=10, pady=5)
-
-    scrollbar = tk.Scrollbar(text_frame)
-    scrollbar.pack(side='right', fill='y')
-
-    text_widget = tk.Text(text_frame, wrap='word', yscrollcommand=scrollbar.set)
-    text_widget.pack(side='left', fill='both', expand=True)
-    scrollbar.config(command=text_widget.yview)
+    tk.Label(popup, text="Paste or type your text below, then click 'Use this text'.",
+             wraplength=660, justify='left').pack(side='top', padx=10, pady=(10, 5))
 
     test_file = os.path.join(out_dir, '_test_text.txt')
-    if os.path.exists(test_file):
-        with open(test_file, 'r', encoding='utf-8', errors='ignore') as f:
-            prev_text = f.read()
-        if prev_text.strip():
-            text_widget.insert('1.0', prev_text)
 
     def use_text():
         content = text_widget.get('1.0', 'end-1c').strip()
@@ -678,11 +664,26 @@ def open_paste_text_popup():
         text_widget.delete('1.0', 'end')
 
     btn_frame = tk.Frame(popup)
-    btn_frame.pack(pady=(5, 10))
-
+    btn_frame.pack(side='bottom', pady=(5, 10))
     tk.Button(btn_frame, text='Use this text', width=15, command=use_text).pack(side='left', padx=5)
     tk.Button(btn_frame, text='Clear', width=10, command=clear_text).pack(side='left', padx=5)
     tk.Button(btn_frame, text='Cancel', width=10, command=popup.destroy).pack(side='left', padx=5)
+
+    text_frame = tk.Frame(popup)
+    text_frame.pack(side='top', fill='both', expand=True, padx=10, pady=5)
+
+    scrollbar = tk.Scrollbar(text_frame)
+    scrollbar.pack(side='right', fill='y')
+
+    text_widget = tk.Text(text_frame, wrap='word', yscrollcommand=scrollbar.set)
+    text_widget.pack(side='left', fill='both', expand=True)
+    scrollbar.config(command=text_widget.yview)
+
+    if os.path.exists(test_file):
+        with open(test_file, 'r', encoding='utf-8', errors='ignore') as f:
+            prev_text = f.read()
+        if prev_text.strip():
+            text_widget.insert('1.0', prev_text)
 
     text_widget.focus_set()
 
@@ -728,7 +729,7 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
     # else:
     #     config_filename = config_filename_selected_config.get()
     # setup button to open a pop-up text entry widget where users can paste text to be used instead of an input file
-    openTextWidget_button = tk.Button(window, text='Paste text',
+    openTextWidget_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                       command=open_paste_text_popup)
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget, y_multiplier_integer,
