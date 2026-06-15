@@ -3248,7 +3248,8 @@ node.append('text')
 
 
 def animated_migration_map(inputFilename, outputDir, entity_col, location_col,
-                           date_col=None, sequence_col=None, lat_col=None, lon_col=None):
+                           date_col=None, sequence_col=None, lat_col=None, lon_col=None,
+                           doc_col=None):
     """Build an animated Leaflet migration map with timeline slider.
 
     Parameters
@@ -3261,6 +3262,7 @@ def animated_migration_map(inputFilename, outputDir, entity_col, location_col,
     sequence_col : str    Optional column with numeric ordering (e.g., chapter, sentence index).
                           If neither date_col nor sequence_col, row order is used.
     lat_col, lon_col : str  Optional pre-geocoded coordinate columns.
+    doc_col : str         Optional column with document names (adds a document filter dropdown).
 
     Returns
     -------
@@ -3284,6 +3286,10 @@ def animated_migration_map(inputFilename, outputDir, entity_col, location_col,
 
     has_coords = lat_col and lon_col and lat_col in df.columns and lon_col in df.columns
 
+    if not doc_col and 'Document' in df.columns:
+        doc_col = 'Document'
+    has_doc = doc_col and doc_col in df.columns
+
     keep_cols = [entity_col, location_col]
     if date_col and date_col in df.columns:
         keep_cols.append(date_col)
@@ -3291,6 +3297,8 @@ def animated_migration_map(inputFilename, outputDir, entity_col, location_col,
         keep_cols.append(sequence_col)
     if has_coords:
         keep_cols.extend([lat_col, lon_col])
+    if has_doc:
+        keep_cols.append(doc_col)
     df = df[keep_cols].dropna(subset=[entity_col, location_col]).copy()
     df[entity_col] = df[entity_col].astype(str).str.strip()
     df[location_col] = df[location_col].astype(str).str.strip()
@@ -3347,17 +3355,22 @@ def animated_migration_map(inputFilename, outputDir, entity_col, location_col,
     all_entities = sorted(df[entity_col].unique())
     entity_color = {e: entity_palette[i % len(entity_palette)] for i, e in enumerate(all_entities)}
 
+    all_docs = sorted(df[doc_col].astype(str).unique()) if has_doc else []
+
     migration_data = {}
     for entity in all_entities:
         edf = df[df[entity_col] == entity]
         stops = []
         for _, row in edf.iterrows():
-            stops.append({
+            stop = {
                 'location': row[location_col],
                 'lat': round(float(row['_lat']), 6),
                 'lon': round(float(row['_lon']), 6),
                 'label': row['_order_label']
-            })
+            }
+            if has_doc:
+                stop['doc'] = str(row[doc_col])
+            stops.append(stop)
         seen = set()
         unique_stops = []
         for s in stops:
@@ -3409,11 +3422,16 @@ def animated_migration_map(inputFilename, outputDir, entity_col, location_col,
   .speed-btn.active {{ background: #4682B4 !important; color: #fff; border-color: #4682B4 !important; }}
   #slider {{ flex: 1; max-width: 60%; }}
   #time-display {{ font-weight: bold; font-size: 15px; min-width: 100px; text-align: center; }}
+  #doc-filter {{ padding: 4px 8px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px;
+                 max-width: 250px; }}
+  #filter-bar {{ text-align: center; padding: 4px 16px; font-size: 13px; background: #f0f0f0;
+                  border-bottom: 1px solid #ddd; }}
   #info {{ padding: 8px 16px; font-size: 13px; color: #555; text-align: center; }}
 </style>
 </head><body>
 <div id="title">{title}</div>
 <div id="legend">{legend_html}</div>
+{doc_filter_html}
 <div id="map"></div>
 <div id="controls">
   <button id="play-btn">&#9654;</button>
@@ -3428,6 +3446,29 @@ def animated_migration_map(inputFilename, outputDir, entity_col, location_col,
 var migrationData = {migration_json};
 var allLabels = {labels_json};
 var entityNames = {entities_json};
+var allDocs = {docs_json};
+var hasDocFilter = allDocs.length > 0;
+
+function getFilteredData() {{
+  if (!hasDocFilter) return {{ data: migrationData, labels: allLabels, entities: entityNames }};
+  var sel = document.getElementById('doc-filter');
+  var docVal = sel ? sel.value : '';
+  if (!docVal) return {{ data: migrationData, labels: allLabels, entities: entityNames }};
+  var filtered = {{}};
+  var filteredEntities = [];
+  var filteredLabels = [];
+  entityNames.forEach(function(name) {{
+    var stops = migrationData[name].stops.filter(function(s) {{ return s.doc === docVal; }});
+    if (stops.length > 0) {{
+      filtered[name] = {{ color: migrationData[name].color, stops: stops }};
+      filteredEntities.push(name);
+      stops.forEach(function(s) {{
+        if (filteredLabels.indexOf(s.label) === -1) filteredLabels.push(s.label);
+      }});
+    }}
+  }});
+  return {{ data: filtered, labels: filteredLabels, entities: filteredEntities }};
+}}
 
 var map = L.map('map').setView([{center_lat}, {center_lon}], 7);
 L.tileLayer('https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}@2x.png', {{
@@ -3471,16 +3512,26 @@ function clearAll() {{
   }});
 }}
 
+function onDocFilterChange() {{
+  var f = getFilteredData();
+  var maxStep = Math.max(0, f.labels.length - 1);
+  slider.max = maxStep;
+  slider.value = 0;
+  showStep(0);
+}}
+
 function showStep(stepIdx) {{
   clearAll();
   if (stepIdx < 0) return;
-  var cutoffLabel = allLabels[Math.min(stepIdx, allLabels.length - 1)];
-  timeDisplay.textContent = cutoffLabel;
+  var f = getFilteredData();
+  var labels = f.labels;
+  var cutoffLabel = labels[Math.min(stepIdx, labels.length - 1)];
+  timeDisplay.textContent = cutoffLabel || '';
 
-  entityNames.forEach(function(name) {{
-    var data = migrationData[name];
+  f.entities.forEach(function(name) {{
+    var data = f.data[name];
     var visibleStops = data.stops.filter(function(s) {{
-      return allLabels.indexOf(s.label) <= stepIdx;
+      return labels.indexOf(s.label) <= stepIdx;
     }});
     if (visibleStops.length === 0) return;
 
@@ -3545,6 +3596,10 @@ playBtn.addEventListener('click', function() {{
   }}, 1200 / speed);
 }});
 
+if (hasDocFilter) {{
+  var docSel = document.getElementById('doc-filter');
+  if (docSel) docSel.addEventListener('change', onDocFilterChange);
+}}
 showStep(0);
 </script>
 </body></html>"""
@@ -3552,12 +3607,22 @@ showStep(0);
     title = os.path.splitext(os.path.basename(inputFilename))[0].replace('_', ' ')
     first_label = all_labels[0] if all_labels else ''
 
+    if all_docs:
+        doc_options = '<option value="">All documents</option>'
+        for d in all_docs:
+            doc_options += '<option value="{0}">{0}</option>'.format(d)
+        doc_filter_html = '<div id="filter-bar">Document: <select id="doc-filter">{}</select></div>'.format(doc_options)
+    else:
+        doc_filter_html = ''
+
     html = html.format(
         title=title,
         legend_html=legend_html,
+        doc_filter_html=doc_filter_html,
         migration_json=_json.dumps(migration_data),
         labels_json=_json.dumps(all_labels),
         entities_json=_json.dumps(all_entities),
+        docs_json=_json.dumps(all_docs),
         center_lat=round(center_lat, 4),
         center_lon=round(center_lon, 4),
         max_step=max(0, len(all_labels) - 1),
