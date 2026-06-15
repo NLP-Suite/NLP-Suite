@@ -7399,86 +7399,79 @@ def _find_documents_in_children(data_complex_id, visited=None):
 def export_grammar_tree_csv(inputDir, outputDir):
     """Export the PC-ACE grammar structure as a parent-child CSV for hierarchical tree visualization.
 
-    Builds rows from setup_Complex, setup_Simplex, setup_xref_Complex-Complex,
-    and setup_xref_Simplex-Complex tables.
-
+    Reloads fresh data from inputDir (same pattern as update_grammar_text).
     Returns the output CSV path, or '' on failure.
     """
-    global setup_Complex_lib, setup_Simplex_lib, setup_xref_Complex_Complex_lib, setup_xref_simplex_complex_lib
+    complex_df = _load_pcace_df(inputDir, 'setup_Complex', {'ID': 'ID_setup_complex'})
+    xref_cc_df = _load_pcace_df(inputDir, 'setup_xref_Complex-Complex')
+    simplex_df = _load_pcace_df(inputDir, 'setup_Simplex', {'ID': 'ID_setup_simplex'})
+    xref_sc_df = _load_pcace_df(inputDir, 'setup_xref_Simplex-Complex',
+                                {'Complex': 'ID_setup_complex', 'Simplex': 'ID_setup_simplex'})
 
-    if setup_Complex_lib is None or setup_Complex_lib.empty:
+    if complex_df is None or complex_df.empty:
         return ''
 
-    def _safe_int(v):
-        try:
-            return int(v)
-        except (ValueError, TypeError):
-            return None
-
     complex_name_map = {}
-    for _, row in setup_Complex_lib.iterrows():
-        k = _safe_int(row['ID_setup_complex'])
-        if k is not None and pd.notna(row.get('Name')):
-            complex_name_map[k] = str(row['Name'])
+    for _, row in complex_df.iterrows():
+        complex_name_map[row['ID_setup_complex']] = str(row['Name'])
 
     simplex_name_map = {}
-    if setup_Simplex_lib is not None and not setup_Simplex_lib.empty:
-        for _, row in setup_Simplex_lib.iterrows():
-            k = _safe_int(row['ID_setup_simplex'])
-            if k is not None and pd.notna(row.get('Name')):
-                simplex_name_map[k] = str(row['Name'])
+    if simplex_df is not None and not simplex_df.empty:
+        for _, row in simplex_df.iterrows():
+            simplex_name_map[row['ID_setup_simplex']] = str(row['Name'])
 
     db_name = os.path.basename(inputDir) if inputDir else 'Grammar'
+    for prefix in ('PCACE-', 'pcace-', 'PC-ACE-', 'pc-ace-'):
+        if db_name.startswith(prefix):
+            db_name = db_name[len(prefix):]
+            break
     rows = []
 
-    # Complex-Complex hierarchy (e.g., Macro event → Event → Semantic triplet)
-    # HigherComplex=-1 means the complex is a root (top-level object)
-    if setup_xref_Complex_Complex_lib is not None and not setup_xref_Complex_Complex_lib.empty:
-        for _, xrow in setup_xref_Complex_Complex_lib.iterrows():
-            higher_id = _safe_int(xrow.get('HigherComplex'))
-            lower_id = _safe_int(xrow.get('LowerComplex'))
-            if lower_id is None:
-                continue
-            child_name = complex_name_map.get(lower_id, '')
-            if not child_name:
-                continue
-            if higher_id is not None and higher_id == -1:
-                parent_name = db_name
-            else:
-                parent_name = complex_name_map.get(higher_id, '') if higher_id is not None else ''
-            if not parent_name:
-                continue
-            required = xrow.get('Required', '')
-            rows.append({
-                'Parent': parent_name,
-                'Child': child_name,
-                'Type': 'Complex',
-                'Required': str(required) if pd.notna(required) else ''
-            })
+    # Follow the same approach as update_grammar_text:
+    # iterate each complex and find its children in the xref table
+    if xref_cc_df is not None and not xref_cc_df.empty:
+        for _, crow in complex_df.iterrows():
+            complex_id = crow['ID_setup_complex']
+            complex_name = str(crow['Name'])
+            cc_children = xref_cc_df[xref_cc_df['HigherComplex'] == complex_id]
+            if 'Order' in cc_children.columns:
+                cc_children = cc_children.sort_values('Order')
+            for _, xrow in cc_children.iterrows():
+                child_id = xrow['LowerComplex']
+                child_name = complex_name_map.get(child_id, '')
+                if child_name and child_name != complex_name:
+                    required = xrow.get('Required', '')
+                    rows.append({
+                        'Parent': complex_name,
+                        'Child': child_name,
+                        'Type': 'Complex',
+                        'Required': str(required) if pd.notna(required) else ''
+                    })
 
-    # Simplex-Complex: simplex children of each complex (e.g., Participant S, Process)
-    if setup_xref_simplex_complex_lib is not None and not setup_xref_simplex_complex_lib.empty:
-        for _, xrow in setup_xref_simplex_complex_lib.iterrows():
-            complex_id = _safe_int(xrow.get('ID_setup_complex'))
-            simplex_id = _safe_int(xrow.get('ID_setup_simplex'))
-            if complex_id is None or simplex_id is None:
-                continue
-            parent_name = complex_name_map.get(complex_id, '')
-            child_name = simplex_name_map.get(simplex_id, '')
-            if parent_name and child_name:
-                required = xrow.get('Required', '')
-                rows.append({
-                    'Parent': parent_name,
-                    'Child': child_name,
-                    'Type': 'Simplex',
-                    'Required': str(required) if pd.notna(required) else ''
-                })
+    if xref_sc_df is not None and not xref_sc_df.empty:
+        for _, crow in complex_df.iterrows():
+            complex_id = crow['ID_setup_complex']
+            complex_name = str(crow['Name'])
+            sc_children = xref_sc_df[xref_sc_df['ID_setup_complex'] == complex_id]
+            if 'Order' in sc_children.columns:
+                sc_children = sc_children.sort_values('Order')
+            for _, xrow in sc_children.iterrows():
+                simplex_id = xrow['ID_setup_simplex']
+                child_name = simplex_name_map.get(simplex_id, '')
+                if child_name:
+                    required = xrow.get('Required', '')
+                    rows.append({
+                        'Parent': complex_name,
+                        'Child': child_name,
+                        'Type': 'Simplex',
+                        'Required': str(required) if pd.notna(required) else ''
+                    })
 
     if not rows:
         return ''
 
     df = pd.DataFrame(rows)
-    outputFilename = os.path.join(outputDir, 'PC-ACE_grammar_tree.csv')
+    outputFilename = os.path.join(outputDir, f'PC-ACE grammar tree for {db_name}.csv')
     df.to_csv(outputFilename, index=False, encoding='utf-8')
     return outputFilename
 

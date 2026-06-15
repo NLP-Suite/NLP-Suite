@@ -3067,7 +3067,7 @@ def hierarchical_tree(inputFilename, outputDir, parent_col, child_col,
     for _, row in df.iterrows():
         parent = row[parent_col]
         child = row[child_col]
-        if not child:
+        if not child or parent == child:
             continue
         children_of.setdefault(parent, []).append(child)
         all_children.add(child)
@@ -3091,7 +3091,12 @@ def hierarchical_tree(inputFilename, outputDir, parent_col, child_col,
     all_groups = sorted(set(node_group.values()))
     group_color = {g: group_palette[i % len(group_palette)] for i, g in enumerate(all_groups)}
 
-    def build_tree(node_name):
+    def build_tree(node_name, _visited=None):
+        if _visited is None:
+            _visited = set()
+        if node_name in _visited:
+            return None
+        _visited.add(node_name)
         label = node_label.get(node_name, node_name)
         info = node_info.get(node_name, '')
         grp = node_group.get(node_name, '')
@@ -3102,7 +3107,8 @@ def hierarchical_tree(inputFilename, outputDir, parent_col, child_col,
             'info': info, 'group': grp, 'color': color}
         kids = children_of.get(node_name, [])
         if kids:
-            result['children'] = [build_tree(c) for c in kids]
+            child_nodes = [build_tree(c, _visited.copy()) for c in kids]
+            result['children'] = [c for c in child_nodes if c is not None]
         return result
 
     if len(roots) == 1:
@@ -3129,7 +3135,7 @@ def hierarchical_tree(inputFilename, outputDir, parent_col, child_col,
 
     html = """<!DOCTYPE html>
 <html><head><meta charset="utf-8">
-<title>Hierarchical Tree</title>
+<title>{title}</title>
 <style>
   * {{ box-sizing: border-box; margin: 0; padding: 0; }}
   body {{ font-family: 'Segoe UI', Arial, sans-serif; background: #f5f0eb; }}
@@ -3137,100 +3143,242 @@ def hierarchical_tree(inputFilename, outputDir, parent_col, child_col,
   #legend {{ text-align: center; padding: 4px 16px 12px; font-size: 13px; }}
   .leg {{ display: inline-block; width: 14px; height: 14px; border-radius: 50%;
           vertical-align: middle; margin: 0 3px 0 12px; }}
-  #tree-container {{ width: 100%; overflow: auto; padding: 20px; }}
+  #hint {{ text-align: center; padding: 0 16px 8px; font-size: 12px; color: #999; }}
+  #tree-container {{ width: 100%; overflow: auto; padding: 20px; text-align: center; }}
+  #tree-container svg {{ display: inline-block; }}
   svg {{ font-family: 'Segoe UI', Arial, sans-serif; }}
   .link {{ fill: none; stroke: #c5b9a8; stroke-width: 1.5px; }}
   .node-circle {{ cursor: pointer; stroke: #fff; stroke-width: 2px; }}
-  .node-label {{ font-size: 11px; fill: #555; }}
-  .node-info {{ font-size: 10px; fill: #888; }}
+  .node-circle-collapsed {{ stroke: #333; stroke-width: 2.5px; stroke-dasharray: 3,2; }}
+  .node-label {{ font-size: 12px; fill: #333; font-weight: 500; }}
   .node-initials {{ font-size: 11px; fill: #fff; font-weight: bold; text-anchor: middle;
                      dominant-baseline: central; pointer-events: none; }}
   .tooltip {{ position: absolute; background: #fff; border: 1px solid #ccc; border-radius: 6px;
               padding: 8px 12px; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
               pointer-events: none; max-width: 280px; }}
+  .badge {{ font-size: 10px; fill: #fff; font-weight: bold; text-anchor: middle;
+            dominant-baseline: central; pointer-events: none; }}
 </style>
 </head><body>
 <div id="title">{title}</div>
 <div id="legend">{legend_html}</div>
+<div id="hint">Click to expand/collapse complex children &bull; Double-click to show/hide simplex fields</div>
 <div id="tree-container"></div>
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <script>
 var treeData = {tree_json};
+var margin = {{ top: 30, right: 40, bottom: 30, left: 40 }};
+var nodeRadius = 22;
+var levelHeight = 120;
+var nodeSpacing = 60;
 
-var containerDiv = document.getElementById('tree-container');
-var margin = {{ top: 40, right: 120, bottom: 40, left: 120 }};
-
-function countLeaves(node) {{
-  if (!node.children || node.children.length === 0) return 1;
-  return node.children.reduce(function(s, c) {{ return s + countLeaves(c); }}, 0);
+// Separate simplex children from complex children in the data
+function separateSimplexes(node) {{
+  if (!node.children) return;
+  node._simplexes = [];
+  var complexKids = [];
+  node.children.forEach(function(c) {{
+    if (c.group === 'Simplex') {{
+      node._simplexes.push(c);
+    }} else {{
+      complexKids.push(c);
+      separateSimplexes(c);
+    }}
+  }});
+  node.children = complexKids.length > 0 ? complexKids : null;
 }}
-function countDepth(node) {{
-  if (!node.children || node.children.length === 0) return 0;
-  return 1 + Math.max.apply(null, node.children.map(countDepth));
-}}
+separateSimplexes(treeData);
 
-var nLeaves = countLeaves(treeData);
-var depth = countDepth(treeData);
-var width = Math.max(900, (depth + 1) * 220) + margin.left + margin.right;
-var height = Math.max(500, nLeaves * 70) + margin.top + margin.bottom;
-
-var svg = d3.select('#tree-container').append('svg')
-    .attr('width', width).attr('height', height);
-var g = svg.append('g')
-    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-
-var treemap = d3.tree().size([height - margin.top - margin.bottom,
-                              width - margin.left - margin.right]);
-var root = d3.hierarchy(treeData, function(d) {{ return d.children; }});
-treemap(root);
+var svg = d3.select('#tree-container').append('svg');
+var gRoot = svg.append('g');
 
 var tooltip = d3.select('body').append('div').attr('class', 'tooltip')
     .style('display', 'none');
 
-g.selectAll('.link')
-    .data(root.links())
-    .enter().append('path')
-    .attr('class', 'link')
-    .attr('d', function(d) {{
-      return 'M' + d.source.y + ',' + d.source.x
-           + ' C' + (d.source.y + d.target.y) / 2 + ',' + d.source.x
-           + ' ' + (d.source.y + d.target.y) / 2 + ',' + d.target.x
-           + ' ' + d.target.y + ',' + d.target.x;
+// Build hierarchy from complex-only tree
+var root = d3.hierarchy(treeData, function(d) {{ return d.children; }});
+
+// Collapse below depth 2
+root.each(function(d) {{
+  if (d.depth >= 3 && d.children) {{
+    d._collapsed = d.children;
+    d.children = null;
+  }}
+}});
+
+var i = 0;
+var duration = 400;
+
+// Track which nodes have simplex panel open
+var simplexVisible = {{}};
+
+function update(source) {{
+  var treemap = d3.tree().nodeSize([nodeSpacing, levelHeight]);
+  treemap(root);
+
+  var nodes = root.descendants();
+  var links = root.links();
+
+  var minX = d3.min(nodes, function(d) {{ return d.x; }});
+  var maxX = d3.max(nodes, function(d) {{ return d.x; }});
+  var maxY = d3.max(nodes, function(d) {{ return d.y; }});
+  var treeWidth = (maxX - minX) + margin.left + margin.right + nodeSpacing;
+  var treeHeight = maxY + margin.top + margin.bottom + 120;
+
+  svg.attr('width', Math.max(treeWidth, 600))
+     .attr('height', Math.max(treeHeight, 300));
+
+  var offsetX = -minX + margin.left + nodeSpacing / 2;
+  gRoot.attr('transform', 'translate(' + offsetX + ',' + margin.top + ')');
+
+  // Clear and redraw
+  gRoot.selectAll('path.link').remove();
+  gRoot.selectAll('g.node').remove();
+  gRoot.selectAll('g.simplex-panel').remove();
+
+  // Links
+  gRoot.selectAll('path.link')
+      .data(links)
+      .enter().append('path')
+      .attr('class', 'link')
+      .attr('d', function(d) {{
+        return 'M' + d.source.x + ',' + d.source.y
+             + ' C' + d.source.x + ',' + (d.source.y + d.target.y) / 2
+             + ' ' + d.target.x + ',' + (d.source.y + d.target.y) / 2
+             + ' ' + d.target.x + ',' + d.target.y;
+      }});
+
+  // Nodes
+  var node = gRoot.selectAll('g.node')
+      .data(nodes)
+      .enter().append('g')
+      .attr('class', 'node')
+      .attr('transform', function(d) {{ return 'translate(' + d.x + ',' + d.y + ')'; }});
+
+  node.append('circle')
+      .attr('r', nodeRadius)
+      .attr('fill', function(d) {{ return d.data.color || '#5B8C6E'; }})
+      .attr('class', function(d) {{
+        return 'node-circle' + (d._collapsed ? ' node-circle-collapsed' : '');
+      }})
+      .on('click', function(event, d) {{
+        event.stopPropagation();
+        if (d._collapsed) {{
+          d.children = d._collapsed;
+          d._collapsed = null;
+        }} else if (d.children) {{
+          d._collapsed = d.children;
+          d.children = null;
+        }}
+        update(d);
+      }})
+      .on('dblclick', function(event, d) {{
+        event.stopPropagation();
+        event.preventDefault();
+        var sxList = d.data._simplexes;
+        if (!sxList || sxList.length === 0) return;
+        var key = d.data.name;
+        simplexVisible[key] = !simplexVisible[key];
+        update(d);
+      }})
+      .on('mouseover', function(event, d) {{
+        var html = '<b>' + d.data.name + '</b>';
+        var nSx = d.data._simplexes ? d.data._simplexes.length : 0;
+        var nCx = 0;
+        if (d._collapsed) nCx = d._collapsed.length;
+        else if (d.children) nCx = d.children.length;
+        if (nCx > 0) html += '<br>' + nCx + ' complex children';
+        if (d._collapsed) html += ' (click to expand)';
+        if (nSx > 0) html += '<br>' + nSx + ' simplex fields (double-click to show)';
+        tooltip.html(html).style('display', 'block')
+               .style('left', (event.pageX + 12) + 'px')
+               .style('top', (event.pageY - 20) + 'px');
+      }})
+      .on('mouseout', function() {{ tooltip.style('display', 'none'); }});
+
+  node.append('text')
+      .attr('class', 'node-initials')
+      .text(function(d) {{ return d.data.initials; }});
+
+  // Badge for collapsed complex children
+  node.each(function(d) {{
+    if (d._collapsed) {{
+      var g = d3.select(this);
+      g.append('circle')
+        .attr('class', 'badge-bg')
+        .attr('cx', nodeRadius - 4).attr('cy', -nodeRadius + 4)
+        .attr('r', 9).attr('fill', '#c0392b');
+      g.append('text')
+        .attr('class', 'badge')
+        .attr('x', nodeRadius - 4).attr('y', -nodeRadius + 4)
+        .text(d._collapsed.length);
+    }}
+  }});
+
+  // Badge for simplex count (blue, bottom-right)
+  node.each(function(d) {{
+    var nSx = d.data._simplexes ? d.data._simplexes.length : 0;
+    if (nSx > 0) {{
+      var g = d3.select(this);
+      g.append('circle')
+        .attr('class', 'badge-bg')
+        .attr('cx', nodeRadius - 4).attr('cy', nodeRadius - 4)
+        .attr('r', 9).attr('fill', '#2980b9');
+      g.append('text')
+        .attr('class', 'badge')
+        .attr('x', nodeRadius - 4).attr('y', nodeRadius - 4)
+        .text(nSx);
+    }}
+  }});
+
+  // Labels (complex only)
+  node.append('text')
+      .attr('class', 'node-label')
+      .attr('y', nodeRadius + 16).attr('text-anchor', 'middle')
+      .text(function(d) {{ return d.data.name; }});
+
+  // Simplex panels for nodes that have been double-clicked
+  nodes.forEach(function(d) {{
+    var sxList = d.data._simplexes;
+    if (!sxList || sxList.length === 0) return;
+    if (!simplexVisible[d.data.name]) return;
+
+    var panel = gRoot.append('g')
+        .attr('class', 'simplex-panel')
+        .attr('transform', 'translate(' + (d.x + nodeRadius + 30) + ',' + (d.y - 10) + ')');
+
+    var lineH = 18;
+    var padX = 10, padY = 6;
+    var maxW = 0;
+    sxList.forEach(function(s) {{ maxW = Math.max(maxW, s.name.length * 7); }});
+    var boxW = maxW + padX * 2 + 10;
+    var boxH = sxList.length * lineH + padY * 2;
+
+    panel.append('rect')
+      .attr('x', 0).attr('y', 0)
+      .attr('width', boxW).attr('height', boxH)
+      .attr('rx', 6).attr('ry', 6)
+      .attr('fill', '#fff').attr('stroke', '#c5b9a8').attr('stroke-width', 1);
+
+    panel.append('line')
+      .attr('x1', -30).attr('y1', 10)
+      .attr('x2', 0).attr('y2', 10)
+      .attr('stroke', '#c5b9a8').attr('stroke-width', 1);
+
+    sxList.forEach(function(s, idx) {{
+      panel.append('circle')
+        .attr('cx', padX + 6).attr('cy', padY + idx * lineH + lineH / 2)
+        .attr('r', 5).attr('fill', s.color || '#8B6B4E');
+      panel.append('text')
+        .attr('x', padX + 16).attr('y', padY + idx * lineH + lineH / 2 + 4)
+        .attr('font-size', '11px').attr('fill', '#555')
+        .text(s.name);
     }});
+  }});
+}}
 
-var node = g.selectAll('.node')
-    .data(root.descendants())
-    .enter().append('g')
-    .attr('class', 'node')
-    .attr('transform', function(d) {{ return 'translate(' + d.y + ',' + d.x + ')'; }});
-
-node.append('circle')
-    .attr('class', 'node-circle')
-    .attr('r', 20)
-    .attr('fill', function(d) {{ return d.data.color || '#5B8C6E'; }})
-    .on('mouseover', function(event, d) {{
-      var html = '<b>' + d.data.name + '</b>';
-      if (d.data.info) html += '<br>' + d.data.info;
-      if (d.data.group) html += '<br><i>' + d.data.group + '</i>';
-      tooltip.html(html).style('display', 'block')
-             .style('left', (event.pageX + 12) + 'px')
-             .style('top', (event.pageY - 20) + 'px');
-    }})
-    .on('mouseout', function() {{ tooltip.style('display', 'none'); }});
-
-node.append('text')
-    .attr('class', 'node-initials')
-    .text(function(d) {{ return d.data.initials; }});
-
-node.append('text')
-    .attr('class', 'node-label')
-    .attr('x', 28).attr('dy', '-0.3em')
-    .text(function(d) {{ return d.data.name; }});
-
-node.append('text')
-    .attr('class', 'node-info')
-    .attr('x', 28).attr('dy', '1em')
-    .text(function(d) {{ return d.data.info || ''; }});
+root.each(function(d) {{ d.id = ++i; }});
+update(root);
 </script>
 </body></html>"""
 
