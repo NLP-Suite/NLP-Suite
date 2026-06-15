@@ -33,6 +33,7 @@ def run(inputFilename,inputdirname, outdirname,
         characters_movement_var,
         dialogue_quotes_var,
         dialogue_coref_var,
+        characters_semantic_space_var,
         time_NER_var,
         story_plot_var,
         space_NER_var,
@@ -57,6 +58,7 @@ def run(inputFilename,inputdirname, outdirname,
         characters_movement_var==False and \
         dialogue_quotes_var==False and \
         dialogue_coref_var==False and \
+        characters_semantic_space_var==False and \
         time_NER_var==False and \
         story_plot_var==False and \
         space_NER_var==False and \
@@ -121,6 +123,11 @@ def run(inputFilename,inputdirname, outdirname,
             return
         run_script_util.run_script("coreference_main.py")
 
+    if characters_semantic_space_var == True:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('word2vec_main.py') == False:
+            return
+        run_script_util.run_script("word2vec_main.py")
+
     if story_plot_var==True or action_POS_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('parsers_annotators_main.py') == False:
             return
@@ -158,6 +165,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             characters_movement_var.get(),
                             dialogue_quotes_var.get(),
                             dialogue_coref_var.get(),
+                            characters_semantic_space_var.get(),
                             time_NER_var.get(),
                             story_plot_var.get(),
                             space_NER_var.get(),
@@ -181,7 +189,7 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=False
 
 GUI_width=str(GUI_IO_util.get_GUI_width(2))
-GUI_size = GUI_width + 'x600' #height
+GUI_size = GUI_width + 'x640' #height
 
 GUI_label='Graphical User Interface (GUI) for Narrative Analysis'
 head, scriptName = os.path.split(os.path.basename(__file__))
@@ -226,6 +234,7 @@ characters_sentiment_arcs_var = tk.IntVar()
 characters_movement_var = tk.IntVar()
 dialogue_quotes_var = tk.IntVar()
 dialogue_coref_var = tk.IntVar()
+characters_semantic_space_var = tk.IntVar()
 
 time_NER_var = tk.IntVar()
 story_plot_var= tk.IntVar()
@@ -252,27 +261,45 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 characters_NER_var.set(0)
 characters_NER_checkbox = tk.Checkbutton(window,text="Via NER", variable=characters_NER_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,characters_NER_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,characters_NER_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "Extract character names using Named Entity Recognition (NER). Identifies PERSON entities in your texts.")
 
 characters_WordNet_var.set(0)
 characters_WordNet_checkbox = tk.Checkbutton(window,text="Via WordNet", variable=characters_WordNet_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_2nd_column,y_multiplier_integer,characters_WordNet_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_2nd_column,y_multiplier_integer,characters_WordNet_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.narrative_analysis_2nd_column,
+                                   "Look up character names in the WordNet lexical database for semantic relations (e.g., hypernyms, synonyms).")
 
 characters_DBpedia_YAGO_var.set(0)
 characters_DBpedia_YAGO_checkbox = tk.Checkbutton(window,text="Via DBpedia/YAGO", variable=characters_DBpedia_YAGO_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_3rd_column,y_multiplier_integer,characters_DBpedia_YAGO_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_3rd_column,y_multiplier_integer,characters_DBpedia_YAGO_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.narrative_analysis_3rd_column,
+                                   "Annotate character names using the DBpedia/YAGO knowledge bases for encyclopedic information.")
 
 characters_byGender_CoreNLP_var.set(0)
 characters_byGender_CoreNLP_checkbox = tk.Checkbutton(window,text="By gender - Via CoreNLP", variable=characters_byGender_CoreNLP_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_4th_column,y_multiplier_integer,characters_byGender_CoreNLP_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_4th_column,y_multiplier_integer,characters_byGender_CoreNLP_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.narrative_analysis_4th_column,
+                                   "Classify characters by gender using CoreNLP's statistical gender annotator.")
 
 characters_byGender_dict_var.set(0)
 characters_byGender_dict_checkbox = tk.Checkbutton(window,text="By gender - Via dictionaries", variable=characters_byGender_dict_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_5th_column,y_multiplier_integer,characters_byGender_dict_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_5th_column,y_multiplier_integer,characters_byGender_dict_checkbox,
+                                   False, False, True, False, 90, GUI_IO_util.narrative_analysis_5th_column,
+                                   "Classify characters by gender using name-gender dictionaries (no CoreNLP required).")
 
 dialogue_coref_var.set(0)
 dialogue_coref_checkbox = tk.Checkbutton(window,text="Who are all those he/she? Coreference resolution (CoreNLP)", variable=dialogue_coref_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,dialogue_coref_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,dialogue_coref_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "Resolve pronouns (he, she, they) to the characters they refer to, using CoreNLP coreference resolution.")
+
+characters_semantic_space_var.set(0)
+characters_semantic_space_checkbox = tk.Checkbutton(window,text="Characters in their semantic space (BERT)", variable=characters_semantic_space_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_4th_column,y_multiplier_integer,characters_semantic_space_checkbox,
+                                   False, False, True, False, 90, GUI_IO_util.narrative_analysis_4th_column,
+                                   "Explore how close characters are to other words (actions, places, concepts) in semantic space using BERT embeddings. Opens the Word2Vec/BERT GUI.")
 
 # ── 2. Action: What ──
 
@@ -281,15 +308,21 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 action_POS_var.set(0)
 action_POS_checkbox = tk.Checkbutton(window, text="Via POS verb tags", variable=action_POS_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,action_POS_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,action_POS_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "Extract action verbs using Part-of-Speech tagging. Identifies what characters DO in the narrative.")
 
 action_WordNet_var.set(0)
 action_WordNet_checkbox = tk.Checkbutton(window, text="Via WordNet", variable=action_WordNet_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_2nd_column,y_multiplier_integer,action_WordNet_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_2nd_column,y_multiplier_integer,action_WordNet_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.narrative_analysis_2nd_column,
+                                   "Look up action verbs in WordNet for semantic relations (hypernyms, synonyms, verb frames).")
 
 action_DBpedia_YAGO_var.set(0)
 action_DBpedia_YAGO_checkbox = tk.Checkbutton(window, text="Via DBpedia/YAGO", variable=action_DBpedia_YAGO_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_3rd_column,y_multiplier_integer,action_DBpedia_YAGO_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_3rd_column,y_multiplier_integer,action_DBpedia_YAGO_checkbox,
+                                   False, False, True, False, 90, GUI_IO_util.narrative_analysis_3rd_column,
+                                   "Annotate action verbs using DBpedia/YAGO knowledge bases for encyclopedic information.")
 
 # ── 3. Characters in action: Who does/says What ──
 
@@ -298,11 +331,15 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 SVO_var.set(0)
 SVO_checkbox = tk.Checkbutton(window, text="SVOs (Who, What, Whom)",variable=SVO_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,SVO_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,SVO_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "Extract Subject-Verb-Object triplets: who does what to whom. The basic building block of narrative action.")
 
 dialogue_quotes_var.set(0)
 dialogue_quotes_checkbox = tk.Checkbutton(window,text="Dialogues (CoreNLP)", variable=dialogue_quotes_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_2nd_column,y_multiplier_integer,dialogue_quotes_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_2nd_column,y_multiplier_integer,dialogue_quotes_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.narrative_analysis_2nd_column,
+                                   "Extract dialogue and direct speech: who says what. Uses CoreNLP quote annotator to attribute quotes to speakers.")
 
 story_parts_var.set(0)
 story_parts_checkbox = tk.Checkbutton(window,text="Narrative elements", variable=story_parts_var, onvalue=1, offvalue=0)
@@ -319,27 +356,39 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 time_NER_var.set(0)
 time_NER_checkbox = tk.Checkbutton(window, text="Time (NER)",variable=time_NER_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,time_NER_checkbox, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,time_NER_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "Extract temporal expressions (dates, times, durations) using NER. When does the story happen?")
 
 story_plot_var.set(0)
 story_plot_checkbox = tk.Checkbutton(window,text="Story & plot (CoreNLP)", variable=story_plot_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_2nd_column,y_multiplier_integer,story_plot_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_2nd_column,y_multiplier_integer,story_plot_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.narrative_analysis_2nd_column,
+                                   "Analyze narrative structure via CoreNLP deep parsing: temporal sequences, plot progression, and discourse patterns.")
 
 space_NER_var.set(0)
 space_NER_checkbox = tk.Checkbutton(window, text="Space (NER)",variable=space_NER_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_3rd_column,y_multiplier_integer,space_NER_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_3rd_column,y_multiplier_integer,space_NER_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.narrative_analysis_3rd_column,
+                                   "Extract place names (cities, countries, locations) using NER. Where does the story take place?")
 
 space_GIS_var.set(0)
 space_GIS_checkbox = tk.Checkbutton(window, text="GIS",variable=space_GIS_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_4th_column,y_multiplier_integer,space_GIS_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_4th_column,y_multiplier_integer,space_GIS_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.narrative_analysis_4th_column,
+                                   "Map extracted locations on an interactive GIS map using geocoding.")
 
 space_WordNet_var.set(0)
 space_WordNet_checkbox = tk.Checkbutton(window, text="WordNet", variable=space_WordNet_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_5th_column,y_multiplier_integer,space_WordNet_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_5th_column,y_multiplier_integer,space_WordNet_checkbox,
+                                   False, False, True, False, 90, GUI_IO_util.narrative_analysis_5th_column,
+                                   "Look up place names in WordNet for semantic relations.")
 
 space_DBpedia_YAGO_var.set(0)
 space_DBpedia_YAGO_checkbox = tk.Checkbutton(window, text="DBpedia/YAGO", variable=space_DBpedia_YAGO_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,space_DBpedia_YAGO_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,space_DBpedia_YAGO_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "Annotate place names using DBpedia/YAGO knowledge bases for encyclopedic information.")
 
 characters_movement_var.set(0)
 characters_movement_checkbox = tk.Checkbutton(window,text="Movement tracking (Stanza NER): Characters across time and space", variable=characters_movement_var, onvalue=1, offvalue=0)
@@ -355,11 +404,15 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 characters_sentiment_arcs_var.set(0)
 characters_sentiment_arcs_checkbox = tk.Checkbutton(window,text="Sentiment arcs by character (Stanza NER + NRC)", variable=characters_sentiment_arcs_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,characters_sentiment_arcs_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,characters_sentiment_arcs_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "Chart how each character's emotional arc changes across the narrative, using Stanza NER to identify characters and NRC to score sentiment.")
 
 shape_stories_var.set(0)
 shape_stories_checkbox = tk.Checkbutton(window, text="Shape of stories",variable=shape_stories_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_3rd_column,y_multiplier_integer,shape_stories_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_3rd_column,y_multiplier_integer,shape_stories_checkbox,
+                                   False, False, True, False, 90, GUI_IO_util.narrative_analysis_3rd_column,
+                                   "Compute the overall emotional shape of the story (rise, fall, rise-fall, etc.) following Kurt Vonnegut's shapes of stories idea.")
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
