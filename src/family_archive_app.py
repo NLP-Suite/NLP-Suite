@@ -297,6 +297,36 @@ body{font-family:'Segoe UI','Inter',Arial,sans-serif;background:#faf9f7;overflow
 .dp-relname:hover{color:#7c9a92;}
 .dp-nofamily{font-size:13px;color:#a39e96;font-style:italic;}
 
+/* Records in detail panel */
+.dp-collapsible{cursor:pointer;user-select:none;}
+.dp-collapsible::after{content:' ▾';font-size:10px;}
+.dp-collapsible.collapsed::after{content:' ▸';}
+.dp-record{font-size:12px !important;color:#5a5550 !important;line-height:1.5 !important;}
+.dp-rec-badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600;
+  color:#fff;background:#8a8279;margin-right:4px;vertical-align:middle;text-transform:uppercase;letter-spacing:.3px;}
+
+/* Records tab */
+#records-container{display:flex;flex-direction:column;width:100%;height:100%;overflow:hidden;}
+#records-toolbar{padding:12px 20px;border-bottom:1px solid #e8e3dd;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+#records-search{flex:1;min-width:200px;padding:7px 12px;border:1px solid #e8e3dd;border-radius:6px;
+  font-size:13px;font-family:inherit;background:#fff;color:#2c2c2c;}
+.rec-filter-btn{padding:4px 10px;border:1px solid #e8e3dd;border-radius:4px;font-size:11px;
+  cursor:pointer;font-family:inherit;background:#fff;color:#5a5550;transition:all .15s;}
+.rec-filter-btn.active{background:#2c2c2c;color:#fff;border-color:#2c2c2c;}
+.rec-filter-btn:hover{border-color:#2c2c2c;}
+#records-count{font-size:11px;color:#8a8279;margin-left:auto;}
+#records-table-wrap{flex:1;overflow:auto;padding:0;}
+#records-table{width:100%;border-collapse:collapse;font-size:13px;}
+#records-table th{position:sticky;top:0;background:#f0ede8;padding:8px 14px;text-align:left;
+  font-size:11px;font-weight:600;color:#8a8279;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #e8e3dd;}
+#records-table td{padding:8px 14px;border-bottom:1px solid #f0ede8;color:#3d3832;vertical-align:top;}
+#records-table tr:hover td{background:#f7f5f2;}
+#records-table .rec-person{font-weight:500;cursor:pointer;color:#446891;white-space:nowrap;}
+#records-table .rec-person:hover{text-decoration:underline;}
+#records-table .rec-type{font-size:11px;font-weight:600;color:#fff;background:#8a8279;
+  padding:2px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}
+#records-table .rec-citation{max-width:500px;line-height:1.5;}
+
 /* Leaflet tooltip override */
 .head-label{background:rgba(250,249,247,.96);border:1px solid #e8e3dd;border-radius:8px;
   padding:5px 10px;box-shadow:0 4px 12px rgba(0,0,0,.08);font-family:'Segoe UI','Inter',sans-serif;
@@ -305,6 +335,16 @@ body{font-family:'Segoe UI','Inter',Arial,sans-serif;background:#faf9f7;overflow
 
 /* No-migration notice */
 .no-data{display:flex;align-items:center;justify-content:center;height:100%;width:100%;color:#8a8279;font-size:14px;}
+
+/* Generation zoom buttons */
+.gen-btn{padding:5px 10px;border:1px solid #c4bfb8;border-radius:4px;background:#fff;
+  color:#2c2c2c;font-size:12px;cursor:pointer;font-family:inherit;transition:all 0.2s;}
+.gen-btn:hover{background:#2c2c2c;color:#fff;}
+.gen-btn.active{background:#2c2c2c;color:#fff;font-weight:600;}
+
+/* vis.js navigation buttons */
+div.vis-network div.vis-navigation div.vis-button{background-color:rgba(250,249,247,0.85);border:1px solid #c4bfb8;border-radius:4px;}
+div.vis-network div.vis-navigation div.vis-button:hover{background-color:#2c2c2c;box-shadow:none;}
 </style>
 </head><body>
 
@@ -315,6 +355,8 @@ body{font-family:'Segoe UI','Inter',Arial,sans-serif;background:#faf9f7;overflow
   <button class="tab-btn" data-tab="relations" onclick="switchTab('relations')">Relations</button>
   <button class="tab-btn" data-tab="migration" id="migration-tab-btn" onclick="switchTab('migration')"
     style="display:none">Migration</button>
+  <button class="tab-btn" data-tab="records" id="records-tab-btn" onclick="switchTab('records')"
+    style="display:none">Records</button>
 </div>
 
 <div id="tab-tree" class="tab-content active">
@@ -349,6 +391,22 @@ body{font-family:'Segoe UI','Inter',Arial,sans-serif;background:#faf9f7;overflow
             oninput="migScrub(parseInt(this.value))">
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<div id="tab-records" class="tab-content">
+  <div id="records-container">
+    <div id="records-toolbar">
+      <input type="text" id="records-search" placeholder="Search records..." oninput="filterRecords()">
+      <div id="records-filters"></div>
+      <span id="records-count"></span>
+    </div>
+    <div id="records-table-wrap">
+      <table id="records-table">
+        <thead><tr><th>Person</th><th>Type</th><th>Citation</th></tr></thead>
+        <tbody id="records-tbody"></tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -388,7 +446,11 @@ function ordinal(n) {
   var v = n % 100;
   return n + (s[(v-20)%10] || s[v] || s[0]);
 }
+function isRecord(fact) { return fact.indexOf('[Record]') === 0; }
+function stripRecordPrefix(fact) { return fact.replace(/^\[Record\]\s*/, ''); }
+
 function categorize(fact) {
+  if (isRecord(fact)) return 'Records';
   var lower = fact.toLowerCase();
   var first = lower.split(/\s+/)[0] || '';
   if (first === 'his' || first === 'her') return 'Family';
@@ -402,12 +464,27 @@ function categorize(fact) {
   if (/\brecorded as\b/.test(lower)) return 'Records';
   if (/\b(was the (son|daughter)|had (one|two|three|a|no|an) (son|daughter|child|children|sister|brother|half)|never married|no known children)\b/.test(lower)) return 'Family';
   return 'Other';
+
+}
+function classifyRecord(text) {
+  var t = text.toLowerCase();
+  if (/census|enumeration district/.test(t)) return 'Census';
+  if (/military|soldier|regiment|confederate|civil war|veteran/.test(t)) return 'Military';
+  if (/marriage|married/.test(t)) return 'Marriage';
+  if (/birth|christening|baptis/.test(t)) return 'Birth';
+  if (/death|burial|cemetery|gravesite|obituary|funeral|find.a.grave/.test(t)) return 'Death';
+  if (/probate|will|estate|executor/.test(t)) return 'Probate';
+  if (/tax|revenue|assessment/.test(t)) return 'Tax';
+  if (/immigration|emigration|passenger|ship|naturalization/.test(t)) return 'Immigration';
+  if (/newspaper/.test(t)) return 'Newspaper';
+  if (/postmaster|appointment/.test(t)) return 'Government';
+  return 'Other';
 }
 function escHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
 // ===== TAB SWITCHING =====
 var currentTab = 'tree';
-var inited = { tree: false, relations: false, migration: false };
+var inited = { tree: false, relations: false, migration: false, records: false };
 
 function switchTab(tabId) {
   document.querySelectorAll('.tab-btn').forEach(function(btn) {
@@ -422,6 +499,7 @@ function switchTab(tabId) {
     if (tabId === 'tree') initFamilyTree();
     else if (tabId === 'relations') initRelations();
     else if (tabId === 'migration') initMigration();
+    else if (tabId === 'records') initRecords();
   }
   if (tabId === 'tree' && treeNetwork) setTimeout(function(){ treeNetwork.fit(); }, 50);
   if (tabId === 'relations' && relNetwork) setTimeout(function(){ relNetwork.fit(); }, 50);
@@ -470,9 +548,22 @@ function showDetailPanel(personId) {
     });
     catOrder.forEach(function(cat) {
       if (cats[cat] && cats[cat].length > 0) {
-        h += '<div class="dp-section"><h3>' + cat.toUpperCase() + '</h3><ul>';
-        cats[cat].forEach(function(f) { h += '<li>' + escHtml(f) + '</li>'; });
-        h += '</ul></div>';
+        if (cat === 'Records') {
+          var recId = 'dp-records-' + Date.now();
+          h += '<div class="dp-section"><h3 class="dp-collapsible" onclick="var el=document.getElementById(\'' + recId + '\');el.style.display=el.style.display===\'none\'?\'block\':\'none\';this.classList.toggle(\'collapsed\')">';
+          h += '&#128196; RECORDS (' + cats[cat].length + ')</h3>';
+          h += '<ul id="' + recId + '">';
+          cats[cat].forEach(function(f) {
+            var clean = stripRecordPrefix(f);
+            var rtype = classifyRecord(clean);
+            h += '<li class="dp-record"><span class="dp-rec-badge">' + rtype + '</span> ' + escHtml(clean) + '</li>';
+          });
+          h += '</ul></div>';
+        } else {
+          h += '<div class="dp-section"><h3>' + cat.toUpperCase() + '</h3><ul>';
+          cats[cat].forEach(function(f) { h += '<li>' + escHtml(f) + '</li>'; });
+          h += '</ul></div>';
+        }
       }
     });
   }
@@ -580,19 +671,61 @@ function initFamilyTree() {
   });
 
   var data = { nodes: new vis.DataSet(nodes), edges: new vis.DataSet(edges) };
+  var nCount = nodes.length;
+  var spacing = nCount > 80 ? 200 : nCount > 40 ? 180 : 170;
   var options = {
     layout: {
       hierarchical: {
         direction: 'UD', sortMethod: 'directed',
-        levelSeparation: 160, nodeSpacing: 170, treeSpacing: 220,
+        levelSeparation: 180, nodeSpacing: spacing, treeSpacing: 250,
         blockShifting: true, edgeMinimization: true, parentCentralization: true
       }
     },
     physics: false,
-    interaction: { hover: true, tooltipDelay: 200, zoomView: true, dragView: true }
+    interaction: { hover: true, tooltipDelay: 200, zoomView: true, dragView: true,
+                   navigationButtons: true, keyboard: { enabled: true } }
   };
 
   treeNetwork = new vis.Network(container, data, options);
+
+  // Add gen-level zoom buttons
+  var gens = {};
+  PEOPLE.forEach(function(p) { gens[p.gen || 1] = true; });
+  var genList = Object.keys(gens).map(Number).sort(function(a,b){return a-b;});
+  if (genList.length > 1) {
+    var genBar = document.createElement('div');
+    genBar.style.cssText = 'position:absolute;top:8px;left:8px;z-index:10;display:flex;gap:4px;flex-wrap:wrap;';
+    var fitBtn = document.createElement('button');
+    fitBtn.textContent = 'Fit All';
+    fitBtn.className = 'gen-btn';
+    function setActiveGen(activeBtn) {
+      genBar.querySelectorAll('.gen-btn').forEach(function(b) { b.classList.remove('active'); });
+      activeBtn.classList.add('active');
+    }
+    fitBtn.onclick = function() {
+      setActiveGen(fitBtn);
+      treeNetwork.fit({ animation: { duration: 500, easingFunction: 'easeInOutQuad' } });
+    };
+    genBar.appendChild(fitBtn);
+    genList.forEach(function(g) {
+      var btn = document.createElement('button');
+      btn.textContent = 'Gen ' + g;
+      btn.className = 'gen-btn';
+      btn.onclick = function() {
+        setActiveGen(btn);
+        var genNodes = PEOPLE.filter(function(p){return (p.gen||1)===g;}).map(function(p){return p.id;});
+        treeNetwork.fit({ nodes: genNodes, animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
+        setTimeout(function() {
+          var scale = treeNetwork.getScale();
+          if (scale < 0.45) treeNetwork.moveTo({ scale: 0.45, animation: { duration: 300, easingFunction: 'easeInOutQuad' } });
+        }, 450);
+      };
+      genBar.appendChild(btn);
+    });
+    container.style.position = 'relative';
+    container.appendChild(genBar);
+  }
+
   treeNetwork.on('click', function(params) {
     if (params.nodes.length > 0) showDetailPanel(params.nodes[0]);
     else hideDetailPanel();
@@ -935,11 +1068,82 @@ function migSetSpeed(s) {
   });
 }
 
+// ===== RECORDS TAB =====
+var allRecords = [];
+var activeRecType = 'All';
+
+function initRecords() {
+  allRecords = [];
+  PEOPLE.forEach(function(p) {
+    if (!p.details) return;
+    p.details.forEach(function(d) {
+      if (isRecord(d)) {
+        var clean = stripRecordPrefix(d);
+        var rtype = classifyRecord(clean);
+        allRecords.push({ person: p.name, personId: p.id, type: rtype, citation: clean });
+      }
+    });
+  });
+
+  // Build filter buttons
+  var types = {};
+  allRecords.forEach(function(r) { types[r.type] = (types[r.type] || 0) + 1; });
+  var filtersEl = document.getElementById('records-filters');
+  filtersEl.innerHTML = '';
+  var allBtn = document.createElement('button');
+  allBtn.className = 'rec-filter-btn active';
+  allBtn.textContent = 'All';
+  allBtn.onclick = function() { activeRecType = 'All'; applyRecFilters(); highlightRecBtn(allBtn); };
+  filtersEl.appendChild(allBtn);
+  Object.keys(types).sort().forEach(function(t) {
+    var btn = document.createElement('button');
+    btn.className = 'rec-filter-btn';
+    btn.textContent = t + ' (' + types[t] + ')';
+    btn.setAttribute('data-type', t);
+    btn.onclick = function() { activeRecType = t; applyRecFilters(); highlightRecBtn(btn); };
+    filtersEl.appendChild(btn);
+  });
+
+  applyRecFilters();
+}
+
+function highlightRecBtn(active) {
+  document.querySelectorAll('.rec-filter-btn').forEach(function(b) { b.classList.remove('active'); });
+  active.classList.add('active');
+}
+
+function applyRecFilters() {
+  var query = (document.getElementById('records-search').value || '').toLowerCase();
+  var filtered = allRecords.filter(function(r) {
+    if (activeRecType !== 'All' && r.type !== activeRecType) return false;
+    if (query && r.person.toLowerCase().indexOf(query) < 0 && r.citation.toLowerCase().indexOf(query) < 0) return false;
+    return true;
+  });
+
+  var tbody = document.getElementById('records-tbody');
+  tbody.innerHTML = '';
+  filtered.forEach(function(r) {
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td class="rec-person" onclick="switchTab(\'tree\');setTimeout(function(){showDetailPanel(\'' +
+      r.personId + '\')},200)">' + escHtml(r.person) + '</td>' +
+      '<td><span class="rec-type">' + r.type + '</span></td>' +
+      '<td class="rec-citation">' + escHtml(r.citation) + '</td>';
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('records-count').textContent = filtered.length + ' of ' + allRecords.length + ' records';
+}
+
+function filterRecords() { applyRecFilters(); }
+
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', function() {
   if (HAS_MIGRATION && MIGRATION.length > 0) {
     document.getElementById('migration-tab-btn').style.display = '';
   }
+  // Show Records tab if any records exist
+  var hasRecords = PEOPLE.some(function(p) { return p.details && p.details.some(isRecord); });
+  if (hasRecords) document.getElementById('records-tab-btn').style.display = '';
   initFamilyTree();
   inited.tree = true;
 });

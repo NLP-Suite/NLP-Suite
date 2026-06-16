@@ -175,25 +175,48 @@ def _parse_place(value):
     if not value:
         return '', '', '', ''
     parts = [p.strip() for p in value.split(',') if p.strip()]
+
+    state_idx = -1
+    state_abbr = ''
+    for i, part in enumerate(parts):
+        low = part.lower().strip()
+        cleaned = re.sub(r'\s+county$', '', low)
+        if cleaned in _STATE_ABBR:
+            state_idx = i
+            state_abbr = _STATE_ABBR[cleaned]
+            break
+        if part.upper().strip() in _ABBR_SET:
+            state_idx = i
+            state_abbr = part.upper().strip()
+            break
+
+    _COUNTRIES = {'usa', 'united states', 'united states of america', 'us',
+                  'canada', 'england', 'uk', 'united kingdom', 'france', 'germany', 'ireland'}
+    country_idx = -1
+    for i, part in enumerate(parts):
+        if part.lower().strip() in _COUNTRIES:
+            country_idx = i
+            break
+
     locality = ''
     county = ''
-    state = ''
-    country = ''
+    state = state_abbr
+    country = parts[country_idx].strip() if country_idx >= 0 else ''
 
-    if len(parts) >= 4:
-        locality, county, state, country = parts[0], parts[1], parts[2], parts[3]
-    elif len(parts) == 3:
-        locality, state, country = parts[0], parts[1], parts[2]
-    elif len(parts) == 2:
-        state, country = parts[0], parts[1]
-    elif len(parts) == 1:
-        state = parts[0]
-
-    state_lower = state.lower().strip()
-    if state_lower in _STATE_ABBR:
-        state = _STATE_ABBR[state_lower]
-    elif state.upper() in _ABBR_SET:
-        state = state.upper()
+    if state_idx >= 0:
+        before_state = [p for j, p in enumerate(parts) if j < state_idx and j != country_idx]
+        if len(before_state) >= 2:
+            locality = before_state[0]
+            county = before_state[1]
+        elif len(before_state) == 1:
+            locality = before_state[0]
+    else:
+        non_country = [p for j, p in enumerate(parts) if j != country_idx]
+        if len(non_country) >= 2:
+            locality = non_country[0]
+            county = non_country[1]
+        elif len(non_country) == 1:
+            locality = non_country[0]
 
     county_lower = county.lower()
     if county_lower.endswith(' county'):
@@ -228,12 +251,49 @@ def _get_sub_fields(record_lines, start_idx, base_level):
     return fields
 
 
+def _extract_sources(record_lines, start_idx, base_level):
+    sources = []
+    i = start_idx
+    while i < len(record_lines):
+        level, tag, value = record_lines[i]
+        if level <= base_level:
+            break
+        if tag == 'SOUR':
+            page = ''
+            url = ''
+            j = i + 1
+            while j < len(record_lines) and record_lines[j][0] > level:
+                sl, st, sv = record_lines[j]
+                if st == 'PAGE':
+                    page = sv
+                    k = j + 1
+                    while k < len(record_lines) and record_lines[k][0] > sl:
+                        cl, ct, cv = record_lines[k]
+                        if ct == 'CONC':
+                            page += cv
+                        elif ct == 'CONT':
+                            page += ' ' + cv
+                        k += 1
+                elif st == 'DATA':
+                    k = j + 1
+                    while k < len(record_lines) and record_lines[k][0] > sl:
+                        cl, ct, cv = record_lines[k]
+                        if ct == 'WWW' and cv:
+                            url = cv
+                        k += 1
+                j += 1
+            if page:
+                sources.append(page)
+        i += 1
+    return sources
+
+
 def _parse_individual(xref, record_lines):
     person = {
         'xref': xref, 'given': '', 'surname': '', 'name': '',
         'sex': 'M', 'born_display': '', 'born_year': 0,
         'died_display': '', 'died_year': 0,
-        'events': [], 'notes': [], 'fams_refs': [], 'famc_refs': []
+        'events': [], 'notes': [], 'sources': [], 'fams_refs': [], 'famc_refs': []
     }
 
     i = 0
@@ -270,13 +330,33 @@ def _parse_individual(xref, record_lines):
                 person['died_display'] = date_display
                 person['died_year'] = date_year
 
+            event_sources = _extract_sources(record_lines, i + 1, level)
+
             person['events'].append({
                 'tag': tag, 'type': event_type,
                 'date_display': date_display, 'year': date_year,
                 'place_display': place_display, 'county': county,
                 'state': state, 'place_full': place_full,
-                'note': note
+                'note': note, 'sources': event_sources
             })
+        elif tag == 'SOUR':
+            page = ''
+            j = i + 1
+            while j < len(record_lines) and record_lines[j][0] > level:
+                sl, st, sv = record_lines[j]
+                if st == 'PAGE':
+                    page = sv
+                    k = j + 1
+                    while k < len(record_lines) and record_lines[k][0] > sl:
+                        cl, ct, cv = record_lines[k]
+                        if ct == 'CONC':
+                            page += cv
+                        elif ct == 'CONT':
+                            page += ' ' + cv
+                        k += 1
+                j += 1
+            if page:
+                person['sources'].append(page)
         elif tag == 'NOTE':
             note_text = value
             sub = _get_sub_fields(record_lines, i + 1, level)
@@ -395,6 +475,7 @@ def _make_slug(name, seen_slugs):
 def _infer_generations(people_by_xref, families):
     gen_map = {}
     parent_of = {}
+    spouse_of = {}
     for fam in families.values():
         for child_xref in fam['children']:
             parents = []
@@ -403,6 +484,9 @@ def _infer_generations(people_by_xref, families):
             if fam['wife']:
                 parents.append(fam['wife'])
             parent_of[child_xref] = parents
+        if fam['husb'] and fam['wife']:
+            spouse_of.setdefault(fam['husb'], set()).add(fam['wife'])
+            spouse_of.setdefault(fam['wife'], set()).add(fam['husb'])
 
     def _get_gen(xref, visited=None):
         if xref in gen_map:
@@ -410,12 +494,12 @@ def _infer_generations(people_by_xref, families):
         if visited is None:
             visited = set()
         if xref in visited:
-            return 1
+            return 0
         visited.add(xref)
         parents = parent_of.get(xref, [])
         if not parents:
-            gen_map[xref] = 1
-            return 1
+            gen_map[xref] = 0
+            return 0
         max_parent_gen = max(_get_gen(p, visited) for p in parents)
         gen_map[xref] = max_parent_gen + 1
         return gen_map[xref]
@@ -423,9 +507,25 @@ def _infer_generations(people_by_xref, families):
     for xref in people_by_xref:
         _get_gen(xref)
 
-    min_gen = min(gen_map.values()) if gen_map else 1
+    changed = True
+    while changed:
+        changed = False
+        for xref, spouses in spouse_of.items():
+            for spouse_xref in spouses:
+                if xref in gen_map and spouse_xref in gen_map:
+                    if gen_map[xref] != gen_map[spouse_xref]:
+                        target = max(gen_map[xref], gen_map[spouse_xref])
+                        if gen_map[xref] != target:
+                            gen_map[xref] = target
+                            changed = True
+                        if gen_map[spouse_xref] != target:
+                            gen_map[spouse_xref] = target
+                            changed = True
+
+    min_gen = min(gen_map.values()) if gen_map else 0
     for xref in gen_map:
-        gen_map[xref] -= (min_gen - 1)
+        gen_map[xref] -= min_gen
+        gen_map[xref] += 1
     return gen_map
 
 
@@ -493,8 +593,15 @@ def parse_gedcom(filepath, geocode=False, progress_callback=None):
             narrative = _generate_narrative(person, event)
             if narrative:
                 details.append(narrative)
+            for src in event.get('sources', []):
+                details.append(f'[Record] {src}')
         for note in person['notes']:
             details.append(note)
+        seen_sources = set()
+        for src in person.get('sources', []):
+            if src not in seen_sources:
+                seen_sources.add(src)
+                details.append(f'[Record] {src}')
 
         age = ''
         if person['born_year'] and person['died_year']:
