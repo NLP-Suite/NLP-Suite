@@ -95,6 +95,12 @@ jobs:
             }
           }
 
+      - name: Sign Mac executable
+        if: runner.os == 'macOS'
+        run: |
+          codesign --force --deep -s - dist/NLP_Suite/NLP_Suite
+          xattr -dr com.apple.quarantine dist/NLP_Suite/ || true
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
