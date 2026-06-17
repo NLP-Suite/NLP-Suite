@@ -79,18 +79,18 @@ jobs:
             PYTHON="$DIST/Scripts/python.exe"
           fi
 
-          "$PIP" install --upgrade pip
-          "$PIP" install --no-cache-dir pandas numpy scipy scikit-learn openpyxl xlrd
-          "$PIP" install --no-cache-dir stanza spacy nltk gensim textblob textstat nrclex
-          "$PIP" install --no-cache-dir langdetect langid autocorrect pyspellchecker fuzzywuzzy
-          "$PIP" install --no-cache-dir transformers sentence-transformers
-          "$PIP" install --no-cache-dir matplotlib plotly "seaborn>=0.13.0" wordcloud mpld3 kaleido
-          "$PIP" install --no-cache-dir folium geopy simplekml shapely geopandas
-          "$PIP" install --no-cache-dir requests beautifulsoup4 lxml chardet tqdm psutil
-          "$PIP" install --no-cache-dir pdfminer.six python-docx striprtf
-          "$PIP" install --no-cache-dir pycorenlp stanfordcorenlp
-          "$PIP" install --no-cache-dir Pillow
-          "$PIP" install --no-cache-dir SPARQLWrapper
+          "$PYTHON" -m pip install --upgrade pip
+          "$PYTHON" -m pip install --no-cache-dir pandas numpy scipy scikit-learn openpyxl xlrd
+          "$PYTHON" -m pip install --no-cache-dir stanza spacy nltk gensim textblob textstat nrclex
+          "$PYTHON" -m pip install --no-cache-dir langdetect langid autocorrect pyspellchecker fuzzywuzzy
+          "$PYTHON" -m pip install --no-cache-dir transformers sentence-transformers
+          "$PYTHON" -m pip install --no-cache-dir matplotlib plotly "seaborn>=0.13.0" wordcloud mpld3 kaleido
+          "$PYTHON" -m pip install --no-cache-dir folium geopy simplekml shapely geopandas
+          "$PYTHON" -m pip install --no-cache-dir requests beautifulsoup4 lxml chardet tqdm psutil
+          "$PYTHON" -m pip install --no-cache-dir pdfminer.six python-docx striprtf
+          "$PYTHON" -m pip install --no-cache-dir pycorenlp stanfordcorenlp
+          "$PYTHON" -m pip install --no-cache-dir Pillow
+          "$PYTHON" -m pip install --no-cache-dir SPARQLWrapper
           # Verify
           "$PYTHON" -c "import pandas, requests, numpy; print('All critical packages OK')"
           echo "Bundled portable Python environment"
