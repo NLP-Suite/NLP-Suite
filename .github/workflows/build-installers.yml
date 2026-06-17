@@ -52,6 +52,47 @@ jobs:
       - name: Build with PyInstaller
         run: python -m PyInstaller NLP_Suite.spec --noconfirm
 
+      - name: Bundle portable Python environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          DIST="dist/NLP_Suite/python-env"
+          PY_VERSION="3.10"
+
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            ARCH=$(uname -m)
+            # Download python-build-standalone (fully relocatable, no system deps)
+            PBS_TAG="20241101"
+            PBS_URL="https://github.com/indygreg/python-build-standalone/releases/download/${PBS_TAG}/cpython-${PY_VERSION}.0+${PBS_TAG}-${ARCH}-apple-darwin-install_only_stripped.tar.gz"
+            echo "Downloading portable Python from $PBS_URL"
+            curl -fSL "$PBS_URL" -o /tmp/python-portable.tar.gz
+            mkdir -p "$DIST"
+            tar -xzf /tmp/python-portable.tar.gz -C "$DIST" --strip-components=1
+            PIP="$DIST/bin/pip3"
+            PYTHON="$DIST/bin/python3"
+          else
+            # Windows: use the workflow Python to create a fully-copied venv
+            python -m venv --copies "$DIST"
+            PIP="$DIST/Scripts/pip.exe"
+            PYTHON="$DIST/Scripts/python.exe"
+          fi
+
+          "$PIP" install --upgrade pip
+          "$PIP" install --no-cache-dir pandas numpy scipy scikit-learn openpyxl xlrd
+          "$PIP" install --no-cache-dir stanza spacy nltk gensim textblob textstat nrclex
+          "$PIP" install --no-cache-dir langdetect langid autocorrect pyspellchecker fuzzywuzzy
+          "$PIP" install --no-cache-dir transformers sentence-transformers
+          "$PIP" install --no-cache-dir matplotlib plotly "seaborn>=0.13.0" wordcloud mpld3 kaleido
+          "$PIP" install --no-cache-dir folium geopy simplekml shapely geopandas
+          "$PIP" install --no-cache-dir requests beautifulsoup4 lxml chardet tqdm psutil
+          "$PIP" install --no-cache-dir pdfminer.six python-docx striprtf
+          "$PIP" install --no-cache-dir pycorenlp stanfordcorenlp
+          "$PIP" install --no-cache-dir Pillow
+          "$PIP" install --no-cache-dir SPARQLWrapper
+          # Verify
+          "$PYTHON" -c "import pandas, requests, numpy; print('All critical packages OK')"
+          echo "Bundled portable Python environment"
+
       - name: Copy data directories to dist (all platforms)
         shell: python
         run: |
