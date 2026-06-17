@@ -60,10 +60,12 @@ jobs:
           PY_VERSION="3.10"
 
           if [ "$RUNNER_OS" = "macOS" ]; then
+            # python-build-standalone uses aarch64, not arm64
             ARCH=$(uname -m)
+            if [ "$ARCH" = "arm64" ]; then ARCH="aarch64"; fi
             # Download python-build-standalone (fully relocatable, no system deps)
-            PBS_TAG="20241101"
-            PBS_URL="https://github.com/indygreg/python-build-standalone/releases/download/${PBS_TAG}/cpython-${PY_VERSION}.0+${PBS_TAG}-${ARCH}-apple-darwin-install_only_stripped.tar.gz"
+            PBS_TAG="20241002"
+            PBS_URL="https://github.com/indygreg/python-build-standalone/releases/download/${PBS_TAG}/cpython-3.10.15+${PBS_TAG}-${ARCH}-apple-darwin-install_only_stripped.tar.gz"
             echo "Downloading portable Python from $PBS_URL"
             curl -fSL "$PBS_URL" -o /tmp/python-portable.tar.gz
             mkdir -p "$DIST"
