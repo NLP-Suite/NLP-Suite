@@ -493,8 +493,6 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
 
     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
 
-    print("\n\n\nRecords in inputfile (in charts_util)", nRecords, '  ', inputFilename)
-
     # standard bar chart ------------------------------------------------------------------------------
     # Form	Lemma	POS	Record ID	Sentence ID	Document ID	Document
     # columns_to_be_plotted_numeric = [[0,0], [1,1]] with count_var = 1 since these values need to be counted

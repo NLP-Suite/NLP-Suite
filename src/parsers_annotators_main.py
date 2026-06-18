@@ -311,31 +311,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                                              reminders_util.message_CoreNLP_NER_tags,
                                              True)
 
-    # CoNLL table analyzer
-    if CoNLL_table_analyzer_var:
-        if IO_libraries_util.check_inputPythonJavaProgramFile('CoNLL_table_analyzer_main.py') == False:
-            return
-        # open the analyzer having saved the new parser output in config so that it opens the right input file
-        config_filename_temp = 'conll_table_analyzer_config.csv'
-        config_input_output_numeric_options_temp=[1, 0, 0, 1]
-        # config_input_output_alphabetic_options is a double list with no headers
-        #   with one sublist for each of the four types of IO configurations: filename, input main dir, input secondary dir, output dir
-        # each sublist has four items: path, date format, date separator, date position
-        # e.g., [['C:/Users/rfranzo/Desktop/NLP-Suite/lib/sampleData/The Three Little Pigs.txt', '', '', ''], ['', '', '', ''], ['', '', '', ''], ['C:\\Program Files (x86)\\NLP_backup\\Output', '', '', '']]
-        config_input_output_alphabetic_options_temp, missing_IO, config_file_exists = config_util.read_config_file(config_filename_temp, config_input_output_numeric_options_temp)
-        # add the CoNLL table file to the config file 'conll_table_analyzer_config.csv'
-        config_input_output_alphabetic_options_temp[0][1]=filesToOpen[0] #@@@[0] # outputfilename
-        # add the output directory to the config file 'conll_table_analyzer_config.csv'
-        config_input_output_alphabetic_options_temp[3][1] = outputDir
-        config_util.write_IO_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options_temp, config_input_output_alphabetic_options_temp, True)
-
-        reminders_util.checkReminder(scriptName,
-                                     reminders_util.title_options_CoNLL_analyzer,
-                                     reminders_util.message_CoNLL_analyzer,
-                                     True)
-
-        run_script_util.run_script("CoNLL_table_analyzer_main.py")
-
     if openOutputFiles:
         filesToOpenSubset = []
         if len(filesToOpen) > 0:
@@ -344,6 +319,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                 filesToOpenSubset.append(filesToOpen[0])
 
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName, filesToOpenSubset)
+
+    # CoNLL table analyzer
+    if CoNLL_table_analyzer_var:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('CoNLL_table_analyzer_main.py') == False:
+            return
+
+        reminders_util.checkReminder(scriptName,
+                                     reminders_util.title_options_CoNLL_analyzer,
+                                     reminders_util.message_CoNLL_analyzer,
+                                     True)
+
+        run_script_util.run_script("CoNLL_table_analyzer_main.py", filesToOpen[0])
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 
@@ -706,7 +693,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          'Please, tick the \'GUIs available\' checkbox if you wish to see and select the range of available tools suitable for pre processing.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to use the selected parser: spaCy, Stanford CoreNLP, Stanza. The parser will produce a CoNLL table (CoNLL U format).\n\nThe CoNLL table is the basis of many of the NLP analyses: noun & verb analysis, function words, clause analysis, query CoNLL.\n\nTwo types of parsers are available:\n   1. Dependency parser: produces a tree where each word is connected to its head word via a grammatical relation (e.g., nsubj, dobj, amod). It answers 'which word modifies/depends on which?' Useful for SVO extraction, relation analysis, and the CoNLL table.\n   2. Constituency parser: produces a phrase-structure tree that groups words into nested constituents (e.g., NP, VP, S). It answers 'what are the phrases?' Useful for clause analysis and understanding sentence structure hierarchically.\n\nStanza (the default NLP package) provides both dependency and constituency parsing. Stanza will export the 'feats' column with information about verb Mood (e.g., infinitive, imperative) and Verb Tense (e.g., Present, Past).\n\nspaCy provides dependency parsing only.\n\nFor Stanford CoreNLP you have a choice between two types of parsers:\n   1. the recommended default Probabilistic Context Free Grammar (PCFG) parser;\n   2. a Neural-network dependency parser.\nThe neural network approach is more accurate but much slower. The neural-network parser does not produce clausal tags.\n\nThe following fields will be automatically added to the standard fields of a CoNLL table (CoNLL U format): RECORD NUMBER, DOCUMENT ID, SENTENCE ID, DOCUMENT (INPUT filename), DATE (if the filename embeds a date).")
+                                  "Please, tick the checkbox if you wish to use the selected parser: spaCy, Stanford CoreNLP, Stanza. The parser will produce a CoNLL table (CoNLL U format).\n\nThe CoNLL table is the basis of many of the NLP analyses: noun & verb analysis, function words, clause analysis, query CoNLL.\n\nTwo types of parsers are available:\n   1. Dependency parser: produces a tree where each word is connected to its head word via a grammatical relation (e.g., nsubj, dobj, amod). It answers 'which word modifies/depends on which?' Useful for SVO extraction, relation analysis, and the CoNLL table.\n   2. Constituency parser: produces a phrase-structure tree that groups words into nested constituents (e.g., NP, VP, S). It answers 'what are the phrases?' Useful for clause analysis and understanding sentence structure hierarchically.\n\nStanza (the default NLP package) provides both dependency and constituency parsing. Stanza will export the 'feats' column with information about verb Mood (e.g., infinitive, imperative) and Verb Tense (e.g., Present, Past).\n\nspaCy provides dependency parsing only.\n\nFor Stanford CoreNLP you have a choice between two types of parsers:\n   1. the recommended default Probabilistic Context Free Grammar (PCFG) parser;\n   2. a Neural-network dependency parser.\nThe neural network approach is more accurate but much slower. The neural-network parser does not produce clausal tags.\n\nThe following fields will be automatically added to the standard fields of a CoNLL table (CoNLL U format): RECORD NUMBER, DOCUMENT ID, SENTENCE ID, DOCUMENT (INPUT filename), DATE (if the filename embeds a date).\n\nPERFORMANCE TIP: On machines without an NVIDIA GPU, spaCy is 3-5x faster than Stanza for dependency parsing and produces the same CoNLL table output. Stanza\'s unique advantage is constituency parsing (for clause analysis), which spaCy does not provide. If you only need dependency parsing (CoNLL table, SVO extraction), spaCy or spaCy (transformer) will be significantly faster. Stanza and spaCy (transformer) benefit greatly from NVIDIA GPU acceleration (CUDA).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick/untick the checkbox if you want to open (or not) the CoNLL table analyzer GUI to analyze the parser results contained in the CoNLL table.\n\nThe CoNLL table analyzer can be used with CoNLL tables produced by any parser (spaCy, Stanford CoreNLP, Stanza).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -730,7 +717,6 @@ def activate_NLP_options(*args):
     else:
         available_parsers = 'Parsers'
     if not 'CoreNLP' in package:
-        CoNLL_table_analyzer_checkbox.configure(state='disabled')
         Json_checkbox.place_forget()  # invisible
     else:
         if parser_var.get():
@@ -741,11 +727,11 @@ def activate_NLP_options(*args):
                                                            y_multiplier_integer,
                                                            Json_checkbox, True)
             Json_checkbox.configure(state='normal')
-        if CoNLL_table_analyzer_var.get() == 1:
-            CoNLL_table_analyzer_checkbox_msg.config(text="Open CoNLL table analyzer GUI")
-        else:
-            CoNLL_table_analyzer_checkbox_msg.config(text="Do NOT open CoNLL table analyzer GUI")
-        CoNLL_table_analyzer_checkbox.configure(state='normal')
+    if CoNLL_table_analyzer_var.get() == 1:
+        CoNLL_table_analyzer_checkbox_msg.config(text="Open CoNLL table analyzer GUI")
+    else:
+        CoNLL_table_analyzer_checkbox_msg.config(text="Do NOT open CoNLL table analyzer GUI")
+    CoNLL_table_analyzer_checkbox.configure(state='normal')
 
     if parser_var.get()==0 and annotators_var.get()==0:
         Json_checkbox.place_forget()  # invisible
