@@ -52,6 +52,49 @@ jobs:
       - name: Build with PyInstaller
         run: python -m PyInstaller NLP_Suite.spec --noconfirm
 
+      - name: Bundle portable Python environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          DIST="dist/NLP_Suite/python-env"
+          PY_VERSION="3.10"
+
+          PBS_TAG="20241002"
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            ARCH=$(uname -m)
+            if [ "$ARCH" = "arm64" ]; then ARCH="aarch64"; fi
+            PBS_URL="https://github.com/indygreg/python-build-standalone/releases/download/${PBS_TAG}/cpython-3.10.15+${PBS_TAG}-${ARCH}-apple-darwin-install_only_stripped.tar.gz"
+          else
+            PBS_URL="https://github.com/indygreg/python-build-standalone/releases/download/${PBS_TAG}/cpython-3.10.15+${PBS_TAG}-x86_64-pc-windows-msvc-install_only_stripped.tar.gz"
+          fi
+
+          echo "Downloading portable Python from $PBS_URL"
+          curl -fSL "$PBS_URL" -o /tmp/python-portable.tar.gz
+          mkdir -p "$DIST"
+          tar -xzf /tmp/python-portable.tar.gz -C "$DIST" --strip-components=1
+
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            PYTHON="$DIST/bin/python3"
+          else
+            PYTHON="$DIST/python.exe"
+          fi
+
+          "$PYTHON" -m pip install --upgrade pip
+          "$PYTHON" -m pip install --no-cache-dir pandas numpy scipy scikit-learn openpyxl xlrd
+          "$PYTHON" -m pip install --no-cache-dir stanza spacy nltk gensim textblob textstat nrclex
+          "$PYTHON" -m pip install --no-cache-dir langdetect langid autocorrect pyspellchecker fuzzywuzzy
+          "$PYTHON" -m pip install --no-cache-dir transformers sentence-transformers
+          "$PYTHON" -m pip install --no-cache-dir matplotlib plotly "seaborn>=0.13.0" wordcloud mpld3 kaleido
+          "$PYTHON" -m pip install --no-cache-dir folium geopy simplekml shapely geopandas
+          "$PYTHON" -m pip install --no-cache-dir requests beautifulsoup4 lxml chardet tqdm psutil
+          "$PYTHON" -m pip install --no-cache-dir pdfminer.six python-docx striprtf
+          "$PYTHON" -m pip install --no-cache-dir pycorenlp stanfordcorenlp
+          "$PYTHON" -m pip install --no-cache-dir Pillow
+          "$PYTHON" -m pip install --no-cache-dir SPARQLWrapper
+          # Verify
+          "$PYTHON" -c "import pandas, requests, numpy; print('All critical packages OK')"
+          echo "Bundled portable Python environment"
+
       - name: Copy data directories to dist (all platforms)
         shell: python
         run: |
@@ -94,6 +137,93 @@ jobs:
               Write-Host "Copied $dll"
             }
           }
+
+      - name: Sign Mac executable
+        if: runner.os == 'macOS'
+        run: |
+          codesign --force --deep -s - dist/NLP_Suite/NLP_Suite
+          xattr -dr com.apple.quarantine dist/NLP_Suite/ || true
+
+      - name: Build Mac Setup launcher app
+        if: runner.os == 'macOS'
+        run: |
+          SETUP_DIR="setup-app"
+          APP="$SETUP_DIR/NLP Suite Mac Setup.app"
+          CONTENTS="$APP/Contents"
+          MACOS="$CONTENTS/MacOS"
+          RESOURCES="$CONTENTS/Resources"
+          BUILD="$SETUP_DIR/.build"
+          mkdir -p "$MACOS" "$RESOURCES" "$BUILD"
+
+          SDK_PATH="$(xcrun --sdk macosx --show-sdk-path)"
+
+          # Build for both architectures
+          BUILT_ARCHS=()
+          for ARCH in arm64 x86_64; do
+            OUTPUT="$BUILD/NLP-Suite-Mac-Setup-$ARCH"
+            if xcrun swiftc \
+              -sdk "$SDK_PATH" \
+              -target "${ARCH}-apple-macosx11.0" \
+              -framework AppKit \
+              "setup-app/Sources/main.swift" \
+              -o "$OUTPUT"; then
+              BUILT_ARCHS+=("$OUTPUT")
+              echo "Built for $ARCH"
+            fi
+          done
+
+          if [ ${#BUILT_ARCHS[@]} -eq 2 ]; then
+            xcrun lipo -create "${BUILT_ARCHS[@]}" -output "$MACOS/NLP-Suite-Mac-Setup"
+            echo "Created universal binary"
+          elif [ ${#BUILT_ARCHS[@]} -eq 1 ]; then
+            cp "${BUILT_ARCHS[0]}" "$MACOS/NLP-Suite-Mac-Setup"
+            echo "Created single-arch binary"
+          else
+            echo "Could not compile Setup app" >&2
+            exit 1
+          fi
+
+          cp "setup-app/Resources/environment_probe.py" "$RESOURCES/"
+          cp "setup-app/Resources/sitecustomize.py" "$RESOURCES/"
+          chmod +x "$MACOS/NLP-Suite-Mac-Setup"
+
+          cat > "$CONTENTS/Info.plist" <<-'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleDevelopmentRegion</key>
+            <string>en</string>
+            <key>CFBundleDisplayName</key>
+            <string>NLP Suite Mac Setup</string>
+            <key>CFBundleExecutable</key>
+            <string>NLP-Suite-Mac-Setup</string>
+            <key>CFBundleIdentifier</key>
+            <string>org.nlpsuite.macsetup</string>
+            <key>CFBundleInfoDictionaryVersion</key>
+            <string>6.0</string>
+            <key>CFBundleName</key>
+            <string>NLP Suite Mac Setup</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>CFBundleShortVersionString</key>
+            <string>2.2</string>
+            <key>CFBundleVersion</key>
+            <string>4</string>
+            <key>LSMinimumSystemVersion</key>
+            <string>11.0</string>
+            <key>NSHighResolutionCapable</key>
+            <true/>
+          </dict>
+          </plist>
+          PLIST
+
+          codesign --force --deep --sign - "$APP"
+          echo "Signed Setup app"
+
+          # Bundle into dist alongside NLP_Suite
+          cp -R "$APP" "dist/NLP_Suite/NLP Suite Mac Setup.app"
+          echo "Bundled Setup app into dist"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
