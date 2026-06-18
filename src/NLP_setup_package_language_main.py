@@ -71,10 +71,10 @@ def display_available_options():
         encoding_var, export_json_var, memory, document_length, limit_sentence_length = config_util.read_NLP_package_language_config()
     package_display_area_value_upon_entry = package+ package_basics + language + encoding_var + str(export_json_var) + \
                 str(memory) + str(document_length) + str(limit_sentence_length)
-    if not package in ['BERT', 'spaCy', 'Stanford CoreNLP', 'Stanza']:
+    if not package in ['spaCy', 'spaCy (transformer)', 'Stanford CoreNLP', 'Stanza']:
                        mb.showwarning(title='Warning',
-                                      message='"' + package + '" is not a package available in the NLP Suite. The config file NLP_default_package_language_config.csv may be corrupted.\n\nThe package option has been temporarily set to Stanford CoreNLP.\n\nYou can change this NLP package option by using the NLP package dropdown menu, scroll through the list, and select the preferred package.')
-                       package = 'Stanford CoreNLP'
+                                      message='"' + package + '" is not a package available in the NLP Suite. The config file NLP_default_package_language_config.csv may be corrupted.\n\nThe package option has been temporarily set to Stanza.\n\nYou can change this NLP package option by using the NLP package dropdown menu, scroll through the list, and select the preferred package.')
+                       package = 'Stanza'
     package_var.set(package)
 
     # parsers has an extra blank after each item
@@ -169,8 +169,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,x_coordinate_hover_over, y
 package_lb = tk.Label(window,text='NLP package (parser & annotators)')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, package_lb, True)
-package_var.set('') # Stanford CoreNLP
-package_menu = tk.OptionMenu(window, package_var, 'BERT', 'spaCy','Stanford CoreNLP', 'Stanza')
+package_var.set('') # Stanza
+package_menu = tk.OptionMenu(window, package_var, 'spaCy', 'spaCy (transformer)', 'Stanford CoreNLP', 'Stanza')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.all_widget_pos,
                                                y_multiplier_integer, package_menu)
 
@@ -185,6 +185,8 @@ def changed_NLP_package_set_parsers(*args):
     global y_multiplier_integer_SV2
     global parsers_display_area, available_parsers
     if package_var.get() == 'spaCy':
+        available_parsers = ['Dependency parser']
+    elif package_var.get() == 'spaCy (transformer)':
         available_parsers = ['Dependency parser']
     elif package_var.get()=='Stanford CoreNLP':
         available_parsers = ['Neural Network', 'Probabilistic Context Free Grammar (PCFG)']
@@ -241,11 +243,7 @@ def get_available_languages():
     languages_available=[]
     if package_var.get() == 'Stanford CoreNLP':
         languages_available=['Arabic','Chinese','English', 'German','Hungarian','Italian','Spanish']
-    if package_var.get() == 'BERT':
-        mb.showwarning(title='Option', message='The BERT option is not available yet. Sorry!\n\nPlease, select another option.')
-        package_var.set('Stanford CoreNLP')
-        return
-    if package_var.get() == 'spaCy':
+    if package_var.get() in ('spaCy', 'spaCy (transformer)'):
         languages_available = spaCy_util.list_all_languages()
     if package_var.get() == 'Stanza':
         languages_available = Stanza_util.list_all_languages()
@@ -480,9 +478,9 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "The text widget displays the currently selected default NLP package and language values.\n\nClick on the button to the far right to open the config file for inspection."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, using the dropdown menu, select the NLP package to be used as the default package for parser and annotators."+GUI_IO_util.msg_Esc + GUI_IO_util.msg_save_uponClose)
+                                  "Please, using the dropdown menu, select the NLP package to be used as the default package for parser and annotators.\n\nspaCy uses statistical models. spaCy (transformer) uses transformer-based models (e.g., RoBERTa) for higher accuracy but slower speed. Stanford CoreNLP and Stanza are also available."+GUI_IO_util.msg_Esc + GUI_IO_util.msg_save_uponClose)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "The text widget displays the available parsers for the selected NLP package " + package_var.get() +"." + GUI_IO_util.msg_Esc + GUI_IO_util.msg_save_uponClose)
+                                  "The text widget displays the available parsers for the selected NLP package " + package_var.get() +".\n\nspaCy uses a statistical pipeline (e.g., en_core_web_sm/md/lg). spaCy (transformer) uses a transformer-based pipeline (e.g., en_core_web_trf with RoBERTa) for higher accuracy at the cost of slower speed and more memory." + GUI_IO_util.msg_Esc + GUI_IO_util.msg_save_uponClose)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, using the dropdown menu, select the NLP package to be used as the default package for basic functions, namely, sentence splitter, tokenizer, lemmatizer."+GUI_IO_util.msg_Esc + GUI_IO_util.msg_save_uponClose)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -498,7 +496,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
 y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
-readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for setting up the default NLP package (e.g., spaCy, Stanford CoreNLP, Stanza), language (e.g., English, Chinese), and language encoding (e.g., utf-8) to be used for parsing and annotating your corpus in a specific language. Different packages support different sets of languages.\n\n" + \
+readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for setting up the default NLP package (e.g., spaCy, spaCy (transformer), Stanford CoreNLP, Stanza), language (e.g., English, Chinese), and language encoding (e.g., utf-8) to be used for parsing and annotating your corpus in a specific language. Different packages support different sets of languages.\n\nspaCy (transformer) uses transformer-based models (e.g., en_core_web_trf with RoBERTa) for higher accuracy at the cost of slower speed and more memory.\n\n" + \
                 "When Stanford CoreNLP is selected as NLP package, various options become available that apply only to CoreNLP: Memory, Document length (CoreNLP has a maximum processing size of 100,000 characters), Limit sentence length (CoreNLP performance deteriorates rapidly with sentence lengths above 100 words)\n\nWhen clicking the CLOSE button, the script will give the option to save the currently selected configuration IF different from the previously saved configuration."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, True, scriptName, False)

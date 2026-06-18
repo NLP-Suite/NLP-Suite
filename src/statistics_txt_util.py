@@ -416,7 +416,7 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
             answer = tk.messagebox.askyesno("TIPS file on memory issues", str(Ndocs) + " file(s) processed in input.\n\n" +
                                             "Output csv file written to the output directory " + outputDir + "\n\n" +
                                             str(
-                                                long_sentences) + " SENTENCES WERE LONGER THAN 100 WORDS (the average sentence length in modern English is 20 words).\n\nMore to the point... Stanford CoreNLP would heavily tax memory resources with such long sentences.\n\nYou should consider editing these sentences if Stanford CoreNLP takes too long to process the file or runs out of memory.\n\nPlease, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.\n\nDo you want to open the TIPS file now?")
+                                                long_sentences) + " SENTENCES WERE LONGER THAN 100 WORDS (the average sentence length in modern English is 20 words).\n\nVery long sentences can tax memory resources and slow down NLP processing.\n\nYou should consider editing these sentences if parsing takes too long or runs out of memory.\n\nPlease, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.\n\nDo you want to open the TIPS file now?")
             if answer:
                 TIPS_util.open_TIPS('TIPS_NLP_Stanford CoreNLP memory issues.pdf')
 

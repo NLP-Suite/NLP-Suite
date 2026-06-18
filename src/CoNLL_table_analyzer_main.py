@@ -279,7 +279,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                     ('CoNLL' not in inputFilename) and \
                     (not inputFilename.strip()[-4:] == '.csv'):
                 mb.showwarning(title='INPUT File Path Error',
-                               message='Please, check INPUT FILE PATH and try again. The file must be a CoNLL table (extension .conll with Stanford CoreNLP no clausal tags, extension .csv with Stanford CoreNLP with clausal tags)')
+                               message='Please, check INPUT FILE PATH and try again. The file must be a CoNLL table (extension .conll or .csv).')
                 return
             msg = "Please, check the \'Searched token\' field and try again.\n\nThe value entered must be different from the default value (e.g.: father)."
             mb.showwarning(title='Searched Token Input Error', message=msg)
@@ -442,6 +442,7 @@ inputFilename = GUI_util.inputFilename
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
+csv_file_var= tk.StringVar()
 extra_GUIs_var = tk.IntVar()
 extra_GUIs_menu_var = tk.StringVar()
 all_analyses = tk.StringVar()
@@ -495,17 +496,45 @@ def clear(e):
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
+def check_csv_file_headers(csv_file):
+    cannotRun=False
+    inputIsCoNLL = CoNLL_util.check_CoNLL(csv_file_var.get(), True)
+    if inputIsCoNLL:
+        reminders_util.checkReminder(scriptName, reminders_util.title_options_input_csv_file,
+                                     reminders_util.message_input_csv_file, True)
+    return cannotRun
 
-# custom sorter to place non alpha strings later while custom sorting
-def custom_sort(s):
-    if s:
-        if s[0].isalpha():
-            return 0
-        else:
-            return 10
+def get_csv_file(window,title,fileType,annotate):
+    #csv_file_var.set('')
+    if csv_file!='':
+        initialFolder=os.path.dirname(os.path.abspath(csv_file_var.get()))
     else:
-        return 10
+        initialFolder = os.path.dirname(os.path.abspath(__file__))
+    filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
 
+    if len(filePath)>0:
+        nRecords, nColumns =IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(filePath, 'utf-8')
+        if nRecords==0:
+            mb.showwarning(title='Warning',
+                           message="The selected input csv file is empty.\n\nPlease, select a different file and try again.")
+            filePath=''
+        else:
+            csv_file_var.set(filePath)
+    return filePath
+
+csv_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: get_csv_file(window,'Select INPUT csv CoNLL table file', [("csv files", "*.csv")],True))
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                               csv_file_button, True)
+
+#setup a button to open Windows Explorer on the selected input directory
+openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,openInputFile_button,
+                    True, False, True,False, 90, GUI_IO_util.IO_configuration_menu, "Open INPUT csv CoNLL table file")
+
+csv_file=tk.Entry(window, width=GUI_IO_util.csv_file_width,textvariable=csv_file_var)
+csv_file.config(state='disabled')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,csv_file)
 
 extra_GUIs_var.set(0)
 extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
@@ -766,15 +795,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_
                                                GUI_IO_util.file_splitter_split_mergedFile_separator_entry_end_pos,
                                                "Enter the end number of sentences to be analyzed in the CoNLL table for repeated elements")
 
-compute_sentence_var.set(0)
-sentence_table_checkbox = tk.Checkbutton(window, text='Compute sentence table', variable=compute_sentence_var,
-                                         onvalue=1, offvalue=0, command = lambda: activate_all_options())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               sentence_table_checkbox)
-
 all_analyses_checkbox.configure(state='normal')
 searchToken_checkbox.configure(state='normal')
-sentence_table_checkbox.configure(state='normal')
 k_sentences_checkbox.configure(state='normal')
 
 
@@ -785,12 +807,10 @@ def activate_all_options():
     all_analyses_menu.configure(state='disabled')
     searchToken_checkbox.configure(state='normal')
     WordNet_checkbox.configure(state='normal')
-    sentence_table_checkbox.configure(state='normal')
     k_sentences_checkbox.configure(state='normal')
     k_words_checkbox.configure(state='disabled')
     before_K_words_entry.configure(state='disabled')
     after_K_words_entry.configure(state='disabled')
-    sentence_table_checkbox.configure(state='normal')
 
 
     # search tokens
@@ -812,8 +832,6 @@ def activate_all_options():
         all_analyses_checkbox.configure(state='disabled')
         all_analyses_menu.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
-        sentence_table_checkbox.configure(state='disabled')
-        sentence_table_checkbox.configure(state='disabled')
         k_sentences_checkbox.configure(state='disabled')
         return
     if extra_GUIs_var.get():
@@ -821,14 +839,11 @@ def activate_all_options():
         all_analyses_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
         k_words_checkbox.configure(state='disabled')
-        sentence_table_checkbox.configure(state='disabled')
         k_sentences_checkbox.configure(state='disabled')
     elif all_analyses_var.get():
         all_analyses_menu.configure(state='normal')
         extra_GUIs_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
-        sentence_table_checkbox.configure(state='disabled')
-        sentence_table_checkbox.configure(state='disabled')
         k_sentences_checkbox.configure(state='disabled')
         reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_CoreNLP_nn_parser,
@@ -838,7 +853,6 @@ def activate_all_options():
         extra_GUIs_checkbox.configure(state='disabled')
         all_analyses_checkbox.configure(state='disabled')
         # k_words_checkbox.configure(state='disabled')
-        sentence_table_checkbox.configure(state='disabled')
         k_sentences_checkbox.configure(state='disabled')
         entry_searchField_kw.configure(state='normal')
         searchedCoNLLdescription_csv_field_menu_lb.configure(state='normal')
@@ -860,7 +874,6 @@ def activate_all_options():
         deprel_menu_lb.configure(state='disabled')
         co_postag_menu_lb.configure(state='disabled')
         co_deprel_menu_lb.configure(state='disabled')
-        sentence_table_checkbox.configure(state='disabled')
         k_sentences_checkbox.configure(state='disabled')
         Begin_K_sent_entry.configure(state='disabled')
         End_K_sent_entry.configure(state='disabled')
@@ -879,7 +892,6 @@ def activate_all_options():
         deprel_menu_lb.configure(state='disabled')
         co_postag_menu_lb.configure(state='disabled')
         co_deprel_menu_lb.configure(state='disabled')
-        sentence_table_checkbox.configure(state='disabled')
         k_sentences_checkbox.configure(state='disabled')
         Begin_K_sent_entry.configure(state='disabled')
         End_K_sent_entry.configure(state='disabled')
@@ -898,14 +910,12 @@ def activate_all_options():
         extra_GUIs_checkbox.configure(state='disabled')
         all_analyses_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
-        sentence_table_checkbox.configure(state='disabled')
         entry_searchField_kw.configure(state='disabled')
         searchedCoNLLdescription_csv_field_menu_lb.configure(state='disabled')
         postag_menu_lb.configure(state='disabled')
         deprel_menu_lb.configure(state='disabled')
         co_postag_menu_lb.configure(state='disabled')
         co_deprel_menu_lb.configure(state='disabled')
-        sentence_table_checkbox.configure(state='disabled')
         Begin_K_sent_entry.configure(state='normal')
         End_K_sent_entry.configure(state='normal')
     else:
@@ -915,7 +925,6 @@ def activate_all_options():
         all_analyses_menu.configure(state='disabled')
         searchToken_checkbox.configure(state='normal')
         WordNet_checkbox.configure(state='normal')
-        sentence_table_checkbox.configure(state='normal')
         k_sentences_checkbox.configure(state='normal')
     if k_words_var.get():
         mb.showwarning(title='Warning',
@@ -957,11 +966,12 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     else:
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
-
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                  "Please, use the 'Select INPUT CSV file' button to select a CoNLL table to analyze.\n\nA CoNLL table is a csv file produced by a parser (spaCy, Stanford CoreNLP, or Stanza) via the Parsers & annotators GUI. In a CoNLL table, each token is labeled with a part-of-speech tag (POSTAG), a Dependency Relation tag (DEPREL), and other linguistic information.\n\nThe selected file will be validated to ensure it is a properly formatted CoNLL table." + GUI_IO_util.msg_openFile)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          'Please, tick the \'GUIs available\' checkbox if you wish to see and select the range of other available tools suitable for searches and style analysis.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox to analyze the CoNLL table for different types of clauses (e.g., noun-phrase, NP, verb phrase, VP), nouns (singular, plural, proper nouns, subject and object), verbs (modality, tense, voice), functions words (or junk/stop words) (e.g., articles/determinants, auxiliaries, conjunctions, prepositions, pronouns), adjectives, adverbs, and ratios of word classes (e.g., content words vs. juunk words).\n\nThe CoNLL table search algorithms use the deps tags of enhanced dependencies, rather than the regular deprel dependencies.\n\nThe Stanford CoreNLP neural network parser does NOT produce clausal tags (only the PCFG parser - Probabilistic Context Free Grammar).\n\nThe Stanford CoreNLP parser does not produce information on verb mood (e.g, indicative, imperative, subjunctive). Stanza does. Use the Stanza CoNLL table output to analyze verb Mood (unfortunately, not in this GUI which only works with Stanford CoreNLP CoNLL)." + GUI_IO_util.msg_Esc)
+                                  "Please, tick the checkbox to analyze the CoNLL table for different types of clauses (e.g., noun-phrase, NP, verb phrase, VP), nouns (singular, plural, proper nouns, subject and object), verbs (modality, tense, voice), functions words (or junk/stop words) (e.g., articles/determinants, auxiliaries, conjunctions, prepositions, pronouns), adjectives, adverbs, and ratios of word classes (e.g., content words vs. junk words).\n\nThe CoNLL table analyzer works with CoNLL tables produced by any parser (spaCy, Stanford CoreNLP, Stanza).\n\nThe CoNLL table search algorithms use the deps tags of enhanced dependencies, rather than the regular deprel dependencies.\n\nStanza (the default NLP package) provides both dependency and constituency parsing, and exports verb Mood (e.g., indicative, imperative, subjunctive) and Tense information in the 'feats' column.\n\nspaCy provides dependency parsing.\n\nNote: The Stanford CoreNLP neural network parser does NOT produce clausal tags (only the PCFG parser - Probabilistic Context Free Grammar)." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to aggregate nouns and verbs in the CoNLL table (POS NN* and POS VB*) via WordNet." \
                                   "\n\nCAVEAT: For VERBS, the 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies."+ GUI_IO_util.msg_Esc)
@@ -979,8 +989,6 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "Select DEPREL value for token co-occurring in the same sentence (e.g., DEPREL nsubjpass for passive nouns that are subjects; RETURN for ANY DEPREL value)." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to run the repetition finder to compute counts and proportions of nouns, verbs, adjectives, and proper nouns across selected K beginnning and ending sentences." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to compute a sentence table with various sentence statistics.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
