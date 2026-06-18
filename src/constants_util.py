@@ -616,7 +616,7 @@ NLP_Suite_corpus_document_tools_menu = \
 'Corpus/document(s) statistics (Sentences, words, lines)', \
 'Corpus/document(s) statistics (Nouns, verbs, adjectives, pronouns, ...)', \
 'N-grams & Co-Occurrences', \
-'Parsers & annotators (BERT, CoreNLP, spaCy, Stanza)', \
+'Parsers & annotators (CoreNLP, spaCy, Stanza)', \
 'CoNLL table analyzer - Search the CoNLL table', \
 'CoNLL table analyzer - Clause, noun, verb, function words frequencies', \
 '', \

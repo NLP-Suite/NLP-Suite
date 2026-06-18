@@ -40,7 +40,7 @@ def file_merger(window,inputdirectory,outputdirectory,openOutputFiles, processSu
         return
 
     if saveFilenameInOutput==None:
-        saveFilenameInOutput = tk.messagebox.askyesnocancel("Save input filename in output", "Do you want to save the input filename in the output merged file at the beginning of each new input document?\n\nEach input filename will be saved enclosed in <@# #@>. for easy identification and search.\n\nCAVEAT! While having input filenames in the merged output file will make searches easy, if you are then using the merged file as input to the Stanford CoreNLP parser, these lines will also be parsed.")
+        saveFilenameInOutput = tk.messagebox.askyesnocancel("Save input filename in output", "Do you want to save the input filename in the output merged file at the beginning of each new input document?\n\nEach input filename will be saved enclosed in <@# #@>. for easy identification and search.\n\nCAVEAT! While having input filenames in the merged output file will make searches easy, if you are then using the merged file as input to the parser, these lines will also be parsed.")
     if saveFilenameInOutput is None: #cancel
         return
     # rootDir contains the last item of a directory path
