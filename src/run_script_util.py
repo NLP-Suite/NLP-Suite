@@ -16,11 +16,15 @@ def _find_python():
     # 1. Check for bundled portable Python (shipped with the PyInstaller dist)
     bundle_dir = os.path.dirname(sys.executable)
     if sys.platform == 'win32':
-        bundled = os.path.join(bundle_dir, 'python-env', 'Scripts', 'python.exe')
+        candidates = [
+            os.path.join(bundle_dir, 'python-env', 'python.exe'),
+            os.path.join(bundle_dir, 'python-env', 'Scripts', 'python.exe'),
+        ]
     else:
-        bundled = os.path.join(bundle_dir, 'python-env', 'bin', 'python3')
-    if os.path.isfile(bundled):
-        return bundled
+        candidates = [os.path.join(bundle_dir, 'python-env', 'bin', 'python3')]
+    for bundled in candidates:
+        if os.path.isfile(bundled):
+            return bundled
 
     # 2. Check CONDA_PREFIX (set by the Mac Setup app or conda activate)
     conda_prefix = os.environ.get('CONDA_PREFIX', '')

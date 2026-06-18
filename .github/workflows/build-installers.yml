@@ -59,24 +59,24 @@ jobs:
           DIST="dist/NLP_Suite/python-env"
           PY_VERSION="3.10"
 
+          PBS_TAG="20241002"
           if [ "$RUNNER_OS" = "macOS" ]; then
-            # python-build-standalone uses aarch64, not arm64
             ARCH=$(uname -m)
             if [ "$ARCH" = "arm64" ]; then ARCH="aarch64"; fi
-            # Download python-build-standalone (fully relocatable, no system deps)
-            PBS_TAG="20241002"
             PBS_URL="https://github.com/indygreg/python-build-standalone/releases/download/${PBS_TAG}/cpython-3.10.15+${PBS_TAG}-${ARCH}-apple-darwin-install_only_stripped.tar.gz"
-            echo "Downloading portable Python from $PBS_URL"
-            curl -fSL "$PBS_URL" -o /tmp/python-portable.tar.gz
-            mkdir -p "$DIST"
-            tar -xzf /tmp/python-portable.tar.gz -C "$DIST" --strip-components=1
-            PIP="$DIST/bin/pip3"
+          else
+            PBS_URL="https://github.com/indygreg/python-build-standalone/releases/download/${PBS_TAG}/cpython-3.10.15+${PBS_TAG}-x86_64-pc-windows-msvc-install_only_stripped.tar.gz"
+          fi
+
+          echo "Downloading portable Python from $PBS_URL"
+          curl -fSL "$PBS_URL" -o /tmp/python-portable.tar.gz
+          mkdir -p "$DIST"
+          tar -xzf /tmp/python-portable.tar.gz -C "$DIST" --strip-components=1
+
+          if [ "$RUNNER_OS" = "macOS" ]; then
             PYTHON="$DIST/bin/python3"
           else
-            # Windows: use the workflow Python to create a fully-copied venv
-            python -m venv --copies "$DIST"
-            PIP="$DIST/Scripts/pip.exe"
-            PYTHON="$DIST/Scripts/python.exe"
+            PYTHON="$DIST/python.exe"
           fi
 
           "$PYTHON" -m pip install --upgrade pip

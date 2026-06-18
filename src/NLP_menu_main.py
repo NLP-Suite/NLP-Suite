@@ -750,6 +750,7 @@ configs_created = ensure_default_configs()
 
 # check for missing I/O configuration options
 setup_IO_checkbox()
+setup_parsers_annotators_checkbox(NLP_package_language_config)
 
 # check for missing external software
 missing_external_software = setup_external_programs_checkbox()
