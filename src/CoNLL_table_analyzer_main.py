@@ -73,6 +73,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                        message="The 'Searched token' field must be different from 'e.g.: father'. Please, enter a CoNLL table token/word and try again.")
         return
 
+    if not CoNLL_util.check_CoNLL(inputFilename):
+        return
+
     withHeader = True
     # TODO Chen we are reading inputFilename twice, once here then again as a dataframe
     data, header = IO_csv_util.get_csv_data(inputFilename, withHeader)
@@ -520,6 +523,7 @@ def get_csv_file(window,title,fileType,annotate):
             filePath=''
         else:
             csv_file_var.set(filePath)
+            GUI_util.inputFilename.set(filePath)
     return filePath
 
 csv_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: get_csv_file(window,'Select INPUT csv CoNLL table file', [("csv files", "*.csv")],True))
@@ -1001,7 +1005,15 @@ scriptName=os.path.basename(__file__)
 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName,True)
 
-if GUI_util.input_main_dir_path.get()!='' or (os.path.basename(GUI_util.inputFilename.get())[-4:] != ".csv"):
+conll_from_argv = False
+if len(sys.argv) > 1 and os.path.isfile(sys.argv[1]) and sys.argv[1].endswith('.csv'):
+    GUI_util.inputFilename.set(sys.argv[1])
+    csv_file_var.set(sys.argv[1])
+    conll_from_argv = True
+
+if conll_from_argv:
+    GUI_util.run_button.configure(state='normal')
+elif GUI_util.input_main_dir_path.get()!='' or (os.path.basename(GUI_util.inputFilename.get())[-4:] != ".csv"):
     GUI_util.run_button.configure(state='disabled')
     mb.showwarning(title='Input file',
                    message="The CoNLL Table Analyzer scripts require in input a csv CoNLL table created by Stanford CoreNLP, Stanza, or spaCy.\n\nAll options and RUN button are disabled until a valid CoNLL file is selected in input.\n\nPlease, click on the button Setup INPUT/OUTPUT configuration to select a CoNLL file in input.")
@@ -1010,12 +1022,23 @@ if GUI_util.input_main_dir_path.get()!='' or (os.path.basename(GUI_util.inputFil
 else:
     GUI_util.run_button.configure(state='normal')
     if inputFilename.get()!='':
-        if not CoNLL_util.check_CoNLL(inputFilename.get()):
+        if CoNLL_util.check_CoNLL(inputFilename.get()):
+            csv_file_var.set(inputFilename.get())
+        else:
             error = True
             activate_all_options()
 
-GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
+def on_inputFilename_changed(*args):
+    tracedInputFile = GUI_util.inputFilename.get()
+    if os.path.isfile(tracedInputFile) and CoNLL_util.check_CoNLL(tracedInputFile, True):
+        csv_file_var.set(tracedInputFile)
+    changed_filename(tracedInputFile)
+
+GUI_util.inputFilename.trace('w', lambda x, y, z: on_inputFilename_changed())
 
 activate_all_options()
+
+GUI_util.window.lift()
+GUI_util.window.focus_force()
 
 GUI_util.window.mainloop()
