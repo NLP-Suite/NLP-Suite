@@ -1291,6 +1291,24 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                     top_n=25, grouped=False)
                 if stacked_png:
                     filesToOpen.append(stacked_png)
+
+            if 'Repeated Ngram' in _df.columns and 'Frequency (sentences)' in _df.columns:
+                import plotly.express as _px
+                top_df = _df.nlargest(30, 'Frequency (sentences)')
+                fig = _px.bar(top_df, x='Frequency (sentences)', y='Repeated Ngram',
+                              orientation='h',
+                              title=f'Top 30 Repeated Ngrams Across Sentences',
+                              hover_data={'Sentence IDs': True},
+                              color='Frequency (sentences)',
+                              color_continuous_scale='Viridis')
+                fig.update_layout(yaxis={'categoryorder': 'total ascending'},
+                                  xaxis_title='Number of sentences containing ngram',
+                                  yaxis_title='')
+                chart_file = os.path.join(outputDir,
+                    IO_files_util.generate_output_file_name('', '', outputDir, '.html',
+                        'repeated_ngrams_bar'))
+                fig.write_html(chart_file)
+                filesToOpen.append(chart_file)
         except Exception:
             pass
 
