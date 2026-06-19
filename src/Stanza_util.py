@@ -5,12 +5,18 @@ import IO_libraries_util
 if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Stanza_util.py",['stanza','os','tkinter','multiprocessing','pandas','gensim','spacy','pyLDAvis','matplotlib','logging','IPython'])==False:
     sys.exit(0)
 
+import os as _os
 import stanza
 try:
+    _stanza_model_dir = _os.path.join(_os.path.expanduser('~'), 'stanza_resources', 'en')
+    if not _os.path.isdir(_stanza_model_dir):
+        import IO_user_interface_util
+        IO_user_interface_util.timed_alert(GUI_util.window, 6000, 'Stanza model download',
+            'Downloading the Stanza language model for the first time (~525 MB).\n\nThis is a one-time download. Please be patient, it may take several minutes depending on your internet connection.',
+            False)
     stanza.download('en')
 except:
-    import IO_internet_util
-    # IO_internet_util.check_internet_availability_warning("Stanza_functions_util.py","stanza","json","re","tkinter","warnings")
+    pass
 
 from stanza.pipeline.multilingual import MultilingualPipeline
 
