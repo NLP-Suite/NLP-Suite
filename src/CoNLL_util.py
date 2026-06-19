@@ -36,10 +36,12 @@ REQUIRED_COLUMNS = {'ID', 'Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel',
 
 def detect_CoNLL_package(headers):
     """Detect which NLP package generated the CoNLL table."""
-    if 'Clause Tag' in headers or 'Deps' in headers:
-        return 'CoreNLP'
-    elif 'feats' in headers:
+    if 'feats' in headers:
         return 'Stanza'
+    elif 'Deps' in headers:
+        return 'CoreNLP'
+    elif 'Clause Tag' in headers:
+        return 'CoreNLP'
     elif 'Sentence' in headers and 'Multi-Word Expression' in headers:
         return 'spaCy'
     return 'unknown'
