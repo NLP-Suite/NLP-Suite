@@ -57,9 +57,8 @@ jobs:
         run: |
           set -euo pipefail
           DIST="dist/NLP_Suite/python-env"
-          PY_VERSION="3.10"
-
           PBS_TAG="20241002"
+
           if [ "$RUNNER_OS" = "macOS" ]; then
             ARCH=$(uname -m)
             if [ "$ARCH" = "arm64" ]; then ARCH="aarch64"; fi
@@ -94,6 +93,31 @@ jobs:
           # Verify
           "$PYTHON" -c "import pandas, requests, numpy; print('All critical packages OK')"
           echo "Bundled portable Python environment"
+
+      - name: Bundle VC++ runtime DLLs into portable env (Windows only)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $envDir = "dist/NLP_Suite/python-env"
+          $sklearnLibs = Join-Path $envDir "lib/site-packages/sklearn/.libs"
+          # VC++ runtime DLLs that sklearn and other native packages need
+          $vcDlls = @("msvcp140.dll", "vcruntime140.dll", "vcruntime140_1.dll", "concrt140.dll", "vcomp140.dll")
+          # Search system directories for the DLLs
+          $searchPaths = @("C:\Windows\System32", "C:\Windows\SysWOW64")
+          foreach ($dll in $vcDlls) {
+            foreach ($searchPath in $searchPaths) {
+              $src = Join-Path $searchPath $dll
+              if (Test-Path $src) {
+                # Copy to python-env root and sklearn .libs
+                Copy-Item $src $envDir -ErrorAction SilentlyContinue
+                if (Test-Path $sklearnLibs) {
+                  Copy-Item $src $sklearnLibs -ErrorAction SilentlyContinue
+                }
+                Write-Host "Copied $dll from $searchPath"
+                break
+              }
+            }
+          }
 
       - name: Copy data directories to dist (all platforms)
         shell: python

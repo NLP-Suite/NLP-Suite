@@ -6,7 +6,7 @@ In an age of BIG DATA, the purpose of the NLP Suite is rather to provide humanis
 
 Furthermore, the NLP Suite is designed for non-specialists, for scholars with **no knowledge or little knowledge of Natural Language Processing.**
 
-The NLP Suite was developed by **Roberto Franzosi** at **Emory University** with the help of many current and past **Emory undergraduate students**. Visit [**The NLP Suite Team**](https://github.com/NLP-Suite/NLP-Suite/wiki/The-NLP-Suite-Team) page for more information.
+The NLP Suite was developed by **Roberto Franzosi** at **Emory University** with the help of many current and past **Emory undergraduate students**. Visit [**The NLP Suite Team**](https://github.com/NLP-Suite/NLP-Suite/wiki/The-NLP-Suite-Team) page for more information In the Summer of 2026, Claude Code improved many of the scripts, extended the functionality of the NLP Suite, and finally solved the problem of the NLP Suite installation via PyInstaller.
 
 ---
 

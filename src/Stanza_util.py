@@ -31,8 +31,10 @@ import GUI_IO_util
 import IO_user_interface_util
 import constants_util
 import parsers_annotators_visualization_util
+import Stanford_CoreNLP_clause_util
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action='ignore', category=RuntimeWarning)
 
 import json
 import stanza.resources.common
@@ -236,28 +238,19 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
             annotator = 'NER'
             processors='tokenize,ner'
         elif "depparse" in annotator_params or "SVO" in annotator_params:
+            constituency_ok = short_lang in available_constituency
             if short_lang not in available_NER:
-                # processors = 'tokenize,mwt,pos,lemma,depparse'  # add NER when parser option selected
-                # From https://stanfordnlp.github.io/stanza/mwt.html#description
-                #   Note: Only languages with multi-word tokens (MWT), such as German or French, require MWTProcessor;
-                #       other languages, such as English or Chinese, do not support this processor in the pipeline.
-                # https://github.com/stanfordnlp/stanza-resources/blob/master/resources_1.1.0.json
-                # mwt not available in all languages (e.g., Chinese)
-                # https://github.com/stanfordnlp/stanza/issues/464
                 if short_lang not in available_mwt:
-                    processors = 'tokenize,pos,lemma,depparse'  # add NER when parser option selected
+                    processors = 'tokenize,pos,lemma,depparse'
                 else:
-                    processors = 'tokenize,pos,mwt,lemma,depparse'  # add NER when parser option selected
+                    processors = 'tokenize,pos,mwt,lemma,depparse'
             else:
-                # processors='tokenize,mwt,pos,ner,lemma,depparse' # add NER when parser option selected
-                # From https://stanfordnlp.github.io/stanza/mwt.html#description Note: Only languages with multi-word tokens (MWT), such as German or French, require MWTProcessor; other languages, such as English or Chinese, do not support this processor in the pipeline.
-                # https://github.com/stanfordnlp/stanza-resources/blob/master/resources_1.1.0.json
-                # mwt not available in all languages (e.g., Chinese)
-                # https://github.com/stanfordnlp/stanza/issues/464
                 if short_lang not in available_mwt:
-                    processors = 'tokenize,pos,ner,lemma,depparse'  # add NER when parser option selected
+                    processors = 'tokenize,pos,ner,lemma,depparse'
                 else:
-                    processors = 'tokenize,pos,mwt,ner,lemma,depparse'  # add NER when parser option selected
+                    processors = 'tokenize,pos,mwt,ner,lemma,depparse'
+            if constituency_ok:
+                processors += ',constituency'
 
             if "SVO" in annotator_params:
                 annotator = 'SVO'
@@ -561,6 +554,30 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
         out_df['Document ID'] = docID
         out_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
 
+        # Extract clause tags from constituency parse trees (when available)
+        out_df['Clause Tag'] = ''
+        if ("depparse" in str(annotator_params) or "SVO" in str(annotator_params)):
+            has_constituency = False
+            try:
+                sentences = stanza_doc.sentences if not isinstance(stanza_doc, list) else [s for doc in stanza_doc for s in doc.sentences]
+                if len(sentences) > 0 and hasattr(sentences[0], 'constituency') and sentences[0].constituency is not None:
+                    has_constituency = True
+            except:
+                pass
+            if has_constituency:
+                clause_tags_all = []
+                for sent in sentences:
+                    tree_str = str(sent.constituency)
+                    try:
+                        full_list, _ = Stanford_CoreNLP_clause_util.clausal_info_extract_from_string(tree_str)
+                        for tag_list in full_list:
+                            clause_tags_all.append(tag_list[0] if isinstance(tag_list, list) else '')
+                    except:
+                        for _ in sent.words:
+                            clause_tags_all.append('')
+                if len(clause_tags_all) == len(out_df):
+                    out_df['Clause Tag'] = clause_tags_all
+
         i = 0
         sidx = 1
         max_idx = len(out_df)-1
@@ -632,11 +649,9 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
         out_df = out_df[['Form', 'POS', 'feats', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
     elif "depparse" in annotator_params or "SVO" in annotator_params:
         if language not in available_NER:
-            out_df = out_df[['ID', 'Form', 'Lemma', 'POS', 'feats', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
-            # out_df = out_df[['Form', 'Lemma', 'POS', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+            out_df = out_df[['ID', 'Form', 'Lemma', 'POS', 'feats', 'Head', 'DepRel', 'Clause Tag', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
         else:
-            out_df = out_df[['ID', 'Form', 'Lemma', 'POS', 'NER', 'feats', 'Multi-Word Expression', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
-            # out_df = out_df[['Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+            out_df = out_df[['ID', 'Form', 'Lemma', 'POS', 'NER', 'feats', 'Multi-Word Expression', 'Head', 'DepRel', 'Clause Tag', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
     elif "sentiment" in annotator_params:
         out_df = out_df[['Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
     return out_df
@@ -1763,6 +1778,23 @@ available_sentiment = [
     "zh-hans"
 ]
 
+# Languages with constituency parsing models in Stanza
+# https://stanfordnlp.github.io/stanza/constituency.html
+available_constituency = [
+    "da",
+    "de",
+    "en",
+    "es",
+    "fr",
+    "it",
+    "ja",
+    "nb",
+    "pt",
+    "tr",
+    "vi",
+    "zh",
+    "zh-hans",
+]
 
 available_NER = [
     "af",
