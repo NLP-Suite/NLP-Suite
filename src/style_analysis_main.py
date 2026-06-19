@@ -92,9 +92,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
             mb.showwarning('Warning', 'No option has been selected for Vocabulary analysis.\n\nPlease, select an option and try again.')
             return
 
-        # if 'Iconic' in vocabulary_analysis_menu_var or 'Repetition across' in vocabulary_analysis_menu_var:
-        #     mb.showwarning('Warning', 'The selected option is not available yet.\n\nSorry!')
-        #     return
+        if 'Iconic' in vocabulary_analysis_menu_var:
+            mb.showwarning('Warning', 'The selected option is not available yet.\n\nSorry!')
+            return
 
         if '*' == vocabulary_analysis_menu_var:
             outputDir_style = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
@@ -168,6 +168,20 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
             outputFiles = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                        openOutputFiles, 
                                                        chartPackage, dataTransformation,process, language)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
+        if '*' in vocabulary_analysis_menu_var or 'Repetition across' in vocabulary_analysis_menu_var:
+            if '*' in vocabulary_analysis_menu_var:
+                process='*Repetition across sentences (special ngrams)'
+            else:
+                process = 'Repetition across sentences (special ngrams)'
+            outputFiles = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+                                                       openOutputFiles,
+                                                       chartPackage, dataTransformation, process, language)
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)

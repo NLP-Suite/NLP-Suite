@@ -953,6 +953,20 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
             return
         k = int(k_str)
 
+    if 'Repetition across' in processType:
+        if '*' in processType:
+            k_str = '3'
+        else:
+            k_str, useless = GUI_IO_util.enter_value_widget(
+                "Enter the ngram size K (e.g., 2 for bigrams, 3 for trigrams). "
+                "Word sequences of this length that repeat across different sentences will be found.",
+                'K', 1, '', '', '')
+        if k_str == '':
+            return
+        k = int(k_str)
+        if k < 2:
+            k = 2
+
     # create the appropriate subdir
     if "Objectivity/subjectivity" in processType:
         # create a subdirectory of the output directory
@@ -1188,6 +1202,40 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                             elif wrdID + 1 > len(words_with_stop) - k:
                                 word_list.append(["Last", k, wrd, wrdID + 1, sentenceID, s, documentID,
                                                   IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+
+    # REPETITION ACROSS SENTENCES (SPECIAL NGRAMS) -----------------------------------------------
+        if 'Repetition across' in processType:
+            header = ["Repeated Ngram", "Ngram Size", "Frequency (sentences)", "Sentence IDs",
+                      "Document ID", "Document"]
+            select_col = ['Repeated Ngram']
+            fileLabel = 'repeated_ngrams_' + str(k) + '-grams'
+            fileLabel_byDocID = 'repeated_ngrams_' + str(k) + '-grams_byDoc'
+            columns_to_be_plotted_yAxis = ['Repeated Ngram']
+            chart_title_label = f'Repeated {k}-grams Across Sentences'
+            chart_title_byDocID = f'Repeated {k}-grams Across Sentences by Document'
+            chart_title_bySentID = f'Repeated {k}-grams Across Sentences'
+            column_xAxis_label = 'Repeated ngrams'
+
+            from collections import defaultdict
+            ngram_sentences = defaultdict(set)
+            sentence_texts = {}
+            for sid, s in enumerate(sentences, 1):
+                words = tokenize_stanza_text(stanzaPipeLine(s))
+                if excludeStopWords:
+                    words = excludeStopWords_list(words)
+                words = [w.lower() for w in words if w.isalpha()]
+                for i in range(len(words) - k + 1):
+                    ngram = ' '.join(words[i:i + k])
+                    ngram_sentences[ngram].add(sid)
+                sentence_texts[sid] = s
+
+            doc_hyperlink = IO_csv_util.dressFilenameForCSVHyperlink(doc)
+            for ngram, sent_ids in sorted(ngram_sentences.items(), key=lambda x: -len(x[1])):
+                if len(sent_ids) >= 2:
+                    sorted_ids = sorted(sent_ids)
+                    word_list.append([ngram, k, len(sent_ids),
+                                      '; '.join(str(sid) for sid in sorted_ids),
+                                      documentID, doc_hyperlink])
 
     # N-GRAMS & HAPAX --------------------------------------------------------------------------
         # hapax and ngrams are processed above outside the for doc loop
