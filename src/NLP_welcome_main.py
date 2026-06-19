@@ -63,7 +63,7 @@ window = GUI_util.window
 def run_NLP():
     if IO_libraries_util.check_inputPythonJavaProgramFile('NLP_menu_main.py') == False:
         return
-    run_script_util.run_script("NLP_menu_main.py")
+    run_script_util.run_script("NLP_menu_main.py", "--from-welcome")
 
 def close_NLP():
     global local_release_version, GitHub_release_version
