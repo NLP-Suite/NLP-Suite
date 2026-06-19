@@ -50,6 +50,13 @@ def run_BERTopic(inputDir, outputDir, openOutputFiles, split_docs_var):
         with open(f'{o_path}/chunks.json', 'w') as f:
             json.dump(docs, f)
         docs = [doc['text'] for doc in docs]
+    _cache_dir = os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'hub',
+                              'models--sentence-transformers--all-MiniLM-L6-v2')
+    if not os.path.isdir(_cache_dir):
+        import IO_user_interface_util
+        IO_user_interface_util.timed_alert(GUI_util.window, 6000, 'BERT model download',
+            'Downloading the BERT model "all-MiniLM-L6-v2" for the first time.\n\nThis is a one-time download. Please be patient.',
+            False)
     sentence_model = SentenceTransformer('all-MiniLM-L6-v2')
     embeddings = sentence_model.encode(docs, show_progress_bar=True)
     vectorizer_model = CountVectorizer(stop_words='english')

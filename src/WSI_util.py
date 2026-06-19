@@ -133,10 +133,22 @@ def get_data(inputFilename, inputDir, Word2Vec_Dir, u_vocab=[], fileType='.txt',
     return all_sent, all_vocab, Word2Vec_Dir, docs, o_paths
 
 
+def _bert_first_download_alert_wsi():
+    cache_dir = os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'hub',
+                             'models--bert-base-uncased')
+    if not os.path.isdir(cache_dir):
+        import IO_user_interface_util
+        import GUI_util
+        IO_user_interface_util.timed_alert(GUI_util.window, 6000, 'BERT model download',
+            'Downloading the BERT model "bert-base-uncased" for the first time (~440 MB).\n\nThis is a one-time download. Please be patient.',
+            False)
+
+
 def get_centroids(all_sent, all_vocab, Word2Vec_Dir, k_range, sample=None):
 
     #load model
     print('\nStarted word sense induction...\n')
+    _bert_first_download_alert_wsi()
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
     model_name = BertModel.from_pretrained('bert-base-uncased', output_hidden_states=True)
     model = Clusterer(tokenizer, model_name)
@@ -162,6 +174,7 @@ def get_centroids(all_sent, all_vocab, Word2Vec_Dir, k_range, sample=None):
 def match_embeddings(all_sent, all_vocab, Word2Vec_Dir):
 
     #load model
+    _bert_first_download_alert_wsi()
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
     model_name = BertModel.from_pretrained('bert-base-uncased', output_hidden_states=True)
     model = Matcher(tokenizer, model_name)

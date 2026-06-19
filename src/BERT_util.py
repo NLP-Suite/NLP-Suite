@@ -46,8 +46,19 @@ import IO_user_interface_util
 import word2vec_distances_util
 import IO_internet_util
 
+
+def _bert_first_download_alert(model_id):
+    cache_dir = os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'hub',
+                             'models--' + model_id.replace('/', '--'))
+    if not os.path.isdir(cache_dir):
+        IO_user_interface_util.timed_alert(GUI_util.window, 6000, 'BERT model download',
+            'Downloading the BERT model "' + model_id + '" for the first time.\n\nThis is a one-time download. Please be patient, it may take several minutes depending on your internet connection.',
+            False)
+
+
 # Provides NER tags per sentence for every doc and stores in a csv file
 def NER_tags_BERT(window, inputFilename, inputDir, outputDir, configFileName, mode, chartPackage, dataTransformation):
+    _bert_first_download_alert("xlm-roberta-large-finetuned-conll03-english")
     tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-large-finetuned-conll03-english")
     model = AutoModelForTokenClassification.from_pretrained("xlm-roberta-large-finetuned-conll03-english")
 
@@ -167,6 +178,7 @@ def doc_summary_BERT(window, inputFilename, inputDir, outputDir, mode, chartPack
 # Creates a list of vectors/word embeddings for input files and subsequently plots them on a 2d graph
 def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, vis_menu_var,
             dim_menu_var, compute_distances_var, top_words_var, keywords_var, lemmatize_var, remove_stopwords_var, configFileName):
+    _bert_first_download_alert("sentence-transformers/all-distilroberta-v1")
     model = SentenceTransformer('sentence-transformers/all-distilroberta-v1')
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
     filesToOpen = []
