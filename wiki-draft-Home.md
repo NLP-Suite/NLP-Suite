@@ -10,7 +10,7 @@ The NLP Suite provides humanists and social scientists a wide range of computati
 
 Available for:
 - **Windows** 10/11 (64-bit)
-- **macOS** (Apple Silicon — M1 and later)
+- **macOS** (Apple Silicon — M1/M2/M3/M4/M5)
 
 ## What Can It Do?
 
