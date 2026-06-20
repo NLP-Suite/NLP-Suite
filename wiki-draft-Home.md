@@ -24,7 +24,7 @@ The NLP Suite offers 50+ GUIs covering:
 - **Data visualization** — geographic maps (Google Earth, Folium), network graphs (Gephi, vis.js), word clouds, Sankey charts, sunburst charts, boxplots, treemaps, heatmaps, timelines, and more
 - **Corpus tools** — n-grams, co-occurrences, text readability, style analysis
 - **File handling & pre-processing** — file conversion (PDF/DOCX/RTF to TXT), file merging/splitting, spell checking, filename standardization, file searching, duplicate detection, encoding validation
-- **File analysis & statistics** — sentence complexity (Yngve, Frazier, subordination ratio, dependency distance), lexical diversity (TTR, MTLD, vocd-D), readability scores (Flesch, Gunning Fog, Coleman-Liau), character emotion arcs, entity timelines, frequency distributions, word type/token ratio
+- **Style analysis & corpus statistics** — sentence complexity (Yngve, Frazier, subordination ratio, dependency distance), lexical diversity (TTR, MTLD, vocd-D), readability scores (Flesch, Gunning Fog, Coleman-Liau), character emotion arcs, entity timelines, frequency distributions, word type/token ratio
 
 ## Key Features
 
