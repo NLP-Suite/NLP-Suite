@@ -82,6 +82,27 @@ The standalone build includes everything you need to run the NLP Suite:
 **Enhancement files:**
 - CoreNLP enhanced dependencies — parsing enhancement files for SVO extraction and linguistic analysis
 
+## The Config Folder
+
+The `config/` folder (created on first run in your home directory) stores your analysis settings and preferences:
+
+**Default configurations:**
+- `NLP_default_IO_config.csv` — your default input/output folders (so you don't have to re-select them each time)
+- `NLP_default_package_language_config.csv` — your NLP package choice (Stanza, spaCy, or CoreNLP) and language preference
+
+**Analysis settings:**
+- Each analysis you run creates a config file that stores its parameters, allowing you to re-run analyses with identical settings later
+
+**API keys:**
+- `Google-geocode-API_config.csv` — Google Geocoding API key (if you use the GIS tools)
+- `Google-Maps-API_config.csv` — Google Maps API key (if you use Google Maps visualization)
+- `Pytesseract.csv` — Tesseract OCR settings (if you use PDF text extraction)
+
+**External software:**
+- `NLP_setup_external_software_config.csv` — paths to optional external tools (Stanford CoreNLP, MALLET, etc.)
+
+The config folder is your personal settings hub — it persists across updates, so your preferences are preserved.
+
 No separate installation of Python, Anaconda, Java, or WordNet is required.
 
 See the [Install page](https://github.com/NLP-Suite/NLP-Suite/wiki/Install-the-NLP-Suite#whats-included) for details on what is and is not included.
