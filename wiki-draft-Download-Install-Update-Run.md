@@ -48,15 +48,13 @@ You can change these at any time in the I/O Configuration area at the top of the
 
 ## Update
 
-To update to a newer version:
+The NLP Suite automatically checks for new versions when you close the main window. If a newer release is available, it will prompt you to download and install it.
 
-1. Download the latest artifact from GitHub Actions (same process as above)
-2. Extract the new zip to a new folder
-3. Delete the old folder (or keep it as a backup)
+**Manual update:** If you want to skip the automatic check, go to [Releases](https://github.com/NLP-Suite/NLP-Suite/releases) and download the latest version, then extract it to a new folder.
 
 Your output files and any external data are not stored inside the NLP Suite folder, so they are not affected by updates.
 
-> **Tip:** Your I/O configuration will reset to defaults after an update. The first-launch auto-config will set up new defaults automatically.
+> **Note:** Your I/O configuration will reset to defaults after an update. The first-launch auto-config will set up new defaults automatically.
 
 ## What's Bundled
 
