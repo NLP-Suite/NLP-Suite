@@ -84,14 +84,17 @@ The standalone build includes everything you need to run the NLP Suite:
 
 ## The Config Folder
 
-The `config/` folder (created on first run in your home directory) stores your analysis settings and preferences:
+The `config/` folder (created on first run) stores your analysis settings and preferences.
 
-**Default configurations:**
-- `NLP_default_IO_config.csv` — your default input/output folders (so you don't have to re-select them each time)
-- `NLP_default_package_language_config.csv` — your NLP package choice (Stanza, spaCy, or CoreNLP) and language preference
+**Auto-created defaults for new users:**
+On your very first launch, the NLP Suite automatically creates two default config files:
+- `NLP_default_IO_config.csv` — sets your input folder to `lib/sampleData/newspaperArticles` and output folder to `~/Documents/NLP_output` (you can change these anytime via I/O Configuration)
+- `NLP_default_package_language_config.csv` — sets your NLP package to Stanza and language to English (you can change these via Setup)
 
-**Analysis settings:**
-- Each analysis you run creates a config file that stores its parameters, allowing you to re-run analyses with identical settings later
+These defaults let you start testing right away without configuration.
+
+**Additional configs created as you work:**
+- Each time you run an analysis, the NLP Suite saves a config file for that specific analysis (e.g., `newspaperArticles.csv`, `Harry P corpus.csv`), allowing you to quickly re-run the same analysis with identical settings without reconfiguring
 
 **API keys:**
 - `Google-geocode-API_config.csv` — Google Geocoding API key (if you use the GIS tools)
