@@ -1940,6 +1940,249 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, conf
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir)
 
+
+def compute_subordination_ratio(window, inputFilename, inputDir, outputDir, configFileName,
+                                openOutputFiles, chartPackage, dataTransformation):
+    """Calculate subordination ratio (subordinate clauses / total clauses) for each sentence."""
+    columns = []
+    documentID = []
+    document = []
+
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='subordination',
+                                                              silent=True)
+    if outputDir == '':
+        return
+
+    all_input_docs = {}
+    dId = 0
+    filesToOpen = []
+
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                                   'Started running Subordination Ratio at', True)
+
+    if len(inputFilename) > 0:
+        numFiles = 1
+        doc = inputFilename
+        if doc.endswith('.txt'):
+            with open(doc, 'r', encoding='utf-8', errors='ignore') as file:
+                dId += 1
+                head, tail = os.path.split(doc)
+                print("Processing file " + str(dId) + '/' + str(numFiles) + tail)
+                text = file.read()
+                documentID.append(dId)
+                document.append(IO_csv_util.dressFilenameForCSVHyperlink(os.path.join(inputDir, doc)))
+                all_input_docs[dId] = text
+    else:
+        inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False,
+                                                  configFileName=configFileName)
+        numFiles = len(inputDocs)
+        if numFiles == 0:
+            return
+
+        for doc in inputDocs:
+            if doc.endswith('.txt'):
+                head, tail = os.path.split(doc)
+                with open(os.path.join(inputDir, doc), 'r', encoding='utf-8', errors='ignore') as file:
+                    dId += 1
+                    print("Importing filename " + str(dId) + '/' + str(numFiles) + ' ' + tail)
+                    text = file.read()
+                    documentID.append(dId)
+                    document.append(IO_csv_util.dressFilenameForCSVHyperlink(os.path.join(inputDir, doc)))
+                    all_input_docs[dId] = text
+
+    document_df = pd.DataFrame({'Document ID': documentID, 'Document': document})
+    document_df = document_df.astype('str')
+
+    columns = ['Subordination Ratio', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
+
+    try:
+        nlp = stanza.Pipeline(lang='en', processors='tokenize,pos,depparse', use_gpu=False)
+    except:
+        import subprocess
+        import sys
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "stanza==1.4.0"])
+        nlp = stanza.Pipeline(lang='en', processors='tokenize,pos,depparse', use_gpu=False)
+
+    op = pd.DataFrame(columns=columns)
+
+    # Subordination markers in dependency relations
+    subordination_deps = {'acl', 'advcl', 'mark', 'csubj', 'ccomp', 'xcomp'}
+
+    for idx, txt in enumerate(all_input_docs.items()):
+        doc = nlp(txt[1])
+        tail = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(document[idx]))[1]
+        print("Processing file " + str(idx+1) + '/' + str(numFiles) + ' ' + tail)
+
+        for i, sentence in enumerate(doc.sentences):
+            total_deps = len(sentence.dependencies)
+            if total_deps == 0:
+                subordination_ratio = 0
+            else:
+                subordinate_count = 0
+                for dep in sentence.dependencies:
+                    if dep[2] in subordination_deps:
+                        subordinate_count += 1
+                subordination_ratio = round(subordinate_count / total_deps, 4)
+
+            op = pd.concat([op, pd.DataFrame([{
+                'Subordination Ratio': subordination_ratio,
+                'Sentence ID': i + 1,
+                'Sentence': sentence.text,
+                'Document ID': idx + 1,
+                'Document': document[idx]}])],
+            ignore_index=True)
+
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                             'SubordinationRatio')
+    IO_csv_util.df_to_csv(window, op, outputFilename, columns, False, 'utf-8')
+    filesToOpen.append(outputFilename)
+
+    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
+                                                       columns_to_be_plotted_xAxis=[],
+                                                       columns_to_be_plotted_yAxis=['Subordination Ratio'],
+                                                       chart_title='Distribution of Subordination Ratios',
+                                                       count_var=0,
+                                                       hover_label=[],
+                                                       outputFileNameType='',
+                                                       column_xAxis_label='Subordination Ratio',
+                                                       column_yAxis_label='Frequency',
+                                                       groupByList=['Document'],
+                                                       plotList=['Subordination Ratio'],
+                                                       chart_title_label='Subordination Ratio')
+
+    if outputFiles != None:
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
+
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+                                       'Finished running Subordination Ratio at', True, '', True, startTime)
+    if openOutputFiles == True:
+        IO_files_util.OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir)
+
+
+def compute_dependency_distance(window, inputFilename, inputDir, outputDir, configFileName,
+                                openOutputFiles, chartPackage, dataTransformation):
+    """Calculate average dependency distance (word distance in parse tree) for each sentence."""
+    columns = []
+    documentID = []
+    document = []
+
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='dep_distance',
+                                                              silent=True)
+    if outputDir == '':
+        return
+
+    all_input_docs = {}
+    dId = 0
+    filesToOpen = []
+
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                                   'Started running Dependency Distance at', True)
+
+    if len(inputFilename) > 0:
+        numFiles = 1
+        doc = inputFilename
+        if doc.endswith('.txt'):
+            with open(doc, 'r', encoding='utf-8', errors='ignore') as file:
+                dId += 1
+                head, tail = os.path.split(doc)
+                print("Processing file " + str(dId) + '/' + str(numFiles) + tail)
+                text = file.read()
+                documentID.append(dId)
+                document.append(IO_csv_util.dressFilenameForCSVHyperlink(os.path.join(inputDir, doc)))
+                all_input_docs[dId] = text
+    else:
+        inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False,
+                                                  configFileName=configFileName)
+        numFiles = len(inputDocs)
+        if numFiles == 0:
+            return
+
+        for doc in inputDocs:
+            if doc.endswith('.txt'):
+                head, tail = os.path.split(doc)
+                with open(os.path.join(inputDir, doc), 'r', encoding='utf-8', errors='ignore') as file:
+                    dId += 1
+                    print("Importing filename " + str(dId) + '/' + str(numFiles) + ' ' + tail)
+                    text = file.read()
+                    documentID.append(dId)
+                    document.append(IO_csv_util.dressFilenameForCSVHyperlink(os.path.join(inputDir, doc)))
+                    all_input_docs[dId] = text
+
+    document_df = pd.DataFrame({'Document ID': documentID, 'Document': document})
+    document_df = document_df.astype('str')
+
+    columns = ['Avg Dependency Distance', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
+
+    try:
+        nlp = stanza.Pipeline(lang='en', processors='tokenize,pos,depparse', use_gpu=False)
+    except:
+        import subprocess
+        import sys
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "stanza==1.4.0"])
+        nlp = stanza.Pipeline(lang='en', processors='tokenize,pos,depparse', use_gpu=False)
+
+    op = pd.DataFrame(columns=columns)
+
+    for idx, txt in enumerate(all_input_docs.items()):
+        doc = nlp(txt[1])
+        tail = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(document[idx]))[1]
+        print("Processing file " + str(idx+1) + '/' + str(numFiles) + ' ' + tail)
+
+        for i, sentence in enumerate(doc.sentences):
+            if len(sentence.words) <= 1:
+                avg_distance = 0
+            else:
+                distances = []
+                for word in sentence.words:
+                    if word.head > 0:  # head > 0 means it has a dependency (0 is root)
+                        distance = abs(word.id - word.head)
+                        distances.append(distance)
+
+                if distances:
+                    avg_distance = round(sum(distances) / len(distances), 2)
+                else:
+                    avg_distance = 0
+
+            op = pd.concat([op, pd.DataFrame([{
+                'Avg Dependency Distance': avg_distance,
+                'Sentence ID': i + 1,
+                'Sentence': sentence.text,
+                'Document ID': idx + 1,
+                'Document': document[idx]}])],
+            ignore_index=True)
+
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                             'DependencyDistance')
+    IO_csv_util.df_to_csv(window, op, outputFilename, columns, False, 'utf-8')
+    filesToOpen.append(outputFilename)
+
+    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
+                                                       columns_to_be_plotted_xAxis=[],
+                                                       columns_to_be_plotted_yAxis=['Avg Dependency Distance'],
+                                                       chart_title='Distribution of Dependency Distances',
+                                                       count_var=0,
+                                                       hover_label=[],
+                                                       outputFileNameType='',
+                                                       column_xAxis_label='Avg Dependency Distance',
+                                                       column_yAxis_label='Frequency',
+                                                       groupByList=['Document'],
+                                                       plotList=['Avg Dependency Distance'],
+                                                       chart_title_label='Avg Dependency Distance')
+
+    if outputFiles != None:
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
+
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+                                       'Finished running Dependency Distance at', True, '', True, startTime)
+    if openOutputFiles == True:
+        IO_files_util.OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir)
+
 # def compute_corpus_statistics_byPOS(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles,
 #                                     chartPackage, dataTransformation):
 #     filesToOpen=[]

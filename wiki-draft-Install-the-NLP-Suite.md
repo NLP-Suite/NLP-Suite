@@ -6,20 +6,18 @@ The NLP Suite is distributed as a standalone application — no Python, Anaconda
 
 ### 1. Download
 
-Go to the [latest workflow run](https://github.com/NLP-Suite/NLP-Suite/actions/workflows/build-installers.yml) and download the artifact for your platform:
+1. Go to [Releases](https://github.com/NLP-Suite/NLP-Suite/releases)
+2. Download the latest zip for your platform:
+   - `NLP-Suite-windows-x64` (Windows 10/11)
+   - `NLP-Suite-mac-arm64` (macOS Apple Silicon — M1/M2/M3/M4/M5)
 
-| Platform | Artifact |
-|----------|----------|
-| Windows 10/11 (64-bit) | `NLP-Suite-windows-x64` |
-| macOS (Apple Silicon — M1/M2/M3/M4) | `NLP-Suite-mac-arm64` |
-
-> **Note:** You need a GitHub account to download workflow artifacts. If a tagged release is available, you can also find the zip files on the [Releases](https://github.com/NLP-Suite/NLP-Suite/releases) page (no login required).
+No GitHub account needed.
 
 ### System Requirements
 
 | Resource | Minimum |
 |----------|---------|
-| Free disk space | **5 GB minimum** without BERT features; **8 GB** with all BERT features (see breakdown below) |
+| Free disk space | **5 GB minimum**; **8 GB** with BERT features; **~10 GB** with all optional software (see breakdown below) |
 | Internet | Required for first run (model downloads) and for optional features (geocoding, web scraping) |
 | RAM | 4 GB (8 GB recommended for large corpora) |
 
@@ -34,6 +32,9 @@ Go to the [latest workflow run](https://github.com/NLP-Suite/NLP-Suite/actions/w
 | NLTK data (wordnet, punkt, etc.) | Bundled | Already included in the installer |
 | BERT models (NER, similarity, topic modeling, WSI) | Up to ~3 GB | Only if you use BERT features, downloaded on first use of each |
 | MALLET (topic modeling) | ~50 MB | Only if you use MALLET; external download (see below) |
+| Stanford CoreNLP | ~550 MB | Only if you use CoreNLP instead of Stanza; requires Java |
+| Java JDK | ~300 MB | Only if you use Stanford CoreNLP |
+| Google Earth Pro | ~50 MB | Only if you use KML/Google Earth visualizations; Folium (included) is an alternative |
 
 ### 2. Extract
 
@@ -153,7 +154,7 @@ python NLP_Suite_main.py
 
 | Problem | Solution |
 |---------|----------|
-| Windows: "Windows protected your PC" | Click **More info** → **Run anyway** |
+| Windows: "Windows protected your PC" (SmartScreen) | Right-click **NLP_Suite.exe** → **Properties** → click **Unlock** (bottom right) → **OK** or **Apply**. (If that doesn't appear, try clicking **More info** → **Run anyway**) |
 | macOS: "cannot be opened because it is from an unidentified developer" | Use the **NLP Suite Mac Setup** app to remove quarantine, then click **Open NLP Suite** |
 | macOS: "NLP_Suite is damaged and can't be opened" | Use the Mac Setup app to remove quarantine. If that doesn't work, open Terminal and run: `xattr -cr /path/to/NLP_Suite` |
 | First run: no config files found | Normal — the app creates them automatically. If it doesn't, check that your Documents folder is writable |
