@@ -23,6 +23,7 @@ The NLP Suite offers 50+ GUIs covering:
 - **Knowledge graphs** — WordNet aggregation, DBpedia, YAGO
 - **Data visualization** — geographic maps (Google Earth, Folium), network graphs (Gephi, vis.js), word clouds, Sankey charts, sunburst charts, boxplots, treemaps, heatmaps, timelines, and more
 - **Corpus tools** — n-grams, co-occurrences, text readability, style analysis
+- **File analysis & statistics** — sentence complexity (Yngve, Frazier, subordination ratio, dependency distance), lexical diversity (TTR, MTLD, vocd-D), readability scores (Flesch, Gunning Fog, Coleman-Liau), character emotion arcs, entity timelines, frequency distributions, word type/token ratio
 
 ## Key Features
 
