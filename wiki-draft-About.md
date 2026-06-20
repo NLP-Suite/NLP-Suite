@@ -31,7 +31,7 @@ The NLP Suite offers a comprehensive range of sentiment and emotion analysis too
 
 * **Neural network approaches:** BERT (English and Multilingual models), Stanford CoreNLP, Stanza, spaCy (TextBlob)
 * **Dictionary-based approaches:** VADER, SentiWordNet, ANEW (sentiment/arousal/dominance), hedonometer, NRC Emotion Wheel (8-emotion analysis with Plutchik wheel visualization)
-* **Shape of stories** — compute and visualize how sentiments fluctuate across documents using hierarchical clustering, SVD, and NMF
+* **Shape of stories** — compute and visualize how sentiments fluctuate across documents using hierarchical clustering, SVD, and NMF; also track sentiment fluctuations across actors (people, organizations) and/or locations in your corpus
 
 ### Knowledge Bases & Word Aggregation
 
@@ -56,14 +56,17 @@ The NLP Suite offers a comprehensive range of sentiment and emotion analysis too
 
 ### Data Visualization
 
-The NLP Suite provides a unified visualization GUI with four tabs:
+The NLP Suite provides a unified visualization GUI with seven tabs that reflect the data type to be visualized:
 
-* **Relational:** network graphs (Gephi, vis.js), Sankey diagrams
 * **Categorical:** colormaps/heatmaps, comparative bar charts, grouped bar charts, stacked bar charts, sunburst charts, treemaps, waffle charts
-* **Temporal:** interactive timelines (TimeMapper), timeline plots, calendar heatmaps
+* **Geographic:** interactive maps (Folium pin maps, heatmaps, KML maps via Google Earth)
+* **Hierarchical tree:** tree diagrams and dendrograms for hierarchical data
 * **Numeric:** boxplots, bubble charts, correlation heatmaps, Excel/Plotly charts, histograms, violin plots
+* **Relational:** network graphs (Gephi, vis.js), Sankey diagrams
+* **Temporal:** interactive timelines (TimeMapper), timeline plots, calendar heatmaps
+* **Wordclouds:** word frequency visualizations
 
-Plus: word clouds, geographic maps, and all standard chart types via Excel and Plotly.
+Plus: all standard chart types via Excel and Plotly.
 
 ### Corpus & Text Analysis
 
@@ -71,9 +74,8 @@ Plus: word clouds, geographic maps, and all standard chart types via Excel and P
 * **Collocation statistics** — PMI, log-likelihood, chi-squared, t-score, Dice coefficient for statistically significant word pairs
 * **TF-IDF ranking** — most distinctive words per document with cosine similarity matrix
 * **Lexical diversity** — TTR, Root TTR, Log TTR, MTLD, vocd-D per document
-* **Readability scores** — Flesch Reading Ease, Flesch-Kincaid Grade, Gunning Fog, Coleman-Liau, Automated Readability Index
+* **Readability and sentence complexity** — Flesch Reading Ease, Flesch-Kincaid Grade, Gunning Fog, Coleman-Liau, Automated Readability Index, plus Yngve and Frazier sentence complexity measures
 * **Word frequency distribution** — rank-frequency tables with Zipf's Law visualization and cumulative coverage curves
-* Text readability and sentence complexity measures
 * Nominalization analysis
 * Style analysis (concreteness, iconicity)
 * Document similarities
@@ -135,6 +137,7 @@ The following papers are based on the NLP Suite tools.
 
 * Franzosi, Roberto. 2020. "What's in a Text? Bridging the Gap Between Quality and Quantity in the Digital Era." Quality & Quantity. DOI: [https://doi.org/10.1007/s11135-020-01067-6](https://doi.org/10.1007/s11135-020-01067-6)
 * Franzosi, Roberto, Wenqin Dong, Yilin Dong. 2021. "Qualitative and Quantitative Research in the Humanities and Social Sciences: How Natural Language Processing (NLP) Can Help." Quality & Quantity. DOI: [https://doi.org/10.1007/s11135-021-01235-2](https://doi.org/10.1007/s11135-021-01235-2)
+* Franzosi, Roberto. 2021. "Of Narrative Time and Space: Geography Meets History in the Digital Era via Linguistics." Digital Scholarship in the Humanities. DOI: [https://doi.org/10.1093/llc/fqab090](https://doi.org/10.1093/llc/fqab090)
 * Franzosi, Roberto. 2021. "Of Narrative Time and Space: Geography Meets History in the Digital Era via Linguistics." Digital Scholarship in the Humanities. DOI: [https://doi.org/10.1093/llc/fqab090](https://doi.org/10.1093/llc/fqab090)
 
 **Unpublished papers**:
