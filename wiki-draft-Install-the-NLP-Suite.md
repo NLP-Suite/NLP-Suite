@@ -6,13 +6,12 @@ The NLP Suite is distributed as a standalone application — no Python, Anaconda
 
 ### 1. Download
 
-1. Go to [GitHub Actions → Build NLP Suite Installers](https://github.com/NLP-Suite/NLP-Suite/actions/workflows/build-installers.yml)
-2. Click the most recent successful workflow run (green checkmark)
-3. Scroll to **Artifacts** and download the zip for your platform:
+1. Go to [Releases](https://github.com/NLP-Suite/NLP-Suite/releases)
+2. Download the latest zip for your platform:
    - `NLP-Suite-windows-x64` (Windows 10/11)
    - `NLP-Suite-mac-arm64` (macOS Apple Silicon)
 
-> You need a GitHub account to download artifacts. For tagged releases, zip files are also available on the [Releases](https://github.com/NLP-Suite/NLP-Suite/releases) page without login.
+No GitHub account needed.
 
 ### System Requirements
 
