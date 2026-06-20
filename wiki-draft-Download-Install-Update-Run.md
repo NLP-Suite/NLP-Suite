@@ -58,13 +58,29 @@ Your output files and any external data are not stored inside the NLP Suite fold
 
 ## What's Bundled
 
-The standalone build includes:
+The standalone build includes everything you need to run the NLP Suite:
 
-- Python runtime and all packages (Stanza, spaCy, NLTK, BERT, Plotly, matplotlib, etc.)
-- WordNet lexical database (via NLTK)
-- NRC Emotion Lexicon
-- Sample data for testing
-- TIPS documentation and reminders
+**Runtime and packages:**
+- Python runtime and all NLP packages (Stanza, spaCy, NLTK, BERT, Plotly, matplotlib, pandas, numpy, etc.)
+
+**Linguistic databases and libraries:**
+- WordNet lexical database (via NLTK) — word aggregation and semantic categories
+- NRC Emotion Lexicon — 8-emotion analysis
+- Concreteness ratings database (Brysbaert et al.) — concreteness analysis
+- Iconicity ratings database — iconic language analysis
+- Gender/name association database (namesGender) — gender annotation
+- Sentiment analysis lexicons (sentimentLib) — dictionary-based sentiment scoring
+- Word lists for various NLP tasks
+
+**Sample data and documentation:**
+- Sample texts: 5 literary stories (Bunin, Faulkner, Murphy, etc.) for testing
+- Sample newspaper articles: 5 book reviews from major publications for corpus analysis
+- TIPS documentation (150+ files explaining algorithms and features)
+- Sample visualizations (charts, heatmaps) showing output formats
+- GIS settings and configuration templates
+
+**Enhancement files:**
+- CoreNLP enhanced dependencies — parsing enhancement files for SVO extraction and linguistic analysis
 
 No separate installation of Python, Anaconda, Java, or WordNet is required.
 
