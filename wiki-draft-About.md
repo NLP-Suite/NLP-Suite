@@ -107,10 +107,6 @@ A major architectural goal of the NLP Suite is to run **entirely in Python** wit
 
 The result: **download, extract, double-click.** Everything works out of the box.
 
-### Unified Data Visualization
-
-The NLP Suite consolidates all visualization into a **single tabbed GUI** with four tabs — Relational, Categorical, Temporal, Numeric — powered by Plotly and matplotlib. Select a CSV output from any NLP tool, pick a chart type, and visualize immediately. No switching between separate GUIs or exporting to external tools.
-
 ### Unique Selling Proposition (USP)
 
 The **Unique Selling Proposition (USP)** of the NLP Suite is its **easiness of use**. The NLP Suite interacts with the user with a set of user-friendly GUIs (**Graphical User Interface**) (over 50 GUIs at present), each GUI with `? HELP buttons` on most widgets, `hover-over help`, `ReadMe buttons`, `reminder messages` that the user can turn On and Off, `videos`, and `TIPS files` for extensive explanations of the algorithms behind the GUIs (over 150 TIPS files for all GUIs at present).
