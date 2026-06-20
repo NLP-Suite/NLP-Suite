@@ -9,7 +9,7 @@ The NLP Suite is distributed as a standalone application — no Python, Anaconda
 1. Go to [Releases](https://github.com/NLP-Suite/NLP-Suite/releases)
 2. Download the latest zip for your platform:
    - `NLP-Suite-windows-x64` (Windows 10/11)
-   - `NLP-Suite-mac-arm64` (macOS Apple Silicon)
+   - `NLP-Suite-mac-arm64` (macOS Apple Silicon — M1/M2/M3/M4/M5)
 
 No GitHub account needed.
 
@@ -154,7 +154,7 @@ python NLP_Suite_main.py
 
 | Problem | Solution |
 |---------|----------|
-| Windows: "Windows protected your PC" | Click **More info** → **Run anyway** |
+| Windows: "Windows protected your PC" (SmartScreen) | Right-click **NLP_Suite.exe** → **Properties** → click **Unlock** (bottom right) → **OK** or **Apply**. (If that doesn't appear, try clicking **More info** → **Run anyway**) |
 | macOS: "cannot be opened because it is from an unidentified developer" | Use the **NLP Suite Mac Setup** app to remove quarantine, then click **Open NLP Suite** |
 | macOS: "NLP_Suite is damaged and can't be opened" | Use the Mac Setup app to remove quarantine. If that doesn't work, open Terminal and run: `xattr -cr /path/to/NLP_Suite` |
 | First run: no config files found | Normal — the app creates them automatically. If it doesn't, check that your Documents folder is writable |
