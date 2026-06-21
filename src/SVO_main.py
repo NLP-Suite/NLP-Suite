@@ -762,10 +762,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         else:
             filesToOpenSubset.append(SVO_filename)
 
-        # Prioritize main visualizations: GIS maps, networks, wordclouds, Sankey charts, HTML files
+        # Prioritize main visualizations: GIS maps, networks, wordclouds (lemmatized only), Sankey charts, HTML files
         main_viz_files = []
         for file in filesToOpen:
-            # Prioritize: .kml (GIS), .gexf (network), .png (wordcloud), .html (Sankey/charts)
+            # Skip raw SVO wordcloud (keep only lemmatized version)
+            if 'SVO_Stanza' in file and file.endswith('.png'):
+                continue
+            # Prioritize: .kml (GIS), .gexf (network), .png (lemmatized wordcloud), .html (Sankey/charts)
             if file[-4:] == '.kml' or file[-5:] == '.gexf' or file[-4:] == '.png' or file[-5:] == '.html':
                 main_viz_files.append(file)
 
