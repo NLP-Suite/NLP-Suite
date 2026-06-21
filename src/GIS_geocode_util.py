@@ -649,28 +649,12 @@ def geocode(window,locations, inputFilename, outputDir,
 											address, country_geocoder, date])
 					else:
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, country_geocoder])
-			else:
-				# Geocoding failed — preserve location name with empty coordinates
-				if inputIsCoNLL:
-					if datePresent:
-						geowriter.writerow([itemToGeocode, NER_Tag, '', '', 'GEOCODING_FAILED', '', sentenceID, sentence, documentID, document, date])
-					else:
-						geowriter.writerow([itemToGeocode, NER_Tag, '', '', 'GEOCODING_FAILED', '', sentenceID, sentence, documentID, document])
-				else:
-					if datePresent:
-						geowriter.writerow([itemToGeocode, NER_Tag, '', '', 'GEOCODING_FAILED', '', date])
-					else:
-						geowriter.writerow([itemToGeocode, NER_Tag, '', '', 'GEOCODING_FAILED', ''])
 
-				# TODO MINO GIS create kml record
+				# Create KML point for successfully geocoded location
 				print("   Processing geocoded record for kml file for Google Earth Pro")
 				pnt = kml.newpoint(coords=[(lng, lat)])
 				pnt.style.iconstyle.icon.href = icon_url
-				# putting the location on the map creates a VERY busy map
-				# pnt.name = itemToGeocode
 				pnt.style.labelstyle.scale = '1'
-				# pnt.style.labelstyle.color = simplekml.Color.rgb(int(r_value), int(g_value), int(b_value))
-				# the code would break if no sentence is passed (e.g., from DB_PC-ACE)
 				try:
 					if date!='':
 						try:
@@ -687,7 +671,6 @@ def geocode(window,locations, inputFilename, outputDir,
 				except:
 					pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>"
 
-				# create the date values for the slide bar in Google Earth Pro for dynamic time
 				if datePresent:
 					try:
 						GEPdateFormat = convertToGEP(date)
@@ -696,6 +679,18 @@ def geocode(window,locations, inputFilename, outputDir,
 						GEPdateFormat = ''
 					pnt.timespan.begin = GEPdateFormat
 					pnt.timespan.end = GEPdateFormat
+			else:
+				# Geocoding failed — preserve location name with empty coordinates (no KML point created)
+				if inputIsCoNLL:
+					if datePresent:
+						geowriter.writerow([itemToGeocode, NER_Tag, '', '', 'Geocoding failed', '', sentenceID, sentence, documentID, document, date])
+					else:
+						geowriter.writerow([itemToGeocode, NER_Tag, '', '', 'Geocoding failed', '', sentenceID, sentence, documentID, document])
+				else:
+					if datePresent:
+						geowriter.writerow([itemToGeocode, NER_Tag, '', '', 'Geocoding failed', '', date])
+					else:
+						geowriter.writerow([itemToGeocode, NER_Tag, '', '', 'Geocoding failed', ''])
 
 	[geowriterNotFoundNonDistinct.writerow([item[0], item[1]]) for item in notGeocodedFull]
 	csvfile.close()
