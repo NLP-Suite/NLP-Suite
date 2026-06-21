@@ -725,7 +725,18 @@ def geocode(window,locations, inputFilename, outputDir,
 	else:
 		if locationsNotFound==index_locations or locationsNotFound==len(distinctGeocodedList):
 			geocodedLocationsOutputFilename='' #used NOT to open the file since there are no records
-			# this warning is already given
+			# Show helpful message to user about why geocoding failed
+			mb.showwarning(title='Geocoding Failed',
+				message='The online geocoding service could not find coordinates for any of your locations.\n\n'
+					'This can happen because:\n'
+					'• Your internet connection is slow or disconnected\n'
+					'• The geocoding service is temporarily unavailable\n'
+					'• The location names don\'t match real places\n\n'
+					'Please:\n'
+					'1. Check your internet connection\n'
+					'2. Try again in a few moments\n'
+					'3. Check that your location names are spelled correctly\n\n'
+					'If the problem continues, try using Nominatim geocoder instead of Google.')
 	# Save geocode cache to disk for future runs
 	_save_geocode_cache()
 
