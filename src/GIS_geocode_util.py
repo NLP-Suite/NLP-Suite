@@ -412,6 +412,13 @@ def geocode(window,locations, inputFilename, outputDir,
 			locations = GIS_location_util.extract_csvFile_locations(window, inputFilename, withHeader, locationColumnName, encodingValue)
 
 		if locations == None or len(locations) == 0:
+			# Check if this is SVO data with no locations linked to SVOs
+			if 'SVO' in inputFilename.upper():
+				mb.showinfo(title='No locations in SVO',
+					message='No locations were found linked to SVO (Subject-Verb-Object) triples.\n\n'
+						'Although NER may have extracted locations from the text, none of them appear in the Subject-Verb-Object extractions.\n\n'
+						'The GIS geocoding process only geocodes locations that are part of SVO relationships.\n\n'
+						'Check your SVO results to confirm.')
 			return '', '', '', ''  # empty output files
 
 	# define variable
