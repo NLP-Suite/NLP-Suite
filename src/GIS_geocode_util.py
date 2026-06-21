@@ -32,8 +32,33 @@ import IO_internet_util
 import GIS_pipeline_util
 import GIS_Google_pin_util # TODO MINO GIS create kml record
 import IO_csv_util # TODO MINO GIS create kml record
+import re
 
 filesToOpen = []
+
+def extract_date_from_filename(filename):
+	"""Extract date from filename like 'Document_Name_MM-DD-YYYY.txt'
+	Tries multiple date patterns: MM-DD-YYYY, DD-MM-YYYY, YYYY-MM-DD, etc.
+	Returns date string or empty string if not found."""
+	try:
+		# Remove path and extension
+		basename = os.path.basename(filename)
+		basename = os.path.splitext(basename)[0]
+
+		# Try common date patterns (MM-DD-YYYY, DD-MM-YYYY, YYYY-MM-DD)
+		patterns = [
+			r'(\d{1,2})-(\d{1,2})-(\d{4})$',  # MM-DD-YYYY or DD-MM-YYYY at end
+			r'(\d{4})-(\d{1,2})-(\d{1,2})$',  # YYYY-MM-DD at end
+			r'(\d{1,2})-(\d{1,2})-(\d{2})$',  # MM-DD-YY at end
+		]
+
+		for pattern in patterns:
+			match = re.search(pattern, basename)
+			if match:
+				return match.group(0)  # Return matched date string
+		return ''
+	except:
+		return ''
 
 # ── Persistent geocoding cache ────────────────────────────────────────────────
 # Saves (lat, lng, address) per location string to a JSON file so that
@@ -462,11 +487,21 @@ def geocode(window,locations, inputFilename, outputDir,
 				document = item[5]
 				if datePresent==True:
 					date = item[6]
+					# If date is empty or 'nan', try to extract from document filename
+					if pd.isna(date) or date == '' or date == 'nan':
+						date = extract_date_from_filename(document)
 			else: # not CoNLL
 				itemToGeocode =item[0]
 				if datePresent:
 					date = item[1]
 					NER_Tag = item[2]
+					# If date is empty or 'nan', try to extract from document
+					if pd.isna(date) or date == '' or date == 'nan':
+						try:
+							doc = item[4] if len(item) > 4 else ''
+							date = extract_date_from_filename(doc)
+						except:
+							date = ''
 				else:
 					NER_Tag = item[1]
 				if NER_Tag == 'COUNTRY':
@@ -599,7 +634,9 @@ def geocode(window,locations, inputFilename, outputDir,
 					country_geocoder=address_list[-1].strip()
 			#print(currRecord + itemToGeocode + str(lat) + str(lng) + address+"\n")
 			# WRITE THE RECORD -----------------------------------------------------------------
+			# Always write the record (even if geocoding failed) to preserve location data
 			if lat!=0 and lng!=0:
+				# Geocoding succeeded
 				if inputIsCoNLL:
 					if datePresent:
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, country_geocoder, sentenceID, sentence, documentID, document, date])
@@ -612,6 +649,18 @@ def geocode(window,locations, inputFilename, outputDir,
 											address, country_geocoder, date])
 					else:
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, country_geocoder])
+			else:
+				# Geocoding failed — preserve location name with empty coordinates
+				if inputIsCoNLL:
+					if datePresent:
+						geowriter.writerow([itemToGeocode, NER_Tag, '', '', 'GEOCODING_FAILED', '', sentenceID, sentence, documentID, document, date])
+					else:
+						geowriter.writerow([itemToGeocode, NER_Tag, '', '', 'GEOCODING_FAILED', '', sentenceID, sentence, documentID, document])
+				else:
+					if datePresent:
+						geowriter.writerow([itemToGeocode, NER_Tag, '', '', 'GEOCODING_FAILED', '', date])
+					else:
+						geowriter.writerow([itemToGeocode, NER_Tag, '', '', 'GEOCODING_FAILED', ''])
 
 				# TODO MINO GIS create kml record
 				print("   Processing geocoded record for kml file for Google Earth Pro")
