@@ -770,12 +770,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
             elif file[-4:] == '.csv':
                 other_files.append(file)
 
-        # Add main visualizations first
-        filesToOpenSubset.extend(main_viz_files)
-
-        # If still under 10 files, add other files
-        if len(filesToOpenSubset) < 10:
-            filesToOpenSubset.extend(other_files[:10 - len(filesToOpenSubset)])
+        # Add main visualizations first (limit to max 10 total with SVO files)
+        max_additional = max(0, 10 - len(filesToOpenSubset))
+        filesToOpenSubset.extend(main_viz_files[:max_additional])
 
         filesToOpenSubset_string = ", \n   ".join(filesToOpenSubset)
         print("Subset of the " + str(len(filesToOpenSubset)) + " SVO files from the different subfolders to be opened:\n   " + str(filesToOpenSubset_string))
