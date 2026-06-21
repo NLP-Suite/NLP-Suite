@@ -754,23 +754,22 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
 
     if openOutputFiles == True and len(filesToOpen) > 0:
         filesToOpenSubset = []
-        # add the SVO main files
-        filesToOpenSubset.append(SVO_filename)
-        # filesToOpenSubset.append(nDateSVOFilename)
-        if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get():
+        filtering_enabled = filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get()
+
+        # If filtering is enabled, focus on filtered results; otherwise show main SVO results
+        if filtering_enabled:
             filesToOpenSubset.append(SVO_filtered_filename)
+        else:
+            filesToOpenSubset.append(SVO_filename)
 
         # Prioritize main visualizations: GIS maps, networks, wordclouds, Sankey charts, HTML files
         main_viz_files = []
-        other_files = []
         for file in filesToOpen:
             # Prioritize: .kml (GIS), .gexf (network), .png (wordcloud), .html (Sankey/charts)
             if file[-4:] == '.kml' or file[-5:] == '.gexf' or file[-4:] == '.png' or file[-5:] == '.html':
                 main_viz_files.append(file)
-            elif file[-4:] == '.csv':
-                other_files.append(file)
 
-        # Add main visualizations first (limit to max 10 total with SVO files)
+        # Add main visualizations first (limit to max 10 total with SVO file)
         max_additional = max(0, 10 - len(filesToOpenSubset))
         filesToOpenSubset.extend(main_viz_files[:max_additional])
 
