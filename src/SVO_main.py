@@ -441,8 +441,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
             else:
                 filesToOpen.extend(outputFiles)
                 # the SVO output file is in outputFiles[1] outputFiles[0] contains the CoNLL parser output
-                SVO_filename = outputFiles[1]
-                svo_result_list.append(outputFiles[1])
+                if len(outputFiles) > 1:
+                    SVO_filename = outputFiles[1]
+                    svo_result_list.append(outputFiles[1])
+                elif len(outputFiles) > 0:
+                    # Fallback: use the only file returned
+                    SVO_filename = outputFiles[0]
+                    svo_result_list.append(outputFiles[0])
+                else:
+                    # No files returned — SVO extraction failed
+                    mb.showwarning(title='SVO Extraction Error',
+                        message='SVO extraction failed to produce output files.\n\nPlease check your input data and try again.')
+                    return
 
 # -------------------------------------------------------------------------------------------------------------------------------------
 # Lemmatizing and Filtering SVO for all packages
