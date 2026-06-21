@@ -36,7 +36,7 @@ The NLP Suite offers 50+ GUIs covering:
 ## Resources
 
 - [Install the NLP Suite](https://github.com/NLP-Suite/NLP-Suite/wiki/Install-the-NLP-Suite)
-- [Supported Systems & Languages](https://github.com/NLP-Suite/NLP-Suite/wiki/Supported-Systems-&-Languages)
+- [Supported Systems & Languages](https://github.com/NLP-Suite/NLP-Suite/wiki/Supported-Systems-Languages)
 - [NLP Suite Architecture](https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Architecture)
 - [Troubleshooting](https://github.com/NLP-Suite/NLP-Suite/wiki/Troubleshooting)
 - [Release History](https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History)
