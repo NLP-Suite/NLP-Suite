@@ -287,19 +287,20 @@ jobs:
           cd NLP-Suite-windows-x64 && zip -r ../NLP-Suite-windows-x64.zip . && cd ..
           cd NLP-Suite-mac-arm64 && zip -r ../NLP-Suite-mac-arm64.zip . && cd ..
 
-      - name: Generate version tag and create release
+      - name: Create tag and release
         run: |
           # Auto-generate version tag for current-stable pushes (e.g., nightly-2026-06-21-a1b2c3d)
           VERSION="nightly-$(date +%Y-%m-%d)-${GITHUB_SHA:0:7}"
+          echo "RELEASE_TAG=$VERSION" >> $GITHUB_ENV
           git tag --force "$VERSION"
           git push --force origin "$VERSION"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: nightly-${{ github.event.head_commit.timestamp || github.run_id }}
+          tag_name: ${{ env.RELEASE_TAG }}
           files: |
             NLP-Suite-windows-x64.zip
             NLP-Suite-mac-arm64.zip
