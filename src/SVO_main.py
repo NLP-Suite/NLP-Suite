@@ -759,22 +759,26 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         # filesToOpenSubset.append(nDateSVOFilename)
         if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get():
             filesToOpenSubset.append(SVO_filtered_filename)
+
+        # Prioritize main visualizations: GIS maps, networks, wordclouds, Sankey charts, HTML files
+        main_viz_files = []
+        other_files = []
         for file in filesToOpen:
-            # open all charts, all Google Earth and Google Maps maps, Gephi gexf network graph, html files, and wordclouds png files
-            if file[-4:] == '.kml' or file[-5:] == '.html' or file[-4:] == '.png' or file[-5:] == '.gexf': # or \
-                # file[-5:] == '.xlsx':
-                filesToOpenSubset.append(file)
+            # Prioritize: .kml (GIS), .gexf (network), .png (wordcloud), .html (Sankey/charts)
+            if file[-4:] == '.kml' or file[-5:] == '.gexf' or file[-4:] == '.png' or file[-5:] == '.html':
+                main_viz_files.append(file)
+            elif file[-4:] == '.csv':
+                other_files.append(file)
+
+        # Add main visualizations first
+        filesToOpenSubset.extend(main_viz_files)
+
+        # If still under 10 files, add other files
+        if len(filesToOpenSubset) < 10:
+            filesToOpenSubset.extend(other_files[:10 - len(filesToOpenSubset)])
 
         filesToOpenSubset_string = ", \n   ".join(filesToOpenSubset)
         print("Subset of the " + str(len(filesToOpenSubset)) + " SVO files from the different subfolders to be opened:\n   " + str(filesToOpenSubset_string))
-        # SVO can produce a very large number of files including the subset files
-        #   when even the subset is greater then 10, open a least the SVO file
-        if len(filesToOpenSubset)>10:
-            if package_var == 'Stanza' or package_var == 'spaCy':
-                filesToOpenSubset=[filesToOpen[0]]
-                filesToOpenSubset.append(filesToOpen[1])
-            else:
-                filesToOpenSubset = [filesToOpen[0]]
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName, filesToOpenSubset)
 
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
