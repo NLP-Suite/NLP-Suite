@@ -6,9 +6,14 @@ WINDOWS
 -------
 1. Extract the zip file to any folder (e.g. Desktop).
 2. Open the extracted folder and double-click NLP_Suite.exe.
-3. If Windows shows "Windows protected your PC":
-   - Click "More info"
-   - Click "Run anyway"
+3. If Windows shows "Windows protected your PC" (SmartScreen):
+   Primary method:
+   - Right-click NLP_Suite.exe → Properties
+   - Click "Unlock" (bottom right) → OK/Apply
+
+   Alternative method:
+   - Click "More info" → Click "Run anyway"
+
    This only happens the first time.
 
 macOS (Apple Silicon)
