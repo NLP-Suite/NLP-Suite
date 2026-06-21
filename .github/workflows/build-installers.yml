@@ -285,8 +285,8 @@ jobs:
           # Auto-generate version tag for current-stable pushes (e.g., nightly-2026-06-21-a1b2c3d)
           VERSION="nightly-$(date +%Y-%m-%d)-${GITHUB_SHA:0:7}"
           echo "AUTO_TAG=$VERSION" >> $GITHUB_ENV
-          git tag "$VERSION"
-          git push origin "$VERSION"
+          git tag --force "$VERSION"
+          git push --force origin "$VERSION"
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
