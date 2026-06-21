@@ -1,3 +1,5 @@
+### NLP Suite  ![GitHub release (latest by date)](https://img.shields.io/github/v/release/NLP-Suite/NLP-Suite?color=Green&label=Latest%20Version)  
+
 # Install External Software
 
 The standalone NLP Suite build bundles most of what you need. The tools listed below are **optional** — install them only if you need the specific functionality they provide.

@@ -1,4 +1,4 @@
-# What the NLP Suite Does
+### NLP Suite  ![GitHub release (latest by date)](https://img.shields.io/github/v/release/NLP-Suite/NLP-Suite?color=Green&label=Latest%20Version)  
 
 The NLP Suite provides an **easy-to-use one-stop shop for many Natural Language Processing (NLP) tasks**. The NLP Suite relies on three different freeware cutting-edge parsers and annotators — [spaCy](https://spacy.io/), [Stanford CoreNLP](https://stanfordnlp.github.io/CoreNLP/), [Stanza](https://stanfordnlp.github.io/stanza/) — to carry out many of these tasks, in particular:
 

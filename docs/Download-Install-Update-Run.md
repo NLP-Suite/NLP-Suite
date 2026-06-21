@@ -1,3 +1,5 @@
+### NLP Suite  ![GitHub release (latest by date)](https://img.shields.io/github/v/release/NLP-Suite/NLP-Suite?color=Green&label=Latest%20Version)  
+
 # Download, Install, Update, Run the NLP Suite
 
 > **This page is for the standalone (PyInstaller) build.** If you want to run from source code, see the [Developer Setup](https://github.com/NLP-Suite/NLP-Suite/wiki/Install-the-NLP-Suite#developer-setup-run-from-source) section on the Install page.

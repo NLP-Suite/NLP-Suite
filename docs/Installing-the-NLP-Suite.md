@@ -1,3 +1,5 @@
+### NLP Suite  ![GitHub release (latest by date)](https://img.shields.io/github/v/release/NLP-Suite/NLP-Suite?color=Green&label=Latest%20Version)  
+
 # Install the NLP Suite
 
 ## Quick Install (recommended)
