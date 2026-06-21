@@ -106,6 +106,20 @@ def _cache_put(location_str, lat, lng, address):
 #	e.g., China, People's Republic of China, US, U.S., United States, United States of America
 multi_name_locations = pd.read_csv(os.path.join(GUI_IO_util.wordLists_libPath,"multi_name_locations.csv"))
 
+# Build lookup dictionary for fast location alias matching (instead of iterating through rows for every location)
+_location_alias_lookup = {}
+try:
+	for _, row in multi_name_locations.iterrows():
+		multi_name_location = str(row[0]).split(', ')
+		standard_name = row["Location single name"]
+		ner_tag = row.get("NER_Tag", "")
+		ner_tag_nominatim = row.get("NER_Tag_Nominatim", "")
+		for loc_name in multi_name_location:
+			_location_alias_lookup[loc_name] = (standard_name, ner_tag, ner_tag_nominatim)
+except Exception as e:
+	print(f"Warning: Could not build location alias lookup: {e}")
+	_location_alias_lookup = {}
+
 # TODO
 # geocode(query, exactly_one=True, timeout=DEFAULT_SENTINEL, limit=None, addressdetails=False, language=False, geometry=None, extratags=False, country_codes=None, viewbox=None, bounded=None)
 # Return a location point by address.
@@ -535,17 +549,12 @@ def geocode(window,locations, inputFilename, outputDir,
 				# print("   Geocoding NON-DISTINCT location: " + itemToGeocode)
 				# multi_name_locations is provided in the NLP Suite lib/wordLists to make sure that multiple name locations are processed correctly
 				#	e.g., China, People's Republic of China, US, U.S., United States, United States of America
-				for index, row in multi_name_locations.iterrows():  # For every row in the ConLL
-					multi_name_location = row[0]
-					multi_name_location = multi_name_location.split(', ')
-					for loc_name in multi_name_location: # "Location multiple names"
-						if itemToGeocode==loc_name:
-							itemToGeocode = row["Location single name"]
-							NER_tag = row["NER_Tag"]
-							NER_tag_nominatim = row["NER_Tag_Nominatim"]
-							break
-					if itemToGeocode == loc_name:
-						break
+				# Fast lookup instead of iterating through all rows
+				if itemToGeocode in _location_alias_lookup:
+					standard_name, ner_tag, ner_tag_nominatim = _location_alias_lookup[itemToGeocode]
+					itemToGeocode = standard_name
+					NER_tag = ner_tag
+					NER_tag_nominatim = ner_tag_nominatim
 				if itemToGeocode in notGeocodedList:
 					notGeocodedList.append(itemToGeocode)
 					notGeocodedFull.append((itemToGeocode,NER_Tag))
@@ -558,17 +567,12 @@ def geocode(window,locations, inputFilename, outputDir,
 					country_geocoder=address_list[-1].strip()
 			else:
 				print("   Geocoding DISTINCT location: " + itemToGeocode, end="", flush=True)
-				for index1, row1 in multi_name_locations.iterrows():  # For every row in the ConLL
-					multi_name_location = row1[0]
-					multi_name_location = multi_name_location.split(', ')
-					for loc_name in multi_name_location: # "Location multiple names"
-						if itemToGeocode==loc_name:
-							itemToGeocode = row1["Location single name"]
-							NER_tag = row1["NER_Tag"]
-							NER_tag_nominatim = row1["NER_Tag_Nominatim"]
-							break
-					if itemToGeocode == loc_name:
-						break
+				# Fast lookup instead of iterating through all rows
+				if itemToGeocode in _location_alias_lookup:
+					standard_name, ner_tag, ner_tag_nominatim = _location_alias_lookup[itemToGeocode]
+					itemToGeocode = standard_name
+					NER_tag = ner_tag
+					NER_tag_nominatim = ner_tag_nominatim
 				distinctGeocodedList.append(itemToGeocode)
 
 				# ── Check persistent disk cache first ──────────────────
