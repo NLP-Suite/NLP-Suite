@@ -206,8 +206,15 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         if not inputIsGeocoded and geocoder == 'Nominatim':
             changed = False
             nom_df = pd.read_csv(inputFilename)
-            # select columns
+            # select columns; spaCy/Stanza NER output may lack 'Sentence' (it has only
+            # 'Sentence ID') and sometimes 'Date'/'Document' -- add them as empty so the
+            # selection below and downstream code do not raise a KeyError
+            for col in ('Sentence', 'Document'):
+                if col not in nom_df.columns:
+                    nom_df[col] = ''
             if datePresent:
+                if 'Date' not in nom_df.columns:
+                    nom_df['Date'] = ''
                 nom_df = nom_df[['Location', 'Date', 'NER', 'Sentence', 'Document']]
             else:
                 nom_df = nom_df[['Location', 'NER', 'Sentence', 'Document']]
