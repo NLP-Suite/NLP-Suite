@@ -655,21 +655,26 @@ def geocode(window,locations, inputFilename, outputDir,
 	csvfileNotFound.close()
 	csvfileNotFoundNonDistinct.close()
 	# TODO MINO GIS create kml record
-	try:
-		kml.save(kmloutputFilename)
-	except:
-		mb.showwarning(title='kml file save failure',
-					   message="Saving the kml file failed. A typical cause of failure is is bad characters in the input text/csv file(s) (e.g, 'LINE TABULATION' or 'INFORMATION SEPARATOR ONE' characters).\n\nThe GIS KML script will now try to automattically clean the kml file, save it in safe mode, and open the kml file in Google Earth Pro.\n\nIf the file cleaning was successful, the map will display correctly. If not, Google Earth Pro will open exactly on the bad character position. Remove the character and save the file. But, you should really clean the original input txt/csv file.")
-		# Save kml regardless of validity. Let the user find any bad characters.
-		kml.save(kmloutputFilename, False)
-		# Clean out any "LINE TABULATION" and "INFORMATION SEPARATOR ONE" characters from the input (causes error with KML).
-		with open(kmloutputFilename, 'r+', encoding='utf_8', errors='ignore') as kmlfile:
-			content = kmlfile.read()
-			content = content.replace(u"\u000B", "")
-			content = content.replace(u"\u001F", "")
-			kmlfile.seek(0)
-			kmlfile.write(content)
-			kmlfile.truncate()
+	# only create a kml map when at least one location was actually geocoded
+	if geocoded_count > 0:
+		try:
+			kml.save(kmloutputFilename)
+		except:
+			mb.showwarning(title='kml file save failure',
+						   message="Saving the kml file failed. A typical cause of failure is is bad characters in the input text/csv file(s) (e.g, 'LINE TABULATION' or 'INFORMATION SEPARATOR ONE' characters).\n\nThe GIS KML script will now try to automattically clean the kml file, save it in safe mode, and open the kml file in Google Earth Pro.\n\nIf the file cleaning was successful, the map will display correctly. If not, Google Earth Pro will open exactly on the bad character position. Remove the character and save the file. But, you should really clean the original input txt/csv file.")
+			# Save kml regardless of validity. Let the user find any bad characters.
+			kml.save(kmloutputFilename, False)
+			# Clean out any "LINE TABULATION" and "INFORMATION SEPARATOR ONE" characters from the input (causes error with KML).
+			with open(kmloutputFilename, 'r+', encoding='utf_8', errors='ignore') as kmlfile:
+				content = kmlfile.read()
+				content = content.replace(u"\u000B", "")
+				content = content.replace(u"\u001F", "")
+				kmlfile.seek(0)
+				kmlfile.write(content)
+				kmlfile.truncate()
+	else:
+		# no geocoded points -> do not produce a kml file
+		kmloutputFilename = ''
 
 	# surface an empty result with an accurate, context-aware message
 	if geocoded_count==0:

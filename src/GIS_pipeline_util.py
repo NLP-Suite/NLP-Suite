@@ -203,7 +203,9 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                 return
         else:
             locations=[[locationColumnName]]
-        if not inputIsGeocoded and geocoder == 'Nominatim':
+        # rebuild the real locations from the file for ANY geocoder (this was previously gated
+        # to Nominatim only, leaving Google with the placeholder [[locationColumnName]] -> 0 geocoded)
+        if not inputIsGeocoded:
             changed = False
             nom_df = pd.read_csv(inputFilename)
             # select columns; spaCy/Stanza NER output may lack 'Sentence' (it has only
