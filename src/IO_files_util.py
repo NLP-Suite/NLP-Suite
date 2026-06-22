@@ -766,6 +766,19 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
 
     # Auto-open decision based on files produced by the CURRENT run, not total in directory
     if nFilesProduced > 10 or len(filesToOpenSubset) > 10:
+        # Too many files to open them all, but still open the primary map visualizations
+        # (Google Earth KML, folium HTML maps) so they are not silently suppressed.
+        if openOutputFiles == True:
+            flat = filesToOpen[0] if (filesToOpen and isinstance(filesToOpen[0], list)) else filesToOpen
+            for file in flat:
+                if isinstance(file, str) and os.path.isfile(file) and len(file) <= 256:
+                    if file.endswith('.kml'):
+                        open_kmlFile(window, file)
+                    elif file.endswith('.html') and 'Folium' in file:
+                        try:
+                            openFile(window, file)
+                        except:
+                            pass
         return
 
     if len(filesToOpen) == 1:
