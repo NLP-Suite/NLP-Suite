@@ -236,6 +236,8 @@ def run(inputFilename,
         # Normalize NER tags: map Stanza/spaCy GPE/LOC to LOCATION for GIS filtering
         location_tags = {'COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION', 'GPE', 'LOC'}
         if 'NER' in df.columns:
+            # Stanza/spaCy emit BIOES-prefixed tags (e.g., 'S-GPE','B-GPE'); take the tag after the prefix
+            df['NER'] = df['NER'].astype(str).str.split('-').str[-1]
             # Map GPE/LOC → LOCATION so downstream GIS code works uniformly
             df['NER'] = df['NER'].replace({'GPE': 'LOCATION', 'LOC': 'LOCATION'})
             # Keep only location rows
@@ -243,14 +245,17 @@ def run(inputFilename,
         else:
             df = pd.DataFrame()  # empty — no NER column
 
-        # For Stanza/spaCy: use Multi-Word Expression when available (pre-joined entities)
+        # For Stanza/spaCy: the 'Multi-Word Expression' column holds the full, pre-joined entity
+        # (e.g., "New York") on each entity-head row, and is blank/NaN on continuation tokens.
+        # Keep only the head rows and use that merged value, so multi-word locations are not
+        # fragmented (e.g., "New" + "York") and continuation tokens are dropped.
         if 'Multi-Word Expression' in df.columns:
-            # Multi-Word Expression holds the full entity (e.g., "United States of America")
-            # Use it instead of the single-token 'Location' when available
-            mwe_mask = df['Multi-Word Expression'].notna() & (df['Multi-Word Expression'] != '') & (df['Multi-Word Expression'] != 'O')
-            df.loc[mwe_mask, 'Location'] = df.loc[mwe_mask, 'Multi-Word Expression']
-            # Drop duplicate rows from multi-token entities (keep first occurrence)
-            df = df[mwe_mask | ~df.duplicated(subset=['Location', 'Sentence ID', 'Document ID'], keep='first')]
+            mwe_mask = df['Multi-Word Expression'].notna() & \
+                       (df['Multi-Word Expression'].astype(str).str.strip() != '') & \
+                       (df['Multi-Word Expression'].astype(str) != 'O')
+            if mwe_mask.any():
+                df = df[mwe_mask].copy()
+                df['Location'] = df['Multi-Word Expression']
 
         if df.empty:
             mb.showwarning("No locations","There are no NER locations to be geocoded and mapped in the selected input txt file.\n\nPlease, select a different txt file and try again.")
