@@ -248,7 +248,7 @@ def create_folium_timestamped_map(window, inputFilename, outputDir,
     # bottom-left leaflet corner, so move that corner to the top-left, below the zoom buttons.
     m.get_root().header.add_child(folium.Element(
         "<style>"
-        ".leaflet-bottom.leaflet-left{top:70px;bottom:auto;left:10px;}"
+        ".leaflet-bottom.leaflet-left{top:10px;bottom:auto;left:55px;}"
         ".leaflet-bottom.leaflet-left .leaflet-control-timecontrol{margin-bottom:0;}"
         "</style>"))
 
