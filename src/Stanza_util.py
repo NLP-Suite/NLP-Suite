@@ -1179,7 +1179,9 @@ def _extract_ner_entities(sentence):
     # Use sentence.entities if available (Stanza NER)
     if hasattr(sentence, 'entities'):
         for ent in sentence.entities:
-            if ent.type in ('GPE', 'LOC', 'STATE_OR_PROVINCE', 'COUNTRY', 'CITY', 'LOCATION'):
+            # Stanza emits GPE (en/zh), LOC (most languages), LOCATION (vi) for places;
+            # the CoreNLP-style CITY/COUNTRY/STATE_OR_PROVINCE tags are never produced by Stanza
+            if ent.type in ('GPE', 'LOC', 'LOCATION'):
                 if ent.text not in locations:
                     locations.append(ent.text)
                     loc_ner.append([ent.text, ent.type, ent.start_char, ent.end_char])
@@ -1656,8 +1658,8 @@ def visualize_GIS_maps_Stanza(svo_df):
             for idx, loc in enumerate(loc_list):
                 if loc.strip() != '':
                     ner_type = ner_list[idx].strip() if idx < len(ner_list) else 'LOCATION'
-                    # Filter to only geocode CITY, COUNTRY, STATE_OR_PROVINCE, GPE (skip generic LOCATION, LOC)
-                    if ner_type in ('CITY', 'COUNTRY', 'STATE_OR_PROVINCE', 'GPE'):
+                    # Geocode geopolitical entities (GPE = countries/cities/states); skip generic LOC (mountains, rivers)
+                    if ner_type == 'GPE':
                         loc_df.loc[len(loc_df.index)] = [loc.strip(), ner_type, row['Sentence ID'], row['Sentence'], row['Document ID'], row['Document']]
     return loc_df
 
