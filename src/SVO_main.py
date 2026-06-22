@@ -655,11 +655,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
     # GIS maps _____________________________________________________
 
         if google_earth_var:
-            key = GIS_pipeline_util.getGoogleAPIkey(window, 'Google-geocode-API_config.csv')
-            if key == '' or key == None:
-                geocoder = 'Nominatim'
-            else:
+            # auto-pick the geocoder silently: Google only if a key is already configured,
+            # otherwise Nominatim (no "enter API key" nag for users without a Google key)
+            if GIS_pipeline_util.has_google_api_key('Google-geocode-API_config.csv'):
                 geocoder = 'Google'
+            else:
+                geocoder = 'Nominatim'
             # SENNA locations are not really geocodable locations
             if (package_var=='SENNA') and os.path.isfile(location_filename):
                 reminders_util.checkReminder(scriptName, reminders_util.title_options_GIS_OpenIE_SENNA,

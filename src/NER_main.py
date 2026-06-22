@@ -238,8 +238,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                         'No mappable location entities were found in the NER output, so no map was produced.')
                     gis_out = None
                 else:
-                    key = GIS_pipeline_util.getGoogleAPIkey(GUI_util.window, 'Google-geocode-API_config.csv')
-                    geocoder = 'Nominatim' if (key == '' or key is None) else 'Google'
+                    # auto-pick the geocoder silently: Google only if a key is already configured,
+                    # otherwise Nominatim (no "enter API key" nag for users without a Google key)
+                    geocoder = 'Google' if GIS_pipeline_util.has_google_api_key('Google-geocode-API_config.csv') else 'Nominatim'
                     date_present = bool(filename_embeds_date_var)
                     gis_out = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename, prepared_csv, inputDir,
                                 gis_subdir, geocoder, 'Google Earth Pro & Google Maps & Python folium pin map & heatmap', chartPackage, dataTransformation,

@@ -74,6 +74,20 @@ def getGoogleAPIkey(window,Google_config, display_key=False):
     return key.strip()
 
 
+# silently report whether a Google API key is already configured, WITHOUT prompting the user.
+# Use this to auto-pick the geocoder (Google if a key exists, else Nominatim) so users without
+# a Google key are not nagged with the "enter API key" dialog on every run.
+def has_google_api_key(Google_config):
+    try:
+        path = os.path.join(GUI_IO_util.configPath, Google_config)
+        if not os.path.isfile(path):
+            return False
+        with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+            return any(line.strip() for line in f)
+    except Exception:
+        return False
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # GIS settings — per-database country bias, area, restrict
 # Saved as GIS_settings.json in the INPUT directory alongside the Excel files.
