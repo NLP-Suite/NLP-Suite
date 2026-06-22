@@ -676,6 +676,12 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
         else:
             filesToOpen = list(filesToOpen)
 
+    # deduplicate while preserving order; pipelines (e.g. NER + geocode + folium + charts)
+    # often append the same file multiple times, which inflates both the reported
+    # "files produced" count and the >10 auto-open threshold
+    if filesToOpen and isinstance(filesToOpen[0], str):
+        filesToOpen = list(dict.fromkeys(filesToOpen))
+
     if len(filesToOpenSubset)> 0:
         filesToOpen=filesToOpenSubset
 
