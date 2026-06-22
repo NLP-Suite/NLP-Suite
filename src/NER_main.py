@@ -267,7 +267,8 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 NER_packages_var = tk.StringVar()
 NER_packages_var.set('BERT (English language model)')
-NER_packages_menu = tk.OptionMenu(window,NER_packages_var,'*', 'BERT (English language model)','spaCy','Stanford CoreNLP','Stanza')
+# IBM https://ibm.github.io/zshot/ "pip install zshot" — placeholder; not yet implemented
+NER_packages_menu = tk.OptionMenu(window,NER_packages_var,'*', 'BERT (English language model)','IBM','spaCy','Stanford CoreNLP','Stanza')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_packages_menu_pos, y_multiplier_integer,
                     NER_packages_menu, False, False, True, False,
@@ -503,6 +504,9 @@ def activate_NER_Options(coming_from_add, coming_from_reset):
     else:
         NER_list=[]
         NER_entry_var.set(NER_list)
+        if 'IBM' in NER_packages_var.get():
+            mb.showwarning("Option not available",
+                           "The selected " + NER_packages_var.get() + " option is not available yet.\n\nSorry! Please, check back soon...")
 NER_packages_var.trace('w',lambda x,y,z: activate_NER_Options(coming_from_add, coming_from_reset))
 
 # activate_NER_Options(coming_from_add, coming_from_reset)
