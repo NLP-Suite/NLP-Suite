@@ -596,5 +596,15 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         if folium_heat_file != '':
             filesToOpen.append(folium_heat_file)
 
+        # dynamic/time-animated folium map (the folium equivalent of Google Earth Pro's time
+        # slider). Only meaningful when the geocoded csv carries a Date column.
+        if datePresent:
+            folium_time_file = GIS_folium_util.create_folium_timestamped_map(window,
+                                                                  geocodedLocationsOutputFilename,
+                                                                  outputDir,
+                                                                  locationColumnName)
+            if folium_time_file != '':
+                filesToOpen.append(folium_time_file)
+
     IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running GIS pipeline at', True, '', True, startTime)
     return filesToOpen
