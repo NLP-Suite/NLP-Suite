@@ -678,7 +678,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                                      config_filename, location_filename, inputDir,
                                      outputGISDir,
                                      # 'Nominatim', 'Google Earth Pro & Google Maps', chartPackage, dataTransformation,
-                                     geocoder, 'Google Earth Pro & Google Maps', chartPackage, dataTransformation,
+                                     geocoder, 'Google Earth Pro & Google Maps & Python folium pin map & heatmap', chartPackage, dataTransformation,
                                      date_present,
                                      country_bias,
                                      area_var,

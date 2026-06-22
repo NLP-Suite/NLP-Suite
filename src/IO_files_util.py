@@ -611,8 +611,28 @@ def checkFile(inputFilename, extension=None, silent=False):
 # inputFilename contains filename with path
 def open_kmlFile(window,inputFilename):
     if sys.platform == 'win32':
-        # https://stackoverflow.com/questions/26498302/how-to-load-the-kml-file-into-google-earth-using-python
-        os.startfile(inputFilename)
+        # Prefer launching Google Earth Pro directly: the .kml file association is frequently
+        # broken/missing, in which case os.startfile (and Explorer double-click) do nothing.
+        gep_paths = [
+            r"C:\Program Files\Google\Google Earth Pro\client\googleearth.exe",
+            r"C:\Program Files (x86)\Google\Google Earth Pro\client\googleearth.exe",
+        ]
+        for gep in gep_paths:
+            if os.path.isfile(gep):
+                try:
+                    subprocess.Popen([gep, inputFilename])
+                    return
+                except Exception:
+                    pass
+        # fall back to the file association
+        try:
+            os.startfile(inputFilename)
+        except Exception:
+            mb.showwarning('Cannot open KML map',
+                "Could not open the KML map automatically.\n\nGoogle Earth Pro was not found at its "
+                "standard install location, and the .kml file type is not associated with it on this PC.\n\n"
+                "Open Google Earth Pro manually and use File > Open to load:\n\n" + str(inputFilename) +
+                "\n\nOr right-click the .kml file > Open with > choose Google Earth Pro (tick 'Always use this app').")
         # also webbrowser.open(inputFilename) will open the kml file in GEP
     elif sys.platform == 'darwin':
         subprocess.Popen(['open', inputFilename])

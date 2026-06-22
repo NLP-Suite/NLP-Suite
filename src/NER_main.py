@@ -230,7 +230,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                 geocoder = 'Nominatim' if (key == '' or key is None) else 'Google'
                 date_present = bool(filename_embeds_date_var)
                 gis_out = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename, ner_csv, inputDir,
-                            outputDir, geocoder, 'Google Earth Pro & Google Maps', chartPackage, dataTransformation,
+                            outputDir, geocoder, 'Google Earth Pro & Google Maps & Python folium pin map & heatmap', chartPackage, dataTransformation,
                             date_present, '', '', False, 'Location', 'utf-8',
                             0, 1, [''], [''], ['Pushpins'], ['red'], [0], ['1'], [0], [''], [1], [1])
                 if gis_out is not None:
