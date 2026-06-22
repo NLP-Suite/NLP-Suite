@@ -878,7 +878,8 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
 
 # OLD SLOWER VERSION
     for idx, row in df.iterrows():
-        print('Processing SVO record '+ str(idx) + '/' + str(len(df)))
+        if idx % 50 == 0 or idx == len(df) - 1:
+            print('Processing SVO record '+ str(idx) + '/' + str(len(df)))
         if lemmatize_s_SV == True:
             lemmatize_s = True
         # the tag suffix @# will have been added in the Stanford_CoreNLP_util function process_json_SVO_enhanced_dependencies
@@ -906,7 +907,9 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
                         row['Subject (S)'] = temp_lemma.replace(' ', '_')
         if lemmatize_v:
             if row['Verb (V)'].count(' ')==0:
-                row['Verb (V)'] = lemmatize_stanza_word(stanzaPipeLine(row['Verb (V)']))
+                # use the LRU-cached lemmatizer (identical result) so repeated verbs
+                # (said, went, was, ...) don't re-run the Stanza pipeline every row
+                row['Verb (V)'] = memoized_lemmatize(row['Verb (V)'])
             else:
                 if filter_v:
                     # WordNet multi-word expressions are all _ separated (e.g., add_on)
