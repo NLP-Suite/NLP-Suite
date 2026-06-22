@@ -37,17 +37,15 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install --no-cache-dir pyinstaller
-          pip install --no-cache-dir pandas numpy scipy scikit-learn openpyxl xlrd
-          pip install --no-cache-dir stanza spacy nltk gensim textblob textstat nrclex
-          pip install --no-cache-dir langdetect langid autocorrect pyspellchecker fuzzywuzzy
-          pip install --no-cache-dir transformers sentence-transformers
-          pip install --no-cache-dir matplotlib plotly "seaborn>=0.13.0" wordcloud mpld3 kaleido
-          pip install --no-cache-dir folium geopy simplekml shapely geopandas
-          pip install --no-cache-dir requests beautifulsoup4 lxml chardet tqdm psutil
-          pip install --no-cache-dir pdfminer.six python-docx striprtf
-          pip install --no-cache-dir pycorenlp stanfordcorenlp
-          pip install --no-cache-dir Pillow
-          pip install --no-cache-dir SPARQLWrapper
+          pip install --no-cache-dir -r requirements.txt
+
+      - name: Install Windows-only dependencies
+        if: runner.os == 'Windows'
+        run: pip install --no-cache-dir -r requirements-windows.txt
+
+      - name: Install macOS-only dependencies
+        if: runner.os == 'macOS'
+        run: pip install --no-cache-dir -r requirements-mac.txt
 
       - name: Build with PyInstaller
         run: python -m PyInstaller NLP_Suite.spec --noconfirm
@@ -79,19 +77,14 @@ jobs:
           fi
 
           "$PYTHON" -m pip install --upgrade pip
-          "$PYTHON" -m pip install --no-cache-dir pandas numpy scipy scikit-learn openpyxl xlrd
-          "$PYTHON" -m pip install --no-cache-dir stanza spacy nltk gensim textblob textstat nrclex
-          "$PYTHON" -m pip install --no-cache-dir langdetect langid autocorrect pyspellchecker fuzzywuzzy
-          "$PYTHON" -m pip install --no-cache-dir transformers sentence-transformers
-          "$PYTHON" -m pip install --no-cache-dir matplotlib plotly "seaborn>=0.13.0" wordcloud mpld3 kaleido
-          "$PYTHON" -m pip install --no-cache-dir folium geopy simplekml shapely geopandas
-          "$PYTHON" -m pip install --no-cache-dir requests beautifulsoup4 lxml chardet tqdm psutil
-          "$PYTHON" -m pip install --no-cache-dir pdfminer.six python-docx striprtf
-          "$PYTHON" -m pip install --no-cache-dir pycorenlp stanfordcorenlp
-          "$PYTHON" -m pip install --no-cache-dir Pillow
-          "$PYTHON" -m pip install --no-cache-dir SPARQLWrapper
+          "$PYTHON" -m pip install --no-cache-dir -r requirements.txt
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            "$PYTHON" -m pip install --no-cache-dir -r requirements-windows.txt
+          else
+            "$PYTHON" -m pip install --no-cache-dir -r requirements-mac.txt
+          fi
           # Verify
-          "$PYTHON" -c "import pandas, requests, numpy, matplotlib, scipy, sklearn, stanza, spacy, nltk, plotly, seaborn, folium, gensim, wordcloud, transformers, sentence_transformers, PIL; print('All critical packages OK')"
+          "$PYTHON" -c "import pandas, requests, numpy, matplotlib, scipy, sklearn, stanza, spacy, nltk, plotly, seaborn, folium, gensim, wordcloud, transformers, sentence_transformers, tensorflow, bertopic, PIL; print('All critical packages OK')"
           echo "Bundled portable Python environment"
 
       - name: Bundle VC++ runtime DLLs into portable env (Windows only)

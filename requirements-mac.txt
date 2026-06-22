@@ -1,0 +1,7 @@
+# macOS-only Python dependencies (installed in addition to requirements.txt).
+# Per Evan's build notes: Mac also needs pafy, pexpect, ptyprocess, python-vlc
+# (used for playing the YouTube/help videos via VLC).
+pafy
+pexpect
+ptyprocess
+python-vlc
