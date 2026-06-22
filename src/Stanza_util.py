@@ -1213,7 +1213,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
 
     # Output columns
     base_cols = ['Subject (S)', 'Verb (V)', 'Object (O)', 'Negation',
-                 'Location', 'Person', 'Organization', 'Time',
+                 'Location', 'Location_NER', 'Person', 'Organization', 'Time',
                  'Sentence ID', 'Sentence', 'Document ID', 'Document']
     if filename_embeds_date_var:
         base_cols.append('Date')
@@ -1227,10 +1227,15 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
         # Extract NER entities for this sentence
         locations, persons, organizations = [], [], []
         if NER_available:
-            locations, persons, organizations, _, _, _ = _extract_ner_entities(sentence)
+            locations, persons, organizations, loc_ner, per_ner, org_ner = _extract_ner_entities(sentence)
 
         # Collect NER text for columns
         loc_str = '; '.join(locations) if locations else ''
+        # Build NER type mapping: location text -> NER type
+        loc_ner_map = {item[0]: item[1] for item in loc_ner}
+        loc_ner_types = [loc_ner_map.get(loc, 'LOCATION') for loc in locations]
+        loc_ner_str = '; '.join(loc_ner_types) if loc_ner_types else ''
+
         per_str = '; '.join(persons) if persons else ''
         org_str = '; '.join(organizations) if organizations else ''
         time_words = []
@@ -1321,6 +1326,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
                 'Object (O)': triple[2],
                 'Negation': N[i] if i < len(N) else False,
                 'Location': loc_str,
+                'Location_NER': loc_ner_str,
                 'Person': per_str,
                 'Organization': org_str,
                 'Time': time_str,
@@ -1640,9 +1646,13 @@ def visualize_GIS_maps_Stanza(svo_df):
     for _,row in svo_df.iterrows():
         if isinstance(row['Location'], str):
             loc_list = row['Location'].split(';')
-            for loc in loc_list:
-                if loc != '':
-                    loc_df.loc[len(loc_df.index)] = [loc, 'LOCATION', row['Sentence ID'], row['Sentence'], row['Document ID'], row['Document']]
+            ner_list = row.get('Location_NER', '').split(';') if isinstance(row.get('Location_NER'), str) else []
+            for idx, loc in enumerate(loc_list):
+                if loc.strip() != '':
+                    ner_type = ner_list[idx].strip() if idx < len(ner_list) else 'LOCATION'
+                    # Filter to only geocode CITY, COUNTRY, STATE_OR_PROVINCE, GPE (skip generic LOCATION, LOC)
+                    if ner_type in ('CITY', 'COUNTRY', 'STATE_OR_PROVINCE', 'GPE'):
+                        loc_df.loc[len(loc_df.index)] = [loc.strip(), ner_type, row['Sentence ID'], row['Sentence'], row['Document ID'], row['Document']]
     return loc_df
 
 # modified from StanfordCoreNLP_util

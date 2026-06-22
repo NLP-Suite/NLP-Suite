@@ -419,11 +419,19 @@ def activate_NER_Options(coming_from_add, coming_from_reset):
             if not coming_from_add:
                 NER_tag_var.set('All NER tags')  # --- All NER tags
     elif 'spaCy' in NER_packages_var.get():
+        NER_menu.configure(state='normal')
+        reset_NER_button.configure(state='normal')
         NER_list = spaCy_util.NER_dict
         NER_entry_var.set(NER_list)
+        if coming_from_reset:
+            NER_tag_var.set(' ')
     elif 'Stanza' in NER_packages_var.get():
+        NER_menu.configure(state='normal')
+        reset_NER_button.configure(state='normal')
         NER_list = get_NER_list('Stanza',language)
         NER_entry_var.set(NER_list)
+        if coming_from_reset:
+            NER_tag_var.set(' ')
     else:
         NER_list=[]
         NER_entry_var.set(NER_list)

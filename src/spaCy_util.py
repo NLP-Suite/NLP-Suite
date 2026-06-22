@@ -421,6 +421,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
         row = {}
         SVO_found = False
         loc_ent_iob_ = ''
+        loc_ner_type_iob_ = ''
         per_ent_iob_ = ''
         org_ent_iob_ = ''
         tim_ent_iob_ = ''
@@ -440,6 +441,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
                 iob = token.ent_iob_
                 if ent in NER_LOCATION:
                     row['Location'], loc_ent_iob_ = _append_ner(row.get('Location'), token.text, iob, loc_ent_iob_)
+                    row['Location_NER'], loc_ner_type_iob_ = _append_ner(row.get('Location_NER'), ent, iob, loc_ner_type_iob_)
                 elif ent in NER_PERSON:
                     row['Person'], per_ent_iob_ = _append_ner(row.get('Person'), token.text, iob, per_ent_iob_)
                 elif ent in NER_ORGANIZATION:
@@ -458,7 +460,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
         c += 1
 
     # build DataFrame from collected rows
-    base_cols = ['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Organization', 'Time',
+    base_cols = ['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Location_NER', 'Person', 'Organization', 'Time',
                  'Sentence ID', 'Sentence', 'Document ID', 'Document']
     svo_df = pd.DataFrame(svo_rows, columns=base_cols) if svo_rows else pd.DataFrame(columns=base_cols)
 
@@ -472,10 +474,10 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
     # add date from filename
     if filename_embeds_date_var:
         svo_df['Date'] = date_str
-        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Organization', 'Time',
+        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Location_NER', 'Person', 'Organization', 'Time',
                           'Sentence ID', 'Sentence', 'Document ID', 'Document', 'Date']]
     else:
-        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Organization', 'Time',
+        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Location_NER', 'Person', 'Organization', 'Time',
                           'Sentence ID', 'Sentence', 'Document ID', 'Document']]
 
     return svo_df
@@ -538,9 +540,13 @@ def visualize_GIS_maps_spaCy(svo_df):
     for _,row in svo_df.iterrows():
         if isinstance(row['Location'], str):
             loc_list = row['Location'].split(';')
-            for loc in loc_list:
-                if loc != '':
-                    loc_df.loc[len(loc_df.index)] = [loc, 'LOCATION', row['Sentence ID'], row['Sentence'], row['Document ID'], row['Document']]
+            ner_list = row.get('Location_NER', '').split(';') if isinstance(row.get('Location_NER'), str) else []
+            for idx, loc in enumerate(loc_list):
+                if loc.strip() != '':
+                    ner_type = ner_list[idx].strip() if idx < len(ner_list) else 'LOCATION'
+                    # Filter to only geocode GPE (countries, cities, states), skip generic LOC (mountains, water bodies)
+                    if ner_type == 'GPE':
+                        loc_df.loc[len(loc_df.index)] = [loc.strip(), ner_type, row['Sentence ID'], row['Sentence'], row['Document ID'], row['Document']]
     return loc_df
 
 # modified from StanfordCoreNLP_util
