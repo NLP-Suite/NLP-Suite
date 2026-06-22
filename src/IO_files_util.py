@@ -732,8 +732,13 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
         if temp_outputDir!=outputDir:
             check_number_ofFiles = True
     split_files = False
-    if check_number_ofFiles: #outputDir != temp_outputDir: #GUI_util.output_dir_path.get():
-        subDirs=next(os.walk(temp_outputDir))[1]
+    # guard: temp_outputDir can be '' or nonexistent when filesToOpen[0] is a relative/bare path;
+    # os.walk would then yield nothing and next() would raise StopIteration
+    if check_number_ofFiles and temp_outputDir and os.path.isdir(temp_outputDir): #outputDir != temp_outputDir: #GUI_util.output_dir_path.get():
+        try:
+            subDirs=next(os.walk(temp_outputDir))[1]
+        except StopIteration:
+            subDirs=[]
         listOfFiles = list()
         for (dirpath, dirnames, filenames) in os.walk(temp_outputDir):
             if "split_" in dirpath:
