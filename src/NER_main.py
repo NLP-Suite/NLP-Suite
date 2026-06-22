@@ -270,8 +270,20 @@ NER_tag_lb = tk.Label(window, text='NER tags')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,NER_tag_lb,True)
 
 # NER tags menu
+# CoreNLP uses its own fine-grained NER scheme (CITY, STATE_OR_PROVINCE, CAUSE_OF_DEATH, ...)
+NER_tags_CoreNLP = ['All NER tags', '--- All quantitative expressions','NUMBER', 'ORDINAL', 'PERCENT', '--- All social actors', 'PERSON', 'ORGANIZATION', '--- All spatial expressions', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION', '--- All temporal expressions', 'DATE', 'TIME', 'DURATION', 'SET',  '--- All other expressions', 'CAUSE_OF_DEATH', 'CRIMINAL_CHARGE', 'EMAIL', 'IDEOLOGY', 'MISC', 'MONEY', 'NATIONALITY', 'RELIGION', 'TITLE', 'URL']
+# spaCy and Stanza (English) use the OntoNotes scheme (GPE, LOC, NORP, FAC, CARDINAL, ...)
+NER_tags_OntoNotes = ['All NER tags', '--- All quantitative expressions', 'CARDINAL', 'ORDINAL', 'PERCENT', 'MONEY', 'QUANTITY', '--- All social actors', 'PERSON', 'NORP', 'ORG', '--- All spatial expressions', 'GPE', 'LOC', 'FAC', '--- All temporal expressions', 'DATE', 'TIME', '--- All other expressions', 'PRODUCT', 'EVENT', 'WORK_OF_ART', 'LAW', 'LANGUAGE']
+
 NER_tag_var.set('All NER tags') #--- All NER tags
-NER_menu = tk.OptionMenu(window,NER_tag_var,'All NER tags', '--- All quantitative expressions','NUMBER', 'ORDINAL', 'PERCENT', '--- All social actors', 'PERSON', 'ORGANIZATION', '--- All spatial expressions', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION', '--- All temporal expressions', 'DATE', 'TIME', 'DURATION', 'SET',  '--- All other expressions', 'CAUSE_OF_DEATH', 'CRIMINAL_CHARGE', 'EMAIL', 'IDEOLOGY', 'MISC', 'MONEY', 'NATIONALITY', 'RELIGION', 'TITLE', 'URL')
+NER_menu = tk.OptionMenu(window,NER_tag_var,*NER_tags_CoreNLP)
+
+# repopulate the NER tags dropdown to match the selected package's NER scheme
+def set_NER_menu_options(tags_list):
+    menu = NER_menu['menu']
+    menu.delete(0, 'end')
+    for tag in tags_list:
+        menu.add_command(label=tag, command=lambda value=tag: NER_tag_var.set(value))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_menu_pos, y_multiplier_integer,
                     NER_menu, True, False, True, False,
@@ -411,6 +423,7 @@ def activate_NER_Options(coming_from_add, coming_from_reset):
         NER_list = BERT_util.NER_dict
         NER_entry_var.set(NER_list['NERs'])
     elif 'CoreNLP' in NER_packages_var.get():
+        set_NER_menu_options(NER_tags_CoreNLP)
         NER_menu.configure(state='normal')
         reset_NER_button.configure(state='normal')
         if coming_from_reset:
@@ -419,19 +432,25 @@ def activate_NER_Options(coming_from_add, coming_from_reset):
             if not coming_from_add:
                 NER_tag_var.set('All NER tags')  # --- All NER tags
     elif 'spaCy' in NER_packages_var.get():
+        set_NER_menu_options(NER_tags_OntoNotes)
         NER_menu.configure(state='normal')
         reset_NER_button.configure(state='normal')
         NER_list = spaCy_util.NER_dict
         NER_entry_var.set(NER_list)
         if coming_from_reset:
             NER_tag_var.set(' ')
+        elif not coming_from_add:
+            NER_tag_var.set('All NER tags')
     elif 'Stanza' in NER_packages_var.get():
+        set_NER_menu_options(NER_tags_OntoNotes)
         NER_menu.configure(state='normal')
         reset_NER_button.configure(state='normal')
         NER_list = get_NER_list('Stanza',language)
         NER_entry_var.set(NER_list)
         if coming_from_reset:
             NER_tag_var.set(' ')
+        elif not coming_from_add:
+            NER_tag_var.set('All NER tags')
     else:
         NER_list=[]
         NER_entry_var.set(NER_list)
