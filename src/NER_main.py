@@ -226,11 +226,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                     "proportional-circle maps, QGIS, Tableau, TimeMapper, date-based animation, custom icons and "
                     "labels - use the dedicated GIS GUI (GIS_main), which can take this NER output as its input."):
                 import GIS_pipeline_util
+                # place GIS output inside the NER folder, in a 'GIS' subfolder (like SVO),
+                # so only one output folder is opened
+                gis_subdir = IO_files_util.make_output_subdirectory('', '', os.path.dirname(ner_csv), label='GIS', silent=True)
                 key = GIS_pipeline_util.getGoogleAPIkey(GUI_util.window, 'Google-geocode-API_config.csv')
                 geocoder = 'Nominatim' if (key == '' or key is None) else 'Google'
                 date_present = bool(filename_embeds_date_var)
                 gis_out = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename, ner_csv, inputDir,
-                            outputDir, geocoder, 'Google Earth Pro & Google Maps & Python folium pin map & heatmap', chartPackage, dataTransformation,
+                            gis_subdir, geocoder, 'Google Earth Pro & Google Maps & Python folium pin map & heatmap', chartPackage, dataTransformation,
                             date_present, '', '', False, 'Location', 'utf-8',
                             0, 1, [''], [''], ['Pushpins'], ['red'], [0], ['1'], [0], [''], [1], [1])
                 if gis_out is not None:
