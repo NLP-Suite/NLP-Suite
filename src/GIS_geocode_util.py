@@ -671,15 +671,34 @@ def geocode(window,locations, inputFilename, outputDir,
 			kmlfile.write(content)
 			kmlfile.truncate()
 
-	# surface an empty result instead of silently producing a header-only csv
+	# surface an empty result with an accurate, context-aware message
 	if geocoded_count==0:
-		mb.showwarning(title='No locations geocoded',
-			message="The geocoder produced an empty result: 0 locations were geocoded.\n\n"
-			"Possible reasons:\n"
-			"  1. The input contained no recognized location NER tags. The location tag is GPE for spaCy and Stanza; LOCATION/CITY/STATE_OR_PROVINCE/COUNTRY for Stanford CoreNLP.\n"
-			"  2. The location column was not recognized. The tool expects a 'Location', 'Word' (CoreNLP), or 'Form' (spaCy/Stanza) column.\n"
-			"  3. Every location failed to geocode. Check your internet connection and the geocoding service, or the spelling of the locations.\n\n"
-			"Input file:\n" + str(inputFilename))
+		is_svo = 'SVO' in str(inputFilename)
+		if len(locations)==0:
+			# nothing was available to geocode
+			if is_svo:
+				msg = ("No locations were found to geocode.\n\n"
+					"For the SVO tool this means that although the NER step may have found locations "
+					"in the corpus, NONE of them are attached to the extracted SVO triples - a location "
+					"is mapped only when it occurs in a sentence that produced a Subject-Verb-Object (SVO) triple.\n\n"
+					"Input file:\n" + str(inputFilename))
+			else:
+				msg = ("No locations were found to geocode.\n\n"
+					"The input contained no recognized location NER tags (GPE for spaCy/Stanza; "
+					"LOCATION/CITY/STATE_OR_PROVINCE/COUNTRY for Stanford CoreNLP), or the location "
+					"column was not recognized (expected 'Location', 'Word', or 'Form').\n\n"
+					"Input file:\n" + str(inputFilename))
+			mb.showwarning(title='No locations to geocode', message=msg)
+		else:
+			# locations WERE found but none could be geocoded -> a geocoding problem, not a missing-location one
+			mb.showwarning(title='No locations geocoded',
+				message=str(len(locations)) + " location(s) were found in the input, but NONE could be geocoded.\n\n"
+				"This is a geocoding problem, not a missing-location problem:\n"
+				"  1. Your internet connection or the geocoding service ('" + str(geocoder) + "') is unavailable "
+				"or rate-limited (Nominatim allows about 1 request per second; large location lists can be throttled).\n"
+				"  2. The place names could not be matched by the geocoder (check spelling/format).\n\n"
+				"The locations that were not geocoded are listed in the LOCATIONS_not-found csv file.\n\n"
+				"Input file:\n" + str(inputFilename))
 
 	if locationsNotFound==0:
 		locationsNotFoundoutputFilename='' #used NOT to open the file since there are NO errors
