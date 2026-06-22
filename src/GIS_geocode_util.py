@@ -339,6 +339,7 @@ def geocode(window,locations, inputFilename, outputDir,
 	notGeocodedList=[]
 	notGeocodedFull=[]
 	locationsNotFound=0
+	geocoded_count=0
 	index=0
 
 	if "Google" in geocoder:
@@ -600,6 +601,7 @@ def geocode(window,locations, inputFilename, outputDir,
 			#print(currRecord + itemToGeocode + str(lat) + str(lng) + address+"\n")
 			# WRITE THE RECORD -----------------------------------------------------------------
 			if lat!=0 and lng!=0:
+				geocoded_count += 1
 				if inputIsCoNLL:
 					if datePresent:
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, country_geocoder, sentenceID, sentence, documentID, document, date])
@@ -668,6 +670,16 @@ def geocode(window,locations, inputFilename, outputDir,
 			kmlfile.seek(0)
 			kmlfile.write(content)
 			kmlfile.truncate()
+
+	# surface an empty result instead of silently producing a header-only csv
+	if geocoded_count==0:
+		mb.showwarning(title='No locations geocoded',
+			message="The geocoder produced an empty result: 0 locations were geocoded.\n\n"
+			"Possible reasons:\n"
+			"  1. The input contained no recognized location NER tags. The location tag is GPE for spaCy and Stanza; LOCATION/CITY/STATE_OR_PROVINCE/COUNTRY for Stanford CoreNLP.\n"
+			"  2. The location column was not recognized. The tool expects a 'Location', 'Word' (CoreNLP), or 'Form' (spaCy/Stanza) column.\n"
+			"  3. Every location failed to geocode. Check your internet connection and the geocoding service, or the spelling of the locations.\n\n"
+			"Input file:\n" + str(inputFilename))
 
 	if locationsNotFound==0:
 		locationsNotFoundoutputFilename='' #used NOT to open the file since there are NO errors
