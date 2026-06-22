@@ -615,6 +615,12 @@ def checkFile(inputFilename, extension=None, silent=False):
 
 # inputFilename contains filename with path
 def open_kmlFile(window,inputFilename):
+    # resolve to an absolute path: a relative path (e.g. 'GIS\\x.kml') would make Google Earth
+    # Pro fail with "Could not open file ... for reading"
+    try:
+        inputFilename = os.path.abspath(inputFilename)
+    except Exception:
+        pass
     if sys.platform == 'win32':
         # Prefer launching Google Earth Pro directly: the .kml file association is frequently
         # broken/missing, in which case os.startfile (and Explorer double-click) do nothing.

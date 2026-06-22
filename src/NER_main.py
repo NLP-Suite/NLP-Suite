@@ -227,7 +227,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                     "labels - use the dedicated GIS GUI (GIS_main), which can take this NER output as its input."):
                 import GIS_pipeline_util
                 # place GIS output inside the NER folder, in a 'GIS' subfolder (like SVO),
-                # so only one output folder is opened
+                # so only one output folder is opened. Resolve ner_csv to an absolute path first
+                # so the GIS subfolder (and the KML path GEP receives) is absolute, not relative
+                # to the process cwd.
+                ner_csv = os.path.abspath(ner_csv)
                 gis_subdir = IO_files_util.make_output_subdirectory('', '', os.path.dirname(ner_csv), label='GIS', silent=True)
                 # GIS_pipeline requires a 'Location' column; the raw NER csv has 'Form'/'Word' and
                 # BIOES tags. Normalize it (Form->Location, tag normalization, multi-word merge) first.
