@@ -625,22 +625,21 @@ def geocode(window,locations, inputFilename, outputDir,
 				# pnt.name = itemToGeocode
 				pnt.style.labelstyle.scale = '1'
 				# pnt.style.labelstyle.color = simplekml.Color.rgb(int(r_value), int(g_value), int(b_value))
-				# the code would break if no sentence is passed (e.g., from DB_PC-ACE)
+				# build the description from only the fields that have a value (skip empty Date/
+				# Document/Sentence so we never print a bare 'Sentence:' label, e.g. for NER output)
 				try:
-					if date!='':
-						try:
-							pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>" \
-											"<i><b>Date</b></i>: " + str(date) + "<br/><br/>" + \
-										  "<i><b>Document</b></i>: " + document + "<br/><br/>" \
-										  "<i><b>Sentence</b></i>: " + sentence + "<br/><br/>"
-						except:
-							pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>"
-					else:
-						pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>" \
-										  "<i><b>Document</b></i>: " + document + "<br/><br/>" \
-										  "<i><b>Sentence</b></i>: " + sentence + "<br/><br/>"
+					def _has(v):
+						return v is not None and str(v).strip() != '' and str(v).strip().lower() != 'nan'
+					_parts = ["<i><b>Location</b></i>: " + str(itemToGeocode)]
+					if _has(date):
+						_parts.append("<i><b>Date</b></i>: " + str(date))
+					if _has(document):
+						_parts.append("<i><b>Document</b></i>: " + str(document))
+					if _has(sentence):
+						_parts.append("<i><b>Sentence</b></i>: " + str(sentence))
+					pnt.description = "<br/><br/>".join(_parts) + "<br/><br/>"
 				except:
-					pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>"
+					pnt.description = "<i><b>Location</b></i>: " + str(itemToGeocode) + "<br/><br/>"
 
 				# create the date values for the slide bar in Google Earth Pro for dynamic time
 				if datePresent:
