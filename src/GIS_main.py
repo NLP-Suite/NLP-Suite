@@ -233,13 +233,20 @@ def run(inputFilename,
             df = df.rename(columns={'Word': 'Location'})
         location_menu_var.set('Location')
 
-        # Normalize NER tags: map Stanza/spaCy GPE/LOC to LOCATION for GIS filtering
-        location_tags = {'COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION', 'GPE', 'LOC'}
+        # Normalize NER tags for GIS filtering, scheme-aware:
+        #   OntoNotes (spaCy / English Stanza) uses GPE for geopolitical places and LOC for
+        #     non-geopolitical features (mountains, rivers) -> map GPE only, exclude LOC.
+        #   CoNLL-style (BERT, non-English Stanza e.g. Italian/French) has no GPE; LOC is the
+        #     only location tag and is geocodable -> map LOC too.
         if 'NER' in df.columns:
+            # detect scheme before normalizing (BIOES tags like 'S-GPE' still contain 'GPE')
+            scheme_has_gpe = df['NER'].astype(str).str.contains('GPE').any()
             # Stanza/spaCy emit BIOES-prefixed tags (e.g., 'S-GPE','B-GPE'); take the tag after the prefix
             df['NER'] = df['NER'].astype(str).str.split('-').str[-1]
-            # Map GPE/LOC → LOCATION so downstream GIS code works uniformly
-            df['NER'] = df['NER'].replace({'GPE': 'LOCATION', 'LOC': 'LOCATION'})
+            mapping = {'GPE': 'LOCATION'}
+            if not scheme_has_gpe:
+                mapping['LOC'] = 'LOCATION'
+            df['NER'] = df['NER'].replace(mapping)
             # Keep only location rows
             df = df[df['NER'].isin({'COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION'})]
         else:
