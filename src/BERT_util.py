@@ -57,7 +57,7 @@ def _bert_first_download_alert(model_id):
 
 
 # Provides NER tags per sentence for every doc and stores in a csv file
-def NER_tags_BERT(window, inputFilename, inputDir, outputDir, configFileName, mode, chartPackage, dataTransformation):
+def NER_tags_BERT(window, inputFilename, inputDir, outputDir, configFileName, mode, chartPackage, dataTransformation, NERs=''):
     _bert_first_download_alert("xlm-roberta-large-finetuned-conll03-english")
     tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-large-finetuned-conll03-english")
     model = AutoModelForTokenClassification.from_pretrained("xlm-roberta-large-finetuned-conll03-english")
@@ -108,6 +108,12 @@ def NER_tags_BERT(window, inputFilename, inputDir, outputDir, configFileName, mo
 
             for el in ner_result:
                 result.append([el['word'], el['entity_group'], sentenceID, s, documentID,IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+
+    # filter to the user-selected tags (when a subset is selected); column 1 is the NER tag
+    selected = {t.strip() for t in str(NERs).replace(',', ' ').split() if t.strip() and '---' not in t}
+    full_set = set(NER_dict['NERs'])
+    if selected and not (selected >= full_set):  # a proper subset was selected
+        result = [row for row in result if row[1] in selected]
 
     result.insert(0, header)
 
@@ -719,14 +725,11 @@ def split_into_sentences(text):
     return sentences
 
 
+# the loaded model is xlm-roberta-large-finetuned-conll03-english, which uses the
+# CoNLL-2003 scheme and emits only 4 coarse entity types (via entity_group)
 NER_dict = {'NERs': [
-    "geo",  # for geographical entity
-    "org",  # for organization entity
-    "per",  # for person entity
-    "gpe",  # for geopolitical entity
-    "tim",  # for time indicator entity
-    "art",  # for artifact entity
-    "eve",  # for event entity
-    "nat",  # for natural phenomenon entity
-    "O",  # is assigned if a word doesn’t belong to any entity.
+    "PER",   # person entity
+    "ORG",   # organization entity
+    "LOC",   # location entity
+    "MISC",  # miscellaneous named entity
 ]}

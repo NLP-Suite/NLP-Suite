@@ -66,9 +66,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
             "\n\nYou can change the selected language using the Setup dropdown menu at the bottom of this GUI, select the 'Setup NLP package and corpus language' to open the GUI where you can change the language option.")
             return
         import BERT_util
-        NER_list = BERT_util.NER_dict
-        NER_entry_var.set(NER_list['NERs'])
-        outputFiles = BERT_util.NER_tags_BERT(window,inputFilename, inputDir, outputDir, config_filename, '', chartPackage, dataTransformation)
+        # '*' (run all) extracts every tag; an explicit BERT run honors the user's tag selection
+        if '*' in NER_package:
+            NER_selection = ', '.join(BERT_util.NER_dict['NERs'])
+        else:
+            NER_selection = NER_entry_var.get()
+        outputFiles = BERT_util.NER_tags_BERT(window,inputFilename, inputDir, outputDir, config_filename, '', chartPackage, dataTransformation, NERs=NER_selection)
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -280,6 +283,8 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indente
 NER_tags_CoreNLP = ['All NER tags', '--- All quantitative expressions','NUMBER', 'ORDINAL', 'PERCENT', '--- All social actors', 'PERSON', 'ORGANIZATION', '--- All spatial expressions', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION', '--- All temporal expressions', 'DATE', 'TIME', 'DURATION', 'SET',  '--- All other expressions', 'CAUSE_OF_DEATH', 'CRIMINAL_CHARGE', 'EMAIL', 'IDEOLOGY', 'MISC', 'MONEY', 'NATIONALITY', 'RELIGION', 'TITLE', 'URL']
 # spaCy and Stanza (English) use the OntoNotes scheme (GPE, LOC, NORP, FAC, CARDINAL, ...)
 NER_tags_OntoNotes = ['All NER tags', '--- All quantitative expressions', 'CARDINAL', 'ORDINAL', 'PERCENT', 'MONEY', 'QUANTITY', '--- All social actors', 'PERSON', 'NORP', 'ORG', '--- All spatial expressions', 'GPE', 'LOC', 'FAC', '--- All temporal expressions', 'DATE', 'TIME', '--- All other expressions', 'PRODUCT', 'EVENT', 'WORK_OF_ART', 'LAW', 'LANGUAGE']
+# BERT uses the CoNLL-2003 scheme — only 4 coarse entity types (no category groups)
+NER_tags_BERT = ['All NER tags', 'PER', 'ORG', 'LOC', 'MISC']
 
 NER_tag_var.set('All NER tags') #--- All NER tags
 NER_menu = tk.OptionMenu(window,NER_tag_var,*NER_tags_CoreNLP)
@@ -352,8 +357,13 @@ def add_NER_tag(coming_from_add, coming_from_reset):
         add_NER_button.configure(state='normal')
     pkg = NER_packages_var.get()
     sel = NER_tag_var.get()
+    # BERT uses the CoNLL-2003 scheme (4 coarse tags, no category groups)
+    if 'BERT' in pkg:
+        if 'All NER tags' in sel:
+            NER_list = ['PER', 'ORG', 'LOC', 'MISC']
+            NER_entry_var.set(', '.join(NER_list))
     # spaCy and Stanza use the OntoNotes NER scheme; CoreNLP uses its own fine-grained scheme
-    if ('spaCy' in pkg) or ('Stanza' in pkg):
+    elif ('spaCy' in pkg) or ('Stanza' in pkg):
         if 'All NER tags' in sel:
             NER_list = ['PERSON', 'NORP', 'ORG', 'GPE', 'LOC', 'FAC', 'PRODUCT', 'EVENT', 'WORK_OF_ART', 'LAW', 'LANGUAGE', 'DATE', 'TIME', 'PERCENT', 'MONEY', 'QUANTITY', 'ORDINAL', 'CARDINAL']
             NER_entry_var.set(', '.join(NER_list))
@@ -445,9 +455,13 @@ def activate_NER_Options(coming_from_add, coming_from_reset):
     reset_NER_button.configure(state='disabled')
     NER_menu.configure(state='disabled')
     if 'BERT' in NER_packages_var.get():
-        import BERT_util
-        NER_list = BERT_util.NER_dict
-        NER_entry_var.set(NER_list['NERs'])
+        set_NER_menu_options(NER_tags_BERT)
+        NER_menu.configure(state='normal')
+        reset_NER_button.configure(state='normal')
+        if coming_from_reset:
+            NER_tag_var.set(' ')
+        elif not coming_from_add:
+            NER_tag_var.set('All NER tags')
     elif 'CoreNLP' in NER_packages_var.get():
         set_NER_menu_options(NER_tags_CoreNLP)
         NER_menu.configure(state='normal')
