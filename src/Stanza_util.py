@@ -407,6 +407,12 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
                 loc_df.to_csv(loc_df_outputFilename, index=False, encoding=language_encoding)
                 filesToOpen.append(loc_df_outputFilename)
 
+    # filter NER output to the user-selected tags (when a subset is selected);
+    # only for a standalone NER run (the SVO/parse df is a CoNLL table, not to be filtered)
+    if "NER" in str(annotator_params) and "SVO" not in str(annotator_params) \
+            and "parse" not in str(annotator_params):
+        df = filter_NER_output_by_tags(df, kwargs.get('NERs', ''), short_lang)
+
     # save dataframe to csv
     df.to_csv(outputFilename, index=False, encoding=language_encoding)
 
@@ -1654,6 +1660,26 @@ def visualize_GIS_maps_Stanza(svo_df):
                     if ner_type in ('CITY', 'COUNTRY', 'STATE_OR_PROVINCE', 'GPE'):
                         loc_df.loc[len(loc_df.index)] = [loc.strip(), ner_type, row['Sentence ID'], row['Sentence'], row['Document ID'], row['Document']]
     return loc_df
+
+# keep only NER rows whose tag is in the user-selected set.
+# Stanza stores tags in BIOES form (e.g. 'S-GPE', 'B-PERSON', 'O'); we match on the
+# tag portion after the prefix. If the selection covers the full tag set (or is
+# empty/unparseable), the dataframe is returned unchanged.
+def filter_NER_output_by_tags(df, NERs, short_lang='en'):
+    if df is None or len(df) == 0 or 'NER' not in df.columns:
+        return df
+    selected = {t.strip() for t in str(NERs).replace(',', ' ').split() if t.strip() and '---' not in t}
+    if not selected:
+        return df
+    full_set = set(NER_dict.get(short_lang, []))
+    if full_set and selected >= full_set:  # all tags selected -> no filtering
+        return df
+    def _tag(ner):
+        ner = str(ner)
+        if ner in ('', 'O', 'None', 'nan'):
+            return ''
+        return ner.split('-')[-1]
+    return df[df['NER'].apply(_tag).isin(selected)].reset_index(drop=True)
 
 # modified from StanfordCoreNLP_util
 def create_output_directory(inputFilename, inputDir, outputDir,

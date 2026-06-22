@@ -80,8 +80,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
     if not skip_NER_extraction and ('*' in NER_package or 'spaCy' in NER_package):
         document_length_var = 1
         limit_sentence_length_var = 1000
-        NER_list = spaCy_util.NER_dict
-        NER_entry_var.set(NER_list)
+        # '*' (run all) extracts every tag; an explicit spaCy run honors the user's tag selection
+        if '*' in NER_package:
+            NER_selection = ', '.join(spaCy_util.NER_dict)
+        else:
+            NER_selection = NER_entry_var.get()
         outputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
                                                     outputDir,
                                                     openOutputFiles,
@@ -89,7 +92,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                                                     ['NER'], False,
                                                     language,
                                                     memory_var, document_length_var, limit_sentence_length_var,
-                                                    NERs=NER_list,
+                                                    NERs=NER_selection,
                                                     filename_embeds_date_var=filename_embeds_date_var,
                                                     date_format=date_format_var,
                                                     items_separator_var=items_separator_var,
@@ -133,8 +136,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         document_length_var = 1
         limit_sentence_length_var = 1000
 
-        NER_list = get_NER_list('Stanza',language)
-        NER_entry_var.set(NER_list)
+        # '*' (run all) extracts every tag; an explicit Stanza run honors the user's tag selection
+        if '*' in NER_package:
+            NER_selection = ', '.join(get_NER_list('Stanza', language))
+        else:
+            NER_selection = NER_entry_var.get()
 
         outputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                       outputDir,
@@ -144,7 +150,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                                                       language_list,
                                                       memory_var, document_length_var, limit_sentence_length_var,
                                                       filename_embeds_date_var=filename_embeds_date_var,
-                                                      NERs=NER_list,
+                                                      NERs=NER_selection,
                                                       date_format=date_format_var,
                                                       items_separator_var=items_separator_var,
                                                       date_position_var=date_position_var)

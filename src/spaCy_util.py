@@ -226,6 +226,9 @@ def spaCy_annotate(configFilename, inputFilename, inputDir,
 
     # concatenate all results at once and save
     df = pd.concat(all_dfs, ignore_index=True) if all_dfs else pd.DataFrame()
+    # filter NER output to the user-selected tags (when a subset is selected)
+    if annotator == 'NER':
+        df = filter_NER_output_by_tags(df, kwargs.get('NERs', ''))
     df.to_csv(outputFilename, index=False, encoding=language_encoding)
     filesToOpen.append(outputFilename)
 
@@ -317,6 +320,21 @@ def get_mwe(out_df):
     # drop 'is_sent_start' column
     out_df = out_df.drop(columns=['is_sent_start'])
     return out_df
+
+# keep only NER rows whose tag is in the user-selected set.
+# NERs is a comma/space-separated string of OntoNotes tags. If it covers the full
+# tag set (or is empty/unparseable), the dataframe is returned unchanged.
+def filter_NER_output_by_tags(df, NERs):
+    if df is None or len(df) == 0 or 'NER' not in df.columns:
+        return df
+    selected = {t.strip() for t in str(NERs).replace(',', ' ').split() if t.strip() and '---' not in t}
+    if not selected:
+        return df
+    full_set = set(NER_dict)
+    if selected >= full_set:  # all tags selected -> no filtering
+        return df
+    # spaCy stores plain entity labels in 'NER' ('' for non-entity tokens)
+    return df[df['NER'].isin(selected)].reset_index(drop=True)
 
 # Convert spaCy doc to pandas dataframe
 def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotator_params, language):
