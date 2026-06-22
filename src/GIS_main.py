@@ -222,53 +222,18 @@ def run(inputFilename,
             filesToOpen.extend(locationFiles)
             NER_outputFilename = locationFiles[0]
 
-        df = pd.read_csv(NER_outputFilename, encoding='utf-8', on_bad_lines='skip')
-
-        # Normalize column names: Stanza/spaCy use 'Form', CoreNLP uses 'Word'
-        if 'Form' in df.columns and 'Word' not in df.columns:
-            df = df.rename(columns={'Form': 'Word'})
-
-        # Rename 'Word' to 'Location' for the GIS pipeline
-        if 'Word' in df.columns:
-            df = df.rename(columns={'Word': 'Location'})
-        location_menu_var.set('Location')
-
-        # Normalize NER tags for GIS filtering, scheme-aware:
-        #   OntoNotes (spaCy / English Stanza) uses GPE for geopolitical places and LOC for
-        #     non-geopolitical features (mountains, rivers) -> map GPE only, exclude LOC.
-        #   CoNLL-style (BERT, non-English Stanza e.g. Italian/French) has no GPE; LOC is the
-        #     only location tag and is geocodable -> map LOC too.
-        if 'NER' in df.columns:
-            # detect scheme before normalizing (BIOES tags like 'S-GPE' still contain 'GPE')
-            scheme_has_gpe = df['NER'].astype(str).str.contains('GPE').any()
-            # Stanza/spaCy emit BIOES-prefixed tags (e.g., 'S-GPE','B-GPE'); take the tag after the prefix
-            df['NER'] = df['NER'].astype(str).str.split('-').str[-1]
-            mapping = {'GPE': 'LOCATION'}
-            if not scheme_has_gpe:
-                mapping['LOC'] = 'LOCATION'
-            df['NER'] = df['NER'].replace(mapping)
-            # Keep only location rows
-            df = df[df['NER'].isin({'COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION'})]
-        else:
-            df = pd.DataFrame()  # empty — no NER column
-
-        # For Stanza/spaCy: the 'Multi-Word Expression' column holds the full, pre-joined entity
-        # (e.g., "New York") on each entity-head row, and is blank/NaN on continuation tokens.
-        # Keep only the head rows and use that merged value, so multi-word locations are not
-        # fragmented (e.g., "New" + "York") and continuation tokens are dropped.
-        if 'Multi-Word Expression' in df.columns:
-            mwe_mask = df['Multi-Word Expression'].notna() & \
-                       (df['Multi-Word Expression'].astype(str).str.strip() != '') & \
-                       (df['Multi-Word Expression'].astype(str) != 'O')
-            if mwe_mask.any():
-                df = df[mwe_mask].copy()
-                df['Location'] = df['Multi-Word Expression']
-
-        if df.empty:
+        # Normalize the raw NER csv in place via the shared helper: Form/Word -> Location,
+        # scheme-aware NER tags (GPE/LOC), multi-word-entity merge, AND Date extracted from each
+        # filename (so the maps get a time slider). Same logic the NER->map prompt uses.
+        prepared = GIS_pipeline_util.normalize_NER_csv_for_GIS(
+            NER_outputFilename, NER_outputFilename,
+            filename_embeds_date_var=filename_embeds_date_var,
+            date_format=date_format_var, items_separator=items_separator_var,
+            date_position=date_position_var)
+        if prepared == '':
             mb.showwarning("No locations","There are no NER locations to be geocoded and mapped in the selected input txt file.\n\nPlease, select a different txt file and try again.")
             return
-
-        df.to_csv(NER_outputFilename, encoding='utf-8', index=False)
+        location_menu_var.set('Location')
         csv_file_var.set(NER_outputFilename)
         filesToOpen.append(NER_outputFilename)
         locationColumnName = 'Location'
@@ -524,10 +489,10 @@ def display_csv_file_options():
     # if Google_Earth_OpenGUI.get() == False:
     #     # GIS_package_var.set('Google Earth Pro & Google Maps')
     #     GIS_package_var.set('Python folium pin map & heatmap')
-    cannotRun, NER_extractor, csv_file=tk.Entry(window, width=GUI_IO_util.csv_file_width,textvariable=csv_file_var)
-    csv_file.config(state='disabled')
-    y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,csv_file)
-    geocode_locations, location_menu = check_csv_file_headers(csv_file_var.get())
+    # the csv_file Entry widget is created once at GUI setup and auto-updates via csv_file_var;
+    # do NOT re-create it here (the old line crashed unpacking an Entry into 3 names).
+    # check_csv_file_headers returns 4 values; capture all of them.
+    cannotRun, NER_extractor, geocode_locations, location_menu = check_csv_file_headers(csv_file_var.get())
 
     return cannotRun
 
