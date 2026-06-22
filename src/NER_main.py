@@ -336,9 +336,6 @@ def add_NER_tag(coming_from_add, coming_from_reset):
     #     window.focus_force()
     #     return
 
-    if 'Stanza' in NER_packages_var.get():
-        # NER_list
-        return
     reset_NER_button.configure(state='normal')
     if coming_from_reset:
         NER_tag_var.set(' ')
@@ -347,26 +344,49 @@ def add_NER_tag(coming_from_add, coming_from_reset):
         return coming_from_reset
     if coming_from_add:
         add_NER_button.configure(state='normal')
-    if 'All NER tags' in NER_tag_var.get(): # == '--- All NER tags':
-        NER_list = NER_list
-        NER_entry_var.set('PERSON, ORGANIZATION, MISC, MONEY, NUMBER, ORDINAL, PERCENT, DATE, TIME, DURATION, SET, EMAIL, URL, CITY,STATE_OR_PROVINCE, COUNTRY, LOCATION, NATIONALITY, RELIGION, TITLE, IDEOLOGY, CRIMINAL_CHARGE,CAUSE_OF_DEATH')
-    elif NER_tag_var.get() == '--- All quantitative expressions':
-        NER_list = ['NUMBER', 'ORDINAL', 'PERCENT']
-        NER_entry_var.set('NUMBER, ORDINAL, PERCENT')
-    elif NER_tag_var.get() == '--- All social actors':
-        NER_list = ['PERSON', 'ORGANIZATION']
-        NER_entry_var.set('PERSON, ORGANIZATION')
-    elif NER_tag_var.get() == '--- All spatial expressions':
-        NER_list = ['CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
-        NER_entry_var.set('CITY, STATE_OR_PROVINCE, COUNTRY, LOCATION')
-    elif NER_tag_var.get() == '--- All temporal expressions':
-        NER_list = ['DATE', 'TIME', 'DURATION', 'SET']
-        NER_entry_var.set('DATE, TIME, DURATION, SET')
-    elif NER_tag_var.get()=='--- All other expressions':
-        mb.showwarning(title='Warning', message='You cannot select the option --- All other expressions.\n\nPlease, select a different option and try again.')
-        NER_tag_var.set(' ')
-        window.focus_force()
-        return
+    pkg = NER_packages_var.get()
+    sel = NER_tag_var.get()
+    # spaCy and Stanza use the OntoNotes NER scheme; CoreNLP uses its own fine-grained scheme
+    if ('spaCy' in pkg) or ('Stanza' in pkg):
+        if 'All NER tags' in sel:
+            NER_list = ['PERSON', 'NORP', 'ORG', 'GPE', 'LOC', 'FAC', 'PRODUCT', 'EVENT', 'WORK_OF_ART', 'LAW', 'LANGUAGE', 'DATE', 'TIME', 'PERCENT', 'MONEY', 'QUANTITY', 'ORDINAL', 'CARDINAL']
+            NER_entry_var.set(', '.join(NER_list))
+        elif sel == '--- All quantitative expressions':
+            NER_list = ['CARDINAL', 'ORDINAL', 'PERCENT', 'MONEY', 'QUANTITY']
+            NER_entry_var.set(', '.join(NER_list))
+        elif sel == '--- All social actors':
+            NER_list = ['PERSON', 'NORP', 'ORG']
+            NER_entry_var.set(', '.join(NER_list))
+        elif sel == '--- All spatial expressions':
+            NER_list = ['GPE', 'LOC', 'FAC']
+            NER_entry_var.set(', '.join(NER_list))
+        elif sel == '--- All temporal expressions':
+            NER_list = ['DATE', 'TIME']
+            NER_entry_var.set(', '.join(NER_list))
+        elif sel == '--- All other expressions':
+            NER_list = ['PRODUCT', 'EVENT', 'WORK_OF_ART', 'LAW', 'LANGUAGE']
+            NER_entry_var.set(', '.join(NER_list))
+    else:
+        if 'All NER tags' in sel: # == '--- All NER tags':
+            NER_list = NER_list
+            NER_entry_var.set('PERSON, ORGANIZATION, MISC, MONEY, NUMBER, ORDINAL, PERCENT, DATE, TIME, DURATION, SET, EMAIL, URL, CITY,STATE_OR_PROVINCE, COUNTRY, LOCATION, NATIONALITY, RELIGION, TITLE, IDEOLOGY, CRIMINAL_CHARGE,CAUSE_OF_DEATH')
+        elif sel == '--- All quantitative expressions':
+            NER_list = ['NUMBER', 'ORDINAL', 'PERCENT']
+            NER_entry_var.set('NUMBER, ORDINAL, PERCENT')
+        elif sel == '--- All social actors':
+            NER_list = ['PERSON', 'ORGANIZATION']
+            NER_entry_var.set('PERSON, ORGANIZATION')
+        elif sel == '--- All spatial expressions':
+            NER_list = ['CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
+            NER_entry_var.set('CITY, STATE_OR_PROVINCE, COUNTRY, LOCATION')
+        elif sel == '--- All temporal expressions':
+            NER_list = ['DATE', 'TIME', 'DURATION', 'SET']
+            NER_entry_var.set('DATE, TIME, DURATION, SET')
+        elif sel == '--- All other expressions':
+            mb.showwarning(title='Warning', message='You cannot select the option --- All other expressions.\n\nPlease, select a different option and try again.')
+            NER_tag_var.set(' ')
+            window.focus_force()
+            return
     # NER_tag_var is set everywhere to ' ' as opposed to ''
     if NER_tag_var.get()!=' ':
         # --- is used for CoreNLP for NER subsets (e.g., --- All spatial expressions)
