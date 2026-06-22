@@ -295,6 +295,16 @@ def set_NER_menu_options(tags_list):
     menu.delete(0, 'end')
     for tag in tags_list:
         menu.add_command(label=tag, command=lambda value=tag: NER_tag_var.set(value))
+
+# the package's full set of real tags (excludes the 'All NER tags' and '--- ...' selectors)
+def _full_tag_set(pkg):
+    if 'BERT' in pkg:
+        tags = NER_tags_BERT
+    elif ('spaCy' in pkg) or ('Stanza' in pkg):
+        tags = NER_tags_OntoNotes
+    else:
+        tags = NER_tags_CoreNLP
+    return {t for t in tags if t != 'All NER tags' and '---' not in t}
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_menu_pos, y_multiplier_integer,
                     NER_menu, True, False, True, False,
@@ -403,22 +413,22 @@ def add_NER_tag(coming_from_add, coming_from_reset):
             NER_tag_var.set(' ')
             window.focus_force()
             return
-    # NER_tag_var is set everywhere to ' ' as opposed to ''
-    if NER_tag_var.get()!=' ':
-        # --- is used for CoreNLP for NER subsets (e.g., --- All spatial expressions)
-        if NER_tag_var.get() in NER_entry_var.get() and not('---' in NER_tag_var.get()):
-            mb.showwarning(title='Warning', message='The NER tag "'+ NER_tag_var.get() + '" is already in your selection NER list: '+ str(NER_entry_var.get()) + '.\n\nPlease, select another NER tag (or hit the Reset button and try again).')
+    # individual-tag selection (the 'All NER tags' and '--- ...' labels are selectors, not literal tags)
+    if sel != ' ' and '---' not in sel and 'All NER tags' not in sel:
+        full_default = _full_tag_set(pkg)
+        current = {t.strip() for t in NER_entry_var.get().replace(',', ' ').split() if t.strip()}
+        if not current or current == full_default:
+            # textbox still holds the default (all tags) -> start a fresh subset with this tag
+            NER_list = [sel]
+            NER_entry_var.set(sel)
+        elif sel in current:
+            mb.showwarning(title='Warning', message='The NER tag "'+ sel + '" is already in your selection NER list: '+ str(NER_entry_var.get()) + '.\n\nPlease, select another NER tag (or hit the Reset button and try again).')
             window.focus_force()
             return
-
-    if NER_tag_var.get().strip():
-        if not('---' in NER_tag_var.get()):
-            NER_list.append(NER_tag_var.get())
-            if len(NER_list)==1:
-                NER_entry_var.set(NER_tag_var.get())
-            else:
-                NER_entry_var.set(NER_entry_var.get()+', '+NER_tag_var.get())
-        # NER_menu.configure(state='disabled')
+        else:
+            # building a subset: add this tag to the existing selection
+            NER_list.append(sel)
+            NER_entry_var.set(NER_entry_var.get() + ', ' + sel)
         add_NER_button.configure(state="normal")
         reset_NER_button.configure(state="normal")
 
