@@ -235,9 +235,23 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                             0, 1, [''], [''], ['Pushpins'], ['red'], [0], ['1'], [0], [''], [1], [1])
                 if gis_out is not None:
                     if isinstance(gis_out, str):
-                        filesToOpen.append(gis_out)
-                    else:
-                        filesToOpen.extend(gis_out)
+                        gis_out = [gis_out]
+                    # the user explicitly chose to map -> open the maps NOW, regardless of the
+                    # 'open output files' checkbox; let non-map GIS files go through normal handling
+                    for f in gis_out:
+                        if not isinstance(f, str):
+                            continue
+                        is_map = f.endswith('.kml') or (f.endswith('.html') and 'Folium' in f)
+                        if is_map and os.path.isfile(f):
+                            if f.endswith('.kml'):
+                                IO_files_util.open_kmlFile(GUI_util.window, f)
+                            else:
+                                try:
+                                    IO_files_util.openFile(GUI_util.window, f)
+                                except Exception:
+                                    pass
+                        else:
+                            filesToOpen.append(f)
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
