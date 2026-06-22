@@ -175,6 +175,33 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                 else:
                     filesToOpen.extend(outputFiles)
 
+            # plot Named Entities (merged multi-word expressions, e.g., "New York") - distinct from
+            # the per-token 'Form' chart above. Only when the Multi-Word Expression column exists
+            # (spaCy / Stanza NER output).
+            try:
+                import pandas as _pd_mwe
+                _mwe_cols = list(_pd_mwe.read_csv(outputFilename, nrows=0, encoding='utf-8').columns)
+            except Exception:
+                _mwe_cols = []
+            if 'Multi-Word Expression' in _mwe_cols:
+                outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
+                                   outputDir,
+                                   columns_to_be_plotted_xAxis=[],
+                                   columns_to_be_plotted_yAxis=['Multi-Word Expression'],
+                                   chart_title='Frequency Distribution of Named Entities (Multi-Word Expressions)',
+                                   # count_var = 1 for columns of alphabetic values
+                                   count_var=1, hover_label=[],
+                                   outputFileNameType='Named-Entity',
+                                   column_xAxis_label='Named entities (multi-word expressions)',
+                                   groupByList=['NER'],
+                                   plotList=['Frequency'],
+                                   chart_title_label='Named Entity')
+                if outputFiles!=None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
+
 # generate visualization output ----------------------------------------------------------------
 # parser ________________________________________________________________
 # 'depparse' used for Stanza and spaCy
