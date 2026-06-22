@@ -610,8 +610,10 @@ def geocode(window,locations, inputFilename, outputDir,
 										address, country_geocoder, sentenceID, sentence, documentID, document])
 				else:
 					if datePresent:
+						# header is [...,'Date','Sentence','Document']; write all three so they
+						# appear in the geocoded csv (and therefore in the folium popups)
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng,
-											address, country_geocoder, date])
+											address, country_geocoder, date, sentence, document])
 					else:
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, country_geocoder])
 
