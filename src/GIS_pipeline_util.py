@@ -119,6 +119,47 @@ def load_GIS_settings(input_dir):
         print(f"  WARNING: Could not read GIS settings from {path}: {e}")
         return '', '', False
 
+# Turn a raw NER output csv (token column 'Form' for spaCy/Stanza or 'Word' for CoreNLP,
+# with BIOES-prefixed tags) into a csv that has a 'Location' column and normalized location
+# NER tags, ready for GIS_pipeline (which requires a 'Location' column). Multi-word entities
+# are merged via the 'Multi-Word Expression' column. Mirrors the preprocessing GIS_main does.
+# Returns out_csv if it contains location rows, else '' (no mappable locations).
+def normalize_NER_csv_for_GIS(ner_csv, out_csv, encodingValue='utf-8'):
+    try:
+        df = pd.read_csv(ner_csv, encoding=encodingValue, on_bad_lines='skip')
+    except Exception:
+        return ''
+    # token column: 'Form' (spaCy/Stanza) or 'Word' (CoreNLP) -> 'Location'
+    if 'Form' in df.columns and 'Word' not in df.columns:
+        df = df.rename(columns={'Form': 'Word'})
+    if 'Word' in df.columns:
+        df = df.rename(columns={'Word': 'Location'})
+    if 'NER' not in df.columns or 'Location' not in df.columns:
+        return ''
+    # scheme-aware tag normalization: strip BIOES prefix (S-GPE -> GPE); map GPE/LOC -> LOCATION.
+    # LOC maps only when the scheme has no GPE (CoNLL/BERT/non-English Stanza), matching the GIS filters.
+    scheme_has_gpe = df['NER'].astype(str).str.contains('GPE').any()
+    df['NER'] = df['NER'].astype(str).str.split('-').str[-1]
+    mapping = {'GPE': 'LOCATION'}
+    if not scheme_has_gpe:
+        mapping['LOC'] = 'LOCATION'
+    df['NER'] = df['NER'].replace(mapping)
+    df = df[df['NER'].isin({'COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION'})]
+    # merge multi-word entities: keep entity-head rows and use the pre-joined value
+    if 'Multi-Word Expression' in df.columns and len(df) > 0:
+        mwe = df['Multi-Word Expression'].astype(str)
+        mwe_mask = df['Multi-Word Expression'].notna() & (mwe.str.strip() != '') & (mwe != 'O')
+        if mwe_mask.any():
+            df = df[mwe_mask].copy()
+            df['Location'] = df['Multi-Word Expression']
+    if df.empty:
+        return ''
+    try:
+        df.to_csv(out_csv, index=False, encoding=encodingValue)
+    except Exception:
+        return ''
+    return out_csv
+
 # the list of arguments reflect the order of widgets in the Google_Earth_main GUI
 # processes one file at a time
 def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,

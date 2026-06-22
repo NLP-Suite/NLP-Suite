@@ -216,6 +216,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
     if not skip_NER_extraction:
         ner_csv = _find_main_NER_csv(filesToOpen)
         nLocations = _count_location_entities(ner_csv) if ner_csv else 0
+        import os as _os_dbg
+        print("[NER->GIS DEBUG] skip_NER_extraction=" + str(skip_NER_extraction)
+              + " | filesToOpen(" + str(len(filesToOpen)) + ")=" + str([_os_dbg.path.basename(str(f)) for f in filesToOpen])
+              + " | ner_csv=" + repr(ner_csv) + " | nLocations=" + str(nLocations))
+        if nLocations <= 0:
+            print("[NER->GIS DEBUG] map prompt NOT shown (ner_csv empty or 0 location entities counted)")
         if nLocations > 0:
             if mb.askyesno('Map extracted locations?',
                     str(nLocations) + " location entities were extracted.\n\n"
@@ -225,17 +231,30 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                     "For many more mapping options - choice of geocoder (Nominatim/Google), folium pin & heat maps, "
                     "proportional-circle maps, QGIS, Tableau, TimeMapper, date-based animation, custom icons and "
                     "labels - use the dedicated GIS GUI (GIS_main), which can take this NER output as its input."):
+                print("[NER->GIS DEBUG] user clicked YES")
                 import GIS_pipeline_util
                 # place GIS output inside the NER folder, in a 'GIS' subfolder (like SVO),
                 # so only one output folder is opened
                 gis_subdir = IO_files_util.make_output_subdirectory('', '', os.path.dirname(ner_csv), label='GIS', silent=True)
-                key = GIS_pipeline_util.getGoogleAPIkey(GUI_util.window, 'Google-geocode-API_config.csv')
-                geocoder = 'Nominatim' if (key == '' or key is None) else 'Google'
-                date_present = bool(filename_embeds_date_var)
-                gis_out = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename, ner_csv, inputDir,
-                            gis_subdir, geocoder, 'Google Earth Pro & Google Maps & Python folium pin map & heatmap', chartPackage, dataTransformation,
-                            date_present, '', '', False, 'Location', 'utf-8',
-                            0, 1, [''], [''], ['Pushpins'], ['red'], [0], ['1'], [0], [''], [1], [1])
+                # GIS_pipeline requires a 'Location' column; the raw NER csv has 'Form'/'Word' and
+                # BIOES tags. Normalize it (Form->Location, tag normalization, multi-word merge) first.
+                prepared_csv = os.path.join(gis_subdir, os.path.basename(ner_csv))
+                prepared_csv = GIS_pipeline_util.normalize_NER_csv_for_GIS(ner_csv, prepared_csv)
+                print("[NER->GIS DEBUG] gis_subdir=" + repr(gis_subdir) + " | prepared_csv=" + repr(prepared_csv))
+                if prepared_csv == '':
+                    mb.showinfo('No mappable locations',
+                        'No mappable location entities were found in the NER output, so no map was produced.')
+                    gis_out = None
+                else:
+                    key = GIS_pipeline_util.getGoogleAPIkey(GUI_util.window, 'Google-geocode-API_config.csv')
+                    geocoder = 'Nominatim' if (key == '' or key is None) else 'Google'
+                    date_present = bool(filename_embeds_date_var)
+                    print("[NER->GIS DEBUG] geocoder=" + str(geocoder) + " | calling GIS_pipeline on " + repr(prepared_csv))
+                    gis_out = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename, prepared_csv, inputDir,
+                                gis_subdir, geocoder, 'Google Earth Pro & Google Maps & Python folium pin map & heatmap', chartPackage, dataTransformation,
+                                date_present, '', '', False, 'Location', 'utf-8',
+                                0, 1, [''], [''], ['Pushpins'], ['red'], [0], ['1'], [0], [''], [1], [1])
+                    print("[NER->GIS DEBUG] GIS_pipeline returned: " + (str([os.path.basename(str(x)) for x in gis_out]) if gis_out else repr(gis_out)))
                 if gis_out is not None:
                     if isinstance(gis_out, str):
                         gis_out = [gis_out]
