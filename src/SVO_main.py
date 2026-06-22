@@ -768,14 +768,19 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
 
         filesToOpenSubset_string = ", \n   ".join(filesToOpenSubset)
         print("Subset of the " + str(len(filesToOpenSubset)) + " SVO files from the different subfolders to be opened:\n   " + str(filesToOpenSubset_string))
-        # SVO can produce a very large number of files including the subset files
-        #   when even the subset is greater then 10, open a least the SVO file
+        # SVO can produce a very large number of files. When the subset is still > 10, trim it
+        # but KEEP the key visualizations: the main SVO file, the Google Earth KML, and the Folium
+        # maps - prioritizing the dynamic Folium-time map so a dated corpus auto-opens it.
         if len(filesToOpenSubset)>10:
-            if package_var == 'Stanza' or package_var == 'spaCy':
-                filesToOpenSubset=[filesToOpen[0]]
-                filesToOpenSubset.append(filesToOpen[1])
-            else:
-                filesToOpenSubset = [filesToOpen[0]]
+            trimmed = [SVO_filename]
+            folium_time = [f for f in filesToOpen if str(f).endswith('.html') and 'Folium-time' in str(f)]
+            kml_files = [f for f in filesToOpen if str(f).endswith('.kml')]
+            folium_other = [f for f in filesToOpen if str(f).endswith('.html') and 'Folium' in str(f) and 'Folium-time' not in str(f)]
+            for grp in (folium_time, kml_files, folium_other):
+                for f in grp:
+                    if f not in trimmed:
+                        trimmed.append(f)
+            filesToOpenSubset = trimmed[:10]
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName, filesToOpenSubset)
 
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
