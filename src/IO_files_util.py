@@ -486,6 +486,11 @@ def getDateFromFileName(file_name, date_format='mm-dd-yyyy', sep='_', date_field
             raw_date = x[startSearch:end]
         else:
             raw_date = x[startSearch + 1:end]
+        # Normalize separators to '-' so slash/dot date formats (e.g. 'mm/dd/yyyy', which has no
+        # dedicated branch below) are handled by the hyphen-based branches, and so the date's
+        # actual separator in the filename need not match the configured format separator.
+        date_format = date_format.replace('/', '-').replace('.', '-')
+        raw_date = raw_date.replace('/', '-').replace('.', '-')
         # https://docs.python.org/2/library/datetime.html#strftime-strptime-behavior
         # the strptime command (strptime(date_string, format) takes date_string and formats it according to format where format has the following values:
         # %m 09 %-m 9 (does not work on all platforms); %d 07 %-d 7 (does not work on all platforms);

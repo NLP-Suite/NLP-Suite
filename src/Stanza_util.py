@@ -1650,7 +1650,13 @@ def Stanza_coref(config_filename, inputFilename, inputDir, outputDir,
 
 # create locations file for GIS
 def visualize_GIS_maps_Stanza(svo_df):
-    loc_df = pd.DataFrame(columns=['Location', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
+    # carry the Date (extracted from the filename during SVO extraction) into the location file
+    # so the geocoder/KML/folium popups can show it (CoNLL_checker keys datePresent on a 'Date' column)
+    has_date = 'Date' in svo_df.columns
+    cols = ['Location', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
+    if has_date:
+        cols.append('Date')
+    loc_df = pd.DataFrame(columns=cols)
     for _,row in svo_df.iterrows():
         if isinstance(row['Location'], str):
             loc_list = row['Location'].split(';')
@@ -1660,7 +1666,10 @@ def visualize_GIS_maps_Stanza(svo_df):
                     ner_type = ner_list[idx].strip() if idx < len(ner_list) else 'LOCATION'
                     # Geocode geopolitical entities (GPE = countries/cities/states); skip generic LOC (mountains, rivers)
                     if ner_type == 'GPE':
-                        loc_df.loc[len(loc_df.index)] = [loc.strip(), ner_type, row['Sentence ID'], row['Sentence'], row['Document ID'], row['Document']]
+                        rowvals = [loc.strip(), ner_type, row['Sentence ID'], row['Sentence'], row['Document ID'], row['Document']]
+                        if has_date:
+                            rowvals.append(row.get('Date', ''))
+                        loc_df.loc[len(loc_df.index)] = rowvals
     return loc_df
 
 # keep only NER rows whose tag is in the user-selected set.

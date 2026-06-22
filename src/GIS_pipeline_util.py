@@ -138,7 +138,9 @@ def load_GIS_settings(input_dir):
 # NER tags, ready for GIS_pipeline (which requires a 'Location' column). Multi-word entities
 # are merged via the 'Multi-Word Expression' column. Mirrors the preprocessing GIS_main does.
 # Returns out_csv if it contains location rows, else '' (no mappable locations).
-def normalize_NER_csv_for_GIS(ner_csv, out_csv, encodingValue='utf-8'):
+def normalize_NER_csv_for_GIS(ner_csv, out_csv, encodingValue='utf-8',
+                              filename_embeds_date_var=False, date_format='mm/dd/yyyy',
+                              items_separator='_', date_position=2):
     try:
         df = pd.read_csv(ner_csv, encoding=encodingValue, on_bad_lines='skip')
     except Exception:
@@ -168,6 +170,19 @@ def normalize_NER_csv_for_GIS(ner_csv, out_csv, encodingValue='utf-8'):
             df['Location'] = df['Multi-Word Expression']
     if df.empty:
         return ''
+    # extract the date from each Document's filename (when the corpus embeds dates in filenames)
+    # so the geocoder/KML/folium popups can show it
+    if filename_embeds_date_var and 'Document' in df.columns:
+        import IO_files_util, IO_csv_util
+        def _date_of(doc):
+            try:
+                raw = IO_csv_util.undressFilenameForCSVHyperlink(str(doc))
+                date, date_str, month, day, year = IO_files_util.getDateFromFileName(
+                    raw, date_format, items_separator, date_position, errMsg=False)
+                return date_str or date or ''
+            except Exception:
+                return ''
+        df['Date'] = df['Document'].apply(_date_of)
     try:
         df.to_csv(out_csv, index=False, encoding=encodingValue)
     except Exception:

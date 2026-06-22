@@ -232,7 +232,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                 # GIS_pipeline requires a 'Location' column; the raw NER csv has 'Form'/'Word' and
                 # BIOES tags. Normalize it (Form->Location, tag normalization, multi-word merge) first.
                 prepared_csv = os.path.join(gis_subdir, os.path.basename(ner_csv))
-                prepared_csv = GIS_pipeline_util.normalize_NER_csv_for_GIS(ner_csv, prepared_csv)
+                prepared_csv = GIS_pipeline_util.normalize_NER_csv_for_GIS(ner_csv, prepared_csv,
+                                    filename_embeds_date_var=filename_embeds_date_var,
+                                    date_format=date_format_var, items_separator=items_separator_var,
+                                    date_position=date_position_var)
                 if prepared_csv == '':
                     mb.showinfo('No mappable locations',
                         'No mappable location entities were found in the NER output, so no map was produced.')
