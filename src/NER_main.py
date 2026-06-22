@@ -23,6 +23,38 @@ import Stanza_util
 import NER_entity_timeline_util
 import run_script_util
 
+# location NER tags across all schemes (CoreNLP, OntoNotes, CoNLL); BIOES prefixes are stripped before testing
+_LOCATION_TAGS = ('GPE', 'LOC', 'LOCATION', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY')
+
+def _find_main_NER_csv(files):
+    # pick the main NER data csv from the produced files (skip charts/freq/timeline/geocoded files)
+    import os as _os
+    for f in files:
+        if not isinstance(f, str) or not f.lower().endswith('.csv'):
+            continue
+        b = _os.path.basename(f).lower()
+        if 'ner' in b and not any(x in b for x in ('freq', 'chart', 'hyperlink', 'timeline', 'summary', 'tracking', 'not-found', 'geo-')):
+            return f
+    return ''
+
+def _count_location_entities(ner_csv):
+    # count location entities in an NER output csv (entity heads when a Multi-Word Expression column exists)
+    import pandas as pd
+    try:
+        df = pd.read_csv(ner_csv, encoding='utf-8', on_bad_lines='skip')
+    except Exception:
+        return 0
+    if 'NER' not in df.columns:
+        return 0
+    loc_mask = df['NER'].astype(str).apply(lambda t: str(t).split('-')[-1] in _LOCATION_TAGS)
+    sub = df[loc_mask]
+    if 'Multi-Word Expression' in df.columns and len(sub) > 0:
+        mwe = sub['Multi-Word Expression'].astype(str)
+        heads = sub[(mwe.str.strip() != '') & (mwe.str.lower() != 'nan') & (mwe != 'O')]
+        if len(heads) > 0:
+            return len(heads)
+    return len(sub)
+
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, config_filename,
@@ -179,6 +211,33 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
+
+# Offer to geocode & map extracted locations -------------------------------------------------
+    if not skip_NER_extraction:
+        ner_csv = _find_main_NER_csv(filesToOpen)
+        nLocations = _count_location_entities(ner_csv) if ner_csv else 0
+        if nLocations > 0:
+            if mb.askyesno('Map extracted locations?',
+                    str(nLocations) + " location entities were extracted.\n\n"
+                    "Would you like to geocode and map them now (Google Earth Pro + folium pin/heat maps)?\n\n"
+                    "NOTE: geocoding contacts an online service for each location, so this can take some time "
+                    "(especially with Nominatim, which is rate-limited to about 1 request per second).\n\n"
+                    "For many more mapping options - choice of geocoder (Nominatim/Google), folium pin & heat maps, "
+                    "proportional-circle maps, QGIS, Tableau, TimeMapper, date-based animation, custom icons and "
+                    "labels - use the dedicated GIS GUI (GIS_main), which can take this NER output as its input."):
+                import GIS_pipeline_util
+                key = GIS_pipeline_util.getGoogleAPIkey(GUI_util.window, 'Google-geocode-API_config.csv')
+                geocoder = 'Nominatim' if (key == '' or key is None) else 'Google'
+                date_present = bool(filename_embeds_date_var)
+                gis_out = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename, ner_csv, inputDir,
+                            outputDir, geocoder, 'Google Earth Pro & Google Maps', chartPackage, dataTransformation,
+                            date_present, '', '', False, 'Location', 'utf-8',
+                            0, 1, [''], [''], ['Pushpins'], ['red'], [0], ['1'], [0], [''], [1], [1])
+                if gis_out is not None:
+                    if isinstance(gis_out, str):
+                        filesToOpen.append(gis_out)
+                    else:
+                        filesToOpen.extend(gis_out)
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
