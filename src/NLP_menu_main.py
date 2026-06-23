@@ -798,30 +798,32 @@ if not setup_IO_OK_checkbox_var.get() or not setup_parsers_annotators_OK_checkbo
         GUI_util.videos_dropdown_field.set('Setup the NLP Suite')
         # GUI_util.watch_video(videos_lookup, scriptName)
 
-if sys.platform=='darwin':
+if sys.platform == 'darwin':
     import platform
-    # On Apple Silicon, check whether a TensorFlow build is present. TensorFlow 2.13+
-    # ships universal/arm64 wheels under the plain "tensorflow" package name, so we
-    # accept any of tensorflow, tensorflow-macos, or tensorflow-metal as sufficient.
     if platform.machine() != 'x86_64':
-        import subprocess
-        try:
-            output = subprocess.check_output(
-                [sys.executable, "-m", "pip", "freeze"], stderr=subprocess.DEVNULL
-            ).decode("utf-8")
-        except Exception:
-            output = ""
-        has_tensorflow = any(pkg in output for pkg in ("tensorflow-metal", "tensorflow-macos", "tensorflow==", "tensorflow "))
-        if not has_tensorflow:
-            mb.showwarning(
-                title='Warning',
-                message='Your Mac uses an Apple Silicon chip (M1/M2/M3).\n\n'
-                        'Some algorithms that rely on TensorFlow (e.g. BERT) may not work correctly '
-                        'without a TensorFlow build that supports Apple Silicon.\n\n'
-                        'If you plan to use those algorithms, install TensorFlow for Apple Silicon:\n\n'
-                        '    pip install tensorflow tensorflow-metal\n\n'
-                        'You do NOT need to reinstall Anaconda — the bundled python-env already '
-                        'supports Apple Silicon.'
-            )
+        # When running as a PyInstaller frozen app, sys.executable is the bundle
+        # binary, not a Python interpreter, so pip cannot be invoked. The bundled
+        # python-env already includes TensorFlow with Apple Silicon support, so
+        # no check is needed. Only warn when running from source (development mode).
+        if not getattr(sys, 'frozen', False):
+            import subprocess
+            try:
+                output = subprocess.check_output(
+                    [sys.executable, "-m", "pip", "freeze"], stderr=subprocess.DEVNULL
+                ).decode("utf-8")
+            except Exception:
+                output = ""
+            has_tensorflow = any(pkg in output for pkg in ("tensorflow-metal", "tensorflow-macos", "tensorflow==", "tensorflow "))
+            if not has_tensorflow:
+                mb.showwarning(
+                    title='Warning',
+                    message='Your Mac uses an Apple Silicon chip (M1/M2/M3).\n\n'
+                            'Some algorithms that rely on TensorFlow (e.g. BERT) may not work correctly '
+                            'without a TensorFlow build that supports Apple Silicon.\n\n'
+                            'If you plan to use those algorithms, install TensorFlow for Apple Silicon:\n\n'
+                            '    pip install tensorflow tensorflow-metal\n\n'
+                            'You do NOT need to reinstall Anaconda — the bundled python-env already '
+                            'supports Apple Silicon.'
+                )
 
 GUI_util.window.mainloop()
