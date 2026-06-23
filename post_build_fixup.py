@@ -84,11 +84,48 @@ def main():
                 dst = os.path.join(DIST_DIR, subdir.split('8')[0], subdir)
                 copy_tree(src, dst)
 
+    # 3. Fix shebangs in python-env/bin so scripts work on end-user machines.
+    # PyInstaller bakes in the build machine's python-env path; replace with a
+    # relative-friendly absolute path based on the actual install location.
+    if sys.platform != 'win32':
+        print()
+        print("=== Fixing python-env/bin shebangs ===")
+        python_env_bin = os.path.join(DIST_DIR, 'python-env', 'bin')
+        python3 = os.path.join(python_env_bin, 'python3')
+        if os.path.isdir(python_env_bin) and os.path.isfile(python3):
+            fixed = 0
+            for script in os.listdir(python_env_bin):
+                path = os.path.join(python_env_bin, script)
+                if not os.path.isfile(path) or os.path.islink(path):
+                    continue
+                try:
+                    with open(path, 'rb') as f:
+                        first = f.read(256)
+                    if not first.startswith(b'#!'):
+                        continue
+                    nl = first.find(b'\n')
+                    old_shebang = first[2:nl].decode(errors='replace').strip()
+                    if old_shebang == python3:
+                        continue
+                    if 'python' not in old_shebang.lower():
+                        continue
+                    with open(path, 'r', errors='replace') as f:
+                        content = f.read()
+                    new_content = f'#!{python3}\n' + content[content.index('\n') + 1:]
+                    with open(path, 'w') as f:
+                        f.write(new_content)
+                    fixed += 1
+                except Exception as e:
+                    print(f"  WARN: could not patch {script}: {e}")
+            print(f"  Patched {fixed} scripts to use {python3}")
+        else:
+            print("  SKIP: python-env/bin not found")
+
     print()
     total_mb = sum(os.path.getsize(os.path.join(dp, f))
                    for dp, dn, fn in os.walk(DIST_DIR) for f in fn) / (1024*1024)
     print(f"=== Done! Total bundle size: {total_mb:.0f} MB ===")
-    print(f"Executable: {os.path.join(DIST_DIR, 'NLP_Suite.exe')}")
+    print(f"Executable: {os.path.join(DIST_DIR, 'NLP_Suite')}")
 
 if __name__ == '__main__':
     main()
