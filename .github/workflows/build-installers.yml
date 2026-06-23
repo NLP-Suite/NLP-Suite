@@ -132,6 +132,15 @@ jobs:
                       shutil.rmtree(dst)
                   shutil.copytree(d, dst)
                   print(f'Copied {d} -> {dst}')
+          # The live config/ is private and untracked, so it is never in the checkout. Seed a default
+          # config/ for first-time users from the committed, secret-free lib/config_defaults/.
+          cfg_defaults = os.path.join('lib', 'config_defaults')
+          if os.path.isdir(cfg_defaults):
+              cfg_dst = os.path.join(dist, 'config')
+              os.makedirs(cfg_dst, exist_ok=True)
+              for f in glob.glob(os.path.join(cfg_defaults, '*.csv')):
+                  shutil.copy2(f, cfg_dst)
+                  print(f'Seeded config default: {os.path.basename(f)}')
           src_dst = os.path.join(dist, 'src')
           os.makedirs(src_dst, exist_ok=True)
           count = 0
