@@ -408,8 +408,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=600, # height at brief display
-                                                 GUI_height_full=640, # height at full display
+                                                 GUI_height_brief=640, # height at brief display
+                                                 GUI_height_full=680, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -582,16 +582,39 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click to open a pdf file of the PC-ACE table relations. These relations are ALWAYS the same across any type of application of PC-ACE (e.g., Avanti! or Lynchings).\nTo view the grammar of data collection for a specific PC-ACE implementation click on the button View grrammar.")
 
-view_grammar_button = tk.Button(window, text='View grammar', width=17,height=1,state='disabled', command=lambda: view_grammar())
+view_grammar_button = tk.Button(window, text='View grammar (as text)', width=17,height=1,state='disabled', command=lambda: view_grammar())
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+150, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    view_grammar_button,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click to export as a text file the grammmar used for the selected, specific implementation of the PC-ACE database.\nThe grammar will be exported in the same directory of the Input Excel files.\nClick on the button View table relations to visualize the general table relations in the PC-ACE databasee, regardless of a selected, specific implementation (i./e., grammar setup).")
 
+def visualize_grammar_tree():
+    outputDir_val = GUI_util.output_dir_path.get()
+    inputDir_val = inputDir.get()
+    if not inputDir_val:
+        mb.showwarning(title='Warning', message='Please, select an input directory containing PC-ACE xlsx tables.')
+        return
+    csv_path = DB_PCACE_data_analysis_util.export_grammar_tree_csv(inputDir_val, outputDir_val)
+    if csv_path:
+        import charts_util
+        outputFiles = charts_util.hierarchical_tree(csv_path, outputDir_val,
+            parent_col='Parent', child_col='Child', color_col='Type')
+        if outputFiles:
+            IO_files_util.OpenOutputFiles(GUI_util.window, True, outputFiles, outputDir_val)
+    else:
+        mb.showwarning(title='Warning', message='No grammar structure found.\n\nPlease, make sure the PC-ACE database is loaded.')
+
+visualize_grammar_tree_button = tk.Button(window, text='View grammar (as tree)', width=20, height=1, state='disabled',
+    command=lambda: visualize_grammar_tree())
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+                                   visualize_grammar_tree_button,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   "Click to export the grammar as a parent-child CSV and visualize it as an interactive D3.js hierarchical tree.\nThe tree shows complex objects and their simplex children, color-coded by type.")
+
 update_grammar_button = tk.Button(window, text='Update grammar', width=17,height=1,state='disabled', command=lambda: update_grammar())
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+300, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                    update_grammar_button,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click to update the grammmar used for the selected, specific implementation of the PC-ACE database saved in setup_complex.xlsx and setup_complex.pkl.\nThe grammar will be saved in setup_complex.xlsx and setup_complex.pkl.\nClick on the button View table relations to visualize the general table relations in the PC-ACE databasee, regardless of a selected, specific implementation (i./e., grammar setup).")
@@ -600,20 +623,21 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 update_identifier_button = tk.Button(window, text='Update identifiers', width=17,height=1,state='disabled', command=lambda: update_identifiers())
 # place widget with hover-over info
 _update_id_btn_y_row = y_multiplier_integer  # save for dynamic hover-over
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                    update_identifier_button,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "Click to update the current complex objects identifiers saved in the table data_Complex.xlsx and data_Complex.pkl")
 
+
 object_type_lb = tk.Label(window, text='Object ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,y_multiplier_integer,object_type_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,object_type_lb,True)
 
 object_type_var= tk.StringVar()
 object_type_var_menu = tk.OptionMenu(window,object_type_var, 'Complex','Simplex')
 object_type_var_menu.configure(state='disabled')
 object_type_var.set('')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+50, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+50, y_multiplier_integer,
                                    object_type_var_menu,
                                    True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "Use the dropdown menu to select the type of object (complex or simplex) for which to obtain a list of values.\nThe object list will then be displayed in the right-hand menu widget.")
@@ -629,7 +653,7 @@ _required_object_y_row = y_multiplier_integer  # save for dynamic hover-over
 _required_object_base_text = ("You can use the dropdown menu to scroll through the list of available objects.\n"
     "You can also select a complex or simplex object, then press Enter or click RUN to toggle its REQUIRED boolean value (from False to True or viceversa).\n"
     "The value is set in the setup_xref_Complex-Complex table or setup_xref_Simplex-Complex table. The xlsx, pkl, and grammar files will be updated.")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+150, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+150, y_multiplier_integer,
                                    required_object,
                                    False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    _required_object_base_text)
@@ -1517,6 +1541,7 @@ def changed_filename(*args):
             view_grammar_button.configure(state='normal')
             update_grammar_button.configure(state='normal')
             update_identifier_button.configure(state='normal')
+            visualize_grammar_tree_button.configure(state='normal')
             rename_button.configure(state='normal')
             remove_button.configure(state='normal')
             merge_button.configure(state='normal')
@@ -1747,7 +1772,9 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     # Row: View table relations / View grammar / Update grammar / Update identifiers / Object type / required object
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                 "Click View table relations to see PC-ACE table relations.\n"
-                                "Click View grammar / Update grammar to see or regenerate the grammar rules.\n"
+                                "Click View grammar / Update grammar to see or regenerate the grammar rules."+ GUI_IO_util.msg_Esc)
+    # Row: Object type
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                 "Select Object type (Complex/Simplex) and an object name, then press Enter to toggle its REQUIRED value." + GUI_IO_util.msg_Esc)
     # Row: Rename / Remove / Merge
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",

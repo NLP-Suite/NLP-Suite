@@ -53,7 +53,8 @@ def run(inputFilename,
         restrict_var,
         map_locations,
         GIS_package_var,
-        Google_Earth_OpenGUI):
+        Google_Earth_OpenGUI,
+        map_characters):
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -95,6 +96,29 @@ def run(inputFilename,
             country_bias=country_bias_var,
             area=area_var if 'e.g.,' not in area_var else '',
             restrict=bool(restrict_var))
+
+    if map_characters:
+        outputDir_mc = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='GIS',
+                                                              silent=True)
+        if outputDir_mc == '':
+            return
+        import NER_location_tracking_util
+        import charts_util
+        trackingFiles = NER_location_tracking_util.main(inputFilename, inputDir, outputDir_mc)
+        if trackingFiles:
+            csv_files = [f for f in trackingFiles if f.endswith('.csv')]
+            if csv_files:
+                mapFiles = charts_util.animated_migration_map(
+                    csv_files[0], outputDir_mc, 'Entity', 'Location')
+                if mapFiles:
+                    filesToOpen.extend(mapFiles if isinstance(mapFiles, list) else [mapFiles])
+            filesToOpen.extend(trackingFiles)
+            if openOutputFiles:
+                IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir_mc, scriptName)
+        else:
+            mb.showwarning("No results", "No person-location pairs were found in the input text.\n\nThe animated character movement map requires text that mentions both people and places.")
+        if NER_extractor==False and geocode_locations_var==False and map_locations==False:
+            return
 
     if NER_extractor==False and geocode_locations_var==False and GIS_package_var=='':
         mb.showwarning("Warning",
@@ -198,41 +222,18 @@ def run(inputFilename,
             filesToOpen.extend(locationFiles)
             NER_outputFilename = locationFiles[0]
 
-        df = pd.read_csv(NER_outputFilename, encoding='utf-8', on_bad_lines='skip')
-
-        # Normalize column names: Stanza/spaCy use 'Form', CoreNLP uses 'Word'
-        if 'Form' in df.columns and 'Word' not in df.columns:
-            df = df.rename(columns={'Form': 'Word'})
-
-        # Rename 'Word' to 'Location' for the GIS pipeline
-        if 'Word' in df.columns:
-            df = df.rename(columns={'Word': 'Location'})
-        location_menu_var.set('Location')
-
-        # Normalize NER tags: map Stanza/spaCy GPE/LOC to LOCATION for GIS filtering
-        location_tags = {'COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION', 'GPE', 'LOC'}
-        if 'NER' in df.columns:
-            # Map GPE/LOC → LOCATION so downstream GIS code works uniformly
-            df['NER'] = df['NER'].replace({'GPE': 'LOCATION', 'LOC': 'LOCATION'})
-            # Keep only location rows
-            df = df[df['NER'].isin({'COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION'})]
-        else:
-            df = pd.DataFrame()  # empty — no NER column
-
-        # For Stanza/spaCy: use Multi-Word Expression when available (pre-joined entities)
-        if 'Multi-Word Expression' in df.columns:
-            # Multi-Word Expression holds the full entity (e.g., "United States of America")
-            # Use it instead of the single-token 'Location' when available
-            mwe_mask = df['Multi-Word Expression'].notna() & (df['Multi-Word Expression'] != '') & (df['Multi-Word Expression'] != 'O')
-            df.loc[mwe_mask, 'Location'] = df.loc[mwe_mask, 'Multi-Word Expression']
-            # Drop duplicate rows from multi-token entities (keep first occurrence)
-            df = df[mwe_mask | ~df.duplicated(subset=['Location', 'Sentence ID', 'Document ID'], keep='first')]
-
-        if df.empty:
+        # Normalize the raw NER csv in place via the shared helper: Form/Word -> Location,
+        # scheme-aware NER tags (GPE/LOC), multi-word-entity merge, AND Date extracted from each
+        # filename (so the maps get a time slider). Same logic the NER->map prompt uses.
+        prepared = GIS_pipeline_util.normalize_NER_csv_for_GIS(
+            NER_outputFilename, NER_outputFilename,
+            filename_embeds_date_var=filename_embeds_date_var,
+            date_format=date_format_var, items_separator=items_separator_var,
+            date_position=date_position_var)
+        if prepared == '':
             mb.showwarning("No locations","There are no NER locations to be geocoded and mapped in the selected input txt file.\n\nPlease, select a different txt file and try again.")
             return
-
-        df.to_csv(NER_outputFilename, encoding='utf-8', index=False)
+        location_menu_var.set('Location')
         csv_file_var.set(NER_outputFilename)
         filesToOpen.append(NER_outputFilename)
         locationColumnName = 'Location'
@@ -312,7 +313,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             restrict_var.get(),
                             map_locations_var.get(),
                             GIS_package_var.get(),
-                            Google_Earth_OpenGUI.get())
+                            Google_Earth_OpenGUI.get(),
+                            map_characters_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -323,8 +325,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=520, # height at brief display
-                                                 GUI_height_full=600, # height at full display
+                                                 GUI_height_brief=560, # height at brief display
+                                                 GUI_height_full=640, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=2, # to be added for full display
                                                  increment=2)  # to be added for full display
@@ -386,6 +388,7 @@ def clear(e):
     geocoder_var.set('Nominatim')
     country_bias_var.set('')
     area_var.set('e.g., (34.98527, -85.59790), (30.770444, -81.521974)')
+    map_characters_var.set(0)
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -486,6 +489,9 @@ def display_csv_file_options():
     # if Google_Earth_OpenGUI.get() == False:
     #     # GIS_package_var.set('Google Earth Pro & Google Maps')
     #     GIS_package_var.set('Python folium pin map & heatmap')
+    # the csv_file Entry widget is created once at GUI setup and auto-updates via csv_file_var;
+    # do NOT re-create it here (the old line crashed unpacking an Entry into 3 names).
+    # check_csv_file_headers returns 4 values; capture all of them.
     cannotRun, NER_extractor, geocode_locations, location_menu = check_csv_file_headers(csv_file_var.get())
 
     return cannotRun
@@ -522,6 +528,12 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration
 csv_file=tk.Entry(window, width=GUI_IO_util.csv_file_width,textvariable=csv_file_var)
 csv_file.config(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,csv_file)
+
+map_characters_var = tk.IntVar()
+map_characters_checkbox = tk.Checkbutton(window, variable=map_characters_var, onvalue=1, offvalue=0)
+map_characters_checkbox.config(text="MAP characters moving in time and space")
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                    map_characters_checkbox, False)
 
 NER_extractor_var.set(0)
 NER_package_var = tk.StringVar()
@@ -710,6 +722,20 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coo
                     GIS_package2_checkbox, False, False, True, False,
                     90, GUI_IO_util.open_reminders_x_coordinate, "Open the GIS_Google_Earth_main GUI.\nGUI opened automatically after running the NER location extractor (and geocoder).\nAfter the GUI opens, you will need to select as input the csv file produced by either the NER location extractor or the geocoder.")
 
+
+
+# map_characters_help_button = tk.Button(window, text='? HELP', width=5,
+#     command=lambda: mb.showinfo("Map character movement",
+#         "This option extracts person entities and locations from your text files using Stanza NER, "
+#         "then produces an animated map showing how characters move across locations over the course of the narrative.\n\n"
+#         "The map shows dashed lines connecting successive locations for each person, with a timeline slider "
+#         "when dates or document sequence are available.\n\n"
+#         "REQUIREMENT: Text file(s) in input (not a csv file).\n\n"
+#         "The option uses the same NER extraction as the GIS pipeline but focuses on PERSON entities "
+#         "and their co-occurring locations rather than geocoding all location mentions."))
+# y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
+#                     map_characters_help_button, False)
+
 open_API_config_lb = tk.Label(window, text='View Google API key')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,open_API_config_lb,True)
 
@@ -783,15 +809,22 @@ TIPS_options='utf-8 encoding','csv files - Problems & solutions','Statistical me
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     if IO_setup_display_brief==False:
-        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, select an input file for the GIS script. Two two types of files are acceptable: txt or csv.\n\nTXT FILE. When a txt file is selected, the script will use the NER values from Stanford CoreNLP to obtain a list of locations saved as a csv file. The script will then process this file the same way as it would process a csv file in input containing location names.\n\nCSV FILE. When a csv file is selected it can be:\n  1. a file containing a column of location names that need to be geocoded (e.g., New York);\n  2. a file of previously geocoded locations with at least three columns: location names, latitude, longitude (all other columns would be ignored);\n  3. a CoNLL table that may contain NER Location values.\n\nA CoNLL table is a file generated by the Python script parsers_annotators_main.py (the script parses text documents using the Stanford CoreNLP parser).'+GUI_IO_util.msg_Esc)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, select an input file for the GIS script. Two two types of files are acceptable: txt or csv.\n\nTXT FILE. When a txt file is selected, the script will use NER to obtain a list of locations saved as a csv file. The script will then process this file the same way as it would process a csv file in input containing location names.\n\nCSV FILE. When a csv file is selected it can be:\n  1. a file containing a column of location names that need to be geocoded (e.g., New York);\n  2. a file of previously geocoded locations with at least three columns: location names, latitude, longitude (all other columns would be ignored);\n  3. a CoNLL table that may contain NER Location values.\n\nA CoNLL table is a file generated by the Python script parsers_annotators_main.py (the script parses text documents using the selected parser: spaCy, Stanford CoreNLP, or Stanza).'+GUI_IO_util.msg_Esc)
         y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_corpusData+GUI_IO_util.msg_Esc)
         y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_outputDirectory+GUI_IO_util.msg_Esc)
     else:
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
-
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                  "The INPUT csv file widget displays the csv LOCATION file as soon as produced by the Stanford CoreNLP NER annotator.\n\nEdit the file and rerun the algorithm to geocode from scratch.\n\nYou can also use the 'Select INPUT CSV file' button to select\n   1. a csv file, however created (e.g., CoreNLP NER annotator), containing a list of locations, i.e., a column header 'Location' and different locations in each row (e.g., Atlanta, New York City, Paris, South Korea); when a DATE field is present, the GIS algorithms will create dynamic maps;\n   2. a csv file of geocoded locations (with fields LATITUDE and LONGITUDE) previosuly created either by this algorithm or externally; if a 'Document' field, or 'Sentence' field, or 'Summary' field or 'Date' field are presnt in the csv file, they will be displayed when clicking on a pin; when a 'Date' field is present, the GIS algorithms will create dynamic maps;\n   3. a csv CoNLL table file with NER location tags; this last option, however, is highly discouraged since the CoNLL table currently available n the NLP Suite has one record per word/token and such country location like 'United States of America' would then not be taken as a single entity for geocoding, but as separate entities.\n\nDifferent options will be available depending upon what the csv file widget displays.\n\nTO RERUN THE PIPELINE, FROM SCRATCH, FROM TEXT TO MAPS, PRESS ESC TO CLEAR THE CSV FILE WIDGET.\n\nYou can also select a geocoded csv file and run the 'MAP locations' option." + GUI_IO_util.msg_openFile)
+                                  "The INPUT csv file widget displays the csv LOCATION file as soon as produced by the NER annotator.\n\nEdit the file and rerun the algorithm to geocode from scratch.\n\nYou can also use the 'Select INPUT CSV file' button to select\n   1. a csv file, however created (e.g., NER annotator), containing a list of locations, i.e., a column header 'Location' and different locations in each row (e.g., Atlanta, New York City, Paris, South Korea); when a DATE field is present, the GIS algorithms will create dynamic maps;\n   2. a csv file of geocoded locations (with fields LATITUDE and LONGITUDE) previosuly created either by this algorithm or externally; if a 'Document' field, or 'Sentence' field, or 'Summary' field or 'Date' field are presnt in the csv file, they will be displayed when clicking on a pin; when a 'Date' field is present, the GIS algorithms will create dynamic maps;\n   3. a csv CoNLL table file with NER location tags; this last option, however, is highly discouraged since the CoNLL table currently available in the NLP Suite has one record per word/token and such country location like 'United States of America' would then not be taken as a single entity for geocoding, but as separate entities.\n\nDifferent options will be available depending upon what the csv file widget displays.\n\nTO RERUN THE PIPELINE, FROM SCRATCH, FROM TEXT TO MAPS, PRESS ESC TO CLEAR THE CSV FILE WIDGET.\n\nYou can also select a geocoded csv file and run the 'MAP locations' option." + GUI_IO_util.msg_openFile)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","This option extracts person entities and locations from your text files using Stanza NER, "
+                                                                       "then produces an animated map showing how characters move across locations over the course of the narrative.\n\n"
+                                                                       "The map shows dashed lines connecting successive locations for each person, with a timeline slider "
+                                                                       "when dates or document sequence are available.\n\n"
+                                                                       "REQUIREMENT: Text file(s) in input (not a csv file).\n\n"
+                                                                       "The option uses the same NER extraction as the GIS pipeline but focuses on PERSON entities "
+                                                                       "and their co-occurring locations rather than geocoding all location mentions."+GUI_IO_util.msg_Esc)
+
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to EXTRACT locations from a text file using NER (Named Entity Recognition).\n\nUse the dropdown menu to select the NER package:\n\n   Stanza (recommended): modern neural network (BiLSTM-CRF), supports 30+ languages, multi-word entities are pre-joined (e.g., 'United States of America' is returned as a single entity).\n\n   spaCy: fast, supports 20+ languages.\n\n   Stanford CoreNLP: fine-grained location types (CITY, STATE_OR_PROVINCE, COUNTRY, LOCATION), primarily English, requires Java.\n\nThe option is available ONLY when input txt file(s) is selected.\n\nTo improve the geocoding of those locations that can take multiple names (e.g., 'United States', 'US', 'USA'), the NLP Suite Stanford CoreNLP algorithm uses the entries of the multi_name_locations.csv file stored in the lib\\wordLists subdirectory of the NLP Suite installation folder. Locations known under different names can be all geocoded under a single name (e.g., 'United States'). You can edit the multi_name_locations.csv file to suit your specific needs and improve geocoding."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the column containing the location names (e.g., New York) to be geocoded and mapped.\n\nTHE OPTION IS NOT AVAILABLE WHEN SELECTING A CONLL INPUT CSV FILE. NER IS THE COLUMN AUTOMATICALLY USED WHEN WORKING WITH A CONLL FILE IN INPUT."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to GEOCODE a list of locations.\n\n'Split' locations (e.g. South America, Atlantic City) will be joined together for geocoding using the following prefix values:\n  south, north, west, east, los, new, san, las, la, hong\nand suffix values:\n  city, island\n\nWHEN USING THE CoNLL TABLE AS INPUT, ONLY TWO CONSECUTIVE VALUES WILL BE JOINED TOGETHER (thus, 'New South Wales' would not be joined).\n\nThe geocoding option is available ONLY when a csv file of locations NOT yet geocoded is selected."+GUI_IO_util.msg_Esc)
@@ -804,7 +837,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
-readMe_message="This Python 3 script allows users to go from text to map in three steps:\n\n1. EXTRACT locations from a text file using Stanford CoreNLP NER extractor (NER values: CITY, STATE_OR_PROVINCE, COUNTRY);\n2. GEOCODE locations, previously extracted, using Nominatim or Google (an API is needed for Google);\n3. MAP locations, previously geocoded, using a selected GIS package (e.g., Google Earth Pro; Google Maps to produce heat maps; Google Maps requires an API key).\n\nOptions are preset and\or disabled depending upon the input type (directory or file; txt or csv file; csv CoNLL file or list of locations to be geocoded or already geocoded).\n\nAll three steps can be selected and carried out in sequence in a pipeline, going automatically from text to map.\n\nIn INPUT, the script can either take:\n   1. A CoNLL table produced by Stanford_CoreNLP.py and use the NER (Named Entity Recognition) values of LOCATION (STATE, PROVINCE, CITY, COUNTRY), values for geocoding;\n   2. a csv file that contains location names to be geocoded (e.g., Chicago);\n   2. a csv file that contains geocoded location names with latitude and longitude.\n\ncsv files, except for the CoNLL table, must have a column header 'Location' (the header 'Word' from the CoreNLP NER annotator will be converted automatically to 'Location')."
+readMe_message="This Python 3 script allows users to go from text to map in three steps:\n\n1. EXTRACT locations from a text file using NER (Named Entity Recognition) via the selected NER package (BERT, Stanza, spaCy, or Stanford CoreNLP);\n2. GEOCODE locations, previously extracted, using Nominatim or Google (an API is needed for Google);\n3. MAP locations, previously geocoded, using a selected GIS package (e.g., Google Earth Pro; Google Maps to produce heat maps; Google Maps requires an API key).\n\nOptions are preset and\or disabled depending upon the input type (directory or file; txt or csv file; csv CoNLL file or list of locations to be geocoded or already geocoded).\n\nAll three steps can be selected and carried out in sequence in a pipeline, going automatically from text to map.\n\nIn INPUT, the script can either take:\n   1. A CoNLL table produced by the selected parser and use the NER (Named Entity Recognition) values of LOCATION (STATE, PROVINCE, CITY, COUNTRY), values for geocoding;\n   2. a csv file that contains location names to be geocoded (e.g., Chicago);\n   2. a csv file that contains geocoded location names with latitude and longitude.\n\ncsv files, except for the CoNLL table, must have a column header 'Location' (the header 'Word' from the NER annotator will be converted automatically to 'Location')."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 

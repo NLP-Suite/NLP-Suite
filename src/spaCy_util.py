@@ -157,6 +157,10 @@ def spaCy_annotate(configFilename, inputFilename, inputDir,
     except OSError:
         # model not installed yet — download once
         try:
+            import IO_user_interface_util
+            IO_user_interface_util.timed_alert(GUI_util.window, 6000, 'spaCy model download',
+                'Downloading the spaCy language model "' + model_name + '" for the first time.\n\nThis is a one-time download. Please be patient.',
+                False)
             subprocess.check_call([sys.executable, "-m", "spacy", "download", model_name])
             nlp = spacy.load(model_name)
         except Exception:
@@ -222,6 +226,9 @@ def spaCy_annotate(configFilename, inputFilename, inputDir,
 
     # concatenate all results at once and save
     df = pd.concat(all_dfs, ignore_index=True) if all_dfs else pd.DataFrame()
+    # filter NER output to the user-selected tags (when a subset is selected)
+    if annotator == 'NER':
+        df = filter_NER_output_by_tags(df, kwargs.get('NERs', ''))
     df.to_csv(outputFilename, index=False, encoding=language_encoding)
     filesToOpen.append(outputFilename)
 
@@ -313,6 +320,21 @@ def get_mwe(out_df):
     # drop 'is_sent_start' column
     out_df = out_df.drop(columns=['is_sent_start'])
     return out_df
+
+# keep only NER rows whose tag is in the user-selected set.
+# NERs is a comma/space-separated string of OntoNotes tags. If it covers the full
+# tag set (or is empty/unparseable), the dataframe is returned unchanged.
+def filter_NER_output_by_tags(df, NERs):
+    if df is None or len(df) == 0 or 'NER' not in df.columns:
+        return df
+    selected = {t.strip() for t in str(NERs).replace(',', ' ').split() if t.strip() and '---' not in t}
+    if not selected:
+        return df
+    full_set = set(NER_dict)
+    if selected >= full_set:  # all tags selected -> no filtering
+        return df
+    # spaCy stores plain entity labels in 'NER' ('' for non-entity tokens)
+    return df[df['NER'].isin(selected)].reset_index(drop=True)
 
 # Convert spaCy doc to pandas dataframe
 def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotator_params, language):
@@ -417,6 +439,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
         row = {}
         SVO_found = False
         loc_ent_iob_ = ''
+        loc_ner_type_iob_ = ''
         per_ent_iob_ = ''
         org_ent_iob_ = ''
         tim_ent_iob_ = ''
@@ -436,6 +459,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
                 iob = token.ent_iob_
                 if ent in NER_LOCATION:
                     row['Location'], loc_ent_iob_ = _append_ner(row.get('Location'), token.text, iob, loc_ent_iob_)
+                    row['Location_NER'], loc_ner_type_iob_ = _append_ner(row.get('Location_NER'), ent, iob, loc_ner_type_iob_)
                 elif ent in NER_PERSON:
                     row['Person'], per_ent_iob_ = _append_ner(row.get('Person'), token.text, iob, per_ent_iob_)
                 elif ent in NER_ORGANIZATION:
@@ -454,7 +478,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
         c += 1
 
     # build DataFrame from collected rows
-    base_cols = ['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Organization', 'Time',
+    base_cols = ['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Location_NER', 'Person', 'Organization', 'Time',
                  'Sentence ID', 'Sentence', 'Document ID', 'Document']
     svo_df = pd.DataFrame(svo_rows, columns=base_cols) if svo_rows else pd.DataFrame(columns=base_cols)
 
@@ -468,10 +492,10 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
     # add date from filename
     if filename_embeds_date_var:
         svo_df['Date'] = date_str
-        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Organization', 'Time',
+        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Location_NER', 'Person', 'Organization', 'Time',
                           'Sentence ID', 'Sentence', 'Document ID', 'Document', 'Date']]
     else:
-        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Organization', 'Time',
+        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Location_NER', 'Person', 'Organization', 'Time',
                           'Sentence ID', 'Sentence', 'Document ID', 'Document']]
 
     return svo_df
@@ -530,13 +554,26 @@ def date_in_filename(document, **kwargs):
 
 # create locations file for GIS
 def visualize_GIS_maps_spaCy(svo_df):
-    loc_df = pd.DataFrame(columns=['Location', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
+    # carry the Date (extracted from the filename during SVO extraction) into the location file
+    # so the geocoder/KML/folium popups can show it (CoNLL_checker keys datePresent on a 'Date' column)
+    has_date = 'Date' in svo_df.columns
+    cols = ['Location', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
+    if has_date:
+        cols.append('Date')
+    loc_df = pd.DataFrame(columns=cols)
     for _,row in svo_df.iterrows():
         if isinstance(row['Location'], str):
             loc_list = row['Location'].split(';')
-            for loc in loc_list:
-                if loc != '':
-                    loc_df.loc[len(loc_df.index)] = [loc, 'LOCATION', row['Sentence ID'], row['Sentence'], row['Document ID'], row['Document']]
+            ner_list = row.get('Location_NER', '').split(';') if isinstance(row.get('Location_NER'), str) else []
+            for idx, loc in enumerate(loc_list):
+                if loc.strip() != '':
+                    ner_type = ner_list[idx].strip() if idx < len(ner_list) else 'LOCATION'
+                    # Filter to only geocode GPE (countries, cities, states), skip generic LOC (mountains, water bodies)
+                    if ner_type == 'GPE':
+                        rowvals = [loc.strip(), ner_type, row['Sentence ID'], row['Sentence'], row['Document ID'], row['Document']]
+                        if has_date:
+                            rowvals.append(row.get('Date', ''))
+                        loc_df.loc[len(loc_df.index)] = rowvals
     return loc_df
 
 # modified from StanfordCoreNLP_util

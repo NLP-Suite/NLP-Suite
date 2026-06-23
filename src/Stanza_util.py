@@ -5,12 +5,18 @@ import IO_libraries_util
 if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Stanza_util.py",['stanza','os','tkinter','multiprocessing','pandas','gensim','spacy','pyLDAvis','matplotlib','logging','IPython'])==False:
     sys.exit(0)
 
+import os as _os
 import stanza
 try:
+    _stanza_model_dir = _os.path.join(_os.path.expanduser('~'), 'stanza_resources', 'en')
+    if not _os.path.isdir(_stanza_model_dir):
+        import IO_user_interface_util
+        IO_user_interface_util.timed_alert(GUI_util.window, 6000, 'Stanza model download',
+            'Downloading the Stanza language model for the first time (~525 MB).\n\nThis is a one-time download. Please be patient, it may take several minutes depending on your internet connection.',
+            False)
     stanza.download('en')
 except:
-    import IO_internet_util
-    # IO_internet_util.check_internet_availability_warning("Stanza_functions_util.py","stanza","json","re","tkinter","warnings")
+    pass
 
 from stanza.pipeline.multilingual import MultilingualPipeline
 
@@ -31,8 +37,10 @@ import GUI_IO_util
 import IO_user_interface_util
 import constants_util
 import parsers_annotators_visualization_util
+import Stanford_CoreNLP_clause_util
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action='ignore', category=RuntimeWarning)
 
 import json
 import stanza.resources.common
@@ -236,28 +244,19 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
             annotator = 'NER'
             processors='tokenize,ner'
         elif "depparse" in annotator_params or "SVO" in annotator_params:
+            constituency_ok = short_lang in available_constituency
             if short_lang not in available_NER:
-                # processors = 'tokenize,mwt,pos,lemma,depparse'  # add NER when parser option selected
-                # From https://stanfordnlp.github.io/stanza/mwt.html#description
-                #   Note: Only languages with multi-word tokens (MWT), such as German or French, require MWTProcessor;
-                #       other languages, such as English or Chinese, do not support this processor in the pipeline.
-                # https://github.com/stanfordnlp/stanza-resources/blob/master/resources_1.1.0.json
-                # mwt not available in all languages (e.g., Chinese)
-                # https://github.com/stanfordnlp/stanza/issues/464
                 if short_lang not in available_mwt:
-                    processors = 'tokenize,pos,lemma,depparse'  # add NER when parser option selected
+                    processors = 'tokenize,pos,lemma,depparse'
                 else:
-                    processors = 'tokenize,pos,mwt,lemma,depparse'  # add NER when parser option selected
+                    processors = 'tokenize,pos,mwt,lemma,depparse'
             else:
-                # processors='tokenize,mwt,pos,ner,lemma,depparse' # add NER when parser option selected
-                # From https://stanfordnlp.github.io/stanza/mwt.html#description Note: Only languages with multi-word tokens (MWT), such as German or French, require MWTProcessor; other languages, such as English or Chinese, do not support this processor in the pipeline.
-                # https://github.com/stanfordnlp/stanza-resources/blob/master/resources_1.1.0.json
-                # mwt not available in all languages (e.g., Chinese)
-                # https://github.com/stanfordnlp/stanza/issues/464
                 if short_lang not in available_mwt:
-                    processors = 'tokenize,pos,ner,lemma,depparse'  # add NER when parser option selected
+                    processors = 'tokenize,pos,ner,lemma,depparse'
                 else:
-                    processors = 'tokenize,pos,mwt,ner,lemma,depparse'  # add NER when parser option selected
+                    processors = 'tokenize,pos,mwt,ner,lemma,depparse'
+            if constituency_ok:
+                processors += ',constituency'
 
             if "SVO" in annotator_params:
                 annotator = 'SVO'
@@ -407,6 +406,12 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
                 loc_df_outputFilename = kwargs["location_filename"]
                 loc_df.to_csv(loc_df_outputFilename, index=False, encoding=language_encoding)
                 filesToOpen.append(loc_df_outputFilename)
+
+    # filter NER output to the user-selected tags (when a subset is selected);
+    # only for a standalone NER run (the SVO/parse df is a CoNLL table, not to be filtered)
+    if "NER" in str(annotator_params) and "SVO" not in str(annotator_params) \
+            and "parse" not in str(annotator_params):
+        df = filter_NER_output_by_tags(df, kwargs.get('NERs', ''), short_lang)
 
     # save dataframe to csv
     df.to_csv(outputFilename, index=False, encoding=language_encoding)
@@ -561,6 +566,30 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
         out_df['Document ID'] = docID
         out_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
 
+        # Extract clause tags from constituency parse trees (when available)
+        out_df['Clause Tag'] = ''
+        if ("depparse" in str(annotator_params) or "SVO" in str(annotator_params)):
+            has_constituency = False
+            try:
+                sentences = stanza_doc.sentences if not isinstance(stanza_doc, list) else [s for doc in stanza_doc for s in doc.sentences]
+                if len(sentences) > 0 and hasattr(sentences[0], 'constituency') and sentences[0].constituency is not None:
+                    has_constituency = True
+            except:
+                pass
+            if has_constituency:
+                clause_tags_all = []
+                for sent in sentences:
+                    tree_str = str(sent.constituency)
+                    try:
+                        full_list, _ = Stanford_CoreNLP_clause_util.clausal_info_extract_from_string(tree_str)
+                        for tag_list in full_list:
+                            clause_tags_all.append(tag_list[0] if isinstance(tag_list, list) else '')
+                    except:
+                        for _ in sent.words:
+                            clause_tags_all.append('')
+                if len(clause_tags_all) == len(out_df):
+                    out_df['Clause Tag'] = clause_tags_all
+
         i = 0
         sidx = 1
         max_idx = len(out_df)-1
@@ -632,11 +661,9 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
         out_df = out_df[['Form', 'POS', 'feats', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
     elif "depparse" in annotator_params or "SVO" in annotator_params:
         if language not in available_NER:
-            out_df = out_df[['ID', 'Form', 'Lemma', 'POS', 'feats', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
-            # out_df = out_df[['Form', 'Lemma', 'POS', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+            out_df = out_df[['ID', 'Form', 'Lemma', 'POS', 'feats', 'Head', 'DepRel', 'Clause Tag', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
         else:
-            out_df = out_df[['ID', 'Form', 'Lemma', 'POS', 'NER', 'feats', 'Multi-Word Expression', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
-            # out_df = out_df[['Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+            out_df = out_df[['ID', 'Form', 'Lemma', 'POS', 'NER', 'feats', 'Multi-Word Expression', 'Head', 'DepRel', 'Clause Tag', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
     elif "sentiment" in annotator_params:
         out_df = out_df[['Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
     return out_df
@@ -1152,7 +1179,9 @@ def _extract_ner_entities(sentence):
     # Use sentence.entities if available (Stanza NER)
     if hasattr(sentence, 'entities'):
         for ent in sentence.entities:
-            if ent.type in ('GPE', 'LOC', 'STATE_OR_PROVINCE', 'COUNTRY', 'CITY', 'LOCATION'):
+            # Stanza emits GPE (en/zh), LOC (most languages), LOCATION (vi) for places;
+            # the CoreNLP-style CITY/COUNTRY/STATE_OR_PROVINCE tags are never produced by Stanza
+            if ent.type in ('GPE', 'LOC', 'LOCATION'):
                 if ent.text not in locations:
                     locations.append(ent.text)
                     loc_ner.append([ent.text, ent.type, ent.start_char, ent.end_char])
@@ -1192,7 +1221,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
 
     # Output columns
     base_cols = ['Subject (S)', 'Verb (V)', 'Object (O)', 'Negation',
-                 'Location', 'Person', 'Organization', 'Time',
+                 'Location', 'Location_NER', 'Person', 'Organization', 'Time',
                  'Sentence ID', 'Sentence', 'Document ID', 'Document']
     if filename_embeds_date_var:
         base_cols.append('Date')
@@ -1206,10 +1235,15 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
         # Extract NER entities for this sentence
         locations, persons, organizations = [], [], []
         if NER_available:
-            locations, persons, organizations, _, _, _ = _extract_ner_entities(sentence)
+            locations, persons, organizations, loc_ner, per_ner, org_ner = _extract_ner_entities(sentence)
 
         # Collect NER text for columns
         loc_str = '; '.join(locations) if locations else ''
+        # Build NER type mapping: location text -> NER type
+        loc_ner_map = {item[0]: item[1] for item in loc_ner}
+        loc_ner_types = [loc_ner_map.get(loc, 'LOCATION') for loc in locations]
+        loc_ner_str = '; '.join(loc_ner_types) if loc_ner_types else ''
+
         per_str = '; '.join(persons) if persons else ''
         org_str = '; '.join(organizations) if organizations else ''
         time_words = []
@@ -1300,6 +1334,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
                 'Object (O)': triple[2],
                 'Negation': N[i] if i < len(N) else False,
                 'Location': loc_str,
+                'Location_NER': loc_ner_str,
                 'Person': per_str,
                 'Organization': org_str,
                 'Time': time_str,
@@ -1615,14 +1650,47 @@ def Stanza_coref(config_filename, inputFilename, inputDir, outputDir,
 
 # create locations file for GIS
 def visualize_GIS_maps_Stanza(svo_df):
-    loc_df = pd.DataFrame(columns=['Location', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
+    # carry the Date (extracted from the filename during SVO extraction) into the location file
+    # so the geocoder/KML/folium popups can show it (CoNLL_checker keys datePresent on a 'Date' column)
+    has_date = 'Date' in svo_df.columns
+    cols = ['Location', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
+    if has_date:
+        cols.append('Date')
+    loc_df = pd.DataFrame(columns=cols)
     for _,row in svo_df.iterrows():
         if isinstance(row['Location'], str):
             loc_list = row['Location'].split(';')
-            for loc in loc_list:
-                if loc != '':
-                    loc_df.loc[len(loc_df.index)] = [loc, 'LOCATION', row['Sentence ID'], row['Sentence'], row['Document ID'], row['Document']]
+            ner_list = row.get('Location_NER', '').split(';') if isinstance(row.get('Location_NER'), str) else []
+            for idx, loc in enumerate(loc_list):
+                if loc.strip() != '':
+                    ner_type = ner_list[idx].strip() if idx < len(ner_list) else 'LOCATION'
+                    # Geocode geopolitical entities (GPE = countries/cities/states); skip generic LOC (mountains, rivers)
+                    if ner_type == 'GPE':
+                        rowvals = [loc.strip(), ner_type, row['Sentence ID'], row['Sentence'], row['Document ID'], row['Document']]
+                        if has_date:
+                            rowvals.append(row.get('Date', ''))
+                        loc_df.loc[len(loc_df.index)] = rowvals
     return loc_df
+
+# keep only NER rows whose tag is in the user-selected set.
+# Stanza stores tags in BIOES form (e.g. 'S-GPE', 'B-PERSON', 'O'); we match on the
+# tag portion after the prefix. If the selection covers the full tag set (or is
+# empty/unparseable), the dataframe is returned unchanged.
+def filter_NER_output_by_tags(df, NERs, short_lang='en'):
+    if df is None or len(df) == 0 or 'NER' not in df.columns:
+        return df
+    selected = {t.strip() for t in str(NERs).replace(',', ' ').split() if t.strip() and '---' not in t}
+    if not selected:
+        return df
+    full_set = set(NER_dict.get(short_lang, []))
+    if full_set and selected >= full_set:  # all tags selected -> no filtering
+        return df
+    def _tag(ner):
+        ner = str(ner)
+        if ner in ('', 'O', 'None', 'nan'):
+            return ''
+        return ner.split('-')[-1]
+    return df[df['NER'].apply(_tag).isin(selected)].reset_index(drop=True)
 
 # modified from StanfordCoreNLP_util
 def create_output_directory(inputFilename, inputDir, outputDir,
@@ -1763,6 +1831,23 @@ available_sentiment = [
     "zh-hans"
 ]
 
+# Languages with constituency parsing models in Stanza
+# https://stanfordnlp.github.io/stanza/constituency.html
+available_constituency = [
+    "da",
+    "de",
+    "en",
+    "es",
+    "fr",
+    "it",
+    "ja",
+    "nb",
+    "pt",
+    "tr",
+    "vi",
+    "zh",
+    "zh-hans",
+]
 
 available_NER = [
     "af",

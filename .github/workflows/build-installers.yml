@@ -37,20 +37,88 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install --no-cache-dir pyinstaller
-          pip install --no-cache-dir pandas numpy scipy scikit-learn openpyxl xlrd
-          pip install --no-cache-dir stanza spacy nltk gensim textblob textstat nrclex
-          pip install --no-cache-dir langdetect langid autocorrect pyspellchecker fuzzywuzzy
-          pip install --no-cache-dir transformers sentence-transformers
-          pip install --no-cache-dir matplotlib plotly "seaborn>=0.13.0" wordcloud mpld3 kaleido
-          pip install --no-cache-dir folium geopy simplekml shapely geopandas
-          pip install --no-cache-dir requests beautifulsoup4 lxml chardet tqdm psutil
-          pip install --no-cache-dir pdfminer.six python-docx striprtf
-          pip install --no-cache-dir pycorenlp stanfordcorenlp
-          pip install --no-cache-dir Pillow
-          pip install --no-cache-dir SPARQLWrapper
+          pip install --no-cache-dir -r requirements.txt
+
+      - name: Install Windows-only dependencies
+        if: runner.os == 'Windows'
+        run: pip install --no-cache-dir -r requirements-windows.txt
+
+      - name: Install macOS-only dependencies
+        if: runner.os == 'macOS'
+        run: pip install --no-cache-dir -r requirements-mac.txt
 
       - name: Build with PyInstaller
         run: python -m PyInstaller NLP_Suite.spec --noconfirm
+
+      - name: Bundle portable Python environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          DIST="dist/NLP_Suite/python-env"
+          PBS_TAG="20241002"
+
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            ARCH=$(uname -m)
+            if [ "$ARCH" = "arm64" ]; then ARCH="aarch64"; fi
+            PBS_URL="https://github.com/indygreg/python-build-standalone/releases/download/${PBS_TAG}/cpython-3.10.15+${PBS_TAG}-${ARCH}-apple-darwin-install_only_stripped.tar.gz"
+          else
+            PBS_URL="https://github.com/indygreg/python-build-standalone/releases/download/${PBS_TAG}/cpython-3.10.15+${PBS_TAG}-x86_64-pc-windows-msvc-install_only_stripped.tar.gz"
+          fi
+
+          echo "Downloading portable Python from $PBS_URL"
+          curl -fSL "$PBS_URL" -o /tmp/python-portable.tar.gz
+          mkdir -p "$DIST"
+          tar -xzf /tmp/python-portable.tar.gz -C "$DIST" --strip-components=1
+
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            PYTHON="$DIST/bin/python3"
+          else
+            PYTHON="$DIST/python.exe"
+          fi
+
+          "$PYTHON" -m pip install --upgrade pip
+          "$PYTHON" -m pip install --no-cache-dir -r requirements.txt
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            "$PYTHON" -m pip install --no-cache-dir -r requirements-windows.txt
+          else
+            "$PYTHON" -m pip install --no-cache-dir -r requirements-mac.txt
+          fi
+          # Verify
+          "$PYTHON" -c "import pandas, requests, numpy, matplotlib, scipy, sklearn, stanza, spacy, nltk, plotly, seaborn, folium, gensim, wordcloud, transformers, sentence_transformers, tensorflow, bertopic, PIL; print('All critical packages OK')"
+          echo "Bundled portable Python environment"
+
+      - name: Bundle VC++ runtime DLLs into portable env (Windows only)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $envDir = "dist/NLP_Suite/python-env"
+          $sklearnLibs = Join-Path $envDir "Lib/site-packages/sklearn/.libs"
+          if (-not (Test-Path $sklearnLibs)) {
+            New-Item -ItemType Directory -Path $sklearnLibs -Force | Out-Null
+            Write-Host "Created $sklearnLibs"
+          }
+          # Full VC++ runtime DLL set for the python-env root (per Evan's Windows testing)
+          $rootDlls = @(
+            "msvcp140.dll", "msvcp140_1.dll", "msvcp140_2.dll", "msvcp140_atomic_wait.dll",
+            "msvcp140_codecvt_ids.dll", "vcamp140.dll", "vccorlib140.dll", "vcomp140.dll",
+            "vcruntime140.dll", "vcruntime140_1.dll", "vcruntime140_threads.dll", "concrt140.dll"
+          )
+          # DLLs that sklearn specifically loads from its own .libs folder
+          $sklearnDlls = @("msvcp140.dll", "vcomp140.dll", "vcruntime140.dll", "vcruntime140_1.dll")
+          $searchPaths = @("C:\Windows\System32", "C:\Windows\SysWOW64")
+          function Copy-Dll($dll, $dest) {
+            foreach ($sp in $searchPaths) {
+              $src = Join-Path $sp $dll
+              if (Test-Path $src) {
+                Copy-Item $src $dest -Force -ErrorAction SilentlyContinue
+                Write-Host "Copied $dll -> $dest"
+                return
+              }
+            }
+            Write-Host "WARNING: $dll not found in System32/SysWOW64"
+          }
+          foreach ($d in $rootDlls)    { Copy-Dll $d $envDir }
+          foreach ($d in $sklearnDlls) { Copy-Dll $d $sklearnLibs }
 
       - name: Copy data directories to dist (all platforms)
         shell: python
@@ -64,6 +132,15 @@ jobs:
                       shutil.rmtree(dst)
                   shutil.copytree(d, dst)
                   print(f'Copied {d} -> {dst}')
+          # The live config/ is private and untracked, so it is never in the checkout. Seed a default
+          # config/ for first-time users from the committed, secret-free lib/config_defaults/.
+          cfg_defaults = os.path.join('lib', 'config_defaults')
+          if os.path.isdir(cfg_defaults):
+              cfg_dst = os.path.join(dist, 'config')
+              os.makedirs(cfg_dst, exist_ok=True)
+              for f in glob.glob(os.path.join(cfg_defaults, '*.csv')):
+                  shutil.copy2(f, cfg_dst)
+                  print(f'Seeded config default: {os.path.basename(f)}')
           src_dst = os.path.join(dist, 'src')
           os.makedirs(src_dst, exist_ok=True)
           count = 0
@@ -95,11 +172,136 @@ jobs:
             }
           }
 
+      - name: Sign Mac executable
+        if: runner.os == 'macOS'
+        run: |
+          codesign --force --deep -s - dist/NLP_Suite/NLP_Suite
+          xattr -dr com.apple.quarantine dist/NLP_Suite/ || true
+
+      - name: Build Mac Setup launcher app
+        if: runner.os == 'macOS'
+        run: |
+          SETUP_DIR="setup-app"
+          APP="$SETUP_DIR/NLP Suite Mac Setup.app"
+          CONTENTS="$APP/Contents"
+          MACOS="$CONTENTS/MacOS"
+          RESOURCES="$CONTENTS/Resources"
+          BUILD="$SETUP_DIR/.build"
+          mkdir -p "$MACOS" "$RESOURCES" "$BUILD"
+
+          SDK_PATH="$(xcrun --sdk macosx --show-sdk-path)"
+
+          # Build for both architectures
+          BUILT_ARCHS=()
+          for ARCH in arm64 x86_64; do
+            OUTPUT="$BUILD/NLP-Suite-Mac-Setup-$ARCH"
+            if xcrun swiftc \
+              -sdk "$SDK_PATH" \
+              -target "${ARCH}-apple-macosx11.0" \
+              -framework AppKit \
+              "setup-app/Sources/main.swift" \
+              -o "$OUTPUT"; then
+              BUILT_ARCHS+=("$OUTPUT")
+              echo "Built for $ARCH"
+            fi
+          done
+
+          if [ ${#BUILT_ARCHS[@]} -eq 2 ]; then
+            xcrun lipo -create "${BUILT_ARCHS[@]}" -output "$MACOS/NLP-Suite-Mac-Setup"
+            echo "Created universal binary"
+          elif [ ${#BUILT_ARCHS[@]} -eq 1 ]; then
+            cp "${BUILT_ARCHS[0]}" "$MACOS/NLP-Suite-Mac-Setup"
+            echo "Created single-arch binary"
+          else
+            echo "Could not compile Setup app" >&2
+            exit 1
+          fi
+
+          cp "setup-app/Resources/environment_probe.py" "$RESOURCES/"
+          cp "setup-app/Resources/sitecustomize.py" "$RESOURCES/"
+          chmod +x "$MACOS/NLP-Suite-Mac-Setup"
+
+          cat > "$CONTENTS/Info.plist" <<-'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleDevelopmentRegion</key>
+            <string>en</string>
+            <key>CFBundleDisplayName</key>
+            <string>NLP Suite Mac Setup</string>
+            <key>CFBundleExecutable</key>
+            <string>NLP-Suite-Mac-Setup</string>
+            <key>CFBundleIdentifier</key>
+            <string>org.nlpsuite.macsetup</string>
+            <key>CFBundleInfoDictionaryVersion</key>
+            <string>6.0</string>
+            <key>CFBundleName</key>
+            <string>NLP Suite Mac Setup</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>CFBundleShortVersionString</key>
+            <string>2.2</string>
+            <key>CFBundleVersion</key>
+            <string>4</string>
+            <key>LSMinimumSystemVersion</key>
+            <string>11.0</string>
+            <key>NSHighResolutionCapable</key>
+            <true/>
+          </dict>
+          </plist>
+          PLIST
+
+          codesign --force --deep --sign - "$APP"
+          echo "Signed Setup app"
+
+          # Bundle into dist alongside NLP_Suite
+          cp -R "$APP" "dist/NLP_Suite/NLP Suite Mac Setup.app"
+          echo "Bundled Setup app into dist"
+
+      - name: Add Mac one-click launcher (clears quarantine + launches)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          L="dist/NLP_Suite/Launch NLP Suite (Mac).command"
+          printf '%s\n' \
+            '#!/bin/sh' \
+            '# Double-click to clear macOS Gatekeeper quarantine on this folder and launch NLP Suite.' \
+            '# First run only: right-click this file -> Open to get past the unidentified-developer prompt.' \
+            'cd "$(dirname "$0")"' \
+            'xattr -dr com.apple.quarantine . 2>/dev/null' \
+            'exec ./NLP_Suite' > "$L"
+          chmod +x "$L"
+          echo "Added Mac one-click launcher: $L"
+
+      # GitHub's upload-artifact strips unix permission bits when uploading a folder, which left the
+      # Mac NLP_Suite launcher, python-env/bin/python3, and the Setup app as non-executable "documents".
+      # Zipping on the native runner preserves exec bits and symlinks; the zip is uploaded as an opaque
+      # file (its internals are untouched) and attached to the Release as-is.
+      - name: Archive build - macOS (zip preserves exec permissions + symlinks)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          cd dist
+          chmod +x "NLP_Suite/NLP_Suite" 2>/dev/null || true
+          find "NLP_Suite/python-env/bin" -type f -exec chmod +x {} \; 2>/dev/null || true
+          chmod +x "NLP_Suite/NLP Suite Mac Setup.app/Contents/MacOS/NLP-Suite-Mac-Setup" 2>/dev/null || true
+          chmod +x "NLP_Suite/Launch NLP Suite (Mac).command" 2>/dev/null || true
+          zip -r -y -X "../${{ matrix.artifact }}.zip" NLP_Suite
+          echo "Created ${{ matrix.artifact }}.zip (permissions preserved)"
+
+      - name: Archive build - Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "dist/NLP_Suite" -DestinationPath "${{ matrix.artifact }}.zip" -Force
+          Write-Host "Created ${{ matrix.artifact }}.zip"
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact }}
-          path: dist/NLP_Suite/
+          path: ${{ matrix.artifact }}.zip
           retention-days: 30
 
   # Create a GitHub Release with all three builds when triggered by a tag
@@ -114,15 +316,13 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
 
-      - name: Zip artifacts
-        run: |
-          cd NLP-Suite-windows-x64 && zip -r ../NLP-Suite-windows-x64.zip . && cd ..
-          cd NLP-Suite-mac-arm64 && zip -r ../NLP-Suite-mac-arm64.zip . && cd ..
-
+      # Each artifact is already a permission-preserving zip built on its native runner.
+      # download-artifact@v4 places each into a directory named after the artifact, so attach
+      # those zips directly - do NOT re-zip (re-zipping on Linux would strip the Mac exec bits).
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            NLP-Suite-windows-x64.zip
-            NLP-Suite-mac-arm64.zip
+            NLP-Suite-windows-x64/NLP-Suite-windows-x64.zip
+            NLP-Suite-mac-arm64/NLP-Suite-mac-arm64.zip
           generate_release_notes: true

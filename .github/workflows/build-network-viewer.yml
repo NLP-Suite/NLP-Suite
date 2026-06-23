@@ -1,0 +1,75 @@
+name: Build Network Graph Viewer
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'ngv-*'
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact: NetworkGraphViewer-windows-x64
+            python-version: '3.10'
+          - os: macos-14
+            artifact: NetworkGraphViewer-mac-arm64
+            python-version: '3.10'
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: roberto
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --no-cache-dir pyinstaller
+          pip install --no-cache-dir pandas numpy openpyxl
+
+      - name: Build with PyInstaller
+        run: python -m PyInstaller NetworkGraphViewer.spec --noconfirm
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/NetworkGraphViewer/
+          retention-days: 30
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Zip artifacts
+        run: |
+          cd NetworkGraphViewer-windows-x64 && zip -r ../NetworkGraphViewer-windows-x64.zip . && cd ..
+          cd NetworkGraphViewer-mac-arm64 && zip -r ../NetworkGraphViewer-mac-arm64.zip . && cd ..
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            NetworkGraphViewer-windows-x64.zip
+            NetworkGraphViewer-mac-arm64.zip
+          body: |
+            Standalone Network Graph Viewer — interactive vis.js network graphs from CSV.
+            No NLP Suite installation required.

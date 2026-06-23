@@ -74,6 +74,20 @@ def getGoogleAPIkey(window,Google_config, display_key=False):
     return key.strip()
 
 
+# silently report whether a Google API key is already configured, WITHOUT prompting the user.
+# Use this to auto-pick the geocoder (Google if a key exists, else Nominatim) so users without
+# a Google key are not nagged with the "enter API key" dialog on every run.
+def has_google_api_key(Google_config):
+    try:
+        path = os.path.join(GUI_IO_util.configPath, Google_config)
+        if not os.path.isfile(path):
+            return False
+        with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+            return any(line.strip() for line in f)
+    except Exception:
+        return False
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # GIS settings — per-database country bias, area, restrict
 # Saved as GIS_settings.json in the INPUT directory alongside the Excel files.
@@ -118,6 +132,62 @@ def load_GIS_settings(input_dir):
     except Exception as e:
         print(f"  WARNING: Could not read GIS settings from {path}: {e}")
         return '', '', False
+
+# Turn a raw NER output csv (token column 'Form' for spaCy/Stanza or 'Word' for CoreNLP,
+# with BIOES-prefixed tags) into a csv that has a 'Location' column and normalized location
+# NER tags, ready for GIS_pipeline (which requires a 'Location' column). Multi-word entities
+# are merged via the 'Multi-Word Expression' column. Mirrors the preprocessing GIS_main does.
+# Returns out_csv if it contains location rows, else '' (no mappable locations).
+def normalize_NER_csv_for_GIS(ner_csv, out_csv, encodingValue='utf-8',
+                              filename_embeds_date_var=False, date_format='mm/dd/yyyy',
+                              items_separator='_', date_position=2):
+    try:
+        df = pd.read_csv(ner_csv, encoding=encodingValue, on_bad_lines='skip')
+    except Exception:
+        return ''
+    # token column: 'Form' (spaCy/Stanza) or 'Word' (CoreNLP) -> 'Location'
+    if 'Form' in df.columns and 'Word' not in df.columns:
+        df = df.rename(columns={'Form': 'Word'})
+    if 'Word' in df.columns:
+        df = df.rename(columns={'Word': 'Location'})
+    if 'NER' not in df.columns or 'Location' not in df.columns:
+        return ''
+    # scheme-aware tag normalization: strip BIOES prefix (S-GPE -> GPE); map GPE/LOC -> LOCATION.
+    # LOC maps only when the scheme has no GPE (CoNLL/BERT/non-English Stanza), matching the GIS filters.
+    scheme_has_gpe = df['NER'].astype(str).str.contains('GPE').any()
+    df['NER'] = df['NER'].astype(str).str.split('-').str[-1]
+    mapping = {'GPE': 'LOCATION'}
+    if not scheme_has_gpe:
+        mapping['LOC'] = 'LOCATION'
+    df['NER'] = df['NER'].replace(mapping)
+    df = df[df['NER'].isin({'COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION'})]
+    # merge multi-word entities: keep entity-head rows and use the pre-joined value
+    if 'Multi-Word Expression' in df.columns and len(df) > 0:
+        mwe = df['Multi-Word Expression'].astype(str)
+        mwe_mask = df['Multi-Word Expression'].notna() & (mwe.str.strip() != '') & (mwe != 'O')
+        if mwe_mask.any():
+            df = df[mwe_mask].copy()
+            df['Location'] = df['Multi-Word Expression']
+    if df.empty:
+        return ''
+    # extract the date from each Document's filename (when the corpus embeds dates in filenames)
+    # so the geocoder/KML/folium popups can show it
+    if filename_embeds_date_var and 'Document' in df.columns:
+        import IO_files_util, IO_csv_util
+        def _date_of(doc):
+            try:
+                raw = IO_csv_util.undressFilenameForCSVHyperlink(str(doc))
+                date, date_str, month, day, year = IO_files_util.getDateFromFileName(
+                    raw, date_format, items_separator, date_position, errMsg=False)
+                return date_str or date or ''
+            except Exception:
+                return ''
+        df['Date'] = df['Document'].apply(_date_of)
+    try:
+        df.to_csv(out_csv, index=False, encoding=encodingValue)
+    except Exception:
+        return ''
+    return out_csv
 
 # the list of arguments reflect the order of widgets in the Google_Earth_main GUI
 # processes one file at a time
@@ -203,11 +273,20 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                 return
         else:
             locations=[[locationColumnName]]
-        if not inputIsGeocoded and geocoder == 'Nominatim':
+        # rebuild the real locations from the file for ANY geocoder (this was previously gated
+        # to Nominatim only, leaving Google with the placeholder [[locationColumnName]] -> 0 geocoded)
+        if not inputIsGeocoded:
             changed = False
             nom_df = pd.read_csv(inputFilename)
-            # select columns
+            # select columns; spaCy/Stanza NER output may lack 'Sentence' (it has only
+            # 'Sentence ID') and sometimes 'Date'/'Document' -- add them as empty so the
+            # selection below and downstream code do not raise a KeyError
+            for col in ('Sentence', 'Document'):
+                if col not in nom_df.columns:
+                    nom_df[col] = ''
             if datePresent:
+                if 'Date' not in nom_df.columns:
+                    nom_df['Date'] = ''
                 nom_df = nom_df[['Location', 'Date', 'NER', 'Sentence', 'Document']]
             else:
                 nom_df = nom_df[['Location', 'NER', 'Sentence', 'Document']]
@@ -516,6 +595,16 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                                                                   locationColumnName)
         if folium_heat_file != '':
             filesToOpen.append(folium_heat_file)
+
+        # dynamic/time-animated folium map (the folium equivalent of Google Earth Pro's time
+        # slider). Only meaningful when the geocoded csv carries a Date column.
+        if datePresent:
+            folium_time_file = GIS_folium_util.create_folium_timestamped_map(window,
+                                                                  geocodedLocationsOutputFilename,
+                                                                  outputDir,
+                                                                  locationColumnName)
+            if folium_time_file != '':
+                filesToOpen.append(folium_time_file)
 
     IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running GIS pipeline at', True, '', True, startTime)
     return filesToOpen

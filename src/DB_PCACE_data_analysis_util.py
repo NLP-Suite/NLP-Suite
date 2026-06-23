@@ -7395,3 +7395,83 @@ def _find_documents_in_children(data_complex_id, visited=None):
 
     return doc_ids
 
+
+def export_grammar_tree_csv(inputDir, outputDir):
+    """Export the PC-ACE grammar structure as a parent-child CSV for hierarchical tree visualization.
+
+    Reloads fresh data from inputDir (same pattern as update_grammar_text).
+    Returns the output CSV path, or '' on failure.
+    """
+    complex_df = _load_pcace_df(inputDir, 'setup_Complex', {'ID': 'ID_setup_complex'})
+    xref_cc_df = _load_pcace_df(inputDir, 'setup_xref_Complex-Complex')
+    simplex_df = _load_pcace_df(inputDir, 'setup_Simplex', {'ID': 'ID_setup_simplex'})
+    xref_sc_df = _load_pcace_df(inputDir, 'setup_xref_Simplex-Complex',
+                                {'Complex': 'ID_setup_complex', 'Simplex': 'ID_setup_simplex'})
+
+    if complex_df is None or complex_df.empty:
+        return ''
+
+    complex_name_map = {}
+    for _, row in complex_df.iterrows():
+        complex_name_map[row['ID_setup_complex']] = str(row['Name'])
+
+    simplex_name_map = {}
+    if simplex_df is not None and not simplex_df.empty:
+        for _, row in simplex_df.iterrows():
+            simplex_name_map[row['ID_setup_simplex']] = str(row['Name'])
+
+    db_name = os.path.basename(inputDir) if inputDir else 'Grammar'
+    for prefix in ('PCACE-', 'pcace-', 'PC-ACE-', 'pc-ace-'):
+        if db_name.startswith(prefix):
+            db_name = db_name[len(prefix):]
+            break
+    rows = []
+
+    # Follow the same approach as update_grammar_text:
+    # iterate each complex and find its children in the xref table
+    if xref_cc_df is not None and not xref_cc_df.empty:
+        for _, crow in complex_df.iterrows():
+            complex_id = crow['ID_setup_complex']
+            complex_name = str(crow['Name'])
+            cc_children = xref_cc_df[xref_cc_df['HigherComplex'] == complex_id]
+            if 'Order' in cc_children.columns:
+                cc_children = cc_children.sort_values('Order')
+            for _, xrow in cc_children.iterrows():
+                child_id = xrow['LowerComplex']
+                child_name = complex_name_map.get(child_id, '')
+                if child_name and child_name != complex_name:
+                    required = xrow.get('Required', '')
+                    rows.append({
+                        'Parent': complex_name,
+                        'Child': child_name,
+                        'Type': 'Complex',
+                        'Required': str(required) if pd.notna(required) else ''
+                    })
+
+    if xref_sc_df is not None and not xref_sc_df.empty:
+        for _, crow in complex_df.iterrows():
+            complex_id = crow['ID_setup_complex']
+            complex_name = str(crow['Name'])
+            sc_children = xref_sc_df[xref_sc_df['ID_setup_complex'] == complex_id]
+            if 'Order' in sc_children.columns:
+                sc_children = sc_children.sort_values('Order')
+            for _, xrow in sc_children.iterrows():
+                simplex_id = xrow['ID_setup_simplex']
+                child_name = simplex_name_map.get(simplex_id, '')
+                if child_name:
+                    required = xrow.get('Required', '')
+                    rows.append({
+                        'Parent': complex_name,
+                        'Child': child_name,
+                        'Type': 'Simplex',
+                        'Required': str(required) if pd.notna(required) else ''
+                    })
+
+    if not rows:
+        return ''
+
+    df = pd.DataFrame(rows)
+    outputFilename = os.path.join(outputDir, f'PC-ACE grammar tree for {db_name}.csv')
+    df.to_csv(outputFilename, index=False, encoding='utf-8')
+    return outputFilename
+

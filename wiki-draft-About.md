@@ -6,7 +6,7 @@ In an age of BIG DATA, the purpose of the NLP Suite is rather to provide humanis
 
 Furthermore, the NLP Suite is designed for non-specialists, for scholars with **no knowledge or little knowledge of Natural Language Processing.**
 
-The NLP Suite was developed by **Roberto Franzosi** at **Emory University** with the help of many current and past **Emory undergraduate students**. Visit [**The NLP Suite Team**](https://github.com/NLP-Suite/NLP-Suite/wiki/The-NLP-Suite-Team) page for more information.
+The NLP Suite was developed by **Roberto Franzosi** at **Emory University** with the help of many current and past **Emory undergraduate students**. Visit [**The NLP Suite Team**](https://github.com/NLP-Suite/NLP-Suite/wiki/The-NLP-Suite-Team) page for more information In the Summer of 2026, Claude Code improved many of the scripts, extended the functionality of the NLP Suite, and finally solved the problem of the NLP Suite installation via PyInstaller.
 
 ---
 
@@ -31,7 +31,7 @@ The NLP Suite offers a comprehensive range of sentiment and emotion analysis too
 
 * **Neural network approaches:** BERT (English and Multilingual models), Stanford CoreNLP, Stanza, spaCy (TextBlob)
 * **Dictionary-based approaches:** VADER, SentiWordNet, ANEW (sentiment/arousal/dominance), hedonometer, NRC Emotion Wheel (8-emotion analysis with Plutchik wheel visualization)
-* **Shape of stories** — compute and visualize how sentiments fluctuate across documents using hierarchical clustering, SVD, and NMF
+* **Shape of stories** — compute and visualize how sentiments fluctuate across documents using hierarchical clustering, SVD, and NMF; also track sentiment fluctuations across actors (people, organizations) and/or locations in your corpus
 
 ### Knowledge Bases & Word Aggregation
 
@@ -42,6 +42,7 @@ The NLP Suite offers a comprehensive range of sentiment and emotion analysis too
 ### Information Extraction
 
 * **Subject-Verb-Object (SVO) extractor** (via Stanford CoreNLP, spaCy, Stanza)
+* **Semantic Role Labeling (SRL)** — the richer "who did what to whom": for every verb (predicate) in a sentence it labels the **Agent (ARG0)**, **Patient (ARG1)**, **Recipient/Beneficiary (ARG2)**, and the **Where/When/How/Why** modifiers (English; via a PropBank BERT model). Output includes a CSV, clickable links that open each source document at the exact sentence, an agent→predicate→patient network graph (dynamic/time-animated when documents are dated), a Sankey flow, and frequency charts of the top agents, predicates, and patients.
 * **Coreference resolution** (via Stanford CoreNLP, Stanza)
 * **Topic modeling** (via MALLET and Gensim LDA)
 * **Word embeddings** (via BERT and Gensim Word2Vec with similarity measures)
@@ -56,14 +57,17 @@ The NLP Suite offers a comprehensive range of sentiment and emotion analysis too
 
 ### Data Visualization
 
-The NLP Suite provides a unified visualization GUI with four tabs:
+The NLP Suite provides a unified visualization GUI with seven tabs that reflect the data type to be visualized:
 
-* **Relational:** network graphs (Gephi, vis.js), Sankey diagrams
 * **Categorical:** colormaps/heatmaps, comparative bar charts, grouped bar charts, stacked bar charts, sunburst charts, treemaps, waffle charts
-* **Temporal:** interactive timelines (TimeMapper), timeline plots, calendar heatmaps
+* **Geographic:** interactive maps (Folium pin maps, heatmaps, KML maps via Google Earth)
+* **Hierarchical tree:** tree diagrams and dendrograms for hierarchical data
 * **Numeric:** boxplots, bubble charts, correlation heatmaps, Excel/Plotly charts, histograms, violin plots
+* **Relational:** network graphs (Gephi, vis.js), Sankey diagrams
+* **Temporal:** interactive timelines (TimeMapper), timeline plots, calendar heatmaps
+* **Wordclouds:** word frequency visualizations
 
-Plus: word clouds, geographic maps, and all standard chart types via Excel and Plotly.
+Plus: all standard chart types via Excel and Plotly.
 
 ### Corpus & Text Analysis
 
@@ -71,9 +75,8 @@ Plus: word clouds, geographic maps, and all standard chart types via Excel and P
 * **Collocation statistics** — PMI, log-likelihood, chi-squared, t-score, Dice coefficient for statistically significant word pairs
 * **TF-IDF ranking** — most distinctive words per document with cosine similarity matrix
 * **Lexical diversity** — TTR, Root TTR, Log TTR, MTLD, vocd-D per document
-* **Readability scores** — Flesch Reading Ease, Flesch-Kincaid Grade, Gunning Fog, Coleman-Liau, Automated Readability Index
+* **Readability and sentence complexity** — Flesch Reading Ease, Flesch-Kincaid Grade, Gunning Fog, Coleman-Liau, Automated Readability Index, plus Yngve and Frazier sentence complexity measures
 * **Word frequency distribution** — rank-frequency tables with Zipf's Law visualization and cumulative coverage curves
-* Text readability and sentence complexity measures
 * Nominalization analysis
 * Style analysis (concreteness, iconicity)
 * Document similarities
@@ -136,6 +139,7 @@ The following papers are based on the NLP Suite tools.
 * Franzosi, Roberto. 2020. "What's in a Text? Bridging the Gap Between Quality and Quantity in the Digital Era." Quality & Quantity. DOI: [https://doi.org/10.1007/s11135-020-01067-6](https://doi.org/10.1007/s11135-020-01067-6)
 * Franzosi, Roberto, Wenqin Dong, Yilin Dong. 2021. "Qualitative and Quantitative Research in the Humanities and Social Sciences: How Natural Language Processing (NLP) Can Help." Quality & Quantity. DOI: [https://doi.org/10.1007/s11135-021-01235-2](https://doi.org/10.1007/s11135-021-01235-2)
 * Franzosi, Roberto. 2021. "Of Narrative Time and Space: Geography Meets History in the Digital Era via Linguistics." Digital Scholarship in the Humanities. DOI: [https://doi.org/10.1093/llc/fqab090](https://doi.org/10.1093/llc/fqab090)
+* Franzosi, Roberto and Shuyang Bian. 2026. "Decoding China's government work report (CGWR): A natural language processing (NLP) approach." Quality & Quantity. DOI: [https://doi.org/10.1007/s11135-026-02604-5](https://doi.org/10.1007/s11135-020-01067-6)
 
 **Unpublished papers**:
 

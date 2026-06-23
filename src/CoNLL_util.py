@@ -36,10 +36,12 @@ REQUIRED_COLUMNS = {'ID', 'Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel',
 
 def detect_CoNLL_package(headers):
     """Detect which NLP package generated the CoNLL table."""
-    if 'Clause Tag' in headers or 'Deps' in headers:
-        return 'CoreNLP'
-    elif 'feats' in headers:
+    if 'feats' in headers:
         return 'Stanza'
+    elif 'Deps' in headers:
+        return 'CoreNLP'
+    elif 'Clause Tag' in headers:
+        return 'CoreNLP'
     elif 'Sentence' in headers and 'Multi-Word Expression' in headers:
         return 'spaCy'
     return 'unknown'
@@ -284,7 +286,7 @@ def sort_output_list(label, _voice_sorted_):
                  find_full_clausalTag(i[1],i[clause_position]), i[sentenceID_position], i[documentID_position], i[documentID_position], i[14]] for i in _voice_sorted_]
         except:
             mb.showwarning(title="CoNLLL table ill formed",
-                           message="The CoNLL table is ill formed. You may have tinkered with it. Please, rerun the Stanford CoreNLP parser since many scripts rely on the CoNLL table.")
+                           message="The CoNLL table is ill formed. You may have tinkered with it. Please, rerun the parser since many scripts rely on the CoNLL table.")
             return
     output_list += _list_sorted_
     return output_list

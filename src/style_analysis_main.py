@@ -1,3 +1,4 @@
+
 # written by Roberto Franzosi (Spring/summer 2020)
 
 import sys
@@ -91,9 +92,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
             mb.showwarning('Warning', 'No option has been selected for Vocabulary analysis.\n\nPlease, select an option and try again.')
             return
 
-        # if 'Iconic' in vocabulary_analysis_menu_var or 'Repetition across' in vocabulary_analysis_menu_var:
-        #     mb.showwarning('Warning', 'The selected option is not available yet.\n\nSorry!')
-        #     return
+        if 'Iconic' in vocabulary_analysis_menu_var:
+            mb.showwarning('Warning', 'The selected option is not available yet.\n\nSorry!')
+            return
 
         if '*' == vocabulary_analysis_menu_var:
             outputDir_style = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
@@ -167,6 +168,20 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
             outputFiles = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                        openOutputFiles, 
                                                        chartPackage, dataTransformation,process, language)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
+        if '*' in vocabulary_analysis_menu_var or 'Repetition across' in vocabulary_analysis_menu_var:
+            if '*' in vocabulary_analysis_menu_var:
+                process='*Repetition across sentences (special ngrams)'
+            else:
+                process = 'Repetition across sentences (special ngrams)'
+            outputFiles = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+                                                       openOutputFiles,
+                                                       chartPackage, dataTransformation, process, language)
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -289,6 +304,36 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
                     else:
                         filesToOpen.extend(outputFiles)
 
+        if '*' in vocabulary_analysis_menu_var or 'TF-IDF' in vocabulary_analysis_menu_var:
+            import statistics_corpus_tfidf_util
+            outputFiles = statistics_corpus_tfidf_util.compute_tfidf(inputFilename, inputDir, outputDir_style,
+                                                                       chartPackage, dataTransformation)
+            if outputFiles is not None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
+        if '*' in vocabulary_analysis_menu_var or 'Lexical diversity' in vocabulary_analysis_menu_var:
+            import statistics_corpus_lexical_diversity_util
+            outputFiles = statistics_corpus_lexical_diversity_util.compute_lexical_diversity(
+                inputFilename, inputDir, outputDir_style, chartPackage, dataTransformation)
+            if outputFiles is not None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
+        if '*' in vocabulary_analysis_menu_var or 'Word frequency distribution' in vocabulary_analysis_menu_var:
+            import statistics_corpus_word_frequency_util
+            outputFiles = statistics_corpus_word_frequency_util.compute_word_frequency(
+                inputFilename, inputDir, outputDir_style, chartPackage, dataTransformation)
+            if outputFiles is not None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
     if gender_guesser_var==True:
         mb.showwarning('Warning',
                        'When the Gender Guesser (Hacker Factor) webpage opens, make sure to read carefully the page content in order to understand:\n1. how this sophisticated neural network Java tool can guess the gender identity of a text writer (male or female);\n2. the difference between formal and informal text genre;\n3. the meaning of the gender estimate as "Weak emphasis could indicate European";\n4. the limits of the algorithms (about 60-70% accuraracy).\n\nYou can also read Argamon, Shlomo, Moshe Koppel, Jonathan Fine, and Anat Rachel Shimoni. 2003. "Gender, Genre, and Writing Style in Formal Written Texts," Text, Vol. 23, No. 3, pp. 321–346.')
@@ -392,7 +437,7 @@ extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for style anal
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Spelling/grammar checker (Open GUI)','Corpus statistics (Open GUI)','N-grams & Co-Occurrences (Open GUI)','Nominalization (Open GUI)','CoNLL table analyzer (Open GUI)','WordNet (Open GUI)')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Spelling/grammar checker (Open GUI)','Corpus statistics (Open GUI)','N-grams & Co-Occurrences (Open GUI)','Nominalization (Open GUI)','CoNLL table analyzer (Open GUI)','WordNet (Open GUI)','What\'s in Your Corpus (Open GUI)')
 extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -417,6 +462,8 @@ def open_GUI(*args):
             run_script_util.run_script("CoNLL_table_analyzer_main.py")
         if 'WordNet' in extra_GUIs_menu_var.get():
             run_script_util.run_script("knowledge_graphs_WordNet_main.py")
+        if 'Corpus' in extra_GUIs_menu_var.get():
+            run_script_util.run_script("whats_in_your_corpus_main.py")
 extra_GUIs_menu_var.trace('w',open_GUI)
 
 complexity_readability_analysis_var.set(0)
@@ -456,6 +503,9 @@ vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*'
                                          'Vowel words',
                                          'Words with capital initial (proper nouns)',
                                          'Language detection',
+                                         'TF-IDF (most distinctive words per document)',
+                                         'Lexical diversity (TTR, MTLD, vocd-D)',
+                                         "Word frequency distribution (Zipf's Law)",
                                          'Repetition: Words in first K and last K sentences',
                                          'Repetition: Last K words of a sentence/First K words of next sentence',
                                          'Repetition across sentences (special ngrams)')

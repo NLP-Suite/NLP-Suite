@@ -1,0 +1,4 @@
+# Windows-only Python dependencies (installed in addition to requirements.txt).
+# Per Evan's build notes: Windows also needs pywin32. (The Microsoft Visual C++ runtime DLLs
+# are bundled separately by the GitHub Actions workflow, not via pip.)
+pywin32

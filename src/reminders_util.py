@@ -417,7 +417,7 @@ def getReminders_list(scriptName,silent=False):
     remindersFile = os.path.join(GUI_IO_util.remindersPath, 'reminders.csv')
     try:
         df = pd.read_csv(remindersFile,encoding='utf-8',on_bad_lines='skip')
-        if not 'Reset to ON all reminders' in df.iloc[0][1] or not 'Reset to OFF all reminders' in df.iloc[1][1]:
+        if not 'Reset to ON all reminders' in df.iloc[0, 1] or not 'Reset to OFF all reminders' in df.iloc[1, 1]:
             df.iloc[0] = ['*','Reset to ON all reminders', 'Turn ON all available reminders for all GUIs', 'ON']
             df.iloc[1] = ['*','Reset to OFF all reminders', 'Turn OFF all available reminders for all GUIs', 'OFF']
             # save the reminders file since it will be read in the function resetReminder

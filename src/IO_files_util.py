@@ -486,6 +486,11 @@ def getDateFromFileName(file_name, date_format='mm-dd-yyyy', sep='_', date_field
             raw_date = x[startSearch:end]
         else:
             raw_date = x[startSearch + 1:end]
+        # Normalize separators to '-' so slash/dot date formats (e.g. 'mm/dd/yyyy', which has no
+        # dedicated branch below) are handled by the hyphen-based branches, and so the date's
+        # actual separator in the filename need not match the configured format separator.
+        date_format = date_format.replace('/', '-').replace('.', '-')
+        raw_date = raw_date.replace('/', '-').replace('.', '-')
         # https://docs.python.org/2/library/datetime.html#strftime-strptime-behavior
         # the strptime command (strptime(date_string, format) takes date_string and formats it according to format where format has the following values:
         # %m 09 %-m 9 (does not work on all platforms); %d 07 %-d 7 (does not work on all platforms);
@@ -610,9 +615,35 @@ def checkFile(inputFilename, extension=None, silent=False):
 
 # inputFilename contains filename with path
 def open_kmlFile(window,inputFilename):
+    # resolve to an absolute path: a relative path (e.g. 'GIS\\x.kml') would make Google Earth
+    # Pro fail with "Could not open file ... for reading"
+    try:
+        inputFilename = os.path.abspath(inputFilename)
+    except Exception:
+        pass
     if sys.platform == 'win32':
-        # https://stackoverflow.com/questions/26498302/how-to-load-the-kml-file-into-google-earth-using-python
-        os.startfile(inputFilename)
+        # Prefer launching Google Earth Pro directly: the .kml file association is frequently
+        # broken/missing, in which case os.startfile (and Explorer double-click) do nothing.
+        gep_paths = [
+            r"C:\Program Files\Google\Google Earth Pro\client\googleearth.exe",
+            r"C:\Program Files (x86)\Google\Google Earth Pro\client\googleearth.exe",
+        ]
+        for gep in gep_paths:
+            if os.path.isfile(gep):
+                try:
+                    subprocess.Popen([gep, inputFilename])
+                    return
+                except Exception:
+                    pass
+        # fall back to the file association
+        try:
+            os.startfile(inputFilename)
+        except Exception:
+            mb.showwarning('Cannot open KML map',
+                "Could not open the KML map automatically.\n\nGoogle Earth Pro was not found at its "
+                "standard install location, and the .kml file type is not associated with it on this PC.\n\n"
+                "Open Google Earth Pro manually and use File > Open to load:\n\n" + str(inputFilename) +
+                "\n\nOr right-click the .kml file > Open with > choose Google Earth Pro (tick 'Always use this app').")
         # also webbrowser.open(inputFilename) will open the kml file in GEP
     elif sys.platform == 'darwin':
         subprocess.Popen(['open', inputFilename])
@@ -676,6 +707,12 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
         else:
             filesToOpen = list(filesToOpen)
 
+    # deduplicate while preserving order; pipelines (e.g. NER + geocode + folium + charts)
+    # often append the same file multiple times, which inflates both the reported
+    # "files produced" count and the >10 auto-open threshold
+    if filesToOpen and isinstance(filesToOpen[0], str):
+        filesToOpen = list(dict.fromkeys(filesToOpen))
+
     if len(filesToOpenSubset)> 0:
         filesToOpen=filesToOpenSubset
 
@@ -695,8 +732,13 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
         if temp_outputDir!=outputDir:
             check_number_ofFiles = True
     split_files = False
-    if check_number_ofFiles: #outputDir != temp_outputDir: #GUI_util.output_dir_path.get():
-        subDirs=next(os.walk(temp_outputDir))[1]
+    # guard: temp_outputDir can be '' or nonexistent when filesToOpen[0] is a relative/bare path;
+    # os.walk would then yield nothing and next() would raise StopIteration
+    if check_number_ofFiles and temp_outputDir and os.path.isdir(temp_outputDir): #outputDir != temp_outputDir: #GUI_util.output_dir_path.get():
+        try:
+            subDirs=next(os.walk(temp_outputDir))[1]
+        except StopIteration:
+            subDirs=[]
         listOfFiles = list()
         for (dirpath, dirnames, filenames) in os.walk(temp_outputDir):
             if "split_" in dirpath:
@@ -766,6 +808,19 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
 
     # Auto-open decision based on files produced by the CURRENT run, not total in directory
     if nFilesProduced > 10 or len(filesToOpenSubset) > 10:
+        # Too many files to open them all, but still open the primary map visualizations
+        # (Google Earth KML, folium HTML maps) so they are not silently suppressed.
+        if openOutputFiles == True:
+            flat = filesToOpen[0] if (filesToOpen and isinstance(filesToOpen[0], list)) else filesToOpen
+            for file in flat:
+                if isinstance(file, str) and os.path.isfile(file) and len(file) <= 256:
+                    if file.endswith('.kml'):
+                        open_kmlFile(window, file)
+                    elif file.endswith('.html') and 'Folium' in file:
+                        try:
+                            openFile(window, file)
+                        except:
+                            pass
         return
 
     if len(filesToOpen) == 1:

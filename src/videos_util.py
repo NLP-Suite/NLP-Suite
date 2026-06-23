@@ -21,9 +21,15 @@ import tkinter.messagebox as mb
 #               "\n\npip install python-vlc to install the vlc module, close the NLP Suite and try again."
 #     mb.showinfo(title='python-vlc module', message=message)
 #     sys.exit(0)
-import vlc
-# importing pafy module
-import pafy
+# vlc (python-vlc) and pafy power the help-video playback, but they are not installed on every
+# platform (Windows in particular). Import them OPTIONALLY so a missing module degrades the video
+# feature gracefully instead of breaking this whole module on import.
+try:
+    import vlc
+    import pafy
+    _VIDEO_LIBS_AVAILABLE = True
+except Exception:
+    _VIDEO_LIBS_AVAILABLE = False
 
 import IO_internet_util
 
@@ -48,6 +54,12 @@ def get_video(selected_video, lookup):
 # lookup = None
 
 def play_video(video_url):
+    if not _VIDEO_LIBS_AVAILABLE:
+        mb.showinfo(title='Video playback unavailable',
+                    message="Watching the help videos needs the 'python-vlc' and 'pafy' modules, "
+                            "which are not installed in this environment.\n\nThe rest of the NLP "
+                            "Suite works normally - only in-app video playback is affected.")
+        return
     if not IO_internet_util.check_internet_availability_warning("videos_util.py"):
         return
     try:

@@ -623,6 +623,71 @@ def set_IO_brief_values(config_filename, y_multiplier_integer):
 
     return date_hover_over_label, IO_setup_display_string, config_input_output_alphabetic_options, missing_IO
 
+def open_paste_text_popup():
+    out_dir = output_dir_path.get()
+    if not out_dir or not os.path.isdir(out_dir):
+        import tkinter.messagebox as mb
+        mb.showwarning("Warning",
+                       "No OUTPUT directory has been set.\n\n"
+                       "Please set up an OUTPUT directory first (via Setup INPUT/OUTPUT configuration) and try again.")
+        return
+
+    popup = tk.Toplevel(window)
+    popup.title("Paste text for quick test run")
+    popup.geometry("700x450")
+    popup.resizable(True, True)
+    popup.transient(window)
+    popup.grab_set()
+
+    tk.Label(popup, text="Paste or type your text below, then click 'Use this text'.",
+             wraplength=660, justify='left').pack(side='top', padx=10, pady=(10, 5))
+
+    test_file = os.path.join(out_dir, '_test_text.txt')
+
+    def use_text():
+        content = text_widget.get('1.0', 'end-1c').strip()
+        if not content:
+            import tkinter.messagebox as mb
+            mb.showwarning("Warning", "No text entered.\n\nPlease paste or type some text and try again.")
+            return
+        with open(test_file, 'w', encoding='utf-8') as f:
+            f.write(content)
+        inputFilename.set(test_file)
+        input_main_dir_path.set('')
+        popup.destroy()
+        import tkinter.messagebox as mb
+        mb.showinfo("Quick test text",
+                    "Text saved to _test_text.txt and set as INPUT file.\n\n"
+                    "You can now click RUN to process it.")
+
+    def clear_text():
+        text_widget.delete('1.0', 'end')
+
+    btn_frame = tk.Frame(popup)
+    btn_frame.pack(side='bottom', pady=(5, 10))
+    tk.Button(btn_frame, text='Use this text', width=15, command=use_text).pack(side='left', padx=5)
+    tk.Button(btn_frame, text='Clear', width=10, command=clear_text).pack(side='left', padx=5)
+    tk.Button(btn_frame, text='Cancel', width=10, command=popup.destroy).pack(side='left', padx=5)
+
+    text_frame = tk.Frame(popup)
+    text_frame.pack(side='top', fill='both', expand=True, padx=10, pady=5)
+
+    scrollbar = tk.Scrollbar(text_frame)
+    scrollbar.pack(side='right', fill='y')
+
+    text_widget = tk.Text(text_frame, wrap='word', yscrollcommand=scrollbar.set)
+    text_widget.pack(side='left', fill='both', expand=True)
+    scrollbar.config(command=text_widget.yview)
+
+    if os.path.exists(test_file):
+        with open(test_file, 'r', encoding='utf-8', errors='ignore') as f:
+            prev_text = f.read()
+        if prev_text.strip():
+            text_widget.insert('1.0', prev_text)
+
+    text_widget.focus_set()
+
+
 def openConfigFile(config_filename):
 
     head, tail = os.path.split(config_filename)
@@ -664,11 +729,12 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
     # else:
     #     config_filename = config_filename_selected_config.get()
     # setup button to open a pop-up text entry widget where users can paste text to be used instead of an input file
-    openTextWidget_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='')
+    openTextWidget_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+                                      command=open_paste_text_popup)
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget, y_multiplier_integer,
-                            openTextWidget_button, True, False, True, False, 90,
-                            GUI_IO_util.read_button_x_coordinate, "Button currently not used. Will eventually open a pop-up text-entry widget where users can paste text to be used temporarily to run the algorithms behind the GUI, instead of either Default or any selected I/O csv config file options.")
+                            openTextWidget_button, True, False, False, False, 90,
+                            GUI_IO_util.read_button_x_coordinate, "Click to open a text-entry widget where you can paste text for a quick test run, instead of setting up a full I/O configuration.")
 
     # display text area for setup brief
 
@@ -933,8 +999,8 @@ def setup_IO_configuration_options(IO_setup_display_brief, scriptName, silent, o
     missing_IO=''
     config_input_output_alphabetic_options = []
     # GUIs with _ALL_ in the scriptName are designated as having a set of clickable buttons for various options but have no run options
-    #   so no IO info should be displayed
-    if not '_ALL_' in scriptName and not 'package_language' in scriptName:
+    #   so no IO info should be displayed (unless they explicitly set non-zero IO config)
+    if (not '_ALL_' in scriptName or config_input_output_numeric_options != [0,0,0,0]) and not 'package_language' in scriptName:
         try:
             config_input_output_numeric_options = [6, 1, 0, 1]
             config_input_output_alphabetic_options = config_util.get_template_config_csv_file(config_input_output_numeric_options, '')
@@ -1074,6 +1140,19 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
             IO_config_setup_full(window, y_multiplier_integer)
         else:
             IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptName, silent)
+
+    if inputFilename.get().endswith('_test_text.txt') and os.path.isfile(inputFilename.get()):
+        import tkinter.messagebox as mb
+        keep = mb.askyesno("Quick test text still active",
+                           "The INPUT file is currently set to the quick-test text file:\n\n"
+                           + inputFilename.get() +
+                           "\n\nThis was pasted in a previous session via the paste-text button. "
+                           "It will remain in effect for this GUI unless you clear it."
+                           "\n\nDo you want to keep using this test text?\n\n"
+                           "Click YES to keep using it.\n"
+                           "Click NO to clear it and revert to your I/O configuration.")
+        if not keep:
+            inputFilename.set('')
 
     old_license_file=os.path.join(GUI_IO_util.libPath, 'LICENSE-NLP-1.0.txt')
     if os.path.isfile(old_license_file):

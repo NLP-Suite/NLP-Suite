@@ -13,7 +13,30 @@ def _find_python():
     if not _is_frozen():
         return sys.executable
 
-    # 1. Check PATH (skip Windows Store alias)
+    # 1. Check for bundled portable Python (shipped with the PyInstaller dist)
+    bundle_dir = os.path.dirname(sys.executable)
+    if sys.platform == 'win32':
+        candidates = [
+            os.path.join(bundle_dir, 'python-env', 'python.exe'),
+            os.path.join(bundle_dir, 'python-env', 'Scripts', 'python.exe'),
+        ]
+    else:
+        candidates = [os.path.join(bundle_dir, 'python-env', 'bin', 'python3')]
+    for bundled in candidates:
+        if os.path.isfile(bundled):
+            return bundled
+
+    # 2. Check CONDA_PREFIX (set by the Mac Setup app or conda activate)
+    conda_prefix = os.environ.get('CONDA_PREFIX', '')
+    if conda_prefix:
+        if sys.platform == 'win32':
+            cp = os.path.join(conda_prefix, 'python.exe')
+        else:
+            cp = os.path.join(conda_prefix, 'bin', 'python3')
+        if os.path.isfile(cp):
+            return cp
+
+    # 3. Check PATH (skip Windows Store alias)
     for name in ('python3', 'python'):
         found = shutil.which(name)
         if found:
@@ -21,7 +44,7 @@ def _find_python():
                 continue
             return found
 
-    # 2. Check common Anaconda/Miniconda locations
+    # 4. Check common Anaconda/Miniconda locations
     home = os.path.expanduser('~')
     conda_candidates = [
         os.path.join(home, 'AppData', 'Local', 'anaconda3', 'envs', 'NLP', 'python.exe'),

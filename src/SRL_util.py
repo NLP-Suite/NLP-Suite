@@ -1,0 +1,263 @@
+# SRL bridge - runs in the NLP Suite's main (3.10) env. Semantic Role Labeling cannot run in the
+# Suite's environment (Riccorl/transformer-srl pins a legacy 2020-2022 stack: torch 1.7, allennlp
+# 1.2, spaCy 2.x, Python 3.8). So SRL runs in a SEPARATE isolated Python 3.8 env, invoked here as a
+# subprocess - the same pattern by which CoreNLP runs as a separate Java process.
+#
+# Output: a CSV (Document, Sentence ID, Sentence, Predicate, Frame, ARG0 Agent, ARG1 Patient,
+# ARG2 Recipient/Beneficiary, Where/When/How/Why) - the "who did what to whom" structure.
+
+import os
+import sys
+import subprocess
+import tkinter.messagebox as mb
+
+import IO_files_util
+import IO_user_interface_util
+
+# SRL runs in a SEPARATE isolated Python 3.8 env (transformer-srl pins a legacy torch 1.7 / allennlp
+# 1.2 / spaCy-2 stack), invoked as a subprocess - the same pattern CoreNLP uses for Java. To work on
+# ANY machine (not hardcoded dev paths) we DISCOVER the pieces rather than hardcode them:
+#   * the SRL env's python : $NLP_SRL_PYTHON, else a sibling conda env named nlp_srl/srl_test38/srl
+#   * the model            : <NLP-Suite>/lib/SRL/srl_bert_base_conll2012.tar.gz (legacy fallback too)
+#   * the worker           : src/SRL_worker.py (ships with the Suite)
+# Run  python setup_SRL.py  once on a new machine to create the env and download the model.
+
+SRL_WORKER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "SRL_worker.py")
+_SRL_LIB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "lib", "SRL")
+SRL_MODEL = os.path.join(_SRL_LIB_DIR, "srl_bert_base_conll2012.tar.gz")
+_SRL_ENV_NAMES = ("nlp_srl", "srl_test38", "srl")
+_MODEL_FILENAME = "srl_bert_base_conll2012.tar.gz"
+
+# Copula/auxiliary/modal predicate lemmas filtered OUT of the network/Sankey/charts (NOT the CSV),
+# so the visuals surface meaningful actions instead of function words.
+_COPULA_AUX = {"be", "will", "would", "can", "could", "shall", "should", "may", "might", "must", "ought"}
+
+
+def srl_python():
+    """Locate the isolated SRL env's python: explicit $NLP_SRL_PYTHON, else a sibling conda env
+    (nlp_srl / srl_test38 / srl) of the interpreter running the Suite. '' if not found."""
+    override = os.environ.get("NLP_SRL_PYTHON", "")
+    if override and os.path.isfile(override):
+        return override
+    envs_dir = os.path.dirname(os.path.dirname(os.path.abspath(sys.executable)))  # .../envs
+    for name in _SRL_ENV_NAMES:
+        for sub in ("python.exe", os.path.join("bin", "python3"), os.path.join("bin", "python")):
+            cand = os.path.join(envs_dir, name, sub)
+            if os.path.isfile(cand):
+                return cand
+    return ""
+
+
+def srl_model():
+    """Path to the SRL model under <NLP-Suite>/lib/SRL/, with a legacy dev fallback. '' if absent."""
+    if os.path.isfile(SRL_MODEL):
+        return SRL_MODEL
+    legacy = os.path.join(os.path.expanduser("~"), "Documents", "NLP_SRL_resources", _MODEL_FILENAME)
+    return legacy if os.path.isfile(legacy) else ""
+
+
+def is_available():
+    """True only if the isolated SRL env, the worker, and the model are all present/discoverable."""
+    return bool(srl_python()) and os.path.isfile(SRL_WORKER) and bool(srl_model())
+
+
+def availability_message():
+    """Human-readable reason SRL can't run, for surfacing to the user (no silent failure)."""
+    missing = []
+    if not srl_python():
+        missing.append("the isolated SRL Python 3.8 environment (a conda env named 'nlp_srl')")
+    if not srl_model():
+        missing.append("the SRL model (lib/SRL/%s)" % _MODEL_FILENAME)
+    if not os.path.isfile(SRL_WORKER):
+        missing.append("the SRL worker script (src/SRL_worker.py)")
+    return ("Semantic Role Labeling needs a one-time setup that is not yet complete on this "
+            "machine.\n\nMissing:\n - " + "\n - ".join(missing) +
+            "\n\nRun  python setup_SRL.py  (in the NLP Suite folder) to create the SRL environment "
+            "and download the model.\n\nSRL runs in its own isolated environment - it cannot share "
+            "the Suite's packages.")
+
+
+def run_SRL(window, inputFilename, inputDir, outputDir, chartPackage='No charts', dataTransformation=''):
+    """Run SRL on the selected txt file or directory. Returns a list of output file paths (or [])."""
+    if not is_available():
+        mb.showwarning(title="SRL not available", message=availability_message())
+        return []
+
+    input_path = inputFilename if inputFilename else inputDir
+    if not input_path:
+        mb.showwarning(title="No input",
+                       message="Please select a txt file or a directory of txt files for SRL.")
+        return []
+
+    # Put all SRL output in an SRL_<corpus> subdirectory (the CSV plus the HTML document
+    # duplicates), consistent with the SVO_/NER_ output-folder naming convention.
+    srl_dir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                                                     label='SRL', silent=True)
+    if not srl_dir:
+        mb.showwarning(title="SRL output folder",
+                       message="Could not create the SRL output subdirectory.\n\nPlease check the "
+                               "output directory and try again.")
+        return []
+
+    output_csv = IO_files_util.generate_output_file_name(
+        input_path, inputDir, srl_dir, ".csv", "SRL")
+
+    startTime = IO_user_interface_util.timed_alert(
+        window, 2000, 'Analysis start',
+        'Started running SRL (Semantic Role Labeling) at', True, '', True)
+
+    try:
+        proc = subprocess.run(
+            [srl_python(), SRL_WORKER, input_path, output_csv, srl_model()],
+            capture_output=True, text=True)
+    except Exception as e:
+        mb.showerror(title="SRL error", message="Could not launch the SRL subprocess:\n\n%s" % e)
+        return []
+
+    if proc.returncode != 0:
+        # Surface the worker's stderr rather than failing silently.
+        tail = (proc.stderr or "").strip()[-1500:]
+        mb.showerror(title="SRL error",
+                     message="The SRL subprocess reported an error:\n\n%s" % tail)
+        return []
+
+    if not os.path.isfile(output_csv):
+        mb.showwarning(title="SRL produced no output",
+                       message="SRL completed but produced no output file. Worker messages:\n\n%s"
+                               % (proc.stderr or "").strip()[-1500:])
+        return []
+
+    output_files = [output_csv]
+    output_files.extend(_build_srl_visualizations(
+        window, output_csv, srl_dir, inputFilename, inputDir, chartPackage, dataTransformation))
+
+    IO_user_interface_util.timed_alert(
+        window, 2000, 'Analysis end',
+        'Finished running SRL (Semantic Role Labeling) at', True, '', True, startTime, False)
+
+    return output_files
+
+
+def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
+                              chartPackage, dataTransformation):
+    """Build visuals from the SRL CSV by mapping ARG0 -> Agent (ARG0), Predicate -> Predicate,
+    ARG1 -> Patient (ARG1) and reusing the SVO suite's network (Gephi), Sankey, and bar-chart machinery
+    - so SRL gets the 'who did what to whom' network, Sankey flow, and frequency charts of the top
+    Agents/Predicates/Patients. Each visual is guarded so one failure never blocks the others or the
+    SRL CSV itself (errors are surfaced, never swallowed)."""
+    import pandas as pd
+    outputs = []
+    try:
+        df = pd.read_csv(srl_csv, encoding='utf-8', on_bad_lines='skip')
+    except Exception as e:
+        mb.showwarning(title="SRL visualization",
+                       message="Could not read the SRL output for visualization:\n\n%s" % e)
+        return outputs
+
+    def col(name):
+        return df[name].fillna('') if name in df.columns else [''] * len(df)
+
+    svo = pd.DataFrame()
+    svo['Agent (ARG0)'] = col('ARG0 (Agent)')
+    svo['Predicate'] = col('Predicate')
+    svo['Patient (ARG1)'] = col('ARG1 (Patient)')
+    svo['Location'] = col('Where (ARGM-LOC)')
+    svo['Time'] = col('When (ARGM-TMP)')
+    svo['Sentence ID'] = col('Sentence ID')
+    svo['Sentence'] = col('Sentence')
+    svo['Document'] = col('Document')
+    svo['Date'] = col('Date')
+
+    # Keep rows with a predicate AND at least an agent or a patient (i.e., a drawable edge).
+    s = svo['Agent (ARG0)'].astype(str).str.strip()
+    v = svo['Predicate'].astype(str).str.strip()
+    o = svo['Patient (ARG1)'].astype(str).str.strip()
+    # Drop copula/auxiliary/modal predicates so the visuals show real actions, not function words.
+    # The predicate LEMMA comes from the Frame (be.01 -> be), falling back to the surface word.
+    if 'Frame' in df.columns:
+        lemma = df['Frame'].fillna('').astype(str).str.split('.').str[0].str.lower()
+        lemma = lemma.where(lemma.str.strip() != '', v.str.lower())
+    else:
+        lemma = v.str.lower()
+    svo = svo[(v != '') & ((s != '') | (o != '')) & (~lemma.isin(_COPULA_AUX))]
+    if svo.empty:
+        return outputs
+
+    svo_csv = IO_files_util.generate_output_file_name(srl_csv, inputDir, srl_dir, '.csv', 'relations')
+    try:
+        svo.to_csv(svo_csv, index=False, encoding='utf-8')
+        outputs.append(svo_csv)
+    except Exception as e:
+        mb.showwarning(title="SRL visualization",
+                       message="Could not write the SVO-format file:\n\n%s" % e)
+        return outputs
+
+    fileBase = os.path.splitext(os.path.basename(srl_csv))[0]
+    use_date = svo['Date'].astype(str).str.strip().ne('').any()
+
+    # Interactive network graph (Python vis.js) - agent -> predicate -> patient. Opens in the browser,
+    # no external app needed. Passing the Date column makes it DYNAMIC/time-varying ('agency over
+    # time') when the documents are dated. This is the primary network for SRL.
+    try:
+        import charts_util
+        net = charts_util.network_graph_visjs(
+            svo_csv, srl_dir, 'Agent (ARG0)', 'Predicate', 'Patient (ARG1)',
+            date_col='Date' if use_date else None)
+        if net:
+            outputs.extend(net if isinstance(net, list) else [net])
+    except Exception as e:
+        mb.showwarning(title="SRL network graph (interactive)",
+                       message="Could not build the interactive SRL network graph:\n\n%s" % repr(e))
+
+    # Gephi network graph (.gexf) - for users who prefer Gephi; create_gexf self-skips if Gephi is
+    # not installed. logic='default'+spellCol='Date' gives a dynamic graph when dated, else static.
+    try:
+        import Gephi_util
+        gexf = Gephi_util.create_gexf(window, fileBase, srl_dir, svo_csv,
+                                      'Agent (ARG0)', 'Predicate', 'Patient (ARG1)',
+                                      spellCol='Date' if use_date else '',
+                                      logic='default' if use_date else 'static')
+        if gexf:
+            outputs.extend(gexf if isinstance(gexf, list) else [gexf])
+    except Exception as e:
+        mb.showwarning(title="SRL network graph (Gephi)",
+                       message="Could not build the SRL Gephi network graph:\n\n%s" % repr(e))
+
+    # 2) Sankey flow: agent -> predicate -> patient
+    try:
+        import charts_util
+        sankey_out = IO_files_util.generate_output_file_name(svo_csv, inputDir, srl_dir, '.html', 'sankey')
+        sk = charts_util.Sankey(svo_csv, sankey_out, 'Agent (ARG0)', 5, 'Predicate', 10, True, 'Patient (ARG1)', 20)
+        if sk:
+            outputs.extend(sk if isinstance(sk, list) else [sk])
+    except Exception as e:
+        mb.showwarning(title="SRL Sankey",
+                       message="Could not build the SRL Sankey chart:\n\n%s" % e)
+
+    # 3) Frequency bar charts: top Agents (ARG0), Predicates, Patients (ARG1)
+    if chartPackage and chartPackage != 'No charts':
+        try:
+            import charts_util
+            chart_specs = [
+                ('Agent (ARG0)', 'Frequency Distribution of SRL Agents (ARG0)', 'Agent (ARG0)', 'SRL-agent'),
+                ('Predicate', 'Frequency Distribution of SRL Predicates', 'Predicate', 'SRL-predicate'),
+                ('Patient (ARG1)', 'Frequency Distribution of SRL Patients (ARG1)', 'Patient (ARG1)', 'SRL-patient'),
+            ]
+            for ycol, title, xlabel, ftype in chart_specs:
+                try:
+                    of = charts_util.visualize_chart(
+                        chartPackage, dataTransformation, svo_csv, srl_dir,
+                        columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=[ycol],
+                        chart_title=title, count_var=1, hover_label=[],
+                        outputFileNameType=ftype, column_xAxis_label=xlabel,
+                        groupByList=['Document'], plotList=['Frequency'], chart_title_label=xlabel)
+                    if of:
+                        outputs.extend(of if isinstance(of, list) else [of])
+                except Exception as e:
+                    mb.showwarning(title="SRL chart",
+                                   message="Could not build the '%s' chart:\n\n%s" % (title, e))
+        except Exception as e:
+            mb.showwarning(title="SRL charts",
+                           message="Could not build the SRL frequency charts:\n\n%s" % e)
+
+    return outputs

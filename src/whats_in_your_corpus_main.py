@@ -46,16 +46,15 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             wordclouds_var.get(),
                             open_wordclouds_GUI_var.get(),
                             topics_var.get(),
-                            topics_Mallet_var.get(),
-                            topics_Gensim_var.get(),
-                            open_tm_GUI_var.get(),
                             what_else_var.get(),
                             what_else_menu_var.get(),
                             quote_var.get(),
                             GIS_var.get(),
                             open_GIS_GUI_var.get(),
                             SVO_var.get(),
-                            open_SVO_GUI_var.get())
+                            open_SVO_GUI_var.get(),
+                            open_word2vec_GUI_var.get(),
+                            open_sentiment_GUI_var.get())
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 def run(inputFilename,inputDir, outputDir,
@@ -71,16 +70,15 @@ def run(inputFilename,inputDir, outputDir,
         wordclouds_var,
         open_wordclouds_GUI_var,
         topics_var,
-        topics_Mallet_var,
-        topics_Gensim_var,
-        open_tm_GUI_var,
         what_else_var,
         what_else_menu_var,
         single_quote,
         GIS_var,
         open_GIS_GUI_var,
         SVO_var,
-        open_SVO_GUI_var):
+        open_SVO_GUI_var,
+        open_word2vec_GUI_var,
+        open_sentiment_GUI_var):
 
     config_filename = GUI_util.config_filename_selected_config.get()
     filesToOpen=[]
@@ -115,7 +113,9 @@ def run(inputFilename,inputDir, outputDir,
         # ((GIS_var == False) or (GIS_var == True and open_GIS_GUI_var == False)) and \
         GIS_var == False and \
         # ((SVO_var == False) or (SVO_var == True and open_SVO_GUI_var == False))):
-        SVO_var == False):
+        SVO_var == False and \
+        open_word2vec_GUI_var == False and \
+        open_sentiment_GUI_var == False):
             mb.showwarning(title='No options selected', message='No options have been selected.\n\nPlease, select an option and try again.')
             return
 
@@ -328,7 +328,7 @@ def run(inputFilename,inputDir, outputDir,
 
     if wordclouds_var==True:
         if open_wordclouds_GUI_var == True:
-            run_script_util.run_script("wordclouds_main.py")
+            run_script_util.run_script("data_visualization_main.py")
         else:
             # run with all default values;
             use_contour_only = False
@@ -354,57 +354,15 @@ def run(inputFilename,inputDir, outputDir,
 
 # topic modeling ---------------------------------------------------------------------------------
     if topics_var==True:
-        outputDir_TM = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='topic_modeling',
-                                                           silent=True)
-        if outputDir_TM == '':
-            return
-        if topics_Gensim_var==True:
-            if IO_libraries_util.check_inputPythonJavaProgramFile('topic_modeling_gensim_util.py')==False:
-                return
-            routine_options = reminders_util.getReminders_list(scriptName)
-            reminders_util.checkReminder(scriptName,
-                                         reminders_util.title_options_topic_modeling_gensim,
-                                         reminders_util.message_topic_modeling_gensim,
-                                         True)
-            routine_options = reminders_util.getReminders_list(scriptName)
+        run_script_util.run_script("topic_modeling_main.py")
 
-            if open_tm_GUI_var == True:
-                run_script_util.run_script("topic_modeling_main.py")
-            else:
-                if language_var != 'English':
-                    reminders_util.checkReminder(
-                        scriptName,
-                        reminders_util.title_options_English_language_Gensim,
-                        reminders_util.message_English_language_Gensim,
-                        True)
-                else:
-                    # run with all default values; do not run MALLET
-                    outputFiles = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir_TM, config_filename, num_topics=20,
-                                                          remove_stopwords_var=1, lemmatize=1, nounsOnly=0, run_Mallet=False, openOutputFiles=openOutputFiles,chartPackage=chartPackage, dataTransformation=dataTransformation)
-                    if outputFiles != None:
-                        if isinstance(outputFiles, str):
-                            filesToOpen.append(outputFiles)
-                        else:
-                            filesToOpen.extend(outputFiles)
+    # Word2Vec
+    if open_word2vec_GUI_var:
+        run_script_util.run_script("word2vec_main.py")
 
-        if topics_Mallet_var==True:
-            if open_tm_GUI_var == True:
-                run_script_util.run_script("topic_modeling_mallet_util.py")
-            else:
-                if language_var != 'English':
-                    reminders_util.checkReminder(
-                        scriptName,
-                        reminders_util.title_options_English_language_MALLET,
-                        reminders_util.message_English_language_MALLET,
-                        True)
-                else:
-                    # running with default values
-                    outputFiles = topic_modeling_mallet_util.run_MALLET(inputDir, outputDir_TM, openOutputFiles=openOutputFiles, chartPackage=chartPackage, dataTransformation=dataTransformation, OptimizeInterval=True, numTopics=20)
-                    if outputFiles != None:
-                        if isinstance(outputFiles, str):
-                            filesToOpen.append(outputFiles)
-                        else:
-                            filesToOpen.extend(outputFiles)
+    # Sentiment analysis
+    if open_sentiment_GUI_var:
+        run_script_util.run_script("sentiment_analysis_main.py")
 
     #  what else ---------------------------------------------------------------------------------
     nouns_var=False
@@ -420,6 +378,10 @@ def run(inputFilename,inputDir, outputDir,
     if what_else_var and what_else_menu_var == '*':
         nouns_var = True
         verbs_var = True
+
+    if 'coreference' in what_else_menu_var.lower():
+        run_script_util.run_script("coreference_main.py")
+        return
 
     if 'noun' in what_else_menu_var.lower():
         nouns_var = True
@@ -737,8 +699,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=550, # height at brief display
-                             GUI_height_full=590, # height at full display
+                             GUI_height_brief=630, # height at brief display
+                             GUI_height_full=670, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=1, # to be added for full display
                              increment=1)  # to be added for full display
@@ -769,6 +731,9 @@ inputFilename=GUI_util.inputFilename
 input_main_dir_path=GUI_util.input_main_dir_path
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
+
+extra_GUIs_var = tk.IntVar()
+extra_GUIs_menu_var = tk.StringVar()
 
 utf8_var= tk.IntVar()
 ASCII_var= tk.IntVar()
@@ -821,6 +786,37 @@ def clear(e):
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
+extra_GUIs_var.set(0)
+extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses', variable=extra_GUIs_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
+
+extra_GUIs_menu_var.set('')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Corpus statistics (Open GUI)','Style Analysis (Open GUI)','N-grams & Co-Occurrences (Open GUI)','CoNLL table analyzer (Open GUI)')
+extra_GUIs_menu.configure(state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                   extra_GUIs_menu,
+                                   False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                   "Select other related types of analysis you wish to perform" \
+                                    "\nThe selected GUI will open without having to press RUN")
+
+def open_GUI(*args):
+    if extra_GUIs_var.get():
+        extra_GUIs_menu.configure(state='normal')
+    else:
+        extra_GUIs_menu.configure(state='disabled')
+        return
+    if extra_GUIs_menu_var.get():
+        if 'statistics' in extra_GUIs_menu_var.get():
+            run_script_util.run_script("statistics_txt_main.py")
+        if 'Style' in extra_GUIs_menu_var.get():
+            run_script_util.run_script("style_analysis_main.py")
+        if 'N-grams' in extra_GUIs_menu_var.get():
+            run_script_util.run_script("NGrams_CoOccurrences_main.py")
+        if 'CoNLL' in extra_GUIs_menu_var.get():
+            run_script_util.run_script("CoNLL_table_analyzer_main.py")
+extra_GUIs_menu_var.trace('w',open_GUI)
+extra_GUIs_var.trace('w',open_GUI)
+
 utf8_var.set(1)
 utf8_checkbox = tk.Checkbutton(window, text='Check input document(s) for utf-8 encoding', variable=utf8_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,utf8_checkbox)
@@ -870,11 +866,11 @@ corpus_options_menu = tk.OptionMenu(window, corpus_text_options_menu_var, '*','L
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_corpus_options_menu_pos,y_multiplier_integer,corpus_options_menu)
 
 wordclouds_var.set(1)
-wordclouds_checkbox = tk.Checkbutton(window,text="Wordclouds", variable=wordclouds_var, onvalue=1, offvalue=0)
+wordclouds_checkbox = tk.Checkbutton(window,text="Visualization options", variable=wordclouds_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,wordclouds_checkbox, True)
 
 open_wordclouds_GUI_var.set(0) # wordclouds GUI
-open_wordclouds_GUI_checkbox = tk.Checkbutton(window,text="Open wordclouds GUI", state='disabled', variable=open_wordclouds_GUI_var, onvalue=1, offvalue=0)
+open_wordclouds_GUI_checkbox = tk.Checkbutton(window,text="Open visualizations GUI", state='disabled', variable=open_wordclouds_GUI_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate,y_multiplier_integer,open_wordclouds_GUI_checkbox)
 
 def activate_wordclouds_GUI(*args):
@@ -886,7 +882,7 @@ wordclouds_var.trace('w', activate_wordclouds_GUI)
 
 activate_wordclouds_GUI()
 
-topics_checkbox = tk.Checkbutton(window,text="What are the topics? (Topic modeling)", variable=topics_var, onvalue=1, offvalue=0)
+topics_checkbox = tk.Checkbutton(window,text="What are the topics? (Topic modeling via BERT, Gensim, MALLET)", variable=topics_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,topics_checkbox,True)
 
 def changed_filename(*args):
@@ -903,68 +899,32 @@ def changed_filename(*args):
 inputFilename.trace('w',changed_filename)
 # input_main_dir_path.trace('w',changed_filename)
 
-topics_Mallet_var.set(0)
-topics_Mallet_checkbox = tk.Checkbutton(window,text="via MALLET", variable=topics_Mallet_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_topics_Mallet_pos,y_multiplier_integer,topics_Mallet_checkbox,True)
-
-topics_Gensim_var.set(1)
-topics_Gensim_checkbox = tk.Checkbutton(window,text="via Gensim", variable=topics_Gensim_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_topics_Gensim_pos,y_multiplier_integer,topics_Gensim_checkbox,True)
-
 open_tm_GUI_var.set(0) # topic modeling GUI
-open_GUI_checkbox = tk.Checkbutton(window,text="Open Gensim/MALLET GUI", variable=open_tm_GUI_var, onvalue=1, offvalue=0)
+open_GUI_checkbox = tk.Checkbutton(window,text="Open topic modeling GUI", variable=open_tm_GUI_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate,y_multiplier_integer,open_GUI_checkbox)
+
+open_word2vec_GUI_var = tk.IntVar()
+open_word2vec_GUI_var.set(0)
+word2vec_checkbox = tk.Checkbutton(window,text="Word embeddings (via BERT, Gensim) and word sense disambiguation (Open GUI)", variable=open_word2vec_GUI_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,word2vec_checkbox)
 
 def activate_topics(*args):
     if topics_var.get()==True:
-        topics_Mallet_checkbox.configure(state='normal')
-        topics_Gensim_checkbox.configure(state='normal')
         open_GUI_checkbox.configure(state='normal')
     else:
-        topics_Mallet_checkbox.configure(state='disabled')
-        topics_Gensim_checkbox.configure(state='disabled')
         open_GUI_checkbox.configure(state='disabled')
 topics_var.trace('w',activate_topics)
-
-def activate_Mallet(*args):
-    if topics_var.get()==True:
-        topics_Gensim_var.set(0)
-        if topics_Mallet_var.get()==True:
-            open_GUI_checkbox.configure(state='normal')
-            topics_Gensim_checkbox.configure(state='disabled')
-            open_GUI_checkbox.configure(state='normal')
-        else:
-            open_tm_GUI_var.set(0)
-            topics_Gensim_checkbox.configure(state='normal')
-            open_GUI_checkbox.configure(state='disabled')
-topics_Mallet_var.trace('w',activate_Mallet)
-
-def activate_Gensim(*args):
-    if topics_var.get()==True:
-        if topics_Gensim_var.get()==True:
-            open_GUI_checkbox.configure(state='normal')
-            topics_Mallet_checkbox.configure(state='disabled')
-            open_GUI_checkbox.configure(state='normal')
-        else:
-            open_GUI_checkbox.configure(state='disabled')
-            topics_Mallet_checkbox.configure(state='normal')
-            open_GUI_checkbox.configure(state='disabled')
-topics_Gensim_var.trace('w',activate_Gensim)
 
 def activate_all_options(*args):
     if open_tm_GUI_var.get()==True:
         corpus_statistics_var.set(0)
         corpus_statistics_checkbox.configure(state='disabled')
         what_else_var.set(0)
-        topics_Mallet_checkbox.configure(state='disabled')
-        topics_Gensim_checkbox.configure(state='disabled')
         what_else_checkbox.configure(state='disabled')
     else:
         corpus_statistics_var.set(1)
         corpus_statistics_checkbox.configure(state='normal')
         what_else_var.set(1)
-        topics_Mallet_checkbox.configure(state='normal')
-        topics_Gensim_checkbox.configure(state='normal')
         what_else_checkbox.configure(state='normal')
 open_tm_GUI_var.trace('w',activate_all_options)
 
@@ -974,15 +934,15 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                                language_var_lb, True)
 
 what_else_var.set(1)
-what_else_checkbox = tk.Checkbutton(window,text="What else is in your document(s)? (via Stanford CoreNLP and WordNet)", variable=what_else_var, onvalue=1, offvalue=0)
+what_else_checkbox = tk.Checkbutton(window,text="What else is in your document(s)? (via Stanza, CoreNLP, and WordNet)", variable=what_else_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,what_else_checkbox,True)
 
 what_else_menu_var.set('*')
-what_else_menu = tk.OptionMenu(window,  what_else_menu_var, '*', 'Dialogues (CoreNLP Neural Network)','Noun and verb classes (CoreNLP NER & WordNet)', 'People & organizations (CoreNLP NER)', 'Females & males (CoreNLP Neural Network)',
+what_else_menu = tk.OptionMenu(window,  what_else_menu_var, '*', 'Coreference resolution (CoreNLP)', 'Dialogues (CoreNLP quote annotator)','Noun and verb classes (Stanza NER & WordNet)', 'People & organizations (Stanza NER)', 'Females & males (CoreNLP gender annotator)',
                                'References to date & time (CoreNLP normalized NER dates)',
-                               'References to geographical locations (CoreNLP NER)',
-                               'References to nature (CoreNLP & WordNet)',
-                               'Sentiments expressed (CoreNLP)')
+                               'References to geographical locations (Stanza NER)',
+                               'References to nature (Stanza NER & WordNet)',
+                               'Sentiments expressed (Stanza)')
 what_else_menu.config(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_what_else_menu_pos, y_multiplier_integer,
                                                what_else_menu, True)
@@ -1015,6 +975,11 @@ what_else_var.trace('w',activate_what_else_menu)
 what_else_menu_var.trace('w',activate_what_else_menu)
 
 activate_what_else_menu()
+
+open_sentiment_GUI_var = tk.IntVar()
+open_sentiment_GUI_var.set(0)
+sentiment_checkbox = tk.Checkbutton(window,text="Sentiment analysis (via BERT, Stanza, spaCy, VADER, NRC, SentiWordNet, ANEW, hedonometer) (Open GUI)", variable=open_sentiment_GUI_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,sentiment_checkbox)
 
 GIS_var.set(1)
 GIS_checkbox = tk.Checkbutton(window,text="GIS (Geographic Information System) pipeline", variable=GIS_var, onvalue=1, offvalue=0)
@@ -1070,26 +1035,17 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                       GUI_IO_util.msg_IO_setup)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                      "Please, tick the checkbox to open other related GUIs (e.g., Corpus statistics, Style Analysis, N-grams, CoNLL table analyzer).\n\nThe selected GUI will open without having to press RUN.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "Please, tick the checkbox to check your input corpus for utf-8 encoding.\n   Non utf-8 compliant texts are likely to lead to code breakdown.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "Please, tick the checkbox to convert non-ASCII apostrophes & quotes and % to percent.\n   ASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n   % signs may lead to code breakdon of Stanford CoreNLP.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer, "NLP Suite Help","Please, tick checkbox to compute corpus statistics: number of documents, number of sentences and words, word n-grams by document.\n\nFOR N-GRAMS, THERE IS A SEPARATE SCRIPT WITH MORE GENERAL OPTIONS: NGrams_CoOccurrences_Viewer_main.\n\nThe * option will lemmatize words and exclude stopwords and punctuation. IT WILL COMPUTE BASIC WORD N-GRAMS. IT WILL NOT COMPUTE LINE LENGTH. YOU WOULD NEED TO RUN THE LINE LENGTH OPTION SEPARATELY.\n\nLine length in a typical document mostly depends upon typesetting formats. Only for poetry or music lyrics does the line-length measure make sense; in fact, you could use the option the detect those documents in your corpus characterized by different typesetting formats (.g., a poem document among narrative documents).\n\nRUN THE LINE-LENGTH OPTION ONLY IF IT MAKES SENSE FOR YOUR CORPUS.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer, "NLP Suite Help","Please, tick checkbox to draw wordclouds using the Wordcloud Python script.\n\nThe wordclouds function in this GUI is based on the following set of default options: \
-            \n  do not use images \
-            \n  set max number of words to 100 \
-            \n  use default font \
-            \n  do NOT use horizontal layout \
-            \n  do NOT lemmatize \
-            \n  exclude stopwords \
-            \n  exclude punctuation \
-            \n  do NOT convert to lowercase \
-            \n  do NOT use different colors for different POS tags \
-            \n  do NOT use different colors for different columns \
-            \n  process together common MWE (e.g, South Carolina) \
-            \n  do not list individual files when processing a directory \
-            \n\nTo set different options, use the wordclouds GUI.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer, "NLP Suite Help","Please, tick the MALLET or Gensim checkboxes to run run LDA Topic Modeling to find out the main topics of your corpus.\n\nTick the \'open GUI\' checkbox to open the specialized Gensim topic modeling GUI that offers more options. MALLET can only be run via its GUI")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox to analyze your corpus for a variety of tools. Select the default \'*\' to run all options. Allternatively, select the specific option to run.\n\nThe NLP tools will allow you to answer questions such as:\n  1. Are there dialogues in your corpus? The CoreNLP QUOTE annotator extracts quotes from text and attributes the quote to the speaker. The default CoreNLP parameter is DOUBLE quotes. If you want to process both DOUBLE and SINGLE quotes, plase tick the checkbox 'Include single quotes.'\n  .2 Do nouns and verbs cluster in specific aggregates (e.g., communication, movement)?\n  3. Does the corpus contain references to people (by gender) and organizations?\n  4.  References to dates and times?\n  5. References to geographical locations that could be placed on a map?\n  6. References to nature (e.g., weather, seasons, animals, plants)?")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox for visualization options.\n\nWith the checkbox ticked, a default wordcloud will be generated. Tick 'Open visualizations GUI' to access the full data visualization GUI with options for wordclouds, network graphs (Gephi, vis.js), Sankey charts, sunburst, treemap, colormap/heatmap, boxplots, bubble charts, GIS maps, and more.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox to open the topic modeling GUI.\n\nThe topic modeling GUI provides access to three approaches:\n  - BERTopic (transformer-based, best for 100+ documents)\n  - Gensim LDA (fast, works well on small corpora)\n  - MALLET LDA (Java-based, requires separate installation)")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox to open the Word embeddings GUI.\n\nThe GUI provides three tools:\n  - Word embeddings via BERT (contextual embeddings from a pre-trained English language model)\n  - Word2Vec via Gensim (static embeddings trained on your corpus, Skip-Gram or CBOW)\n  - Word sense disambiguation via BERT (automatically identifies different senses of a word in your corpus)")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox to analyze your corpus for a variety of tools. Select the default \'*\' to run all options. Alternatively, select the specific option to run.\n\nMost options use Stanza (Python). Four options require Stanford CoreNLP (Java): coreference resolution, dialogues, gender, and normalized dates.\n\nThe NLP tools will allow you to answer questions such as:\n  1. Who refers to whom? (CoreNLP coreference resolution — opens the coreference GUI)\n  2. Are there dialogues in your corpus? (CoreNLP quote annotator — extracts quotes and attributes them to speakers. Default is DOUBLE quotes; tick 'Include single quotes' for both.)\n  3. Do nouns and verbs cluster in specific aggregates, e.g., communication, movement? (Stanza NER + WordNet)\n  4. Does the corpus contain references to people and organizations? (Stanza NER)\n  5. Are there references to females and males? (CoreNLP gender annotator)\n  6. References to dates and times? (CoreNLP SUTime normalized date extraction)\n  7. References to geographical locations that could be placed on a map? (Stanza NER)\n  8. References to nature, e.g., weather, seasons, animals, plants? (Stanza NER + WordNet)\n  9. Sentiments expressed? (Stanza)")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox to open the Sentiment Analysis GUI.\n\nThe GUI provides multiple approaches:\n  - Large Language Models: BERT (English and Multilingual)\n  - Neural network: Stanford CoreNLP, Stanza\n  - Dictionary-based: ANEW, hedonometer, NRC (emotion wheel), spaCy/TextBlob, SentiWordNet, VADER\n  - Character-level: Character Emotion Arcs (NER + NRC)")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to run the GIS pipeline to extract locations from your input document(s) and map them in Google Earth Pro and Google Maps.\n\nThe GIS function in this GUI is based on the following default options:" \
             "\n  use Nominatim for geocoding "\
             "\n  use Google Earth Pro & Google Maps for mapping "\

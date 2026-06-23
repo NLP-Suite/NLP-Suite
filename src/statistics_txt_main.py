@@ -202,7 +202,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              y_multiplier_integer_add=1, # to be added for full display
                              increment=1)  # to be added for full display
 
-GUI_label='Graphical User Interface (GUI) for Statistical Analyses of txt Files'
+GUI_label='Graphical User Interface (GUI) for Corpus Statistics'
 head, scriptName = os.path.split(os.path.basename(__file__))
 config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -251,7 +251,7 @@ extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analy
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'N-grams & Co-occurrences', 'CoNLL Table Analyzer (Open GUI)','Style Analysis (Open GUI)')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'N-grams & Co-occurrences', 'CoNLL Table Analyzer (Open GUI)','Style Analysis (Open GUI)','What\'s in Your Corpus (Open GUI)')
 extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -274,10 +274,12 @@ def open_GUI(*args):
             run_script_util.run_script("style_analysis_main.py")
         if 'grams' in extra_GUIs_menu_var.get():
             run_script_util.run_script("NGrams_CoOccurrences_main.py")
+        if 'Corpus' in extra_GUIs_menu_var.get():
+            run_script_util.run_script("whats_in_your_corpus_main.py")
 extra_GUIs_menu_var.trace('w',open_GUI)
 
 corpus_statistics_var.set(0)
-corpus_statistics_checkbox = tk.Checkbutton(window,text="Compute document(s) statistics", variable=corpus_statistics_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+corpus_statistics_checkbox = tk.Checkbutton(window,text="Compute corpus statistics", variable=corpus_statistics_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,corpus_statistics_checkbox,True)
 
 corpus_statistics_options_menu_var.set('*')
@@ -316,7 +318,7 @@ def activate_corpus_options(*args):
 corpus_statistics_var.trace('w',activate_corpus_options)
 
 corpus_statistics_byPOS_var.set(0)
-corpus_statistics_byPOS_checkbox = tk.Checkbutton(window,text="Compute document(s) statistics by POS (Part of Speech) tag value", variable=corpus_statistics_byPOS_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+corpus_statistics_byPOS_checkbox = tk.Checkbutton(window,text="Compute corpus statistics by POS (Part of Speech) tag value", variable=corpus_statistics_byPOS_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    corpus_statistics_byPOS_checkbox,

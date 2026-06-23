@@ -62,7 +62,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         gephi_var,
         wordcloud_var,
         google_earth_var,
-        compare_svo_var=False):
+        compare_svo_var=False,
+        map_characters_var=False):
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -80,6 +81,21 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
     inputFilename = GUI_util.inputFilename.get()
     inputDir = GUI_util.input_main_dir_path.get()
     outputDir = GUI_util.output_dir_path.get()
+
+    # Semantic Role Labeling runs in a separate isolated Python 3.8 env (see SRL_util) and is
+    # independent of the SVO/parser pipeline. If SRL is checked, run it on its own and return.
+    if SRL_var.get() == 1:
+        import SRL_util
+        if inputFilename and inputFilename[-4:].lower() == '.csv':
+            mb.showwarning(title='SRL input error',
+                           message='Semantic Role Labeling needs txt input (a txt file or a folder '
+                                   'of txt files), not a csv file.\n\nPlease select txt input and try again.')
+            return
+        srl_files = SRL_util.run_SRL(GUI_util.window, inputFilename, inputDir, outputDir,
+                                     chartPackage, dataTransformation)
+        if srl_files:
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, srl_files, outputDir, scriptName)
+        return
 
     outputCorefedDir = ''
     outputSVODir = ''
@@ -111,7 +127,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                 subjects_dict_path_var, verbs_dict_path_var, objects_dict_path_var,
                 filter_subjects, filter_verbs, filter_objects,
                 lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
-                gephi_var, wordcloud_var, google_earth_var, False)
+                gephi_var, wordcloud_var, google_earth_var, False, map_characters_var)
             pkg_label = 'CoreNLP' if pkg == 'Stanford CoreNLP' else pkg
             if inputFilename != '':
                 base = os.path.basename(inputFilename)[0:-4]
@@ -440,8 +456,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
             else:
                 filesToOpen.extend(outputFiles)
                 # the SVO output file is in outputFiles[1] outputFiles[0] contains the CoNLL parser output
-                SVO_filename = outputFiles[1]
-                svo_result_list.append(outputFiles[1])
+                if len(outputFiles) > 1:
+                    SVO_filename = outputFiles[1]
+                    svo_result_list.append(outputFiles[1])
+                elif len(outputFiles) > 0:
+                    # Fallback: use the only file returned
+                    SVO_filename = outputFiles[0]
+                    svo_result_list.append(outputFiles[0])
+                else:
+                    # No files returned — SVO extraction failed
+                    mb.showwarning(title='SVO Extraction Error',
+                        message='SVO extraction failed to produce output files.\n\nPlease check your input data and try again.')
+                    return
 
 # -------------------------------------------------------------------------------------------------------------------------------------
 # Lemmatizing and Filtering SVO for all packages
@@ -654,11 +680,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
     # GIS maps _____________________________________________________
 
         if google_earth_var:
-            key = GIS_pipeline_util.getGoogleAPIkey(window, 'Google-geocode-API_config.csv')
-            if key == '' or key == None:
-                geocoder = 'Nominatim'
-            else:
+            # auto-pick the geocoder silently: Google only if a key is already configured,
+            # otherwise Nominatim (no "enter API key" nag for users without a Google key)
+            if GIS_pipeline_util.has_google_api_key('Google-geocode-API_config.csv'):
                 geocoder = 'Google'
+            else:
+                geocoder = 'Nominatim'
             # SENNA locations are not really geocodable locations
             if (package_var=='SENNA') and os.path.isfile(location_filename):
                 reminders_util.checkReminder(scriptName, reminders_util.title_options_GIS_OpenIE_SENNA,
@@ -677,7 +704,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                                      config_filename, location_filename, inputDir,
                                      outputGISDir,
                                      # 'Nominatim', 'Google Earth Pro & Google Maps', chartPackage, dataTransformation,
-                                     geocoder, 'Google Earth Pro & Google Maps', chartPackage, dataTransformation,
+                                     geocoder, 'Google Earth Pro & Google Maps & Python folium pin map & heatmap', chartPackage, dataTransformation,
                                      date_present,
                                      country_bias,
                                      area_var,
@@ -694,6 +721,40 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                                 filesToOpen.append(outputFiles)
                             else:
                                 filesToOpen.extend(outputFiles)
+
+    if map_characters_var and len(svo_result_list) > 0:
+        import charts_util as charts_util_mc
+        svo_file = svo_result_list[0]
+        try:
+            svo_df = pd.read_csv(svo_file, encoding='utf-8', on_bad_lines='skip')
+        except Exception:
+            svo_df = pd.DataFrame()
+        if 'Subject (S)' in svo_df.columns and 'Location' in svo_df.columns:
+            pairs = []
+            for _, row in svo_df.iterrows():
+                subj = str(row.get('Subject (S)', '')).strip()
+                locs = str(row.get('Location', '')).strip()
+                if subj and subj != 'nan' and subj != '?' and locs and locs != 'nan':
+                    doc = row.get('Document', '')
+                    sent_id = row.get('Sentence ID', '')
+                    for loc in locs.split(';'):
+                        loc = loc.strip()
+                        if loc:
+                            pairs.append({'Entity': subj, 'Location': loc,
+                                          'Document': doc, 'Sentence ID': sent_id})
+            if pairs:
+                pair_df = pd.DataFrame(pairs)
+                mc_output = IO_files_util.generate_output_file_name(inputFilename, inputDir,
+                                outputSVODir, '.csv', 'SVO_character-movement')
+                pair_df.to_csv(mc_output, index=False, encoding='utf-8')
+                filesToOpen.append(mc_output)
+                mapFiles = charts_util_mc.animated_migration_map(
+                    mc_output, outputSVODir, 'Entity', 'Location')
+                if mapFiles:
+                    filesToOpen.extend(mapFiles if isinstance(mapFiles, list) else [mapFiles])
+            else:
+                mb.showwarning("No character movement",
+                    "No SVO rows have both a Subject and a Location.\n\nThe animated character movement map requires sentences where a social actor appears with a location.")
 
     if compare_svo_var:
         compare_initialdir = GUI_util.output_dir_path.get()
@@ -719,27 +780,48 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
 
     if openOutputFiles == True and len(filesToOpen) > 0:
         filesToOpenSubset = []
-        # add the SVO main files
-        filesToOpenSubset.append(SVO_filename)
-        # filesToOpenSubset.append(nDateSVOFilename)
-        if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get():
+        filtering_enabled = filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get()
+
+        # If filtering is enabled, focus on filtered results; otherwise show main SVO results
+        if filtering_enabled:
             filesToOpenSubset.append(SVO_filtered_filename)
+        else:
+            filesToOpenSubset.append(SVO_filename)
+
+        # Prioritize main visualizations: GIS maps, networks, wordclouds (lemmatized only), Sankey charts, HTML files
+        main_viz_files = []
+        kml_files = []
         for file in filesToOpen:
-            # open all charts, all Google Earth and Google Maps maps, Gephi gexf network graph, html files, and wordclouds png files
-            if file[-4:] == '.kml' or file[-5:] == '.html' or file[-4:] == '.png' or file[-5:] == '.gexf': # or \
-                # file[-5:] == '.xlsx':
-                filesToOpenSubset.append(file)
+            # Skip raw SVO wordcloud (keep only lemmatized version)
+            if 'SVO_Stanza' in file and file.endswith('.png'):
+                continue
+            # Prioritize: .kml (GIS), .gexf (network), .png (lemmatized wordcloud), .html (Sankey/charts)
+            if file.endswith('.kml'):
+                kml_files.append(file)
+            elif file.endswith('.gexf') or file.endswith('.png') or file.endswith('.html'):
+                main_viz_files.append(file)
+        # Add KML files first (GIS maps are important for SVO context)
+        main_viz_files = kml_files + main_viz_files
+
+        # Add main visualizations first (limit to max 10 total with SVO file)
+        max_additional = max(0, 10 - len(filesToOpenSubset))
+        filesToOpenSubset.extend(main_viz_files[:max_additional])
 
         filesToOpenSubset_string = ", \n   ".join(filesToOpenSubset)
         print("Subset of the " + str(len(filesToOpenSubset)) + " SVO files from the different subfolders to be opened:\n   " + str(filesToOpenSubset_string))
-        # SVO can produce a very large number of files including the subset files
-        #   when even the subset is greater then 10, open a least the SVO file
+        # SVO can produce a very large number of files. When the subset is still > 10, trim it
+        # but KEEP the key visualizations: the main SVO file, the Google Earth KML, and the Folium
+        # maps - prioritizing the dynamic Folium-time map so a dated corpus auto-opens it.
         if len(filesToOpenSubset)>10:
-            if package_var == 'Stanza' or package_var == 'spaCy':
-                filesToOpenSubset=[filesToOpen[0]]
-                filesToOpenSubset.append(filesToOpen[1])
-            else:
-                filesToOpenSubset = [filesToOpen[0]]
+            trimmed = [SVO_filename]
+            folium_time = [f for f in filesToOpen if str(f).endswith('.html') and 'Folium-time' in str(f)]
+            kml_files = [f for f in filesToOpen if str(f).endswith('.kml')]
+            folium_other = [f for f in filesToOpen if str(f).endswith('.html') and 'Folium' in str(f) and 'Folium-time' not in str(f)]
+            for grp in (folium_time, kml_files, folium_other):
+                for f in grp:
+                    if f not in trimmed:
+                        trimmed.append(f)
+            filesToOpenSubset = trimmed[:10]
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName, filesToOpenSubset)
 
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
@@ -767,7 +849,8 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  gephi_var.get(),
                                  wordcloud_var.get(),
                                  google_earth_var.get(),
-                                 compare_svo_var.get())
+                                 compare_svo_var.get(),
+                                 map_characters_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -778,8 +861,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=600, # height at brief display
-                             GUI_height_full=640, # height at full display
+                             GUI_height_brief=640, # height at brief display
+                             GUI_height_full=680, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -844,6 +927,7 @@ def clear(e):
     wordcloud_checkbox.configure(state='normal')
     google_earth_checkbox.configure(state='normal')
     compare_svo_var.set(0)
+    map_characters_var.set(0)
 
     global subject_filePath, verb_filePath, object_filePath
 
@@ -1153,7 +1237,7 @@ SRL_checkbox = tk.Checkbutton(window, text='SRL (Semantic Role Labeling)',
                                                 variable=SRL_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                                SRL_checkbox)
-SRL_checkbox.configure(state='disabled')
+SRL_checkbox.configure(state='normal')
 
 gephi_var.set(1)
 gephi_checkbox = tk.Checkbutton(window, text='Visualize SVO relations ',
@@ -1205,10 +1289,19 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_c
                                    False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "Visualize GIS maps as pin and heat maps. Google Earth Pro and Google Maps will be used as mapping software if you have obtained a free Google API key. Otherwise, Python folium will be used.\n"
                                    "Read the TIPS file 'Google API Key' on how to get the API key.\nMaps are exported to the SVO subdirectory only, whether filtering or lemmatizing to avoid missing locations.")
+map_characters_var = tk.IntVar()
+map_characters_checkbox = tk.Checkbutton(window, text='MAP S(ubjects) moving in time and space',
+                                       variable=map_characters_var, onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                   map_characters_checkbox,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "Produce an animated map showing how SVO subjects (social actors) move across locations over the course of the narrative.\n"
+                                   "Uses the Subject (S) column as the moving entity and the Location column from the SVO output to track movement.\n"
+                                   "Unlike the GIS NER approach, this captures common-noun actors (e.g., 'the mob', 'soldiers') not just proper names.")
 compare_svo_var = tk.IntVar()
 compare_svo_checkbox = tk.Checkbutton(window, text='Compare SVO results across parsers',
                                        variable=compare_svo_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    compare_svo_checkbox,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "Compare two SVO csv files produced by different parsers (e.g., CoreNLP vs Stanza). Produces a summary of triple overlap and a list of differences.")
@@ -1324,10 +1417,20 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "Please, tick the S & O gender checkbox if you wish to run Stanford CoreNLP neural network gender annotator to extract the gender (female, male) for every Subject and Object extracted by the SVO script.\n\n"
                                   "Tick the S & O quote/speaker checkbox if you wish to run Stanford CoreNLP neural network quote annotator to extract the speaker involved in direct discourse for every Subject and Object extracted by the SVO script.\n\n"
                                   "THE GENDER AND QUOTE/SPEAKER ANNOTATORS ARE AVAILABLE FOR STANFORD CORENLP AND ENGLISH LANGUAGE ONLY.\n\n"
-                                  "Tick the SRL checkbox if you wish to run Jinho Choi's SRL (Semantic Role Labeling) algorithm (https://github.com/emorynlp/elit/blob/main/docs/semantic_role_labeling.md). THE OPTION IS CURRENTLY DISABLED."+GUI_IO_util.msg_Esc)
+                                  "Tick the SRL (Semantic Role Labeling) checkbox to identify, for every verb (predicate) in a sentence, WHO did WHAT to WHOM:\n"
+                                  "   ARG0 = the Agent (the doer);\n"
+                                  "   ARG1 = the Patient (the one acted upon/affected);\n"
+                                  "   ARG2 = the Recipient or Beneficiary;\n"
+                                  "   plus modifiers Where (ARGM-LOC), When (ARGM-TMP), How (ARGM-MNR), and Why (ARGM-CAU).\n\n"
+                                  "SRL is the richer successor to Subject-Verb-Object (SVO) analysis. In INPUT it expects a txt file or a directory of txt files (ENGLISH ONLY). In OUTPUT it produces a csv file with one row per sentence-and-predicate (a sentence with several verbs yields several rows).\n\n"
+                                  "SRL runs in a separate, self-contained engine. The first run loads a BERT-based model and may take 30-60 seconds; the GUI will appear frozen (Not Responding) while SRL runs. This is normal - please be patient."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in Gephi and Sankey network graphs, and Sunburst, Treemap charts (Sankey graphs display only top 10 Subject (S), 20 Verb (V), 20 Object (O)); Sunburst and Treemap charts display only top 15 values; to change these default values, open the Data visualization GUI and change the parameters;\n\n  2. to visualize SVO relations in a wordcloud (Subjects in red; Verbs in blue; Objects in green);\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Google or Nominatim to geocode locations. If the Google-geocode-API_config.csv file is present in the config subdirectory, Google will be used to geocode, as perhaps more accurate than Nominatim. Otherwise, Nominatim will be used. If you wish to chose between Google and Nominatim, for geocoding, please, use the GIS_main script.\n\nTo improve the geocoding of those locations that can take multiple names (e.g., 'United States', 'US', 'USA'), the NLP Suite Stanford CoreNLP algorithm uses the entries of the multi_name_locations.csv file stored in the lib\wordLists subdirectory of the NLP Suite installation folder. Locations known under different names can be all geocoded under a single name (e.g., 'United States'). You can edit the multi_name_locations.csv file to suit your specific needs and improve geocoding."+GUI_IO_util.msg_Esc)
                                    # "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi;\n\n  2. to visualize SVO relations in a wordcloud (Subjects in red; Verbs in blue; Objects in green);\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.\n\nThe GIS mapping option is not available for SENNA or CoreNLP OpenIE." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                  "Produce an animated map showing how SVO subjects (social actors) move across locations over the course of the narrative.\n"
+                                   "Uses the Subject (S) column as the moving entity and the Location column from the SVO output to track movement.\n"
+                                   "Unlike the GIS NER approach, this captures common-noun actors (e.g., 'the mob', 'soldiers') not just proper names."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox to compare two existing SVO csv files produced by different NLP packages (e.g., CoreNLP vs Stanza vs spaCy).\n\nWhen you click RUN with this option checked, two file dialogs will prompt you to select the first SVO csv file (e.g., from CoreNLP) and the second SVO csv file (e.g., from Stanza).\n\nThe comparison produces:\n  1. A summary csv with triple overlap percentage (Jaccard), unique triple counts, and recall rates.\n  2. A differences csv listing all (S, V, O) triples found by one parser but not the other.\n  3. A shared csv listing all triples found by both parsers.\n\nTriples are normalized (lowercase, trimmed) before comparison.\n\nIMPORTANT: Do not expect a perfect match. Different parsers build different dependency trees, so they will naturally extract different SVO triples. A low overlap rate does not mean one parser is wrong — it reflects genuine differences in syntactic analysis. Use the differences file to review the most significant discrepancies manually."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",

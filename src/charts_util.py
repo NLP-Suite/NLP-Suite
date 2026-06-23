@@ -22,6 +22,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+import warnings
+warnings.simplefilter(action='ignore', category=RuntimeWarning)
+
 import tkinter.messagebox as mb
 from collections import Counter
 import pandas as pd
@@ -492,8 +495,6 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
     count_var_SV = count_var
 
     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
-
-    print("\n\n\nRecords in inputfile (in charts_util)", nRecords, '  ', inputFilename)
 
     # standard bar chart ------------------------------------------------------------------------------
     # Form	Lemma	POS	Record ID	Sentence ID	Document ID	Document
@@ -1562,6 +1563,11 @@ def waffle_chart(inputFilename, outputDir, category_col, top_n=10, grid_size=10)
     return out_path
 
 
+def bubble_chart(inputFilename, outputDir, y_column, X_axis_var='', color_column=''):
+    import charts_Plotly_util
+    return charts_Plotly_util.bubble_chart(inputFilename, outputDir, y_column, X_axis_var, color_column)
+
+
 # written by Samir Kaddoura, March 2023
 
 # var1 is the first categorical variable, lengthvar1 is the amount of var 1: should take values of 5 or 10
@@ -2563,6 +2569,7 @@ def network_graph_visjs(inputFilename, outputDir, col1, col2, col3,
 
     edges = {}
     edge_dates = {}
+    edge_labels = {}
     for _, row in net_df.iterrows():
         vals = [row[c] for c in svo_cols if row[c]]
         row_date = None
@@ -2575,6 +2582,12 @@ def network_graph_visjs(inputFilename, outputDir, col1, col2, col3,
             edges[key] = edges.get(key, 0) + 1
             if row_date is not None:
                 edge_dates.setdefault(key, []).append(row_date)
+        if len(vals) >= 3:
+            verb = row[svo_cols[1]]
+            if verb:
+                edge_labels.setdefault((vals[0], vals[-1]), set()).add(verb)
+                for i in range(len(vals) - 1):
+                    edge_labels.setdefault((vals[i], vals[i + 1]), set()).add(verb)
 
     triplet_counts = {}
     for _, row in net_df.iterrows():
@@ -2630,13 +2643,35 @@ def network_graph_visjs(inputFilename, outputDir, col1, col2, col3,
             'title': '{} (freq: {})'.format(n, freq),
             'role': rk})
 
+    all_verbs = sorted(set(v for labels in edge_labels.values() for v in labels))
+    edge_color_palette = [
+        '#E04040', '#4060E0', '#30A030', '#E0A020', '#9040C0',
+        '#20B0B0', '#E06090', '#808000', '#FF6020', '#6080FF',
+        '#A05030', '#00A060', '#C04080', '#5090A0', '#D0D030',
+        '#8060C0', '#40C080', '#E08040', '#6060A0', '#B04040']
+    verb_color_map = {}
+    for i, v in enumerate(all_verbs):
+        verb_color_map[v] = edge_color_palette[i % len(edge_color_palette)]
+
     vis_edges = []
     for (s, t), w in edges.items():
+        labels_for_edge = edge_labels.get((s, t), set())
+        if len(labels_for_edge) == 1:
+            ec = verb_color_map[next(iter(labels_for_edge))]
+        else:
+            ec = '#aaaaaa'
+        label_str = ', '.join(sorted(labels_for_edge)) if labels_for_edge else ''
+        title_parts = ['{} → {}'.format(s, t)]
+        if label_str:
+            title_parts.append('via: {}'.format(label_str))
+        title_parts.append('count: {}'.format(w))
         e_entry = {
             'from': node_id_map[s], 'to': node_id_map[t],
             'value': w,
-            'title': '{} → {} ({})'.format(s, t, w),
-            'color': {'color': '#aaaaaa', 'highlight': '#333333'}}
+            'title': ' | '.join(title_parts),
+            'label': label_str if len(labels_for_edge) == 1 else '',
+            'color': {'color': ec, 'highlight': '#333333'},
+            'edgeVerb': label_str}
         if _has_dates and (s, t) in edge_dates:
             e_entry['dates'] = sorted(set(
                 d.strftime('%Y-%m-%d') for d in edge_dates[(s, t)]))
@@ -2699,6 +2734,13 @@ def network_graph_visjs(inputFilename, outputDir, col1, col2, col3,
     for rk, rl in zip(role_keys, role_labels):
         legend_parts.append(
             '<span class="leg" style="background:{}"></span>{}'.format(palette[rk], rl))
+    if all_verbs:
+        legend_parts.append('&nbsp;&nbsp;|&nbsp;&nbsp;<b>Edges:</b>')
+        for v in all_verbs[:12]:
+            legend_parts.append(
+                '<span class="leg-e" style="background:{}"></span>{}'.format(verb_color_map[v], v))
+        if len(all_verbs) > 12:
+            legend_parts.append('… +{} more'.format(len(all_verbs) - 12))
     legend_html = '  '.join(legend_parts)
 
     html = """<!DOCTYPE html>
@@ -2712,6 +2754,8 @@ def network_graph_visjs(inputFilename, outputDir, col1, col2, col3,
   #legend {{ text-align: center; padding: 4px; font-size: 13px; }}
   .leg {{ display: inline-block; width: 14px; height: 14px; border-radius: 50%;
           vertical-align: middle; margin: 0 3px 0 12px; }}
+  .leg-e {{ display: inline-block; width: 20px; height: 4px;
+            vertical-align: middle; margin: 0 3px 0 10px; border-radius: 2px; }}
   #time-slider-container {{ display: {slider_display}; padding: 6px 20px;
            background: #f8f8f8; border-top: 1px solid #ddd; text-align: center; }}
   #time-slider-container label {{ font-size: 13px; margin-right: 8px; }}
@@ -2756,12 +2800,17 @@ var options = {{
   interaction: {{ hover: true, tooltipDelay: 100 }},
   nodes: {{ scaling: {{ min: 8, max: 45 }} }},
   edges: {{ arrows: {{ to: {{ enabled: true, scaleFactor: 0.5 }} }},
-            smooth: {{ type: 'continuous' }}, scaling: {{ min: 1, max: 6 }} }}
+            smooth: {{ type: 'continuous' }}, scaling: {{ min: 1, max: 6 }},
+            font: {{ size: 10, color: '#555', strokeWidth: 2, strokeColor: '#fff', align: 'top' }} }}
 }};
 var network = new vis.Network(container, gdata, options);
 var origNodeProps = {{}};
 nodes.forEach(function(n) {{
   origNodeProps[n.id] = {{ size: n.size, fontSize: n.font ? n.font.size : 14 }};
+}});
+var origEdgeColors = {{}};
+edges.forEach(function(e) {{
+  origEdgeColors[e.id] = e.color && e.color.color ? e.color.color : '#aaaaaa';
 }});
 function resetAll() {{
   nodes.forEach(function(n) {{
@@ -2770,7 +2819,8 @@ function resetAll() {{
                     font: {{ size: orig.fontSize, color: '#333' }} }});
   }});
   edges.forEach(function(e) {{
-    edges.update({{ id: e.id, color: {{ color: '#aaaaaa', opacity: 1.0 }} }});
+    var oc = origEdgeColors[e.id] || '#aaaaaa';
+    edges.update({{ id: e.id, color: {{ color: oc, opacity: 1.0 }} }});
   }});
 }}
 var slider = document.getElementById('time-slider');
@@ -2822,8 +2872,9 @@ function applyTimeFilter(idx) {{
   edges.forEach(function(e) {{
     var dates = e.dates || [];
     var visible = dates.length === 0 || dates.some(function(d) {{ return d <= cutoff; }});
+    var oc = origEdgeColors[e.id] || '#aaaaaa';
     if (visible) {{
-      edges.update({{ id: e.id, color: {{ color: '#aaaaaa', opacity: 1.0 }} }});
+      edges.update({{ id: e.id, color: {{ color: oc, opacity: 1.0 }} }});
     }} else {{
       edges.update({{ id: e.id, color: {{ color: '#eee', opacity: 0.03 }} }});
     }}
@@ -2866,8 +2917,9 @@ network.on("click", function(params) {{
     }}
   }});
   edges.forEach(function(e) {{
+    var oc = origEdgeColors[e.id] || '#aaaaaa';
     if (involvedEdgeIds.has(e.id)) {{
-      edges.update({{ id: e.id, color: {{ color: '#333', opacity: 1.0 }} }});
+      edges.update({{ id: e.id, color: {{ color: oc, opacity: 1.0 }} }});
     }} else {{
       edges.update({{ id: e.id, color: {{ color: '#eee', opacity: 0.08 }} }});
     }}
@@ -2968,6 +3020,778 @@ network.on("click", function(params) {{
         print(f"  WARNING: Gephi .gexf export: {ge}")
 
     return output_files
+
+
+def hierarchical_tree(inputFilename, outputDir, parent_col, child_col,
+                      label_col=None, info_col=None, color_col=None):
+    """Build an interactive D3.js hierarchical tree from parent-child CSV columns.
+
+    Parameters
+    ----------
+    inputFilename : str   CSV file path.
+    outputDir : str
+    parent_col : str      Column with parent node names.
+    child_col : str       Column with child node names.
+    label_col : str       Optional column for display labels (defaults to child_col).
+    info_col : str        Optional column for tooltip/detail text (e.g., dates, attributes).
+    color_col : str       Optional column for node color grouping.
+
+    Returns
+    -------
+    list of str   Paths to output files (HTML).
+    """
+    import json as _json
+    import re as _re
+
+    try:
+        df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+    except UnicodeDecodeError:
+        df = pd.read_csv(inputFilename, encoding='ISO-8859-1', on_bad_lines='skip')
+    except Exception as e:
+        print(f"  WARNING: Could not read CSV: {e}")
+        return []
+
+    if parent_col not in df.columns or child_col not in df.columns:
+        print(f"  WARNING: Required columns '{parent_col}' and/or '{child_col}' not found.")
+        return []
+
+    df = df[[c for c in [parent_col, child_col, label_col, info_col, color_col] if c and c in df.columns]].dropna(subset=[child_col])
+    df[parent_col] = df[parent_col].fillna('').astype(str).str.strip()
+    df[child_col] = df[child_col].astype(str).str.strip()
+
+    children_of = {}
+    node_info = {}
+    node_label = {}
+    node_group = {}
+    all_children = set()
+
+    for _, row in df.iterrows():
+        parent = row[parent_col]
+        child = row[child_col]
+        if not child or parent == child:
+            continue
+        children_of.setdefault(parent, []).append(child)
+        all_children.add(child)
+        if label_col and label_col in df.columns and pd.notna(row.get(label_col)):
+            node_label[child] = str(row[label_col])
+        if info_col and info_col in df.columns and pd.notna(row.get(info_col)):
+            node_info[child] = str(row[info_col])
+        if color_col and color_col in df.columns and pd.notna(row.get(color_col)):
+            node_group[child] = str(row[color_col])
+
+    all_parents = set(children_of.keys()) - {''}
+    roots = (all_parents - all_children) | ({''} if '' in children_of else set())
+    if not roots:
+        roots = all_parents - all_children
+    if not roots:
+        roots = {next(iter(children_of))} if children_of else set()
+
+    group_palette = [
+        '#5B8C6E', '#8B6B4E', '#4A7B9D', '#C17C4E', '#7B6B8D',
+        '#5A9E8F', '#B85C5C', '#6E8B3D', '#9B7DB8', '#CC9E4F']
+    all_groups = sorted(set(node_group.values()))
+    group_color = {g: group_palette[i % len(group_palette)] for i, g in enumerate(all_groups)}
+
+    def build_tree(node_name, _visited=None):
+        if _visited is None:
+            _visited = set()
+        if node_name in _visited:
+            return None
+        _visited.add(node_name)
+        label = node_label.get(node_name, node_name)
+        info = node_info.get(node_name, '')
+        grp = node_group.get(node_name, '')
+        color = group_color.get(grp, '#5B8C6E')
+        initials = ''.join(w[0].upper() for w in label.split() if w)[:2]
+        result = {
+            'name': label, 'initials': initials,
+            'info': info, 'group': grp, 'color': color}
+        kids = children_of.get(node_name, [])
+        if kids:
+            child_nodes = [build_tree(c, _visited.copy()) for c in kids]
+            result['children'] = [c for c in child_nodes if c is not None]
+        return result
+
+    if len(roots) == 1:
+        root_name = next(iter(roots))
+        if root_name == '':
+            direct_children = children_of.get('', [])
+            if len(direct_children) == 1:
+                tree_data = build_tree(direct_children[0])
+            else:
+                tree_data = {'name': 'Root', 'initials': 'R', 'info': '', 'group': '', 'color': '#888',
+                             'children': [build_tree(c) for c in direct_children]}
+        else:
+            tree_data = build_tree(root_name)
+    else:
+        tree_data = {'name': 'Root', 'initials': 'R', 'info': '', 'group': '', 'color': '#888',
+                     'children': [build_tree(r) for r in sorted(roots) if r]}
+
+    legend_html = ''
+    if all_groups:
+        parts = []
+        for g in all_groups:
+            parts.append('<span class="leg" style="background:{}"></span>{}'.format(group_color[g], g))
+        legend_html = '  '.join(parts)
+
+    html = """<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<title>{title}</title>
+<style>
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  body {{ font-family: 'Segoe UI', Arial, sans-serif; background: #f5f0eb; }}
+  #title {{ text-align: center; padding: 16px; font-size: 20px; font-weight: bold; color: #333; }}
+  #legend {{ text-align: center; padding: 4px 16px 12px; font-size: 13px; }}
+  .leg {{ display: inline-block; width: 14px; height: 14px; border-radius: 50%;
+          vertical-align: middle; margin: 0 3px 0 12px; }}
+  #hint {{ text-align: center; padding: 0 16px 8px; font-size: 12px; color: #999; }}
+  #tree-container {{ width: 100%; overflow: auto; padding: 20px; text-align: center; }}
+  #tree-container svg {{ display: inline-block; }}
+  svg {{ font-family: 'Segoe UI', Arial, sans-serif; }}
+  .link {{ fill: none; stroke: #c5b9a8; stroke-width: 1.5px; }}
+  .node-circle {{ cursor: pointer; stroke: #fff; stroke-width: 2px; }}
+  .node-circle-collapsed {{ stroke: #333; stroke-width: 2.5px; stroke-dasharray: 3,2; }}
+  .node-label {{ font-size: 12px; fill: #333; font-weight: 500; }}
+  .node-initials {{ font-size: 11px; fill: #fff; font-weight: bold; text-anchor: middle;
+                     dominant-baseline: central; pointer-events: none; }}
+  .tooltip {{ position: absolute; background: #fff; border: 1px solid #ccc; border-radius: 6px;
+              padding: 8px 12px; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+              pointer-events: none; max-width: 280px; }}
+  .badge {{ font-size: 10px; fill: #fff; font-weight: bold; text-anchor: middle;
+            dominant-baseline: central; pointer-events: none; }}
+</style>
+</head><body>
+<div id="title">{title}</div>
+<div id="legend">{legend_html}</div>
+<div id="hint">Click to expand/collapse complex children &bull; Double-click to show/hide simplex fields</div>
+<div id="tree-container"></div>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+var treeData = {tree_json};
+var margin = {{ top: 30, right: 40, bottom: 30, left: 40 }};
+var nodeRadius = 22;
+var levelHeight = 120;
+var nodeSpacing = 60;
+
+// Separate simplex children from complex children in the data
+function separateSimplexes(node) {{
+  if (!node.children) return;
+  node._simplexes = [];
+  var complexKids = [];
+  node.children.forEach(function(c) {{
+    if (c.group === 'Simplex') {{
+      node._simplexes.push(c);
+    }} else {{
+      complexKids.push(c);
+      separateSimplexes(c);
+    }}
+  }});
+  node.children = complexKids.length > 0 ? complexKids : null;
+}}
+separateSimplexes(treeData);
+
+var svg = d3.select('#tree-container').append('svg');
+var gRoot = svg.append('g');
+
+var tooltip = d3.select('body').append('div').attr('class', 'tooltip')
+    .style('display', 'none');
+
+// Build hierarchy from complex-only tree
+var root = d3.hierarchy(treeData, function(d) {{ return d.children; }});
+
+// Collapse below depth 2
+root.each(function(d) {{
+  if (d.depth >= 3 && d.children) {{
+    d._collapsed = d.children;
+    d.children = null;
+  }}
+}});
+
+var i = 0;
+var duration = 400;
+
+// Track which nodes have simplex panel open
+var simplexVisible = {{}};
+
+function update(source) {{
+  var treemap = d3.tree().nodeSize([nodeSpacing, levelHeight]);
+  treemap(root);
+
+  var nodes = root.descendants();
+  var links = root.links();
+
+  var minX = d3.min(nodes, function(d) {{ return d.x; }});
+  var maxX = d3.max(nodes, function(d) {{ return d.x; }});
+  var maxY = d3.max(nodes, function(d) {{ return d.y; }});
+  var treeWidth = (maxX - minX) + margin.left + margin.right + nodeSpacing;
+  var treeHeight = maxY + margin.top + margin.bottom + 120;
+
+  svg.attr('width', Math.max(treeWidth, 600))
+     .attr('height', Math.max(treeHeight, 300));
+
+  var offsetX = -minX + margin.left + nodeSpacing / 2;
+  gRoot.attr('transform', 'translate(' + offsetX + ',' + margin.top + ')');
+
+  // Clear and redraw
+  gRoot.selectAll('path.link').remove();
+  gRoot.selectAll('g.node').remove();
+  gRoot.selectAll('g.simplex-panel').remove();
+
+  // Links
+  gRoot.selectAll('path.link')
+      .data(links)
+      .enter().append('path')
+      .attr('class', 'link')
+      .attr('d', function(d) {{
+        return 'M' + d.source.x + ',' + d.source.y
+             + ' C' + d.source.x + ',' + (d.source.y + d.target.y) / 2
+             + ' ' + d.target.x + ',' + (d.source.y + d.target.y) / 2
+             + ' ' + d.target.x + ',' + d.target.y;
+      }});
+
+  // Nodes
+  var node = gRoot.selectAll('g.node')
+      .data(nodes)
+      .enter().append('g')
+      .attr('class', 'node')
+      .attr('transform', function(d) {{ return 'translate(' + d.x + ',' + d.y + ')'; }});
+
+  node.append('circle')
+      .attr('r', nodeRadius)
+      .attr('fill', function(d) {{ return d.data.color || '#5B8C6E'; }})
+      .attr('class', function(d) {{
+        return 'node-circle' + (d._collapsed ? ' node-circle-collapsed' : '');
+      }})
+      .on('click', function(event, d) {{
+        event.stopPropagation();
+        if (d._collapsed) {{
+          d.children = d._collapsed;
+          d._collapsed = null;
+        }} else if (d.children) {{
+          d._collapsed = d.children;
+          d.children = null;
+        }}
+        update(d);
+      }})
+      .on('dblclick', function(event, d) {{
+        event.stopPropagation();
+        event.preventDefault();
+        var sxList = d.data._simplexes;
+        if (!sxList || sxList.length === 0) return;
+        var key = d.data.name;
+        simplexVisible[key] = !simplexVisible[key];
+        update(d);
+      }})
+      .on('mouseover', function(event, d) {{
+        var html = '<b>' + d.data.name + '</b>';
+        var nSx = d.data._simplexes ? d.data._simplexes.length : 0;
+        var nCx = 0;
+        if (d._collapsed) nCx = d._collapsed.length;
+        else if (d.children) nCx = d.children.length;
+        if (nCx > 0) html += '<br>' + nCx + ' complex children';
+        if (d._collapsed) html += ' (click to expand)';
+        if (nSx > 0) html += '<br>' + nSx + ' simplex fields (double-click to show)';
+        tooltip.html(html).style('display', 'block')
+               .style('left', (event.pageX + 12) + 'px')
+               .style('top', (event.pageY - 20) + 'px');
+      }})
+      .on('mouseout', function() {{ tooltip.style('display', 'none'); }});
+
+  node.append('text')
+      .attr('class', 'node-initials')
+      .text(function(d) {{ return d.data.initials; }});
+
+  // Badge for collapsed complex children
+  node.each(function(d) {{
+    if (d._collapsed) {{
+      var g = d3.select(this);
+      g.append('circle')
+        .attr('class', 'badge-bg')
+        .attr('cx', nodeRadius - 4).attr('cy', -nodeRadius + 4)
+        .attr('r', 9).attr('fill', '#c0392b');
+      g.append('text')
+        .attr('class', 'badge')
+        .attr('x', nodeRadius - 4).attr('y', -nodeRadius + 4)
+        .text(d._collapsed.length);
+    }}
+  }});
+
+  // Badge for simplex count (blue, bottom-right)
+  node.each(function(d) {{
+    var nSx = d.data._simplexes ? d.data._simplexes.length : 0;
+    if (nSx > 0) {{
+      var g = d3.select(this);
+      g.append('circle')
+        .attr('class', 'badge-bg')
+        .attr('cx', nodeRadius - 4).attr('cy', nodeRadius - 4)
+        .attr('r', 9).attr('fill', '#2980b9');
+      g.append('text')
+        .attr('class', 'badge')
+        .attr('x', nodeRadius - 4).attr('y', nodeRadius - 4)
+        .text(nSx);
+    }}
+  }});
+
+  // Labels (complex only)
+  node.append('text')
+      .attr('class', 'node-label')
+      .attr('y', nodeRadius + 16).attr('text-anchor', 'middle')
+      .text(function(d) {{ return d.data.name; }});
+
+  // Simplex panels for nodes that have been double-clicked
+  nodes.forEach(function(d) {{
+    var sxList = d.data._simplexes;
+    if (!sxList || sxList.length === 0) return;
+    if (!simplexVisible[d.data.name]) return;
+
+    var panel = gRoot.append('g')
+        .attr('class', 'simplex-panel')
+        .attr('transform', 'translate(' + (d.x + nodeRadius + 30) + ',' + (d.y - 10) + ')');
+
+    var lineH = 18;
+    var padX = 10, padY = 6;
+    var maxW = 0;
+    sxList.forEach(function(s) {{ maxW = Math.max(maxW, s.name.length * 7); }});
+    var boxW = maxW + padX * 2 + 10;
+    var boxH = sxList.length * lineH + padY * 2;
+
+    panel.append('rect')
+      .attr('x', 0).attr('y', 0)
+      .attr('width', boxW).attr('height', boxH)
+      .attr('rx', 6).attr('ry', 6)
+      .attr('fill', '#fff').attr('stroke', '#c5b9a8').attr('stroke-width', 1);
+
+    panel.append('line')
+      .attr('x1', -30).attr('y1', 10)
+      .attr('x2', 0).attr('y2', 10)
+      .attr('stroke', '#c5b9a8').attr('stroke-width', 1);
+
+    sxList.forEach(function(s, idx) {{
+      panel.append('circle')
+        .attr('cx', padX + 6).attr('cy', padY + idx * lineH + lineH / 2)
+        .attr('r', 5).attr('fill', s.color || '#8B6B4E');
+      panel.append('text')
+        .attr('x', padX + 16).attr('y', padY + idx * lineH + lineH / 2 + 4)
+        .attr('font-size', '11px').attr('fill', '#555')
+        .text(s.name);
+    }});
+  }});
+}}
+
+root.each(function(d) {{ d.id = ++i; }});
+update(root);
+</script>
+</body></html>"""
+
+    title = os.path.splitext(os.path.basename(inputFilename))[0].replace('_', ' ')
+
+    html = html.format(
+        title=title,
+        legend_html=legend_html,
+        tree_json=_json.dumps(tree_data))
+
+    def _safe_fn(s):
+        return _re.sub(r'[<>:"/\\|?*]', '_', s).replace(' ', '_')
+
+    base = _safe_fn(os.path.splitext(os.path.basename(inputFilename))[0])
+    output_file = os.path.join(outputDir, '{}_tree.html'.format(base))
+    with open(output_file, 'w', encoding='utf-8') as fh:
+        fh.write(html)
+    print(f"  Hierarchical tree saved: {output_file}")
+    return [output_file]
+
+
+def animated_migration_map(inputFilename, outputDir, entity_col, location_col,
+                           date_col=None, sequence_col=None, lat_col=None, lon_col=None,
+                           doc_col=None):
+    """Build an animated Leaflet migration map with timeline slider.
+
+    Parameters
+    ----------
+    inputFilename : str   CSV file path.
+    outputDir : str
+    entity_col : str      Column with entity/person names.
+    location_col : str    Column with location names.
+    date_col : str        Optional column with dates (used for ordering and labels).
+    sequence_col : str    Optional column with numeric ordering (e.g., chapter, sentence index).
+                          If neither date_col nor sequence_col, row order is used.
+    lat_col, lon_col : str  Optional pre-geocoded coordinate columns.
+    doc_col : str         Optional column with document names (adds a document filter dropdown).
+
+    Returns
+    -------
+    list of str   Paths to output files (HTML).
+    """
+    import json as _json
+    import re as _re
+
+    try:
+        df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+    except UnicodeDecodeError:
+        df = pd.read_csv(inputFilename, encoding='ISO-8859-1', on_bad_lines='skip')
+    except Exception as e:
+        print(f"  WARNING: Could not read CSV: {e}")
+        return []
+
+    for c in [entity_col, location_col]:
+        if c not in df.columns:
+            print(f"  WARNING: Column '{c}' not found in CSV.")
+            return []
+
+    has_coords = lat_col and lon_col and lat_col in df.columns and lon_col in df.columns
+
+    if not doc_col and 'Document' in df.columns:
+        doc_col = 'Document'
+    has_doc = doc_col and doc_col in df.columns
+
+    keep_cols = [entity_col, location_col]
+    if date_col and date_col in df.columns:
+        keep_cols.append(date_col)
+    if sequence_col and sequence_col in df.columns:
+        keep_cols.append(sequence_col)
+    if has_coords:
+        keep_cols.extend([lat_col, lon_col])
+    if has_doc:
+        keep_cols.append(doc_col)
+    df = df[keep_cols].dropna(subset=[entity_col, location_col]).copy()
+    df[entity_col] = df[entity_col].astype(str).str.strip()
+    df[location_col] = df[location_col].astype(str).str.strip()
+
+    if sequence_col and sequence_col in df.columns:
+        df = df.sort_values(sequence_col)
+        df['_order_label'] = df[sequence_col].astype(str)
+    elif date_col and date_col in df.columns:
+        df['_parsed_date'] = pd.to_datetime(df[date_col], errors='coerce')
+        df = df.sort_values('_parsed_date')
+        df['_order_label'] = df[date_col].astype(str)
+    else:
+        df['_order_label'] = [str(i) for i in range(len(df))]
+
+    if not has_coords:
+        try:
+            from geopy.geocoders import Nominatim
+            import time as _time
+        except ImportError:
+            print("  WARNING: geopy not available for geocoding. Provide lat/lon columns or install geopy.")
+            return []
+
+        geocoder = Nominatim(user_agent="NLP_Suite_migration_map", timeout=10)
+        unique_locs = df[location_col].unique()
+        loc_coords = {}
+        print(f"  Geocoding {len(unique_locs)} unique locations...")
+        for loc in unique_locs:
+            if not loc:
+                continue
+            try:
+                result = geocoder.geocode(loc)
+                if result:
+                    loc_coords[loc] = (result.latitude, result.longitude)
+                else:
+                    print(f"    Could not geocode: {loc}")
+            except Exception as ge:
+                print(f"    Geocoding error for '{loc}': {ge}")
+            _time.sleep(1.1)
+
+        df['_lat'] = df[location_col].map(lambda x: loc_coords.get(x, (None, None))[0])
+        df['_lon'] = df[location_col].map(lambda x: loc_coords.get(x, (None, None))[1])
+    else:
+        df['_lat'] = pd.to_numeric(df[lat_col], errors='coerce')
+        df['_lon'] = pd.to_numeric(df[lon_col], errors='coerce')
+
+    df = df.dropna(subset=['_lat', '_lon'])
+    if df.empty:
+        print("  WARNING: No geocoded locations found.")
+        return []
+
+    entity_palette = [
+        '#2E8B57', '#8B4513', '#4682B4', '#CD853F', '#6A5ACD',
+        '#20B2AA', '#DC143C', '#6B8E23', '#9370DB', '#DAA520']
+    all_entities = sorted(df[entity_col].unique())
+    entity_color = {e: entity_palette[i % len(entity_palette)] for i, e in enumerate(all_entities)}
+
+    all_docs = sorted(df[doc_col].astype(str).unique()) if has_doc else []
+
+    migration_data = {}
+    for entity in all_entities:
+        edf = df[df[entity_col] == entity]
+        stops = []
+        for _, row in edf.iterrows():
+            stop = {
+                'location': row[location_col],
+                'lat': round(float(row['_lat']), 6),
+                'lon': round(float(row['_lon']), 6),
+                'label': row['_order_label']
+            }
+            if has_doc:
+                stop['doc'] = str(row[doc_col])
+            stops.append(stop)
+        seen = set()
+        unique_stops = []
+        for s in stops:
+            key = (s['location'], s['label'])
+            if key not in seen:
+                seen.add(key)
+                unique_stops.append(s)
+        migration_data[entity] = {
+            'color': entity_color[entity],
+            'stops': unique_stops
+        }
+
+    all_labels = []
+    for entity in all_entities:
+        for s in migration_data[entity]['stops']:
+            if s['label'] not in all_labels:
+                all_labels.append(s['label'])
+
+    all_lats = df['_lat'].tolist()
+    all_lons = df['_lon'].tolist()
+    center_lat = sum(all_lats) / len(all_lats)
+    center_lon = sum(all_lons) / len(all_lons)
+
+    legend_parts = []
+    for e in all_entities:
+        legend_parts.append(
+            '<span class="leg-dot" style="background:{}"></span>{}'.format(entity_color[e], e))
+    legend_html = '  '.join(legend_parts)
+
+    html = """<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<title>Migration Map</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  body {{ font-family: 'Segoe UI', Arial, sans-serif; }}
+  #title {{ text-align: center; padding: 10px; font-size: 18px; font-weight: bold; color: #333; }}
+  #legend {{ text-align: center; padding: 4px 16px 8px; font-size: 13px; }}
+  .leg-dot {{ display: inline-block; width: 12px; height: 12px; border-radius: 50%;
+              vertical-align: middle; margin: 0 3px 0 10px; }}
+  #map {{ width: 100%; height: 65vh; }}
+  #controls {{ display: flex; align-items: center; justify-content: center;
+               padding: 10px 20px; background: #f8f8f8; border-top: 1px solid #ddd; gap: 12px; }}
+  #controls button {{ font-size: 16px; padding: 4px 14px; cursor: pointer; border: 1px solid #ccc;
+                       border-radius: 4px; background: #fff; }}
+  #controls button:hover {{ background: #e8e8e8; }}
+  .speed-btn {{ font-size: 13px !important; padding: 2px 8px !important; }}
+  .speed-btn.active {{ background: #4682B4 !important; color: #fff; border-color: #4682B4 !important; }}
+  #slider {{ flex: 1; max-width: 60%; }}
+  #time-display {{ font-weight: bold; font-size: 15px; min-width: 100px; text-align: center; }}
+  #doc-filter {{ padding: 4px 8px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px;
+                 max-width: 250px; }}
+  #filter-bar {{ text-align: center; padding: 4px 16px; font-size: 13px; background: #f0f0f0;
+                  border-bottom: 1px solid #ddd; }}
+  #info {{ padding: 8px 16px; font-size: 13px; color: #555; text-align: center; }}
+</style>
+</head><body>
+<div id="title">{title}</div>
+<div id="legend">{legend_html}</div>
+{doc_filter_html}
+<div id="map"></div>
+<div id="controls">
+  <button id="play-btn">&#9654;</button>
+  <button class="speed-btn active" data-speed="1">1x</button>
+  <button class="speed-btn" data-speed="2">2x</button>
+  <button class="speed-btn" data-speed="4">4x</button>
+  <input type="range" id="slider" min="0" max="{max_step}" value="0" step="1">
+  <span id="time-display">{first_label}</span>
+</div>
+<div id="info">Click play or drag the slider to animate migration paths.</div>
+<script>
+var migrationData = {migration_json};
+var allLabels = {labels_json};
+var entityNames = {entities_json};
+var allDocs = {docs_json};
+var hasDocFilter = allDocs.length > 0;
+
+function getFilteredData() {{
+  if (!hasDocFilter) return {{ data: migrationData, labels: allLabels, entities: entityNames }};
+  var sel = document.getElementById('doc-filter');
+  var docVal = sel ? sel.value : '';
+  if (!docVal) return {{ data: migrationData, labels: allLabels, entities: entityNames }};
+  var filtered = {{}};
+  var filteredEntities = [];
+  var filteredLabels = [];
+  entityNames.forEach(function(name) {{
+    var stops = migrationData[name].stops.filter(function(s) {{ return s.doc === docVal; }});
+    if (stops.length > 0) {{
+      filtered[name] = {{ color: migrationData[name].color, stops: stops }};
+      filteredEntities.push(name);
+      stops.forEach(function(s) {{
+        if (filteredLabels.indexOf(s.label) === -1) filteredLabels.push(s.label);
+      }});
+    }}
+  }});
+  return {{ data: filtered, labels: filteredLabels, entities: filteredEntities }};
+}}
+
+var map = L.map('map').setView([{center_lat}, {center_lon}], 7);
+L.tileLayer('https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}@2x.png', {{
+  attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+  maxZoom: 18
+}}).addTo(map);
+
+var entityLayers = {{}};
+entityNames.forEach(function(name) {{
+  entityLayers[name] = {{
+    pathLine: null,
+    markers: [],
+    currentMarker: null,
+    labelMarker: null
+  }};
+}});
+
+var slider = document.getElementById('slider');
+var timeDisplay = document.getElementById('time-display');
+var playBtn = document.getElementById('play-btn');
+var speedBtns = document.querySelectorAll('.speed-btn');
+var playInterval = null;
+var speed = 1;
+
+speedBtns.forEach(function(btn) {{
+  btn.addEventListener('click', function() {{
+    speed = parseInt(this.dataset.speed);
+    speedBtns.forEach(function(b) {{ b.classList.remove('active'); }});
+    this.classList.add('active');
+  }});
+}});
+
+function clearAll() {{
+  entityNames.forEach(function(name) {{
+    var el = entityLayers[name];
+    if (el.pathLine) {{ map.removeLayer(el.pathLine); el.pathLine = null; }}
+    el.markers.forEach(function(m) {{ map.removeLayer(m); }});
+    el.markers = [];
+    if (el.currentMarker) {{ map.removeLayer(el.currentMarker); el.currentMarker = null; }}
+    if (el.labelMarker) {{ map.removeLayer(el.labelMarker); el.labelMarker = null; }}
+  }});
+}}
+
+function onDocFilterChange() {{
+  var f = getFilteredData();
+  var maxStep = Math.max(0, f.labels.length - 1);
+  slider.max = maxStep;
+  slider.value = 0;
+  showStep(0);
+}}
+
+function showStep(stepIdx) {{
+  clearAll();
+  if (stepIdx < 0) return;
+  var f = getFilteredData();
+  var labels = f.labels;
+  var cutoffLabel = labels[Math.min(stepIdx, labels.length - 1)];
+  timeDisplay.textContent = cutoffLabel || '';
+
+  f.entities.forEach(function(name) {{
+    var data = f.data[name];
+    var visibleStops = data.stops.filter(function(s) {{
+      return labels.indexOf(s.label) <= stepIdx;
+    }});
+    if (visibleStops.length === 0) return;
+
+    var coords = visibleStops.map(function(s) {{ return [s.lat, s.lon]; }});
+    var el = entityLayers[name];
+
+    if (coords.length > 1) {{
+      el.pathLine = L.polyline(coords, {{
+        color: data.color, weight: 3, opacity: 0.7, dashArray: '8, 4'
+      }}).addTo(map);
+    }}
+
+    visibleStops.forEach(function(s, i) {{
+      var isLast = (i === visibleStops.length - 1);
+      var radius = isLast ? 10 : 6;
+      var opacity = isLast ? 1.0 : 0.5;
+      var marker = L.circleMarker([s.lat, s.lon], {{
+        radius: radius, fillColor: data.color, color: '#fff',
+        weight: 2, fillOpacity: opacity
+      }}).bindTooltip(s.location + ', ' + s.label, {{ permanent: false }}).addTo(map);
+      el.markers.push(marker);
+
+      if (isLast) {{
+        el.currentMarker = L.circleMarker([s.lat, s.lon], {{
+          radius: 14, fillColor: data.color, color: '#fff',
+          weight: 3, fillOpacity: 0.9
+        }}).addTo(map);
+        el.labelMarker = L.tooltip({{
+          permanent: true, direction: 'right', offset: [16, 0],
+          className: 'entity-label'
+        }}).setLatLng([s.lat, s.lon])
+          .setContent('<b>' + name + '</b> &middot; &rarr; ' + s.location)
+          .addTo(map);
+      }}
+    }});
+  }});
+}}
+
+slider.addEventListener('input', function() {{
+  showStep(parseInt(this.value));
+}});
+
+playBtn.addEventListener('click', function() {{
+  if (playInterval) {{
+    clearInterval(playInterval);
+    playInterval = null;
+    playBtn.textContent = '\\u25B6';
+    return;
+  }}
+  if (parseInt(slider.value) >= parseInt(slider.max)) slider.value = 0;
+  playBtn.textContent = '\\u275A\\u275A';
+  playInterval = setInterval(function() {{
+    var v = parseInt(slider.value) + 1;
+    if (v > parseInt(slider.max)) {{
+      clearInterval(playInterval);
+      playInterval = null;
+      playBtn.textContent = '\\u25B6';
+      return;
+    }}
+    slider.value = v;
+    showStep(v);
+  }}, 1200 / speed);
+}});
+
+if (hasDocFilter) {{
+  var docSel = document.getElementById('doc-filter');
+  if (docSel) docSel.addEventListener('change', onDocFilterChange);
+}}
+showStep(0);
+</script>
+</body></html>"""
+
+    title = os.path.splitext(os.path.basename(inputFilename))[0].replace('_', ' ')
+    first_label = all_labels[0] if all_labels else ''
+
+    if all_docs:
+        doc_options = '<option value="">All documents</option>'
+        for d in all_docs:
+            doc_options += '<option value="{0}">{0}</option>'.format(d)
+        doc_filter_html = '<div id="filter-bar">Document: <select id="doc-filter">{}</select></div>'.format(doc_options)
+    else:
+        doc_filter_html = ''
+
+    html = html.format(
+        title=title,
+        legend_html=legend_html,
+        doc_filter_html=doc_filter_html,
+        migration_json=_json.dumps(migration_data),
+        labels_json=_json.dumps(all_labels),
+        entities_json=_json.dumps(all_entities),
+        docs_json=_json.dumps(all_docs),
+        center_lat=round(center_lat, 4),
+        center_lon=round(center_lon, 4),
+        max_step=max(0, len(all_labels) - 1),
+        first_label=first_label)
+
+    def _safe_fn(s):
+        return _re.sub(r'[<>:"/\\|?*]', '_', s).replace(' ', '_')
+
+    base = _safe_fn(os.path.splitext(os.path.basename(inputFilename))[0])
+    output_file = os.path.join(outputDir, '{}_migration_map.html'.format(base))
+    with open(output_file, 'w', encoding='utf-8') as fh:
+        fh.write(html)
+    print(f"  Migration map saved: {output_file}")
+
+    return [output_file]
 
 
 def proportional_circle_map(inputFilename, outputDir, location_col):
@@ -3600,6 +4424,8 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
   #legend {{ text-align: center; padding: 4px; font-size: 13px; }}
   .leg {{ display: inline-block; width: 14px; height: 14px; border-radius: 50%;
           vertical-align: middle; margin: 0 3px 0 12px; }}
+  .leg-e {{ display: inline-block; width: 20px; height: 4px;
+            vertical-align: middle; margin: 0 3px 0 10px; border-radius: 2px; }}
   #time-slider-container {{ display: {slider_display}; padding: 6px 20px;
            background: #f8f8f8; border-top: 1px solid #ddd; text-align: center; }}
   #time-slider-container label {{ font-size: 13px; margin-right: 8px; }}
@@ -3716,8 +4542,9 @@ function applyTimeFilter(idx) {{
   edges.forEach(function(e) {{
     var dates = e.dates || [];
     var visible = dates.length === 0 || dates.some(function(d) {{ return d <= cutoff; }});
+    var oc = origEdgeColors[e.id] || '#aaaaaa';
     if (visible) {{
-      edges.update({{ id: e.id, color: {{ color: '#aaaaaa', opacity: 1.0 }} }});
+      edges.update({{ id: e.id, color: {{ color: oc, opacity: 1.0 }} }});
     }} else {{
       edges.update({{ id: e.id, color: {{ color: '#eee', opacity: 0.03 }} }});
     }}
@@ -3769,8 +4596,9 @@ network.on("click", function(params) {{
     }}
   }});
   edges.forEach(function(e) {{
+    var oc = origEdgeColors[e.id] || '#aaaaaa';
     if (involvedEdgeIds.has(e.id)) {{
-      edges.update({{ id: e.id, color: {{ color: '#333', opacity: 1.0 }} }});
+      edges.update({{ id: e.id, color: {{ color: oc, opacity: 1.0 }} }});
     }} else {{
       edges.update({{ id: e.id, color: {{ color: '#eee', opacity: 0.08 }} }});
     }}

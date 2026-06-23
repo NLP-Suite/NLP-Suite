@@ -57,6 +57,32 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
 
 GUI_util.run_button.configure(command=run_script_command)
 
+# Show welcome screen for the first 3 launches, then go straight to the menu.
+# --from-welcome flag is passed by NLP_welcome_main to avoid a redirect loop.
+import json as _json
+
+if '--from-welcome' not in sys.argv:
+    _launch_count_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'config', 'launch_count.json')
+    try:
+        with open(_launch_count_file, 'r') as _f:
+            _launch_data = _json.load(_f)
+        _launch_count = _launch_data.get('count', 0)
+    except (FileNotFoundError, ValueError):
+        _launch_count = 0
+
+    _launch_count += 1
+    try:
+        os.makedirs(os.path.dirname(_launch_count_file), exist_ok=True)
+        with open(_launch_count_file, 'w') as _f:
+            _json.dump({'count': _launch_count}, _f)
+    except Exception:
+        pass
+
+    if _launch_count <= 3:
+        import run_script_util as _rsu
+        _rsu.run_script("NLP_welcome_main.py")
+        sys.exit(0)
+
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
 IO_setup_display_brief=False
@@ -190,7 +216,7 @@ def checkIO_Filename_InputDir(script, IO_values_local=0, fileExtension=''):
 pydict = {}
 pydict[""] = ["", 0]  # not available
 # https://stanfordnlp.github.io/CoreNLP/quote.html
-pydict["Parsers & annotators (BERT, CoreNLP, spaCy, Stanza)"] = ["parsers_annotators_main.py", 1]
+pydict["Parsers & annotators (CoreNLP, spaCy, Stanza)"] = ["parsers_annotators_main.py", 1]
 pydict["CoreNLP annotator - date (normalized NER date)"] = ["parsers_annotators_main.py", 1]
 pydict["CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)"] = ["html_annotator_gender_main.py", 1]
 pydict["CoreNLP annotator - quote"] = ["parsers_annotators_main.py", 1]
@@ -750,6 +776,7 @@ configs_created = ensure_default_configs()
 
 # check for missing I/O configuration options
 setup_IO_checkbox()
+setup_parsers_annotators_checkbox(NLP_package_language_config)
 
 # check for missing external software
 missing_external_software = setup_external_programs_checkbox()

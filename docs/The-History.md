@@ -1,0 +1,15 @@
+### NLP Suite  ![GitHub release (latest by date)](https://img.shields.io/github/v/release/NLP-Suite/NLP-Suite?color=Green&label=Latest%20Version)  
+
+The idea of the NLP Suite came out of **Franzosi**'s life-long work on computer-assisted textual analysis using **PC-ACE (Program for Computer-Assisted Coding of Events)** and of the recent teaching of **Big/Small Data & Visualization (Emory Soc/Ling/QTM 446W)** in the Spring semester of **2016**. To the handful of NLP Java files in PC-ACE written by **Alberto Purpura** in the Fall 2016, we started adding a few Python scripts written by students (e.g., a Python wrapper of Stanford CoreNLP). These Python scripts were run from command line independently of PC-ACE, could only process one or a handful of files, were not user friendly and were very buggy and slow. 
+
+In the Spring semester of **2019**, with **Jack Hester** as TA, we worked hard to improve the Python algorithms and to introduce Graphical User Interface (GUI) in Tkinter for the major scripts. 
+
+In the **summer of 2019**, while a visiting professor at the University of Urbino, Italy, Franzosi decided to learn Python (with the help of **Marco Cappellacci**) to keep up with what student collaborators were doing. Franzosi made it his obsession to continuously improve the user interface, generalize the scripts, and structure the package.
+
+In the Fall semester **2019**, with **Josh Karol** as TA, we abandoned PC-ACE altogether and focused on improving the growing number of Python scripts and the GUIs.
+
+As we were exchanging Python files over email, collaborators **Yi Wang** and **Brett Landau** started urging Franzosi to setup the package in **GitHub**. Swamped with development work, Franzosi resisted having to learn new things until, in the **Spring 2021**, **Rafael Piloto** took the time to setup the NLP Suite GitHub page and here we are. And yes, learning the ins and outs of GitHub was not easy; not to mention writing all the documents for first-time users. **Wei Dai** wrote the scripts to install the NLP Suite with ongoing improvements. Franzosi continued to work on the user interface, developing the online ?HELP, Read me, videos, reminders, TIPS and, with hundreds of functions and scripts, the structure of the NLP Suite. At the same time, he has continued to work with his [**team**](https://github.com/NLP-Suite/NLP-Suite/wiki/The-NLP-Suite-Team) on extending the range of NLP tools available in the NLP Suite.
+
+In the Spring semester **2024**, **Rafael Piloto** designed the new web-based approach to the NLP-Suite and new installation based on **Docker** and managed the team that worked on the project: **Aiden Amaya**, **Calla Gong**, **Isaac (William) Light**, and **Sherry Rui**.
+
+In the Summer **2026**, **Roberto** partnered with **Claude Code** (Anthropic) to improve the efficiency of all NLP Suite algorithms and to greatly expand the range of visualization and corpus analysis tools, adding statistical capabilities to the Suite. They also built the **PyInstaller** packaging pipeline standalone for Windows and macOS distribution, thus overcoming a major obstacle to the easy installation of the NLP Suite.
