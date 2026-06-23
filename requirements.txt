@@ -38,7 +38,8 @@ spacytextblob
 spacy-langdetect
 
 # Transformers / deep learning
-transformers
+# transformers pinned <5: transformers 5.x breaks bert-extractive-summarizer 0.10.1 (Evan's testing).
+transformers==4.41.2
 sentence-transformers
 tensorflow
 tensorflow-hub
@@ -90,7 +91,9 @@ pycorenlp
 stanfordcorenlp
 
 # Image
-Pillow
+# Pillow pinned to 10.4.0: Pillow 12.x is incompatible with the bundled Tcl/Tk 8.6 runtime and
+# crashes loading the welcome-screen images (Evan's testing) - the app won't open without this pin.
+Pillow==10.4.0
 
 # Knowledge graphs
 SPARQLWrapper
