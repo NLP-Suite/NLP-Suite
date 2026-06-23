@@ -25,6 +25,22 @@ CRITICAL_MODULES = [
 
 IGNORED_DECLARATIONS = {"__main__"}
 
+# Top-level imports across src/ that are intentionally NOT present in the bundled
+# environment, so the scan must not report them as missing:
+#   - Legacy Python 2 / Windows-only modules.
+#   - The SRL stack (transformer_srl + allennlp): SRL runs in its own isolated Python
+#     3.8 conda env set up via setup_SRL.py (transformer-srl pins torch 1.7 / allennlp /
+#     spaCy 2.x). transformer_srl is imported only by SRL_worker.py, which runs in that
+#     separate env - never in the bundled python-env.
+IGNORED_SOURCE_IMPORTS = {
+    "urllib2",  # Legacy Python 2 script.
+    "win32con",
+    "win32gui",
+    "winreg",
+    "transformer_srl",  # SRL: separate Python 3.8 env via setup_SRL.py
+    "allennlp",         # SRL dependency, same separate env
+}
+
 
 def declared_modules(source_directory):
     modules = set()
@@ -58,6 +74,37 @@ def declared_modules(source_directory):
                         values.append(element.value)
                 if values:
                     modules.update(values)
+
+    return modules, parse_errors
+
+
+def imported_modules(source_directory):
+    modules = set()
+    parse_errors = []
+    local_modules = {path.stem for path in source_directory.glob("*.py")}
+    standard_modules = set(getattr(sys, "stdlib_module_names", ()))
+
+    for source_file in source_directory.glob("*.py"):
+        try:
+            tree = ast.parse(source_file.read_text(encoding="utf-8-sig"), filename=str(source_file))
+        except Exception as error:
+            parse_errors.append(f"{source_file.name}: {error}")
+            continue
+
+        for node in ast.walk(tree):
+            names = []
+            if isinstance(node, ast.Import):
+                names = [alias.name.split(".", 1)[0] for alias in node.names]
+            elif isinstance(node, ast.ImportFrom) and node.module and node.level == 0:
+                names = [node.module.split(".", 1)[0]]
+
+            for name in names:
+                if (
+                    name not in local_modules
+                    and name not in standard_modules
+                    and name not in IGNORED_SOURCE_IMPORTS
+                ):
+                    modules.add(name)
 
     return modules, parse_errors
 
@@ -126,6 +173,9 @@ def main():
     missing = []
     lookup_errors = {}
     declared, parse_errors = declared_modules(source_directory)
+    imported, import_parse_errors = imported_modules(source_directory)
+    declared.update(imported)
+    parse_errors.extend(import_parse_errors)
     declared.difference_update(IGNORED_DECLARATIONS)
     for module in sorted(declared):
         available, error = module_available(module)
