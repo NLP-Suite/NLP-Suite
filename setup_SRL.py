@@ -8,7 +8,7 @@ the same idea as CoreNLP running in its own Java runtime.
 Run this ONCE per machine. It:
   1. creates a conda env named 'nlp_srl' (Python 3.8),
   2. installs the pinned SRL dependencies into it (in the order that resolves cleanly),
-  3. downloads the pretrained SRL model into lib/SRL/.
+  3. downloads the pretrained SRL model AND the SemLink PropBank->VerbNet role map into lib/SRL/.
 
 Usage:    python setup_SRL.py
 Requires: conda on PATH (Anaconda/Miniconda) and an internet connection.
@@ -24,6 +24,10 @@ ENV_NAME = "nlp_srl"
 PY_VERSION = "3.8"
 MODEL_URL = "https://www.dropbox.com/s/4tes6ypf2do0feb/srl_bert_base_conll2012.tar.gz?dl=1"
 MODEL_NAME = "srl_bert_base_conll2012.tar.gz"
+# SemLink (Palmer et al.) PropBank<->VerbNet linking - gives the principled per-frame thematic roles
+# (Agent/Patient/Theme/Experiencer/Stimulus/Recipient...). Fetched from source, not bundled.
+SEMLINK_URL = "https://raw.githubusercontent.com/cu-clear/semlink/master/instances/pb-vn2.json"
+SEMLINK_NAME = "pb-vn2.json"
 
 # Pinned deps, split into two pip steps because protobuf/overrides must be pinned DOWN after the
 # main install pulls newer versions (this is the sequence verified to run on a modern machine).
@@ -63,15 +67,29 @@ def main():
     run([py, "-m", "pip", "install"] + PIP_STEP2)
     run([py, "-m", "spacy", "download", SPACY_MODEL])
 
-    print("=== 3/3  Downloading SRL model (~400 MB) ===")
+    print("=== 3/3  Downloading SRL model (~400 MB) and the SemLink role map ===")
     os.makedirs(LIB_SRL, exist_ok=True)
     dest = os.path.join(LIB_SRL, MODEL_NAME)
     if os.path.isfile(dest):
         print("Model already present: " + dest)
     else:
-        print("Downloading to " + dest + " ...")
+        print("Downloading model to " + dest + " ...")
         urllib.request.urlretrieve(MODEL_URL, dest)
         print("Downloaded.")
+
+    semlink_dest = os.path.join(LIB_SRL, SEMLINK_NAME)
+    if os.path.isfile(semlink_dest):
+        print("SemLink role map already present: " + semlink_dest)
+    else:
+        try:
+            print("Downloading SemLink PropBank->VerbNet role map (pb-vn2.json) ...")
+            urllib.request.urlretrieve(SEMLINK_URL, semlink_dest)
+            print("Downloaded.")
+        except Exception as e:
+            # Non-fatal: SRL still runs and falls back to the heuristic refined roles without it.
+            print("WARNING: could not download the SemLink role map (%s).\n"
+                  "SRL will still work using heuristic refined roles. You can place pb-vn2.json in\n"
+                  "  %s\nlater to enable the principled VerbNet roles." % (e, LIB_SRL))
 
     print("\n[OK] SRL setup complete. Tick the SRL checkbox in the SVO GUI to use it.")
 
