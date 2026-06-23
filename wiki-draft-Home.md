@@ -16,7 +16,7 @@ Available for:
 
 The NLP Suite offers 50+ GUIs covering:
 
-- **Text analysis** — tokenization, lemmatization, POS tagging, named entity recognition, dependency parsing, coreference resolution, SVO extraction
+- **Text analysis** — tokenization, lemmatization, POS tagging, named entity recognition, dependency parsing, coreference resolution, SVO (Subject-Verb-Object) extraction, SRL (Semantic Role Labeling) extraction
 - **Sentiment & emotion analysis** — BERT, Stanza, VADER, SentiWordNet, ANEW, hedonometer, NRC emotion wheel (with Plutchik visualization)
 - **Topic modeling** — Gensim LDA, MALLET
 - **Word embeddings** — BERT, Gensim Word2Vec
