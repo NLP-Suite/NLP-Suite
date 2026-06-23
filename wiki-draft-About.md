@@ -42,6 +42,7 @@ The NLP Suite offers a comprehensive range of sentiment and emotion analysis too
 ### Information Extraction
 
 * **Subject-Verb-Object (SVO) extractor** (via Stanford CoreNLP, spaCy, Stanza)
+* **Semantic Role Labeling (SRL)** — the richer "who did what to whom": for every verb (predicate) in a sentence it labels the **Agent (ARG0)**, **Patient (ARG1)**, **Recipient/Beneficiary (ARG2)**, and the **Where/When/How/Why** modifiers (English; via a PropBank BERT model). Output includes a CSV, clickable links that open each source document at the exact sentence, an agent→predicate→patient network graph (dynamic/time-animated when documents are dated), a Sankey flow, and frequency charts of the top agents, predicates, and patients.
 * **Coreference resolution** (via Stanford CoreNLP, Stanza)
 * **Topic modeling** (via MALLET and Gensim LDA)
 * **Word embeddings** (via BERT and Gensim Word2Vec with similarity measures)
