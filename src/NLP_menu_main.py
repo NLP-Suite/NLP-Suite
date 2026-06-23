@@ -806,28 +806,28 @@ if sys.platform=='darwin':
     print("\n\n--------------- platform.machine()\n\n--------------- ",platform.machine())
     if platform.machine()!='x86_64':
         import subprocess
-        # Run pip freeze command and capture output
-        output = subprocess.check_output(["pip", "freeze"]).decode("utf-8")
+        # Use the RUNNING interpreter's pip: a bare "pip" is not on PATH in the bundled app, so
+        # subprocess.check_output(["pip", ...]) raised an unhandled exception before mainloop() and
+        # the whole app closed when the setup dialog was dismissed. Also wrap it so any failure here
+        # is never fatal to startup.
+        output = ""
+        try:
+            output = subprocess.check_output([sys.executable, "-m", "pip", "freeze"]).decode("utf-8")
+        except Exception as e:
+            print("Could not run pip freeze for the TensorFlow check (non-fatal): ", e)
         print("\n\n--------------- output\n\n--------------- ", str(output))
-        # Check if tensorflow-metal or tensorflow-macos is in the output
-        if not "tensorflow-metal" in output and not "tensorflow-macos" in output:
-            uninstall_tensorflow = ''
-            if 'tensorflow' in output:
-                uninstall_tensorflow = '\nType: pip uninstall tensorflow and click Enter'
-            install_tensorflow_macos = '\nType: pip install tensorflow-macos and click Enter'
-            mb.showwarning(title='Warning',message='Your Mac is based on an Apple M1 or M2 chips.\n\n' \
-                   'You will have problems running some of the algorithms in the NLP Suite (e.g., the cutting edge BERT based on Google tensorflow).\n\n' \
-                   'You must delete the currently installed Anaconda version and then install the ARM version of Anaconda.\n\n' \
-                    'To remove Anaconda, open ternminal and type one of the following commands:\n\n' \
-                    'rm -rf anaconda3\n' \
-                    'rm -rf ~/anaconda3\n' \
-                    'rm -rf ~/opt/anaconda3\n\n' \
-                    'Once you have run the remove command, close and reopen your terminal to refresh it. You should no longer see (base) in your terminal prompt.\n\n' \
-                    'You can get more information on Anaconda installation at https://docs.anaconda.com/anaconda/install/uninstall/\n\n' \
-                    'You will be directed next to download the ARM version of Anaconda. Once download is complete, double click on the downloaded file to install it.\n\n' \
-                    'Following this, close the NLP Suite GUIs and re-run STEP 2 and STEP 3. You are nearly there...\n' \
-                    'Close and reopen your terminal. Type: NLP and click Enter to activate the NLP environment.' + uninstall_tensorflow + install_tensorflow_macos)
-            anaconda_arm_download_url='https://nam11.safelinks.protection.outlook.com/?url=https%3A%2F%2Frepo.anaconda.com%2Farchive%2FAnaconda3-2022.10-MacOSX-arm64.pkg&data=05%7C01%7Crfranzo%40emory.edu%7C842cbdaeb8374097024a08db103ce5a7%7Ce004fb9cb0a4424fbcd0322606d5df38%7C0%7C0%7C638121625954175023%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=Jas0c9fNf3Z3Eo0jCgPZiv741KCT%2BjcBqtUCnM8D9fs%3D&reserved=0'
-            webbrowser.open_new_tab(anaconda_arm_download_url)
+        # A valid TensorFlow install is tensorflow-macos, tensorflow-metal, OR - since TensorFlow
+        # 2.13+ ships arm64 wheels - the standard 'tensorflow' package. Warn only if none is present.
+        has_tensorflow = ("tensorflow-macos" in output or "tensorflow-metal" in output
+                          or "tensorflow==" in output)
+        if output and not has_tensorflow:
+            mb.showwarning(title='TensorFlow not installed',
+                   message='Your Mac uses Apple Silicon (M1/M2/M3 chips).\n\n'
+                   'Some NLP Suite algorithms (e.g., the cutting-edge BERT models built on Google '
+                   'TensorFlow) need TensorFlow, which is not currently installed.\n\n'
+                   'The bundled Python environment already supports Apple Silicon, so no Anaconda '
+                   'changes are needed. To enable these algorithms, open Terminal and type:\n\n'
+                   'pip install tensorflow\n\n'
+                   'then press Enter and restart the NLP Suite.')
 
 GUI_util.window.mainloop()
