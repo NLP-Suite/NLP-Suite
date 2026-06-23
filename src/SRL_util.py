@@ -33,6 +33,30 @@ _MODEL_FILENAME = "srl_bert_base_conll2012.tar.gz"
 _COPULA_AUX = {"be", "will", "would", "can", "could", "shall", "should", "may", "might", "must", "ought"}
 
 
+def _parse_refined(cell):
+    """'Stimulus: The news | Experiencer: the man' -> {'The news': 'Stimulus', ...}. Each role keeps
+    only its primary name (the part before ' / ', dropping the preposition cue)."""
+    out = {}
+    for seg in str(cell).split(' | '):
+        if ': ' in seg:
+            role, _, filler = seg.partition(': ')
+            filler = filler.strip()
+            if filler:
+                out[filler] = role.split(' / ')[0].strip()
+    return out
+
+
+def _refined_roles_list(cell):
+    """All primary role names in a 'Refined roles' cell (one per labelled argument), for counting."""
+    roles = []
+    for seg in str(cell).split(' | '):
+        if ': ' in seg:
+            role, _, filler = seg.partition(': ')
+            if filler.strip():
+                roles.append(role.split(' / ')[0].strip())
+    return roles
+
+
 def srl_python():
     """Locate the isolated SRL env's python: explicit $NLP_SRL_PYTHON, else a sibling conda env
     (nlp_srl / srl_test38 / srl) of the interpreter running the Suite. '' if not found."""
@@ -167,6 +191,7 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
     svo['Sentence'] = col('Sentence')
     svo['Document'] = col('Document')
     svo['Date'] = col('Date')
+    svo['Refined roles'] = col('Refined roles')   # carried for the VerbNet-role views (not the relations file)
 
     # Keep rows with a predicate AND at least an agent or a patient (i.e., a drawable edge).
     s = svo['Agent (ARG0)'].astype(str).str.strip()
@@ -185,7 +210,8 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
 
     svo_csv = IO_files_util.generate_output_file_name(srl_csv, inputDir, srl_dir, '.csv', 'relations')
     try:
-        svo.to_csv(svo_csv, index=False, encoding='utf-8')
+        svo[['Agent (ARG0)', 'Predicate', 'Patient (ARG1)', 'Location', 'Time',
+             'Sentence ID', 'Sentence', 'Document', 'Date']].to_csv(svo_csv, index=False, encoding='utf-8')
         outputs.append(svo_csv)
     except Exception as e:
         mb.showwarning(title="SRL visualization",
@@ -259,5 +285,83 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
         except Exception as e:
             mb.showwarning(title="SRL charts",
                            message="Could not build the SRL frequency charts:\n\n%s" % e)
+
+    # ---- VerbNet-role views: the refined SemLink roles drive their OWN role-flow network and Sankey
+    # (Agent-role -> Predicate -> Patient-role) plus a frequency profile of the roles, so the NEW role
+    # values are visualized, not just the S/V/O structure. Reuses the same machinery on role-typed
+    # columns, so no change to shared chart code. The Agent/Patient role is read back from the
+    # 'Refined roles' column by matching the argument filler text. ----
+    refined_maps = [_parse_refined(x) for x in svo['Refined roles']]
+    agent_roles, patient_roles = [], []
+    for m, a, p in zip(refined_maps,
+                       svo['Agent (ARG0)'].astype(str), svo['Patient (ARG1)'].astype(str)):
+        a, p = a.strip(), p.strip()
+        agent_roles.append(m.get(a, 'Agent') if a else '')
+        patient_roles.append(m.get(p, 'Patient/Theme') if p else '')
+    role_df = svo.copy()
+    role_df['Agent role'] = agent_roles
+    role_df['Patient role'] = patient_roles
+
+    role_csv = IO_files_util.generate_output_file_name(svo_csv, inputDir, srl_dir, '.csv', 'roles')
+    role_view_ok = False
+    try:
+        role_df[['Agent role', 'Predicate', 'Patient role', 'Location', 'Time',
+                 'Sentence ID', 'Sentence', 'Document', 'Date']].to_csv(
+            role_csv, index=False, encoding='utf-8')
+        outputs.append(role_csv)
+        role_view_ok = True
+    except Exception as e:
+        mb.showwarning(title="SRL role visualization",
+                       message="Could not write the VerbNet-role relations file:\n\n%s" % e)
+
+    if role_view_ok:
+        # Role-flow network: Agent-role -> Predicate -> Patient-role.
+        try:
+            import charts_util
+            rnet = charts_util.network_graph_visjs(
+                role_csv, srl_dir, 'Agent role', 'Predicate', 'Patient role',
+                date_col='Date' if use_date else None)
+            if rnet:
+                outputs.extend(rnet if isinstance(rnet, list) else [rnet])
+        except Exception as e:
+            mb.showwarning(title="SRL role network",
+                           message="Could not build the VerbNet-role network:\n\n%s" % repr(e))
+        # Role-flow Sankey: Agent-role -> Predicate -> Patient-role.
+        try:
+            import charts_util
+            rsankey_out = IO_files_util.generate_output_file_name(
+                role_csv, inputDir, srl_dir, '.html', 'role-sankey')
+            rsk = charts_util.Sankey(role_csv, rsankey_out,
+                                     'Agent role', 5, 'Predicate', 10, True, 'Patient role', 20)
+            if rsk:
+                outputs.extend(rsk if isinstance(rsk, list) else [rsk])
+        except Exception as e:
+            mb.showwarning(title="SRL role Sankey",
+                           message="Could not build the VerbNet-role Sankey:\n\n%s" % e)
+
+    # Refined-role frequency profile (counts every labelled role across the corpus).
+    if chartPackage and chartPackage != 'No charts':
+        try:
+            import charts_util
+            role_rows = []
+            for rr, doc in zip(svo['Refined roles'], svo['Document'].astype(str)):
+                for role in _refined_roles_list(rr):
+                    role_rows.append({'Document': doc, 'Role': role})
+            if role_rows:
+                roles_freq_csv = IO_files_util.generate_output_file_name(
+                    svo_csv, inputDir, srl_dir, '.csv', 'role-freq')
+                pd.DataFrame(role_rows).to_csv(roles_freq_csv, index=False, encoding='utf-8')
+                of = charts_util.visualize_chart(
+                    chartPackage, dataTransformation, roles_freq_csv, srl_dir,
+                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Role'],
+                    chart_title='Frequency Distribution of SRL Refined Roles (VerbNet)',
+                    count_var=1, hover_label=[], outputFileNameType='SRL-refined-role',
+                    column_xAxis_label='Refined role (VerbNet)', groupByList=['Document'],
+                    plotList=['Frequency'], chart_title_label='Refined role (VerbNet)')
+                if of:
+                    outputs.extend(of if isinstance(of, list) else [of])
+        except Exception as e:
+            mb.showwarning(title="SRL refined-role chart",
+                           message="Could not build the refined-role frequency chart:\n\n%s" % e)
 
     return outputs

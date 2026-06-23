@@ -58,15 +58,55 @@ REFINED_ORDER = ["ARG0", "ARG1", "ARG2", "ARG3", "ARG4",
                  "ARGM-LOC", "ARGM-TMP", "ARGM-MNR", "ARGM-CAU"]
 
 
-def refine_role(label, text, predicate_lemma):
-    """Map a PropBank label + its filler text to a fairly-accurate thematic-role name."""
+def load_semlink_map(path):
+    """Load SemLink pb-vn2.json - {sense: {vn_class: {ARG0:'agent', ARG1:'theme', ...}}} - into
+    {(sense, 'ARG0'): 'Agent', ...}: the PRINCIPLED per-frame PropBank-argument -> VerbNet thematic
+    role (Palmer's PropBank<->VerbNet linking). Returns {} if the file is absent or unparseable, so
+    SRL falls back to the heuristic."""
+    role_map = {}
+    if not path or not os.path.exists(path):
+        return role_map
+    try:
+        import json
+        data = json.load(open(path, encoding="utf-8"))
+        for sense, classes in data.items():
+            for argmap in classes.values():          # take the first VerbNet class for this sense
+                for arg, role in argmap.items():
+                    if role:
+                        role_map[(sense, arg.upper())] = str(role).replace("_", " ").title()
+                break
+    except Exception as e:
+        sys.stderr.write("Could not parse SemLink map %s: %s\n" % (path, e))
+        return {}
+    sys.stderr.write("Loaded %d SemLink role mappings from %s\n" % (len(role_map), path))
+    return role_map
+
+
+def _mapped_role(role_map, sense, label):
+    """VerbNet thematic role for a PropBank (sense, label), or None if not mapped."""
+    if not role_map or not sense:
+        return None
+    return role_map.get((sense, label.upper()))
+
+
+def refine_role(label, text, predicate_lemma, sense=None, role_map=None):
+    """The principled SemLink/VerbNet role for (sense, label) when available, KEPT ALONGSIDE the
+    preposition cue on oblique args when the two differ (e.g. 'Destination / Source' for a 'from'
+    phrase). Falls back to a heuristic (preposition + psych-verb list) when SemLink has no mapping."""
+    mapped = _mapped_role(role_map, sense, label)
+    prep_role = None
+    if label in ("ARG2", "ARG3", "ARG4") and text.strip():
+        prep_role = PREP_ROLE.get(text.strip().split()[0].lower())
+    if mapped:
+        if prep_role and prep_role.lower() != mapped.lower():
+            return "%s / %s" % (mapped, prep_role)   # both: VerbNet frame role + preposition cue
+        return mapped
     if label == "ARG0":
         return "Experiencer" if predicate_lemma in PSYCH_VERBS else "Agent"
     if label == "ARG1":
         return "Patient/Theme"
     if label in ("ARG2", "ARG3", "ARG4"):
-        first = text.strip().split()[0].lower() if text.strip() else ""
-        return PREP_ROLE.get(first, "Arg" + label[-1])
+        return prep_role or ("Arg" + label[-1])
     return ARGM_ROLE.get(label, label)
 
 
@@ -209,6 +249,10 @@ def main():
         sys.stderr.write("SRL model not found at: %s\n" % model_path)
         sys.exit(3)
 
+    # Optional SemLink mapping (drop pb-vn2.json next to the model). If present, Refined roles use the
+    # principled per-frame PropBank->VerbNet roles; if absent, the heuristic applies.
+    role_map = load_semlink_map(os.path.join(os.path.dirname(os.path.abspath(model_path)), "pb-vn2.json"))
+
     files = gather_input_files(input_path)
     if not files:
         sys.stderr.write("No .txt input found at: %s\n" % input_path)
@@ -257,11 +301,13 @@ def main():
                 }
                 for label, header in ROLE_COLUMNS:
                     row[header] = "; ".join(r.get(label, []))
-                # Refined thematic-role reading alongside the ARG columns (heuristic).
+                # Refined thematic-role reading alongside the ARG columns (VerbAtlas if pb2va.tsv is
+                # present, else heuristic).
                 refined = []
                 for label in REFINED_ORDER:
                     for txt in r.get(label, []):
-                        refined.append("%s: %s" % (refine_role(label, txt, predicate_lemma), txt))
+                        role = refine_role(label, txt, predicate_lemma, sense=frame, role_map=role_map)
+                        refined.append("%s: %s" % (role, txt))
                 row["Refined roles"] = " | ".join(refined)
                 rows.append(row)
 
