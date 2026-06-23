@@ -323,7 +323,8 @@ def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
 		try:
 			description = "<i><b>Location</b></i>: " + location + "<br/><br/>"
 			if datePresent:
-				description = description + "\n" + "<i><b>Date</b></i>: " + str(date) + "<br/><br/>"
+				# show the date only, not any 00:00:00 time component
+				description = description + "\n" + "<i><b>Date</b></i>: " + str(date).split(' ')[0] + "<br/><br/>"
 			if document != "":
 				description = description + "\n" + "<i><b>Document</b></i>: " + document + "<br/><br/>"
 			if summary !='':

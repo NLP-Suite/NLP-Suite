@@ -85,6 +85,10 @@ def _build_popup_html(row, df_columns, location_col=None, max_text_len=200):
         if col == 'Document':
             val_str = os.path.basename(val_str.replace('=HYPERLINK("', '').rstrip('")'))
 
+        # Dates: show the date only, drop the 00:00:00 midnight time component
+        if col == 'Date':
+            val_str = val.strftime('%Y-%m-%d') if hasattr(val, 'strftime') else val_str.split(' ')[0]
+
         # Truncate long text fields (e.g. Sentence)
         if len(val_str) > max_text_len:
             val_str = val_str[:max_text_len] + '...'
