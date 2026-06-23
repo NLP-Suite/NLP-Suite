@@ -22,7 +22,7 @@ import IO_files_util
 import GUI_IO_util
 import IO_user_interface_util
 import TIPS_util
-import DB_PCACE_data_analyzer_util
+import DB_PCACE_data_analysis_util as DB_PCACE_data_analyzer_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 

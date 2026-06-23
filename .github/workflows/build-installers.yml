@@ -92,28 +92,33 @@ jobs:
         shell: pwsh
         run: |
           $envDir = "dist/NLP_Suite/python-env"
-          $sklearnLibs = Join-Path $envDir "lib/site-packages/sklearn/.libs"
-          # Create sklearn .libs directory if it doesn't exist
+          $sklearnLibs = Join-Path $envDir "Lib/site-packages/sklearn/.libs"
           if (-not (Test-Path $sklearnLibs)) {
             New-Item -ItemType Directory -Path $sklearnLibs -Force | Out-Null
             Write-Host "Created $sklearnLibs"
           }
-          # VC++ runtime DLLs that sklearn and other native packages need
-          $vcDlls = @("msvcp140.dll", "vcruntime140.dll", "vcruntime140_1.dll", "concrt140.dll", "vcomp140.dll")
-          # Search system directories for the DLLs
+          # Full VC++ runtime DLL set for the python-env root (per Evan's Windows testing)
+          $rootDlls = @(
+            "msvcp140.dll", "msvcp140_1.dll", "msvcp140_2.dll", "msvcp140_atomic_wait.dll",
+            "msvcp140_codecvt_ids.dll", "vcamp140.dll", "vccorlib140.dll", "vcomp140.dll",
+            "vcruntime140.dll", "vcruntime140_1.dll", "vcruntime140_threads.dll", "concrt140.dll"
+          )
+          # DLLs that sklearn specifically loads from its own .libs folder
+          $sklearnDlls = @("msvcp140.dll", "vcomp140.dll", "vcruntime140.dll", "vcruntime140_1.dll")
           $searchPaths = @("C:\Windows\System32", "C:\Windows\SysWOW64")
-          foreach ($dll in $vcDlls) {
-            foreach ($searchPath in $searchPaths) {
-              $src = Join-Path $searchPath $dll
+          function Copy-Dll($dll, $dest) {
+            foreach ($sp in $searchPaths) {
+              $src = Join-Path $sp $dll
               if (Test-Path $src) {
-                # Copy to python-env root and sklearn .libs
-                Copy-Item $src $envDir -ErrorAction SilentlyContinue
-                Copy-Item $src $sklearnLibs -ErrorAction SilentlyContinue
-                Write-Host "Copied $dll from $searchPath"
-                break
+                Copy-Item $src $dest -Force -ErrorAction SilentlyContinue
+                Write-Host "Copied $dll -> $dest"
+                return
               }
             }
+            Write-Host "WARNING: $dll not found in System32/SysWOW64"
           }
+          foreach ($d in $rootDlls)    { Copy-Dll $d $envDir }
+          foreach ($d in $sklearnDlls) { Copy-Dll $d $sklearnLibs }
 
       - name: Copy data directories to dist (all platforms)
         shell: python
@@ -245,11 +250,33 @@ jobs:
           cp -R "$APP" "dist/NLP_Suite/NLP Suite Mac Setup.app"
           echo "Bundled Setup app into dist"
 
+      # GitHub's upload-artifact strips unix permission bits when uploading a folder, which left the
+      # Mac NLP_Suite launcher, python-env/bin/python3, and the Setup app as non-executable "documents".
+      # Zipping on the native runner preserves exec bits and symlinks; the zip is uploaded as an opaque
+      # file (its internals are untouched) and attached to the Release as-is.
+      - name: Archive build - macOS (zip preserves exec permissions + symlinks)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          cd dist
+          chmod +x "NLP_Suite/NLP_Suite" 2>/dev/null || true
+          find "NLP_Suite/python-env/bin" -type f -exec chmod +x {} \; 2>/dev/null || true
+          chmod +x "NLP_Suite/NLP Suite Mac Setup.app/Contents/MacOS/NLP-Suite-Mac-Setup" 2>/dev/null || true
+          zip -r -y -X "../${{ matrix.artifact }}.zip" NLP_Suite
+          echo "Created ${{ matrix.artifact }}.zip (permissions preserved)"
+
+      - name: Archive build - Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "dist/NLP_Suite" -DestinationPath "${{ matrix.artifact }}.zip" -Force
+          Write-Host "Created ${{ matrix.artifact }}.zip"
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact }}
-          path: dist/NLP_Suite/
+          path: ${{ matrix.artifact }}.zip
           retention-days: 30
 
   # Create a GitHub Release with all three builds when triggered by a tag
@@ -264,15 +291,13 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
 
-      - name: Zip artifacts
-        run: |
-          cd NLP-Suite-windows-x64 && zip -r ../NLP-Suite-windows-x64.zip . && cd ..
-          cd NLP-Suite-mac-arm64 && zip -r ../NLP-Suite-mac-arm64.zip . && cd ..
-
+      # Each artifact is already a permission-preserving zip built on its native runner.
+      # download-artifact@v4 places each into a directory named after the artifact, so attach
+      # those zips directly - do NOT re-zip (re-zipping on Linux would strip the Mac exec bits).
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            NLP-Suite-windows-x64.zip
-            NLP-Suite-mac-arm64.zip
+            NLP-Suite-windows-x64/NLP-Suite-windows-x64.zip
+            NLP-Suite-mac-arm64/NLP-Suite-mac-arm64.zip
           generate_release_notes: true
