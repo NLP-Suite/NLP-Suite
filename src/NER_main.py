@@ -23,6 +23,38 @@ import Stanza_util
 import NER_entity_timeline_util
 import run_script_util
 
+# location NER tags across all schemes (CoreNLP, OntoNotes, CoNLL); BIOES prefixes are stripped before testing
+_LOCATION_TAGS = ('GPE', 'LOC', 'LOCATION', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY')
+
+def _find_main_NER_csv(files):
+    # pick the main NER data csv from the produced files (skip charts/freq/timeline/geocoded files)
+    import os as _os
+    for f in files:
+        if not isinstance(f, str) or not f.lower().endswith('.csv'):
+            continue
+        b = _os.path.basename(f).lower()
+        if 'ner' in b and not any(x in b for x in ('freq', 'chart', 'hyperlink', 'timeline', 'summary', 'tracking', 'not-found', 'geo-')):
+            return f
+    return ''
+
+def _count_location_entities(ner_csv):
+    # count location entities in an NER output csv (entity heads when a Multi-Word Expression column exists)
+    import pandas as pd
+    try:
+        df = pd.read_csv(ner_csv, encoding='utf-8', on_bad_lines='skip')
+    except Exception:
+        return 0
+    if 'NER' not in df.columns:
+        return 0
+    loc_mask = df['NER'].astype(str).apply(lambda t: str(t).split('-')[-1] in _LOCATION_TAGS)
+    sub = df[loc_mask]
+    if 'Multi-Word Expression' in df.columns and len(sub) > 0:
+        mwe = sub['Multi-Word Expression'].astype(str)
+        heads = sub[(mwe.str.strip() != '') & (mwe.str.lower() != 'nan') & (mwe != 'O')]
+        if len(heads) > 0:
+            return len(heads)
+    return len(sub)
+
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, config_filename,
@@ -66,9 +98,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
             "\n\nYou can change the selected language using the Setup dropdown menu at the bottom of this GUI, select the 'Setup NLP package and corpus language' to open the GUI where you can change the language option.")
             return
         import BERT_util
-        NER_list = BERT_util.NER_dict
-        NER_entry_var.set(NER_list['NERs'])
-        outputFiles = BERT_util.NER_tags_BERT(window,inputFilename, inputDir, outputDir, config_filename, '', chartPackage, dataTransformation)
+        # '*' (run all) extracts every tag; an explicit BERT run honors the user's tag selection
+        if '*' in NER_package:
+            NER_selection = ', '.join(BERT_util.NER_dict['NERs'])
+        else:
+            NER_selection = NER_entry_var.get()
+        outputFiles = BERT_util.NER_tags_BERT(window,inputFilename, inputDir, outputDir, config_filename, '', chartPackage, dataTransformation, NERs=NER_selection)
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -80,8 +115,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
     if not skip_NER_extraction and ('*' in NER_package or 'spaCy' in NER_package):
         document_length_var = 1
         limit_sentence_length_var = 1000
-        NER_list = spaCy_util.NER_dict
-        NER_entry_var.set(NER_list)
+        # '*' (run all) extracts every tag; an explicit spaCy run honors the user's tag selection
+        if '*' in NER_package:
+            NER_selection = ', '.join(spaCy_util.NER_dict)
+        else:
+            NER_selection = NER_entry_var.get()
         outputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
                                                     outputDir,
                                                     openOutputFiles,
@@ -89,7 +127,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                                                     ['NER'], False,
                                                     language,
                                                     memory_var, document_length_var, limit_sentence_length_var,
-                                                    NERs=NER_list,
+                                                    NERs=NER_selection,
                                                     filename_embeds_date_var=filename_embeds_date_var,
                                                     date_format=date_format_var,
                                                     items_separator_var=items_separator_var,
@@ -133,8 +171,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         document_length_var = 1
         limit_sentence_length_var = 1000
 
-        NER_list = get_NER_list('Stanza',language)
-        NER_entry_var.set(NER_list)
+        # '*' (run all) extracts every tag; an explicit Stanza run honors the user's tag selection
+        if '*' in NER_package:
+            NER_selection = ', '.join(get_NER_list('Stanza', language))
+        else:
+            NER_selection = NER_entry_var.get()
 
         outputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                       outputDir,
@@ -144,7 +185,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                                                       language_list,
                                                       memory_var, document_length_var, limit_sentence_length_var,
                                                       filename_embeds_date_var=filename_embeds_date_var,
-                                                      NERs=NER_list,
+                                                      NERs=NER_selection,
                                                       date_format=date_format_var,
                                                       items_separator_var=items_separator_var,
                                                       date_position_var=date_position_var)
@@ -170,6 +211,66 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
+
+# Offer to geocode & map extracted locations -------------------------------------------------
+    if not skip_NER_extraction:
+        ner_csv = _find_main_NER_csv(filesToOpen)
+        nLocations = _count_location_entities(ner_csv) if ner_csv else 0
+        if nLocations > 0:
+            if mb.askyesno('Map extracted locations?',
+                    str(nLocations) + " location entities were extracted.\n\n"
+                    "Would you like to geocode and map them now (Google Earth Pro + folium pin/heat maps)?\n\n"
+                    "NOTE: geocoding contacts an online service for each location, so this can take some time "
+                    "(especially with Nominatim, which is rate-limited to about 1 request per second).\n\n"
+                    "For many more mapping options - choice of geocoder (Nominatim/Google), folium pin & heat maps, "
+                    "proportional-circle maps, QGIS, Tableau, TimeMapper, date-based animation, custom icons and "
+                    "labels - use the dedicated GIS GUI (GIS_main), which can take this NER output as its input."):
+                import GIS_pipeline_util
+                # place GIS output inside the NER folder, in a 'GIS' subfolder (like SVO),
+                # so only one output folder is opened. Resolve ner_csv to an absolute path first
+                # so the GIS subfolder (and the KML path GEP receives) is absolute, not relative
+                # to the process cwd.
+                ner_csv = os.path.abspath(ner_csv)
+                gis_subdir = IO_files_util.make_output_subdirectory('', '', os.path.dirname(ner_csv), label='GIS', silent=True)
+                # GIS_pipeline requires a 'Location' column; the raw NER csv has 'Form'/'Word' and
+                # BIOES tags. Normalize it (Form->Location, tag normalization, multi-word merge) first.
+                prepared_csv = os.path.join(gis_subdir, os.path.basename(ner_csv))
+                prepared_csv = GIS_pipeline_util.normalize_NER_csv_for_GIS(ner_csv, prepared_csv,
+                                    filename_embeds_date_var=filename_embeds_date_var,
+                                    date_format=date_format_var, items_separator=items_separator_var,
+                                    date_position=date_position_var)
+                if prepared_csv == '':
+                    mb.showinfo('No mappable locations',
+                        'No mappable location entities were found in the NER output, so no map was produced.')
+                    gis_out = None
+                else:
+                    # auto-pick the geocoder silently: Google only if a key is already configured,
+                    # otherwise Nominatim (no "enter API key" nag for users without a Google key)
+                    geocoder = 'Google' if GIS_pipeline_util.has_google_api_key('Google-geocode-API_config.csv') else 'Nominatim'
+                    date_present = bool(filename_embeds_date_var)
+                    gis_out = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename, prepared_csv, inputDir,
+                                gis_subdir, geocoder, 'Google Earth Pro & Google Maps & Python folium pin map & heatmap', chartPackage, dataTransformation,
+                                date_present, '', '', False, 'Location', 'utf-8',
+                                0, 1, [''], [''], ['Pushpins'], ['red'], [0], ['1'], [0], [''], [1], [1])
+                if gis_out is not None:
+                    if isinstance(gis_out, str):
+                        gis_out = [gis_out]
+                    # the user explicitly chose to map -> open the maps NOW, regardless of the
+                    # 'open output files' checkbox; let non-map GIS files go through normal handling
+                    for f in gis_out:
+                        if not isinstance(f, str):
+                            continue
+                        is_map = f.endswith('.kml') or (f.endswith('.html') and 'Folium' in f)
+                        if is_map and os.path.isfile(f):
+                            if f.endswith('.kml'):
+                                IO_files_util.open_kmlFile(GUI_util.window, f)
+                            else:
+                                try:
+                                    IO_files_util.openFile(GUI_util.window, f)
+                                except Exception:
+                                    pass
+                        else:
+                            filesToOpen.append(f)
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -258,7 +359,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 NER_packages_var = tk.StringVar()
 NER_packages_var.set('BERT (English language model)')
-# IBM https://ibm.github.io/zshot/ "pip install zshot"
+# IBM https://ibm.github.io/zshot/ "pip install zshot" — placeholder; not yet implemented
 NER_packages_menu = tk.OptionMenu(window,NER_packages_var,'*', 'BERT (English language model)','IBM','spaCy','Stanford CoreNLP','Stanza')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_packages_menu_pos, y_multiplier_integer,
@@ -270,8 +371,32 @@ NER_tag_lb = tk.Label(window, text='NER tags')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,NER_tag_lb,True)
 
 # NER tags menu
+# CoreNLP uses its own fine-grained NER scheme (CITY, STATE_OR_PROVINCE, CAUSE_OF_DEATH, ...)
+NER_tags_CoreNLP = ['All NER tags', '--- All quantitative expressions','NUMBER', 'ORDINAL', 'PERCENT', '--- All social actors', 'PERSON', 'ORGANIZATION', '--- All spatial expressions', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION', '--- All temporal expressions', 'DATE', 'TIME', 'DURATION', 'SET',  '--- All other expressions', 'CAUSE_OF_DEATH', 'CRIMINAL_CHARGE', 'EMAIL', 'IDEOLOGY', 'MISC', 'MONEY', 'NATIONALITY', 'RELIGION', 'TITLE', 'URL']
+# spaCy and Stanza (English) use the OntoNotes scheme (GPE, LOC, NORP, FAC, CARDINAL, ...)
+NER_tags_OntoNotes = ['All NER tags', '--- All quantitative expressions', 'CARDINAL', 'ORDINAL', 'PERCENT', 'MONEY', 'QUANTITY', '--- All social actors', 'PERSON', 'NORP', 'ORG', '--- All spatial expressions', 'GPE', 'LOC', 'FAC', '--- All temporal expressions', 'DATE', 'TIME', '--- All other expressions', 'PRODUCT', 'EVENT', 'WORK_OF_ART', 'LAW', 'LANGUAGE']
+# BERT uses the CoNLL-2003 scheme — only 4 coarse entity types (no category groups)
+NER_tags_BERT = ['All NER tags', 'PER', 'ORG', 'LOC', 'MISC']
+
 NER_tag_var.set('All NER tags') #--- All NER tags
-NER_menu = tk.OptionMenu(window,NER_tag_var,'All NER tags', '--- All quantitative expressions','NUMBER', 'ORDINAL', 'PERCENT', '--- All social actors', 'PERSON', 'ORGANIZATION', '--- All spatial expressions', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION', '--- All temporal expressions', 'DATE', 'TIME', 'DURATION', 'SET',  '--- All other expressions', 'CAUSE_OF_DEATH', 'CRIMINAL_CHARGE', 'EMAIL', 'IDEOLOGY', 'MISC', 'MONEY', 'NATIONALITY', 'RELIGION', 'TITLE', 'URL')
+NER_menu = tk.OptionMenu(window,NER_tag_var,*NER_tags_CoreNLP)
+
+# repopulate the NER tags dropdown to match the selected package's NER scheme
+def set_NER_menu_options(tags_list):
+    menu = NER_menu['menu']
+    menu.delete(0, 'end')
+    for tag in tags_list:
+        menu.add_command(label=tag, command=lambda value=tag: NER_tag_var.set(value))
+
+# the package's full set of real tags (excludes the 'All NER tags' and '--- ...' selectors)
+def _full_tag_set(pkg):
+    if 'BERT' in pkg:
+        tags = NER_tags_BERT
+    elif ('spaCy' in pkg) or ('Stanza' in pkg):
+        tags = NER_tags_OntoNotes
+    else:
+        tags = NER_tags_CoreNLP
+    return {t for t in tags if t != 'All NER tags' and '---' not in t}
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_menu_pos, y_multiplier_integer,
                     NER_menu, True, False, True, False,
@@ -324,9 +449,6 @@ def add_NER_tag(coming_from_add, coming_from_reset):
     #     window.focus_force()
     #     return
 
-    if 'Stanza' in NER_packages_var.get():
-        # NER_list
-        return
     reset_NER_button.configure(state='normal')
     if coming_from_reset:
         NER_tag_var.set(' ')
@@ -335,42 +457,70 @@ def add_NER_tag(coming_from_add, coming_from_reset):
         return coming_from_reset
     if coming_from_add:
         add_NER_button.configure(state='normal')
-    if 'All NER tags' in NER_tag_var.get(): # == '--- All NER tags':
-        NER_list = NER_list
-        NER_entry_var.set('PERSON, ORGANIZATION, MISC, MONEY, NUMBER, ORDINAL, PERCENT, DATE, TIME, DURATION, SET, EMAIL, URL, CITY,STATE_OR_PROVINCE, COUNTRY, LOCATION, NATIONALITY, RELIGION, TITLE, IDEOLOGY, CRIMINAL_CHARGE,CAUSE_OF_DEATH')
-    elif NER_tag_var.get() == '--- All quantitative expressions':
-        NER_list = ['NUMBER', 'ORDINAL', 'PERCENT']
-        NER_entry_var.set('NUMBER, ORDINAL, PERCENT')
-    elif NER_tag_var.get() == '--- All social actors':
-        NER_list = ['PERSON', 'ORGANIZATION']
-        NER_entry_var.set('PERSON, ORGANIZATION')
-    elif NER_tag_var.get() == '--- All spatial expressions':
-        NER_list = ['CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
-        NER_entry_var.set('CITY, STATE_OR_PROVINCE, COUNTRY, LOCATION')
-    elif NER_tag_var.get() == '--- All temporal expressions':
-        NER_list = ['DATE', 'TIME', 'DURATION', 'SET']
-        NER_entry_var.set('DATE, TIME, DURATION, SET')
-    elif NER_tag_var.get()=='--- All other expressions':
-        mb.showwarning(title='Warning', message='You cannot select the option --- All other expressions.\n\nPlease, select a different option and try again.')
-        NER_tag_var.set(' ')
-        window.focus_force()
-        return
-    # NER_tag_var is set everywhere to ' ' as opposed to ''
-    if NER_tag_var.get()!=' ':
-        # --- is used for CoreNLP for NER subsets (e.g., --- All spatial expressions)
-        if NER_tag_var.get() in NER_entry_var.get() and not('---' in NER_tag_var.get()):
-            mb.showwarning(title='Warning', message='The NER tag "'+ NER_tag_var.get() + '" is already in your selection NER list: '+ str(NER_entry_var.get()) + '.\n\nPlease, select another NER tag (or hit the Reset button and try again).')
+    pkg = NER_packages_var.get()
+    sel = NER_tag_var.get()
+    # BERT uses the CoNLL-2003 scheme (4 coarse tags, no category groups)
+    if 'BERT' in pkg:
+        if 'All NER tags' in sel:
+            NER_list = ['PER', 'ORG', 'LOC', 'MISC']
+            NER_entry_var.set(', '.join(NER_list))
+    # spaCy and Stanza use the OntoNotes NER scheme; CoreNLP uses its own fine-grained scheme
+    elif ('spaCy' in pkg) or ('Stanza' in pkg):
+        if 'All NER tags' in sel:
+            NER_list = ['PERSON', 'NORP', 'ORG', 'GPE', 'LOC', 'FAC', 'PRODUCT', 'EVENT', 'WORK_OF_ART', 'LAW', 'LANGUAGE', 'DATE', 'TIME', 'PERCENT', 'MONEY', 'QUANTITY', 'ORDINAL', 'CARDINAL']
+            NER_entry_var.set(', '.join(NER_list))
+        elif sel == '--- All quantitative expressions':
+            NER_list = ['CARDINAL', 'ORDINAL', 'PERCENT', 'MONEY', 'QUANTITY']
+            NER_entry_var.set(', '.join(NER_list))
+        elif sel == '--- All social actors':
+            NER_list = ['PERSON', 'NORP', 'ORG']
+            NER_entry_var.set(', '.join(NER_list))
+        elif sel == '--- All spatial expressions':
+            NER_list = ['GPE', 'LOC', 'FAC']
+            NER_entry_var.set(', '.join(NER_list))
+        elif sel == '--- All temporal expressions':
+            NER_list = ['DATE', 'TIME']
+            NER_entry_var.set(', '.join(NER_list))
+        elif sel == '--- All other expressions':
+            NER_list = ['PRODUCT', 'EVENT', 'WORK_OF_ART', 'LAW', 'LANGUAGE']
+            NER_entry_var.set(', '.join(NER_list))
+    else:
+        if 'All NER tags' in sel: # == '--- All NER tags':
+            NER_list = NER_list
+            NER_entry_var.set('PERSON, ORGANIZATION, MISC, MONEY, NUMBER, ORDINAL, PERCENT, DATE, TIME, DURATION, SET, EMAIL, URL, CITY,STATE_OR_PROVINCE, COUNTRY, LOCATION, NATIONALITY, RELIGION, TITLE, IDEOLOGY, CRIMINAL_CHARGE,CAUSE_OF_DEATH')
+        elif sel == '--- All quantitative expressions':
+            NER_list = ['NUMBER', 'ORDINAL', 'PERCENT']
+            NER_entry_var.set('NUMBER, ORDINAL, PERCENT')
+        elif sel == '--- All social actors':
+            NER_list = ['PERSON', 'ORGANIZATION']
+            NER_entry_var.set('PERSON, ORGANIZATION')
+        elif sel == '--- All spatial expressions':
+            NER_list = ['CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
+            NER_entry_var.set('CITY, STATE_OR_PROVINCE, COUNTRY, LOCATION')
+        elif sel == '--- All temporal expressions':
+            NER_list = ['DATE', 'TIME', 'DURATION', 'SET']
+            NER_entry_var.set('DATE, TIME, DURATION, SET')
+        elif sel == '--- All other expressions':
+            mb.showwarning(title='Warning', message='You cannot select the option --- All other expressions.\n\nPlease, select a different option and try again.')
+            NER_tag_var.set(' ')
             window.focus_force()
             return
-
-    if NER_tag_var.get().strip():
-        if not('---' in NER_tag_var.get()):
-            NER_list.append(NER_tag_var.get())
-            if len(NER_list)==1:
-                NER_entry_var.set(NER_tag_var.get())
-            else:
-                NER_entry_var.set(NER_entry_var.get()+', '+NER_tag_var.get())
-        # NER_menu.configure(state='disabled')
+    # individual-tag selection (the 'All NER tags' and '--- ...' labels are selectors, not literal tags)
+    if sel != ' ' and '---' not in sel and 'All NER tags' not in sel:
+        full_default = _full_tag_set(pkg)
+        current = {t.strip() for t in NER_entry_var.get().replace(',', ' ').split() if t.strip()}
+        if not current or current == full_default:
+            # textbox still holds the default (all tags) -> start a fresh subset with this tag
+            NER_list = [sel]
+            NER_entry_var.set(sel)
+        elif sel in current:
+            mb.showwarning(title='Warning', message='The NER tag "'+ sel + '" is already in your selection NER list: '+ str(NER_entry_var.get()) + '.\n\nPlease, select another NER tag (or hit the Reset button and try again).')
+            window.focus_force()
+            return
+        else:
+            # building a subset: add this tag to the existing selection
+            NER_list.append(sel)
+            NER_entry_var.set(NER_entry_var.get() + ', ' + sel)
         add_NER_button.configure(state="normal")
         reset_NER_button.configure(state="normal")
 
@@ -407,10 +557,15 @@ def activate_NER_Options(coming_from_add, coming_from_reset):
     reset_NER_button.configure(state='disabled')
     NER_menu.configure(state='disabled')
     if 'BERT' in NER_packages_var.get():
-        import BERT_util
-        NER_list = BERT_util.NER_dict
-        NER_entry_var.set(NER_list['NERs'])
+        set_NER_menu_options(NER_tags_BERT)
+        NER_menu.configure(state='normal')
+        reset_NER_button.configure(state='normal')
+        if coming_from_reset:
+            NER_tag_var.set(' ')
+        elif not coming_from_add:
+            NER_tag_var.set('All NER tags')
     elif 'CoreNLP' in NER_packages_var.get():
+        set_NER_menu_options(NER_tags_CoreNLP)
         NER_menu.configure(state='normal')
         reset_NER_button.configure(state='normal')
         if coming_from_reset:
@@ -419,11 +574,25 @@ def activate_NER_Options(coming_from_add, coming_from_reset):
             if not coming_from_add:
                 NER_tag_var.set('All NER tags')  # --- All NER tags
     elif 'spaCy' in NER_packages_var.get():
+        set_NER_menu_options(NER_tags_OntoNotes)
+        NER_menu.configure(state='normal')
+        reset_NER_button.configure(state='normal')
         NER_list = spaCy_util.NER_dict
         NER_entry_var.set(NER_list)
+        if coming_from_reset:
+            NER_tag_var.set(' ')
+        elif not coming_from_add:
+            NER_tag_var.set('All NER tags')
     elif 'Stanza' in NER_packages_var.get():
+        set_NER_menu_options(NER_tags_OntoNotes)
+        NER_menu.configure(state='normal')
+        reset_NER_button.configure(state='normal')
         NER_list = get_NER_list('Stanza',language)
         NER_entry_var.set(NER_list)
+        if coming_from_reset:
+            NER_tag_var.set(' ')
+        elif not coming_from_add:
+            NER_tag_var.set('All NER tags')
     else:
         NER_list=[]
         NER_entry_var.set(NER_list)
@@ -470,7 +639,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, click on the 'Pre-processing tools' button to open the GUI where you will be able to perform a variety of\n   file checking options (e.g., utf-8 encoding compliance of your corpus or sentence length);\n   file cleaning options (e.g., convert non-ASCII apostrophes & quotes and % to percent).\n\nNon utf-8 compliant texts are likely to lead to code breakdown in various algorithms.\n\nASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n\n% signs will lead to code breakdon of Stanford CoreNLP.\n\nSentences without an end-of-sentence marker (. ! ?) in Stanford CoreNLP will be processed together with the next sentence, potentially leading to very long sentences.\n\nSentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the 23 NER tags that you would like to extract.\n\nFor English, the Stanford CoreNLP, by default through the NERClassifierCombiner annotator, recognizes the following NER values:\n  named (PERSON, LOCATION, ORGANIZATION, MISC);\n  numerical (MONEY, NUMBER, ORDINAL, PERCENT);\n  temporal (DATE, TIME, DURATION, SET).\n  In addition, via regexner, the following entity classes are tagged: EMAIL, URL, CITY, STATE_OR_PROVINCE, COUNTRY, NATIONALITY, RELIGION, (job) TITLE, IDEOLOGY, CRIMINAL_CHARGE, CAUSE_OF_DEATH.\n\nClick on the + button to add more NER tags.\nClick on the Reset button (or ESCape) to cancel all selected options and start over."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","The Stanford CoreNLP NER annotator uses entitymentions to process multi-word-expressions (MWE), such as 'Harry Potter' for PERSON or 'United States of America' for COUNTRY."+GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","All NER annotators handle multi-word expressions (MWE), such as 'Harry Potter' as a single PERSON or 'United States of America' as a single COUNTRY/GPE.\n\nThe NER tags dropdown adapts to the package selected above, each using its own tag scheme:\n   - Stanford CoreNLP: its own fine-grained scheme (CITY, STATE_OR_PROVINCE, COUNTRY, LOCATION, CAUSE_OF_DEATH, CRIMINAL_CHARGE, ...);\n   - spaCy and Stanza: the OntoNotes scheme (PERSON, NORP, ORG, GPE, LOC, FAC, DATE, TIME, MONEY, QUANTITY, ...);\n   - BERT: the CoNLL-2003 scheme (PER, ORG, LOC, MISC).\n\nSelect 'All NER tags' to extract every tag, or pick a category (e.g. 'All spatial expressions') or an individual tag to extract only those. Your selection filters the output for all packages.\n\nPress the ESCape button to clear any previously selected options and start fresh."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to run the NER Entity Timeline tool.\n\nThis tool uses Stanza NER to extract named entities (PERSON, GPE, LOC, ORG, etc.) and track WHEN they appear across the narrative.\n\nThe tool produces:\n   - Entity timeline CSV with every mention, its sentence, and narrative position (0 = beginning, 1 = end)\n   - Frequency bar chart of the top 20 entities across all types\n   - Per-type scatter timelines showing when each PERSON, GPE, ORG, or LOC appears\n   - Entity presence heatmap showing the density of mentions across 10 narrative segments\n   - Per-document entity counts (when processing multiple documents)\n\nThis tool runs independently of the NER package selected above — it always uses Stanza.\n\nNOTE: The heatmap divides the text into 10 narrative-position bins (0-10%, 10-20%, ... 90-100%). With very short texts (e.g., a single sentence like 'Berkeley went to New York with her friend Maria'), all entities will cluster in one bin, producing a single dark column. This is expected — the heatmap is designed for longer documents where entity mentions spread across the narrative arc."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

@@ -243,6 +243,15 @@ def create_folium_timestamped_map(window, inputFilename, outputDir,
     center = _compute_center(df)
     m = folium.Map(location=center, zoom_start=4, tiles='OpenStreetMap')
 
+    # place the time-slider control in the TOP-LEFT corner (like Google Earth Pro's time slider).
+    # folium's TimestampedGeoJson does not expose a position option; the control defaults to the
+    # bottom-left leaflet corner, so move that corner to the top-left, below the zoom buttons.
+    m.get_root().header.add_child(folium.Element(
+        "<style>"
+        ".leaflet-bottom.leaflet-left{top:10px;bottom:auto;left:55px;}"
+        ".leaflet-bottom.leaflet-left .leaflet-control-timecontrol{margin-bottom:0;}"
+        "</style>"))
+
     TimestampedGeoJson(
         {'type': 'FeatureCollection', 'features': features},
         period='P1D',

@@ -183,30 +183,62 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 		currLocation = ''
 		tokenEnd = 0
 
-		# If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location'
-		if list(dt.columns)[0]=='Word':
-			dt = dt.rename(columns={"Word": "Location"})
+		# Column A is 'Word' for CoreNLP NER, 'Form' for spaCy/Stanza NER; rename either to 'Location'
+		if list(dt.columns)[0] in ('Word', 'Form'):
+			dt = dt.rename(columns={list(dt.columns)[0]: "Location"})
+
+		# spaCy/Stanza NER output has no tokenBegin/tokenEnd to merge multi-word entities,
+		# but it already provides the fully-merged entity in the 'Multi-Word Expression' column
+		# (e.g., 'New York' on the first token, blank/NaN on continuation tokens).
+		use_mwe = ('Multi-Word Expression' in dt.columns) and ('tokenBegin' not in dt.columns)
+
+		# NER-scheme-aware location filtering:
+		#   OntoNotes (spaCy / English Stanza) uses GPE for geopolitical places and LOC for
+		#     non-geopolitical features (mountains, rivers) -> LOC is EXCLUDED from geocoding.
+		#   CoNLL-style output (BERT, and non-English Stanza such as Italian/French/German)
+		#     has no GPE; there LOC is the only location tag and denotes geocodable places
+		#     -> LOC is INCLUDED.
+		_ner_col = dt['NER'].astype(str) if 'NER' in dt.columns else pd.Series([], dtype=str)
+		include_loc = not _ner_col.str.contains('GPE').any()
+
+		def _is_location_tag(ner):
+			ner = str(ner)
+			if ner in ('LOCATION', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY') or ('GPE' in ner):
+				return True
+			# only treat LOC as a geocodable location for CoNLL-style schemes (no GPE present)
+			if include_loc and ('LOC' in ner):
+				return True
+			return False
 
 		for index, row in dt.iterrows():
 			print("Processing record " + str(index+1)+"/"+str(count_row)+ " in csv file; location: " + str(row[locationColumnNumber]))
 			if str(row["Location"]) != '' and str(row["Location"]) != 'nan':
+				# spaCy/Stanza: use the pre-merged 'Multi-Word Expression' value and skip
+				# continuation tokens (blank/NaN MWE). NER tags here are BIOES (e.g., 'S-GPE', 'B-GPE').
+				if use_mwe:
+					mwe = row["Multi-Word Expression"]
+					if pd.isna(mwe) or str(mwe).strip() == '':
+						continue
+					ner = str(row["NER"])
+					if _is_location_tag(ner):
+						sentence = row["Sentence"] if "Sentence" in dt.columns else ''
+						document = row["Document"] if "Document" in dt.columns else ''
+						locList.append([str(mwe).strip(), ner, sentence, document])
+					continue
 				# LOCATION, CITY, STATE_OR_PROVINCE, COUNTRY are the location NER tags for CoreNLP
 				# GPE is location NER tag for spaCy and Stanza
 				# the code would break if no NER is passed (e.g., from DB_PC-ACE)
 				try:
-					if (row["NER"]=='LOCATION' or  \
-						row["NER"]=='CITY' or  \
-						row["NER"]=='STATE_OR_PROVINCE' or \
-						row["NER"]=='COUNTRY') or \
-						('GPE' in row["NER"]):
+					if _is_location_tag(row["NER"]):
 						# check next row
 						try:
 							nextrow = dt.iloc[index + 1]
 						except:
 							nextrow=row
 						# spaCy and Stanza do not contain tokenEnd tokenBegin headers; code would break
-						sentence = row["Sentence"]
-						document = row["Document"]
+						# spaCy/Stanza NER output may also lack a 'Sentence' column
+						sentence = row["Sentence"] if "Sentence" in dt.columns else ''
+						document = row["Document"] if "Document" in dt.columns else ''
 						try:
 							if row["tokenEnd"]==nextrow["tokenBegin"]:
 								# the current location value (e.g., las) needs to be merged with the next row value (e.g., las vegas)

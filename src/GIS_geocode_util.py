@@ -378,6 +378,7 @@ def geocode(window,locations, inputFilename, outputDir,
 	notGeocodedList=[]
 	notGeocodedFull=[]
 	locationsNotFound=0
+	geocoded_count=0
 	index=0
 
 	if "Google" in geocoder:
@@ -647,7 +648,7 @@ def geocode(window,locations, inputFilename, outputDir,
 			# WRITE THE RECORD -----------------------------------------------------------------
 			# Always write the record (even if geocoding failed) to preserve location data
 			if lat!=0 and lng!=0:
-				# Geocoding succeeded
+				geocoded_count += 1
 				if inputIsCoNLL:
 					if datePresent:
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, country_geocoder, sentenceID, sentence, documentID, document, date])
@@ -656,8 +657,10 @@ def geocode(window,locations, inputFilename, outputDir,
 										address, country_geocoder, sentenceID, sentence, documentID, document])
 				else:
 					if datePresent:
+						# header is [...,'Date','Sentence','Document']; write all three so they
+						# appear in the geocoded csv (and therefore in the folium popups)
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng,
-											address, country_geocoder, date])
+											address, country_geocoder, date, sentence, document])
 					else:
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, country_geocoder])
 
@@ -666,21 +669,22 @@ def geocode(window,locations, inputFilename, outputDir,
 				pnt = kml.newpoint(coords=[(lng, lat)])
 				pnt.style.iconstyle.icon.href = icon_url
 				pnt.style.labelstyle.scale = '1'
+				# pnt.style.labelstyle.color = simplekml.Color.rgb(int(r_value), int(g_value), int(b_value))
+				# build the description from only the fields that have a value (skip empty Date/
+				# Document/Sentence so we never print a bare 'Sentence:' label, e.g. for NER output)
 				try:
-					if date!='':
-						try:
-							pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>" \
-											"<i><b>Date</b></i>: " + str(date) + "<br/><br/>" + \
-										  "<i><b>Document</b></i>: " + document + "<br/><br/>" \
-										  "<i><b>Sentence</b></i>: " + sentence + "<br/><br/>"
-						except:
-							pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>"
-					else:
-						pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>" \
-										  "<i><b>Document</b></i>: " + document + "<br/><br/>" \
-										  "<i><b>Sentence</b></i>: " + sentence + "<br/><br/>"
+					def _has(v):
+						return v is not None and str(v).strip() != '' and str(v).strip().lower() != 'nan'
+					_parts = ["<i><b>Location</b></i>: " + str(itemToGeocode)]
+					if _has(date):
+						_parts.append("<i><b>Date</b></i>: " + str(date))
+					if _has(document):
+						_parts.append("<i><b>Document</b></i>: " + str(document))
+					if _has(sentence):
+						_parts.append("<i><b>Sentence</b></i>: " + str(sentence))
+					pnt.description = "<br/><br/>".join(_parts) + "<br/><br/>"
 				except:
-					pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>"
+					pnt.description = "<i><b>Location</b></i>: " + str(itemToGeocode) + "<br/><br/>"
 
 				if datePresent:
 					try:
@@ -708,21 +712,55 @@ def geocode(window,locations, inputFilename, outputDir,
 	csvfileNotFound.close()
 	csvfileNotFoundNonDistinct.close()
 	# TODO MINO GIS create kml record
-	try:
-		kml.save(kmloutputFilename)
-	except:
-		mb.showwarning(title='kml file save failure',
-					   message="Saving the kml file failed. A typical cause of failure is is bad characters in the input text/csv file(s) (e.g, 'LINE TABULATION' or 'INFORMATION SEPARATOR ONE' characters).\n\nThe GIS KML script will now try to automattically clean the kml file, save it in safe mode, and open the kml file in Google Earth Pro.\n\nIf the file cleaning was successful, the map will display correctly. If not, Google Earth Pro will open exactly on the bad character position. Remove the character and save the file. But, you should really clean the original input txt/csv file.")
-		# Save kml regardless of validity. Let the user find any bad characters.
-		kml.save(kmloutputFilename, False)
-		# Clean out any "LINE TABULATION" and "INFORMATION SEPARATOR ONE" characters from the input (causes error with KML).
-		with open(kmloutputFilename, 'r+', encoding='utf_8', errors='ignore') as kmlfile:
-			content = kmlfile.read()
-			content = content.replace(u"\u000B", "")
-			content = content.replace(u"\u001F", "")
-			kmlfile.seek(0)
-			kmlfile.write(content)
-			kmlfile.truncate()
+	# only create a kml map when at least one location was actually geocoded
+	if geocoded_count > 0:
+		try:
+			kml.save(kmloutputFilename)
+		except:
+			mb.showwarning(title='kml file save failure',
+						   message="Saving the kml file failed. A typical cause of failure is is bad characters in the input text/csv file(s) (e.g, 'LINE TABULATION' or 'INFORMATION SEPARATOR ONE' characters).\n\nThe GIS KML script will now try to automattically clean the kml file, save it in safe mode, and open the kml file in Google Earth Pro.\n\nIf the file cleaning was successful, the map will display correctly. If not, Google Earth Pro will open exactly on the bad character position. Remove the character and save the file. But, you should really clean the original input txt/csv file.")
+			# Save kml regardless of validity. Let the user find any bad characters.
+			kml.save(kmloutputFilename, False)
+			# Clean out any "LINE TABULATION" and "INFORMATION SEPARATOR ONE" characters from the input (causes error with KML).
+			with open(kmloutputFilename, 'r+', encoding='utf_8', errors='ignore') as kmlfile:
+				content = kmlfile.read()
+				content = content.replace(u"\u000B", "")
+				content = content.replace(u"\u001F", "")
+				kmlfile.seek(0)
+				kmlfile.write(content)
+				kmlfile.truncate()
+	else:
+		# no geocoded points -> do not produce a kml file
+		kmloutputFilename = ''
+
+	# surface an empty result with an accurate, context-aware message
+	if geocoded_count==0:
+		is_svo = 'SVO' in str(inputFilename)
+		if len(locations)==0:
+			# nothing was available to geocode
+			if is_svo:
+				msg = ("No locations were found to geocode.\n\n"
+					"For the SVO tool this means that although the NER step may have found locations "
+					"in the corpus, NONE of them are attached to the extracted SVO triples - a location "
+					"is mapped only when it occurs in a sentence that produced a Subject-Verb-Object (SVO) triple.\n\n"
+					"Input file:\n" + str(inputFilename))
+			else:
+				msg = ("No locations were found to geocode.\n\n"
+					"The input contained no recognized location NER tags (GPE for spaCy/Stanza; "
+					"LOCATION/CITY/STATE_OR_PROVINCE/COUNTRY for Stanford CoreNLP), or the location "
+					"column was not recognized (expected 'Location', 'Word', or 'Form').\n\n"
+					"Input file:\n" + str(inputFilename))
+			mb.showwarning(title='No locations to geocode', message=msg)
+		else:
+			# locations WERE found but none could be geocoded -> a geocoding problem, not a missing-location one
+			mb.showwarning(title='No locations geocoded',
+				message=str(len(locations)) + " location(s) were found in the input, but NONE could be geocoded.\n\n"
+				"This is a geocoding problem, not a missing-location problem:\n"
+				"  1. Your internet connection or the geocoding service ('" + str(geocoder) + "') is unavailable "
+				"or rate-limited (Nominatim allows about 1 request per second; large location lists can be throttled).\n"
+				"  2. The place names could not be matched by the geocoder (check spelling/format).\n\n"
+				"The locations that were not geocoded are listed in the LOCATIONS_not-found csv file.\n\n"
+				"Input file:\n" + str(inputFilename))
 
 	if locationsNotFound==0:
 		locationsNotFoundoutputFilename='' #used NOT to open the file since there are NO errors

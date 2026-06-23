@@ -222,41 +222,18 @@ def run(inputFilename,
             filesToOpen.extend(locationFiles)
             NER_outputFilename = locationFiles[0]
 
-        df = pd.read_csv(NER_outputFilename, encoding='utf-8', on_bad_lines='skip')
-
-        # Normalize column names: Stanza/spaCy use 'Form', CoreNLP uses 'Word'
-        if 'Form' in df.columns and 'Word' not in df.columns:
-            df = df.rename(columns={'Form': 'Word'})
-
-        # Rename 'Word' to 'Location' for the GIS pipeline
-        if 'Word' in df.columns:
-            df = df.rename(columns={'Word': 'Location'})
-        location_menu_var.set('Location')
-
-        # Normalize NER tags: map Stanza/spaCy GPE/LOC to LOCATION for GIS filtering
-        location_tags = {'COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION', 'GPE', 'LOC'}
-        if 'NER' in df.columns:
-            # Map GPE/LOC → LOCATION so downstream GIS code works uniformly
-            df['NER'] = df['NER'].replace({'GPE': 'LOCATION', 'LOC': 'LOCATION'})
-            # Keep only location rows
-            df = df[df['NER'].isin({'COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION'})]
-        else:
-            df = pd.DataFrame()  # empty — no NER column
-
-        # For Stanza/spaCy: use Multi-Word Expression when available (pre-joined entities)
-        if 'Multi-Word Expression' in df.columns:
-            # Multi-Word Expression holds the full entity (e.g., "United States of America")
-            # Use it instead of the single-token 'Location' when available
-            mwe_mask = df['Multi-Word Expression'].notna() & (df['Multi-Word Expression'] != '') & (df['Multi-Word Expression'] != 'O')
-            df.loc[mwe_mask, 'Location'] = df.loc[mwe_mask, 'Multi-Word Expression']
-            # Drop duplicate rows from multi-token entities (keep first occurrence)
-            df = df[mwe_mask | ~df.duplicated(subset=['Location', 'Sentence ID', 'Document ID'], keep='first')]
-
-        if df.empty:
+        # Normalize the raw NER csv in place via the shared helper: Form/Word -> Location,
+        # scheme-aware NER tags (GPE/LOC), multi-word-entity merge, AND Date extracted from each
+        # filename (so the maps get a time slider). Same logic the NER->map prompt uses.
+        prepared = GIS_pipeline_util.normalize_NER_csv_for_GIS(
+            NER_outputFilename, NER_outputFilename,
+            filename_embeds_date_var=filename_embeds_date_var,
+            date_format=date_format_var, items_separator=items_separator_var,
+            date_position=date_position_var)
+        if prepared == '':
             mb.showwarning("No locations","There are no NER locations to be geocoded and mapped in the selected input txt file.\n\nPlease, select a different txt file and try again.")
             return
-
-        df.to_csv(NER_outputFilename, encoding='utf-8', index=False)
+        location_menu_var.set('Location')
         csv_file_var.set(NER_outputFilename)
         filesToOpen.append(NER_outputFilename)
         locationColumnName = 'Location'
@@ -512,10 +489,10 @@ def display_csv_file_options():
     # if Google_Earth_OpenGUI.get() == False:
     #     # GIS_package_var.set('Google Earth Pro & Google Maps')
     #     GIS_package_var.set('Python folium pin map & heatmap')
-    cannotRun, NER_extractor, csv_file=tk.Entry(window, width=GUI_IO_util.csv_file_width,textvariable=csv_file_var)
-    csv_file.config(state='disabled')
-    y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,csv_file)
-    geocode_locations, location_menu = check_csv_file_headers(csv_file_var.get())
+    # the csv_file Entry widget is created once at GUI setup and auto-updates via csv_file_var;
+    # do NOT re-create it here (the old line crashed unpacking an Entry into 3 names).
+    # check_csv_file_headers returns 4 values; capture all of them.
+    cannotRun, NER_extractor, geocode_locations, location_menu = check_csv_file_headers(csv_file_var.get())
 
     return cannotRun
 

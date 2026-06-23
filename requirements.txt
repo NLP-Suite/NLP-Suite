@@ -1,5 +1,9 @@
 # NLP Suite Python dependencies
-# Used by GitHub Actions CI for PyInstaller builds
+# Used by GitHub Actions CI for PyInstaller builds and the bundled portable Python env.
+# Authoritative, complete list (reconciled with Evan's package inventory).
+# Transitive dependencies (absl-py, gast, numba, llvmlite, jedi, parso, traitlets, ...) are
+# pulled automatically and are NOT listed here.
+# Platform-specific extras live in requirements-windows.txt and requirements-mac.txt.
 
 # Core data science
 pandas
@@ -8,6 +12,8 @@ scipy
 scikit-learn
 openpyxl
 xlrd
+numexpr
+h5py
 
 # NLP
 stanza
@@ -16,15 +22,34 @@ nltk
 gensim
 textblob
 textstat
+nrclex
 langdetect
 langid
 autocorrect
 pyspellchecker
 fuzzywuzzy[speedup]
+sacremoses
+sentencepiece
+editdistance
+wn
+pywsd
+contextualSpellCheck
+spacytextblob
+spacy-langdetect
 
-# Transformers (optional — large)
-# transformers
-# sentence-transformers
+# Transformers / deep learning
+transformers
+sentence-transformers
+tensorflow
+tensorflow-hub
+tf-keras
+bert-extractive-summarizer
+
+# Topic modeling
+bertopic
+pyLDAvis
+umap-learn
+hdbscan
 
 # Visualization
 matplotlib
@@ -40,6 +65,10 @@ geopy
 simplekml
 shapely
 geopandas
+geocoder
+googlemaps
+geojson
+gmaps
 
 # Web / parsing
 requests
@@ -49,10 +78,12 @@ chardet
 tqdm
 psutil
 
-# PDF / document
+# PDF / document / OCR (OCR also needs system binaries: Tesseract + poppler)
 pdfminer.six
 python-docx
 striprtf
+pdf2image
+pytesseract
 
 # Stanford CoreNLP client
 pycorenlp
@@ -63,3 +94,13 @@ Pillow
 
 # Knowledge graphs
 SPARQLWrapper
+
+# GUI
+tkcolorpicker
+
+# Auto-update via git
+pygit2
+
+# Jupyter widgets (used by pyLDAvis visualizations)
+ipython
+ipywidgets

@@ -407,6 +407,12 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
                 loc_df.to_csv(loc_df_outputFilename, index=False, encoding=language_encoding)
                 filesToOpen.append(loc_df_outputFilename)
 
+    # filter NER output to the user-selected tags (when a subset is selected);
+    # only for a standalone NER run (the SVO/parse df is a CoNLL table, not to be filtered)
+    if "NER" in str(annotator_params) and "SVO" not in str(annotator_params) \
+            and "parse" not in str(annotator_params):
+        df = filter_NER_output_by_tags(df, kwargs.get('NERs', ''), short_lang)
+
     # save dataframe to csv
     df.to_csv(outputFilename, index=False, encoding=language_encoding)
 
@@ -1173,7 +1179,9 @@ def _extract_ner_entities(sentence):
     # Use sentence.entities if available (Stanza NER)
     if hasattr(sentence, 'entities'):
         for ent in sentence.entities:
-            if ent.type in ('GPE', 'LOC', 'STATE_OR_PROVINCE', 'COUNTRY', 'CITY', 'LOCATION'):
+            # Stanza emits GPE (en/zh), LOC (most languages), LOCATION (vi) for places;
+            # the CoreNLP-style CITY/COUNTRY/STATE_OR_PROVINCE tags are never produced by Stanza
+            if ent.type in ('GPE', 'LOC', 'LOCATION'):
                 if ent.text not in locations:
                     locations.append(ent.text)
                     loc_ner.append([ent.text, ent.type, ent.start_char, ent.end_char])
@@ -1213,7 +1221,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
 
     # Output columns
     base_cols = ['Subject (S)', 'Verb (V)', 'Object (O)', 'Negation',
-                 'Location', 'Person', 'Organization', 'Time',
+                 'Location', 'Location_NER', 'Person', 'Organization', 'Time',
                  'Sentence ID', 'Sentence', 'Document ID', 'Document']
     if filename_embeds_date_var:
         base_cols.append('Date')
@@ -1227,10 +1235,15 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
         # Extract NER entities for this sentence
         locations, persons, organizations = [], [], []
         if NER_available:
-            locations, persons, organizations, _, _, _ = _extract_ner_entities(sentence)
+            locations, persons, organizations, loc_ner, per_ner, org_ner = _extract_ner_entities(sentence)
 
         # Collect NER text for columns
         loc_str = '; '.join(locations) if locations else ''
+        # Build NER type mapping: location text -> NER type
+        loc_ner_map = {item[0]: item[1] for item in loc_ner}
+        loc_ner_types = [loc_ner_map.get(loc, 'LOCATION') for loc in locations]
+        loc_ner_str = '; '.join(loc_ner_types) if loc_ner_types else ''
+
         per_str = '; '.join(persons) if persons else ''
         org_str = '; '.join(organizations) if organizations else ''
         time_words = []
@@ -1321,6 +1334,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
                 'Object (O)': triple[2],
                 'Negation': N[i] if i < len(N) else False,
                 'Location': loc_str,
+                'Location_NER': loc_ner_str,
                 'Person': per_str,
                 'Organization': org_str,
                 'Time': time_str,
@@ -1636,14 +1650,47 @@ def Stanza_coref(config_filename, inputFilename, inputDir, outputDir,
 
 # create locations file for GIS
 def visualize_GIS_maps_Stanza(svo_df):
-    loc_df = pd.DataFrame(columns=['Location', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
+    # carry the Date (extracted from the filename during SVO extraction) into the location file
+    # so the geocoder/KML/folium popups can show it (CoNLL_checker keys datePresent on a 'Date' column)
+    has_date = 'Date' in svo_df.columns
+    cols = ['Location', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
+    if has_date:
+        cols.append('Date')
+    loc_df = pd.DataFrame(columns=cols)
     for _,row in svo_df.iterrows():
         if isinstance(row['Location'], str):
             loc_list = row['Location'].split(';')
-            for loc in loc_list:
-                if loc != '':
-                    loc_df.loc[len(loc_df.index)] = [loc, 'LOCATION', row['Sentence ID'], row['Sentence'], row['Document ID'], row['Document']]
+            ner_list = row.get('Location_NER', '').split(';') if isinstance(row.get('Location_NER'), str) else []
+            for idx, loc in enumerate(loc_list):
+                if loc.strip() != '':
+                    ner_type = ner_list[idx].strip() if idx < len(ner_list) else 'LOCATION'
+                    # Geocode geopolitical entities (GPE = countries/cities/states); skip generic LOC (mountains, rivers)
+                    if ner_type == 'GPE':
+                        rowvals = [loc.strip(), ner_type, row['Sentence ID'], row['Sentence'], row['Document ID'], row['Document']]
+                        if has_date:
+                            rowvals.append(row.get('Date', ''))
+                        loc_df.loc[len(loc_df.index)] = rowvals
     return loc_df
+
+# keep only NER rows whose tag is in the user-selected set.
+# Stanza stores tags in BIOES form (e.g. 'S-GPE', 'B-PERSON', 'O'); we match on the
+# tag portion after the prefix. If the selection covers the full tag set (or is
+# empty/unparseable), the dataframe is returned unchanged.
+def filter_NER_output_by_tags(df, NERs, short_lang='en'):
+    if df is None or len(df) == 0 or 'NER' not in df.columns:
+        return df
+    selected = {t.strip() for t in str(NERs).replace(',', ' ').split() if t.strip() and '---' not in t}
+    if not selected:
+        return df
+    full_set = set(NER_dict.get(short_lang, []))
+    if full_set and selected >= full_set:  # all tags selected -> no filtering
+        return df
+    def _tag(ner):
+        ner = str(ner)
+        if ner in ('', 'O', 'None', 'nan'):
+            return ''
+        return ner.split('-')[-1]
+    return df[df['NER'].apply(_tag).isin(selected)].reset_index(drop=True)
 
 # modified from StanfordCoreNLP_util
 def create_output_directory(inputFilename, inputDir, outputDir,

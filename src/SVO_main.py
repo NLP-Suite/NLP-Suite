@@ -82,6 +82,21 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
     inputDir = GUI_util.input_main_dir_path.get()
     outputDir = GUI_util.output_dir_path.get()
 
+    # Semantic Role Labeling runs in a separate isolated Python 3.8 env (see SRL_util) and is
+    # independent of the SVO/parser pipeline. If SRL is checked, run it on its own and return.
+    if SRL_var.get() == 1:
+        import SRL_util
+        if inputFilename and inputFilename[-4:].lower() == '.csv':
+            mb.showwarning(title='SRL input error',
+                           message='Semantic Role Labeling needs txt input (a txt file or a folder '
+                                   'of txt files), not a csv file.\n\nPlease select txt input and try again.')
+            return
+        srl_files = SRL_util.run_SRL(GUI_util.window, inputFilename, inputDir, outputDir,
+                                     chartPackage, dataTransformation)
+        if srl_files:
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, srl_files, outputDir, scriptName)
+        return
+
     outputCorefedDir = ''
     outputSVODir = ''
     outputLocations = []
@@ -665,11 +680,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
     # GIS maps _____________________________________________________
 
         if google_earth_var:
-            key = GIS_pipeline_util.getGoogleAPIkey(window, 'Google-geocode-API_config.csv')
-            if key == '' or key == None:
-                geocoder = 'Nominatim'
-            else:
+            # auto-pick the geocoder silently: Google only if a key is already configured,
+            # otherwise Nominatim (no "enter API key" nag for users without a Google key)
+            if GIS_pipeline_util.has_google_api_key('Google-geocode-API_config.csv'):
                 geocoder = 'Google'
+            else:
+                geocoder = 'Nominatim'
             # SENNA locations are not really geocodable locations
             if (package_var=='SENNA') and os.path.isfile(location_filename):
                 reminders_util.checkReminder(scriptName, reminders_util.title_options_GIS_OpenIE_SENNA,
@@ -688,7 +704,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                                      config_filename, location_filename, inputDir,
                                      outputGISDir,
                                      # 'Nominatim', 'Google Earth Pro & Google Maps', chartPackage, dataTransformation,
-                                     geocoder, 'Google Earth Pro & Google Maps', chartPackage, dataTransformation,
+                                     geocoder, 'Google Earth Pro & Google Maps & Python folium pin map & heatmap', chartPackage, dataTransformation,
                                      date_present,
                                      country_bias,
                                      area_var,
@@ -793,6 +809,19 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
 
         filesToOpenSubset_string = ", \n   ".join(filesToOpenSubset)
         print("Subset of the " + str(len(filesToOpenSubset)) + " SVO files from the different subfolders to be opened:\n   " + str(filesToOpenSubset_string))
+        # SVO can produce a very large number of files. When the subset is still > 10, trim it
+        # but KEEP the key visualizations: the main SVO file, the Google Earth KML, and the Folium
+        # maps - prioritizing the dynamic Folium-time map so a dated corpus auto-opens it.
+        if len(filesToOpenSubset)>10:
+            trimmed = [SVO_filename]
+            folium_time = [f for f in filesToOpen if str(f).endswith('.html') and 'Folium-time' in str(f)]
+            kml_files = [f for f in filesToOpen if str(f).endswith('.kml')]
+            folium_other = [f for f in filesToOpen if str(f).endswith('.html') and 'Folium' in str(f) and 'Folium-time' not in str(f)]
+            for grp in (folium_time, kml_files, folium_other):
+                for f in grp:
+                    if f not in trimmed:
+                        trimmed.append(f)
+            filesToOpenSubset = trimmed[:10]
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName, filesToOpenSubset)
 
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
@@ -1208,7 +1237,7 @@ SRL_checkbox = tk.Checkbutton(window, text='SRL (Semantic Role Labeling)',
                                                 variable=SRL_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                                SRL_checkbox)
-SRL_checkbox.configure(state='disabled')
+SRL_checkbox.configure(state='normal')
 
 gephi_var.set(1)
 gephi_checkbox = tk.Checkbutton(window, text='Visualize SVO relations ',
@@ -1388,7 +1417,13 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "Please, tick the S & O gender checkbox if you wish to run Stanford CoreNLP neural network gender annotator to extract the gender (female, male) for every Subject and Object extracted by the SVO script.\n\n"
                                   "Tick the S & O quote/speaker checkbox if you wish to run Stanford CoreNLP neural network quote annotator to extract the speaker involved in direct discourse for every Subject and Object extracted by the SVO script.\n\n"
                                   "THE GENDER AND QUOTE/SPEAKER ANNOTATORS ARE AVAILABLE FOR STANFORD CORENLP AND ENGLISH LANGUAGE ONLY.\n\n"
-                                  "Tick the SRL checkbox if you wish to run Jinho Choi's SRL (Semantic Role Labeling) algorithm (https://github.com/emorynlp/elit/blob/main/docs/semantic_role_labeling.md). THE OPTION IS CURRENTLY DISABLED."+GUI_IO_util.msg_Esc)
+                                  "Tick the SRL (Semantic Role Labeling) checkbox to identify, for every verb (predicate) in a sentence, WHO did WHAT to WHOM:\n"
+                                  "   ARG0 = the Agent (the doer);\n"
+                                  "   ARG1 = the Patient (the one acted upon/affected);\n"
+                                  "   ARG2 = the Recipient or Beneficiary;\n"
+                                  "   plus modifiers Where (ARGM-LOC), When (ARGM-TMP), How (ARGM-MNR), and Why (ARGM-CAU).\n\n"
+                                  "SRL is the richer successor to Subject-Verb-Object (SVO) analysis. In INPUT it expects a txt file or a directory of txt files (ENGLISH ONLY). In OUTPUT it produces a csv file with one row per sentence-and-predicate (a sentence with several verbs yields several rows).\n\n"
+                                  "SRL runs in a separate, self-contained engine. The first run loads a BERT-based model and may take 30-60 seconds; the GUI will appear frozen (Not Responding) while SRL runs. This is normal - please be patient."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in Gephi and Sankey network graphs, and Sunburst, Treemap charts (Sankey graphs display only top 10 Subject (S), 20 Verb (V), 20 Object (O)); Sunburst and Treemap charts display only top 15 values; to change these default values, open the Data visualization GUI and change the parameters;\n\n  2. to visualize SVO relations in a wordcloud (Subjects in red; Verbs in blue; Objects in green);\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Google or Nominatim to geocode locations. If the Google-geocode-API_config.csv file is present in the config subdirectory, Google will be used to geocode, as perhaps more accurate than Nominatim. Otherwise, Nominatim will be used. If you wish to chose between Google and Nominatim, for geocoding, please, use the GIS_main script.\n\nTo improve the geocoding of those locations that can take multiple names (e.g., 'United States', 'US', 'USA'), the NLP Suite Stanford CoreNLP algorithm uses the entries of the multi_name_locations.csv file stored in the lib\wordLists subdirectory of the NLP Suite installation folder. Locations known under different names can be all geocoded under a single name (e.g., 'United States'). You can edit the multi_name_locations.csv file to suit your specific needs and improve geocoding."+GUI_IO_util.msg_Esc)
                                    # "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi;\n\n  2. to visualize SVO relations in a wordcloud (Subjects in red; Verbs in blue; Objects in green);\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.\n\nThe GIS mapping option is not available for SENNA or CoreNLP OpenIE." + GUI_IO_util.msg_Esc)
