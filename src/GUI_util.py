@@ -193,23 +193,26 @@ def display_logo():
     # Necessary to avoid creating a circular dependent import
     from IO_libraries_util import install_all_Python_packages
     if install_all_Python_packages(window, "GUI_util", ['tkinter', 'os', 'subprocess', 'PIL']) == False:
-        sys.exit(0)
+        return  # PIL not installed; skip logo rather than exiting the whole app
 
-    from PIL import Image, ImageTk
-    # https://stackoverflow.com/questions/17504570/creating-simply-image-gallery-in-python-tkinter-pil
-    # https://stackoverflow.com/questions/76616042/attributeerror-module-pil-image-has-no-attribute-antialias
-    image_list = [GUI_IO_util.image_libPath + os.sep + "logo.png"]
-    for x in image_list:
-        img = ImageTk.PhotoImage(Image.open(x).resize((85,50), Image.LANCZOS)) #Image.ANTIALIAS))
-        logo = tk.Label(window, width=85, height=50, anchor='nw', image=img)
-        logo.image = img
-        # the logo has some white spaces to its left; better cutting this so that it can be aligned with HELP? buttons
-        # -12 works for Windows; must be checked for Mac
-        if platform == "win32":
-            offset=12
-        else:
-            offset=12
-        logo.place(x=GUI_IO_util.help_button_x_coordinate-offset, y=10)
+    try:
+        from PIL import Image, ImageTk
+        # https://stackoverflow.com/questions/17504570/creating-simply-image-gallery-in-python-tkinter-pil
+        # https://stackoverflow.com/questions/76616042/attributeerror-module-pil-image-has-no-attribute-antialias
+        image_list = [GUI_IO_util.image_libPath + os.sep + "logo.png"]
+        for x in image_list:
+            img = ImageTk.PhotoImage(Image.open(x).resize((85,50), Image.LANCZOS)) #Image.ANTIALIAS))
+            logo = tk.Label(window, width=85, height=50, anchor='nw', image=img)
+            logo.image = img
+            # the logo has some white spaces to its left; better cutting this so that it can be aligned with HELP? buttons
+            # -12 works for Windows; must be checked for Mac
+            if platform == "win32":
+                offset=12
+            else:
+                offset=12
+            logo.place(x=GUI_IO_util.help_button_x_coordinate-offset, y=10)
+    except Exception:
+        pass  # Logo is cosmetic; skip silently if PIL/ImageTk is unavailable or incompatible
 
 
 # define the variable local_release_version
