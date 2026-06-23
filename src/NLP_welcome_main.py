@@ -16,7 +16,7 @@ from itertools import cycle
 # https://pillow.readthedocs.io/en/stable/installation.html
 # Pillow and PIL cannot co-exist in the same environment. Before installing Pillow, please uninstall PIL.
 # Pillow >= 1.0 no longer supports “import Image”. Please use “from PIL import Image” instead.
-from PIL import Image, ImageTk
+from PIL import Image
 from subprocess import call
 
 import GUI_IO_util
@@ -125,7 +125,10 @@ def make_images(canvas_width, canvas_height):
         # https://stackoverflow.com/questions/76616042/attributeerror-module-pil-image-has-no-attribute-antialias
         image_obj = Image.open(image).resize((int(image_width), int(image_height)), Image.Resampling.LANCZOS)
         images.append(image_obj)
-        photo_image = ImageTk.PhotoImage(image_obj)
+        # Native Tk PhotoImage (no PIL.ImageTk/_imagingtk) - see GUI_util.tk_image_from_pil:
+        # the bundled portable Python's statically-embedded Tcl/Tk crashes ImageTk with
+        # invalid command name "PyImagingPhoto".
+        photo_image = GUI_util.tk_image_from_pil(image_obj)
         photos_list.append(photo_image)
 
     photos1 = cycle(photos_list[0:len(image_1_list)])
