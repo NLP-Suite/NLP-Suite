@@ -252,6 +252,21 @@ jobs:
           cp -R "$APP" "dist/NLP_Suite/NLP Suite Mac Setup.app"
           echo "Bundled Setup app into dist"
 
+      - name: Add Mac one-click launcher (clears quarantine + launches)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          L="dist/NLP_Suite/Launch NLP Suite (Mac).command"
+          printf '%s\n' \
+            '#!/bin/sh' \
+            '# Double-click to clear macOS Gatekeeper quarantine on this folder and launch NLP Suite.' \
+            '# First run only: right-click this file -> Open to get past the unidentified-developer prompt.' \
+            'cd "$(dirname "$0")"' \
+            'xattr -dr com.apple.quarantine . 2>/dev/null' \
+            'exec ./NLP_Suite' > "$L"
+          chmod +x "$L"
+          echo "Added Mac one-click launcher: $L"
+
       # GitHub's upload-artifact strips unix permission bits when uploading a folder, which left the
       # Mac NLP_Suite launcher, python-env/bin/python3, and the Setup app as non-executable "documents".
       # Zipping on the native runner preserves exec bits and symlinks; the zip is uploaded as an opaque
@@ -264,6 +279,7 @@ jobs:
           chmod +x "NLP_Suite/NLP_Suite" 2>/dev/null || true
           find "NLP_Suite/python-env/bin" -type f -exec chmod +x {} \; 2>/dev/null || true
           chmod +x "NLP_Suite/NLP Suite Mac Setup.app/Contents/MacOS/NLP-Suite-Mac-Setup" 2>/dev/null || true
+          chmod +x "NLP_Suite/Launch NLP Suite (Mac).command" 2>/dev/null || true
           zip -r -y -X "../${{ matrix.artifact }}.zip" NLP_Suite
           echo "Created ${{ matrix.artifact }}.zip (permissions preserved)"
 
