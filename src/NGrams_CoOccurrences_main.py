@@ -80,7 +80,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
     #     if 'CoNLL' in extra_GUIs_menu_var.get():
     #         run_script_util.run_script("CoNLL_table_analyzer_main.py")
     #     if 'WordNet' in extra_GUIs_menu_var.get():
-    #         run_script_util.run_script("knowledge_graphs_WordNet_main.py")
+    #         run_script_util.run_script("semantic_aggregation_main.py")
     #     if 'Word search' in extra_GUIs_menu_var.get():
     #         run_script_util.run_script("file_search_byWord_main.py")
 
@@ -518,7 +518,7 @@ def open_GUI(*args):
         if 'Style' in extra_GUIs_menu_var.get():
             run_script_util.run_script("style_analysis_main.py")
         if 'WordNet' in extra_GUIs_menu_var.get():
-            run_script_util.run_script("knowledge_graphs_WordNet_main.py")
+            run_script_util.run_script("semantic_aggregation_main.py")
         if 'Word search' in extra_GUIs_menu_var.get():
             run_script_util.run_script("file_search_byWord_main.py")
 

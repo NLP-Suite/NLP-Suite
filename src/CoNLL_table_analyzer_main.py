@@ -63,7 +63,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
     #     if 'Word searches' in extra_GUIs_menu_var.get():
     #         run_script_util.run_script("file_search_byWord_main.py")
     #     if 'Wordnet' in extra_GUIs_menu_var.get():
-    #         run_script_util.run_script("knowledge_graphs_WordNet_main.py")
+    #         run_script_util.run_script("semantic_aggregation_main.py")
 
 # Ngrams searches & VIEWER','Word searches
 
@@ -345,8 +345,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
 
         # the WordNet installation directory is now checked in aggregate_GoingUP
         WordNetDir = ''
-        import knowledge_graphs_WordNet_util
-        output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, inputFilename_nouns, outputDir,
+        import semantic_aggregation_WordNet_util
+        output = semantic_aggregation_WordNet_util.aggregate_GoingUP(WordNetDir, inputFilename_nouns, outputDir,
                                                                  config_filename, 'NOUN',
                                                                  openOutputFiles, chartPackage, dataTransformation,
                                                                  language_var='English')
@@ -356,7 +356,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
             else:
                 filesToOpen.extend(output)
 
-        output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, inputFilename_verbs, outputDir,
+        output = semantic_aggregation_WordNet_util.aggregate_GoingUP(WordNetDir, inputFilename_verbs, outputDir,
                                                                  config_filename, 'VERB',
                                                                  openOutputFiles, chartPackage,dataTransformation,
                                                                  language_var='English')
@@ -575,7 +575,7 @@ def open_GUI(*args):
         if 'Word searches' in extra_GUIs_menu_var.get():
             run_script_util.run_script("file_search_byWord_main.py")
         if 'Wordnet' in extra_GUIs_menu_var.get():
-            run_script_util.run_script("knowledge_graphs_WordNet_main.py")
+            run_script_util.run_script("semantic_aggregation_main.py")
         if 'statistics' in extra_GUIs_menu_var.get():
             run_script_util.run_script("statistics_txt_main.py")
 extra_GUIs_menu_var.trace('w',open_GUI)

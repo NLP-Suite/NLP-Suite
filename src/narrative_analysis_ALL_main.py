@@ -89,9 +89,9 @@ def run(inputFilename,inputdirname, outdirname,
         run_script_util.run_script("NER_main.py")
 
     if characters_WordNet_var==True or space_WordNet_var == True or action_WordNet_var == True:
-        if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_WordNet_main.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('semantic_aggregation_main.py')==False:
             return
-        run_script_util.run_script("knowledge_graphs_WordNet_main.py")
+        run_script_util.run_script("semantic_aggregation_main.py")
 
     if characters_DBpedia_YAGO_var == True or characters_DBpedia_YAGO_var == True or space_DBpedia_YAGO_var==True or action_DBpedia_YAGO_var == True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_DBpedia_YAGO_main.py') == False:
@@ -292,7 +292,7 @@ def open_extra_GUI(*args):
         if 'Word2Vec' in extra_GUIs_menu_var.get():
             run_script_util.run_script("word2vec_main.py")
         if 'WordNet' in extra_GUIs_menu_var.get():
-            run_script_util.run_script("knowledge_graphs_WordNet_main.py")
+            run_script_util.run_script("semantic_aggregation_main.py")
         if 'Corpus' in extra_GUIs_menu_var.get():
             run_script_util.run_script("whats_in_your_corpus_main.py")
 extra_GUIs_menu_var.trace('w', open_extra_GUI)

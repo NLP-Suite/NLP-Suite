@@ -38,7 +38,7 @@ import Stanford_CoreNLP_util
 # import SENNA_util
 import spaCy_util
 import reminders_util
-import knowledge_graphs_WordNet_util
+import semantic_aggregation_WordNet_util
 import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -515,7 +515,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                                                               ['Subject (S)', 'Object (O)'])
                 # the WordNet installation directory, WordNetDir,  is now checked in aggregate_GoingUP
                 WordNetDir=''
-                output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
+                output = semantic_aggregation_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
                                                                          config_filename, 'NOUN',
                                                                          openOutputFiles, 
                                                                          chartPackage, dataTransformation, language_var)
@@ -524,7 +524,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                     filesToOpen.extend(output)
                 if lemmatize_verbs:
                     outputFilename = IO_csv_util.extract_from_csv(SVO_lemmatized_filename, outputWNDir, '', ['Verb (V)'])
-                    output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
+                    output = semantic_aggregation_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
                                                                              config_filename, 'VERB',
                                                                              openOutputFiles, 
                                                                              chartPackage, dataTransformation, language_var)

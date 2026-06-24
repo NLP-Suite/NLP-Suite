@@ -61,7 +61,7 @@ def run(inputFilename,inputDir, outputDir,
     #     if 'Ngrams searches' in extra_GUIs_menu_var.get():
     #         run_script_util.run_script("NGrams_CoOccurrences_main.py")
     #     if 'Wordnet' in extra_GUIs_menu_var.get():
-    #         run_script_util.run_script("knowledge_graphs_WordNet_main.py")
+    #         run_script_util.run_script("semantic_aggregation_main.py")
 
     # # create a subdirectory of the output directory
     # outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='search',
@@ -289,7 +289,7 @@ def open_GUI(*args):
         if 'searches & VIEWER' in extra_GUIs_menu_var.get():
             run_script_util.run_script("NGrams_CoOccurrences_main.py")
         if 'Wordnet' in extra_GUIs_menu_var.get():
-            run_script_util.run_script("knowledge_graphs_WordNet_main.py")
+            run_script_util.run_script("semantic_aggregation_main.py")
 extra_GUIs_menu_var.trace('w',open_GUI)
 
 search_options_menu_var.set('Case sensitive (default)')

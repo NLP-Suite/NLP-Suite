@@ -17,7 +17,7 @@ import IO_user_interface_util
 import IO_files_util
 import config_util
 import statistics_txt_util
-import knowledge_graphs_WordNet_util
+import semantic_aggregation_WordNet_util
 import Stanford_CoreNLP_util
 # import wordclouds_util
 import GIS_pipeline_util
@@ -442,7 +442,7 @@ def run(inputFilename,inputDir, outputDir,
                                 noun_verb='VERB'
                             else:
                                 return
-                            outputFiles = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir_what_else, config_filename, noun_verb,
+                            outputFiles = semantic_aggregation_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir_what_else, config_filename, noun_verb,
                                                                         openOutputFiles, chartPackage, dataTransformation, language_var)
                             if outputFiles != None:
                                 if isinstance(outputFiles, str):
@@ -456,7 +456,7 @@ def run(inputFilename,inputDir, outputDir,
                                 noun_verb='NOUN'
                             else:
                                 return
-                            outputFiles = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir_what_else, config_filename, noun_verb,
+                            outputFiles = semantic_aggregation_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir_what_else, config_filename, noun_verb,
                                                                         openOutputFiles, chartPackage, dataTransformation, language_var)
                             if outputFiles != None:
                                 if isinstance(outputFiles, str):

@@ -6,7 +6,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"knowledge_graphs_WordNet_main",['os','tkinter','pandas'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"semantic_aggregation_FrameNet_VerbNet_WordNet_main",['os','tkinter','pandas'])==False:
     sys.exit(0)
 
 import os
@@ -18,7 +18,7 @@ import GUI_IO_util
 import config_util
 import IO_files_util
 import CoNLL_util
-import knowledge_graphs_WordNet_util
+import semantic_aggregation_WordNet_util
 import sentence_analysis_util
 import Stanford_CoreNLP_util
 import reminders_util
@@ -68,7 +68,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         return False
 
     if disaggregate_var==True:
-        filesToOpen= knowledge_graphs_WordNet_util.disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb)
+        filesToOpen= semantic_aggregation_WordNet_util.disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb)
         if len(filesToOpen)>0:
             csv_file_var.set(str(filesToOpen[0]))
 
@@ -129,9 +129,9 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
             return
         check_column=0
         if extract_proper_nouns:
-            filesToOpen=knowledge_graphs_WordNet_util.get_case_initial_row(csv_file, outputDir,sel_col, True)
+            filesToOpen=semantic_aggregation_WordNet_util.get_case_initial_row(csv_file, outputDir,sel_col, True)
         if extract_improper_nouns:
-            filesToOpen=knowledge_graphs_WordNet_util.get_case_initial_row(csv_file, outputDir,sel_col, False)
+            filesToOpen=semantic_aggregation_WordNet_util.get_case_initial_row(csv_file, outputDir,sel_col, False)
 
     if aggregate_lemmatized_var==True:
 
@@ -153,7 +153,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                 result=mb.askokcancel(title='Missing required information', message="You have selected to run the option 'Zoom OUT/UP to find higher-level aggregates' with the 'VERB' option but the csv file currently selected does not contain the expected subscript 'verbs_lemma'.\n\nIf this an overshigth, click on the Select INPUT CSV file button to select a different csv file and try again.")
                 if result==False:
                     return
-        filesToOpen = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, csv_file, outputDir, config_filename, noun_verb, openOutputFiles,
+        filesToOpen = semantic_aggregation_WordNet_util.aggregate_GoingUP(WordNetDir, csv_file, outputDir, config_filename, noun_verb, openOutputFiles,
                                                      chartPackage, dataTransformation, language_var, wordNet_keyword_list)
 
     if extract_nouns_verbs_from_CoNLL_var==True:
@@ -190,7 +190,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                     noun_verb = 'VERB'
                 else:
                     return
-                outputFiles = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
+                outputFiles = semantic_aggregation_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
                                                         openOutputFiles, chartPackage, dataTransformation, language_var, wordNet_keyword_list)
                 if outputFiles != None:
                     if isinstance(outputFiles, str):
@@ -204,7 +204,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                     noun_verb = 'NOUN'
                 else:
                     return
-                outputFiles = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
+                outputFiles = semantic_aggregation_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
                                                         openOutputFiles, chartPackage, dataTransformation, language_var, wordNet_keyword_list)
                 if outputFiles != None:
                     if isinstance(outputFiles, str):
@@ -218,7 +218,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
             return
         outputFilename=IO_files_util.generate_output_file_name(csv_file, outputDir, '.csv', 'WordNet', 'conll')
         filesToOpen.append(outputFilename)
-        outputFiles = knowledge_graphs_WordNet_util.Wordnet_bySentenceID(csv_file,dict_WordNet_filename_var,outputFilename,outputDir,noun_verb,openOutputFiles,chartPackage, dataTransformation)
+        outputFiles = semantic_aggregation_WordNet_util.Wordnet_bySentenceID(csv_file,dict_WordNet_filename_var,outputFilename,outputDir,noun_verb,openOutputFiles,chartPackage, dataTransformation)
         if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -263,7 +263,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
 
-GUI_label='Graphical User Interface (GUI) for WordNet tools'
+GUI_label='Graphical User Interface (GUI) for FrameNet, VerbNet, WordNet tools'
 head, scriptName = os.path.split(os.path.basename(__file__))
 config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -298,6 +298,15 @@ wordNet_keyword_list = []
 hidden_noun_lemma_csv = tk.StringVar()
 hidden_verb_lemma_csv = tk.StringVar()
 
+FrameNet_var  = tk.IntVar()
+VerbNet_var  = tk.IntVar()
+WordNet_var  = tk.IntVar()
+knowledge_base_menu_var = tk.StringVar()
+
+aggregate_var = tk.IntVar()
+build_word_list_var = tk.IntVar()
+
+disambiguate_var = tk.IntVar()
 
 aggregate_POS_var = tk.IntVar()
 noun_verb_menu_var = tk.StringVar()
@@ -339,14 +348,91 @@ csv_file=tk.Entry(window, width=GUI_IO_util.WordNet_csv_file_width,textvariable=
 csv_file.config(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,csv_file)
 
-WordNet_category_lb = tk.Label(window, text='WordNet category (synset)')
+lexical_category_lb = tk.Label(window, text='Lexical categories ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               WordNet_category_lb,True)
+                                               lexical_category_lb,True)
 
 noun_verb_menu = tk.OptionMenu(window, noun_verb_menu_var, 'NOUN', 'VERB')
 noun_verb_menu.configure(width=9, state="normal")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                                noun_verb_menu)
+
+knowledge_base_lb = tk.Label(window, text='Knowledge base ')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                               knowledge_base_lb,True)
+
+knowledge_base_menu_var.set('*')
+knowledge_base_menu = tk.OptionMenu(window, knowledge_base_menu_var, '*', 'FrameNet', 'VerbNet', 'WordNet')
+knowledge_base_menu.configure(width=9, state="normal")
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
+                                               knowledge_base_menu)
+
+
+aggregate_var.set(0)
+aggregate_checkbox = tk.Checkbutton(window, text='Aggregate corpus words into categories', variable=disaggregate_var,
+                                    onvalue=1, offvalue=0, command=lambda: activate_all_options(noun_verb_menu_var.get()))
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                             aggregate_checkbox,
+                                             True, False, True, False,
+                                             90, GUI_IO_util.labels_x_coordinate,
+                                             "Tick the checkbox to search the WordNet lexical database for semantically related words in selected top-level synset(s) for NOUN or VERB.\n"
+                                             "The algorithm deals with WordNet records only and does not deal with the input document(s) selected in the I/O configuration")
+
+build_word_list_var.set(0)
+build_word_list_checkbox = tk.Checkbutton(window, text='Build a word list from a selected lexical category', variable=build_word_list_var,
+                                    onvalue=1, offvalue=0, command=lambda: activate_all_options(build_word_list_var.get()))
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                             build_word_list_checkbox,
+                                             False, False, True, False,
+                                             90, GUI_IO_util.labels_x_coordinate,
+                                             "Tick the checkbox to search the WordNet lexical database for semantically related words in selected top-level synset(s) for NOUN or VERB.\n"
+                                             "The algorithm deals with WordNet records only and does not deal with the input document(s) selected in the I/O configuration")
+
+disambiguate_var.set(0)
+disambiguate_checkbox = tk.Checkbutton(window, text='Word sense disambiguation', variable=disambiguate_var,
+                                    onvalue=1, offvalue=0, command=lambda: activate_all_options(disambiguate_var.get()))
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                             disambiguate_checkbox,
+                                             False, False, True, False,
+                                             90, GUI_IO_util.labels_x_coordinate,
+                                             "Tick the checkbox to search the WordNet lexical database for semantically related words in selected top-level synset(s) for NOUN or VERB.\n"
+                                             "The algorithm deals with WordNet records only and does not deal with the input document(s) selected in the I/O configuration")
+
+# FrameNet_var.set(0)
+# FrameNet_var_checkbox = tk.Checkbutton(window, text='FrameNet', variable=FrameNet_var,
+#                                    onvalue=1, offvalue=0, command=lambda: activate_all_options(FrameNet_var.get()))
+# # place widget with hover-over info
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+#                                              FrameNet_var_checkbox,
+#                                              False, False, True, False,
+#                                              90, GUI_IO_util.labels_x_coordinate,
+#                                              "Tick the checkbox to select a csv file containing in the first column LEMMATIZED words (noun or verb, since WordNet only contains lemmatized values)" \
+#                                              "\nLemmatized values will be used to find their WordNet aggregate value (e.g., the verb 'walk' as 'motion')")
+#
+# VerbNet_var.set(0)
+# VerbNet_var_checkbox = tk.Checkbutton(window, text='VerbNet', variable=VerbNet_var,
+#                                    onvalue=1, offvalue=0, command=lambda: activate_all_options(VerbNet_var.get()))
+# # place widget with hover-over info
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+#                                              VerbNet_var_checkbox,
+#                                              False, False, True, False,
+#                                              90, GUI_IO_util.labels_x_coordinate,
+#                                              "Tick the checkbox to select a csv file containing in the first column LEMMATIZED words (noun or verb, since WordNet only contains lemmatized values)" \
+#                                              "\nLemmatized values will be used to find their WordNet aggregate value (e.g., the verb 'walk' as 'motion')")
+#
+# WordNet_var.set(0)
+# WordNet_var_checkbox = tk.Checkbutton(window, text='WordNet', variable=WordNet_var,
+#                                    onvalue=1, offvalue=0, command=lambda: activate_all_options(WordNet_var.get()))
+# # place widget with hover-over info
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+#                                              WordNet_var_checkbox,
+#                                              False, False, True, False,
+#                                              90, GUI_IO_util.labels_x_coordinate,
+#                                              "Tick the checkbox to select a csv file containing in the first column LEMMATIZED words (noun or verb, since WordNet only contains lemmatized values)" \
+#                                              "\nLemmatized values will be used to find their WordNet aggregate value (e.g., the verb 'walk' as 'motion')")
 
 disaggregate_var.set(0)
 disaggregate_checkbox = tk.Checkbutton(window, text='Zoom IN/DOWN to find related words', variable=disaggregate_var,
@@ -583,7 +669,7 @@ def activate_all_options(noun_verb, fromaggregate=False):
     # GUI_util.select_inputFilename_button.configure(state="disabled")
     # csv_file_var.set('')
     # csv_file_button.config(state='disabled')
-    disaggregate_checkbox.configure(state='normal')
+    disambiguate_checkbox.configure(state='normal')
     annotate_file_checkbox.configure(state='normal')
     aggregate_lemmatized_checkbox.configure(state='normal')
     extract_proper_nouns_checkbox.configure(state='normal')
@@ -665,7 +751,7 @@ def activate_all_options(noun_verb, fromaggregate=False):
     #     asked = False
 
     if extract_proper_nouns_var.get() == True or extract_improper_nouns_var.get() == True:
-        disaggregate_checkbox.configure(state='disabled')
+        disambiguate_checkbox.configure(state='disabled')
         annotate_file_checkbox.configure(state='disabled')
         aggregate_lemmatized_checkbox.configure(state='disabled')
         extract_nouns_verbs_from_CoNLL_checkbox.configure(state='disabled')
@@ -695,7 +781,7 @@ def activate_all_options(noun_verb, fromaggregate=False):
                     return
         csv_file_button.config(state='normal')
         GUI_util.select_inputFilename_button.configure(state="normal")
-        disaggregate_checkbox.configure(state='disabled')
+        disambiguate_checkbox.configure(state='disabled')
         annotate_file_checkbox.configure(state='disabled')
         extract_proper_nouns_checkbox.configure(state='disabled')
         extract_improper_nouns_checkbox.configure(state='disabled')
@@ -706,7 +792,7 @@ def activate_all_options(noun_verb, fromaggregate=False):
     #     asked = False
 
     if extract_nouns_verbs_from_CoNLL_var.get()==True:
-        disaggregate_checkbox.configure(state='disabled')
+        disambiguate_checkbox.configure(state='disabled')
         annotate_file_checkbox.configure(state='disabled')
         aggregate_lemmatized_checkbox.configure(state='disabled')
         extract_proper_nouns_checkbox.configure(state='disabled')

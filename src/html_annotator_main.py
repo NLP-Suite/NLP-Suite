@@ -23,7 +23,7 @@ import run_script_util
 
 def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, chartPackage, dataTransformation,
         knowledge_graphs_DBpedia_YAGO_var,
-        knowledge_graphs_WordNet_var,
+        semantic_aggregation_WordNet_var,
         html_gender_annotator_var,
         html_annotator_dictionary_var,
         html_annotator_add_dictionary_var,
@@ -43,10 +43,10 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, chartPacka
             return
         run_script_util.run_script("knowledge_graphs_DBpedia_YAGO_main.py")
 
-    if knowledge_graphs_WordNet_var==True:
-        if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_WordNet_main.py') == False:
+    if semantic_aggregation_WordNet_var==True:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('semantic_aggregation_main.py') == False:
             return
-        run_script_util.run_script("knowledge_graphs_WordNet_main.py")
+        run_script_util.run_script("semantic_aggregation_main.py")
 
     if html_annotator_add_dictionary_var==True or html_annotator_extractor==True:
         if inputFilename!='' and inputFilename[-5:]!='.html':
@@ -107,7 +107,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                 GUI_util.charts_package_options_widget.get(),
                 GUI_util.data_transformation_options_widget.get(),
                 knowledge_graphs_DBpedia_YAGO_var.get(),
-                knowledge_graphs_WordNet_var.get(),
+                semantic_aggregation_WordNet_var.get(),
                 html_gender_annotator_var.get(),
                 html_annotator_dictionary_var.get(),
                 html_annotator_add_dictionary_var.get(),
@@ -168,7 +168,7 @@ window.bind("<Escape>", clear)
 csvValue_color_list=[]
 
 knowledge_graphs_DBpedia_YAGO_var=tk.IntVar() # to annotate a document using DBpedia
-knowledge_graphs_WordNet_var=tk.IntVar() # to annotate a document using DBpedia
+semantic_aggregation_WordNet_var=tk.IntVar() # to annotate a document using DBpedia
 html_gender_annotator_var=tk.IntVar()
 
 html_annotator_dictionary_var=tk.IntVar() # to annotate a document using a dictionary
@@ -190,10 +190,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-knowledge_graphs_WordNet_button = tk.Button(window, width=GUI_IO_util.widget_width_long, text='HTML annotate corpus using the WordNet knowledge graphs (Open GUI)', command=lambda: run_script_util.run_script("knowledge_graphs_WordNet_main.py"))
+semantic_aggregation_WordNet_button = tk.Button(window, width=GUI_IO_util.widget_width_long, text='HTML annotate corpus using the WordNet knowledge graphs (Open GUI)', command=lambda: run_script_util.run_script("semantic_aggregation_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   knowledge_graphs_WordNet_button,
+                                   semantic_aggregation_WordNet_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 

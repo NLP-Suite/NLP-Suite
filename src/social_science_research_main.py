@@ -44,13 +44,13 @@ def check_filename(outputDir):
 
 
 def character(outputDir):
-    if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_WordNet_main.py') == False:
+    if IO_libraries_util.check_inputPythonJavaProgramFile('semantic_aggregation_main.py') == False:
         return
     if platform == "win32":
-        run_script_util.run_script("knowledge_graphs_WordNet_main.py", "character")
+        run_script_util.run_script("semantic_aggregation_main.py", "character")
     # linux # OS X
     elif platform == "linux" or platform == "linux2" or platform == "darwin":
-        subprocess.call("sudo Python knowledge_graphs_WordNet_main.py character", shell=True)
+        subprocess.call("sudo Python semantic_aggregation_main.py character", shell=True)
     # files are opened in the WordNet GUI
 
 def find_character_home(outputDir):
@@ -85,13 +85,13 @@ def intruder(CoreNLPdir,inputDir, outputDir, openOutputFiles, chartPackage, data
 
 
 def ancestor(inputDir, outputDir):
-    if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_WordNet_main.py') == False:
+    if IO_libraries_util.check_inputPythonJavaProgramFile('semantic_aggregation_main.py') == False:
         return
     if platform == "win32":
         run_script_util.run_script("WordNet.py", "ancestor")
     # linux # OS X
     elif platform == "linux" or platform == "linux2" or platform == "darwin":
-        subprocess.call("sudo Python knowledge_graphs_WordNet_main.py ancestor", shell=True)
+        subprocess.call("sudo Python semantic_aggregation_main.py ancestor", shell=True)
     # files are opened in the WordNet GUI
 
 

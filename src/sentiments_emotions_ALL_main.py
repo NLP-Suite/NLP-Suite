@@ -72,7 +72,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_WordNet_GUI_button = tk.Button(window, text='WordNet searches (NOUN: feeling; VERB: emotion) (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: run_script_util.run_script("knowledge_graphs_WordNet_main.py"))
+open_WordNet_GUI_button = tk.Button(window, text='WordNet searches (NOUN: feeling; VERB: emotion) (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: run_script_util.run_script("semantic_aggregation_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_WordNet_GUI_button,

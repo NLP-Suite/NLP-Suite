@@ -461,7 +461,7 @@ def open_GUI(*args):
         if 'CoNLL' in extra_GUIs_menu_var.get():
             run_script_util.run_script("CoNLL_table_analyzer_main.py")
         if 'WordNet' in extra_GUIs_menu_var.get():
-            run_script_util.run_script("knowledge_graphs_WordNet_main.py")
+            run_script_util.run_script("semantic_aggregation_main.py")
         if 'Corpus' in extra_GUIs_menu_var.get():
             run_script_util.run_script("whats_in_your_corpus_main.py")
 extra_GUIs_menu_var.trace('w',open_GUI)

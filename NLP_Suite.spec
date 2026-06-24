@@ -69,7 +69,7 @@ _local_modules = [
     'IO_csv_util', 'IO_files_util', 'IO_internet_util',
     'IO_libraries_util', 'IO_string_util', 'IO_user_interface_util',
     'knowledge_graphs_DBpedia_util', 'knowledge_graphs_DBpedia_YAGO_main',
-    'knowledge_graphs_WordNet_main', 'knowledge_graphs_WordNet_util',
+    'semantic_aggregation_main', 'semantic_aggregation_WordNet_util',
     'knowledge_graphs_YAGO_util',
     'lib_util', 'license_GUI',
     'narrative_analysis_ALL_main',

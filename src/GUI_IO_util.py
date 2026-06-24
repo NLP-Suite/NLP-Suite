@@ -559,7 +559,7 @@ if sys.platform == 'darwin':  # Mac OS
     html_annotator_color_palette_dict_menu = 1190
     html_annotator_bold_checkbox = 1270
 
-# Mac: knowledge_graphs_WordNet_main
+# Mac: semantic_aggregation_main
 #     WordNet_csv_file_width = 130
 #     WordNet_keyWord_entry_width = et_b40
 #     WordNet_dict_WordNet_filename_width = 80
@@ -962,7 +962,7 @@ else: #windows and anything else
     html_annotator_color_palette_dict_menu = 1080
     html_annotator_bold_checkbox = 1180
 
-# Windows: knowledge_graphs_WordNet_main
+# Windows: semantic_aggregation_main
     WordNet_csv_file_width = 130
     WordNet_keyWord_entry_width = 85
     WordNet_dict_WordNet_filename_width = 80

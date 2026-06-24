@@ -317,7 +317,7 @@ pydict['Corpus/document(s) statistics (Nouns, verbs, adjectives, pronouns, ...)'
 pydict['N-grams & Co-Occurrences'] = ["NGrams_CoOccurrences_main.py", 1]
 pydict["Who wrote the text? Man or woman? (via Gender guesser)"] = ["Gender guesser", 0, 0, '']
 pydict["Wordclouds (ALL options GUI)"] = ["wordclouds_main.py", 1]
-pydict["WordNet"] = ["knowledge_graphs_WordNet_main.py", 1]
+pydict["WordNet"] = ["semantic_aggregation_main.py", 1]
 pydict["Word embeddings (Word2Vec) (via BERT & Gensim)"] = ["word2vec_main.py", 1]
 # pydict["Word embeddings (Word2Vec) (via spaCy)"] = ["", 0]
 pydict["------------------"] = ["", 2]
