@@ -13,8 +13,9 @@ import html
 import re
 import urllib.parse
 
-# transformer_srl submodules must be imported so AllenNLP registers the custom components.
-from transformer_srl import dataset_readers, models, predictors  # noqa: F401
+# NOTE: transformer_srl is imported LAZILY inside main() (not at module top), so this script stays
+# importable under the Suite's Python 3.10 bundle (e.g. a PyInstaller import audit). transformer_srl
+# only loads when the worker is actually RUN as a subprocess in the isolated Python 3.8 SRL env.
 
 # Fallback only; SRL_util passes the resolved model path as argv[3]. Default to <NLP-Suite>/lib/SRL/.
 DEFAULT_MODEL = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -264,6 +265,9 @@ def main():
     os.makedirs(html_dir, exist_ok=True)
 
     sys.stderr.write("Loading SRL model (first load ~30-60s)...\n")
+    # Imported here, not at module top: transformer_srl + its submodules register the AllenNLP
+    # components, but the legacy py3.8 stack only exists in the isolated SRL env where this runs.
+    from transformer_srl import dataset_readers, models, predictors  # noqa: F401
     predictor = predictors.SrlTransformersPredictor.from_path(model_path, "transformer_srl")
 
     rows = []

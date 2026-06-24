@@ -250,6 +250,10 @@ a = Analysis(
         'nltk',      # hook incompatible with Python 3.8; nltk downloads data at runtime
         'spacy_langdetect', 'contextualSpellCheck',  # optional, may not be installed
         'pygit2',    # not needed in bundled app; auto-update disabled when frozen
+        # SRL (transformer_srl/allennlp) runs ONLY in a separate Python 3.8 subprocess env, never in
+        # this py3.10 bundle. src/SRL_worker.py ships as a data script and imports them lazily at run
+        # time, so it never needs to import here. Exclude them so the legacy stack is never pulled in.
+        'transformer_srl', 'allennlp',
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
