@@ -1,3 +1,8 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
 # OSX
 #
 .DS_Store
