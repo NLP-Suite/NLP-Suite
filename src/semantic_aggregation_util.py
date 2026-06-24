@@ -151,3 +151,104 @@ def aggregate(knowledge_base, WordNetDir, inputFile, outputDir, config_filename,
             files += run_vn()
         files += run_fn()
     return files
+
+
+# ---- Zoom IN/DOWN: build a word list from a category (VerbNet class / FrameNet frame) ----
+
+def _strip_pos_prefix(term):
+    """The WordNet keyword widget prefixes entries with 'noun.'/'verb.'; strip that so the term works
+    as a VerbNet class / FrameNet frame / lemma."""
+    t = str(term).strip()
+    if t.lower().startswith('noun.') or t.lower().startswith('verb.'):
+        return t.split('.', 1)[1]
+    return t
+
+
+def _write_word_list(rows, resource, outputDir, category_col):
+    """rows: list of {'Term', category_col}. Write a de-duplicated word-list csv; return [csv] or []."""
+    import pandas as pd
+    if not rows:
+        mb.showwarning(title="%s word list" % resource,
+                       message="%s found no words for the category/categories you entered.\n\nCheck the "
+                               "spelling - e.g. a VerbNet class like 'murder-42.1' (or a member verb like "
+                               "'murder'), or a FrameNet frame like 'Killing'." % resource)
+        return []
+    out_csv = os.path.join(outputDir, "NLP_%s_DOWN_wordlist.csv" % resource)
+    try:
+        pd.DataFrame(rows)[['Term', category_col]].drop_duplicates().to_csv(out_csv, index=False, encoding='utf-8')
+    except Exception as e:
+        mb.showwarning(title="%s word list" % resource, message="Could not write the word list:\n\n%s" % e)
+        return []
+    return [out_csv]
+
+
+def disaggregate_VerbNet(terms, outputDir, noun_verb):
+    """Build a word list from VerbNet: each term is a member verb (-> its class's verbs) or a class id
+    (-> that class's verbs)."""
+    IO_libraries_util.import_nltk_resource(GUI_util.window, 'corpora/verbnet', 'verbnet')
+    from nltk.corpus import verbnet as vn
+    all_ids = None
+    rows = []
+    for raw in terms:
+        t = _strip_pos_prefix(raw).lower()
+        classes = vn.classids(lemma=t)              # t as a verb lemma -> its class(es)
+        if not classes:                              # else t as a class id (full id or numeric part)
+            if all_ids is None:
+                all_ids = vn.classids()
+            classes = [c for c in all_ids if c == t or c.split('-', 1)[-1] == t]
+        for c in classes:
+            for m in vn.lemmas(c):
+                rows.append({'Term': m.replace('_', ' '), 'VerbNet class': c})
+    return _write_word_list(rows, 'VerbNet', outputDir, 'VerbNet class')
+
+
+def disaggregate_FrameNet(terms, outputDir, noun_verb):
+    """Build a word list from FrameNet: each term is a frame name (-> its lexical units) or a word
+    (-> the frames it evokes -> their lexical units). Includes verbs AND nouns (event nouns)."""
+    IO_libraries_util.import_nltk_resource(GUI_util.window, 'corpora/framenet_v17', 'framenet_v17')
+    from nltk.corpus import framenet as fn
+    rows = []
+    for raw in terms:
+        t = _strip_pos_prefix(raw)
+        try:
+            frames = list(fn.frames(r'(?i)^' + re.escape(t) + r'$'))      # t as a frame name
+        except Exception:
+            frames = []
+        if not frames:                                                    # else t as a lemma
+            try:
+                frames = list(fn.frames_by_lemma(re.compile(r'(?i)^' + re.escape(t) + r'\.')))
+            except Exception:
+                frames = []
+        for fr in frames:
+            for lu_name in fr.lexUnit:
+                rows.append({'Term': lu_name.rsplit('.', 1)[0], 'FrameNet frame': fr.name})
+    return _write_word_list(rows, 'FrameNet', outputDir, 'FrameNet frame')
+
+
+def disaggregate(knowledge_base, WordNetDir, outputDir, terms, noun_verb):
+    """Dispatch Zoom IN/DOWN (build a word list from a category) to the chosen Knowledge base.
+    '*' = all applicable (WordNet always; VerbNet only for verbs; FrameNet always)."""
+    kb = knowledge_base or 'WordNet'
+    files = []
+
+    def run_wn():
+        return wn_util.disaggregate_GoingDOWN(WordNetDir, outputDir, terms, noun_verb) or []
+
+    def run_vn():
+        return disaggregate_VerbNet(terms, outputDir, noun_verb) or []
+
+    def run_fn():
+        return disaggregate_FrameNet(terms, outputDir, noun_verb) or []
+
+    if kb == 'WordNet':
+        files += run_wn()
+    elif kb == 'VerbNet':
+        files += run_vn()
+    elif kb == 'FrameNet':
+        files += run_fn()
+    else:  # '*' = all applicable
+        files += run_wn()
+        if noun_verb == 'VERB':
+            files += run_vn()
+        files += run_fn()
+    return files
