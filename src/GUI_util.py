@@ -189,6 +189,23 @@ def trace_checkbox_NoLabel(checkbox_var, checkbox_text, onText, offText):
 # font Gotham for NLP
 # RGB red is #b10a0a
 
+def tk_image_from_pil(pil_image):
+    """Build a tkinter.PhotoImage from a PIL image WITHOUT PIL.ImageTk / the _imagingtk
+    C bridge. The bundled portable Python (python-build-standalone) statically embeds
+    Tcl/Tk, so _imagingtk cannot attach to it and ImageTk.PhotoImage crashes with
+        invalid command name "PyImagingPhoto"
+    Tk 8.6 decodes PNG natively, so we hand Tk base64-encoded PNG bytes through the
+    built-in PhotoImage(data=...). PIL is used only to decode/resize, which never touches
+    _imagingtk. Keep a reference to the returned image (Tk does not)."""
+    import io
+    import base64
+    if pil_image.mode not in ("RGB", "RGBA", "L", "LA", "P"):
+        pil_image = pil_image.convert("RGBA")
+    buffer = io.BytesIO()
+    pil_image.save(buffer, format="PNG")
+    return tk.PhotoImage(data=base64.b64encode(buffer.getvalue()))
+
+
 def display_logo():
     # Necessary to avoid creating a circular dependent import
     from IO_libraries_util import install_all_Python_packages
@@ -196,12 +213,12 @@ def display_logo():
         return  # PIL not installed; skip logo rather than exiting the whole app
 
     try:
-        from PIL import Image, ImageTk
+        from PIL import Image
         # https://stackoverflow.com/questions/17504570/creating-simply-image-gallery-in-python-tkinter-pil
         # https://stackoverflow.com/questions/76616042/attributeerror-module-pil-image-has-no-attribute-antialias
         image_list = [GUI_IO_util.image_libPath + os.sep + "logo.png"]
         for x in image_list:
-            img = ImageTk.PhotoImage(Image.open(x).resize((85,50), Image.LANCZOS)) #Image.ANTIALIAS))
+            img = tk_image_from_pil(Image.open(x).resize((85,50), Image.LANCZOS)) #Image.ANTIALIAS))
             logo = tk.Label(window, width=85, height=50, anchor='nw', image=img)
             logo.image = img
             # the logo has some white spaces to its left; better cutting this so that it can be aligned with HELP? buttons
