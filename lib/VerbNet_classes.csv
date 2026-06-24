@@ -1,0 +1,430 @@
+VerbNet class,Example members
+accompany-51.7,"accompany, conduct, escort, guide, lead, shepherd, steer"
+admire-31.2,"admire, adore, appreciate, bear, bewail, cherish, deify, disbelieve"
+admire-31.2-1,"despise, detest, disdain, dislike, regret, like, love, enjoy"
+admit-65,"admit, allow, include, permit, welcome"
+adopt-93,"assume, adopt, take_over, take_on"
+advise-37.9,"alert, assure, brief, encourage, entice, inform, notify"
+advise-37.9-1,"admonish, advise, caution, counsel, instruct, warn"
+allow-64,"allow, permit"
+amalgamate-22.2,
+amalgamate-22.2-1,"couple, incorporate, integrate, match, overlap"
+amalgamate-22.2-1-1,"amalgamate, coalesce, consolidate, intermingle"
+amalgamate-22.2-2,"conjoin, entangle, muddle, pair, team, affiliate, associate, compare"
+amalgamate-22.2-2-1,"alternate, crisscross, entwine, interchange, interconnect, interlace, interlink, interlock"
+amalgamate-22.2-3,oppose
+amalgamate-22.2-3-1,"introduce, figure"
+amalgamate-22.2-3-1-1,"marry, wed"
+amalgamate-22.2-3-2,engage
+amuse-31.1,"abash, affect, afflict, affront, aggravate, aggrieve, agitate, agonize"
+animal_sounds-38,"baa, bark, bay, bellow, blat, bleat, bray, buzz"
+appeal-31.4,
+appeal-31.4-1,niggle
+appeal-31.4-2,"grate, jar"
+appeal-31.4-3,"appeal, matter"
+appear-48.1.1,"appear, arise, awake, awaken, break, burst, come, dawn"
+appoint-29.1,"appoint, crown, designate, elect, proclaim, promote, mark, ordain"
+approve-77,"accept, understand, encourage, discourage"
+assessment-34,"analyze, assess, audit, evaluate, review, scrutinize, study"
+assuming_position-50,"bend, bow, crouch, flop, hang, kneel, lean, lie"
+avoid-52,"avoid, boycott, circumvent, dodge, duck, elude, eschew, evade"
+banish-10.2,"banish, deport, evacuate, expel, extradite, recall, remove"
+battle-36.4,"consult, exile"
+battle-36.4-1,"argue, bargain, battle, bicker, brawl, clash, combat, compete"
+begin-55.1,"go_on, proceed"
+begin-55.1-1,"begin, start, start_off, commence, recommence, resume, undertake"
+being_dressed-41.3.3,"attire, clad, garb, robe"
+bend-45.2,"bend, crease, crinkle, crumple, fold, furrow, rumple, wrinkle"
+berry-13.7,"antique, berry, birdnest, blackberry, clam, crab, fish, fowl"
+bill-54.5,"bet, bill, charge, fine, invoice, mulct, overcharge, save"
+body_internal_motion-49,"buck, fidget, flap, gyrate, kick, rock, squirm, sway"
+body_internal_states-40.6,"convulse, cower, quake, quiver, shake, shiver, shudder, tremble"
+braid-41.2.2,"bob, braid, brush, clip, coldcream, comb, condition, crimp"
+break-45.1,"break, chip, crack, crash, crush, fracture, rip, shatter"
+breathe-40.1.2,"bleed, dribble, drool, puke, spit, sweat, vomit, weep"
+breathe-40.1.2-1,"breathe, cough, cry, defecate, expectorate, retch, slobber, urinate"
+bring-11.3,take
+bring-11.3-1,bring
+build-26.1,"arrange, assemble, bake, blow, cast, chisel, churn, compile"
+build-26.1-1,"build, carve, cut, make, sculpt, shape"
+bulge-47.5.3,"bristle, bulge, seethe"
+bump-18.4,hit
+bump-18.4-1,"bang, brush, bump, crash, knock, ram, slam, smash"
+butter-9.9,"aromatize, asphalt, bait, black, blanket, blindfold, board, bread"
+calibratable_cos-45.6,multiply
+calibratable_cos-45.6-1,"appreciate, balloon, climb, decline, decrease, depreciate, differ, diminish"
+calve-28,"calve, cub, fawn, foal, kitten, lamb, litter, pup"
+captain-29.8,"prostitute, volunteer"
+captain-29.8-1,"boss, bully, butcher, butler, caddy, captain, champion, chaperone"
+captain-29.8-1-1,star
+care-88,mind
+care-88-1,"care, worry, wonder"
+carry-11.4,"carry, drag, haul, heft, hoist, lug, pull, schlep"
+carry-11.4-1,
+carry-11.4-1-1,"heave, kick, push, shove"
+carve-21.2,
+carve-21.2-1,"bruise, chip, crush, cube, dent, dice, fillet, gash"
+carve-21.2-2,"bore, carve, chop, crop, drill, file, lance, mill"
+change_bodily_state-40.8.4,"blanch, faint, sicken, swoon"
+characterize-29.2,"depict, detail, envision, interpret, picture, paint, recast, redraw"
+characterize-29.2-1,"portray, characterize, see, view, know"
+characterize-29.2-1-1,"define, describe, represent, accept, envisage, identify, imagine, visualize"
+characterize-29.2-1-2,"report, reveal"
+chase-51.6,"chase, follow, pursue, shadow, tail, track, trail"
+cheat-10.6,"bereave, break, cleanse, cure, denude, deplete, depopulate, deprive"
+cheat-10.6-1,"burgle, con, drain, ease, milk, mulct, plunder, swindle"
+cheat-10.6-1-1,"free, absolve, acquit, exonerate, pardon"
+chew-39.2,
+chew-39.2-1,"chew, chomp, crunch, gnaw, masticate, munch, nibble, pick"
+chew-39.2-2,"sip, slurp, suck"
+chit_chat-37.6,"argue, chat, chatter, chitchat, confer, converse, gab, gossip"
+clear-10.3,
+clear-10.3-1,"clear, clean, drain, empty"
+cling-22.5,"adhere, cleave, cling"
+coil-9.6,"loop, roll, spin, twine, whirl, wind"
+coil-9.6-1,"curl, coil, twirl, twist"
+coloring-24,"color, distemper, dye, enamel, glaze, japan, lacquer, paint"
+complain-37.8,"boast, brag, complain, crab, gripe, grouch, grouse, grumble"
+complete-55.2,"complete, discontinue, initiate, quit"
+concealment-16,"block, cloister, conceal, curtain, isolate, quarantine, repress, screen"
+concealment-16-1,hide
+confess-37.10,"confess, admit, acknowledge, proclaim, reveal"
+confine-92,"charge, institutionalize"
+confine-92-1,"commit, send, confine"
+conjecture-29.5,
+conjecture-29.5-1,"allow, conjecture, deny, doubt, feel, foreknow, foresee, foretell"
+conjecture-29.5-2,"admit, assert, discover, grant, guarantee, maintain, observe, show"
+consider-29.9,
+consider-29.9-1,"view, acknowledge, deem, esteem, imagine, rate, reckon, report"
+consider-29.9-1-1,"know, recognize, see"
+consider-29.9-1-1-1,"consider, remember, imagine"
+consider-29.9-2,"suspect, think, feel, suppose, believe"
+conspire-71,"collaborate, collude, conspire, discriminate, lesgislate, partner, protest, rebel"
+consume-66,"use, consume, pass"
+consume-66-1,"spend, waste"
+contiguous_location-47.8,"bestride, blanket, border, bound, bracket, bridge, cap, circle"
+contiguous_location-47.8-1,"abut, adjoin, cross, hit, intersect, meet, touch"
+contiguous_location-47.8-2,dominate
+continue-55.3,continue
+contribute-13.2,
+contribute-13.2-1,"disseminate, distribute, lose, refer, relinquish, remit, resign, restore"
+contribute-13.2-1-1,"administer, donate, forfeit, sacrifice, submit, surrender"
+contribute-13.2-1-1-1,contribute
+contribute-13.2-2,"disburse, extend, proffer, return, transfer"
+contribute-13.2-2-1,reimburse
+convert-26.6.2,"come_around, fall, get, get_around, get_down, go_back, resort, return"
+convert-26.6.2-1,"change_over, convert, move_over, switch, switch_over"
+cooking-45.3,"bake, barbecue, blanch, boil, braise, broil, brown, charbroil"
+cooperate-73,
+cooperate-73-1,"collaborate, cooperate, join"
+cooperate-73-2,participate
+cooperate-73-3,"labour, work"
+cope-83,deal
+cope-83-1,cope
+cope-83-1-1,"manage, grapple, get_by, succeed"
+correlate-86,"coincide, correlate, alternate"
+correspond-36.1,"banter, bargain, coexist, collaborate, collide, commiserate, communicate, compromise"
+correspond-36.1-1,agree
+correspond-36.1-1-1,"debate, argue"
+cost-54.2,"carry, cost, last, take"
+crane-40.3.2,"arch, bare, bat, beat, blow, clench, click, close"
+create-26.4,"coin, compose, compute, concoct, construct, contrive, create, derive"
+create-26.4-1,"conjure, design, dig, mint, publish, rearrange, reconstitute, reorganize"
+curtsey-40.3.3,"bob, bow, curtsey, genuflect, kneel, salaam, salute"
+cut-21.1,
+cut-21.1-1,"chip, clip, cut, hack, hew, saw, scrape, scratch"
+debone-10.8,"deaccent, debark, debone, debowel, debug, debur, declaw, defang"
+declare-29.4,
+declare-29.4-1,maintain
+declare-29.4-1-1,prove
+declare-29.4-1-1-1,declare
+declare-29.4-1-1-2,"find, judge"
+declare-29.4-1-1-3,profess
+declare-29.4-2,proclaim
+dedicate-79,"dedicate, devote, commit"
+defend-85,"defend, insure, protect, shade"
+destroy-44,"annihilate, blitz, damage, decimate, demolish, desecrate, destroy, devastate"
+devour-39.4,
+devour-39.4-1,"consume, devour, ingest"
+devour-39.4-2,"imbibe, swill"
+differ-23.4,"branch, deviate, differ, diverge"
+dine-39.5,"banquet, breakfast, brunch, dine, feast, graze, lunch, luncheon"
+disappearance-48.2,"die, disappear, expire, lapse, perish, vanish"
+disassemble-23.3,"detach, disassemble, disconnect, dismantle, dismount, partition, sift, sunder"
+discover-84,"discover, ascertain"
+discover-84-1,pick_up
+discover-84-1-1,"hear, learn, read, study, find_out, figure_out"
+dress-41.1.1,"bathe, change, clothe, disrobe, dress, exercise, preen, primp"
+dressing_well-41.3.2,"doll, dress, spruce, tog"
+drive-11.5,"drive, row, wheel"
+drive-11.5-1,"barge, bus, cart, ferry, fly, shuttle, truck"
+dub-29.3,"call, decree, dub, make, pronounce, rule, stamp, term"
+dub-29.3-1,"anoint, baptize, brand, christen, consecrate, crown, label, name"
+eat-39.1,
+eat-39.1-1,eat
+eat-39.1-2,drink
+enforce-63,"enforce, impose"
+engender-27,"beget, bring_about, cause, create, engender, generate, shape, sire"
+entity_specific_cos-45.5,"blister, bloom, blossom, bud, burgeon, burn, corrode, decay"
+entity_specific_modes_being-47.2,"billow, bloom, blossom, blow, breathe, bristle, bulge, burn"
+equip-13.4.2,"charge, invest, ply"
+equip-13.4.2-1,"arm, equip, rearm, redress, regale, reward, saddle"
+equip-13.4.2-1-1,"armor, overburden, weight, burden, compensate"
+escape-51.1,
+escape-51.1-1,"ascend, ?climb, ?cross, depart, descend, disembark, enter, escape"
+escape-51.1-2,"advance, approach, come, fall, go, plunge, recede, return"
+escape-51.1-2-1,arrive
+exceed-90,"exceed, excel, lap, outbid, outmatch, outnumber, outrace, outsmart"
+exchange-13.6,"barter, replace"
+exchange-13.6-1,"change, exchange, trade"
+exchange-13.6-1-1,"substitute, swap"
+exhale-40.1.3,
+exhale-40.1.3-1,"exhale, perspire"
+exhale-40.1.3-2,inhale
+exist-47.1,overspread
+exist-47.1-1,"coexist, ?correspond, ?depend, dwell, exist, extend, flourish, languish"
+exist-47.1-1-1,"endure, survive"
+feeding-39.7,"bottlefeed, breastfeed, feed, force-feed, handfeed, spoonfeed, suckle"
+ferret-35.6,"ferret, nose, seek, tease"
+fill-9.8,"adorn, anoint, bandage, bathe, bestrew, bind, blanket, block"
+fill-9.8-1,"pollute, stain"
+fit-54.3,"carry, contain, fit, feed, hold, house, seat, serve"
+flinch-40.5,"balk, cower, cringe, flinch, recoil, shrink, wince"
+floss-41.2.1,"brush, floss, shave, wash"
+focus-87,"focus, center, concentrate, converge"
+forbid-67,"ban, bar, block, deter, discourage, dissuade, forbid, hinder"
+force-59,"bullock, bamboozle, coax, coerce, commission, compel, dare, draw"
+force-59-1,"allure, annoy, arm-twist, bluff, blackmail, bounce, bribe, bully"
+free-80,"liberate, discharge"
+free-80-1,"absolve, acquit, clear, free, cure, relieve, emancipate, release"
+fulfilling-13.4.1,"issue, leave, present, trust"
+fulfilling-13.4.1-1,"credit, entrust, furnish, serve, supply"
+fulfilling-13.4.1-2,provide
+funnel-9.3,"ladle, hoe, scoop, siphon, sop"
+funnel-9.3-1,dip
+funnel-9.3-2,"channel, rake, shovel, spoon, squish, squash, tuck, wipe"
+funnel-9.3-2-1,"bang, dump, hammer, pound, push, funnel, ram, shake"
+future_having-13.3,"advance, allocate, allot, apportion, assign, award, bequeath, cede"
+get-13.5.1,"attain, book, buy, call, catch, charter, choose, conserve"
+get-13.5.1-1,"earn, fetch, cash, gain, get, save, steal"
+give-13.1,"lend, loan, pass, peddle, refund, render, volunteer"
+give-13.1-1,"give, hock, rent, sell, lease, pawn"
+gobble-39.3,
+gobble-39.3-1,"bolt, gobble, wolf"
+gobble-39.3-2,"gulp, guzzle, quaff, swallow, swig"
+gorge-39.6,"exist, feed, flourish, gorge, live, prosper, subsist, survive"
+groom-41.1.2,"curry, groom"
+grow-26.2,"develop, evolve, grow, hatch, mature"
+help-72,"support, succor"
+help-72-1,"aid, abet, assist, help"
+herd-47.5.2,"accumulate, aggregate, amass, assemble, cluster, collect, congregate, convene"
+hiccup-40.1.1,"belch, blush, burp, eruct, fart, flush, hiccup, pant"
+hit-18.1,
+hit-18.1-1,"bang, bash, batter, beat, bump, butt, dash, drum"
+hold-15.1,
+hold-15.1-1,"clasp, clutch, grasp, grip, handle, hold, wield"
+hunt-35.1,"dig, feel, fish, hunt, mine, poach, scrounge"
+hurt-40.8.3,
+hurt-40.8.3-1,stub
+hurt-40.8.3-1-1,"break, chip, fracture, pull, rupture, split, sprain, turn"
+hurt-40.8.3-2,"bark, bite, bruise, bump, burn, cut, hurt, injure"
+illustrate-25.3,"address, adorn, autograph, brand, date, decorate, embellish, endorse"
+image_impression-25.1,"annotate, applique, emboss, embroider, engrave, etch, imprint, incise"
+indicate-78,"imply, predict"
+indicate-78-1,"explain, indicate, say"
+indicate-78-1-1,"confirm, demonstrate, establish, prove, reveal, show"
+inquire-37.1.2,"ask, enquire, inquire, consult, pry"
+instr_communication-37.4,"broadcast, cable, e-mail, fax, modem, netmail, phone, radio"
+investigate-35.4,"canvass, explore, examine, frisk, inspect, investigate, monitor, observe"
+judgement-33,"acclaim, accurse, applaud, assail, assault, attack, belittle, blame"
+keep-15.2,"hoard, keep, leave, store, stock"
+knead-26.5,"beat, bend, coil, collect, compress, contort, curve, distort"
+learn-14,acquire
+learn-14-1,"cram, read, study, learn"
+learn-14-2,"glean, memorize"
+learn-14-2-1,"assimilate, learn, read"
+leave-51.2,abandon
+leave-51.2-1,"desert, leave"
+lecture-37.11,
+lecture-37.11-1,"lecture, moralize, preach, remark, speak, talk, theorize, write"
+lecture-37.11-1-1,"elaborate, comment"
+lecture-37.11-2,dwell
+light_emission-43.1,"beam, blaze, blink, burn, flame, flare, flash, flicker"
+limit-76,"confine, limit, reduce, restrict, restrain, constrain"
+linger-53.1,"dally, dawdle, dither, equivocate, hesitate, linger, loaf, loiter"
+linger-53.1-1,"delay, stall"
+lodge-46,"bivouac, board, camp, dwell, live, lodge, quarter, reside"
+long-32.2,
+long-32.2-1,"ache, crave, fall, hanker, hope, hunger, itch, long"
+long-32.2-2,"dangle, hanker, lust, thirst, yearn"
+manner_speaking-37.3,"babble, bark, bawl, bellow, bleat, boom, bray, burble"
+marry-36.2,"court, cuddle, date, divorce, embrace, hug, kiss, marry"
+marvel-31.3,
+marvel-31.3-1,"cheer, cringe, enthuse, exult, fume, gladden, madden, marvel"
+marvel-31.3-2,"bother, care, fret, mind, moon, rage, rejoice, rhapsodize"
+marvel-31.3-3,"bleed, care, cry, fear, feel, grieve, mourn, weep"
+marvel-31.3-4,"ache, hurt, suffer"
+marvel-31.3-5,"bask, delight, exult, glory, luxuriate, rejoice, revel, wallow"
+marvel-31.3-6,"approve, beware, despair, disapprove, sicken, tire, weary"
+marvel-31.3-7,groove
+marvel-31.3-8,"anger, anguish, delight, enthuse, exult, fret, fume, gloat"
+marvel-31.3-9,"react, thrill"
+masquerade-29.6,"behave, camouflage, count, function, masquerade, officiate, qualify, rank"
+masquerade-29.6-1,"act, behave"
+masquerade-29.6-2,"serve, pose"
+matter-91,"matter, count"
+meander-47.7,"cascade, climb, crawl, cut, drop, go, meander, plunge"
+meet-36.3,
+meet-36.3-1,"consult, deliberate, meet, play, remonstrate, reunite, visit"
+meet-36.3-2,"battle, box, debate, fight"
+mine-10.9,"mine, quarry"
+mix-22.1,
+mix-22.1-1,cream
+mix-22.1-1-1,"blend, combine, commingle, fuse, merge, mingle, mix"
+mix-22.1-2,add
+mix-22.1-2-1,"concatenate, connect, join, link, pool, network"
+modes_of_being_with_motion-47.3,"bob, bow, creep, dance, drift, eddy, falter, flap"
+murder-42.1,"assassinate, butcher, dispatch, eliminate, execute, immolate, liquidate, massacre"
+murder-42.1-1,kill
+neglect-75,
+neglect-75-1,omit
+neglect-75-1-1,"neglect, fail"
+neglect-75-2,manage
+nonvehicle-51.4.2,"cruise, drive, fly, navigate, oar, paddle, pedal, rally"
+nonverbal_expression-40.2,"beam, cackle, chortle, chuckle, cough, cry, frown, gape"
+obtain-13.5.2,"accept, accrue, accumulate, appropriate, borrow, cadge, collect, exact"
+obtain-13.5.2-1,"acquire, obtain, purchase"
+occurrence-48.3,"ensue, eventuate, happen, occur, recur, transpire, befall, chance"
+order-60,"need, want, permit"
+order-60-1,"ask, command, demand, order, require"
+orphan-29.7,"apprentice, canonize, cripple, cuckold, knight, martyr, orphan, outlaw"
+other_cos-45.4,"abase, abate, abbreviate, abrade, abridge, accelerate, acetify, acidify"
+pain-40.8.1,"bother, hurt, itch, pain"
+pay-68,"pay, spend, waste, serve, repay"
+peer-30.3,"check, gape, gawk, gaze, glance, glare, goggle, leer"
+pelt-17.2,"bombard, buffet, pelt, shower, stone"
+performance-26.7,
+performance-26.7-1,"chant, direct, enact, improvise, intone, perform"
+performance-26.7-1-1,"dance, hum, play, recite, sing, whistle"
+performance-26.7-2,"choreograph, compose, produce, silkscreen, take"
+performance-26.7-2-1,"draw, paint, spin, write"
+pit-10.7,"bark, beard, bone, burl, core, gill, gut, head"
+pocket-9.10,"archive, bag, bank, beach, bed, bench, billet, bin"
+pocket-9.10-1,"berth, dock, drydock, land, ground, lodge, stable"
+poison-42.2,"asphyxiate, crucify, drown, electrocute, garrotte, hang, knife, poison"
+poke-19,"dig, jab, pierce, poke, prick, stick"
+pour-9.5,"dribble, drip, pour, slop, slosh, spew, spill"
+preparing-26.3,
+preparing-26.3-1,"bake, blend, brew, clear, cook, cook_up, fix, light"
+preparing-26.3-2,"boil, clean, fry, grill, hardboil, iron, overbake, poach"
+price-54.4,"appraise, approximate, assess, calibrate, estimate, fix, gauge, peg"
+push-12,heave
+push-12-1,"jerk, pull, tug, yank"
+push-12-1-1,"jostle, press, push, shove, thrust"
+put-9.1,"arrange, bury, immerse, lodge, mount, position, situate, sling"
+put-9.1-1,"deposit, insert, install, stash, stow"
+put-9.1-2,"place, set, put"
+put_direction-9.4,"drop, elevate, hoist, lift, lower, raise"
+put_spatial-9.2,"lay, prop"
+put_spatial-9.2-1,"dangle, hang, lean, perch, rest, sit, stand, suspend"
+reach-51.8,"reach, hit, make"
+reflexive_appearance-48.1.2,"assert, declare, define, exhibit, expose, express, flaunt, form"
+refrain-69,"refrain, abstain, desist"
+register-54.1,"measure, read, register, total, weigh"
+rely-70,"rely, depend, bank, bargain, count, figure, reckon, bet"
+remove-10.1,"abolish, abstract, cull, deduct, delete, depose, disgorge, dislodge"
+risk-94,"bet, gamble, venture, wager"
+risk-94-1,"chance, risk, hazard"
+roll-51.3.1,"bounce, drift, drop, float, glide, move, roll, slide"
+rummage-35.5,"bore, burrow, delve, forage, fumble, grope, leaf, listen"
+run-51.3.2,"amble, backpack, bolt, bounce, bound, bowl, canter, carom"
+rush-53.2,"hasten, hurry, rush"
+say-37.7,"disclose, exclaim, insinuate, insist, intimate, reply, respond, retort"
+say-37.7-1,"announce, articulate, blab, blurt, claim, confess, confide, convey"
+say-37.7-1-1,"purpose, suggest, recommend"
+say-37.7-2,hint
+scribble-25.2,"carve, chalk, charcoal, copy, crayon, doodle, draw, forge"
+search-35.2,"advertise, check, comb, dive, drag, dredge, excavate, patrol"
+see-30.1,"smell, taste"
+see-30.1-1,"detect, discern, feel, sense, perceive, notice, see"
+see-30.1-1-1,hear
+send-11.1,"convey, deliver, dispatch, pass_on, port, post, return, shift"
+send-11.1-1,"airmail, express, FedEx, forward, hand, mail, pass, send"
+separate-23.1,"disassociate, dismember, sever, uncoil"
+separate-23.1-1,"decouple, differentiate, disentangle, distinguish, divide, divorce, segregate"
+separate-23.1-2,"disconnect, dissociate, part, separate"
+settle-89,"settle, concur, contract, harmonize, bargain, consent, cohere, jibe"
+shake-22.3,
+shake-22.3-1,"lump, mass"
+shake-22.3-1-1,"beat, fuse, scramble, stir, swirl, whip, whisk"
+shake-22.3-2,"band, baste, cluster, collate, collect, gather, group, herd"
+shake-22.3-2-1,"append, attach, bind, bond, bundle, fasten, glom, graft"
+sight-30.2,"descry, discover, espy, examine, experience, eye, glimpse, inspect"
+simple_dressing-41.3.1,"don, doff, wear"
+slide-11.2,move
+slide-11.2-1-1,"bounce, float, roll, slide"
+smell_emission-43.3,"reek, smell, stink"
+snooze-40.4,"catnap, doze, drowse, nap, sleep, slumber, snooze"
+sound_emission-43.2,"babble, bang, beat, beep, bellow, blare, blast, blat"
+sound_existence-47.4,"echo, resonate, resound, reverberate, sound"
+spank-18.3,"belt, birch, bludgeon, bonk, brain, cane, clobber, club"
+spatial_configuration-47.6,"balance, bend, bow, crouch, dangle, droop, flop, fly"
+split-23.2,"blow, break, cut, draw, hack, hew, kick, knock"
+spray-9.7,
+spray-9.7-1,"brush, drizzle, hang, plaster, pump, rub, scatter, seed"
+spray-9.7-1-1,"cram, crowd, jam, pack, pile"
+spray-9.7-2,"drape, load, dab, daub, mound, dust, heap, slather"
+stalk-35.3,"smell, stalk, taste, track"
+steal-10.5,"abduct, annex, cabbage, capture, confiscate, cop, emancipate, embezzle"
+stimulus_subject-30.4,"feel, look, smell, sound, taste"
+stop-55.4,"terminate, halt, repeat"
+stop-55.4-1,"cease, end, finish, stop"
+substance_emission-43.4,"belch, bleed, bubble, dribble, drip, drool, emanate, exude"
+succeed-74,
+succeed-74-1,succeed
+succeed-74-1-1,manage
+succeed-74-2,fail
+suffocate-40.7,"asphyxiate, choke, drown, starve, stifle, suffocate"
+suspect-81,"suspect, accuse, condemn"
+swarm-47.5.1,
+swarm-47.5.1-1,"bustle, crawl, creep, hop, run, swarm, swim, teem"
+swarm-47.5.1-2,throng
+swarm-47.5.1-2-1,abound
+swat-18.2,"bite, claw, paw, peck, punch, scratch, slug, stab"
+talk-37.5,"speak, talk"
+tape-22.4,"anchor, band, belt, bolt, bracket, buckle, button, cement"
+tape-22.4-1,"clamp, clip, clasp, gum, paste"
+tell-37.2,tell
+throw-17.1,discard
+throw-17.1-1,"bash, bat, bunt, chuck, fire, flick, fling, flip"
+throw-17.1-1-1,"catapult, kick, throw, tip, toss"
+tingle-40.8.2,"ache, burn, hum, pound, prickle, pucker, reel, smart"
+touch-20,
+touch-20-1,"caress, fondle, graze, kiss, lick, nudge, pat, peck"
+transcribe-25.4,"chronicle, copy, film, forge, imitate, microfilm, photocopy, photograph"
+transfer_mesg-37.1.1,"cite, demonstrate, elucidate, explain, explicate, expound, justify, narrate"
+transfer_mesg-37.1.1-1,"dictate, quote, read"
+transfer_mesg-37.1.1-1-1,"show, teach, tell, write"
+try-61,"try, attempt, intend"
+turn-26.6.1,"alter, deform, metamorphose, mutate, transform, translate, transmute"
+turn-26.6.1-1,"change, convert, turn"
+urge-58,"ask, urge, persuade, implore"
+vehicle-51.4.1,"balloon, boat, bobsled, bus, cab, caravan, chariot, coach"
+vehicle-51.4.1-1,"bicycle, bike, canoe, cycle, kayak, motorbike, motorcycle, raft"
+waltz-51.5,"boogie, bop, cancan, clog, conga, dance, foxtrot, jig"
+want-32.1,"covet, crave, desire, fancy, need, want"
+want-32.1-1,"enjoy, crave"
+want-32.1-1-1,"want, need, like, prefer, desire"
+weather-57,"blow, clear, drizzle, fog, freeze, gust, hail, howl"
+weekend-56,"December, holiday, honeymoon, overnight, sojourn, summer, vacation, weekend"
+wink-40.3.1,wag
+wink-40.3.1-1,"beckon, blink, clap, gesture, nod, point, shrug, squint"
+wipe_instr-10.4.2,"file, filter, hoover, iron, plough, sandpaper, sponge, towel"
+wipe_instr-10.4.2-1,"brush, comb, hose, mop, plow, rake, shear, shovel"
+wipe_manner-10.4.1,"buff, distill, expunge, flush, leach, polish, purge, shave"
+wipe_manner-10.4.1-1,"bail, dab, dust, erase, lick, pluck, prune, rinse"
+wish-62,"expect, wish, hope, intend, mean, plan, propose, think"
+withdraw-82,
+withdraw-82-1,"back_out, chicken_out, get_out, wriggle_out, bow_out, pull_out"
+withdraw-82-2,"get_away, back_off"
+withdraw-82-3,"withdraw, retreat, pull_away, retire"

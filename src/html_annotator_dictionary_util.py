@@ -20,6 +20,31 @@ import IO_user_interface_util
 from csv import reader
 import IO_csv_util
 
+
+def _term_regex(term):
+    """Build a whole-word regex for a dictionary term, to be used with re.IGNORECASE:
+       - flexible whitespace inside multi-word terms (extra spaces / line breaks);
+       - FrameNet '(particle)' notation treated as OPTIONAL (e.g. 'fall (upon)' matches 'fall' or 'fall upon');
+       - all other characters escaped (hyphens, dots, ...).
+       Replace matches via a function using m.group(0) so the text's original case/spacing is preserved."""
+    pieces = []
+    for piece in re.split(r'(\([^)]*\))', term.strip()):
+        if not piece:
+            continue
+        if piece.startswith('(') and piece.endswith(')'):
+            inner = piece[1:-1].split()
+            if inner:
+                pieces.append(r'(?:\s+' + r'\s+'.join(re.escape(w) for w in inner) + r')?')
+        else:
+            words = piece.split()
+            if words:
+                pieces.append(r'\s+'.join(re.escape(w) for w in words))
+    core = ''.join(pieces)
+    if not core:
+        return None
+    return r'\b(?=\w)' + core + r'\b(?!\w)'
+
+
 # the function associates specific values of a csv file to a specific color
 # append the function to allow multiple wordColNum and catColNum (cat for categories)
 def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
@@ -128,24 +153,21 @@ def dictionary_annotate(inputFile, inputDir, outputDir, configFileName, dict_fil
                 termID=termID+1
                 #print("Processing dictionary field '" + csv_field1_var + "' " + str(termID) + "/" + str(len(terms)) + " " + term)
                 print(f"Processing dictionary field '{csv_field1_var}' {termID}/{len(terms)} term")
-                if re.search(r'\b' + term + r'\b', text)==None:
+                _pat = _term_regex(term)
+                if _pat is None or re.search(_pat, text, re.IGNORECASE) is None:
                     continue
                 for term1 in reserved_dictionary:
                     if term1 in dictionary:
-                        tagString = tagAnnotations[0] + term1 + tagAnnotations[1]
-                        # use regular expression replace to check for distinct words (e.g., he not tagging he in held)
-                        # \b beginning and ending of word
-                        # \w word character including numbers and characters
-                        text = re.sub(rf"\b(?=\w){term1}\b(?!\w)", tagString, text)
+                        _pat1 = _term_regex(term1)
+                        if _pat1:
+                            text = re.sub(_pat1, lambda m: tagAnnotations[0] + m.group(0) + tagAnnotations[1], text, flags=re.IGNORECASE)
                         # remove term from dictionary, to avoid double processing in next tagging
                         terms.remove(str(term1))
                         continue
                 term_intextID=term_intextID+1
                 print("   Annotating '" + term + "' in text " + str(term_intextID) + "/" + str(len(text)))
-                tagString = tagAnnotations[0] + term + tagAnnotations[1]
-
-                # use regular expression replace to check for distinct words (e.g., he not tagging he in held)
-                text = re.sub(rf"\b(?=\w){term}\b(?!\w)", tagString, text)
+                # tag the matched surface form (m.group(0)) so the text's original case/spacing is preserved
+                text = re.sub(_pat, lambda m: tagAnnotations[0] + m.group(0) + tagAnnotations[1], text, flags=re.IGNORECASE)
         else:
             for i in range(len(dictionary)):
                 terms = dictionary[i]
@@ -158,25 +180,27 @@ def dictionary_annotate(inputFile, inputDir, outputDir, configFileName, dict_fil
                     termID = termID + 1
                     print("Processing dictionary field value " + str(termID) + "/" + str(
                         len(terms)) + " " + term)
+                    _pat = _term_regex(term)
+                    if _pat is None:
+                        continue
                     try:
-                        if re.search(r'\b' + term + r'\b', text) == None:
+                        if re.search(_pat, text, re.IGNORECASE) is None:
                             continue
                     except:
                         continue
                     for term1 in reserved_dictionary:
                         if term1 in terms:
-                            tagString = tagAnnotations[0] + term1 + tagAnnotations[1]
-                            # use regular expression replace to check for distinct words (e.g., he not tagging he in held)
-                            text = re.sub(rf"\b(?=\w){term1}\b(?!\w)", tagString, text)
+                            _pat1 = _term_regex(term1)
+                            if _pat1:
+                                text = re.sub(_pat1, lambda m: tagAnnotations[0] + m.group(0) + tagAnnotations[1], text, flags=re.IGNORECASE)
                             # remove term from dictionary, to avoid double processing in next tagging
                             terms.remove(str(term1))
                             continue
                     term_intextID=term_intextID+1
                     print("   Annotating '" + term + "' in text " + str(term_intextID) + "/" + str(len(text)))
-                    tagString = tagAnnotations[0] + term + tagAnnotations[1]
-                    # use regular expression replace to check for distinct words (e.g., he not tagging he in held)
+                    # tag the matched surface form (m.group(0)) so the text's original case/spacing is preserved
                     try:
-                        text = re.sub(rf"\b(?=\w){term}\b(?!\w)", tagString, text)
+                        text = re.sub(_pat, lambda m: tagAnnotations[0] + m.group(0) + tagAnnotations[1], text, flags=re.IGNORECASE)
                     except:
                         continue
         writeout.append(text)

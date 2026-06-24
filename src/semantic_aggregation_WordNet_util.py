@@ -1,6 +1,6 @@
 #Written by Roberto Franzosi
 #Modified by Cynthia Dong (Fall 2019-Spring 2020)
-#Wordnet_bySentenceID and get_case_initial_row written by Yi Wang (April 2020)
+#Wordnet_bySentenceID written by Yi Wang (April 2020)
 
 import sys
 import GUI_util
@@ -423,22 +423,6 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, nou
                                        'Finished running WordNet charts by sentence index at', True, '', True,
                                        startTime)
 
-    return filesToOpen
-
-def get_case_initial_row(inputFilename,outputDir,check_column, firstLetterCapitalized=True):
-    if firstLetterCapitalized:
-        case_label='Upper'
-    else:
-        case_label='Lower'
-    outputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'filter_' + case_label)
-    filesToOpen.append(outputFilename)
-    data = pd.read_csv(inputFilename,encoding='utf-8',on_bad_lines='skip')
-    if firstLetterCapitalized:
-        regex = '^[A-Z].*'
-    else:
-        regex = '^[a-z].*'
-    data = data[data[check_column].str.contains(regex, regex= True, na=False)] # select by regular expression
-    data.to_csv(outputFilename,encoding='utf-8', index=False)
     return filesToOpen
 
 # The output file returned by the JAVA script WordNet_Search_UP.jar contains

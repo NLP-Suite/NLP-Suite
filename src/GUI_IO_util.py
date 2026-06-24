@@ -577,7 +577,7 @@ if sys.platform == 'darwin':  # Mac OS
 #     WordNet_dict_WordNet_filename_lb_pos = open_TIPS_x_coordinate
 
     WordNet_csv_file_width = 90
-    WordNet_keyWord_entry_width = 52
+    WordNet_keyWord_entry_width = 42
     WordNet_dict_WordNet_filename_width = 45
 
     WordNet_reset_pos = 516
@@ -964,7 +964,7 @@ else: #windows and anything else
 
 # Windows: semantic_aggregation_main
     WordNet_csv_file_width = 130
-    WordNet_keyWord_entry_width = 85
+    WordNet_keyWord_entry_width = 70
     WordNet_dict_WordNet_filename_width = 80
 
     WordNet_reset_pos = 430

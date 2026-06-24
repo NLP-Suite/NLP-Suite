@@ -22,7 +22,63 @@ from collections import defaultdict
 
 import charts_util
 import IO_user_interface_util
+import GUI_IO_util
 import semantic_aggregation_WordNet_util as wn_util
+
+
+# ---- KB-aware category lists for the GUI picker (WordNet top synsets / VerbNet classes / FrameNet frames) ----
+
+_WORDNET_TOP_NOUN = ('act', 'animal', 'artifact', 'attribute', 'body', 'cognition', 'communication', 'event',
+                     'feeling', 'food', 'group', 'location', 'motive', 'object', 'person', 'phenomenon', 'plant',
+                     'possession', 'process', 'quantity', 'relation', 'shape', 'state', 'substance', 'time')
+_WORDNET_TOP_VERB = ('body', 'change', 'cognition', 'communication', 'competition', 'consumption', 'contact',
+                     'creation', 'emotion', 'motion', 'perception', 'possession', 'social', 'stative', 'weather')
+_category_cache = {}
+
+
+def _categories_from_csv_or_nltk(filename, nltk_fn):
+    """Read the first column of lib/<filename> (the reference list that backs the dropdown);
+    if the csv is missing, fall back to computing the list from NLTK so the picker never comes up empty."""
+    if filename in _category_cache:
+        return _category_cache[filename]
+    vals = []
+    try:
+        with open(os.path.join(GUI_IO_util.libPath, filename), encoding='utf-8') as f:
+            rdr = csv.reader(f)
+            next(rdr, None)  # header
+            vals = [row[0] for row in rdr if row and row[0].strip()]
+    except Exception:
+        vals = []
+    if not vals:
+        try:
+            vals = nltk_fn()
+        except Exception:
+            vals = []
+    _category_cache[filename] = vals
+    return vals
+
+
+def _vn_classes():
+    IO_libraries_util.import_nltk_resource(GUI_util.window, 'corpora/verbnet', 'verbnet')
+    from nltk.corpus import verbnet as vn
+    return sorted(vn.classids())
+
+
+def _fn_frames():
+    IO_libraries_util.import_nltk_resource(GUI_util.window, 'corpora/framenet_v17', 'framenet_v17')
+    from nltk.corpus import framenet as fn
+    return sorted((f.name for f in fn.frames()), key=str.lower)
+
+
+def get_categories(knowledge_base, noun_verb):
+    """Categories to list in the KB-aware picker dropdown: WordNet top synsets (by NOUN/VERB),
+    the 429 VerbNet classes, or the 1,221 FrameNet frames."""
+    kb = knowledge_base or 'WordNet'
+    if kb == 'VerbNet':
+        return _categories_from_csv_or_nltk('VerbNet_classes.csv', _vn_classes)
+    if kb == 'FrameNet':
+        return _categories_from_csv_or_nltk('FrameNet_frames.csv', _fn_frames)
+    return list(_WORDNET_TOP_NOUN if noun_verb == 'NOUN' else _WORDNET_TOP_VERB)
 
 
 def _read_word_list(inputFile):
