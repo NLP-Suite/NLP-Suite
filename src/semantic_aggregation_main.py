@@ -176,6 +176,12 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         hidden_noun_lemma_csv.set(noun_lemma_csv)
 
     if aggregate_POS_var == True:
+        if not inputFilename and not inputDir:
+            mb.showerror(title='Missing required information',
+                         message="The 'Zoom OUT/UP by POS tags' option needs a txt file or a directory "
+                                 "of txt files in input (selected via the Setup INPUT/OUTPUT configuration).\n\n"
+                                 "Please select a txt input and try again.")
+            return
         annotator = ['POS']
         nouns_var = True
         verbs_var = True
@@ -733,7 +739,15 @@ def activate_all_options(noun_verb, fromaggregate=False):
     else:
         show_keywords_button.configure(state="disabled")
 
-    if len(wordNet_keyword_list) > 0 or keyWord_entry_var.get() != '':
+    # Enable RUN whenever an actionable option is selected. The REQUIRED input differs by option
+    # (csv for the list-based options, txt for the POS option, keywords for Zoom IN/DOWN) and is
+    # validated at RUN time in run(), which warns if it is missing.
+    _zoom_down_ready = disaggregate_var.get() and (len(wordNet_keyword_list) > 0 or keyWord_entry_var.get() != '')
+    _corpus_option = (aggregate_lemmatized_var.get() or annotate_file_var.get()
+                      or extract_proper_nouns_var.get() or extract_improper_nouns_var.get()
+                      or extract_nouns_verbs_from_CoNLL_var.get() or aggregate_POS_var.get()
+                      or aggregate_bySentenceID_var.get())
+    if _zoom_down_ready or _corpus_option:
         GUI_util.run_button.configure(state='normal')
     else:
         GUI_util.run_button.configure(state='disabled')
