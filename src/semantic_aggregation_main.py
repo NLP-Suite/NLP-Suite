@@ -385,8 +385,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_co
 #                                              aggregate_checkbox,
 #                                              False, False, True, False,
 #                                              90, GUI_IO_util.labels_x_coordinate,
-#                                              "Tick the checkbox to search the WordNet lexical database for semantically related words in selected top-level synset(s) for NOUN or VERB.\n"
-#                                              "The algorithm deals with WordNet records only and does not deal with the input document(s) selected in the I/O configuration")
+#                                              "Tick the checkbox to search the selected Knowledge base (WordNet synset, VerbNet class, or FrameNet frame) for related words in the selected category for NOUN or VERB.\n"
+#                                              "The algorithm uses the selected lexical database only and does not use the input document(s) selected in the I/O configuration")
 
 # build_word_list_var.set(0)
 # build_word_list_checkbox = tk.Checkbutton(window, text='Build a word list from a selected lexical category', variable=build_word_list_var,
@@ -396,8 +396,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_co
 #                                              build_word_list_checkbox,
 #                                              False, False, True, False,
 #                                              90, GUI_IO_util.labels_x_coordinate,
-#                                              "Tick the checkbox to search the WordNet lexical database for semantically related words in selected top-level synset(s) for NOUN or VERB.\n"
-#                                              "The algorithm deals with WordNet records only and does not deal with the input document(s) selected in the I/O configuration")
+#                                              "Tick the checkbox to search the selected Knowledge base (WordNet synset, VerbNet class, or FrameNet frame) for related words in the selected category for NOUN or VERB.\n"
+#                                              "The algorithm uses the selected lexical database only and does not use the input document(s) selected in the I/O configuration")
 
 disambiguate_var.set(0)
 disambiguate_checkbox = tk.Checkbutton(window, text='Word sense disambiguation', variable=disambiguate_var,
@@ -407,8 +407,8 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
                                              disambiguate_checkbox,
                                              False, False, True, False,
                                              90, GUI_IO_util.labels_x_coordinate,
-                                             "Tick the checkbox to search the WordNet lexical database for semantically related words in selected top-level synset(s) for NOUN or VERB.\n"
-                                             "The algorithm deals with WordNet records only and does not deal with the input document(s) selected in the I/O configuration")
+                                             "Tick the checkbox to search the selected Knowledge base (WordNet synset, VerbNet class, or FrameNet frame) for related words in the selected category for NOUN or VERB.\n"
+                                             "The algorithm uses the selected lexical database only and does not use the input document(s) selected in the I/O configuration")
 
 # FrameNet_var.set(0)
 # FrameNet_var_checkbox = tk.Checkbutton(window, text='FrameNet', variable=FrameNet_var,
@@ -451,8 +451,8 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
                                              disaggregate_checkbox,
                                              True, False, True, False,
                                              90, GUI_IO_util.labels_x_coordinate,
-                                             "Tick the checkbox to search the WordNet lexical database for semantically related words in selected top-level synset(s) for NOUN or VERB.\n"
-                                             "The algorithm deals with WordNet records only and does not deal with the input document(s) selected in the I/O configuration")
+                                             "Tick the checkbox to search the selected Knowledge base (WordNet synset, VerbNet class, or FrameNet frame) for related words in the selected category for NOUN or VERB.\n"
+                                             "The algorithm uses the selected lexical database only and does not use the input document(s) selected in the I/O configuration")
 
 def activate_keyword_menu():
     if keyWord_var.get() != '':
@@ -500,7 +500,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_keyWord_
                                              keyWord_menu,
                                              False, False, True, False,
                                              90, GUI_IO_util.labels_x_coordinate,
-                                             "Use the dropdown menu to select the top-level synset(s) for NOUN or VERB to be used to find semantically related terms in the WordNet lexical database.\n" \
+                                             "Use the dropdown menu to select the top-level synset(s) for NOUN or VERB to be used to find related terms in the selected Knowledge base.\n" \
                                              "The use of this widget is mutually exclusive with the widget 'YOUR synset(s)'. You can use one or the other.")
 
 keyWord_entry_lb = tk.Label(window, text='YOUR synset(s) ')
@@ -514,7 +514,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_keyWord_
                                              keyWord_entry,
                                              True, False, True, False,
                                              90, GUI_IO_util.labels_x_coordinate,
-                                             "Enter the comma-separated synset(s) you want to use to search the WordNet lexical database for NOUN or VERB. Particularly useful for searching lower-level synsets (e.g., 'ethnic group' instead of 'person').\n" \
+                                             "Enter the comma-separated categories you want to use - a WordNet synset, VerbNet class, or FrameNet frame - for NOUN or VERB. Particularly useful for searching lower-level synsets (e.g., 'ethnic group' instead of 'person').\n" \
                                              "The use of this widget is mutually exclusive with the widget 'Top-level synset'. You can use one or the other.")
 
 OK_button = tk.Button(window, text='OK', width=GUI_IO_util.OK_button_width, height=1, state='disabled', command=lambda: accept_WordNet_list())
@@ -935,7 +935,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to run a Python 3 script to extract all LEMMATIZED nouns and verbs from a CoNLL table (LEMMATIZED, since WordNet only contains lemmatized values) - nouns and verbs to be used by the 'Zoom OUT/UP' algorithm to aggregate nouns and verbs into WorNet categories.\n\nFor convenience, the script will also export the original words for nouns and verbs as found in FORM.\n\nIn INPUT, the script expects 2 csv files:\n  1. a csv CoNLL file;\n  2. a csv dictionary file containing the WordNet classification of LEMMATIZED words into higher-level aggregates (LEMMATIZED, since WordNet only contains lemmatized values). This file is generated by the 'Zoom OUT/UP' widget.\n\n   You will be prompted to select these csv files when you tick the checkbox.\n\nIn OUTPUT, the script produces a csv file and an Excel line plot of the aggregate WordNet categories by sentence index.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to classify your document(s) by the main NOUN & VERB WordNet synsets.\n\nThe algorithm uses the Stanford CoreNLP POS (Part of Speech) annotator to extract Nouns and Verbs to be then classified via WordNet.\n\nIn INPUT the algorithm expects either a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm produces a csv file of nouns and verbs classified by WordNet top synsets.")
+                                  "Please, tick the checkbox if you wish to classify your document(s) by the selected Knowledge base (WordNet, VerbNet, or FrameNet).\n\nThe algorithm uses the Stanford CoreNLP POS (Part of Speech) annotator to extract Nouns and Verbs to be then classified via the selected Knowledge base.\n\nIn INPUT the algorithm expects either a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm produces a csv file of nouns and verbs classified by the selected resource's categories.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to run the Python 3 script 'Zoom OUT/UP by Sentence Index' to provide a csv file and an Excel line plot of the aggregate WordNet categories by sentence index for more in-grained linguistic analyses.\n\nIn INPUT, the algorithm expects 2 csv files:\n  1. a csv CoNLL file (you can select this file using the 'Select INPUT/OUTPUT configuration' widget or the 'Select INPUT CSV file' widget);\n  2. a csv dictionary file containing the WordNet classification of LEMMATIZED words into higher-level aggregates generated by the 'Zoom OUT/UP' widget (LEMMATIZED, since WordNet only contains lemmatized values) (you will be prompted to select this csv file when you tick the checkbox).\n\nIn OUTPUT, the script produces a csv file and an Excel line plot of the aggregate WordNet categories by sentence index.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
