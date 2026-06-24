@@ -10,7 +10,10 @@ struct Environment: Hashable {
     }
 
     var label: String {
-        "\(name) — \(shortPath(folder.path))"
+        if isPackagedEnvironment(folder, architecture: currentMacArchitecture()) {
+            return "Portable Python — \(shortPath(folder.path))"
+        }
+        return "\(name) — \(shortPath(folder.path))"
     }
 }
 
@@ -49,6 +52,30 @@ struct CommandOutput {
     let text: String
 }
 
+let portableEnvironmentPreparedKey = "portableEnvironmentPreparedSuites"
+
+func appendPath(_ relativePath: String, to base: URL) -> URL {
+    relativePath.split(separator: "/").reduce(base.standardizedFileURL) { url, component in
+        url.appendingPathComponent(String(component))
+    }.standardizedFileURL
+}
+
+func uniqueURLs(_ urls: [URL]) -> [URL] {
+    var seen = Set<String>()
+    var unique: [URL] = []
+    for url in urls {
+        let standardized = url.standardizedFileURL
+        if seen.insert(standardized.path).inserted {
+            unique.append(standardized)
+        }
+    }
+    return unique
+}
+
+func isPackagedEnvironment(_ folder: URL, architecture: String) -> Bool {
+    folder.standardizedFileURL.lastPathComponent == "python-env"
+}
+
 func shortPath(_ path: String) -> String {
     let home = FileManager.default.homeDirectoryForCurrentUser.path
     if path == home {
@@ -65,7 +92,32 @@ func findPython(in folder: URL) -> URL? {
         folder.appendingPathComponent("bin/python3"),
         folder.appendingPathComponent("bin/python"),
     ]
-    return choices.first { FileManager.default.isExecutableFile(atPath: $0.path) }
+    return choices.first { FileManager.default.fileExists(atPath: $0.path) }
+}
+
+func bundledEnvironmentFolder(in suite: URL) -> URL {
+    suite.appendingPathComponent("python-env").standardizedFileURL
+}
+
+func bundledEnvironment(in suite: URL) -> Environment? {
+    let folder = bundledEnvironmentFolder(in: suite)
+    guard let python = findPython(in: folder) else {
+        return nil
+    }
+    return Environment(folder: folder, python: python)
+}
+
+func findEnvironmentFolder(under folder: URL) -> URL? {
+    if findPython(in: folder) != nil {
+        return folder.standardizedFileURL
+    }
+
+    let children = try? FileManager.default.contentsOfDirectory(
+        at: folder,
+        includingPropertiesForKeys: [.isDirectoryKey],
+        options: [.skipsHiddenFiles]
+    )
+    return children?.first { findPython(in: $0) != nil }?.standardizedFileURL
 }
 
 func run(
@@ -108,32 +160,27 @@ func currentMacArchitecture() -> String {
     return result?.text.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 }
 
-func environmentVariables(for environment: Environment, suite: URL? = nil) -> [String: String] {
+func environmentVariables(for environment: Environment) -> [String: String] {
     var values = ProcessInfo.processInfo.environment
     let environmentBin = environment.folder.appendingPathComponent("bin").path
+    let suiteFolder = environment.folder.deletingLastPathComponent()
+    let suiteInternal = suiteFolder.appendingPathComponent("_internal")
+    let environmentLib = environment.folder.appendingPathComponent("lib")
     let commonBins = ["/usr/bin", "/bin", "/usr/sbin", "/sbin", "/opt/homebrew/bin", "/usr/local/bin"]
     let launcherResources = Bundle.main.resourceURL?.path ?? ""
+    let libraryPaths = [suiteInternal.path, environmentLib.path]
+        .filter { FileManager.default.fileExists(atPath: $0) }
 
-    // Prepend python-env/bin (bundled interpreter) before the conda env so that
-    // NLP Suite's sub-processes (config GUIs, etc.) use the correct Python with
-    // the full set of required packages, even before the user reconfigures pip.
-    var pathComponents: [String] = []
-    if let suite {
-        let bundledBin = suite.appendingPathComponent("python-env/bin").path
-        if FileManager.default.fileExists(atPath: bundledBin) {
-            pathComponents.append(bundledBin)
-        }
-    }
-    pathComponents.append(environmentBin)
-    pathComponents.append(contentsOf: commonBins)
-
-    values["PATH"] = pathComponents.joined(separator: ":")
-    values["CONDA_PREFIX"] = environment.folder.path
-    values["CONDA_DEFAULT_ENV"] = environment.name
-    values["CONDA_SHLVL"] = "1"
+    values["PATH"] = ([environmentBin] + commonBins).joined(separator: ":")
+    values["VIRTUAL_ENV"] = environment.folder.path
+    values["DYLD_LIBRARY_PATH"] = (libraryPaths + [values["DYLD_LIBRARY_PATH"]].compactMap { $0 })
+        .joined(separator: ":")
     values["PYTHONNOUSERSITE"] = "1"
     values["PYTHONPATH"] = launcherResources
     values["NLP_SUITE_SKIP_PACKAGE_CHECKS"] = "1"
+    values["PAFY_BACKEND"] = "internal"
+    values["NUMBA_CACHE_DIR"] = FileManager.default.temporaryDirectory
+        .appendingPathComponent("nlp-mac-setup-numba-\(getuid())").path
     values["MPLCONFIGDIR"] = FileManager.default.temporaryDirectory
         .appendingPathComponent("nlp-mac-setup-matplotlib-\(getuid())").path
     values.removeValue(forKey: "PYTHONHOME")
@@ -147,6 +194,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusLabel: NSTextField!
     private var progress: NSProgressIndicator!
     private var logView: NSTextView!
+    private var executableQuarantineButton: NSButton!
     private var buttons: [NSButton] = []
     private var environments: [Environment] = []
     private var reports: [URL: CheckReport] = [:]
@@ -181,7 +229,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let directions = NSTextField(
             wrappingLabelWithString:
-                "1. Choose the NLP Suite folder.  2. Find a working environment.  3. Check it.  4. Open NLP Suite."
+                "1. Locate the NLP folder.  2. Verify the python environment.  3. Open the Suite."
         )
         directions.font = .systemFont(ofSize: 13)
         directions.textColor = .secondaryLabelColor
@@ -197,11 +245,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let chooseSuiteButton = makeButton("Choose Folder…", action: #selector(chooseSuite))
         let rescanButton = makeButton("Rescan", action: #selector(rescan))
-        let chooseEnvironmentButton = makeButton("Choose…", action: #selector(chooseEnvironment))
-        let findBestButton = makeButton("Find Best Automatically", action: #selector(findBestEnvironment))
         let checkButton = makeButton("Check This Setup", action: #selector(checkSelectedEnvironment))
         let openButton = makeButton("Open NLP Suite", action: #selector(openSuite), defaultButton: true)
-        let executableQuarantineButton = makeButton(
+        executableQuarantineButton = makeButton(
             "Remove Quarantine from Executable",
             action: #selector(removeExecutableQuarantine)
         )
@@ -213,15 +259,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         buttons = [
             chooseSuiteButton,
             rescanButton,
-            chooseEnvironmentButton,
-            findBestButton,
             checkButton,
             openButton,
             executableQuarantineButton,
             folderQuarantineButton,
         ]
 
-        statusLabel = NSTextField(labelWithString: "Looking for Conda environments…")
+        statusLabel = NSTextField(labelWithString: "Choose the NLP Suite folder.")
         statusLabel.font = .systemFont(ofSize: 13, weight: .medium)
 
         progress = NSProgressIndicator()
@@ -246,12 +290,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             buttons: [chooseSuiteButton]
         )
         let environmentRow = makeRow(
-            label: "Conda environment",
+            label: "Portable Python",
             control: environmentMenu,
-            buttons: [rescanButton, chooseEnvironmentButton]
+            buttons: [rescanButton]
         )
 
-        let actionRow = NSStackView(views: [findBestButton, checkButton, openButton])
+        let actionRow = NSStackView(views: [checkButton, openButton])
         actionRow.orientation = .horizontal
         actionRow.spacing = 10
 
@@ -325,20 +369,52 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func restoreLastFolder() {
-        guard let path = UserDefaults.standard.string(forKey: "suitePath") else {
+        let savedFolder = UserDefaults.standard.string(forKey: "suitePath").map {
+            URL(fileURLWithPath: $0).standardizedFileURL
+        }
+        let folder = ([savedFolder].compactMap { $0 } + nearbySuiteCandidates()).first(where: isSuiteFolder)
+        guard let folder else {
             return
         }
-        let folder = URL(fileURLWithPath: path)
+
+        UserDefaults.standard.set(folder.path, forKey: "suitePath")
+        suiteField.stringValue = folder.path
+        updateExecutableQuarantineButtonState()
+    }
+
+    private func nearbySuiteCandidates() -> [URL] {
+        let appFolder = Bundle.main.bundleURL.deletingLastPathComponent().standardizedFileURL
+        let bases = uniqueURLs([
+            appFolder,
+            appFolder.deletingLastPathComponent(),
+            appFolder.deletingLastPathComponent().deletingLastPathComponent(),
+        ])
+        let names = [
+            "NLP-Suite-mac-\(macArchitecture)",
+            "NLP-Suite-mac-arm64",
+            "NLP-Suite-mac-x86_64",
+        ]
+
+        return uniqueURLs(bases.flatMap { base in
+            names.map { base.appendingPathComponent($0).standardizedFileURL }
+        })
+    }
+
+    private func rememberSuiteFolder(_ folder: URL) {
         if isSuiteFolder(folder) {
+            UserDefaults.standard.set(folder.standardizedFileURL.path, forKey: "suitePath")
             suiteField.stringValue = folder.path
+            updateExecutableQuarantineButtonState()
         }
     }
 
     private func isSuiteFolder(_ folder: URL) -> Bool {
         let executable = folder.appendingPathComponent("NLP_Suite")
         let source = folder.appendingPathComponent("src")
+        let portablePython = bundledEnvironmentFolder(in: folder)
         return FileManager.default.fileExists(atPath: executable.path)
             && FileManager.default.fileExists(atPath: source.path)
+            && findPython(in: portablePython) != nil
     }
 
     private var selectedSuite: URL? {
@@ -355,6 +431,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusLabel.stringValue = message
         buttons.forEach { $0.isEnabled = !busy }
         environmentMenu.isEnabled = !busy && !environments.isEmpty
+        if !busy {
+            updateExecutableQuarantineButtonState()
+        }
         busy ? progress.startAnimation(nil) : progress.stopAnimation(nil)
     }
 
@@ -385,36 +464,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard isSuiteFolder(folder) else {
             showError(
                 "That is not the NLP Suite folder",
-                "Choose the folder that directly contains NLP_Suite and the src folder."
+                "Choose the folder that directly contains NLP_Suite, src, and python-env/bin/python3."
             )
             return
         }
 
-        suiteField.stringValue = folder.path
-        UserDefaults.standard.set(folder.path, forKey: "suitePath")
+        rememberSuiteFolder(folder)
         reports.removeAll()
         addLog("Folder: \(shortPath(folder.path))")
-
-        // Immediately surface the bundled python-env so it appears in the list
-        // without requiring a separate Rescan click.
-        let bundledEnv = folder.appendingPathComponent("python-env")
-        if let python = findPython(in: bundledEnv) {
-            let env = Environment(folder: bundledEnv.standardizedFileURL, python: python)
-            if !environments.contains(env) {
-                environments.append(env)
-                environments.sort(by: environmentComesFirst)
-                reloadEnvironmentMenu(preferred: bundledEnv)
-                saveSelectedEnvironment()
-                addLog("Found bundled python-env: \(shortPath(bundledEnv.path))")
-            }
-        }
-
-        statusLabel.stringValue = "Folder chosen. Click Find Best Automatically."
+        scanForEnvironments()
     }
 
     @objc private func chooseEnvironment() {
         let panel = NSOpenPanel()
-        panel.title = "Choose a Conda environment folder"
+        panel.title = "Choose a portable Python environment folder"
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = false
@@ -463,159 +526,42 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func scanForEnvironments() {
-        setBusy(true, message: "Looking for environments…")
-        let suiteURL = selectedSuite
+        guard let suite = selectedSuite else {
+            environments = []
+            reloadEnvironmentMenu(preferred: nil)
+            statusLabel.stringValue = "Choose the NLP Suite folder."
+            return
+        }
+
+        setBusy(true, message: "Looking for bundled Python…")
 
         DispatchQueue.global(qos: .userInitiated).async {
-            var found = self.findEnvironments()
-
-            // Also include the bundled python-env that ships alongside the NLP Suite binary.
-            // This is the preferred environment: it has all required packages pre-installed.
-            if let suite = suiteURL {
-                let bundledEnv = suite.appendingPathComponent("python-env")
-                if let python = findPython(in: bundledEnv) {
-                    let env = Environment(folder: bundledEnv.standardizedFileURL, python: python)
-                    if !found.contains(env) {
-                        found.append(env)
-                    }
-                }
-            }
-
-            found.sort(by: self.environmentComesFirst)
+            let found = self.findEnvironments(for: suite)
             DispatchQueue.main.async {
                 self.environments = found
-                let savedPath = UserDefaults.standard.string(forKey: "environmentPath")
-                let savedURL = savedPath.map { URL(fileURLWithPath: $0) }
-                self.reloadEnvironmentMenu(preferred: savedURL)
+                let preferredURL = found.first?.folder
+                self.reloadEnvironmentMenu(preferred: preferredURL)
+                self.saveSelectedEnvironment()
                 self.setBusy(
                     false,
                     message: found.isEmpty
-                        ? "No environments found. Click Choose…"
-                        : "Found \(found.count) environments."
+                        ? "Bundled Python not found in this NLP Suite folder."
+                        : "Using bundled Python."
                 )
                 self.addLog(
                     found.isEmpty
-                        ? "No environments found."
-                        : "Found \(found.count) environments."
+                        ? "No bundled Python found."
+                        : "Python Env: \(shortPath(found[0].python.path))"
                 )
             }
         }
     }
 
-    private func findEnvironments() -> [Environment] {
-        let files = FileManager.default
-        let home = files.homeDirectoryForCurrentUser
-        var folders = Set<URL>()
-
-        if let activePath = ProcessInfo.processInfo.environment["CONDA_PREFIX"] {
-            folders.insert(URL(fileURLWithPath: activePath).standardizedFileURL)
-        }
-
-        let roots = [
-            home.appendingPathComponent("anaconda"),
-            home.appendingPathComponent("anaconda3"),
-            home.appendingPathComponent("miniconda"),
-            home.appendingPathComponent("miniconda3"),
-            home.appendingPathComponent("miniforge3"),
-            home.appendingPathComponent("mambaforge"),
-            URL(fileURLWithPath: "/opt/homebrew/Caskroom/miniconda/base"),
-            URL(fileURLWithPath: "/opt/homebrew/Caskroom/miniforge/base"),
-            URL(fileURLWithPath: "/opt/homebrew/anaconda3"),
-            URL(fileURLWithPath: "/opt/anaconda3"),
-            URL(fileURLWithPath: "/opt/miniconda3"),
-            URL(fileURLWithPath: "/Applications/anaconda3"),
-            URL(fileURLWithPath: "/Applications/miniconda3"),
-            URL(fileURLWithPath: "/usr/local/anaconda3"),
-            URL(fileURLWithPath: "/usr/local/miniconda3"),
-            URL(fileURLWithPath: "/usr/local/Caskroom/miniconda/base"),
-        ]
-
-        let registry = home.appendingPathComponent(".conda/environments.txt")
-        if let text = try? String(contentsOf: registry, encoding: .utf8) {
-            for line in text.split(whereSeparator: \.isNewline) {
-                let path = String(line).trimmingCharacters(in: .whitespacesAndNewlines)
-                let folder = URL(fileURLWithPath: path).standardizedFileURL
-                if findPython(in: folder) != nil {
-                    folders.insert(folder)
-                }
-            }
-        }
-
-        for root in roots {
-            if findPython(in: root) != nil {
-                folders.insert(root.standardizedFileURL)
-            }
-
-            let envsFolder = root.appendingPathComponent("envs")
-            let children = try? files.contentsOfDirectory(
-                at: envsFolder,
-                includingPropertiesForKeys: [.isDirectoryKey],
-                options: [.skipsHiddenFiles]
-            )
-            for child in children ?? [] where findPython(in: child) != nil {
-                folders.insert(child.standardizedFileURL)
-            }
-        }
-
-        let condaPrograms = roots.map { $0.appendingPathComponent("bin/conda") } + [
-            URL(fileURLWithPath: "/opt/homebrew/bin/conda"),
-            URL(fileURLWithPath: "/usr/local/bin/conda"),
-        ]
-
-        for conda in condaPrograms where files.isExecutableFile(atPath: conda.path) {
-            guard
-                let output = try? run(conda, ["env", "list", "--json"]),
-                output.status == 0,
-                let data = output.text.data(using: .utf8),
-                let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                let paths = json["envs"] as? [String]
-            else {
-                continue
-            }
-
-            for path in paths {
-                let folder = URL(fileURLWithPath: path).standardizedFileURL
-                if findPython(in: folder) != nil {
-                    folders.insert(folder)
-                }
-            }
-        }
-
-        return folders.compactMap { folder in
-            guard let python = findPython(in: folder) else {
-                return nil
-            }
-            return Environment(folder: folder, python: python)
-        }.sorted(by: environmentComesFirst)
+    private func findEnvironments(for suite: URL) -> [Environment] {
+        bundledEnvironment(in: suite).map { [$0] } ?? []
     }
 
     private func environmentComesFirst(_ left: Environment, _ right: Environment) -> Bool {
-        func priority(_ environment: Environment) -> Int {
-            // Bundled python-env (shipped with the NLP Suite binary) always wins —
-            // it has all required packages and the correct architecture.
-            if environment.name == "python-env" {
-                return 0
-            }
-            let isNLP = environment.name.caseInsensitiveCompare("NLP") == .orderedSame
-            let isTraditionalInstall = environment.folder.path.contains("/anaconda/envs/NLP")
-                || environment.folder.path.contains("/anaconda3/envs/NLP")
-            if isNLP && isTraditionalInstall {
-                return 1
-            }
-            if isNLP {
-                return 2
-            }
-            if environment.name.localizedCaseInsensitiveContains("nlp") {
-                return 3
-            }
-            return 4
-        }
-
-        let leftPriority = priority(left)
-        let rightPriority = priority(right)
-        if leftPriority != rightPriority {
-            return leftPriority < rightPriority
-        }
         return left.folder.path.localizedStandardCompare(right.folder.path) == .orderedAscending
     }
 
@@ -633,13 +579,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         environmentMenu.isEnabled = !environments.isEmpty
     }
 
+    private func preparedPortableEnvironments() -> Set<String> {
+        Set(UserDefaults.standard.stringArray(forKey: portableEnvironmentPreparedKey) ?? [])
+    }
+
+    private func markPortableEnvironmentPrepared(_ environment: Environment) {
+        var prepared = preparedPortableEnvironments()
+        prepared.insert(environment.folder.standardizedFileURL.path)
+        UserDefaults.standard.set(Array(prepared).sorted(), forKey: portableEnvironmentPreparedKey)
+    }
+
+    private func prepareEnvironmentIfNeeded(_ environment: Environment) throws {
+        markPortableEnvironmentPrepared(environment)
+    }
+
     @objc private func checkSelectedEnvironment() {
         guard let suite = selectedSuite, isSuiteFolder(suite) else {
             showError("Choose the NLP Suite folder", "Click Choose Folder… first.")
             return
         }
         guard let environment = selectedEnvironment else {
-            showError("Choose an environment", "Click Find Best Automatically or choose one from the list.")
+            showError("Bundled Python not found", "Choose the portable NLP Suite folder that contains python-env/bin/python3.")
             return
         }
 
@@ -649,7 +609,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         addLog("Checking \(shortPath(environment.folder.path))")
 
         DispatchQueue.global(qos: .userInitiated).async {
-            let result = self.check(environment: environment, suite: suite)
+            let result: Result<CheckReport, Error>
+            do {
+                self.allowMacToOpen(suite)
+                try self.prepareEnvironmentIfNeeded(environment)
+                result = self.check(environment: environment, suite: suite)
+            } catch {
+                result = .failure(error)
+            }
             DispatchQueue.main.async {
                 switch result {
                 case .success(let report):
@@ -660,54 +627,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     self.addLog(error.localizedDescription)
                     self.showError("Check failed", error.localizedDescription)
                 }
-            }
-        }
-    }
-
-    @objc private func findBestEnvironment() {
-        guard let suite = selectedSuite, isSuiteFolder(suite) else {
-            showError("Choose the NLP Suite folder", "Click Choose Folder… first.")
-            return
-        }
-        guard !environments.isEmpty else {
-            showError("No environments found", "Click Rescan or Choose…")
-            return
-        }
-
-        let likely = environments.filter { $0.name.localizedCaseInsensitiveContains("nlp") }
-        let choices = likely.isEmpty ? environments : likely
-        setBusy(true, message: "Checking \(choices.count) environments…")
-        addLog("Finding the best environment.")
-
-        DispatchQueue.global(qos: .userInitiated).async {
-            var best: (Environment, CheckReport)?
-
-            for environment in choices {
-                DispatchQueue.main.async {
-                    self.statusLabel.stringValue = "Checking \(environment.label)…"
-                }
-
-                if case .success(let report) = self.check(environment: environment, suite: suite) {
-                    let newScore = report.score(for: self.macArchitecture)
-                    let oldScore = best?.1.score(for: self.macArchitecture) ?? -1
-                    if newScore > oldScore {
-                        best = (environment, report)
-                    }
-                }
-            }
-
-            DispatchQueue.main.async {
-                guard let best else {
-                    self.setBusy(false, message: "No working environment found.")
-                    self.addLog("No environment passed the check.")
-                    return
-                }
-
-                self.reloadEnvironmentMenu(preferred: best.0.folder)
-                self.reports[best.0.folder] = best.1
-                self.saveSelectedEnvironment()
-                self.showReport(best.1)
-                self.addLog("Best choice: \(shortPath(best.0.folder.path))")
             }
         }
     }
@@ -730,7 +649,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let output = try run(
                 environment.python,
                 [probe.path, "--suite", suite.path],
-                environment: environmentVariables(for: environment, suite: suite),
+                environment: environmentVariables(for: environment),
                 folder: suite
             )
 
@@ -813,14 +732,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func allowMacToOpen(_ suite: URL) {
         let executable = suite.appendingPathComponent("NLP_Suite")
+        let python3 = suite.appendingPathComponent("python-env/bin/python3")
+        let python = suite.appendingPathComponent("python-env/bin/python")
         _ = try? run(
             URL(fileURLWithPath: "/usr/bin/xattr"),
             ["-dr", "com.apple.quarantine", suite.path]
         )
-        _ = try? run(
-            URL(fileURLWithPath: "/bin/chmod"),
-            ["+x", executable.path]
-        )
+        for file in [executable, python3, python] {
+            _ = try? run(
+                URL(fileURLWithPath: "/bin/chmod"),
+                ["+x", file.path]
+            )
+        }
+    }
+
+    private func updateExecutableQuarantineButtonState() {
+        guard executableQuarantineButton != nil else {
+            return
+        }
+        guard let suite = selectedSuite, isSuiteFolder(suite) else {
+            executableQuarantineButton.title = "Remove Quarantine from Executable"
+            executableQuarantineButton.isEnabled = false
+            return
+        }
+
+        executableQuarantineButton.title = "Remove Quarantine from Executable"
+        executableQuarantineButton.isEnabled = true
     }
 
     @objc private func removeExecutableQuarantine() {
@@ -830,10 +767,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         let executable = suite.appendingPathComponent("NLP_Suite")
-        let result = try? run(
-            URL(fileURLWithPath: "/usr/bin/xattr"),
-            ["-r", "-d", "com.apple.quarantine", executable.path]
-        )
+        let xattr = URL(fileURLWithPath: "/usr/bin/xattr")
+        let quarantine = try? run(xattr, ["-p", "com.apple.quarantine", executable.path])
+
+        if quarantine?.status != 0 {
+            statusLabel.stringValue = "NLP_Suite has no quarantine tag."
+            addLog("No quarantine tag on \(shortPath(executable.path))")
+            return
+        }
+
+        let result = try? run(xattr, ["-d", "com.apple.quarantine", executable.path])
 
         if result?.status == 0 {
             statusLabel.stringValue = "Quarantine removed from NLP_Suite."
@@ -865,13 +808,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+
+    private func suiteEntryPointScript(in suite: URL) -> URL? {
+        let candidates = [
+            suite.appendingPathComponent("src/NLP_menu_main.py"),
+            suite.appendingPathComponent("NLP_Suite.py"),
+            suite.appendingPathComponent("src/NLP_Suite.py"),
+            suite.appendingPathComponent("src/NLP_Suite_main.py"),
+            suite.appendingPathComponent("src/NLP_welcome_main.py"),
+        ]
+        return candidates.first { FileManager.default.fileExists(atPath: $0.path) }
+    }
+
     @objc private func openSuite() {
         guard let suite = selectedSuite, isSuiteFolder(suite) else {
             showError("Choose the NLP Suite folder", "Click Choose Folder… first.")
             return
         }
         guard let environment = selectedEnvironment else {
-            showError("Choose an environment", "Click Find Best Automatically first.")
+            showError("Bundled Python not found", "Choose the portable NLP Suite folder that contains python-env/bin/python3.")
             return
         }
         guard suiteMatchesThisMac(suite) else {
@@ -884,17 +839,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        guard let report = reports[environment.folder] else {
-            showError("Check the setup first", "Click Check This Setup.")
-            return
-        }
-        guard report.importantChecksPass else {
-            showError("This setup is not ready", "Click Find Best Automatically or choose another environment.")
-            return
-        }
-        guard report.architecture == macArchitecture else {
-            showError("Wrong environment type", "Choose an environment made for this Mac.")
-            return
+        if let report = reports[environment.folder] {
+            guard report.importantChecksPass else {
+                showError("This setup is not ready", "The bundled Python environment is missing required packages.")
+                return
+            }
+            guard report.architecture == macArchitecture else {
+                showError("Wrong Python type", "Choose an NLP Suite download made for this Mac.")
+                return
+            }
         }
 
         allowMacToOpen(suite)
@@ -905,14 +858,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let logFile = logFolder.appendingPathComponent("NLP-Suite-Mac-Setup.log")
         FileManager.default.createFile(atPath: logFile.path, contents: nil)
 
+        guard let entryPoint = suiteEntryPointScript(in: suite) else {
+            showError(
+                "NLP Suite entry script not found",
+                "Could not find src/NLP_menu_main.py, NLP_Suite.py, or another known NLP Suite entry script in the selected folder."
+            )
+            addLog("No Python entry script found in \(shortPath(suite.path))")
+            return
+        }
+
         do {
             let logHandle = try FileHandle(forWritingTo: logFile)
             try logHandle.seekToEnd()
 
             let process = Process()
-            process.executableURL = suite.appendingPathComponent("NLP_Suite")
+            process.executableURL = environment.python
+            process.arguments = [entryPoint.path]
             process.currentDirectoryURL = suite
-            process.environment = environmentVariables(for: environment, suite: suite)
+            try prepareEnvironmentIfNeeded(environment)
+            process.environment = environmentVariables(for: environment)
             process.standardOutput = logHandle
             process.standardError = logHandle
             process.terminationHandler = { _ in
