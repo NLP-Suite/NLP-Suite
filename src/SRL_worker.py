@@ -31,7 +31,7 @@ ROLE_COLUMNS = [
     ("ARGM-MNR", "How (ARGM-MNR)"),
     ("ARGM-CAU", "Why (ARGM-CAU)"),
 ]
-HEADERS = ["Document", "Date", "Sentence ID", "Sentence", "Predicate", "Frame"] + \
+HEADERS = ["Document", "Date", "Sentence ID", "Sentence", "Predicate", "Frame", "VerbNet class"] + \
           [h for _, h in ROLE_COLUMNS] + ["Refined roles", "Description"]
 
 # --- Heuristic refined-role enrichment (PropBank numbered args -> fairly-accurate thematic-role
@@ -61,26 +61,27 @@ REFINED_ORDER = ["ARG0", "ARG1", "ARG2", "ARG3", "ARG4",
 
 def load_semlink_map(path):
     """Load SemLink pb-vn2.json - {sense: {vn_class: {ARG0:'agent', ARG1:'theme', ...}}} - into
-    {(sense, 'ARG0'): 'Agent', ...}: the PRINCIPLED per-frame PropBank-argument -> VerbNet thematic
-    role (Palmer's PropBank<->VerbNet linking). Returns {} if the file is absent or unparseable, so
-    SRL falls back to the heuristic."""
-    role_map = {}
+    role_map {(sense,'ARG0'):'Agent'} (the per-frame PropBank->VerbNet thematic role) AND
+    class_map {sense: vn_class} (the DISAMBIGUATED VerbNet class id for the predicate's sense, e.g.
+    '42.1'). Returns ({}, {}) if the file is absent/unparseable, so SRL falls back to the heuristic."""
+    role_map, class_map = {}, {}
     if not path or not os.path.exists(path):
-        return role_map
+        return role_map, class_map
     try:
         import json
         data = json.load(open(path, encoding="utf-8"))
         for sense, classes in data.items():
-            for argmap in classes.values():          # take the first VerbNet class for this sense
+            for vn_class, argmap in classes.items():     # take the first VerbNet class for this sense
+                class_map[sense] = vn_class
                 for arg, role in argmap.items():
                     if role:
                         role_map[(sense, arg.upper())] = str(role).replace("_", " ").title()
                 break
     except Exception as e:
         sys.stderr.write("Could not parse SemLink map %s: %s\n" % (path, e))
-        return {}
+        return {}, {}
     sys.stderr.write("Loaded %d SemLink role mappings from %s\n" % (len(role_map), path))
-    return role_map
+    return role_map, class_map
 
 
 def _mapped_role(role_map, sense, label):
@@ -252,7 +253,7 @@ def main():
 
     # Optional SemLink mapping (drop pb-vn2.json next to the model). If present, Refined roles use the
     # principled per-frame PropBank->VerbNet roles; if absent, the heuristic applies.
-    role_map = load_semlink_map(os.path.join(os.path.dirname(os.path.abspath(model_path)), "pb-vn2.json"))
+    role_map, class_map = load_semlink_map(os.path.join(os.path.dirname(os.path.abspath(model_path)), "pb-vn2.json"))
 
     files = gather_input_files(input_path)
     if not files:
@@ -301,6 +302,7 @@ def main():
                     "Sentence": sentence,
                     "Predicate": v.get("verb", ""),
                     "Frame": frame,
+                    "VerbNet class": class_map.get(frame, ""),
                     "Description": v.get("description", ""),
                 }
                 for label, header in ROLE_COLUMNS:

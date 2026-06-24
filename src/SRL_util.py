@@ -57,6 +57,20 @@ def _refined_roles_list(cell):
     return roles
 
 
+def _verbnet_class_names():
+    """Map a VerbNet numeric class id (as SemLink records it, e.g. '42.1') to the readable NLTK id
+    ('murder-42.1'), for friendlier charts. Best-effort: returns {} if NLTK VerbNet is unavailable."""
+    try:
+        from nltk.corpus import verbnet as vn
+        names = {}
+        for cid in vn.classids():
+            num = cid.split('-', 1)[1] if '-' in cid else cid   # 'murder-42.1' -> '42.1'
+            names[num] = cid
+        return names
+    except Exception:
+        return {}
+
+
 def srl_python():
     """Locate the isolated SRL env's python: explicit $NLP_SRL_PYTHON, else a sibling conda env
     (nlp_srl / srl_test38 / srl) of the interpreter running the Suite. '' if not found."""
@@ -172,7 +186,9 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
     import pandas as pd
     outputs = []
     try:
-        df = pd.read_csv(srl_csv, encoding='utf-8', on_bad_lines='skip')
+        # 'VerbNet class' must stay a string: ids like '44' or '9.10' would be mangled to 44.0 / 9.1
+        # if pandas infers the column as float.
+        df = pd.read_csv(srl_csv, encoding='utf-8', on_bad_lines='skip', dtype={'VerbNet class': str})
     except Exception as e:
         mb.showwarning(title="SRL visualization",
                        message="Could not read the SRL output for visualization:\n\n%s" % e)
@@ -192,6 +208,7 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
     svo['Document'] = col('Document')
     svo['Date'] = col('Date')
     svo['Refined roles'] = col('Refined roles')   # carried for the VerbNet-role views (not the relations file)
+    svo['VerbNet class'] = col('VerbNet class')   # the disambiguated VerbNet class per predicate (SemLink)
 
     # Keep rows with a predicate AND at least an agent or a patient (i.e., a drawable edge).
     s = svo['Agent (ARG0)'].astype(str).str.strip()
@@ -363,5 +380,33 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
         except Exception as e:
             mb.showwarning(title="SRL refined-role chart",
                            message="Could not build the refined-role frequency chart:\n\n%s" % e)
+
+        # VerbNet-class profile: how often each DISAMBIGUATED VerbNet class occurs (the predicate's
+        # sense-resolved class via SemLink) - the backbone for verb aggregation (e.g. grouping
+        # murder-42.1 / destroy-44 / hit-18.1 into a 'violence' category).
+        try:
+            import charts_util
+            class_names = _verbnet_class_names()      # numeric id -> readable 'murder-42.1' (best-effort)
+            vn_rows = []
+            for cls, doc in zip(svo['VerbNet class'], svo['Document'].astype(str)):
+                cls = str(cls).strip()
+                if cls:
+                    vn_rows.append({'Document': doc, 'VerbNet class': class_names.get(cls, cls)})
+            if vn_rows:
+                vn_freq_csv = IO_files_util.generate_output_file_name(
+                    svo_csv, inputDir, srl_dir, '.csv', 'verbnet-class')
+                pd.DataFrame(vn_rows).to_csv(vn_freq_csv, index=False, encoding='utf-8')
+                of = charts_util.visualize_chart(
+                    chartPackage, dataTransformation, vn_freq_csv, srl_dir,
+                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['VerbNet class'],
+                    chart_title='Frequency Distribution of SRL VerbNet Classes',
+                    count_var=1, hover_label=[], outputFileNameType='SRL-verbnet-class',
+                    column_xAxis_label='VerbNet class', groupByList=['Document'],
+                    plotList=['Frequency'], chart_title_label='VerbNet class')
+                if of:
+                    outputs.extend(of if isinstance(of, list) else [of])
+        except Exception as e:
+            mb.showwarning(title="SRL VerbNet class chart",
+                           message="Could not build the VerbNet class frequency chart:\n\n%s" % e)
 
     return outputs
