@@ -312,8 +312,8 @@ VerbNet_var  = tk.IntVar()
 WordNet_var  = tk.IntVar()
 knowledge_base_menu_var = tk.StringVar()
 
-aggregate_var = tk.IntVar()
-build_word_list_var = tk.IntVar()
+# aggregate_var = tk.IntVar()
+# build_word_list_var = tk.IntVar()
 
 disambiguate_var = tk.IntVar()
 
@@ -377,27 +377,27 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_co
                                                knowledge_base_menu)
 
 
-aggregate_var.set(0)
-aggregate_checkbox = tk.Checkbutton(window, text='Aggregate corpus words into categories', variable=disaggregate_var,
-                                    onvalue=1, offvalue=0, command=lambda: activate_all_options(noun_verb_menu_var.get()))
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                             aggregate_checkbox,
-                                             True, False, True, False,
-                                             90, GUI_IO_util.labels_x_coordinate,
-                                             "Tick the checkbox to search the WordNet lexical database for semantically related words in selected top-level synset(s) for NOUN or VERB.\n"
-                                             "The algorithm deals with WordNet records only and does not deal with the input document(s) selected in the I/O configuration")
+# aggregate_var.set(0)
+# aggregate_checkbox = tk.Checkbutton(window, text='Aggregate corpus words into categories', variable=disaggregate_var,
+#                                     onvalue=1, offvalue=0, command=lambda: activate_all_options(noun_verb_menu_var.get()))
+# # place widget with hover-over info
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+#                                              aggregate_checkbox,
+#                                              False, False, True, False,
+#                                              90, GUI_IO_util.labels_x_coordinate,
+#                                              "Tick the checkbox to search the WordNet lexical database for semantically related words in selected top-level synset(s) for NOUN or VERB.\n"
+#                                              "The algorithm deals with WordNet records only and does not deal with the input document(s) selected in the I/O configuration")
 
-build_word_list_var.set(0)
-build_word_list_checkbox = tk.Checkbutton(window, text='Build a word list from a selected lexical category', variable=build_word_list_var,
-                                    onvalue=1, offvalue=0, command=lambda: activate_all_options(build_word_list_var.get()))
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                             build_word_list_checkbox,
-                                             False, False, True, False,
-                                             90, GUI_IO_util.labels_x_coordinate,
-                                             "Tick the checkbox to search the WordNet lexical database for semantically related words in selected top-level synset(s) for NOUN or VERB.\n"
-                                             "The algorithm deals with WordNet records only and does not deal with the input document(s) selected in the I/O configuration")
+# build_word_list_var.set(0)
+# build_word_list_checkbox = tk.Checkbutton(window, text='Build a word list from a selected lexical category', variable=build_word_list_var,
+#                                     onvalue=1, offvalue=0, command=lambda: activate_all_options(build_word_list_var.get()))
+# # place widget with hover-over info
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+#                                              build_word_list_checkbox,
+#                                              False, False, True, False,
+#                                              90, GUI_IO_util.labels_x_coordinate,
+#                                              "Tick the checkbox to search the WordNet lexical database for semantically related words in selected top-level synset(s) for NOUN or VERB.\n"
+#                                              "The algorithm deals with WordNet records only and does not deal with the input document(s) selected in the I/O configuration")
 
 disambiguate_var.set(0)
 disambiguate_checkbox = tk.Checkbutton(window, text='Word sense disambiguation', variable=disambiguate_var,
@@ -739,18 +739,10 @@ def activate_all_options(noun_verb, fromaggregate=False):
     else:
         show_keywords_button.configure(state="disabled")
 
-    # Enable RUN whenever an actionable option is selected. The REQUIRED input differs by option
-    # (csv for the list-based options, txt for the POS option, keywords for Zoom IN/DOWN) and is
-    # validated at RUN time in run(), which warns if it is missing.
-    _zoom_down_ready = disaggregate_var.get() and (len(wordNet_keyword_list) > 0 or keyWord_entry_var.get() != '')
-    _corpus_option = (aggregate_lemmatized_var.get() or annotate_file_var.get()
-                      or extract_proper_nouns_var.get() or extract_improper_nouns_var.get()
-                      or extract_nouns_verbs_from_CoNLL_var.get() or aggregate_POS_var.get()
-                      or aggregate_bySentenceID_var.get())
-    if _zoom_down_ready or _corpus_option:
-        GUI_util.run_button.configure(state='normal')
-    else:
-        GUI_util.run_button.configure(state='disabled')
+    # RUN is always enabled. The required input differs by option (csv for the list-based options,
+    # txt for the POS option, keywords for Zoom IN/DOWN) and the "no option selected" case are all
+    # validated and warned about at RUN time in run().
+    GUI_util.run_button.configure(state='normal')
 
     # else:
     #     asked = False
@@ -959,6 +951,10 @@ readMe_message = "These scripts interface with the WordNet lexical database (bun
         "\n\nIn OUTPUT the different algorithms produce\n1. HTML files (e.g., Annotate corpus (using WordNet csv output file from Zoom IN/DOWN));\n2. csv files (all other algorithms)."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+
+# GUI_bottom's activateRunButton would disable RUN until an I/O file is selected, but this hub
+# validates the per-option input at RUN time (Zoom IN/DOWN needs none), so keep RUN enabled.
+GUI_util.run_button.configure(state='normal')
 
 reminders_util.checkReminder(
         config_filename,
