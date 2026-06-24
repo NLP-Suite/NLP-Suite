@@ -1,0 +1,70 @@
+[tool.ruff]
+# Exclude non-code, data, and installer-scaffolding directories.
+exclude = [
+    "lib/",
+    "docs/",
+    "TIPS/",
+    "TIPS docx/",
+    "reminders/",
+    "setup_Mac/",
+    "setup_Windows/",
+]
+
+line-length = 120
+
+# Python 3.9 runtime constraint
+target-version = "py39"
+
+
+[tool.ruff.lint]
+# Core linting families:
+# E/W   = pycodestyle (formatting / style issues)
+# F     = pyflakes (unused/undefined/import issues)
+# I     = import sorting (isort behavior)
+# UP    = pyupgrade (modern Python syntax suggestions)
+# B     = bugbear (common bugs + design issues)
+# T20   = print/debug statement detection (Pylint-style hygiene)
+# PL    = Pylint port (PLC/PLE/PLR/PLW) — covers the useful pylint checks at
+#         ruff speed.
+select = ["E", "W", "F", "I", "UP", "B", "T20", "PL"]
+
+ignore = [
+    "E501",    # line too long (allowed in research / readability-first code)
+    "E402",    # imports not at top (legacy scripts / experimental structure)
+    "T203",    # pprint found (common in research debugging; suppress)
+    # Pylint design-metric checks: too noisy on legacy research functions.
+    "PLR0911", # too-many-return-statements
+    "PLR0912", # too-many-branches
+    "PLR0913", # too-many-arguments
+    "PLR0915", # too-many-statements
+    "PLR2004", # magic-value-comparison
+    "PLW2901", # redefined-loop-name
+    # Intentional patterns in this codebase.
+    "PLC0415", # import-outside-top-level — deliberate lazy imports (cycles / heavy deps)
+    "PLW0603", # global-statement — research code keeps module-level state
+    # Residual legacy findings, deferred to incremental boy-scout cleanup.
+    "PLR1714", # repeated-equality-comparison
+    "PLR1704", # redefined-argument-from-local
+    "PLR1722", # sys-exit-alias
+    "PLR1730", # if-stmt-min-max
+    "PLR0133", # comparison-of-constant
+    "PLC0206", # dict-index-missing-items
+    "PLW0127", # self-assigning-variable
+    "PLW0128", # redeclared-assigned-name
+    "PLW0406", # import-self
+    "PLW1510", # subprocess-run-without-check
+    # Auto-fixable simplifications firing on legacy code; clear in a dedicated
+    # `ruff check --fix` pass, then drop these so the rules gate new code.
+    "PLR5501", # collapsible-else-if
+    "PLR1736", # unnecessary-list-index-lookup
+    "PLR2044", # empty-comment
+    "PLR1711", # useless-return
+    "PLR0402", # manual-from-import
+    "PLR1733", # unnecessary-dict-index-lookup
+]
+
+
+[tool.ruff.lint.isort]
+# Optional but improves deterministic import grouping
+combine-as-imports = true
+force-sort-within-sections = true

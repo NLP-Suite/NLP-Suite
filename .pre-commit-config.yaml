@@ -1,0 +1,17 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.16
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+  - repo: https://github.com/RobertCraigie/pyright-python
+    rev: v1.1.410
+    hooks:
+      - id: pyright
+        files: ^src/  # gate only changed src files on commit;
+        # drives gradual per-file cleanup of the legacy backlog. Full sweep: `pre-commit run pyright --all-files`.
+        # pytest in the isolated hook venv so pyright sees pytest.skip as NoReturn (otherwise the
+        # try/except import guard in every test_*.py reads as possibly-unbound). Keep this minimal:
+        # do NOT add pandas-stubs etc., which would make the gate stricter than the per-file backlog expects.
+        additional_dependencies: [pytest]
