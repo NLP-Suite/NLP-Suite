@@ -345,21 +345,21 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
 
         # the WordNet installation directory is now checked in aggregate_GoingUP
         WordNetDir = ''
-        import semantic_aggregation_WordNet_util
-        output = semantic_aggregation_WordNet_util.aggregate_GoingUP(WordNetDir, inputFilename_nouns, outputDir,
-                                                                 config_filename, 'NOUN',
-                                                                 openOutputFiles, chartPackage, dataTransformation,
-                                                                 language_var='English')
+        import semantic_aggregation_util
+        output = semantic_aggregation_util.aggregate('*', WordNetDir, inputFilename_nouns, outputDir,
+                                                     config_filename, 'NOUN',
+                                                     openOutputFiles, chartPackage, dataTransformation,
+                                                     language_var='English')
         if output != None:
             if isinstance(output, str):
                 filesToOpen.append(output)
             else:
                 filesToOpen.extend(output)
 
-        output = semantic_aggregation_WordNet_util.aggregate_GoingUP(WordNetDir, inputFilename_verbs, outputDir,
-                                                                 config_filename, 'VERB',
-                                                                 openOutputFiles, chartPackage,dataTransformation,
-                                                                 language_var='English')
+        output = semantic_aggregation_util.aggregate('*', WordNetDir, inputFilename_verbs, outputDir,
+                                                     config_filename, 'VERB',
+                                                     openOutputFiles, chartPackage, dataTransformation,
+                                                     language_var='English')
         if output != None:
             if isinstance(output, str):
                 filesToOpen.append(output)
@@ -593,7 +593,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
                                                all_analyses_menu,False)
 
 WordNet_var = tk.IntVar()
-WordNet_checkbox = tk.Checkbutton(window, state='disabled', variable=WordNet_var,  text='WordNet classification of Nouns & Verbs', onvalue=1,
+WordNet_checkbox = tk.Checkbutton(window, state='disabled', variable=WordNet_var,  text='Classification of Nouns & Verbs via FrameNet, VerbNet, WordNet', onvalue=1,
                                   offvalue=0, command = lambda:  activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                     y_multiplier_integer, WordNet_checkbox)
@@ -981,7 +981,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox to analyze the CoNLL table for different types of clauses (e.g., noun-phrase, NP, verb phrase, VP), nouns (singular, plural, proper nouns, subject and object), verbs (modality, tense, voice), functions words (or junk/stop words) (e.g., articles/determinants, auxiliaries, conjunctions, prepositions, pronouns), adjectives, adverbs, and ratios of word classes (e.g., content words vs. junk words).\n\nThe CoNLL table analyzer works with CoNLL tables produced by any parser (spaCy, Stanford CoreNLP, Stanza).\n\nDEPENDENCY vs. CONSTITUENCY PARSING\nAll parsers (spaCy, Stanza, Stanford CoreNLP) produce dependency parse trees, which represent word-to-word grammatical relations (e.g., nsubj, obj, advmod). These relations power noun, verb, function word, and search analyses.\n\nConstituency parsing produces phrase-structure trees that group words into nested phrases (NP, VP, S, SBAR, PP, etc.). ONLY the Stanford CoreNLP PCFG parser and the Stanza constituency parser produce clause tags. No other parser provides clause tags. Without clause tags, the Clause analysis option will be skipped.\n\nCLAUSE TAGS\nClause tags label each token with its lowest enclosing phrase type (e.g., S for main clause, SBAR for subordinate clause, NP for noun phrase, VP for verb phrase). These tags enable analysis of clause types, clause length, and clause distribution across a text.\n\nTHE 'feats' COLUMN (Stanza only)\nStanza exports morphological features in the 'feats' column (e.g., Mood=Ind, Tense=Past, VerbForm=Fin, Number=Sing). This enables analysis of verb mood (indicative, imperative, subjunctive), verb tense (past, present, future), verb form (finite, infinitive, participle, gerund), and noun number (singular, plural). Neither spaCy nor Stanford CoreNLP export this information. These features are especially valuable for languages with rich morphology (e.g., Italian, German, French).\n\nNote: The Stanford CoreNLP neural network parser does NOT produce clause tags (only the PCFG parser - Probabilistic Context Free Grammar). spaCy does not support constituency parsing." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to aggregate nouns and verbs in the CoNLL table (POS NN* and POS VB*) via WordNet." \
+                                  "Please, tick the checkbox if you wish to aggregate nouns and verbs in the CoNLL table (POS NN* and POS VB*) via FrameNet, VerbNet, and WordNet." \
                                   "\n\nCAVEAT: For VERBS, the 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies."+ GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checbox to search the CoNLL table for a specific token/word. Enter the CASE SENSITIVE token (i.e., word) to be searched (enter * for any word).\n\nENTER * TO SEARCH FOR ANY TOKEN/WORD.\n\nThe EXACT word will be searched (e.g., if you enter 'American', any instances of 'America' will not be found).\n\nDO NOT USE QUOTES WHEN ENTERING A SEARCH TOKEN. n\nThe algorithm will search all the tokens related to this token in the CoNLL table. For example, if the the token wife is entered, the algorithm will search in each dependency tree (i.e., each sentence).\n\nIn OUTPUT the algorithm will produce several charts and a Gephi network graphs of the relationship between searched and co-occurring words." + GUI_IO_util.msg_Esc)
