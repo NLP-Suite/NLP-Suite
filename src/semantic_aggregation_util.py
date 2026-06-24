@@ -1,0 +1,153 @@
+# Semantic Aggregation dispatcher (WordNet / VerbNet / FrameNet).
+#
+# WordNet aggregation (hierarchical: climb to anchor synsets / supersenses) lives in
+# semantic_aggregation_WordNet_util. VerbNet (verb classes) and FrameNet (frames) are FLAT
+# membership look-ups via NLTK, handled here. The hub (semantic_aggregation_main) calls aggregate()
+# and the Knowledge base dropdown chooses the resource ('*' = all applicable).
+
+import sys
+
+import GUI_util
+import IO_libraries_util
+
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "semantic_aggregation",
+                                                 ['os', 're', 'csv', 'tkinter', 'nltk', 'pandas']) == False:
+    sys.exit(0)
+
+import os
+import re
+import csv
+import tkinter.messagebox as mb
+from collections import defaultdict
+
+import charts_util
+import IO_user_interface_util
+import semantic_aggregation_WordNet_util as wn_util
+
+
+def _read_word_list(inputFile):
+    import pandas as pd
+    data = pd.read_csv(inputFile, encoding='utf-8', on_bad_lines='skip')
+    if data.shape[1] == 0:
+        return []
+    return [str(w).strip() for w in data.iloc[:, 0].dropna().unique().tolist() if str(w).strip()]
+
+
+def _aggregate_flat(resource, category_fn, inputFile, outputDir, noun_verb, chartPackage, dataTransformation):
+    """Shared writer for the FLAT (membership) resources. category_fn(lemma) -> category string.
+    Writes a Word/category csv + a frequency csv + a frequency chart; returns the output files."""
+    filesToOpen = []
+    words = _read_word_list(inputFile)
+    fileName = os.path.basename(inputFile).split('.')[0]
+    cat_col = resource + ' category'
+    csv1 = os.path.join(outputDir, "NLP_%s_UP_%s_%s.csv" % (resource, noun_verb, fileName))
+    csv2 = os.path.join(outputDir, "NLP_%s_UP_%s_%s_frequency.csv" % (resource, noun_verb, fileName))
+    rows = []
+    counts = defaultdict(int)
+    not_found = 0
+    for w in words:
+        cat = category_fn(w.lower()) or 'Not found'
+        if cat == 'Not found':
+            not_found += 1
+        counts[cat] += 1
+        rows.append({'Word': w, cat_col: cat})
+    if not rows or all(r[cat_col] == 'Not found' for r in rows):
+        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Invalid Input',
+            "%s %s aggregation.\n\n%s found none of the %s in the input csv file\n%s."
+            % (resource, noun_verb, resource, noun_verb, inputFile))
+        return filesToOpen
+    if not_found > 0:
+        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Invalid Input',
+            "%s %s aggregation.\n\n%d word(s) were not found in %s and are labelled 'Not found'."
+            % (resource, noun_verb, not_found, resource))
+    with open(csv1, 'w', encoding='utf-8', newline='') as f:
+        wtr = csv.DictWriter(f, fieldnames=['Word', cat_col]); wtr.writeheader(); wtr.writerows(rows)
+    with open(csv2, 'w', encoding='utf-8', newline='') as f:
+        wtr = csv.DictWriter(f, fieldnames=[cat_col, 'Frequency']); wtr.writeheader()
+        for cat, n in sorted(counts.items(), key=lambda x: -x[1]):
+            wtr.writerow({cat_col: cat, 'Frequency': n})
+    filesToOpen += [csv1, csv2]
+    if chartPackage and chartPackage != 'No charts':
+        of = charts_util.visualize_chart(chartPackage, dataTransformation, csv1, outputDir,
+            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=[cat_col],
+            chart_title='Frequency of %s categories for %s' % (resource, noun_verb),
+            count_var=1, hover_label=[], outputFileNameType='',
+            column_xAxis_label='%s %s category' % (resource, noun_verb),
+            groupByList=[], plotList=[], chart_title_label='')
+        if of:
+            filesToOpen.extend(of if isinstance(of, list) else [of])
+    return filesToOpen
+
+
+def aggregate_VerbNet(inputFile, outputDir, noun_verb, chartPackage, dataTransformation):
+    """Aggregate a list of VERBS to their VerbNet class (the first/most-basic class per lemma).
+    NOTE: bare lemmas are polysemous (e.g. 'hang' is in several classes); this takes the first."""
+    if noun_verb != 'VERB':
+        mb.showwarning(title="VerbNet",
+                       message="VerbNet classifies VERBS only - it has no nouns.\n\nPlease select VERB "
+                               "as the Lexical category for the VerbNet knowledge base.")
+        return []
+    IO_libraries_util.import_nltk_resource(GUI_util.window, 'corpora/verbnet', 'verbnet')
+    from nltk.corpus import verbnet as vn
+    start = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
+        'Started running VerbNet aggregation at', True, '', True)
+    def cat(lemma):
+        ids = vn.classids(lemma=lemma)
+        return ids[0] if ids else 'Not found'
+    out = _aggregate_flat('VerbNet', cat, inputFile, outputDir, noun_verb, chartPackage, dataTransformation)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+        'Finished running VerbNet aggregation at', True, '', True, start)
+    return out
+
+
+def aggregate_FrameNet(inputFile, outputDir, noun_verb, chartPackage, dataTransformation):
+    """Aggregate a list of nouns or verbs to their FrameNet frame (the first frame per lemma+POS).
+    NOTE: bare lemmas are polysemous; this takes the first frame."""
+    IO_libraries_util.import_nltk_resource(GUI_util.window, 'corpora/framenet_v17', 'framenet_v17')
+    from nltk.corpus import framenet as fn
+    pos = 'v' if noun_verb == 'VERB' else 'n'
+    start = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
+        'Started running FrameNet aggregation at', True, '', True)
+    def cat(lemma):
+        try:
+            frames = sorted({lu.frame.name for lu in
+                             fn.lus(re.compile(r'(?i)^' + re.escape(lemma) + r'\.' + pos + r'$'))})
+        except Exception:
+            frames = []
+        return frames[0] if frames else 'Not found'
+    out = _aggregate_flat('FrameNet', cat, inputFile, outputDir, noun_verb, chartPackage, dataTransformation)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+        'Finished running FrameNet aggregation at', True, '', True, start)
+    return out
+
+
+def aggregate(knowledge_base, WordNetDir, inputFile, outputDir, config_filename, noun_verb,
+              openOutputFiles, chartPackage, dataTransformation, language_var='', target_terms=None):
+    """Dispatch a Zoom OUT/UP aggregation to the chosen Knowledge base. '*' = all applicable
+    (WordNet always; VerbNet only for verbs; FrameNet for nouns or verbs) - one labelling per resource."""
+    kb = knowledge_base or 'WordNet'
+    files = []
+
+    def run_wn():
+        r = wn_util.aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_verb,
+                                      openOutputFiles, chartPackage, dataTransformation, language_var, target_terms)
+        return r or []
+
+    def run_vn():
+        return aggregate_VerbNet(inputFile, outputDir, noun_verb, chartPackage, dataTransformation) or []
+
+    def run_fn():
+        return aggregate_FrameNet(inputFile, outputDir, noun_verb, chartPackage, dataTransformation) or []
+
+    if kb == 'WordNet':
+        files += run_wn()
+    elif kb == 'VerbNet':
+        files += run_vn()
+    elif kb == 'FrameNet':
+        files += run_fn()
+    else:  # '*' = all applicable resources
+        files += run_wn()
+        if noun_verb == 'VERB':
+            files += run_vn()
+        files += run_fn()
+    return files

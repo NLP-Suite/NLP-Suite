@@ -19,6 +19,7 @@ import config_util
 import IO_files_util
 import CoNLL_util
 import semantic_aggregation_WordNet_util
+import semantic_aggregation_util
 import sentence_analysis_util
 import Stanford_CoreNLP_util
 import reminders_util
@@ -36,6 +37,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         csv_file,
         aggregate_POS_var,
         noun_verb,
+        knowledge_base,
         disaggregate_var,
         wordNet_keyword_list,
         annotate_file_var,
@@ -153,7 +155,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                 result=mb.askokcancel(title='Missing required information', message="You have selected to run the option 'Zoom OUT/UP to find higher-level aggregates' with the 'VERB' option but the csv file currently selected does not contain the expected subscript 'verbs_lemma'.\n\nIf this an overshigth, click on the Select INPUT CSV file button to select a different csv file and try again.")
                 if result==False:
                     return
-        filesToOpen = semantic_aggregation_WordNet_util.aggregate_GoingUP(WordNetDir, csv_file, outputDir, config_filename, noun_verb, openOutputFiles,
+        filesToOpen = semantic_aggregation_util.aggregate(knowledge_base, WordNetDir, csv_file, outputDir, config_filename, noun_verb, openOutputFiles,
                                                      chartPackage, dataTransformation, language_var, wordNet_keyword_list)
 
     if extract_nouns_verbs_from_CoNLL_var==True:
@@ -190,7 +192,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                     noun_verb = 'VERB'
                 else:
                     return
-                outputFiles = semantic_aggregation_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
+                outputFiles = semantic_aggregation_util.aggregate(knowledge_base, WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
                                                         openOutputFiles, chartPackage, dataTransformation, language_var, wordNet_keyword_list)
                 if outputFiles != None:
                     if isinstance(outputFiles, str):
@@ -204,7 +206,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                     noun_verb = 'NOUN'
                 else:
                     return
-                outputFiles = semantic_aggregation_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
+                outputFiles = semantic_aggregation_util.aggregate(knowledge_base, WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
                                                         openOutputFiles, chartPackage, dataTransformation, language_var, wordNet_keyword_list)
                 if outputFiles != None:
                     if isinstance(outputFiles, str):
@@ -238,6 +240,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             csv_file_var.get(),
                             aggregate_POS_var.get(),
                             noun_verb_menu_var.get(),
+                            knowledge_base_menu_var.get(),
                             disaggregate_var.get(),
                             wordNet_keyword_list,
                             annotate_file_var.get(),
