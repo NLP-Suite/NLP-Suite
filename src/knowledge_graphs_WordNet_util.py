@@ -10,6 +10,7 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window,"WordNet",['os'
     sys.exit(0)
 
 import os
+import re
 import pandas as pd
 import csv
 import tkinter.messagebox as mb
@@ -75,6 +76,51 @@ def _climb_to_top(synset, top_synsets):
         for parent in current.hypernyms():
             queue.append((path + [parent.name()], parent))
     return 'unknown', [synset.name()]
+
+
+def _resolve_anchor_synsets(anchor_terms, pos):
+    """Resolve user anchor terms to a set of WordNet synsets to aggregate UP toward. Each term may be
+    a word/phrase ('person', 'ethnic group') or an explicit synset name ('person.n.01'). Words use
+    the first (most frequent) sense. Returns (anchors_set, unresolved_list)."""
+    anchors = set()
+    unresolved = []
+    for term in anchor_terms:
+        term = str(term).strip()
+        if not term:
+            continue
+        key = term.replace(' ', '_')
+        if re.match(r'^[\w\-]+\.[a-z]\.\d+$', key):     # explicit synset name, e.g. person.n.01
+            try:
+                anchors.add(wn.synset(key))
+                continue
+            except Exception:
+                unresolved.append(term)
+                continue
+        syns = wn.synsets(key, pos=pos)
+        if syns:
+            anchors.add(syns[0])                        # first (most frequent) sense
+        else:
+            unresolved.append(term)
+    return anchors, unresolved
+
+
+def _climb_to_target(synset, target_synsets, top_synsets):
+    """Climb hypernyms until an ancestor IS one of the user's anchor synsets; return (anchor_label,
+    path) for the NEAREST (most specific) matching anchor. If no anchor is an ancestor, fall back to
+    the top-level supersense so the word still gets a category, prefixed '(other) '."""
+    visited = set()
+    queue = [([synset.name()], synset)]
+    while queue:
+        path, current = queue.pop(0)
+        if current in visited:
+            continue
+        visited.add(current)
+        if current in target_synsets:
+            return current.lemmas()[0].name().replace('_', ' '), path
+        for parent in current.hypernyms():
+            queue.append((path + [parent.name()], parent))
+    category, path = _climb_to_top(synset, top_synsets)
+    return '(other) ' + category, path
 
 
 def disaggregate_GoingDOWN(WordNetDir, outputDir, wordNet_keyword_list, noun_verb):
@@ -145,7 +191,7 @@ def disaggregate_GoingDOWN(WordNetDir, outputDir, wordNet_keyword_list, noun_ver
     return filesToOpen
 
 
-def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_verb, openOutputFiles, chartPackage, dataTransformation, language_var=''):
+def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_verb, openOutputFiles, chartPackage, dataTransformation, language_var='', target_terms=None):
     filesToOpen = []
 
     head, scriptName = os.path.split(os.path.basename(__file__))
@@ -165,6 +211,23 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
 
     pos = _get_wn_pos(noun_verb)
     top_synsets = VERB_TOP_SYNSETS if noun_verb == 'VERB' else NOUN_TOP_SYNSETS
+
+    # Optional lower-level aggregation: if the user supplied anchor synsets (the 'YOUR synset(s)' /
+    # 'Top-level synset' field), aggregate UP to the NEAREST of those (e.g. person vs artifact for
+    # 'violence against people vs things') instead of the fixed top-level supersenses.
+    anchors = set()
+    if target_terms:
+        anchors, unresolved = _resolve_anchor_synsets(target_terms, pos)
+        if unresolved:
+            mb.showwarning(title='WordNet anchor synset(s) not found',
+                message="These anchor synset(s) were not found in WordNet for " + noun_verb +
+                        " and will be ignored:\n\n" + ", ".join(unresolved))
+        if anchors:
+            IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'WordNet aggregation level',
+                "Aggregating UP to your " + str(len(anchors)) + " anchor synset(s):\n\n" +
+                ", ".join(sorted(a.name() for a in anchors)) +
+                "\n\ninstead of the top-level supersenses. Words not under any anchor are labelled "
+                "'(other) ...'.", False, '', True)
 
     startTime = IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start',
         'Started running WordNet (Zoom OUT/UP) with the ' + noun_verb + ' option at', True, '', True, '', True)
@@ -189,7 +252,10 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
                          'Intermediate synset 1': ''})
             continue
         synset = synsets[0]
-        category, path = _climb_to_top(synset, top_synsets)
+        if anchors:
+            category, path = _climb_to_target(synset, anchors, top_synsets)
+        else:
+            category, path = _climb_to_top(synset, top_synsets)
         category_counts[category] += 1
         intermediate_dict = {'Word': word_clean, 'WordNet Category': category}
         for idx, step in enumerate(path):

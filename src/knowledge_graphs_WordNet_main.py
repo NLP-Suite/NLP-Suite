@@ -154,7 +154,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                 if result==False:
                     return
         filesToOpen = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, csv_file, outputDir, config_filename, noun_verb, openOutputFiles,
-                                                     chartPackage, dataTransformation, language_var)
+                                                     chartPackage, dataTransformation, language_var, wordNet_keyword_list)
 
     if extract_nouns_verbs_from_CoNLL_var==True:
         # check that input file is a CoNLL table
@@ -191,7 +191,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                 else:
                     return
                 outputFiles = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
-                                                        openOutputFiles, chartPackage, dataTransformation, language_var)
+                                                        openOutputFiles, chartPackage, dataTransformation, language_var, wordNet_keyword_list)
                 if outputFiles != None:
                     if isinstance(outputFiles, str):
                         filesToOpen.append(outputFiles)
@@ -205,7 +205,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                 else:
                     return
                 outputFiles = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
-                                                        openOutputFiles, chartPackage, dataTransformation, language_var)
+                                                        openOutputFiles, chartPackage, dataTransformation, language_var, wordNet_keyword_list)
                 if outputFiles != None:
                     if isinstance(outputFiles, str):
                         filesToOpen.append(outputFiles)
