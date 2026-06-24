@@ -209,6 +209,7 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
     svo['Date'] = col('Date')
     svo['Refined roles'] = col('Refined roles')   # carried for the VerbNet-role views (not the relations file)
     svo['VerbNet class'] = col('VerbNet class')   # the disambiguated VerbNet class per predicate (SemLink)
+    svo['FrameNet frame'] = col('FrameNet frame') # the disambiguated FrameNet frame per predicate (SemLink chain)
 
     # Keep rows with a predicate AND at least an agent or a patient (i.e., a drawable edge).
     s = svo['Agent (ARG0)'].astype(str).str.strip()
@@ -408,5 +409,32 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
         except Exception as e:
             mb.showwarning(title="SRL VerbNet class chart",
                            message="Could not build the VerbNet class frequency chart:\n\n%s" % e)
+
+        # FrameNet frame profile: how often each disambiguated FrameNet frame occurs (the predicate's
+        # frame via the SemLink chain + gated lemma fallback) - interpretable action categories
+        # (Killing, Destroying, Execution, Attack, Cause_harm ...) for content analysis.
+        try:
+            import charts_util
+            fn_rows = []
+            for fr, doc in zip(svo['FrameNet frame'], svo['Document'].astype(str)):
+                fr = str(fr).strip()
+                if fr:
+                    fn_rows.append({'Document': doc, 'FrameNet frame': fr})
+            if fn_rows:
+                fn_freq_csv = IO_files_util.generate_output_file_name(
+                    svo_csv, inputDir, srl_dir, '.csv', 'framenet-frame')
+                pd.DataFrame(fn_rows).to_csv(fn_freq_csv, index=False, encoding='utf-8')
+                of = charts_util.visualize_chart(
+                    chartPackage, dataTransformation, fn_freq_csv, srl_dir,
+                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['FrameNet frame'],
+                    chart_title='Frequency Distribution of SRL FrameNet Frames',
+                    count_var=1, hover_label=[], outputFileNameType='SRL-framenet-frame',
+                    column_xAxis_label='FrameNet frame', groupByList=['Document'],
+                    plotList=['Frequency'], chart_title_label='FrameNet frame')
+                if of:
+                    outputs.extend(of if isinstance(of, list) else [of])
+        except Exception as e:
+            mb.showwarning(title="SRL FrameNet frame chart",
+                           message="Could not build the FrameNet frame frequency chart:\n\n%s" % e)
 
     return outputs

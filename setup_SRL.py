@@ -24,10 +24,12 @@ ENV_NAME = "nlp_srl"
 PY_VERSION = "3.8"
 MODEL_URL = "https://www.dropbox.com/s/4tes6ypf2do0feb/srl_bert_base_conll2012.tar.gz?dl=1"
 MODEL_NAME = "srl_bert_base_conll2012.tar.gz"
-# SemLink (Palmer et al.) PropBank<->VerbNet linking - gives the principled per-frame thematic roles
-# (Agent/Patient/Theme/Experiencer/Stimulus/Recipient...). Fetched from source, not bundled.
-SEMLINK_URL = "https://raw.githubusercontent.com/cu-clear/semlink/master/instances/pb-vn2.json"
-SEMLINK_NAME = "pb-vn2.json"
+# SemLink (Palmer et al.) PropBank<->VerbNet<->FrameNet linking - gives the principled per-frame
+# thematic roles (pb-vn2) AND the VerbNet-class -> FrameNet-frame map (vn-fn2). Fetched from source.
+# fn_lemma_frame.json (a small unambiguous verb-lemma -> sole FrameNet frame table, derived from
+# Berkeley FrameNet, CC BY) ships in lib/SRL/ already - it is not downloaded.
+SEMLINK_FILES = ["pb-vn2.json", "vn-fn2.json"]
+SEMLINK_BASE = "https://raw.githubusercontent.com/cu-clear/semlink/master/instances/"
 
 # Pinned deps, split into two pip steps because protobuf/overrides must be pinned DOWN after the
 # main install pulls newer versions (this is the sequence verified to run on a modern machine).
@@ -77,19 +79,21 @@ def main():
         urllib.request.urlretrieve(MODEL_URL, dest)
         print("Downloaded.")
 
-    semlink_dest = os.path.join(LIB_SRL, SEMLINK_NAME)
-    if os.path.isfile(semlink_dest):
-        print("SemLink role map already present: " + semlink_dest)
-    else:
+    for name in SEMLINK_FILES:
+        dest = os.path.join(LIB_SRL, name)
+        if os.path.isfile(dest):
+            print("SemLink map already present: " + dest)
+            continue
         try:
-            print("Downloading SemLink PropBank->VerbNet role map (pb-vn2.json) ...")
-            urllib.request.urlretrieve(SEMLINK_URL, semlink_dest)
+            print("Downloading SemLink map (%s) ..." % name)
+            urllib.request.urlretrieve(SEMLINK_BASE + name, dest)
             print("Downloaded.")
         except Exception as e:
-            # Non-fatal: SRL still runs and falls back to the heuristic refined roles without it.
-            print("WARNING: could not download the SemLink role map (%s).\n"
-                  "SRL will still work using heuristic refined roles. You can place pb-vn2.json in\n"
-                  "  %s\nlater to enable the principled VerbNet roles." % (e, LIB_SRL))
+            # Non-fatal: SRL still runs (heuristic refined roles, no VerbNet/FrameNet columns) without it.
+            print("WARNING: could not download the SemLink map %s (%s).\n"
+                  "SRL still works with heuristic refined roles. You can place %s in\n"
+                  "  %s\nlater to enable the principled VerbNet roles + VerbNet/FrameNet aggregation."
+                  % (name, e, name, LIB_SRL))
 
     print("\n[OK] SRL setup complete. Tick the SRL checkbox in the SVO GUI to use it.")
 

@@ -31,7 +31,7 @@ ROLE_COLUMNS = [
     ("ARGM-MNR", "How (ARGM-MNR)"),
     ("ARGM-CAU", "Why (ARGM-CAU)"),
 ]
-HEADERS = ["Document", "Date", "Sentence ID", "Sentence", "Predicate", "Frame", "VerbNet class"] + \
+HEADERS = ["Document", "Date", "Sentence ID", "Sentence", "Predicate", "Frame", "VerbNet class", "FrameNet frame"] + \
           [h for _, h in ROLE_COLUMNS] + ["Refined roles", "Description"]
 
 # --- Heuristic refined-role enrichment (PropBank numbered args -> fairly-accurate thematic-role
@@ -82,6 +82,39 @@ def load_semlink_map(path):
         return {}, {}
     sys.stderr.write("Loaded %d SemLink role mappings from %s\n" % (len(role_map), path))
     return role_map, class_map
+
+
+def build_sense_frame_map(pb_vn_path, vn_fn_path, fn_lemma_path):
+    """Precompute {sense: FrameNet frame} (JSON only, no NLTK at run time): the SemLink chain
+    sense -> any VerbNet class -> FrameNet frame (vn-fn2.json), with a QUALITY-GATED fallback to the
+    verb lemma's SOLE FrameNet frame (fn_lemma_frame.json) when the chain misses (catches e.g.
+    lynch -> Killing, assault -> Attack, while leaving ambiguous verbs like attack blank). Returns {}
+    if the maps are absent."""
+    frame_map = {}
+    if not (pb_vn_path and os.path.exists(pb_vn_path) and vn_fn_path and os.path.exists(vn_fn_path)):
+        return frame_map, {}
+    try:
+        import json
+        pb = json.load(open(pb_vn_path, encoding="utf-8"))
+        vf = json.load(open(vn_fn_path, encoding="utf-8"))
+        fl = json.load(open(fn_lemma_path, encoding="utf-8")) if fn_lemma_path and os.path.exists(fn_lemma_path) else {}
+        for sense, classes in pb.items():
+            lemma = sense.split(".")[0]
+            frame = None
+            for vc in classes:                       # try ALL the sense's VerbNet classes
+                frames = vf.get(vc + "-" + lemma)
+                if frames:
+                    frame = frames[0]
+                    break
+            if not frame:
+                frame = fl.get(lemma)                # quality-gated unambiguous-lemma fallback
+            if frame:
+                frame_map[sense] = frame
+    except Exception as e:
+        sys.stderr.write("Could not build FrameNet frame map: %s\n" % e)
+        return {}, {}
+    sys.stderr.write("Loaded %d FrameNet frame mappings\n" % len(frame_map))
+    return frame_map, fl   # fl (unambiguous lemma->frame) is used as a surface-lemma fallback at run time
 
 
 def _mapped_role(role_map, sense, label):
@@ -135,16 +168,47 @@ def roles_from_tags(words, tags):
     return roles
 
 
+_NLP = None
+
+
+def _get_nlp():
+    """Load spaCy en_core_web_sm ONCE (sentence splitting + verb lemmatization); False if absent."""
+    global _NLP
+    if _NLP is None:
+        try:
+            import spacy
+            _NLP = spacy.load("en_core_web_sm", disable=["tagger", "ner", "parser"])
+            _NLP.add_pipe(_NLP.create_pipe("sentencizer"))
+        except Exception:
+            _NLP = False
+    return _NLP
+
+
 def sentence_split(text):
     """Split text into sentences. Use spaCy en_core_web_sm if present; else a simple fallback."""
-    try:
-        import spacy
-        nlp = spacy.load("en_core_web_sm", disable=["tagger", "ner", "parser"])
-        nlp.add_pipe(nlp.create_pipe("sentencizer"))
-        return [s.text.strip() for s in nlp(text).sents if s.text.strip()]
-    except Exception:
-        import re
-        return [s.strip() for s in re.split(r"(?<=[.!?])\s+", text) if s.strip()]
+    nlp = _get_nlp()
+    if nlp:
+        try:
+            return [s.text.strip() for s in nlp(text).sents if s.text.strip()]
+        except Exception:
+            pass
+    import re
+    return [s.strip() for s in re.split(r"(?<=[.!?])\s+", text) if s.strip()]
+
+
+def lemmatize_verb(word):
+    """Lemmatize a single surface verb form ('lynched' -> 'lynch'), lowercased; '' on failure. Used
+    to recover a FrameNet frame when the SRL model mis-disambiguates an out-of-inventory predicate."""
+    word = (word or "").strip()
+    if not word:
+        return ""
+    nlp = _get_nlp()
+    if nlp:
+        try:
+            return nlp(word)[0].lemma_.lower()
+        except Exception:
+            pass
+    return word.lower()
 
 
 def gather_input_files(input_path):
@@ -253,7 +317,12 @@ def main():
 
     # Optional SemLink mapping (drop pb-vn2.json next to the model). If present, Refined roles use the
     # principled per-frame PropBank->VerbNet roles; if absent, the heuristic applies.
-    role_map, class_map = load_semlink_map(os.path.join(os.path.dirname(os.path.abspath(model_path)), "pb-vn2.json"))
+    _model_dir = os.path.dirname(os.path.abspath(model_path))
+    role_map, class_map = load_semlink_map(os.path.join(_model_dir, "pb-vn2.json"))
+    # FrameNet frame per predicate: SemLink chain (pb-vn2 -> vn-fn2) + quality-gated lemma fallback.
+    frame_map, fl_map = build_sense_frame_map(os.path.join(_model_dir, "pb-vn2.json"),
+                                              os.path.join(_model_dir, "vn-fn2.json"),
+                                              os.path.join(_model_dir, "fn_lemma_frame.json"))
 
     files = gather_input_files(input_path)
     if not files:
@@ -295,6 +364,11 @@ def main():
                 r = roles_from_tags(words, v.get("tags", []))
                 frame = v.get("frame", v.get("sense", ""))
                 predicate_lemma = (frame.split(".")[0] if frame else v.get("verb", "")).lower()
+                # FrameNet frame: sense-based chain first; if the model mis-sensed an out-of-inventory
+                # predicate (e.g. lynched -> liquify.01), fall back to the SURFACE verb's lemma.
+                fn_frame = frame_map.get(frame, "")
+                if not fn_frame:
+                    fn_frame = fl_map.get(lemmatize_verb(v.get("verb", "")), "")
                 row = {
                     "Document": doc_link,
                     "Date": doc_date,
@@ -303,6 +377,7 @@ def main():
                     "Predicate": v.get("verb", ""),
                     "Frame": frame,
                     "VerbNet class": class_map.get(frame, ""),
+                    "FrameNet frame": fn_frame,
                     "Description": v.get("description", ""),
                 }
                 for label, header in ROLE_COLUMNS:
