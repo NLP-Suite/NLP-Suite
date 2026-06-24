@@ -2,7 +2,7 @@
   "include": ["src"],
   "exclude": ["**/node_modules", "**/__pycache__", "**/.venv", "**/venv"],
   "typeCheckingMode": "standard",
-  "pythonVersion": "3.9",
+  "pythonVersion": "3.10",
   "reportMissingImports": "none",
   "reportMissingModuleSource": "none"
 }

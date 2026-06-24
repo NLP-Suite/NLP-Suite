@@ -12,8 +12,8 @@ exclude = [
 
 line-length = 120
 
-# Python 3.9 runtime constraint
-target-version = "py39"
+# Python 3.10 runtime constraint
+target-version = "py310"
 
 
 [tool.ruff.lint]
