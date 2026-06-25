@@ -1000,7 +1000,7 @@ GIS_var.trace('w', activate_GIS_GUI)
 activate_GIS_GUI()
 
 SVO_var.set(1)
-SVO_checkbox = tk.Checkbutton(window,text="SVO (Subject-Verb-Object) pipeline", variable=SVO_var, onvalue=1, offvalue=0)
+SVO_checkbox = tk.Checkbutton(window,text="SVO (Subject-Verb-Object) & SRL (Semantic Role Labeling) pipeline", variable=SVO_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,SVO_checkbox, True)
 
 open_SVO_GUI_var.set(0) # SVO GUI

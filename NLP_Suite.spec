@@ -71,6 +71,7 @@ _local_modules = [
     'knowledge_graphs_DBpedia_util', 'knowledge_graphs_DBpedia_YAGO_main',
     'semantic_aggregation_main', 'semantic_aggregation_WordNet_util',
     'semantic_aggregation_util',
+    'basic_NLP_util',
     'knowledge_graphs_YAGO_util',
     'lib_util', 'license_GUI',
     'narrative_analysis_ALL_main',

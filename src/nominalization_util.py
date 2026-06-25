@@ -29,20 +29,9 @@ IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/wordnet','wordne
 # IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/wordnet','omw-1.4')
 IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/omw-1.4','omw-1.4')
 from nltk.corpus import wordnet as wn
-# pywsd word-sense-disambiguation needs ALL previous
-
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Nominalization",['pywsd'])==False:
-    sys.exit(0)
-
-# from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
-# MUST use this version or code will break no longer true; pywsd~=1.2.4 pip install pywsd~=1.2.4; even try pip install pywsd=1.2.2
-#   or this version pip install pywsd==1.0.2
-# https://github.com/alvations/pywsd/issues/65
-# pywsd depends upon wn below; if the code breaks reinstall wn
-# pywsd Python word sense disambiguation
-#   https://pypi.org/project/pywsd/
-from pywsd import disambiguate
-# pip install wn==0.0.23
+# Nominalization detection uses WordNet derivational morphology + POS/lemma from the Suite's config-aware
+# basic NLP layer (basic_NLP_util). It no longer depends on pywsd (which broke against newer `wn`); this is
+# the standard, reproducible WordNet method (Fellbaum 1998). See _nominalization_base_verb below.
 import string
 import re
 from collections import Counter
@@ -79,6 +68,37 @@ def check_word_for_nominalization(word,nominalized_verbs_list):
             skip_record = False
             break
     return skip_record
+# --- deverbal-nominalization detection (WordNet derivational morphology; reproducible, NLTK-only) ---
+# A noun is a deverbal nominalization iff it is derived from a verb (destruction<-destroy, killing<-kill,
+# decision<-decide). Method: WordNet derivationally-related forms (Fellbaum 1998), with a VALIDATED suffix
+# fallback for regular cases missing from WordNet. Deverbal only (deadjectival like happiness<-happy is a
+# different phenomenon and is not counted here). See docs/ + the paper's methods section.
+
+def _deverbal_base_wordnet(noun_lemma):
+    """Base VERB lemma a noun is DERIVED from, via WordNet derivational morphology, or None. Requires the noun
+    to be LONGER than the verb - a deverbal nominalization adds a suffix (noun = verb + suffix), so this
+    encodes the derivation DIRECTION and rejects denominal verbs / base nouns (table->tabulate,
+    quality->qualify, station->station are NOT nominalizations). Checks all noun senses; returns the first
+    qualifying verb (destruction->destroy, decision->decide, killing->kill, death->die)."""
+    try:
+        for lem in wn.lemmas(noun_lemma, pos=wn.NOUN):
+            for form in lem.derivationally_related_forms():
+                v = form.name()
+                if form.synset().pos() == 'v' and len(noun_lemma) > len(v):
+                    return v
+    except Exception:
+        pass
+    return None
+
+
+def _nominalization_base_verb(noun_lemma):
+    """Base verb of a deverbal nominalization (WordNet derivational morphology + derivation-direction length
+    constraint), or None. Reproducible (NLTK/WordNet only); high precision (rejects table/quality/station).
+    Known limitation: IRREGULAR nominalizations not longer than their verb (belief<-believe, sale<-sell,
+    loss<-lose) are missed - supplement via the curated list if needed. See the paper's methods section."""
+    return _deverbal_base_wordnet(noun_lemma)
+
+
 def nominalized_verb_detection(docID,doc,dateStr, sent,check_ending,nominalized_verbs_list):
 
     first_section = re.compile("^(.+?)\.")
@@ -87,6 +107,7 @@ def nominalized_verb_detection(docID,doc,dateStr, sent,check_ending,nominalized_
 
     # sentences = tokenize.sent_tokenize(sent)
     from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
+    import basic_NLP_util
     sentences = sentence_split_stanza_text(stanzaPipeLine(sent))
 
     result_true_false_each_noun = []
@@ -112,89 +133,41 @@ def nominalized_verb_detection(docID,doc,dateStr, sent,check_ending,nominalized_
         nomi_count.append(0)
         word_count.append(0)
         sentence.append(each_sen)
-        words_with_tags = disambiguate(each_sen)
-        for tup in words_with_tags:
-            word, syns = tup
-            if (word in string.punctuation) or (word == "\"") or (word[0] == "\'") or (word[0] == "`"):
+        for surface, lemma, pos in basic_NLP_util.basic_nlp(str(each_sen)):
+            if (not surface) or (surface in string.punctuation) or surface[0] in ('"', "'", '`'):
                 continue
             word_count[sen_id] += 1
-            derivationals = []
-            word = word.lower()
+            # nominalization detection applies to NOUNS only (POSTAG NN*)
+            if not str(pos).startswith('NN'):
+                continue
+            word = surface.lower()
+            noun_lemma = (lemma or surface).lower()
             if word in true_word:
                 nomi_count[sen_id] += 1
-                if nomi_sen_ == "":
-                    nomi_sen_ = word
-                else:
-                    nomi_sen_ = nomi_sen_ + "; " + word
+                nomi_sen_ = word if nomi_sen_ == "" else nomi_sen_ + "; " + word
                 noun_cnt[word] += 1
                 nominalized_cnt[word] += 1
                 continue
             if word in false_word:
                 noun_cnt[word] += 1
                 continue
-            if syns:
-                #look at only nouns
-                if not is_pos(syns.name(), 'n'):
-                    # TODO do not save; leads to huge file
-                    # result_true_false_each_noun.append([word, '', False])
-                    # false_word.append(word)
-                    # noun_cnt[word] += 1
+            base_verb = _nominalization_base_verb(noun_lemma)
+            if base_verb:
+                if check_ending and check_word_for_nominalization(word, nominalized_verbs_list):
                     continue
-                if wn.lemmas(word):
-                    for lemma in wn.lemmas(word):
-                        derive = lemma.derivationally_related_forms()
-                        if derive not in derivationals and derive:
-                            derivationals.append(derive)
+                print('   NOUN/NOMINALIZED VERB:', word, ' VERB:', base_verb)
+                if dateStr != '':
+                    result_true_false_each_noun.append([word, base_verb, docID, IO_csv_util.dressFilenameForCSVHyperlink(doc), dateStr])
                 else:
-                    try:
-                        derivationals = syns.lemmas()[0].derivationally_related_forms()
-                    except:
-                        pass
-                stem = first_section.match(str(syns.name())).group(1)
-                found = False
-                for deriv in derivationals:
-                    if is_pos(str(deriv), 'v'):
-                        # original deriv_str = str(deriv)[7:-3].split('.')[3]
-                        # deriv is a list with typically one item
-                        #   [Lemma('construct.v.01.construct)
-                        # sometimes the list can have multiple items
-                        #   deriv [Lemma('dramatize.v.02.dramatize), Lemma('dramatize.v.02.dramatise')]
-                        #   when multiple items are given taken the first in the list
-                        #   deriv[0]
-                        try:
-                            deriv_str = str(deriv[0])[7:-2].split('.')[3]
-                        except:
-                            deriv_str = str([deriv][0])[7:-2].split('.')[3]
-                        print('   NOUN/NOMINALIZED VERB:', word, ' VERB:',deriv_str)
-                        try:
-                            deriv_str = str(deriv[0])[7:-2].split('.')[3]
-                        except:
-                            continue
-                        # deriv_str is now the verb that is being lemmatized
-                        if check_ending:
-                            skip_record = check_word_for_nominalization(word,nominalized_verbs_list)
-                            if skip_record:
-                                continue
-                        if dateStr != '':
-                            result_true_false_each_noun.append([word, deriv_str, docID, IO_csv_util.dressFilenameForCSVHyperlink(doc), dateStr])
-                        else:
-                            result_true_false_each_noun.append([word, deriv_str, docID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
-                        verbs.append(deriv_str)
-                        true_word.append(word)
-                        noun_cnt[word] += 1
-                        if nomi_sen_ == "":
-                            nomi_sen_ = word
-                        else:
-                            nomi_sen_ = nomi_sen_ + "; " + word
-                        nominalized_cnt[word] += 1
-                        found = True
-                        break
-                if found:
-                    nomi_count[sen_id] += 1
-                    continue
-                # else: # TODO do not save; leads to a huge unnecessary file
-                #     result_true_false_each_noun.append([word, '', False]) #includes word='NO NOMINALIZATION'
-                #     noun_cnt[word] += 1
+                    result_true_false_each_noun.append([word, base_verb, docID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                verbs.append(base_verb)
+                true_word.append(word)
+                noun_cnt[word] += 1
+                nomi_sen_ = word if nomi_sen_ == "" else nomi_sen_ + "; " + word
+                nominalized_cnt[word] += 1
+                nomi_count[sen_id] += 1
+            else:
+                false_word.append(word)
         nomi_sen.append(nomi_sen_)
         nomi_sen_ = ""
     for i in range(sen_id+1):

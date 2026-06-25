@@ -45,6 +45,47 @@ def _term_regex(term):
     return r'\b(?=\w)' + core + r'\b(?!\w)'
 
 
+def _expand_terms_by_lemma(terms, files):
+    """Expand single-word dictionary terms with their inflected forms found in the corpus, using the Suite's
+    config-aware basic NLP layer (basic_NLP_util.basic_nlp) - which tokenizes + lemmatizes with the package
+    the user picked for basic functions (spaCy or Stanza), NO dependency parse. For each corpus token whose
+    LEMMA matches a dictionary term's lemma, the token's SURFACE form is returned, so inflected forms
+    (attacked, bombing, Attack) get tagged while the original text stays untouched. Multi-word terms are left
+    to the phrase matcher. Returns [] (and warns) if the lemmatizer is unavailable -> exact-form fallback."""
+    try:
+        import basic_NLP_util
+    except Exception as e:
+        mb.showwarning(title='Lemma annotation',
+                       message="Could not load the basic NLP layer for lemma annotation:\n\n%s\n\n"
+                               "Falling back to exact-form matching." % e)
+        return []
+
+    # lemmatize the SINGLE-WORD dictionary terms (multi-word terms stay with the phrase matcher)
+    dict_lemmas = set()
+    for t in terms:
+        t = str(t).strip()
+        if not t or ' ' in t:
+            continue
+        pairs = basic_NLP_util.basic_nlp_lemmas(t)
+        dict_lemmas.add((pairs[0][1] if pairs else t).lower())
+    if not dict_lemmas:
+        return []
+
+    surfaces = set()
+    for f in files:
+        try:
+            with open(f, 'r', encoding='utf-8', errors='ignore') as _fh:
+                text = _fh.read()
+        except Exception:
+            continue
+        for surface, lemma in basic_NLP_util.basic_nlp_lemmas(text):
+            if lemma and lemma.lower() in dict_lemmas:
+                s = surface.strip()
+                if s:
+                    surfaces.add(s)
+    return sorted(surfaces)
+
+
 # the function associates specific values of a csv file to a specific color
 # append the function to allow multiple wordColNum and catColNum (cat for categories)
 def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
@@ -91,7 +132,7 @@ def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
 #   csvValue_color_list should be a list, for gender is csvValue_color_list = [genderCol, '|', 'FEMALE', 'red', '|', 'MALE', 'blue', '|']
 #   tagAnnotations is also a list, for gender  ['<span style="color: blue; font-weight: bold">', '</span>']
 def dictionary_annotate(inputFile, inputDir, outputDir, configFileName, dict_file,
-                        csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, fileType='.txt', fileSubc=''):
+                        csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, fileType='.txt', fileSubc='', lemmatize=False):
     writeout = []
     filesToOpen = []
     # TODO needs to check how csv_field1_var is passed when multiple fields are selected
@@ -126,6 +167,12 @@ def dictionary_annotate(inputFile, inputDir, outputDir, configFileName, dict_fil
             catColNum.append(IO_csv_util.get_columnNumber_from_headerValue(headers, field, dict_file))
 
     dictionary, color_list = readCsv(wordColNum, catColNum, dict_file, csvValue_color_list)
+    # Lemma annotation: lemmatize the corpus (fast Stanza tokenize+lemma) and add the surface forms whose
+    # LEMMA is a dictionary term, so inflected forms are tagged too - each in its ORIGINAL form (text untouched).
+    if lemmatize and len(csvValue_color_list) == 0 and isinstance(dictionary, list):
+        for surface in _expand_terms_by_lemma(dictionary, files):
+            if surface not in dictionary:
+                dictionary.append(surface)
     reserved_dictionary = ['bold', 'color', 'font', 'span', 'style', 'weight', 'black', 'blue', 'green', 'pink', 'yellow', 'red']
     # check the dictionary list if any of the reserved annotator terms (bold, color, font, span, style, weight) appear in the list
     #   reserved terms must be processed first to avoid replacing terms twice

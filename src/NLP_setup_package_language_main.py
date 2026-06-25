@@ -213,7 +213,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                                y_multiplier_integer,
                                                package_basics_lb, True, False, False, False, 90,
                                                GUI_IO_util.labels_x_coordinate,
-                                               "Use the dropdown menu to select the package (spaCy, Stanza) to be used for basic NLP operations: sentence splitting, tokenizing, lemmatizing.")
+                                               "Use the dropdown menu to select the package (spaCy, Stanza) to be used for basic NLP operations: sentence splitting, tokenizing, lemmatizing, POS tagging.\nOption saved in /config/NLP_default_package_language_config.csv")
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
 #                                                y_multiplier_integer, package_basics_lb, True)
 package_basics_var.set('Stanza')
@@ -224,14 +224,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.all_widget_po
                                                y_multiplier_integer,
                                                package_basics_menu, False, False, False, False, 90,
                                                GUI_IO_util.open_TIPS_x_coordinate,
-                                               "Use the dropdown menu to select the package (spaCy, Stanza) to be used for basic NLP operations: sentence splitting, tokenizing, lemmatizing.")
-
-def activate_NLP_basics(*args):
-    if package_basics_var.get()=='spaCy':
-        mb.showwarning(title='Warning',
-                       message='spaCy is not available yet for basic NLP operations.\n\nPlease, select another option.')
-        # package_basics_var.set('Stanza')
-package_basics_var.trace('w', activate_NLP_basics)
+                                               "Use the dropdown menu to select the package (spaCy, Stanza) to be used for basic NLP operations: sentence splitting, tokenizing, lemmatizing, POS tagging.\nOption saved in /config/NLP_default_package_language_config.csv")
 
 language_lb = tk.Label(window,text='Language')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
@@ -439,10 +432,10 @@ def close_GUI():
         mb.showwarning(title='Warning',message='You must select the language your corpus is written in before closing.')
         return
     if package_basics_var.get()=='':
-        mb.showwarning(title='Warning',message='You must select the package for the basic functions of tokenizing, lemmatizing, sentence splitting before closing.')
+        mb.showwarning(title='Warning',message='You must select the package for the basic functions of tokenizing, lemmatizing, sentence splitting, and POS tagging before closing.')
         return
     if package_basics_var.get()!='Stanza':
-        mb.showwarning(title='Warning',message='Stanza is the only option currently available as the package for the basic functions of tokenizing, lemmatizing, sentence splitting before closing.\n\nPlease, use the dropdown menu to select Stanza for basic functions.')
+        mb.showwarning(title='Warning',message='Stanza is the only option currently available as the package for the basic functions of tokenizing, lemmatizing, sentence splitting, and POS tagging before closing.\n\nPlease, use the dropdown menu to select Stanza for basic functions.')
         return
     import NLP_setup_update_util
     currently_selected_package_language = get_str_package_display_area_value()
@@ -461,7 +454,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_
                                                y_multiplier_integer,
                                                close_button, True, False, False, False, 90,
                                                GUI_IO_util.read_button_x_coordinate,
-                                               "When clicking the CLOSE button, the script will give you the option to save the currently selected configuration IF different from the previously saved configuration."
+                                               "When clicking the CLOSE button, the script will give you the option to save in /config/NLP_default_package_language_config.csv the currently selected configuration IF different from the previously saved configuration."
                                                "\nThe CLOSE button will also trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."
                                                "\nYou must be connected to the internet for the auto update to work.")
 
@@ -482,9 +475,9 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "The text widget displays the available parsers for the selected NLP package " + package_var.get() +".\n\nspaCy uses a statistical pipeline (e.g., en_core_web_sm/md/lg). spaCy (transformer) uses a transformer-based pipeline (e.g., en_core_web_trf with RoBERTa) for higher accuracy at the cost of slower speed and more memory.\n\nPERFORMANCE TIP: On machines without an NVIDIA GPU, spaCy is 3-5x faster than Stanza for dependency parsing and produces the same CoNLL table output. Stanza\'s unique advantage is constituency parsing (for clause analysis), which spaCy does not provide. If you only need dependency parsing (CoNLL table, SVO extraction), spaCy or spaCy (transformer) will be significantly faster. Stanza and spaCy (transformer) benefit greatly from NVIDIA GPU acceleration (CUDA)." + GUI_IO_util.msg_Esc + GUI_IO_util.msg_save_uponClose)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, using the dropdown menu, select the NLP package to be used as the default package for basic functions, namely, sentence splitter, tokenizer, lemmatizer."+GUI_IO_util.msg_Esc + GUI_IO_util.msg_save_uponClose)
+                                  "Please, using the dropdown menu, select the NLP package to be used as the default package for basic functions, namely, sentence splitter, tokenizer, lemmatizer, and POS tagger."+GUI_IO_util.msg_Esc + GUI_IO_util.msg_save_uponClose)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, using the dropdown menu, select the language(s) your input txt file(s) are written in. Different NLP packages support a different range of languages.\n\nFor those NLP packages that suport multiple languages (e.g., texts written in both English and Chinese), such as Stanza, hit the + button multiple times to add multiple languages.\n\nHit the Reset buttons to start fresh.\n\nHit the Show button to display the current language selection." + GUI_IO_util.msg_save_uponClose)
+                                  "Please, using the dropdown menu, select the language(s) your input txt file(s) are written in. Different NLP packages support a different range of languages.\n\nFor those NLP packages that support multiple languages (e.g., texts written in both English and Chinese), such as Stanza, hit the + button multiple times to add multiple languages.\n\nHit the Reset buttons to start fresh.\n\nHit the Show button to display the current language selection." + GUI_IO_util.msg_save_uponClose)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,
                                   "NLP Suite Help","Please, using the dropdown menu, select the type of encoding you wish to use.\n\nLocations in different languages may require encodings (e.g., latin-1 for French or Italian) different from the standard (and default) utf-8 encoding."+GUI_IO_util.msg_Esc + GUI_IO_util.msg_save_uponClose)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -497,7 +490,7 @@ y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for setting up the default NLP package (e.g., spaCy, spaCy (transformer), Stanford CoreNLP, Stanza), language (e.g., English, Chinese), and language encoding (e.g., utf-8) to be used for parsing and annotating your corpus in a specific language. Different packages support different sets of languages.\n\nspaCy (transformer) uses transformer-based models (e.g., en_core_web_trf with RoBERTa) for higher accuracy at the cost of slower speed and more memory.\n\n" + \
-                "When Stanford CoreNLP is selected as NLP package, various options become available that apply only to CoreNLP: Memory, Document length (CoreNLP has a maximum processing size of 100,000 characters), Limit sentence length (CoreNLP performance deteriorates rapidly with sentence lengths above 100 words)\n\nWhen clicking the CLOSE button, the script will give the option to save the currently selected configuration IF different from the previously saved configuration."
+                "When Stanford CoreNLP is selected as NLP package, various options become available that apply only to CoreNLP: Memory, Document length (CoreNLP has a maximum processing size of 100,000 characters), Limit sentence length (CoreNLP performance deteriorates rapidly with sentence lengths above 100 words)\n\nWhen clicking the CLOSE button, the script will give the option to save in /config/NLP_default_package_language_config.csv the currently selected configuration IF different from the previously saved configuration."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, True, scriptName, False)
 

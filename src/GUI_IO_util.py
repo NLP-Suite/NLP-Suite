@@ -964,7 +964,7 @@ else: #windows and anything else
 
 # Windows: semantic_aggregation_main
     WordNet_csv_file_width = 130
-    WordNet_keyWord_entry_width = 70
+    WordNet_keyWord_entry_width = 75
     WordNet_dict_WordNet_filename_width = 80
 
     WordNet_reset_pos = 430

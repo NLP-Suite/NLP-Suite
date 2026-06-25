@@ -330,6 +330,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                                      reminders_util.message_CoNLL_analyzer,
                                      True)
 
+        if 'open_analyzer' in sys.argv:
+            # launched from the Semantic Aggregation hub's 'Run the default parser': open the analyzer detached
+            # and close this transient parser GUI so the user isn't left with it lingering behind the analyzer.
+            run_script_util.run_script_detached("CoNLL_table_analyzer_main.py", filesToOpen[0])
+            GUI_util.window.destroy()
+            return
         run_script_util.run_script("CoNLL_table_analyzer_main.py", filesToOpen[0])
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
@@ -765,5 +771,12 @@ if error:
     # this will display the correct hover-over info after the python call, in case options were changed
     error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 
+
+# CoNLL handoff: when launched from the Semantic Aggregation hub's 'Run the default parser' option, pre-tick
+# 'Open the CoNLL table analyzer' so that, after parsing, this GUI opens the analyzer with the fresh CoNLL.
+if 'open_analyzer' in sys.argv:
+    parser_var.set(1)
+    CoNLL_table_analyzer_var.set(1)
+    CoNLL_table_analyzer_checkbox_msg.config(text="Open CoNLL table analyzer GUI")
 
 GUI_util.window.mainloop()

@@ -453,6 +453,7 @@ csv_file_var= tk.StringVar()
 extra_GUIs_var = tk.IntVar()
 extra_GUIs_menu_var = tk.StringVar()
 all_analyses = tk.StringVar()
+advanced_analyses = tk.StringVar()
 searchField_kw_var = tk.StringVar()
 searchField_POS_var = tk.StringVar()
 
@@ -475,6 +476,7 @@ clausal_analysis_var = tk.IntVar()
 compute_sentence_var = tk.IntVar()
 
 all_analyses_var = tk.IntVar()
+advanced_analyses_var = tk.IntVar()
 
 buildString = ''
 menu_values = []
@@ -486,9 +488,11 @@ deprel_menu = '*', *sorted([k + " - " + v for k, v in Stanford_CoreNLP_tags_util
 def clear(e):
     extra_GUIs_var.set(0)
     all_analyses_var.set(0)
+    advanced_analyses_var.set(0)
     all_analyses_checkbox.configure(state='normal')
     all_analyses_menu.configure(state='disabled')
     all_analyses.set('*')
+    advanced_analyses.set('*')
     search_token_var.set(0)
     searchField_kw_var.set('e.g.: father or * for all tokens in the CoNLL table')
     postag_var.set('*')
@@ -581,7 +585,7 @@ def open_GUI(*args):
 extra_GUIs_menu_var.trace('w',open_GUI)
 
 all_analyses_var = tk.IntVar()
-all_analyses_checkbox = tk.Checkbutton(window, state='disabled', variable = all_analyses_var, text='CoNLL analyses',
+all_analyses_checkbox = tk.Checkbutton(window, state='disabled', variable = all_analyses_var, text='Basic CoNLL analyses',
                                 onvalue=1, offvalue=0, command = lambda: activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                     y_multiplier_integer, all_analyses_checkbox,True)
@@ -592,11 +596,22 @@ all_analyses_menu.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                all_analyses_menu,False)
 
-WordNet_var = tk.IntVar()
-WordNet_checkbox = tk.Checkbutton(window, state='disabled', variable=WordNet_var,  text='Classification of Nouns & Verbs via FrameNet, VerbNet, WordNet', onvalue=1,
-                                  offvalue=0, command = lambda:  activate_all_options())
+advanced_analyses_var = tk.IntVar()
+advanced_analyses_checkbox = tk.Checkbutton(window, state='disabled', variable = advanced_analyses_var, text='Advanced CoNLL analyses',
+                                onvalue=1, offvalue=0, command = lambda: activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
-                                                    y_multiplier_integer, WordNet_checkbox)
+                                                    y_multiplier_integer, advanced_analyses_checkbox,True)
+advanced_analyses.set('*')
+advanced_analyses_menu = tk.OptionMenu(window, advanced_analyses, '*', 'Classification of Nouns & Verbs via FrameNet, VerbNet, WordNet', 'Noun analysis', 'Verb analysis', 'Adjective analysis', 'Adverb analysis', 'Function (junk/stop) words analysis','Content/Function ratio analysis','Beginning-End K sentences analyzer (repetition finder)','Word Sense Disambiguation (WSD)','Zoom OUT/UP by Sentence Index')
+advanced_analyses_menu.configure(state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                               advanced_analyses_menu,False)
+
+# WordNet_var = tk.IntVar()
+# WordNet_checkbox = tk.Checkbutton(window, state='disabled', variable=WordNet_var,  text='Classification of Nouns & Verbs via FrameNet, VerbNet, WordNet', onvalue=1,
+#                                   offvalue=0, command = lambda:  activate_all_options())
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
+#                                                     y_multiplier_integer, WordNet_checkbox)
 
 search_token_var = tk.IntVar()
 searchToken_checkbox = tk.Checkbutton(window, state='disabled', variable=search_token_var,  text='Search token/word', onvalue=1,
@@ -768,44 +783,44 @@ def changed_filename(tracedInputFile):
     clear("<Escape>")
 # GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
 
-k_sentences_var.set(0)
-k_sentences_checkbox = tk.Checkbutton(window, text="Beginning-End K sentences analyzer (repetition finder)",
-                              variable=k_sentences_var, onvalue=1, offvalue=0, command = lambda: activate_all_options())
-# k_sentences_checkbox.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               k_sentences_checkbox,True)
-
-Begin_K_sent_entry_lb = tk.Label(window,
-                                    text='Begin K-sentences')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
-                                               Begin_K_sent_entry_lb, True)
-
-Begin_K_sent_entry = tk.Entry(window, textvariable=Begin_K_sent_var)
-Begin_K_sent_entry.configure(width=GUI_IO_util.widget_width_extra_short, state='disabled')
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+130,
-                                               y_multiplier_integer,
-                                               Begin_K_sent_entry, True, False, False, False, 90,
-                                               GUI_IO_util.file_splitter_split_mergedFile_separator_entry_begin_pos,
-                                               "Enter the beginning number of sentences to be analyzed in the CoNLL table for repeated elements")
-
-End_K_sent_entry_lb = tk.Label(window,
-                                    text='End K-sentences')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
-                                               End_K_sent_entry_lb, True)
-
-End_K_sent_entry = tk.Entry(window, textvariable=End_K_sent_var)
-End_K_sent_entry.configure(width=GUI_IO_util.widget_width_extra_short, state='disabled')
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate+120,
-                                               y_multiplier_integer,
-                                               End_K_sent_entry, False, False, False, False, 90,
-                                               GUI_IO_util.file_splitter_split_mergedFile_separator_entry_end_pos,
-                                               "Enter the end number of sentences to be analyzed in the CoNLL table for repeated elements")
+# k_sentences_var.set(0)
+# k_sentences_checkbox = tk.Checkbutton(window, text="Beginning-End K sentences analyzer (repetition finder)",
+#                               variable=k_sentences_var, onvalue=1, offvalue=0, command = lambda: activate_all_options())
+# # k_sentences_checkbox.configure(state='disabled')
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+#                                                k_sentences_checkbox,True)
+#
+# Begin_K_sent_entry_lb = tk.Label(window,
+#                                     text='Begin K-sentences')
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+#                                                Begin_K_sent_entry_lb, True)
+#
+# Begin_K_sent_entry = tk.Entry(window, textvariable=Begin_K_sent_var)
+# Begin_K_sent_entry.configure(width=GUI_IO_util.widget_width_extra_short, state='disabled')
+# # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+130,
+#                                                y_multiplier_integer,
+#                                                Begin_K_sent_entry, True, False, False, False, 90,
+#                                                GUI_IO_util.file_splitter_split_mergedFile_separator_entry_begin_pos,
+#                                                "Enter the beginning number of sentences to be analyzed in the CoNLL table for repeated elements")
+#
+# End_K_sent_entry_lb = tk.Label(window,
+#                                     text='End K-sentences')
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
+#                                                End_K_sent_entry_lb, True)
+#
+# End_K_sent_entry = tk.Entry(window, textvariable=End_K_sent_var)
+# End_K_sent_entry.configure(width=GUI_IO_util.widget_width_extra_short, state='disabled')
+# # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate+120,
+#                                                y_multiplier_integer,
+#                                                End_K_sent_entry, False, False, False, False, 90,
+#                                                GUI_IO_util.file_splitter_split_mergedFile_separator_entry_end_pos,
+#                                                "Enter the end number of sentences to be analyzed in the CoNLL table for repeated elements")
 
 all_analyses_checkbox.configure(state='normal')
 searchToken_checkbox.configure(state='normal')
-k_sentences_checkbox.configure(state='normal')
+# k_sentences_checkbox.configure(state='normal')
 
 
 def activate_all_options():
@@ -813,12 +828,14 @@ def activate_all_options():
     extra_GUIs_menu.configure(state='disabled')
     all_analyses_checkbox.configure(state='normal')
     all_analyses_menu.configure(state='disabled')
+    advanced_analyses_checkbox.configure(state='normal')
+    advanced_analyses_menu.configure(state='disabled')
     searchToken_checkbox.configure(state='normal')
-    WordNet_checkbox.configure(state='normal')
-    k_sentences_checkbox.configure(state='normal')
-    k_words_checkbox.configure(state='disabled')
-    before_K_words_entry.configure(state='disabled')
-    after_K_words_entry.configure(state='disabled')
+    # WordNet_checkbox.configure(state='normal')
+    # k_sentences_checkbox.configure(state='normal')
+    # k_words_checkbox.configure(state='disabled')
+    # before_K_words_entry.configure(state='disabled')
+    # after_K_words_entry.configure(state='disabled')
 
 
     # search tokens
@@ -829,39 +846,47 @@ def activate_all_options():
     deprel_menu_lb.configure(state='disabled')
     co_postag_menu_lb.configure(state='disabled')
     co_deprel_menu_lb.configure(state='disabled')
-    WordNet_checkbox.configure(state='disabled')
+    # WordNet_checkbox.configure(state='disabled')
 
     # k sentences options
-    Begin_K_sent_entry.configure(state='disabled')
-    End_K_sent_entry.configure(state='disabled')
+    # Begin_K_sent_entry.configure(state='disabled')
+    # End_K_sent_entry.configure(state='disabled')
 
     if error:
         extra_GUIs_checkbox.configure(state='disabled')
         all_analyses_checkbox.configure(state='disabled')
         all_analyses_menu.configure(state='disabled')
+        advanced_analyses_checkbox.configure(state='disabled')
+        advanced_analyses_menu.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
-        k_sentences_checkbox.configure(state='disabled')
+        # k_sentences_checkbox.configure(state='disabled')
         return
     if extra_GUIs_var.get():
         extra_GUIs_menu.configure(state='normal')
         all_analyses_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
-        k_words_checkbox.configure(state='disabled')
-        k_sentences_checkbox.configure(state='disabled')
+        # k_words_checkbox.configure(state='disabled')
+        # k_sentences_checkbox.configure(state='disabled')
     elif all_analyses_var.get():
         all_analyses_menu.configure(state='normal')
         extra_GUIs_checkbox.configure(state='disabled')
+        advanced_analyses_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
-        k_sentences_checkbox.configure(state='disabled')
+        # k_sentences_checkbox.configure(state='disabled')
         reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_CoreNLP_nn_parser,
                                      reminders_util.message_CoreNLP_nn_parser,
                                      True)
+    elif advanced_analyses_var.get():
+        advanced_analyses_menu.configure(state='normal')
+        extra_GUIs_checkbox.configure(state='disabled')
+        all_analyses_checkbox.configure(state='disabled')
+        searchToken_checkbox.configure(state='disabled')
     elif search_token_var.get()==True:
         extra_GUIs_checkbox.configure(state='disabled')
         all_analyses_checkbox.configure(state='disabled')
         # k_words_checkbox.configure(state='disabled')
-        k_sentences_checkbox.configure(state='disabled')
+        # k_sentences_checkbox.configure(state='disabled')
         entry_searchField_kw.configure(state='normal')
         searchedCoNLLdescription_csv_field_menu_lb.configure(state='normal')
         postag_menu_lb.configure(state='normal')
@@ -869,40 +894,40 @@ def activate_all_options():
         co_postag_menu_lb.configure(state='normal')
         co_deprel_menu_lb.configure(state='normal')
         k_words_checkbox.configure(state='normal')
-    elif WordNet_var.get():
-        WordNet_checkbox.configure(state='normal')
-
-        extra_GUIs_checkbox.configure(state='disabled')
-        all_analyses_checkbox.configure(state='disabled')
-        k_words_checkbox.configure(state='disabled')
-        searchToken_checkbox.configure(state='disabled')
-        entry_searchField_kw.configure(state='disabled')
-        searchedCoNLLdescription_csv_field_menu_lb.configure(state='disabled')
-        postag_menu_lb.configure(state='disabled')
-        deprel_menu_lb.configure(state='disabled')
-        co_postag_menu_lb.configure(state='disabled')
-        co_deprel_menu_lb.configure(state='disabled')
-        k_sentences_checkbox.configure(state='disabled')
-        Begin_K_sent_entry.configure(state='disabled')
-        End_K_sent_entry.configure(state='disabled')
-    elif k_words_var.get():
-        mb.showwarning(title='Warning',
-                       message="The option is not available yet. Try again soon.\n\nSorry!")
-        return
-        extra_GUIs_checkbox.configure(state='disabled')
-        all_analyses_checkbox.configure(state='disabled')
-        searchToken_checkbox.configure(state='disabled')
-        entry_searchField_kw.configure(state='disabled')
-        before_K_words_entry.configure(state='normal')
-        after_K_words_entry.configure(state='normal')
-        searchedCoNLLdescription_csv_field_menu_lb.configure(state='disabled')
-        postag_menu_lb.configure(state='disabled')
-        deprel_menu_lb.configure(state='disabled')
-        co_postag_menu_lb.configure(state='disabled')
-        co_deprel_menu_lb.configure(state='disabled')
-        k_sentences_checkbox.configure(state='disabled')
-        Begin_K_sent_entry.configure(state='disabled')
-        End_K_sent_entry.configure(state='disabled')
+    # elif WordNet_var.get():
+    #     WordNet_checkbox.configure(state='normal')
+    #
+    #     extra_GUIs_checkbox.configure(state='disabled')
+    #     all_analyses_checkbox.configure(state='disabled')
+    #     k_words_checkbox.configure(state='disabled')
+    #     searchToken_checkbox.configure(state='disabled')
+    #     entry_searchField_kw.configure(state='disabled')
+    #     searchedCoNLLdescription_csv_field_menu_lb.configure(state='disabled')
+    #     postag_menu_lb.configure(state='disabled')
+    #     deprel_menu_lb.configure(state='disabled')
+    #     co_postag_menu_lb.configure(state='disabled')
+    #     co_deprel_menu_lb.configure(state='disabled')
+    #     k_sentences_checkbox.configure(state='disabled')
+    #     Begin_K_sent_entry.configure(state='disabled')
+    #     End_K_sent_entry.configure(state='disabled')
+    # elif k_words_var.get():
+    #     mb.showwarning(title='Warning',
+    #                    message="The option is not available yet. Try again soon.\n\nSorry!")
+    #     return
+    #     extra_GUIs_checkbox.configure(state='disabled')
+    #     all_analyses_checkbox.configure(state='disabled')
+    #     searchToken_checkbox.configure(state='disabled')
+    #     entry_searchField_kw.configure(state='disabled')
+    #     before_K_words_entry.configure(state='normal')
+    #     after_K_words_entry.configure(state='normal')
+    #     searchedCoNLLdescription_csv_field_menu_lb.configure(state='disabled')
+    #     postag_menu_lb.configure(state='disabled')
+    #     deprel_menu_lb.configure(state='disabled')
+    #     co_postag_menu_lb.configure(state='disabled')
+    #     co_deprel_menu_lb.configure(state='disabled')
+    #     k_sentences_checkbox.configure(state='disabled')
+    #     Begin_K_sent_entry.configure(state='disabled')
+    #     End_K_sent_entry.configure(state='disabled')
     elif compute_sentence_var.get():
         extra_GUIs_checkbox.configure(state='disabled')
         all_analyses_checkbox.configure(state='disabled')
@@ -913,7 +938,7 @@ def activate_all_options():
         deprel_menu_lb.configure(state='disabled')
         co_postag_menu_lb.configure(state='disabled')
         co_deprel_menu_lb.configure(state='disabled')
-        k_sentences_checkbox.configure(state='disabled')
+        # k_sentences_checkbox.configure(state='disabled')
     elif k_sentences_var.get():
         extra_GUIs_checkbox.configure(state='disabled')
         all_analyses_checkbox.configure(state='disabled')
@@ -924,21 +949,23 @@ def activate_all_options():
         deprel_menu_lb.configure(state='disabled')
         co_postag_menu_lb.configure(state='disabled')
         co_deprel_menu_lb.configure(state='disabled')
-        Begin_K_sent_entry.configure(state='normal')
-        End_K_sent_entry.configure(state='normal')
+        # Begin_K_sent_entry.configure(state='normal')
+        # End_K_sent_entry.configure(state='normal')
     else:
         extra_GUIs_checkbox.configure(state='normal')
         extra_GUIs_menu.configure(state='disabled')
         all_analyses_checkbox.configure(state='normal')
         all_analyses_menu.configure(state='disabled')
+        advanced_analyses_checkbox.configure(state='normal')
+        advanced_analyses_menu.configure(state='disabled')
         searchToken_checkbox.configure(state='normal')
-        WordNet_checkbox.configure(state='normal')
-        k_sentences_checkbox.configure(state='normal')
-    if k_words_var.get():
-        mb.showwarning(title='Warning',
-                       message="The option is not available yet. Try again soon.\n\nSorry!")
-        k_words_var.set(0)
-        return
+        # WordNet_checkbox.configure(state='normal')
+        # k_sentences_checkbox.configure(state='normal')
+    # if k_words_var.get():
+    #     mb.showwarning(title='Warning',
+    #                    message="The option is not available yet. Try again soon.\n\nSorry!")
+    #     k_words_var.set(0)
+    #     return
 
 activate_all_options()
 
@@ -995,8 +1022,8 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, select POSTAG value for token co-occurring in the same sentence (e.g., NN for noun; RETURN for ANY POSTAG value).\n\n" \
                                   "Select DEPREL value for token co-occurring in the same sentence (e.g., DEPREL nsubjpass for passive nouns that are subjects; RETURN for ANY DEPREL value)." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to run the repetition finder to compute counts and proportions of nouns, verbs, adjectives, and proper nouns across selected K beginnning and ending sentences." + GUI_IO_util.msg_Esc)
+    # y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+    #                               "Please, tick the checkbox if you wish to run the repetition finder to compute counts and proportions of nouns, verbs, adjectives, and proper nouns across selected K beginnning and ending sentences." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

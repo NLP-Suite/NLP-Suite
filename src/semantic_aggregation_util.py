@@ -177,6 +177,85 @@ def aggregate_FrameNet(inputFile, outputDir, noun_verb, chartPackage, dataTransf
     return out
 
 
+def wsd_aggregate_WordNet(conll_file, outputDir, noun_verb, chartPackage, dataTransformation):
+    """Word Sense Disambiguation aggregation (WordNet). For each NOUN/VERB token in a CoNLL table, disambiguate
+    its sense IN CONTEXT with the Lesk algorithm (NLTK `nltk.wsd.lesk`; Lesk 1986) using the token's sentence,
+    then aggregate to that synset's WordNet top-level category (lexname / supersense). This picks the
+    context-correct sense instead of the bare-lemma first sense. WordNet-only - VerbNet/FrameNet sense
+    disambiguation is the SRL/SemLink route. See docs/Semantic_Aggregation_GUI_design.md section 8 (WSD vs WSI)."""
+    import pandas as pd
+    IO_libraries_util.import_nltk_resource(GUI_util.window, 'corpora/wordnet', 'wordnet')
+    from nltk.wsd import lesk
+    try:
+        conll = pd.read_csv(conll_file, encoding='utf-8', on_bad_lines='skip')
+    except Exception as e:
+        mb.showwarning(title='Word sense disambiguation',
+                       message="Could not read the CoNLL table:\n\n%s\n\n%s" % (conll_file, e))
+        return []
+    cols = {str(c).strip().lower(): c for c in conll.columns}
+    form_c = cols.get('form')
+    pos_c = cols.get('pos')
+    lemma_c = cols.get('lemma')
+    sent_c = cols.get('sentence id')
+    doc_c = cols.get('document id') or cols.get('document')
+    if not form_c or not pos_c or not sent_c:
+        mb.showwarning(title='Word sense disambiguation',
+                       message="Word sense disambiguation expects a CoNLL table with Form, POS and Sentence ID "
+                               "columns (it needs each word's sentence as context).\n\n%s\n\nPlease select a "
+                               "CoNLL table and try again." % conll_file)
+        return []
+    wn_pos = 'n' if noun_verb == 'NOUN' else 'v'
+    pos_prefix = 'NN' if noun_verb == 'NOUN' else 'VB'
+    start = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
+        'Started running Word sense disambiguation (Lesk) at', True, '', True)
+    rows = []
+    counts = defaultdict(int)
+    group_keys = [c for c in (doc_c, sent_c) if c]
+    for _, sent_df in conll.groupby(group_keys, sort=False):
+        context = [str(f) for f in sent_df[form_c].tolist() if str(f).strip() and str(f) != 'nan']
+        for _, r in sent_df.iterrows():
+            if not str(r[pos_c]).startswith(pos_prefix):
+                continue
+            surface = str(r[form_c]).strip()
+            word = str(r[lemma_c]).strip() if lemma_c else surface
+            if not word or word == 'nan':
+                continue
+            try:
+                syn = lesk(context, word, wn_pos)
+            except Exception:
+                syn = None
+            cat = syn.lexname() if syn else 'Not found'
+            counts[cat] += 1
+            rows.append({'Word': surface, 'Lemma': word, 'WordNet category': cat})
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+        'Finished running Word sense disambiguation (Lesk) at', True, '', True, start)
+    if not rows:
+        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Invalid Input',
+            "Word sense disambiguation found no %s in the CoNLL table\n%s." % (noun_verb, conll_file))
+        return []
+    fileName = os.path.basename(conll_file).split('.')[0]
+    csv1 = os.path.join(outputDir, "NLP_WSD_WordNet_%s_%s.csv" % (noun_verb, fileName))
+    csv2 = os.path.join(outputDir, "NLP_WSD_WordNet_%s_%s_frequency.csv" % (noun_verb, fileName))
+    filesToOpen = []
+    with open(csv1, 'w', encoding='utf-8', newline='') as f:
+        wtr = csv.DictWriter(f, fieldnames=['Word', 'Lemma', 'WordNet category'])
+        wtr.writeheader(); wtr.writerows(rows)
+    with open(csv2, 'w', encoding='utf-8', newline='') as f:
+        wtr = csv.DictWriter(f, fieldnames=['WordNet category', 'Frequency']); wtr.writeheader()
+        for cat, n in sorted(counts.items(), key=lambda x: -x[1]):
+            wtr.writerow({'WordNet category': cat, 'Frequency': n})
+    filesToOpen += [csv1, csv2]
+    if chartPackage and chartPackage != 'No charts':
+        of = charts_util.visualize_chart(chartPackage, dataTransformation, csv1, outputDir,
+            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['WordNet category'],
+            chart_title='Word-sense-disambiguated WordNet categories for %s' % noun_verb,
+            count_var=1, hover_label=[], outputFileNameType='',
+            column_xAxis_label='WordNet category (WSD)', groupByList=[], plotList=[], chart_title_label='')
+        if of:
+            filesToOpen.extend(of if isinstance(of, list) else [of])
+    return filesToOpen
+
+
 def aggregate(knowledge_base, WordNetDir, inputFile, outputDir, config_filename, noun_verb,
               openOutputFiles, chartPackage, dataTransformation, language_var='', target_terms=None):
     """Dispatch a Zoom OUT/UP aggregation to the chosen Knowledge base. '*' = all applicable

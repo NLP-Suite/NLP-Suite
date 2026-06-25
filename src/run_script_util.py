@@ -110,3 +110,18 @@ def run_script(script_name, *extra_args):
 
     cmd = [python, script_path] + list(extra_args)
     return call(cmd)
+
+
+def run_script_detached(script_name, *extra_args):
+    """Like run_script but NON-blocking: launches the script with subprocess.Popen and returns immediately,
+    so the caller (e.g. a transient GUI handing off to another) can close itself while the launched GUI keeps
+    running. Falls back to the guarded (blocking) run_script if the interpreter or script can't be located,
+    so the user still gets the proper error dialog."""
+    import subprocess
+    python = _find_python()
+    src_dir = _script_dir()
+    script_path = os.path.join(src_dir, script_name)
+    if python is None or not os.path.isfile(script_path):
+        return run_script(script_name, *extra_args)
+    subprocess.Popen([python, script_path] + list(extra_args))
+    return 0

@@ -133,6 +133,110 @@ def check_CoNLL(filename, skipWarning=False):
         return False
     return True
 
+
+def _default_output_dir():
+    """The Suite's default 'Output files directory', read from config/NLP_default_IO_config.csv (where the parser
+    auto-creates its output subdirectories). Returns '' if it cannot be read."""
+    try:
+        import GUI_IO_util
+        import csv as _csv
+        path = os.path.join(GUI_IO_util.configPath, 'NLP_default_IO_config.csv')
+        if os.path.isfile(path):
+            with open(path, 'r', newline='', encoding='utf-8', errors='ignore') as fh:
+                for row in _csv.reader(fh):
+                    if row and row[0].strip() == 'Output files directory':
+                        return row[1].strip() if len(row) > 1 else ''
+    except Exception:
+        pass
+    return ''
+
+
+def _corpus_search_roots(outputDir, inputFilename='', inputDir=''):
+    """Directories to search for a corpus's CoNLL table: the output dir, the input dir, the input file's folder,
+    and the Suite's default output dir from config/NLP_default_IO_config.csv (where the parser auto-creates its
+    output subdirectories) - deduped, existing only. The parser may write the CoNLL to any of these per setup."""
+    roots = []
+    for d in (outputDir, inputDir, os.path.dirname(inputFilename) if inputFilename else '', _default_output_dir()):
+        if d and os.path.isdir(d) and d not in roots:
+            roots.append(d)
+    return roots
+
+
+def find_corpus_CoNLL(outputDir, inputFilename='', inputDir=''):
+    """Return a newest-first list of valid CoNLL csv tables found for the current corpus.
+
+    Searches the output dir, the input dir, and the input file's folder (see _corpus_search_roots); keeps every
+    .csv whose path contains 'CoNLL' and that validates as a CoNLL table (look-alikes such as saved I/O
+    configuration files are rejected by check_CoNLL), and - when a corpus name is known - narrows to files whose
+    name contains it. Used by the Semantic Aggregation hub to hand a corpus's CoNLL to the CoNLL Table Analyzer."""
+    # corpus stem: a single txt file's base name, else the input directory name
+    stem = ''
+    if inputFilename and inputFilename.lower().endswith('.txt'):
+        stem = os.path.basename(inputFilename)[:-4]
+    elif inputDir:
+        stem = os.path.basename(os.path.normpath(inputDir))
+    matches = []
+    seen = set()
+    for base in _corpus_search_roots(outputDir, inputFilename, inputDir):
+        for root, dirs, files in os.walk(base):
+            for f in files:
+                if not f.lower().endswith('.csv'):
+                    continue
+                path = os.path.join(root, f)
+                if 'conll' not in path.lower() or path in seen:
+                    continue
+                seen.add(path)
+                try:
+                    if check_CoNLL(path, True):
+                        matches.append(path)
+                except Exception:
+                    pass
+    if stem:
+        # match the corpus name anywhere in the path: the parser's auto-created subdir carries the corpus name
+        # even when the CoNLL filename itself is mangled (e.g. the parser's own typo 'newspperArticles')
+        narrowed = [m for m in matches if stem.lower() in m.lower()]
+        if narrowed:
+            matches = narrowed
+    matches.sort(key=lambda p: os.path.getmtime(p), reverse=True)
+    return matches
+
+
+def open_analyzer_for_current_corpus(run_parser=False):
+    """Hand the current corpus's CoNLL table to the CoNLL Table Analyzer GUI (the 'CoNLL handoff').
+
+    run_parser=True: open the Parsers/Annotators GUI (parsers_annotators_main.py), which parses the corpus
+    with the configured package (Stanford CoreNLP / Stanza / spaCy) and itself opens the analyzer preloaded
+    with the fresh CoNLL - we reuse that canonical pipeline rather than duplicate the 3-way parser dispatch.
+
+    run_parser=False: look in the current IO output directory for a CoNLL table matching the corpus; if found,
+    open the analyzer pre-loaded with it (run_script forwards the path as argv, read at the analyzer's startup,
+    CoNLL_table_analyzer_main.py lines ~1012-1031). If none is found, offer to open the analyzer so the user
+    can select one. Returns the CoNLL path opened (or None). The launcher widget is placed/wired in the hub."""
+    import run_script_util
+    if run_parser:
+        run_script_util.run_script("parsers_annotators_main.py", "open_analyzer")
+        return None
+    outputDir = GUI_util.output_dir_path.get()
+    inputFilename = GUI_util.inputFilename.get()
+    inputDir = GUI_util.input_main_dir_path.get()
+    matches = find_corpus_CoNLL(outputDir, inputFilename, inputDir)
+    if matches:
+        conll = matches[0]  # newest
+        run_script_util.run_script("CoNLL_table_analyzer_main.py", conll)
+        return conll
+    roots = _corpus_search_roots(outputDir, inputFilename, inputDir)
+    where = '\n   '.join(roots) if roots else '(no input/output directory is set)'
+    ans = mb.askyesno(title='No CoNLL table found',
+                      message="No CoNLL table was found for the current corpus. I searched:\n\n   " + where + "\n\n"
+                              "(A CoNLL table is one produced by parsing your corpus with Stanford CoreNLP, Stanza, or spaCy; "
+                              "look-alike files such as saved I/O configurations are ignored.)\n\n"
+                              "If your CoNLL table is elsewhere, click YES to open the CoNLL Table Analyzer and select it manually.\n"
+                              "Click NO to cancel (or tick 'Run the default parser' to parse your corpus first).")
+    if ans:
+        run_script_util.run_script("CoNLL_table_analyzer_main.py")
+    return None
+
+
 # The function builds a double list of all records in the CoNLL table
 def CoNLL_record_division(list_csv_rows):
 

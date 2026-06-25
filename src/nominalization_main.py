@@ -110,8 +110,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'Nominalization':'TIPS_NLP_Nominalization.pdf'}
-TIPS_options='Nominalization'
+TIPS_lookup = {'Nominalization':'TIPS_NLP_Nominalization.pdf','Lexical databases (WordNet, VerbNet, FrameNet)': 'TIPS_NLP_Lexical databases (WordNet, VerbNet, FrameNet).pdf','Style analysis':'TIPS_NLP_Style analysis.pdf','CoNLL Table': 'TIPS_NLP_Stanford CoreNLP CoNLL table.pdf'}
+TIPS_options='Nominalization','Lexical databases (WordNet, VerbNet, FrameNet)','Style analysis','CoNLL Table'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
