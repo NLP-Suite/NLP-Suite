@@ -287,7 +287,69 @@ def get_csv_file(window,title,fileType,displayFile):
         csv_file_var.set(filePath)
     return filePath
 
-csv_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: get_csv_file(window,'Select INPUT csv file', [("dictionary files", "*.csv")],True))
+
+def _semagg_default_output_dir():
+    """The Suite's default 'Output files directory' from config/NLP_default_IO_config.csv, or '' if unreadable."""
+    try:
+        import GUI_IO_util, csv as _csv
+        path = os.path.join(GUI_IO_util.configPath, 'NLP_default_IO_config.csv')
+        if os.path.isfile(path):
+            with open(path, 'r', newline='', encoding='utf-8', errors='ignore') as fh:
+                for row in _csv.reader(fh):
+                    if row and row[0].strip() == 'Output files directory':
+                        return row[1].strip() if len(row) > 1 else ''
+    except Exception:
+        pass
+    return ''
+
+
+def find_semagg_csv(outputDir, inputFilename='', inputDir=''):
+    """Newest-first list of semantic-aggregation input csvs in the output/input/default dirs: lemma lists
+    (*_nouns_lemma.csv / *_verbs_lemma.csv, for Zoom OUT/UP) and Zoom IN/DOWN word lists
+    (NLP_*_DOWN_wordlist.csv, for Annotate). Matched by filename marker (Suite-produced, so the name is reliable)."""
+    markers = ('nouns_lemma', 'verbs_lemma', 'down_wordlist')
+    roots = []
+    for d in (outputDir, inputDir, os.path.dirname(inputFilename) if inputFilename else '', _semagg_default_output_dir()):
+        if d and os.path.isdir(d) and d not in roots:
+            roots.append(d)
+    matches = []
+    seen = set()
+    for base in roots:
+        for root, dirs, files in os.walk(base):
+            for f in files:
+                fl = f.lower()
+                if not fl.endswith('.csv') or not any(m in fl for m in markers):
+                    continue
+                p = os.path.join(root, f)
+                if p in seen:
+                    continue
+                seen.add(p)
+                matches.append(p)
+    matches.sort(key=lambda p: os.path.getmtime(p), reverse=True)
+    return matches
+
+
+def select_input_csv(window):
+    """'Select INPUT CSV file' button handler: offer the semantic-aggregation csvs found for the corpus
+    (lemma lists + Zoom IN/DOWN word lists); fall back to a file dialog if none are found or the user browses."""
+    chosen = IO_files_util.select_path_from_list(window,
+                 find_semagg_csv(GUI_util.output_dir_path.get(), GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get()),
+                 'Select a semantic-aggregation csv (a lemma list, or a Zoom IN/DOWN word-list dictionary), or browse for another file:',
+                 title='Available semantic-aggregation csv files')
+    if chosen is None:
+        return ''
+    if chosen != '__BROWSE__':
+        filePath = chosen
+    else:
+        filePath = tk.filedialog.askopenfilename(title='Select INPUT csv file',
+                                                 initialdir=os.path.dirname(os.path.abspath(__file__)),
+                                                 filetypes=[("dictionary files", "*.csv")])
+    if len(filePath) > 0:
+        csv_file_var.set(filePath)
+    return filePath
+
+
+csv_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: select_input_csv(window))
 # csv_file_button.config(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,csv_file_button,True)
 
@@ -390,7 +452,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
                                              "Click to open the CoNLL table analyzer GUI.")
 
 run_parser_var.set(0)
-run_parser_checkbox = tk.Checkbutton(window, text='Run the default parser', variable=run_parser_var,
+run_parser_checkbox = tk.Checkbutton(window, text='Run the default parser (Open GUI)', variable=run_parser_var,
                                     onvalue=1, offvalue=0, command=lambda: activate_all_options(disambiguate_var.get()))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,

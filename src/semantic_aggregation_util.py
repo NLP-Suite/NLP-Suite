@@ -204,8 +204,9 @@ def wsd_aggregate_WordNet(conll_file, outputDir, noun_verb, chartPackage, dataTr
                                "columns (it needs each word's sentence as context).\n\n%s\n\nPlease select a "
                                "CoNLL table and try again." % conll_file)
         return []
+    import CoNLL_util
     wn_pos = 'n' if noun_verb == 'NOUN' else 'v'
-    pos_prefix = 'NN' if noun_verb == 'NOUN' else 'VB'
+    pos_match = CoNLL_util.is_noun_POS if noun_verb == 'NOUN' else CoNLL_util.is_verb_POS
     start = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
         'Started running Word sense disambiguation (Lesk) at', True, '', True)
     rows = []
@@ -214,7 +215,7 @@ def wsd_aggregate_WordNet(conll_file, outputDir, noun_verb, chartPackage, dataTr
     for _, sent_df in conll.groupby(group_keys, sort=False):
         context = [str(f) for f in sent_df[form_c].tolist() if str(f).strip() and str(f) != 'nan']
         for _, r in sent_df.iterrows():
-            if not str(r[pos_c]).startswith(pos_prefix):
+            if not pos_match(r[pos_c]):
                 continue
             surface = str(r[form_c]).strip()
             word = str(r[lemma_c]).strip() if lemma_c else surface

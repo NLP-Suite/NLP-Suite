@@ -4,6 +4,7 @@
 import sys
 import GUI_util
 import IO_libraries_util
+import CoNLL_util  # is_noun_POS / is_verb_POS / is_adjective_POS / is_adverb_POS - handle Penn + Universal tags
 
 if IO_libraries_util.install_all_Python_packages(GUI_util.window,"wordclouds_util",['wordcloud','numpy','matplotlib','ntpath','PIL','stanza','csv'])==False:
     sys.exit(0)
@@ -631,15 +632,14 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                     for row in df.itertuples():
                         word = row.Lemma if lemmatize else row.Form
                         pos = row.POS
-                        pos_prefix = pos[:2] if len(pos) >= 2 else pos
                         color = None
-                        if pos_prefix.startswith('VB'):
+                        if CoNLL_util.is_verb_POS(pos):
                             color = blue_code
-                        elif pos_prefix.startswith('NN'):
+                        elif CoNLL_util.is_noun_POS(pos):
                             color = red_code
-                        elif pos_prefix == 'JJ':
+                        elif CoNLL_util.is_adjective_POS(pos):
                             color = green_code
-                        elif pos_prefix == 'RB':
+                        elif CoNLL_util.is_adverb_POS(pos):
                             color = grey_code
                         if color:
                             color_to_words[color].append(word)

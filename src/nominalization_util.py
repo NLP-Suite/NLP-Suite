@@ -137,8 +137,9 @@ def nominalized_verb_detection(docID,doc,dateStr, sent,check_ending,nominalized_
             if (not surface) or (surface in string.punctuation) or surface[0] in ('"', "'", '`'):
                 continue
             word_count[sen_id] += 1
-            # nominalization detection applies to NOUNS only (POSTAG NN*)
-            if not str(pos).startswith('NN'):
+            # nominalization detection applies to NOUNS only (Penn NN* or Universal NOUN/PROPN)
+            import CoNLL_util
+            if not CoNLL_util.is_noun_POS(pos):
                 continue
             word = surface.lower()
             noun_lemma = (lemma or surface).lower()

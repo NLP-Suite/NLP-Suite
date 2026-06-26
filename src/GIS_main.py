@@ -496,13 +496,73 @@ def display_csv_file_options():
 
     return cannotRun
 
+def _gis_default_output_dir():
+    """The Suite's default 'Output files directory' from config/NLP_default_IO_config.csv, or '' if unreadable."""
+    try:
+        import GUI_IO_util, csv as _csv
+        path = os.path.join(GUI_IO_util.configPath, 'NLP_default_IO_config.csv')
+        if os.path.isfile(path):
+            with open(path, 'r', newline='', encoding='utf-8', errors='ignore') as fh:
+                for row in _csv.reader(fh):
+                    if row and row[0].strip() == 'Output files directory':
+                        return row[1].strip() if len(row) > 1 else ''
+    except Exception:
+        pass
+    return ''
+
+
+def _is_geocoded_csv(path):
+    """True if the csv has Latitude AND Longitude columns (a geocoded GIS file)."""
+    try:
+        hdrs = set(h.strip().lower() for h in IO_csv_util.get_csvfile_headers(path))
+        return 'latitude' in hdrs and 'longitude' in hdrs
+    except Exception:
+        return False
+
+
+def find_geocoded_csv(outputDir, inputFilename='', inputDir=''):
+    """Newest-first list of geocoded GIS csv files (Latitude/Longitude) found in the output dir, the input dir,
+    the input file's folder, and the Suite default output dir - including GIS subfolders (e.g. under an SVO
+    output). Only csvs whose path mentions 'gis'/'geocod' are header-validated, to stay fast on large trees."""
+    roots = []
+    for d in (outputDir, inputDir, os.path.dirname(inputFilename) if inputFilename else '', _gis_default_output_dir()):
+        if d and os.path.isdir(d) and d not in roots:
+            roots.append(d)
+    matches = []
+    seen = set()
+    for base in roots:
+        for root, dirs, files in os.walk(base):
+            for f in files:
+                if not f.lower().endswith('.csv'):
+                    continue
+                p = os.path.join(root, f)
+                if p in seen or ('gis' not in p.lower() and 'geocod' not in p.lower()):
+                    continue
+                seen.add(p)
+                if _is_geocoded_csv(p):
+                    matches.append(p)
+    matches.sort(key=lambda p: os.path.getmtime(p), reverse=True)
+    return matches
+
+
 def get_csv_file(window,title,fileType,annotate):
     #csv_file_var.set('')
-    if csv_file!='':
-        initialFolder=os.path.dirname(os.path.abspath(csv_file_var.get()))
+    # First offer the geocoded csv files discovered in the output (incl. GIS subfolders under SVO); only fall
+    # back to a file dialog if none are found or the user chooses to browse.
+    chosen = IO_files_util.select_path_from_list(window,
+                 find_geocoded_csv(GUI_util.output_dir_path.get(), GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get()),
+                 'Select a geocoded csv file (with Latitude/Longitude) found in your output, or browse for another file:',
+                 title='Available geocoded csv files')
+    if chosen is None:
+        return ''
+    if chosen != '__BROWSE__':
+        filePath = chosen
     else:
-        initialFolder = os.path.dirname(os.path.abspath(__file__))
-    filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
+        if csv_file!='':
+            initialFolder=os.path.dirname(os.path.abspath(csv_file_var.get()))
+        else:
+            initialFolder = os.path.dirname(os.path.abspath(__file__))
+        filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
 
     if len(filePath)>0:
         nRecords, nColumns =IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(filePath, 'utf-8')

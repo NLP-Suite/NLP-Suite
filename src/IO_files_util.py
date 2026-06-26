@@ -1204,4 +1204,48 @@ def gatherCLAs():
     #     if os.path.isfile(quote_filename) and os.path.isdir(quote_outputDir):
     #         target_filePath = quote_outputDir + os.sep + os.path.basename(quote_filename)
     #         # move the quote file under quote dir where a user is more likely to look for it
+
+
+def select_path_from_list(window, paths, intro_text, title='Available files'):
+    """Modal picker: list 'paths' (each labelled by its parent-folder/filename) for the user to choose one.
+    Returns the chosen path, the sentinel '__BROWSE__' (the list is empty, or the user chose to browse for
+    another file), or None (the user cancelled). Reusable file-selection helper (CoNLL, GIS, ...)."""
+    import tkinter as tk
+    if not paths:
+        return '__BROWSE__'
+    result = {'value': None}
+    top = tk.Toplevel(window)
+    top.title(title)
+    top.transient(window)
+    top.grab_set()
+    tk.Label(top, text=intro_text).pack(padx=12, pady=(12, 6), anchor='w')
+    frame = tk.Frame(top)
+    frame.pack(padx=12, fill='both', expand=True)
+    sb = tk.Scrollbar(frame)
+    sb.pack(side='right', fill='y')
+    lb = tk.Listbox(frame, width=95, height=min(12, len(paths)), yscrollcommand=sb.set)
+    for p in paths:
+        lb.insert('end', os.path.join(os.path.basename(os.path.dirname(p)), os.path.basename(p)))
+    lb.pack(side='left', fill='both', expand=True)
+    sb.config(command=lb.yview)
+    lb.selection_set(0)
+
+    def do_select():
+        sel = lb.curselection()
+        if sel:
+            result['value'] = paths[sel[0]]
+            top.destroy()
+
+    def do_browse():
+        result['value'] = '__BROWSE__'
+        top.destroy()
+
+    lb.bind('<Double-Button-1>', lambda e: do_select())
+    btns = tk.Frame(top)
+    btns.pack(pady=10)
+    tk.Button(btns, text='Select', width=12, command=do_select).pack(side='left', padx=5)
+    tk.Button(btns, text='Browse for another file...', width=22, command=do_browse).pack(side='left', padx=5)
+    tk.Button(btns, text='Cancel', width=10, command=top.destroy).pack(side='left', padx=5)
+    top.wait_window()
+    return result['value']
     #         os.replace(quote_filename, target_filePath)

@@ -5,222 +5,143 @@ Created on Sat Jan 22 23:05:52 2022
 
 @author: claude
 edited by Naman Sahni 9/23.2022
+rewritten 2026 (Roberto Franzosi / Claude): correct bookend-repetition finder + robust counts
 """
-from pydoc import Doc
 import pandas as pd
-import string
-# from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text, sentence_split_stanza_text
 
 import IO_files_util
 import charts_util
-import statistics_txt_util
+import CoNLL_util  # is_noun_POS / is_verb_POS / is_adjective_POS - handle both Penn and Universal POS tags
+
 
 def k_sent(inputFilename, outputDir, chartPackage, dataTransformation, Begin_K_sent_var, End_K_sent_var):
-    filesToOpen=[]
+    """First/last K-sentences analyzer for a CoNLL table. Produces two outputs per run:
 
-    label='CoNLL_' + str(Begin_K_sent_var) + '-' + str(End_K_sent_var) + '-sent'
-    # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label=label,
-                                                       silent=True)
+    1. COUNTS: for the first K and the last K sentences of each document, the counts and proportions of
+       Words / Nouns / Verbs / Adjectives / Proper-Nouns.
+    2. BOOKEND REPETITION FINDER: content words (POSTAG NN*/VB*/JJ*) whose LEMMA appears in BOTH the first K
+       and the last K sentences of a document - i.e. words that open AND close the text (a rhetorical/narrative
+       framing device). Each repeated word is reported with its Form, Lemma, Sentence ID/text, and its CORPUS
+       DOCUMENT FREQUENCY (how many documents contain the lemma); the table is sorted rarest-first, so the most
+       distinctive bookend words - the meaningful ones - rise to the top. Matching is on the lemma (so 'attack'
+       and 'attacks' count as the same word) while the original Form is preserved for display.
+
+    Works directly from the CoNLL columns (Sentence ID / Document ID / Form / Lemma / POS / DepRel) - no
+    re-parsing - and resets all state per document. Returns (outputDir, filesToOpen)."""
+    filesToOpen = []
+    try:
+        Begin_K_sent_var = int(Begin_K_sent_var)
+        End_K_sent_var = int(End_K_sent_var)
+    except (ValueError, TypeError):
+        return outputDir, filesToOpen
+
+    label = 'CoNLL_' + str(Begin_K_sent_var) + '-' + str(End_K_sent_var) + '-sent'
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label=label, silent=True)
     if outputDir == '':
         return outputDir, filesToOpen
 
     conll = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
-    head = ["First/Last Sentences", "K value", "Words Count","Nouns Count","Nouns Proportion", "Verbs Count", "Verbs Proportion", "Adjectives Count","Adjectives Proportion","Proper-Nouns Count","Proper-Nouns Proportion", "Document ID", "Document"]
-    result = []
 
-    head_rep_words = ["Firs/Last Sentences", "K value", "Word", "Word ID", "Sentence ID", "Sentence", "Document ID", "Document"]
-    result_rep_words = []
-    result_rep_words_temp = []
+    def _content_lemmas(rows):
+        """[(lemma_lowercased, Form, Sentence ID), ...] for alphabetic content words (nouns/verbs/adjectives,
+        in either Penn or Universal POS tag sets)."""
+        items = []
+        for form, lemma, pos, sid in zip(rows['Form'].astype(str), rows['Lemma'].astype(str),
+                                         rows['POS'].astype(str), rows['Sentence ID']):
+            if (CoNLL_util.is_noun_POS(pos) or CoNLL_util.is_verb_POS(pos) or CoNLL_util.is_adjective_POS(pos)) and form.isalpha():
+                lem = lemma.lower()
+                if lem:
+                    items.append((lem, form, sid))
+        return items
 
-    rep_words_first = []
-    rep_words_last = []
+    # corpus distinctiveness: how many documents contain each content lemma (document frequency)
+    lemma_docFreq = {}
+    for doc_id in conll['Document ID'].unique():
+        for lem in set(l for l, _, _ in _content_lemmas(conll.loc[conll['Document ID'] == doc_id])):
+            lemma_docFreq[lem] = lemma_docFreq.get(lem, 0) + 1
 
+    head_counts = ["First/Last Sentences", "K value", "Words Count", "Nouns Count", "Nouns Proportion",
+                   "Verbs Count", "Verbs Proportion", "Adjectives Count", "Adjectives Proportion",
+                   "Proper-Nouns Count", "Proper-Nouns Proportion", "Document ID", "Document"]
+    head_rep = ["First/Last Sentences", "K value", "Word (Form)", "Lemma", "Word ID", "Sentence ID",
+                "Sentence", "Corpus document frequency", "Document ID", "Document"]
+    result_counts = []
+    result_rep = []
 
-    #print(filtered_lemmas)
+    for doc_id in conll['Document ID'].unique():
+        doc_rows = conll.loc[conll['Document ID'] == doc_id]
+        if len(doc_rows) == 0:
+            continue
+        DOC = doc_rows['Document'].iloc[0]
+        sent_ids = sorted(doc_rows['Sentence ID'].unique())
+        if not sent_ids:
+            continue
+        first_ids = sent_ids[:Begin_K_sent_var]
+        last_ids = [s for s in sent_ids[-End_K_sent_var:] if s not in first_ids] if End_K_sent_var > 0 else []
+        first_rows = doc_rows.loc[doc_rows['Sentence ID'].isin(first_ids)]
+        last_rows = doc_rows.loc[doc_rows['Sentence ID'].isin(last_ids)]
 
+        # counts / proportions for the first and last K sentences
+        def _counts_row(section, K, rows):
+            pos = rows['POS'].astype(str)
+            wc = int((~rows['DepRel'].astype(str).eq('punct')).sum())
+            nn = int(pos.apply(CoNLL_util.is_noun_POS).sum())
+            nnp = int(pos.apply(CoNLL_util.is_proper_noun_POS).sum())
+            vb = int(pos.apply(CoNLL_util.is_verb_POS).sum())
+            jj = int(pos.apply(CoNLL_util.is_adjective_POS).sum())
+            den = wc if wc else 1
+            return [section, K, wc, nn, nn / den, vb, vb / den, jj, jj / den, nnp, nnp / den, doc_id, DOC]
+        result_counts.append(_counts_row('First', Begin_K_sent_var, first_rows))
+        result_counts.append(_counts_row('Last', End_K_sent_var, last_rows))
 
-    txt = ""
+        # bookend repetition: content lemmas appearing in BOTH the first and the last K sentences
+        first_content = _content_lemmas(first_rows)
+        last_content = _content_lemmas(last_rows)
+        repeated = set(l for l, _, _ in first_content) & set(l for l, _, _ in last_content)
+        if repeated:
+            sent_text = doc_rows.groupby('Sentence ID')['Form'].apply(
+                lambda f: ' '.join(f.astype(str))).to_dict()
+            for section, K, content in (('First', Begin_K_sent_var, first_content),
+                                        ('Last', End_K_sent_var, last_content)):
+                wid = 0
+                for lem, form, sid in content:
+                    wid += 1
+                    if lem in repeated:
+                        result_rep.append([section, K, form, lem, wid, sid, sent_text.get(sid, ''),
+                                           lemma_docFreq.get(lem, 0), doc_id, DOC])
 
-    for i in range(1, max(conll["Document ID"])+1):
-        txt = ""
-        doc_conll = conll.loc[conll["Document ID"] == i]
-        outputFilename_rep_words = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
-                                                                 'CoNLL_K_sent_rep_words'+str(Begin_K_sent_var),
-                                                                 '', '', '', '',
-                                                                 False,
-                                                                 True)
-        for l in doc_conll["Form"]:
-            if l in string.punctuation:
-                txt += l + " "
-            else:
-                txt += " " + l
+    # write the counts table + chart
+    if result_counts:
+        outFile = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', label,
+                                                          '', '', '', '', False, True)
+        pd.DataFrame(result_counts, columns=head_counts).to_csv(outFile, encoding='utf-8', index=False)
+        filesToOpen.append(outFile)
+        ch = charts_util.visualize_chart(chartPackage, dataTransformation, outFile, outputDir, [],
+                                         ['Nouns Proportion', 'Verbs Proportion', 'Adjectives Proportion',
+                                          'Proper-Nouns Proportion'],
+                                         chart_title="Word-class proportions in the first and last K (" +
+                                                     str(Begin_K_sent_var) + '-' + str(End_K_sent_var) + ") sentences",
+                                         outputFileNameType='k_sent', column_xAxis_label='Tags', count_var=0,
+                                         hover_label=[], groupByList=[], plotList=[], chart_title_label='')
+        if ch is not None:
+            filesToOpen.extend([ch] if isinstance(ch, str) else ch)
 
-        #txt.replace("  ", " ")
-        #print(txt)
-        from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text
-        sent = sentences = sentence_split_stanza_text(stanzaPipeLine(txt))
-        sentenceID = 0
-
-        for doc in doc_conll["Document"]:
-            DOC = doc
-            break
-
-        for s in sent:
-
-            sentenceID = sentenceID + 1
-
-            words = tokenize_stanza_text(stanzaPipeLine(s))
-
-            words = statistics_txt_util.excludeStopWords_list(words)
-
-            filtered_words = [word for word in words if word.isalpha()]
-
-            for wrdID, wrd in enumerate(filtered_words):
-                if sentenceID <= Begin_K_sent_var:
-                    result_rep_words_temp.append(["First", Begin_K_sent_var, wrd, wrdID+1, sentenceID, s, i, DOC])
-                    rep_words_first.append(wrd)
-
-                elif sentenceID > len(sentences) - End_K_sent_var:
-                    result_rep_words_temp.append(["Last", End_K_sent_var, wrd, wrdID+1, sentenceID, s, i, DOC])
-                    rep_words_last.append(wrd)
-
-        result_rep_words.extend([sublist for sublist in result_rep_words_temp if sublist[2] in rep_words_first and sublist[2] in rep_words_last])
-
-        df_rep_words = pd.DataFrame(result_rep_words, columns=head_rep_words)
-        if df_rep_words.empty:
-            outputFilename_rep_words = None
-        else:
-            df_rep_words.to_csv(outputFilename_rep_words, encoding='utf-8', index=False)
-            filesToOpen.append(outputFilename_rep_words)
-
-            columns_to_be_plotted_xAxis=[]
-            columns_to_be_plotted_yAxis=['Word']
-            count_var=1
-            outputFiles = charts_util.visualize_chart(chartPackage,dataTransformation,
-                                                            outputFilename_rep_words, outputDir,
-                                                            columns_to_be_plotted_xAxis,columns_to_be_plotted_yAxis,
-                                                            chart_title="Frequency Distribution of Repeated Words in First and Last K (" + str(Begin_K_sent_var)+'-'+str(End_K_sent_var) +") Sentences",
-                                                            outputFileNameType=str(Begin_K_sent_var)+'-'+str(End_K_sent_var)+'-sent_rep_words',
-                                                            column_xAxis_label='Words',
-                                                            count_var=count_var,
-                                                            hover_label=[],
-                                                            groupByList=[], # ['Document ID', 'Document'],
-                                                            plotList=[], #['Concreteness (Mean score)'],
-                                                            chart_title_label='') #'Concreteness Statistics')
-            if outputFiles!=None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
-
-
-
-
-
-
-
-
-
-
-
-
-    for i in range(1, max(conll["Document ID"])+1):
-        doc_conll = conll.loc[conll["Document ID"] == i]
-        outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
-                                                                 label,
-                                                                 '', '', '', '',
-                                                                 False,
-                                                                 True)
-        if max(doc_conll['Sentence ID']) <= 2 * Begin_K_sent_var:
-            if(doc_conll["Sentence ID"]<=Begin_K_sent_var):
-                ksentences_first = doc_conll.loc[doc_conll["Sentence ID"]]
-
-
-
-            else:
-                ksentences_last = doc_conll.loc[doc_conll["Sentence ID"]]
-
-        else:
-            ksentences_first = doc_conll.loc[(doc_conll["Sentence ID"] <= Begin_K_sent_var)]
-            ksentences_last = doc_conll.loc[(doc_conll["Sentence ID"] > max(doc_conll['Sentence ID']) - End_K_sent_var)]
-
-        #ksentences = ksentences_first + ksentences_last
-        word_count_first = len(ksentences_first['POS']) - ksentences_first['DepRel'].value_counts()["punct"]
-        verb_count_first = 0
-        noun_count_first = 0
-        adj_count_first = 0
-        pp_count_first = 0#proper nouns
-
-        word_count_last = len(ksentences_last['POS']) - ksentences_last['DepRel'].value_counts()["punct"]
-        verb_count_last = 0
-        noun_count_last = 0
-        adj_count_last = 0
-        pp_count_last = 0#proper nouns
-        for pos in ksentences_first['POS']:
-            if "NN" in pos: # nouns
-                noun_count_first +=1
-                if "NNP" in pos: # proper nouns
-                    pp_count_first += 1
-            elif "VB" in pos: # verbs
-                verb_count_first +=1
-            elif "JJ" in pos: # adjectives
-                adj_count_first +=1
-        # print("dataframe: ")
-        # print(ksentences)
-        for doc in ksentences_first['Document']:
-            DOC = doc # as doc is in CoNLL table, doc already as the hyperlink
-            break
-
-        for pos in ksentences_last['POS']:
-            if "NN" in pos: # nouns
-                noun_count_last +=1
-                if "NNP" in pos: # proper nouns
-                    pp_count_last += 1
-            elif "VB" in pos: # verbs
-                verb_count_last +=1
-            elif "JJ" in pos: # adjectives
-                adj_count_last +=1
-        # print("dataframe: ")
-        # print(ksentences)
-        for doc in ksentences_last['Document']:
-            DOC = doc # as doc is in CoNLL table, doc already as the hyperlink
-            break
-
-        temp_first =["First", Begin_K_sent_var, word_count_first, noun_count_first, noun_count_first / word_count_first,
-                      verb_count_first, verb_count_first / word_count_first, adj_count_first, adj_count_first / word_count_first,pp_count_first, pp_count_first / word_count_first, i, DOC]
-
-        temp_last = ["Last", End_K_sent_var, word_count_last, noun_count_last, noun_count_last / word_count_last,
-                      verb_count_last, verb_count_last / word_count_last, adj_count_last, adj_count_last / word_count_last,pp_count_last, pp_count_last / word_count_last, i, DOC]
-        result.append(temp_first)
-        result.append(temp_last)
-        df = pd.DataFrame(result, columns=head)
-        if df.empty:
-            outputFilename = None
-        else:
-            df.to_csv(outputFilename, encoding='utf-8', index=False)
-            filesToOpen.append(outputFilename)
-
-            columns_to_be_plotted_xAxis=[]
-            columns_to_be_plotted_yAxis=['Nouns Proportion','Verbs Proportion','Adjectives Proportion','Proper-Nouns Proportion']
-            count_var=0
-            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                            outputFilename, outputDir,
-                                                            columns_to_be_plotted_xAxis,columns_to_be_plotted_yAxis,
-                                                            chart_title="Frequency Distribution of Different Proportions in First and Last K (" + str(Begin_K_sent_var)+'-'+str(End_K_sent_var) + ") Sentences",
-                                                            outputFileNameType='k_sent',
-                                                            column_xAxis_label='Tags',
-                                                            count_var=count_var,
-                                                            hover_label=[],
-                                                            groupByList=[], # ['Document ID', 'Document'],
-                                                            plotList=[], #['Concreteness (Mean score)'],
-                                                            chart_title_label='') #'Concreteness Statistics')
-            if outputFiles!=None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
+    # write the bookend-repetition table + chart (rarest-in-corpus first = most distinctive)
+    if result_rep:
+        result_rep.sort(key=lambda r: r[7])
+        outFile = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
+                                                          label + '_rep_words', '', '', '', '', False, True)
+        pd.DataFrame(result_rep, columns=head_rep).to_csv(outFile, encoding='utf-8', index=False)
+        filesToOpen.append(outFile)
+        ch = charts_util.visualize_chart(chartPackage, dataTransformation, outFile, outputDir, [], ['Lemma'],
+                                         chart_title="Words repeated in BOTH the first and last K (" +
+                                                     str(Begin_K_sent_var) + '-' + str(End_K_sent_var) +
+                                                     ") sentences (bookend repetition)",
+                                         outputFileNameType=str(Begin_K_sent_var) + '-' + str(End_K_sent_var) +
+                                                            '-sent_rep_words',
+                                         column_xAxis_label='Words', count_var=1,
+                                         hover_label=[], groupByList=[], plotList=[], chart_title_label='')
+        if ch is not None:
+            filesToOpen.extend([ch] if isinstance(ch, str) else ch)
 
     return outputDir, filesToOpen
-
-

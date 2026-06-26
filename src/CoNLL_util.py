@@ -34,6 +34,39 @@ REQUIRED_COLUMNS = {'ID', 'Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel',
                     'Sentence ID', 'Document ID', 'Document'}
 
 
+# The Suite's CoNLL 'POS' column holds Penn Treebank tags (NN*, VB*, JJ*) from Stanford CoreNLP, but Universal
+# POS tags (NOUN/PROPN, VERB/AUX, ADJ) from Stanza and spaCy. These helpers accept either tag set so POS-based
+# analyses work regardless of the parser that produced the CoNLL table.
+def is_noun_POS(pos):
+    """True for a noun in either Penn (NN*) or Universal (NOUN/PROPN) tag sets."""
+    pos = str(pos)
+    return pos.startswith('NN') or pos in ('NOUN', 'PROPN')
+
+
+def is_proper_noun_POS(pos):
+    """True for a proper noun in either Penn (NNP*) or Universal (PROPN) tag sets."""
+    pos = str(pos)
+    return pos.startswith('NNP') or pos == 'PROPN'
+
+
+def is_verb_POS(pos):
+    """True for a verb (auxiliaries included, matching CoreNLP VB*) in Penn (VB*) or Universal (VERB/AUX)."""
+    pos = str(pos)
+    return pos.startswith('VB') or pos in ('VERB', 'AUX')
+
+
+def is_adjective_POS(pos):
+    """True for an adjective in either Penn (JJ*) or Universal (ADJ) tag sets."""
+    pos = str(pos)
+    return pos.startswith('JJ') or pos == 'ADJ'
+
+
+def is_adverb_POS(pos):
+    """True for an adverb in either Penn (RB*) or Universal (ADV) tag sets."""
+    pos = str(pos)
+    return pos.startswith('RB') or pos == 'ADV'
+
+
 def detect_CoNLL_package(headers):
     """Detect which NLP package generated the CoNLL table."""
     if 'feats' in headers:
@@ -199,6 +232,53 @@ def find_corpus_CoNLL(outputDir, inputFilename='', inputDir=''):
             matches = narrowed
     matches.sort(key=lambda p: os.path.getmtime(p), reverse=True)
     return matches
+
+
+def choose_corpus_CoNLL(window, outputDir, inputFilename='', inputDir=''):
+    """Pop a picker listing the CoNLL tables found for the current corpus (find_corpus_CoNLL), newest first,
+    labelled by their parser/corpus subfolder. Returns the chosen path, the sentinel '__BROWSE__' (no CoNLL
+    found, or the user chose to browse for another file), or None (the user cancelled)."""
+    import tkinter as tk
+    matches = find_corpus_CoNLL(outputDir, inputFilename, inputDir)
+    if not matches:
+        return '__BROWSE__'
+    result = {'value': None}
+    top = tk.Toplevel(window)
+    top.title('Available CoNLL tables')
+    top.transient(window)
+    top.grab_set()
+    tk.Label(top, text='Select a CoNLL table found for your corpus, or browse for another file:').pack(
+        padx=12, pady=(12, 6), anchor='w')
+    frame = tk.Frame(top)
+    frame.pack(padx=12, fill='both', expand=True)
+    sb = tk.Scrollbar(frame)
+    sb.pack(side='right', fill='y')
+    lb = tk.Listbox(frame, width=95, height=min(12, len(matches)), yscrollcommand=sb.set)
+    for m in matches:
+        # label by the parser/corpus subfolder + filename, which together identify the parse
+        lb.insert('end', os.path.join(os.path.basename(os.path.dirname(m)), os.path.basename(m)))
+    lb.pack(side='left', fill='both', expand=True)
+    sb.config(command=lb.yview)
+    lb.selection_set(0)
+
+    def do_select():
+        sel = lb.curselection()
+        if sel:
+            result['value'] = matches[sel[0]]
+            top.destroy()
+
+    def do_browse():
+        result['value'] = '__BROWSE__'
+        top.destroy()
+
+    lb.bind('<Double-Button-1>', lambda e: do_select())
+    btns = tk.Frame(top)
+    btns.pack(pady=10)
+    tk.Button(btns, text='Select', width=12, command=do_select).pack(side='left', padx=5)
+    tk.Button(btns, text='Browse for another file...', width=22, command=do_browse).pack(side='left', padx=5)
+    tk.Button(btns, text='Cancel', width=10, command=top.destroy).pack(side='left', padx=5)
+    top.wait_window()
+    return result['value']
 
 
 def open_analyzer_for_current_corpus(run_parser=False):
@@ -485,16 +565,13 @@ def get_nouns_verbs_CoNLL(inputFilename,output_dir):
 
     for index, row in conll_table.iterrows():
         # Check if cell value has length greq. than 2 since we're looking for VB* and NN*
-        if len(conll_table['POS'][index]) >= 2:
-            # Check if begins with VB
-            if "VB" in conll_table['POS'][index][0:2]:
-                # Starts with VB, add to verb set
-                verb_form_set.add(conll_table['Form'][index])
-                verb_lemma_set.add(conll_table['Lemma'][index])
-            # Check if begins with NN
-            elif 'NN' in conll_table['POS'][index][0:2]:
-                noun_form_set.add(conll_table['Form'][index])
-                noun_lemma_set.add(conll_table['Lemma'][index])
+        pos = conll_table['POS'][index]  # Penn (NN*/VB*) or Universal (NOUN/VERB) - is_*_POS handle both + NaN
+        if is_verb_POS(pos):
+            verb_form_set.add(conll_table['Form'][index])
+            verb_lemma_set.add(conll_table['Lemma'][index])
+        elif is_noun_POS(pos):
+            noun_form_set.add(conll_table['Form'][index])
+            noun_lemma_set.add(conll_table['Lemma'][index])
 
     verbs_form_df = pd.DataFrame(verb_form_set, columns = ['Verbs'])
     verbs_lemma_df = pd.DataFrame(verb_lemma_set, columns = ['Verbs'])
