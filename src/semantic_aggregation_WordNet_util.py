@@ -269,9 +269,10 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         return filesToOpen
 
     if not_found_count > 0:
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Invalid Input',
-            "WordNet " + noun_verb + " aggregation.\n\nSome words in the list to be aggregated do not exist in WordNet for " +
-            noun_verb + ".\n\n" + str(not_found_count) + " word(s) not found.")
+        found_count = sum(1 for r in rows if r['WordNet Category'] != 'Not found')
+        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Aggregation results',
+            "WordNet " + noun_verb + " aggregation.\n\n" + str(found_count) + " of " + str(len(rows)) +
+            " word(s) were classified into WordNet categories; " + str(not_found_count) + " were not found.")
 
     all_keys = set()
     for r in rows:
@@ -351,10 +352,13 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, nou
                                                    'Started running category charts by sentence index at',
                                                    True, '', True, '', False)
 
+    import CoNLL_util
     if noun_verb == 'NOUN':
-        checklist = ['NN', 'NNP', 'NNPS', 'NNS']
-    else:
-        checklist = ['VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ']
+        pos_match = CoNLL_util.is_noun_POS
+    elif noun_verb == 'VERB':
+        pos_match = CoNLL_util.is_verb_POS
+    else:  # both noun and verb (Penn or Universal POS tags)
+        pos_match = lambda p: CoNLL_util.is_noun_POS(p) or CoNLL_util.is_verb_POS(p)
     # read in the CoreNLP CoNLL table
     connl = pd.read_csv(ConnlTable,encoding='utf-8',on_bad_lines='skip')
     # read in the dictionary file to be used to filter CoNLL values
@@ -373,7 +377,7 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, nou
                        "The file \n\n" + ConnlTable + "\n\ndoes not appear to be a CoNLL table with expected column names: Form,Lemma,POS, SentenceID, DocumentID, Document.\n\nPlease, select the right input file and try again.")
         return
     # filter the list by noun or verb
-    connl = connl[connl['POS'].isin(checklist)]
+    connl = connl[connl['POS'].apply(pos_match)]
     # detect the word column (Term/Word/Lemma) and the category column for ANY resource
     #   (WordNet 'WordNet category', VerbNet 'VerbNet category/class', FrameNet 'FrameNet category/frame')
     _cols = list(wn_dict.columns)
@@ -413,24 +417,37 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, nou
                 for i in range(Row_list[index + 1][4] - 1, Row_list[index][4], -1):
                     Row_list.insert(index + 1, ['', '', '', '', i, Row_list[index][5], Row_list[index][6]])
     df = pd.DataFrame(Row_list,
-                      index=['Form', 'Lemma', 'POS', category_label, 'Sentence ID', 'Document ID', 'Document'])
-    outputFilename = charts_util.add_missing_IDs(df,outputFilename)
+                      columns=['Form', 'Lemma', 'POS', category_label, 'Sentence ID', 'Document ID', 'Document'])
+    outputFilename = charts_util.add_missing_IDs(df, outputFilename)
+    if outputFilename:
+        filesToOpen.append(outputFilename)  # the by-sentence category data table
 
-    if chartPackage!='No charts':
-        outputFiles = statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
-                                                                       ConnlTable,
-                                                                       df,
-                                                                       outputDir,
-                                                                       openOutputFiles,
-                                                                       
-                                                                       chartPackage,
-                                                                       dataTransformation,
-                                                                       [[4, 5]],
-                                                                       [category_label], ['Form'],
-                                                                       ['Sentence ID', 'Document ID', 'Document'],
-                                                                       )
-        if len(outputFiles) > 0:
-            filesToOpen.extend(outputFiles)
+    if chartPackage != 'No charts':
+        # Chart directly, bypassing the broken statistics_csv_util.compute_csv_column_frequencies (it builds
+        # 'Frequency_<col>' columns but pivots on a plain 'Frequency' it never creates - see tech-debt notes).
+        # Count each category per sentence, pivot to one column per category, and line-chart across sentence index.
+        try:
+            freq = df.groupby(['Document ID', 'Document', 'Sentence ID', category_label]).size().reset_index(name='Frequency')
+            pivot = freq.pivot_table(index=['Document ID', 'Document', 'Sentence ID'],
+                                     columns=category_label, values='Frequency', fill_value=0).reset_index()
+            freqFilename = os.path.join(outputDir, os.path.splitext(os.path.basename(outputFilename))[0] + '_by_sentence_frequency.csv')
+            pivot.to_csv(freqFilename, index=False, encoding='utf-8')
+            filesToOpen.append(freqFilename)
+            cat_cols = [c for c in pivot.columns
+                        if c not in ('Document ID', 'Document', 'Sentence ID') and not str(c).lower().startswith('not ')]
+            if cat_cols:
+                ch = charts_util.visualize_chart(chartPackage, dataTransformation, freqFilename, outputDir,
+                                                 ['Sentence ID'], cat_cols,
+                                                 chart_title=str(category_label) + ' frequency by sentence index',
+                                                 outputFileNameType='by_sentence_index',
+                                                 column_xAxis_label='Sentence index', count_var=0,
+                                                 hover_label=[], groupByList=[], plotList=[], chart_title_label='')
+                if ch:
+                    filesToOpen.extend([ch] if isinstance(ch, str) else ch)
+        except Exception as e:
+            mb.showwarning('By-sentence chart',
+                           "The by-sentence category TABLE was produced, but the chart could not be rendered:\n\n"
+                           + str(e) + "\n\nThe table is here:\n" + str(outputFilename))
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running WordNet charts by sentence index at', True, '', True,
                                        startTime)

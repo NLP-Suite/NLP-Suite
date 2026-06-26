@@ -456,12 +456,12 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
     if inputDataFrame is not None:
         if len(inputDataFrame)!=0:
             data = inputDataFrame
+        headers = list(inputDataFrame.columns)  # else 'headers' is undefined when a DataFrame is passed
     else:
         with open(inputFilename,encoding='utf-8',errors='ignore') as infile:
             reader = csv.reader(x.replace('\0', '') for x in infile)
             headers = next(reader)
         header_indices = [i for i, item in enumerate(headers) if item]
-        import pandas as pd
         data = pd.read_csv(inputFilename, usecols=header_indices,encoding='utf-8',on_bad_lines='skip')
 
     # remove hyperlink before processing

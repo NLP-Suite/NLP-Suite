@@ -1218,7 +1218,7 @@ def select_path_from_list(window, paths, intro_text, title='Available files'):
     top.title(title)
     top.transient(window)
     top.grab_set()
-    tk.Label(top, text=intro_text).pack(padx=12, pady=(12, 6), anchor='w')
+    tk.Label(top, text=intro_text, justify='left', wraplength=820).pack(padx=12, pady=(12, 6), anchor='w')
     frame = tk.Frame(top)
     frame.pack(padx=12, fill='both', expand=True)
     sb = tk.Scrollbar(frame)

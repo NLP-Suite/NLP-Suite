@@ -113,9 +113,9 @@ def _aggregate_flat(resource, category_fn, inputFile, outputDir, noun_verb, char
             % (resource, noun_verb, resource, noun_verb, inputFile))
         return filesToOpen
     if not_found > 0:
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Invalid Input',
-            "%s %s aggregation.\n\n%d word(s) were not found in %s and are labelled 'Not found'."
-            % (resource, noun_verb, not_found, resource))
+        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Aggregation results',
+            "%s %s aggregation.\n\n%d of %d word(s) were classified into %s categories; %d were not found (labelled 'Not found')."
+            % (resource, noun_verb, len(words) - not_found, len(words), resource, not_found))
     with open(csv1, 'w', encoding='utf-8', newline='') as f:
         wtr = csv.DictWriter(f, fieldnames=['Word', cat_col]); wtr.writeheader(); wtr.writerows(rows)
     with open(csv2, 'w', encoding='utf-8', newline='') as f:

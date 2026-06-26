@@ -35,11 +35,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         searchedCoNLLField, searchField_kw, postag, deprel, co_postag, co_deprel, Begin_K_sent_var, End_K_sent_var):
 
     # 'Run the default parser' option: this analyzer needs a CoNLL table; if the user has none, open the
-    # Parsers/Annotators GUI (it parses the corpus and reopens the analyzer with the fresh CoNLL) and close
-    # this empty analyzer. Checked first so it works even when no valid CoNLL is loaded.
+    # Parsers/Annotators GUI, which parses the corpus and reopens the analyzer with the fresh CoNLL. We do NOT
+    # close this window: if the parse stalls/fails the user still has the analyzer (a fresh one opens on success;
+    # the empty one can simply be closed). Checked first so it works even when no valid CoNLL is loaded.
     if run_parser_var.get():
+        IO_user_interface_util.timed_alert(GUI_util.window, 5000, 'Running the parser',
+            'The Parsers/Annotators GUI is opening in a separate window. Run it there; when it finishes a NEW '
+            'CoNLL Table Analyzer will open with the parsed CoNLL table. You can then close THIS (empty) window.',
+            True, '', True)
         run_script_util.run_script_detached("parsers_annotators_main.py", "open_analyzer")
-        GUI_util.window.destroy()
         return
 
     global recordID_position, documentId_position, data, all_CoNLL_records
@@ -265,14 +269,16 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         noun_verb_list = [nv_sel] if nv_sel in ('NOUN', 'VERB') else ['NOUN', 'VERB']
         adv_startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                                            'Started running CoNLL Advanced analyses at', True, '', True, '', False)
+        # all Advanced analyses write into a dedicated subdirectory (keeps them out of the cluttered main output dir)
+        adv_outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='CoNLL_Advanced_analyses', silent=True) or outputDir
         if sel == '*' or sel == 'Classification of Nouns & Verbs via FrameNet, VerbNet, WordNet':
             import semantic_aggregation_util, config_util
             cfg = config_util.read_NLP_package_language_config()
             cfg_language = cfg[4] if len(cfg) > 4 else ''
-            noun_form_csv, noun_lemma_csv, verb_form_csv, verb_lemma_csv = CoNLL_util.get_nouns_verbs_CoNLL(inputFilename, outputDir)
+            noun_form_csv, noun_lemma_csv, verb_form_csv, verb_lemma_csv = CoNLL_util.get_nouns_verbs_CoNLL(inputFilename, adv_outputDir)
             for noun_verb in noun_verb_list:
                 lemma_csv = noun_lemma_csv if noun_verb == 'NOUN' else verb_lemma_csv
-                outFiles = semantic_aggregation_util.aggregate(knowledge_base_menu_var.get(), '', lemma_csv, outputDir,
+                outFiles = semantic_aggregation_util.aggregate(knowledge_base_menu_var.get(), '', lemma_csv, adv_outputDir,
                                                                config_filename, noun_verb, openOutputFiles, chartPackage,
                                                                dataTransformation, cfg_language, [])
                 if outFiles:
@@ -280,39 +286,38 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         if sel == '*' or sel == 'Word Sense Disambiguation (WSD)':
             import semantic_aggregation_util
             for noun_verb in noun_verb_list:
-                outFiles = semantic_aggregation_util.wsd_aggregate_WordNet(inputFilename, outputDir, noun_verb, chartPackage, dataTransformation)
+                outFiles = semantic_aggregation_util.wsd_aggregate_WordNet(inputFilename, adv_outputDir, noun_verb, chartPackage, dataTransformation)
                 if outFiles:
                     filesToOpen.extend(outFiles)
         if sel == '*' or sel == 'Zoom OUT/UP by Sentence Index':
-            if dict_WordNet_filename_var.get() == '':
-                # the aggregation DICTIONARY is the Zoom OUT/UP output (NLP_*_UP_*.csv): each lemmatized word
-                # mapped to its WordNet/VerbNet/FrameNet category. Restrict the picker to those, with a fallback.
-                dicts, seen = [], set()
-                for base in CoNLL_util._corpus_search_roots(outputDir, inputFilename, GUI_util.input_main_dir_path.get()):
-                    for r, d, fs in os.walk(base):
-                        for f in fs:
-                            fl = f.lower()
-                            p = os.path.join(r, f)
-                            if fl.endswith('.csv') and '_up_' in fl and 'frequency' not in fl and p not in seen:
-                                seen.add(p)
-                                dicts.append(p)
-                dicts.sort(key=os.path.getmtime, reverse=True)
-                intro = ("Select the aggregation DICTIONARY csv produced by the 'Zoom OUT/UP' option - it maps each "
-                         "lemmatized word to its WordNet / VerbNet / FrameNet category. 'By Sentence ID' uses it to "
-                         "show where those categories occur across the sentences of your CoNLL table. Or browse for another file:")
-                chosen = IO_files_util.select_path_from_list(GUI_util.window, dicts, intro,
-                                                             title='Available aggregation dictionaries (Zoom OUT/UP output)')
-                if chosen is None:
-                    return
-                if chosen == '__BROWSE__':
-                    chosen = tk.filedialog.askopenfilename(title='Select the aggregation dictionary csv file', filetypes=[("csv files", "*.csv")])
-                    if not chosen:
-                        return
-                dict_WordNet_filename_var.set(chosen)
-            import semantic_aggregation_WordNet_util
+            import semantic_aggregation_WordNet_util, semantic_aggregation_util, config_util
+            # No dictionary file-picking: the resource comes from the Knowledge base selector, and the aggregation
+            # dictionary is GENERATED on the fly (Zoom OUT/UP) from the corpus, then plotted by sentence. This keeps
+            # the same two selectors (Knowledge base + NOUN/VERB) driving every Advanced option. A browse fallback
+            # remains for an externally-made dictionary (used only if generation yields nothing).
+            resource = knowledge_base_menu_var.get()
+            if resource in ('', '*'):
+                resource = 'WordNet'  # by-sentence default when no specific resource is selected
+            cfg = config_util.read_NLP_package_language_config()
+            cfg_language = cfg[4] if len(cfg) > 4 else ''
+            nf_csv, noun_lemma_csv, vf_csv, verb_lemma_csv = CoNLL_util.get_nouns_verbs_CoNLL(inputFilename, adv_outputDir)
             for noun_verb in noun_verb_list:
-                outputFilename = IO_files_util.generate_output_file_name(inputFilename, outputDir, '.csv', 'WordNet_' + noun_verb, 'conll')
-                outFiles = semantic_aggregation_WordNet_util.Wordnet_bySentenceID(inputFilename, dict_WordNet_filename_var, outputFilename, outputDir, noun_verb, openOutputFiles, chartPackage, dataTransformation)
+                lemma_csv = noun_lemma_csv if noun_verb == 'NOUN' else verb_lemma_csv
+                # generate the aggregation dictionary (Zoom OUT/UP) for this resource + class
+                agg_files = semantic_aggregation_util.aggregate(resource, '', lemma_csv, adv_outputDir, config_filename,
+                                                                noun_verb, openOutputFiles, chartPackage, dataTransformation,
+                                                                cfg_language, [])
+                dict_path = next((f for f in (agg_files or [])
+                                  if '_up_' in os.path.basename(f).lower()
+                                  and 'frequency' not in os.path.basename(f).lower()), '')
+                if not dict_path:  # fallback: let the user browse for an external dictionary
+                    dict_path = tk.filedialog.askopenfilename(
+                        title="Select an aggregation dictionary csv for %s %s" % (resource, noun_verb),
+                        filetypes=[("csv files", "*.csv")])
+                    if not dict_path:
+                        continue
+                outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', adv_outputDir, '.csv', resource + '_' + noun_verb, 'conll')
+                outFiles = semantic_aggregation_WordNet_util.Wordnet_bySentenceID(inputFilename, dict_path, outputFilename, adv_outputDir, noun_verb, openOutputFiles, chartPackage, dataTransformation)
                 if outFiles:
                     if isinstance(outFiles, str):
                         filesToOpen.append(outFiles)
@@ -323,7 +328,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                 mb.showwarning(title='K sentences required',
                                message="The 'Beginning-End K sentences analyzer (repetition finder)' needs the Begin K-sentences and End K-sentences values.\n\nPlease enter them and try again.")
             else:
-                temp_outputDir, outFiles = CoNLL_k_sentences_util.k_sent(inputFilename, outputDir, chartPackage, dataTransformation, Begin_K_sent_var, End_K_sent_var)
+                temp_outputDir, outFiles = CoNLL_k_sentences_util.k_sent(inputFilename, adv_outputDir, chartPackage, dataTransformation, Begin_K_sent_var, End_K_sent_var)
                 if outFiles:
                     filesToOpen.extend(outFiles)
         IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
@@ -596,7 +601,20 @@ def clear(e):
     compute_sentence_var.set(0)
     activate_all_options()
     GUI_util.clear("Escape")
-window.bind("<Escape>", clear)
+
+
+def clear_on_escape(e):
+    # Escape resets the options (clear) AND additionally clears the input CoNLL textbox + the run-parser checkbox.
+    # (clear() itself must NOT clear the csv, because changed_filename calls clear() right after loading a CoNLL.)
+    global error
+    error = True
+    clear(e)
+    csv_file_var.set('')
+    run_parser_var.set(0)
+    GUI_util.run_button.configure(state='disabled')
+
+
+window.bind("<Escape>", clear_on_escape)
 
 def check_csv_file_headers(csv_file):
     cannotRun=False
@@ -1125,12 +1143,11 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          'Please, tick the \'GUIs available\' checkbox if you wish to see and select the range of other available tools suitable for searches and style analysis.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "'Run the default parser (Open GUI)' to open the Parsers &n Annotator GUI." + GUI_IO_util.msg_Esc)
+                                  "Tick 'Run the default parser (Open GUI)' when you do not yet have a CoNLL table: it opens the Parsers & Annotators GUI (with the parser and 'Open CoNLL table analyzer' pre-ticked). Run it there to parse your corpus with the configured parser, and this analyzer reopens loaded with the fresh CoNLL table." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox to analyze the CoNLL table for different types of clauses (e.g., noun-phrase, NP, verb phrase, VP), nouns (singular, plural, proper nouns, subject and object), verbs (modality, tense, voice), functions words (or junk/stop words) (e.g., articles/determinants, auxiliaries, conjunctions, prepositions, pronouns), adjectives, adverbs, and ratios of word classes (e.g., content words vs. junk words).\n\nThe CoNLL table analyzer works with CoNLL tables produced by any parser (spaCy, Stanford CoreNLP, Stanza).\n\nDEPENDENCY vs. CONSTITUENCY PARSING\nAll parsers (spaCy, Stanza, Stanford CoreNLP) produce dependency parse trees, which represent word-to-word grammatical relations (e.g., nsubj, obj, advmod). These relations power noun, verb, function word, and search analyses.\n\nConstituency parsing produces phrase-structure trees that group words into nested phrases (NP, VP, S, SBAR, PP, etc.). ONLY the Stanford CoreNLP PCFG parser and the Stanza constituency parser produce clause tags. No other parser provides clause tags. Without clause tags, the Clause analysis option will be skipped.\n\nCLAUSE TAGS\nClause tags label each token with its lowest enclosing phrase type (e.g., S for main clause, SBAR for subordinate clause, NP for noun phrase, VP for verb phrase). These tags enable analysis of clause types, clause length, and clause distribution across a text.\n\nTHE 'feats' COLUMN (Stanza only)\nStanza exports morphological features in the 'feats' column (e.g., Mood=Ind, Tense=Past, VerbForm=Fin, Number=Sing). This enables analysis of verb mood (indicative, imperative, subjunctive), verb tense (past, present, future), verb form (finite, infinitive, participle, gerund), and noun number (singular, plural). Neither spaCy nor Stanford CoreNLP export this information. These features are especially valuable for languages with rich morphology (e.g., Italian, German, French).\n\nNote: The Stanford CoreNLP neural network parser does NOT produce clause tags (only the PCFG parser - Probabilistic Context Free Grammar). spaCy does not support constituency parsing." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to aggregate nouns and verbs in the CoNLL table (POS NN* and POS VB*) via FrameNet, VerbNet, and WordNet." \
-                                  "\n\nCAVEAT: For VERBS, the 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies."+ GUI_IO_util.msg_Esc)
+                                  "Please, tick 'Advanced CoNLL analyses' and pick an option from the dropdown:\n\n- Classification of Nouns & Verbs: aggregate the nouns/verbs in the CoNLL table into FrameNet, VerbNet, and WordNet categories.\n- Word Sense Disambiguation (WSD): disambiguate each noun/verb in its sentence context (Lesk algorithm) and aggregate to the context-correct WordNet category.\n- Zoom OUT/UP by Sentence Index: using an aggregation dictionary (a Zoom OUT/UP output mapping words to categories), plot where those WordNet/VerbNet/FrameNet categories occur across the sentences.\n- Beginning-End K sentences (repetition finder): content words that repeat in BOTH the first K and the last K sentences of a document (bookend repetition), plus counts/proportions of word classes in those sentences.\n\nBoth nouns and verbs are processed by default; use the NOUN/VERB selector to restrict to one.\n\nCAVEAT: For VERBS, the WordNet 'stative' category includes the auxiliary 'be' and 'possession' includes 'have'/'get'; you may wish to exclude these auxiliaries from frequencies." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checbox to search the CoNLL table for a specific token/word. Enter the CASE SENSITIVE token (i.e., word) to be searched (enter * for any word).\n\nENTER * TO SEARCH FOR ANY TOKEN/WORD.\n\nThe EXACT word will be searched (e.g., if you enter 'American', any instances of 'America' will not be found).\n\nDO NOT USE QUOTES WHEN ENTERING A SEARCH TOKEN. n\nThe algorithm will search all the tokens related to this token in the CoNLL table. For example, if the the token wife is entered, the algorithm will search in each dependency tree (i.e., each sentence).\n\nIn OUTPUT the algorithm will produce several charts and a Gephi network graphs of the relationship between searched and co-occurring words." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
