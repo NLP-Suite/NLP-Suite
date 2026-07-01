@@ -99,11 +99,10 @@ def run(inputFilename, inputDir, outputDir,
             if len(files_to_open) > 0:
                 outputCorefedDir = os.path.dirname(files_to_open[0])
 
-        elif 'BERT' in Coref or 'spaCy' in Coref:
-            # ── neural coreference paths: BERT (fastcoref) and spaCy (coreferee) ──
+        elif 'BERT' in Coref:
+            # ── neural coreference path: BERT (fastcoref) ──
             import coreference_neural_util
-            engine_fn = (coreference_neural_util.fastcoref_coref if 'BERT' in Coref
-                         else coreference_neural_util.coreferee_coref)
+            engine_fn = coreference_neural_util.fastcoref_coref
             files_to_open, error_indicator = engine_fn(
                 config_filename, inputFilename, inputDir, outputDir,
                 openOutputFiles, chartPackage, dataTransformation,
@@ -291,7 +290,7 @@ CoRef_lb = tk.Label(window, text='Coreference resolution')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,CoRef_lb,True)
 
 CoRef_var.set('Stanford CoreNLP')
-CoRef_var_menu = tk.OptionMenu(window,CoRef_var,'Stanford CoreNLP','Stanza','BERT','spaCy')
+CoRef_var_menu = tk.OptionMenu(window,CoRef_var,'Stanford CoreNLP','Stanza','BERT')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.coreference_CoRef_var_menu_pos, y_multiplier_integer,
                     CoRef_var_menu, False, False, True, False,
@@ -307,11 +306,6 @@ def activate_options(*args):
                                "downloads the model (~500 MB) and needs an internet connection.\n\n"
                                "Unlike CoreNLP/Stanza (pronominal only), it also clusters nominal mentions, "
                                "but the NLP Suite replaces only pronouns with their referent.")
-    elif selected == 'spaCy':
-        mb.showwarning(title='spaCy coreference (coreferee)',
-                       message="spaCy coreference uses the 'coreferee' component in the spaCy pipeline (English only).\n\n"
-                               "It requires: pip install coreferee, python -m coreferee install en, and a spaCy "
-                               "English model (e.g. python -m spacy download en_core_web_lg).")
 CoRef_var.trace('w',activate_options)
 
 # CoRef_var.set(1)

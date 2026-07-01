@@ -46,12 +46,11 @@ tensorflow-hub
 tf-keras
 bert-extractive-summarizer
 
-# Coreference resolution (neural engines for the Coreference GUI)
-# fastcoref -> the 'BERT' option (SpanBERT/LingMess); coreferee -> the 'spaCy' option.
-# Their models download on first use (fastcoref self-downloads; spaCy + coreferee models via
-# coreference_neural_util's one-time auto-download).
+# Coreference resolution (neural engine for the Coreference GUI)
+# fastcoref -> the 'BERT' option (SpanBERT/LingMess); its model self-downloads on first use.
+# NOTE: coreferee (the former 'spaCy' option) was removed - it pins spacy<3.6, which forces the
+# whole suite's spaCy stack down into un-buildable source dists and breaks the PyInstaller build.
 fastcoref
-coreferee
 
 # Topic modeling
 bertopic
