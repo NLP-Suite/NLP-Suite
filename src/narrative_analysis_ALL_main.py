@@ -43,6 +43,8 @@ def run(inputFilename,inputdirname, outdirname,
         action_var,
         action_POS_var,
         action_WordNet_var,
+        action_VerbNet_var,
+        action_FrameNet_var,
         action_DBpedia_YAGO_var,
         SVO_var,
         shape_stories_var,
@@ -70,6 +72,8 @@ def run(inputFilename,inputdirname, outdirname,
         action_var==False and \
         action_POS_var==False and \
         action_WordNet_var==False and \
+        action_VerbNet_var==False and \
+        action_FrameNet_var==False and \
         action_DBpedia_YAGO_var==False and \
         SVO_var==False and \
         shape_stories_var==False and \
@@ -88,7 +92,10 @@ def run(inputFilename,inputdirname, outdirname,
             return
         run_script_util.run_script("NER_main.py")
 
-    if characters_WordNet_var==True or space_WordNet_var == True or action_WordNet_var == True:
+    # WordNet / VerbNet / FrameNet for characters, space, and action all open the semantic
+    # aggregation GUI, which aggregates nouns/verbs via any of the three lexical databases.
+    if characters_WordNet_var==True or space_WordNet_var == True or action_WordNet_var == True \
+            or action_VerbNet_var == True or action_FrameNet_var == True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('semantic_aggregation_main.py')==False:
             return
         run_script_util.run_script("semantic_aggregation_main.py")
@@ -177,6 +184,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             action_var.get(),
                             action_POS_var.get(),
                             action_WordNet_var.get(),
+                            action_VerbNet_var.get(),
+                            action_FrameNet_var.get(),
                             action_DBpedia_YAGO_var.get(),
                             SVO_var.get(),
                             shape_stories_var.get(),
@@ -200,7 +209,10 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for Narrative Analysis'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = GUI_util.config_filename_selected_config.get()
+# hardcode the default config here (as every other GUI does): at module-init time
+# GUI_util.config_filename_selected_config is not yet populated and .get() returns '', which makes
+# the startup I/O check read an empty config and falsely report the INPUT/OUTPUT fields as missing
+config_filename = 'NLP_default_IO_config.csv'
 
 # The 4 values of config_option refer to:
 #   input file
@@ -249,6 +261,8 @@ space_DBpedia_YAGO_var = tk.IntVar()
 action_var = tk.IntVar()
 action_POS_var = tk.IntVar()
 action_WordNet_var = tk.IntVar()
+action_VerbNet_var = tk.IntVar()
+action_FrameNet_var = tk.IntVar()
 action_DBpedia_YAGO_var = tk.IntVar()
 
 SVO_var = tk.IntVar()
@@ -359,12 +373,24 @@ action_WordNet_var.set(0)
 action_WordNet_checkbox = tk.Checkbutton(window, text="Via WordNet", variable=action_WordNet_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_2nd_column,y_multiplier_integer,action_WordNet_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.narrative_analysis_2nd_column,
-                                   "Look up action verbs in WordNet for semantic relations (hypernyms, synonyms, verb frames).")
+                                   "Look up action verbs in WordNet for semantic relations (hypernyms, synonyms, verb frames). Opens the semantic aggregation GUI.")
+
+action_VerbNet_var.set(0)
+action_VerbNet_checkbox = tk.Checkbutton(window, text="Via VerbNet", variable=action_VerbNet_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_3rd_column,y_multiplier_integer,action_VerbNet_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.narrative_analysis_3rd_column,
+                                   "Aggregate action verbs into VerbNet classes (thematic-role verb classes, e.g. murder-42.1). Opens the semantic aggregation GUI.")
+
+action_FrameNet_var.set(0)
+action_FrameNet_checkbox = tk.Checkbutton(window, text="Via FrameNet", variable=action_FrameNet_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_4th_column,y_multiplier_integer,action_FrameNet_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.narrative_analysis_4th_column,
+                                   "Aggregate action verbs into FrameNet frames (event/scene frames such as Motion, Killing, Cause_harm). Opens the semantic aggregation GUI.")
 
 action_DBpedia_YAGO_var.set(0)
 action_DBpedia_YAGO_checkbox = tk.Checkbutton(window, text="Via DBpedia/YAGO", variable=action_DBpedia_YAGO_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_3rd_column,y_multiplier_integer,action_DBpedia_YAGO_checkbox,
-                                   False, False, True, False, 90, GUI_IO_util.narrative_analysis_3rd_column,
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_5th_column,y_multiplier_integer,action_DBpedia_YAGO_checkbox,
+                                   False, False, True, False, 90, GUI_IO_util.narrative_analysis_5th_column,
                                    "Annotate action verbs using DBpedia/YAGO knowledge bases for encyclopedic information.")
 
 # ── 3. Characters in action: Who does/says What ──
@@ -472,6 +498,8 @@ def clear(e):
     characters_movement_var.set(0)
     action_POS_var.set(0)
     action_WordNet_var.set(0)
+    action_VerbNet_var.set(0)
+    action_FrameNet_var.set(0)
     action_DBpedia_YAGO_var.set(0)
     SVO_var.set(0)
     dialogue_quotes_var.set(0)
@@ -525,7 +553,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     # 1. Characters: Who & Whom (coreference + semantic space row)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox to resolve coreferences: who do all those 'he', 'she', 'they' refer to? (via CoreNLP). Or tick 'Characters in their semantic space' to explore how close characters are to other words (actions, places, concepts) using BERT embeddings.")
     # 2. Action: What (label floats above)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkboxes to extract action via the POS annotator (Part of Speech) with verb tags, WordNet or the knowledge bases DBpedia/YAGO.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkboxes to extract action via the POS annotator (Part of Speech) with verb tags, one of the three lexical databases WordNet, VerbNet or FrameNet (which aggregate the action verbs into semantic categories - WordNet senses, VerbNet classes, or FrameNet frames - via the semantic aggregation GUI), or the knowledge bases DBpedia/YAGO.")
     # 3. Characters in action: Who does/says What (label floats above)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkboxes to extract SVO triplets (Subject-Verb-Object), dialogue (who says what, via CoreNLP quote annotator), or narrative elements.")
     # 4. Scenes/settings: When & Where (time + space row; label floats above)

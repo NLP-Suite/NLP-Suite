@@ -464,7 +464,7 @@ head, scriptName = os.path.split(os.path.basename(__file__))
 #   output dir
 config_input_output_numeric_options=[0,1,0,1]
 
-GUI_util.set_window(GUI_size, GUI_label, GUI_util.config_filename_selected_config.get(), config_input_output_numeric_options)
+GUI_util.set_window(GUI_size, GUI_label, 'NLP_default_IO_config.csv', config_input_output_numeric_options)
 
 window=GUI_util.window
 config_input_output_numeric_options=GUI_util.config_input_output_numeric_options

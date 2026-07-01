@@ -136,7 +136,9 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for Annotating Documents in HTML Format'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = GUI_util.config_filename_selected_config.get()
+# hardcode the default config at module init: config_filename_selected_config is empty this early,
+# which would make the startup I/O check falsely report the INPUT/OUTPUT fields as missing
+config_filename = 'NLP_default_IO_config.csv'
 
 # The 4 values of config_option refer to:
 #   input file

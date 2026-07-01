@@ -252,6 +252,9 @@ def nominalization(inputFilename,inputDir, outputDir, config_filename, config_in
     nominalized_verbs_list = []
     result_all_documents = []
     result_true_false_each_noun_all_documents=[]
+    # accumulate nominalization counts across ALL documents so the frequency csv/chart is a single
+    # global distribution (not per-document counts, which repeat words and are unsorted)
+    nominalized_cnt_total = Counter()
 
     counter_nominalized_list.append(['Noun/Nominalized Verb', 'Frequency'])
 
@@ -294,8 +297,11 @@ def nominalization(inputFilename,inputDir, outputDir, config_filename, config_in
         result_all_documents.extend(result_specific_document)
         result_true_false_each_noun_all_documents.extend(result_true_false_each_noun)
 
-        for word, freq in nominalized_cnt.most_common():
-            counter_nominalized_list.append([word, freq])
+        nominalized_cnt_total.update(nominalized_cnt)
+
+    # build the frequency csv from the corpus-wide totals, sorted by frequency (descending)
+    for word, freq in nominalized_cnt_total.most_common():
+        counter_nominalized_list.append([word, freq])
 
     IO_csv_util.list_to_csv(GUI_util.window, result_all_documents,
                             outputFilename_nom_verb_freq_bySentence)
@@ -342,15 +348,19 @@ def nominalization(inputFilename,inputDir, outputDir, config_filename, config_in
             headers = IO_csv_util.get_csvfile_headers (inputFilename)
             groupBy = []
             X_axis_label=''
+            # count_var=1 counts the values of the FIRST column in each [x, y] pair and puts them on
+            # the X-axis (the second column only supplies the series label). To plot frequencies BY
+            # DATE / BY DOCUMENT, the X-axis column (Date=4, Document=3) must be the first element -
+            # previously it was 0 (the Noun), so the chart showed nouns on the X-axis mislabeled 'Date'.
             if 'Date' in headers:
-                columns_to_be_plotted_yAxis = [[0, 4]]
+                columns_to_be_plotted_yAxis = [[4, 4]]
                 X_axis_label = 'Date'
                 groupBy=['Date']
             else:
                 if 'Document' in headers:
                     X_axis_label = 'Document'
                     groupBy=['Document']
-                    columns_to_be_plotted_yAxis = [[0, 3]]
+                    columns_to_be_plotted_yAxis = [[3, 3]]
 
             # column_xAxis_label='Nominalized verb'
             # columns_to_be_plotted_xAxis=[]

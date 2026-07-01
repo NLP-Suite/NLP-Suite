@@ -12,9 +12,6 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-# if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Nominalization",['tkinter','nltk','pywsd','wn','csv','re','os','collections'])==False:
-#     sys.exit(0)
-
 import os
 import tkinter as tk
 import IO_files_util
@@ -67,7 +64,10 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for Nominalization'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = GUI_util.config_filename_selected_config.get()
+# hardcode the default config here (as every other GUI does): at module-init time
+# GUI_util.config_filename_selected_config is not yet populated and .get() returns '', which makes
+# the startup I/O check read an empty config and falsely report the INPUT/OUTPUT fields as missing
+config_filename = 'NLP_default_IO_config.csv'
 
 # The 4 values of config_option refer to:
 #   input file
@@ -125,7 +125,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, untick the checkbox if you do not want to check nominalized verbs for their typical ending (e.g., ing, ion; see TIPS file).\n\nWhen the checkbox is ticked, nomanilized verbs will also be checked against the values listed in the nominalized-verbs-list.csv in the lib/wordList subdirectory that users can edit.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, untick the checkbox if you do not want to check nominalized verbs for their typical ending (e.g., ing, ion; see TIPS file).\n\nWhen the checkbox is ticked, nomanilized verbs will also be checked against the values listed in the nominalized-verbs-list.csv in the lib/wordLists subdirectory that users can edit.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
 
     return y_multiplier_integer -1
@@ -133,7 +133,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
-readMe_message="The Python 3 scripts analyzes a text file for instances of nominalization (i.e., the use of nouns instead of verbs, such as 'the lynching' occurred).\n\nNominalization, together with passive verb voices, can be used to deny agency. In fact, in an expression such as 'the lynching occurred' there is no mention of an agent, of who did it."
+readMe_message="These Python 3 scripts analyze a text file (or a directory of text files) for instances of nominalization, i.e., the use of a noun derived from a verb (a deverbal noun) instead of the verb itself, such as 'the lynching occurred' instead of 'they lynched'.\n\nNominalization, together with the passive voice, can be used to deny agency: in an expression such as 'the lynching occurred' there is no mention of an agent, of who did it.\n\nHOW IT WORKS. Each word is tagged for part of speech and lemmatized using the NLP Suite's configuration-aware basic NLP layer (spaCy or Stanza, according to your setup). Every noun is then tested against WordNet's derivational morphology (Fellbaum 1998): a noun is flagged as a nominalization when WordNet links it to a base VERB through a derivationally related form, with a derivation-direction (length) constraint so that only nouns DERIVED from verbs are kept (e.g., 'destruction' -> 'destroy'). The scripts no longer rely on pywsd. Optionally (checkbox) nominalized nouns are also filtered by their typical endings (-ing, -ion, -ent, -ance, -ence) and checked against an editable list, lib/wordLists/nominalized-verbs-list.csv, which you can extend with nominalizations that do not follow the standard endings.\n\nIN OUTPUT the scripts produce\n   1. a csv file listing each noun with its base verb and a TRUE/FALSE nominalization flag;\n   2. a csv file with the frequency distribution of the nominalized verbs;\n   3. a csv file with the frequency distribution of nominalizations by sentence index;\n   4. bar charts of these frequency distributions."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 

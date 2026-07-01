@@ -38,8 +38,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.open_csv_output_checkbox.get(),
                             GUI_util.charts_package_options_widget.get(),
                             GUI_util.data_transformation_options_widget.get(),
-                            utf8_var.get(),
-                            ASCII_var.get(),
+                            check_clean_var.get(),
+                            check_clean_menu_var.get(),
                             corpus_statistics_var.get(),
                             corpus_statistics_options_menu_var.get(),
                             corpus_text_options_menu_var.get(),
@@ -62,8 +62,8 @@ def run(inputFilename,inputDir, outputDir,
         
         chartPackage,
         dataTransformation,
-        utf8_var,
-        ASCII_var,
+        check_clean_var,
+        check_clean_menu_var,
         corpus_statistics_var,
         corpus_statistics_options_menu_var,
         corpus_text_options_menu_var,
@@ -103,8 +103,7 @@ def run(inputFilename,inputDir, outputDir,
         return
 
 
-    if (utf8_var==False and \
-        ASCII_var == False and \
+    if (check_clean_var==False and \
         corpus_statistics_var==False and \
         wordclouds_var == False and \
         # ((topics_var==False) or (topics_var==True and topics_Mallet_var==False and topics_Gensim_var==False and open_tm_GUI_var==False)) and \
@@ -130,10 +129,12 @@ def run(inputFilename,inputDir, outputDir,
     if outputDir == '':
         return
 
-    if utf8_var==True:
+    # print(check_clean_menu_var)
+
+    if check_clean_var==True and ('*' in check_clean_menu_var or 'utf-8' in check_clean_menu_var):
         file_checker_util.check_utf8_compliance(GUI_util.window, inputFilename, inputDir, outputDir,openOutputFiles,True)
 
-    if ASCII_var==True:
+    if check_clean_var == True and ('*' in check_clean_menu_var or 'ASCII' in check_clean_menu_var):
         result=file_cleaner_util.convert_2_ASCII(GUI_util.window,inputFilename, inputDir, outputDir, config_filename)
         if result==False:
             return
@@ -417,7 +418,7 @@ def run(inputFilename,inputDir, outputDir,
 # WordNet ----------------------------------
         if nature_var:
             IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Nature via CoreNLP and WordNet',
-                                               'The analysis of references to nature via Stanford CoreNLP annd WordNet has not been implemented yet.\n"What else is in your corpus" will continue with all other CoreNLP annotators')
+                                               'The analysis of references to nature via Stanford CoreNLP and WordNet has not been implemented yet.\n"What else is in your corpus" will continue with all other CoreNLP annotators')
 
         if nouns_var or verbs_var:
             if nouns_var or verbs_var or what_else_menu_var == '*':
@@ -735,8 +736,9 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_
 extra_GUIs_var = tk.IntVar()
 extra_GUIs_menu_var = tk.StringVar()
 
-utf8_var= tk.IntVar()
-ASCII_var= tk.IntVar()
+check_clean_var= tk.IntVar()
+check_clean_menu_var = tk.StringVar()
+
 corpus_statistics_var= tk.IntVar()
 corpus_statistics_options_menu_var = tk.StringVar()
 corpus_text_options_menu_var = tk.StringVar()
@@ -768,6 +770,8 @@ open_SVO_GUI_var = tk.IntVar()
 y_multiplier_integer_SV=0 # used to set the quote_var widget on the proper GUI line
 
 def clear(e):
+    check_clean_var.set(1),
+    check_clean_menu_var.set('*')
     corpus_statistics_var.set(1)
     corpus_statistics_options_menu_var.set('*')
     corpus_text_options_menu_var.set('*')
@@ -817,13 +821,19 @@ def open_GUI(*args):
 extra_GUIs_menu_var.trace('w',open_GUI)
 extra_GUIs_var.trace('w',open_GUI)
 
-utf8_var.set(1)
-utf8_checkbox = tk.Checkbutton(window, text='Check input document(s) for utf-8 encoding', variable=utf8_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,utf8_checkbox)
+check_clean_var.set(1)
+check_clean_menu_var.set('*')
 
-ASCII_var.set(1)
-ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & quotes and % to percent', variable=ASCII_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,ASCII_checkbox)
+check_clean_checkbox = tk.Checkbutton(window,text="Check & clean corpus", variable=check_clean_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,check_clean_checkbox,True)
+
+check_clean_menu = tk.OptionMenu(window,  check_clean_menu_var, '*', 'Check input document(s) for utf-8 encoding',
+                                 'Convert non-ASCII apostrophes & quotes and % to percent')
+
+# check_clean_menu.config(state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_corpus_statistics_options_menu_lb_pos, y_multiplier_integer,
+                                               check_clean_menu, False)
+
 
 def activate_linguistic_features_options():
     if corpus_statistics_var.get():
@@ -1037,9 +1047,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "Please, tick the checkbox to open other related GUIs (e.g., Corpus statistics, Style Analysis, N-grams, CoNLL table analyzer).\n\nThe selected GUI will open without having to press RUN.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                      "Please, tick the checkbox to check your input corpus for utf-8 encoding.\n   Non utf-8 compliant texts are likely to lead to code breakdown.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                      "Please, tick the checkbox to convert non-ASCII apostrophes & quotes and % to percent.\n   ASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n   % signs may lead to code breakdon of Stanford CoreNLP.")
+                                      "Please, tick the checkbox to check your input corpus for utf-8 encoding and/or to convert non-ASCII apostrophes & quotes and % to percent.\n   Non utf-8 compliant texts are likely to lead to code breakdown.\n   ASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n   % signs may lead to code breakdown of Stanford CoreNLP.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer, "NLP Suite Help","Please, tick checkbox to compute corpus statistics: number of documents, number of sentences and words, word n-grams by document.\n\nFOR N-GRAMS, THERE IS A SEPARATE SCRIPT WITH MORE GENERAL OPTIONS: NGrams_CoOccurrences_Viewer_main.\n\nThe * option will lemmatize words and exclude stopwords and punctuation. IT WILL COMPUTE BASIC WORD N-GRAMS. IT WILL NOT COMPUTE LINE LENGTH. YOU WOULD NEED TO RUN THE LINE LENGTH OPTION SEPARATELY.\n\nLine length in a typical document mostly depends upon typesetting formats. Only for poetry or music lyrics does the line-length measure make sense; in fact, you could use the option the detect those documents in your corpus characterized by different typesetting formats (.g., a poem document among narrative documents).\n\nRUN THE LINE-LENGTH OPTION ONLY IF IT MAKES SENSE FOR YOUR CORPUS.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox for visualization options.\n\nWith the checkbox ticked, a default wordcloud will be generated. Tick 'Open visualizations GUI' to access the full data visualization GUI with options for wordclouds, network graphs (Gephi, vis.js), Sankey charts, sunburst, treemap, colormap/heatmap, boxplots, bubble charts, GIS maps, and more.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox to open the topic modeling GUI.\n\nThe topic modeling GUI provides access to three approaches:\n  - BERTopic (transformer-based, best for 100+ documents)\n  - Gensim LDA (fast, works well on small corpora)\n  - MALLET LDA (Java-based, requires separate installation)")

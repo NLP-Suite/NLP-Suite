@@ -99,6 +99,22 @@ def run(inputFilename, inputDir, outputDir,
             if len(files_to_open) > 0:
                 outputCorefedDir = os.path.dirname(files_to_open[0])
 
+        elif 'BERT' in Coref or 'spaCy' in Coref:
+            # ── neural coreference paths: BERT (fastcoref) and spaCy (coreferee) ──
+            import coreference_neural_util
+            engine_fn = (coreference_neural_util.fastcoref_coref if 'BERT' in Coref
+                         else coreference_neural_util.coreferee_coref)
+            files_to_open, error_indicator = engine_fn(
+                config_filename, inputFilename, inputDir, outputDir,
+                openOutputFiles, chartPackage, dataTransformation,
+                language_var, Manual_Coref_var)
+            if error_indicator:
+                return
+
+            outputCorefedDir = ''
+            if len(files_to_open) > 0:
+                outputCorefedDir = os.path.dirname(files_to_open[0])
+
         else:
             # ── Stanford CoreNLP coreference path (default) ──
             if language_var != 'English' and language_var != 'Chinese':
@@ -164,7 +180,23 @@ def run(inputFilename, inputDir, outputDir,
             error = Stanford_CoreNLP_coreference_util.manualCoref(inputFilename, corefed_txt_file, corefed_txt_file)
 
     if openOutputFiles == True and len(filesToOpen) > 0:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputCorefedDir, scriptName)
+        # The coreferenced txt files ARE the corpus and are saved to disk; do not flood the screen by
+        # opening every one (a few hundred Harry Potter chapters would be unusable). Auto-open only a
+        # handful of them, but ALWAYS open the analytical outputs (coref_table csv, charts, Sankey).
+        MAX_COREF_TXT_TO_OPEN = 5
+        txt_files = [f for f in filesToOpen if str(f).lower().endswith('.txt')]
+        other_files = [f for f in filesToOpen if not str(f).lower().endswith('.txt')]
+        if len(txt_files) > MAX_COREF_TXT_TO_OPEN:
+            mb.showinfo(title='Coreferenced corpus',
+                        message=str(len(txt_files)) + " coreferenced txt files were saved to\n\n" +
+                                str(outputCorefedDir) +
+                                "\n\nTo avoid opening hundreds of files, they were NOT opened automatically.\n\n"
+                                "Open the output folder to view them; the coref_table and any charts are opened below.")
+            files_for_opening = other_files
+        else:
+            files_for_opening = filesToOpen
+        if len(files_for_opening) > 0:
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, files_for_opening, outputCorefedDir, scriptName)
 
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
 run_script_command = lambda: run(GUI_util.inputFilename.get(),
@@ -268,9 +300,18 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.coreference_CoRe
 
 def activate_options(*args):
     selected = CoRef_var.get()
-    if selected not in ('Stanford CoreNLP', 'Stanza'):
-        mb.showwarning(title='Option not available',
-                       message="The selected " + selected + " coreference option is not available yet. Sorry!\n\nCheck back soon...")
+    if selected == 'BERT':
+        mb.showwarning(title='BERT coreference (fastcoref)',
+                       message="BERT coreference uses the 'fastcoref' neural model (English only).\n\n"
+                               "It requires the 'fastcoref' package (pip install fastcoref); the first run "
+                               "downloads the model (~500 MB) and needs an internet connection.\n\n"
+                               "Unlike CoreNLP/Stanza (pronominal only), it also clusters nominal mentions, "
+                               "but the NLP Suite replaces only pronouns with their referent.")
+    elif selected == 'spaCy':
+        mb.showwarning(title='spaCy coreference (coreferee)',
+                       message="spaCy coreference uses the 'coreferee' component in the spaCy pipeline (English only).\n\n"
+                               "It requires: pip install coreferee, python -m coreferee install en, and a spaCy "
+                               "English model (e.g. python -m spacy download en_core_web_lg).")
 CoRef_var.trace('w',activate_options)
 
 # CoRef_var.set(1)
@@ -371,15 +412,15 @@ GUI_util.input_main_dir_path.trace('w', lambda x, y, z: changed_filename(GUI_uti
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'Stanford CoreNLP supported languages': 'TIPS_NLP_Stanford CoreNLP supported languages.pdf',
+TIPS_lookup = { 'Coreference resolution': "TIPS_NLP_Coreference resolution.pdf",
+               'Stanford CoreNLP supported languages': 'TIPS_NLP_Stanford CoreNLP supported languages.pdf',
                'Stanford CoreNLP performance & accuracy': 'TIPS_NLP_Stanford CoreNLP performance and accuracy.pdf',
-               'Stanford CoreNLP coreference resolution': "TIPS_NLP_Stanford CoreNLP coreference resolution.pdf",
                'Stanza coreference resolution': "TIPS_NLP_Stanza coreference resolution.pdf",
                'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                'Stanford CoreNLP memory issues':'TIPS_NLP_Stanford CoreNLP memory issues.pdf',
                'csv files - Problems & solutions': 'TIPS_NLP_csv files - Problems & solutions.pdf'}
 
-TIPS_options = 'Stanford CoreNLP coreference resolution','Stanza coreference resolution','Stanford CoreNLP supported languages','Stanford CoreNLP performance & accuracy', 'utf-8 encoding', 'Stanford CoreNLP memory issues', 'csv files - Problems & solutions'
+TIPS_options = 'Coreference resolution','Stanford CoreNLP supported languages','Stanford CoreNLP performance & accuracy', 'utf-8 encoding', 'Stanford CoreNLP memory issues', 'csv files - Problems & solutions'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons

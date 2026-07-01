@@ -225,7 +225,9 @@ def wsd_aggregate_WordNet(conll_file, outputDir, noun_verb, chartPackage, dataTr
                 syn = lesk(context, word, wn_pos)
             except Exception:
                 syn = None
-            cat = syn.lexname() if syn else 'Not found'
+            # lexname is 'pos.category' (e.g. 'verb.stative', 'noun.person'); drop the pos prefix
+            # since the noun/verb is already stated in the chart title and the output file name
+            cat = syn.lexname().split('.', 1)[-1] if syn else 'Not found'
             counts[cat] += 1
             rows.append({'Word': surface, 'Lemma': word, 'WordNet category': cat})
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',

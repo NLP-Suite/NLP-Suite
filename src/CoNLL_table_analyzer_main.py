@@ -324,11 +324,30 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                     else:
                         filesToOpen.extend(outFiles)
         if sel == '*' or sel == 'Beginning-End K sentences analyzer (repetition finder)':
-            if Begin_K_sent_var == 0 or End_K_sent_var == 0:
+            # The Begin/End K entry fields are not on the GUI, so prompt for the values when they are
+            # not set (the repetition finder needs how many sentences at the start and end to compare).
+            begin_k, end_k = Begin_K_sent_var, End_K_sent_var
+            if begin_k == 0 or end_k == 0:
+                from tkinter import simpledialog
+                if begin_k == 0:
+                    begin_k = simpledialog.askinteger(
+                        'Beginning K sentences',
+                        'Repetition finder: enter the number of sentences at the BEGINNING of each '
+                        'document to scan for repeated content words (K):',
+                        parent=GUI_util.window, minvalue=1)
+                if begin_k and end_k == 0:
+                    end_k = simpledialog.askinteger(
+                        'Ending K sentences',
+                        'Repetition finder: enter the number of sentences at the END of each '
+                        'document to scan for repeated content words (K):',
+                        parent=GUI_util.window, minvalue=1)
+            if not begin_k or not end_k:
                 mb.showwarning(title='K sentences required',
-                               message="The 'Beginning-End K sentences analyzer (repetition finder)' needs the Begin K-sentences and End K-sentences values.\n\nPlease enter them and try again.")
+                               message="The 'Beginning-End K sentences analyzer (repetition finder)' needs both "
+                                       "the Begin K and End K sentence counts.\n\nPlease run the option again and "
+                                       "enter valid values.")
             else:
-                temp_outputDir, outFiles = CoNLL_k_sentences_util.k_sent(inputFilename, adv_outputDir, chartPackage, dataTransformation, Begin_K_sent_var, End_K_sent_var)
+                temp_outputDir, outFiles = CoNLL_k_sentences_util.k_sent(inputFilename, adv_outputDir, chartPackage, dataTransformation, begin_k, end_k)
                 if outFiles:
                     filesToOpen.extend(outFiles)
         IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',

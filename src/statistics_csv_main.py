@@ -1,3 +1,4 @@
+
 import sys
 import GUI_util
 import IO_libraries_util
@@ -358,7 +359,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv
 
 csv_field_menu = tk.OptionMenu(window, csv_field_var, *menu_values)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_csv_field_menu_pos, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+110, y_multiplier_integer,
                                    csv_field_menu,
                                    False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "Use the dropdown menu to select the csv file field to be used to compute frequencies"
@@ -429,18 +430,18 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv
 add_field2_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled',
                               command=lambda: activate_hover_over_field_menu())
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_add_field2_button_pos, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+110, y_multiplier_integer,
                                    add_field2_button,
                                    True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "Click the + button, when available, to add another hover-over field")
 
 csv_hover_over_field_lb = tk.Label(window, text='Hover-over field')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_csv_hover_over_field_lb_pos, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                                csv_hover_over_field_lb, True)
 
 csv_hover_over_field_menu = tk.OptionMenu(window, csv_hover_over_field_var, *menu_values)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_csv_hover_over_field_menu_pos, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+120, y_multiplier_integer,
                                    csv_hover_over_field_menu,
                                    False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "Use the dropdown menu to select the csv file field to be used to display hover-over information"

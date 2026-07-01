@@ -165,6 +165,11 @@ def run_SRL(window, inputFilename, inputDir, outputDir, chartPackage='No charts'
                                % (proc.stderr or "").strip()[-1500:])
         return []
 
+    # Add the WordNet sense column alongside the SemLink VerbNet class / FrameNet frame columns.
+    # The worker runs in the isolated srl_test38 env (JSON only, no NLTK); WordNet needs NLTK, so it
+    # is resolved here in the main env, context-disambiguated (Lesk) like the WSD feature.
+    _add_wordnet_column(output_csv)
+
     output_files = [output_csv]
     output_files.extend(_build_srl_visualizations(
         window, output_csv, srl_dir, inputFilename, inputDir, chartPackage, dataTransformation))
@@ -174,6 +179,59 @@ def run_SRL(window, inputFilename, inputDir, outputDir, chartPackage='No charts'
         'Finished running SRL (Semantic Role Labeling) at', True, '', True, startTime, False)
 
     return output_files
+
+
+def _add_wordnet_column(srl_csv):
+    """Add a 'WordNet' column to the SRL table: the predicate's WordNet verb synset, disambiguated
+    IN CONTEXT with the Lesk algorithm against the row's Sentence (same approach as the WSD feature).
+    Placed next to the SemLink 'VerbNet class'/'FrameNet frame' columns so the table carries all three
+    sense inventories (WordNet, VerbNet, FrameNet) for the predicate. Errors are surfaced, not swallowed."""
+    import pandas as pd
+    try:
+        df = pd.read_csv(srl_csv, encoding='utf-8', on_bad_lines='skip', dtype={'VerbNet class': str})
+    except Exception as e:
+        mb.showwarning(title="SRL WordNet column",
+                       message="Could not read the SRL table to add the WordNet column:\n\n%s" % e)
+        return
+    if 'WordNet' in df.columns or 'Predicate' not in df.columns:
+        return
+    try:
+        import IO_libraries_util
+        IO_libraries_util.import_nltk_resource(GUI_util.window, 'corpora/wordnet', 'wordnet')
+        from nltk.wsd import lesk
+    except Exception as e:
+        mb.showwarning(title="SRL WordNet column",
+                       message="Could not load WordNet (NLTK) to add the WordNet column:\n\n%s" % e)
+        return
+
+    def _wn_sense(row):
+        # the predicate LEMMA: from the PropBank Frame ('picture.01' -> 'picture'), else the surface predicate
+        frame = str(row.get('Frame', '') or '')
+        lemma = frame.split('.')[0].strip().lower() if frame and frame.lower() != 'nan' else ''
+        if not lemma:
+            lemma = str(row.get('Predicate', '') or '').strip().lower()
+        if not lemma:
+            return ''
+        sent = str(row.get('Sentence', '') or '')
+        context = sent.split() if sent.strip() else [lemma]
+        try:
+            syn = lesk(context, lemma, 'v')
+        except Exception:
+            syn = None
+        return syn.name() if syn else 'Not found'
+
+    df['WordNet'] = df.apply(_wn_sense, axis=1)
+    # place 'WordNet' right after 'FrameNet frame' so the three sense inventories sit together
+    cols = list(df.columns)
+    if 'FrameNet frame' in cols:
+        cols.remove('WordNet')
+        cols.insert(cols.index('FrameNet frame') + 1, 'WordNet')
+        df = df[cols]
+    try:
+        df.to_csv(srl_csv, index=False, encoding='utf-8')
+    except Exception as e:
+        mb.showwarning(title="SRL WordNet column",
+                       message="Could not write the SRL table with the WordNet column:\n\n%s" % e)
 
 
 def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
@@ -210,6 +268,7 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
     svo['Refined roles'] = col('Refined roles')   # carried for the VerbNet-role views (not the relations file)
     svo['VerbNet class'] = col('VerbNet class')   # the disambiguated VerbNet class per predicate (SemLink)
     svo['FrameNet frame'] = col('FrameNet frame') # the disambiguated FrameNet frame per predicate (SemLink chain)
+    svo['WordNet'] = col('WordNet')               # the Lesk-disambiguated WordNet verb synset per predicate
 
     # Keep rows with a predicate AND at least an agent or a patient (i.e., a drawable edge).
     s = svo['Agent (ARG0)'].astype(str).str.strip()
@@ -226,10 +285,18 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
     if svo.empty:
         return outputs
 
+    # A numeric, 1-based Document ID per unique Document name. The shared chart code
+    # (visualize_charts_util) requires a 'Document ID' column whenever a chart is grouped
+    # by Document (groupByList=['Document']); the SRL CoNLL only carries the Document name.
+    doc_id_map = {d: i + 1 for i, d in enumerate(dict.fromkeys(svo['Document'].astype(str)))}
+    def _doc_id(doc):
+        return doc_id_map.get(str(doc), 0)
+    svo['Document ID'] = svo['Document'].astype(str).map(doc_id_map)
+
     svo_csv = IO_files_util.generate_output_file_name(srl_csv, inputDir, srl_dir, '.csv', 'relations')
     try:
         svo[['Agent (ARG0)', 'Predicate', 'Patient (ARG1)', 'Location', 'Time',
-             'Sentence ID', 'Sentence', 'Document', 'Date']].to_csv(svo_csv, index=False, encoding='utf-8')
+             'Sentence ID', 'Sentence', 'Document ID', 'Document', 'Date']].to_csv(svo_csv, index=False, encoding='utf-8')
         outputs.append(svo_csv)
     except Exception as e:
         mb.showwarning(title="SRL visualization",
@@ -364,7 +431,7 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
             role_rows = []
             for rr, doc in zip(svo['Refined roles'], svo['Document'].astype(str)):
                 for role in _refined_roles_list(rr):
-                    role_rows.append({'Document': doc, 'Role': role})
+                    role_rows.append({'Document ID': _doc_id(doc), 'Document': doc, 'Role': role})
             if role_rows:
                 roles_freq_csv = IO_files_util.generate_output_file_name(
                     svo_csv, inputDir, srl_dir, '.csv', 'role-freq')
@@ -392,7 +459,7 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
             for cls, doc in zip(svo['VerbNet class'], svo['Document'].astype(str)):
                 cls = str(cls).strip()
                 if cls:
-                    vn_rows.append({'Document': doc, 'VerbNet class': class_names.get(cls, cls)})
+                    vn_rows.append({'Document ID': _doc_id(doc), 'Document': doc, 'VerbNet class': class_names.get(cls, cls)})
             if vn_rows:
                 vn_freq_csv = IO_files_util.generate_output_file_name(
                     svo_csv, inputDir, srl_dir, '.csv', 'verbnet-class')
@@ -419,7 +486,7 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
             for fr, doc in zip(svo['FrameNet frame'], svo['Document'].astype(str)):
                 fr = str(fr).strip()
                 if fr:
-                    fn_rows.append({'Document': doc, 'FrameNet frame': fr})
+                    fn_rows.append({'Document ID': _doc_id(doc), 'Document': doc, 'FrameNet frame': fr})
             if fn_rows:
                 fn_freq_csv = IO_files_util.generate_output_file_name(
                     svo_csv, inputDir, srl_dir, '.csv', 'framenet-frame')
@@ -436,5 +503,31 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
         except Exception as e:
             mb.showwarning(title="SRL FrameNet frame chart",
                            message="Could not build the FrameNet frame frequency chart:\n\n%s" % e)
+
+        # WordNet-sense profile: how often each Lesk-disambiguated WordNet verb synset occurs -
+        # the WordNet counterpart of the VerbNet-class and FrameNet-frame profiles above.
+        try:
+            import charts_util
+            wn_rows = []
+            for wn, doc in zip(svo['WordNet'], svo['Document'].astype(str)):
+                wn = str(wn).strip()
+                if wn and wn.lower() != 'nan':
+                    wn_rows.append({'Document ID': _doc_id(doc), 'Document': doc, 'WordNet': wn})
+            if wn_rows:
+                wn_freq_csv = IO_files_util.generate_output_file_name(
+                    svo_csv, inputDir, srl_dir, '.csv', 'wordnet-sense')
+                pd.DataFrame(wn_rows).to_csv(wn_freq_csv, index=False, encoding='utf-8')
+                of = charts_util.visualize_chart(
+                    chartPackage, dataTransformation, wn_freq_csv, srl_dir,
+                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['WordNet'],
+                    chart_title='Frequency Distribution of SRL WordNet Senses',
+                    count_var=1, hover_label=[], outputFileNameType='SRL-wordnet-sense',
+                    column_xAxis_label='WordNet sense', groupByList=['Document'],
+                    plotList=['Frequency'], chart_title_label='WordNet sense')
+                if of:
+                    outputs.extend(of if isinstance(of, list) else [of])
+        except Exception as e:
+            mb.showwarning(title="SRL WordNet sense chart",
+                           message="Could not build the WordNet sense frequency chart:\n\n%s" % e)
 
     return outputs

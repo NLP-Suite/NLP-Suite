@@ -118,14 +118,11 @@ def noun_POSTAG_NER_DEPREL_compute_lists_frequencies(data, data_divided_sents):
     filtered_df = df[df['POS'].isin(included_tags)]
     possible_items = list(filtered_df['NER'].value_counts().keys())
     list_nouns_ner = data_preparation(data,possible_items, possible_items, 4)
-    strings = '''[['Noun NERs', 'Frequencies'],'''
-    for index, item in enumerate(possible_items):
-        if index != len(possible_items)-1:
-            strings+= "['"+item+"',ner_counter['"+item+"']],"
-        else:
-            strings += "['" + item + "',ner_counter['" + item + "']]]"
-    noun_ner_stats = eval(strings)
-    print(noun_ner_stats[1],noun_ner_stats[1][1], "THIS IS THE O COUNTER!!!!!!!!")
+    # Build the NER frequency stats DIRECTLY from value_counts. The old code eval'd a string that referenced
+    # 'ner_counter', a variable removed by the canonical-columns refactor (hence the crash); a list comprehension
+    # is also safe against NER values containing quotes, which would have broken the eval.
+    ner_counts = filtered_df['NER'].value_counts()
+    noun_ner_stats = [['Noun NERs', 'Frequencies']] + [[item, int(ner_counts[item])] for item in possible_items]
     return list_nouns_postag, list_nouns_deprel, list_nouns_ner, noun_postag_stats, noun_deprel_stats, noun_ner_stats
 
     # return list_nouns_postag, list_nouns_deprel, list_nouns_ner, noun_postag_stats, noun_deprel_stats, noun_ner_stats

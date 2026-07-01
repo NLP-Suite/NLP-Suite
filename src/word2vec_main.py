@@ -48,24 +48,6 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, chartPackage, dataTr
         return
 
     ## if statements for any requirements
-    if WSI_var:
-
-        if WSI_keywords_var.get()=='':
-            mb.showwarning(title='Missing keywords',message='The "Word sense induction" algorithm requires a comma-separated list of case-sensitive keywords taken from the corpus in order to run.\n\nPlease, enter the keywords and try again.')
-            return
-
-        import WSI_util, WSI_viz, WSI_keyterms
-
-        all_sent, all_vocab, Word2Vec_Dir, docs, paths = WSI_util.get_data(inputFilename, inputDir, Word2Vec_Dir, u_vocab=WSI_keywords_var.get(), fileType='.txt', configFileName=config_filename)
-        k_range = (k_means_min_var.get(), k_means_max_var.get())
-        WSI_util.get_centroids(all_sent, all_vocab, Word2Vec_Dir, k_range)
-        WSI_util.match_embeddings(all_sent, all_vocab, Word2Vec_Dir)
-        s_paths = WSI_util.get_cluster_sentences(Word2Vec_Dir)
-        v_paths = WSI_viz.sense_bar_chart(Word2Vec_Dir)
-        n = int(ngrams_menu_var.get().split('-')[0])
-        k_paths = WSI_keyterms.get_keyterms(Word2Vec_Dir, topn=top_keywords_var.get(), ngram_range=(1, n))
-        filesToOpen = s_paths + v_paths + k_paths
-
     if BERT_var:
         reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_BERT_Word2Vec_timing,
@@ -128,8 +110,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=680, # height at brief display
-                             GUI_height_full=760, # height at full display
+                             GUI_height_brief=600, # height at brief display
+                             GUI_height_full=680, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -230,101 +212,6 @@ def activate_plot_options(*args):
         dim_menu.configure(state='disabled')
 vis_menu_var.trace('w',activate_plot_options)
 
-## option for WSI via BERT
-#@@@
-WSI_var.set(0)
-WSI_checkbox = tk.Checkbutton(window, text='Word sense induction (via BERT (English language model))', variable=WSI_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,WSI_checkbox,True)
-
-# Word sense induction (WSI) is the problem of automatically identifying the different senses expressed by a word used in a collection of documents.
-
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
-    y_multiplier_integer,
-    WSI_checkbox,
-    True, False, False, False, 90, GUI_IO_util.labels_x_coordinate,
-    "Tick the checkbox to run the word sense induction (WSI) algorithm to automatically identify the different senses expressed by a word used in your corpus based on Lucy & Bamman, 2021, BERT model.\nAdjust the various options in the next line of widgets to control the model parameters.")
-
-k_means_min_var = tk.Scale(window, from_=2, to=9, orient=tk.HORIZONTAL)
-k_means_min_var.pack()
-k_means_min_var.set(4)
-# place widget with hover-over info # memory_pos
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate,
-                                               y_multiplier_integer,
-                                               k_means_min_var, True, False, False, False, 90,
-                                               GUI_IO_util.open_reminders_x_coordinate,
-                                               "Use the slider widget to set the K-means MINIMUM value you wish to use for word sense induction")
-
-k_means_max_var = tk.Scale(window, from_=3, to=15, orient=tk.HORIZONTAL)
-k_means_max_var.pack()
-k_means_max_var.set(6)
-# place widget with hover-over info # memory_pos
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate-40,
-                                               y_multiplier_integer,
-                                               k_means_max_var, True, False, False, False, 90,
-                                               GUI_IO_util.open_reminders_x_coordinate,
-                                               "Use the slider widget to set the K-means MAXIMUM value you wish to use for word sense induction")
-
-ngrams_lb = tk.Label(window,text='N-grams')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate-55,y_multiplier_integer,ngrams_lb,True)
-ngrams_menu_var = tk.StringVar()
-ngrams_menu_var.set('1-grams')
-ngrams_menu = tk.OptionMenu(window,ngrams_menu_var, '1-grams (unigrams)','2-grams (bigrams)','3-grams (trigrams)','4-grams (quadgrams)')
-# place widget with hover-over info # memory_pos
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate+25,
-                                               y_multiplier_integer,
-                                               ngrams_menu, True, False, False, False, 90,
-                                               GUI_IO_util.open_TIPS_x_coordinate,
-                                               "Use the dropdown menu to select the N-grams to be used in computing the highest scoring N-grams to return as cluster key terms ")
-
-top_keywords_var = tk.Scale(window, from_=5, to=20, orient=tk.HORIZONTAL)
-top_keywords_var.pack()
-top_keywords_var.set(10)
-# place widget with hover-over info # memory_pos
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate+50,
-                                               y_multiplier_integer,
-                                               top_keywords_var, False, False, False, False, 90,
-                                               GUI_IO_util.run_button_x_coordinate,
-                                               "Maximum number of keywords to be returned ")
-
-WSI_keywords_var = tk.StringVar()
-WSI_keywords_var.set('')
-WSI_keywords_lb = tk.Label(window, text='Keywords (WSI)')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,WSI_keywords_lb,True)
-
-WSIdictionary_file_var=tk.StringVar() # dictionary file used to annotate
-def get_dictionary_file(window,title,fileType):
-    #WSIdictionary_var.set('')
-    filePath = tk.filedialog.askopenfilename(title = title, initialdir =outputDir, filetypes = fileType)
-    if len(filePath)>0:
-        # WSIdictionary_file.config(state='normal')
-        WSI_keywords_var.set(filePath)
-
-WSIdictionary_button=tk.Button(window, text='Select dictionary file ',command=lambda: get_dictionary_file(window,'Select INPUT dictionary file', [("dictionary files", "*.csv")]))
-# WSIdictionary_button.config(state='disabled')
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate + 100, y_multiplier_integer,
-                                   WSIdictionary_button,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-                                   "Click to select a csv file containing a list of words for which disambiguation is sought.\nIf disambiguation is sought for only a few words, please, enter them comma-separated in the entry widget.")
-
-#setup a button to open Windows Explorer on the selected input directory
-openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, WSI_keywords_var.get()))
-# openInputFile_button.configure(state='disabled')
-# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
-# the two x-coordinate and x-coordinate_hover_over must have the same values
-y_multiplier_integer = GUI_IO_util.placeWidget(window,
-    GUI_IO_util.labels_x_indented_coordinate + 250, y_multiplier_integer,
-    openInputFile_button, True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate + 250, "Open csv dictionary file")
-
-WSI_keywords_entry = tk.Entry(window, textvariable=WSI_keywords_var)
-WSI_keywords_entry.configure(state='normal',width=GUI_IO_util.widget_width_extra_long)
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+100,
-    y_multiplier_integer,
-    WSI_keywords_entry,
-    False, False, False, False, 90, GUI_IO_util.IO_configuration_menu,
-    "Enter the comma-separated, case-sensitive words to be used to compute word sense induction")
 
 ## option for BERT
 BERT_var.set(0)
@@ -481,12 +368,13 @@ videos_options='Word2Vec'
 
 TIPS_lookup = {"Lemmas & stopwords":"TIPS_NLP_NLP Basic Language.pdf",
                "Word embeddings with BERT": "TIPS_NLP_BERT word embeddings.pdf",
-               "Word Sense Induction (via BERT & K-means)": "TIPS_NLP_Word Sense Induction.pdf",
+               "Word Sense Induction (WSI) (via BERT & K-means)": "TIPS_NLP_Word Sense Induction (WSI).pdf",
+               "Word Sense Disambiguation (WSD) (via CoNLL & WordNet)": "TIPS_NLP_Word Sense Disambiguation (WSD).pdf",
                "Word2Vec with Gensim":"TIPS_NLP_Word2Vec.pdf",
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
                'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
 
-TIPS_options = 'Lemmas & stopwords', 'Word embeddings with BERT', 'Word Sense Induction (via BERT & K-means)', 'Word2Vec with Gensim', 'csv files - Problems & solutions', 'Statistical measures'
+TIPS_options = 'Lemmas & stopwords', 'Word embeddings with BERT', 'Word Sense Induction (via BERT & K-means)', 'Word Sense Disambiguation (WSD) (via CoNLL & WordNet)', 'Word2Vec with Gensim', 'csv files - Problems & solutions', 'Statistical measures'
 
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     if not IO_setup_display_brief:
@@ -505,12 +393,6 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
                                   "Please, using the dropdown menus, select the types of preferred display.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
-                                  "NLP Suite Help",
-                                  "Please, tick the checkbox to run word sense induction via BERT.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
-                                  "NLP Suite Help",
-                                  "Please, select the csv dictionary file containing the words or enter the comma-separated words to be use to compute word sense induction via BERT.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
                                   "Please, tick the checkbox to run word embeddings via BERT.\n\nWord embeddings are vector values corresponding to specific words.\n\nWords are converted into such vectors so that they can be plotted easily on XY or XYZ axes, and we can analyze words with close relations to one another in a semantic space.\n\nThere are many different models that can construct these vector values (BERT models, Word2Vec, etc.).")

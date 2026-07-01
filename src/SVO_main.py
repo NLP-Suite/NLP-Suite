@@ -1357,10 +1357,7 @@ videos_lookup = {'SVO':'https://www.youtube.com/watch?v=QsMD6Kqpjas'}
 videos_options='SVO'
 
 TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
-               'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
-               'Statistical measures': 'TIPS_NLP_Statistical measures.pdf',
-               'Excel - Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
-               'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
+               'Coreference resolution': "TIPS_NLP_Coreference resolution.pdf",
                'English Language Benchmarks': 'TIPS_NLP_English Language Benchmarks.pdf',
                'Things to do with words: Overall view': 'TIPS_NLP_Things to do with words Overall view.pdf',
                'SVO extraction and visualization': 'TIPS_NLP_SVO extraction and visualization.pdf',
@@ -1372,7 +1369,6 @@ TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                'Stanford CoreNLP parser': 'TIPS_NLP_Stanford CoreNLP parser.pdf',
                'Improving SVO output: Multi-Word Expressions (MWE) & Linking Verbs and Light Verbs':'TIPS_NLP_Multi-Word Expressions (MWE) & Linking & Light Verbs.pdf',
                'Stanford CoreNLP enhanced dependencies parser (SVO)':'TIPS_NLP_Stanford CoreNLP enhanced dependencies parser (SVO).pdf',
-               'Stanford CoreNLP coreference resolution': "TIPS_NLP_Stanford CoreNLP coreference resolution.pdf",
                'CoNLL table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
                # 'SENNA': 'TIPS_NLP_SVO SENNA.pdf',
                'WordNet': 'TIPS_NLP_WordNet.pdf',
@@ -1380,11 +1376,16 @@ TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                "Google API Key":"TIPS_NLP_GIS_Google API Key.pdf",
                "Geocoding": "TIPS_NLP_GIS_Geocoding.pdf",
                "Geocoding: How to Improve Nominatim":"TIPS_NLP_GIS_Geocoding Nominatim.pdf",
-               "Gephi network graphs": "TIPS_NLP_Gephi network graphs.pdf"}
+               "Gephi network graphs": "TIPS_NLP_Gephi network graphs.pdf",
+               'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
+               'Statistical measures': 'TIPS_NLP_Statistical measures.pdf',
+               'Excel - Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
+               'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
+               }
                # 'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
 
 # removed SENNA from the TIPS_options
-TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures', 'English Language Benchmarks', 'Things to do with words: Overall view', 'SVO extraction and visualization', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'Improving SVO output: Multi-Word Expressions (MWE) & Linking Verbs and Light Verbs','Stanford CoreNLP coreference resolution', 'CoNLL table',  'WordNet', 'Google Earth Pro', 'Google API Key', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs' #, 'Java download install run'
+TIPS_options = 'Coreference resolution', 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures', 'English Language Benchmarks', 'Things to do with words: Overall view', 'SVO extraction and visualization', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'Improving SVO output: Multi-Word Expressions (MWE) & Linking Verbs and Light Verbs','Stanford CoreNLP coreference resolution', 'CoNLL table',  'WordNet', 'Google Earth Pro', 'Google API Key', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs' #, 'Java download install run'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
