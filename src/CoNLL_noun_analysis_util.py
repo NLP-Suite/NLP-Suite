@@ -128,6 +128,13 @@ def noun_POSTAG_NER_DEPREL_compute_lists_frequencies(data, data_divided_sents):
     # return list_nouns_postag, list_nouns_deprel, list_nouns_ner, noun_postag_stats, noun_deprel_stats, noun_ner_stats
 
 def process_df_headers(df, word_type):
+    if df.shape[1] == 0:
+        # Empty subcategory (no matching tokens): return an empty df carrying the expected headers
+        # so df_to_csv writes a valid header-only file and neither the column assignment below nor
+        # charting crashes.
+        _empty_headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag",
+                          "Record ID", "Sentence ID", "Document ID", "Document", word_type]
+        return pd.DataFrame(columns=_empty_headers), _empty_headers
     if len(df.columns)==15: #date column present
         df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
                       "Sentence ID", "Document ID", "Document", 'Date', word_type]
@@ -156,6 +163,15 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 
     noun_postag_list, noun_deprel_list, noun_ner_list, noun_postag_stats, noun_deprel_stats, noun_ner_stats = noun_POSTAG_NER_DEPREL_compute_lists_frequencies(data,
                                                                                                   data_divided_sents)
+
+    # With no nouns the DataFrame built from noun_postag_list has 0 columns and pandas raises an
+    # opaque "Length mismatch" error on column assignment (df1.columns = [...]). Warn and skip
+    # instead of crashing. (POS is tagset-normalized upstream, so this only fires when the table
+    # genuinely has no nouns.)
+    if len(noun_postag_list) == 0:
+        IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Noun analysis',
+            'No nouns were found in the CoNLL table.\n\nNoun analyses were skipped.')
+        return filesToOpen
 
     # output file names
     noun_list_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun-ALL',

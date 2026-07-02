@@ -80,6 +80,85 @@ def detect_CoNLL_package(headers):
     return 'unknown'
 
 
+# ----------------------------------------------------------------------------------------------
+# Universal POS (+ morphological feats) -> Penn Treebank, so the Penn-based CoNLL analyzers work
+# on Stanza/spaCy tables (which store Universal POS: NOUN/VERB/ADJ/ADV...) as well as CoreNLP
+# tables (already Penn). English-oriented; when feats are absent it falls back to the base Penn
+# tag (NN/VB/JJ/RB) so analyses stay coarse but never crash. Penn tags pass through unchanged.
+# ----------------------------------------------------------------------------------------------
+_UNIVERSAL_POS = {'NOUN', 'PROPN', 'VERB', 'AUX', 'ADJ', 'ADV', 'ADP', 'DET', 'PRON',
+                  'CCONJ', 'SCONJ', 'CONJ', 'NUM', 'PART', 'INTJ', 'SYM', 'X', 'PUNCT'}
+
+
+def _parse_feats(feats):
+    """Parse a CoNLL-U feats string ('Number=Plur|Tense=Past') into a dict; '' / '_' -> {}."""
+    parsed = {}
+    if feats and str(feats) not in ('_', ''):
+        for kv in str(feats).split('|'):
+            if '=' in kv:
+                key, value = kv.split('=', 1)
+                parsed[key] = value
+    return parsed
+
+
+def universal_to_penn(pos, feats=''):
+    """Map one Universal POS tag (+ optional feats string) to the closest Penn Treebank tag.
+    Tags that are not Universal (i.e. already Penn, or unknown) are returned unchanged."""
+    pos = str(pos)
+    if pos not in _UNIVERSAL_POS:
+        return pos  # already Penn (NN, VBD, JJ, ...) or unknown -> leave as-is
+    f = _parse_feats(feats)
+    number = f.get('Number', '')
+
+    if pos == 'NOUN':
+        return 'NNS' if number == 'Plur' else 'NN'
+    if pos == 'PROPN':
+        return 'NNPS' if number == 'Plur' else 'NNP'
+    if pos in ('VERB', 'AUX'):
+        verbform = f.get('VerbForm', '')
+        tense = f.get('Tense', '')
+        if verbform == 'Ger' or (verbform == 'Part' and tense == 'Pres'):
+            return 'VBG'
+        if verbform == 'Part' and tense == 'Past':
+            return 'VBN'
+        if verbform == 'Inf':
+            return 'VB'
+        if verbform == 'Fin':
+            if tense == 'Past':
+                return 'VBD'
+            if f.get('Person', '') == '3' and number == 'Sing':
+                return 'VBZ'
+            return 'VBP'
+        return 'VB'  # no VerbForm -> base verb (modals ideally MD; recoverable from gold xpos)
+    if pos == 'ADJ':
+        return {'Cmp': 'JJR', 'Sup': 'JJS'}.get(f.get('Degree', ''), 'JJ')
+    if pos == 'ADV':
+        return {'Cmp': 'RBR', 'Sup': 'RBS'}.get(f.get('Degree', ''), 'RB')
+    if pos == 'ADP':
+        return 'IN'
+    if pos == 'DET':
+        return 'DT'
+    if pos == 'PRON':
+        prontype = f.get('PronType', '')
+        poss = f.get('Poss', '')
+        if prontype in ('Int', 'Rel'):
+            return 'WP$' if poss == 'Yes' else 'WP'
+        return 'PRP$' if poss == 'Yes' else 'PRP'
+    if pos in ('CCONJ', 'CONJ'):
+        return 'CC'
+    if pos == 'SCONJ':
+        return 'IN'
+    if pos == 'NUM':
+        return 'CD'
+    if pos == 'PART':
+        return 'RP'
+    if pos == 'INTJ':
+        return 'UH'
+    if pos == 'PUNCT':
+        return '.'
+    return pos  # SYM, X -> leave as-is
+
+
 def normalize_to_canonical(headers, data):
     """Reorder columns from any CoNLL format to canonical (CoreNLP) order.
 
@@ -92,6 +171,24 @@ def normalize_to_canonical(headers, data):
     Returns (canonical_headers, normalized_data).
     """
     source_positions = {h: i for i, h in enumerate(headers)}
+
+    # Normalize Universal POS (Stanza/spaCy) to Penn Treebank tags BEFORE reordering, while the
+    # source 'feats' column is still available to recover fine detail (number/tense/degree). This
+    # makes the canonical 'POS' column Penn for every parser, so the entire Penn-based analyzer
+    # stack works unchanged. No-op for CoreNLP tables (POS already Penn).
+    pos_idx = source_positions.get('POS')
+    feats_idx = source_positions.get('feats')
+    if pos_idx is not None:
+        remapped = []
+        for row in data:
+            if pos_idx < len(row):
+                feats_val = row[feats_idx] if (feats_idx is not None and feats_idx < len(row)) else ''
+                mapped = universal_to_penn(row[pos_idx], feats_val)
+                if mapped != row[pos_idx]:
+                    row = list(row)
+                    row[pos_idx] = mapped
+            remapped.append(row)
+        data = remapped
 
     # Build target column list — canonical + optional Date/Year
     target_cols = list(CANONICAL_COLUMNS)

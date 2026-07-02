@@ -129,6 +129,13 @@ def clause_data_preparation(data):
     return clause_stats, dat
 
 def process_df_headers(df, word_type):
+    if df.shape[1] == 0:
+        # Empty subcategory (no matching tokens): return an empty df carrying the expected headers
+        # so df_to_csv writes a valid header-only file and neither the column assignment below nor
+        # charting crashes.
+        _empty_headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag",
+                          "Record ID", "Sentence ID", "Document ID", "Document", word_type]
+        return pd.DataFrame(columns=_empty_headers), _empty_headers
     if len(df.columns)==15: #date column present
         df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
                       "Sentence ID", "Document ID", "Document", 'Date', word_type]

@@ -97,7 +97,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
     # Detect source package and normalize columns to canonical (CoreNLP) order
     # so all downstream positional indexing works regardless of package
     source_package = CoNLL_util.detect_CoNLL_package(header)
+    # normalize_to_canonical also maps Universal POS (Stanza/spaCy) -> Penn tags, so every parser's
+    # table works with the Penn-based analyses below.
     header, data = CoNLL_util.normalize_to_canonical(header, data)
+
     all_CoNLL_records = CoNLL_util.CoNLL_record_division(data)
     if all_CoNLL_records == None:
         return

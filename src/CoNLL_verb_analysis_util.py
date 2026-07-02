@@ -53,6 +53,13 @@ cla_open_csv = False  # if run from command line, will check if they want to ope
 
 
 def process_df_headers(df, word_type):
+    if df.shape[1] == 0:
+        # Empty subcategory (no matching tokens, e.g. no modal verbs on a Stanza table): return an
+        # empty df carrying the expected headers so df_to_csv writes a valid header-only file and
+        # neither the column assignment below nor charting crashes.
+        _empty_headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag",
+                          "Record ID", "Sentence ID", "Document ID", "Document", word_type]
+        return pd.DataFrame(columns=_empty_headers), _empty_headers
     if len(df.columns)==15: #date column present
         df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
                       "Sentence ID", "Document ID", "Document", 'Date', word_type]
@@ -665,6 +672,15 @@ def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sen
     startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running VERB ANALYSES at',
                                                    True, '', True, '', True)
+
+    # With no verbs the sub-analyses below build 0-column DataFrames and pandas raises an opaque
+    # "Length mismatch" error on process_df_headers/column assignment. Detect the empty case up
+    # front (POS is at canonical position 3, tagset-normalized upstream) and skip instead of crashing.
+    verb_pos_tags = {'VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ', 'MD'}
+    if not any(len(tok) > 3 and tok[3] in verb_pos_tags for tok in data):
+        IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Verb analysis',
+            'No verbs were found in the CoNLL table.\n\nVerb analyses were skipped.')
+        return filesToOpen
 
     outputFiles = verb_compute_frequencies(inputFilename, outputDir, data, data_divided_sents,
                                    openOutputFiles, chartPackage, dataTransformation)

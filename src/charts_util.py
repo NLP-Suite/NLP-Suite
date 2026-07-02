@@ -431,6 +431,14 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
         print(
             'The file\n\n' + inputFilename + '\n\nis empty. No charts can be produced using this csv file.\n\nPlease, check the file and try again.')
         return filesToOpen
+    # A file with headers but no data rows (e.g. an empty word-class subcategory such as modal verbs
+    # on a Stanza table) cannot be plotted; skip it gracefully rather than erroring in the plotting code.
+    try:
+        if pd.read_csv(inputFilename, nrows=1).shape[0] == 0:
+            print('The file\n\n' + inputFilename + '\n\nhas no data rows; skipping chart.')
+            return filesToOpen
+    except Exception:
+        pass
     field_number_xAxis = None
     if len(columns_to_be_plotted_xAxis) == 1:
         field_number_xAxis = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted_xAxis[0],

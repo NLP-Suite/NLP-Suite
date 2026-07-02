@@ -99,6 +99,12 @@ def adjective_POSTAG_NER_DEPREL_compute_lists_frequencies(data, data_divided_sen
 
 def process_df_headers(df, word_type):
     num_columns = len(df.columns)
+    if num_columns == 0:
+        # Empty subcategory (no matching tokens): return an empty df carrying the expected headers
+        # so df_to_csv writes a valid header-only file and nothing crashes (instead of raising).
+        _empty_headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag",
+                          "Record ID", "Sentence ID", "Document ID", "Document", word_type]
+        return pd.DataFrame(columns=_empty_headers), _empty_headers
 
     if num_columns == 15:  # Includes a Date column
         df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
@@ -123,6 +129,13 @@ def adjective_stats(inputFilename, outputDir, data, data_divided_sents, openOutp
     adjective_postag_list, adjective_postag_stats, adjective_deprel_list, adjective_deprel_stats, adjective_ner_list, adjective_ner_stats = compute_stats(data)
 
     adjective_postag_list, adjective_deprel_list, adjective_ner_list, adjective_postag_stats, adjective_deprel_stats, adjective_ner_stats = adjective_POSTAG_NER_DEPREL_compute_lists_frequencies(data, data_divided_sents)
+
+    # No adjectives -> empty list -> 0-column DataFrame -> pandas "Length mismatch" crash on
+    # process_df_headers/column assignment. Warn and skip instead of crashing (see noun util).
+    if len(adjective_postag_list) == 0:
+        IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Adjective analysis',
+            'No adjectives were found in the CoNLL table.\n\nAdjective analyses were skipped.')
+        return filesToOpen
 
     ###debugging
     df = pd.DataFrame(adjective_postag_list)
