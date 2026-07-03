@@ -104,21 +104,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
                 filesToOpen.extend(outFiles)
 
     if SRL_var == 1:
-        import SRL_util
-        print(inputFilename)
-        if inputFilename and inputFilename[-4:].lower() == '.csv':
-            mb.showwarning(title='SRL input error',
-                           message='Semantic Role Labeling needs txt input (a txt file or a folder '
-                                   'of txt files), not a csv file.\n\nPlease select txt input and try again.')
-            return
-        srl_files = SRL_util.run_SRL(GUI_util.window, inputFilename, inputDir, outputDir,
-                                     chartPackage, dataTransformation)
-        if srl_files:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, srl_files, outputDir, scriptName)
-        # return
+        # SRL now has its own dedicated GUI (SRL_main.py); open it rather than running inline,
+        # so the hub inherits future SRL options (engine choice, nominal SRL). The engine itself
+        # still lives in SRL_util.run_SRL, called from that GUI.
+        run_script_util.run_script("SRL_main.py")
 
     # DOCUMENT embeddings: semantic similarity & clustering (SBERT). Promoted from the old
-    # 'More semantic analyses' dropdown to its own checkbox; runs inline like SRL/WSD.
+    # 'More semantic analyses' dropdown to its own checkbox; runs inline like WSD.
     if SSC_var == 1:
         import semantic_similarity_util
         # write the similarity matrix/heatmap/clusters into a dedicated subdirectory
@@ -715,7 +707,7 @@ WSD_checkbox = tk.Checkbutton(window, text='Word Sense Disambiguation (WSD) (via
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,WSD_checkbox,False)
 
 SRL_var.set(0)
-SRL_checkbox = tk.Checkbutton(window, text='Semantic Role Labelling (SRL)', variable=SRL_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+SRL_checkbox = tk.Checkbutton(window, text='Semantic Role Labelling (SRL) (Open GUI)', variable=SRL_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,SRL_checkbox,False)
 
 SSC_var.set(0)
