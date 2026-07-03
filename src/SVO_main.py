@@ -85,17 +85,21 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
     # Semantic Role Labeling runs in a separate isolated Python 3.8 env (see SRL_util) and is
     # independent of the SVO/parser pipeline. If SRL is checked, run it on its own and return.
     if SRL_var.get() == 1:
-        import SRL_util
-        if inputFilename and inputFilename[-4:].lower() == '.csv':
-            mb.showwarning(title='SRL input error',
-                           message='Semantic Role Labeling needs txt input (a txt file or a folder '
-                                   'of txt files), not a csv file.\n\nPlease select txt input and try again.')
-            return
-        srl_files = SRL_util.run_SRL(GUI_util.window, inputFilename, inputDir, outputDir,
-                                     chartPackage, dataTransformation)
-        if srl_files:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, srl_files, outputDir, scriptName)
+        run_script_util.run_script("SRL_main.py")
+        # SRL now has its own GUI; opening it must not fall through into the SVO pipeline below.
         return
+
+        # import SRL_util
+        # if inputFilename and inputFilename[-4:].lower() == '.csv':
+        #     mb.showwarning(title='SRL input error',
+        #                    message='Semantic Role Labeling needs txt input (a txt file or a folder '
+        #                            'of txt files), not a csv file.\n\nPlease select txt input and try again.')
+        #     return
+        # srl_files = SRL_util.run_SRL(GUI_util.window, inputFilename, inputDir, outputDir,
+        #                              chartPackage, dataTransformation)
+        # if srl_files:
+        #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, srl_files, outputDir, scriptName)
+        # return
 
     outputCorefedDir = ''
     outputSVODir = ''
@@ -1233,7 +1237,7 @@ def activate_annotator(annotator_type):
             quote_var.set(0)
 
 SRL_var.set(0)
-SRL_checkbox = tk.Checkbutton(window, text='SRL (Semantic Role Labeling)',
+SRL_checkbox = tk.Checkbutton(window, text='Semantic Role Labeling (SRL) (Open GUI)',
                                                 variable=SRL_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                                SRL_checkbox)

@@ -35,6 +35,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
         WSIdictionary_file_var,
         WSD_var,
         SRL_var,
+        SSC_var,
         vocabulary_analysis_var,
         vocabulary_analysis_menu_var):
 
@@ -66,6 +67,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
         WSI_var == False and
         WSD_var == False and
         SRL_var == False and
+        SSC_var == False and
         vocabulary_analysis_var == False):
         mb.showwarning('Warning','No options have been selected.\n\nPlease, select an option and try again.')
         return
@@ -115,6 +117,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, srl_files, outputDir, scriptName)
         # return
 
+    # DOCUMENT embeddings: semantic similarity & clustering (SBERT). Promoted from the old
+    # 'More semantic analyses' dropdown to its own checkbox; runs inline like SRL/WSD.
+    if SSC_var == 1:
+        import semantic_similarity_util
+        # write the similarity matrix/heatmap/clusters into a dedicated subdirectory
+        # (keeps them out of the cluttered main output dir)
+        simDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                                                        label='semantic_similarity', silent=True) or outputDir
+        outFiles = semantic_similarity_util.document_similarity_clustering(window, inputFilename, inputDir, simDir, openOutputFiles, chartPackage, dataTransformation)
+        if outFiles:
+            filesToOpen.extend(outFiles)
+
     # vocabulary analysis    ---------------------------------------------------------------------
 
     if vocabulary_analysis_var == True:
@@ -136,16 +150,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
                 return
         else:
             outputDir_style=outputDir
-
-        if 'Semantic similarity' in vocabulary_analysis_menu_var:
-            import semantic_similarity_util
-            # write the similarity matrix/heatmap/clusters into a dedicated subdirectory
-            # (keeps them out of the cluttered main output dir)
-            simDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
-                                                            label='semantic_similarity', silent=True) or outputDir
-            outFiles = semantic_similarity_util.document_similarity_clustering(window, inputFilename, inputDir, simDir, openOutputFiles, chartPackage, dataTransformation)
-            if outFiles:
-                filesToOpen.extend(outFiles)
 
         if '*' in vocabulary_analysis_menu_var or 'Coreference' in vocabulary_analysis_menu_var:
             run_script_util.run_script("coreference_main.py")
@@ -435,6 +439,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 WSIdictionary_file_var.get(),
                                 WSD_var.get(),
                                 SRL_var.get(),
+                                SSC_var.get(),
                                 vocabulary_analysis_var.get(),
                                 vocabulary_analysis_menu_var.get())
 
@@ -447,8 +452,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=600, # height at brief display
-                             GUI_height_full=560, # height at full display
+                             GUI_height_brief=640, # height at brief display
+                             GUI_height_full=600, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=1, # to be added for full display
                              increment=1)  # to be added for full display
@@ -483,6 +488,8 @@ extra_GUIs_var = tk.IntVar()
 WSI_var = tk.IntVar()
 WSD_var = tk.IntVar()
 SRL_var = tk.IntVar()
+SSC_var = tk.IntVar() # semantic similarity & clustering
+
 # WSD_menu_var= tk.StringVar()
 
 def clear(e):
@@ -494,6 +501,7 @@ def clear(e):
     WSI_var.set(0)
     WSD_var.set(0)
     SRL_var.set(0)
+    SSC_var.set(0)
 
     vocabulary_analysis_var.set(0)
 
@@ -517,6 +525,7 @@ vocabulary_analysis_var=tk.IntVar()
 vocabulary_analysis_menu_var=tk.StringVar()
 
 def check_csv_file_headers(csv_file):
+    import CoNLL_util
     cannotRun=False
     inputIsCoNLL = CoNLL_util.check_CoNLL(csv_file_var.get(), True)
     if inputIsCoNLL:
@@ -709,13 +718,17 @@ SRL_var.set(0)
 SRL_checkbox = tk.Checkbutton(window, text='Semantic Role Labelling (SRL)', variable=SRL_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,SRL_checkbox,False)
 
-semantic_aggregation_button=tk.Button(window, width=70, text='Aggregate words by semantics (Open GUI)',command=lambda: run_script_util.run_script("semantic_aggregation_main.py"))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               semantic_aggregation_button, False)
+SSC_var.set(0)
+SSC_checkbox = tk.Checkbutton(window, text='DOCUMENT embeddings: Semantic similarity & clustering', variable=SSC_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,SSC_checkbox,False)
 
-classify_words_by_semantic_closeness_button=tk.Button(window, width=70, text='Classify words by semantic proximity: Word2Vec & word embeddings (Open GUI)',command=lambda: run_script_util.run_script("Word2Vec_main.py"))
+classify_words_by_semantic_closeness_button=tk.Button(window, width=90, text='WORD embeddings: Classify words by semantic proximity: Word2Vec & word embeddings (Open GUI)',command=lambda: run_script_util.run_script("Word2Vec_main.py"))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                classify_words_by_semantic_closeness_button, False)
+
+semantic_aggregation_button=tk.Button(window, width=90, text='Aggregate words by semantics (Open GUI)',command=lambda: run_script_util.run_script("semantic_aggregation_main.py"))
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                               semantic_aggregation_button, False)
 
 
 vocabulary_analysis_var.set(0)
@@ -732,8 +745,7 @@ vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*'
                                          'Abstract/concrete vocabulary',
                                          'Iconic vocabulary',
                                          'Objectivity/subjectivity (via spaCy)',
-                                         'Topic modelling',
-                                         'Semantic similarity & clustering (document embeddings)')
+                                         'Topic modelling')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    vocabulary_analysis_menu,
                                    False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
@@ -821,12 +833,14 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          "Tick 'Semantic Role Labelling (SRL)' to label, for each predicate in a sentence, its semantic arguments - WHO did WHAT to WHOM, and when/where/why (agent, patient, instrument, etc.). Where a parser gives grammatical relations (subject, object), SRL gives the MEANING roles the phrases play around a predicate.\n\nIn NLP Suite, SRL is also the sense-disambiguated route to VerbNet classes and FrameNet frames (via PropBank predicate senses and the SemLink mappings), complementing the WordNet-based WSD option above.\n\nNote: standard SRL is VERBAL - predicates are verbs; noun-evoked frames would require nominal SRL, which is not yet integrated.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                                         "Click 'Aggregate words by semantics (Open GUI)' to open the Semantic Aggregation GUI. There you can classify and aggregate the NOUNS and VERBS of your corpus into WordNet, VerbNet, and FrameNet categories: build a word list from a category (Zoom IN/DOWN), or roll words up into higher-level categories (Zoom OUT/UP) - at the top-level supersense or at a lower-level synset you choose. This is the context-blind (first-sense) counterpart to the Word Sense Disambiguation option above.")
+                                                         "Tick 'DOCUMENT embeddings: Semantic similarity & clustering to embed each document with SBERT (sentence-transformers) and compute a document-by-document semantic similarity matrix (csv + an interactive heatmap) and cluster the documents by MEANING (number of clusters chosen automatically). This is the document-level counterpart to the word-level Word2Vec/BERT embeddings. Needs at least 2 txt documents; the SBERT model downloads once (~80 MB) on first use.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          "Click 'Classify words by semantic proximity: Word2Vec & word embeddings (Open GUI)' to open the Word2Vec GUI. Instead of mapping words to predefined categories (as WordNet/VerbNet/FrameNet do), this learns each word's meaning from HOW IT IS USED in your corpus - producing word embeddings (Word2Vec/Gensim, or BERT) so you can find words that are semantically close, i.e. used in similar contexts. A data-driven notion of meaning, complementary to the inventory-based aggregation and WSD options.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                                         "Click 'Aggregate words by semantics (Open GUI)' to open the Semantic Aggregation GUI. There you can classify and aggregate the NOUNS and VERBS of your corpus into WordNet, VerbNet, and FrameNet categories: build a word list from a category (Zoom IN/DOWN), or roll words up into higher-level categories (Zoom OUT/UP) - at the top-level supersense or at a lower-level synset you choose. This is the context-blind (first-sense) counterpart to the Word Sense Disambiguation option above.")
     #
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                                         "Please, tick 'More semantic analyses' and use the dropdown menu to select an analysis:\n\n   1. Coreference resolution (Open GUI) - opens the Coreference GUI to resolve pronouns to their antecedents; when it finishes you can choose to use the new coreferenced corpus for your analyses in this GUI.\n\n   2. Nominalization - detect deverbal nouns (nouns derived from verbs, e.g. 'destruction' from 'destroy').\n\n   3. Abstract/concrete vocabulary - mean/median concreteness per sentence (0=abstract to 5=concrete), using the ratings by Brysbaert, Warriner & Kuperman, Concreteness Ratings for 40 Thousand Generally Known English Word Lemmas, Behavioral Research (2014) 46:904-911. English only.\n\n   4. Iconic vocabulary - (not available yet).\n\n   5. Objectivity/subjectivity (via spaCy) - score how objective vs. subjective the language is.\n\n   6. Topic modelling - discover the latent topics in the corpus.\n\n   7. Semantic similarity & clustering (document embeddings) - embed each document with SBERT (sentence-transformers) and compute a document-by-document semantic similarity matrix (csv + an interactive heatmap) and cluster the documents by MEANING (number of clusters chosen automatically). This is the document-level counterpart to the word-level Word2Vec/BERT embeddings. Needs at least 2 txt documents; the SBERT model downloads once (~80 MB) on first use.")
+                                                         "Please, tick 'More semantic analyses' and use the dropdown menu to select an analysis:\n\n   1. Coreference resolution (Open GUI) - opens the Coreference GUI to resolve pronouns to their antecedents; when it finishes you can choose to use the new coreferenced corpus for your analyses in this GUI.\n\n   2. Nominalization - detect deverbal nouns (nouns derived from verbs, e.g. 'destruction' from 'destroy').\n\n   3. Abstract/concrete vocabulary - mean/median concreteness per sentence (0=abstract to 5=concrete), using the ratings by Brysbaert, Warriner & Kuperman, Concreteness Ratings for 40 Thousand Generally Known English Word Lemmas, Behavioral Research (2014) 46:904-911. English only.\n\n   4. Iconic vocabulary - (not available yet).\n\n   5. Objectivity/subjectivity (via spaCy) - score how objective vs. subjective the language is.\n\n   6. Topic modelling - discover the latent topics in the corpus.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)

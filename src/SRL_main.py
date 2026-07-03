@@ -2,11 +2,6 @@
 #edited by Elaine Dong, Dec 04 2019
 #edited by Roberto Franzosi, Nov 2019, October 2020
 
-# https://stackoverflow.com/questions/2836959/adjective-nominalization-in-python-nltk
-# https://stackoverflow.com/questions/45109767/get-verb-from-noun-wordnet-python
-
-# https://github.com/topics/nominalization
-# https://pypi.org/project/qanom/0.0.1/
 
 import sys
 import GUI_util
@@ -20,22 +15,22 @@ import GUI_IO_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,inputDir, outputDir,openOutputFiles,chartPackage, dataTransformation,check_ending):
+def run(inputFilename,inputDir, outputDir,openOutputFiles,chartPackage, dataTransformation):
 
     config_filename = GUI_util.config_filename_selected_config.get()
     filesToOpen = []
-
-    import nominalization_util
-    outputFiles = nominalization_util.nominalization(inputFilename,inputDir, outputDir, config_filename, config_input_output_numeric_options, openOutputFiles,chartPackage,dataTransformation,check_ending)
-
-    if outputFiles!=None:
-        if isinstance(outputFiles, str):
-            filesToOpen.append(outputFiles)
-        else:
-            filesToOpen.extend(outputFiles)
-
-    if openOutputFiles == 1:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
+    if SRL_var.get() == 1:
+        import SRL_util
+        if inputFilename and inputFilename[-4:].lower() == '.csv':
+            mb.showwarning(title='SRL input error',
+                           message='Semantic Role Labeling needs txt input (a txt file or a folder '
+                                   'of txt files), not a csv file.\n\nPlease select txt input and try again.')
+            return
+        srl_files = SRL_util.run_SRL(GUI_util.window, inputFilename, inputDir, outputDir,
+                                     chartPackage, dataTransformation)
+        if srl_files:
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, srl_files, outputDir, scriptName)
+        return
 
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
@@ -44,8 +39,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.charts_package_options_widget.get(),
-                                GUI_util.data_transformation_options_widget.get(),
-                                check_nom_verb_ending_var.get())
+                                GUI_util.data_transformation_options_widget.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -63,7 +57,8 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
 
-GUI_label='Graphical User Interface (GUI) for Nominalization'
+GUI_label='Graphical User Interface (GUI) for Semantic Role Labelling (SRL)'
+
 head, scriptName = os.path.split(os.path.basename(__file__))
 # hardcode the default config here (as every other GUI does): at module-init time
 # GUI_util.config_filename_selected_config is not yet populated and .get() returns '', which makes
@@ -98,7 +93,7 @@ csv_file_var = tk.StringVar()
 extra_GUIs_var = tk.IntVar()
 extra_GUIs_menu_var = tk.StringVar()
 
-check_nom_verb_ending_var = tk.IntVar()
+SRL_var = tk.IntVar()
 
 def check_csv_file_headers(csv_file):
     import CoNLL_util
@@ -160,7 +155,7 @@ extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analy
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Semantic analysis (Open GUI)','Parsers & annotators (Open GUI)','N-grams & Co-Occurrences (Open GUI)','CoNLL table analyzer (Open GUI)','WordNet (Open GUI)','What\'s in Your Corpus (Open GUI)')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Subject-Verb-Object (SVO)','Semantic analysis (Open GUI)','Parsers & annotators (Open GUI)','N-grams & Co-Occurrences (Open GUI)','CoNLL table analyzer (Open GUI)','WordNet (Open GUI)','What\'s in Your Corpus (Open GUI)')
 extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -178,6 +173,8 @@ def open_GUI(*args):
             run_script_util.run_script("semantic_analysis_main.py")
         elif 'Parser' in extra_GUIs_menu_var.get():
             run_script_util.run_script("parsers_annotators_main.py")
+        elif 'SVO' in extra_GUIs_menu_var.get():
+            run_script_util.run_script("SVO_main.py")
         elif 'CoNLL' in extra_GUIs_menu_var.get():
             run_script_util.run_script("CoNLL_table_analyzer_main.py")
         else:
@@ -187,16 +184,15 @@ def open_GUI(*args):
 
 extra_GUIs_menu_var.trace('w',open_GUI)
 
-check_nom_verb_ending_var.set(1)
-check_nom_verb_ending_checkbox = tk.Checkbutton(window, variable=check_nom_verb_ending_var, onvalue=1, offvalue=0)
-check_nom_verb_ending_checkbox.config(text="Check the nominalized verb ending")
+SRL_var.set(1)
+SRL_checkbox = tk.Checkbutton(window, variable=SRL_var, onvalue=1, offvalue=0)
+SRL_checkbox.config(text="Semantic Role Labelling (SRL)")
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer,
-                                               check_nom_verb_ending_checkbox, False, False, False, False, 90,
+                                               SRL_checkbox, False, False, False, False, 90,
                                                GUI_IO_util.labels_x_coordinate,
-                                               "The checkbox, when ticked, checks nominalized verbs (i.e., nouns) for the typical ending of nominalized verbs (nment, ing, ion, ance, ence)\n" \
-                                               "and for the values listed in the nominalized-verbs-list.csv in the lib/wordList subdirectory that users can edit")
+                                               "The checkbox, when ticked, checks CLAUDE CODE ")
 
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,check_nom_verb_ending_checkbox)
 
@@ -224,7 +220,20 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                                              "NLP Suite Help",
                                                              'Please, tick the \'GUIs available\' checkbox if you wish to see and select the range of other available tools suitable for stylistic analysis.')
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, untick the checkbox if you do not want to check nominalized verbs for their typical ending (e.g., ing, ion; see TIPS file).\n\nWhen the checkbox is ticked, nomanilized verbs will also be checked against the values listed in the nominalized-verbs-list.csv in the lib/wordLists subdirectory that users can edit.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Tick the SRL (Semantic Role Labeling) checkbox to identify, for every verb (predicate) in a sentence, WHO did WHAT to WHOM:\n"
+                                  "   ARG0 = the Agent (the doer);\n"
+                                  "   ARG1 = the Patient (the one acted upon/affected);\n"
+                                  "   ARG2 = the Recipient or Beneficiary;\n"
+                                  "   plus modifiers Where (ARGM-LOC), When (ARGM-TMP), How (ARGM-MNR), and Why (ARGM-CAU).\n\n"
+                                  "SRL is the richer successor to Subject-Verb-Object (SVO) analysis. In INPUT it expects a txt file or a directory of txt files (ENGLISH ONLY). In OUTPUT it produces a csv file with one row per sentence-and-predicate (a sentence with several verbs yields several rows).\n\n"
+                                  "Beyond the raw PropBank arguments, SRL enriches each predicate via SemLink (Palmer's PropBank-VerbNet-FrameNet linking):\n"
+                                  "   Refined roles = fairly-accurate VerbNet thematic roles (Agent, Patient/Theme, Experiencer, Stimulus, Recipient, Goal, Result...), keeping the preposition cue alongside when it differs (e.g. 'Destination / Source');\n"
+                                  "   VerbNet class = the sense-disambiguated VerbNet class of the predicate (e.g. murder.01 = murder-42.1) - a backbone for grouping verbs into categories such as 'violence';\n"
+                                  "   FrameNet frame = the disambiguated FrameNet frame (Killing, Destroying, Execution, Attack, Cause_harm...) - interpretable action categories for content analysis (e.g. lynch = Killing).\n\n"
+                                  "Visualizations include a 'who did what to whom' network and Sankey flow (both entity-level and VerbNet-role-level), plus frequency charts of the refined roles, VerbNet classes, and FrameNet frames.\n\n"
+                                  "SRL runs in a separate, isolated Python 3.8 engine (it cannot share the Suite's packages) that is set up once per machine by running  python setup_SRL.py  - this creates the environment, downloads the BERT model, and fetches the SemLink maps. The VerbNet class and FrameNet frame columns need those maps; without them SRL still runs with heuristic refined roles.\n\n"
+                                  "Note: lemmatization inside the SRL engine uses spaCy (already present in that isolated environment), not the Suite's default Stanza, which is not installed there.\n\n"
+                                  "The first run loads the BERT-based model and may take 30-60 seconds; the GUI will appear frozen (Not Responding) while SRL runs. This is normal - please be patient."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
 
     return y_multiplier_integer -1
@@ -232,7 +241,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
-readMe_message="These Python 3 scripts analyze a text file (or a directory of text files) for instances of nominalization, i.e., the use of a noun derived from a verb (a deverbal noun) instead of the verb itself, such as 'the lynching occurred' instead of 'they lynched'.\n\nNominalization, together with the passive voice, can be used to deny agency: in an expression such as 'the lynching occurred' there is no mention of an agent, of who did it.\n\nHOW IT WORKS. Each word is tagged for part of speech and lemmatized using the NLP Suite's configuration-aware basic NLP layer (spaCy or Stanza, according to your setup). Every noun is then tested against WordNet's derivational morphology (Fellbaum 1998): a noun is flagged as a nominalization when WordNet links it to a base VERB through a derivationally related form, with a derivation-direction (length) constraint so that only nouns DERIVED from verbs are kept (e.g., 'destruction' -> 'destroy'). The scripts no longer rely on pywsd. Optionally (checkbox) nominalized nouns are also filtered by their typical endings (-ing, -ion, -ent, -ance, -ence) and checked against an editable list, lib/wordLists/nominalized-verbs-list.csv, which you can extend with nominalizations that do not follow the standard endings.\n\nIN OUTPUT the scripts produce\n   1. a csv file listing each noun with its base verb and a TRUE/FALSE nominalization flag;\n   2. a csv file with the frequency distribution of the nominalized verbs;\n   3. a csv file with the frequency distribution of nominalizations by sentence index;\n   4. bar charts of these frequency distributions."
+readMe_message="CLAUDE CODE These Python 3 scripts analyze a text file (or a directory of text files) for instances of nominalization, i.e., the use of a noun derived from a verb (a deverbal noun) instead of the verb itself, such as 'the lynching occurred' instead of 'they lynched'.\n\nNominalization, together with the passive voice, can be used to deny agency: in an expression such as 'the lynching occurred' there is no mention of an agent, of who did it.\n\nHOW IT WORKS. Each word is tagged for part of speech and lemmatized using the NLP Suite's configuration-aware basic NLP layer (spaCy or Stanza, according to your setup). Every noun is then tested against WordNet's derivational morphology (Fellbaum 1998): a noun is flagged as a nominalization when WordNet links it to a base VERB through a derivationally related form, with a derivation-direction (length) constraint so that only nouns DERIVED from verbs are kept (e.g., 'destruction' -> 'destroy'). The scripts no longer rely on pywsd. Optionally (checkbox) nominalized nouns are also filtered by their typical endings (-ing, -ion, -ent, -ance, -ence) and checked against an editable list, lib/wordLists/nominalized-verbs-list.csv, which you can extend with nominalizations that do not follow the standard endings.\n\nIN OUTPUT the scripts produce\n   1. a csv file listing each noun with its base verb and a TRUE/FALSE nominalization flag;\n   2. a csv file with the frequency distribution of the nominalized verbs;\n   3. a csv file with the frequency distribution of nominalizations by sentence index;\n   4. bar charts of these frequency distributions."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 

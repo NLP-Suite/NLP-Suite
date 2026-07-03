@@ -13,6 +13,7 @@ import tkinter.messagebox as mb
 
 import IO_files_util
 import IO_user_interface_util
+import GUI_util
 
 # SRL runs in a SEPARATE isolated Python 3.8 env (transformer-srl pins a legacy torch 1.7 / allennlp
 # 1.2 / spaCy-2 stack), invoked as a subprocess - the same pattern CoreNLP uses for Java. To work on
