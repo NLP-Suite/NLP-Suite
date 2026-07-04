@@ -90,6 +90,12 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,chartPackage,dataTransf
         else:
             run_mw_kw = stat_test_option in ('*', 'Mann-Whitney U / Kruskal-Wallis')
             run_ll = stat_test_option in ('*', 'Log-likelihood (corpus comparison)')
+            run_chi = stat_test_option == 'Chi-square (independence)'
+            run_corr = stat_test_option == 'Correlation (Spearman / Kendall)'
+            run_mk = stat_test_option == 'Mann-Kendall (temporal trend)'
+            run_cp = stat_test_option == 'Change-point detection (temporal)'
+            run_perm = stat_test_option == 'Permutation test (two groups)'
+            run_kappa = stat_test_option == "Inter-annotator agreement (Cohen's / Fleiss' kappa)"
 
             if run_mw_kw:
                 if stat_value_col == '' or stat_group_col == '':
@@ -120,6 +126,79 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,chartPackage,dataTransf
                         stat_freq_col1 if stat_freq_col1 != '' else None,
                         stat_freq_col2 if stat_freq_col2 != '' else None,
                         stat_corpus_col if stat_corpus_col != '' else None,
+                        chartPackage, dataTransformation)
+                    if outputFiles:
+                        filesToOpen.extend(outputFiles)
+
+            if run_chi:
+                if stat_value_col == '' or stat_group_col == '':
+                    mb.showwarning(title='Missing fields',
+                                   message='The Chi-square test of independence requires two categorical columns.\n\nPlease, select the Value column (variable A) and the Group column (variable B) and try again.')
+                else:
+                    outputFiles = statistics_statistical_tests_util.run_chi_square_test(
+                        csv_file, outputDir, stat_value_col, stat_group_col,
+                        chartPackage, dataTransformation)
+                    if outputFiles:
+                        filesToOpen.extend(outputFiles)
+
+            if run_corr:
+                if stat_value_col == '' or stat_group_col == '':
+                    mb.showwarning(title='Missing fields',
+                                   message='The correlation test requires two numeric columns.\n\nPlease, select the Value column (Y) and the Group column (X) and try again.')
+                else:
+                    outputFiles = statistics_statistical_tests_util.run_correlation_test(
+                        csv_file, outputDir, stat_group_col, stat_value_col,
+                        'spearman', chartPackage, dataTransformation)
+                    if outputFiles:
+                        filesToOpen.extend(outputFiles)
+
+            if run_mk:
+                if stat_value_col == '' or stat_group_col == '':
+                    mb.showwarning(title='Missing fields',
+                                   message='The Mann-Kendall trend test requires a numeric Value column and a date/time Group column.\n\nPlease, select the Value column (numeric series) and the Group column (date/time) and try again.')
+                else:
+                    outputFiles = statistics_statistical_tests_util.run_mann_kendall_trend_test(
+                        csv_file, outputDir, stat_group_col, stat_value_col,
+                        chartPackage, dataTransformation)
+                    if outputFiles:
+                        filesToOpen.extend(outputFiles)
+
+            if run_cp:
+                if stat_value_col == '' or stat_group_col == '':
+                    mb.showwarning(title='Missing fields',
+                                   message='Change-point detection requires a numeric Value column and a date/time (or ordered) Group column.\n\nPlease, select the Value column (numeric series) and the Group column (date/time) and try again.')
+                else:
+                    outputFiles = statistics_statistical_tests_util.run_change_point_test(
+                        csv_file, outputDir, stat_group_col, stat_value_col,
+                        chartPackage, dataTransformation)
+                    if outputFiles:
+                        filesToOpen.extend(outputFiles)
+
+            if run_perm:
+                if stat_value_col == '' or stat_group_col == '':
+                    mb.showwarning(title='Missing fields',
+                                   message='The permutation test requires a numeric Value column and a 2-group Group column.\n\nPlease, select the Value column (numeric) and the Group column (category) and try again.')
+                else:
+                    outputFiles = statistics_statistical_tests_util.run_permutation_test(
+                        csv_file, outputDir, stat_value_col, stat_group_col,
+                        10000, chartPackage, dataTransformation)
+                    if outputFiles:
+                        filesToOpen.extend(outputFiles)
+
+            if run_kappa:
+                # every selected column is treated as one annotator's/tool's labels;
+                # 2 columns -> Cohen's kappa, 3+ -> Fleiss' kappa
+                rater_cols = [c for c in [stat_value_col, stat_group_col, stat_word_col,
+                                          stat_freq_col1, stat_freq_col2, stat_corpus_col] if c != '']
+                if len(rater_cols) < 2:
+                    mb.showwarning(title='Missing fields',
+                                   message="Inter-annotator agreement requires at least 2 annotator/tool columns.\n\n"
+                                           "Select one column per annotator, e.g. Value column = Stanza tags, Group column = spaCy tags. "
+                                           "Add more columns (Word / Freq / Corpus selectors) for 3+ annotators (Fleiss' kappa).\n\n"
+                                           "Please, select the columns and try again.")
+                else:
+                    outputFiles = statistics_statistical_tests_util.run_kappa_test(
+                        csv_file, outputDir, rater_cols,
                         chartPackage, dataTransformation)
                     if outputFiles:
                         filesToOpen.extend(outputFiles)
@@ -220,8 +299,28 @@ def get_input_csv_file(window_ref, title, fileType):
             filePath = ''
         else:
             input_csv_file_var.set(filePath)
+            # Mirror the selection into the standard GUI input file. The RUN button is gated on
+            # GUI_util.inputFilename (config option [3,0,0,1] expects a csv FILE); the custom button
+            # alone left it empty, so RUN stayed disabled. Clearing input_main_dir_path is required
+            # too: activateRunButton disables RUN when an input dir is set but none is expected.
+            GUI_util.inputFilename.set(filePath)
+            GUI_util.input_main_dir_path.set('')
             changed_filename()
+            refresh_run_button()
     return filePath
+
+
+def refresh_run_button():
+    # Re-evaluate the RUN button after selecting the input csv via the custom button.
+    # The input file is validated live by GUI_util.check_fileName; the output directory is still
+    # required, so flag it as missing when unset (keeps RUN disabled instead of failing at run time).
+    out_dir = GUI_util.output_dir_path.get()
+    missing = '' if out_dir != '' else 'OUTPUT files directory\n'
+    cfg = GUI_util.config_filename_selected_config.get() or config_filename
+    try:
+        GUI_util.activateRunButton(cfg, IO_setup_display_brief, scriptName, missing, True)
+    except Exception as e:
+        print('refresh_run_button: could not re-evaluate RUN button:', e)
 
 input_csv_file_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',
                                   command=lambda: get_input_csv_file(window, 'Select INPUT csv file', [("csv files", "*.csv")]))
@@ -261,6 +360,7 @@ def clear(e):
     # corpus_statistics_var.set(0)
     # corpus_statistics_options_menu_var.set('*')
     # corpus_text_options_menu_var.set('')
+    input_csv_file_var.set("")
     all_csv_stats_var.set(0)
     csv_field_freq_var.set(0)
     stat_test_var.set(0)
@@ -618,16 +718,26 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                                "Tick the checkbox to run statistical hypothesis tests on the selected csv file.\n\n"
                                                "Use the dropdown menu to select a specific test or * for all available tests.")
 
-stat_test_options = ['*', 'Mann-Whitney U / Kruskal-Wallis', 'Log-likelihood (corpus comparison)']
+stat_test_options = ['*', 'Mann-Whitney U / Kruskal-Wallis', 'Chi-square (independence)',
+                     'Correlation (Spearman / Kendall)', 'Mann-Kendall (temporal trend)',
+                     'Change-point detection (temporal)', 'Permutation test (two groups)',
+                     'Log-likelihood (corpus comparison)',
+                     "Inter-annotator agreement (Cohen's / Fleiss' kappa)"]
 stat_test_menu = tk.OptionMenu(window, stat_test_menu_var, *stat_test_options)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.statistics_csv_csv_groupBy_field_menu_pos, y_multiplier_integer,
                                                stat_test_menu,
                                                False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
-                                               "Select which hypothesis test to run:\n\n"
-                                               "* = run both tests\n\n"
-                                               "Mann-Whitney U / Kruskal-Wallis: compare a numeric variable across groups "
+                                               "Select which hypothesis test to run. Most tests use two columns: the Value column (first variable) and the Group column (second variable).\n\n"
+                                               "* = run Mann-Whitney/Kruskal-Wallis AND Log-likelihood.\n\n"
+                                               "Mann-Whitney U / Kruskal-Wallis (Value=numeric, Group=category): compare a numeric variable across groups "
                                                "(2 groups → Mann-Whitney; 3+ groups → Kruskal-Wallis with Dunn's post-hoc).\n\n"
-                                               "Log-likelihood (corpus comparison): identify words statistically over/under-represented in one corpus vs another.")
+                                               "Chi-square (independence) (Value=category A, Group=category B): test whether two categorical variables are associated (+ Cramer's V).\n\n"
+                                               "Correlation (Spearman / Kendall) (Value=Y numeric, Group=X numeric): test monotonic association between two numeric variables.\n\n"
+                                               "Mann-Kendall (temporal trend) (Value=numeric series, Group=date/time): test for a significant increasing/decreasing trend over time (+ Sen's slope).\n\n"
+                                               "Change-point detection (temporal) (Value=numeric series, Group=date/time): find a single abrupt shift in the series (Pettitt's test) and the mean before/after.\n\n"
+                                               "Permutation test (two groups) (Value=numeric, Group=2 categories): distribution-free test of the difference in group means by shuffling labels (+ Cohen's d).\n\n"
+                                               "Log-likelihood (corpus comparison): identify words statistically over/under-represented in one corpus vs another (uses Word / Freq / Corpus columns below).\n\n"
+                                               "Inter-annotator agreement (Cohen's / Fleiss' kappa): measure how well 2+ annotators/tools agree. Each selected column (Value, Group, and optionally Word / Freq / Corpus) is one annotator's labels; 2 columns → Cohen's, 3+ → Fleiss'.")
 
 # Mann-Whitney / Kruskal-Wallis field selectors
 stat_value_col_lb = tk.Label(window, text='Value column')
@@ -690,12 +800,20 @@ def activate_stat_test_options(*args):
     if stat_test_var.get() == 1:
         stat_test_menu.configure(state='normal')
         option = stat_test_menu_var.get()
-        run_mw = option in ('*', 'Mann-Whitney U / Kruskal-Wallis')
+        run_kappa = option == "Inter-annotator agreement (Cohen's / Fleiss' kappa)"
+        # tests that use the Value column (var A) + Group column (var B)
+        run_value_group = option in ('*', 'Mann-Whitney U / Kruskal-Wallis',
+                                     'Chi-square (independence)',
+                                     'Correlation (Spearman / Kendall)',
+                                     'Mann-Kendall (temporal trend)',
+                                     'Change-point detection (temporal)',
+                                     'Permutation test (two groups)')
         run_ll = option in ('*', 'Log-likelihood (corpus comparison)')
-        state_mw = 'normal' if run_mw else 'disabled'
-        state_ll = 'normal' if run_ll else 'disabled'
-        stat_value_col_menu.configure(state=state_mw)
-        stat_group_col_menu.configure(state=state_mw)
+        # kappa can use every column selector (each column = one annotator)
+        state_vg = 'normal' if (run_value_group or run_kappa) else 'disabled'
+        state_ll = 'normal' if (run_ll or run_kappa) else 'disabled'
+        stat_value_col_menu.configure(state=state_vg)
+        stat_group_col_menu.configure(state=state_vg)
         stat_word_col_menu.configure(state=state_ll)
         stat_freq_col1_menu.configure(state=state_ll)
         stat_freq_col2_menu.configure(state=state_ll)
@@ -752,11 +870,18 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   'Please, using the dropdown menu, for the selected csv field, selected  one or more group-by fields (e.g., compute the frequencies of POSTAG values by DocumentID in a CoNLL table displaying both words and lemmas in hover over.) \n\nMultiple fields can be selected by pressing the + button.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox to run statistical hypothesis tests.\n\n"
+                                  "Most tests use two columns: the Value column (first variable) and the Group column (second variable).\n\n"
                                   "Use the dropdown menu to select:\n"
-                                  "   * = run both tests\n"
-                                  "   Mann-Whitney U / Kruskal-Wallis: compare a numeric variable across groups "
+                                  "   * = run Mann-Whitney/Kruskal-Wallis AND Log-likelihood\n"
+                                  "   Mann-Whitney U / Kruskal-Wallis (Value=numeric, Group=category): compare a numeric variable across groups "
                                   "(2 groups → Mann-Whitney U; 3+ groups → Kruskal-Wallis with Dunn's post-hoc).\n"
-                                  "   Log-likelihood (corpus comparison): identify words statistically over/under-represented in one corpus vs another.")
+                                  "   Chi-square (independence) (Value=category A, Group=category B): test association between two categorical variables (+ Cramer's V).\n"
+                                  "   Correlation (Spearman / Kendall) (Value=Y, Group=X, both numeric): test monotonic association between two numeric variables.\n"
+                                  "   Mann-Kendall (temporal trend) (Value=numeric series, Group=date/time): test for a significant trend over time (+ Sen's slope).\n"
+                                  "   Change-point detection (temporal) (Value=numeric series, Group=date/time): find a single abrupt shift in the series (Pettitt's test).\n"
+                                  "   Permutation test (two groups) (Value=numeric, Group=2 categories): distribution-free test of the difference in group means (+ Cohen's d).\n"
+                                  "   Log-likelihood (corpus comparison): identify words statistically over/under-represented in one corpus vs another.\n"
+                                  "   Inter-annotator agreement (Cohen's / Fleiss' kappa): measure how well 2+ annotators/tools agree; each selected column is one annotator (2 → Cohen's, 3+ → Fleiss').")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Mann-Whitney / Kruskal-Wallis fields: select the numeric Value column (e.g., Sentiment score) and the categorical Group column (e.g., Document, Corpus).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",

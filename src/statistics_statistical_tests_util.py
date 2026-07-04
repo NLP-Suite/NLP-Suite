@@ -725,6 +725,400 @@ def run_correlation_test(inputFilename, outputDir, col_x, col_y,
 
 
 # ---------------------------------------------------------------------------
+#  7. Inter-Annotator Agreement (Cohen's / Fleiss' kappa)
+# ---------------------------------------------------------------------------
+
+def _cohens_kappa(labels_a, labels_b):
+    categories = sorted(set(labels_a) | set(labels_b), key=lambda v: str(v))
+    cat_index = {c: i for i, c in enumerate(categories)}
+    k = len(categories)
+    n = len(labels_a)
+    cm = np.zeros((k, k), dtype=float)
+    for a, b in zip(labels_a, labels_b):
+        cm[cat_index[a], cat_index[b]] += 1
+    po = np.trace(cm) / n if n > 0 else 0.0
+    row_marg = cm.sum(axis=1) / n
+    col_marg = cm.sum(axis=0) / n
+    pe = float(np.sum(row_marg * col_marg))
+    kappa = (po - pe) / (1 - pe) if (1 - pe) != 0 else 0.0
+    return kappa, po, pe, categories, cm
+
+
+def _fleiss_kappa(rating_matrix):
+    # rating_matrix: N items x K categories; cell = number of raters assigning item i to category j
+    N, k = rating_matrix.shape
+    n_raters = rating_matrix[0].sum()
+    p_j = rating_matrix.sum(axis=0) / (N * n_raters)
+    P_i = (np.sum(rating_matrix ** 2, axis=1) - n_raters) / (n_raters * (n_raters - 1))
+    P_bar = float(np.mean(P_i))
+    Pe_bar = float(np.sum(p_j ** 2))
+    kappa = (P_bar - Pe_bar) / (1 - Pe_bar) if (1 - Pe_bar) != 0 else 0.0
+    return kappa, P_bar, Pe_bar, p_j
+
+
+def _kappa_interpretation(kappa):
+    # Landis & Koch (1977) benchmarks
+    if kappa < 0:
+        return 'poor (worse than chance)'
+    elif kappa <= 0.20:
+        return 'slight'
+    elif kappa <= 0.40:
+        return 'fair'
+    elif kappa <= 0.60:
+        return 'moderate'
+    elif kappa <= 0.80:
+        return 'substantial'
+    else:
+        return 'almost perfect'
+
+
+def run_kappa_test(inputFilename, outputDir, rater_cols,
+                   chartPackage='Excel', dataTransformation='No transformation'):
+    """Inter-annotator agreement across 2+ annotator/tool columns.
+
+    Each column in rater_cols holds one annotator's (or tool's) labels for the same items
+    (rows). Exactly 2 columns -> Cohen's kappa (+ confusion matrix); 3+ columns -> Fleiss' kappa.
+    Typical use: compare Stanza vs spaCy POS/NER tags to measure how well the tools agree."""
+    filesToOpen = []
+
+    df = _validate_csv_input(inputFilename)
+    if df is None:
+        return filesToOpen
+
+    if not isinstance(rater_cols, (list, tuple)):
+        rater_cols = [rater_cols]
+
+    # drop empties and de-duplicate while preserving order (a column picked twice is one rater)
+    seen = set()
+    unique_cols = []
+    for c in rater_cols:
+        if c in (None, '') or c in seen:
+            continue
+        seen.add(c)
+        unique_cols.append(c)
+    rater_cols = unique_cols
+
+    if len(rater_cols) < 2:
+        mb.showwarning(title='Insufficient annotators',
+                       message='Inter-annotator agreement requires at least 2 distinct annotator/tool columns.\n\n'
+                               'Please, select one column per annotator and try again.')
+        return filesToOpen
+
+    for col in rater_cols:
+        if col not in df.columns:
+            mb.showwarning(title='Column error',
+                           message='Column "' + str(col) + '" not found in the input file.')
+            return filesToOpen
+
+    df = df[rater_cols].dropna().copy()
+    # treat every label as a trimmed string so numeric and text tags compare consistently
+    for col in rater_cols:
+        df[col] = df[col].astype(str).str.strip()
+
+    if len(df) < 2:
+        mb.showwarning(title='Insufficient data',
+                       message='At least 2 items (rows) rated by all annotators are needed.')
+        return filesToOpen
+
+    n_raters = len(rater_cols)
+    po_obs = pe_chance = 0.0
+
+    if n_raters == 2:
+        method_label = "Cohen's kappa"
+        labels_a = df[rater_cols[0]].tolist()
+        labels_b = df[rater_cols[1]].tolist()
+        kappa, po_obs, pe_chance, categories, cm = _cohens_kappa(labels_a, labels_b)
+        interp = _kappa_interpretation(kappa)
+
+        summary_df = pd.DataFrame({
+            'Statistic': ['Method', 'Kappa', 'Interpretation',
+                          'Observed agreement (Po)', 'Expected agreement (Pe)',
+                          'N items', 'N categories', 'Annotator 1', 'Annotator 2'],
+            'Value': [method_label, round(kappa, 4), interp,
+                      round(po_obs, 4), round(pe_chance, 4),
+                      len(df), len(categories), rater_cols[0], rater_cols[1]]
+        })
+        out1 = _save_results_csv(summary_df, inputFilename, '', outputDir, 'kappa_summary')
+        filesToOpen.append(out1)
+
+        # confusion matrix: rows = annotator 1 labels, cols = annotator 2 labels
+        cm_df = pd.DataFrame(cm.astype(int), index=categories, columns=categories)
+        cm_df.index.name = rater_cols[0] + ' \\ ' + rater_cols[1]
+        cm_df = cm_df.reset_index()
+        out2 = _save_results_csv(cm_df, inputFilename, '', outputDir, 'kappa_confusion_matrix')
+        filesToOpen.append(out2)
+
+    else:
+        method_label = "Fleiss' kappa"
+        categories = sorted(set().union(*[set(df[c]) for c in rater_cols]), key=lambda v: str(v))
+        cat_index = {c: i for i, c in enumerate(categories)}
+        N = len(df)
+        k = len(categories)
+        rating_matrix = np.zeros((N, k), dtype=float)
+        for row_i, (_, row) in enumerate(df.iterrows()):
+            for col in rater_cols:
+                rating_matrix[row_i, cat_index[row[col]]] += 1
+
+        kappa, po_obs, pe_chance, p_j = _fleiss_kappa(rating_matrix)
+        interp = _kappa_interpretation(kappa)
+
+        summary_df = pd.DataFrame({
+            'Statistic': ['Method', 'Kappa', 'Interpretation',
+                          'Mean observed agreement (P-bar)', 'Expected agreement (Pe-bar)',
+                          'N items', 'N annotators', 'N categories', 'Annotators'],
+            'Value': [method_label, round(kappa, 4), interp,
+                      round(po_obs, 4), round(pe_chance, 4),
+                      N, n_raters, k, ', '.join(rater_cols)]
+        })
+        out1 = _save_results_csv(summary_df, inputFilename, '', outputDir, 'kappa_summary')
+        filesToOpen.append(out1)
+
+        # category distribution across all annotations
+        dist_df = pd.DataFrame({
+            'Category': [str(c) for c in categories],
+            'Proportion': [round(float(p), 4) for p in p_j]
+        })
+        out2 = _save_results_csv(dist_df, inputFilename, '', outputDir, 'kappa_category_distribution')
+        filesToOpen.append(out2)
+
+    # chart: observed vs chance agreement (kappa corrects the gap between the two)
+    chart_df = pd.DataFrame({
+        'Agreement type': ['Observed', 'Expected (chance)'],
+        'Proportion': [round(po_obs, 4), round(pe_chance, 4)]
+    })
+    chart_csv = _save_results_csv(chart_df, inputFilename, '', outputDir, 'kappa_agreement')
+    filesToOpen.append(chart_csv)
+
+    outputFiles = charts_util.run_all(
+        [[0, 1]], chart_csv, outputDir, outputFileLabel='kappa',
+        chartPackage=chartPackage, dataTransformation=dataTransformation,
+        chart_type_list=['bar'],
+        chart_title=method_label + ': kappa=' + str(round(kappa, 3)) + ' (' + interp + ')' +
+                    '\nObserved vs chance agreement',
+        column_xAxis_label_var='Agreement type', column_yAxis_label_var='Proportion',
+        hover_info_column_list=[])
+    _append_chart_files(filesToOpen, outputFiles)
+
+    return filesToOpen
+
+
+# ---------------------------------------------------------------------------
+#  8. Change-Point Detection (Pettitt's test)
+# ---------------------------------------------------------------------------
+
+def _pettitt_test(x):
+    # Pettitt's non-parametric test for a single change point (shift in the median).
+    # Rank-based O(n) formulation: U_t = 2*cumsum(rank)[:t] - t*(n+1).
+    x = np.asarray(x, dtype=float)
+    n = len(x)
+    ranks = stats.rankdata(x)
+    cum = np.cumsum(ranks)
+    t_idx = np.arange(1, n)                      # t = 1 .. n-1
+    U = 2.0 * cum[:n - 1] - t_idx * (n + 1)
+    abs_U = np.abs(U)
+    K = float(np.max(abs_U))
+    t = int(np.argmax(abs_U)) + 1                # first index of the SECOND segment (0-based)
+    p_value = 2.0 * math.exp((-6.0 * K * K) / (n ** 3 + n ** 2))
+    p_value = min(p_value, 1.0)
+    return {'K': K, 'change_index': t, 'p_value': p_value}
+
+
+def run_change_point_test(inputFilename, outputDir, date_col, value_col,
+                          chartPackage='Excel', dataTransformation='No transformation'):
+    """Detect a single abrupt shift in a time-ordered numeric series (e.g. topic prevalence,
+    sentiment) using Pettitt's test. Reports where the shift occurs and the mean before/after."""
+    filesToOpen = []
+
+    df = _validate_csv_input(inputFilename)
+    if df is None:
+        return filesToOpen
+
+    for col in [date_col, value_col]:
+        if col not in df.columns:
+            mb.showwarning(title='Column error',
+                           message='Column "' + col + '" not found in the input file.')
+            return filesToOpen
+
+    df = df[[date_col, value_col]].dropna()
+
+    if not pd.api.types.is_numeric_dtype(df[value_col]):
+        mb.showwarning(title='Column type error',
+                       message='Column "' + value_col + '" must be numeric.')
+        return filesToOpen
+
+    try:
+        df[date_col] = pd.to_datetime(df[date_col], infer_datetime_format=True)
+        df = df.sort_values(date_col).reset_index(drop=True)
+        x_is_date = True
+    except:
+        # fall back to input order when the column is not parseable as a date
+        df = df.reset_index(drop=True)
+        x_is_date = False
+
+    if len(df) < 10:
+        mb.showwarning(title='Insufficient data',
+                       message='At least 10 observations are needed for change-point detection.')
+        return filesToOpen
+
+    values = df[value_col].values
+    result = _pettitt_test(values)
+    t = result['change_index']
+
+    mean_before = float(np.mean(values[:t]))
+    mean_after = float(np.mean(values[t:]))
+    if x_is_date:
+        cp_label = str(df[date_col].iloc[t].strftime('%Y-%m-%d'))
+    else:
+        cp_label = 'row ' + str(t)
+
+    summary_df = pd.DataFrame({
+        'Statistic': ['Change point (location)', 'Change-point index (row)', 'K statistic', 'p-value',
+                      'Significant (alpha=0.05)', 'Mean before', 'Mean after', 'Shift (after - before)',
+                      'N'],
+        'Value': [cp_label, t, round(result['K'], 4), round(result['p_value'], 6),
+                  'Yes' if result['p_value'] < 0.05 else 'No',
+                  round(mean_before, 4), round(mean_after, 4),
+                  round(mean_after - mean_before, 4), len(values)]
+    })
+    out1 = _save_results_csv(summary_df, inputFilename, '', outputDir, 'change_point_summary')
+    filesToOpen.append(out1)
+
+    # step line of the segment means makes the shift visible against the raw series
+    seg_mean = np.where(np.arange(len(values)) < t, mean_before, mean_after)
+    if x_is_date:
+        x_axis = df[date_col].dt.strftime('%Y-%m-%d')
+    else:
+        x_axis = df.index.astype(str)
+    chart_df = pd.DataFrame({
+        date_col: x_axis,
+        value_col: values,
+        'Segment mean': np.round(seg_mean, 4)
+    })
+    chart_csv = _save_results_csv(chart_df, inputFilename, '', outputDir, 'change_point_series')
+    filesToOpen.append(chart_csv)
+
+    sig = 'significant' if result['p_value'] < 0.05 else 'not significant'
+    outputFiles = charts_util.run_all(
+        [[0, 1], [0, 2]], chart_csv, outputDir, outputFileLabel='change_point',
+        chartPackage=chartPackage, dataTransformation=dataTransformation,
+        chart_type_list=['line'],
+        chart_title='Change-Point Detection (Pettitt)\nchange at ' + cp_label +
+                    ', p=' + str(round(result['p_value'], 4)) + ' (' + sig + ')',
+        column_xAxis_label_var=date_col, column_yAxis_label_var=value_col,
+        hover_info_column_list=[])
+    _append_chart_files(filesToOpen, outputFiles)
+
+    return filesToOpen
+
+
+# ---------------------------------------------------------------------------
+#  9. Permutation Test (two-group difference in means)
+# ---------------------------------------------------------------------------
+
+def run_permutation_test(inputFilename, outputDir, value_col, group_col,
+                         n_permutations=10000,
+                         chartPackage='Excel', dataTransformation='No transformation'):
+    """Distribution-free test of whether the difference in means between two groups is more
+    extreme than expected by chance, by repeatedly shuffling the group labels. A robust,
+    assumption-light complement to Mann-Whitney for small or non-normal samples."""
+    filesToOpen = []
+
+    df = _validate_csv_input(inputFilename)
+    if df is None:
+        return filesToOpen
+
+    for col in [value_col, group_col]:
+        if col not in df.columns:
+            mb.showwarning(title='Column error',
+                           message='Column "' + col + '" not found in the input file.')
+            return filesToOpen
+
+    df = df[[value_col, group_col]].dropna()
+
+    if not pd.api.types.is_numeric_dtype(df[value_col]):
+        mb.showwarning(title='Column type error',
+                       message='Column "' + value_col + '" must be numeric.')
+        return filesToOpen
+
+    labels = sorted(df[group_col].unique())
+    if len(labels) < 2:
+        mb.showwarning(title='Group error',
+                       message='Column "' + group_col + '" must have at least 2 unique values.')
+        return filesToOpen
+    if len(labels) > 2:
+        IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Permutation test warning',
+            'More than 2 groups found. Using the first two alphabetically: ' +
+            str(labels[0]) + ' and ' + str(labels[1]) + '.', False)
+        labels = labels[:2]
+        df = df[df[group_col].isin(labels)]
+
+    a = df[df[group_col] == labels[0]][value_col].values.astype(float)
+    b = df[df[group_col] == labels[1]][value_col].values.astype(float)
+
+    if len(a) < 3 or len(b) < 3:
+        mb.showwarning(title='Insufficient data',
+                       message='Each group needs at least 3 observations.')
+        return filesToOpen
+
+    mean_a, mean_b = float(np.mean(a)), float(np.mean(b))
+    observed_diff = mean_a - mean_b
+    obs_abs = abs(observed_diff)
+
+    # seeded generator -> reproducible p-values across runs
+    rng = np.random.default_rng(42)
+    pooled = np.concatenate([a, b])
+    n1 = len(a)
+    perm_diffs = np.empty(n_permutations)
+    for i in range(n_permutations):
+        rng.shuffle(pooled)
+        perm_diffs[i] = pooled[:n1].mean() - pooled[n1:].mean()
+
+    # +1 in numerator and denominator -> unbiased permutation p-value (never exactly 0)
+    p_value = (np.sum(np.abs(perm_diffs) >= obs_abs) + 1) / (n_permutations + 1)
+
+    pooled_sd = np.sqrt(((len(a) - 1) * np.var(a, ddof=1) + (len(b) - 1) * np.var(b, ddof=1)) /
+                        (len(a) + len(b) - 2)) if (len(a) + len(b) - 2) > 0 else 0.0
+    cohens_d = observed_diff / pooled_sd if pooled_sd > 0 else 0.0
+
+    summary_df = pd.DataFrame({
+        'Statistic': ['Observed difference in means', 'p-value (two-sided)', "Cohen's d (effect size)",
+                      'Permutations', 'Significant (alpha=0.05)',
+                      'Group A', 'Group A n', 'Group A mean',
+                      'Group B', 'Group B n', 'Group B mean'],
+        'Value': [round(observed_diff, 4), round(float(p_value), 6), round(cohens_d, 4),
+                  n_permutations, 'Yes' if p_value < 0.05 else 'No',
+                  str(labels[0]), len(a), round(mean_a, 4),
+                  str(labels[1]), len(b), round(mean_b, 4)]
+    })
+    out1 = _save_results_csv(summary_df, inputFilename, '', outputDir, 'permutation_summary')
+    filesToOpen.append(out1)
+
+    # full permutation distribution (lets the user histogram the null distribution if wanted)
+    dist_df = pd.DataFrame({'Permuted difference in means': np.round(perm_diffs, 6)})
+    out2 = _save_results_csv(dist_df, inputFilename, '', outputDir, 'permutation_distribution')
+    filesToOpen.append(out2)
+
+    chart_df = pd.DataFrame({
+        'Group': [str(labels[0]), str(labels[1])],
+        'Mean': [round(mean_a, 4), round(mean_b, 4)]
+    })
+    chart_csv = _save_results_csv(chart_df, inputFilename, '', outputDir, 'permutation_means')
+    filesToOpen.append(chart_csv)
+
+    outputFiles = charts_util.run_all(
+        [[0, 1]], chart_csv, outputDir, outputFileLabel='permutation',
+        chartPackage=chartPackage, dataTransformation=dataTransformation,
+        chart_type_list=['bar'],
+        chart_title='Permutation Test\n' + group_col + ': ' + str(labels[0]) + ' vs ' + str(labels[1]) +
+                    '\nobserved diff=' + str(round(observed_diff, 3)) + ', p=' + str(round(float(p_value), 4)),
+        column_xAxis_label_var='Group', column_yAxis_label_var=value_col,
+        hover_info_column_list=[])
+    _append_chart_files(filesToOpen, outputFiles)
+
+    return filesToOpen
+
+
+# ---------------------------------------------------------------------------
 #  Auto-detect: examine a CSV and run appropriate statistical tests
 # ---------------------------------------------------------------------------
 

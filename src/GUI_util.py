@@ -2,6 +2,10 @@
 
 import sys
 
+# Load early so the pandas on_bad_lines kwarg works on every pandas version across the whole
+# suite (GUI_util is imported at the top of essentially every script). No-op on pandas >= 1.3.
+import pandas_compat_util
+
 # this will renew the SSL certificate indefinitely
 # pip install pyOpenSSL
 # pip install requests[security]
