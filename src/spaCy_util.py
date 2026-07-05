@@ -157,7 +157,6 @@ def spaCy_annotate(configFilename, inputFilename, inputDir,
     except OSError:
         # model not installed yet — download once
         try:
-            import IO_user_interface_util
             IO_user_interface_util.timed_alert(GUI_util.window, 6000, 'spaCy model download',
                 'Downloading the spaCy language model "' + model_name + '" for the first time.\n\nThis is a one-time download. Please be patient.',
                 False)

@@ -543,7 +543,10 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         print(f"  Google Maps heatmap: CSV rows: {len(df)}")
 
         if 'Latitude' in df and 'Longitude' in df:
-            df = df.dropna(subset=['Latitude', 'Longitude'])
+            # reset_index(drop=True) is REQUIRED: dropna leaves gaps in the row index, but the loop
+            # below indexes lat[i]/lon[i] by position via range(len(lat)); without a contiguous
+            # 0..n-1 index those become label lookups and raise KeyError on the first dropped row
+            df = df.dropna(subset=['Latitude', 'Longitude']).reset_index(drop=True)
             lat = df.Latitude
             lon = df.Longitude
             print(f"  Google Maps heatmap: {len(lat)} valid lat/lon rows after dropna")

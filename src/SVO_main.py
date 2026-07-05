@@ -728,6 +728,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
 
     if map_characters_var and len(svo_result_list) > 0:
         import charts_util as charts_util_mc
+        import pandas as pd
         svo_file = svo_result_list[0]
         try:
             svo_df = pd.read_csv(svo_file, encoding='utf-8', on_bad_lines='skip')

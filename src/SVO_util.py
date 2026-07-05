@@ -876,69 +876,16 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
 #     df.to_csv(svo_file_name, encoding='utf-8', index=False)
 
 
-# OLD SLOWER VERSION
-    for idx, row in df.iterrows():
-        if idx % 50 == 0 or idx == len(df) - 1:
-            print('Processing SVO record '+ str(idx) + '/' + str(len(df)))
-        if lemmatize_s_SV == True:
-            lemmatize_s = True
-        # the tag suffix @# will have been added in the Stanford_CoreNLP_util function process_json_SVO_enhanced_dependencies
-        #   to identify any mwe (multi-word expression) that is a NER PERSON, ORGANIZATION, or LOCATION
-        #   (e.g., Christopher Columbus, United States of America) which should always be treated as social actors independently of the WordNet list
-        if '@#' in row['Subject (S)']:
-            lemmatize_s = False
-            keep_record = True
-        if lemmatize_s:
-            if row['Subject (S)'].count(' ')==0:
-                row['Subject (S)'] = memoized_lemmatize(row['Subject (S)'])
-            else:
-                if filter_s:
-                    if not '@#' in row['Subject (S)']:
-                        # WordNet multi-word expressions are all _ separated (e.g., Christopher_Columbus)
-                        # convert string to list
-                        temp_list = row['Subject (S)'].split(' ')
-                        temp_lemma = ''
-                        for i in range(len(temp_list)):
-                            if temp_lemma=='':
-                                temp_lemma = memoized_lemmatize(temp_list[i])
-                            else:
-                                temp_lemma = temp_lemma + ' ' + memoized_lemmatize(temp_list[i])
-                        row['Subject (S)'] = temp_lemma.replace('  ', ' ') # temp_lemma will have 2 blanks when lemmatizing a blank token
-                        row['Subject (S)'] = temp_lemma.replace(' ', '_')
-        if lemmatize_v:
-            if row['Verb (V)'].count(' ')==0:
-                # use the LRU-cached lemmatizer (identical result) so repeated verbs
-                # (said, went, was, ...) don't re-run the Stanza pipeline every row
-                row['Verb (V)'] = memoized_lemmatize(row['Verb (V)'])
-            else:
-                if filter_v:
-                    # WordNet multi-word expressions are all _ separated (e.g., add_on)
-                    # convert string to list
-                    temp_list = row['Verb (V)'].split(' ')
-                    temp_lemma = ''
-                    for i in range(len(temp_list)):
-                        if temp_lemma=='':
-                            temp_lemma = memoized_lemmatize(temp_list[i])
-                        else:
-                            temp_lemma = temp_lemma + ' ' + memoized_lemmatize(temp_list[i])
-                    row['Verb (V)'] = temp_lemma.replace('  ', ' ') # temp_lemma will have 2 blanks when lemmatizing  a blank token
-                    row['Verb (V)'] = temp_lemma.replace(' ', '_')
-        if lemmatize_o:
-            if row['Object (O)'].count(' ')==0:
-                row['Object (O)'] = memoized_lemmatize(row['Object (O)'])
-            else:
-                if filter_o:
-                    # WordNet multi-word expressions are all _ separated (e.g., Christopher_Columbus)
-                    # convert string to list
-                    temp_list = row['Object (O)'].split(' ')
-                    temp_lemma = ''
-                    for i in range(len(temp_list)):
-                        if temp_lemma=='':
-                            temp_lemma = memoized_lemmatize(temp_list[i])
-                        else:
-                            temp_lemma = temp_lemma + ' ' + memoized_lemmatize(temp_list[i])
-                    row['Object (O)'] = temp_lemma.replace('  ', ' ') # temp_lemma will have 2 blanks when lemmatizing  a blank token
-                    row['Object (O)'] = temp_lemma.replace(' ', '_')
+    def process_svo_row(row, lemmatize_s, lemmatize_v, lemmatize_o, lemmatize_s_SV,
+                        filter_s, filter_v, filter_o, s_filtered_set, v_filtered_set, o_filtered_set):
+        lemmatize_s_local = lemmatize_s
+        if lemmatize_s_SV:
+            lemmatize_s_local = True
+        # the tag suffix @# is added upstream to flag a mwe that is a NER PERSON, ORGANIZATION, or
+        # LOCATION (e.g., Christopher Columbus, United States of America); those are social actors
+        # that must NOT be lemmatized regardless of the WordNet list
+        if '@#' in str(row['Subject (S)']):
+            lemmatize_s_local = False
 
         if lemmatize_s_local and row['Subject (S)'].count(' ') == 0:
             row['Subject (S)'] = memoized_lemmatize(row['Subject (S)'])
