@@ -19,6 +19,7 @@ import config_util
 import statistics_txt_util
 import semantic_aggregation_WordNet_util
 import Stanford_CoreNLP_util
+import Stanza_util
 # import wordclouds_util
 import GIS_pipeline_util
 import topic_modeling_gensim_util
@@ -29,6 +30,110 @@ import file_cleaner_util
 import file_spell_checker_util
 import style_analysis_abstract_concreteness_analysis_util
 import run_script_util
+
+# --- Parser-aware annotation helpers ---------------------------------------------------------------
+# Honor the NLP package the user selected in Setup (spaCy / Stanford CoreNLP / Stanza). NER (and,
+# later, POS & sentiment) run on the selected package. A few annotators (gender, dialogue/quote,
+# normalized dates) exist ONLY in Stanford CoreNLP; those verify CoreNLP is installed and warn the
+# user that CoreNLP is being used because the option is CoreNLP-only.
+
+def _selected_package(package):
+    p = (package or '').lower()
+    if 'stanza' in p:
+        return 'Stanza'
+    if 'spacy' in p:
+        return 'spaCy'
+    return 'CoreNLP'   # Stanford CoreNLP (and the fallback)
+
+
+def _CoreNLP_only_ok(option_label, package):
+    """For a CoreNLP-only option: check Stanford CoreNLP is installed and, when the user's selected
+    package is not CoreNLP, warn that CoreNLP will be used because the option requires it.
+    Returns True to proceed (CoreNLP available), False to skip (not installed)."""
+    CoreNLPdir, software_url, missing_external_software, errorFound = \
+        IO_libraries_util.get_external_software_dir('whats_in_your_corpus_main', 'Stanford CoreNLP',
+                                                    silent=True, only_check_missing=True)
+    if CoreNLPdir is None or CoreNLPdir == '':
+        mb.showwarning('Stanford CoreNLP not installed',
+                       'The option "' + option_label + '" is available ONLY via Stanford CoreNLP, '
+                       'but Stanford CoreNLP does not appear to be installed.\n\n'
+                       'Please, install Stanford CoreNLP using the Setup dropdown menu at the bottom '
+                       'of the GUI (Software DOWNLOAD / Software INSTALL) and try again.\n\n'
+                       'This option will be skipped.')
+        return False
+    if _selected_package(package) != 'CoreNLP':
+        IO_user_interface_util.timed_alert(GUI_util.window, 6000, 'Running Stanford CoreNLP',
+                       'The option "' + option_label + '" is available ONLY via Stanford CoreNLP.\n\n'
+                       'Although your selected NLP package is ' + str(package) + ', this option will '
+                       'run with Stanford CoreNLP.', False)
+    return True
+
+
+def _annotate_NER_by_package(package, config_filename, inputFilename, inputDir, outputDir,
+                             openOutputFiles, chartPackage, dataTransformation,
+                             language_var, language_list, export_json_var, memory_var,
+                             document_length_var, limit_sentence_length_var,
+                             corenlp_NERs, ontonotes_NERs, **extra_kwargs):
+    """Route NER extraction to the user-selected package. corenlp_NERs is a list (CoreNLP scheme:
+    PERSON/ORGANIZATION/CITY/...); ontonotes_NERs is a comma-separated string (spaCy/Stanza
+    OntoNotes scheme: PERSON/ORG/GPE/LOC/...). extra_kwargs (e.g. date-extraction options) are
+    forwarded verbatim to the selected engine."""
+    pkg = _selected_package(package)
+    if pkg == 'Stanza':
+        return Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir, outputDir,
+                    openOutputFiles, chartPackage, dataTransformation,
+                    'NER', False, language_list, memory_var,
+                    document_length_var, limit_sentence_length_var,
+                    NERs=ontonotes_NERs, **extra_kwargs)
+    elif pkg == 'spaCy':
+        import spaCy_util
+        return spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir, outputDir,
+                    openOutputFiles, chartPackage, dataTransformation,
+                    ['NER'], False, language_var, memory_var,
+                    document_length_var, limit_sentence_length_var,
+                    NERs=ontonotes_NERs, **extra_kwargs)
+    else:
+        return Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
+                    openOutputFiles, chartPackage, dataTransformation,
+                    'NER', False, language_var, export_json_var, memory_var,
+                    document_length_var, limit_sentence_length_var,
+                    NERs=corenlp_NERs, **extra_kwargs)
+
+
+def _NER_word_column(package):
+    """The column holding the token/word in NER output differs by engine: CoreNLP writes 'Word',
+    spaCy & Stanza write 'Form'. Consumers that read the NER csv by column name (e.g. the GIS
+    pipeline) must use this to stay engine-agnostic."""
+    return 'Word' if _selected_package(package) == 'CoreNLP' else 'Form'
+
+
+def _annotate_SVO_by_package(package, config_filename, inputFilename, inputDir, outputDir,
+                             openOutputFiles, chartPackage, dataTransformation,
+                             language_var, language_list, export_json_var, memory_var,
+                             document_length_var, limit_sentence_length_var, **extra_kwargs):
+    """Route the SVO (Subject-Verb-Object) pipeline to the user-selected package. SVO extraction and
+    location extraction (google_earth_var/location_filename) exist in all three engines; the bundled
+    gender & quote extraction is Stanford CoreNLP-only. When the selected package is not CoreNLP, the
+    gender_var/quote_var kwargs are dropped (Stanza/spaCy ignore them) and the caller is expected to
+    have warned the user."""
+    pkg = _selected_package(package)
+    if pkg == 'Stanza':
+        return Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir, outputDir,
+                    openOutputFiles, chartPackage, dataTransformation,
+                    'SVO', False, language_list, memory_var,
+                    document_length_var, limit_sentence_length_var, **extra_kwargs)
+    elif pkg == 'spaCy':
+        import spaCy_util
+        return spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir, outputDir,
+                    openOutputFiles, chartPackage, dataTransformation,
+                    ['SVO'], False, language_var, memory_var,
+                    document_length_var, limit_sentence_length_var, **extra_kwargs)
+    else:
+        return Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
+                    openOutputFiles, chartPackage, dataTransformation,
+                    'SVO', False, language_var, export_json_var, memory_var,
+                    document_length_var, limit_sentence_length_var, **extra_kwargs)
+
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -487,23 +592,21 @@ def run(inputFilename,inputDir, outputDir,
                     filesToOpen.extend(outputFiles)
 
         if people_organizations_var == True:
-            annotator = 'NER'
-            NER_list=['PERSON','ORGANIZATION']
-
-            outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                      outputDir_what_else, openOutputFiles,
-                                                                      chartPackage,
-                                                                      annotator, False,
-                                                                      language_var, export_json_var, memory_var, document_length_var,
-                                                                      limit_sentence_length_var,
-                                                                      NERs=NER_list)
+            # NER for people & organizations, via the user-selected package (Stanza/spaCy/CoreNLP)
+            outputFiles = _annotate_NER_by_package(package, config_filename, inputFilename, inputDir,
+                                                   outputDir_what_else, openOutputFiles,
+                                                   chartPackage, dataTransformation,
+                                                   language_var, language_list, export_json_var, memory_var,
+                                                   document_length_var, limit_sentence_length_var,
+                                                   corenlp_NERs=['PERSON', 'ORGANIZATION'],
+                                                   ontonotes_NERs='PERSON, ORG')
             if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
                 else:
                     filesToOpen.extend(outputFiles)
 
-        if gender_var == True:
+        if gender_var == True and _CoreNLP_only_ok('Females & males (gender annotator)', package):
             annotator = 'gender'
             outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
@@ -516,7 +619,7 @@ def run(inputFilename,inputDir, outputDir,
                 else:
                     filesToOpen.extend(outputFiles)
 
-        if dialogues_var==True:
+        if dialogues_var==True and _CoreNLP_only_ok('Dialogues (quote annotator)', package):
             annotator = 'quote'
             outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
@@ -529,7 +632,7 @@ def run(inputFilename,inputDir, outputDir,
                 else:
                     filesToOpen.extend(outputFiles)
 
-        if times_var==True:
+        if times_var==True and _CoreNLP_only_ok('References to date & time (normalized dates)', package):
             annotator='normalized-date'
             outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir_what_else,
                         openOutputFiles, chartPackage, dataTransformation,
@@ -541,15 +644,14 @@ def run(inputFilename,inputDir, outputDir,
                     filesToOpen.extend(outputFiles)
 
         if locations_var == True:
-            annotator = 'NER'
-            NER_list = ['CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
-
-            outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                      outputDir_what_else, openOutputFiles,
-                                                                      chartPackage, dataTransformation,
-                                                                      annotator, False,
-                                                                      language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
-                                                                      NERs=NER_list)
+            # NER for geographical locations, via the user-selected package (Stanza/spaCy/CoreNLP)
+            outputFiles = _annotate_NER_by_package(package, config_filename, inputFilename, inputDir,
+                                                   outputDir_what_else, openOutputFiles,
+                                                   chartPackage, dataTransformation,
+                                                   language_var, language_list, export_json_var, memory_var,
+                                                   document_length_var, limit_sentence_length_var,
+                                                   corenlp_NERs=['CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION'],
+                                                   ontonotes_NERs='GPE, LOC')
             if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -575,21 +677,21 @@ def run(inputFilename,inputDir, outputDir,
             run_script_util.run_script("GIS_main.py")
         else:
             # run with all default values;
-            # checking for txt: NER=='LOCATION', provide a csv output with column: [Locations]
-            NERs = ['COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION']
-            locations = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                         outputDir_what_else, openOutputFiles,
-                                                                         chartPackage, dataTransformation, 'NER',
-                                                                         False,
-                                                                         language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
-                                                                         NERs=NERs,
-                                                                         extract_date_from_text_var=0,
-                                                                         filename_embeds_date_var=filename_embeds_date_var,
-                                                                         date_format=date_format_var,
-                                                                         items_separator_var=items_separator_var,
-                                                                         date_position_var=date_position_var)
+            # location NER via the user-selected package (Stanza/spaCy/CoreNLP), then geocode & map
+            locations = _annotate_NER_by_package(package, config_filename, inputFilename, inputDir,
+                                                 outputDir_what_else, openOutputFiles,
+                                                 chartPackage, dataTransformation,
+                                                 language_var, language_list, export_json_var, memory_var,
+                                                 document_length_var, limit_sentence_length_var,
+                                                 corenlp_NERs=['COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION'],
+                                                 ontonotes_NERs='GPE, LOC',
+                                                 extract_date_from_text_var=0,
+                                                 filename_embeds_date_var=filename_embeds_date_var,
+                                                 date_format=date_format_var,
+                                                 items_separator_var=items_separator_var,
+                                                 date_position_var=date_position_var)
 
-            if len(locations) == 0:
+            if locations is None or len(locations) == 0:
                 mb.showwarning("No locations",
                                "There are no NER locations to be geocoded and mapped in the selected input txt file.\n\nPlease, select a different txt file and try again.")
                 return
@@ -602,7 +704,8 @@ def run(inputFilename,inputDir, outputDir,
         country_bias = ''
         box_tuple = ''
         restrict_var = False
-        locationColumnName = 'Word'
+        # CoreNLP writes the token in a 'Word' column; spaCy & Stanza write it in 'Form'
+        locationColumnName = _NER_word_column(package)
         encoding_var = 'utf-8'
 
         # create a subdirectory of the output directory
@@ -646,41 +749,39 @@ def run(inputFilename,inputDir, outputDir,
         if open_SVO_GUI_var == True:
             run_script_util.run_script("SVO_main.py")
         else:
-            # run with all default values;
+            # run with all default values; SVO pipeline via the user-selected package (Stanza/spaCy/CoreNLP)
+            pkg = _selected_package(package)
             location_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir_SVO, '.csv',
-                                                                        'CoreNLP_SVO_LOCATIONS')
-            gender_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir_SVO, '.csv',
-                                                                      'CoreNLP_SVO_gender')
-            quote_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir_SVO, '.csv',
-                                                                     'CoreNLP_SVO_quote')
+                                                                        pkg + '_SVO_LOCATIONS')
             outputLocations.append(location_filename)
-            extract_date_from_text_var = False
-            google_earth_var = True
-            location_filename = location_filename
-            gender_var = True
-            gender_filename = gender_filename
-            quote_var = True
-            quote_filename = quote_filename
-            outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                               outputDir_SVO, openOutputFiles,
-                                                                               chartPackage, dataTransformation,
-                                                                               'SVO', False,
-                                                                               language_var,
-                                                                               export_json_var,
-                                                                               memory_var=memory_var,
-                                                                               document_length_var=document_length_var,
-                                                                               limit_sentence_length_var=limit_sentence_length_var,
-                                                                               extract_date_from_text_var=extract_date_from_text_var,
-                                                                               filename_embeds_date_var=filename_embeds_date_var,
-                                                                               date_format=date_format_var,
-                                                                               items_separator_var=items_separator_var,
-                                                                               date_position_var=date_position_var,
-                                                                               google_earth_var=google_earth_var,
-                                                                               location_filename=location_filename,
-                                                                               gender_var=gender_var,
-                                                                               gender_filename=gender_filename,
-                                                                               quote_var=quote_var,
-                                                                               quote_filename=quote_filename)
+            # SVO + location extraction exist in all three engines
+            svo_kwargs = dict(extract_date_from_text_var=False,
+                              filename_embeds_date_var=filename_embeds_date_var,
+                              date_format=date_format_var,
+                              items_separator_var=items_separator_var,
+                              date_position_var=date_position_var,
+                              google_earth_var=True,
+                              location_filename=location_filename)
+            if pkg == 'CoreNLP':
+                # gender & dialogue/quote extraction are bundled into the CoreNLP SVO pipeline ONLY
+                gender_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir_SVO, '.csv',
+                                                                          'CoreNLP_SVO_gender')
+                quote_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir_SVO, '.csv',
+                                                                         'CoreNLP_SVO_quote')
+                svo_kwargs.update(gender_var=True, gender_filename=gender_filename,
+                                  quote_var=True, quote_filename=quote_filename)
+            else:
+                IO_user_interface_util.timed_alert(GUI_util.window, 6000, 'Running SVO via ' + str(package),
+                    'The SVO (Subject-Verb-Object) pipeline will run via ' + str(package) + '.\n\n'
+                    'The bundled gender and dialogue/quote extraction is available ONLY via Stanford '
+                    'CoreNLP and will be skipped. Subject-Verb-Object and location extraction will be '
+                    'produced normally.', False)
+            outputFiles = _annotate_SVO_by_package(package, config_filename, inputFilename, inputDir,
+                                                   outputDir_SVO, openOutputFiles,
+                                                   chartPackage, dataTransformation,
+                                                   language_var, language_list, export_json_var, memory_var,
+                                                   document_length_var, limit_sentence_length_var,
+                                                   **svo_kwargs)
             if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
