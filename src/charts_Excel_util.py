@@ -587,14 +587,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
     #                                    True, '', True, startTime, silent=True)
     return chart_outputFilename
 
-def df_to_list_w_header(df):
-    res = []
-    header = list(df.columns)
-    res.append(header)
-    for index, row in df.iterrows():
-        temp = [row[tag] for tag in header]
-        res.append(temp)
-    return res
+# df_to_list_w_header moved to IO_csv_util (single canonical copy); call IO_csv_util.df_to_list_w_header(...)
 
 
 def df_to_list(df):
