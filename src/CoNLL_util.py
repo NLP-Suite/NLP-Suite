@@ -316,19 +316,29 @@ def _corpus_search_roots(outputDir, inputFilename='', inputDir=''):
     return roots
 
 
-def find_corpus_CoNLL(outputDir, inputFilename='', inputDir=''):
-    """Return a newest-first list of valid CoNLL csv tables found for the current corpus.
+def find_corpus_csv(outputDir, inputFilename='', inputDir='',
+                    path_filter=None, validator=None, narrow_by_stem=True):
+    """Generic corpus-csv discovery (was copy-pasted per csv type: CoNLL, geocoded GIS, semantic-aggregation).
+    Returns a newest-first list of .csv files found under the corpus dirs (see _corpus_search_roots), kept when:
+      - path_filter passes: a case-insensitive substring, OR a callable(path)->bool, OR None (accept any path);
+      - validator passes: a callable(path)->bool run on survivors (e.g. check_CoNLL / is-geocoded), or None.
+    When narrow_by_stem and a corpus name is known, narrows to paths containing it (the parser's auto-created
+    subdir carries the corpus name even when the filename is mangled). Callers wrap this with their own type."""
+    if isinstance(path_filter, str):
+        _needle = path_filter.lower()
+        _pf = lambda p: _needle in p.lower()
+    elif callable(path_filter):
+        _pf = path_filter
+    else:
+        _pf = lambda p: True
 
-    Searches the output dir, the input dir, and the input file's folder (see _corpus_search_roots); keeps every
-    .csv whose path contains 'CoNLL' and that validates as a CoNLL table (look-alikes such as saved I/O
-    configuration files are rejected by check_CoNLL), and - when a corpus name is known - narrows to files whose
-    name contains it. Used by the Semantic Aggregation hub to hand a corpus's CoNLL to the CoNLL Table Analyzer."""
     # corpus stem: a single txt file's base name, else the input directory name
     stem = ''
     if inputFilename and inputFilename.lower().endswith('.txt'):
         stem = os.path.basename(inputFilename)[:-4]
     elif inputDir:
         stem = os.path.basename(os.path.normpath(inputDir))
+
     matches = []
     seen = set()
     for base in _corpus_search_roots(outputDir, inputFilename, inputDir):
@@ -337,17 +347,15 @@ def find_corpus_CoNLL(outputDir, inputFilename='', inputDir=''):
                 if not f.lower().endswith('.csv'):
                     continue
                 path = os.path.join(root, f)
-                if 'conll' not in path.lower() or path in seen:
+                if path in seen or not _pf(path):
                     continue
                 seen.add(path)
                 try:
-                    if check_CoNLL(path, True):
+                    if validator is None or validator(path):
                         matches.append(path)
                 except Exception:
                     pass
-    if stem:
-        # match the corpus name anywhere in the path: the parser's auto-created subdir carries the corpus name
-        # even when the CoNLL filename itself is mangled (e.g. the parser's own typo 'newspperArticles')
+    if narrow_by_stem and stem:
         narrowed = [m for m in matches if stem.lower() in m.lower()]
         if narrowed:
             matches = narrowed
@@ -355,51 +363,23 @@ def find_corpus_CoNLL(outputDir, inputFilename='', inputDir=''):
     return matches
 
 
+def find_corpus_CoNLL(outputDir, inputFilename='', inputDir=''):
+    """Newest-first list of valid CoNLL csv tables for the current corpus: .csv whose path contains 'CoNLL'
+    and that validates as a CoNLL table (look-alikes such as saved I/O configs are rejected by check_CoNLL)."""
+    return find_corpus_csv(outputDir, inputFilename, inputDir,
+                           path_filter='conll', validator=lambda p: check_CoNLL(p, True))
+
+
 def choose_corpus_CoNLL(window, outputDir, inputFilename='', inputDir=''):
     """Pop a picker listing the CoNLL tables found for the current corpus (find_corpus_CoNLL), newest first,
     labelled by their parser/corpus subfolder. Returns the chosen path, the sentinel '__BROWSE__' (no CoNLL
-    found, or the user chose to browse for another file), or None (the user cancelled)."""
-    import tkinter as tk
+    found, or the user chose to browse for another file), or None (the user cancelled). Uses the shared picker
+    IO_files_util.select_path_from_list (deferred import avoids the IO_files_util<->CoNLL_util cycle)."""
+    import IO_files_util
     matches = find_corpus_CoNLL(outputDir, inputFilename, inputDir)
-    if not matches:
-        return '__BROWSE__'
-    result = {'value': None}
-    top = tk.Toplevel(window)
-    top.title('Available CoNLL tables')
-    top.transient(window)
-    top.grab_set()
-    tk.Label(top, text='Select a CoNLL table found for your corpus, or browse for another file:').pack(
-        padx=12, pady=(12, 6), anchor='w')
-    frame = tk.Frame(top)
-    frame.pack(padx=12, fill='both', expand=True)
-    sb = tk.Scrollbar(frame)
-    sb.pack(side='right', fill='y')
-    lb = tk.Listbox(frame, width=95, height=min(12, len(matches)), yscrollcommand=sb.set)
-    for m in matches:
-        # label by the parser/corpus subfolder + filename, which together identify the parse
-        lb.insert('end', os.path.join(os.path.basename(os.path.dirname(m)), os.path.basename(m)))
-    lb.pack(side='left', fill='both', expand=True)
-    sb.config(command=lb.yview)
-    lb.selection_set(0)
-
-    def do_select():
-        sel = lb.curselection()
-        if sel:
-            result['value'] = matches[sel[0]]
-            top.destroy()
-
-    def do_browse():
-        result['value'] = '__BROWSE__'
-        top.destroy()
-
-    lb.bind('<Double-Button-1>', lambda e: do_select())
-    btns = tk.Frame(top)
-    btns.pack(pady=10)
-    tk.Button(btns, text='Select', width=12, command=do_select).pack(side='left', padx=5)
-    tk.Button(btns, text='Browse for another file...', width=22, command=do_browse).pack(side='left', padx=5)
-    tk.Button(btns, text='Cancel', width=10, command=top.destroy).pack(side='left', padx=5)
-    top.wait_window()
-    return result['value']
+    return IO_files_util.select_path_from_list(window, matches,
+        'Select a CoNLL table found for your corpus, or browse for another file:',
+        title='Available CoNLL tables')
 
 
 def open_analyzer_for_current_corpus(run_parser=False):
