@@ -933,51 +933,7 @@ def get_data_to_be_plotted_NO_counts(inputFilename, withHeader_var, headers, col
     return data_to_be_plotted
 
 
-def header_check(inputFile):
-    sentenceID_pos = ''
-    docCol_pos = ''
-    docName_pos = ''
-    frequency_pos = []
-
-    if isinstance(inputFile, pd.DataFrame):
-        header = list(inputFile.columns)
-    else:
-        header = IO_csv_util.get_csvfile_headers(inputFile)
-    if 'Sentence ID' in header:
-        sentenceID_pos = header.index('Sentence ID')
-    else:
-        pass
-
-    if 'Document ID' in header:
-        docCol_pos = header.index('Document ID')
-    else:
-        pass
-
-    if 'Document' in header:
-        docName_pos = header.index('Document')
-    else:
-        pass
-
-    # Frequenc to capture Frequency and Frequencies
-    # str added since the header may contain several instances of the searched item (e.g., Mean score, Median score)
-    #   in which case it would not be found
-    str_header = str(', '.join(header))
-    if 'Frequenc' in str_header or 'Number of' in str_header or 'score' in str_header or 'Score' in str_header:
-        # the code would break with the wrong header item (e.g., no Frequency in header to get the index
-        # We do 2 things here:
-        #   1. get the right header value (e.g., Number of words, or Score, instead of Frequency)
-        #   2. Loop through the header containing a specific value (e.g., score) and get all its positions (e.g., Mean score, Median score)
-        #   frequency_pos needs to be a list [] rather than a string to accommodate for multiple instances
-        # https://stackoverflow.com/questions/64127075/how-to-retrieve-partial-matches-from-a-list-of-strings
-        result = list(filter(lambda x: 'Frequenc' in x or 'Number of' in x or 'Score' in x or 'score' in x, header))
-        try:
-            for i in range(0, len(result)):
-                frequency_pos.append(header.index(result[i]))
-        except:
-            pass
-    else:
-        pass
-    return sentenceID_pos, docCol_pos, docName_pos, frequency_pos, header
+# header_check moved to IO_csv_util (single canonical copy); call IO_csv_util.header_check(...)
 
 
 # TODO Samir very slow
@@ -1042,7 +998,7 @@ def add_missing_IDs(input, outputFilename):
     end_sentence = 1  # last sentence in loop
     number_sentences = []
     Row_list_new = []
-    sentenceID_pos, docCol_pos, docName_pos, frequency_pos, header = header_check(input)
+    sentenceID_pos, docCol_pos, docName_pos, frequency_pos, header = IO_csv_util.header_check(input)
     Row_list = IO_csv_util.df_to_list(df)
     len_Row_list = len(Row_list)
     for index, row in enumerate(Row_list):

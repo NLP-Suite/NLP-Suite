@@ -440,9 +440,13 @@ def list_to_df(tag_list):
 
 
 def header_check(inputFile):
-    sentenceID_pos=''
-    docID_pos=''
-    docName_pos=''
+    # Canonical version (was duplicated in charts_util). Returns the column positions of
+    # Sentence ID, Document ID, Document, any Frequency-like columns (Frequency/Number of/Score -
+    # possibly several, hence a list), and the full header list. inputFile may be a csv path or a df.
+    sentenceID_pos = ''
+    docCol_pos = ''
+    docName_pos = ''
+    frequency_pos = []
 
     if isinstance(inputFile, pd.DataFrame):
         header = list(inputFile.columns)
@@ -450,19 +454,22 @@ def header_check(inputFile):
         header = get_csvfile_headers(inputFile)
     if 'Sentence ID' in header:
         sentenceID_pos = header.index('Sentence ID')
-    else:
-        pass
-
     if 'Document ID' in header:
-        docID_pos = header.index('Document ID')
-    else:
-        pass
-
+        docCol_pos = header.index('Document ID')
     if 'Document' in header:
         docName_pos = header.index('Document')
-    else:
-        pass
-    return sentenceID_pos, docID_pos, docName_pos, header
+
+    # str-join since the header may contain several matches (e.g., Mean score, Median score);
+    # frequency_pos is a list to hold every matching position.
+    str_header = str(', '.join(header))
+    if 'Frequenc' in str_header or 'Number of' in str_header or 'score' in str_header or 'Score' in str_header:
+        result = list(filter(lambda x: 'Frequenc' in x or 'Number of' in x or 'Score' in x or 'score' in x, header))
+        try:
+            for i in range(0, len(result)):
+                frequency_pos.append(header.index(result[i]))
+        except:
+            pass
+    return sentenceID_pos, docCol_pos, docName_pos, frequency_pos, header
 
 
 def sort_by_column(input, column):
