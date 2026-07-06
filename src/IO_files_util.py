@@ -1248,4 +1248,32 @@ def select_path_from_list(window, paths, intro_text, title='Available files'):
     tk.Button(btns, text='Cancel', width=10, command=top.destroy).pack(side='left', padx=5)
     top.wait_window()
     return result['value']
+
+
+def get_corpus_CoNLL_csv(window, target_var, title='Select INPUT csv CoNLL table file',
+                         fileType=(("csv files", "*.csv"),), set_inputFilename=True):
+    """'Select INPUT CSV file' button handler shared by the CoNLL-cluster GUIs (nominalization, SRL,
+    CoNLL Table Analyzer, semantic/syntactic analysis). Offers the CoNLL tables discovered for the current
+    corpus (CoNLL_util.choose_corpus_CoNLL); else browses. Rejects an empty csv. Stores the choice in
+    target_var (and GUI_util.inputFilename when set_inputFilename). Returns the chosen path ('' if none)."""
+    import CoNLL_util
+    chosen = CoNLL_util.choose_corpus_CoNLL(window, GUI_util.output_dir_path.get(),
+                                            GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get())
+    if chosen is None:
+        return ''
+    if chosen != '__BROWSE__':
+        filePath = chosen
+    else:
+        initialFolder = os.path.dirname(os.path.abspath(target_var.get()))
+        filePath = filedialog.askopenfilename(title=title, initialdir=initialFolder, filetypes=fileType)
+    if filePath:
+        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(filePath, 'utf-8')
+        if nRecords == 0:
+            mb.showwarning(title='Warning',
+                           message="The selected input csv file is empty.\n\nPlease, select a different file and try again.")
+            return ''
+        target_var.set(filePath)
+        if set_inputFilename:
+            GUI_util.inputFilename.set(filePath)
+    return filePath
     #         os.replace(quote_filename, target_filePath)

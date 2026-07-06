@@ -96,36 +96,8 @@ extra_GUIs_menu_var = tk.StringVar()
 SRL_var = tk.IntVar()
 
 
-def get_csv_file(window,title,fileType,annotate):
-    #csv_file_var.set('')
-    # First offer the CoNLL tables discovered for the current corpus (output/input/default dirs); only fall
-    # back to a file dialog if none are found or the user chooses to browse.
-    import CoNLL_util
-    import IO_csv_util
-    chosen = CoNLL_util.choose_corpus_CoNLL(window, GUI_util.output_dir_path.get(), GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get())
-    if chosen is None:
-        return ''
-    if chosen != '__BROWSE__':
-        filePath = chosen
-    else:
-        if csv_file!='':
-            initialFolder=os.path.dirname(os.path.abspath(csv_file_var.get()))
-        else:
-            initialFolder = os.path.dirname(os.path.abspath(__file__))
-        filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
 
-    if len(filePath)>0:
-        nRecords, nColumns =IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(filePath, 'utf-8')
-        if nRecords==0:
-            mb.showwarning(title='Warning',
-                           message="The selected input csv file is empty.\n\nPlease, select a different file and try again.")
-            filePath=''
-        else:
-            csv_file_var.set(filePath)
-            GUI_util.inputFilename.set(filePath)
-    return filePath
-
-csv_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: get_csv_file(window,'Select INPUT csv CoNLL table file', [("csv files", "*.csv")],True))
+csv_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: IO_files_util.get_corpus_CoNLL_csv(window, csv_file_var,'Select INPUT csv CoNLL table file', [("csv files", "*.csv")],True))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                csv_file_button, True)
 
