@@ -635,6 +635,8 @@ NLP_Suite_corpus_document_tools_menu = \
 'Knowledge graphs: DBpedia & YAGO', \
 'NER (Named Entity Recognition) annotator', \
 'Narrative analysis (ALL options GUI)', \
+'Semantic analysis', \
+'Syntactic analysis (ALL)', \
 'Semantic analysis (via TensorFlow)', \
 'Sentiments/emotions (ALL options GUI)', \
 'Sentiment analysis (dictionary options: ANEW, hedonometer, SentiWordNet, VADER)', \
