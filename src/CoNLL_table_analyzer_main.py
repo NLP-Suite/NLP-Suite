@@ -638,13 +638,6 @@ def clear_on_escape(e):
 
 window.bind("<Escape>", clear_on_escape)
 
-def check_csv_file_headers(csv_file):
-    cannotRun=False
-    inputIsCoNLL = CoNLL_util.check_CoNLL(csv_file_var.get(), True)
-    if inputIsCoNLL:
-        reminders_util.checkReminder(scriptName, reminders_util.title_options_input_csv_file,
-                                     reminders_util.message_input_csv_file, True)
-    return cannotRun
 
 def get_csv_file(window,title,fileType,annotate):
     #csv_file_var.set('')
