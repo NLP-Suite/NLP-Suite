@@ -264,6 +264,30 @@ def check_CoNLL(filename, skipWarning=False):
     return True
 
 
+def process_df_headers(df, word_type):
+    """Canonical version (was duplicated in the 6 CoNLL_*_analysis_util modules). Assign CoNLL column
+    names to a word-subcategory dataframe and append the subcategory column `word_type`. Handles the
+    standard 14-column table and the 15-column variant (with a Date column); a 0-column df (empty
+    subcategory, e.g. no modal verbs) returns a header-only df so df_to_csv writes a valid file and
+    charting doesn't crash. Any other column count raises (previously a cryptic pandas Length
+    mismatch)."""
+    num_columns = len(df.columns)
+    base = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag",
+            "Record ID", "Sentence ID", "Document ID", "Document"]
+    if num_columns == 0:
+        headers = base + [word_type]
+        return pd.DataFrame(columns=headers), headers
+    if num_columns == 15:      # includes a Date column
+        headers = base + ['Date', word_type]
+    elif num_columns == 14:    # standard CoNLL table
+        headers = base + [word_type]
+    else:
+        raise ValueError('process_df_headers: unexpected number of columns (%d); expected 14 or 15'
+                         % num_columns)
+    df.columns = headers
+    return df, headers
+
+
 def _default_output_dir():
     """The Suite's default 'Output files directory', read from config/NLP_default_IO_config.csv (where the parser
     auto-creates its output subdirectories). Returns '' if it cannot be read."""

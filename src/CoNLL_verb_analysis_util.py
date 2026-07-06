@@ -52,27 +52,6 @@ cla_open_csv = False  # if run from command line, will check if they want to ope
 # Used to divide sentences etc.
 
 
-def process_df_headers(df, word_type):
-    if df.shape[1] == 0:
-        # Empty subcategory (no matching tokens, e.g. no modal verbs on a Stanza table): return an
-        # empty df carrying the expected headers so df_to_csv writes a valid header-only file and
-        # neither the column assignment below nor charting crashes.
-        _empty_headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag",
-                          "Record ID", "Sentence ID", "Document ID", "Document", word_type]
-        return pd.DataFrame(columns=_empty_headers), _empty_headers
-    if len(df.columns)==15: #date column present
-        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                      "Sentence ID", "Document ID", "Document", 'Date', word_type]
-        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                   "Sentence ID",
-                   "Document ID", "Document", 'Date', word_type]
-    else:
-        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                      "Sentence ID", "Document ID", "Document", word_type]
-        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                   "Sentence ID",
-                   "Document ID", "Document", word_type]
-    return df, headers
 
 def compute_stats(data):
     global form_list, postag_list, postag_counter, deprel_list, deprel_counter
@@ -211,7 +190,7 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 
     # convert list to dataframe and save
     df = pd.DataFrame(verb_voice_list)
-    df, headers = process_df_headers(df, "Verb Voice")
+    df, headers = CoNLL_util.process_df_headers(df, "Verb Voice")
 
     IO_csv_util.df_to_csv(GUI_util.window, df, verb_voice_file_name, headers=headers, index=False,
                           language_encoding='utf-8')
@@ -361,7 +340,7 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 
     # convert list to dataframe and save
     df = pd.DataFrame(verb_modals_list)
-    df, headers = process_df_headers(df, "Verb Modals (POS tag MD)")
+    df, headers = CoNLL_util.process_df_headers(df, "Verb Modals (POS tag MD)")
 
     IO_csv_util.df_to_csv(GUI_util.window, df, verb_modals_file_name, headers=headers, index=False,
                           language_encoding='utf-8')
@@ -393,7 +372,7 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 
     # convert list to dataframe and save
     df = pd.DataFrame(verb_modality_list)
-    df, headers = process_df_headers(df, "Verb Modality")
+    df, headers = CoNLL_util.process_df_headers(df, "Verb Modality")
 
     IO_csv_util.df_to_csv(GUI_util.window, df, verb_modality_file_name, headers=headers, index=False,
                           language_encoding='utf-8')
@@ -425,7 +404,7 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 
         # convert list to dataframe and save
         df = pd.DataFrame(verb_modality_value_list)
-        df, headers = process_df_headers(df, "Modality Value")
+        df, headers = CoNLL_util.process_df_headers(df, "Modality Value")
 
         IO_csv_util.df_to_csv(GUI_util.window, df, verb_modality_value_stats_file_name, headers=headers, index=False,
                               language_encoding='utf-8')
@@ -628,7 +607,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 
     # convert list to dataframe and save
     df = pd.DataFrame(verb_tense_list)
-    df, headers = process_df_headers(df, "Verb Tense")
+    df, headers = CoNLL_util.process_df_headers(df, "Verb Tense")
 
     IO_csv_util.df_to_csv(GUI_util.window, df, verb_tense_file_name, headers=headers, index=False,
                           language_encoding='utf-8')

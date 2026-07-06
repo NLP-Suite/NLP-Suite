@@ -47,27 +47,6 @@ def compute_stats(data):
     return postag_list, postag_counter, deprel_list, deprel_counter
 
 
-def process_df_headers(df, word_type):
-    if df.shape[1] == 0:
-        # Empty subcategory (no matching tokens): return an empty df carrying the expected headers
-        # so df_to_csv writes a valid header-only file and neither the column assignment below nor
-        # charting crashes.
-        _empty_headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag",
-                          "Record ID", "Sentence ID", "Document ID", "Document", word_type]
-        return pd.DataFrame(columns=_empty_headers), _empty_headers
-    if len(df.columns)==15: #date column present
-        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                      "Sentence ID", "Document ID", "Document", 'Date', word_type]
-        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                   "Sentence ID",
-                   "Document ID", "Document", 'Date', word_type]
-    else:
-        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                      "Sentence ID", "Document ID", "Document", word_type]
-        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                   "Sentence ID",
-                   "Document ID", "Document", word_type]
-    return df, headers
 
 def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputFiles,chartPackage, dataTransformation):
     # create pronoun subdir
@@ -102,7 +81,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
 
         # convert list to dataframe and save
         df = pd.DataFrame(pronouns_list)
-        df, headers = process_df_headers(df, "PRONOUNS")
+        df, headers = CoNLL_util.process_df_headers(df, "PRONOUNS")
 
         IO_csv_util.df_to_csv(GUI_util.window, df, pronouns_list_file_name, headers=headers, index=False,
                               language_encoding='utf-8')
@@ -191,7 +170,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
 
         # convert list to dataframe and save
         df = pd.DataFrame(prepositions_list)
-        df, headers = process_df_headers(df, "PREPOSITIONS")
+        df, headers = CoNLL_util.process_df_headers(df, "PREPOSITIONS")
 
         IO_csv_util.df_to_csv(GUI_util.window, df, function_words_prepositions_file_name, headers=headers, index=False,
                               language_encoding='utf-8')
@@ -257,7 +236,7 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
 
         # convert list to dataframe and save
         df = pd.DataFrame(article_list)
-        df, headers = process_df_headers(df, "ARTICLES")
+        df, headers = CoNLL_util.process_df_headers(df, "ARTICLES")
 
         IO_csv_util.df_to_csv(GUI_util.window, df, function_words_articles_file_name, headers=headers, index=False,
                               language_encoding='utf-8')
@@ -322,7 +301,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
 
         # convert list to dataframe and save
         df = pd.DataFrame(conjunction_list)
-        df, headers = process_df_headers(df, "CONJUNCTIONS")
+        df, headers = CoNLL_util.process_df_headers(df, "CONJUNCTIONS")
         IO_csv_util.df_to_csv(GUI_util.window, df, function_words_conjunctions_file_name, headers=headers, index=False,
                               language_encoding='utf-8')
 
@@ -403,7 +382,7 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
 
         # convert list to dataframe and save
         df = pd.DataFrame(auxiliary_list)
-        df, headers = process_df_headers(df, "AUXILIARIES")
+        df, headers = CoNLL_util.process_df_headers(df, "AUXILIARIES")
 
         IO_csv_util.df_to_csv(GUI_util.window, df, function_words_auxiliaries_file_name, headers=headers, index=False,
                               language_encoding='utf-8')

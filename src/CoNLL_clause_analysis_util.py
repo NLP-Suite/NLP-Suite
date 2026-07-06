@@ -3,6 +3,7 @@
 # modified by Jack Hester (February 2019)
 # modified by Roberto Franzosi (February 2019-August 2020), November 2021
 
+import CoNLL_util
 import sys
 import GUI_util
 import IO_libraries_util
@@ -128,27 +129,6 @@ def clause_data_preparation(data):
     dat = sorted(dat, key=lambda x: int(x[recordID_position]))
     return clause_stats, dat
 
-def process_df_headers(df, word_type):
-    if df.shape[1] == 0:
-        # Empty subcategory (no matching tokens): return an empty df carrying the expected headers
-        # so df_to_csv writes a valid header-only file and neither the column assignment below nor
-        # charting crashes.
-        _empty_headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag",
-                          "Record ID", "Sentence ID", "Document ID", "Document", word_type]
-        return pd.DataFrame(columns=_empty_headers), _empty_headers
-    if len(df.columns)==15: #date column present
-        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                      "Sentence ID", "Document ID", "Document", 'Date', word_type]
-        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                   "Sentence ID",
-                   "Document ID", "Document", 'Date', word_type]
-    else:
-        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                      "Sentence ID", "Document ID", "Document", word_type]
-        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                   "Sentence ID",
-                   "Document ID", "Document", word_type]
-    return df, headers
 
 def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,openOutputFiles,chartPackage, dataTransformation):
 
@@ -194,7 +174,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
     # convert list to dataframe and save
     # headers=['Clause Tags','Frequencies']
     df = pd.DataFrame(clausal_list)
-    df, headers = process_df_headers(df, "Clause Tag")
+    df, headers = CoNLL_util.process_df_headers(df, "Clause Tag")
 
     IO_csv_util.df_to_csv(GUI_util.window, df, clausal_analysis_stats_file_name, headers=headers, index=False, language_encoding='utf-8')
 

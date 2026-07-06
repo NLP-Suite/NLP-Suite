@@ -97,25 +97,6 @@ def adjective_POSTAG_NER_DEPREL_compute_lists_frequencies(data, data_divided_sen
     return list_adjectives_postag, list_adjectives_deprel, list_adjectives_ner, adjective_postag_stats, adjective_deprel_stats, adjective_ner_stats
 
 
-def process_df_headers(df, word_type):
-    num_columns = len(df.columns)
-    if num_columns == 0:
-        # Empty subcategory (no matching tokens): return an empty df carrying the expected headers
-        # so df_to_csv writes a valid header-only file and nothing crashes (instead of raising).
-        _empty_headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag",
-                          "Record ID", "Sentence ID", "Document ID", "Document", word_type]
-        return pd.DataFrame(columns=_empty_headers), _empty_headers
-
-    if num_columns == 15:  # Includes a Date column
-        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                      "Sentence ID", "Document ID", "Document", "Date", word_type]
-    elif num_columns == 14:  # Standard CoNLL format
-        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                      "Sentence ID", "Document ID", "Document", word_type]
-    else:
-        raise ValueError(f"Unexpected number of columns: {num_columns}")
-
-    return df, df.columns
 
 
 
@@ -141,7 +122,7 @@ def adjective_stats(inputFilename, outputDir, data, data_divided_sents, openOutp
     df = pd.DataFrame(adjective_postag_list)
     #debugging
 
-    df, headers = process_df_headers(df, "Adjective POS Tags")
+    df, headers = CoNLL_util.process_df_headers(df, "Adjective POS Tags")
     # Output file names
     adjective_list_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'AVA', 'Adjective-ALL', 'list')
     adjective_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'AVA', 'Adjective', 'stats')
@@ -168,7 +149,7 @@ def adjective_stats(inputFilename, outputDir, data, data_divided_sents, openOutp
 
 
     df = pd.DataFrame(adjective_postag_list)
-    df, headers = process_df_headers(df, "Adjective POS Tags")
+    df, headers = CoNLL_util.process_df_headers(df, "Adjective POS Tags")
     headers = list(headers) if not isinstance(headers, list) else headers
 
 
@@ -176,13 +157,13 @@ def adjective_stats(inputFilename, outputDir, data, data_divided_sents, openOutp
     IO_csv_util.df_to_csv(GUI_util.window, df, adjective_postag_list_file_name, headers=headers, index=False, language_encoding='utf-8')
 
     df = pd.DataFrame(adjective_ner_list)
-    df, headers = process_df_headers(df, "Adjective NER Tags")
+    df, headers = CoNLL_util.process_df_headers(df, "Adjective NER Tags")
     headers = list(headers) if not isinstance(headers, list) else headers
 
     IO_csv_util.df_to_csv(GUI_util.window, df, adjective_ner_list_file_name, headers=headers, index=False, language_encoding='utf-8')
 
     df = pd.DataFrame(adjective_deprel_list)
-    df, headers = process_df_headers(df, "Adjective DEPREL Tags")
+    df, headers = CoNLL_util.process_df_headers(df, "Adjective DEPREL Tags")
     headers = list(headers) if not isinstance(headers, list) else headers
 
     IO_csv_util.df_to_csv(GUI_util.window, df, adjective_deprel_list_file_name, headers=headers, index=False, language_encoding='utf-8')

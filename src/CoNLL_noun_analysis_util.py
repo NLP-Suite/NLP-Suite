@@ -127,27 +127,6 @@ def noun_POSTAG_NER_DEPREL_compute_lists_frequencies(data, data_divided_sents):
 
     # return list_nouns_postag, list_nouns_deprel, list_nouns_ner, noun_postag_stats, noun_deprel_stats, noun_ner_stats
 
-def process_df_headers(df, word_type):
-    if df.shape[1] == 0:
-        # Empty subcategory (no matching tokens): return an empty df carrying the expected headers
-        # so df_to_csv writes a valid header-only file and neither the column assignment below nor
-        # charting crashes.
-        _empty_headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag",
-                          "Record ID", "Sentence ID", "Document ID", "Document", word_type]
-        return pd.DataFrame(columns=_empty_headers), _empty_headers
-    if len(df.columns)==15: #date column present
-        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                      "Sentence ID", "Document ID", "Document", 'Date', word_type]
-        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                   "Sentence ID",
-                   "Document ID", "Document", 'Date', word_type]
-    else:
-        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                      "Sentence ID", "Document ID", "Document", word_type]
-        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                   "Sentence ID",
-                   "Document ID", "Document", word_type]
-    return df, headers
 
 
 def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, chartPackage, dataTransformation):
@@ -205,7 +184,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 
     # convert list to dataframe and save
     df = pd.DataFrame(noun_postag_list)
-    df, headers = process_df_headers(df, "Noun POS Tags")
+    df, headers = CoNLL_util.process_df_headers(df, "Noun POS Tags")
 
     IO_csv_util.df_to_csv(GUI_util.window, df, noun_postag_list_file_name, headers=headers, index=False,
                           language_encoding='utf-8')
@@ -214,7 +193,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 
     # convert list to dataframe and save
     df = pd.DataFrame(noun_ner_list)
-    df, headers = process_df_headers(df, "Noun NER Tags")
+    df, headers = CoNLL_util.process_df_headers(df, "Noun NER Tags")
 
     IO_csv_util.df_to_csv(GUI_util.window, df, noun_ner_list_file_name, headers=headers, index=False,
                           language_encoding='utf-8')
@@ -223,7 +202,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 
     # convert list to dataframe and save
     df = pd.DataFrame(noun_deprel_list)
-    df, headers = process_df_headers(df, "Noun DEPREL Tags")
+    df, headers = CoNLL_util.process_df_headers(df, "Noun DEPREL Tags")
 
     IO_csv_util.df_to_csv(GUI_util.window, df, noun_deprel_list_file_name, headers=headers, index=False,
                           language_encoding='utf-8')

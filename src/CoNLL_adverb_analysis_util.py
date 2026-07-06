@@ -91,25 +91,6 @@ def adverb_POSTAG_DEPREL_compute_lists_frequencies(data, data_divided_sents):
     return list_adverbs_postag, list_adverbs_deprel, adverbs_postag_stats, adverbs_deprel_stats
 
 
-def process_df_headers(df, word_type):
-    num_columns = len(df.columns)
-    if num_columns == 0:
-        # Empty subcategory (no matching tokens): return an empty df carrying the expected headers
-        # so df_to_csv writes a valid header-only file and nothing crashes (instead of raising).
-        _empty_headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag",
-                          "Record ID", "Sentence ID", "Document ID", "Document", word_type]
-        return pd.DataFrame(columns=_empty_headers), _empty_headers
-
-    if num_columns == 15:  # Includes a Date column
-        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                      "Sentence ID", "Document ID", "Document", "Date", word_type]
-    elif num_columns == 14:  # Standard CoNLL format
-        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-                      "Sentence ID", "Document ID", "Document", word_type]
-    else:
-        raise ValueError(f"Unexpected number of columns: {num_columns}")
-
-    return df, df.columns
 
 
 
@@ -135,7 +116,7 @@ def adverb_stats(inputFilename, outputDir, data, data_divided_sents, openOutputF
     df = pd.DataFrame(adverbs_postag_list)
     #debugging
 
-    df, headers = process_df_headers(df, "Adverbs POS Tags")
+    df, headers = CoNLL_util.process_df_headers(df, "Adverbs POS Tags")
     # Output file names
     adverbs_list_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'AVA', 'Adverbs-ALL', 'list')
     adverbs_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'AVA', 'Adverb', 'stats')
@@ -162,7 +143,7 @@ def adverb_stats(inputFilename, outputDir, data, data_divided_sents, openOutputF
 
 
     df = pd.DataFrame(adverbs_postag_list)
-    df, headers = process_df_headers(df, "Adverbs POS Tags")
+    df, headers = CoNLL_util.process_df_headers(df, "Adverbs POS Tags")
     headers = list(headers) if not isinstance(headers, list) else headers
 
 
@@ -173,7 +154,7 @@ def adverb_stats(inputFilename, outputDir, data, data_divided_sents, openOutputF
 
 
     df = pd.DataFrame(adverbs_deprel_list)
-    df, headers = process_df_headers(df, "Adverb DEPREL Tags")
+    df, headers = CoNLL_util.process_df_headers(df, "Adverb DEPREL Tags")
     headers = list(headers) if not isinstance(headers, list) else headers
 
     IO_csv_util.df_to_csv(GUI_util.window, df, adverbs_deprel_list_file_name, headers=headers, index=False, language_encoding='utf-8')
