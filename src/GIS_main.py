@@ -26,6 +26,7 @@ import IO_csv_util
 import GIS_pipeline_util
 import GIS_file_check_util
 import IO_files_util
+import CoNLL_util
 import Stanford_CoreNLP_util
 import run_script_util
 import Stanza_util
@@ -496,21 +497,6 @@ def display_csv_file_options():
 
     return cannotRun
 
-def _gis_default_output_dir():
-    """The Suite's default 'Output files directory' from config/NLP_default_IO_config.csv, or '' if unreadable."""
-    try:
-        import GUI_IO_util, csv as _csv
-        path = os.path.join(GUI_IO_util.configPath, 'NLP_default_IO_config.csv')
-        if os.path.isfile(path):
-            with open(path, 'r', newline='', encoding='utf-8', errors='ignore') as fh:
-                for row in _csv.reader(fh):
-                    if row and row[0].strip() == 'Output files directory':
-                        return row[1].strip() if len(row) > 1 else ''
-    except Exception:
-        pass
-    return ''
-
-
 def _is_geocoded_csv(path):
     """True if the csv has Latitude AND Longitude columns (a geocoded GIS file)."""
     try:
@@ -521,28 +507,12 @@ def _is_geocoded_csv(path):
 
 
 def find_geocoded_csv(outputDir, inputFilename='', inputDir=''):
-    """Newest-first list of geocoded GIS csv files (Latitude/Longitude) found in the output dir, the input dir,
-    the input file's folder, and the Suite default output dir - including GIS subfolders (e.g. under an SVO
-    output). Only csvs whose path mentions 'gis'/'geocod' are header-validated, to stay fast on large trees."""
-    roots = []
-    for d in (outputDir, inputDir, os.path.dirname(inputFilename) if inputFilename else '', _gis_default_output_dir()):
-        if d and os.path.isdir(d) and d not in roots:
-            roots.append(d)
-    matches = []
-    seen = set()
-    for base in roots:
-        for root, dirs, files in os.walk(base):
-            for f in files:
-                if not f.lower().endswith('.csv'):
-                    continue
-                p = os.path.join(root, f)
-                if p in seen or ('gis' not in p.lower() and 'geocod' not in p.lower()):
-                    continue
-                seen.add(p)
-                if _is_geocoded_csv(p):
-                    matches.append(p)
-    matches.sort(key=lambda p: os.path.getmtime(p), reverse=True)
-    return matches
+    """Newest-first list of geocoded GIS csv files (Latitude/Longitude) for the current corpus. Only csvs whose
+    path mentions 'gis'/'geocod' are header-validated, to stay fast on large trees. Thin wrapper over the shared
+    CoNLL_util.find_corpus_csv discovery (no stem-narrowing: a geocoded file may not carry the corpus name)."""
+    return CoNLL_util.find_corpus_csv(outputDir, inputFilename, inputDir,
+                path_filter=lambda p: 'gis' in p.lower() or 'geocod' in p.lower(),
+                validator=_is_geocoded_csv, narrow_by_stem=False)
 
 
 def get_csv_file(window,title,fileType,annotate):

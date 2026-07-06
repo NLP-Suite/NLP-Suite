@@ -290,45 +290,15 @@ def get_csv_file(window,title,fileType,displayFile):
     return filePath
 
 
-def _semagg_default_output_dir():
-    """The Suite's default 'Output files directory' from config/NLP_default_IO_config.csv, or '' if unreadable."""
-    try:
-        import GUI_IO_util, csv as _csv
-        path = os.path.join(GUI_IO_util.configPath, 'NLP_default_IO_config.csv')
-        if os.path.isfile(path):
-            with open(path, 'r', newline='', encoding='utf-8', errors='ignore') as fh:
-                for row in _csv.reader(fh):
-                    if row and row[0].strip() == 'Output files directory':
-                        return row[1].strip() if len(row) > 1 else ''
-    except Exception:
-        pass
-    return ''
-
-
 def find_semagg_csv(outputDir, inputFilename='', inputDir=''):
-    """Newest-first list of semantic-aggregation input csvs in the output/input/default dirs: lemma lists
+    """Newest-first list of semantic-aggregation input csvs for the corpus: lemma lists
     (*_nouns_lemma.csv / *_verbs_lemma.csv, for Zoom OUT/UP) and Zoom IN/DOWN word lists
-    (NLP_*_DOWN_wordlist.csv, for Annotate). Matched by filename marker (Suite-produced, so the name is reliable)."""
+    (NLP_*_DOWN_wordlist.csv, for Annotate). Matched by filename marker (Suite-produced, so the name is
+    reliable). Thin wrapper over the shared CoNLL_util.find_corpus_csv discovery (no stem-narrowing)."""
     markers = ('nouns_lemma', 'verbs_lemma', 'down_wordlist')
-    roots = []
-    for d in (outputDir, inputDir, os.path.dirname(inputFilename) if inputFilename else '', _semagg_default_output_dir()):
-        if d and os.path.isdir(d) and d not in roots:
-            roots.append(d)
-    matches = []
-    seen = set()
-    for base in roots:
-        for root, dirs, files in os.walk(base):
-            for f in files:
-                fl = f.lower()
-                if not fl.endswith('.csv') or not any(m in fl for m in markers):
-                    continue
-                p = os.path.join(root, f)
-                if p in seen:
-                    continue
-                seen.add(p)
-                matches.append(p)
-    matches.sort(key=lambda p: os.path.getmtime(p), reverse=True)
-    return matches
+    return CoNLL_util.find_corpus_csv(outputDir, inputFilename, inputDir,
+                path_filter=lambda p: any(m in os.path.basename(p).lower() for m in markers),
+                narrow_by_stem=False)
 
 
 def select_input_csv(window):
