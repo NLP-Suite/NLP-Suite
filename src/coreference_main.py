@@ -409,7 +409,7 @@ videos_options='No videos available'
 TIPS_lookup = { 'Coreference resolution': "TIPS_NLP_Coreference resolution.pdf",
                'Stanford CoreNLP supported languages': 'TIPS_NLP_Stanford CoreNLP supported languages.pdf',
                'Stanford CoreNLP performance & accuracy': 'TIPS_NLP_Stanford CoreNLP performance and accuracy.pdf',
-               'Stanza coreference resolution': "TIPS_NLP_Stanza coreference resolution.pdf",
+               'Stanza coreference resolution': "TIPS_NLP_Coreference resolution.pdf",
                'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                'Stanford CoreNLP memory issues':'TIPS_NLP_Stanford CoreNLP memory issues.pdf',
                'csv files - Problems & solutions': 'TIPS_NLP_csv files - Problems & solutions.pdf'}

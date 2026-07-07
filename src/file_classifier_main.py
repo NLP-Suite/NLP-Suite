@@ -187,7 +187,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'Classify files (By date)':'TIPS_NLP_File classifier (By date).pdf','Classify files (By NER)':'TIPS_NLP_File classifier (By NER).pdf', 'NER (Named Entity Recognition)':'TIPS_NLP_NER (Named Entity Recognition) Stanford CoreNLP.pdf','CoNLL Table':'TIPS_NLP_Stanford CoreNLP CoNLL table.pdf'}
+TIPS_lookup = {'Classify files (By date)':'TIPS_NLP_File classifier (By date).pdf','Classify files (By NER)':'TIPS_NLP_File classifier (By NER).pdf', 'NER (Named Entity Recognition)':'TIPS_NLP_NER (Named Entity Recognition).pdf','CoNLL Table':'TIPS_NLP_Stanford CoreNLP CoNLL table.pdf'}
 TIPS_options='Classify files (By date)', 'Classify files (By NER)','NER (Named Entity Recognition)','CoNLL Table'
 
 # add all the lines to the end to every special GUI

@@ -28,6 +28,7 @@ import reminders_util
 import file_summary_checker_util
 import file_find_non_related_documents_util
 import run_script_util
+import plagiarist_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -150,40 +151,39 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox,
         mb.showwarning(title='Similarity Index warning', message="The level of similarity was set at " + str(
             similarityIndex_Plagiarist_var) + ".\n\nCAVEAT! The default threshold for similarity is normally set at 80%.\n\nBe aware that lowering the default level may result in too many documents wrongly classified as similar; conversely, raising the level may exclude too many documents.")
 
-    if IO_libraries_util.check_inputPythonJavaProgramFile('Lucene.jar') == False:
-        return
-    if len(DateCharacterSeparator) == 0:
-        tk.messagebox.showinfo("Plagiarist", "DateCharacterSeparator")
-        return
     lib_stopwords = lib_util.check_lib_stopwords()
 
-    if len(lib_stopwords) != 0:
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running PLAGIARIST at',
-                                           True)
-        errorFound, error_code, system_output, java_version = IO_libraries_util.check_java_installation('Lucene')
-        if errorFound:
-            return
-        subprocess.call(['java', '-jar', 'Lucene.jar', '-inputDir', inputDir + os.sep, '-outputDir',
-                         outputDir + os.sep
-                            , '-stopword', lib_stopwords, '-embedsDate', str(fileName_embeds_date), '-dateFormat',
-                         DateFormat
-                            , '-datePos', str(DatePosition), '-itemsDelim', DateCharacterSeparator, '-similarityIndex',
-                         str(similarityIndex_Plagiarist_var)])
-        filesToOpen.append(outputDir + os.sep + "document_duplicates.txt")
+    if fileName_embeds_date and len(DateCharacterSeparator) == 0:
+        tk.messagebox.showinfo("Plagiarist",
+            "The filenames are marked as embedding a date, but no date character "
+            "separator was entered.\n\nPlease enter the separator and try again.")
+        return
 
-        outputFilenameCSV_1 = outputDir + os.sep + "Lucene_classes_freq.csv"
-        filesToOpen.append(outputFilenameCSV_1)
+    # Python (scikit-learn TF-IDF + cosine similarity) replacement for the former
+    # Java Lucene.jar. It writes the same output files, so the charting below is
+    # unchanged.
+    result = plagiarist_util.run(inputDir, outputDir, lib_stopwords,
+                                 similarityIndex_Plagiarist_var,
+                                 fileName_embeds_date, DateFormat, DatePosition,
+                                 DateCharacterSeparator)
+    if result is None:
+        return
 
-        if fileName_embeds_date:
-            outputFilenameCSV_2 = outputDir + os.sep + "Lucene_classes_time_freq.csv"
-            filesToOpen.append(outputFilenameCSV_2)
+    filesToOpen.append(outputDir + os.sep + "document_duplicates.txt")
 
-        outputFilenameCSV_3 = outputDir + os.sep + "Lucene_document_instance_classes_freq.csv"
-        filesToOpen.append(outputFilenameCSV_3)
+    outputFilenameCSV_1 = outputDir + os.sep + "Lucene_classes_freq.csv"
+    filesToOpen.append(outputFilenameCSV_1)
 
-        outputFilenameCSV_4 = outputDir + os.sep + "Lucene_Document_classes_freq.csv"
-        group_newspaper(outputFilenameCSV_3, outputFilenameCSV_4)
-        filesToOpen.append(outputFilenameCSV_4)
+    outputFilenameCSV_2 = outputDir + os.sep + "Lucene_classes_time_freq.csv"
+    if fileName_embeds_date and os.path.isfile(outputFilenameCSV_2):
+        filesToOpen.append(outputFilenameCSV_2)
+
+    outputFilenameCSV_3 = outputDir + os.sep + "Lucene_document_instance_classes_freq.csv"
+    filesToOpen.append(outputFilenameCSV_3)
+
+    outputFilenameCSV_4 = outputDir + os.sep + "Lucene_Document_classes_freq.csv"
+    group_newspaper(outputFilenameCSV_3, outputFilenameCSV_4)
+    filesToOpen.append(outputFilenameCSV_4)
 
     if chartPackage!='No charts':
         # Lucene_classes_freq.csv; outputFilenameCSV_1
@@ -207,7 +207,7 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox,
                 filesToOpen.extend(outputFiles)
 
         # Plot Lucene_classes_time_freq.csv line plot (temporal plot); outputFilenameCSV_2
-        if fileName_embeds_date:
+        if fileName_embeds_date and os.path.isfile(outputFilenameCSV_2):
             # columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=[[0,1], [0,2], [0,3], [0,4], [0,5], [0,6],[0,7], [0,8], [0,9],[0,10]]
             # hover_label=['','','','','','','','','','']
             inputFilename = outputFilenameCSV_2
@@ -726,11 +726,11 @@ videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
 TIPS_lookup = {'Check the character\'s name tag': 'TIPS_NLP_Word similarity (Levenshtein edit distance).pdf',
-               'Filename well-formedness': 'TIPS_NLP_Filename well-formedness.pdf',
+               'Filename well-formedness': 'TIPS_NLP_Filename checker.pdf',
                'WordNet': 'TIPS_NLP_WordNet.pdf',
                'Find the character\'s home (By date)': 'TIPS_NLP_File classifier (By date).pdf',
                'Find the character\'s home (By NER)': 'TIPS_NLP_File classifier (By NER).pdf',
-               'NER (Named Entity Recognition)': 'TIPS_NLP_NER (Named Entity Recognition) Stanford CoreNLP.pdf',
+               'NER (Named Entity Recognition)': 'TIPS_NLP_NER (Named Entity Recognition).pdf',
                'Find the missing character': 'TIPS_NLP_Find the missing character.pdf',
                'Check the character\'s name tag': 'TIPS_NLP_Word similarity (Levenshtein edit distance).pdf',
                'Find the intruder': 'TIPS_NLP_Find the intruder.pdf',
@@ -771,7 +771,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to run the Python 3 script 'Find the intruder'. The script checks the documents grouped together in a directory, as perhaps all describing a specific event, to see whether any of them do not belong to the group. The script uses NER values for 'Location','Date','Organization', and 'Person' as criteria for checking files.\n\nPlease, using the dropdown menu, select a value for the similarity index. The similarity index, based on cosine similarity, is used to compute the degree of similarity between documents. The default value is set as 0.2. If you set a high value >.6, then every document may be an intruder; so, the recommended value should be <.4.\n\nIn INPUT the script expects the path to a directory containing several folders, each folder containing a set of related documents (e.g., all describing the same event).\n\nIn OUTPUT, the script creates two csv files: One includes a list of irrelevant files, and the folder they are in; The other csv file contains the frequency of having intruders in the input folders.\n\nNo Excel charts are produced since the csv output lists only one record of frequencies and percentages.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to run the Java script 'Find the plagiarist'. The script, based on Lucene, checks a set of documents to compute the percentage of similarity between any two of them.\n\nIn INPUT the script expects:\n   1. the file stopwords.txt stored in the lib subdirectory;\n   2. a directory that contains all the files to be compared.\n\nIn OUTPUT, the script produces four output files: \n   1. document_duplicates.txt that shows the summary of duplicated files;\n   2. Lucene_class_freq.csv that shows how many documents fall into each class of frequency (e.g., 100 documents have 10%-20% similarity with other files);\n   3. Lucene_classes_time_freq.csv that shows, for each year, how many documents fall into each class of frequency (e.g., in 1897, 100 documents have 10%-20% similarity with other files);\n  4. Lucene_document_classes_freq.csv that shows for each document, how many documents fall into each class of frequency (e.g., for the document “The Oglethorpe Echo_09-19-1919_1_1.txt”, 10 other documents have 10%-20% frequency of similarity with it).\n\nThe default threshold for similarity is set at 80%. Documents that get a score over this value are considered duplicates of the candidate document. This level was arrived at by running several different threshold levels on different corpora. Lowering the level would give too many false positives (too many documents wrongly classified as similar); raising the level may exclude too many documents.")
+                                  "Please, tick the checkbox if you wish to run the 'Find the plagiarist' tool. It uses TF-IDF with cosine similarity to compute the percentage of similarity between any two documents.\n\nIn INPUT the tool expects:\n   1. the file stopwords.txt stored in the lib subdirectory;\n   2. a directory that contains all the files to be compared.\n\nIn OUTPUT, the tool produces four output files: \n   1. document_duplicates.txt that shows the summary of duplicated files;\n   2. Lucene_classes_freq.csv that shows how many documents fall into each class of frequency (e.g., 100 documents have 10%-20% similarity with other files);\n   3. Lucene_classes_time_freq.csv that shows, for each year, how many documents fall into each class of frequency (e.g., in 1897, 100 documents have 10%-20% similarity with other files);\n  4. Lucene_document_classes_freq.csv that shows for each document, how many documents fall into each class of frequency (e.g., for the document “The Oglethorpe Echo_09-19-1919_1_1.txt”, 10 other documents have 10%-20% frequency of similarity with it).\n\nThe default threshold for similarity is set at 80%. Documents that get a score over this value are considered duplicates of the candidate document. Because the similarity is now computed with TF-IDF cosine similarity rather than the former Lucene scoring, you may wish to re-check this threshold on your corpus. Lowering the level would give too many false positives (too many documents wrongly classified as similar); raising the level may exclude too many documents.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

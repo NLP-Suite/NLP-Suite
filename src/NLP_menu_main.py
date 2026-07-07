@@ -292,7 +292,7 @@ pydict['Sentiment analysis (dictionary options: ANEW, hedonometer, SentiWordNet,
 pydict['Sentiment analysis (neural network/tensor options: BERT, spaCy, Stanford CoreNLP, Stanza)'] = ["sentiment_analysis_main.py", 1]
 pydict["Sentiments/emotions (ALL options GUI)"] = ["sentiments_emotions_ALL_main.py", 1]
 pydict["Shape of stories"] = ["shape_of_stories_main.py", 1]
-pydict["Similarities between documents (via Java Lucene)"] = ["social_science_research_main.py", 1]
+pydict["Similarities between documents (via TF-IDF)"] = ["social_science_research_main.py", 1]
 pydict["Similarities between documents (via Python difflib)"] = ["", 0]  # not available
 pydict["Similarities between words (Levenshtein distance)"] = ["file_spell_checker_main.py", 1]
 pydict["Spelling checkers"] = ["file_spell_checker_main.py", 1]

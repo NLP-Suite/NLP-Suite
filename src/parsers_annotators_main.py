@@ -665,7 +665,7 @@ TIPS_lookup = {'Stanford CoreNLP download': 'TIPS_NLP_Stanford CoreNLP download 
                'Things to do with words: Overall view': 'TIPS_NLP_Things to do with words Overall view.pdf',
                'Stanford CoreNLP supported languages':'TIPS_NLP_Stanford CoreNLP supported languages.pdf',
                'CoNLL Table': 'TIPS_NLP_Stanford CoreNLP CoNLL table.pdf',
-               'CoreNLP NER (Named Entity Recognition)': 'TIPS_NLP_CoreNLP_NER (Named Entity Recognition).pdf',
+               'CoreNLP NER (Named Entity Recognition)': 'TIPS_NLP_NER tags across packages.pdf',
                'NER tags across packages':'TIPS_NLP_NER tags across packages.pdf',
                'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf",
                'DEPREL (Stanford Dependency Relations)': "TIPS_NLP_DEPREL (Dependency Relations) Stanford CoreNLP.pdf",

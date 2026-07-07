@@ -590,7 +590,7 @@ NLP_Suite_pre_processing_tools_menu = 'File handler (ALL options GUI)','Sample c
 'Language detection', \
 'Newspaper article/Document titles', \
 'Sample corpus (ALL options GUI)', \
-'Similarities between documents (via Java Lucene)', \
+'Similarities between documents (via TF-IDF)', \
 'Similarities between documents (via Python difflib)', \
 'Similarities between words (Levenshtein distance)', \
 'Spelling checkers', \
@@ -607,7 +607,7 @@ NLP_Suite_pre_processing_tools_menu = 'File handler (ALL options GUI)','Sample c
 
 NLP_Suite_corpus_tools_menu = 'Co-Occurrences VIEWER', 'N-grams VIEWER', \
 'Shape of stories', 'Similarities between documents (via Python difflib)', \
-'Similarities between documents (via Java Lucene)', 'Topic modeling (via MALLET & Gensim)'
+'Similarities between documents (via TF-IDF)', 'Topic modeling (via MALLET & Gensim)'
 
 NLP_Suite_corpus_document_tools_menu = \
 'Fundamental NLP tools ---------------------------------------------------------------------------', \

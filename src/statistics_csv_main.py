@@ -838,7 +838,7 @@ TIPS_lookup = {'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems
                'Statistical tools in the NLP Suite': 'TIPS_NLP_Statistical tools.pdf',
                'Statistical descriptive measures': "TIPS_NLP_Statistical measures.pdf",
                'Lemmas & stopwords':'TIPS_NLP_NLP Basic language.pdf',
-               'Style measures': 'TIPS_NLP_Style measures.pdf',
+               'Style measures': 'TIPS_NLP_Style analysis.pdf',
                # 'N-Grams (word & character)': "TIPS_NLP_Ngram (word & character).pdf",
                # 'NLP Ngram and Word Co-Occurrence Viewer': "TIPS_NLP_Ngram and Word Co-Occurrence VIEWER.pdf",
                # 'Google Ngram Viewer': 'TIPS_NLP_Ngram Google Ngram Viewer.pdf',
