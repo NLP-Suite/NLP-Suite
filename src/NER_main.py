@@ -375,8 +375,9 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indente
 NER_tags_CoreNLP = ['All NER tags', '--- All quantitative expressions','NUMBER', 'ORDINAL', 'PERCENT', '--- All social actors', 'PERSON', 'ORGANIZATION', '--- All spatial expressions', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION', '--- All temporal expressions', 'DATE', 'TIME', 'DURATION', 'SET',  '--- All other expressions', 'CAUSE_OF_DEATH', 'CRIMINAL_CHARGE', 'EMAIL', 'IDEOLOGY', 'MISC', 'MONEY', 'NATIONALITY', 'RELIGION', 'TITLE', 'URL']
 # spaCy and Stanza (English) use the OntoNotes scheme (GPE, LOC, NORP, FAC, CARDINAL, ...)
 NER_tags_OntoNotes = ['All NER tags', '--- All quantitative expressions', 'CARDINAL', 'ORDINAL', 'PERCENT', 'MONEY', 'QUANTITY', '--- All social actors', 'PERSON', 'NORP', 'ORG', '--- All spatial expressions', 'GPE', 'LOC', 'FAC', '--- All temporal expressions', 'DATE', 'TIME', '--- All other expressions', 'PRODUCT', 'EVENT', 'WORK_OF_ART', 'LAW', 'LANGUAGE']
-# BERT uses the CoNLL-2003 scheme — only 4 coarse entity types (no category groups)
-NER_tags_BERT = ['All NER tags', 'PER', 'ORG', 'LOC', 'MISC']
+# BERT now uses an OntoNotes-fine-tuned model (djagatiya/ner-roberta-base-ontonotesv5-englishv4),
+# so it shares the same grouped OntoNotes scheme (18 tags, by category) as spaCy & Stanza
+NER_tags_BERT = NER_tags_OntoNotes
 
 NER_tag_var.set('All NER tags') #--- All NER tags
 NER_menu = tk.OptionMenu(window,NER_tag_var,*NER_tags_CoreNLP)
@@ -459,13 +460,9 @@ def add_NER_tag(coming_from_add, coming_from_reset):
         add_NER_button.configure(state='normal')
     pkg = NER_packages_var.get()
     sel = NER_tag_var.get()
-    # BERT uses the CoNLL-2003 scheme (4 coarse tags, no category groups)
-    if 'BERT' in pkg:
-        if 'All NER tags' in sel:
-            NER_list = ['PER', 'ORG', 'LOC', 'MISC']
-            NER_entry_var.set(', '.join(NER_list))
-    # spaCy and Stanza use the OntoNotes NER scheme; CoreNLP uses its own fine-grained scheme
-    elif ('spaCy' in pkg) or ('Stanza' in pkg):
+    # BERT (OntoNotes-fine-tuned model), spaCy and Stanza all use the OntoNotes NER scheme;
+    # CoreNLP uses its own fine-grained scheme
+    if ('BERT' in pkg) or ('spaCy' in pkg) or ('Stanza' in pkg):
         if 'All NER tags' in sel:
             NER_list = ['PERSON', 'NORP', 'ORG', 'GPE', 'LOC', 'FAC', 'PRODUCT', 'EVENT', 'WORK_OF_ART', 'LAW', 'LANGUAGE', 'DATE', 'TIME', 'PERCENT', 'MONEY', 'QUANTITY', 'ORDINAL', 'CARDINAL']
             NER_entry_var.set(', '.join(NER_list))
@@ -618,7 +615,7 @@ videos_options='NER extractor'
 TIPS_lookup = {'Stanford CoreNLP supported languages':'TIPS_NLP_Stanford CoreNLP supported languages.pdf',
                'Stanford CoreNLP performance & accuracy':'TIPS_NLP_Stanford CoreNLP performance and accuracy.pdf',
                'Stanford CoreNLP memory issues': 'TIPS_NLP_Stanford CoreNLP memory issues.pdf',
-               'CoreNLP NER (Named Entity Recognition)':'TIPS_NLP_CoreNLP_NER (Named Entity Recognition).pdf',
+               'CoreNLP NER (Named Entity Recognition)':'TIPS_NLP_NER tags across packages.pdf',
                'NER tags across packages':'TIPS_NLP_NER tags across packages.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
                'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
@@ -639,7 +636,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, click on the 'Pre-processing tools' button to open the GUI where you will be able to perform a variety of\n   file checking options (e.g., utf-8 encoding compliance of your corpus or sentence length);\n   file cleaning options (e.g., convert non-ASCII apostrophes & quotes and % to percent).\n\nNon utf-8 compliant texts are likely to lead to code breakdown in various algorithms.\n\nASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n\n% signs will lead to code breakdon of Stanford CoreNLP.\n\nSentences without an end-of-sentence marker (. ! ?) in Stanford CoreNLP will be processed together with the next sentence, potentially leading to very long sentences.\n\nSentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the 23 NER tags that you would like to extract.\n\nFor English, the Stanford CoreNLP, by default through the NERClassifierCombiner annotator, recognizes the following NER values:\n  named (PERSON, LOCATION, ORGANIZATION, MISC);\n  numerical (MONEY, NUMBER, ORDINAL, PERCENT);\n  temporal (DATE, TIME, DURATION, SET).\n  In addition, via regexner, the following entity classes are tagged: EMAIL, URL, CITY, STATE_OR_PROVINCE, COUNTRY, NATIONALITY, RELIGION, (job) TITLE, IDEOLOGY, CRIMINAL_CHARGE, CAUSE_OF_DEATH.\n\nClick on the + button to add more NER tags.\nClick on the Reset button (or ESCape) to cancel all selected options and start over."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","All NER annotators handle multi-word expressions (MWE), such as 'Harry Potter' as a single PERSON or 'United States of America' as a single COUNTRY/GPE.\n\nThe NER tags dropdown adapts to the package selected above, each using its own tag scheme:\n   - Stanford CoreNLP: its own fine-grained scheme (CITY, STATE_OR_PROVINCE, COUNTRY, LOCATION, CAUSE_OF_DEATH, CRIMINAL_CHARGE, ...);\n   - spaCy and Stanza: the OntoNotes scheme (PERSON, NORP, ORG, GPE, LOC, FAC, DATE, TIME, MONEY, QUANTITY, ...);\n   - BERT: the CoNLL-2003 scheme (PER, ORG, LOC, MISC).\n\nSelect 'All NER tags' to extract every tag, or pick a category (e.g. 'All spatial expressions') or an individual tag to extract only those. Your selection filters the output for all packages.\n\nPress the ESCape button to clear any previously selected options and start fresh."+GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","All NER annotators handle multi-word expressions (MWE), such as 'Harry Potter' as a single PERSON or 'United States of America' as a single COUNTRY/GPE.\n\nThe NER tags dropdown adapts to the package selected above, each using its own tag scheme:\n   - Stanford CoreNLP: its own fine-grained scheme (CITY, STATE_OR_PROVINCE, COUNTRY, LOCATION, CAUSE_OF_DEATH, CRIMINAL_CHARGE, ...);\n   - spaCy, Stanza and BERT: the OntoNotes scheme (PERSON, NORP, ORG, GPE, LOC, FAC, DATE, TIME, MONEY, QUANTITY, ...).\n\nSelect 'All NER tags' to extract every tag, or pick a category (e.g. 'All spatial expressions') or an individual tag to extract only those. Your selection filters the output for all packages.\n\nPress the ESCape button to clear any previously selected options and start fresh."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to run the NER Entity Timeline tool.\n\nThis tool uses Stanza NER to extract named entities (PERSON, GPE, LOC, ORG, etc.) and track WHEN they appear across the narrative.\n\nThe tool produces:\n   - Entity timeline CSV with every mention, its sentence, and narrative position (0 = beginning, 1 = end)\n   - Frequency bar chart of the top 20 entities across all types\n   - Per-type scatter timelines showing when each PERSON, GPE, ORG, or LOC appears\n   - Entity presence heatmap showing the density of mentions across 10 narrative segments\n   - Per-document entity counts (when processing multiple documents)\n\nThis tool runs independently of the NER package selected above — it always uses Stanza.\n\nNOTE: The heatmap divides the text into 10 narrative-position bins (0-10%, 10-20%, ... 90-100%). With very short texts (e.g., a single sentence like 'Berkeley went to New York with her friend Maria'), all entities will cluster in one bin, producing a single dark column. This is expected — the heatmap is designed for longer documents where entity mentions spread across the narrative arc."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

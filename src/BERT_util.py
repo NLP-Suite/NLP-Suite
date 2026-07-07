@@ -58,9 +58,9 @@ def _bert_first_download_alert(model_id):
 
 # Provides NER tags per sentence for every doc and stores in a csv file
 def NER_tags_BERT(window, inputFilename, inputDir, outputDir, configFileName, mode, chartPackage, dataTransformation, NERs=''):
-    _bert_first_download_alert("xlm-roberta-large-finetuned-conll03-english")
-    tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-large-finetuned-conll03-english")
-    model = AutoModelForTokenClassification.from_pretrained("xlm-roberta-large-finetuned-conll03-english")
+    _bert_first_download_alert("djagatiya/ner-roberta-base-ontonotesv5-englishv4")
+    tokenizer = AutoTokenizer.from_pretrained("djagatiya/ner-roberta-base-ontonotesv5-englishv4")
+    model = AutoModelForTokenClassification.from_pretrained("djagatiya/ner-roberta-base-ontonotesv5-englishv4")
 
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
 
@@ -725,11 +725,18 @@ def split_into_sentences(text):
     return sentences
 
 
-# the loaded model is xlm-roberta-large-finetuned-conll03-english, which uses the
-# CoNLL-2003 scheme and emits only 4 coarse entity types (via entity_group)
+# the loaded model is djagatiya/ner-roberta-base-ontonotesv5-englishv4, fine-tuned on OntoNotes 5;
+# it emits the full OntoNotes 18-type scheme (via entity_group) - the same tags spaCy & Stanza use,
+# grouped below by category the way the NER dropdown groups them
 NER_dict = {'NERs': [
-    "PER",   # person entity
-    "ORG",   # organization entity
-    "LOC",   # location entity
-    "MISC",  # miscellaneous named entity
+    # quantitative expressions
+    "CARDINAL", "ORDINAL", "PERCENT", "MONEY", "QUANTITY",
+    # social actors
+    "PERSON", "NORP", "ORG",
+    # spatial expressions
+    "GPE", "LOC", "FAC",
+    # temporal expressions
+    "DATE", "TIME",
+    # other expressions
+    "PRODUCT", "EVENT", "WORK_OF_ART", "LAW", "LANGUAGE",
 ]}
