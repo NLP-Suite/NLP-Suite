@@ -264,14 +264,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'Clause analysis':'TIPS_NLP_Clause Analysis.pdf',
+TIPS_lookup = {'Clause analysis':'TIPS_NLP_Clause analysis.pdf',
                'Sentence complexity':'TIPS_NLP_Sentence complexity.pdf',
                'Text readability':'TIPS_NLP_Text readability.pdf',
                'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
                'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf",
                'DEPREL (Stanford Dependency Relations)': "TIPS_NLP_DEPREL (Dependency Relations) Stanford CoreNLP.pdf",
-               'NLP Searches': "TIPS_NLP_NLP Searches.pdf",
-               'N-Grams (word & character)':"TIPS_NLP_Ngrams (word & character).pdf",
+               'NLP Searches': "TIPS_NLP_NLP searches.pdf",
+               'N-Grams (word & character)':"TIPS_NLP_Ngram (word & character).pdf",
                'NLP Ngram and Word Co-Occurrence VIEWER':"TIPS_NLP_Ngram and Word Co-Occurrence VIEWER.pdf",
                'Google Ngram Viewer':'TIPS_NLP_Ngram Google Ngram Viewer.pdf',
                'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',

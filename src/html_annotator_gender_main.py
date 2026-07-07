@@ -464,7 +464,7 @@ activate_all_options()
 videos_lookup = {'Gender annotator':'https://youtu.be/w7yIGy19VvA'}
 videos_options='Gender annotator'
 
-TIPS_lookup = {'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf','Statistical measures':'TIPS_NLP_Statistical measures.pdf','Gender annotator':'TIPS_NLP_Gender annotator.pdf','NER (Named Entity Recognition)':'TIPS_NLP_NER (Named Entity Recognition) Stanford CoreNLP.pdf','CoreNLP Coref':'TIPS_NLP_Coreference resolution.pdf'}
+TIPS_lookup = {'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf','Statistical measures':'TIPS_NLP_Statistical measures.pdf','Gender annotator':'TIPS_NLP_Stanford CoreNLP gender annotator.pdf','NER (Named Entity Recognition)':'TIPS_NLP_NER (Named Entity Recognition) Stanford CoreNLP.pdf','CoreNLP Coref':'TIPS_NLP_Coreference resolution.pdf'}
 TIPS_options='csv files - Problems & solutions','Statistical measures','Gender annotator', 'NER (Named Entity Recognition)', 'CoreNLP Coref'
 
 # add all the lines to the end to every special GUI

@@ -837,10 +837,10 @@ videos_options='No videos available'
 TIPS_lookup = {'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
                'Statistical tools in the NLP Suite': 'TIPS_NLP_Statistical tools.pdf',
                'Statistical descriptive measures': "TIPS_NLP_Statistical measures.pdf",
-               'Lemmas & stopwords':'TIPS_NLP_NLP Basic Language.pdf',
+               'Lemmas & stopwords':'TIPS_NLP_NLP Basic language.pdf',
                'Style measures': 'TIPS_NLP_Style measures.pdf',
-               # 'N-Grams (word & character)': "TIPS_NLP_Ngrams (word & character).pdf",
-               # 'NLP Ngram and Word Co-Occurrence Viewer': "TIPS_NLP_NLP Ngram and Co-Occurrence Viewer.pdf",
+               # 'N-Grams (word & character)': "TIPS_NLP_Ngram (word & character).pdf",
+               # 'NLP Ngram and Word Co-Occurrence Viewer': "TIPS_NLP_Ngram and Word Co-Occurrence VIEWER.pdf",
                # 'Google Ngram Viewer': 'TIPS_NLP_Ngram Google Ngram Viewer.pdf',
                'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf'}
 TIPS_options = 'Statistical tools in the NLP Suite', 'Statistical descriptive measures', 'csv files - Problems & solutions', 'Lemmas & stopwords', 'Excel smoothing data series'

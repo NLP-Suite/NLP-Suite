@@ -110,7 +110,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'The world of emotions and sentiments':'TIPS_NLP_The world of emotions and sentiments.pdf','Sentiment Analysis':"TIPS_NLP_Sentiment Analysis.pdf"}
+TIPS_lookup = {'The world of emotions and sentiments':'TIPS_NLP_The world of emotions and sentiments.pdf','Sentiment Analysis':"TIPS_NLP_Sentiment analysis.pdf"}
 TIPS_options='The world of emotions and sentiments','Sentiment Analysis'
 
 # add all the lines to the end to every special GUI

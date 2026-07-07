@@ -321,7 +321,7 @@ changed_GIS_filename()
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {"Geocoding":"TIPS_NLP_Geocoding.pdf","Geographic distances":"TIPS_NLP_GIS distances.pdf",'Statistical measures':'TIPS_NLP_Statistical measures.pdf'}
+TIPS_lookup = {"Geocoding":"TIPS_NLP_GIS_Geocoding.pdf","Geographic distances":"TIPS_NLP_GIS distances.pdf",'Statistical measures':'TIPS_NLP_Statistical measures.pdf'}
 TIPS_options='Geocoding', 'Geographic distances', 'Statistical measures'
 
 # add all the lines to the end to every special GUI

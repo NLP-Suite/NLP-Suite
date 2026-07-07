@@ -347,7 +347,7 @@ videos_options='No videos available'
 
 TIPS_lookup = {'Style analysis':'TIPS_NLP_Style analysis.pdf',
                'English Language Benchmarks': 'TIPS_NLP_English Language Benchmarks.pdf',
-               'N-Grams (word & character)':"TIPS_NLP_Ngrams (word & character).pdf",
+               'N-Grams (word & character)':"TIPS_NLP_Ngram (word & character).pdf",
                'NLP Ngram and Word Co-Occurrence VIEWER':"TIPS_NLP_Ngram and Word Co-Occurrence VIEWER.pdf",
                'Google Ngram Viewer':'TIPS_NLP_Ngram Google Ngram Viewer.pdf',
                'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',

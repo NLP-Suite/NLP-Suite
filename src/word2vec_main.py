@@ -366,7 +366,7 @@ def activate_all_options():
 videos_lookup = {'Word2Vec':'https://www.youtube.com/watch?v=Yjj50_l9sd8'}
 videos_options='Word2Vec'
 
-TIPS_lookup = {"Lemmas & stopwords":"TIPS_NLP_NLP Basic Language.pdf",
+TIPS_lookup = {"Lemmas & stopwords":"TIPS_NLP_NLP Basic language.pdf",
                "Word embeddings with BERT": "TIPS_NLP_BERT word embeddings.pdf",
                "Word Sense Induction (WSI) (via BERT & K-means)": "TIPS_NLP_Word Sense Induction (WSI).pdf",
                "Word Sense Disambiguation (WSD) (via CoNLL & WordNet)": "TIPS_NLP_Word Sense Disambiguation (WSD).pdf",

@@ -1389,7 +1389,7 @@ videos_options='No videos available'
 # TIPS_options='No TIPS available'
 
 TIPS_lookup = {'SQL template queries':'TIPS_NLP_SQL Template Queries.pdf',
-               'PC-ACE tables analyzer via Pandas':'TIPS_NLP_PC-ACE ACCESS DB Analyzer.pdf',
+               'PC-ACE tables analyzer via Pandas':'TIPS_NLP_PC-ACE Access DB Analyzer.pdf',
                'PC-ACE - Export ACCESS tables to Excel':'TIPS_NLP_PC-ACE - Export ACCESS tables to Excel.pdf',
                'SVO automatic extraction and visualization': 'TIPS_NLP_SVO extraction and visualization.pdf',
                "Google Earth Pro": "TIPS_NLP_GIS_Google Earth Pro.pdf",

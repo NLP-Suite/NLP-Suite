@@ -673,7 +673,7 @@ TIPS_lookup = {'Stanford CoreNLP download': 'TIPS_NLP_Stanford CoreNLP download 
                'Stanford CoreNLP date extractor (NER normalized date)': 'TIPS_NLP_Stanford CoreNLP date extractor.pdf',
                'Sentiment analysis':'TIPS_NLP_Sentiment analysis.pdf',
                'Noun Analysis': "IPS_NLP_Noun Analysis.pdf",
-               'Verb Analysis': "TIPS_NLP_Verb Analysis.pdf",
+               'Verb Analysis': "TIPS_NLP_Verb analysis.pdf",
                'Function Words Analysis': 'TIPS_NLP_Function Words Analysis.pdf',
                'Clause Analysis': 'TIPS_NLP_Clause analysis.pdf'}
                # 'Java download install run': 'TIPS_NLP_Java download install run.pdf',

@@ -527,7 +527,7 @@ TIPS_lookup = {"Narrative analysis":"TIPS_NLP_Things to do with words Narrative 
                'DBpedia ontology classes':'TIPS_NLP_Annotator DBpedia ontology classes.pdf',
                'YAGO (schema.org) ontology classes':'TIPS_NLP_Annotator YAGO (schema.org) ontology classes.pdf',
                "Annotator (via dictionary)":"TIPS_NLP_Annotator dictionary.pdf",
-               "Gender annotator":"TIPS_NLP_Gender annotator.pdf",
+               "Gender annotator":"TIPS_NLP_Stanford CoreNLP gender annotator.pdf",
                'English Language Benchmarks': 'TIPS_NLP_English Language Benchmarks.pdf',
                'Things to do with words: Overall view': 'TIPS_NLP_Things to do with words Overall view.pdf'}
 TIPS_options='Narrative analysis', 'Stanford CoreNLP date extractor (NER normalized date)','WordNet','Annotator','DBpedia','DBpedia ontology classes','YAGO','YAGO (schema.org) ontology classes','Gender annotator','Annotator (via dictionary)','SVO (Subject-Verb-Object extractor)', 'Shape of stories','English Language Benchmarks', 'Things to do with words: Overall view'

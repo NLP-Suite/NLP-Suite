@@ -636,7 +636,7 @@ videos_options='No videos available'
 TIPS_lookup = {
                'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
                'Style analysis':'TIPS_NLP_Style analysis.pdf',
-               'N-Grams (word & character)':"TIPS_NLP_Ngrams (word & character).pdf",
+               'N-Grams (word & character)':"TIPS_NLP_Ngram (word & character).pdf",
                'NLP Ngram and Word Co-Occurrence VIEWER':"TIPS_NLP_Ngram and Word Co-Occurrence VIEWER.pdf",
                'Google Ngram Viewer':'TIPS_NLP_Ngram Google Ngram Viewer.pdf',
                'Statistical measures': 'TIPS_NLP_Statistical measures.pdf',

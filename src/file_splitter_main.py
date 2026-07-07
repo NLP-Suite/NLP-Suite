@@ -737,7 +737,7 @@ TIPS_lookup = {'File manager': 'TIPS_NLP_File manager.pdf',
                'Filename checker': 'TIPS_NLP_Filename checker.pdf', 'Filename matcher': 'TIPS_NLP_Filename matcher.pdf',
                'File classifier (By date)': 'TIPS_NLP_File classifier (By date).pdf',
                'File classifier (By NER)': 'TIPS_NLP_File classifier (By NER).pdf',
-               'File content checker & converter': 'TIPS_NLP_File checker & converter.pdf',
+               'File content checker & converter': 'TIPS_NLP_File checker & converter & cleaner.pdf',
                'Text encoding (utf-8)': 'TIPS_NLP_Text encoding (utf-8).pdf',
                'Spelling checker': 'TIPS_NLP_Spelling checker.pdf', 'File merger': 'TIPS_NLP_File merger.pdf',
                'File splitter': 'TIPS_NLP_File splitter.pdf'}

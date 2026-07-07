@@ -744,7 +744,7 @@ TIPS_lookup = {
                'Iconic language':'TIPS_NLP_Iconic language.pdf',
                'Objective/subjective language':'TIPS_NLP_Objectivity_subjectivity (via spaCy and TextBlob).pdf',
                'Nominalization':'TIPS_NLP_Nominalization.pdf',
-               'N-Grams (word & character)':"TIPS_NLP_Ngrams (word & character).pdf",
+               'N-Grams (word & character)':"TIPS_NLP_Ngram (word & character).pdf",
                'NLP Ngram and Word Co-Occurrence VIEWER':"TIPS_NLP_Ngram and Word Co-Occurrence VIEWER.pdf",
                'Google Ngram Viewer':'TIPS_NLP_Ngram Google Ngram Viewer.pdf',
                'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',

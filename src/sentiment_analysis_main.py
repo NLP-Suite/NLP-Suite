@@ -665,7 +665,7 @@ videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
 TIPS_lookup = {'The world of emotions and sentiments':'TIPS_NLP_The world of emotions and sentiments.pdf',
-               'Sentiment Analysis':"TIPS_NLP_Sentiment Analysis.pdf",
+               'Sentiment Analysis':"TIPS_NLP_Sentiment analysis.pdf",
                'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
                'Statistical measures': 'TIPS_NLP_Statistical measures.pdf',

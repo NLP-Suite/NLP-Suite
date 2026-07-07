@@ -725,14 +725,14 @@ plagiaristOptions(date_format, items_separator_var, date_position_var)
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'Check the character\'s name tag': 'TIPS_NLP_Word similarity (Levenshtein distance).pdf',
+TIPS_lookup = {'Check the character\'s name tag': 'TIPS_NLP_Word similarity (Levenshtein edit distance).pdf',
                'Filename well-formedness': 'TIPS_NLP_Filename well-formedness.pdf',
                'WordNet': 'TIPS_NLP_WordNet.pdf',
                'Find the character\'s home (By date)': 'TIPS_NLP_File classifier (By date).pdf',
                'Find the character\'s home (By NER)': 'TIPS_NLP_File classifier (By NER).pdf',
                'NER (Named Entity Recognition)': 'TIPS_NLP_NER (Named Entity Recognition) Stanford CoreNLP.pdf',
                'Find the missing character': 'TIPS_NLP_Find the missing character.pdf',
-               'Check the character\'s name tag': 'TIPS_NLP_TIPS_NLP_Word similarity (Levenshtein word distance).pdf',
+               'Check the character\'s name tag': 'TIPS_NLP_Word similarity (Levenshtein edit distance).pdf',
                'Find the intruder': 'TIPS_NLP_Find the intruder.pdf',
                'Find the plagiarist': 'TIPS_NLP_Find the plagiarist (via Lucene).pdf',
                'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
