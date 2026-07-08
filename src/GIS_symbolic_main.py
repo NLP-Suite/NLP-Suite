@@ -24,15 +24,46 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
 
     filesToOpen = []
 
-    if not inputFilename or not os.path.isfile(inputFilename):
-        mb.showwarning(title='No input file', message='Please select an input CSV file.')
-        return
     if not do_extract and not do_movement and not do_distribution:
         mb.showwarning(title='No analysis selected',
                        message="Please tick at least one option:\n\n"
                                "  • Extract social actors in non-geocodable space… (BUILD)\n"
                                "  • MAP social actors moving… (DYNAMIC)\n"
                                "  • Distribution of social actors… (STATIC)")
+        return
+
+    if not inputFilename or not os.path.isfile(inputFilename):
+        grabbed = ''
+        if do_extract:
+            # BUILD reads a CoNLL table. Try to auto-grab the newest CoNLL found for this corpus (e.g. one
+            # just produced by the parser), drop it into the input box, and continue this run.
+            import CoNLL_util
+            conlls = CoNLL_util.find_corpus_CoNLL(outputDir, GUI_util.inputFilename.get(),
+                                                  GUI_util.input_main_dir_path.get())
+            if conlls and mb.askyesno(title='Use this CoNLL for BUILD?',
+                    message='Found a CoNLL table for your corpus:\n\n' + os.path.basename(conlls[0]) +
+                            '\n\nUse it as the BUILD input?'):
+                _apply_selected_csv(conlls[0])   # populate the input textbox + enable RUN
+                grabbed = conlls[0]
+        if grabbed:
+            inputFilename = grabbed              # continue this run with the grabbed CoNLL
+        elif do_extract:
+            import run_script_util
+            if mb.askyesno(title='No CoNLL input',
+                    message='The BUILD step needs a CoNLL table of your corpus, and none was found.\n\n'
+                            'Open the Parsers & annotators GUI now to parse your corpus into a CoNLL table?\n\n'
+                            '(Then come back and click RUN again — this tool will grab the CoNLL for you.)'):
+                run_script_util.run_script("parsers_annotators_main.py")
+            return
+        else:
+            mb.showwarning(title='No input file',
+                           message='The DYNAMIC / STATIC analyses need a Social-actors csv.\n\nClick Select INPUT '
+                                   'CSV — the picker lists the tables the BUILD step produces (or Browse to one).')
+            return
+
+    if not outputDir:
+        mb.showwarning(title='No output directory',
+                       message='Please select an OUTPUT files directory (the top I/O row, or Setup).')
         return
 
     import pandas as pd
@@ -43,11 +74,20 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         events_csv = ss.extract_actor_space_events(inputFilename, outputDir)
         if events_csv:
             filesToOpen.append(events_csv)
+            # push the BUILD output into the input box (replacing the CoNLL) so the DYNAMIC / STATIC
+            # analyses run on the Social-actors table and its columns (space_type, Sentence ID…) populate
+            # the Location / Sequence / Attribute dropdowns
+            _apply_selected_csv(events_csv)
+            inputFilename = events_csv
+            # BUILD is a one-shot: untick it so a follow-up RUN does not try to re-BUILD from this
+            # (non-CoNLL) Social-actors table
+            extract_var.set(0)
         else:
             mb.showwarning(title='No events extracted',
                            message='No social-actor-in-non-geocodable-space events were found.\n\n'
                                    'The BUILD step expects a CoNLL table (parse your corpus first via the '
                                    'Parsers & annotators or SVO GUI).')
+            return
 
     # the movement / distribution analyses read the assembled actor-location csv;
     # if only BUILD was requested, we are done
@@ -153,8 +193,8 @@ IO_setup_display_brief = True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(
     IO_setup_display_brief,
     GUI_width=GUI_IO_util.get_GUI_width(3),
-    GUI_height_brief=520,
-    GUI_height_full=600,
+    GUI_height_brief=560,
+    GUI_height_full=640,
     y_multiplier_integer=GUI_util.y_multiplier_integer,
     y_multiplier_integer_add=2,
     increment=2)
@@ -185,6 +225,16 @@ attribute_col_var = tk.StringVar()
 sequence_col_var = tk.StringVar()
 extra_GUIs_var = tk.IntVar()
 extra_GUIs_menu_var = tk.StringVar()
+
+
+def _enable_run_button(*args):
+    # RUN becomes available as soon as an analysis is ticked (BUILD / DYNAMIC / STATIC);
+    # run() validates the input file + output dir at click time.
+    if extract_var.get() or map_var.get() or distribution_var.get():
+        GUI_util.run_button.configure(state='normal')
+extract_var.trace('w', _enable_run_button)
+map_var.trace('w', _enable_run_button)
+distribution_var.trace('w', _enable_run_button)
 
 
 # ---- INPUT CSV file — smart picker (lists csv files found for the corpus) ---
@@ -375,7 +425,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configurat
                                                location_col_menu, False, False, True, False, 90,
                                                GUI_IO_util.IO_configuration_menu,
                                                "Select the CSV column that holds the place / location names "
-                                               "(e.g. door, house, field, woods).")
+                                               "(e.g. door, house, field, woods).\n\nIf your input is a Social-actors "
+                                               "table from the BUILD step, pick 'space_noun' (the raw place word) or "
+                                               "'space_type' (its category, e.g. domestic_interior).")
 
 sequence_col_label = tk.Label(window, text='Sequence column  (DYNAMIC)')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -385,7 +437,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configurat
                                                sequence_col_menu, False, False, True, False, 90,
                                                GUI_IO_util.IO_configuration_menu,
                                                "Optional. The CSV column giving narrative ORDER (a step index or date) "
-                                               "so the movement view knows the sequence. Only used by the dynamic view.")
+                                               "so the movement view knows the sequence. Only used by the dynamic view."
+                                               "\n\nIn a Social-actors table from the BUILD step, pick 'Sentence ID'.")
 
 attribute_col_label = tk.Label(window, text='Attribute column  (STATIC)')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -395,7 +448,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configurat
                                                attribute_col_menu, False, False, True, False, 90,
                                                GUI_IO_util.IO_configuration_menu,
                                                "Select the CSV column holding the social attribute of the actor "
-                                               "(gender, race, class…). Required for the Distribution analysis.")
+                                               "(gender, race, class…). Required for the Distribution analysis.\n\n"
+                                               "The BUILD step does NOT create this column — it gives you 'actor' "
+                                               "(who acts) but not their attribute. Add a gender / race / class column "
+                                               "to the Social-actors table (by hand, or gender via the gender "
+                                               "annotator), then pick it here.")
 
 
 def refresh_columns(*args):
@@ -494,13 +551,18 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         "   2. symbolic_space_<attribute>_x_space_heatmap.png — a heatmap annotated with chi-square, Cramer's V, "
         "and the over/under-represented cells." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-        "Select the CSV column that holds the place / location names (e.g. door, house, field, woods)." + GUI_IO_util.msg_Esc)
+        "Select the CSV column that holds the place / location names (e.g. door, house, field, woods).\n\n"
+        "If your input is a Social-actors table produced by the BUILD step, pick 'space_noun' (the raw place word) "
+        "or 'space_type' (its category, e.g. domestic_interior)." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
         "Optional. The CSV column giving narrative ORDER (a step index or a date) so the movement view knows the "
-        "sequence. Only used by the dynamic view." + GUI_IO_util.msg_Esc)
+        "sequence. Only used by the dynamic view.\n\nIn a Social-actors table from the BUILD step, pick 'Sentence ID'."
+        + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
         "Select the CSV column holding the actor's social attribute (gender, race, class…). Required for the "
-        "Distribution analysis; used to colour trajectories in the movement view." + GUI_IO_util.msg_Esc)
+        "Distribution analysis; used to colour trajectories in the movement view.\n\nThe BUILD step does NOT create "
+        "this column — it gives 'actor' but not their attribute. Add a gender / race / class column to the "
+        "Social-actors table (by hand, or gender via the gender annotator), then pick it here." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer - 1
 
