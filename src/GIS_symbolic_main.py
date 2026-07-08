@@ -20,26 +20,46 @@ import GUI_IO_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation,
-        do_movement, do_distribution, location_col, attribute_col, sequence_col):
+        do_extract, do_movement, do_distribution, location_col, attribute_col, sequence_col):
 
     filesToOpen = []
 
     if not inputFilename or not os.path.isfile(inputFilename):
         mb.showwarning(title='No input file', message='Please select an input CSV file.')
         return
-    if not do_movement and not do_distribution:
+    if not do_extract and not do_movement and not do_distribution:
         mb.showwarning(title='No analysis selected',
-                       message="Please tick at least one analysis:\n\n"
-                               "  • MAP social actors moving… (movement / dynamic)\n"
-                               "  • Distribution of social actors… (distribution / static)")
-        return
-    if not location_col:
-        mb.showwarning(title='No location column',
-                       message='Please select the Location column from your CSV.')
+                       message="Please tick at least one option:\n\n"
+                               "  • Extract social actors in non-geocodable space… (BUILD)\n"
+                               "  • MAP social actors moving… (DYNAMIC)\n"
+                               "  • Distribution of social actors… (STATIC)")
         return
 
     import pandas as pd
     import GIS_symbolic_util as ss
+
+    # ---- BUILD: extract the actor-in-space table from a CoNLL corpus ---------
+    if do_extract:
+        events_csv = ss.extract_actor_space_events(inputFilename, outputDir)
+        if events_csv:
+            filesToOpen.append(events_csv)
+        else:
+            mb.showwarning(title='No events extracted',
+                           message='No social-actor-in-non-geocodable-space events were found.\n\n'
+                                   'The BUILD step expects a CoNLL table (parse your corpus first via the '
+                                   'Parsers & annotators or SVO GUI).')
+
+    # the movement / distribution analyses read the assembled actor-location csv;
+    # if only BUILD was requested, we are done
+    if not do_movement and not do_distribution:
+        if filesToOpen and openOutputFiles == 1:
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
+        return
+
+    if not location_col:
+        mb.showwarning(title='No location column',
+                       message='The movement / distribution analyses need a Location column from your CSV.')
+        return
 
     try:
         try:
@@ -117,6 +137,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.charts_package_options_widget.get(),
                                  GUI_util.data_transformation_options_widget.get(),
+                                 extract_var.get(),
                                  map_var.get(),
                                  distribution_var.get(),
                                  location_col_var.get(),
@@ -156,6 +177,7 @@ input_main_dir_path = GUI_util.input_main_dir_path
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 csv_file_var = tk.StringVar()
+extract_var = tk.IntVar()
 map_var = tk.IntVar()
 distribution_var = tk.IntVar()
 location_col_var = tk.StringVar()
@@ -166,29 +188,12 @@ extra_GUIs_menu_var = tk.StringVar()
 
 
 # ---- INPUT CSV file — smart picker (lists csv files found for the corpus) ---
-def _plausible_input(path):
-    """Keep only csv files that could be a raw location(+attribute) input.
-    Excludes geocoded outputs (geo-Goo), geocoding not-found residue, frequency /
-    speed-assessment metadata, and this tool's own outputs."""
-    p = os.path.basename(path).lower()
-    noise = ('geo-goo', 'geocod', 'not-found', 'not_found', 'non-distinct',
-             'speed_assessment', 'bydoc_freq', '_freq', 'residuals',
-             '_x_space', 'symbolic_space_transitions', 'symbolic_space_movement')
-    return not any(n in p for n in noise)
-
-
-def _group_rank(path):
-    """Cluster the picker list by relevance to this tool: LOCATION tables first
-    (actor + place ready), then SVO, then NER, then everything else. Newest-first
-    order is preserved within each group (Python's sort is stable)."""
-    p = os.path.basename(path).lower()
-    if 'location' in p:
-        return 0
-    if 'svo' in p:
-        return 1
-    if 'ner' in p:
-        return 2
-    return 3
+def _builder_output(path):
+    """The picker lists ONLY the tables produced by the Social-actors BUILD step
+    (NLP_GIS_symbolic_actor_space_events_*.csv) — the ready actor-in-space input the
+    DYNAMIC / STATIC analyses read. Anything else (a CoNLL to BUILD from, or a hand-coded
+    csv) is reached with 'Browse for another file'."""
+    return 'actor_space_events' in os.path.basename(path).lower()
 
 
 def refresh_run_button():
@@ -218,38 +223,26 @@ def _apply_selected_csv(f):
 
 def select_csv_file():
     import CoNLL_util
-    # csv files found under the corpus / output dirs, newest-first, minus the noise
+    # list ONLY the Social-actors BUILD output tables found for this corpus, newest-first
     matches = CoNLL_util.find_corpus_csv(GUI_util.output_dir_path.get(),
                                          GUI_util.inputFilename.get(),
                                          GUI_util.input_main_dir_path.get(),
-                                         path_filter=_plausible_input)
-    matches = sorted(matches, key=_group_rank)  # group types together, keep newest-first within group
+                                         path_filter=_builder_output)
     if not matches:
-        answer = mb.askyesno(title='No input csv found',
-            message="No suitable csv file was found in your input/output folders.\n\n"
-                    "This tool reads a csv you CODE yourself: one row per actor-in-a-place, with a LOCATION "
-                    "column and an ATTRIBUTE column (gender, race, class), plus an ORDER column for the movement "
-                    "view.\n\n"
-                    "No single tool produces that whole table — race and class are yours to code (gender can be "
-                    "tagged by the gender annotator). What the Suite CAN give you is a head start on the LOCATION "
-                    "+ actor part: the SVO extractor (who-did-what-where) lists each actor and the place; you then "
-                    "add the attribute column.\n\n"
-                    "Open the SVO extractor to build that scaffold now?\n\n"
-                    "(Choose No to browse for a csv you already have.)")
-        if answer:
-            import run_script_util
-            run_script_util.run_script("SVO_main.py")
-            return
-        f = filedialog.askopenfilename(title='Select INPUT CSV file',
+        mb.showinfo(title='No Social-actors table yet',
+                    message="No Social-actors table (NLP_GIS_symbolic_actor_space_events_*.csv) was found for "
+                            "this corpus.\n\nProduce one with the BUILD step: tick 'Extract social actors in "
+                            "non-geocodable space (BUILD)', select a CoNLL table of your corpus, and RUN. Then this "
+                            "picker will list it.\n\nOr browse now for a table you already have.")
+        f = filedialog.askopenfilename(title='Select INPUT csv file',
                                        filetypes=[('csv files', '*.csv'), ('All files', '*.*')])
         if f:
             _apply_selected_csv(f)
         return
     chosen = IO_files_util.select_path_from_list(
         window, matches,
-        'Select a csv file found for your corpus (location + attribute columns), '
-        'or browse for another file:',
-        title='Available csv files')
+        'Select a Social-actors table produced by the BUILD step, or browse for another file:',
+        title='Available Social-actors tables')
     if chosen is None:
         return
     if chosen == '__BROWSE__':
@@ -327,6 +320,20 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configurat
                                                "The selected GUI opens without pressing RUN.")
 
 extra_GUIs_menu_var.trace('w', open_GUI)
+
+
+# ---- BUILD — extract the actor-in-space table from a text corpus -----------
+extract_var.set(0)
+extract_checkbox = tk.Checkbutton(window, variable=extract_var, onvalue=1, offvalue=0)
+extract_checkbox.config(text="Extract social actors in non-geocodable space from a corpus  (BUILD)")
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                               extract_checkbox, False, False, False, False, 90,
+                                               GUI_IO_util.labels_x_coordinate,
+                                               "BUILD step. Runs the extraction pipeline on a CoNLL parse of your corpus: "
+                                               "for each place noun that maps to a non-geocodable space type, it walks the "
+                                               "dependency parse to the acting social actor (subject), producing the "
+                                               "actor-in-space table the DYNAMIC and STATIC analyses read.\n\nInput here is "
+                                               "a CoNLL table (parse the corpus first via Parsers & annotators or SVO).")
 
 
 # ---- Row 1: DYNAMIC — movement through non-geocodable space ----------------
@@ -452,6 +459,15 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         "   • Narrative analysis — story-grammar / narrative-structure tools on the same corpus.\n\n"
         "Tip: if you have no input csv yet, the 'Select INPUT CSV file' picker will offer to open the SVO extractor "
         "for you." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+        "BUILD step (the pipeline). This is how you get the input table when you start from TEXT rather than a ready csv.\n\n"
+        "In INPUT it expects a CoNLL dependency table (parse your corpus first via the Parsers & annotators or SVO GUI). "
+        "It walks the parse to find, for every non-geocodable place noun (cupboard, hall, forest, dungeon…), the social "
+        "actor acting there (the subject), classifying the place into a space type via lib/symbolic_space_typology.csv.\n\n"
+        "In OUTPUT it writes NLP_GIS_symbolic_actor_space_events_<corpus>.csv — one row per actor-in-space event "
+        "(actor, space noun, space type, order). That file is the actor-location table the DYNAMIC and STATIC analyses "
+        "read; you add the actor ATTRIBUTE (gender/race/class) column to it (the gender annotator can tag gender)."
+        + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
         "DYNAMIC view (movement). Traces how social actors move between KINDS of space over the narrative "
         "(e.g. door → house → field → woods) and draws a directed movement graph.\n\n"

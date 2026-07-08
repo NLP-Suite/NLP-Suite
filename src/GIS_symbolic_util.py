@@ -12,11 +12,18 @@
 
 import os
 
-import symbolic_space_typology_util as typology
+import GIS_symbolic_typology_util as typology
 
 # Space types that are inherently symbolic/interior even if a string happens to
 # weakly geocode (e.g. "Kitchen" is a hamlet somewhere) — the guard from the memo.
 _INHERENTLY_SYMBOLIC = {'domestic_interior', 'threshold_liminal'}
+
+# Prepositions that mark a locative oblique ("in the cupboard", "to the door");
+# used by the CoNLL dependency extractor to keep only spatial obl/nmod nouns.
+_SPATIAL_PREP = {'in', 'into', 'inside', 'on', 'onto', 'at', 'to', 'toward', 'towards',
+                 'through', 'across', 'behind', 'under', 'beneath', 'below', 'above',
+                 'near', 'by', 'within', 'up', 'down', 'out', 'outside', 'around',
+                 'past', 'along', 'over', 'from'}
 
 
 # ---- Phase 2: geocodable vs symbolic --------------------------------------
@@ -278,4 +285,80 @@ def save_crosstab_csv(table, output_path, stats=None):
     if stats and 'residuals' in stats:
         base, ext = os.path.splitext(output_path)
         stats['residuals'].to_csv(base + '_residuals' + ext, encoding='utf-8-sig')
+    return output_path
+
+
+# ---- BUILD pipeline: actor-in-space events from a CoNLL corpus -------------
+
+def extract_actor_space_events(conll_file, outputDir):
+    """Build the actor-in-(non-geocodable)-space table from a CoNLL dependency table.
+
+    For each sentence, find every place noun whose lemma classifies to a space TYPE and
+    that sits in a locative oblique (obl/nmod under a spatial preposition), then walk the
+    dependency Head up to the governing predicate and down to its subject = the acting
+    SOCIAL ACTOR. Writes one row per actor-in-space event:
+        Document ID, Sentence ID (order), actor, actor_pos, space_noun, space_type,
+        preposition, Sentence.
+    This is the table the DYNAMIC and STATIC analyses read (add the actor ATTRIBUTE by
+    hand or via the gender annotator). Returns the output csv path, or '' if nothing was
+    produced (e.g. the input is not a CoNLL table).
+    """
+    import pandas as pd
+    try:
+        df = pd.read_csv(conll_file, encoding='utf-8', dtype=str, keep_default_na=False)
+    except Exception:
+        return ''
+    needed = {'ID', 'Form', 'Lemma', 'POS', 'Head', 'DepRel', 'Sentence ID', 'Document ID'}
+    if not needed.issubset(set(df.columns)):
+        return ''
+
+    rows = []
+    for (doc, sent), g in df.groupby(['Document ID', 'Sentence ID'], sort=False):
+        tok, kids = {}, {}
+        for _, r in g.iterrows():
+            try:
+                tid = int(float(r['ID']))
+                head = int(float(r['Head'])) if str(r['Head']).strip() else 0
+            except ValueError:
+                continue
+            tok[tid] = {'form': r['Form'], 'lemma': r['Lemma'], 'pos': r['POS'],
+                        'head': head, 'deprel': r['DepRel']}
+            kids.setdefault(head, []).append(tid)
+        text = ' '.join(tok[i]['form'] for i in sorted(tok))
+        for tid, t in tok.items():
+            if t['pos'] not in ('NOUN', 'PROPN'):
+                continue
+            if t['deprel'] not in ('obl', 'nmod', 'obl:loc', 'obl:tmod'):
+                continue
+            space_type = typology.classify(t['lemma'])
+            if space_type == typology.UNCLASSIFIED:
+                continue
+            prep = ''
+            for c in kids.get(tid, []):
+                if tok[c]['deprel'] == 'case' and tok[c]['lemma'].lower() in _SPATIAL_PREP:
+                    prep = tok[c]['lemma'].lower()
+                    break
+            if not prep:
+                continue
+            actor, gov = None, t['head']
+            for _ in range(4):  # walk up through cop/aux/conj to the predicate carrying the subject
+                subj = [c for c in kids.get(gov, []) if tok[c]['deprel'] in ('nsubj', 'nsubj:pass')]
+                if subj:
+                    actor = tok[subj[0]]
+                    break
+                gov = tok.get(gov, {}).get('head', 0)
+                if gov == 0:
+                    break
+            if actor is None or not str(actor['form']).strip():
+                continue
+            rows.append({'Document ID': doc, 'Sentence ID': sent, 'actor': actor['form'],
+                         'actor_pos': actor['pos'], 'space_noun': t['lemma'],
+                         'space_type': space_type, 'preposition': prep, 'Sentence': text})
+    if not rows:
+        return ''
+    base = os.path.splitext(os.path.basename(conll_file))[0] if conll_file else 'corpus'
+    output_path = os.path.join(outputDir, 'NLP_GIS_symbolic_actor_space_events_' + base + '.csv')
+    pd.DataFrame(rows, columns=['Document ID', 'Sentence ID', 'actor', 'actor_pos',
+                                'space_noun', 'space_type', 'preposition', 'Sentence']).to_csv(
+        output_path, index=False, encoding='utf-8-sig')
     return output_path

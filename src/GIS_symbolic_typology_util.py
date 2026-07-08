@@ -22,6 +22,7 @@ import os
 CATEGORIES = [
     'domestic_interior', 'field_labor', 'wild_forest', 'threshold_liminal',
     'royal_court', 'sacred', 'market_public', 'water_passage',
+    'subterranean', 'tower_height',
 ]
 
 # WordNet anchor synsets per category, used only for the hypernym fallback
@@ -34,7 +35,19 @@ _ANCHORS = {
     'sacred':            ['place_of_worship.n.01', 'religious_residence.n.01'],
     'market_public':     ['mercantile_establishment.n.01', 'municipality.n.01'],
     'water_passage':     ['body_of_water.n.01', 'way.n.06'],
+    'subterranean':      ['cave.n.01', 'cellar.n.01'],
+    'tower_height':      ['tower.n.01'],
     # threshold_liminal is hard to anchor cleanly in WordNet; rely on the lexicon.
+}
+
+# Generic / abstract nouns that must NEVER classify via the WordNet fallback
+# (they are not places: "on his way", "in that place", "in the middle"). Without
+# this guard the fallback invents a space type for them (way -> water_passage).
+_STOPWORDS = {
+    'way', 'place', 'line', 'part', 'thing', 'side', 'area', 'point', 'bit', 'lot',
+    'kind', 'sort', 'number', 'matter', 'deal', 'course', 'rest', 'world', 'one',
+    'end', 'top', 'bottom', 'front', 'back', 'middle', 'edge', 'spot', 'space',
+    'position', 'location', 'distance', 'direction', 'moment', 'time', 'day',
 }
 
 UNCLASSIFIED = 'unclassified'
@@ -110,6 +123,8 @@ def classify(word, lexicon=None, use_wordnet=True):
         last = w.split()[-1]
         if last in lex:
             return lex[last]
+    if w in _STOPWORDS:
+        return UNCLASSIFIED
     if use_wordnet:
         cat = _wordnet_category(w)
         if cat:
