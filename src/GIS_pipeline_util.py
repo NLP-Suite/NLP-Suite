@@ -278,6 +278,11 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         if not inputIsGeocoded:
             changed = False
             nom_df = pd.read_csv(inputFilename)
+            # the NER csv holds the location strings in the engine's token column
+            # ('Form' for spaCy/Stanza, 'Word' for CoreNLP) = locationColumnName, not a
+            # literal 'Location' column; expose it under the name this block expects.
+            if 'Location' not in nom_df.columns and locationColumnName and locationColumnName in nom_df.columns:
+                nom_df = nom_df.rename(columns={locationColumnName: 'Location'})
             # select columns; spaCy/Stanza NER output may lack 'Sentence' (it has only
             # 'Sentence ID') and sometimes 'Date'/'Document' -- add them as empty so the
             # selection below and downstream code do not raise a KeyError

@@ -259,7 +259,10 @@ def run(inputFilename,inputDir, outputDir,
             lemmatize=True
 
         if '*' in corpus_statistics_options_menu_var or 'statistics' in corpus_statistics_options_menu_var:
-            outputFiles, outputDir = statistics_txt_util.compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config_filename, False,
+            # keep the returned (deeper) dir OUT of outputDir so the later sub-analyses
+            # (n-grams, what_else, GIS) nest under the corpus_ base as SIBLINGS rather than
+            # inside each other -- the cumulative nesting was overflowing Windows' 255-char path.
+            outputFiles, _ = statistics_txt_util.compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config_filename, False,
                                   chartPackage, dataTransformation,
                                   stopwords, lemmatize)
             if outputFiles != None:
@@ -415,7 +418,7 @@ def run(inputFilename,inputDir, outputDir,
 
             # n-grams
             case_sensitive=False
-            outputFiles, outputDir = statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
+            outputFiles, _ = statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
                                                               outputDir, config_filename,
                                                               ngramsNumber, frequency, hapax_words,
                                                               normalize, lemmatize, case_sensitive,
