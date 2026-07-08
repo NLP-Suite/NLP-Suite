@@ -15,6 +15,7 @@ import tkinter.messagebox as mb
 
 import GUI_IO_util
 import run_script_util
+import reminders_util
 
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -116,11 +117,11 @@ def run(inputFilename,inputdirname, outdirname,
         run_script_util.run_script("sentiment_analysis_main.py")
 
     if characters_movement_var == True:
-        import NER_location_tracking_util
-        filesToOpen = NER_location_tracking_util.main(inputFilename, inputdirname, outdirname)
-        if filesToOpen and open_csv_output_checkbox:
-            import IO_files_util
-            IO_files_util.OpenOutputFiles(GUI_util.window, open_csv_output_checkbox, filesToOpen, outdirname)
+        # the character-movement map lives in GIS_main (its "MAP characters moving in time and
+        # space" option); open that GUI so this stays a launcher option like every other checkbox.
+        if IO_libraries_util.check_inputPythonJavaProgramFile('GIS_main.py') == False:
+            return
+        run_script_util.run_script("GIS_main.py")
 
     if dialogue_quotes_var == True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('parsers_annotators_main.py') == False:
@@ -460,7 +461,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indente
                                    "Annotate place names using DBpedia/YAGO knowledge bases for encyclopedic information.")
 
 characters_movement_var.set(0)
-characters_movement_checkbox = tk.Checkbutton(window,text="Movement tracking (Stanza NER): Characters across time and space", variable=characters_movement_var, onvalue=1, offvalue=0)
+characters_movement_checkbox = tk.Checkbutton(window,text="MAP characters moving in time and space", variable=characters_movement_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_2nd_column,y_multiplier_integer,
                                    characters_movement_checkbox,
                                    False, False, True, False, 90, GUI_IO_util.narrative_analysis_2nd_column,
@@ -571,5 +572,9 @@ y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,
 readMe_message="The GUI brings together various Python 3 scripts to buil a pipeline for the analysis of stories, automatically extracting the Who, What, Whom, When, and Where from texts and visualiziing the results.\n\nEach tool performs all required computations then saves results as csv files and visualizes them in various ways (word clouds, network graphs, geographic maps, Excel charts)."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+
+# On opening, remind the user that this is a launcher: every checkbox opens its own dedicated GUI.
+reminders_util.checkReminder(scriptName, reminders_util.title_options_narrative_analysis_ALL,
+                             reminders_util.message_narrative_analysis_ALL, True)
 
 GUI_util.window.mainloop()

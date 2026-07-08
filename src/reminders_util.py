@@ -42,6 +42,9 @@ message_missing_external_software_NLP_main_GUI = 'At least some external softwar
 title_options_missing_external_software_any_main_GUI = ['Missing external software any GUI']
 message_missing_external_software_any_main_GUI = 'At least some external software has not been installed. \n\nSome of the algorithms that require the software will not run.\n\nPlease, using the dropdown menu "Setup" at the bottom of this GUI, select "Software download & install," to download/install external software.'
 
+title_options_narrative_analysis_ALL = ['Narrative analysis: every option opens its own GUI']
+message_narrative_analysis_ALL = 'Every checkbox in this Narrative analysis GUI is an "Open GUI" option: ticking one and clicking RUN opens a separate, dedicated GUI (NER, gender, sentiment arcs, coreference, GIS, SVO, shape of stories, ...) where you carry out that specific task with its own options.\n\nThis GUI does not run the analyses itself; it is a launcher that takes you to the right tool.'
+
 title_options_TensorFlow = ['TensorFlow and Mac M1 and M2 chips']
 message_TensorFlow = 'The NLP package BERT used in the NLP Suite rely on the Google Machine Learning platform TensorFlow.\nOn a Mac with the new M1 or M2 chip TensorFlow may lead to various errors displayed in terminal (e.g., semaphore, zsh: illegal hardware instruction) and an inability to run any of the scripts in the NLP Suite.\n\nIf you do experience this problem, while waiting for a more permanent solution to the problem, follow the instructions provided here by Apple\n\nhttps://developer.apple.com/metal/tensorflow-plugin/'
 
