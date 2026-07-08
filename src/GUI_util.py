@@ -93,6 +93,23 @@ def clear(e):
 window.bind("<Escape>", clear)
 
 
+def bind_escape_reset(win, reset_fn=None):
+    """Generalized <Escape> handler for a GUI. Binds Escape so it first runs an optional
+    GUI-specific reset (reset_fn, which clears that GUI's own checkboxes/dropdowns/columns)
+    and then the standard clear() that resets the shared bottom dropdowns. Use this instead
+    of hand-binding <Escape> so the standard reset is never accidentally dropped and every
+    GUI clears consistently. reset_fn takes no arguments."""
+    def _on_escape(e=None):
+        if reset_fn is not None:
+            try:
+                reset_fn()
+            except Exception as ex:
+                print('bind_escape_reset: GUI-specific reset failed:', ex)
+        clear(e)
+    win.bind("<Escape>", _on_escape)
+    return _on_escape
+
+
 #IO widgets
 
 ### TODO Roby commented

@@ -1240,10 +1240,18 @@ def select_path_from_list(window, paths, intro_text, title='Available files'):
         result['value'] = '__BROWSE__'
         top.destroy()
 
+    def do_open():
+        # open the highlighted file (Excel / default app) WITHOUT closing the picker,
+        # so the user can inspect a file before selecting it
+        sel = lb.curselection()
+        if sel:
+            openFile(window, paths[sel[0]])
+
     lb.bind('<Double-Button-1>', lambda e: do_select())
     btns = tk.Frame(top)
     btns.pack(pady=10)
     tk.Button(btns, text='Select', width=12, command=do_select).pack(side='left', padx=5)
+    tk.Button(btns, text='Open file', width=10, command=do_open).pack(side='left', padx=5)
     tk.Button(btns, text='Browse for another file...', width=22, command=do_browse).pack(side='left', padx=5)
     tk.Button(btns, text='Cancel', width=10, command=top.destroy).pack(side='left', padx=5)
     top.wait_window()
