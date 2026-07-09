@@ -32,13 +32,16 @@ import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,input_main_dir_path, output_dir_path,
-    openOutputFiles,
-    
-    chartPackage,
-    dataTransformation,
-    script_to_run,
-    IO_values):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputFilename = GUI_util.inputFilename.get()
+    input_main_dir_path = GUI_util.input_main_dir_path.get()
+    output_dir_path = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    script_to_run = globals()['script_to_run']
+    IO_values = globals()['IO_values']
 
     if script_to_run=='':
         mb.showwarning('No option selection','No option has been selected.\n\nPlease, using the dropdown menus, select one of the many General tools and/or Linguistic analysis tools, then click on RUN again.')
@@ -46,16 +49,7 @@ def run(inputFilename,input_main_dir_path, output_dir_path,
     IO_files_util.runScript_fromMenu_option(script_to_run,IO_values,inputFilename,input_main_dir_path, output_dir_path, openOutputFiles,chartPackage, dataTransformation)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-run_script_command=lambda: run(GUI_util.inputFilename.get(),
-                            GUI_util.input_main_dir_path.get(),
-                            GUI_util.output_dir_path.get(),
-                            GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.charts_package_options_widget.get(),
-                            GUI_util.data_transformation_options_widget.get(),
-                            script_to_run,
-                            IO_values)
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # Show welcome screen for the first 3 launches, then go straight to the menu.
 # --from-welcome flag is passed by NLP_welcome_main to avoid a redirect loop.

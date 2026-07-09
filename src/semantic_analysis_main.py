@@ -27,17 +27,24 @@ import run_script_util
 
 
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTransformation,
-        extra_GUIs_var,
-        extra_GUIs_menu_var,
-        WSI_var,
-        WSI_keywords_var,
-        WSIdictionary_file_var,
-        WSD_var,
-        SRL_var,
-        SSC_var,
-        vocabulary_analysis_var,
-        vocabulary_analysis_menu_var):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputFilename = GUI_util.inputFilename.get()
+    inputDir = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    extra_GUIs_var = globals()['extra_GUIs_var'].get()
+    extra_GUIs_menu_var = globals()['extra_GUIs_menu_var'].get()
+    WSI_var = globals()['WSI_var'].get()
+    WSI_keywords_var = globals()['WSI_keywords_var'].get()
+    WSIdictionary_file_var = globals()['WSIdictionary_file_var'].get()
+    WSD_var = globals()['WSD_var'].get()
+    SRL_var = globals()['SRL_var'].get()
+    SSC_var = globals()['SSC_var'].get()
+    vocabulary_analysis_var = globals()['vocabulary_analysis_var'].get()
+    vocabulary_analysis_menu_var = globals()['vocabulary_analysis_menu_var'].get()
 
 
     config_filename = GUI_util.config_filename_selected_config.get()
@@ -418,24 +425,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir_style, scriptName)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-run_script_command=lambda: run(GUI_util.inputFilename.get(),
-                                GUI_util.input_main_dir_path.get(),
-                                GUI_util.output_dir_path.get(),
-                                GUI_util.open_csv_output_checkbox.get(),
-                                GUI_util.charts_package_options_widget.get(),
-                                GUI_util.data_transformation_options_widget.get(),
-                                extra_GUIs_var.get(),
-                                extra_GUIs_menu_var.get(),
-                                WSI_var.get(),
-                                WSI_keywords_var.get(),
-                                WSIdictionary_file_var.get(),
-                                WSD_var.get(),
-                                SRL_var.get(),
-                                SSC_var.get(),
-                                vocabulary_analysis_var.get(),
-                                vocabulary_analysis_menu_var.get())
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 

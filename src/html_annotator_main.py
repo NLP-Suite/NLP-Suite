@@ -21,19 +21,26 @@ import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, chartPackage, dataTransformation,
-        knowledge_graphs_DBpedia_YAGO_var,
-        semantic_aggregation_WordNet_var,
-        html_gender_annotator_var,
-        html_annotator_dictionary_var,
-        html_annotator_add_dictionary_var,
-        html_dictionary_file,
-        csv_field1_var,
-        csv_field2_var,
-        color_palette_dict_var,
-        bold_var,
-        csvValue_color_list,
-        html_annotator_extractor):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputFilename = GUI_util.inputFilename.get()
+    input_main_dir_path = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    knowledge_graphs_DBpedia_YAGO_var = globals()['knowledge_graphs_DBpedia_YAGO_var'].get()
+    semantic_aggregation_WordNet_var = globals()['semantic_aggregation_WordNet_var'].get()
+    html_gender_annotator_var = globals()['html_gender_annotator_var'].get()
+    html_annotator_dictionary_var = globals()['html_annotator_dictionary_var'].get()
+    html_annotator_add_dictionary_var = globals()['html_annotator_add_dictionary_var'].get()
+    html_dictionary_file = html_annotator_dictionary_file_var.get()
+    csv_field1_var = globals()['csv_field1_var'].get()
+    csv_field2_var = globals()['csv_field2_var'].get()
+    color_palette_dict_var = globals()['color_palette_dict_var'].get()
+    bold_var = bold_dict_var.get()
+    csvValue_color_list = globals()['csvValue_color_list']
+    html_annotator_extractor = html_annotator_extractor_var.get()
 
     config_filename = GUI_util.config_filename_selected_config.get()
     filesToOpen=[]
@@ -100,26 +107,7 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, chartPacka
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 #def run(inputFilename,input_main_dir_path,outputDir, dictionary_var, annotator_dictionary, DBpedia_var, annotator_extractor, openOutputFiles):
-run_script_command=lambda: run(GUI_util.inputFilename.get(),
-                GUI_util.input_main_dir_path.get(),
-                GUI_util.output_dir_path.get(),
-                GUI_util.open_csv_output_checkbox.get(),
-                GUI_util.charts_package_options_widget.get(),
-                GUI_util.data_transformation_options_widget.get(),
-                knowledge_graphs_DBpedia_YAGO_var.get(),
-                semantic_aggregation_WordNet_var.get(),
-                html_gender_annotator_var.get(),
-                html_annotator_dictionary_var.get(),
-                html_annotator_add_dictionary_var.get(),
-                html_annotator_dictionary_file_var.get(),
-                csv_field1_var.get(),
-                csv_field2_var.get(),
-                color_palette_dict_var.get(),
-                bold_dict_var.get(),
-                csvValue_color_list,
-                html_annotator_extractor_var.get())
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 

@@ -24,9 +24,24 @@ import config_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, chartPackage, dataTransformation,
-        CoreNLP_gender_annotator_var, CoreNLP_download_gender_file_var, CoreNLP_upload_gender_file_var,
-        annotator_dictionary_var, annotator_dictionary_file_var,personal_pronouns_var,plot_var, year_state_var, firstName_entry_var, new_SS_folders):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputFilename = GUI_util.inputFilename.get()
+    input_main_dir_path = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    CoreNLP_gender_annotator_var = globals()['CoreNLP_gender_annotator_var'].get()
+    CoreNLP_download_gender_file_var = globals()['CoreNLP_download_gender_file_var'].get()
+    CoreNLP_upload_gender_file_var = globals()['CoreNLP_upload_gender_file_var'].get()
+    annotator_dictionary_var = globals()['annotator_dictionary_var'].get()
+    annotator_dictionary_file_var = globals()['annotator_dictionary_file_var'].get()
+    personal_pronouns_var = globals()['personal_pronouns_var'].get()
+    plot_var = globals()['plot_var'].get()
+    year_state_var = globals()['year_state_var'].get()
+    firstName_entry_var = globals()['firstName_entry_var'].get()
+    new_SS_folders = globals()['new_SS_folders']
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -119,24 +134,7 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, chartPacka
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 #def run(inputFilename,input_main_dir_path,outputDir, dictionary_var, annotator_dictionary, DBpedia_var, annotator_extractor, openOutputFiles):
-run_script_command=lambda: run(GUI_util.inputFilename.get(),
-                GUI_util.input_main_dir_path.get(),
-                GUI_util.output_dir_path.get(),
-                GUI_util.open_csv_output_checkbox.get(),
-                GUI_util.charts_package_options_widget.get(),
-                GUI_util.data_transformation_options_widget.get(),
-                CoreNLP_gender_annotator_var.get(),
-                CoreNLP_download_gender_file_var.get(),
-                CoreNLP_upload_gender_file_var.get(),
-                annotator_dictionary_var.get(),
-                annotator_dictionary_file_var.get(),
-                personal_pronouns_var.get(),
-                plot_var.get(),
-                year_state_var.get(),
-                firstName_entry_var.get(),
-                new_SS_folders)
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 

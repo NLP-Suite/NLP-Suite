@@ -31,8 +31,22 @@ import run_script_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation,
-        searchedCoNLLField, searchField_kw, postag, deprel, co_postag, co_deprel, Begin_K_sent_var, End_K_sent_var):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputFilename = GUI_util.inputFilename.get()
+    inputDir = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    searchedCoNLLField = searchedCoNLLField_var.get()
+    searchField_kw = searchField_kw_var.get()
+    postag = postag_var.get()
+    deprel = deprel_var.get()
+    co_postag = co_postag_var.get()
+    co_deprel = co_deprel_var.get()
+    Begin_K_sent_var = globals()['Begin_K_sent_var'].get()
+    End_K_sent_var = globals()['End_K_sent_var'].get()
 
     # 'Run the default parser' option: this analyzer needs a CoNLL table; if the user has none, open the
     # Parsers/Annotators GUI, which parses the corpus and reopens the analyzer with the fresh CoNLL. We do NOT
@@ -502,22 +516,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
-run_script_command = lambda: run(GUI_util.inputFilename.get(),
-                                 GUI_util.input_main_dir_path.get(),
-                                 GUI_util.output_dir_path.get(),
-                                 GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.charts_package_options_widget.get(),
-                                 GUI_util.data_transformation_options_widget.get(),
-                                 searchedCoNLLField_var.get(),
-                                 searchField_kw_var.get(),
-                                 postag_var.get(),
-                                 deprel_var.get(),
-                                 co_postag_var.get(),
-                                 co_deprel_var.get(),
-                                 Begin_K_sent_var.get(),
-                                 End_K_sent_var.get())
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 

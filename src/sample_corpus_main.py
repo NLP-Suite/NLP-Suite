@@ -13,17 +13,26 @@ import GUI_IO_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(window, inputFilename, inputDir, outputDir, selectedFile,
-            openOutputFiles,
-            
-            chartPackage,
-            dataTransformation,
-            sample_by_documentID,
-            sample_by_date, date_menu, comparator, date_distance_value, date_type,
-            sample_by_keywords_inFilename,
-            keywords_inFilename,
-            sample_by_keywords_inDocument,
-            keywords_inDocument):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    window = globals()['window']
+    inputFilename = GUI_util.inputFilename.get()
+    inputDir = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    selectedFile = globals()['selectedFile'].get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    sample_by_documentID = sample_by_documentID_var.get()
+    sample_by_date = sample_by_date_var.get()
+    date_menu = date_menu_var.get()
+    comparator = comparator_var.get()
+    date_distance_value = date_distance_value_var.get()
+    date_type = date_type_var.get()
+    sample_by_keywords_inFilename = sample_by_keywords_inFilename_var.get()
+    keywords_inFilename = keywords_inFilename_var.get()
+    sample_by_keywords_inDocument = sample_by_keywords_inDocument_var.get()
+    keywords_inDocument = keywords_inDocument_var.get()
 
     config_filename = GUI_util.config_filename_selected_config.get()
     outputDir = os.path.join(inputDir, 'subcorpus_search')
@@ -61,25 +70,7 @@ def run(window, inputFilename, inputDir, outputDir, selectedFile,
     # sample_corpus_util.sample_corpus_by_document_id(selectedFile, inputDir, outputDir)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-run_script_command=lambda: run(window, GUI_util.inputFilename.get(),
-                               GUI_util.input_main_dir_path.get(),
-                               GUI_util.output_dir_path.get(),
-                               selectedFile.get(),
-                               GUI_util.open_csv_output_checkbox.get(),
-                               GUI_util.charts_package_options_widget.get(),
-                               GUI_util.data_transformation_options_widget.get(),
-                               sample_by_documentID_var.get(),
-                               sample_by_date_var.get(),
-                               date_menu_var.get(),
-                               comparator_var.get(),
-                               date_distance_value_var.get(),
-                               date_type_var.get(),
-                               sample_by_keywords_inFilename_var.get(),
-                               keywords_inFilename_var.get(),
-                               sample_by_keywords_inDocument_var.get(),
-                               keywords_inDocument_var.get())
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
