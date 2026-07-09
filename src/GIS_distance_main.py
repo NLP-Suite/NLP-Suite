@@ -189,19 +189,20 @@ extra_GUIs_var = tk.IntVar()
 extra_GUIs_menu_var = tk.StringVar()
 
 def _plausible_gis(path):
-    # drop the geocoding residue that has no coordinates
+    # drop the geocoding residue (no coordinates) and this tool's OWN distance output files
     p = os.path.basename(path).lower()
-    return not any(n in p for n in ('not-found', 'not_found', 'non-distinct'))
+    return not any(n in p for n in ('not-found', 'not_found', 'non-distinct', '_distance'))
 
 def _is_geocoded_csv(path):
-    # a GIS-distance input is a GEOCODED csv: it must carry Latitude + Longitude columns
-    # (also matches the pairwise 6-column form Latitude1/Longitude1/Latitude2/Longitude2).
+    # a GIS-distance INPUT is a single-location GEOCODED csv: it must carry a 'Location' column
+    # plus 'Latitude' and 'Longitude'. Requiring the exact single-location headers excludes this
+    # tool's own distance OUTPUT files, which have 'Location 1'/'Location 2', 'Latitude 1' etc.
     try:
         with open(path, encoding='utf-8-sig', newline='') as f:
             cols = {c.strip().strip('"').lower() for c in (f.readline() or '').split(',')}
     except Exception:
         return False
-    return any('latitude' in c for c in cols) and any('longitude' in c for c in cols)
+    return 'location' in cols and 'latitude' in cols and 'longitude' in cols
 
 def _apply_selected_csv(f):
     csv_file_var.set(f)
