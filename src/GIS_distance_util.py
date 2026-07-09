@@ -318,3 +318,110 @@ def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,geolocat
 
     IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running GIS distance at', True, '', True, startTime,True)
     return filesToOpen
+
+
+def _find_column_by_name(df, wanted):
+    # case-insensitive exact match on a header name (wanted is already lower-case)
+    for c in df.columns:
+        if str(c).strip().lower() == wanted:
+            return c
+    return None
+
+
+# Movement distances between CONSECUTIVE geolocated locations.
+#   Within each group (Document), the geolocated rows are ordered by Sentence ID and the
+#   distance is computed between each location and the NEXT one, i.e. how far the
+#   narrative/character moves from one geolocated place to the next.
+#   Unlike the pairwise/baseline functions, coordinates are resolved BY HEADER NAME
+#   (Location, Latitude, Longitude, Document, Sentence ID), so the function consumes the
+#   Suite's standard geocoded output directly (Location, NER, Latitude, Longitude, ...,
+#   Sentence ID, ..., Document) without any hand-built two-location file.
+def computeConsecutiveDistances(window, inputFilename, outputDir, distinctValues, encodingValue,
+                                groupColumn='Document', orderColumn='Sentence ID'):
+    filesToOpen = []
+    startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start',
+                                                   'Started running GIS consecutive (movement) distances at',
+                                                   True, '', True, '', True)
+    try:
+        df = pd.read_csv(inputFilename, encoding=encodingValue, on_bad_lines='skip')
+    except Exception:
+        mb.showerror(title='Input file error',
+                     message="There was an error in the function 'Compute GIS consecutive (movement) distances' reading the input file\n"
+                             + str(inputFilename) + "\nMost likely, the error is due to an encoding error. Your current encoding value is "
+                             + encodingValue + ".\n\nSelect a different encoding value and try again.")
+        return ['']
+
+    locCol = _find_column_by_name(df, 'location')
+    latCol = _find_column_by_name(df, 'latitude')
+    lonCol = _find_column_by_name(df, 'longitude')
+    if latCol is None or lonCol is None:
+        mb.showwarning(title='Missing coordinates',
+                       message="To compute movement (consecutive-location) distances the input csv must be a GEOCODED file containing Latitude and Longitude columns.\n\nColumns found:\n"
+                               + str(list(df.columns)) + "\n\nPlease, geocode your locations first (GIS mapping tool) and select the geocoded csv, then try again.")
+        return ['']
+
+    grpCol = _find_column_by_name(df, groupColumn.lower())          # 'document'
+    ordCol = _find_column_by_name(df, orderColumn.lower())          # 'sentence id'
+    if ordCol is None:
+        ordCol = _find_column_by_name(df, 'sentence')               # fall back to Sentence
+
+    # keep only rows with valid numeric coordinates (drops 'Geocoding failed' rows)
+    df[latCol] = pd.to_numeric(df[latCol], errors='coerce')
+    df[lonCol] = pd.to_numeric(df[lonCol], errors='coerce')
+    df = df.dropna(subset=[latCol, lonCol]).reset_index(drop=True)
+    if df.empty:
+        mb.showwarning(title='No geocoded data',
+                       message="The input csv has no rows with valid Latitude/Longitude values.\n\nPlease, geocode your locations first and try again.")
+        return ['']
+
+    distanceoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', 'distance', 'consecutive', 'movement', '', False, True)
+
+    header = ['Location 1', 'Latitude 1', 'Longitude 1', 'Location 2', 'Latitude 2', 'Longitude 2',
+              'Geodesic distance in miles', 'Geodesic distance in Km',
+              'Great circle distance in miles', 'Great circle distance in Km',
+              'Document', 'From sentence', 'To sentence']
+
+    nWritten = 0
+    with open(distanceoutputFilename, 'w', newline='', encoding=encodingValue, errors='ignore') as outputFile:
+        geowriter = csv.writer(outputFile)
+        geowriter.writerow(header)
+        # pair consecutive locations within each Document; without a Document column treat the
+        # whole file as a single sequence
+        if grpCol is not None:
+            group_iter = list(df.groupby(grpCol, sort=False))
+        else:
+            group_iter = [('', df)]
+        for gname, sub in group_iter:
+            if ordCol is not None:
+                sub = sub.sort_values(by=ordCol, kind='stable')
+            sub = sub.reset_index(drop=True)
+            for i in range(len(sub) - 1):
+                r1 = sub.iloc[i]
+                r2 = sub.iloc[i + 1]
+                wp1 = (float(r1[latCol]), float(r1[lonCol]))
+                wp2 = (float(r2[latCol]), float(r2[lonCol]))
+                # skip consecutive mentions at the SAME place (no movement)
+                if distinctValues and wp1 == wp2:
+                    continue
+                loc1 = str(r1[locCol]) if locCol is not None else ''
+                loc2 = str(r2[locCol]) if locCol is not None else ''
+                fromS = str(r1[ordCol]) if ordCol is not None else ''
+                toS = str(r2[ordCol]) if ordCol is not None else ''
+                distMiles = distance.distance(wp1, wp2).miles
+                distKm = distance.distance(wp1, wp2).km
+                GCdistMiles = great_circle(wp1, wp2).miles
+                GCdistKm = great_circle(wp1, wp2).km
+                geowriter.writerow([loc1, wp1[0], wp1[1], loc2, wp2[0], wp2[1],
+                                    distMiles, distKm, GCdistMiles, GCdistKm,
+                                    str(gname), fromS, toS])
+                nWritten += 1
+
+    IO_user_interface_util.timed_alert(window, 2000, 'Analysis end',
+                                       'Finished running GIS consecutive (movement) distances at',
+                                       True, '', True, startTime, True)
+    if nWritten == 0:
+        mb.showwarning(title='No movement',
+                       message="No consecutive-location movements were found to measure.\n\nThis can happen if each document has only one geolocated location, or all consecutive locations are identical.")
+        return ['']
+    filesToOpen.append(distanceoutputFilename)
+    return filesToOpen

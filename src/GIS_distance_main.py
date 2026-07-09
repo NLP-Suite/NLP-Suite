@@ -40,7 +40,7 @@ import GIS_pipeline_util
 def run(inputFilename,outputDir, openOutputFiles, chartPackage, dataTransformation,
         encoding, geocoder,
         # geocode,
-        compute_pairwise_distances, compute_baseline_distances, baselineLocation,locationColumn,locationColumn2):
+        compute_pairwise_distances, compute_baseline_distances, compute_consecutive_distances, baselineLocation,locationColumn,locationColumn2):
     config_filename = GUI_util.config_filename_selected_config.get()
 
     filesToOpen = []
@@ -68,7 +68,7 @@ def run(inputFilename,outputDir, openOutputFiles, chartPackage, dataTransformati
                        message='The input file\n\n' + inputFilename + '\n\nis not an expected csv file. Please, check the file and try again.')
         return
 
-    if compute_pairwise_distances== False and compute_baseline_distances==False:
+    if compute_pairwise_distances== False and compute_baseline_distances==False and compute_consecutive_distances==False:
         mb.showwarning(title='Warning',
                        message="No options have been selected.\n\nPlease, select an option and try again.")
         return
@@ -97,7 +97,7 @@ def run(inputFilename,outputDir, openOutputFiles, chartPackage, dataTransformati
     locationColumnNumber = 0
     locationColumnNumber2 = 0
 
-    if withHeader==True:
+    if withHeader==True and locationColumn!="":
         locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumn, inputFilename)
         if len(locationColumn2)>0:
             locationColumnNumber2=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumn2, inputFilename)
@@ -131,6 +131,15 @@ def run(inputFilename,outputDir, openOutputFiles, chartPackage, dataTransformati
         if pairwiseFiles:
             filesToOpen.extend(pairwiseFiles)
 
+    if compute_consecutive_distances:
+        # movement: distance between each geolocated location and the next, within each Document.
+        # Resolves Latitude/Longitude/Document/Sentence ID by header name, so it consumes the
+        # single-location geocoded csv directly (no hand-built two-location file).
+        consecutiveFiles=GIS_distance_util.computeConsecutiveDistances(GUI_util.window, inputFilename, outputDir, distinctValues, encoding)
+        consecutiveFiles=[f for f in consecutiveFiles if f]
+        if consecutiveFiles:
+            filesToOpen.extend(consecutiveFiles)
+
     if len(filesToOpen)==0:
         return
 
@@ -148,6 +157,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             # geocode_var.get(),
                             compute_pairwise_distances_var.get(),
                             compute_baseline_distances_var.get(),
+                            compute_consecutive_distances_var.get(),
                             baselineLocation_entry_var.get(),
                             location_var.get(),
                             location_var2.get())
@@ -161,8 +171,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=560, # height at brief display
-                                                 GUI_height_full=600, # height at full display
+                                                 GUI_height_brief=595, # height at brief display
+                                                 GUI_height_full=635, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -305,6 +315,7 @@ location_var2=tk.StringVar()
 compute_baseline_distances_var=tk.IntVar()
 baselineLocation_entry_var=tk.StringVar()
 compute_pairwise_distances_var=tk.IntVar()
+compute_consecutive_distances_var=tk.IntVar()
 
 def clear(e):
     csv_file_var.set('')
@@ -316,6 +327,7 @@ def clear(e):
     geocoder_var.set('Nominatim')
     compute_pairwise_distances_var.set(0)
     compute_baseline_distances_var.set(0)
+    compute_consecutive_distances_var.set(0)
     baselineLocation_entry_var.set('')
     location_var.set('')
     location_var2.set('')
@@ -358,6 +370,12 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 baselineLocation_entry = tk.Entry(window, textvariable=baselineLocation_entry_var)
 baselineLocation_entry.configure(width=50, state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+450,y_multiplier_integer,baselineLocation_entry)
+
+compute_consecutive_distances_var.set(0)
+compute_consecutive_distances_checkbox = tk.Checkbutton(window, variable=compute_consecutive_distances_var, onvalue=1, offvalue=0)
+compute_consecutive_distances_checkbox.config(text="Compute distances between consecutive locations (movement per document)")
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
+                                               y_multiplier_integer, compute_consecutive_distances_checkbox)
 
 _gisFile = inputFilename.get()
 menu_values = IO_csv_util.get_csvfile_headers(_gisFile) if (_gisFile.endswith('.csv') and os.path.isfile(_gisFile)) else ''
@@ -450,6 +468,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the type of geocoding service you wish to use, Google or Nominatim. For Google you need an API key."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to compute distances of all locations listed in your input file.\n\nIn INPUT the script expects geocoded data with Latitude and Longitude values for two sets of locations whose distances you want to compute. The input file must have a column with the FIRST selected location name, followed by its latitude and longitude; followed by the SECOND selected location name, followed by its latitude and longitude.\n\nSix columns in input are expected (e.g., Location1, Latitude1, Longitude1, Location2, Latitude2, Longitude2, in this order). The input csv file may contain other fields but the location and geocoded fields MUST be in this order."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to compute distances of all locations listed in your input file from a specific location (e.g., Atlanta). You will need to enter the location name (e.g., again, Atlanta).\n\nIn INPUT the script expects either\n   1. a list of locations that will be geocoded before computing distances from a baseline location. The input file must have a column of locations (selected in the FIRST selected location names).\n   2. geocoded data with Latitude and Longitude values for a set of locations whose distances from a baseline location you want to compute. The input file must have a column with the FIRST selected location name, followed by its latitude and longitude."+GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to compute MOVEMENT distances, i.e., the distance between each geolocated location and the NEXT one within the same document (how far the narrative/characters move from place to place across a story).\n\nIn INPUT the script expects a single GEOCODED csv (as produced by the GIS mapping tool) with Latitude and Longitude columns. Locations are ordered by Sentence ID within each Document and paired in sequence, so a single-location geocoded file is all you need: the FIRST/SECOND location columns are NOT used by this option.\n\nIn OUTPUT the script lists each consecutive location pair with its geodesic and great circle distances (miles and Km), together with the Document and the from/to sentences."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the column containing the FIRST set of location names (e.g., Location1)."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the column containing the SECOND set of location names (e.g., Location2)."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
