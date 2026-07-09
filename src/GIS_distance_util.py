@@ -283,6 +283,16 @@ def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,geolocat
     baseLocationLat = 0
     baseLocationLon = 0
 
+    # honor the actual file: a csv that already has Latitude/Longitude columns is geocoded,
+    # so read its coordinates directly instead of re-geocoding (the CoNLL_checker flag can
+    # miss Suite-format geocoded files -> without this they wrongly enter the geocoding branch)
+    try:
+        _cols = {str(c).strip().lower() for c in pd.read_csv(inputFilename, nrows=0, encoding=encodingValue).columns}
+        if any('latitude' in c for c in _cols) and any('longitude' in c for c in _cols):
+            InputIsGeocoded = True
+    except Exception:
+        pass
+
     # not geocoded input
     if InputIsGeocoded == False:
         import IO_internet_util
@@ -299,7 +309,7 @@ def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,geolocat
             outputCsvLocationsOnly=IO_files_util.generate_output_file_name(inputFilename,'', outputDir, '.csv', 'GIS', 'NER_locations', '', '', '', False, True)
             locations = GIS_location_util.extract_NER_locations(inputFilename,filenamePositionInCoNLLTable,encodingValue,split_locations,datePresent)
         else:
-            locations = GIS_location_util.extract_csvFile_locations(GUI_util.window,inputFilename,withHeader,locationColumnNumber,encodingValue)
+            locations = GIS_location_util.extract_csvFile_locations(GUI_util.window,inputFilename,withHeader,locationColumnNumber,encodingValue,False,0)
 
         if locations==None or len(locations)==0:
             filesToOpen.append('')

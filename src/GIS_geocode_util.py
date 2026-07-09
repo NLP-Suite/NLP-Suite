@@ -425,7 +425,7 @@ def geocode(window,locations, inputFilename, outputDir,
 			locations = GIS_location_util.extract_NER_locations(window, inputFilename, encodingValue, datePresent)
 		else:
 			# locations is a list of names of locations
-			locations = GIS_location_util.extract_csvFile_locations(window, inputFilename, withHeader, locationColumnName, encodingValue)
+			locations = GIS_location_util.extract_csvFile_locations(window, inputFilename, withHeader, locationColumnName, encodingValue, datePresent, 0)
 
 		if locations == None or len(locations) == 0:
 			# Check if this is SVO data with no locations linked to SVOs
