@@ -1842,12 +1842,12 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, conf
                'Sentence ID', 'Sentence', 'Document ID', 'Document']
     try:
         nlp = stanza.Pipeline(lang='en', processors='tokenize,pos,constituency',use_gpu=False)
-    except:
-        import subprocess
-        import sys
-        # subprocess.check_call([sys.executable, "-m", "pip", "install", "git+https://github.com/stanfordnlp/stanza.git@dev"])
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "stanza==1.4.0"])
-        # import stanza
+    except Exception:
+        # The first load can fail when stanza's resources.json or the English models are missing/stale.
+        # Download them (the real remedy) and retry. Do NOT pip-install an old pinned stanza at runtime:
+        # you cannot downgrade the running interpreter (it fails with CalledProcessError), the current
+        # stanza is 1.10+, and pip is not available in the frozen build.
+        stanza.download('en', verbose=False)
         nlp = stanza.Pipeline(lang='en', processors='tokenize,pos,constituency',use_gpu=False)
     op = pd.DataFrame(columns=columns)
     for idx, txt in enumerate(all_input_docs.items()):
@@ -1997,10 +1997,9 @@ def compute_subordination_ratio(window, inputFilename, inputDir, outputDir, conf
 
     try:
         nlp = stanza.Pipeline(lang='en', processors='tokenize,pos,depparse', use_gpu=False)
-    except:
-        import subprocess
-        import sys
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "stanza==1.4.0"])
+    except Exception:
+        # download the stanza models and retry -- never pip-downgrade stanza at runtime (see note above)
+        stanza.download('en', verbose=False)
         nlp = stanza.Pipeline(lang='en', processors='tokenize,pos,depparse', use_gpu=False)
 
     op = pd.DataFrame(columns=columns)
@@ -2118,10 +2117,9 @@ def compute_dependency_distance(window, inputFilename, inputDir, outputDir, conf
 
     try:
         nlp = stanza.Pipeline(lang='en', processors='tokenize,pos,depparse', use_gpu=False)
-    except:
-        import subprocess
-        import sys
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "stanza==1.4.0"])
+    except Exception:
+        # download the stanza models and retry -- never pip-downgrade stanza at runtime (see note above)
+        stanza.download('en', verbose=False)
         nlp = stanza.Pipeline(lang='en', processors='tokenize,pos,depparse', use_gpu=False)
 
     op = pd.DataFrame(columns=columns)
