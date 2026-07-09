@@ -25,18 +25,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
     if ("Lemma" in str(annotator_params) and 'Lemma' in temp_outputFilename) or 'parse' in str(annotator_params):
         # reminders_util.checkReminder(scriptName, reminders_util.lemma_frequencies,
         #                              reminders_util.message_lemma_frequencies, True)
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                                           outputDir,
-                                                           columns_to_be_plotted_xAxis=[],
-                                                           columns_to_be_plotted_yAxis=['Form','Lemma'],
-                                                           chart_title='Frequency Distribution of Form & Lemma Values',
-                                                           # count_var = 1 for columns of alphabetic values
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='form-lemma', #'POS_bar',
-                                                           column_xAxis_label='Form & Lemma values',
-                                                           groupByList=['Document'],
-                                                           plotList=['Frequency'],
-                                                           chart_title_label='Lemma Values')
+        outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Form','Lemma'], title='Frequency Distribution of Form & Lemma Values', x_label='Form & Lemma values', file_label='form-lemma', plot_list=['Frequency'], title_label='Lemma Values')
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):
@@ -48,36 +37,14 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
 # All POS ________________________________________________________________
 
     if ('POS' in str(annotator_params) and 'POS' in temp_outputFilename) or 'parse' in str(annotator_params):
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                                           outputDir,
-                                                           columns_to_be_plotted_xAxis=[],
-                                                           columns_to_be_plotted_yAxis=['POS'],
-                                                           chart_title='Frequency Distribution of Part of Speech (POS) Tags',
-                                                           # count_var = 1 for columns of alphabetic values
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='POS', #'POS_bar',
-                                                           column_xAxis_label='POS (Part of Speech) tag values',
-                                                           groupByList=['Document'],
-                                                           plotList=['Frequency'],
-                                                           chart_title_label='POS (Part of Speech) Tag Values')
+        outputFiles = charts_util.plot(outputFilename, outputDir, columns=['POS'], title='Frequency Distribution of Part of Speech (POS) Tags', x_label='POS (Part of Speech) tag values', file_label='POS', plot_list=['Frequency'], title_label='POS (Part of Speech) Tag Values')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                                           outputDir,
-                                                           columns_to_be_plotted_xAxis=[],
-                                                           columns_to_be_plotted_yAxis=['Form'],
-                                                           chart_title='Frequency Distribution of Form Values', # by Part of Speech (POS) Tags
-                                                           # count_var = 1 for columns of alphabetic values
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='Form', #'POS_bar',
-                                                           column_xAxis_label='Form values',
-                                                           groupByList=['POS'],
-                                                           plotList=['Frequency'],
-                                                           chart_title_label='Form Values')
+        outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Form'], title='Frequency Distribution of Form Values', x_label='Form values', file_label='Form', group_by=['POS'], plot_list=['Frequency'], title_label='Form Values')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -120,36 +87,14 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
 
         if IO_csv_util.get_csvfile_headers(outputFilename, False)[1] == "NER":
             # plot NER tag (e.g, LOCATION), standard bar and by Doc
-            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                               outputDir,
-                               columns_to_be_plotted_xAxis=[],
-                               columns_to_be_plotted_yAxis=['NER'],
-                               chart_title='Frequency Distribution of NER Tags',
-                               # count_var = 1 for columns of alphabetic values
-                               count_var=1, hover_label=[],
-                               outputFileNameType='NER-tag', #'NER_tag_bar',
-                               column_xAxis_label='NER tags',
-                               groupByList=['Document'],
-                               plotList=['Frequency'],
-                               chart_title_label='NER')
+            outputFiles = charts_util.plot(outputFilename, outputDir, columns=['NER'], title='Frequency Distribution of NER Tags', x_label='NER tags', file_label='NER-tag', plot_list=['Frequency'], title_label='NER')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
                 else:
                     filesToOpen.extend(outputFiles)
 
-            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                               outputDir,
-                               columns_to_be_plotted_xAxis=[],
-                               columns_to_be_plotted_yAxis=['Word'],
-                               chart_title='Frequency Distribution of NER ' + NER_tag + ' Values',
-                               # count_var = 1 for columns of alphabetic values
-                               count_var=1, hover_label=[],
-                               outputFileNameType='NER-tag-value', #'NER_tag_bar',
-                               column_xAxis_label='NER ' + NER_tag + ' expression',
-                               groupByList=['Document'],
-                               plotList=[],
-                               chart_title_label='NER Tag Values')
+            outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Word'], title='Frequency Distribution of NER ' + NER_tag + ' Values', x_label='NER ' + NER_tag + ' expression', file_label='NER-tag-value', title_label='NER Tag Values')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -157,18 +102,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                     filesToOpen.extend(outputFiles)
 
             # plot Form values by NER tag (e.g, Atlanta in LOCATION)
-            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                               outputDir,
-                               columns_to_be_plotted_xAxis=[],
-                               columns_to_be_plotted_yAxis=['Form'],
-                               chart_title='Frequency Distribution of Form Values',
-                               # count_var = 1 for columns of alphabetic values
-                               count_var=1, hover_label=[],
-                               outputFileNameType='Form', #'NER_tag_bar',
-                               column_xAxis_label='Form values',
-                               groupByList=['NER'],
-                               plotList=['Frequency'],
-                               chart_title_label='Form')
+            outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Form'], title='Frequency Distribution of Form Values', x_label='Form values', file_label='Form', group_by=['NER'], plot_list=['Frequency'], title_label='Form')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -184,18 +118,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
             except Exception:
                 _mwe_cols = []
             if 'Multi-Word Expression' in _mwe_cols:
-                outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                   outputDir,
-                                   columns_to_be_plotted_xAxis=[],
-                                   columns_to_be_plotted_yAxis=['Multi-Word Expression'],
-                                   chart_title='Frequency Distribution of Named Entities (Multi-Word Expressions)',
-                                   # count_var = 1 for columns of alphabetic values
-                                   count_var=1, hover_label=[],
-                                   outputFileNameType='Named-Entity',
-                                   column_xAxis_label='Named entities (multi-word expressions)',
-                                   groupByList=['NER'],
-                                   plotList=['Frequency'],
-                                   chart_title_label='Named Entity')
+                outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Multi-Word Expression'], title='Frequency Distribution of Named Entities (Multi-Word Expressions)', x_label='Named entities (multi-word expressions)', file_label='Named-Entity', group_by=['NER'], plot_list=['Frequency'], title_label='Named Entity')
                 if outputFiles!=None:
                     if isinstance(outputFiles, str):
                         filesToOpen.append(outputFiles)
@@ -211,36 +134,14 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
 
         reminders_util.checkReminder(scriptName, reminders_util.DepRel_frequencies,
                                      reminders_util.message_DepRel_frequencies, True)
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                                           outputDir,
-                                                           columns_to_be_plotted_xAxis=[],
-                                                           columns_to_be_plotted_yAxis=['DepRel'],
-                                                           chart_title='Frequency Distribution of DepRel (Dependency Relations) Values',
-                                                           # count_var = 1 for columns of alphabetic values
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='DepRel',
-                                                           column_xAxis_label='DepRel values',
-                                                           groupByList=['Document'],
-                                                           plotList=['Frequency'],
-                                                           chart_title_label='DepRel')
+        outputFiles = charts_util.plot(outputFilename, outputDir, columns=['DepRel'], title='Frequency Distribution of DepRel (Dependency Relations) Values', x_label='DepRel values', file_label='DepRel', plot_list=['Frequency'], title_label='DepRel')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                                           outputDir,
-                                                           columns_to_be_plotted_xAxis=[],
-                                                           columns_to_be_plotted_yAxis=['Form'],
-                                                           chart_title='Frequency Distribution of Form Values', # by DepRel (Dependency Relations) Values',
-                                                           # count_var = 1 for columns of alphabetic values
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='Form',
-                                                           column_xAxis_label='Form values',
-                                                           groupByList=['DepRel'],
-                                                           plotList=['Frequency'],
-                                                           chart_title_label='Form Values')
+        outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Form'], title='Frequency Distribution of Form Values', x_label='Form values', file_label='Form', group_by=['DepRel'], plot_list=['Frequency'], title_label='Form Values')
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):
@@ -257,18 +158,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
             # (('SVO' in str(annotator_params) and 'SVO' in outputFilename)) or \
             # visualizing normalized-date for SVO is done in SVO_util called in SVO_main
         # Date expressions are in the form yesterday, tomorrow morning, the day before Christmas
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                                           outputDir,
-                                                           columns_to_be_plotted_xAxis=[],
-                                                           columns_to_be_plotted_yAxis=['Date expression'],
-                                                           chart_title='Frequency Distribution of Date Expressions',
-                                                           # count_var = 1 for columns of alphabetic values
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='date-express', #'NER_info_bar',
-                                                           column_xAxis_label='Date expression',
-                                                           groupByList=['Document'],
-                                                           plotList=['Frequency'],
-                                                           chart_title_label='Date Expressions')
+        outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Date expression'], title='Frequency Distribution of Date Expressions', x_label='Date expression', file_label='date-express', plot_list=['Frequency'], title_label='Date Expressions')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -276,18 +166,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                 filesToOpen.extend(outputFiles)
 
             # normalized dates are in the form PAST_REF, NEXT_IMMEDIATE P1D, ...
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                                           outputDir,
-                                                           columns_to_be_plotted_xAxis=[],
-                                                           columns_to_be_plotted_yAxis=['Normalized date'],
-                                                           chart_title='Frequency Distribution of Normalized Dates',
-                                                           # count_var = 1 for columns of alphabetic values
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='date', #'NER_date_bar',
-                                                           column_xAxis_label='Normalized date',
-                                                           groupByList=['Document'],
-                                                           plotList=['Frequency'],
-                                                           chart_title_label='Normalized Dates')
+        outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Normalized date'], title='Frequency Distribution of Normalized Dates', x_label='Normalized date', file_label='date', plot_list=['Frequency'], title_label='Normalized Dates')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -295,18 +174,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                 filesToOpen.extend(outputFiles)
 
             # Date types are in the form PAST, PRESENT, OTHER
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                                           outputDir,
-                                                           columns_to_be_plotted_xAxis=[],
-                                                           columns_to_be_plotted_yAxis=['Date type'],
-                                                           chart_title='Frequency Distribution of Date Types',
-                                                           # count_var = 1 for columns of alphabetic values
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='date-types', #'NER_info_bar',
-                                                           column_xAxis_label='Date type',
-                                                           groupByList=['Document'],
-                                                           plotList=['Frequency'],
-                                                           chart_title_label='Date Types')
+        outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Date type'], title='Frequency Distribution of Date Types', x_label='Date type', file_label='date-types', plot_list=['Frequency'], title_label='Date Types')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -317,36 +185,14 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
 # gender ________________________________________________________________
 
     if 'gender' in str(annotator_params) and 'gender' in temp_outputFilename:
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                                           outputDir,
-                                                           columns_to_be_plotted_xAxis=[],
-                                                           columns_to_be_plotted_yAxis=['Gender'],
-                                                           chart_title='Frequency Distribution of Gender Values',
-                                                           # count_var = 1 for columns of alphabetic values
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='gender-values', #'gender_bar',
-                                                           column_xAxis_label='Gender values',
-                                                           groupByList=['Document'],
-                                                           plotList=['Gender'],
-                                                           chart_title_label='Gender')
+        outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Gender'], title='Frequency Distribution of Gender Values', x_label='Gender values', file_label='gender-values', plot_list=['Gender'], title_label='Gender')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                                           outputDir,
-                                                           columns_to_be_plotted_xAxis=[],
-                                                           columns_to_be_plotted_yAxis=['Word'],
-                                                           chart_title='Frequency Distribution of Gendered Words',
-                                                           # count_var = 1 for columns of alphabetic values
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='gender-words', #'gender_bar',
-                                                           column_xAxis_label='Gender words',
-                                                           groupByList=['Gender','Document'],
-                                                           plotList=['Frequency'],
-                                                           chart_title_label='Gendered Words')
+        outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Word'], title='Frequency Distribution of Gendered Words', x_label='Gender words', file_label='gender-words', group_by=['Gender','Document'], plot_list=['Frequency'], title_label='Gendered Words')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -384,17 +230,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
 # quote ________________________________________________________________
 
     if 'quote' in str(annotator_params) and 'quote' in temp_outputFilename:
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                                           outputDir,
-                                                           columns_to_be_plotted_xAxis=[],
-                                                           columns_to_be_plotted_yAxis=['Speakers'],
-                                                           chart_title='Frequency Distribution of Speakers\n(CoreNLP Quote Annotator)',
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='quote', #'quote_bar',
-                                                           column_xAxis_label='Speakers',
-                                                           groupByList=['Document'],
-                                                           plotList=['Frequency'],
-                                                           chart_title_label='Quotes')
+        outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Speakers'], title='Frequency Distribution of Speakers\n(CoreNLP Quote Annotator)', x_label='Speakers', file_label='quote', plot_list=['Frequency'], title_label='Quotes')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -406,17 +242,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
 
     if 'sentiment' in str(annotator_params) and 'sentiment' in temp_outputFilename:
         if IO_csv_util.get_csvfile_headers(outputFilename, False)[0] == "Sentiment score":
-            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                                               outputDir,
-                                                               columns_to_be_plotted_xAxis=[],
-                                                               columns_to_be_plotted_yAxis=['Sentiment score'], # sentiment score
-                                                               chart_title='Frequency Distribution of Sentiment Scores',
-                                                               count_var=1, hover_label=[],
-                                                               outputFileNameType='score', #'senti_bar',
-                                                               column_xAxis_label='Sentiment score',
-                                                               groupByList=['Document'],
-                                                               plotList=['Sentiment score'],
-                                                               chart_title_label='Sentiment Score Statistics')
+            outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Sentiment score'], title='Frequency Distribution of Sentiment Scores', x_label='Sentiment score', file_label='score', plot_list=['Sentiment score'], title_label='Sentiment Score Statistics')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -424,17 +250,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                     filesToOpen.extend(outputFiles)
 
         if IO_csv_util.get_csvfile_headers(outputFilename, False)[1] == "Sentiment label":
-            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                                               outputDir,
-                                                               columns_to_be_plotted_xAxis=[],
-                                                               columns_to_be_plotted_yAxis=['Sentiment label'],
-                                                               chart_title='Frequency Distribution of Sentiment Labels',
-                                                               count_var=1, hover_label=[], # ['Sentiment label'],
-                                                               outputFileNameType='label', #'senti_bar',
-                                                               column_xAxis_label='Sentiment label',
-                                                               groupByList=['Document'],
-                                                               plotList=['Sentiment label'],
-                                                               chart_title_label='Sentiment Label Statistics')
+            outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Sentiment label'], title='Frequency Distribution of Sentiment Labels', x_label='Sentiment label', file_label='label', plot_list=['Sentiment label'], title_label='Sentiment Label Statistics')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -550,18 +366,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
         #         filesToOpen.extend(outputFiles)
 
 # plot Subjects
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                                           outputSVOUnFilterDir,
-                                                           columns_to_be_plotted_xAxis=[],
-                                                           columns_to_be_plotted_yAxis=['Subject (S)'],
-                                                           chart_title='Frequency Distribution of Subjects (unlemmatized, unfiltered)',
-                                                           # count_var = 1 for columns of alphabetic values
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='S-form', #'S_bar',
-                                                           column_xAxis_label='Subjects (unlemmatized, unfiltered)',
-                                                           groupByList=['Document'],
-                                                           plotList=['Frequency'],
-                                                           chart_title_label='Subjects (unlemmatized, unfiltered)')
+        outputFiles = charts_util.plot(outputFilename, outputSVOUnFilterDir, columns=['Subject (S)'], title='Frequency Distribution of Subjects (unlemmatized, unfiltered)', x_label='Subjects (unlemmatized, unfiltered)', file_label='S-form', plot_list=['Frequency'], title_label='Subjects (unlemmatized, unfiltered)')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -569,18 +374,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                 filesToOpen.extend(outputFiles)
 
 # plot Verbs
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                                           outputSVOUnFilterDir,
-                                                           columns_to_be_plotted_xAxis=[],
-                                                           columns_to_be_plotted_yAxis=['Verb (V)'],
-                                                           chart_title='Frequency Distribution of Verbs (unlemmatized, unfiltered)',
-                                                           # count_var = 1 for columns of alphabetic values
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='V-form', #'V_bar',
-                                                           column_xAxis_label='Verbs (unlemmatized, unfiltered)',
-                                                           groupByList=['Document'],
-                                                           plotList=['Frequency'],
-                                                           chart_title_label='Verbs (unlemmatized, unfiltered)')
+        outputFiles = charts_util.plot(outputFilename, outputSVOUnFilterDir, columns=['Verb (V)'], title='Frequency Distribution of Verbs (unlemmatized, unfiltered)', x_label='Verbs (unlemmatized, unfiltered)', file_label='V-form', plot_list=['Frequency'], title_label='Verbs (unlemmatized, unfiltered)')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -588,18 +382,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                 filesToOpen.extend(outputFiles)
 
 # plot Objects
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                                           outputSVOUnFilterDir,
-                                                           columns_to_be_plotted_xAxis=[],
-                                                           columns_to_be_plotted_yAxis=['Object (O)'],
-                                                           chart_title='Frequency Distribution of Objects (unlemmatized, unfiltered)',
-                                                           # count_var = 1 for columns of alphabetic values
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='O-form', #'O_bar',
-                                                           column_xAxis_label='Objects (unlemmatized, unfiltered)',
-                                                           groupByList=['Document'],
-                                                           plotList=['Frequency'],
-                                                           chart_title_label='Objects (unlemmatized, unfiltered)')
+        outputFiles = charts_util.plot(outputFilename, outputSVOUnFilterDir, columns=['Object (O)'], title='Frequency Distribution of Objects (unlemmatized, unfiltered)', x_label='Objects (unlemmatized, unfiltered)', file_label='O-form', plot_list=['Frequency'], title_label='Objects (unlemmatized, unfiltered)')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -625,36 +408,14 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
         #     filesToOpen.extend(pronoun_files)
 
         if "coref table" in str(annotator_params):
-            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                                               outputDir,
-                                                               columns_to_be_plotted_xAxis=[],
-                                                               columns_to_be_plotted_yAxis=['Pronoun'],
-                                                               chart_title='Frequency Distribution of Pronouns (Antecedents)',
-                                                               # count_var = 1 for columns of alphabetic values
-                                                               count_var=1, hover_label=[],
-                                                               outputFileNameType='pronouns',  # 'O_bar',
-                                                               column_xAxis_label='Pronouns (antecedents)',
-                                                               groupByList=[],
-                                                               plotList=[],
-                                                               chart_title_label='')
+            outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Pronoun'], title='Frequency Distribution of Pronouns (Antecedents)', x_label='Pronouns (antecedents)', file_label='pronouns', group_by=None)
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
                 else:
                     filesToOpen.extend(outputFiles)
 
-            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                                               outputDir,
-                                                               columns_to_be_plotted_xAxis=[],
-                                                               columns_to_be_plotted_yAxis=['Referent'],
-                                                               chart_title='Frequency Distribution of Coreferences (Referents)',
-                                                               # count_var = 1 for columns of alphabetic values
-                                                               count_var=1, hover_label=[],
-                                                               outputFileNameType='referents',  # 'O_bar',
-                                                               column_xAxis_label='Coreferences (referents)',
-                                                               groupByList=[],
-                                                               plotList=[],
-                                                               chart_title_label='')
+            outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Referent'], title='Frequency Distribution of Coreferences (Referents)', x_label='Coreferences (referents)', file_label='referents', group_by=None)
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
