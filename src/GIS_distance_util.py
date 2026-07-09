@@ -121,9 +121,12 @@ def create_distance_distribution_charts(distanceoutputFilename, outputDir, files
         print('GIS_distance distribution charts: cannot read', distanceoutputFilename, e)
         return filesToOpen
 
-    bins = [0, 1, 10, 20, 30, 40, 50, 100, np.inf]
-    names = ['0', '1-10', '11-20', '21-30', '31-40', '41-50', '51-100', '101+']
-    # the two algorithms in miles (km is only a unit conversion, same distribution shape)
+    # log-decade bins: geographic distances span orders of magnitude (a few miles to a few
+    # thousand), so fixed local bands (the old 0-100 mile scheme) dumped everything into one
+    # open-ended catch-all bar. Decade bands read across both local and global scales.
+    bins = [0, 1, 10, 100, 1000, 10000, np.inf]
+    names = ['<1', '1-10', '10-100', '100-1,000', '1,000-10,000', '10,000+']
+    # both algorithms in miles (km is only a unit conversion, same distribution shape)
     for measure in ['Geodesic distance in miles', 'Great circle distance in miles']:
         if measure not in df.columns:
             continue
@@ -154,7 +157,8 @@ def create_distance_distribution_charts(distanceoutputFilename, outputDir, files
 #   (and Document) by header name.
 #   scope='per-document' -> all-pairs WITHIN each Document (cheap, narrative-aware; needs a
 #       Document column, falls back to whole-corpus with a warning if absent);
-#   scope='whole-corpus'  -> all-pairs across every distinct location in the file (grows as N^2).
+#   scope='whole-corpus'  -> all-pairs across every distinct location in the file (grows as N^2);
+#   scope='both'          -> run both scopes, producing two separate output files.
 def computePairwiseDistances(window, inputFilename, outputDir, distinctValues, encodingValue,
                              scope='per-document', chartPackage='No charts', dataTransformation=''):
     import itertools
@@ -189,11 +193,12 @@ def computePairwiseDistances(window, inputFilename, outputDir, distinctValues, e
                        message="The input csv has no rows with valid Latitude/Longitude values.\n\nPlease, geocode your locations first and try again.")
         return ['']
 
-    per_document = (scope == 'per-document')
-    if per_document and docCol is None:
+    # which scope(s) to run: 'both' runs per-document AND whole-corpus (two output files)
+    requested = ['per-document', 'whole-corpus'] if scope == 'both' else [scope]
+    if docCol is None and 'per-document' in requested:
         mb.showwarning(title='No Document column',
-                       message="You selected PER-DOCUMENT pairwise distances, but the input csv has no 'Document' column to group by.\n\nThe tool will compute WHOLE-CORPUS pairwise distances instead (all-pairs across every location in the file).")
-        per_document = False
+                       message="PER-DOCUMENT pairwise distances need a 'Document' column to group by, which is missing from the input csv.\n\nThe tool will compute WHOLE-CORPUS pairwise distances instead (all-pairs across every location in the file).")
+        requested = ['whole-corpus']   # collapse (avoids a duplicate run when 'both' was selected)
 
     def _distinct_locations(sub):
         seen = set()
@@ -207,48 +212,54 @@ def computePairwiseDistances(window, inputFilename, outputDir, distinctValues, e
             out.append(rec)
         return out
 
-    if per_document:
-        groups = [(str(g), _distinct_locations(sub)) for g, sub in df.groupby(docCol, sort=False)]
-    else:
-        groups = [('', _distinct_locations(df))]
+    any_output = False
+    for one_scope in requested:
+        per_document = (one_scope == 'per-document')
+        if per_document:
+            groups = [(str(g), _distinct_locations(sub)) for g, sub in df.groupby(docCol, sort=False)]
+        else:
+            groups = [('', _distinct_locations(df))]
 
-    total_pairs = sum(len(locs) * (len(locs) - 1) // 2 for _, locs in groups)
-    if total_pairs == 0:
-        mb.showwarning(title='No pairs',
-                       message="No location pairs could be formed.\n\nThis can happen if each document has fewer than two distinct geocoded locations.")
-        return ['']
-    if total_pairs > 200000:
-        if not mb.askyesno(title='Large computation',
-                           message="This will compute " + str(total_pairs) + " location pairs, which may take a long time.\n\nConsider PER-DOCUMENT scope to reduce the number of pairs.\n\nDo you want to continue?"):
-            return ['']
+        total_pairs = sum(len(locs) * (len(locs) - 1) // 2 for _, locs in groups)
+        if total_pairs == 0:
+            mb.showwarning(title='No pairs',
+                           message="No " + one_scope + " location pairs could be formed.\n\nThis can happen when each document (per-document) or the whole file (whole-corpus) has fewer than two distinct geocoded locations.")
+            continue
+        if total_pairs > 200000:
+            if not mb.askyesno(title='Large computation',
+                               message="The " + one_scope + " option will compute " + str(total_pairs) + " location pairs, which may take a long time.\n\nConsider PER-DOCUMENT scope to reduce the number of pairs.\n\nDo you want to continue?"):
+                continue
 
-    distanceoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', 'distance', 'pairwise', ('per-document' if per_document else 'whole-corpus'), '', False, True)
-    header = ['Location 1', 'Latitude 1', 'Longitude 1', 'Location 2', 'Latitude 2', 'Longitude 2',
-              'Geodesic distance in miles', 'Geodesic distance in Km',
-              'Great circle distance in miles', 'Great circle distance in Km', 'Document']
+        distanceoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', 'distance', 'pairwise', one_scope, '', False, True)
+        header = ['Location 1', 'Latitude 1', 'Longitude 1', 'Location 2', 'Latitude 2', 'Longitude 2',
+                  'Geodesic distance in miles', 'Geodesic distance in Km',
+                  'Great circle distance in miles', 'Great circle distance in Km', 'Document']
 
-    with open(distanceoutputFilename, 'w', newline='', encoding=encodingValue, errors='ignore') as outputFile:
-        geowriter = csv.writer(outputFile)
-        geowriter.writerow(header)
-        for gname, locs in groups:
-            for (n1, la1, lo1), (n2, la2, lo2) in itertools.combinations(locs, 2):
-                wp1 = (la1, lo1)
-                wp2 = (la2, lo2)
-                distMiles = distance.distance(wp1, wp2).miles
-                distKm = distance.distance(wp1, wp2).km
-                GCdistMiles = great_circle(wp1, wp2).miles
-                GCdistKm = great_circle(wp1, wp2).km
-                geowriter.writerow([n1, la1, lo1, n2, la2, lo2, distMiles, distKm, GCdistMiles, GCdistKm, gname])
+        with open(distanceoutputFilename, 'w', newline='', encoding=encodingValue, errors='ignore') as outputFile:
+            geowriter = csv.writer(outputFile)
+            geowriter.writerow(header)
+            for gname, locs in groups:
+                for (n1, la1, lo1), (n2, la2, lo2) in itertools.combinations(locs, 2):
+                    wp1 = (la1, lo1)
+                    wp2 = (la2, lo2)
+                    distMiles = distance.distance(wp1, wp2).miles
+                    distKm = distance.distance(wp1, wp2).km
+                    GCdistMiles = great_circle(wp1, wp2).miles
+                    GCdistKm = great_circle(wp1, wp2).km
+                    geowriter.writerow([n1, la1, lo1, n2, la2, lo2, distMiles, distKm, GCdistMiles, GCdistKm, gname])
 
-    filesToOpen.append(distanceoutputFilename)
-    filesToOpen = create_distance_distribution_charts(distanceoutputFilename, outputDir, filesToOpen, encodingValue)
-    if chartPackage != 'No charts':
-        try:
-            filesToOpen = createCharts(distanceoutputFilename, outputDir, filesToOpen, chartPackage, dataTransformation)
-        except Exception as e:
-            print('GIS_distance createCharts (pairwise) failed:', e)
+        filesToOpen.append(distanceoutputFilename)
+        filesToOpen = create_distance_distribution_charts(distanceoutputFilename, outputDir, filesToOpen, encodingValue)
+        if chartPackage != 'No charts':
+            try:
+                filesToOpen = createCharts(distanceoutputFilename, outputDir, filesToOpen, chartPackage, dataTransformation)
+            except Exception as e:
+                print('GIS_distance createCharts (pairwise) failed:', e)
+        any_output = True
 
     IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running GIS pairwise (all-pairs) distances at', True, '', True, startTime, True)
+    if not any_output:
+        return ['']
     return filesToOpen
 
 # The function computes the distance between a pre-selected city and all cities in a list
