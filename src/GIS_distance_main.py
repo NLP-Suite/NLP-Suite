@@ -37,7 +37,7 @@ import GIS_pipeline_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputFilename,outputDir, openOutputFiles, chartPackage, dataTransformation,
-        encoding, geocoder,
+        encoding,
         # geocode,
         compute_pairwise_distances, compute_baseline_distances, compute_consecutive_distances, baselineLocation, pairwise_scope):
     config_filename = GUI_util.config_filename_selected_config.get()
@@ -130,7 +130,6 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.charts_package_options_widget.get(),
                             GUI_util.data_transformation_options_widget.get(),
                             encoding_var.get(),
-                            geocoder_var.get(),
                             # geocode_var.get(),
                             compute_pairwise_distances_var.get(),
                             compute_baseline_distances_var.get(),
@@ -147,8 +146,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=535, # height at brief display
-                                                 GUI_height_full=575, # height at full display
+                                                 GUI_height_brief=505, # height at brief display
+                                                 GUI_height_full=545, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -284,7 +283,6 @@ def open_GUI(*args):
 extra_GUIs_menu_var.trace('w', open_GUI)
 
 encoding_var=tk.StringVar()
-geocoder_var=tk.StringVar()
 # geocode_var=tk.IntVar()
 pairwise_scope_var=tk.StringVar()
 compute_baseline_distances_var=tk.IntVar()
@@ -299,7 +297,6 @@ def clear(e):
     extra_GUIs_menu_var.set('')
     extra_GUIs_menu.configure(state='disabled')
     encoding_var.set('utf-8')
-    geocoder_var.set('Nominatim')
     compute_pairwise_distances_var.set(0)
     compute_baseline_distances_var.set(0)
     compute_consecutive_distances_var.set(0)
@@ -314,12 +311,6 @@ encodingValue = tk.OptionMenu(window,encoding_var,'utf-8','utf-16-le','utf-32-le
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+350, y_multiplier_integer,encodingValue,True)
 encoding_lb = tk.Label(window, text='Select the encoding type (utf-8 default)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,encoding_lb)
-
-geocoder_lb = tk.Label(window, text='Geocoder')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,geocoder_lb,True)
-geocoder_var.set('Nominatim')
-geocoder = tk.OptionMenu(window,geocoder_var,'Nominatim','Google')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+350, y_multiplier_integer,geocoder)
 
 # geocode_var.set(0)
 # geocode_checkbox = tk.Checkbutton(window, variable=geocode_var, onvalue=1, offvalue=0)
@@ -393,7 +384,6 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click the 'Select INPUT CSV file' button to choose the GEOCODED GIS csv file to process.\n\nThe picker lists only the geocoded csv files found for your corpus, i.e., files that contain Latitude and Longitude columns (typically produced by the GIS mapping tool). You can also browse for another file.\n\nThe distance algorithms require geocoded data (Latitude/Longitude) to compute distances between locations."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the 'GUIs available for more analyses' checkbox to enable the dropdown menu, then select a related tool to open its Graphical User Interface (GUI):\n\n  1. GIS: Mapping locations, to map geocodable locations in time and space;\n  2. Google Earth, to visualize locations in Google Earth Pro;\n  3. Symbolic (non-geocodable) space, to analyze characters moving in NON-geocodable narrative space (house, field, forest, threshold).\n\nThe selected GUI opens without pressing RUN."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the type of encoding you wish to use.\n\nLocations in different languages may require encodings (e.g., latin-1 for French or Italian) different from the standard (and default) utf-8 encoding."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the type of geocoding service you wish to use, Google or Nominatim. For Google you need an API key."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to compute PAIRWISE distances, i.e., the distance between every combination of two of the DISTINCT geolocated locations in your input file.\n\nIn INPUT the script expects a single GEOCODED csv (as produced by the GIS mapping tool) with a Location column and Latitude/Longitude columns. You do NOT need to prepare a file with two location columns: the tool forms the pairs itself.\n\nUse the dropdown to the right to select the SCOPE:\n   - per-document (default): all-pairs WITHIN each document. Cheap and narrative-aware (it pairs only places that co-occur in the same story); requires a Document column.\n   - whole-corpus: all-pairs across every distinct location in the file. This grows as N-squared (N = number of distinct locations) and can be very slow on large, place-rich corpora; it also pairs locations from unrelated documents.\n\nSee the 'Geographic distances' TIPS for the computing-cost details."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to compute distances of all locations listed in your input file from a specific location (e.g., Atlanta). You will need to enter the location name (e.g., again, Atlanta).\n\nIn INPUT the script expects either\n   1. a list of locations that will be geocoded before computing distances from a baseline location. The input file must have a column of locations (selected in the FIRST selected location names).\n   2. geocoded data with Latitude and Longitude values for a set of locations whose distances from a baseline location you want to compute. The input file must have a column with the FIRST selected location name, followed by its latitude and longitude."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to compute MOVEMENT distances, i.e., the distance between each geolocated location and the NEXT one within the same document (how far the narrative/characters move from place to place across a story).\n\nIn INPUT the script expects a single GEOCODED csv (as produced by the GIS mapping tool) with Latitude and Longitude columns. Locations are ordered by Sentence ID within each Document and paired in sequence, so a single-location geocoded file is all you need: the FIRST/SECOND location columns are NOT used by this option.\n\nIn OUTPUT the script lists each consecutive location pair with its geodesic and great circle distances (miles and Km), together with the Document and the from/to sentences."+GUI_IO_util.msg_Esc)
