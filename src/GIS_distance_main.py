@@ -198,6 +198,72 @@ input_main_dir_path=GUI_util.input_main_dir_path
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
+# ---- INPUT csv picker + related-GUIs launcher (template from nominalization_main; adapted so
+# ---- the picker takes ANY geocoded csv, not a CoNLL table) ----------------------------------
+csv_file_var = tk.StringVar()
+extra_GUIs_var = tk.IntVar()
+extra_GUIs_menu_var = tk.StringVar()
+
+def select_csv_file():
+    import tkinter.filedialog as filedialog
+    f = filedialog.askopenfilename(title='Select INPUT geocoded csv file',
+                                   filetypes=[('csv files', '*.csv'), ('All files', '*.*')])
+    if f:
+        csv_file_var.set(f)
+        GUI_util.inputFilename.set(f)        # trace -> refreshes the location-column dropdowns
+        GUI_util.input_main_dir_path.set('')
+        try:                                 # re-evaluate RUN now that a csv is selected
+            _missing = '' if GUI_util.output_dir_path.get() != '' else 'OUTPUT files directory\n'
+            GUI_util.activateRunButton(GUI_util.config_filename_selected_config.get() or config_filename,
+                                       IO_setup_display_brief, scriptName, _missing, True)
+        except Exception as e:
+            print('GIS_distance select_csv_file: could not re-evaluate RUN button:', e)
+
+csv_file_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width,
+                            text='Select INPUT CSV file', command=lambda: select_csv_file())
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                               csv_file_button, True)
+
+openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+                                 command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                    openInputFile_button, True, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                    "Open the selected INPUT csv file")
+
+csv_file = tk.Entry(window, width=GUI_IO_util.csv_file_width, textvariable=csv_file_var)
+csv_file.config(state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, csv_file)
+
+extra_GUIs_var.set(0)
+extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ', variable=extra_GUIs_var,
+                                     onvalue=1, offvalue=0, command=lambda: open_GUI())
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                               extra_GUIs_checkbox, True)
+
+extra_GUIs_menu_var.set('')
+extra_GUIs_menu = tk.OptionMenu(window, extra_GUIs_menu_var, 'GIS: Mapping locations (Open GUI)',
+                                'Google Earth (Open GUI)', 'Symbolic (non-geocodable) space (Open GUI)')
+extra_GUIs_menu.configure(state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                    extra_GUIs_menu, False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                    "Open a related GIS tool without leaving this GUI.\nThe selected GUI opens without pressing RUN.")
+
+def open_GUI(*args):
+    import run_script_util
+    if extra_GUIs_var.get():
+        extra_GUIs_menu.configure(state='normal')
+    sel = extra_GUIs_menu_var.get()
+    if not sel:
+        return
+    if 'Mapping' in sel:
+        run_script_util.run_script("GIS_main.py")
+    elif 'Google Earth' in sel:
+        run_script_util.run_script("GIS_Google_Earth_main.py")
+    elif 'Symbolic' in sel:
+        run_script_util.run_script("GIS_symbolic_main.py")
+
+extra_GUIs_menu_var.trace('w', open_GUI)
+
 encoding_var=tk.StringVar()
 geocoder_var=tk.StringVar()
 # geocode_var=tk.IntVar()
