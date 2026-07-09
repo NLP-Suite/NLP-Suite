@@ -126,8 +126,16 @@ def run(inputFilename,outputDir, openOutputFiles, chartPackage, dataTransformati
     if len(filesToOpen)==0:
         return
 
+    # a full run (several modes/scopes) writes many files -- csv data, distribution charts and
+    # Excel charts -- too many to open them all. Auto-open only the distribution charts to
+    # visualize (the readable summary), as several Suite scripts do; fall back to the distance
+    # csvs if no charts were produced. All files remain written to the output subdirectory.
+    filesToOpenSubset = [f for f in filesToOpen if isinstance(f, str) and f.lower().endswith('.png')]
+    if not filesToOpenSubset:
+        filesToOpenSubset = [f for f in filesToOpen if isinstance(f, str) and f.lower().endswith('.csv')]
+
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName, filesToOpenSubset)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
