@@ -249,7 +249,8 @@ baselineLocation_entry = tk.Entry(window, textvariable=baselineLocation_entry_va
 baselineLocation_entry.configure(width=50, state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+450,y_multiplier_integer,baselineLocation_entry)
 
-menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
+_gisFile = inputFilename.get()
+menu_values = IO_csv_util.get_csvfile_headers(_gisFile) if (_gisFile.endswith('.csv') and os.path.isfile(_gisFile)) else ''
 
 location_field_lb = tk.Label(window, text='Select the column containing the FIRST location names')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,location_field_lb,True)
@@ -301,7 +302,8 @@ def changed_GIS_filename(*args):
 
     # 	reminders_util.checkReminder("geocoding_welcome","Welcome to the geocoder Graphical User Interface (GUI)","Welcome to the geocoder Graphical User Interface (GUI).\n\nWhen running the SVO (Subject-Verb-Object) algorithm, all geocoder options have been automatically setup for you.\n\nOf course, you can change any of the options after reading the TIPS files or the ?HELP messages.\n\nAs a first time user, for now, all you need to do is to CLICK RUN.")
 
-    menu_values = IO_csv_util.get_csvfile_headers(inputFilename.get())
+    _gisFile = inputFilename.get()
+    menu_values = IO_csv_util.get_csvfile_headers(_gisFile) if (_gisFile.endswith('.csv') and os.path.isfile(_gisFile)) else ''
 
     # must change 2 widgets where menus must be updated after changing the filename
     m = location_field["menu"]
