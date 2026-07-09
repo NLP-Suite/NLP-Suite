@@ -286,95 +286,6 @@ def visualize_chart_byGroup(inputFilename, outputDir, chartPackage, dataTransfor
 #             filesToOpen.append(chart_outputFilename)
 #     return filesToOpen
 
-def visualize_chart_bySent(inputFilename, outputDir, chartPackage, dataTransformation, filesToOpen, n_documents,
-                           columns_to_be_plotted_byDoc, columns_to_be_plotted_yAxis, count_var, pivot):
-    # TODO temporary to measure process time
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                                   'Started running Excel bySent at',
-                                                   True, '', True, '', True)
-    # inputFilename = data_pivot(inputFilename, 'Sentence ID', 'Yngve score')
-    # columns_to_be_plotted_bySent = [[columns_to_be_plotted_bySent[0][0]]]
-    if count_var == 1:  # for alphabetic fields that need to be counted for display in a chart
-        temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(
-            GUI_util.window,
-            inputFilename,
-            None, outputDir,
-            False,
-
-            chartPackage,
-            dataTransformation,
-            plot_cols=columns_to_be_plotted_numeric,
-            hover_col=[],
-            group_cols=[['Document ID', 'Document', 'Sentence ID']],
-            complete_sid=True,
-            fileNameType='CSV',
-            chartType='',
-            pivot=pivot)
-        inputFilename = temp_outputFilename[0]
-        if pivot:
-            inputFilename = statistics_csv_util.csv_data_pivot(temp_outputFilename[0], 'Sentence ID',
-                                                               'Gender', no_hyperlinks=True)
-        else:
-            # Using the output from statistics_csv_util.compute_csv_column_frequencies
-            #   Document, Frequency, Sentence ID, Field to be plotted (e.g., POS)
-            # columns_to_be_plotted_bySent = [[1, 4, 2, 3]]
-            columns_to_be_plotted_bySent = [[2, 4]]
-    else:  # numeric values of field(s) to be plotted
-        columns_to_be_plotted_bySent = []
-        if n_documents > 1:
-            for i in range(0, len(columns_to_be_plotted_numeric)):
-                # For multiple series, by document & sentence IDs any combinations of Document, Frequency, Sentence ID, Field to be plotted
-                #       does not work
-                # Only the following works:
-                #   YES [[Document, Column 1 to be plotted], [Document, Column 2 to be plotted], ...]
-                # NO [[Document, Column 1 to be plotted, Sentence ID], [Document, Column 2 to be plotted, Sentence ID], ...]
-                #   sentence IDs are repeated on X-axis rather than Docs
-                # NO [[Document, Sentence ID, Column 1 to be plotted], [Document, Sentence ID, Column 2 to be plotted], ...]
-                #   frequencies or scores on X-axis
-                # NO [[Document, Column 1 to be plotted, Column 2 to be plotted, Sentence ID]]
-                #   only one series plotted with Docs on X-axis
-                columns_to_be_plotted_bySent.append([docCol + 1, columns_to_be_plotted_numeric[i][0]])
-        else:
-            # Sentence ID, Frequency
-            columns_to_be_plotted_bySent.append([sentCol, columns_to_be_plotted_numeric[i][0]])
-
-    if n_documents > 1:
-        chart_title = chart_title + ' by Document & Sentence Index'
-        xAxis_label = ''
-    else:
-        chart_title = chart_title + ' by Sentence Index'
-        xAxis_label = 'Sentence index'
-
-    if outputFileNameType != '':
-        outputFileLabel = 'bySent_' + outputFileNameType
-    else:
-        outputFileLabel = 'bySent'
-
-    outputFiles = run_all(columns_to_be_plotted_bySent, inputFilename, outputDir,
-                          outputFileLabel=outputFileLabel,
-                          chartPackage=chartPackage,
-                          dataTransformation=dataTransformation,
-                          chart_type_list=['line'],
-                          chart_title=chart_title,
-                          column_xAxis_label_var=xAxis_label,
-                          column_yAxis_label_var=column_yAxis_label,
-                          hover_info_column_list=hover_label,
-                          count_var=0,  # always 0 when plotting by sentence index
-                          complete_sid=True,
-                          remove_hyperlinks=True)
-
-    if outputFiles != None:
-        if isinstance(outputFiles, str):
-            filesToOpen.append(outputFiles)
-        else:
-            filesToOpen.extend(outputFiles)
-
-    # TODO temporary to measure process time
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                       'Finished running Excel bySent at',
-                                       True, '', True, startTime, True)
-
-
 # TODO columns_to_be_plotted comes in a single list to be exported to run_all as double list
 # columns_to_be_plotted, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc
 #   all double lists [[]]
@@ -625,12 +536,7 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
     # sentence index value are the first item in the list [[7,2]] i.e. 7
     #   plot values are the second item in the list [[7,2]] i.e. 2
     count_var = count_var_SV
-    # not all csv output contain the Sentence ID (e.g., line length function)
-    # TODO Samir; to test the add_missing_IDs you must change bySent=False to bySent=True
-    bySent = False
-    if bySent:
-        fileToOpen = visualize_chart_bySent(inputFilename, outputDir, chartPackage, filesToOpen, n_documents,
-                                            columns_to_be_plotted_byDoc, columns_to_be_plotted_yAxis, count_var, pivot)
+    # (per-sentence line-chart path removed: visualize_chart_bySent was dead-gated (bySent=False) and broken)
 
     # compute field STATISTICS (mean, median, skeweness, kurtosis...)--------------------------------------------------------------
     # TODO THE FIELD MUST CONTAIN NUMERIC VALUES
