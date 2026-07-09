@@ -27,9 +27,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
     if not do_extract and not do_movement and not do_distribution:
         mb.showwarning(title='No analysis selected',
                        message="Please tick at least one option:\n\n"
-                               "  • Extract social actors in non-geocodable space… (BUILD)\n"
-                               "  • MAP social actors moving… (DYNAMIC)\n"
-                               "  • Distribution of social actors… (STATIC)")
+                               "  • Extract characters in non-geocodable space… (BUILD)\n"
+                               "  • MAP characters moving… (DYNAMIC)\n"
+                               "  • Distribution of characters… (STATIC)")
         return
 
     if not inputFilename or not os.path.isfile(inputFilename):
@@ -281,7 +281,7 @@ def select_csv_file():
     if not matches:
         mb.showinfo(title='No Social-actors table yet',
                     message="No Social-actors table (NLP_GIS_symbolic_actor_space_events_*.csv) was found for "
-                            "this corpus.\n\nProduce one with the BUILD step: tick 'Extract social actors in "
+                            "this corpus.\n\nProduce one with the BUILD step: tick 'Extract characters in "
                             "non-geocodable space (BUILD)', select a CoNLL table of your corpus, and RUN. Then this "
                             "picker will list it.\n\nOr browse now for a table you already have.")
         f = filedialog.askopenfilename(title='Select INPUT csv file',
@@ -375,13 +375,13 @@ extra_GUIs_menu_var.trace('w', open_GUI)
 # ---- BUILD — extract the actor-in-space table from a text corpus -----------
 extract_var.set(0)
 extract_checkbox = tk.Checkbutton(window, variable=extract_var, onvalue=1, offvalue=0)
-extract_checkbox.config(text="Extract social actors in non-geocodable space from a corpus  (BUILD)")
+extract_checkbox.config(text="Extract characters in non-geocodable space from a corpus  (BUILD)")
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                extract_checkbox, False, False, False, False, 90,
                                                GUI_IO_util.labels_x_coordinate,
                                                "BUILD step. Runs the extraction pipeline on a CoNLL parse of your corpus: "
                                                "for each place noun that maps to a non-geocodable space type, it walks the "
-                                               "dependency parse to the acting social actor (subject), producing the "
+                                               "dependency parse to the acting character (subject), producing the "
                                                "actor-in-space table the DYNAMIC and STATIC analyses read.\n\nInput here is "
                                                "a CoNLL table (parse the corpus first via Parsers & annotators or SVO).")
 
@@ -389,11 +389,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 # ---- Row 1: DYNAMIC — movement through non-geocodable space ----------------
 map_var.set(0)
 map_checkbox = tk.Checkbutton(window, variable=map_var, onvalue=1, offvalue=0)
-map_checkbox.config(text="MAP social actors moving in time and non-geocodable space  (DYNAMIC)")
+map_checkbox.config(text="MAP characters moving in time and non-geocodable space  (DYNAMIC)")
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                map_checkbox, False, False, False, False, 90,
                                                GUI_IO_util.labels_x_coordinate,
-                                               "DYNAMIC view. Traces how social actors MOVE between kinds of space "
+                                               "DYNAMIC view. Traces how characters MOVE between kinds of space "
                                                "over the narrative (door → house → field → woods…) as a "
                                                "directed movement graph.\n\nNeeds the rows in narrative ORDER: pick a "
                                                "Sequence column below (or a date/index).")
@@ -402,7 +402,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 # ---- Row 2: STATIC — distribution across non-geocodable space --------------
 distribution_var.set(0)
 distribution_checkbox = tk.Checkbutton(window, variable=distribution_var, onvalue=1, offvalue=0)
-distribution_checkbox.config(text="Distribution of social actors across non-geocodable space  (STATIC)")
+distribution_checkbox.config(text="Distribution of characters across non-geocodable space  (STATIC)")
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                distribution_checkbox, False, False, False, False, 90,
                                                GUI_IO_util.labels_x_coordinate,
@@ -526,7 +526,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         "read; you add the actor ATTRIBUTE (gender/race/class) column to it (the gender annotator can tag gender)."
         + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-        "DYNAMIC view (movement). Traces how social actors move between KINDS of space over the narrative "
+        "DYNAMIC view (movement). Traces how characters move between KINDS of space over the narrative "
         "(e.g. door → house → field → woods) and draws a directed movement graph.\n\n"
         "In INPUT the algorithm expects a csv file with a LOCATION column (place names) and, to establish the "
         "narrative ORDER, a SEQUENCE column (a step index or a date). This is a file you ASSEMBLE yourself — no "
@@ -574,7 +574,7 @@ readMe_message = ("This script analyzes NON-geocodable space — the kinds of pl
     "Each place mention is classified into a space TYPE (domestic/interior, field/labour, wild/forest, "
     "threshold/liminal, royal/court, sacred, market/public, water/passage) using the editable gazetteer "
     "lib/symbolic_space_typology.csv (seeded from WordNet). It then produces two complementary analyses:\n\n"
-    "  • DYNAMIC (movement): how social actors move between kinds of space over the narrative "
+    "  • DYNAMIC (movement): how characters move between kinds of space over the narrative "
     "(door → house → field → woods), as a directed movement graph. Needs the rows in narrative order.\n\n"
     "  • STATIC (distribution): a cross-tabulation of a social attribute (gender, race, class) against the kind "
     "of space, with a heatmap and chi-square / Cramer's V — which actors appear in which kind of space.\n\n"
@@ -589,9 +589,9 @@ readMe_message = ("This script analyzes NON-geocodable space — the kinds of pl
     "   (2) Scaffold from text: the SVO extractor (SVO_main, who-did-what-where) gives you the actor + location "
     "(+ order) rows; you then add the ATTRIBUTE column by hand (the gender annotator can tag gender; race and class "
     "you code).\n\n"
-    "IMPORTANT — the unit of analysis is a SOCIAL ACTOR in a kind of space, so it requires an actor. When the input "
+    "IMPORTANT — the unit of analysis is a CHARACTER in a kind of space, so it requires an actor. When the input "
     "comes from SVO, the analysis therefore covers only ACTOR-BEARING clauses (those with at least a subject and "
-    "verb): a place merely mentioned, with no social actor acting there, is NOT counted. This restriction is by "
+    "verb): a place merely mentioned, with no character acting there, is NOT counted. This restriction is by "
     "design — an actorless place is not an observation for the attribute-by-space or actor-movement questions. "
     "If instead you want every place the narrative invokes regardless of actor, feed a NER location table — a "
     "location-level view, without the attribute.")

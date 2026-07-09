@@ -296,7 +296,7 @@ def extract_actor_space_events(conll_file, outputDir):
     For each sentence, find every place noun whose lemma classifies to a space TYPE and
     that sits in a locative oblique (obl/nmod under a spatial preposition), then walk the
     dependency Head up to the governing predicate and down to its subject = the acting
-    SOCIAL ACTOR. Writes one row per actor-in-space event:
+    CHARACTER. Writes one row per actor-in-space event:
         Document ID, Sentence ID (order), actor, actor_pos, space_noun, space_type,
         preposition, Sentence.
     This is the table the DYNAMIC and STATIC analyses read (add the actor ATTRIBUTE by
