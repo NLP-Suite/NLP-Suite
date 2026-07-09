@@ -109,7 +109,14 @@ def _auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
     charts_util.auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen)
 
 
-def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation, SQL_query_var):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputDir = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    SQL_query_var = SQL_query_entry.get("1.0", "end-1c")
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -204,16 +211,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation, S
                        message='No SQLite database available.\n\nPlease, select an input directory containing xlsx or csv data files, or select an existing SQLite database.')
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-run_script_command=lambda: run(
-                                GUI_util.input_main_dir_path.get(),
-                                GUI_util.output_dir_path.get(),
-                                GUI_util.open_csv_output_checkbox.get(),
-                                # GUI_util.create_chart_output_checkbox.get(),
-                                GUI_util.charts_package_options_widget.get(),
-                                GUI_util.data_transformation_options_widget.get(),
-                                SQL_query_entry.get("1.0", "end-1c"))
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 

@@ -39,8 +39,22 @@ import file_checker_util as utf
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, sentimentAnalysis, sentimentAnalysisMethod, memory_var, corpus_analysis,
-        hierarchical_clustering, SVD, NMF, best_topic_estimation):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputFilename = GUI_util.inputFilename.get()
+    inputDir = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    sentimentAnalysis = sentiment_analysis_var.get()
+    sentimentAnalysisMethod = sentiment_analysis_menu_var.get()
+    memory_var = globals()['memory_var'].get()
+    corpus_analysis = corpus_analysis_var.get()
+    hierarchical_clustering = hierarchical_clustering_var.get()
+    SVD = SVD_var.get()
+    NMF = NMF_var.get()
+    best_topic_estimation = best_topic_estimation_var.get()
 
     config_filename = GUI_util.config_filename_selected_config.get()
     global nSAscoreFiles
@@ -357,27 +371,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
 
 
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
-run_script_command = lambda: run(GUI_util.inputFilename.get(),
-                                 GUI_util.input_main_dir_path.get(),
-                                 GUI_util.output_dir_path.get(),
-                                 GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.charts_package_options_widget.get(),
-                                 GUI_util.data_transformation_options_widget.get(),
-                                 sentiment_analysis_var.get(),
-                                 sentiment_analysis_menu_var.get(),
-                                 memory_var.get(),
-                                 corpus_analysis_var.get(),
-                                 # sentence_window_entry_var.get(),
-                                 # sliding_window_entry_var.get(),
-                                 hierarchical_clustering_var.get(),
-                                 # hierarchical_default_entry_var.get(),
-                                 SVD_var.get(),
-                                 # SVD_default_entry_var.get(),
-                                 NMF_var.get(),
-                                 best_topic_estimation_var.get())
                                  # NMF_default_entry_var.get())
 
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 

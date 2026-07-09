@@ -1863,8 +1863,7 @@ def run_command():
             if openOutputFiles:
                 IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
-run_script_command = lambda: run_command()
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run_command)
 
 
 # ── Clear ─────────────────────────────────────────────────────────────────────
