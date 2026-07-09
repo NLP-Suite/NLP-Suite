@@ -30,17 +30,32 @@ import charts_util
 import IO_user_interface_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
-def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
-        simplex_value_type, simplex_value,
-        primary_complex_var,
-        value_parent_object_var,
-        setup_complex, identifiers, extended_headers, setup_simplex,
-        # print_narrative_var,
-        complex_parents_var, complex_children_var,
-        document_sources_var, comments_var, comments_type,
-        from_dataID_setupID_objectType_var, enter_data_ID_var,
-        search_simplex_value='', search_simplex_result='',
-        required_object_type='', required_object_name=''):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputDir = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    simplex_value_type = simplex_value_type_var.get()
+    simplex_value = globals()['simplex_value'].get()
+    primary_complex_var = complex_identifiers_var.get()
+    value_parent_object_var = globals()['value_parent_object_var'].get()
+    setup_complex = globals()['setup_complex'].get()
+    identifiers = identifiers_var.get()
+    extended_headers = extended_headers_var.get()
+    setup_simplex = globals()['setup_simplex'].get()
+    complex_parents_var = globals()['complex_parents_var'].get()
+    complex_children_var = globals()['complex_children_var'].get()
+    document_sources_var = globals()['document_sources_var'].get()
+    comments_var = globals()['comments_var'].get()
+    comments_type = comments_type_var.get()
+    from_dataID_setupID_objectType_var = globals()['from_dataID_setupID_objectType_var'].get()
+    enter_data_ID_var = globals()['enter_data_ID_var'].get()
+    search_simplex_value = search_simplex_var.get()
+    search_simplex_result = search_simplex_results_var.get()
+    required_object_type = object_type_var.get()
+    required_object_name = required_object_var.get()
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -376,29 +391,7 @@ def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-run_script_command=lambda: run(
-                                GUI_util.input_main_dir_path.get(),
-                                GUI_util.output_dir_path.get(),
-                                GUI_util.open_csv_output_checkbox.get(),
-                                GUI_util.charts_package_options_widget.get(),
-                                GUI_util.data_transformation_options_widget.get(),
-                                simplex_value_type_var.get(),
-                                simplex_value.get(),
-                                complex_identifiers_var.get(),
-                                value_parent_object_var.get(),
-                                setup_complex.get(),
-                                identifiers_var.get(),
-                                extended_headers_var.get(),
-                                setup_simplex.get(),
-                                # print_narrative_var.get(),
-                                complex_parents_var.get(),
-                                complex_children_var.get(),
-                                document_sources_var.get(), comments_var.get(), comments_type_var.get(),
-                                from_dataID_setupID_objectType_var.get(), enter_data_ID_var.get(),
-                                search_simplex_var.get(), search_simplex_results_var.get(),
-                                object_type_var.get(), required_object_var.get())
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 

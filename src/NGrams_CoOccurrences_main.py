@@ -26,23 +26,29 @@ import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation,
-        ngrams_options_list,
-        Ngrams_compute_var,
-        ngrams_menu_var,
-        ngrams_options_menu_var,
-        ngrams_size,
-        search_words,
-        minus_K_words_var,
-        plus_K_words_var,
-        Ngrams_search_var,
-        csv_file_var,
-        ngrams_viewer_var,
-        CoOcc_Viewer_var,
-        # within_sentence_co_occurrence_search_var,
-        date_options,
-        temporal_aggregation_var,
-        viewer_options_list):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputFilename = GUI_util.inputFilename.get()
+    inputDir = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    ngrams_options_list = globals()['ngrams_options_list']
+    Ngrams_compute_var = globals()['Ngrams_compute_var'].get()
+    ngrams_menu_var = globals()['ngrams_menu_var'].get()
+    ngrams_options_menu_var = globals()['ngrams_options_menu_var'].get()
+    ngrams_size = globals()['ngrams_size'].get()
+    search_words = search_words_var.get()
+    minus_K_words_var = globals()['minus_K_words_var'].get()
+    plus_K_words_var = globals()['plus_K_words_var'].get()
+    Ngrams_search_var = globals()['Ngrams_search_var'].get()
+    csv_file_var = globals()['csv_file_var'].get()
+    ngrams_viewer_var = globals()['ngrams_viewer_var'].get()
+    CoOcc_Viewer_var = globals()['CoOcc_Viewer_var'].get()
+    date_options = globals()['date_options'].get()
+    temporal_aggregation_var = globals()['temporal_aggregation_var'].get()
+    viewer_options_list = globals()['viewer_options_list']
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -393,28 +399,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
 
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-run_script_command = lambda: run(GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get(), GUI_util.output_dir_path.get(),
-                                 GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.charts_package_options_widget.get(),
-                                 GUI_util.data_transformation_options_widget.get(),
-                                 ngrams_options_list,
-                                 Ngrams_compute_var.get(),
-                                 ngrams_menu_var.get(),
-                                 ngrams_options_menu_var.get(),
-                                 ngrams_size.get(),
-                                 search_words_var.get(),
-                                 minus_K_words_var.get(),
-                                 plus_K_words_var.get(),
-                                 Ngrams_search_var.get(),
-                                 csv_file_var.get(),
-                                 ngrams_viewer_var.get(),
-                                 CoOcc_Viewer_var.get(),
-                                 # within_sentence_co_occurrence_search_var.get(),
-                                 date_options.get(),
-                                 temporal_aggregation_var.get(),
-                                 viewer_options_list)
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
