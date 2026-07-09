@@ -28,17 +28,24 @@ import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,inputDir,outputDir,
-        openOutputFiles,
-        
-        chartPackage,
-        dataTransformation,
-        mean_var,
-        median_var,
-        SA_algorithm_var,
-        sentence_index_var,
-        shape_of_stories_var,
-        character_arcs_checkbox_var=0):
+def run():
+    # Read the GUI widget values here at RUN time. (Previously these were threaded in via a
+    # `run_script_command = lambda: run(...)`; now that the GUI and logic share one script the
+    # widgets are all module-level, so that parameter list only added a second arg list to keep
+    # in sync.) Options whose value name equals the module-level widget of the same name are read
+    # through globals() to avoid the local-shadows-global UnboundLocalError.
+    inputFilename = GUI_util.inputFilename.get()
+    inputDir = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    _w = globals()
+    mean_var = _w['mean_var'].get()
+    median_var = _w['median_var'].get()
+    SA_algorithm_var = _w['SA_algorithm_var'].get()
+    shape_of_stories_var = _w['shape_of_stories_var'].get()
+    character_arcs_checkbox_var = _w['character_arcs_checkbox_var'].get()
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -443,20 +450,7 @@ def run(inputFilename,inputDir,outputDir,
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-run_script_command=lambda: run(GUI_util.inputFilename.get(),
-                               GUI_util.input_main_dir_path.get(),
-                               GUI_util.output_dir_path.get(),
-                               GUI_util.open_csv_output_checkbox.get(),
-                               GUI_util.charts_package_options_widget.get(),
-                               GUI_util.data_transformation_options_widget.get(),
-                               mean_var.get(),
-                               median_var.get(),
-                               SA_algorithm_var.get(),
-                               sentence_index_var.get(),
-                               shape_of_stories_var.get(),
-                               character_arcs_checkbox_var.get())
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
