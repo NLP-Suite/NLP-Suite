@@ -982,38 +982,28 @@ def process_sentenceID_record(Row_list, Row_list_new, index,
                               start_sentence, end_sentence,
                               header, sentenceID_pos, docCol_pos, docName_pos, frequency_pos,
                               save_current):
-    # TODO temporary to measure process time
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                                   'Started running Excel process_sentenceID_record at',
-                                                   True, '', True, '', True)
-    # range(start, stop, step)
-    # end_sentence is always skipped; the range of integers end at end_sentence – 1
+    # Append one filler row per missing sentence (start_sentence .. end_sentence-1). Each filler carries
+    # the document's ID/name (constant across the gap), the missing Sentence ID, and 0 in every frequency
+    # column (blank elsewhere). A prototype row is built ONCE and copied per sentence -- the old code
+    # rescanned all columns for every missing sentence (O(gap x columns)) and fired two timed_alert
+    # console prints on every call (thousands of times on a corpus).
+    # Fixes a latent bug: the old inner loop wrote temp[frequency_pos[i]] (i = sentence number) instead
+    # of iterating the frequency positions -> IndexError / wrong column once i exceeded len(frequency_pos).
+    template = [''] * len(header)
+    if isinstance(docCol_pos, int):
+        template[docCol_pos] = Row_list[index][docCol_pos]
+    if isinstance(docName_pos, int):
+        template[docName_pos] = Row_list[index][docName_pos]
+    for p in frequency_pos:
+        if isinstance(p, int):
+            template[p] = 0
     for i in range(start_sentence, end_sentence, 1):
-        temp = [''] * len(header)
-        # loop through headers for Sentence ID, Document ID, and Document to insert missing values
-        for j in range(len(header)):
-            if j == sentenceID_pos:
-                # insert Sentence ID
-                temp[j] = i
-                # when adding a new Sentence ID, insert a frequency value of 0,
-                #   in every occurrence of a frequency column, whatever the name may be (Frequency, Frequencies, Number of, Score)
-                for k in range(0, len(frequency_pos)):
-                    if frequency_pos[k] != '':
-                        temp[frequency_pos[i]] = 0
-            elif j == docCol_pos:
-                # insert Document ID
-                temp[j] = Row_list[index][docCol_pos]
-            elif j == docName_pos:
-                # insert Document
-                temp[j] = Row_list[index][docName_pos]
-        Row_list_new.append(temp)
+        row = template.copy()
+        row[sentenceID_pos] = i
+        Row_list_new.append(row)
 
     if save_current:
         Row_list_new.append(Row_list[index])
-    # TODO temporary to measure process time
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                       'Finished running Excel process_sentenceID_record at',
-                                       True, '', True, startTime, True)
 
     return Row_list_new
 
@@ -1025,7 +1015,12 @@ def process_sentenceID_record(Row_list, Row_list_new, index,
 # output is a csv file
 # TODO Samir very slow
 def add_missing_IDs(input, outputFilename):
-    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
+    import stanza
+    # Count each document's sentences with a TOKENIZE-ONLY pipeline (built once here). The old code ran
+    # the shared tokenize+lemma pipeline and lemmatized every word of every document just to count its
+    # sentences -- lemmatization does not affect sentence segmentation, so this gives the SAME count while
+    # dropping the per-word neural lemmatizer inference (the dominant cost that made this 'VERY SLOW').
+    sentence_counter = stanza.Pipeline(lang='en', processors='tokenize', use_gpu=False, verbose=False)
     # TODO temporary to measure process time
     startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                                    'Started running Excel Add missing IDs at',
@@ -1056,8 +1051,7 @@ def add_missing_IDs(input, outputFilename):
             inputFilename = Row_list[index][docName_pos]
             inputFilename = IO_csv_util.undressFilenameForCSVHyperlink(inputFilename)
             text = (open(inputFilename, "r", encoding="utf-8", errors='ignore').read())
-            sentences = sentence_split_stanza_text(stanzaPipeLine(text))
-            number_sentences.append([inputFilename, len(sentences)])
+            number_sentences.append([inputFilename, len(sentence_counter(text).sentences)])
 
             # check whether the last sentence for the previous doc was less than number of sentences
             if index == 0:  # first record in df
