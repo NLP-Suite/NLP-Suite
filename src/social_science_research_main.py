@@ -265,11 +265,30 @@ def Levenshtein():
     # files are opened in the spell_checker_main
 
 
-def run(inputDir, input_secondary_dir_path, outputDir, openOutputFiles, chartPackage, dataTransformation,
-        fileName_embeds_date, DateFormat, DatePosition, DateCharacterSeparator,
-        check_filename_var, character_var, character_home_var, missing_character_var, NER_var, intruder_var,
-        similarityIndex_Intruder_var, ancestor_var, nouns_verbs,
-        plagiarist_var, similarityIndex_Plagiarist_var, Levenshtein_var):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputDir = GUI_util.input_main_dir_path.get()
+    input_secondary_dir_path = GUI_util.input_secondary_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    fileName_embeds_date = globals()['fileName_embeds_date'].get()
+    DateFormat = date_format.get()
+    DatePosition = date_position_var.get()
+    DateCharacterSeparator = items_separator_var.get()
+    check_filename_var = globals()['check_filename_var'].get()
+    character_var = globals()['character_var'].get()
+    character_home_var = globals()['character_home_var'].get()
+    missing_character_var = globals()['missing_character_var'].get()
+    NER_var = globals()['NER_var'].get()
+    intruder_var = globals()['intruder_var'].get()
+    similarityIndex_Intruder_var = globals()['similarityIndex_Intruder_var'].get()
+    ancestor_var = globals()['ancestor_var'].get()
+    nouns_verbs = ancestor_menu_var.get()
+    plagiarist_var = globals()['plagiarist_var'].get()
+    similarityIndex_Plagiarist_var = globals()['similarityIndex_Plagiarist_var'].get()
+    Levenshtein_var = globals()['Levenshtein_var'].get()
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -311,30 +330,7 @@ def run(inputDir, input_secondary_dir_path, outputDir, openOutputFiles, chartPac
 
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-run_script_command = lambda: run(GUI_util.input_main_dir_path.get(),
-                                 GUI_util.input_secondary_dir_path.get(),
-                                 GUI_util.output_dir_path.get(),
-                                 GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.charts_package_options_widget.get(),
-                                 GUI_util.data_transformation_options_widget.get(),
-                                 fileName_embeds_date.get(),
-                                 date_format.get(),
-                                 date_position_var.get(),
-                                 items_separator_var.get(),
-                                 check_filename_var.get(),
-                                 character_var.get(),
-                                 character_home_var.get(),
-                                 missing_character_var.get(),
-                                 NER_var.get(),
-                                 intruder_var.get(),
-                                 similarityIndex_Intruder_var.get(),
-                                 ancestor_var.get(),
-                                 ancestor_menu_var.get(),
-                                 plagiarist_var.get(),
-                                 similarityIndex_Plagiarist_var.get(),
-                                 Levenshtein_var.get())
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 

@@ -25,34 +25,37 @@ import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,inputDir, outputDir,
-    openOutputFiles,
-    
-    chartPackage,
-    dataTransformation,
-    split_mergedFile,
-    split_mergedFile_separator_entry_begin,
-    split_mergedFile_separator_entry_end,
-    extract_BME_K_sentences,
-    Begin_K_sent,
-    End_K_sent,
-    splitByTOC,
-    TOC_filename,
-    splitByFileLength,
-    split_docLength,
-    splitByKeyword,
-    keyword_value_var,
-    lemmatize_var,
-    first_occurrence_var,
-    extract_sentences_var,
-    extract_sentences_search_words_var,
-    splitByString,
-    string_value_var,
-    blankLine_var,
-    number_var,
-    post_num_string_value_var,
-    split_csv_by_documentID_var,
-    menu_option):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputFilename = GUI_util.inputFilename.get()
+    inputDir = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    split_mergedFile = split_mergedFile_var.get()
+    split_mergedFile_separator_entry_begin = split_mergedFile_separator_entry_begin_var.get()
+    split_mergedFile_separator_entry_end = split_mergedFile_separator_entry_end_var.get()
+    extract_BME_K_sentences = extract_BME_K_sentences_var.get()
+    Begin_K_sent = Begin_K_sent_var.get()
+    End_K_sent = End_K_sent_var.get()
+    splitByTOC = TOC_var.get()
+    TOC_filename = TOC_filename_var.get()
+    splitByFileLength = docLength_var.get()
+    split_docLength = split_docLength_var.get()
+    splitByKeyword = keyword_var.get()
+    keyword_value_var = globals()['keyword_value_var'].get()
+    lemmatize_var = globals()['lemmatize_var'].get()
+    first_occurrence_var = globals()['first_occurrence_var'].get()
+    extract_sentences_var = globals()['extract_sentences_var'].get()
+    extract_sentences_search_words_var = globals()['extract_sentences_search_words_var'].get()
+    splitByString = string_var.get()
+    string_value_var = globals()['string_value_var'].get()
+    blankLine_var = globals()['blankLine_var'].get()
+    number_var = globals()['number_var'].get()
+    post_num_string_value_var = globals()['post_num_string_value_var'].get()
+    split_csv_by_documentID_var = globals()['split_csv_by_documentID_var'].get()
+    menu_option = globals()['menu_option']
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -181,37 +184,7 @@ def run(inputFilename,inputDir, outputDir,
         # IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-run_script_command=lambda: run(GUI_util.inputFilename.get(),
-                            GUI_util.input_main_dir_path.get(),
-                            GUI_util.output_dir_path.get(),
-                            GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.charts_package_options_widget.get(),
-                            GUI_util.data_transformation_options_widget.get(),
-                            split_mergedFile_var.get(),
-                            split_mergedFile_separator_entry_begin_var.get(),
-                            split_mergedFile_separator_entry_end_var.get(),
-                            extract_BME_K_sentences_var.get(),
-                            Begin_K_sent_var.get(),
-                            End_K_sent_var.get(),
-                            TOC_var.get(),
-                            TOC_filename_var.get(),
-                            docLength_var.get(),
-                            split_docLength_var.get(),
-                            keyword_var.get(),
-                            keyword_value_var.get(),
-                            lemmatize_var.get(),
-                            first_occurrence_var.get(),
-                            extract_sentences_var.get(),
-                            extract_sentences_search_words_var.get(),
-                            string_var.get(),
-                            string_value_var.get(),
-                            blankLine_var.get(),
-                            number_var.get(),
-                            post_num_string_value_var.get(),
-                            split_csv_by_documentID_var.get(),
-                            menu_option)
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 

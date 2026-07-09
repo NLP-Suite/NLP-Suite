@@ -15,11 +15,28 @@ import IO_files_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename, inputDir, outputDir,openOutputFiles, chartPackage, dataTransformation,
-        remove_stopwords_var, lemmatize_var, WSI_var,
-        BERT_var, Gensim_var,
-        sg_menu_var, vector_size_var, window_var, min_count_var,
-        vis_menu_var, dim_menu_var, compute_distances_var, top_words_var, keywords_var):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputFilename = GUI_util.inputFilename.get()
+    inputDir = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    remove_stopwords_var = globals()['remove_stopwords_var'].get()
+    lemmatize_var = globals()['lemmatize_var'].get()
+    WSI_var = globals()['WSI_var'].get()
+    BERT_var = globals()['BERT_var'].get()
+    Gensim_var = globals()['Gensim_var'].get()
+    sg_menu_var = globals()['sg_menu_var'].get()
+    vector_size_var = globals()['vector_size_var'].get()
+    window_var = globals()['window_var'].get()
+    min_count_var = globals()['min_count_var'].get()
+    vis_menu_var = globals()['vis_menu_var'].get()
+    dim_menu_var = globals()['dim_menu_var'].get()
+    compute_distances_var = globals()['compute_distances_var'].get()
+    top_words_var = globals()['top_words_var'].get()
+    keywords_var = globals()['keywords_var'].get()
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -80,28 +97,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, chartPackage, dataTr
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, Word2Vec_Dir, scriptName)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-run_script_command=lambda: run(GUI_util.inputFilename.get(),
-                                GUI_util.input_main_dir_path.get(),
-                                GUI_util.output_dir_path.get(),
-                                GUI_util.open_csv_output_checkbox.get(),
-                                GUI_util.charts_package_options_widget.get(),
-                                GUI_util.data_transformation_options_widget.get(),
-                                remove_stopwords_var.get(),
-                                lemmatize_var.get(),
-                                WSI_var.get(),
-                                BERT_var.get(),
-                                Gensim_var.get(),
-                                sg_menu_var.get(),
-                                vector_size_var.get(),
-                                window_var.get(),
-                                min_count_var.get(),
-                                vis_menu_var.get(),
-                                dim_menu_var.get(),
-                                compute_distances_var.get(),
-                                top_words_var.get(),
-                                keywords_var.get())
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 

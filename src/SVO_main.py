@@ -43,27 +43,34 @@ import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation,
-        coref_var,
-        manual_coref_var,
-        normalized_NER_date_extractor_var,
-        package_var,
-        gender_var,
-        quote_var,
-        subjects_dict_path_var,
-        verbs_dict_path_var,
-        objects_dict_path_var,
-        filter_subjects,
-        filter_verbs,
-        filter_objects,
-        lemmatize_subjects,
-        lemmatize_verbs,
-        lemmatize_objects,
-        gephi_var,
-        wordcloud_var,
-        google_earth_var,
-        compare_svo_var=False,
-        map_characters_var=False):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputFilename = GUI_util.inputFilename.get()
+    inputDir = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    coref_var = globals()['coref_var'].get()
+    manual_coref_var = globals()['manual_coref_var'].get()
+    normalized_NER_date_extractor_var = globals()['normalized_NER_date_extractor_var'].get()
+    package_var = globals()['package_var'].get()
+    gender_var = globals()['gender_var'].get()
+    quote_var = globals()['quote_var'].get()
+    subjects_dict_path_var = globals()['subjects_dict_path_var'].get()
+    verbs_dict_path_var = globals()['verbs_dict_path_var'].get()
+    objects_dict_path_var = globals()['objects_dict_path_var'].get()
+    filter_subjects = filter_subjects_var.get()
+    filter_verbs = filter_verbs_var.get()
+    filter_objects = filter_objects_var.get()
+    lemmatize_subjects = lemmatize_subjects_var.get()
+    lemmatize_verbs = lemmatize_verbs_var.get()
+    lemmatize_objects = lemmatize_objects_var.get()
+    gephi_var = globals()['gephi_var'].get()
+    wordcloud_var = globals()['wordcloud_var'].get()
+    google_earth_var = globals()['google_earth_var'].get()
+    compare_svo_var = globals()['compare_svo_var'].get()
+    map_characters_var = globals()['map_characters_var'].get()
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -830,34 +837,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName, filesToOpenSubset)
 
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
-run_script_command = lambda: run(GUI_util.inputFilename.get(),
-                                 GUI_util.input_main_dir_path.get(),
-                                 GUI_util.output_dir_path.get(),
-                                 GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.charts_package_options_widget.get(),
-                                 GUI_util.data_transformation_options_widget.get(),
-                                 coref_var.get(),
-                                 manual_coref_var.get(),
-                                 normalized_NER_date_extractor_var.get(),
-                                 package_var.get(),
-                                 gender_var.get(),
-                                 quote_var.get(),
-                                 subjects_dict_path_var.get(),
-                                 verbs_dict_path_var.get(),
-                                 objects_dict_path_var.get(),
-                                 filter_subjects_var.get(),
-                                 filter_verbs_var.get(),
-                                 filter_objects_var.get(),
-                                 lemmatize_subjects_var.get(),
-                                 lemmatize_verbs_var.get(),
-                                 lemmatize_objects_var.get(),
-                                 gephi_var.get(),
-                                 wordcloud_var.get(),
-                                 google_earth_var.get(),
-                                 compare_svo_var.get(),
-                                 map_characters_var.get())
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 

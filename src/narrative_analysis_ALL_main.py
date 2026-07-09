@@ -20,37 +20,41 @@ import reminders_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,inputdirname, outdirname,
-        open_csv_output_checkbox,
-        create_chart_output_checkbox,
-        charts_package_options_widget,
-        characters_NER_var,
-        characters_WordNet_var,
-        characters_DBpedia_YAGO_var,
-        characters_byGender_var,
-        characters_byGender_CoreNLP_var,
-        characters_byGender_dict_var,
-        characters_sentiment_arcs_var,
-        characters_movement_var,
-        dialogue_quotes_var,
-        dialogue_coref_var,
-        characters_semantic_space_var,
-        time_NER_var,
-        story_plot_var,
-        space_NER_var,
-        space_GIS_var,
-        space_WordNet_var,
-        space_DBpedia_YAGO_var,
-        action_var,
-        action_POS_var,
-        action_WordNet_var,
-        action_VerbNet_var,
-        action_FrameNet_var,
-        action_DBpedia_YAGO_var,
-        SVO_var,
-        shape_stories_var,
-        story_parts_var,
-        extra_GUIs_var):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputFilename = GUI_util.inputFilename.get()
+    inputdirname = GUI_util.input_main_dir_path.get()
+    outdirname = GUI_util.output_dir_path.get()
+    open_csv_output_checkbox = GUI_util.open_csv_output_checkbox.get()
+    create_chart_output_checkbox = GUI_util.charts_package_options_widget.get()
+    charts_package_options_widget = GUI_util.data_transformation_options_widget.get()
+    characters_NER_var = globals()['characters_NER_var'].get()
+    characters_WordNet_var = globals()['characters_WordNet_var'].get()
+    characters_DBpedia_YAGO_var = globals()['characters_DBpedia_YAGO_var'].get()
+    characters_byGender_var = globals()['characters_byGender_var'].get()
+    characters_byGender_CoreNLP_var = globals()['characters_byGender_CoreNLP_var'].get()
+    characters_byGender_dict_var = globals()['characters_byGender_dict_var'].get()
+    characters_sentiment_arcs_var = globals()['characters_sentiment_arcs_var'].get()
+    characters_movement_var = globals()['characters_movement_var'].get()
+    dialogue_quotes_var = globals()['dialogue_quotes_var'].get()
+    dialogue_coref_var = globals()['dialogue_coref_var'].get()
+    characters_semantic_space_var = globals()['characters_semantic_space_var'].get()
+    time_NER_var = globals()['time_NER_var'].get()
+    story_plot_var = globals()['story_plot_var'].get()
+    space_NER_var = globals()['space_NER_var'].get()
+    space_GIS_var = globals()['space_GIS_var'].get()
+    space_WordNet_var = globals()['space_WordNet_var'].get()
+    space_DBpedia_YAGO_var = globals()['space_DBpedia_YAGO_var'].get()
+    action_var = globals()['action_var'].get()
+    action_POS_var = globals()['action_POS_var'].get()
+    action_WordNet_var = globals()['action_WordNet_var'].get()
+    action_VerbNet_var = globals()['action_VerbNet_var'].get()
+    action_FrameNet_var = globals()['action_FrameNet_var'].get()
+    action_DBpedia_YAGO_var = globals()['action_DBpedia_YAGO_var'].get()
+    SVO_var = globals()['SVO_var'].get()
+    shape_stories_var = globals()['shape_stories_var'].get()
+    story_parts_var = globals()['story_parts_var'].get()
+    extra_GUIs_var = globals()['extra_GUIs_var'].get()
 
     if (extra_GUIs_var==False and \
         characters_NER_var==False and \
@@ -159,41 +163,7 @@ def run(inputFilename,inputdirname, outdirname,
         run_script_util.run_script("shape_of_stories_main.py")
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-run_script_command=lambda: run(GUI_util.inputFilename.get(),
-                            GUI_util.input_main_dir_path.get(),
-                            GUI_util.output_dir_path.get(),
-                            GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.charts_package_options_widget.get(),
-                            GUI_util.data_transformation_options_widget.get(),
-                            characters_NER_var.get(),
-                            characters_WordNet_var.get(),
-                            characters_DBpedia_YAGO_var.get(),
-                            characters_byGender_var.get(),
-                            characters_byGender_CoreNLP_var.get(),
-                            characters_byGender_dict_var.get(),
-                            characters_sentiment_arcs_var.get(),
-                            characters_movement_var.get(),
-                            dialogue_quotes_var.get(),
-                            dialogue_coref_var.get(),
-                            characters_semantic_space_var.get(),
-                            time_NER_var.get(),
-                            story_plot_var.get(),
-                            space_NER_var.get(),
-                            space_GIS_var.get(),
-                            space_WordNet_var.get(),
-                            space_DBpedia_YAGO_var.get(),
-                            action_var.get(),
-                            action_POS_var.get(),
-                            action_WordNet_var.get(),
-                            action_VerbNet_var.get(),
-                            action_FrameNet_var.get(),
-                            action_DBpedia_YAGO_var.get(),
-                            SVO_var.get(),
-                            shape_stories_var.get(),
-                            story_parts_var.get(),
-                            extra_GUIs_var.get())
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 

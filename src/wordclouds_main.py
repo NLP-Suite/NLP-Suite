@@ -30,10 +30,29 @@ def transform_format(val):
     else:
         return val
 
-def run(inputFilename, inputDir, outputDir, visualization_tools, wordcloud_title_var, prefer_horizontal, font,
-        max_words, lemmatize, exclude_stopwords, exclude_punctuation, lowercase, collocation, differentPOS_differentColor,
-        prepare_image_var,selectedImage, use_contour_only,
-        differentColumns_differentColors, csvField_color_list, openOutputFiles, doNotCreateIntermediateFiles):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputFilename = GUI_util.inputFilename.get()
+    inputDir = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    visualization_tools = wordclouds_var.get()
+    wordcloud_title_var = globals()['wordcloud_title_var'].get()
+    prefer_horizontal = prefer_horizontal_var.get()
+    font = font_var.get()
+    max_words = max_words_var.get()
+    lemmatize = lemmatize_var.get()
+    exclude_stopwords = exclude_stopwords_var.get()
+    exclude_punctuation = exclude_punctuation_var.get()
+    lowercase = lowercase_var.get()
+    collocation = collocation_var.get()
+    differentPOS_differentColor = differentPOS_differentColor_var.get()
+    prepare_image_var = globals()['prepare_image_var'].get()
+    selectedImage = selectedImage_var.get()
+    use_contour_only = use_contour_only_var.get()
+    differentColumns_differentColors = differentColumns_differentColor_var.get()
+    csvField_color_list = globals()['csvField_color_list']
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    doNotCreateIntermediateFiles = doNotCreateIntermediateFiles_var.get()
 
     config_filename = GUI_util.config_filename_selected_config.get()
     filesToOpen=[]
@@ -127,28 +146,7 @@ def run(inputFilename, inputDir, outputDir, visualization_tools, wordcloud_title
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 
-run_script_command=lambda: run(GUI_util.inputFilename.get(),
-                            GUI_util.input_main_dir_path.get(),
-                            GUI_util.output_dir_path.get(),
-                            wordclouds_var.get(),
-                            wordcloud_title_var.get(),
-                            prefer_horizontal_var.get(),
-                            font_var.get(),
-                            max_words_var.get(),
-                            lemmatize_var.get(),
-                            exclude_stopwords_var.get(),
-                            exclude_punctuation_var.get(),
-                            lowercase_var.get(),
-                            collocation_var.get(),
-                            differentPOS_differentColor_var.get(),
-                            prepare_image_var.get(),
-                            selectedImage_var.get(),
-                            use_contour_only_var.get(),
-                            differentColumns_differentColor_var.get(),
-                            csvField_color_list,
-                            GUI_util.open_csv_output_checkbox.get(),
-                            doNotCreateIntermediateFiles_var.get())
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 

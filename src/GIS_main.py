@@ -36,26 +36,27 @@ import BERT_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 
-def run(inputFilename,
-        inputDir,
-        outputDir,
-        openOutputFiles,
-
-        chartPackage,
-        dataTransformation,
-        csv_file,
-        NER_extractor,
-        NER_package,
-        location_menu,
-        geocoder,
-        geocode_locations,
-        country_bias_var,
-        area_var,
-        restrict_var,
-        map_locations,
-        GIS_package_var,
-        Google_Earth_OpenGUI,
-        map_characters):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputFilename = GUI_util.inputFilename.get()
+    inputDir = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    csv_file = csv_file_var.get()
+    NER_extractor = NER_extractor_var.get()
+    NER_package = NER_package_var.get()
+    location_menu = location_menu_var.get()
+    geocoder = geocoder_var.get()
+    geocode_locations = geocode_locations_var.get()
+    country_bias_var = globals()['country_bias_var'].get()
+    area_var = globals()['area_var'].get()
+    restrict_var = globals()['restrict_var'].get()
+    map_locations = map_locations_var.get()
+    GIS_package_var = globals()['GIS_package_var'].get()
+    Google_Earth_OpenGUI = globals()['Google_Earth_OpenGUI'].get()
+    map_characters = map_characters_var.get()
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -297,27 +298,7 @@ def run(inputFilename,
         return
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-run_script_command=lambda: run(GUI_util.inputFilename.get(),
-                            GUI_util.input_main_dir_path.get(),
-                            GUI_util.output_dir_path.get(),
-                            GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.charts_package_options_widget.get(),
-                            GUI_util.data_transformation_options_widget.get(),
-                            csv_file_var.get(),
-                            NER_extractor_var.get(),
-                            NER_package_var.get(),
-                            location_menu_var.get(),
-                            geocoder_var.get(),
-                            geocode_locations_var.get(),
-                            country_bias_var.get(),
-                            area_var.get(),
-                            restrict_var.get(),
-                            map_locations_var.get(),
-                            GIS_package_var.get(),
-                            Google_Earth_OpenGUI.get(),
-                            map_characters_var.get())
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 

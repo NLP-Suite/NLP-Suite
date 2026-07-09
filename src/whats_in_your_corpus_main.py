@@ -137,53 +137,32 @@ def _annotate_SVO_by_package(package, config_filename, inputFilename, inputDir, 
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-run_script_command=lambda: run(GUI_util.inputFilename.get(),
-                            GUI_util.input_main_dir_path.get(),
-                            GUI_util.output_dir_path.get(),
-                            GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.charts_package_options_widget.get(),
-                            GUI_util.data_transformation_options_widget.get(),
-                            check_clean_var.get(),
-                            check_clean_menu_var.get(),
-                            corpus_statistics_var.get(),
-                            corpus_statistics_options_menu_var.get(),
-                            corpus_text_options_menu_var.get(),
-                            wordclouds_var.get(),
-                            open_wordclouds_GUI_var.get(),
-                            topics_var.get(),
-                            what_else_var.get(),
-                            what_else_menu_var.get(),
-                            quote_var.get(),
-                            GIS_var.get(),
-                            open_GIS_GUI_var.get(),
-                            SVO_var.get(),
-                            open_SVO_GUI_var.get(),
-                            open_word2vec_GUI_var.get(),
-                            open_sentiment_GUI_var.get())
-
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-def run(inputFilename,inputDir, outputDir,
-        openOutputFiles,
-        
-        chartPackage,
-        dataTransformation,
-        check_clean_var,
-        check_clean_menu_var,
-        corpus_statistics_var,
-        corpus_statistics_options_menu_var,
-        corpus_text_options_menu_var,
-        wordclouds_var,
-        open_wordclouds_GUI_var,
-        topics_var,
-        what_else_var,
-        what_else_menu_var,
-        single_quote,
-        GIS_var,
-        open_GIS_GUI_var,
-        SVO_var,
-        open_SVO_GUI_var,
-        open_word2vec_GUI_var,
-        open_sentiment_GUI_var):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputFilename = GUI_util.inputFilename.get()
+    inputDir = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    check_clean_var = globals()['check_clean_var'].get()
+    check_clean_menu_var = globals()['check_clean_menu_var'].get()
+    corpus_statistics_var = globals()['corpus_statistics_var'].get()
+    corpus_statistics_options_menu_var = globals()['corpus_statistics_options_menu_var'].get()
+    corpus_text_options_menu_var = globals()['corpus_text_options_menu_var'].get()
+    wordclouds_var = globals()['wordclouds_var'].get()
+    open_wordclouds_GUI_var = globals()['open_wordclouds_GUI_var'].get()
+    topics_var = globals()['topics_var'].get()
+    what_else_var = globals()['what_else_var'].get()
+    what_else_menu_var = globals()['what_else_menu_var'].get()
+    single_quote = quote_var.get()
+    GIS_var = globals()['GIS_var'].get()
+    open_GIS_GUI_var = globals()['open_GIS_GUI_var'].get()
+    SVO_var = globals()['SVO_var'].get()
+    open_SVO_GUI_var = globals()['open_SVO_GUI_var'].get()
+    open_word2vec_GUI_var = globals()['open_word2vec_GUI_var'].get()
+    open_sentiment_GUI_var = globals()['open_sentiment_GUI_var'].get()
 
     config_filename = GUI_util.config_filename_selected_config.get()
     filesToOpen=[]
@@ -795,7 +774,7 @@ def run(inputFilename,inputDir, outputDir,
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 

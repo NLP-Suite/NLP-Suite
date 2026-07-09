@@ -42,15 +42,34 @@ import reminders_util
 # from iso3166 import countries
 
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation,
-            encoding_var,
-            locationColumnName,
-            date_var, date_format_var,
-            group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
-            icon_var_list, specific_icon_var_list,
-            name_var_list, scale_var_list, color_var_list, color_style_var_list,
-            description_csv_field_var, bold_var_list, italic_var_list,
-            description_var_list, description_csv_field_var_list, heat_map_var):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputFilename = GUI_util.inputFilename.get()
+    inputDir = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    encoding_var = globals()['encoding_var'].get()
+    locationColumnName = location_var.get()
+    date_var = globals()['date_var'].get()
+    date_format_var = globals()['date_format_var'].get()
+    group_var = globals()['group_var'].get()
+    group_number_var = globals()['group_number_var'].get()
+    group_values_entry_var_list = globals()['group_values_entry_var_list']
+    group_label_entry_var_list = globals()['group_label_entry_var_list']
+    icon_var_list = globals()['icon_var_list']
+    specific_icon_var_list = globals()['specific_icon_var_list']
+    name_var_list = globals()['name_var_list']
+    scale_var_list = globals()['scale_var_list']
+    color_var_list = globals()['color_var_list']
+    color_style_var_list = globals()['color_style_var_list']
+    description_csv_field_var = globals()['description_csv_field_var'].get()
+    bold_var_list = italic_var_list
+    italic_var_list = bold_var_list
+    description_var_list = globals()['description_var_list']
+    description_csv_field_var_list = globals()['description_csv_field_var_list']
+    heat_map_var = globals()['heat_map_var'].get()
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -133,24 +152,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
     if openOutputFiles == 1:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
-run_script_command=lambda: run(GUI_util.inputFilename.get(),
-                GUI_util.input_main_dir_path.get(),
-                GUI_util.output_dir_path.get(),GUI_util.open_csv_output_checkbox.get(),
-                GUI_util.charts_package_options_widget.get(),
-                GUI_util.data_transformation_options_widget.get(),
-                encoding_var.get(),
-                location_var.get(),
-                date_var.get(),date_format_var.get(),
-                group_var.get(), group_number_var.get(), group_values_entry_var_list,group_label_entry_var_list,
-                icon_var_list, specific_icon_var_list,
-                name_var_list, scale_var_list, color_var_list, color_style_var_list,
-                description_csv_field_var.get(), italic_var_list, bold_var_list,
-                description_var_list, description_csv_field_var_list, heat_map_var.get())
-
-
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 

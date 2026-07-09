@@ -21,45 +21,48 @@ import IO_user_interface_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 
-def run(inputDir, outputDir,
-        openOutputFiles,
-        
-        chartPackage,
-        dataTransformation,
-        selectedCsvFile_var, selectedCsvFile_colName,
-        utf8_var,
-        ASCII_var,
-        list_var,
-        rename_var,
-        copy_var,
-        move_var,
-        delete_var,
-        count_file_manager_var,
-        split_var,
-        rename_new_entry,
-        by_file_type_var,
-        file_type_menu_var,
-        by_creation_date_var,
-        by_author_var,
-        before_date_var,
-        after_date_var,
-        by_prefix_var,
-        by_substring_var,
-        string_entry_var,
-        by_foldername_var,
-        folder_character_separator_var,
-        by_embedded_items_var,
-        comparison_var,
-        number_of_items_var,
-        embedded_item_character_value_var,
-        include_exclude_var,
-        character_count_file_manager_var,
-        character_entry_var,
-        include_subdir_var,
-        fileName_embeds_date,
-        date_format,
-        date_separator,
-        date_position):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputDir = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    selectedCsvFile_var = globals()['selectedCsvFile_var'].get()
+    selectedCsvFile_colName = select_csv_field_var.get()
+    utf8_var = globals()['utf8_var'].get()
+    ASCII_var = globals()['ASCII_var'].get()
+    list_var = globals()['list_var'].get()
+    rename_var = globals()['rename_var'].get()
+    copy_var = globals()['copy_var'].get()
+    move_var = globals()['move_var'].get()
+    delete_var = globals()['delete_var'].get()
+    count_file_manager_var = globals()['count_file_manager_var'].get()
+    split_var = split_file_manager_var.get()
+    rename_new_entry = rename_new_entry_var.get()
+    by_file_type_var = globals()['by_file_type_var'].get()
+    file_type_menu_var = globals()['file_type_menu_var'].get()
+    by_creation_date_var = globals()['by_creation_date_var'].get()
+    by_author_var = globals()['by_author_var'].get()
+    before_date_var = globals()['before_date_var'].get()
+    after_date_var = globals()['after_date_var'].get()
+    by_prefix_var = globals()['by_prefix_var'].get()
+    by_substring_var = globals()['by_substring_var'].get()
+    string_entry_var = globals()['string_entry_var'].get()
+    by_foldername_var = globals()['by_foldername_var'].get()
+    folder_character_separator_var = globals()['folder_character_separator_var'].get()
+    by_embedded_items_var = globals()['by_embedded_items_var'].get()
+    comparison_var = globals()['comparison_var'].get()
+    number_of_items_var = globals()['number_of_items_var'].get()
+    embedded_item_character_value_var = globals()['embedded_item_character_value_var'].get()
+    include_exclude_var = globals()['include_exclude_var'].get()
+    character_count_file_manager_var = globals()['character_count_file_manager_var'].get()
+    character_entry_var = globals()['character_entry_var'].get()
+    include_subdir_var = globals()['include_subdir_var'].get()
+    fileName_embeds_date = globals()['fileName_embeds_date'].get()
+    date_format = globals()['date_format'].get()
+    date_separator = items_separator_var.get()
+    date_position = date_position_var.get()
 
     if inputDir==outputDir and list_var==0:
         command = tk.messagebox.askyesno("File manager: Input and Output paths", "You have selected the same directory for both input and output.\n\nTHIS IS NOT A GOOD IDEA, PARTICULARLY IF YOU DO NOT HAVE BACKUPS OF THE FILES IN THE INPUT DIRECTORY!\n\nAre you sure you want to do continue?")
@@ -391,48 +394,7 @@ def run(inputDir, outputDir,
         mb.showwarning(title='File manager', message='No files ' + msg + operation + '.\n\nPlease, check the following information:\n  1. INPUT files directory;\n  2. selected file type (if you ticked the By file type option);\n  3. Include subdirectory option;\n  4. the correct "Number of items" when you are using the option "By number of embedded items".')
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-run_script_command=lambda: run(GUI_util.input_main_dir_path.get(),
-                                GUI_util.output_dir_path.get(),
-                                GUI_util.open_csv_output_checkbox.get(),
-                                GUI_util.charts_package_options_widget.get(),
-                                GUI_util.data_transformation_options_widget.get(),
-                                selectedCsvFile_var.get(),
-                                select_csv_field_var.get(),
-                                utf8_var.get(),
-                                ASCII_var.get(),
-                                list_var.get(),
-                                rename_var.get(),
-                                copy_var.get(),
-                                move_var.get(),
-                                delete_var.get(),
-                                count_file_manager_var.get(),
-                                split_file_manager_var.get(),
-                                rename_new_entry_var.get(),
-                                by_file_type_var.get(),
-                                file_type_menu_var.get(),
-                                by_creation_date_var.get(),
-                                by_author_var.get(),
-                                before_date_var.get(),
-                                after_date_var.get(),
-                                by_prefix_var.get(),
-                                by_substring_var.get(),
-                                string_entry_var.get(),
-                                by_foldername_var.get(),
-                                folder_character_separator_var.get(),
-                                by_embedded_items_var.get(),
-                                comparison_var.get(),
-                                number_of_items_var.get(),
-                                embedded_item_character_value_var.get(),
-                                include_exclude_var.get(),
-                                character_count_file_manager_var.get(),
-                                character_entry_var.get(),
-                                include_subdir_var.get(),
-                                fileName_embeds_date.get(),
-                                date_format.get(),
-                                items_separator_var.get(),
-                                date_position_var.get())
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
