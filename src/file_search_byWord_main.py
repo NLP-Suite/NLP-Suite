@@ -24,20 +24,24 @@ import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,inputDir, outputDir,
-    openOutputFiles,
-    chartPackage,
-    dataTransformation,
-    search_options,
-    search_by_dictionary,
-    selectedCsvFile,
-    search_by_keyword,
-    search_keyword_values,
-    minus_K_words_sentences_var,
-    plus_K_words_sentences_var,
-    extract_sentences_var,
-    coOccurring_keywords_var,
-    create_subcorpus_var): #,
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputFilename = GUI_util.inputFilename.get()
+    inputDir = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    search_options = search_options_menu_var.get()
+    search_by_dictionary = search_by_dictionary_var.get()
+    selectedCsvFile = selectedCsvFile_var.get()
+    search_by_keyword = search_by_keyword_var.get()
+    search_keyword_values = keyword_value_var.get()
+    minus_K_words_sentences_var = globals()['minus_K_words_sentences_var'].get()
+    plus_K_words_sentences_var = globals()['plus_K_words_sentences_var'].get()
+    extract_sentences_var = globals()['extract_sentences_var'].get()
+    coOccurring_keywords_var = globals()['coOccurring_keywords_var'].get()
+    create_subcorpus_var = globals()['create_subcorpus_var'].get() #,
     # extract_sentences_search_words_var_str):
 
     config_filename = GUI_util.config_filename_selected_config.get()
@@ -164,24 +168,7 @@ def run(inputFilename,inputDir, outputDir,
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-run_script_command=lambda: run(GUI_util.inputFilename.get(),
-                            GUI_util.input_main_dir_path.get(),
-                            GUI_util.output_dir_path.get(),
-                            GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.charts_package_options_widget.get(),
-                            GUI_util.data_transformation_options_widget.get(),
-                            search_options_menu_var.get(),
-                            search_by_dictionary_var.get(),
-                            selectedCsvFile_var.get(),
-                            search_by_keyword_var.get(),
-                            keyword_value_var.get(),
-                            minus_K_words_sentences_var.get(),
-                            plus_K_words_sentences_var.get(),
-                            extract_sentences_var.get(),
-                            coOccurring_keywords_var.get(),
-                            create_subcorpus_var.get())
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
