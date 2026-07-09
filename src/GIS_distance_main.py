@@ -72,6 +72,12 @@ def run(inputFilename,outputDir, openOutputFiles, chartPackage, dataTransformati
                        message="No options have been selected.\n\nPlease, select an option and try again.")
         return
 
+    # write all outputs (csv, distribution charts, Excel charts) into a dedicated subdirectory,
+    # as most NLP Suite scripts do, rather than dumping them into the output directory root
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='GIS_distance', silent=True)
+    if outputDir == '':
+        return
+
     # Location / Latitude / Longitude are resolved BY HEADER NAME inside the util functions,
     # so no FIRST/SECOND location-column selection is needed. Pairwise forms all-pairs of the
     # distinct geocoded locations itself; baseline auto-detects the 'Location' column.
