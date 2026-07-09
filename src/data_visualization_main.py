@@ -1359,6 +1359,11 @@ geo_open_ge_button = tk.Button(tab_geographic, text='Open Google Earth GUI', wid
                                command=lambda: run_script_util.run_script("GIS_Google_Earth_main.py"))
 geo_open_ge_button.place(x=200, y=40)
 
+# the non-geocodable sibling of GIS_main (kitchen/forest/threshold vs map coordinates)
+geo_open_symbolic_button = tk.Button(tab_geographic, text='Open Symbolic (non-geocodable) Space GUI', width=40,
+                                     command=lambda: run_script_util.run_script("GIS_symbolic_main.py"))
+geo_open_symbolic_button.place(x=400, y=40)
+
 def run_entity_location_tracking():
     inputFile = GUI_util.inputFilename.get()
     inputDir = GUI_util.input_main_dir_path.get()
