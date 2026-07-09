@@ -488,7 +488,7 @@ if len(sys.argv) > 1 and os.path.isfile(sys.argv[1]) and sys.argv[1].lower().end
 videos_lookup = {'No videos available': ''}
 videos_options = 'No videos available'
 
-TIPS_lookup = {'Narrative / non-geocodable symbolic space': 'TIPS_NLP_Narrative non-geocodable symbolic space.pdf',
+TIPS_lookup = {'Narrative / non-geocodable symbolic space': 'TIPS_NLP_GIS Narrative non-geocodable symbolic space.pdf',
                'Geocoding': 'TIPS_NLP_GIS_Geocoding.pdf',
                'csv files - Problems & solutions': 'TIPS_NLP_csv files - Problems & solutions.pdf'}
 TIPS_options = 'Narrative / non-geocodable symbolic space', 'Geocoding', 'csv files - Problems & solutions'
