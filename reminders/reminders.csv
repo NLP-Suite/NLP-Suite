@@ -345,7 +345,7 @@ Depending upon corpus size, manual coreference is also not possible, due to memo
 
 Please, check the API key, your billing information, and the API enabled and try again.
 
-PLEASE, read the TIPS_NLP_Google API Key.pdf for help.",OFF
+PLEASE, read the TIPS_NLP_GIS_Google API Key.pdf for help.",OFF
 *,WordNet VERB aggregation,"CAVEAT!
 
 For VERBS, the aggregated 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies.
@@ -497,3 +497,6 @@ Stanford-CoreNLP_config.csv,CoreNLP version,"The CoreNLP version you are using i
 
 Your current version of Stanford CoreNLP will run anyway, but you should update to the latest release.",OFF
 *,spaCy annotators,"Contrary to Stanford CoreNLP and Stanza, spaCy does not process specific annotators (e.g., POS, NER). Regardless of selected annotator, spaCy will also process the corpus with its full parser.",ON
+*,Narrative analysis: every option opens its own GUI,"Every checkbox in this Narrative analysis GUI is an ""Open GUI"" option: ticking one and clicking RUN opens a separate, dedicated GUI (NER, gender, sentiment arcs, coreference, GIS, SVO, shape of stories, ...) where you carry out that specific task with its own options.
+
+This GUI does not run the analyses itself; it is a launcher that takes you to the right tool.",ON
