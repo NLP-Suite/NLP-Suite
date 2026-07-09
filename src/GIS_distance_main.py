@@ -122,12 +122,12 @@ def run(inputFilename,outputDir, openOutputFiles, chartPackage, dataTransformati
     filesToOpen=[]
 
     if compute_baseline_distances and baselineLocation!='':
-        baselineFiles=GIS_distance_util.computeDistancesFromSpecificLocation(GUI_util.window,inputFilename, outputDir, geolocator,geocoder,inputIsGeocoded,baselineLocation, headers,locationColumnNumber,locationColumn, distinctValues,withHeader,inputIsCoNLL,split_locations,datePresent,filenamePositionInCoNLLTable,encodingValue)
+        baselineFiles=GIS_distance_util.computeDistancesFromSpecificLocation(GUI_util.window,inputFilename, outputDir, geolocator,geocoder,inputIsGeocoded,baselineLocation, headers,locationColumnNumber,locationColumn, distinctValues,withHeader,inputIsCoNLL,split_locations,datePresent,filenamePositionInCoNLLTable,encodingValue,chartPackage,dataTransformation)
         if baselineFiles:
             filesToOpen.extend(baselineFiles)
 
     if compute_pairwise_distances:
-        pairwiseFiles=GIS_distance_util.computePairwiseDistances(GUI_util.window,inputFilename,outputDir,headers,locationColumnNumber,locationColumnNumber2,locationColumn,locationColumn2, distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue)
+        pairwiseFiles=GIS_distance_util.computePairwiseDistances(GUI_util.window,inputFilename,outputDir,headers,locationColumnNumber,locationColumnNumber2,locationColumn,locationColumn2, distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue,chartPackage,dataTransformation)
         if pairwiseFiles:
             filesToOpen.extend(pairwiseFiles)
 

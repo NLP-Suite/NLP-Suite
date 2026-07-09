@@ -41,7 +41,7 @@ import charts_util
 import IO_csv_util
 import IO_internet_util
 
-def createCharts(distanceoutputFilename, outputDir, filesToOpen, baselineLocation=''):
+def createCharts(distanceoutputFilename, outputDir, filesToOpen, chartPackage, dataTransformation, baselineLocation=''):
 
     xlsxFilename=distanceoutputFilename
     yAxis = 'Geodesic distance in miles'
@@ -92,9 +92,9 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, baselineLocatio
                                               hover_info_column_list=[],
                                               count_var = 0,
                                               column_yAxis_label_var=yAxis)
-    xlsxFilename = chart_outputFilename.replace('.xlsx','_GreatCircle.xlsx')
+    xlsxFilename = outputFiles.replace('.xlsx','_GreatCircle.xlsx')
     try:
-        os.rename(chart_outputFilename,xlsxFilename)
+        os.rename(outputFiles,xlsxFilename)
     except:
         # the file already exists and must be removed
         if os.path.isfile(xlsxFilename):
@@ -103,7 +103,7 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, baselineLocatio
     filesToOpen.append(xlsxFilename)
     return filesToOpen
 
-def computePairwiseDistances(window,inputFilename,outputDir,headers,locationColumnNumber,locationColumnNumber2,locationColumnName,locationColumnName2,distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue):
+def computePairwiseDistances(window,inputFilename,outputDir,headers,locationColumnNumber,locationColumnNumber2,locationColumnName,locationColumnName2,distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue,chartPackage='No charts',dataTransformation=''):
     filesToOpen=[]
     currList=[]
     startTime=IO_user_interface_util.timed_alert(window, 2000, 'Analysis start', 'Started running GIS distance at',
@@ -180,9 +180,10 @@ def computePairwiseDistances(window,inputFilename,outputDir,headers,locationColu
     filesToOpen.append(distanceoutputFilename)
 
     if chartPackage!='No charts':
-        filesToOpen = createCharts(distanceoutputFilename,outputDir,filesToOpen)
-        # if len(chart_outputFilename) > 0:
-        # 	filesToOpen.append(chart_outputFilename)
+        try:
+            filesToOpen = createCharts(distanceoutputFilename,outputDir,filesToOpen,chartPackage,dataTransformation)
+        except Exception as e:
+            print('GIS_distance createCharts (pairwise) failed:', e)
 
 
     IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running GIS distance at', True, '', True, startTime, True)
@@ -194,7 +195,7 @@ def computePairwiseDistances(window,inputFilename,outputDir,headers,locationColu
 #   If the list contains previously geocoded values the function will NOT geocode the values
 #       otherwise it will geocode the location names
 
-def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,geolocator,geocoder,InputIsGeocoded,baselineLocation,headers,locationColumnNumber,locationColumnName,distinctValues,withHeader,inputIsCoNLL,split_locations,datePresent,filenamePositionInCoNLLTable,encodingValue):
+def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,geolocator,geocoder,InputIsGeocoded,baselineLocation,headers,locationColumnNumber,locationColumnName,distinctValues,withHeader,inputIsCoNLL,split_locations,datePresent,filenamePositionInCoNLLTable,encodingValue,chartPackage='No charts',dataTransformation=''):
     currList=[]
     filesToOpen=[]
     startTime=IO_user_interface_util.timed_alert(window, 2000, 'Analysis start', 'Started running GIS distance from ' + baselineLocation + ' at',
@@ -271,31 +272,37 @@ def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,geolocat
     with open(distanceoutputFilename, 'w',newline='',encoding=encodingValue,errors='ignore') as outputFile:
         geowriter = csv.writer(outputFile)
         geowriter.writerow(['Location 1','Latitude 1','Longitude 1','Location 2','Latitude 2','Longitude 2','Geodesic distance in miles','Geodesic distance in Km','Great circle distance in miles','Great circle distance in Km'])
+        # resolve the location/latitude/longitude columns BY NAME so the function works on the
+        # Suite's standard geocoded layout (Location, NER, Latitude, Longitude, ...) and not only
+        # on files where latitude/longitude happen to sit right after the location column
+        latColName = _find_column_by_name(dt, 'latitude')
+        lonColName = _find_column_by_name(dt, 'longitude')
+        locColName = _find_column_by_name(dt, 'location')
+        if locColName is None:
+            locColName = locationColumnName
+        if latColName is None or lonColName is None:
+            mb.showwarning(title='Missing coordinates',
+                           message="To compute distances from a baseline location on a geocoded file, the input csv must contain Latitude and Longitude columns.\n\nColumns found:\n"
+                                   + str(list(dt.columns)) + "\n\nPlease, geocode your locations first (GIS mapping tool) and try again.")
+            filesToOpen.append('')
+            return filesToOpen
+        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename, encodingValue)
         # loop through for the waypoints of the second location
         for index, row in dt.iterrows():
-            currentLocation=str(row[locationColumnNumber])
-            nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename, encodingValue)
+            currentLocation=str(row[locColName]) if locColName in dt.columns else ''
             currRecord = str(index) + "/" + str(nRecords)
             if currentLocation!='' and currentLocation!='nan': #nan Not A Numeric value SHOULD NOT BE NECESSARY!!!
+                lat_val = row[latColName]
+                lon_val = row[lonColName]
                 try:
-                    float(row[locationColumnNumber+1])
-                except:
-                    mb.showerror(title='Input file error', message="Column number " + str(locationColumnNumber+1) + " (" + headers[locationColumnNumber+2] + ") of your input csv file does not contain proper Latitude values for your location.\n\nPlease, check your selected 'Column containing location names' and/or input csv filename and try again.")
-                    filesToOpen.append('')
-                    return filesToOpen
-                try:
-                    float(row[locationColumnNumber+2])
-                except:
-                    mb.showerror(title='Input file error', message="Column number " + str(locationColumnNumber+2) + " (" + headers[locationColumnNumber+3] + ") of your input csv file does not contain proper Longitute values for your location.\n\nPlease, check your selected 'Column containing location names' and/or input csv filename and try again.")
-                    filesToOpen.append('')
-                    return filesToOpen
-
-                #nan Not A Numeric value
-                if str(row[locationColumnNumber+1])=='' or str(row[locationColumnNumber+2])=='' or str(row[locationColumnNumber+1])=='nan' or str(row[locationColumnNumber+2])=='nan':
+                    float(lat_val)
+                    float(lon_val)
+                except (TypeError, ValueError):
+                    # rows that failed geocoding have empty/non-numeric coordinates -> skip them
                     print(currRecord,"     WAYPOINTS NOT NUMERIC (nan) ",currentLocation)
                     waypoints2=''
                 else:
-                    waypoints2=[row[locationColumnNumber+1],row[locationColumnNumber+2]]
+                    waypoints2=[lat_val,lon_val]
             else:
                 print(currRecord,"     CURRENT LOCATION IS BLANK")
                 waypoints2=''
@@ -312,9 +319,10 @@ def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,geolocat
     filesToOpen.append(distanceoutputFilename)
 
     if chartPackage!='No charts':
-        filesToOpen = createCharts(distanceoutputFilename,outputDir,filesToOpen,baselineLocation)
-        # if len(chart_outputFilename) > 0:
-        # 	filesToOpen.append(chart_outputFilename)
+        try:
+            filesToOpen = createCharts(distanceoutputFilename,outputDir,filesToOpen,chartPackage,dataTransformation,baselineLocation)
+        except Exception as e:
+            print('GIS_distance createCharts (baseline) failed:', e)
 
     IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running GIS distance at', True, '', True, startTime,True)
     return filesToOpen
