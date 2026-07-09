@@ -20,15 +20,22 @@ import constants_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
-        knowledge_graphs_var,
-        confidence_level,
-        databases_var,
-        sub_class_entry,
-        ontology_list,
-        create_HTML_files_var,
-        ontology_color_list,
-        bold_DBpedia_YAGO_var):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputFilename = GUI_util.inputFilename.get()
+    inputDir = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    knowledge_graphs_var = globals()['knowledge_graphs_var'].get()
+    confidence_level = confidence_level_entry.get()
+    databases_var = globals()['databases_var'].get()
+    sub_class_entry = sub_class_entry_var.get()
+    ontology_list = globals()['ontology_list']
+    create_HTML_files_var = globals()['create_HTML_files_var'].get()
+    ontology_color_list = globals()['ontology_color_list']
+    bold_DBpedia_YAGO_var = globals()['bold_DBpedia_YAGO_var'].get()
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -103,22 +110,7 @@ def run(inputFilename,inputDir,outputDir, openOutputFiles, chartPackage, dataTra
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 #def run(inputFilename,input_main_dir_path,outputDir, dictionary_var, annotator_dictionary, DBpedia_var, annotator_extractor, openOutputFiles):
-run_script_command=lambda: run(GUI_util.inputFilename.get(),
-                GUI_util.input_main_dir_path.get(),
-                GUI_util.output_dir_path.get(),
-                GUI_util.open_csv_output_checkbox.get(),
-                GUI_util.charts_package_options_widget.get(),
-                GUI_util.data_transformation_options_widget.get(),
-                knowledge_graphs_var.get(),
-                confidence_level_entry.get(),
-                databases_var.get(),
-                sub_class_entry_var.get(),
-                ontology_list,
-                create_HTML_files_var.get(),
-                ontology_color_list,
-                bold_DBpedia_YAGO_var.get())
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 

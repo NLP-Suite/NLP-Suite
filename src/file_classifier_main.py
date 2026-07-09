@@ -19,19 +19,22 @@ import IO_files_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(input_main_dir_path, input_secondary_dir_path, outputDir,
-        openOutputFiles,
-        
-        chartPackage,
-        dataTransformation,
-        by_date_var,
-        date_format,
-        date_separator,
-        date_position,
-        date_distance_value,
-        date_type,
-        by_NER_var,
-        similarityIndex_var):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    input_main_dir_path = GUI_util.input_main_dir_path.get()
+    input_secondary_dir_path = GUI_util.input_secondary_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    by_date_var = globals()['by_date_var'].get()
+    date_format = globals()['date_format'].get()
+    date_separator = items_separator_var.get()
+    date_position = date_position_var.get()
+    date_distance_value = date_distance_value_var.get()
+    date_type = date_type_var.get()
+    by_NER_var = globals()['by_NER_var'].get()
+    similarityIndex_var = globals()['similarityIndex_var'].get()
 
     filesToOpen=[]
 
@@ -66,22 +69,7 @@ def run(input_main_dir_path, input_secondary_dir_path, outputDir,
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the File Classifier at', True, '', True, startTime)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-run_script_command=lambda: run(GUI_util.input_main_dir_path.get(),
-                            GUI_util.input_secondary_dir_path.get(),
-                            GUI_util.output_dir_path.get(),
-                            GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.charts_package_options_widget.get(),
-                            GUI_util.data_transformation_options_widget.get(),
-                            by_date_var.get(),
-                            date_format.get(),
-                            items_separator_var.get(),
-                            date_position_var.get(),
-                            date_distance_value_var.get(),
-                            date_type_var.get(),
-                            by_NER_var.get(),
-                            similarityIndex_var.get())
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 

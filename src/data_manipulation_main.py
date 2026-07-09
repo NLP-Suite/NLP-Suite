@@ -20,12 +20,20 @@ import run_script_util
 
 # RUN section ________________________________________________________________________________________________________
 
-def run(inputFilename,
-        selectedCsvFile,
-        operation_results_text_list,
-        operation,
-        append_var, concatenate_var, drop_var, extract_var, merge_var,
-        output_to_csv_var, openOutputFiles, outputDir):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputFilename = GUI_util.inputFilename.get()
+    selectedCsvFile = globals()['selectedCsvFile'].get()
+    operation_results_text_list = globals()['operation_results_text_list']
+    operation = operation_name_var.get()
+    append_var = globals()['append_var'].get()
+    concatenate_var = globals()['concatenate_var'].get()
+    drop_var = globals()['drop_var'].get()
+    extract_var = globals()['extract_var'].get()
+    merge_var = globals()['merge_var'].get()
+    output_to_csv_var = globals()['output_to_csv_var'].get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    outputDir = GUI_util.output_dir_path.get()
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -104,17 +112,7 @@ def run(inputFilename,
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 
 if __name__ == '__main__':
-    run_script_command = lambda: run(GUI_util.inputFilename.get(),
-                                     selectedCsvFile.get(),
-                                     operation_results_text_list,
-                                     operation_name_var.get(),
-                                     append_var.get(), concatenate_var.get(),
-                                     drop_var.get(), extract_var.get(), merge_var.get(),
-                                     output_to_csv_var.get(),
-                                     GUI_util.open_csv_output_checkbox.get(), GUI_util.output_dir_path.get()
-                                     )
-
-    GUI_util.run_button.configure(command=run_script_command)
+    GUI_util.run_button.configure(command=run)
 
     # GUI section ______________________________________________________________________________________________________________________________________________________
 

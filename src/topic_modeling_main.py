@@ -63,13 +63,23 @@ args = parser.parse_args()
 """
 
 
-def run(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, num_topics,
-        BERT_var,
-        split_docs_var,
-        MALLET_var,
-        optimize_intervals_var,
-        Gensim_var,
-        remove_stopwords_var, lemmatize_var, nounsOnly_var, Gensim_MALLET_var):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputDir = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    num_topics = num_topics_var.get()
+    BERT_var = globals()['BERT_var'].get()
+    split_docs_var = globals()['split_docs_var'].get()
+    MALLET_var = globals()['MALLET_var'].get()
+    optimize_intervals_var = globals()['optimize_intervals_var'].get()
+    Gensim_var = globals()['Gensim_var'].get()
+    remove_stopwords_var = globals()['remove_stopwords_var'].get()
+    lemmatize_var = globals()['lemmatize_var'].get()
+    nounsOnly_var = globals()['nounsOnly_var'].get()
+    Gensim_MALLET_var = globals()['Gensim_MALLET_var'].get()
 
     if not BERT_var and not MALLET_var and not Gensim_var:
         mb.showwarning(title='Warning', message='There are no options selected.\n\nPlease, select one of the available options (MALLET or Gensim) and try again.')
@@ -111,23 +121,7 @@ def run(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
-run_script_command = lambda: run(GUI_util.input_main_dir_path.get(),
-                                 GUI_util.output_dir_path.get(),
-                                 GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.charts_package_options_widget.get(),
-                                 GUI_util.data_transformation_options_widget.get(),
-                                 num_topics_var.get(),
-                                 BERT_var.get(),
-                                 split_docs_var.get(),
-                                 MALLET_var.get(),
-                                 optimize_intervals_var.get(),
-                                 Gensim_var.get(),
-                                 remove_stopwords_var.get(),
-                                 lemmatize_var.get(),
-                                 nounsOnly_var.get(),
-                                 Gensim_MALLET_var.get())
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 

@@ -17,7 +17,22 @@ import IO_files_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 
-def run(inputPath, outputPath, selectedCsvFile_var, openOutputFiles, chartPackage, dataTransformation, find_var, source_extension_var, target_extension_var, matching_var, copy_var, move_var, character_value, number_of_items):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputPath = GUI_util.input_main_dir_path.get()
+    outputPath = GUI_util.output_dir_path.get()
+    selectedCsvFile_var = globals()['selectedCsvFile_var'].get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    find_var = globals()['find_var'].get()
+    source_extension_var = source_file_type_menu_var.get()
+    target_extension_var = target_file_type_menu_var.get()
+    matching_var = globals()['matching_var'].get()
+    copy_var = globals()['copy_var'].get()
+    move_var = globals()['move_var'].get()
+    character_value = character_value_var.get()
+    number_of_items = number_of_items_var.get()
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -55,22 +70,7 @@ def run(inputPath, outputPath, selectedCsvFile_var, openOutputFiles, chartPackag
 # noi = file_filename_matcher_GUI.number_of_items_value.get()
 # print("Number of items: ", noi)
 # print("Type: ", type(file_filename_matcher_GUI.number_of_items_var.get()))
-run_script_command=lambda: run(GUI_util.input_main_dir_path.get(),
-                               GUI_util.output_dir_path.get(),
-                               selectedCsvFile_var.get(),
-                               GUI_util.open_csv_output_checkbox.get(),
-                               GUI_util.charts_package_options_widget.get(),
-                               GUI_util.data_transformation_options_widget.get(),
-                               find_var.get(),
-                               source_file_type_menu_var.get(),
-                               target_file_type_menu_var.get(),
-                               matching_var.get(),
-                               copy_var.get(),
-                               move_var.get(),
-                               character_value_var.get(),
-                               number_of_items_var.get())
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 

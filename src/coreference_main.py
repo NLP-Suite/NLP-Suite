@@ -35,13 +35,19 @@ import run_script_util
 
 files_to_open = []
 
-def run(inputFilename, inputDir, outputDir,
-        openOutputFiles, chartPackage, dataTransformation,
-        Coref,
-        Manual_Coref_var,
-        split_coreferenced_files_var,
-        continue_manual_Coref_var,
-        corefed_txt_file):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputFilename = GUI_util.inputFilename.get()
+    inputDir = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    Coref = CoRef_var.get()
+    Manual_Coref_var = manual_Coref_var.get()
+    split_coreferenced_files_var = globals()['split_coreferenced_files_var'].get()
+    continue_manual_Coref_var = globals()['continue_manual_Coref_var'].get()
+    corefed_txt_file = corefed_txt_file_var.get()
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -198,19 +204,7 @@ def run(inputFilename, inputDir, outputDir,
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, files_for_opening, outputCorefedDir, scriptName)
 
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
-run_script_command = lambda: run(GUI_util.inputFilename.get(),
-                                 GUI_util.input_main_dir_path.get(),
-                                 GUI_util.output_dir_path.get(),
-                                 GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.charts_package_options_widget.get(),
-                                 GUI_util.data_transformation_options_widget.get(),
-                                 CoRef_var.get(),
-                                 manual_Coref_var.get(),
-                                 split_coreferenced_files_var.get(),
-                                 continue_manual_Coref_var.get(),
-                                 corefed_txt_file_var.get())
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
