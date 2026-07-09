@@ -249,11 +249,14 @@ def run_mann_whitney_test(inputFilename, outputDir, value_col, group_col,
                            message='Column "' + col + '" not found in the input file.')
             return filesToOpen
 
-    df = df[[value_col, group_col]].dropna()
+    df = df[[value_col, group_col]].copy()
+    df[value_col] = pd.to_numeric(df[value_col], errors='coerce')
+    df = df.dropna()
 
-    if not pd.api.types.is_numeric_dtype(df[value_col]):
-        mb.showwarning(title='Column type error',
-                       message='Column "' + value_col + '" must be numeric.')
+    if df.empty:
+        mb.showwarning(title='No numeric data',
+                       message='Column "' + value_col + '" has no numeric values to test '
+                               '(non-numeric and blank rows are skipped).')
         return filesToOpen
 
     labels = sorted(df[group_col].unique())
@@ -346,11 +349,14 @@ def run_kruskal_wallis_test(inputFilename, outputDir, value_col, group_col,
                            message='Column "' + col + '" not found in the input file.')
             return filesToOpen
 
-    df = df[[value_col, group_col]].dropna()
+    df = df[[value_col, group_col]].copy()
+    df[value_col] = pd.to_numeric(df[value_col], errors='coerce')
+    df = df.dropna()
 
-    if not pd.api.types.is_numeric_dtype(df[value_col]):
-        mb.showwarning(title='Column type error',
-                       message='Column "' + value_col + '" must be numeric.')
+    if df.empty:
+        mb.showwarning(title='No numeric data',
+                       message='Column "' + value_col + '" has no numeric values to test '
+                               '(non-numeric and blank rows are skipped).')
         return filesToOpen
 
     labels = sorted(df[group_col].unique())
@@ -433,11 +439,14 @@ def run_mann_kendall_trend_test(inputFilename, outputDir, date_col, value_col,
                            message='Column "' + col + '" not found in the input file.')
             return filesToOpen
 
-    df = df[[date_col, value_col]].dropna()
+    df = df[[date_col, value_col]].copy()
+    df[value_col] = pd.to_numeric(df[value_col], errors='coerce')
+    df = df.dropna()
 
-    if not pd.api.types.is_numeric_dtype(df[value_col]):
-        mb.showwarning(title='Column type error',
-                       message='Column "' + value_col + '" must be numeric.')
+    if df.empty:
+        mb.showwarning(title='No numeric data',
+                       message='Column "' + value_col + '" has no numeric values to test '
+                               '(non-numeric and blank rows are skipped).')
         return filesToOpen
 
     try:
@@ -646,13 +655,16 @@ def run_correlation_test(inputFilename, outputDir, col_x, col_y,
                            message='Column "' + col + '" not found in the input file.')
             return filesToOpen
 
-    df = df[[col_x, col_y]].dropna()
-
+    df = df[[col_x, col_y]].copy()
     for col in [col_x, col_y]:
-        if not pd.api.types.is_numeric_dtype(df[col]):
-            mb.showwarning(title='Column type error',
-                           message='Column "' + col + '" must be numeric.')
-            return filesToOpen
+        df[col] = pd.to_numeric(df[col], errors='coerce')
+    df = df.dropna()
+
+    if df.empty:
+        mb.showwarning(title='No numeric data',
+                       message='Columns "' + col_x + '" / "' + col_y + '" have no numeric values to test '
+                               '(non-numeric and blank rows are skipped).')
+        return filesToOpen
 
     if len(df) < 5:
         mb.showwarning(title='Insufficient data',
@@ -939,11 +951,14 @@ def run_change_point_test(inputFilename, outputDir, date_col, value_col,
                            message='Column "' + col + '" not found in the input file.')
             return filesToOpen
 
-    df = df[[date_col, value_col]].dropna()
+    df = df[[date_col, value_col]].copy()
+    df[value_col] = pd.to_numeric(df[value_col], errors='coerce')
+    df = df.dropna()
 
-    if not pd.api.types.is_numeric_dtype(df[value_col]):
-        mb.showwarning(title='Column type error',
-                       message='Column "' + value_col + '" must be numeric.')
+    if df.empty:
+        mb.showwarning(title='No numeric data',
+                       message='Column "' + value_col + '" has no numeric values to test '
+                               '(non-numeric and blank rows are skipped).')
         return filesToOpen
 
     try:
@@ -1033,11 +1048,14 @@ def run_permutation_test(inputFilename, outputDir, value_col, group_col,
                            message='Column "' + col + '" not found in the input file.')
             return filesToOpen
 
-    df = df[[value_col, group_col]].dropna()
+    df = df[[value_col, group_col]].copy()
+    df[value_col] = pd.to_numeric(df[value_col], errors='coerce')
+    df = df.dropna()
 
-    if not pd.api.types.is_numeric_dtype(df[value_col]):
-        mb.showwarning(title='Column type error',
-                       message='Column "' + value_col + '" must be numeric.')
+    if df.empty:
+        mb.showwarning(title='No numeric data',
+                       message='Column "' + value_col + '" has no numeric values to test '
+                               '(non-numeric and blank rows are skipped).')
         return filesToOpen
 
     labels = sorted(df[group_col].unique())
