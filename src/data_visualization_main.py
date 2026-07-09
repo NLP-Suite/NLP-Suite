@@ -1336,16 +1336,24 @@ violin_category_menu.place(x=360, y=220)
 # ── Tab 5: Geographic ───────────────────────────────────────────────────────
 
 tab_help(tab_geographic, 10,
-    "Geographic visualization tools: GIS mapping and animated movement maps.\n\n"
-    "GIS: Map locations extracted from your corpus via Stanza NER. Open the GIS GUI\n"
-    "or Google Earth GUI for full options.\n\n"
-    "Extract entity-location CSV: Runs Stanza NER on your text files and pairs every\n"
-    "PERSON with every LOCATION mentioned in the same sentence. Produces a CSV ready\n"
-    "for the animated movement map below.\n\n"
-    "Animated movement map: Visualize how entities (people, characters) move across\n"
-    "locations over time. Select entity, location, and optional date/sequence columns\n"
-    "from a CSV file, then click RUN. Locations are auto-geocoded via Nominatim,\n"
-    "or you can provide pre-geocoded latitude/longitude columns.")
+    "Geographic visualization: map where your corpus's entities are, and how they move.\n\n"
+    "Geocodable space (real map coordinates) via the GIS / Google Earth GUIs; non-geocodable\n"
+    "space (house, field, forest - no coordinates) via the Symbolic Space GUI. Use the per-row\n"
+    "? HELP buttons for each option below.")
+tab_help(tab_geographic, 40,
+    "Open a full mapping GUI:\n\n"
+    "Open GIS GUI - geocodable geographic mapping (Google Earth Pro / Google Maps).\n"
+    "Open Google Earth GUI - build KML / Google Earth maps from a csv.\n"
+    "Open Symbolic (non-geocodable) Space GUI - the companion for kinds of place that carry\n"
+    "social meaning but have NO map coordinates (house vs. field; gender / race / class x space).")
+tab_help(tab_geographic, 75,
+    "Extract entity-location CSV from text (Stanza NER): runs NER on your text files and pairs\n"
+    "every PERSON with every LOCATION mentioned in the same sentence, producing a csv ready for\n"
+    "the animated movement map below. The result is auto-loaded into the input box.")
+tab_help(tab_geographic, 110,
+    "Animated movement map (from CSV): visualize how entities (people, characters) move across\n"
+    "locations over time. Pick the Entity, Location, and optional Date/sequence columns; locations\n"
+    "are auto-geocoded via Nominatim, or provide pre-geocoded Latitude / Longitude columns. Then RUN.")
 
 geo_description = tk.Label(tab_geographic, text='Geographic visualization',
                            font=("Courier", 12, "bold"), foreground="red")
@@ -1450,12 +1458,21 @@ wc_open_button.place(x=10, y=170)
 # ── Tab 7: Hierarchical tree ──────────────────────────────────────────────────
 
 tab_help(tab_tree, 10,
-    "Build an interactive hierarchical tree from a CSV file with parent-child columns.\n\n"
-    "Use cases: family trees/genealogy, organizational charts, PC-ACE grammar hierarchies,\n"
-    "narrative structure, dependency trees.\n\n"
-    "Select the parent and child columns from the dropdown menus below, then click RUN.\n"
-    "Optionally select a label column (display name), info column (tooltip details),\n"
-    "and color column (group nodes by category).")
+    "Build an interactive hierarchical tree from a csv with parent-child columns - family\n"
+    "trees / genealogy, org charts, PC-ACE grammar hierarchies, narrative structure, dependency\n"
+    "trees. Map the columns below and click RUN. Use the per-row ? HELP for each column.")
+tab_help(tab_tree, 50,
+    "Parent column / Child column (required): each row of the csv is one edge, parent -> child;\n"
+    "the tree is assembled from all such edges. E.g. for a genealogy, Parent = the ancestor and\n"
+    "Child = their descendant.")
+tab_help(tab_tree, 85,
+    "Label column (optional): the display name shown on each node. Defaults to the child value\n"
+    "when not set.")
+tab_help(tab_tree, 120,
+    "Info / tooltip column (optional): extra text shown when you hover over a node.")
+tab_help(tab_tree, 155,
+    "Color-group column (optional): color the nodes by this column's category, to group them\n"
+    "visually (e.g. by generation, department, or type).")
 
 tree_description = tk.Label(tab_tree, text='Hierarchical tree visualization',
                             font=("Courier", 12, "bold"), foreground="red")
