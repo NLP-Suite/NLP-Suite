@@ -158,7 +158,7 @@ def create_distance_distribution_charts(distanceoutputFilename, outputDir, files
 #   scope='per-document' -> all-pairs WITHIN each Document (cheap, narrative-aware; needs a
 #       Document column, falls back to whole-corpus with a warning if absent);
 #   scope='whole-corpus'  -> all-pairs across every distinct location in the file (grows as N^2);
-#   scope='both'          -> run both scopes, producing two separate output files.
+#   scope='*'             -> run both scopes, producing two separate output files.
 def computePairwiseDistances(window, inputFilename, outputDir, distinctValues, encodingValue,
                              scope='per-document', chartPackage='No charts', dataTransformation=''):
     import itertools
@@ -193,12 +193,12 @@ def computePairwiseDistances(window, inputFilename, outputDir, distinctValues, e
                        message="The input csv has no rows with valid Latitude/Longitude values.\n\nPlease, geocode your locations first and try again.")
         return ['']
 
-    # which scope(s) to run: 'both' runs per-document AND whole-corpus (two output files)
-    requested = ['per-document', 'whole-corpus'] if scope == 'both' else [scope]
+    # which scope(s) to run: '*' runs per-document AND whole-corpus (two output files)
+    requested = ['per-document', 'whole-corpus'] if scope == '*' else [scope]
     if docCol is None and 'per-document' in requested:
         mb.showwarning(title='No Document column',
                        message="PER-DOCUMENT pairwise distances need a 'Document' column to group by, which is missing from the input csv.\n\nThe tool will compute WHOLE-CORPUS pairwise distances instead (all-pairs across every location in the file).")
-        requested = ['whole-corpus']   # collapse (avoids a duplicate run when 'both' was selected)
+        requested = ['whole-corpus']   # collapse (avoids a duplicate run when '*' was selected)
 
     def _distinct_locations(sub):
         seen = set()
