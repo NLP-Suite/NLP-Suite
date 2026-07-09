@@ -83,8 +83,12 @@ jobs:
           else
             "$PYTHON" -m pip install --no-cache-dir -r requirements-mac.txt
           fi
-          # Verify
-          "$PYTHON" -c "import pandas, requests, numpy, matplotlib, scipy, sklearn, stanza, spacy, nltk, plotly, seaborn, folium, gensim, wordcloud, transformers, sentence_transformers, tensorflow, bertopic, PIL; print('All critical packages OK')"
+          # spaCy English model — NOT pulled in by `pip install spacy`; the suite loads
+          # en_core_web_sm widely (spell-checker, SRL, statistics, topic modeling, WSI, spaCy parser).
+          # spacy download installs the model wheel matching the installed spaCy version.
+          "$PYTHON" -m spacy download en_core_web_sm
+          # Verify (including that the spaCy English model actually loads)
+          "$PYTHON" -c "import pandas, requests, numpy, matplotlib, scipy, sklearn, stanza, spacy, nltk, plotly, seaborn, folium, gensim, wordcloud, transformers, sentence_transformers, tensorflow, bertopic, PIL; spacy.load('en_core_web_sm'); print('All critical packages + en_core_web_sm OK')"
           echo "Bundled portable Python environment"
 
       - name: Bundle VC++ runtime DLLs into portable env (Windows only)
