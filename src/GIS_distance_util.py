@@ -230,7 +230,7 @@ def computePairwiseDistances(window, inputFilename, outputDir, distinctValues, e
                                message="The " + one_scope + " option will compute " + str(total_pairs) + " location pairs, which may take a long time.\n\nConsider PER-DOCUMENT scope to reduce the number of pairs.\n\nDo you want to continue?"):
                 continue
 
-        distanceoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', 'distance', 'pairwise', one_scope, '', False, True)
+        distanceoutputFilename = IO_files_util.generate_output_file_name('', '', outputDir, '.csv', 'GIS', 'distance','pairwise', one_scope, '', False, True)
         header = ['Location 1', 'Latitude 1', 'Longitude 1', 'Location 2', 'Latitude 2', 'Longitude 2',
                   'Geodesic distance in miles', 'Geodesic distance in Km',
                   'Great circle distance in miles', 'Great circle distance in Km', 'Document']
@@ -274,9 +274,9 @@ def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,geolocat
     startTime=IO_user_interface_util.timed_alert(window, 2000, 'Analysis start', 'Started running GIS distance from ' + baselineLocation + ' at',
                                                  True, '', True, '', True)
     if distinctValues==True:
-        distanceoutputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', 'distance', baselineLocation, locationColumnName, 'DISTINCT', False, True)
+        distanceoutputFilename=IO_files_util.generate_output_file_name('', '', outputDir, '.csv', 'GIS', 'distance',baselineLocation, locationColumnName, 'DISTINCT', False, True)
     else:
-        distanceoutputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', 'distance', locationColumnName, baselineLocation, 'ALL', False, True)
+        distanceoutputFilename=IO_files_util.generate_output_file_name('', '', outputDir, '.csv', 'GIS', 'distance',locationColumnName, baselineLocation, 'ALL', False, True)
     filesToOpen.append(distanceoutputFilename)
 
     #for baselineLocation locationColumnNumber inputFilename
@@ -466,7 +466,7 @@ def computeConsecutiveDistances(window, inputFilename, outputDir, distinctValues
                        message="The input csv has no rows with valid Latitude/Longitude values.\n\nPlease, geocode your locations first and try again.")
         return ['']
 
-    distanceoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', 'distance', 'consecutive', 'movement', '', False, True)
+    distanceoutputFilename = IO_files_util.generate_output_file_name('', '', outputDir, '.csv', 'GIS', 'distance','consecutive', 'movement', '', False, True)
 
     header = ['Location 1', 'Latitude 1', 'Longitude 1', 'Location 2', 'Latitude 2', 'Longitude 2',
               'Geodesic distance in miles', 'Geodesic distance in Km',
