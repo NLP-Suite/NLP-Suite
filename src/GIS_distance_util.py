@@ -101,7 +101,53 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, chartPackage, d
             os.remove(xlsxFilename)
         os.rename(outputFiles,xlsxFilename)
     filesToOpen.append(xlsxFilename)
+    filesToOpen = create_distance_distribution_charts(distanceoutputFilename, outputDir, filesToOpen)
     return filesToOpen
+
+
+# Distribution of distances across bands: how many location pairs fall in each distance range
+# (0, 1-10, 11-20, ..., 101+ miles). This is the useful part of the former standalone
+# GIS_distance_plot.py, generalized to any distance output file produced by this tool. Unlike
+# the per-pair chart in createCharts, it scales to large corpora (thousands of pairs).
+def create_distance_distribution_charts(distanceoutputFilename, outputDir, filesToOpen, encodingValue='utf-8'):
+    try:
+        import numpy as np
+        import matplotlib.pyplot as plt
+    except Exception as e:
+        print('GIS_distance distribution charts: matplotlib/numpy unavailable:', e)
+        return filesToOpen
+    try:
+        df = pd.read_csv(distanceoutputFilename, encoding=encodingValue, on_bad_lines='skip')
+    except Exception as e:
+        print('GIS_distance distribution charts: cannot read', distanceoutputFilename, e)
+        return filesToOpen
+
+    bins = [0, 1, 10, 20, 30, 40, 50, 100, np.inf]
+    names = ['0', '1-10', '11-20', '21-30', '31-40', '41-50', '51-100', '101+']
+    # the two algorithms in miles (km is only a unit conversion, same distribution shape)
+    for measure in ['Geodesic distance in miles', 'Great circle distance in miles']:
+        if measure not in df.columns:
+            continue
+        try:
+            vals = pd.to_numeric(df[measure], errors='coerce').dropna()
+            if vals.empty:
+                continue
+            counts = pd.cut(vals, bins, labels=names, include_lowest=True).value_counts().reindex(names, fill_value=0)
+            fig = plt.figure(figsize=(8, 5))
+            ax = fig.add_subplot(111)
+            counts.plot(kind='bar', ax=ax, color='#4C72B0')
+            ax.set_title('Distribution of ' + measure)
+            ax.set_xlabel('Distance band (miles)')
+            ax.set_ylabel('Frequency (number of location pairs)')
+            fig.tight_layout()
+            pngFilename = IO_files_util.generate_output_file_name(distanceoutputFilename, '', outputDir, '.png', 'GIS', 'distance-distribution', measure.replace(' ', '-'), '', '', False, True)
+            fig.savefig(pngFilename, dpi=100)
+            plt.close(fig)
+            filesToOpen.append(pngFilename)
+        except Exception as e:
+            print('GIS_distance distribution chart failed for', measure, ':', e)
+    return filesToOpen
+
 
 def computePairwiseDistances(window,inputFilename,outputDir,headers,locationColumnNumber,locationColumnNumber2,locationColumnName,locationColumnName2,distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue,chartPackage='No charts',dataTransformation=''):
     filesToOpen=[]
@@ -432,4 +478,5 @@ def computeConsecutiveDistances(window, inputFilename, outputDir, distinctValues
                        message="No consecutive-location movements were found to measure.\n\nThis can happen if each document has only one geolocated location, or all consecutive locations are identical.")
         return ['']
     filesToOpen.append(distanceoutputFilename)
+    filesToOpen = create_distance_distribution_charts(distanceoutputFilename, outputDir, filesToOpen, encodingValue)
     return filesToOpen
