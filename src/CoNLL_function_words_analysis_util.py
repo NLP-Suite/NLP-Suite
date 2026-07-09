@@ -92,17 +92,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
             columns_to_be_plotted_yAxis = ['FORM']
             count_var = 1
 
-            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                      pronouns_list_file_name, outputDir,
-                                                      columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                      chart_title="Frequency Distribution of Pronouns",
-                                                      outputFileNameType='FW_pron',
-                                                      column_xAxis_label='Pronoun',
-                                                      count_var=count_var,
-                                                      hover_label=[],
-                                                      groupByList=['Document'],
-                                                      plotList=[],
-                                                      chart_title_label='')
+            outputFiles = charts_util.plot(pronouns_list_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Pronouns", x_label='Pronoun', count=count_var, file_label='FW_pron')
 
             # run_all returns a string; must use append
             if outputFiles != None:
@@ -115,17 +105,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
             columns_to_be_plotted_yAxis = ['PRONOUNS']
             count_var = 1
 
-            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                      pronouns_list_file_name, outputDir,
-                                                      columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                      chart_title="Frequency Distribution of Types of Pronouns",
-                                                      outputFileNameType='FW_pron_type',
-                                                      column_xAxis_label='Pronoun type',
-                                                      count_var=count_var,
-                                                      hover_label=[],
-                                                      groupByList=['Document'],
-                                                      plotList=[],
-                                                      chart_title_label='')
+            outputFiles = charts_util.plot(pronouns_list_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Types of Pronouns", x_label='Pronoun type', count=count_var, file_label='FW_pron_type')
 
             # run_all returns a string; must use append
             if outputFiles!=None:
@@ -181,17 +161,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
             columns_to_be_plotted_yAxis = ['PREPOSITIONS']
             count_var = 1
 
-            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                      function_words_prepositions_file_name, outputDir,
-                                                      columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                      chart_title="Frequency Distribution of Prepositions",
-                                                      outputFileNameType='FW_prep',
-                                                      column_xAxis_label='Preposition',
-                                                      count_var=count_var,
-                                                      hover_label=[],
-                                                      groupByList=['Document'],
-                                                      plotList=[],
-                                                      chart_title_label='')
+            outputFiles = charts_util.plot(function_words_prepositions_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Prepositions", x_label='Preposition', count=count_var, file_label='FW_prep')
 
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
@@ -247,17 +217,7 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
             columns_to_be_plotted_yAxis = ['ARTICLES']
             count_var = 1
 
-            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                      function_words_articles_file_name, outputDir,
-                                                      columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                      chart_title="Frequency Distribution of Articles",
-                                                      outputFileNameType='FW_art',
-                                                      column_xAxis_label='Article',
-                                                      count_var=count_var,
-                                                      hover_label=[],
-                                                      groupByList=['Document'],
-                                                      plotList=[],
-                                                      chart_title_label='')
+            outputFiles = charts_util.plot(function_words_articles_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Articles", x_label='Article', count=count_var, file_label='FW_art')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -311,17 +271,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
             columns_to_be_plotted_yAxis = ['CONJUNCTIONS']
             count_var = 1
 
-            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                  function_words_conjunctions_file_name, outputDir,
-                                  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                  chart_title="Frequency Distribution of Conjunctions",
-                                  outputFileNameType='FW_conj',
-                                  column_xAxis_label='Conjunction',
-                                  count_var=count_var,
-                                  hover_label=[],
-                                  groupByList=['Document'],
-                                  plotList=[],
-                                  chart_title_label='')
+            outputFiles = charts_util.plot(function_words_conjunctions_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Conjunctions", x_label='Conjunction', count=count_var, file_label='FW_conj')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -332,17 +282,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
             columns_to_be_plotted_yAxis = ['Lemma']
             count_var = 1
 
-            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                  function_words_conjunctions_file_name, outputDir,
-                                  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                  chart_title="Frequency Distribution of Conjunction Words",
-                                  outputFileNameType='FW_conj_words',
-                                  column_xAxis_label='Conjunction word',
-                                  count_var=count_var,
-                                  hover_label=[],
-                                  groupByList=['Document'],
-                                  plotList=[],
-                                  chart_title_label='')
+            outputFiles = charts_util.plot(function_words_conjunctions_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Conjunction Words", x_label='Conjunction word', count=count_var, file_label='FW_conj_words')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -394,17 +334,7 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
             columns_to_be_plotted_yAxis = ['Lemma']
             count_var = 1
 
-            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                      function_words_auxiliaries_file_name, outputDir,
-                                                      columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                      chart_title="Frequency Distribution of Auxiliaries",
-                                                      outputFileNameType='FW_aux',
-                                                      column_xAxis_label='Auxiliary verb',
-                                                      count_var=count_var,
-                                                      hover_label=[],
-                                                      groupByList=['Document'],
-                                                      plotList=[],
-                                                      chart_title_label='')
+            outputFiles = charts_util.plot(function_words_auxiliaries_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Auxiliaries", x_label='Auxiliary verb', count=count_var, file_label='FW_aux')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)

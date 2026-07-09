@@ -501,17 +501,7 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, 
 
         columns_to_be_plotted_xAxis = ['Searched Token_Word']
         columns_to_be_plotted_yAxis = ['Searched Token_Word']
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                  outputFilename, outputDir,
-                                                  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                  chart_title="Frequency Distribution of Searched " + related_token_POSTAG + " words/tokens",
-                                                  outputFileNameType='srchd_word',
-                                                  column_xAxis_label= '' + ' Searched words for the word "' + form_of_token + '"',
-                                                  count_var=count_var,
-                                                  hover_label=[],
-                                                  groupByList=['Document'],  # ['Document ID', 'Document'],
-                                                  plotList=[],  # ['Concreteness (Mean score)'],
-                                                  chart_title_label='')  # 'Concreteness Statistics')
+        outputFiles = charts_util.plot(outputFilename, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Searched " + related_token_POSTAG + " words/tokens", x_label='' + ' Searched words for the word "' + form_of_token + '"', count=count_var, file_label='srchd_word')  # 'Concreteness Statistics')
         if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -520,17 +510,7 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, 
 
         columns_to_be_plotted_xAxis = ['POS Tag of Searched Token_Word']
         columns_to_be_plotted_yAxis = ['POS Tag of Searched Token_Word']
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                           outputFilename, outputDir,
-                                                           columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                           chart_title="Frequency Distribution of ' + _tok_postag_ + ' POS Tag of Searched Token_Word",
-                                                           outputFileNameType='',
-                                                           column_xAxis_label=_tok_postag_ + ' POS Tag for the word "' + form_of_token + '"',
-                                                           count_var=count_var,
-                                                           hover_label=[],
-                                                           groupByList=[],  # ['Document ID', 'Document'],
-                                                           plotList=[],  # ['Concreteness (Mean score)'],
-                                                           chart_title_label='')  # 'Concreteness Statistics')
+        outputFiles = charts_util.plot(outputFilename, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of ' + _tok_postag_ + ' POS Tag of Searched Token_Word", x_label=_tok_postag_ + ' POS Tag for the word "' + form_of_token + '"', count=count_var, group_by=None)  # 'Concreteness Statistics')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -540,17 +520,7 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, 
             columns_to_be_plotted_xAxis = ['DepRel of Searched Token_Word']
             columns_to_be_plotted_yAxis = ['DepRel of Searched Token_Word']
             # @@@
-            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                               outputFilename, outputDir,
-                                                               columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                               chart_title="Frequency Distribution of " + _tok_deprel_ + " DepRel of Searched Token_Word",
-                                                               outputFileNameType='',
-                                                               column_xAxis_label=_tok_deprel_ + ' DepRel Tag for the word "' + form_of_token + '"',
-                                                               count_var=count_var,
-                                                               hover_label=[],
-                                                               groupByList=[],  # ['Document ID', 'Document'],
-                                                               plotList=[],  # ['Concreteness (Mean score)'],
-                                                               chart_title_label='')  # 'Concreteness Statistics')
+            outputFiles = charts_util.plot(outputFilename, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of " + _tok_deprel_ + " DepRel of Searched Token_Word", x_label=_tok_deprel_ + ' DepRel Tag for the word "' + form_of_token + '"', count=count_var, group_by=None)  # 'Concreteness Statistics')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -560,17 +530,7 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, 
 
         columns_to_be_plotted_xAxis = ['Co-occurring Token_Word']
         columns_to_be_plotted_yAxis = ['Co-occurring Token_Word']
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                           outputFilename, outputDir,
-                                                           columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                           chart_title="Frequency Distribution of Co-occurring " + related_token_POSTAG + " words/tokens",
-                                                           outputFileNameType='coOcc_word',
-                                                           column_xAxis_label=related_token_POSTAG  + ' Co-occurring words for the word "' + form_of_token + '"',
-                                                           count_var=count_var,
-                                                           hover_label=[],
-                                                           groupByList=[],  # ['Document ID', 'Document'],
-                                                           plotList=[],  # ['Concreteness (Mean score)'],
-                                                           chart_title_label='')  # 'Concreteness Statistics')
+        outputFiles = charts_util.plot(outputFilename, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Co-occurring " + related_token_POSTAG + " words/tokens", x_label=related_token_POSTAG  + ' Co-occurring words for the word "' + form_of_token + '"', count=count_var, file_label='coOcc_word', group_by=None)  # 'Concreteness Statistics')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -579,17 +539,7 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, 
 
         columns_to_be_plotted_xAxis = ['POS Tag of Co-occurring Token_Word']
         columns_to_be_plotted_yAxis = ['POS Tag of Co-occurring Token_Word']
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                           outputFilename, outputDir,
-                                                           columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                           chart_title="Frequency Distribution of Co-occurring " + related_token_POSTAG + " POS Tags",
-                                                           outputFileNameType='search_CoOc_POS',
-                                                           column_xAxis_label= related_token_POSTAG  + ' POS Tag co-occurring with the word "' + form_of_token + '"',
-                                                           count_var=count_var,
-                                                           hover_label=[],
-                                                           groupByList=[],  # ['Document ID', 'Document'],
-                                                           plotList=[],  # ['Concreteness (Mean score)'],
-                                                           chart_title_label='')  # 'Concreteness Statistics')
+        outputFiles = charts_util.plot(outputFilename, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Co-occurring " + related_token_POSTAG + " POS Tags", x_label=related_token_POSTAG  + ' POS Tag co-occurring with the word "' + form_of_token + '"', count=count_var, file_label='search_CoOc_POS', group_by=None)  # 'Concreteness Statistics')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -599,17 +549,7 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, 
         columns_to_be_plotted_xAxis = ['DepRel of Co-occurring Token_Word']
         columns_to_be_plotted_yAxis = ['DepRel of Co-occurring Token_Word']
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                           outputFilename, outputDir,
-                                                           columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                           chart_title="Frequency Distribution of Co-occurring " + related_token_DEPREL + " DepRel Tags",
-                                                           outputFileNameType='search_CoOc_DepRel',
-                                                           column_xAxis_label=related_token_DEPREL + ' DepRel Tag co-occurring with the word "' + form_of_token + '"',
-                                                           count_var=count_var,
-                                                           hover_label=[],
-                                                           groupByList=[],  # ['Document ID', 'Document'],
-                                                           plotList=[],  # ['Concreteness (Mean score)'],
-                                                           chart_title_label='')  # 'Concreteness Statistics')
+        outputFiles = charts_util.plot(outputFilename, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Co-occurring " + related_token_DEPREL + " DepRel Tags", x_label=related_token_DEPREL + ' DepRel Tag co-occurring with the word "' + form_of_token + '"', count=count_var, file_label='search_CoOc_DepRel', group_by=None)  # 'Concreteness Statistics')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)

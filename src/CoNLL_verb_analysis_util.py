@@ -201,17 +201,7 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
         columns_to_be_plotted_yAxis = ['Verb Voice']
         count_var = 1
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                  verb_voice_file_name, outputDir,
-                                                  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                  chart_title="Frequency Distribution of Verb Voice",
-                                                  outputFileNameType='verb_voice',
-                                                  column_xAxis_label='Verb voice',
-                                                  count_var=count_var,
-                                                  hover_label=[],
-                                                  groupByList=[], # 'Document' not exported
-                                                  plotList=[],
-                                                  chart_title_label='')
+        outputFiles = charts_util.plot(verb_voice_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Verb Voice", x_label='Verb voice', count=count_var, file_label='verb_voice', group_by=None)
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):
@@ -351,17 +341,7 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
         columns_to_be_plotted_yAxis = ['Verb Modals (POS tag MD)']
         count_var = 1
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                  verb_modals_file_name, outputDir,
-                                                  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                  chart_title="Frequency Distribution of Verb Modals (POS tag MD)",
-                                                  outputFileNameType='verb_modls',
-                                                  column_xAxis_label='Verb Modals (POS tag MD)',
-                                                  count_var=count_var,
-                                                  hover_label=[],
-                                                  groupByList=['Document'],
-                                                  plotList=[],
-                                                  chart_title_label='')
+        outputFiles = charts_util.plot(verb_modals_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Verb Modals (POS tag MD)", x_label='Verb Modals (POS tag MD)', count=count_var, file_label='verb_modls')
 
 
         if outputFiles!=None:
@@ -383,17 +363,7 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
         columns_to_be_plotted_yAxis = ['Verb Modality']
         count_var = 1
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                  verb_modality_file_name, outputDir,
-                                                  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                  chart_title="Frequency Distribution of Verb Modality",
-                                                  outputFileNameType='verb_mod',
-                                                  column_xAxis_label='Verb Modality',
-                                                  count_var=count_var,
-                                                  hover_label=[],
-                                                  groupByList=['Document'],
-                                                  plotList=[],
-                                                  chart_title_label='')
+        outputFiles = charts_util.plot(verb_modality_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Verb Modality", x_label='Verb Modality', count=count_var, file_label='verb_mod')
 
 
         if outputFiles!=None:
@@ -413,17 +383,7 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
         columns_to_be_plotted_yAxis = ['Modality Value']
         count_var = 1
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                  verb_modality_value_stats_file_name, outputDir,
-                                                  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                  chart_title="Frequency Distribution of Modality Value",
-                                                  outputFileNameType='verb_mod_value',
-                                                  column_xAxis_label='Modality value',
-                                                  count_var=count_var,
-                                                  hover_label=[],
-                                                  groupByList=['Document'],
-                                                  plotList=[],
-                                                  chart_title_label='')
+        outputFiles = charts_util.plot(verb_modality_value_stats_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Modality Value", x_label='Modality value', count=count_var, file_label='verb_mod_value')
 
 
         if outputFiles!=None:
@@ -515,17 +475,7 @@ def verb_compute_frequencies(inputFilename, outputDir, data, data_divided_sents,
     columns_to_be_plotted_yAxis = ['Verb POS tag']
     count_var = 1
 
-    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                              verb_POS_file_name, outputDir,
-                                              columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                              chart_title="Frequency Distribution of Verb POS Tags",
-                                              outputFileNameType='verb_POS',
-                                              column_xAxis_label='Verb POS tag',
-                                              count_var=count_var,
-                                              hover_label=[],
-                                              groupByList=[], # 'Document' not exported in this output file
-                                              plotList=[],
-                                              chart_title_label='')
+    outputFiles = charts_util.plot(verb_POS_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Verb POS Tags", x_label='Verb POS tag', count=count_var, file_label='verb_POS', group_by=None)
 
     if outputFiles!=None:
         if isinstance(outputFiles, str):
@@ -618,17 +568,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
         columns_to_be_plotted_yAxis = ['Verb Tense']
         count_var = 1
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                  verb_tense_file_name, outputDir,
-                                                  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                  chart_title="Frequency Distribution of Verb Tense Value",
-                                                  outputFileNameType='verb_tense',
-                                                  column_xAxis_label='Verb tense',
-                                                  count_var=count_var,
-                                                  hover_label=[],
-                                                  groupByList=[], # 'Document' not exported in this output file
-                                                  plotList=[],
-                                                  chart_title_label='')
+        outputFiles = charts_util.plot(verb_tense_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Verb Tense Value", x_label='Verb tense', count=count_var, file_label='verb_tense', group_by=None)
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):

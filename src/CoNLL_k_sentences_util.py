@@ -116,13 +116,9 @@ def k_sent(inputFilename, outputDir, chartPackage, dataTransformation, Begin_K_s
                                                           '', '', '', '', False, True)
         pd.DataFrame(result_counts, columns=head_counts).to_csv(outFile, encoding='utf-8', index=False)
         filesToOpen.append(outFile)
-        ch = charts_util.visualize_chart(chartPackage, dataTransformation, outFile, outputDir, [],
-                                         ['Nouns Proportion', 'Verbs Proportion', 'Adjectives Proportion',
-                                          'Proper-Nouns Proportion'],
-                                         chart_title="Word-class proportions in the first and last K (" +
-                                                     str(Begin_K_sent_var) + '-' + str(End_K_sent_var) + ") sentences",
-                                         outputFileNameType='k_sent', column_xAxis_label='Tags', count_var=0,
-                                         hover_label=[], groupByList=[], plotList=[], chart_title_label='')
+        ch = charts_util.plot(outFile, outputDir, columns=['Nouns Proportion', 'Verbs Proportion', 'Adjectives Proportion',
+                                          'Proper-Nouns Proportion'], title="Word-class proportions in the first and last K (" +
+                                                     str(Begin_K_sent_var) + '-' + str(End_K_sent_var) + ") sentences", x_label='Tags', count=0, file_label='k_sent', group_by=None)
         if ch is not None:
             filesToOpen.extend([ch] if isinstance(ch, str) else ch)
 
@@ -133,14 +129,10 @@ def k_sent(inputFilename, outputDir, chartPackage, dataTransformation, Begin_K_s
                                                           label + '_rep_words', '', '', '', '', False, True)
         pd.DataFrame(result_rep, columns=head_rep).to_csv(outFile, encoding='utf-8', index=False)
         filesToOpen.append(outFile)
-        ch = charts_util.visualize_chart(chartPackage, dataTransformation, outFile, outputDir, [], ['Lemma'],
-                                         chart_title="Words repeated in BOTH the first and last K (" +
+        ch = charts_util.plot(outFile, outputDir, columns=['Lemma'], title="Words repeated in BOTH the first and last K (" +
                                                      str(Begin_K_sent_var) + '-' + str(End_K_sent_var) +
-                                                     ") sentences (bookend repetition)",
-                                         outputFileNameType=str(Begin_K_sent_var) + '-' + str(End_K_sent_var) +
-                                                            '-sent_rep_words',
-                                         column_xAxis_label='Words', count_var=1,
-                                         hover_label=[], groupByList=[], plotList=[], chart_title_label='')
+                                                     ") sentences (bookend repetition)", x_label='Words', file_label=str(Begin_K_sent_var) + '-' + str(End_K_sent_var) +
+                                                            '-sent_rep_words', group_by=None)
         if ch is not None:
             filesToOpen.extend([ch] if isinstance(ch, str) else ch)
 

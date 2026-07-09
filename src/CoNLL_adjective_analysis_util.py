@@ -211,17 +211,7 @@ def adjective_stats(inputFilename, outputDir, data, data_divided_sents, openOutp
         columns_to_be_plotted_yAxis = ['Adjective POS Tags']
         count_var = 1
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                  adjective_postag_list_file_name, outputDir,
-                                                  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                  chart_title="Frequency Distribution of Adjective POS Tags",
-                                                  outputFileNameType='adjective_POS',
-                                                  column_xAxis_label='Adjective POS tag',
-                                                  count_var=count_var,
-                                                  hover_label=[],
-                                                  groupByList=['Document'],
-                                                  plotList=[],
-                                                  chart_title_label='')
+        outputFiles = charts_util.plot(adjective_postag_list_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Adjective POS Tags", x_label='Adjective POS tag', count=count_var, file_label='adjective_POS')
 
         if outputFiles:
             filesToOpen.extend(outputFiles if isinstance(outputFiles, list) else [outputFiles])
@@ -231,17 +221,7 @@ def adjective_stats(inputFilename, outputDir, data, data_divided_sents, openOutp
         columns_to_be_plotted_yAxis = ['Adjective NER Tags']
         count_var = 1
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                  adjective_ner_list_file_name, outputDir,
-                                                  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                  chart_title="Frequency Distribution of Adjective NER Tags",
-                                                  outputFileNameType='adjective_NER',
-                                                  column_xAxis_label='Adjective NER tag',
-                                                  count_var=count_var,
-                                                  hover_label=[],
-                                                  groupByList=['Document'],
-                                                  plotList=[],
-                                                  chart_title_label='')
+        outputFiles = charts_util.plot(adjective_ner_list_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Adjective NER Tags", x_label='Adjective NER tag', count=count_var, file_label='adjective_NER')
 
         if outputFiles:
             filesToOpen.extend(outputFiles if isinstance(outputFiles, list) else [outputFiles])
@@ -251,17 +231,7 @@ def adjective_stats(inputFilename, outputDir, data, data_divided_sents, openOutp
         columns_to_be_plotted_yAxis = ['Adjective DEPREL Tags']
         count_var = 1
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                  adjective_deprel_list_file_name, outputDir,
-                                                  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                  chart_title="Frequency Distribution of Adjective DEPREL Tags",
-                                                  outputFileNameType='adjective_DEPREL',
-                                                  column_xAxis_label='Adjective DEPREL tag',
-                                                  count_var=count_var,
-                                                  hover_label=[],
-                                                  groupByList=['Document'],
-                                                  plotList=[],
-                                                  chart_title_label='')
+        outputFiles = charts_util.plot(adjective_deprel_list_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Adjective DEPREL Tags", x_label='Adjective DEPREL tag', count=count_var, file_label='adjective_DEPREL')
 
         if outputFiles:
             filesToOpen.extend(outputFiles if isinstance(outputFiles, list) else [outputFiles])

@@ -183,17 +183,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
         columns_to_be_plotted_yAxis=['Clause Tag']
         count_var=1
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                  clausal_analysis_stats_file_name, outputDir,
-                                                  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                  chart_title="Frequency Distribution of Clause Types",
-                                                  outputFileNameType='clausal_stats',
-                                                  column_xAxis_label='Clause Type',
-                                                  count_var=count_var,
-                                                  hover_label=[],
-                                                  groupByList=['Document'],
-                                                  plotList=[],
-                                                  chart_title_label='')
+        outputFiles = charts_util.plot(clausal_analysis_stats_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Clause Types", x_label='Clause Type', count=count_var, file_label='clausal_stats')
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):

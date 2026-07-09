@@ -258,17 +258,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         columns_to_be_plotted_yAxis = ['Noun POS Tags']
         count_var = 1
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                  noun_postag_list_file_name, outputDir,
-                                                  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                  chart_title="Frequency Distribution of Noun POS Tags",
-                                                  outputFileNameType='noun_POS',
-                                                  column_xAxis_label='Noun POS tag',
-                                                  count_var=count_var,
-                                                  hover_label=[],
-                                                  groupByList=['Document'],
-                                                  plotList=[],
-                                                  chart_title_label='')
+        outputFiles = charts_util.plot(noun_postag_list_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Noun POS Tags", x_label='Noun POS tag', count=count_var, file_label='noun_POS')
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):
@@ -280,17 +270,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         columns_to_be_plotted_yAxis = ['Noun NER Tags']
         count_var = 1
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                  noun_postag_list_file_name, outputDir,
-                                                  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                  chart_title="Frequency Distribution of Noun NER Tags",
-                                                  outputFileNameType='noun_NER',
-                                                  column_xAxis_label='Noun NER tag',
-                                                  count_var=count_var,
-                                                  hover_label=[],
-                                                  groupByList=['Document'],
-                                                  plotList=[],
-                                                  chart_title_label='')
+        outputFiles = charts_util.plot(noun_postag_list_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Noun NER Tags", x_label='Noun NER tag', count=count_var, file_label='noun_NER')
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):
@@ -302,17 +282,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         columns_to_be_plotted_yAxis = ['Noun DEPREL Tags']
         count_var = 1
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                  noun_deprel_list_file_name, outputDir,
-                                                  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                  chart_title="Frequency Distribution of Noun DEPREL Tags",
-                                                  outputFileNameType='noun_DEPREL',
-                                                  column_xAxis_label='Noun DEPREL tag',
-                                                  count_var=count_var,
-                                                  hover_label=[],
-                                                  groupByList=['Document'],
-                                                  plotList=[],
-                                                  chart_title_label='')
+        outputFiles = charts_util.plot(noun_deprel_list_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Noun DEPREL Tags", x_label='Noun DEPREL tag', count=count_var, file_label='noun_DEPREL')
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):
