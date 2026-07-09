@@ -489,9 +489,17 @@ videos_lookup = {'No videos available': ''}
 videos_options = 'No videos available'
 
 TIPS_lookup = {'Narrative / non-geocodable symbolic space': 'TIPS_NLP_GIS Narrative non-geocodable symbolic space.pdf',
+               'GIS (Geographic Information System): Mapping Locations': 'TIPS_NLP_GIS (Geographic Information System).pdf',
+               'Extracting locations: NER (Named Entity Recognition)': 'TIPS_NLP_NER tags across packages.pdf',
+               'Statistical measures': 'TIPS_NLP_Statistical measures.pdf',
                'Geocoding': 'TIPS_NLP_GIS_Geocoding.pdf',
+               'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                'csv files - Problems & solutions': 'TIPS_NLP_csv files - Problems & solutions.pdf'}
-TIPS_options = 'Narrative / non-geocodable symbolic space', 'Geocoding', 'csv files - Problems & solutions'
+TIPS_options = ('Narrative / non-geocodable symbolic space',
+                'GIS (Geographic Information System): Mapping Locations',
+                'Extracting locations: NER (Named Entity Recognition)',
+                'Statistical measures', 'Geocoding', 'utf-8 encoding',
+                'csv files - Problems & solutions')
 
 
 def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
