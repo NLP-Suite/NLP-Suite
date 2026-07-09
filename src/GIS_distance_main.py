@@ -226,10 +226,13 @@ def select_csv_file():
         window, matches,
         'Select a GEOCODED GIS csv (Latitude & Longitude columns) found for your corpus, '
         'or browse for another file:',
-        title='Available geocoded GIS csv files')
+        title='Available geocoded GIS csv files',
+        browse_filetypes=[('csv files', '*.csv'), ('All files', '*.*')],
+        browse_title='Select INPUT geocoded csv file')
     if chosen is None:
         return
     if chosen == '__BROWSE__':
+        # empty list -> no highlighted file to anchor on; browse from the default location
         f = filedialog.askopenfilename(title='Select INPUT geocoded csv file',
                                        filetypes=[('csv files', '*.csv'), ('All files', '*.*')])
     else:

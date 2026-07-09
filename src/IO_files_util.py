@@ -1206,10 +1206,14 @@ def gatherCLAs():
     #         # move the quote file under quote dir where a user is more likely to look for it
 
 
-def select_path_from_list(window, paths, intro_text, title='Available files'):
+def select_path_from_list(window, paths, intro_text, title='Available files',
+                          browse_filetypes=None, browse_title='Select a file'):
     """Modal picker: list 'paths' (each labelled by its parent-folder/filename) for the user to choose one.
     Returns the chosen path, the sentinel '__BROWSE__' (the list is empty, or the user chose to browse for
-    another file), or None (the user cancelled). Reusable file-selection helper (CoNLL, GIS, ...)."""
+    another file), or None (the user cancelled). Reusable file-selection helper (CoNLL, GIS, ...).
+    If browse_filetypes is supplied, 'Browse for another file...' opens the file dialog HERE, starting in
+    the folder of the currently highlighted file, and returns the browsed path directly (so the caller no
+    longer needs its own filedialog for the non-empty-list case)."""
     import tkinter as tk
     if not paths:
         return '__BROWSE__'
@@ -1237,8 +1241,20 @@ def select_path_from_list(window, paths, intro_text, title='Available files'):
             top.destroy()
 
     def do_browse():
-        result['value'] = '__BROWSE__'
-        top.destroy()
+        # if the caller supplied filetypes, open the file dialog here, starting in the folder of the
+        # currently highlighted file; otherwise hand '__BROWSE__' back for the caller to browse
+        if browse_filetypes is not None:
+            initialdir = ''
+            sel = lb.curselection()
+            if sel:
+                initialdir = os.path.dirname(paths[sel[0]])
+            browsed = filedialog.askopenfilename(title=browse_title, initialdir=initialdir, filetypes=browse_filetypes)
+            if browsed:                       # cancelled -> leave the picker open
+                result['value'] = browsed
+                top.destroy()
+        else:
+            result['value'] = '__BROWSE__'
+            top.destroy()
 
     def do_open():
         # open the highlighted file (Excel / default app) WITHOUT closing the picker,
