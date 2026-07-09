@@ -1,3 +1,5 @@
+> 💡 **Tip:** In the **Release list** on the left, **click any version** (e.g. the newest one at the top) to open it and see **what's new** in that release. Scroll down on this page for the highlights.
+
 ## 📥 What you need to do
 
 1. **Download** the installer for your computer from the **Assets** below:
