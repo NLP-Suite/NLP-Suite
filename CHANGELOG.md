@@ -4,6 +4,11 @@ The most recent release is at the top. Each release's bullets are shown as **"Wh
 on the corresponding GitHub Release page (the top section is added automatically by the
 release workflow). Keep the newest version's section at the very top and update it before tagging.
 
+## v1.6.3
+- **Faster corpus & sentence statistics charts.** The tools that build per-sentence charts (sentence complexity, subordination) no longer re-run the language model on every document just to count its sentences — a large speed-up on multi-document corpora, with identical results.
+- **Fixed a crash in "What's in your corpus → sentence complexity".** It was trying to reinstall an old version of a language library at run time and failing; it now downloads the needed model instead.
+- **Chart engine modernization (behind the scenes).** ~100 chart-producing tools were moved onto a cleaner internal chart interface. Charts look and behave exactly the same, but the code is far simpler and several long-standing chart bugs and dead code paths were removed. *(A good area to spot-check while testing: run a few tools that produce charts — POS/verb/adverb analyses, sentiment, parser visualizations — and confirm the Excel charts still open correctly.)*
+
 ## v1.6.2
 - **Under-the-hood modernization of every tool.** All ~50 GUIs had their **RUN** button rewired to a simpler, more reliable pattern. Nothing changes in how you use the tools — but it removes a long-standing source of bugs and makes future fixes safer.
 - **CoNLL Table Analyzer:** you can now run the **Basic and Advanced analyses together** in a single pass, instead of one at a time.
