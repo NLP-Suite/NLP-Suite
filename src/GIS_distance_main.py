@@ -141,7 +141,6 @@ def run(inputFilename,outputDir, openOutputFiles, chartPackage, dataTransformati
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.create_chart_output_checkbox.get(),
                             GUI_util.charts_package_options_widget.get(),
                             GUI_util.data_transformation_options_widget.get(),
                             encoding_var.get(),
@@ -320,6 +319,7 @@ def clear(e):
     baselineLocation_entry_var.set('')
     location_var.set('')
     location_var2.set('')
+    GUI_util.run_button.configure(state='disabled')   # no input -> RUN off until a csv is picked again
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
