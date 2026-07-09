@@ -267,18 +267,8 @@ def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutput
 				print('Input directory "' + inputDir + '" is invalid.')
 				sys.exit(0)
 
-		outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
-												  columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=[
-				'Sentence iconicity (Mean score: 1 Not iconic-7 Very iconic)'],
-												  # columns_to_be_plotted_bySent= [[10, 7, 0]],
-												  chart_title='Frequency Distribution of Sentence Iconicity Scores (1 Not iconic-7 Very iconic)',
-												  count_var=1,  # 0 for numeric field
-												  hover_label=[],
-												  outputFileNameType='',
-												  column_xAxis_label='Sentence iconicity scores',
-												  groupByList=['Document'],
-												  plotList=[],
-												  chart_title_label='Sentence Iconicity Statistics')
+		outputFiles = charts_util.plot(outputFilename, outputDir, columns=[
+				'Sentence iconicity (Mean score: 1 Not iconic-7 Very iconic)'], title='Frequency Distribution of Sentence Iconicity Scores (1 Not iconic-7 Very iconic)', x_label='Sentence iconicity scores', title_label='Sentence Iconicity Statistics')
 		if outputFiles != None:
 			if isinstance(outputFiles, str):
 				filesToOpen.append(outputFiles)
@@ -298,18 +288,7 @@ def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutput
 			IO_error = IO_csv_util.list_to_csv(0, iconic_words, temp_outputFilename)
 			if not IO_error:
 				filesToOpen.append(temp_outputFilename)
-				outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, temp_outputFilename, outputDir,
-																   columns_to_be_plotted_xAxis=[],
-														  		   columns_to_be_plotted_yAxis=['Word'],
-																   # columns_to_be_plotted_bySent= [[10, 7, 0]],
-																   chart_title='Frequency Distribution of Iconic Words',
-																   count_var=1, # 0 for numeric field
-																   hover_label=[],
-																   outputFileNameType='',
-																   column_xAxis_label='Word',
-																   groupByList=['Document'],
-																   plotList=[],
-																   chart_title_label='Iconic Words')
+				outputFiles = charts_util.plot(temp_outputFilename, outputDir, columns=['Word'], title='Frequency Distribution of Iconic Words', x_label='Word', title_label='Iconic Words')
 				if outputFiles!=None:
 					if isinstance(outputFiles, str):
 						filesToOpen.append(outputFiles)

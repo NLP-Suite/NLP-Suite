@@ -422,16 +422,7 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
 
     filesToOpen.append(outputFilename)
 
-    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
-                                                       columns_to_be_plotted_xAxis=[],
-                                                       columns_to_be_plotted_yAxis=['Sentence length (in words)'],
-                                                       chart_title='Sentence Length (In Words)',
-                                                       count_var=1, hover_label=[],
-                                                       outputFileNameType='Sent', #'line_bar',
-                                                       column_xAxis_label='Sentence length (in words)',
-                                                       groupByList=['Document'],
-                                                       plotList=['Sentence length (in words)'],
-                                                       chart_title_label='Sentence Lenghts')
+    outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Sentence length (in words)'], title='Sentence Length (In Words)', x_label='Sentence length (in words)', file_label='Sent', plot_list=['Sentence length (in words)'], title_label='Sentence Lenghts')
 
     if outputFiles!=None:
         if isinstance(outputFiles, str):
@@ -508,16 +499,7 @@ def compute_line_length(window, configFileName, inputFilename, inputDir, outputD
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running line length analysis at', True, '', True, startTime, True)
 
     # produce all charts
-    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
-                                              columns_to_be_plotted_xAxis=[],
-                                              columns_to_be_plotted_yAxis=['Line length (in words)'],
-                                              chart_title='Frequency Distribution of Line Length',
-                                              count_var=1, hover_label=[],
-                                              outputFileNameType='', #'line_bar', column_xAxis_label='Line length',
-                                              column_xAxis_label='Line length',
-                                              groupByList=['Document'],
-                                              plotList=['Line length (in words)'],
-                                              chart_title_label='Line Length')
+    outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Line length (in words)'], title='Frequency Distribution of Line Length', x_label='Line length', plot_list=['Line length (in words)'], title_label='Line Length')
 
     if outputFiles!=None:
         if isinstance(outputFiles, str):
@@ -698,18 +680,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName,
                # chartPackage = "Excel" ## I am too tired ... I don't know why -- Simon
                # createCharts = 1
                 # this variable is not right....
-                outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, csv_vocab_outputFilename,
-                                                          outputDir,
-                                                          columns_to_be_plotted_xAxis=columns_to_be_plotted_xAxis,
-                                                          columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                          chart_title='Frequency of ' + str(index+1) + '-gram' ,
-                                                          count_var=0, hover_label=[],  # hover_label,
-                                                          # outputFileNameType='n-grams_'+str(gram), # +'_'+ tail,
-                                                          outputFileNameType='',
-                                                          column_xAxis_label=str(index+1) + '-gram',
-                                                          groupByList=[], #['Document'],
-                                                          plotList=[], # ['Frequency in Document'],
-                                                          chart_title_label=str(index+1) + '-gram')
+                outputFiles = charts_util.plot(csv_vocab_outputFilename, outputDir, columns=columns_to_be_plotted_yAxis, title='Frequency of ' + str(index+1) + '-gram', x_label=str(index+1) + '-gram', count=0, group_by=None, title_label=str(index+1) + '-gram')
                 if outputFiles != None:
                     if isinstance(outputFiles, str):
                         filesToOpen.append(outputFiles)
@@ -735,18 +706,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName,
            # chartPackage = "Excel" ## I am too tired ... I don't know why -- Simon
            # createCharts = 1
             # this variable is not right....
-            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, csv_outputFilename,
-                                                      outputDir,
-                                                      columns_to_be_plotted_xAxis=columns_to_be_plotted_xAxis,
-                                                      columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                      chart_title='Frequency of ' + str(index+1) + '-gram' ,
-                                                      count_var=0, hover_label=[],  # hover_label,
-                                                      # outputFileNameType='n-grams_'+str(gram), # +'_'+ tail,
-                                                      outputFileNameType='',
-                                                      column_xAxis_label=str(index+1) + '-gram',
-                                                      groupByList=['Document'],
-                                                      plotList=['Frequency in Document'],
-                                                      chart_title_label=str(index+1) + '-gram')
+            outputFiles = charts_util.plot(csv_outputFilename, outputDir, columns=columns_to_be_plotted_yAxis, title='Frequency of ' + str(index+1) + '-gram', x_label=str(index+1) + '-gram', count=0, plot_list=['Frequency in Document'], title_label=str(index+1) + '-gram')
             if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -1258,16 +1218,7 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
         filesToOpen.append(outputFilename)
 
     if chartPackage!='No charts':
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
-                                                    columns_to_be_plotted_xAxis=[],
-                                                    columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                    chart_title=chart_title_label,
-                                                    count_var=1, hover_label=[],
-                                                    outputFileNameType='',  # 'line_bar',
-                                                    column_xAxis_label=column_xAxis_label,
-                                                    groupByList=['Document'],
-                                                    plotList=['Frequency'],
-                                                    chart_title_label=column_xAxis_label)
+        outputFiles = charts_util.plot(outputFilename, outputDir, columns=columns_to_be_plotted_yAxis, title=chart_title_label, x_label=column_xAxis_label, plot_list=['Frequency'], title_label=column_xAxis_label)
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):
@@ -1647,17 +1598,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
 
                 # overall qualitative grade level (e.g., 4th)
                 hover_label = []
-                outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                                                   outputDir,
-                                                                   columns_to_be_plotted_xAxis=[],
-                                                                   columns_to_be_plotted_yAxis=['Overall readability consensus'],
-                                                                   chart_title='Text Readability\nFrequencies of Overall Readability Consensus',
-                                                                   count_var=1, hover_label=[],
-                                                                   outputFileNameType='cons',  # 'READ_bar',
-                                                                   column_xAxis_label='Consensus readability level',
-                                                                   groupByList=[],
-                                                                   plotList=[],
-                                                                   chart_title_label='')
+                outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Overall readability consensus'], title='Text Readability\nFrequencies of Overall Readability Consensus', x_label='Consensus readability level', file_label='cons', group_by=None)
                 if outputFiles!=None:
                     if isinstance(outputFiles, str):
                         filesToOpen.append(outputFiles)
@@ -1672,17 +1613,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
                 # hover_label = ['Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence']
                 hover_label = []
 
-                outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                                                   outputDir,
-                                                                   columns_to_be_plotted_xAxis=[],
-                                                                   columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                                   chart_title='Text Readability\nFrequencies of 6 Readability Measures',
-                                                                   count_var=0, hover_label=[],
-                                                                   outputFileNameType='',  # 'READ_bar',
-                                                                   column_xAxis_label='Readability scores',
-                                                                   groupByList=[],
-                                                                   plotList=[],
-                                                                   chart_title_label='')
+                outputFiles = charts_util.plot(outputFilename, outputDir, columns=columns_to_be_plotted_yAxis, title='Text Readability\nFrequencies of 6 Readability Measures', x_label='Readability scores', count=0, group_by=None)
                 if outputFiles!=None:
                     if isinstance(outputFiles, str):
                         filesToOpen.append(outputFiles)
@@ -1691,17 +1622,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
 
                 # overall numeric grade level
                 hover_label = []
-                outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                                                   outputDir,
-                                                                   columns_to_be_plotted_xAxis=[],
-                                                                   columns_to_be_plotted_yAxis=['Grade level'],
-                                                                   chart_title='Text Readability\nFrequencies of Overall Grade Level',
-                                                                   count_var=0, hover_label=[],
-                                                                   outputFileNameType='grade',  # 'READ_bar',
-                                                                   column_xAxis_label='Grade level',
-                                                                   groupByList=['Document'],
-                                                                   plotList=['Grade level'],
-                                                                   chart_title_label='Readability Grade Level')
+                outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Grade level'], title='Text Readability\nFrequencies of Overall Grade Level', x_label='Grade level', count=0, file_label='grade', plot_list=['Grade level'], title_label='Readability Grade Level')
                 if outputFiles!=None:
                     if isinstance(outputFiles, str):
                         filesToOpen.append(outputFiles)
@@ -1917,18 +1838,7 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, conf
 
     # TODO we need an X-axis to plot these scores against
     # , 'Frazier score'
-    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
-                                                       columns_to_be_plotted_xAxis=[],
-                                                       columns_to_be_plotted_yAxis=['Yngve score'],
-                                                       chart_title='Frequency Distribution of Complexity Scores\n(Yngve & Frazier)',
-                                                       count_var=0, # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
-                                                       hover_label=[],
-                                                       outputFileNameType='', #'' #'complexity_bar',
-                                                       column_xAxis_label='Complexity scores',
-                                                       column_yAxis_label='Scores',
-                                                       groupByList=['Document'],
-                                                       plotList=['Yngve score','Frazier score'],
-                                                       chart_title_label='Complexity Scores')
+    outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Yngve score'], title='Frequency Distribution of Complexity Scores\n(Yngve & Frazier)', x_label='Complexity scores', count=0, plot_list=['Yngve score','Frazier score'], title_label='Complexity Scores', y_label='Scores')
     if outputFiles!=None:
         if isinstance(outputFiles, str):
             filesToOpen.append(outputFiles)
@@ -2036,18 +1946,7 @@ def compute_subordination_ratio(window, inputFilename, inputDir, outputDir, conf
     IO_csv_util.df_to_csv(window, op, outputFilename, columns, False, 'utf-8')
     filesToOpen.append(outputFilename)
 
-    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
-                                                       columns_to_be_plotted_xAxis=[],
-                                                       columns_to_be_plotted_yAxis=['Subordination Ratio'],
-                                                       chart_title='Distribution of Subordination Ratios',
-                                                       count_var=0,
-                                                       hover_label=[],
-                                                       outputFileNameType='',
-                                                       column_xAxis_label='Subordination Ratio',
-                                                       column_yAxis_label='Frequency',
-                                                       groupByList=['Document'],
-                                                       plotList=['Subordination Ratio'],
-                                                       chart_title_label='Subordination Ratio')
+    outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Subordination Ratio'], title='Distribution of Subordination Ratios', x_label='Subordination Ratio', count=0, plot_list=['Subordination Ratio'], title_label='Subordination Ratio', y_label='Frequency')
 
     if outputFiles != None:
         if isinstance(outputFiles, str):
@@ -2157,18 +2056,7 @@ def compute_dependency_distance(window, inputFilename, inputDir, outputDir, conf
     IO_csv_util.df_to_csv(window, op, outputFilename, columns, False, 'utf-8')
     filesToOpen.append(outputFilename)
 
-    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
-                                                       columns_to_be_plotted_xAxis=[],
-                                                       columns_to_be_plotted_yAxis=['Avg Dependency Distance'],
-                                                       chart_title='Distribution of Dependency Distances',
-                                                       count_var=0,
-                                                       hover_label=[],
-                                                       outputFileNameType='',
-                                                       column_xAxis_label='Avg Dependency Distance',
-                                                       column_yAxis_label='Frequency',
-                                                       groupByList=['Document'],
-                                                       plotList=['Avg Dependency Distance'],
-                                                       chart_title_label='Avg Dependency Distance')
+    outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Avg Dependency Distance'], title='Distribution of Dependency Distances', x_label='Avg Dependency Distance', count=0, plot_list=['Avg Dependency Distance'], title_label='Avg Dependency Distance', y_label='Frequency')
 
     if outputFiles != None:
         if isinstance(outputFiles, str):
