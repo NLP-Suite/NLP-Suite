@@ -163,18 +163,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, configFileName, annotationType
     if not df.empty:
         import charts_util
         chart_label = annotationTypes[0] if annotationTypes else 'Thing'
-        outputFiles = charts_util.visualize_chart(
-            chartPackage, dataTransformation, csvname, outputDir,
-            columns_to_be_plotted_xAxis=[],
-            columns_to_be_plotted_yAxis=['Token'],
-            chart_title='Frequency of YAGO ' + chart_label + ' Words',
-            count_var=1,
-            hover_label=[],
-            outputFileNameType='',
-            column_xAxis_label='YAGO ' + chart_label + ' word',
-            groupByList=['Document'],
-            plotList=[],
-            chart_title_label='')
+        outputFiles = charts_util.plot(csvname, outputDir, columns=['Token'], title='Frequency of YAGO ' + chart_label + ' Words', x_label='YAGO ' + chart_label + ' word')
         if outputFiles is not None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)

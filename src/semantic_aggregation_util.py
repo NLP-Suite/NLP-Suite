@@ -124,12 +124,7 @@ def _aggregate_flat(resource, category_fn, inputFile, outputDir, noun_verb, char
             wtr.writerow({cat_col: cat, 'Frequency': n})
     filesToOpen += [csv1, csv2]
     if chartPackage and chartPackage != 'No charts':
-        of = charts_util.visualize_chart(chartPackage, dataTransformation, csv1, outputDir,
-            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=[cat_col],
-            chart_title='Frequency of %s categories for %s' % (resource, noun_verb),
-            count_var=1, hover_label=[], outputFileNameType='',
-            column_xAxis_label='%s %s category' % (resource, noun_verb),
-            groupByList=[], plotList=[], chart_title_label='')
+        of = charts_util.plot(csv1, outputDir, columns=[cat_col], title='Frequency of %s categories for %s' % (resource, noun_verb), x_label='%s %s category' % (resource, noun_verb), group_by=None)
         if of:
             filesToOpen.extend(of if isinstance(of, list) else [of])
     return filesToOpen
@@ -249,11 +244,7 @@ def wsd_aggregate_WordNet(conll_file, outputDir, noun_verb, chartPackage, dataTr
             wtr.writerow({'WordNet category': cat, 'Frequency': n})
     filesToOpen += [csv1, csv2]
     if chartPackage and chartPackage != 'No charts':
-        of = charts_util.visualize_chart(chartPackage, dataTransformation, csv1, outputDir,
-            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['WordNet category'],
-            chart_title='Word-sense-disambiguated WordNet categories for %s' % noun_verb,
-            count_var=1, hover_label=[], outputFileNameType='',
-            column_xAxis_label='WordNet category (WSD)', groupByList=[], plotList=[], chart_title_label='')
+        of = charts_util.plot(csv1, outputDir, columns=['WordNet category'], title='Word-sense-disambiguated WordNet categories for %s' % noun_verb, x_label='WordNet category (WSD)', group_by=None)
         if of:
             filesToOpen.extend(of if isinstance(of, list) else [of])
     return filesToOpen

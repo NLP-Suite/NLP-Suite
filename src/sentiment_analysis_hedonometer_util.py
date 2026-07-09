@@ -282,16 +282,7 @@ def main(inputFilename, inputDir, outputDir, mode,  chartPackage='Excel', dataTr
             columns_to_be_plotted_yAxis=['Sentiment score (Median)']
         # inputFilename = outputFilename
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
-                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                   chart_title='Frequency of Hedonometer Sentiment Scores',
-                                                   count_var=0, hover_label=[],
-                                                   outputFileNameType='Hedo',  # 'line_bar',
-                                                   column_xAxis_label='Sentiment score',
-                                                   column_yAxis_label='Scores',
-                                                   groupByList=['Document'],
-                                                   plotList=['Sentiment Score'],
-                                                   chart_title_label='Hedonometer Sentiment Scores')
+        outputFiles = charts_util.plot(outputFilename, outputDir, columns=columns_to_be_plotted_yAxis, title='Frequency of Hedonometer Sentiment Scores', x_label='Sentiment score', count=0, file_label='Hedo', plot_list=['Sentiment Score'], title_label='Hedonometer Sentiment Scores', y_label='Scores')
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):

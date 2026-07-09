@@ -255,17 +255,7 @@ def main(inputFilename, inputDir, outputDir, chartPackage='Excel', dataTransform
     filesToOpen.append(plutchik_file)
 
     if chartPackage != 'No charts':
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
-                                                   columns_to_be_plotted_xAxis=[],
-                                                   columns_to_be_plotted_yAxis=emotion_cols,
-                                                   chart_title='NRC Emotion Scores by Sentence',
-                                                   count_var=0, hover_label=[],
-                                                   outputFileNameType='NRC',
-                                                   column_xAxis_label='Sentence ID',
-                                                   column_yAxis_label='Emotion Score',
-                                                   groupByList=['Document'],
-                                                   plotList=emotion_cols,
-                                                   chart_title_label='NRC Emotion Scores')
+        outputFiles = charts_util.plot(outputFilename, outputDir, columns=emotion_cols, title='NRC Emotion Scores by Sentence', x_label='Sentence ID', count=0, file_label='NRC', plot_list=emotion_cols, title_label='NRC Emotion Scores', y_label='Emotion Score')
         if outputFiles is not None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)

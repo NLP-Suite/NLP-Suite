@@ -295,16 +295,7 @@ def main(inputFilename, inputDir, outputDir, mode,  chartPackage='Excel', dataTr
     if chartPackage!='No charts':
         # VADER does not compute separate mean and median values
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
-                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Sentiment score'],
-                                                   chart_title='Frequency of VADER Sentiment Scores',
-                                                   count_var=0, hover_label=[],
-                                                   outputFileNameType='VADER',  # 'line_bar',
-                                                   column_xAxis_label='Sentiment label',
-                                                   column_yAxis_label='Scores',
-                                                   groupByList=['Document'],
-                                                   plotList=['Sentiment Score'],
-                                                   chart_title_label='VADER Sentiment Scores')
+        outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Sentiment score'], title='Frequency of VADER Sentiment Scores', x_label='Sentiment label', count=0, file_label='VADER', plot_list=['Sentiment Score'], title_label='VADER Sentiment Scores', y_label='Scores')
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):

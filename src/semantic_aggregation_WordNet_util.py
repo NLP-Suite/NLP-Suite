@@ -295,16 +295,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
     filesToOpen.append(outputFilenameCSV1)
     filesToOpen.append(outputFilenameCSV2)
 
-    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilenameCSV1, outputDir,
-                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['WordNet Category'],
-                                               chart_title='Frequency of WordNet Aggregate Categories for ' + noun_verb,
-                                               count_var=1,
-                                               hover_label=[],
-                                               outputFileNameType='',
-                                               column_xAxis_label='WordNet ' + noun_verb + ' category',
-                                               groupByList=[],
-                                               plotList=[],
-                                               chart_title_label='')
+    outputFiles = charts_util.plot(outputFilenameCSV1, outputDir, columns=['WordNet Category'], title='Frequency of WordNet Aggregate Categories for ' + noun_verb, x_label='WordNet ' + noun_verb + ' category', group_by=None)
     if outputFiles is not None:
         if isinstance(outputFiles, str):
             filesToOpen.append(outputFiles)
@@ -317,17 +308,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         operation_results_text_list.append(str(outputFilenameCSV1) + ',Word,<>,have,and')
         outputFilenameCSV3_new = data_manipulation_util.export_csv_to_csv_txt(outputDir, operation_results_text_list, '.csv', [0, 1])
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilenameCSV3_new,
-                                                   outputDir,
-                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['WordNet Category'],
-                                                   chart_title='Frequency of WordNet Aggregate Categories for ' + noun_verb + ' (No Auxiliaries)',
-                                                   count_var=1,
-                                                   hover_label=[],
-                                                   outputFileNameType='',
-                                                   column_xAxis_label='WordNet ' + noun_verb + ' category',
-                                                   groupByList=[],
-                                                   plotList=[],
-                                                   chart_title_label='')
+        outputFiles = charts_util.plot(outputFilenameCSV3_new, outputDir, columns=['WordNet Category'], title='Frequency of WordNet Aggregate Categories for ' + noun_verb + ' (No Auxiliaries)', x_label='WordNet ' + noun_verb + ' category', group_by=None)
         if outputFiles is not None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)

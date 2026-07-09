@@ -205,18 +205,7 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, configFileName, openOutputF
 
     if not df.empty:
         import charts_util
-        outputFiles = charts_util.visualize_chart(
-            chartPackage, dataTransformation, csvname, outputDir,
-            columns_to_be_plotted_xAxis=[],
-            columns_to_be_plotted_yAxis=['Token'],
-            chart_title='Frequency of DBpedia Words',
-            count_var=1,
-            hover_label=[],
-            outputFileNameType='',
-            column_xAxis_label='DBpedia word',
-            groupByList=['Document'],
-            plotList=[],
-            chart_title_label='')
+        outputFiles = charts_util.plot(csvname, outputDir, columns=['Token'], title='Frequency of DBpedia Words', x_label='DBpedia word')
         if outputFiles is not None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
