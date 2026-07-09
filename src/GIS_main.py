@@ -561,9 +561,25 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coor
 
 map_characters_var = tk.IntVar()
 map_characters_checkbox = tk.Checkbutton(window, variable=map_characters_var, onvalue=1, offvalue=0)
-map_characters_checkbox.config(text="MAP characters moving in time and space")
+map_characters_checkbox.config(text="MAP characters moving in time and geocodable space")
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                    map_characters_checkbox, False)
+                    map_characters_checkbox, True,
+                    x_coordinate_hover_over=GUI_IO_util.labels_x_coordinate,
+                    text_info="Here 'space' means GEOGRAPHIC, geocodable space - real places that resolve to map "
+                              "coordinates (cities, counties, countries).\n\nFor SYMBOLIC / SOCIAL space that has "
+                              "NO map coordinates (e.g. house vs. field), or how a social attribute (gender, race, "
+                              "class) maps onto types of space, use the 'Symbolic / non-geocodable space' GUI - "
+                              "opened with the button to the right.")
+
+# same row: shortcut to the non-geocodable sibling (this GUI has no 'GUIs available' dropdown).
+# NOTE (layout): x=560 is chosen to clear the long checkbox label; verify/nudge if it overlaps.
+open_symbolic_button = tk.Button(window, text='Open Symbolic (non-geocodable) Space GUI',
+                                 command=lambda: run_script_util.run_script("GIS_symbolic_main.py"))
+y_multiplier_integer = GUI_IO_util.placeWidget(window, 560, y_multiplier_integer, open_symbolic_button, False,
+                    x_coordinate_hover_over=560,
+                    text_info="Open the Symbolic / non-geocodable Space GUI - the companion to this tool for kinds "
+                              "of place that carry social meaning but have NO map coordinates (house, field, "
+                              "threshold, woods), and how gender / race / class map onto them.")
 
 NER_extractor_var.set(0)
 NER_package_var = tk.StringVar()
@@ -822,6 +838,7 @@ TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
                'Statistical measures':'TIPS_NLP_Statistical measures.pdf',
                'GIS (Geographic Information System): Mapping Locations':'TIPS_NLP_GIS (Geographic Information System).pdf',
+               'Symbolic (non-geocodable) space':'TIPS_NLP_GIS Narrative non-geocodable symbolic space.pdf',
                'Extracting locations: NER (Named Entity Recognition)':'TIPS_NLP_NER tags across packages.pdf',
                'Geocoding: How to Improve Nominatim':'TIPS_NLP_GIS_Geocoding Nominatim.pdf',
                "Geocoding":"TIPS_NLP_GIS_Geocoding.pdf",
@@ -831,7 +848,7 @@ TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                "HTML":"TIPS_NLP_GIS_Google Earth Pro HTML.pdf",
                "Google Earth Pro Icon":"TIPS_NLP_GIS_Google Earth Pro Icon.pdf",
                "Google Earth Pro Description":"TIPS_NLP_GIS_Google Earth Pro Description.pdf"}
-TIPS_options='utf-8 encoding','csv files - Problems & solutions','Statistical measures','GIS (Geographic Information System): Mapping Locations','Extracting locations: NER (Named Entity Recognition)','Geocoding','Geocoding: How to Improve Nominatim', 'Google Earth Pro', 'Google API Key', 'HTML', 'Google Earth Pro Icon', 'Google Earth Pro Description'
+TIPS_options='utf-8 encoding','csv files - Problems & solutions','Statistical measures','GIS (Geographic Information System): Mapping Locations','Symbolic (non-geocodable) space','Extracting locations: NER (Named Entity Recognition)','Geocoding','Geocoding: How to Improve Nominatim', 'Google Earth Pro', 'Google API Key', 'HTML', 'Google Earth Pro Icon', 'Google Earth Pro Description'
 
 
 # add all the lines to the end to every special GUI
@@ -848,12 +865,13 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                   "The INPUT csv file widget displays the csv LOCATION file as soon as produced by the NER annotator.\n\nEdit the file and rerun the algorithm to geocode from scratch.\n\nYou can also use the 'Select INPUT CSV file' button to select\n   1. a csv file, however created (e.g., NER annotator), containing a list of locations, i.e., a column header 'Location' and different locations in each row (e.g., Atlanta, New York City, Paris, South Korea); when a DATE field is present, the GIS algorithms will create dynamic maps;\n   2. a csv file of geocoded locations (with fields LATITUDE and LONGITUDE) previosuly created either by this algorithm or externally; if a 'Document' field, or 'Sentence' field, or 'Summary' field or 'Date' field are presnt in the csv file, they will be displayed when clicking on a pin; when a 'Date' field is present, the GIS algorithms will create dynamic maps;\n   3. a csv CoNLL table file with NER location tags; this last option, however, is highly discouraged since the CoNLL table currently available in the NLP Suite has one record per word/token and such country location like 'United States of America' would then not be taken as a single entity for geocoding, but as separate entities.\n\nDifferent options will be available depending upon what the csv file widget displays.\n\nTO RERUN THE PIPELINE, FROM SCRATCH, FROM TEXT TO MAPS, PRESS ESC TO CLEAR THE CSV FILE WIDGET.\n\nYou can also select a geocoded csv file and run the 'MAP locations' option." + GUI_IO_util.msg_openFile)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","This option extracts person entities and locations from your text files using Stanza NER, "
-                                                                       "then produces an animated map showing how characters move across locations over the course of the narrative.\n\n"
+                                                                       "then produces an animated map showing how characters move across GEOGRAPHIC space (real places that resolve to map coordinates: cities, counties, countries) over the course of the narrative.\n\n"
                                                                        "The map shows dashed lines connecting successive locations for each person, with a timeline slider "
                                                                        "when dates or document sequence are available.\n\n"
                                                                        "REQUIREMENT: Text file(s) in input (not a csv file).\n\n"
                                                                        "The option uses the same NER extraction as the GIS pipeline but focuses on PERSON entities "
-                                                                       "and their co-occurring locations rather than geocoding all location mentions."+GUI_IO_util.msg_Esc)
+                                                                       "and their co-occurring locations rather than geocoding all location mentions.\n\n"
+                                                                       "NOTE ON 'SPACE': here 'space' means GEOGRAPHIC, geocodable space. For SYMBOLIC / SOCIAL space that has NO map coordinates - e.g. house vs. field, or how a social attribute (gender, race, class) maps onto types of space - use the 'Symbolic / social space' option below."+GUI_IO_util.msg_Esc)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to EXTRACT locations from a text file using NER (Named Entity Recognition).\n\nUse the dropdown menu to select the NER package:\n\n   Stanza (recommended): modern neural network (BiLSTM-CRF), supports 30+ languages, multi-word entities are pre-joined (e.g., 'United States of America' is returned as a single entity).\n\n   spaCy: fast, supports 20+ languages.\n\n   Stanford CoreNLP: fine-grained location types (CITY, STATE_OR_PROVINCE, COUNTRY, LOCATION), primarily English, requires Java.\n\nThe option is available ONLY when input txt file(s) is selected.\n\nTo improve the geocoding of those locations that can take multiple names (e.g., 'United States', 'US', 'USA'), the NLP Suite Stanford CoreNLP algorithm uses the entries of the multi_name_locations.csv file stored in the lib\\wordLists subdirectory of the NLP Suite installation folder. Locations known under different names can be all geocoded under a single name (e.g., 'United States'). You can edit the multi_name_locations.csv file to suit your specific needs and improve geocoding."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the column containing the location names (e.g., New York) to be geocoded and mapped.\n\nTHE OPTION IS NOT AVAILABLE WHEN SELECTING A CONLL INPUT CSV FILE. NER IS THE COLUMN AUTOMATICALLY USED WHEN WORKING WITH A CONLL FILE IN INPUT."+GUI_IO_util.msg_Esc)
