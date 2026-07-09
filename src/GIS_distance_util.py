@@ -377,15 +377,18 @@ def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,geolocat
             if currentLocation!='' and currentLocation!='nan': #nan Not A Numeric value SHOULD NOT BE NECESSARY!!!
                 lat_val = row[latColName]
                 lon_val = row[lonColName]
-                try:
-                    float(lat_val)
-                    float(lon_val)
-                except (TypeError, ValueError):
-                    # rows that failed geocoding have empty/non-numeric coordinates -> skip them
+                # rows that failed geocoding have empty/non-numeric OR NaN coordinates -> skip them.
+                # NOTE: float('nan') does NOT raise, so a numeric-only check would let NaN through and
+                # crash geopy with "Point coordinates must be finite"; pd.isna catches the NaN case.
+                if pd.isna(lat_val) or pd.isna(lon_val):
                     print(currRecord,"     WAYPOINTS NOT NUMERIC (nan) ",currentLocation)
                     waypoints2=''
                 else:
-                    waypoints2=[lat_val,lon_val]
+                    try:
+                        waypoints2=[float(lat_val),float(lon_val)]
+                    except (TypeError, ValueError):
+                        print(currRecord,"     WAYPOINTS NOT NUMERIC ",currentLocation)
+                        waypoints2=''
             else:
                 print(currRecord,"     CURRENT LOCATION IS BLANK")
                 waypoints2=''
