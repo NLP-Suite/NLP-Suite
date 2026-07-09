@@ -346,6 +346,46 @@ def _bin_numeric_columns_for_chart(inputFilename, outputDir, value_col_indices, 
         return None
 
 
+def plot(input_file, output_dir, *, columns,
+         title='', x_label='', y_label='Frequencies',
+         count=True, group_by='Document', hover=None, file_label='',
+         plot_list=None, title_label='', package=None, transform=None):
+    """Name-based, keyword-only front door to the Excel chart engine -- covers the two dominant chart
+    shapes ('count & bar' and 'numeric scores'): a bar chart of one or more columns, optionally grouped
+    by document, with an optional per-field statistics pass. Thin wrapper over visualize_chart().
+
+    Replaces the 13-16 positional args + hand-computed column INDICES ([[3,6]]) with header NAMES and
+    keywords, e.g.
+        charts_util.plot(inputFilename, outputDir, columns=['Form'], title='...', x_label='...',
+                         file_label='Adverbs_Form')
+    in place of the long visualize_chart(...) call.
+
+    columns          : header name (str) or list of names to plot.
+    count=True       : count value frequencies (count_var=1); False plots the numeric values as-is (0).
+    group_by         : 'Document' (default), a field name, a list, or None for no grouping.
+    package/transform: default to the GUI's current chart package + data transformation.
+    Returns the list of files to open (same as visualize_chart)."""
+    import GUI_util
+    if isinstance(columns, str):
+        columns = [columns]
+    if package is None:
+        package = GUI_util.charts_package_options_widget.get()
+    if transform is None:
+        transform = GUI_util.data_transformation_options_widget.get()
+    if group_by is None:
+        groupByList = []
+    elif isinstance(group_by, str):
+        groupByList = [group_by]
+    else:
+        groupByList = list(group_by)
+    return visualize_chart(package, transform, input_file, output_dir,
+                           [], columns,
+                           title, 1 if count else 0, hover if hover is not None else [],
+                           file_label, x_label,
+                           groupByList, plot_list if plot_list is not None else [], title_label,
+                           column_yAxis_label=y_label)
+
+
 def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
                     columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
                     chart_title, count_var, hover_label, outputFileNameType, column_xAxis_label,

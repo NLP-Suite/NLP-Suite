@@ -198,42 +198,20 @@ def adverb_stats(inputFilename, outputDir, data, data_divided_sents, openOutputF
             filesToOpen.extend(outputFiles if isinstance(outputFiles, list) else [outputFiles])
 
         # Adverb POS Tags Frequency Chart
-        columns_to_be_plotted_xAxis = []
-        columns_to_be_plotted_yAxis = ['Adverbs POS Tags']
-        count_var = 1
-
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                  adverbs_postag_list_file_name, outputDir,
-                                                  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                  chart_title="Frequency Distribution of Adverb POS Tags",
-                                                  outputFileNameType='adverb_POS',
-                                                  column_xAxis_label='Adverb POS tag',
-                                                  count_var=count_var,
-                                                  hover_label=[],
-                                                  groupByList=['Document'],
-                                                  plotList=[],
-                                                  chart_title_label='')
+        outputFiles = charts_util.plot(adverbs_postag_list_file_name, outputDir,
+                                       columns=['Adverbs POS Tags'],
+                                       title="Frequency Distribution of Adverb POS Tags",
+                                       x_label='Adverb POS tag', file_label='adverb_POS')
 
         if outputFiles:
             filesToOpen.extend(outputFiles if isinstance(outputFiles, list) else [outputFiles])
 
 
         # Adverb DEPREL Tags Frequency Chart
-        columns_to_be_plotted_xAxis = []
-        columns_to_be_plotted_yAxis = ['Adverbs DEPREL Tags']
-        count_var = 1
-
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                  adverbs_deprel_list_file_name, outputDir,
-                                                  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                  chart_title="Frequency Distribution of Adverbs DEPREL Tags",
-                                                  outputFileNameType='adverb_DEPREL',
-                                                  column_xAxis_label='Adverb DEPREL tag',
-                                                  count_var=count_var,
-                                                  hover_label=[],
-                                                  groupByList=['Document'],
-                                                  plotList=[],
-                                                  chart_title_label='')
+        outputFiles = charts_util.plot(adverbs_deprel_list_file_name, outputDir,
+                                       columns=['Adverbs DEPREL Tags'],
+                                       title="Frequency Distribution of Adverbs DEPREL Tags",
+                                       x_label='Adverb DEPREL tag', file_label='adverb_DEPREL')
 
         if outputFiles:
             filesToOpen.extend(outputFiles if isinstance(outputFiles, list) else [outputFiles])
