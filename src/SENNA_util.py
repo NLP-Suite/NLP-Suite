@@ -403,7 +403,7 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
                       SVO['O(NP)'], SVO['Negation'], SVO['Location'], SVO['Person'], SVO['Time'], sent_id, sentence, document_id, formatted_inputFilename_name]],
                     columns=['Subject (S)', 'Verb (V)', 'Object (O)', 'S(NP)', 'O(NP)', 'Negation', 'Location',
                              'Person', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
-                new_df = new_df.append(new_row, ignore_index=True)
+                new_df = pd.concat([new_df, new_row], ignore_index=True)
         sent_id += 1
 
     # save SVO data frame as csv file

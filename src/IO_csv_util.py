@@ -501,7 +501,7 @@ def align_dataframes(df_list):
             # ​​​​SettingwithCopyWarning
             temp[sentenceID] = max
             temp['Frequency'] = 0
-            new_df = df.append(temp,ignore_index=True)
+            new_df = pd.concat([df, temp], ignore_index=True)
         else:
             new_df = df
         new_list.append(new_df)

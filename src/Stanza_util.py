@@ -487,14 +487,14 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
                         dicts.append(d)
             for i in range(len(dicts)):
                 temp_df = pd.DataFrame.from_dict([dicts[i]])
-                out_df = out_df.append(temp_df)
+                out_df = pd.concat([out_df, temp_df], ignore_index=True)
         except:
             dicts = stanza_doc.to_dict()
             for i in range(len(dicts)):
                 temp_df = pd.DataFrame.from_dict(dicts[i])
                 # if annotator_params=='sentiment':
                 #     temp_df['sentiment_score'] = sentiment_dictionary[i]
-                out_df = out_df.append(temp_df)
+                out_df = pd.concat([out_df, temp_df], ignore_index=True)
 
     # Stanza doc to Pandas DataFrame conversion logic for single language annotation
     elif annotator_params!='sentiment':
@@ -511,7 +511,7 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
             # if annotator_params=='sentiment':
             #     temp_df['sentiment_score'] = sentiment_dictionary[i]
             #     temp_df['Sentence'] = sentence_dictionary[i]
-            out_df = out_df.append(temp_df)
+            out_df = pd.concat([out_df, temp_df], ignore_index=True)
 
     if annotator_params=='sentiment':
         # Stanza sentiment returns 0 (negative), 1 (neutral), 2 (positive) — a coarse 3-class scale

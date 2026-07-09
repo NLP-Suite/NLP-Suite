@@ -143,9 +143,9 @@ def count_frequency_two_svo(CoreNLP_csv, senna_csv, inputFilename, inputDir, out
     total_svo = len(same_svo) + len(diff_svo)
     total_sv = len(same_sv) + len(diff_sv)
 
-    df = df.append(pd.DataFrame([[len(same_svo), len(same_sv), len(diff_svo), len(diff_sv), total_svo, total_sv]],
+    df = pd.concat([df, pd.DataFrame([[len(same_svo), len(same_sv), len(diff_svo), len(diff_sv), total_svo, total_sv]],
                                 columns=['Same SVO', 'Same SV', 'Different SVO', 'Different SV', 'Total SVO',
-                                         'Total SV']), ignore_index=True)
+                                         'Total SV'])], ignore_index=True)
     freq_output_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputSVODir, '.csv',
                                                                'SENNA_CoreNLP_SVO_FREQ')
     df.to_csv(freq_output_name, encoding='utf-8', index=False)
@@ -176,8 +176,8 @@ def count_frequency_two_svo(CoreNLP_csv, senna_csv, inputFilename, inputDir, out
         diff.append([('', '', '')] * (len(same) - len(diff)))
 
     for svo1, svhashOutputDir in zip(same, diff):
-        compare_df = compare_df.append(pd.DataFrame([['', svo1[0], svo1[1], svo1[2], svhashOutputDir[3], svhashOutputDir[0], svhashOutputDir[1], svhashOutputDir[2]]],
-                                                    columns=['Same', 'S', 'V', 'O', 'Different', 'S', 'V', 'O']), ignore_index=True)
+        compare_df = pd.concat([compare_df, pd.DataFrame([['', svo1[0], svo1[1], svo1[2], svhashOutputDir[3], svhashOutputDir[0], svhashOutputDir[1], svhashOutputDir[2]]],
+                                                    columns=['Same', 'S', 'V', 'O', 'Different', 'S', 'V', 'O'])], ignore_index=True)
 
     # Outputting the file
     compare_outout_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputSVODir, '.csv',
@@ -206,7 +206,7 @@ def combine_two_svo(CoreNLP_svo, senna_svo, inputFilename, inputDir, outputSVODi
             new_row = [df_name, df.loc[i, 'Subject (S)'],
                        df.loc[i, 'Verb (V)'], df.loc[i, 'Object (O)'], df.loc[i, 'Negation'], df.loc[i, 'Location'],
                        df.loc[i, 'Person'], df.loc[i, 'Time'], df.loc[i, 'Sentence ID'], df.loc[i, 'Sentence'], df.loc[i, 'Document ID'], df.loc[i, 'Document']]
-            combined_df = combined_df.append(pd.DataFrame([new_row], columns=columns), ignore_index=True)
+            combined_df = pd.concat([combined_df, pd.DataFrame([new_row], columns=columns)], ignore_index=True)
 
     combined_df.sort_values(by=['Document ID', 'Sentence ID'], inplace=True)
     output_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputSVODir, '.csv',
