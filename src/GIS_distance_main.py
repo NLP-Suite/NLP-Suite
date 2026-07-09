@@ -31,7 +31,6 @@ import IO_files_util
 import GUI_IO_util
 import GIS_file_check_util
 import GIS_distance_util
-import IO_csv_util
 import GIS_geocode_util
 import GIS_pipeline_util
 
@@ -40,7 +39,7 @@ import GIS_pipeline_util
 def run(inputFilename,outputDir, openOutputFiles, chartPackage, dataTransformation,
         encoding, geocoder,
         # geocode,
-        compute_pairwise_distances, compute_baseline_distances, compute_consecutive_distances, baselineLocation,locationColumn,locationColumn2):
+        compute_pairwise_distances, compute_baseline_distances, compute_consecutive_distances, baselineLocation, pairwise_scope):
     config_filename = GUI_util.config_filename_selected_config.get()
 
     filesToOpen = []
@@ -73,34 +72,10 @@ def run(inputFilename,outputDir, openOutputFiles, chartPackage, dataTransformati
                        message="No options have been selected.\n\nPlease, select an option and try again.")
         return
 
-    if compute_pairwise_distances== True and inputIsGeocoded==False:
-        mb.showwarning(title='Warning',
-                       message='You are running the GIS algorithm for pairwise distances with an input file that seems to be non-geocoded. You cannot run this option with non-geocoded data. You can only run the option "Compute distances from baseline location."\n\nPlease, select a different option or a geocoded file with six columns and try again.')
-        return
-
-    if compute_pairwise_distances and (locationColumn==""):
-        mb.showwarning(title='Warning',
-                       message='You are running the GIS algorithm for pairwise distances. You must select the column containing the First location names.\n\nPlease, using the dropdown menu, select the column of the FIRST location names and try again.')
-        return
-
-    if compute_pairwise_distances== True and inputIsGeocoded and len(headers)<6:
-        mb.showwarning(title='Warning',
-                       message='You are running the GIS algorithm for pairwise distances. But your input file has fewer than the expected 6 headers (Location1, Latitude1, Longitude1, Location2, Latitude2, Longitude2):\n\n' + str(headers) + '\n\nPlease, select a different file and try again.')
-        return
-
-    if compute_baseline_distances and baselineLocation != '' and locationColumn=="":
-        mb.showwarning(title='Warning',
-                       message='You are running the GIS distance algorithm from the baseline location ' + baselineLocation + '. You must select the column containing the First location name.\n\nPlease, using the dropdown menu, select the column of the FIRST location names and try again.')
-        return
-
-
+    # Location / Latitude / Longitude are resolved BY HEADER NAME inside the util functions,
+    # so no FIRST/SECOND location-column selection is needed. Pairwise forms all-pairs of the
+    # distinct geocoded locations itself; baseline auto-detects the 'Location' column.
     locationColumnNumber = 0
-    locationColumnNumber2 = 0
-
-    if withHeader==True and locationColumn!="":
-        locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumn, inputFilename)
-        if len(locationColumn2)>0:
-            locationColumnNumber2=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumn2, inputFilename)
 
     encodingValue='utf-8'
 
@@ -122,12 +97,14 @@ def run(inputFilename,outputDir, openOutputFiles, chartPackage, dataTransformati
     filesToOpen=[]
 
     if compute_baseline_distances and baselineLocation!='':
-        baselineFiles=GIS_distance_util.computeDistancesFromSpecificLocation(GUI_util.window,inputFilename, outputDir, geolocator,geocoder,inputIsGeocoded,baselineLocation, headers,locationColumnNumber,locationColumn, distinctValues,withHeader,inputIsCoNLL,split_locations,datePresent,filenamePositionInCoNLLTable,encodingValue,chartPackage,dataTransformation)
+        baselineFiles=GIS_distance_util.computeDistancesFromSpecificLocation(GUI_util.window,inputFilename, outputDir, geolocator,geocoder,inputIsGeocoded,baselineLocation, headers,locationColumnNumber,'', distinctValues,withHeader,inputIsCoNLL,split_locations,datePresent,filenamePositionInCoNLLTable,encodingValue,chartPackage,dataTransformation)
         if baselineFiles:
             filesToOpen.extend(baselineFiles)
 
     if compute_pairwise_distances:
-        pairwiseFiles=GIS_distance_util.computePairwiseDistances(GUI_util.window,inputFilename,outputDir,headers,locationColumnNumber,locationColumnNumber2,locationColumn,locationColumn2, distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue,chartPackage,dataTransformation)
+        # all-pairs of the DISTINCT geocoded locations; scope = per-document or whole-corpus
+        pairwiseFiles=GIS_distance_util.computePairwiseDistances(GUI_util.window,inputFilename,outputDir,distinctValues,encodingValue,pairwise_scope,chartPackage,dataTransformation)
+        pairwiseFiles=[f for f in pairwiseFiles if f]
         if pairwiseFiles:
             filesToOpen.extend(pairwiseFiles)
 
@@ -159,8 +136,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             compute_baseline_distances_var.get(),
                             compute_consecutive_distances_var.get(),
                             baselineLocation_entry_var.get(),
-                            location_var.get(),
-                            location_var2.get())
+                            pairwise_scope_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -171,8 +147,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=595, # height at brief display
-                                                 GUI_height_full=635, # height at full display
+                                                 GUI_height_brief=535, # height at brief display
+                                                 GUI_height_full=575, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -310,8 +286,7 @@ extra_GUIs_menu_var.trace('w', open_GUI)
 encoding_var=tk.StringVar()
 geocoder_var=tk.StringVar()
 # geocode_var=tk.IntVar()
-location_var=tk.StringVar()
-location_var2=tk.StringVar()
+pairwise_scope_var=tk.StringVar()
 compute_baseline_distances_var=tk.IntVar()
 baselineLocation_entry_var=tk.StringVar()
 compute_pairwise_distances_var=tk.IntVar()
@@ -329,8 +304,7 @@ def clear(e):
     compute_baseline_distances_var.set(0)
     compute_consecutive_distances_var.set(0)
     baselineLocation_entry_var.set('')
-    location_var.set('')
-    location_var2.set('')
+    pairwise_scope_var.set('per-document')
     GUI_util.run_button.configure(state='disabled')   # no input -> RUN off until a csv is picked again
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
@@ -355,9 +329,14 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 compute_pairwise_distances_var.set(0)
 compute_pairwise_distances_checkbox = tk.Checkbutton(window, variable=compute_pairwise_distances_var, onvalue=1, offvalue=0)
-compute_pairwise_distances_checkbox.config(text="Compute pairwise distances")
+compute_pairwise_distances_checkbox.config(text="Compute pairwise distances (all-pairs of distinct locations)")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
-                                               y_multiplier_integer, compute_pairwise_distances_checkbox)
+                                               y_multiplier_integer, compute_pairwise_distances_checkbox,True)
+
+pairwise_scope_var.set('per-document')
+pairwise_scope_menu = tk.OptionMenu(window, pairwise_scope_var, 'per-document', 'whole-corpus')
+pairwise_scope_menu.configure(state='disabled')   # enabled when the pairwise checkbox is ticked
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+350, y_multiplier_integer, pairwise_scope_menu)
 
 compute_baseline_distances_var.set(0)
 compute_baseline_distances_checkbox = tk.Checkbutton(window, variable=compute_baseline_distances_var, onvalue=1, offvalue=0)
@@ -377,35 +356,12 @@ compute_consecutive_distances_checkbox.config(text="Compute distances between co
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, compute_consecutive_distances_checkbox)
 
-_gisFile = inputFilename.get()
-menu_values = IO_csv_util.get_csvfile_headers(_gisFile) if (_gisFile.endswith('.csv') and os.path.isfile(_gisFile)) else ''
-
-location_field_lb = tk.Label(window, text='Select the column containing the FIRST location names')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,location_field_lb,True)
-if menu_values!='':
-    location_field = tk.OptionMenu(window,location_var,*menu_values)
-else:
-    location_field = tk.OptionMenu(window,location_var,menu_values)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+350, y_multiplier_integer,location_field)
-
-location_field_lb2 = tk.Label(window, text='Select the column containing the SECOND location names')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,location_field_lb2,True)
-if menu_values!='':
-    location_field2 = tk.OptionMenu(window,location_var2,*menu_values)
-else:
-    location_field2 = tk.OptionMenu(window,location_var2,menu_values)
-location_field2.configure(state='disabled')   # SECOND column only needed for pairwise; enabled when that box is ticked
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+350, y_multiplier_integer,location_field2)
-
 def activate_options(*args):
-    # The two modes are independent and may BOTH run in the same execution:
-    #   pairwise needs the SECOND location column; baseline needs the typed baseline location.
-    # Ticking one no longer disables the other; each just enables its own dependent widget.
+    # modes are independent and may all run together; each enables only its own widget
     if compute_pairwise_distances_var.get():
-        location_field2.configure(state='normal')
+        pairwise_scope_menu.configure(state='normal')
     else:
-        location_field2.configure(state='disabled')
-        location_var2.set('')
+        pairwise_scope_menu.configure(state='disabled')
 
     if compute_baseline_distances_var.get():
         baselineLocation_entry.configure(state='normal')
@@ -415,34 +371,6 @@ def activate_options(*args):
 
 compute_pairwise_distances_var.trace('w',activate_options)
 compute_baseline_distances_var.trace('w',activate_options)
-
-def changed_GIS_filename(*args):
-
-    # check that input file is a CoNLL table;
-    #	many options are NOT available when working with a CoNLL table
-    location_var.set('')
-    location_var2.set('')
-    baselineLocation_entry.configure(state='normal')
-
-    # 	reminders_util.checkReminder("geocoding_welcome","Welcome to the geocoder Graphical User Interface (GUI)","Welcome to the geocoder Graphical User Interface (GUI).\n\nWhen running the SVO (Subject-Verb-Object) algorithm, all geocoder options have been automatically setup for you.\n\nOf course, you can change any of the options after reading the TIPS files or the ?HELP messages.\n\nAs a first time user, for now, all you need to do is to CLICK RUN.")
-
-    _gisFile = inputFilename.get()
-    menu_values = IO_csv_util.get_csvfile_headers(_gisFile) if (_gisFile.endswith('.csv') and os.path.isfile(_gisFile)) else ''
-
-    # must change 2 widgets where menus must be updated after changing the filename
-    m = location_field["menu"]
-    m.delete(0, "end")
-    for s in menu_values:
-        m.add_command(label=s, command=lambda value=s: location_var.set(value))
-
-    m = location_field2["menu"]
-    m.delete(0, "end")
-    for s in menu_values:
-        m.add_command(label=s, command=lambda value=s: location_var2.set(value))
-
-inputFilename.trace('w', changed_GIS_filename)
-
-changed_GIS_filename()
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
@@ -466,18 +394,16 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the 'GUIs available for more analyses' checkbox to enable the dropdown menu, then select a related tool to open its Graphical User Interface (GUI):\n\n  1. GIS: Mapping locations, to map geocodable locations in time and space;\n  2. Google Earth, to visualize locations in Google Earth Pro;\n  3. Symbolic (non-geocodable) space, to analyze characters moving in NON-geocodable narrative space (house, field, forest, threshold).\n\nThe selected GUI opens without pressing RUN."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the type of encoding you wish to use.\n\nLocations in different languages may require encodings (e.g., latin-1 for French or Italian) different from the standard (and default) utf-8 encoding."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the type of geocoding service you wish to use, Google or Nominatim. For Google you need an API key."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to compute distances of all locations listed in your input file.\n\nIn INPUT the script expects geocoded data with Latitude and Longitude values for two sets of locations whose distances you want to compute. The input file must have a column with the FIRST selected location name, followed by its latitude and longitude; followed by the SECOND selected location name, followed by its latitude and longitude.\n\nSix columns in input are expected (e.g., Location1, Latitude1, Longitude1, Location2, Latitude2, Longitude2, in this order). The input csv file may contain other fields but the location and geocoded fields MUST be in this order."+GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to compute PAIRWISE distances, i.e., the distance between every combination of two of the DISTINCT geolocated locations in your input file.\n\nIn INPUT the script expects a single GEOCODED csv (as produced by the GIS mapping tool) with a Location column and Latitude/Longitude columns. You do NOT need to prepare a file with two location columns: the tool forms the pairs itself.\n\nUse the dropdown to the right to select the SCOPE:\n   - per-document (default): all-pairs WITHIN each document. Cheap and narrative-aware (it pairs only places that co-occur in the same story); requires a Document column.\n   - whole-corpus: all-pairs across every distinct location in the file. This grows as N-squared (N = number of distinct locations) and can be very slow on large, place-rich corpora; it also pairs locations from unrelated documents.\n\nSee the 'Geographic distances' TIPS for the computing-cost details."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to compute distances of all locations listed in your input file from a specific location (e.g., Atlanta). You will need to enter the location name (e.g., again, Atlanta).\n\nIn INPUT the script expects either\n   1. a list of locations that will be geocoded before computing distances from a baseline location. The input file must have a column of locations (selected in the FIRST selected location names).\n   2. geocoded data with Latitude and Longitude values for a set of locations whose distances from a baseline location you want to compute. The input file must have a column with the FIRST selected location name, followed by its latitude and longitude."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to compute MOVEMENT distances, i.e., the distance between each geolocated location and the NEXT one within the same document (how far the narrative/characters move from place to place across a story).\n\nIn INPUT the script expects a single GEOCODED csv (as produced by the GIS mapping tool) with Latitude and Longitude columns. Locations are ordered by Sentence ID within each Document and paired in sequence, so a single-location geocoded file is all you need: the FIRST/SECOND location columns are NOT used by this option.\n\nIn OUTPUT the script lists each consecutive location pair with its geodesic and great circle distances (miles and Km), together with the Document and the from/to sentences."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the column containing the FIRST set of location names (e.g., Location1)."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the column containing the SECOND set of location names (e.g., Location2)."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
 
     return y_multiplier_integer -1
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
-readMe_message="This Python 3 script computes geographic distances between locations, in both kilometers and miles, by either geodesic distance or by great circle distance. Distances will be visualized in Excel charts.\n\nBoth GEODESIC and GREAT CIRCLE distances, in miles and kilometers, will be computed.\n\nIn INPUT the script expects geocoded data with Latitude and Longitude values for one or two sets of locations, depending upon whether distances are computed from a specific baseline location or between two sets of locations listed in a csv input file. The input file must have a column with the FIRST selected location name, followed by its latitude and longitude; when computing pairwise distances, these first three columns must be followed by the SECOND selected location name, followed by its latitude and longitude.\n\nThe input csv file may contain other fields but the location and geocoded fields MUST be in this order.\n\nEnter a location name (e.g., New York) in the 'Enter baseline location' field, if you wish to compute distances of all locations listed in your input file from a specific location (again, e.g., New York)."
+readMe_message="This Python 3 script computes geographic distances between locations, in both kilometers and miles, by either geodesic or great circle distance.\n\nIn INPUT the script expects a single GEOCODED csv (as produced by the GIS mapping/geocoding tool) with a Location column and Latitude/Longitude columns. Locations, coordinates and (optionally) Document/Sentence are read by column name; you do NOT need to prepare a file with two location columns.\n\nThree distance options are available:\n   1. PAIRWISE distances: the distance between every combination of two of the distinct locations, either within each document (per-document) or across the whole file (whole-corpus).\n   2. BASELINE distances: the distance from a location you type (e.g., New York) to each location in the file.\n   3. MOVEMENT distances: the distance between each location and the next one within a document (how far characters move across a story).\n\nAll options compute both GEODESIC and GREAT CIRCLE distances (miles and Km) and produce a distance-distribution chart."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 

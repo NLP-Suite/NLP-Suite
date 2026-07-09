@@ -101,7 +101,6 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, chartPackage, d
             os.remove(xlsxFilename)
         os.rename(outputFiles,xlsxFilename)
     filesToOpen.append(xlsxFilename)
-    filesToOpen = create_distance_distribution_charts(distanceoutputFilename, outputDir, filesToOpen)
     return filesToOpen
 
 
@@ -149,90 +148,107 @@ def create_distance_distribution_charts(distanceoutputFilename, outputDir, files
     return filesToOpen
 
 
-def computePairwiseDistances(window,inputFilename,outputDir,headers,locationColumnNumber,locationColumnNumber2,locationColumnName,locationColumnName2,distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue,chartPackage='No charts',dataTransformation=''):
-    filesToOpen=[]
-    currList=[]
-    startTime=IO_user_interface_util.timed_alert(window, 2000, 'Analysis start', 'Started running GIS distance at',
-                                                 True, '', True, '', True)
-    if distinctValues==True:
-        distanceoutputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', 'distance', locationColumnName, locationColumnName2, 'DISTINCT', False, True)
+# Pairwise (all-pairs) distances: given the DISTINCT geocoded locations in the input file,
+#   compute the distance between every combination of two of them. No pre-built two-location
+#   file is needed -- the tool forms the pairs itself, reading Location/Latitude/Longitude
+#   (and Document) by header name.
+#   scope='per-document' -> all-pairs WITHIN each Document (cheap, narrative-aware; needs a
+#       Document column, falls back to whole-corpus with a warning if absent);
+#   scope='whole-corpus'  -> all-pairs across every distinct location in the file (grows as N^2).
+def computePairwiseDistances(window, inputFilename, outputDir, distinctValues, encodingValue,
+                             scope='per-document', chartPackage='No charts', dataTransformation=''):
+    import itertools
+    filesToOpen = []
+    startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start',
+                                                   'Started running GIS pairwise (all-pairs) distances at',
+                                                   True, '', True, '', True)
+    try:
+        df = pd.read_csv(inputFilename, encoding=encodingValue, on_bad_lines='skip')
+    except Exception:
+        mb.showerror(title='Input file error',
+                     message="There was an error in the function 'Compute GIS pairwise distances' reading the input file\n"
+                             + str(inputFilename) + "\nMost likely, the error is due to an encoding error. Your current encoding value is "
+                             + encodingValue + ".\n\nSelect a different encoding value and try again.")
+        return ['']
+
+    locCol = _find_column_by_name(df, 'location')
+    latCol = _find_column_by_name(df, 'latitude')
+    lonCol = _find_column_by_name(df, 'longitude')
+    if latCol is None or lonCol is None:
+        mb.showwarning(title='Missing coordinates',
+                       message="To compute pairwise distances the input csv must be a GEOCODED file containing Latitude and Longitude columns.\n\nColumns found:\n"
+                               + str(list(df.columns)) + "\n\nPlease, geocode your locations first (GIS mapping tool) and select the geocoded csv, then try again.")
+        return ['']
+    docCol = _find_column_by_name(df, 'document')
+
+    df[latCol] = pd.to_numeric(df[latCol], errors='coerce')
+    df[lonCol] = pd.to_numeric(df[lonCol], errors='coerce')
+    df = df.dropna(subset=[latCol, lonCol]).reset_index(drop=True)
+    if df.empty:
+        mb.showwarning(title='No geocoded data',
+                       message="The input csv has no rows with valid Latitude/Longitude values.\n\nPlease, geocode your locations first and try again.")
+        return ['']
+
+    per_document = (scope == 'per-document')
+    if per_document and docCol is None:
+        mb.showwarning(title='No Document column',
+                       message="You selected PER-DOCUMENT pairwise distances, but the input csv has no 'Document' column to group by.\n\nThe tool will compute WHOLE-CORPUS pairwise distances instead (all-pairs across every location in the file).")
+        per_document = False
+
+    def _distinct_locations(sub):
+        seen = set()
+        out = []
+        for _, r in sub.iterrows():
+            name = str(r[locCol]) if locCol is not None else ''
+            rec = (name, float(r[latCol]), float(r[lonCol]))
+            if distinctValues and rec in seen:
+                continue
+            seen.add(rec)
+            out.append(rec)
+        return out
+
+    if per_document:
+        groups = [(str(g), _distinct_locations(sub)) for g, sub in df.groupby(docCol, sort=False)]
     else:
-        distanceoutputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', 'distance', locationColumnName, locationColumnName2, 'ALL', False, True)
-    filesToOpen.append(distanceoutputFilename)
+        groups = [('', _distinct_locations(df))]
 
-    #with open(distanceoutputFilename, 'w',newline='',encoding="utf-8",errors='ignore') as csvfile:
-    #latin-1
-    with open(inputFilename, 'r',newline='',encoding=encodingValue,errors='ignore') as inputFile, open(distanceoutputFilename, 'w',newline='',encoding=encodingValue,errors='ignore') as outputFile:
+    total_pairs = sum(len(locs) * (len(locs) - 1) // 2 for _, locs in groups)
+    if total_pairs == 0:
+        mb.showwarning(title='No pairs',
+                       message="No location pairs could be formed.\n\nThis can happen if each document has fewer than two distinct geocoded locations.")
+        return ['']
+    if total_pairs > 200000:
+        if not mb.askyesno(title='Large computation',
+                           message="This will compute " + str(total_pairs) + " location pairs, which may take a long time.\n\nConsider PER-DOCUMENT scope to reduce the number of pairs.\n\nDo you want to continue?"):
+            return ['']
+
+    distanceoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', 'distance', 'pairwise', ('per-document' if per_document else 'whole-corpus'), '', False, True)
+    header = ['Location 1', 'Latitude 1', 'Longitude 1', 'Location 2', 'Latitude 2', 'Longitude 2',
+              'Geodesic distance in miles', 'Geodesic distance in Km',
+              'Great circle distance in miles', 'Great circle distance in Km', 'Document']
+
+    with open(distanceoutputFilename, 'w', newline='', encoding=encodingValue, errors='ignore') as outputFile:
         geowriter = csv.writer(outputFile)
-        try:
-            dt = pd.read_csv(inputFile,encoding=encodingValue, on_bad_lines='skip')
-        except:
-            mb.showerror(title='Input file error', message="There was an error in the function 'Compute GIS distance' reading the input file\n" + str(inputFile) + "\nMost likely, the error is due to an encoding error. Your current encoding value is " + encodingValue + ".\n\nSelect a different encoding value and try again.")
-            filesToOpen.append('')
-            return filesToOpen
-        geowriter.writerow(['Location 1','Latitude 1','Longitude 1','Location 2','Latitude 2','Longitude 2','Geodesic distance in miles','Geodesic distance in Km','Great circle distance in miles','Great circle distance in Km'])
-        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename, encodingValue)
-        for index, row in dt.iterrows():
-            currRecord=str(index) + "/" + str(nRecords)
-            currentLocation1=str(row[locationColumnNumber])
-            currentLocation2=str(row[locationColumnNumber2])
-            if (str(currentLocation1)!='' and str(currentLocation1)!='nan' and str(currentLocation2)!='' and str(currentLocation2)!='nan'): #nan Not A Numeric value SHOULD NOT BE NECESSARY!!!
-                #nan Not A Numeric value
-                if str(row[locationColumnNumber+1])=='' or str(row[locationColumnNumber+2])=='' or str(row[locationColumnNumber+1])=='nan' or str(row[locationColumnNumber+2])=='nan':
-                    print(currRecord,"     WAYPOINTS NOT NUMERIC (nan) ",currentLocation1)
-                    waypoints1=''
-                    waypoints2=''
-                elif str(row[locationColumnNumber+4])=='' or str(row[locationColumnNumber+5])=='' or str(row[locationColumnNumber+4])=='nan' or str(row[locationColumnNumber+5])=='nan':
-                    print(currRecord,"     WAYPOINTS NOT NUMERIC (nan) ",currentLocation2)
-                    waypoints1=''
-                    waypoints2=''
-                else:
-                    try:
-                        float(row[locationColumnNumber+1])
-                    except:
-                        mb.showerror(title='Input file error', message="Column number " + str(locationColumnNumber+1) + " (" + headers[locationColumnNumber+2] + ") of your input csv file does not contain proper Latitude values for the first location.\n\nPlease, check your selected 'Column containing location names' and/or input csv filename and try again.")
-                        filesToOpen.append('')
-                        return filesToOpen
-                    try:
-                        float(row[locationColumnNumber+2])
-                    except:
-                        mb.showerror(title='Input file error', message="Column number " + str(locationColumnNumber+2) + " (" + headers[locationColumnNumber+3] + ") of your input csv file does not contain proper Longitude values for the first location.\n\nPlease, check your selected 'Column containing location names' and/or input csv filename and try again.")
-                        filesToOpen.append('')
-                        return filesToOpen
-                    try:
-                        float(row[locationColumnNumber+4])
-                    except:
-                        mb.showerror(title='Input file error', message="Column number " + str(locationColumnNumber+4) + " (" + headers[locationColumnNumber+5] +") of your input csv file does not contain proper Latitude values for the second location.\n\nPlease, check your selected 'Select the second column containing location names (for distances)' and/or input csv filename and try again.")
-                        filesToOpen.append('')
-                        return filesToOpen
-                    try:
-                        float(row[locationColumnNumber+5])
-                    except:
-                        mb.showerror(title='Input file error', message="Column number " + str(locationColumnNumber+5) + " (" + headers[locationColumnNumber+6] +") of your input csv file does not contain proper Longitude values for the second location.\n\nPlease, check your selected 'Select the second column containing location names (for distances)' and/or input csv filename and try again.")
-                        filesToOpen.append('')
-                        return filesToOpen
-                    waypoints1=(row[locationColumnNumber+1], row[locationColumnNumber+2])
-                    waypoints2=(row[locationColumnNumber2+1], row[locationColumnNumber2+2])
-                    # print(currRecord, currentLocation1, currentLocation2, str(row[locationColumnNumber+1]),str(row[locationColumnNumber+2]))
-                    if (distinctValues==False) or ([waypoints1,waypoints2] not in currList):
-                        currList.append([waypoints1,waypoints2])
-                        distMiles=distance.distance(waypoints1, waypoints2).miles
-                        distKm=distance.distance(waypoints1, waypoints2).km
-                        GCdistMiles=great_circle(waypoints1, waypoints2).miles
-                        GCdistKm=great_circle(waypoints1, waypoints2).km
-                        # geowriter.writerow([row[locationColumnNumber], row[locationColumnNumber2],row[locationColumnNumber+1],row[locationColumnNumber+2],row[locationColumnNumber2+1],row[locationColumnNumber2+2],distMiles,distKm,GCdistMiles,GCdistKm])
-                        geowriter.writerow([row[locationColumnNumber],str(waypoints1[0]),str(waypoints1[1]),row[locationColumnNumber2],str(waypoints2[0]),str(waypoints2[1]),distMiles,distKm,GCdistMiles,GCdistKm])
-    outputFile.close()
-    filesToOpen.append(distanceoutputFilename)
+        geowriter.writerow(header)
+        for gname, locs in groups:
+            for (n1, la1, lo1), (n2, la2, lo2) in itertools.combinations(locs, 2):
+                wp1 = (la1, lo1)
+                wp2 = (la2, lo2)
+                distMiles = distance.distance(wp1, wp2).miles
+                distKm = distance.distance(wp1, wp2).km
+                GCdistMiles = great_circle(wp1, wp2).miles
+                GCdistKm = great_circle(wp1, wp2).km
+                geowriter.writerow([n1, la1, lo1, n2, la2, lo2, distMiles, distKm, GCdistMiles, GCdistKm, gname])
 
-    if chartPackage!='No charts':
+    filesToOpen.append(distanceoutputFilename)
+    filesToOpen = create_distance_distribution_charts(distanceoutputFilename, outputDir, filesToOpen, encodingValue)
+    if chartPackage != 'No charts':
         try:
-            filesToOpen = createCharts(distanceoutputFilename,outputDir,filesToOpen,chartPackage,dataTransformation)
+            filesToOpen = createCharts(distanceoutputFilename, outputDir, filesToOpen, chartPackage, dataTransformation)
         except Exception as e:
             print('GIS_distance createCharts (pairwise) failed:', e)
 
-
-    IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running GIS distance at', True, '', True, startTime, True)
+    IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running GIS pairwise (all-pairs) distances at', True, '', True, startTime, True)
     return filesToOpen
 
 # The function computes the distance between a pre-selected city and all cities in a list
@@ -364,6 +380,7 @@ def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,geolocat
     outputFile.close()
     filesToOpen.append(distanceoutputFilename)
 
+    filesToOpen = create_distance_distribution_charts(distanceoutputFilename, outputDir, filesToOpen, encodingValue)
     if chartPackage!='No charts':
         try:
             filesToOpen = createCharts(distanceoutputFilename,outputDir,filesToOpen,chartPackage,dataTransformation,baselineLocation)
