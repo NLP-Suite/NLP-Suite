@@ -88,11 +88,6 @@ def run(inputFilename,outputDir, openOutputFiles, chartPackage, dataTransformati
                        message='You are running the GIS algorithm for pairwise distances. But your input file has fewer than the expected 6 headers (Location1, Latitude1, Longitude1, Location2, Latitude2, Longitude2):\n\n' + str(headers) + '\n\nPlease, select a different file and try again.')
         return
 
-    if compute_pairwise_distances== False and inputIsGeocoded and (locationColumn=="" or locationColumn2==""):
-        mb.showwarning(title='Warning',
-                       message='You are running the GIS distance algorithm using two sets of locations. You must select the columns containing the First and Second location names.\n\nPlease, using the dropdown menu, select the column of the FIRST and SECOND location names and try again.')
-        return
-
     if compute_baseline_distances and baselineLocation != '' and locationColumn=="":
         mb.showwarning(title='Warning',
                        message='You are running the GIS distance algorithm from the baseline location ' + baselineLocation + '. You must select the column containing the First location name.\n\nPlease, using the dropdown menu, select the column of the FIRST location names and try again.')
@@ -123,16 +118,21 @@ def run(inputFilename,outputDir, openOutputFiles, chartPackage, dataTransformati
     numColumns=len(headers)
     split_locations=''
 
+    # the two modes are independent and may both run; accumulate the files each produces
+    filesToOpen=[]
+
     if compute_baseline_distances and baselineLocation!='':
-        filesToOpen=GIS_distance_util.computeDistancesFromSpecificLocation(GUI_util.window,inputFilename, outputDir, geolocator,geocoder,inputIsGeocoded,baselineLocation, headers,locationColumnNumber,locationColumn, distinctValues,withHeader,inputIsCoNLL,split_locations,datePresent,filenamePositionInCoNLLTable,encodingValue)
-        if len(filesToOpen)==0:
-            return
+        baselineFiles=GIS_distance_util.computeDistancesFromSpecificLocation(GUI_util.window,inputFilename, outputDir, geolocator,geocoder,inputIsGeocoded,baselineLocation, headers,locationColumnNumber,locationColumn, distinctValues,withHeader,inputIsCoNLL,split_locations,datePresent,filenamePositionInCoNLLTable,encodingValue)
+        if baselineFiles:
+            filesToOpen.extend(baselineFiles)
+
     if compute_pairwise_distances:
-        filesToOpen=GIS_distance_util.computePairwiseDistances(GUI_util.window,inputFilename,outputDir,headers,locationColumnNumber,locationColumnNumber2,locationColumn,locationColumn2, distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue)
-        if len(filesToOpen)==0:
-            return
-        if len(filesToOpen) == 0:
-            return
+        pairwiseFiles=GIS_distance_util.computePairwiseDistances(GUI_util.window,inputFilename,outputDir,headers,locationColumnNumber,locationColumnNumber2,locationColumn,locationColumn2, distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue)
+        if pairwiseFiles:
+            filesToOpen.extend(pairwiseFiles)
+
+    if len(filesToOpen)==0:
+        return
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -161,8 +161,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=480, # height at brief display
-                                                 GUI_height_full=520, # height at full display
+                                                 GUI_height_brief=560, # height at brief display
+                                                 GUI_height_full=600, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -376,27 +376,23 @@ if menu_values!='':
     location_field2 = tk.OptionMenu(window,location_var2,*menu_values)
 else:
     location_field2 = tk.OptionMenu(window,location_var2,menu_values)
+location_field2.configure(state='disabled')   # SECOND column only needed for pairwise; enabled when that box is ticked
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+350, y_multiplier_integer,location_field2)
 
 def activate_options(*args):
+    # The two modes are independent and may BOTH run in the same execution:
+    #   pairwise needs the SECOND location column; baseline needs the typed baseline location.
+    # Ticking one no longer disables the other; each just enables its own dependent widget.
     if compute_pairwise_distances_var.get():
-        compute_baseline_distances_checkbox.configure(state='disabled')
-        baselineLocation_entry.configure(state='disabled')
         location_field2.configure(state='normal')
-        baselineLocation_entry_var.set('')
     else:
-        compute_baseline_distances_checkbox.configure(state='normal')
-        baselineLocation_entry.configure(state='normal')
         location_field2.configure(state='disabled')
+        location_var2.set('')
 
     if compute_baseline_distances_var.get():
-        compute_pairwise_distances_checkbox.configure(state='disabled')
         baselineLocation_entry.configure(state='normal')
-        location_field2.configure(state='disabled')
     else:
-        compute_pairwise_distances_checkbox.configure(state='normal')
         baselineLocation_entry.configure(state='disabled')
-        location_field2.configure(state='normal')
         baselineLocation_entry_var.set('')
 
 compute_pairwise_distances_var.trace('w',activate_options)
