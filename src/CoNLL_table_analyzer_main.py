@@ -989,27 +989,14 @@ def activate_all_options():
     if extra_GUIs_var.get():
         extra_GUIs_menu.configure(state='normal')
         all_analyses_checkbox.configure(state='disabled')
+        advanced_analyses_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
         # k_words_checkbox.configure(state='disabled')
         # k_sentences_checkbox.configure(state='disabled')
-    elif all_analyses_var.get():
-        all_analyses_menu.configure(state='normal')
-        extra_GUIs_checkbox.configure(state='disabled')
-        advanced_analyses_checkbox.configure(state='disabled')
-        searchToken_checkbox.configure(state='disabled')
-        # k_sentences_checkbox.configure(state='disabled')
-        reminders_util.checkReminder(scriptName,
-                                     reminders_util.title_options_CoreNLP_nn_parser,
-                                     reminders_util.message_CoreNLP_nn_parser,
-                                     True)
-    elif advanced_analyses_var.get():
-        advanced_analyses_menu.configure(state='normal')
-        extra_GUIs_checkbox.configure(state='disabled')
-        all_analyses_checkbox.configure(state='disabled')
-        searchToken_checkbox.configure(state='disabled')
     elif search_token_var.get()==True:
         extra_GUIs_checkbox.configure(state='disabled')
         all_analyses_checkbox.configure(state='disabled')
+        advanced_analyses_checkbox.configure(state='disabled')
         # k_words_checkbox.configure(state='disabled')
         # k_sentences_checkbox.configure(state='disabled')
         entry_searchField_kw.configure(state='normal')
@@ -1019,6 +1006,24 @@ def activate_all_options():
         co_postag_menu_lb.configure(state='normal')
         co_deprel_menu_lb.configure(state='normal')
         k_words_checkbox.configure(state='normal')
+    elif all_analyses_var.get():
+        # Basic and Advanced CoNLL analyses are INDEPENDENT: either or BOTH may be run.
+        # run() dispatches them in separate if-blocks (~line 126 and ~line 280), so ticking both
+        # runs both. When Basic is on, enable its dropdown AND Advanced's if that is also ticked;
+        # neither disables the other checkbox. extra_GUIs / search stay exclusive with the analyses.
+        all_analyses_menu.configure(state='normal')
+        extra_GUIs_checkbox.configure(state='disabled')
+        searchToken_checkbox.configure(state='disabled')
+        if advanced_analyses_var.get():
+            advanced_analyses_menu.configure(state='normal')
+        reminders_util.checkReminder(scriptName,
+                                     reminders_util.title_options_CoreNLP_nn_parser,
+                                     reminders_util.message_CoreNLP_nn_parser,
+                                     True)
+    elif advanced_analyses_var.get():
+        advanced_analyses_menu.configure(state='normal')
+        extra_GUIs_checkbox.configure(state='disabled')
+        searchToken_checkbox.configure(state='disabled')
     # elif WordNet_var.get():
     #     WordNet_checkbox.configure(state='normal')
     #
