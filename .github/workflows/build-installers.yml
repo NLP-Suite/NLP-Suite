@@ -317,8 +317,29 @@ jobs:
       contents: write
 
     steps:
+# Checkout MUST run before download-artifact: actions/checkout cleans the workspace,
+      # which would delete the downloaded artifacts if it ran afterwards. It also gives the
+      # release step access to docs/release_body_header.md and CHANGELOG.md.
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
+
+      # Assemble the release body: fixed download instructions (docs/release_body_header.md)
+      # followed by the newest CHANGELOG.md section as the human-readable "What's new".
+      # GitHub's own auto-generated "What's Changed" commit list is appended below by
+      # generate_release_notes. Also expose today's date for the release name.
+      - name: Build release notes
+        id: notes
+        run: |
+          echo "date=$(date +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
+          cat docs/release_body_header.md > RELEASE_BODY.md
+          echo '' >> RELEASE_BODY.md
+          if [ -f CHANGELOG.md ]; then
+            # print the bullets of the top (newest) CHANGELOG section, excluding its heading
+            awk '/^## /{n++} n==1 && !/^## /{print}' CHANGELOG.md >> RELEASE_BODY.md
+          fi
 
       # Each artifact is already a permission-preserving zip built on its native runner.
       # download-artifact@v4 places each into a directory named after the artifact, so attach
@@ -326,19 +347,9 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
+          name: ${{ github.ref_name }} (${{ steps.notes.outputs.date }})
+          body_path: RELEASE_BODY.md
+          generate_release_notes: true
           files: |
             NLP-Suite-windows-x64/NLP-Suite-windows-x64.zip
             NLP-Suite-mac-arm64/NLP-Suite-mac-arm64.zip
-          generate_release_notes: true
-          body: |
-            ## 📥 What you need to do
-
-            1. **Download** the installer for your computer from the **Assets** below:
-               - **Windows** → `NLP-Suite-windows-x64.zip`
-               - **Mac (Apple Silicon)** → `NLP-Suite-mac-arm64.zip`
-            2. **Unzip** it, open the unzipped folder, and run **NLP Suite** (Windows) or the **NLP Suite** launcher (Mac). No separate Python install is needed — a portable Python is bundled. See the **getting-started guide** inside the folder if it's your first time.
-            3. **Mac only:** if macOS blocks the app ("unidentified developer"), right-click the launcher → **Open** (or follow the guide in the folder).
-            4. **Already have an older version?** Just download this one — there's nothing to uninstall, and your data folders are untouched.
-
-            ---
-            ### What changed in this release
