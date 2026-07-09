@@ -713,6 +713,9 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
     if filesToOpen and isinstance(filesToOpen[0], str):
         filesToOpen = list(dict.fromkeys(filesToOpen))
 
+    # number of files actually produced this run (before narrowing to the open-subset), so the
+    # "N files produced" report stays accurate even when only a curated subset is auto-opened
+    nFilesProducedFull = len(filesToOpen)
     if len(filesToOpenSubset)> 0:
         filesToOpen=filesToOpenSubset
 
@@ -763,7 +766,7 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
     subsetLabel = ''
     opened_folder_label = ''
 
-    nFilesProduced = len(filesToOpen)
+    nFilesProduced = nFilesProducedFull
     if nFilesProduced == 1:
         produced_singular_plural = 'file'
     else:
