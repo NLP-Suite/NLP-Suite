@@ -225,16 +225,7 @@ def visualize_SVOs(fileName, outputDir, chartPackage, dataTransformation, filesT
     elif 'filter' in fileName:
         label = 'filtered'
         label1 = 'filter'
-    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, fileName,
-                                                       outputDir,
-                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Subject (S)'],
-                                                       chart_title='Frequency Distribution of Subjects (' + label + ')',
-                                                       count_var=1, hover_label=[],
-                                                       outputFileNameType='S-' + label1,  # 'POS_bar',
-                                                       column_xAxis_label='Subjects (' + label + ')',
-                                                       groupByList=['Document'],
-                                                       plotList=['Frequency'],
-                                                       chart_title_label='Subjects (' + label + ')')
+    outputFiles = charts_util.plot(fileName, outputDir, columns=['Subject (S)'], title='Frequency Distribution of Subjects (' + label + ')', x_label='Subjects (' + label + ')', file_label='S-' + label1, plot_list=['Frequency'], title_label='Subjects (' + label + ')')
 
     if openFiles and outputFiles!=None:
         if isinstance(outputFiles, str):
@@ -242,32 +233,14 @@ def visualize_SVOs(fileName, outputDir, chartPackage, dataTransformation, filesT
         else:
             filesToOpen.extend(outputFiles)
 
-    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, fileName,
-                                                       outputDir,
-                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Verb (V)'],
-                                                       chart_title='Frequency Distribution of Verbs (' + label + ')',
-                                                       count_var=1, hover_label=[],
-                                                       outputFileNameType='V-' + label1,  # 'POS_bar',
-                                                       column_xAxis_label='Verbs (' + label + ')',
-                                                       groupByList=['Document'],
-                                                       plotList=['Frequency'],
-                                                       chart_title_label='Verbs (' + label + ')')
+    outputFiles = charts_util.plot(fileName, outputDir, columns=['Verb (V)'], title='Frequency Distribution of Verbs (' + label + ')', x_label='Verbs (' + label + ')', file_label='V-' + label1, plot_list=['Frequency'], title_label='Verbs (' + label + ')')
     if openFiles and outputFiles!=None:
         if isinstance(outputFiles, str):
             filesToOpen.append(outputFiles)
         else:
             filesToOpen.extend(outputFiles)
 
-    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, fileName,
-                                                       outputDir,
-                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Object (O)'],
-                                                       chart_title='Frequency Distribution of Objects (' + label + ')',
-                                                       count_var=1, hover_label=[],
-                                                       outputFileNameType='O-' + label1,  # 'POS_bar',
-                                                       column_xAxis_label='Objects (' + label + ')',
-                                                       groupByList=['Document'],
-                                                       plotList=['Frequency'],
-                                                       chart_title_label='Objects (' + label + ')')
+    outputFiles = charts_util.plot(fileName, outputDir, columns=['Object (O)'], title='Frequency Distribution of Objects (' + label + ')', x_label='Objects (' + label + ')', file_label='O-' + label1, plot_list=['Frequency'], title_label='Objects (' + label + ')')
 
     if openFiles and outputFiles!=None:
         if isinstance(outputFiles, str):
@@ -1195,17 +1168,7 @@ def normalize_date_svo(inputFilename, outputDir,  chartPackage='Excel', dataTran
                                                                      silent=True)
 
     # Date expressions are in the form yesterday, tomorrow morning, the day before Christmas
-    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, inputFilename,
-                                                        outputNormalizedDateDir,
-                                                        columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Date expression'],
-                                                        chart_title='Frequency Distribution of Date Expressions',
-                                                        # count_var = 1 for columns of alphabetic values
-                                                        count_var=1, hover_label=[],
-                                                        outputFileNameType='date-express', #'NER_info_bar',
-                                                        column_xAxis_label='Date expression (includes '+nEmtyCells+' SVOs with no date)',
-                                                        groupByList=['Document'],
-                                                        plotList=['Frequency'],
-                                                        chart_title_label='Date Expressions')
+    outputFiles = charts_util.plot(inputFilename, outputNormalizedDateDir, columns=['Date expression'], title='Frequency Distribution of Date Expressions', x_label='Date expression (includes '+nEmtyCells+' SVOs with no date)', file_label='date-express', plot_list=['Frequency'], title_label='Date Expressions')
     if outputFiles!=None:
         if isinstance(outputFiles, str):
             filesToOpen.append(outputFiles)
@@ -1213,17 +1176,7 @@ def normalize_date_svo(inputFilename, outputDir,  chartPackage='Excel', dataTran
             filesToOpen.extend(outputFiles)
 
     # normalized dates are in the form PAST_REF, NEXT_IMMEDIATE P1D, ...
-    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, inputFilename,
-                                                        outputNormalizedDateDir,
-                                                        columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Normalized date'],
-                                                        chart_title='Frequency Distribution of Normalized Dates',
-                                                        # count_var = 1 for columns of alphabetic values
-                                                        count_var=1, hover_label=[],
-                                                        outputFileNameType='date', #'NER_date_bar',
-                                                        column_xAxis_label='Normalized date (includes '+nEmtyCells+' SVOs with no date)',
-                                                        groupByList=['Document'],
-                                                        plotList=['Frequency'],
-                                                        chart_title_label='Normalized Dates')
+    outputFiles = charts_util.plot(inputFilename, outputNormalizedDateDir, columns=['Normalized date'], title='Frequency Distribution of Normalized Dates', x_label='Normalized date (includes '+nEmtyCells+' SVOs with no date)', file_label='date', plot_list=['Frequency'], title_label='Normalized Dates')
     if outputFiles!=None:
         if isinstance(outputFiles, str):
             filesToOpen.append(outputFiles)
@@ -1231,17 +1184,7 @@ def normalize_date_svo(inputFilename, outputDir,  chartPackage='Excel', dataTran
             filesToOpen.extend(outputFiles)
 
     # Date types are in the form PAST, PRESENT, OTHER
-    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, inputFilename,
-                                                        outputNormalizedDateDir,
-                                                        columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Date type'],
-                                                        chart_title='Frequency Distribution of Date Types',
-                                                        # count_var = 1 for columns of alphabetic values
-                                                        count_var=1, hover_label=[],
-                                                        outputFileNameType='date-types', #'NER_info_bar',
-                                                        column_xAxis_label='Date type',
-                                                        groupByList=['Document'],
-                                                        plotList=['Frequency'],
-                                                        chart_title_label='Date Types (includes '+nEmtyCells+' SVOs with no date)')
+    outputFiles = charts_util.plot(inputFilename, outputNormalizedDateDir, columns=['Date type'], title='Frequency Distribution of Date Types', x_label='Date type', file_label='date-types', plot_list=['Frequency'], title_label='Date Types (includes '+nEmtyCells+' SVOs with no date)')
     if outputFiles!=None:
         if isinstance(outputFiles, str):
             filesToOpen.append(outputFiles)

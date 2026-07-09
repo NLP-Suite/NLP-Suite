@@ -417,18 +417,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
             else:
                 chart_title = 'Frequency of Locations Found by ' + geocoder
 
-            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                               geocodedLocationsOutputFilename,
-                                                               outputDir,
-                                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Location'],
-                                                               chart_title=chart_title,
-                                                               # count_var = 1 for columns of alphabetic values
-                                                               count_var=1, hover_label=[],
-                                                               outputFileNameType='', #'found',  # 'NER_tag_bar',
-                                                               column_xAxis_label='Locations',
-                                                               groupByList=[],
-                                                               plotList=[],
-                                                               chart_title_label='')
+            outputFiles = charts_util.plot(geocodedLocationsOutputFilename, outputDir, columns=['Location'], title=chart_title, x_label='Locations', group_by=None)
 
             if outputFiles!=None:
                 if len(outputFiles) > 0:
@@ -441,18 +430,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                     outputFiles[0] = head+os.sep+tail
                     filesToOpen.extend(outputFiles)
 
-            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                               geocodedLocationsOutputFilename,
-                                                               outputDir,
-                                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Country from Geocoder'],
-                                                               chart_title='Frequency of Countries Found by ' + geocoder,
-                                                               # count_var = 1 for columns of alphabetic values
-                                                               count_var=1, hover_label=[],
-                                                               outputFileNameType='', #'found',  # 'NER_tag_bar',
-                                                               column_xAxis_label='Country found by ' + geocoder,
-                                                               groupByList=[],
-                                                               plotList=[],
-                                                               chart_title_label='')
+            outputFiles = charts_util.plot(geocodedLocationsOutputFilename, outputDir, columns=['Country from Geocoder'], title='Frequency of Countries Found by ' + geocoder, x_label='Country found by ' + geocoder, group_by=None)
 
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
@@ -467,17 +445,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                 filesToOpen.append(locationsNotFoundNonDistinctoutputFilename)
                 if chartPackage!='No charts':
 
-                    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, locationsNotFoundNonDistinctoutputFilename,
-                                                                           outputDir,
-                                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Location'],
-                                                                           chart_title='Frequency of Locations not Found by ' + geocoder,
-                                                                           # count_var = 1 for columns of alphabetic values
-                                                                           count_var=1, hover_label=[],
-                                                                           outputFileNameType='', #'not-found',  # 'NER_tag_bar',
-                                                                           column_xAxis_label='Locations',
-                                                                           groupByList=[],
-                                                                           plotList=[],
-                                                                           chart_title_label='')
+                    outputFiles = charts_util.plot(locationsNotFoundNonDistinctoutputFilename, outputDir, columns=['Location'], title='Frequency of Locations not Found by ' + geocoder, x_label='Locations', group_by=None)
                     if outputFiles!=None:
                         if len(outputFiles) > 0:
                             # must split the file in case both path and filename contain the word LOCATION
@@ -500,18 +468,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                 # no need to display since the chart will contain the values
                 # return_files.append(outputFilename)
                 columns_to_be_plotted_yAxis=["Number of Distinct Locations Found by Geocoder ", "Number of Distinct Locations NOT Found by Geocoder"]
-                outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                                                   outputFilename,
-                                                                   outputDir,
-                                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                                   chart_title='Number of DISTINCT Locations Found and not Found by Geocoder',
-                                                                   # count_var = 1 for columns of alphabetic values
-                                                                   count_var=0, hover_label=[],
-                                                                   outputFileNameType='',
-                                                                   column_xAxis_label='Geocoder results',
-                                                                   groupByList=[],
-                                                                   plotList=[],
-                                                                   chart_title_label='')
+                outputFiles = charts_util.plot(outputFilename, outputDir, columns=columns_to_be_plotted_yAxis, title='Number of DISTINCT Locations Found and not Found by Geocoder', x_label='Geocoder results', count=0, group_by=None)
                 if outputFiles!=None:
                     if isinstance(outputFiles, str):
                         filesToOpen.append(outputFiles)

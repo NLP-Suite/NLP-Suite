@@ -357,12 +357,7 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
             ]
             for ycol, title, xlabel, ftype in chart_specs:
                 try:
-                    of = charts_util.visualize_chart(
-                        chartPackage, dataTransformation, svo_csv, srl_dir,
-                        columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=[ycol],
-                        chart_title=title, count_var=1, hover_label=[],
-                        outputFileNameType=ftype, column_xAxis_label=xlabel,
-                        groupByList=['Document'], plotList=['Frequency'], chart_title_label=xlabel)
+                    of = charts_util.plot(svo_csv, srl_dir, columns=[ycol], title=title, x_label=xlabel, file_label=ftype, plot_list=['Frequency'], title_label=xlabel)
                     if of:
                         outputs.extend(of if isinstance(of, list) else [of])
                 except Exception as e:
@@ -437,13 +432,7 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
                 roles_freq_csv = IO_files_util.generate_output_file_name(
                     svo_csv, inputDir, srl_dir, '.csv', 'role-freq')
                 pd.DataFrame(role_rows).to_csv(roles_freq_csv, index=False, encoding='utf-8')
-                of = charts_util.visualize_chart(
-                    chartPackage, dataTransformation, roles_freq_csv, srl_dir,
-                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Role'],
-                    chart_title='Frequency Distribution of SRL Refined Roles (VerbNet)',
-                    count_var=1, hover_label=[], outputFileNameType='SRL-refined-role',
-                    column_xAxis_label='Refined role (VerbNet)', groupByList=['Document'],
-                    plotList=['Frequency'], chart_title_label='Refined role (VerbNet)')
+                of = charts_util.plot(roles_freq_csv, srl_dir, columns=['Role'], title='Frequency Distribution of SRL Refined Roles (VerbNet)', x_label='Refined role (VerbNet)', file_label='SRL-refined-role', plot_list=['Frequency'], title_label='Refined role (VerbNet)')
                 if of:
                     outputs.extend(of if isinstance(of, list) else [of])
         except Exception as e:
@@ -465,13 +454,7 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
                 vn_freq_csv = IO_files_util.generate_output_file_name(
                     svo_csv, inputDir, srl_dir, '.csv', 'verbnet-class')
                 pd.DataFrame(vn_rows).to_csv(vn_freq_csv, index=False, encoding='utf-8')
-                of = charts_util.visualize_chart(
-                    chartPackage, dataTransformation, vn_freq_csv, srl_dir,
-                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['VerbNet class'],
-                    chart_title='Frequency Distribution of SRL VerbNet Classes',
-                    count_var=1, hover_label=[], outputFileNameType='SRL-verbnet-class',
-                    column_xAxis_label='VerbNet class', groupByList=['Document'],
-                    plotList=['Frequency'], chart_title_label='VerbNet class')
+                of = charts_util.plot(vn_freq_csv, srl_dir, columns=['VerbNet class'], title='Frequency Distribution of SRL VerbNet Classes', x_label='VerbNet class', file_label='SRL-verbnet-class', plot_list=['Frequency'], title_label='VerbNet class')
                 if of:
                     outputs.extend(of if isinstance(of, list) else [of])
         except Exception as e:
@@ -492,13 +475,7 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
                 fn_freq_csv = IO_files_util.generate_output_file_name(
                     svo_csv, inputDir, srl_dir, '.csv', 'framenet-frame')
                 pd.DataFrame(fn_rows).to_csv(fn_freq_csv, index=False, encoding='utf-8')
-                of = charts_util.visualize_chart(
-                    chartPackage, dataTransformation, fn_freq_csv, srl_dir,
-                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['FrameNet frame'],
-                    chart_title='Frequency Distribution of SRL FrameNet Frames',
-                    count_var=1, hover_label=[], outputFileNameType='SRL-framenet-frame',
-                    column_xAxis_label='FrameNet frame', groupByList=['Document'],
-                    plotList=['Frequency'], chart_title_label='FrameNet frame')
+                of = charts_util.plot(fn_freq_csv, srl_dir, columns=['FrameNet frame'], title='Frequency Distribution of SRL FrameNet Frames', x_label='FrameNet frame', file_label='SRL-framenet-frame', plot_list=['Frequency'], title_label='FrameNet frame')
                 if of:
                     outputs.extend(of if isinstance(of, list) else [of])
         except Exception as e:
@@ -518,13 +495,7 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
                 wn_freq_csv = IO_files_util.generate_output_file_name(
                     svo_csv, inputDir, srl_dir, '.csv', 'wordnet-sense')
                 pd.DataFrame(wn_rows).to_csv(wn_freq_csv, index=False, encoding='utf-8')
-                of = charts_util.visualize_chart(
-                    chartPackage, dataTransformation, wn_freq_csv, srl_dir,
-                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['WordNet'],
-                    chart_title='Frequency Distribution of SRL WordNet Senses',
-                    count_var=1, hover_label=[], outputFileNameType='SRL-wordnet-sense',
-                    column_xAxis_label='WordNet sense', groupByList=['Document'],
-                    plotList=['Frequency'], chart_title_label='WordNet sense')
+                of = charts_util.plot(wn_freq_csv, srl_dir, columns=['WordNet'], title='Frequency Distribution of SRL WordNet Senses', x_label='WordNet sense', file_label='SRL-wordnet-sense', plot_list=['Frequency'], title_label='WordNet sense')
                 if of:
                     outputs.extend(of if isinstance(of, list) else [of])
         except Exception as e:
