@@ -1217,6 +1217,7 @@ def select_path_from_list(window, paths, intro_text, title='Available files',
     import tkinter as tk
     if not paths:
         return '__BROWSE__'
+    paths = list(paths)               # local copy; the Remove-file button may delete entries
     result = {'value': None}
     top = tk.Toplevel(window)
     top.title(title)
@@ -1263,11 +1264,42 @@ def select_path_from_list(window, paths, intro_text, title='Available files',
         if sel:
             openFile(window, paths[sel[0]])
 
+    def do_remove():
+        # permanently delete the highlighted file from disk (with confirmation), then drop it from
+        # the list -- lets the user clean up empty / left-over output files without leaving the picker
+        sel = lb.curselection()
+        if not sel:
+            return
+        i = sel[0]
+        path = paths[i]
+        try:
+            empty = os.path.getsize(path) == 0
+        except Exception:
+            empty = False
+        if not mb.askyesno(title='Remove file',
+                           message='Permanently delete this file from disk?\n\n' + path
+                                   + ('\n\n(The file is empty.)' if empty else '')):
+            return
+        try:
+            os.remove(path)
+        except Exception as e:
+            mb.showwarning(title='Could not remove file',
+                           message='The file could not be removed:\n\n' + path + '\n\n' + str(e))
+            return
+        del paths[i]
+        lb.delete(i)
+        if not paths:                      # nothing left -> hand back to the caller to browse
+            result['value'] = '__BROWSE__'
+            top.destroy()
+            return
+        lb.selection_set(min(i, len(paths) - 1))
+
     lb.bind('<Double-Button-1>', lambda e: do_select())
     btns = tk.Frame(top)
     btns.pack(pady=10)
     tk.Button(btns, text='Select', width=12, command=do_select).pack(side='left', padx=5)
     tk.Button(btns, text='Open file', width=10, command=do_open).pack(side='left', padx=5)
+    tk.Button(btns, text='Remove file', width=11, command=do_remove).pack(side='left', padx=5)
     tk.Button(btns, text='Browse for another file...', width=22, command=do_browse).pack(side='left', padx=5)
     tk.Button(btns, text='Cancel', width=10, command=top.destroy).pack(side='left', padx=5)
     top.wait_window()
