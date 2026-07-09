@@ -365,17 +365,7 @@ def run():
     import charts_util
     columns_to_be_plotted_xAxis=[]
     columns_to_be_plotted_yAxis=['File_Type']
-    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                                              outputDir + os.sep + outputFilename, outputDir,
-                                              columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                              chart_title="Frequency Distribution of File Types",
-                                              outputFileNameType='File_Types',
-                                              column_xAxis_label='File type',
-                                              count_var=1,
-                                              hover_label=[],
-                                              groupByList=[],
-                                              plotList=['Frequency'],
-                                              chart_title_label='')
+    outputFiles = charts_util.plot(outputDir + os.sep + outputFilename, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of File Types", x_label='File type', file_label='File_Types', group_by=None, plot_list=['Frequency'])
     if outputFiles:
         filesToOpen.extend(outputFiles if isinstance(outputFiles, list) else [outputFiles])
 

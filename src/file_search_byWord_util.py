@@ -650,18 +650,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
 # visualize results for document searches ---------------------------------------------------------------
 
     if not search_within_sentence:
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename_csv_word, outputDir,
-                                                  columns_to_be_plotted_xAxis=[],
-                                                  columns_to_be_plotted_yAxis=['Frequency of occurrence'],
-                                                  chart_title=chart_title,
-                                                  count_var=1,
-                                                  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
-                                                  hover_label=[],
-                                                  outputFileNameType='',
-                                                  column_xAxis_label=search_keywords_str,
-                                                  groupByList=['Document'],
-                                                  plotList=[],
-                                                  chart_title_label='')
+        outputFiles = charts_util.plot(outputFilename_csv_word, outputDir, columns=['Frequency of occurrence'], title=chart_title, x_label=search_keywords_str)
         if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)

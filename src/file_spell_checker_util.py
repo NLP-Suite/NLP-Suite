@@ -207,18 +207,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, 
              if result==False:
                  pass
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename_byDoc, outputDir,
-                                                   columns_to_be_plotted_xAxis=[],
-                                                  columns_to_be_plotted_yAxis=['Misspelled-unusual lemmatized word'],
-                                                   chart_title='Frequency of Misspelled-Unusual Words',
-                                                   count_var=0, # no point counting; all values are distinct
-                                                   hover_label=[],
-                                                   outputFileNameType='',  # 'line_bar',
-                                                   column_xAxis_label='Misspelled-Unusual lemmatized word',
-                                                   groupByList=['Document'],
-                                                   # plotList=['Misspelled-Unusual Words Statistics'],
-                                                   plotList=[],
-                                                   chart_title_label='')
+        outputFiles = charts_util.plot(outputFilename_byDoc, outputDir, columns=['Misspelled-unusual lemmatized word'], title='Frequency of Misspelled-Unusual Words', x_label='Misspelled-Unusual lemmatized word', count=0)
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):
@@ -265,16 +254,7 @@ def check_for_typo_sub_dir(inputDir, outputDir, inputCsvDictionaryFile, openOutp
         filesToOpen.append(outputFileName_complete)
 
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
-                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Typo?'],
-                                                           chart_title='Frequency of Potential Typos',
-                                                           count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
-                                                           hover_label=[],
-                                                           outputFileNameType='Leven_spell',
-                                                           column_xAxis_label='Typo',
-                                                           groupByList=[],
-                                                           plotList=[],
-                                                           chart_title_label='')
+        outputFiles = charts_util.plot(inputFilename, outputDir, columns=['Typo?'], title='Frequency of Potential Typos', x_label='Typo', file_label='Leven_spell', group_by=None)
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -812,16 +792,7 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity end',
                                                'Finished running Word similarity at', True, '', True, startTime, True)
 
-            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFileName_simple, outputDir,
-                                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Typo?'],
-                                                               chart_title='Frequency of Potential Typos',
-                                                               count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
-                                                               hover_label=[],
-                                                               outputFileNameType='Leven_spell',
-                                                               column_xAxis_label='Typo',
-                                                               groupByList=[],
-                                                               plotList=[],
-                                                               chart_title_label='')
+            outputFiles = charts_util.plot(outputFileName_simple, outputDir, columns=['Typo?'], title='Frequency of Potential Typos', x_label='Typo', file_label='Leven_spell', group_by=None)
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)

@@ -621,17 +621,7 @@ def sentiment_main(inputFilename, inputDir, outputDir, configFileName, mode,  ch
 
     if chartPackage!='No charts':
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
-                                                           columns_to_be_plotted_xAxis=[],
-                                                           columns_to_be_plotted_yAxis=['Sentiment score'],
-                                                           chart_title='Frequency of roBERTa Sentiment Scores',
-                                                           count_var=0, hover_label=[],
-                                                           outputFileNameType='roBERTa_scores',  # 'line_bar',
-                                                           column_xAxis_label='Sentiment score',
-                                                           column_yAxis_label='Scores',
-                                                           groupByList=['Document'],
-                                                           plotList=['Sentiment Score'],
-                                                           chart_title_label='roBERTa Sentiment Scores')
+        outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Sentiment score'], title='Frequency of roBERTa Sentiment Scores', x_label='Sentiment score', count=0, file_label='roBERTa_scores', plot_list=['Sentiment Score'], title_label='roBERTa Sentiment Scores', y_label='Scores')
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):
@@ -639,17 +629,7 @@ def sentiment_main(inputFilename, inputDir, outputDir, configFileName, mode,  ch
             else:
                 filesToOpen.extend(outputFiles)
 
-        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
-                                                           columns_to_be_plotted_xAxis=[],
-                                                           columns_to_be_plotted_yAxis=['Sentiment label'],
-                                                           chart_title='Frequency of roBERTa Sentiment Labels',
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='roBERTa_labels',  # 'line_bar',
-                                                           column_xAxis_label='Sentiment label',
-                                                           column_yAxis_label='Frequency',
-                                                           groupByList=['Document'],
-                                                           plotList=['Sentiment label'],
-                                                           chart_title_label='roBERTa Sentiment Labels')
+        outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Sentiment label'], title='Frequency of roBERTa Sentiment Labels', x_label='Sentiment label', file_label='roBERTa_labels', plot_list=['Sentiment label'], title_label='roBERTa Sentiment Labels', y_label='Frequency')
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):

@@ -307,14 +307,7 @@ def run():
             values_csv = DB_PCACE_data_analysis_util.get_data_simplex_values_listing(
                 inputDir, outputDir, setup_simplex)
             if values_csv and os.path.isfile(values_csv):
-                chart_outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
-                    values_csv, outputDir,
-                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=[],
-                    chart_title=f'Frequency of "{setup_simplex}" values',
-                    count_var=1, hover_label=[],
-                    outputFileNameType='',
-                    column_xAxis_label=setup_simplex,
-                    groupByList=[], plotList=[], chart_title_label='')
+                chart_outputFiles = charts_util.plot(values_csv, outputDir, columns=[], title=f'Frequency of "{setup_simplex}" values', x_label=setup_simplex, group_by=None)
                 if chart_outputFiles is not None:
                     if isinstance(chart_outputFiles, str):
                         filesToOpen.append(chart_outputFiles)

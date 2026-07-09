@@ -2517,17 +2517,7 @@ def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, chart
             if chartPackage!='No charts':
                 columns_to_be_plotted_xAxis=[]
                 columns_to_be_plotted_yAxis=["Number of Pronouns", "Number of Coreferenced Pronouns", "Pronouns Coreference Rate"]
-                outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
-                                                                   outputDir,
-                                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                                   chart_title='Coreferenced Pronouns',
-                                                                   # count_var = 1 for columns of alphabetic values
-                                                                   count_var=0, hover_label=[],
-                                                                   outputFileNameType='', #'pronouns_bar',
-                                                                   column_xAxis_label='Coreference values',
-                                                                   groupByList=[],
-                                                                   plotList=[],
-                                                                   chart_title_label='')
+                outputFiles = charts_util.plot(outputFilename, outputDir, columns=columns_to_be_plotted_yAxis, title='Coreferenced Pronouns', x_label='Coreference values', count=0, group_by=None)
                 if outputFiles!=None:
                     if isinstance(outputFiles, str):
                         filesToOpen.append(outputFiles)
