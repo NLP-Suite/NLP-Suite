@@ -4,6 +4,12 @@ The most recent release is at the top. Each release's bullets are shown as **"Wh
 on the corresponding GitHub Release page (the top section is added automatically by the
 release workflow). Keep the newest version's section at the very top and update it before tagging.
 
+## v1.6.2
+- **Under-the-hood modernization of every tool.** All ~50 GUIs had their **RUN** button rewired to a simpler, more reliable pattern. Nothing changes in how you use the tools — but it removes a long-standing source of bugs and makes future fixes safer.
+- **CoNLL Table Analyzer:** you can now run the **Basic and Advanced analyses together** in a single pass, instead of one at a time.
+- **GIS distances:** fixed a crash in the **"distance from a baseline location"** mode when the corpus contained places that couldn't be geocoded — those are now skipped cleanly.
+- Release-page and housekeeping improvements (dated release titles, a clearer "What's new" section).
+
 ## v1.6.1
 - **Geographic distances (GIS) tool fully overhauled.** It now works directly on a geocoded corpus and offers three analyses on the same file:
   - distances between **all pairs** of places — within each document, across the whole corpus, or both;
