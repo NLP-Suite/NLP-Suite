@@ -392,6 +392,49 @@ def visualize_chart_bySent(inputFilename, outputDir, chartPackage, dataTransform
 #   chart_title_label is used as part of the chart_title when plotting the fields statistics (Mean, Mode, Skewness,...)
 # X-axis
 
+def _bin_numeric_columns_for_chart(inputFilename, outputDir, value_col_indices, threshold=20, max_bins=10):
+    """Numeric X-axis binning (the 'TODO Naman' note): for a FREQUENCY bar chart of numeric values,
+    when a plotted column holds more than `threshold` distinct numeric values, replace those values
+    with ordered range labels (e.g. '03: 24.6-36.4') so the chart shows ~max_bins value CLASSES
+    instead of a forest of individual-value bars. Writes a binned copy of the csv and returns its
+    path if anything was binned; returns None otherwise (non-numeric column, few distinct values, or
+    any error), so the caller falls back to the original file unchanged."""
+    try:
+        import numpy as np
+        df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+    except Exception:
+        return None
+    binned_any = False
+    for idx in value_col_indices:
+        try:
+            if idx is None or idx < 0 or idx >= len(df.columns):
+                continue
+            col = df.columns[idx]
+            s = pd.to_numeric(df[col], errors='coerce')
+            if s.notna().sum() == 0:                 # not a numeric column -> leave alone
+                continue
+            if s.dropna().nunique() <= threshold:    # few enough distinct values already
+                continue
+            vmin, vmax = float(s.min()), float(s.max())
+            if vmin == vmax:
+                continue
+            edges = np.linspace(vmin, vmax, max_bins + 1)
+            # ordered, self-describing labels; the zero-padded prefix keeps them sortable
+            labels = [f"{j + 1:02d}: {edges[j]:.4g}-{edges[j + 1]:.4g}" for j in range(max_bins)]
+            df[col] = pd.cut(s, bins=edges, labels=labels, include_lowest=True).astype(str)
+            binned_any = True
+        except Exception:
+            continue
+    if not binned_any:
+        return None
+    try:
+        outFile = os.path.join(outputDir, 'NLP_binned_' + os.path.basename(inputFilename))
+        df.to_csv(outFile, index=False)
+        return outFile
+    except Exception:
+        return None
+
+
 def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
                     columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
                     chart_title, count_var, hover_label, outputFileNameType, column_xAxis_label,
@@ -479,22 +522,9 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
         # columns_to_be_plotted_numeric[0].insert(0, docCol + 1)
         # columns_to_be_plotted_byDoc = columns_to_be_plotted_numeric
 
-        # TODO Naman for numeric data build classes of values, rather than individual values, to be displayed in the X-axis
-        # https://stackoverflow.com/questions/49382207/how-to-map-numeric-data-into-categories-bins-in-pandas-dataframe
-        # if count_var == 0: # numeric variable
-        #     import pandas as pd
-        #     df = pd.read_csv(inputFilename)
-        #     # column_data =df[columns_to_be_plotted_yAxis[0].tolist()]
-        #     column_data =df[columns_to_be_plotted_yAxis[0]].tolist()
-        #     print("len(column_data)", len(column_data), "column_data",column_data)
-        #     bins = list(set(column_data))
-        #     bins.sort()
-        #     x_axis_labels = []
-        #     # create classes of values
-        #     for j in range(1,len(bins)):
-        #         # x_axis_labels.append(f"Bin(j)")
-        #         x_axis_labels.append("Bin-" + str(j))
-        #     print("Bins",pd.cut(column_data, bins, labels=x_axis_labels))
+        # numeric X-axis binning (the former 'TODO Naman' note) is implemented below, just before the
+        # bar chart is built, via _bin_numeric_columns_for_chart: a numeric column with many distinct
+        # values is grouped into ~10 range classes so the X-axis is readable rather than a forest of bars.
 
     # when pivoting data
     # columns_to_be_plotted_bySent = []
@@ -504,12 +534,23 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
 
     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
 
+    # numeric X-axis binning (TODO Naman): for a frequency bar chart of a numeric column with many
+    # distinct values, plot ~10 value CLASSES instead of a forest of individual-value bars. Narrowly
+    # gated (frequency counts, no explicit X-axis field) and confined to this bar chart -- byDoc/bySent
+    # and every other path keep the original file untouched.
+    chartInputFilename = inputFilename
+    if count_var == 1 and len(columns_to_be_plotted_xAxis) == 0:
+        binnedFilename = _bin_numeric_columns_for_chart(inputFilename, outputDir,
+                                                        [pair[1] for pair in columns_to_be_plotted_numeric])
+        if binnedFilename:
+            chartInputFilename = binnedFilename
+
     # standard bar chart ------------------------------------------------------------------------------
     # Form	Lemma	POS	Record ID	Sentence ID	Document ID	Document
     # columns_to_be_plotted_numeric = [[0,0], [1,1]] with count_var = 1 since these values need to be counted
     # @@@ 12/22/2024
     if isinstance(columns_to_be_plotted_numeric, list): # only plot if not empty list
-        outputFiles = run_all(columns_to_be_plotted_numeric, inputFilename, outputDir,
+        outputFiles = run_all(columns_to_be_plotted_numeric, chartInputFilename, outputDir,
                               outputFileLabel=outputFileNameType,
                               chartPackage=chartPackage,
                               dataTransformation=dataTransformation,
