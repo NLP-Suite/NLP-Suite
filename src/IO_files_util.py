@@ -806,8 +806,10 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
     mb.showwarning(title="Output files",message="The " + scriptName + " has produced " +
                 str(nFilesProduced) + " " + produced_singular_plural + " in output." + total_label + wayTooMany + label + subsetLabel + opened_folder_label)
 
-    # Auto-open decision based on files produced by the CURRENT run, not total in directory
-    if nFilesProduced > 10 or len(filesToOpenSubset) > 10:
+    # Auto-open decision based on files produced by the CURRENT run, not total in directory.
+    # A caller that passes filesToOpenSubset has already curated exactly what to open, so honor
+    # it (open the subset below) instead of falling back to KML/Folium only.
+    if nFilesProduced > 10 and len(filesToOpenSubset) == 0:
         # Too many files to open them all, but still open the primary map visualizations
         # (Google Earth KML, folium HTML maps) so they are not silently suppressed.
         if openOutputFiles == True:
