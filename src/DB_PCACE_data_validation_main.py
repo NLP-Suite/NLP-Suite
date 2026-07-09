@@ -52,7 +52,13 @@ def _ensure_database_loaded(inputDir):
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformation):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    inputFilename = GUI_util.inputFilename.get() if hasattr(GUI_util.inputFilename, 'get') else ''
+    outputDir = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
 
     config_filename = GUI_util.config_filename_selected_config.get()
     inputDir = GUI_util.input_main_dir_path.get()
@@ -1307,14 +1313,7 @@ readMe_message = ("This GUI provides tools for validating and cleaning PC-ACE da
 
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 
-run_script_command = lambda: run(
-    GUI_util.inputFilename.get() if hasattr(GUI_util.inputFilename, 'get') else '',
-    GUI_util.output_dir_path.get(),
-    GUI_util.open_csv_output_checkbox.get(),
-    GUI_util.charts_package_options_widget.get(),
-    GUI_util.data_transformation_options_widget.get())
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options,
                     y_multiplier_integer, readMe_command,

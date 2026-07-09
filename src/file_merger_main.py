@@ -16,16 +16,20 @@ import file_merger_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(input_main_dir_path, output_dir_path,
-    openOutputFiles,
-    chartPackage, dataTransformation,
-    merge_processSubdir,
-    merge_saveFilenameInOutput,
-    merge_embed_filenames_inStringSeparators,
-    merge_separator_entry_begin,
-    merge_separator_entry_end,
-    merge_embed_subdir_name,
-    merge_character_separator):
+def run():
+    # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    input_main_dir_path = GUI_util.input_main_dir_path.get()
+    output_dir_path = GUI_util.output_dir_path.get()
+    openOutputFiles = GUI_util.open_csv_output_checkbox.get()
+    chartPackage = GUI_util.charts_package_options_widget.get()
+    dataTransformation = GUI_util.data_transformation_options_widget.get()
+    merge_processSubdir = merge_subdir_var.get()
+    merge_saveFilenameInOutput = merge_save_fileName_var.get()
+    merge_embed_filenames_inStringSeparators = merge_embed_filenames_inStringSeparators_var.get()
+    merge_separator_entry_begin = merge_separator_entry_begin_var.get()
+    merge_separator_entry_end = merge_separator_entry_end_var.get()
+    merge_embed_subdir_name = merge_embed_subdir_name_var.get()
+    merge_character_separator = merge_character_separator_var.get()
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
@@ -52,21 +56,7 @@ def run(input_main_dir_path, output_dir_path,
 
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-run_script_command=lambda: run(
-                            GUI_util.input_main_dir_path.get(),
-                            GUI_util.output_dir_path.get(),
-                            GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.charts_package_options_widget.get(),
-                            GUI_util.data_transformation_options_widget.get(),
-                            merge_subdir_var.get(),
-                            merge_save_fileName_var.get(),
-                            merge_embed_filenames_inStringSeparators_var.get(),
-                            merge_separator_entry_begin_var.get(),
-                            merge_separator_entry_end_var.get(),
-                            merge_embed_subdir_name_var.get(),
-                            merge_character_separator_var.get())
-
-GUI_util.run_button.configure(command=run_script_command)
+GUI_util.run_button.configure(command=run)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
