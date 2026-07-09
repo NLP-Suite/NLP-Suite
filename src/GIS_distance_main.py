@@ -204,20 +204,54 @@ csv_file_var = tk.StringVar()
 extra_GUIs_var = tk.IntVar()
 extra_GUIs_menu_var = tk.StringVar()
 
+def _plausible_gis(path):
+    # drop the geocoding residue that has no coordinates
+    p = os.path.basename(path).lower()
+    return not any(n in p for n in ('not-found', 'not_found', 'non-distinct'))
+
+def _is_geocoded_csv(path):
+    # a GIS-distance input is a GEOCODED csv: it must carry Latitude + Longitude columns
+    # (also matches the pairwise 6-column form Latitude1/Longitude1/Latitude2/Longitude2).
+    try:
+        with open(path, encoding='utf-8-sig', newline='') as f:
+            cols = {c.strip().strip('"').lower() for c in (f.readline() or '').split(',')}
+    except Exception:
+        return False
+    return any('latitude' in c for c in cols) and any('longitude' in c for c in cols)
+
+def _apply_selected_csv(f):
+    csv_file_var.set(f)
+    GUI_util.inputFilename.set(f)            # trace -> refreshes the location-column dropdowns
+    GUI_util.input_main_dir_path.set('')
+    try:                                     # re-evaluate RUN now that a csv is selected
+        _missing = '' if GUI_util.output_dir_path.get() != '' else 'OUTPUT files directory\n'
+        GUI_util.activateRunButton(GUI_util.config_filename_selected_config.get() or config_filename,
+                                   IO_setup_display_brief, scriptName, _missing, True)
+    except Exception as e:
+        print('GIS_distance select_csv_file: could not re-evaluate RUN button:', e)
+
 def select_csv_file():
+    import CoNLL_util
     import tkinter.filedialog as filedialog
-    f = filedialog.askopenfilename(title='Select INPUT geocoded csv file',
-                                   filetypes=[('csv files', '*.csv'), ('All files', '*.*')])
+    # list only the GEOCODED GIS csv files found for this corpus (Latitude + Longitude columns)
+    matches = CoNLL_util.find_corpus_csv(GUI_util.output_dir_path.get(),
+                                         GUI_util.inputFilename.get(),
+                                         GUI_util.input_main_dir_path.get(),
+                                         path_filter=_plausible_gis, validator=_is_geocoded_csv)
+    chosen = IO_files_util.select_path_from_list(
+        window, matches,
+        'Select a GEOCODED GIS csv (Latitude & Longitude columns) found for your corpus, '
+        'or browse for another file:',
+        title='Available geocoded GIS csv files')
+    if chosen is None:
+        return
+    if chosen == '__BROWSE__':
+        f = filedialog.askopenfilename(title='Select INPUT geocoded csv file',
+                                       filetypes=[('csv files', '*.csv'), ('All files', '*.*')])
+    else:
+        f = chosen
     if f:
-        csv_file_var.set(f)
-        GUI_util.inputFilename.set(f)        # trace -> refreshes the location-column dropdowns
-        GUI_util.input_main_dir_path.set('')
-        try:                                 # re-evaluate RUN now that a csv is selected
-            _missing = '' if GUI_util.output_dir_path.get() != '' else 'OUTPUT files directory\n'
-            GUI_util.activateRunButton(GUI_util.config_filename_selected_config.get() or config_filename,
-                                       IO_setup_display_brief, scriptName, _missing, True)
-        except Exception as e:
-            print('GIS_distance select_csv_file: could not re-evaluate RUN button:', e)
+        _apply_selected_csv(f)
 
 csv_file_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width,
                             text='Select INPUT CSV file', command=lambda: select_csv_file())
