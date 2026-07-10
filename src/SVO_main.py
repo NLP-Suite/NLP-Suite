@@ -253,13 +253,23 @@ def run():
                                        manual_coref_var)
         if error_indicator != 0:
             return
+        coref_txt_files = []
         for file in outputFiles:
             # visualize the data produced under coref table
             if 'chart' in file or '.csv' in file:
                 filesToOpen.append(file)
+            elif str(file)[-4:] == '.txt':
+                # the coreferenced txt copies that SVO must now parse
+                coref_txt_files.append(file)
 
-        # changed the inputDir to the coreferenced dir
-        inputDir = outputCorefDir + os.sep + 'coref_' + package_var
+        # point SVO at the directory that ACTUALLY holds the coreferenced txt files.
+        # Deriving it from the produced files avoids guessing the folder name (the old
+        #   outputCorefDir + os.sep + 'coref_' + package_var pointed at a non-existent dir
+        #   because the real coref subdirectory carries the corpus descriptor).
+        if coref_txt_files:
+            inputDir = os.path.dirname(coref_txt_files[0])
+        else:
+            inputDir = outputCorefDir
         # only the inputDir will be used when coreferencing, whether it will contain a set of files or just one file
         inputFilename=''
 
@@ -300,12 +310,15 @@ def run():
         if gender_var:
             # In Stanford_CoreNLP_util def create_output_directory subdir are created in the form annotator + "_CoreNLP"
             #   must respect this format to avoid error warning
+            # create the subdirectory here so the gender file has a directory to be written into
+            #   (create_output_directory makes gender_CoreNLP_<descriptor> at the top level, not nested in the SVO folder)
+            gender_dir = IO_files_util.make_output_subdirectory('', '', outputSVODir, label='gender_CoreNLP', silent=True)
             gender_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir,
-                                                                      outputSVODir + os.sep + 'gender_CoreNLP', '.csv',
+                                                                      gender_dir, '.csv',
                                                                       '') # SVO_CoreNLP_gender
 
             gender_filename_html = IO_files_util.generate_output_file_name(inputFilename, inputDir,
-                                                                           outputSVODir + os.sep + 'gender_CoreNLP', '.html',
+                                                                           gender_dir, '.html',
                                                                            '') # dict_annotated_gender
 
             annotator.append("gender")
@@ -315,8 +328,10 @@ def run():
         if quote_var:
             # In Stanford_CoreNLP_util def create_output_directory subdir are created in the form annotator + "_CoreNLP"
             #   must respect this format to avoid error warning
+            # create the subdirectory here so the quote file has a directory to be written into
+            quote_dir = IO_files_util.make_output_subdirectory('', '', outputSVODir, label='quote_CoreNLP', silent=True)
             quote_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir,
-                                                                     outputSVODir + os.sep + 'quote_CoreNLP', '.csv',
+                                                                     quote_dir, '.csv',
                                                                      '') #SVO_CoreNLP_quote
             annotator.append("quote")
         else:
@@ -556,6 +571,27 @@ def run():
     if inputFilename[-4:] == '.csv':
         svo_result_list.append(inputFilename)
         SVO_filename=inputFilename
+
+    # '@#' is an internal social-actor flag prepended to Subjects upstream (Stanford_CoreNLP_util) and
+    # consumed by the lemmatize/filter logic; it must NEVER reach a chart. lemmatize_filter_svo strips it
+    # from its own outputs, but the raw/merged SVO files that feed the network, Sankey, sunburst and
+    # treemap visualizations can still carry it. This is the single chokepoint through which every charted
+    # file passes, so strip '@#' from all of them here (filtering has already used it by now).
+    import pandas as pd
+    for _svo_file in svo_result_list:
+        try:
+            if _svo_file and str(_svo_file).lower().endswith('.csv') and os.path.isfile(_svo_file):
+                _df = pd.read_csv(_svo_file, encoding='utf-8', on_bad_lines='skip')
+                _changed = False
+                for _col in ('Subject (S)', 'Object (O)'):
+                    if _col in _df.columns and _df[_col].astype(str).str.contains('@#', regex=False).any():
+                        _df[_col] = _df[_col].astype(str).str.replace('@#', '', regex=False)
+                        _changed = True
+                if _changed:
+                    _df.to_csv(_svo_file, encoding='utf-8', index=False)
+        except Exception as e:
+            print('Warning: could not strip the internal @# marker from', _svo_file, '-', str(e))
+
     if ('SVO_' in inputFilename) or (len(svo_result_list) > 0):
         i = 0
         for f in svo_result_list:
@@ -737,7 +773,14 @@ def run():
     if map_characters_var and len(svo_result_list) > 0:
         import charts_util as charts_util_mc
         import pandas as pd
-        svo_file = svo_result_list[0]
+        # Prefer the FILTERED SVO (social actors only) when a subject filter was applied, so the moving
+        # characters are genuine social actors rather than EVERY subject (verbs, abstract nouns, pronouns,
+        # passive-inferred placeholders). The filtered file keeps the Location column. Fall back to the raw
+        # SVO when no filter was applied.
+        if filter_subjects and SVO_filtered_filename and os.path.isfile(SVO_filtered_filename):
+            svo_file = SVO_filtered_filename
+        else:
+            svo_file = svo_result_list[0]
         try:
             svo_df = pd.read_csv(svo_file, encoding='utf-8', on_bad_lines='skip')
         except Exception:
@@ -1191,7 +1234,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_c
                                    "The complete path of the object social actor list is "+ object_filePath+"\nTick twice the checkbox 'Filter Object' to select a different file.")
 
 gender_var.set(0)
-gender_checkbox = tk.Checkbutton(window, text='S & O gender',
+gender_checkbox = tk.Checkbutton(window, text='S & O gender (via CoreNLP)',
                                                 variable=gender_var, onvalue=1, offvalue=0, command=lambda: activate_annotator('gender'))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -1200,7 +1243,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "The neural network gender annotator is available only via Stanford CoreNLP and for the English language only")
 
 quote_var.set(0)
-quote_checkbox = tk.Checkbutton(window, text='S & O quote/speaker',
+quote_checkbox = tk.Checkbutton(window, text='S & O quote/speaker (via CoreNLP)',
                                                 variable=quote_var, onvalue=1, offvalue=0, command=lambda: activate_annotator('quote'))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
@@ -1220,11 +1263,12 @@ def activate_annotator(annotator_type):
         return
     if package_var.get() != 'Stanford CoreNLP':
         # Instead of forcing the user to change the package in Setup and retry, switch the SVO package to
-        # Stanford CoreNLP right here (visible in the dropdown) with a brief timed notice. gender/quote need
-        # the CoreNLP parse; the run's CoreNLP path warns if CoreNLP itself is not installed.
-        import IO_user_interface_util
-        IO_user_interface_util.timed_alert(GUI_util.window, 5000, 'Using Stanford CoreNLP',
-                                           'The ' + annotator_type + ' annotator runs only via Stanford CoreNLP.\n\nSwitched the SVO package to Stanford CoreNLP for this run.')
+        # Stanford CoreNLP right here (visible in the dropdown). gender/quote need the CoreNLP parse; the
+        # run's CoreNLP path warns if CoreNLP itself is not installed.
+        # Use a modal dialog (not a timed_alert): if the user clicks RUN within the countdown, the blocking
+        # run freezes the Tkinter event loop and the timed alert can never auto-close (it lingers at 0).
+        mb.showinfo(title='Using Stanford CoreNLP',
+                    message='The ' + annotator_type + ' annotator runs only via Stanford CoreNLP.\n\nThe SVO package has been switched to Stanford CoreNLP for this run.')
         package_var.set('Stanford CoreNLP')
 
 SRL_var.set(0)
@@ -1273,7 +1317,7 @@ google_earth_var.set(0)
 google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where (via Google Earth Pro & Google Maps)',
                                        variable=google_earth_var, onvalue=1, offvalue=0, command=lambda: check_NER())
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    google_earth_checkbox,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "Visualize GIS maps as pin and heat maps. Google Earth Pro and Google Maps will be used as mapping software if you have obtained a free Google API key. Otherwise, Python folium will be used.\n"
@@ -1399,7 +1443,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, using the dropdown menu, select the NLP package to be used to extract SVOs from your corpus.\nYour package selection is independent of the NLP package currently selected in Setup.\n\nSelecting * will run all three main parsers (spaCy, Stanford CoreNLP, Stanza) on your corpus and automatically compare the SVO results across all pairs of parsers. This may take a very long time depending on corpus size.\n\nThe comparison produces:\n  1. A summary csv with triple overlap percentage (Jaccard), unique triple counts, and recall rates.\n  2. A differences csv listing all (S, V, O) triples found by one parser but not the other.\n  3. A shared csv listing all triples found by both parsers.\n\nIMPORTANT: Do not expect a perfect match across parsers. Different NLP packages build different dependency trees from the same sentence, so they will naturally extract different SVO triples. A low overlap rate does not necessarily mean one parser is wrong — it reflects genuine differences in how each parser analyzes syntax. The comparison is meant to highlight the differences for manual review, not to produce a pass/fail score.\n\nYou can also compare any two existing SVO csv files using the 'Compare SVO results' checkbox below. When you tick that checkbox and click RUN, two file dialogs will prompt you to select the first and second SVO csv files to compare."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the 'Lemmatize' checkboxes to produce lemmatized subjects, verbs, or objects. When SVOs are lemmatized, the algorithm will aggregate the Subjects and Objects (nouns) and Verbs (verbs) into WordNet top synset categories (e.g., 'run' into 'motion').\n\nTick the 'Filter' checkboxes to filter all SVO extracted triplets for Subjects, Verbs, and Objects via dictionary filter files.\n\nDictionary filter files can be created via WordNet and saved in the \'lib/wordLists\' subfolder.\n\nFor instance, you can filter SVO by social actors and social action. In fact, the file \'social-actor-list.csv\', created via WordNet with multiple keywords (act, group, person) and saved in the \'lib/wordLists\' subfolder, will be automatically loaded as the DEFAULT dictionary file (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly created via WordNet using multiple keywords (change, cognition, communication, contact, emotion, motion, social), saved in the \'lib/wordLists\' subfolder, and automatically loaded as the DEFAULT dictionary file for verbs.\n\nWhen working on folktales, animals, or even plants, may also act and speak. You may use the animal_list.csv filter file, based on the multiple multiple keywords (act, group, person, animal) or (act, group, person, animal, plants) and saved in the \'lib/wordLists\' subfolder.\n\nYou can edit these lists, adding and deleting entries at any time, using any text editor.\n\nWordNet produces thousands of entries for nouns and verbs. For more limited domains, you way want to pair down the number to a few hundred entries.\n\nFILTER FILES BASED ON WordNet MUST CONTAIN LEMMATIZED ENTRIES, SINCE WordNet IS BASED ON LEMMATIZED ENTRIES."+GUI_IO_util.msg_Esc)
+                                  "Please, tick the 'Lemmatize' checkboxes to produce lemmatized subjects, verbs, or objects. When SVOs are lemmatized, the algorithm will aggregate the Subjects and Objects (nouns) and Verbs (verbs) into WordNet top synset categories (e.g., 'run' into 'motion').\n\nTick the 'Filter' checkboxes to filter all SVO extracted triplets for Subjects, Verbs, and Objects via dictionary filter files.\n\nDictionary filter files can be created via WordNet and saved in the \'lib/wordLists\' subfolder.\n\nFor instance, you can filter SVO by social actors and social action. In fact, the file \'social-actor-list.csv\', created via WordNet with multiple keywords (act, group, person) and saved in the \'lib/wordLists\' subfolder, will be automatically loaded as the DEFAULT dictionary file (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly created via WordNet using multiple keywords (change, cognition, communication, contact, emotion, motion, social), saved in the \'lib/wordLists\' subfolder, and automatically loaded as the DEFAULT dictionary file for verbs.\n\nWhen working on folktales, animals, or even plants, may also act and speak. You may use the animal_list.csv filter file, based on the multiple multiple keywords (act, group, person, animal) or (act, group, person, animal, plants) and saved in the \'lib/wordLists\' subfolder.\n\nYou can edit these lists, adding and deleting entries at any time, using any text editor.\n\nWordNet produces thousands of entries for nouns and verbs. For more limited domains, you way want to pair down the number to a few hundred entries.\n\nFILTER FILES BASED ON WordNet MUST CONTAIN LEMMATIZED ENTRIES, SINCE WordNet IS BASED ON LEMMATIZED ENTRIES.\n\nA NOTE ON CONTRACTED FORMS: CoreNLP tokenizes contractions, so a contracted auxiliary or copula verb (e.g., 'It's in the area' → It / 's / area) is extracted with its original contracted surface form ('s, 've, 're, 'll, 'd). The Suite leaves these AS IN THE ORIGINAL text and does not normalize them; ticking the 'Lemmatize' Verb checkbox maps them to their base form ('s → be, 've → have, 'll → will). The Saxon (possessive) genitive 's, as in 'Claude's book', is tagged as a possessive ending, not a verb, so it is NEVER extracted as a Verb (V); it can only appear glued to a Subject or Object noun phrase."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "The three widgets display the currently selected dictionary filter files for Subjects, Verbs, and Objects (Objects share the same file as Subjects and you may wish to change that).\n\nThe filter file social-actor-list, created via WordNet with the multiple keywords act, group, person and saved in the \'lib/wordLists\' subfolder, will be automatically set as the DEFAULT filter for subjects (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly created via WordNet using multiple keywords (change, cognition, communication, contact, emotion, motion, social), saved in the \'lib/wordLists\' subfolder, and automatically loaded as the DEFAULT dictionary file for verbs.\n\nThe widgets are disabled because you are not allowed to tamper with these values. If you wish to change a selected file, please tick the appropriate checkbox in the line above (e.g., Filter Subject) and you will be prompted to select a new file."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",

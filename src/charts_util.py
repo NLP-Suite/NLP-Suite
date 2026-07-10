@@ -3492,6 +3492,9 @@ def animated_migration_map(inputFilename, outputDir, entity_col, location_col,
     all_lons = df['_lon'].tolist()
     center_lat = sum(all_lats) / len(all_lats)
     center_lon = sum(all_lons) / len(all_lons)
+    # bounding box of all geocoded points, so the map can fit-to-bounds (see JS) and never
+    # open on empty ocean with the markers off-screen
+    map_bounds = [[min(all_lats), min(all_lons)], [max(all_lats), max(all_lons)]]
 
     legend_parts = []
     for e in all_entities:
@@ -3509,6 +3512,7 @@ def animated_migration_map(inputFilename, outputDir, entity_col, location_col,
   body {{ font-family: 'Segoe UI', Arial, sans-serif; }}
   #title {{ text-align: center; padding: 10px; font-size: 18px; font-weight: bold; color: #333; }}
   #legend {{ text-align: center; padding: 4px 16px 8px; font-size: 13px; }}
+  #legend-caption {{ font-weight: bold; color: #333; margin-right: 4px; }}
   .leg-dot {{ display: inline-block; width: 12px; height: 12px; border-radius: 50%;
               vertical-align: middle; margin: 0 3px 0 10px; }}
   #map {{ width: 100%; height: 65vh; }}
@@ -3529,7 +3533,7 @@ def animated_migration_map(inputFilename, outputDir, entity_col, location_col,
 </style>
 </head><body>
 <div id="title">{title}</div>
-<div id="legend">{legend_html}</div>
+<div id="legend"><span id="legend-caption">Moving characters &mdash; the SVO Subjects (S) that appear with a location:</span> {legend_html}</div>
 {doc_filter_html}
 <div id="map"></div>
 <div id="controls">
@@ -3569,11 +3573,18 @@ function getFilteredData() {{
   return {{ data: filtered, labels: filteredLabels, entities: filteredEntities }};
 }}
 
-var map = L.map('map').setView([{center_lat}, {center_lon}], 7);
+var map = L.map('map').setView([{center_lat}, {center_lon}], 5);
 L.tileLayer('https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}@2x.png', {{
   attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
   maxZoom: 18
 }}).addTo(map);
+// Fit the view to ALL geocoded points so the markers are never off-screen.
+// A fixed zoom centered on the mean coordinate often lands on empty ocean when the
+// locations are spread across continents, leaving a blank gray map even though markers exist.
+var mapBounds = {bounds_json};
+if (mapBounds && mapBounds.length === 2) {{
+  try {{ map.fitBounds(mapBounds, {{ padding: [40, 40], maxZoom: 10 }}); }} catch (e) {{}}
+}}
 
 var entityLayers = {{}};
 entityNames.forEach(function(name) {{
@@ -3724,6 +3735,7 @@ showStep(0);
         docs_json=_json.dumps(all_docs),
         center_lat=round(center_lat, 4),
         center_lon=round(center_lon, 4),
+        bounds_json=_json.dumps(map_bounds),
         max_step=max(0, len(all_labels) - 1),
         first_label=first_label)
 

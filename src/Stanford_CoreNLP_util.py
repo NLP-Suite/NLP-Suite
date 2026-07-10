@@ -1624,73 +1624,61 @@ def process_json_quote(config_filename,documentID, document, sentenceID, json, *
 
     # get date string of this sub file
     date_str = date_in_filename(document, **kwargs)
-    result = []
-    quoted_sentences = {}
-    speakers = {}#the speakers of each quote
-    quotes = {}
-    for quote in json['quotes']:
-        # to find all sentences with quotes
-        sentenceIDs = list(range(quote['beginSentence'], quote['endSentence'] + 1))
-        for sent in sentenceIDs:
-            quoted_sentences[sent] = quoted_sentences.get(sent, 0) + 1
-            # quote_text = quote['text']
-            # print(quote['speaker'], quote_text)
-            if sent in speakers.keys():
-                if quote['canonicalSpeaker'] == 'Unknown':
-                    if 'speaker' in quote and quote['speaker'] != 'Unknown':
-                        speakers[sent].append(quote['speaker'])
-                    else:
-                        speakers[sent].append('Unknown')
-                else:
-                    speakers[sent].append(quote['canonicalSpeaker'])
-                try:
-                    quotes[sent].append(quote['text'])
-                except:
-                    print('ERROR')
-            else:
-                try:
-                    if quote['mention']:
-                        speakers[sent] = [quote['mention']]
-                    else:
-                        if quote['canonicalSpeaker'] == 'Unknown':
-                            if 'speaker' in quote and quote['speaker'] != 'Unknown':
-                                speakers[sent] = [quote['speaker']]
-                            else:
-                                speakers[sent] = ['Unknown']
-                        else:
-                            speakers[sent] = [quote['canonicalSpeaker']]
-                except:
-                    if quote['canonicalSpeaker'] == 'Unknown':
-                        if 'speaker' in quote and quote['speaker'] != 'Unknown':
-                            speakers[sent] = [quote['speaker']]
-                        else:
-                            speakers[sent] = ['Unknown']
-                    else:
-                        speakers[sent] = [quote['canonicalSpeaker']]
-                quotes[sent] = [quote['text']]
-    # iterate over those sentence indexes and find its complete sentence
-    for quoted_sent_id, number_of_quotes in quoted_sentences.items():
-        sentenceID = quoted_sent_id+1
-        sentence_data = json['sentences'][quoted_sent_id]
-        # for sentence in CoreNLP_output['sentences']:
+
+    def _resolve_speaker(q):
+        # prefer the coref-resolved canonical speaker; fall back to the raw mention, then the speaker token.
+        # (The old code preferred the raw mention, so speakers came out as unresolved pronouns like 'his'.)
+        cs = str(q.get('canonicalSpeaker', '') or '')
+        if cs and cs != 'Unknown':
+            return cs
+        mention = str(q.get('mention', '') or '')
+        if mention and mention != 'Unknown':
+            return mention
+        sp = str(q.get('speaker', '') or '')
+        if sp and sp != 'Unknown':
+            return sp
+        return 'Unknown'
+
+    def _complete_sentence(sent_idx):
+        # plain text of the sentence at 0-based index sent_idx
+        if sent_idx < 0 or sent_idx >= len(json['sentences']):
+            return ''
         complete_sent = ''
-        for token in sentence_data['tokens']:
+        for token in json['sentences'][sent_idx]['tokens']:
             if token['originalText'] in string.punctuation:
                 complete_sent = complete_sent + token['originalText']
+            elif token['index'] == 1:
+                complete_sent = complete_sent + token['originalText']
             else:
-                if token['index'] == 1:
-                    complete_sent = complete_sent + token['originalText']
-                else:
-                    complete_sent = complete_sent + ' ' + token['originalText']
+                complete_sent = complete_sent + ' ' + token['originalText']
+        return complete_sent
 
-        check_sentence_length(len(sentence_data['tokens']), sentenceID, config_filename)
+    # 'Number of Quotes' reports how many quotes are anchored to each begin-sentence, while we still
+    # emit ONE ROW PER QUOTE (so multiple quotes in a sentence are never dropped, and a quote that
+    # spans several sentences yields a single row anchored at its begin-sentence rather than being
+    # duplicated across every spanned sentence).
+    sentence_quote_counts = {}
+    for quote in json['quotes']:
+        begin = quote['beginSentence']
+        sentence_quote_counts[begin] = sentence_quote_counts.get(begin, 0) + 1
+
+    result = []
+    for quote in json['quotes']:
+        begin = quote['beginSentence']
+        sentenceID_1based = begin + 1
+        speaker = _resolve_speaker(quote)
+        quote_text = quote.get('text', '')
+        number_of_quotes = sentence_quote_counts.get(begin, 1)
+        complete_sent = _complete_sentence(begin)
+        if 0 <= begin < len(json['sentences']):
+            check_sentence_length(len(json['sentences'][begin]['tokens']), sentenceID_1based, config_filename)
 
         if filename_embeds_date_var:
-            # TODO MINO: rearrange the columns
-            temp = [str(speakers[quoted_sent_id][0]), quotes[quoted_sent_id][0], number_of_quotes,  sentenceID,
+            temp = [str(speaker), quote_text, number_of_quotes, sentenceID_1based,
                     complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), date_str]
         else:
-            temp = [str(speakers[quoted_sent_id][0]), quotes[quoted_sent_id][0], number_of_quotes, sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)]
+            temp = [str(speaker), quote_text, number_of_quotes, sentenceID_1based,
+                    complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)]
         result.append(temp)
     return result
 
@@ -1758,7 +1746,13 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         else:
             quote_columns = ["Speakers", "Quote", "Number of Quotes", "Sentence ID", "Sentence", "Document ID", "Document"]
         quote_df = pd.DataFrame(raw_quote_info, columns=quote_columns)
-        quote_df = quote_df[["Speakers", "Quote", "Number of Quotes", "Sentence ID", "Document ID"]]
+        # process_json_quote now returns ONE ROW PER QUOTE. The SVO merge below joins on
+        # Sentence ID + Document ID, so multiple quotes in the same sentence would fan out (duplicate)
+        # the SVO rows. Collapse to one row per sentence here: join the speakers, keep the count.
+        quote_df = quote_df[["Speakers", "Number of Quotes", "Sentence ID", "Document ID"]]
+        quote_df = quote_df.groupby(["Sentence ID", "Document ID"], as_index=False).agg(
+            {"Speakers": lambda s: '; '.join(dict.fromkeys(str(x) for x in s)),
+             "Number of Quotes": "max"})
 
     SVO_enhanced_dependencies = []
     SVO_brief = []
@@ -1891,6 +1885,10 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
     # merge gender information with SVO information
     if gender_var:
         SVO_df = pd.DataFrame(SVO_brief, columns=['Subject (S)', 'Verb (V)', 'Object (O)', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
+        # '@#' is an internal social-actor flag; strip it here so it does not leak into the gender_CoreNLP
+        # output file, AND so the merge below (on Subject) matches the plain-text subjects in gender_df
+        # (otherwise '@#he' never matches 'he' and gender comes back empty for every social actor).
+        SVO_df['Subject (S)'] = SVO_df['Subject (S)'].astype(str).str.replace('@#', '', regex=False)
         gender_df = pd.DataFrame(gender_info, columns=["Subject (S)", "S Gender", "Sentence Set", "Document ID"])
         merge_df = pd.merge(SVO_df, gender_df, on=["Subject (S)", "Document ID"], how='left')
 
@@ -1920,6 +1918,8 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
 
     if quote_var:
         SVO_df = pd.DataFrame(SVO_brief, columns=['Subject (S)', 'Verb (V)', 'Object (O)', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
+        # strip the internal '@#' social-actor flag so it does not leak into the quote_CoreNLP output file
+        SVO_df['Subject (S)'] = SVO_df['Subject (S)'].astype(str).str.replace('@#', '', regex=False)
         # quote_df = pd.DataFrame(quote_info, columns=["Speakers", "Number of Quotes", "Sentence ID", "Document ID"])
         merge_df = pd.merge(SVO_df, quote_df, on=["Sentence ID", "Document ID"], how='left')
         columns = ['Subject (S)', 'Verb (V)', 'Object (O)', "Speakers", "Number of Quotes", "Sentence ID", "Sentence", "Document ID", "Document"]

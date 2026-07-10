@@ -452,6 +452,9 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
     container = []
     hover_over_header = []
     removed_hyperlinks = False
+    # set by the by-group branch when it auto-selects the chart shape (grouped vs single-series totals);
+    # overrides the x-axis field for the run_all call further below
+    auto_column_xAxis = None
 
     if inputDataFrame is not None:
         if len(inputDataFrame)!=0:
@@ -701,19 +704,86 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         #data_final = data_final.pivot(index=group_cols, columns=plot_cols, values="Frequency")
         data_final.fillna(0, inplace=True)
         data = data_final
-        # Excel allows to group a series value by another series values (e.g., Form or Lemma values by POS or NER tags)
-        #   two x-axis labels will be created
-        #   https://www.extendoffice.com/documents/excel/2715-excel-chart-group-axis-labels.html
-        # but the only way to do this in openpyxl is by plotting TWO separate series,
-        #   e.g., a bar chart for Form or Lemma values and a bar or line chart for POS tags
-        #   https://openpyxl.readthedocs.io/en/latest/charts/secondary.html
 
-        # added TONY1
-        # pivot=True
-        if pivot==True:
-            data = data.pivot(index = group_colsumn_names[1:], columns = group_colsumn_names[0], values = "Frequency")
-            data.fillna(0, inplace=True)
-            #data.reset_index("Document")
+        # ---- Auto-select the chart shape from the data's dimensions (single plotted field only) --------
+        # The old code ALWAYS emitted two series: the real one plus a zeroed 'Frequency_<group>' series
+        # (an openpyxl grouped-x-axis trick that never worked; it showed as an empty legend entry, and the
+        # per-group values were only visible in the data sheet). Instead, measure D = distinct groups
+        # (documents) and V = distinct field values, then choose automatically:
+        #   * D == 1, or too many categories to chart legibly -> single-series totals (no empty series);
+        #   * otherwise -> a genuine GROUPED chart (wide pivot): smaller dimension = colored series,
+        #     larger dimension = x-axis (tie -> x = field, series = document).
+        # IMPORTANT: outputFilename (the byDoc frequency FILE) is written from data_final AND read again
+        # downstream (visualize_chart -> compute_csv_column_statistics groups it by Document), so it MUST
+        # keep its original long layout. We therefore leave `data`/outputFilename untouched and build the
+        # auto-selected chart from a SEPARATE frame (chart_data) charted from its own file (see below).
+        # Each series column is named 'Frequency_<value>' so the shared data_transformation / column-lookup
+        # machinery handles it exactly as it does the single-series case.
+        chart_data = None
+        _columns_list_orig = [list(p) for p in columns_list]  # restore point if auto-selection fails
+        if len(plot_cols) == 1:
+            try:
+                _grp = group_cols[0]
+                _fld = plot_cols[0]
+                _freq_fld = 'Frequency_' + _fld
+                if _grp in data_final.columns and _fld in data_final.columns and _freq_fld in data_final.columns:
+                    _D = int(data_final[_grp].nunique())
+                    _V = int(data_final[_fld].nunique())
+                    # The readability bottleneck is the number of COLORED SERIES (the legend), not the
+                    # x-axis: a bar chart handles ~20-40 x categories fine, but not that many colors. So we
+                    # make the SMALLER dimension the series (its size must be small) and the LARGER the
+                    # x-axis (allowed to be bigger).
+                    _SERIES_MAX = 12   # max colored series / legend entries for a legible grouped chart
+                    _X_MAX = 40        # max x-axis categories before the bars get too cramped
+                    _smaller = min(_D, _V)
+                    _larger = max(_D, _V)
+                    if _D > 1 and _smaller <= _SERIES_MAX and _larger <= _X_MAX:
+                        if _V >= _D:
+                            _x_field, _series_field = _fld, _grp   # x = field, one colored series per document
+                        else:
+                            _x_field, _series_field = _grp, _fld   # x = document, one colored series per field value
+                        _wide = data_final.pivot_table(index=_x_field, columns=_series_field,
+                                                       values=_freq_fld, aggfunc='sum',
+                                                       fill_value=0).reset_index()
+                        _series_values = [c for c in _wide.columns if c != _x_field]
+                        # The series-column name IS the legend label. Name them CLEANLY (document series ->
+                        # basename without path/extension; field-value series -> the value) and DO NOT use a
+                        # 'Frequency' prefix, so the shared data_transformation leaves them untouched (no
+                        # 'Frequency_<full path>_No transformation' clutter reaches the legend). De-duplicate
+                        # in case two documents share a basename.
+                        _rename = {}
+                        _seen = {}
+                        for v in _series_values:
+                            lbl = os.path.splitext(os.path.basename(str(v)))[0] if _series_field == _grp else str(v)
+                            if lbl in _seen:
+                                _seen[lbl] += 1
+                                lbl = lbl + ' (' + str(_seen[lbl]) + ')'
+                            else:
+                                _seen[lbl] = 1
+                            _rename[v] = lbl
+                        _wide = _wide.rename(columns=_rename)
+                        _clean_labels = [_rename[v] for v in _series_values]
+                        chart_data = _wide
+                        columns_list = [[_x_field, lbl] for lbl in _clean_labels]
+                        auto_column_xAxis = _x_field
+                    else:
+                        _totals = data_final.groupby(_fld, as_index=False)[_freq_fld].sum()
+                        # rename the count column to a clean, non-'Frequency' legend label
+                        _totals = _totals.rename(columns={_freq_fld: 'Count'})
+                        chart_data = _totals[[_fld, 'Count']]
+                        columns_list = [[_fld, 'Count']]
+                        auto_column_xAxis = _fld
+                        if _D > 1 and (_smaller > _SERIES_MAX or _larger > _X_MAX):
+                            import IO_user_interface_util
+                            IO_user_interface_util.timed_alert(window, 4000, 'Chart',
+                                'Too many documents/values (' + str(_D) + ' x ' + str(_V) + ') for a legible '
+                                'grouped chart.\n\nCharting the field totals; the per-document breakdown is in '
+                                'the data sheet.')
+            except Exception as _auto_e:
+                print('Auto chart-shape selection failed; keeping default layout:', str(_auto_e))
+                chart_data = None
+                columns_list = _columns_list_orig  # revert any partial reassignment
+        # ---------------------------------------------------------------------------------------------
         if (complete_sid):
             # TODO Samir
             print("Completing sentence index...")
@@ -770,6 +840,20 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
 
         # print("OK DONE TRANSFORMATION")
         # print('===-=====-====')
+
+    # By default the chart is drawn from the (long) frequency file. When the by-group auto-selection
+    # produced a reshaped chart frame (grouped wide pivot or single-series totals), draw the chart from a
+    # SEPARATE file so the long frequency file -- read again downstream by compute_csv_column_statistics
+    # (groupby Document) -- is left completely untouched.
+    chart_source_file = outputFilename
+    if chart_data is not None and tracked:
+        chart_source_file = (outputFilename[:-4] + '_chart.csv') if outputFilename.lower().endswith('.csv') \
+            else (outputFilename + '_chart.csv')
+        chart_data.to_csv(chart_source_file, encoding='utf-8', index=False)
+        if chartPackage != 'No charts':
+            statistics_csv_util.data_transformation(chart_source_file, dataTransformation).to_csv(
+                chart_source_file, encoding='utf-8', index=False)
+
     if chartPackage!='No charts' and tracked:
         def add_suffix_to_selected_elements(list_of_lists, suffix, keyword, curse):
             return [[element + "_" + suffix if keyword in element and curse not in element else element for element in sublist] for sublist in
@@ -778,14 +862,14 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         columns_list_copy = columns_list.copy()
 
         columns_list = add_suffix_to_selected_elements(columns_list,dataTransformation,'Frequency','Document')
-        columns_to_be_plotted = get_columns_to_be_plotted(outputFilename, columns_list)
+        columns_to_be_plotted = get_columns_to_be_plotted(chart_source_file, columns_list)
         bool = False
         for ele in columns_to_be_plotted:
             if None in ele:
                 bool = True
         if bool:
             columns_list = columns_list_copy
-            columns_to_be_plotted = get_columns_to_be_plotted(outputFilename, columns_list_copy)
+            columns_to_be_plotted = get_columns_to_be_plotted(chart_source_file, columns_list_copy)
         # The form/lemma + doc have a special treatment
         if plot_cols == ['Form','Lemma'] and 'Document' in group_cols:
             #@@@
@@ -809,22 +893,29 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
                                               column_xAxis_label_var=column_xAxis_label_var,
                                               hover_info_column_list=hover_over_header)
         else:
-            if len(group_cols)>0:
+            if auto_column_xAxis is not None:
+                # the by-group auto-selection above chose the x-axis field (grouped: larger dimension;
+                # single-series totals: the field) and rebuilt columns_list to match
+                column_xAxis_label_var = auto_column_xAxis
+            elif len(group_cols)>0:
                 column_xAxis_label_var = group_cols[0]
             else:
                 column_xAxis_label_var = plot_cols[0]
             # see note above about the order of items in columns_to_be_plotted list
             #   the group_cols item must always be the last item in the columns_to_be_plotted list
-            headers = IO_csv_util.get_csvfile_headers(outputFilename)
+            headers = IO_csv_util.get_csvfile_headers(chart_source_file)
 
-            outputFiles = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            # the y-axis of a frequency chart is a count, not the field name; label it 'Frequencies'
+            # for the auto-selected by-group charts (grouped and totals alike)
+            _yAxis_label = 'Frequencies' if auto_column_xAxis is not None else header
+            outputFiles = charts_util.run_all(columns_to_be_plotted, chart_source_file, outputDir,
                                               outputFileLabel=fileNameType,
                                               chartPackage=chartPackage,
                                               dataTransformation=dataTransformation,
                                               chart_type_list=[chartType],
                                               chart_title=chart_title,
                                               column_xAxis_label_var=column_xAxis_label_var,
-                                              column_yAxis_label_var=header,
+                                              column_yAxis_label_var=_yAxis_label,
                                               hover_info_column_list=hover_over_header)
         if outputFiles != None:
             if isinstance(outputFiles, str):

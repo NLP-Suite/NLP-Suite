@@ -198,17 +198,26 @@ def SVOWordCloud(svoFile, inputFilename, outputDir, transformed_image_mask, word
         blue_code: [],
         green_code: []
     }
+    # Keep '_' as the multi-word-expression joiner so an MWE renders as ONE visually distinct unit
+    # (inferred_subject_passive, christopher_columbus) rather than collapsing into a run-on
+    # (inferredsubjectpassive) or splitting into words indistinguishable from separate tokens
+    # (inferred subject passive). Any internal spaces are joined with '_' too, so every multi-token
+    # entity is uniformly underscore-joined; all other punctuation is still stripped.
+    def _clean(value):
+        parts = ["".join(ch for ch in seg if ch.isalnum() or ch == '_') for seg in str(value).lower().split(" ")]
+        return "_".join(p for p in parts if p)
+
     for _, row in svo_df.iterrows():
         if row["Subject (S)"] != "":
             # check if the strings contains special character
-            words_list.append(" ".join(["".join(filter(str.isalnum, s)) for s in row["Subject (S)"].lower().split(" ")]))
-            color_list[red_code].append(" ".join(["".join(filter(str.isalnum, s)) for s in row["Subject (S)"].lower().split(" ")]))
+            words_list.append(_clean(row["Subject (S)"]))
+            color_list[red_code].append(_clean(row["Subject (S)"]))
         if row["Verb (V)"] != "":
-            words_list.append(" " + (" ".join(["".join(filter(str.isalnum, s)) for s in row["Verb (V)"].lower().split(" ")])))
-            color_list[blue_code].append(" " + (" ".join(["".join(filter(str.isalnum, s)) for s in row["Verb (V)"].lower().split(" ")])))
+            words_list.append(" " + _clean(row["Verb (V)"]))
+            color_list[blue_code].append(" " + _clean(row["Verb (V)"]))
         if row["Object (O)"] != "":
-            words_list.append((" ".join(["".join(filter(str.isalnum, s)) for s in row["Object (O)"].lower().split(" ")])) + " ")
-            color_list[green_code].append((" ".join(["".join(filter(str.isalnum, s)) for s in row["Object (O)"].lower().split(" ")])) + " ")
+            words_list.append(_clean(row["Object (O)"]) + " ")
+            color_list[green_code].append(_clean(row["Object (O)"]) + " ")
     words_count_dict = Counter(words_list)
     # print (words_count_dict)
     max_words = 1000 # TODO MINO: make max_words bigger to include generally lower frequency "Object (O)" words

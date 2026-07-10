@@ -45,8 +45,15 @@ def run():
     deprel = deprel_var.get()
     co_postag = co_postag_var.get()
     co_deprel = co_deprel_var.get()
-    Begin_K_sent_var = globals()['Begin_K_sent_var'].get()
-    End_K_sent_var = globals()['End_K_sent_var'].get()
+    # IntVar.get() raises if the entry was cleared or holds a non-integer; fall back to the 2/2 default
+    try:
+        Begin_K_sent_var = globals()['Begin_K_sent_var'].get()
+    except Exception:
+        Begin_K_sent_var = 2
+    try:
+        End_K_sent_var = globals()['End_K_sent_var'].get()
+    except Exception:
+        End_K_sent_var = 2
 
     # 'Run the default parser' option: this analyzer needs a CoNLL table; if the user has none, open the
     # Parsers/Annotators GUI, which parses the corpus and reopens the analyzer with the fresh CoNLL. We do NOT
@@ -350,28 +357,16 @@ def run():
                     else:
                         filesToOpen.extend(outFiles)
         if sel == '*' or sel == 'Beginning-End K sentences analyzer (repetition finder)':
-            # The Begin/End K entry fields are not on the GUI, so prompt for the values when they are
-            # not set (the repetition finder needs how many sentences at the start and end to compare).
+            # Begin K / End K come from the GUI entry fields (shown when the repetition finder is
+            # selected; default 2/2). Guard against an empty/0 field by falling back to 2.
             begin_k, end_k = Begin_K_sent_var, End_K_sent_var
-            # No GUI K fields yet -> default to a 2/2 'bookend' comparison with a NON-blocking timed notice
-            # instead of a modal that stalls an unattended '*' (run-all) pass. Set the K fields to override
-            # once they are re-enabled on the GUI.
-            if begin_k == 0 or end_k == 0:
-                if begin_k == 0:
-                    begin_k = 2
-                if end_k == 0:
-                    end_k = 2
-                IO_user_interface_util.timed_alert(GUI_util.window, 5000, 'Repetition finder',
-                                                   'Using the default K = ' + str(begin_k) + ' beginning / ' + str(end_k) + ' ending sentences (set the K fields to change).')
-            if not begin_k or not end_k:
-                mb.showwarning(title='K sentences required',
-                               message="The 'Beginning-End K sentences analyzer (repetition finder)' needs both "
-                                       "the Begin K and End K sentence counts.\n\nPlease run the option again and "
-                                       "enter valid values.")
-            else:
-                temp_outputDir, outFiles = CoNLL_k_sentences_util.k_sent(inputFilename, adv_outputDir, chartPackage, dataTransformation, begin_k, end_k)
-                if outFiles:
-                    filesToOpen.extend(outFiles)
+            if not begin_k:
+                begin_k = 2
+            if not end_k:
+                end_k = 2
+            temp_outputDir, outFiles = CoNLL_k_sentences_util.k_sent(inputFilename, adv_outputDir, chartPackage, dataTransformation, begin_k, end_k)
+            if outFiles:
+                filesToOpen.extend(outFiles)
         IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
                                            'Finished running CoNLL Advanced analyses at', True, '', True, adv_startTime, False)
 
@@ -590,6 +585,9 @@ co_deprel_var = tk.StringVar()
 k_sentences_var = tk.IntVar()
 Begin_K_sent_var = tk.IntVar()
 End_K_sent_var = tk.IntVar()
+# default the repetition-finder K fields to a 2/2 'bookend' comparison; the user can change them
+Begin_K_sent_var.set(2)
+End_K_sent_var.set(2)
 csv_file_field_list = []
 
 clausal_analysis_var = tk.IntVar()
@@ -731,8 +729,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 advanced_analyses.set('*')
 advanced_analyses_menu = tk.OptionMenu(window, advanced_analyses, '*', 'Classification of Nouns & Verbs via FrameNet, VerbNet, WordNet','Beginning-End K sentences analyzer (repetition finder)','Word Sense Disambiguation (WSD)','Zoom OUT/UP by Sentence Index')
 advanced_analyses_menu.configure(state='disabled')
+# sameY=True: keep the dropdown on the Advanced-analyses checkbox row and let the repetition-finder
+# Begin K / End K fields share THAT SAME row (placed to its right by show_hide_K_sentence_widgets()
+# below). This avoids a separate row with its own stray '? HELP' button appearing/disappearing.
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
-                                               advanced_analyses_menu,False)
+                                               advanced_analyses_menu,True)
+_adv_K_row = y_multiplier_integer  # the dropdown's own row; the K fields go here, to the right
+y_multiplier_integer = _adv_K_row + 1  # subsequent widgets resume on the next row
 
 # WordNet_var = tk.IntVar()
 # WordNet_checkbox = tk.Checkbutton(window, state='disabled', variable=WordNet_var,  text='Classification of Nouns & Verbs via FrameNet, VerbNet, WordNet', onvalue=1,
@@ -913,40 +916,42 @@ def changed_filename(tracedInputFile):
     clear("<Escape>")
 # GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
 
-# k_sentences_var.set(0)
-# k_sentences_checkbox = tk.Checkbutton(window, text="Beginning-End K sentences analyzer (repetition finder)",
-#                               variable=k_sentences_var, onvalue=1, offvalue=0, command = lambda: activate_all_options())
-# # k_sentences_checkbox.configure(state='disabled')
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-#                                                k_sentences_checkbox,True)
-#
-# Begin_K_sent_entry_lb = tk.Label(window,
-#                                     text='Begin K-sentences')
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
-#                                                Begin_K_sent_entry_lb, True)
-#
-# Begin_K_sent_entry = tk.Entry(window, textvariable=Begin_K_sent_var)
-# Begin_K_sent_entry.configure(width=GUI_IO_util.widget_width_extra_short, state='disabled')
-# # place widget with hover-over info
-# y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+130,
-#                                                y_multiplier_integer,
-#                                                Begin_K_sent_entry, True, False, False, False, 90,
-#                                                GUI_IO_util.file_splitter_split_mergedFile_separator_entry_begin_pos,
-#                                                "Enter the beginning number of sentences to be analyzed in the CoNLL table for repeated elements")
-#
-# End_K_sent_entry_lb = tk.Label(window,
-#                                     text='End K-sentences')
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
-#                                                End_K_sent_entry_lb, True)
-#
-# End_K_sent_entry = tk.Entry(window, textvariable=End_K_sent_var)
-# End_K_sent_entry.configure(width=GUI_IO_util.widget_width_extra_short, state='disabled')
-# # place widget with hover-over info
-# y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate+120,
-#                                                y_multiplier_integer,
-#                                                End_K_sent_entry, False, False, False, False, 90,
-#                                                GUI_IO_util.file_splitter_split_mergedFile_separator_entry_end_pos,
-#                                                "Enter the end number of sentences to be analyzed in the CoNLL table for repeated elements")
+# Begin K / End K sentence-count fields for the 'Beginning-End K sentences analyzer (repetition
+# finder)'. Following the parsers_annotators GUI pattern (which shows 'Include single quotes' only
+# for the quote annotator), these fields APPEAR only when the Advanced-analyses dropdown is set to
+# the repetition finder (or '*'), and DISAPPEAR otherwise. show_hide_K_sentence_widgets() (bound
+# below via .trace) does the place/place_forget; run() reads Begin_K_sent_var / End_K_sent_var.
+# _adv_K_row was captured earlier, directly below the Advanced-analyses dropdown.
+Begin_K_sent_entry_lb = tk.Label(window, text='Begin K')
+Begin_K_sent_entry = tk.Entry(window, width=GUI_IO_util.widget_width_extra_short, textvariable=Begin_K_sent_var)
+End_K_sent_entry_lb = tk.Label(window, text='End K')
+End_K_sent_entry = tk.Entry(window, width=GUI_IO_util.widget_width_extra_short, textvariable=End_K_sent_var)
+
+def show_hide_K_sentence_widgets(*args):
+    sel = advanced_analyses.get()
+    if advanced_analyses_var.get() and (sel == '*' or 'repetition finder' in sel):
+        _begin_x = GUI_IO_util.open_setup_x_coordinate
+        _end_x = GUI_IO_util.run_button_x_coordinate
+        _hover_x = GUI_IO_util.open_TIPS_x_coordinate  # show the hover message in a clear left-side area
+        GUI_IO_util.placeWidget(window, _begin_x, _adv_K_row, Begin_K_sent_entry_lb, True, True)
+        # the short 'Begin K' / 'End K' labels carry the explanation via a hover-over on the entry box
+        GUI_IO_util.placeWidget(window, _begin_x + 70, _adv_K_row, Begin_K_sent_entry, True, False,
+                                False, False, 90, _hover_x,
+                                'Enter how many sentences at the BEGINNING of each document to scan for '
+                                'repeated elements (nouns, verbs, adjectives, proper nouns).')
+        GUI_IO_util.placeWidget(window, _end_x, _adv_K_row, End_K_sent_entry_lb, True, True)
+        GUI_IO_util.placeWidget(window, _end_x + 70, _adv_K_row, End_K_sent_entry, True, False,
+                                False, False, 90, _hover_x,
+                                'Enter how many sentences at the END of each document to scan for '
+                                'repeated elements (nouns, verbs, adjectives, proper nouns).')
+    else:
+        Begin_K_sent_entry_lb.place_forget()
+        Begin_K_sent_entry.place_forget()
+        End_K_sent_entry_lb.place_forget()
+        End_K_sent_entry.place_forget()
+
+advanced_analyses.trace('w', show_hide_K_sentence_widgets)
+advanced_analyses_var.trace('w', show_hide_K_sentence_widgets)
 
 all_analyses_checkbox.configure(state='normal')
 searchToken_checkbox.configure(state='normal')

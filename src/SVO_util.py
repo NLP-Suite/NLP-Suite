@@ -910,6 +910,13 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
     else:
         filtered_svo = df.copy()
 
+    # '@#' is an internal-only flag prepended upstream to Subjects that are NER PERSON/ORGANIZATION/
+    # LOCATION; it was needed by the lemmatize/filter logic above but must NOT leak into any output
+    # file or chart (it was showing up as '@#He', '@#United States', etc.). Strip it from all three
+    # dataframes now that filtering is done.
+    for _svo_df in (df, lemmatized_svo, filtered_svo):
+        _svo_df['Subject (S)'] = _svo_df['Subject (S)'].astype(str).str.replace('@#', '', regex=False)
+
     # save the edited df to the svo file
     df.to_csv(svo_file_name, encoding='utf-8', index=False)
 
