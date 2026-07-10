@@ -8,6 +8,7 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window, "parsers_annot
     sys.exit(0)
 
 import os
+import IO_user_interface_util
 import tkinter as tk
 import tkinter.messagebox as mb
 from subprocess import call
@@ -97,6 +98,17 @@ def run():
     if annotators_menu_var == 'Word embeddings (Word2Vec)':
         mb.showinfo("Warning", "The 'Word embeddings (Word2Vec)' annotator is not available yet for either BERT or spaCy. Sorry!\n\nPlease, select an annotator and try try again.")
         return
+
+    # CoreNLP-only annotators (gender, quote, normalized-date, OpenIE) require the Stanford CoreNLP parser.
+    # If one is selected under a different package (e.g. Stanza), run it via CoreNLP FOR THIS analysis --
+    # with a brief timed notice, leaving the user's default package unchanged -- instead of the old
+    # "go to Setup, switch package, try again" wall. If CoreNLP is not installed, the CoreNLP branch below
+    # warns via its own check_CoreNLPVersion.
+    if annotators_var and package != 'Stanford CoreNLP' and annotators_menu_var and \
+            any(k in annotators_menu_var for k in ('Gender', 'Quote', 'Normalized NER', 'OpenIE')):
+        IO_user_interface_util.timed_alert(GUI_util.window, 5000, 'Using Stanford CoreNLP',
+                                           'The ' + annotators_menu_var + ' runs only via Stanford CoreNLP.\n\nRunning it with Stanford CoreNLP for this analysis; your default package (' + package + ') is unchanged.')
+        package = 'Stanford CoreNLP'
 
 # Stanford CoreNLP ---------------------------------------------------------------------------
     if package=='Stanford CoreNLP':
