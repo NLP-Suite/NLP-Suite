@@ -287,7 +287,11 @@ def run():
         adv_startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                                            'Started running CoNLL Advanced analyses at', True, '', True, '', False)
         # all Advanced analyses write into a dedicated subdirectory (keeps them out of the cluttered main output dir)
-        adv_outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='CoNLL_Advanced_analyses', silent=True) or outputDir
+        # base on outputDirSV (the original parent that the Basic sub-analyses also use), NOT the shared
+        # 'outputDir' -- the Basic Function-words branch reassigns outputDir to its CoNLL_stop subdir, so
+        # basing on it would nest CoNLL_Advanced_analyses INSIDE CoNLL_stop and blow past the 255-char path
+        # limit when both Basic and Advanced run together.
+        adv_outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDirSV, label='CoNLL_Advanced_analyses', silent=True) or outputDirSV
         if sel == '*' or sel == 'Classification of Nouns & Verbs via FrameNet, VerbNet, WordNet':
             import semantic_aggregation_util, config_util
             cfg = config_util.read_NLP_package_language_config()
