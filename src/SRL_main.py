@@ -33,10 +33,14 @@ def run():
                            message='Semantic Role Labeling needs txt input (a txt file or a folder '
                                    'of txt files), not a csv file.\n\nPlease select txt input and try again.')
             return
-        srl_files = SRL_util.run_SRL(GUI_util.window, inputFilename, inputDir, outputDir,
+        srl_result = SRL_util.run_SRL(GUI_util.window, inputFilename, inputDir, outputDir,
                                      chartPackage, dataTransformation)
+        # run_SRL returns (all_files, subset_of_key_visuals) on a full run, or [] / None on an early exit
+        srl_files, srl_subset = srl_result if isinstance(srl_result, tuple) else (srl_result or [], [])
         if srl_files:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, srl_files, outputDir, scriptName)
+            # SRL produces many files; open only the curated subset (interactive networks + Sankey flows)
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, srl_files, outputDir, scriptName,
+                                          filesToOpenSubset=srl_subset)
         return
 
 

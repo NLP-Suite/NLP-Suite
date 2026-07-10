@@ -244,6 +244,7 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
     SRL CSV itself (errors are surfaced, never swallowed)."""
     import pandas as pd
     outputs = []
+    subset = []  # curated 'most relevant' visuals (interactive networks + Sankey flows) to auto-open (< 10 files)
     try:
         # 'VerbNet class' must stay a string: ids like '44' or '9.10' would be mangled to 44.0 / 9.1
         # if pandas infers the column as float.
@@ -317,6 +318,7 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
             date_col='Date' if use_date else None)
         if net:
             outputs.extend(net if isinstance(net, list) else [net])
+            subset.extend(net if isinstance(net, list) else [net])
     except Exception as e:
         mb.showwarning(title="SRL network graph (interactive)",
                        message="Could not build the interactive SRL network graph:\n\n%s" % repr(e))
@@ -342,6 +344,7 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
         sk = charts_util.Sankey(svo_csv, sankey_out, 'Agent (ARG0)', 5, 'Predicate', 10, True, 'Patient (ARG1)', 20)
         if sk:
             outputs.extend(sk if isinstance(sk, list) else [sk])
+            subset.extend(sk if isinstance(sk, list) else [sk])
     except Exception as e:
         mb.showwarning(title="SRL Sankey",
                        message="Could not build the SRL Sankey chart:\n\n%s" % e)
@@ -404,6 +407,7 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
                 date_col='Date' if use_date else None)
             if rnet:
                 outputs.extend(rnet if isinstance(rnet, list) else [rnet])
+                subset.extend(rnet if isinstance(rnet, list) else [rnet])
         except Exception as e:
             mb.showwarning(title="SRL role network",
                            message="Could not build the VerbNet-role network:\n\n%s" % repr(e))
@@ -416,6 +420,7 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
                                      'Agent role', 5, 'Predicate', 10, True, 'Patient role', 20)
             if rsk:
                 outputs.extend(rsk if isinstance(rsk, list) else [rsk])
+                subset.extend(rsk if isinstance(rsk, list) else [rsk])
         except Exception as e:
             mb.showwarning(title="SRL role Sankey",
                            message="Could not build the VerbNet-role Sankey:\n\n%s" % e)
@@ -502,4 +507,7 @@ def _build_srl_visualizations(window, srl_csv, srl_dir, inputFilename, inputDir,
             mb.showwarning(title="SRL WordNet sense chart",
                            message="Could not build the WordNet sense frequency chart:\n\n%s" % e)
 
-    return outputs
+    # return both the full file list AND the curated subset of key visuals (interactive networks + Sankey
+    # flows). SRL produces >10 files; without a subset, OpenOutputFiles' "too many files" branch opens only
+    # KML/Folium maps (which SRL has none of) and nothing useful appears.
+    return outputs, subset
