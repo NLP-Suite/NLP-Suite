@@ -353,20 +353,16 @@ def run():
             # The Begin/End K entry fields are not on the GUI, so prompt for the values when they are
             # not set (the repetition finder needs how many sentences at the start and end to compare).
             begin_k, end_k = Begin_K_sent_var, End_K_sent_var
+            # No GUI K fields yet -> default to a 2/2 'bookend' comparison with a NON-blocking timed notice
+            # instead of a modal that stalls an unattended '*' (run-all) pass. Set the K fields to override
+            # once they are re-enabled on the GUI.
             if begin_k == 0 or end_k == 0:
-                from tkinter import simpledialog
                 if begin_k == 0:
-                    begin_k = simpledialog.askinteger(
-                        'Beginning K sentences',
-                        'Repetition finder: enter the number of sentences at the BEGINNING of each '
-                        'document to scan for repeated content words (K):',
-                        parent=GUI_util.window, minvalue=1)
-                if begin_k and end_k == 0:
-                    end_k = simpledialog.askinteger(
-                        'Ending K sentences',
-                        'Repetition finder: enter the number of sentences at the END of each '
-                        'document to scan for repeated content words (K):',
-                        parent=GUI_util.window, minvalue=1)
+                    begin_k = 2
+                if end_k == 0:
+                    end_k = 2
+                IO_user_interface_util.timed_alert(GUI_util.window, 5000, 'Repetition finder',
+                                                   'Using the default K = ' + str(begin_k) + ' beginning / ' + str(end_k) + ' ending sentences (set the K fields to change).')
             if not begin_k or not end_k:
                 mb.showwarning(title='K sentences required',
                                message="The 'Beginning-End K sentences analyzer (repetition finder)' needs both "
