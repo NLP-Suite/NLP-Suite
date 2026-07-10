@@ -67,7 +67,8 @@ def run():
     lemmatize_verbs = lemmatize_verbs_var.get()
     lemmatize_objects = lemmatize_objects_var.get()
     gephi_var = globals()['gephi_var'].get()
-    wordcloud_var = globals()['wordcloud_var'].get()
+    # conflated: the single 'Visualize SVO relations' checkbox drives BOTH the network graphs and the wordcloud
+    wordcloud_var = gephi_var
     google_earth_var = globals()['google_earth_var'].get()
     compare_svo_var = globals()['compare_svo_var'].get()
     map_characters_var = globals()['map_characters_var'].get()
@@ -909,7 +910,6 @@ def clear(e):
     wordcloud_var.set(1)
     google_earth_var.set(1)
     gephi_checkbox.configure(state='normal')
-    wordcloud_checkbox.configure(state='normal')
     google_earth_checkbox.configure(state='normal')
     compare_svo_var.set(0)
     map_characters_var.set(0)
@@ -1234,15 +1234,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "When filtering subjects/verbs/objects, Gephi network graphs will be produced for both unfiltered and filtered SVOs and saved respectively in the SVO and SVO_filtered subdirectories.\nSankey graphs display only top 10 Subject (S), 20 Verb (V), 20 Object (O). Sunburst and Treemap charts display top 15 values. To change these default values, use the Data visualization GUI.\n"
                                    "When lemmatizing, network graphs will also be produced for lemmatized unfiltered and filtered SVOs and saved in the WordNet subdirectory.")
 
+# 'Visualize SVO relations in wordcloud' checkbox removed: conflated into the single 'Visualize SVO
+# relations' checkbox above, which now drives both the network graphs and the wordcloud (see run()).
 wordcloud_var.set(1)
-wordcloud_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in wordcloud', variable=wordcloud_var,
-                                    onvalue=1, offvalue=0)
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
-                                   wordcloud_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "When filtering subjects/verbs/objects, wordclouds will be produced for both unfiltered and filtered SVOs and saved respectively in the SVO and SVO_filtered subdirectories\n" 
-                                   "When lemmatizing, wordclouds will also be produced for lemmatized unfiltered and filtered SVOs and saved in the WordNet subdirectory.")
 
 def check_NER(first_time=False):
     NER_available=True
@@ -1327,7 +1321,6 @@ def activateFilters(*args):
         wordcloud_var.set(0)
         google_earth_var.set(0)
         gephi_checkbox.configure(state='disabled')
-        wordcloud_checkbox.configure(state='disabled')
         google_earth_checkbox.configure(state='disabled')
     # SENNA does not produce geocodable locations; SENNA no longer used
     # if package_var.get()=='SENNA':
