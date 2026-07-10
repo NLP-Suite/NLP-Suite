@@ -884,6 +884,31 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
                                               lemmatize_s_SV, filter_s, filter_v, filter_o,
                                               s_filtered_set, v_filtered_set, o_filtered_set), axis=1)
 
+    # df now holds the LEMMATIZED SVO. Build the two derived outputs FROM it (previously lemmatized_svo /
+    # filtered_svo were copied BEFORE processing and never updated -> the "filtered" file was an unfiltered
+    # copy, so 0 records were ever filtered).
+    lemmatized_svo = df.copy()
+    # Filtered SVO: keep a row only when EACH ENABLED filter's field is in its actor/action list (AND across
+    # the enabled filters; a disabled filter imposes no constraint). A field tagged '@#' is a NER
+    # PERSON/ORGANIZATION/LOCATION -- a genuine social actor -- and is kept regardless of the list.
+    # Object is typically NOT filtered (default), so non-actor objects survive (e.g. 'terrorists blow up
+    # railroad' -- railroad is not a social actor, but the row is kept).
+    if filter_s or filter_v or filter_o:
+        def _row_passes(row):
+            if filter_s:
+                s = str(row['Subject (S)'])
+                if '@#' not in s and s.lower() not in s_filtered_set:
+                    return False
+            if filter_v and str(row['Verb (V)']).lower() not in v_filtered_set:
+                return False
+            if filter_o:
+                o = str(row['Object (O)'])
+                if '@#' not in o and o.lower() not in o_filtered_set:
+                    return False
+            return True
+        filtered_svo = df[df.apply(_row_passes, axis=1)].copy()
+    else:
+        filtered_svo = df.copy()
 
     # save the edited df to the svo file
     df.to_csv(svo_file_name, encoding='utf-8', index=False)
