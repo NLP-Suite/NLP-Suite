@@ -36,7 +36,10 @@ def k_sent(inputFilename, outputDir, chartPackage, dataTransformation, Begin_K_s
         return outputDir, filesToOpen
 
     label = 'CoNLL_' + str(Begin_K_sent_var) + '-' + str(End_K_sent_var) + '-sent'
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label=label, silent=True)
+    # pass '' (not inputFilename) so this inner subdir is just 'CoNLL_<b>-<e>-sent' WITHOUT re-appending the
+    # full corpus descriptor -- the parent (CoNLL_Advanced_analyses_<corpus>) already carries the corpus
+    # identity, and re-appending it at every nesting level is what pushed the path past the 255-char limit.
+    outputDir = IO_files_util.make_output_subdirectory('', '', outputDir, label=label, silent=True)
     if outputDir == '':
         return outputDir, filesToOpen
 
