@@ -123,6 +123,11 @@ def run():
 
 # ANALYSES -----------------------------------------------------------------------------------
 
+    # capture the ORIGINAL output dir before the Basic branch reassigns outputDir to its subdirs.
+    # Defined unconditionally so Advanced-analyses-alone (which bases its dir on outputDirSV) does not
+    # hit UnboundLocalError when the Basic branch is skipped.
+    outputDirSV = outputDir
+
     if all_analyses_var.get():
         # # create a subdirectory of the output directory; should create a subdir with increasing number to avoid writing ver
         # outputDir_temp = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='CoNLL_analyses',
