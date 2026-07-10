@@ -1209,13 +1209,23 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
                                    "The neural network quote annotator is available only via Stanford CoreNLP")
 
 def activate_annotator(annotator_type):
-    if (package_var.get() != 'Stanford CoreNLP') or (package_var.get() == 'Stanford CoreNLP' and 'English' not in str(language_list)):
+    # gender/quote are byproducts of the Stanford CoreNLP parse (English only).
+    if 'English' not in str(language_list):
         mb.showwarning(title='Warning',
-                       message='The ' + annotator_type + ' annotator is only available for the Stanford CoreNLP package and the English language.')
+                       message='The ' + annotator_type + ' annotator is only available for the English language.')
         if annotator_type=='gender':
             gender_var.set(0)
         elif annotator_type=='quote':
             quote_var.set(0)
+        return
+    if package_var.get() != 'Stanford CoreNLP':
+        # Instead of forcing the user to change the package in Setup and retry, switch the SVO package to
+        # Stanford CoreNLP right here (visible in the dropdown) with a brief timed notice. gender/quote need
+        # the CoreNLP parse; the run's CoreNLP path warns if CoreNLP itself is not installed.
+        import IO_user_interface_util
+        IO_user_interface_util.timed_alert(GUI_util.window, 5000, 'Using Stanford CoreNLP',
+                                           'The ' + annotator_type + ' annotator runs only via Stanford CoreNLP.\n\nSwitched the SVO package to Stanford CoreNLP for this run.')
+        package_var.set('Stanford CoreNLP')
 
 SRL_var.set(0)
 SRL_checkbox = tk.Checkbutton(window, text='Semantic Role Labeling (SRL) (Open GUI)',
