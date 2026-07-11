@@ -311,10 +311,10 @@ REGISTRY = {
     'sentiment_more':   dict(category='sentiment', kind='gui', gui_script='sentiment_analysis_main.py',
                              label='BERT · spaCy · VADER · NRC · SentiWordNet  (opens Sentiment GUI)'),
     # --- arcs (character emotion arcs: Stanza NER + NRC 8-emotion scoring, per character over the story) ---
+    # Batch-only dimension -- no GUI pointer. (Whole-narrative "shape of stories" is heavy BERT+clustering
+    # and GUI-coupled, like topics; it stays in the Sentiment GUI and is mentioned in this row's HELP.)
     'character_arcs':   dict(category='arcs', kind='batch', run=_run_character_arcs,
                              label='Character emotion arcs (NRC 8 emotions, per character across the story)'),
-    'arcs_more':        dict(category='arcs', kind='gui', gui_script='sentiment_analysis_main.py',
-                             label='Sentiment arcs by actor & location, shape of stories  (opens Sentiment GUI)'),
 }
 
 

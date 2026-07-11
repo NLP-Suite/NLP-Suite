@@ -312,8 +312,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                                y_multiplier_integer, arcs_checkbox, True)
 arcs_menu_var.set('*')
 arcs_menu = tk.OptionMenu(window, arcs_menu_var, '*',
-                          'Character emotion arcs (NRC 8 emotions, per character across the story)',
-                          'Sentiment arcs by actor & location, shape of stories  (opens Sentiment GUI)')
+                          'Character emotion arcs (NRC 8 emotions, per character across the story)')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, arcs_menu, False)
 
 # --- help buttons (one per row, in order) ----------------------------------------------------
