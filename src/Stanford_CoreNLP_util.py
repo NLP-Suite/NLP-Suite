@@ -610,11 +610,11 @@ def CoreNLP_annotate(config_filename,inputFilename,
         # '-props spanish',
         if language == 'English':
             CoreNLP_nlp = subprocess.Popen(
-                ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
+                [IO_libraries_util.get_java_executable(), '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
                  'edu.stanford.nlp.pipeline.StanfordCoreNLPServer',  '-parse.maxlen', str(sentence_length), '-timeout', '999999'])
         else:
             CoreNLP_nlp = subprocess.Popen(
-                ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
+                [IO_libraries_util.get_java_executable(), '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
                  'edu.stanford.nlp.pipeline.StanfordCoreNLPServer','-props', language.lower(),
                  '-parse.maxlen', str(sentence_length), '-timeout', '999999'])
 
@@ -624,11 +624,11 @@ def CoreNLP_annotate(config_filename,inputFilename,
         #      'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen' + str(sentence_length),'-timeout', '999999'])
         if language == 'English':
             CoreNLP_nlp = subprocess.Popen(
-                ['java', '-mx' + str(memory_var) + "g", '-cp',  os.path.join(CoreNLPdir, '*'),
+                [IO_libraries_util.get_java_executable(), '-mx' + str(memory_var) + "g", '-cp',  os.path.join(CoreNLPdir, '*'),
                  'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen', str(sentence_length),'-timeout', '999999'])
         else:
             CoreNLP_nlp = subprocess.Popen(
-                ['java', '-mx' + str(memory_var) + "g", '-cp',  os.path.join(CoreNLPdir, '*'),
+                [IO_libraries_util.get_java_executable(), '-mx' + str(memory_var) + "g", '-cp',  os.path.join(CoreNLPdir, '*'),
                  'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-props', language.lower(),
                  '-parse.maxlen', str(sentence_length),'-timeout', '999999'])
 

@@ -494,7 +494,7 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
 
     # TODO which annotators is it using? We do not need all annotators! Sentence splitter and tokenizer (and NER)
     p = subprocess.Popen(
-        ['java', '-mx' + str(5) + "g", '-cp', os.path.join(CoreNLPDir, '*'),
+        [IO_libraries_util.get_java_executable(), '-mx' + str(5) + "g", '-cp', os.path.join(CoreNLPDir, '*'),
          'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
     time.sleep(5)
 

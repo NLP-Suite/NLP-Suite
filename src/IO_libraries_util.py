@@ -14,6 +14,42 @@ import csv
 
 import GUI_util
 import GUI_IO_util
+
+
+# ---------------------------------------------------------------------------------------------
+# Java executable resolver. The portable/packaged app has NO system Java, so Stanford CoreNLP-based
+# tools (spell checker, coreference, gender, sentiment, all CoreNLP parsers) failed with "Java runtime
+# could not be located". We bundle a JRE with the installer under <app>/jre and point every java call
+# here. Falls back to NLP_JAVA_HOME/JAVA_HOME, then plain 'java' on PATH for source/dev runs.
+# ---------------------------------------------------------------------------------------------
+_JAVA_EXECUTABLE = None
+
+
+def get_java_executable():
+    global _JAVA_EXECUTABLE
+    if _JAVA_EXECUTABLE is not None:
+        return _JAVA_EXECUTABLE
+    exe = 'java.exe' if sys.platform.startswith('win') else 'java'
+    candidates = []
+    if getattr(sys, 'frozen', False):
+        # PyInstaller: the app dir (next to the executable) and the onefile temp dir (_MEIPASS)
+        app_dir = os.path.dirname(sys.executable)
+        meipass = getattr(sys, '_MEIPASS', app_dir)
+        for base in (app_dir, os.path.join(app_dir, '_internal'), meipass):
+            candidates.append(os.path.join(base, 'jre', 'bin', exe))
+    for var in ('NLP_JAVA_HOME', 'JAVA_HOME'):
+        home = os.environ.get(var)
+        if home:
+            candidates.append(os.path.join(home, 'bin', exe))
+    for c in candidates:
+        try:
+            if c and os.path.isfile(c):
+                _JAVA_EXECUTABLE = c
+                return c
+        except Exception:
+            pass
+    _JAVA_EXECUTABLE = exe if sys.platform.startswith('win') else 'java'
+    return _JAVA_EXECUTABLE
 import reminders_util
 import TIPS_util
 import IO_internet_util
@@ -247,7 +283,7 @@ def check_java_installation(script):
     try:
         # if you are testing new Java install/uninstall ...
         #   YOU MUST CLOSE PyCharm to run correctly the next command subprocess.run
-        java_output = subprocess.run(['java', '-version'], capture_output=True)
+        java_output = subprocess.run([get_java_executable(), '-version'], capture_output=True)
         error_code = java_output.returncode  # Should be 0 if java installed
         system_output = java_output.stderr.decode('utf-8')  # This is what you see when you run "java -version" in your command line
         java_version = get_java_version(system_output)
