@@ -307,14 +307,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier
 # 9. Zooming in on characters (emotional arcs + movement in space)
 characters_var.set(1)
 characters_checkbox = tk.Checkbutton(window,
-                               text="Zooming in on characters: Characters' emotional arcs and movements in space",
+                               text="Zooming in on characters: Characters' emotional arcs and movements in time and space",
                                variable=characters_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, characters_checkbox, True)
 characters_menu_var.set('*')
 characters_menu = tk.OptionMenu(window, characters_menu_var, '*',
                           'Emotion arcs (NRC 8 emotions, per character across the story)',
-                          'Movement in space (each character’s places, mapped)')
+                          'Movement in time & space (each character’s places over the story, mapped)')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, characters_menu, False)
 
 # --- help buttons (one per row, in order) ----------------------------------------------------
@@ -389,9 +389,10 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         "NRC's eight emotions (anger, anticipation, disgust, fear, joy, sadness, surprise, trust) across the "
         "narrative, using Stanza NER to attribute sentences to characters; produces an emotion-arc chart and a "
         "dominant-emotion timeline per leading character.\n\n"
-        "• MOVEMENT IN SPACE — where each character goes: Stanza tracks the places each character passes through and "
-        "builds an animated migration MAP. Only the DISTINCT locations are geocoded (bounded), and we cap to the 40 "
-        "most frequent, so a big-corpus run can't stall on the network.\n\n"
+        "• MOVEMENT IN TIME & SPACE — where each character goes, and when: Stanza tracks the places each character "
+        "passes through and builds an animated migration MAP whose timeline follows narrative order (sentence "
+        "index), with a per-document filter. Only the DISTINCT locations are geocoded (bounded), and we cap to the "
+        "40 most frequent, so a big-corpus run can't stall on the network.\n\n"
         "Whole-narrative 'shape of stories' (heavy BERT + clustering) stays in the Sentiment Analysis GUI.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                                          "NLP Suite Help", GUI_IO_util.msg_openOutputFiles)

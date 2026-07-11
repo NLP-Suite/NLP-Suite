@@ -36,7 +36,7 @@ CATEGORY_TITLE = {
     'spatial':   'Where does it all happen?  (geocodable and symbolic space)',
     'narrative': 'Who did what to whom?  (Narrative)',
     'sentiment': 'How does it feel?  (Sentiment)',
-    'characters': "Zooming in on characters: Characters' emotional arcs and movements in space",
+    'characters': "Zooming in on characters: Characters' emotional arcs and movements in time and space",
 }
 
 
@@ -267,7 +267,10 @@ def _run_character_movement(c):
     except Exception:
         pass
     try:
-        files += _files(charts_util.animated_migration_map(map_input, map_dir, 'Entity', 'Location'))
+        # order the animation by narrative time (Sentence ID), with a per-document filter -> movement
+        # in TIME and space, not merely space.
+        files += _files(charts_util.animated_migration_map(
+            map_input, map_dir, 'Entity', 'Location', sequence_col='Sentence ID', doc_col='Document'))
     except Exception as e:
         print('Corpus Profiler: character movement map skipped: %s' % e)
     return files
@@ -348,7 +351,7 @@ REGISTRY = {
     'character_arcs':     dict(category='characters', kind='batch', run=_run_character_arcs,
                              label='Emotion arcs (NRC 8 emotions, per character across the story)'),
     'character_movement': dict(category='characters', kind='batch', run=_run_character_movement,
-                             label='Movement in space (each character’s places, mapped)'),
+                             label='Movement in time & space (each character’s places over the story, mapped)'),
 }
 
 
@@ -553,7 +556,7 @@ _CATEGORY_LEAD = {
     'sentiment':  'How does the corpus feel? Sentiment was scored with a neural model.',
     'characters': 'Zooming in on the people of the corpus: how each character FEELS over the story '
                   '(NRC’s eight emotions, traced per character) and where each character MOVES '
-                  '(the places they pass through, mapped).',
+                  'over the story (the places they pass through, animated along narrative time).',
 }
 
 
