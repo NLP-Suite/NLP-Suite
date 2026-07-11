@@ -29,7 +29,7 @@ CATEGORY_ORDER = ['counts', 'vocabulary', 'syntax', 'semantics',
 CATEGORY_TITLE = {
     'counts':    'How big / how varied?  (Counts & measures)',
     'vocabulary': "What's the vocabulary like?  (Vocabulary)",
-    'syntax':    'Grammar & structure  (Syntax)',
+    'syntax':    'Grammar & structure — parts of speech  (Syntax)',
     'semantics': 'What do the words mean?  (Semantics)',
     'topics':    'What is it about?  (Topics)',
     'entities':  'Who, what, where, when  (Entities)',
@@ -192,6 +192,16 @@ def _run_semantic_classes(c):
     return out
 
 
+# ---- syntax: parts-of-speech distribution (nouns, verbs, adjectives, adverbs, pronouns) via Stanza POS ----
+def _run_pos_stats(c):
+    import Stanza_util
+    out = Stanza_util.Stanza_annotate(
+        c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
+        c['chartPackage'], c['dataTransformation'], ['All POS'], False,
+        [c['language']], c['memory_var'], c['document_length_var'], c['limit_sentence_length_var'])
+    return list(dict.fromkeys(_files(out)))   # Stanza returns the file once per doc; dedupe
+
+
 # ---- narrative: SVO (CoreNLP) + SRL (transformer; self-skips if its env isn't installed) ----
 def _run_svo(c):
     # Subject-Verb-Object triples via the CoreNLP 'SVO' annotator, run with defaults
@@ -325,9 +335,11 @@ REGISTRY = {
                              label='Noun & verb classes (WordNet top synsets)'),
     'semantics_more':   dict(category='semantics', kind='gui', gui_script='semantic_analysis_main.py',
                              label='WSD · word embeddings · semantic similarity · nominalization  (opens Semantic Analysis GUI)'),
-    # --- syntax (full parse + CoNLL analyses live in the analyzer GUI) ---
-    'syntax_gui':       dict(category='syntax', kind='gui', gui_script='CoNLL_table_analyzer_main.py',
-                             label='POS · dependency · clause · N/V/Adj/Adv · function words · complexity · readability'),
+    # --- syntax: parts-of-speech distribution RUNS in batch (Stanza POS); deeper CoNLL analyses via GUI ---
+    'syntax_pos':       dict(category='syntax', kind='batch', run=_run_pos_stats,
+                             label='Parts of speech — nouns, verbs, adjectives, adverbs, pronouns (Stanza POS)'),
+    'syntax_more':      dict(category='syntax', kind='gui', gui_script='CoNLL_table_analyzer_main.py',
+                             label='Dependency · clause · function words · complexity · readability  (opens CoNLL Analyzer)'),
     # --- topics (Gensim LDA runs in batch, force-bypassing the 50-file advisory; deeper engines via GUI) ---
     'topics_gensim':    dict(category='topics', kind='batch', run=_run_topics,
                              label='Topic modeling (Gensim LDA)'),
@@ -547,7 +559,8 @@ _INTERACTIVE_EXT = ('.html', '.htm', '.kml')
 _CATEGORY_LEAD = {
     'counts':     'How big and how varied is the corpus? The profiler measured its size and spread.',
     'vocabulary': 'What is the vocabulary like? The profiler looked at richness, frequency and word shape.',
-    'syntax':     'How is the language structured? Grammar and dependency structure were examined.',
+    'syntax':     'How is the language built? Every word was POS-tagged, so the corpus can be read as a '
+                  'distribution of parts of speech — nouns, verbs, adjectives, adverbs, pronouns.',
     'semantics':  'What do the words mean? Nouns and verbs were aggregated up to their WordNet classes.',
     'topics':     'What is the corpus about? Topics were surveyed.',
     'entities':   'Who, what, where and when? People, organizations, locations, gender and dates were extracted.',
@@ -849,6 +862,41 @@ def _interp_arcs(files):
     return findings
 
 
+def _find_pos_df(files):
+    """The Stanza 'All POS' table (a CSV with a POS column)."""
+    for cand in files:
+        b = os.path.basename(str(cand)).lower()
+        if b.endswith('.csv') and 'pos' in b and not any(k in b for k in ('no_hyperlinks', 'chart', 'bydoc')):
+            df = _read_csv(cand)
+            if df is not None and 'POS' in df.columns:
+                return df
+    return None
+
+
+_POS_NAMES = [('NOUN', 'nouns'), ('VERB', 'verbs'), ('ADJ', 'adjectives'),
+              ('ADV', 'adverbs'), ('PRON', 'pronouns'), ('PROPN', 'proper nouns')]
+
+
+def _interp_syntax(files):
+    df = _find_pos_df(files)
+    if df is None:
+        return []
+    vc = df['POS'].astype(str).str.upper().value_counts()
+    total = int(vc.sum())
+    if total == 0:
+        return []
+    breakdown = ', '.join('%s %s (%.0f%%)' % (_thousands(vc.get(t, 0)), name, 100 * int(vc.get(t, 0)) / total)
+                          for t, name in _POS_NAMES if int(vc.get(t, 0)) > 0)
+    findings = ['Of %s POS-tagged tokens, the parts of speech break down as %s.' % (_thousands(total), breakdown)]
+    nouns, verbs = int(vc.get('NOUN', 0)) + int(vc.get('PROPN', 0)), int(vc.get('VERB', 0))
+    if verbs:
+        ratio = nouns / verbs
+        style = ('a nominal, descriptive style' if ratio > 1.5
+                 else ('a verbal, action-driven style' if ratio < 0.9 else 'a balanced style'))
+        findings.append('The noun-to-verb ratio is %.2f — %s.' % (ratio, style))
+    return findings
+
+
 def _interp_characters(files):
     findings = _interp_arcs(files)   # emotional arcs: characters tracked + prevailing emotions
     # movement in space: the character->location tracking table (Entity + Location columns)
@@ -875,7 +923,7 @@ def _interp_characters(files):
 def _interpret(category, files):
     """Dispatch to the per-category interpreter; always returns a (possibly empty) list of sentences."""
     fn = {'counts': _interp_counts, 'vocabulary': _interp_vocabulary, 'entities': _interp_entities,
-          'semantics': _interp_semantics, 'narrative': _interp_narrative,
+          'semantics': _interp_semantics, 'narrative': _interp_narrative, 'syntax': _interp_syntax,
           'sentiment': _interp_sentiment, 'characters': _interp_characters, 'topics': _interp_topics}.get(category)
     if not fn:
         return []
@@ -987,6 +1035,11 @@ def _chart_specs(category, files):
                     d = df.assign(_c=pd.to_numeric(df['Count'], errors='coerce')).dropna(subset=['_c']) \
                         .sort_values('_c', ascending=False).head(8)
                     specs.append(('Semantic roles (SRL)', [(str(r['Role']), r['_c']) for _, r in d.iterrows()]))
+        elif category == 'syntax':
+            df = _find_pos_df(files)
+            if df is not None:
+                vc = df['POS'].astype(str).str.upper().value_counts().head(10)
+                specs.append(('Parts of speech', list(vc.items())))
         elif category == 'counts':
             f = _find(files, 'corpus_stats', exclude=('ungroup', 'group'))
             if f:
