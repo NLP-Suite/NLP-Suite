@@ -516,6 +516,211 @@ def _classify_files(files):
     return imgs, data, inter
 
 
+# ---------------------------------------------------------------------------------------------
+# Finding INTERPRETATION. Each _interp_<category> reads the analysis's own output CSV(s) and
+# returns a list of plain-language sentences stating what the numbers SAY -- not just that a file
+# exists. Everything is defensive: a missing/odd file yields no sentence, never an exception.
+# Files are located by keyword within the category's output list, so this is corpus-agnostic
+# (filenames embed the corpus name). Grounded in the real newspaperArticles profile output.
+# ---------------------------------------------------------------------------------------------
+_PRONOUNS = {'he', 'him', 'his', 'she', 'her', 'hers', 'it', 'its', 'they', 'them', 'their',
+             'theirs', 'i', 'me', 'my', 'mine', 'we', 'us', 'our', 'ours', 'you', 'your', 'yours',
+             'this', 'that', 'these', 'those', 'who', 'whom', 'whose', 'himself', 'herself'}
+
+
+def _read_csv(path):
+    """Version-tolerant CSV read -> DataFrame or None (never raises)."""
+    import pandas as pd
+    try:
+        return pd.read_csv(path)
+    except Exception:
+        for kw in ({'engine': 'python', 'on_bad_lines': 'skip'},
+                   {'engine': 'python', 'error_bad_lines': False}):
+            try:
+                return pd.read_csv(path, **kw)
+            except Exception:
+                continue
+    return None
+
+
+def _find(files, *must, exclude=()):
+    """First file whose basename contains ALL `must` keywords and none of `exclude` (case-insensitive)."""
+    for f in files:
+        b = os.path.basename(str(f)).lower()
+        if b.endswith('.csv') and all(m.lower() in b for m in must) and not any(x.lower() in b for x in exclude):
+            return f
+    return None
+
+
+def _num(df, *name_subs):
+    """First column whose (lowercased) name contains any of name_subs, coerced to a numeric Series."""
+    import pandas as pd
+    for c in df.columns:
+        cl = str(c).lower()
+        if any(s in cl for s in name_subs):
+            return pd.to_numeric(df[c], errors='coerce').dropna()
+    return None
+
+
+def _thousands(n):
+    return '{:,}'.format(int(n))
+
+
+def _interp_counts(files):
+    f = _find(files, 'corpus_stats', exclude=('ungroup', 'group'))
+    if not f:
+        return []
+    df = _read_csv(f)
+    if df is None:
+        return []
+    sent, words, syll = _num(df, 'number of sentences'), _num(df, 'number of words'), _num(df, 'number of syllables')
+    if sent is None or words is None or not len(sent) or sent.sum() == 0:
+        return []
+    tot_s, tot_w = int(sent.sum()), int(words.sum())
+    line = ('The corpus runs to %s words across %s sentences — about %.1f words per sentence.'
+            % (_thousands(tot_w), _thousands(tot_s), tot_w / tot_s if tot_s else 0))
+    if syll is not None and syll.sum() > 0 and tot_w:
+        line += (' Its %s syllables average %.2f per word, a rough gauge of lexical heft.'
+                 % (_thousands(syll.sum()), syll.sum() / tot_w))
+    return [line]
+
+
+def _interp_vocabulary(files):
+    f = _find(files, 'yule')
+    if not f:
+        return []
+    df = _read_csv(f)
+    if df is None:
+        return []
+    k = _num(df, 'yule', 'k value')
+    if k is None or not len(k):
+        return []
+    return [('Vocabulary richness (Yule’s K — lower means a more varied, less repetitive vocabulary) '
+             'averages %.1f across the documents, ranging from %.1f (richest) to %.1f (most repetitive).'
+             % (k.mean(), k.min(), k.max()))]
+
+
+def _interp_entities(files):
+    import pandas as pd
+    findings = []
+    f = _find(files, 'ner_all_ner', exclude=('bydoc', 'chart', 'group', 'no_hyperlinks', 'stats'))
+    if f:
+        df = _read_csv(f)
+        if df is not None and 'NER' in df.columns and 'Word' in df.columns:
+            tags = df['NER'].astype(str).value_counts()
+            if tags.sum() > 0:
+                top_tags = ', '.join('%s (%s)' % (t, _thousands(c)) for t, c in tags.head(5).items())
+                findings.append('The parser tagged %s entity mentions, led by %s.'
+                                % (_thousands(tags.sum()), top_tags))
+                named = df[~df['Word'].astype(str).str.lower().isin(_PRONOUNS)]['Word'].astype(str).value_counts()
+                if len(named):
+                    names = ', '.join('%s (%d)' % (w, int(c)) for w, c in named.head(6).items())
+                    findings.append('Setting pronouns aside, the most frequently named entities are %s.' % names)
+    fg = _find(files, 'gender', 'bydoc_freq', exclude=('chart',))
+    if fg:
+        df = _read_csv(fg)
+        if df is not None and 'Gender' in df.columns:
+            freqcol = next((c for c in df.columns if 'frequency_word' in str(c).lower()), None)
+            if freqcol:
+                g = df.groupby(df['Gender'].astype(str).str.upper())[freqcol].apply(
+                    lambda s: pd.to_numeric(s, errors='coerce').sum())
+                male, female = int(g.get('MALE', 0)), int(g.get('FEMALE', 0))
+                if male + female > 0:
+                    findings.append('Gendered references skew %s: %s male vs %s female mentions (%.0f%% male).'
+                                    % ('male' if male >= female else 'female', _thousands(male),
+                                       _thousands(female), 100 * male / (male + female)))
+    fd = _find(files, 'normalized-date', exclude=('bydoc', 'chart', 'no_hyperlinks', 'group'))
+    if fd:
+        df = _read_csv(fd)
+        if df is not None and len(df):
+            typ = ''
+            tcol = next((c for c in df.columns if str(c).lower().strip() == 'date type'), None)
+            if tcol:
+                vc = df[tcol].astype(str).value_counts()
+                typ = ' — mostly ' + ', '.join('%s %s' % (int(v), k.lower()) for k, v in vc.head(3).items())
+            findings.append('%s time expressions were extracted and normalized%s.' % (_thousands(len(df)), typ))
+    return findings
+
+
+def _interp_semantics(files):
+    findings = []
+    for label, sub in (('Nouns', 'noun'), ('Verbs', 'verb')):
+        f = _find(files, 'wordnet_up_' + sub, 'frequency') or _find(files, sub, 'frequency', 'wordnet')
+        if not f:
+            continue
+        df = _read_csv(f)
+        if df is None:
+            continue
+        catcol = next((c for c in df.columns if 'category' in str(c).lower()), None)
+        frqcol = next((c for c in df.columns if 'frequency' in str(c).lower()), None)
+        if not catcol or not frqcol:
+            continue
+        import pandas as pd
+        df = df.assign(_f=pd.to_numeric(df[frqcol], errors='coerce')).dropna(subset=['_f'])
+        top = df.sort_values('_f', ascending=False).head(5)
+        if len(top):
+            items = ', '.join('%s (%d)' % (str(r[catcol]), int(r['_f'])) for _, r in top.iterrows())
+            findings.append('%s cluster into WordNet classes led by %s.' % (label, items))
+    return findings
+
+
+def _interp_narrative(files):
+    import pandas as pd
+    findings = []
+    fs = _find(files, 'svo', exclude=('sunburst', 'treemap', 'form', 'chart', 'bydoc'))
+    if fs:
+        df = _read_csv(fs)
+        if df is not None:
+            findings.append('Subject–Verb–Object extraction produced %s triples.' % _thousands(len(df)))
+    fr = _find(files, 'role-freq', 'chart')
+    if fr:
+        df = _read_csv(fr)
+        if df is not None and 'Role' in df.columns and 'Count' in df.columns:
+            cnt = pd.to_numeric(df['Count'], errors='coerce')
+            df = df.assign(_c=cnt).dropna(subset=['_c']).sort_values('_c', ascending=False)
+            if len(df):
+                items = ', '.join('%s (%s)' % (str(r['Role']), _thousands(r['_c'])) for _, r in df.head(5).iterrows())
+                findings.append('Semantic-role labeling filled %s role slots, dominated by %s.'
+                                % (_thousands(df['_c'].sum()), items))
+    return findings
+
+
+def _interp_sentiment(files):
+    for cand in files:
+        b = os.path.basename(str(cand)).lower()
+        if not (b.endswith('.csv') and 'sentiment' in b) or 'no_hyperlinks' in b or 'chart' in b:
+            continue
+        df = _read_csv(cand)
+        if df is None:
+            continue
+        labcol = next((c for c in df.columns if 'sentiment label' in str(c).lower()), None)
+        if not labcol:
+            continue
+        vc = df[labcol].astype(str).str.lower().value_counts()
+        tot = int(vc.sum())
+        if tot == 0:
+            continue
+        pos, neg, neu = int(vc.get('positive', 0)), int(vc.get('negative', 0)), int(vc.get('neutral', 0))
+        lean = 'positive' if pos >= max(neg, neu) else ('negative' if neg >= neu else 'neutral')
+        return [('Across %s scored sentences the mood leans %s: %.0f%% positive, %.0f%% negative, %.0f%% neutral.'
+                 % (_thousands(tot), lean, 100 * pos / tot, 100 * neg / tot, 100 * neu / tot))]
+    return []
+
+
+def _interpret(category, files):
+    """Dispatch to the per-category interpreter; always returns a (possibly empty) list of sentences."""
+    fn = {'counts': _interp_counts, 'vocabulary': _interp_vocabulary, 'entities': _interp_entities,
+          'semantics': _interp_semantics, 'narrative': _interp_narrative,
+          'sentiment': _interp_sentiment}.get(category)
+    if not fn:
+        return []
+    try:
+        return [s for s in fn(files) if s]
+    except Exception as e:
+        print('Corpus Profiler: interpretation for "%s" skipped: %s' % (category, e))
+        return []
+
+
 def build_paper_summary(outputDir, corpus_name, results, header_stats, run_config,
                         report_basename='NLP_corpus_profile.html'):
     summary_path = os.path.join(outputDir, 'NLP_corpus_profile_summary.html')
@@ -587,6 +792,7 @@ def build_paper_summary(outputDir, corpus_name, results, header_stats, run_confi
   h2.dim .num{ font-family:'Segoe UI',system-ui,sans-serif; color:var(--accent); font-weight:700;
                font-size:15px; margin-right:10px; vertical-align:2px; }
   .lead-p{ margin:8px 0 4px; }
+  .finding{ margin:12px 0; font-size:16.5px; padding-left:15px; border-left:3px solid var(--accent); }
   figure{ margin:22px 0; }
   figure img{ display:block; width:100%%; height:auto; border:1px solid var(--rule); border-radius:8px;
               background:var(--card); }
@@ -629,6 +835,13 @@ def build_paper_summary(outputDir, corpus_name, results, header_stats, run_confi
         parts.append('<section class="dim"><h2 class="dim"><span class="num">%d</span>%s</h2>'
                      % (sec_no, _esc(CATEGORY_TITLE[cat])))
         parts.append('<p class="lead-p">%s</p>' % _esc(_CATEGORY_LEAD.get(cat, '')))
+
+        # INTERPRETATION: read this dimension's output CSVs and state what they say, in prose
+        cat_files = []
+        for r in recs:
+            cat_files += r.get('files', [])
+        for _finding in _interpret(cat, cat_files):
+            parts.append('<p class="finding">%s</p>' % _esc(_finding))
 
         # gather this dimension's outputs
         all_imgs, all_data, all_inter, gui_ptrs, errs = [], [], [], [], []
