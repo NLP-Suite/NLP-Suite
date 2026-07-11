@@ -612,7 +612,7 @@ NLP_Suite_corpus_tools_menu = 'Co-Occurrences VIEWER', 'N-grams VIEWER', \
 NLP_Suite_corpus_document_tools_menu = \
 'Fundamental NLP tools ---------------------------------------------------------------------------', \
 '', \
-'CORPUS PROFILER — what\'s in your corpus? (a sweeping view)', \
+'CORPUS PROFILER. WHAT\'S IN YOUR CORPUS? A SWEEPING VIEW.', \
 'Corpus/document(s) statistics (Sentences, words, lines)', \
 'Corpus/document(s) statistics (Nouns, verbs, adjectives, pronouns, ...)', \
 'N-grams & Co-Occurrences', \
