@@ -24,7 +24,7 @@ import html as _html
 # Category metadata (order + user-question titles). Adding/moving categories is done here.
 # ---------------------------------------------------------------------------------------------
 CATEGORY_ORDER = ['counts', 'vocabulary', 'syntax', 'semantics',
-                  'topics', 'entities', 'spatial', 'narrative', 'sentiment']
+                  'topics', 'entities', 'spatial', 'narrative', 'sentiment', 'arcs']
 
 CATEGORY_TITLE = {
     'counts':    'How big / how varied?  (Counts & measures)',
@@ -36,6 +36,7 @@ CATEGORY_TITLE = {
     'spatial':   'Where does it all happen?  (geocodable and symbolic space)',
     'narrative': 'Who did what to whom?  (Narrative)',
     'sentiment': 'How does it feel?  (Sentiment)',
+    'arcs':      'How do characters feel over the story?  (Character emotion arcs)',
 }
 
 
@@ -223,6 +224,13 @@ def _run_sentiment(c):
     return _files(out)
 
 
+# ---- character emotion arcs: Stanza NER + NRC's 8 emotions, traced per character across the story ---
+def _run_character_arcs(c):
+    import character_emotion_arcs_util
+    return _files(character_emotion_arcs_util.main(
+        c['inputFilename'], c['inputDir'], c['outputDir'], c['chartPackage'], c['dataTransformation']))
+
+
 # ---------------------------------------------------------------------------------------------
 # The registry.  id -> dict(category, label, kind, run)
 #   kind == 'batch' -> run(c) invoked during a profile; 'gui' -> surfaced as an "open tool" link.
@@ -290,6 +298,11 @@ REGISTRY = {
                              label='Sentiment (Stanza)'),
     'sentiment_more':   dict(category='sentiment', kind='gui', gui_script='sentiment_analysis_main.py',
                              label='BERT · spaCy · VADER · NRC · SentiWordNet  (opens Sentiment GUI)'),
+    # --- arcs (character emotion arcs: Stanza NER + NRC 8-emotion scoring, per character over the story) ---
+    'character_arcs':   dict(category='arcs', kind='batch', run=_run_character_arcs,
+                             label='Character emotion arcs (NRC 8 emotions, per character across the story)'),
+    'arcs_more':        dict(category='arcs', kind='gui', gui_script='sentiment_analysis_main.py',
+                             label='Sentiment arcs by actor & location, shape of stories  (opens Sentiment GUI)'),
 }
 
 
@@ -492,6 +505,8 @@ _CATEGORY_LEAD = {
     'spatial':    'Where does it all happen? Both geocodable and symbolic (narrative) space were considered.',
     'narrative':  'Who did what to whom? Subject-Verb-Object triples and semantic roles were derived.',
     'sentiment':  'How does the corpus feel? Sentiment was scored with a neural model.',
+    'arcs':       'How do the people in the story feel, and how does that feeling rise and fall? '
+                  'NRC’s eight emotions were traced per character across the narrative.',
 }
 
 
@@ -707,11 +722,41 @@ def _interp_sentiment(files):
     return []
 
 
+_EIGHT_EMOTIONS = ('Anger', 'Anticipation', 'Disgust', 'Fear', 'Joy', 'Sadness', 'Surprise', 'Trust')
+
+
+def _interp_arcs(files):
+    import pandas as pd
+    f = (_find(files, 'character_emotion_arcs', exclude=('chart', 'no_hyperlinks', 'bydoc'))
+         or _find(files, 'character', 'arc', exclude=('chart', 'no_hyperlinks')))
+    if not f:
+        return []
+    df = _read_csv(f)
+    if df is None or 'Character' not in df.columns:
+        return []
+    named = df[df['Character'].astype(str) != '_NARRATOR/UNATTRIBUTED_']
+    if not len(named):
+        return []
+    counts = named['Character'].astype(str).value_counts()
+    findings = ['Emotion arcs were traced for %d named character%s across the story; the most-followed are %s.'
+                % (len(counts), '' if len(counts) == 1 else 's',
+                   ', '.join('%s (%d)' % (c, int(n)) for c, n in counts.head(5).items()))]
+    present = [c for c in df.columns if str(c).strip().capitalize() in _EIGHT_EMOTIONS]
+    if present:
+        sums = {str(c).strip().capitalize(): pd.to_numeric(df[c], errors='coerce').sum() for c in present}
+        ordered = sorted(sums.items(), key=lambda kv: kv[1], reverse=True)
+        total = sum(v for _, v in ordered) or 1
+        lead = ', '.join('%s (%.0f%%)' % (k, 100 * v / total) for k, v in ordered[:3] if v > 0)
+        if lead:
+            findings.append('Across all characters the prevailing emotions are %s.' % lead)
+    return findings
+
+
 def _interpret(category, files):
     """Dispatch to the per-category interpreter; always returns a (possibly empty) list of sentences."""
     fn = {'counts': _interp_counts, 'vocabulary': _interp_vocabulary, 'entities': _interp_entities,
           'semantics': _interp_semantics, 'narrative': _interp_narrative,
-          'sentiment': _interp_sentiment}.get(category)
+          'sentiment': _interp_sentiment, 'arcs': _interp_arcs}.get(category)
     if not fn:
         return []
     try:
