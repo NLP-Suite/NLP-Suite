@@ -1542,15 +1542,14 @@ def Sankey(data, outputFilename, var1, lengthvar1, var2, lengthvar2, three_way_S
     if three_way_Sankey:
         # 3 variables
         data[var1] = data[var1].str.lower()
-        tempframe = pd.DataFrame(data[var1].value_counts().head(lengthvar1)).reset_index()
-        try:
-            finalframe = data[data[var1].isin(list(set(tempframe['index'])))]
-        except:
-            if len(finalframe) == 0:
-                mb.showwarning(title='Warning',
-                               message='The dataframe computed by the Sankey flowchart is empty.\n\nIt is likely that you are using a version of pandas > 1.5.2. If so, in command line please, pip unistall pandas and pip install pandas==1.5.2')
-                return
-            finalframe = data[data[var1].isin(list(set(tempframe.index)))]
+        # value_counts().reset_index() names its first column 'index' (old pandas) or var1 (new pandas),
+        # so tempframe['index'] raised KeyError; the old except handler then read finalframe before it
+        # was ever assigned -> UnboundLocalError. Use value_counts().index directly (version-agnostic).
+        finalframe = data[data[var1].isin(list(data[var1].value_counts().head(lengthvar1).index))]
+        if len(finalframe) == 0:
+            mb.showwarning(title='Warning',
+                           message='The dataframe computed by the Sankey flowchart is empty.\n\nNo Sankey flowchart can be produced.')
+            return
         tempframe2 = pd.DataFrame(finalframe[var2]).value_counts().head(lengthvar2).reset_index()
         tempframe3 = pd.DataFrame(finalframe[var3]).value_counts().head(lengthvar3).reset_index()
         finalframe = finalframe[finalframe[var2].isin(list(set(tempframe2[var2])))]

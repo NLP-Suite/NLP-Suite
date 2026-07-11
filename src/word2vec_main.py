@@ -330,7 +330,8 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration
     "Enter the comma-separated, case-sensitive words to be used to visualize Euclidean distances and cosine similarity between selected words.\nKEYWORDS MUST BE IN YOUR CORPUS.\nCosine similarity will always be computed for the top selected n words whether the checkbox 'Compute word distances' is ticked or not.")
 
 def activate_all_options():
-    WSI_checkbox.configure(state='normal')
+    # WSI moved out of Word2Vec: WSI_checkbox was never created, so referencing it here crashed the GUI
+    # on open (NameError). WSI_var (defined below, defaults off) is left intact for the run logic.
     BERT_checkbox.configure(state='normal')
     Gensim_checkbox.configure(state='normal')
     sg_menu.configure(state='normal')
@@ -346,14 +347,12 @@ def activate_all_options():
         min_count_entry.configure(state='disabled')
     if BERT_var.get():
         Gensim_checkbox.configure(state='disabled')
-        WSI_checkbox.configure(state='disabled')
         sg_menu.configure(state='disabled')
         vector_size_entry.configure(state='disabled')
         window_size_entry.configure(state='disabled')
         min_count_entry.configure(state='disabled')
     if Gensim_var.get():
         BERT_checkbox.configure(state='disabled')
-        WSI_checkbox.configure(state='disabled')
         sg_menu.configure(state='normal')
         vector_size_entry.configure(state='normal')
         window_size_entry.configure(state='normal')
