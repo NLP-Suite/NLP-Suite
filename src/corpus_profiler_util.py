@@ -67,9 +67,16 @@ def _run_statistics(c):
 
 def _run_ngrams(c):
     import statistics_txt_util
+    # signature: (window, inputFilename, inputDir, outputDir, configFileName,
+    #             ngramsNumber, frequency, hapax_words, normalize, lemmatize=False, ...)
+    # ngramsNumber/frequency/hapax_words/normalize are REQUIRED. Defaults mirror the N-grams GUI:
+    # size 3, min frequency 1, compute hapax, no normalization. Pass the trailing options by
+    # KEYWORD so we never have to fill (and risk misaligning) every optional positional in between.
     out, _ = statistics_txt_util.compute_character_word_ngrams(
-        c['window'], c['inputFilename'], c['inputDir'], c['outputDir'], c['config_filename'], False,
-        c['chartPackage'], c['dataTransformation'])
+        c['window'], c['inputFilename'], c['inputDir'], c['outputDir'], c['config_filename'],
+        3, 1, True, False,
+        wordgram=True, openOutputFiles=False,
+        chartPackage=c['chartPackage'], dataTransformation=c['dataTransformation'])
     return _files(out)
 
 def _run_sentence_length(c):
