@@ -116,7 +116,8 @@ def run():
     run_config = dict(
         subtitle='package: ' + str(package) + '  ·  language: ' + str(language) + '  ·  ' + time.strftime('%Y-%m-%d'),
         footer='NLP Suite — Corpus Profiler.  ' + str(len(results)) +
-               ' analyses run.  Per-file detail lives in the category subfolders.')
+               ' analyses run.  Per-file detail lives in the category subfolders.',
+        inputDir=inputDir, inputFilename=inputFilename)   # so the summary can draw a corpus wordcloud
 
     # build both: the navigable index (companion) and the paper-style summary (opened below)
     corpus_profiler_util.build_report(outputDir, corpus_name, results, header, run_config)

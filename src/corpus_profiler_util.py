@@ -987,10 +987,79 @@ def _chart_specs(category, files):
                     d = df.assign(_c=pd.to_numeric(df['Count'], errors='coerce')).dropna(subset=['_c']) \
                         .sort_values('_c', ascending=False).head(8)
                     specs.append(('Semantic roles (SRL)', [(str(r['Role']), r['_c']) for _, r in d.iterrows()]))
+        elif category == 'counts':
+            f = _find(files, 'corpus_stats', exclude=('ungroup', 'group'))
+            if f:
+                df = _read_csv(f)
+                if df is not None:
+                    wc = next((c for c in df.columns if 'number of words' in str(c).lower()), None)
+                    idc = next((c for c in df.columns if str(c).lower().strip() == 'document id'), None)
+                    if wc:
+                        labels = df[idc].astype(str) if idc else df.index.astype(str)
+                        pairs = [('Doc ' + str(l), float(v)) for l, v
+                                 in zip(labels, pd.to_numeric(df[wc], errors='coerce')) if v == v]
+                        if pairs:
+                            specs.append(('Words per document', pairs))
+        elif category == 'vocabulary':
+            f = _find(files, 'yule')
+            if f:
+                df = _read_csv(f)
+                if df is not None:
+                    kc = next((c for c in df.columns if 'yule' in str(c).lower() or 'k value' in str(c).lower()), None)
+                    idc = next((c for c in df.columns if str(c).lower().strip() == 'document id'), None)
+                    if kc:
+                        labels = df[idc].astype(str) if idc else df.index.astype(str)
+                        pairs = [('Doc ' + str(l), float(v)) for l, v
+                                 in zip(labels, pd.to_numeric(df[kc], errors='coerce')) if v == v]
+                        if pairs:
+                            specs.append(("Vocabulary richness — Yule's K per document (lower = richer)", pairs))
         return specs
     except Exception as e:
         print('Corpus Profiler: chart specs for "%s" skipped: %s' % (category, e))
         return []
+
+
+def _data_uri(path, max_bytes=2_200_000):
+    """base64 data: URI for an image so it embeds INLINE in the summary and always renders (portable,
+    survives moving/emailing the file). '' if missing or larger than max_bytes (avoids bloat)."""
+    try:
+        ext = os.path.splitext(str(path))[1].lower().lstrip('.')
+        ext = 'jpeg' if ext == 'jpg' else ext
+        if ext not in ('png', 'jpeg', 'gif', 'svg') or os.path.getsize(path) > max_bytes:
+            return ''
+        import base64
+        with open(path, 'rb') as fh:
+            b64 = base64.b64encode(fh.read()).decode('ascii')
+        return 'data:%s;base64,%s' % ('image/svg+xml' if ext == 'svg' else 'image/' + ext, b64)
+    except Exception:
+        return ''
+
+
+def _make_wordcloud(inputDir, inputFilename, outputDir):
+    """Generate a corpus wordcloud PNG (the iconic 'at a glance' visual). Returns its path or ''."""
+    try:
+        import glob as _glob
+        from wordcloud import WordCloud, STOPWORDS
+        paths = (sorted(_glob.glob(os.path.join(inputDir, '*.txt'))) if inputDir
+                 else ([inputFilename] if inputFilename else []))
+        texts = []
+        for p in paths[:300]:
+            try:
+                with open(p, encoding='utf-8', errors='ignore') as fh:
+                    texts.append(fh.read())
+            except Exception:
+                pass
+        text = ' '.join(texts).strip()
+        if len(text) < 50:
+            return ''
+        wc = WordCloud(width=1000, height=460, background_color='white', collocations=False,
+                       stopwords=set(STOPWORDS), max_words=150, prefer_horizontal=0.9).generate(text)
+        out = os.path.join(outputDir, 'NLP_corpus_wordcloud.png')
+        wc.to_file(out)
+        return out
+    except Exception as e:
+        print('Corpus Profiler: wordcloud skipped: %s' % e)
+        return ''
 
 
 def build_paper_summary(outputDir, corpus_name, results, header_stats, run_config,
@@ -1076,6 +1145,12 @@ def build_paper_summary(outputDir, corpus_name, results, header_stats, run_confi
   .svg-lab{ font:12px 'Segoe UI',system-ui,sans-serif; fill:var(--muted); }
   .svg-val{ font:600 12px 'Segoe UI',system-ui,sans-serif; fill:var(--muted); }
   rect.svg-bar{ fill:var(--accent); opacity:.88; }
+  figure.wordcloud{ margin:26px 0 8px; }
+  figure.wordcloud img{ width:100%%; height:auto; border:1px solid var(--rule); border-radius:10px; }
+  .interactive{ font-family:'Segoe UI',system-ui,sans-serif; font-size:13px; margin:14px 0;
+                padding:9px 13px; background:var(--accent-soft); border-radius:8px; }
+  .interactive a{ color:var(--accent); text-decoration:none; white-space:nowrap; }
+  .interactive a:hover{ text-decoration:underline; }
   figcaption{ font-family:'Segoe UI',system-ui,sans-serif; font-size:12.5px; color:var(--muted);
               margin-top:8px; }
   figcaption .fnum{ color:var(--accent); font-weight:700; }
@@ -1104,6 +1179,14 @@ def build_paper_summary(outputDir, corpus_name, results, header_stats, run_confi
     for val, lab in kpis:
         parts.append('<div class="kpi"><b>%s</b><span>%s</span></div>' % (_esc(val), _esc(lab)))
     parts.append('</div>')
+
+    # corpus WORDCLOUD -- the iconic 'at a glance' visual, embedded INLINE as base64 so it always renders
+    _wc = _make_wordcloud(run_config.get('inputDir', ''), run_config.get('inputFilename', ''), outputDir)
+    _wc_uri = _data_uri(_wc, max_bytes=3_500_000) if _wc else ''
+    if _wc_uri:
+        parts.append('<figure class="wordcloud"><img src="%s" alt="corpus wordcloud" loading="lazy">'
+                     '<figcaption>The corpus at a glance — its most frequent words.</figcaption></figure>'
+                     % _wc_uri)
 
     # ---- numbered sections, one per dimension that produced results ----
     fig_no = 0
@@ -1143,35 +1226,39 @@ def build_paper_summary(outputDir, corpus_name, results, header_stats, run_confi
             all_data += data
             all_inter += inter
 
-        # embed up to MAX_FIG_PER_SECTION charts as figures
-        for img in all_imgs[:MAX_FIG_PER_SECTION]:
+        # embed PNG charts INLINE as base64 data-URIs -> they always render, even if the summary file
+        # is moved or emailed (relative <img src> can silently break; that is why charts looked absent).
+        _shown = 0
+        for img in all_imgs:
+            if _shown >= MAX_FIG_PER_SECTION:
+                break
+            uri = _data_uri(img)
+            if not uri:
+                continue
+            _shown += 1
             fig_no += 1
-            parts.append('<figure><a href="%s"><img src="%s" alt="%s" loading="lazy"></a>'
+            parts.append('<figure><img src="%s" alt="%s" loading="lazy">'
                          '<figcaption><span class="fnum">Figure %d.</span> %s</figcaption></figure>'
-                         % (_esc(_rel(img, report_dir)), _esc(_rel(img, report_dir)),
-                            _esc(_humanize_file(img)), fig_no, _esc(_humanize_file(img))))
-        if len(all_imgs) > MAX_FIG_PER_SECTION:
+                         % (uri, _esc(_humanize_file(img)), fig_no, _esc(_humanize_file(img))))
+        if len(all_imgs) > _shown:
             parts.append('<p class="note">+%d more chart%s for this dimension in the '
                          '<a href="%s">full report</a>.</p>'
-                         % (len(all_imgs) - MAX_FIG_PER_SECTION,
-                            '' if len(all_imgs) - MAX_FIG_PER_SECTION == 1 else 's',
+                         % (len(all_imgs) - _shown, '' if len(all_imgs) - _shown == 1 else 's',
                             _esc(report_basename)))
 
-        # embed interactive HTML charts (Plotly sunburst/treemap/sankey, network graphs, migration
-        # maps) as iframes -- SVO/SRL/GIS/topics emit these instead of PNGs, so without this those key
-        # sections would show NO chart at all.
+        # interactive charts (Plotly sunburst/treemap/sankey, network graphs, migration maps) are big
+        # (~3-4 MB) CDN-based HTML that browsers WON'T render embedded from a local file -> link them
+        # prominently instead of showing a blank iframe.
         html_charts = [f for f in all_inter if str(f).lower().endswith(('.html', '.htm'))]
-        for hc in html_charts[:2]:
-            fig_no += 1
-            _relhc = _rel(hc, report_dir)
-            parts.append('<figure><iframe src="%s" loading="lazy" class="chartframe"></iframe>'
-                         '<figcaption><span class="fnum">Figure %d.</span> %s &nbsp;·&nbsp; '
-                         '<a href="%s">open full</a></figcaption></figure>'
-                         % (_esc(_relhc), fig_no, _esc(_humanize_file(hc)), _esc(_relhc)))
+        if html_charts:
+            links = ' &nbsp;·&nbsp; '.join('<a href="%s">▶&nbsp;%s</a>'
+                                           % (_esc(_rel(h, report_dir)), _esc(_humanize_file(h)))
+                                           for h in html_charts[:6])
+            parts.append('<p class="interactive"><b>Interactive charts</b> (open in browser): %s</p>' % links)
 
-        # source-data links (csv/xlsx) + remaining interactive artifacts (kml, extra charts)
-        _embedded = set(html_charts[:2])
-        srcs = all_data + [f for f in all_inter if f not in _embedded]
+        # source-data links (csv/xlsx) + remaining artifacts (kml, extra charts)
+        _linked = set(html_charts[:6])
+        srcs = all_data + [f for f in all_inter if f not in _linked]
         if srcs:
             links = ' · '.join('<a href="%s">%s</a>' % (_esc(_rel(s, report_dir)), _esc(os.path.basename(s)))
                                for s in srcs[:12])
