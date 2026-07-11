@@ -529,7 +529,7 @@ extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analy
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Coreference resolution (Open GUI)','Spelling/grammar checker (Open GUI)','Corpus statistics (Open GUI)','N-grams & Co-Occurrences (Open GUI)','Nominalization (Open GUI)','CoNLL table analyzer (Open GUI)','WordNet (Open GUI)','What\'s in Your Corpus (Open GUI)')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Coreference resolution (Open GUI)','Spelling/grammar checker (Open GUI)','Corpus statistics (Open GUI)','N-grams & Co-Occurrences (Open GUI)','Nominalization (Open GUI)','CoNLL table analyzer (Open GUI)','WordNet (Open GUI)','Corpus Profiler (Open GUI)')
 extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -554,8 +554,8 @@ def open_GUI(*args):
             run_script_util.run_script("CoNLL_table_analyzer_main.py")
         if 'WordNet' in extra_GUIs_menu_var.get():
             run_script_util.run_script("semantic_aggregation_main.py")
-        if 'Corpus' in extra_GUIs_menu_var.get():
-            run_script_util.run_script("whats_in_your_corpus_main.py")
+        if 'Profile' in extra_GUIs_menu_var.get():
+            run_script_util.run_script("corpus_profiler_main.py")
         if 'Coreference' in extra_GUIs_menu_var.get():
             run_script_util.run_script("coreference_main.py")
 

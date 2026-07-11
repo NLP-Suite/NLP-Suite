@@ -82,7 +82,7 @@ if '--from-welcome' not in sys.argv:
 IO_setup_display_brief=False
 
 GUI_width=GUI_IO_util.get_GUI_width(2)
-GUI_height=670 # height of GUI with full I/O display
+GUI_height=630 # height of GUI with full I/O display
 
 GUI_size = str(GUI_width) + 'x' + str(GUI_height)
 
@@ -307,7 +307,7 @@ pydict["Topic modeling (via MALLET & Gensim)"] = ["topic_modeling_main.py", 1]
 pydict["utf-8 compliance"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["Style analysis (ALL options GUI)"] = ["style_analysis_main.py", 1]
 pydict["Narrative analysis (ALL options GUI)"] = ["narrative_analysis_ALL_main.py", 1]
-pydict["WHAT\'S IN YOUR CORPUS/DOCUMENT(S)? A SWEEPING VIEW"] = ["whats_in_your_corpus_main.py", 1]
+pydict["Corpus Profiler"] = ["corpus_profiler_main.py", 1]
 pydict["Corpus/document(s) statistics (Sentences, words, lines)"] = ["statistics_txt_main.py", 1]
 pydict['Corpus/document(s) statistics (Nouns, verbs, adjectives, pronouns, ...)'] = ["statistics_txt_main.py", 1]
 pydict['N-grams & Co-Occurrences'] = ["NGrams_CoOccurrences_main.py", 1]
@@ -463,93 +463,99 @@ open_setup_button = tk.Button(window, width=GUI_IO_util.open_file_directory_butt
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_setup_external_software_button, y_multiplier_integer,
                                                open_setup_button, False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate, "Open the NLP_setup_external_software_config.csv file containing all external software installation paths")
 
-general_tools_lb = tk.Label(window, text='General Utility Tools', foreground="red",font=("Courier", 12, "bold"))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               general_tools_lb)
+# CORPUS PROFILER -- flagship one-click tool: a prominent bold red button, given a role of its own at the
+# top of the tool list. Placement/wording easy to tweak.
+corpus_profiler_button = tk.Button(window,
+                                   text="CORPUS PROFILER  —  what's in your corpus? one click → an HTML report and a paper-style summary",
+                                   width=95, font=("Courier", 11, "bold"), fg='red',
+                                   command=lambda: run_script_util.run_script("corpus_profiler_main.py"))
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 30,
+                                               y_multiplier_integer,
+                                               corpus_profiler_button, False, False, False, False, 90,
+                                               GUI_IO_util.labels_x_coordinate + 30,
+                                               "CORPUS PROFILER — run a battery of NLP analyses on your corpus with sensible DEFAULTS and get a paper-style summary plus a single navigable HTML report (NLP_corpus_profile.html) that links every result.")
 
-# setup GUI widgets
+# ── Notebook: the seven tool dropdowns grouped into TWO tabs (General Utility / Linguistic) ──
+# Replaces the seven stacked dropdown rows (the layout designed in NLP_menu_notebook_skeleton).
+# Each Combobox keeps the SAME textvariable as before, so the existing traces (getScript),
+# the RUN dispatch, and the Esc-clear all keep working UNCHANGED. Mirrors the placed-notebook
+# pattern already used in data_visualization_main.py.
+nb_style = ttk.Style()
+try:
+    nb_style.theme_use('clam')
+except Exception:
+    pass
+nb_style.configure('NLP.TNotebook.Tab', font=("Courier", 11, "bold"), foreground='red', padding=[16, 5])
+nb_style.map('NLP.TNotebook.Tab',
+             background=[('selected', '#d0e0f0'), ('!selected', '#e8e8e8')],
+             foreground=[('selected', 'red'), ('!selected', '#999999')])
+
+notebook_y = GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step * y_multiplier_integer
+nb_width = GUI_width - GUI_IO_util.labels_x_coordinate - 20
+nb_height = 210
+tools_notebook = ttk.Notebook(window, style='NLP.TNotebook')
+tools_notebook.place(x=GUI_IO_util.labels_x_coordinate, y=notebook_y, width=nb_width, height=nb_height)
+
+tab_utility = ttk.Frame(tools_notebook)
+tab_linguistic = ttk.Frame(tools_notebook)
+tools_notebook.add(tab_utility, text='   General Utility Tools   ')
+tools_notebook.add(tab_linguistic, text='   Linguistic Analysis Tools   ')
+
+# advance past the notebook so the RUN bar (GUI_bottom) lands below it
+y_multiplier_integer = y_multiplier_integer + 6
+
+_tab_help_x = nb_width - 95
+_ROW_STEP = 42
+
+def _tab_row(parent, row_y, label_text, combobox, help_message):
+    tk.Label(parent, text=label_text).place(x=10, y=row_y + 3)
+    combobox.place(x=250, y=row_y)
+    tk.Button(parent, text='? HELP',
+              command=lambda m=help_message: mb.showinfo("NLP Suite Help", m)).place(x=_tab_help_x, y=row_y)
+
+# --- General Utility tab -------------------------------------------------------
 data_file_handling_tools_var.set('')
-file_handling_lb = tk.Label(window, text='Data & Files Handling Tools')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                               file_handling_lb, True)
-data_file_handling_tools_menu = ttk.Combobox(window, width = 90, textvariable = data_file_handling_tools_var)
+data_file_handling_tools_menu = ttk.Combobox(tab_utility, width=80, textvariable=data_file_handling_tools_var)
 data_file_handling_tools_menu['values'] = constants_util.NLP_Suite_data_file_handling_tools_menu
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, data_file_handling_tools_menu,
-                                             False, False, True, False,
-                                             90, GUI_IO_util.entry_box_x_coordinate,
-                                             "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
+_tab_row(tab_utility, 12, 'Data & Files Handling Tools', data_file_handling_tools_menu,
+         "Please, using the dropdown menu, select one of the many options available for data and file handling." + GUI_IO_util.msg_Esc)
 
 pre_processing_tools_var.set('')
-pre_processing_lb = tk.Label(window, text='Pre-Processing Tools')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                               pre_processing_lb, True)
-
-pre_processing_tools_menu = ttk.Combobox(window, width = 90, textvariable = pre_processing_tools_var)
+pre_processing_tools_menu = ttk.Combobox(tab_utility, width=80, textvariable=pre_processing_tools_var)
 pre_processing_tools_menu['values'] = constants_util.NLP_Suite_pre_processing_tools_menu
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, pre_processing_tools_menu, False, False, True, False, 90, GUI_IO_util.entry_box_x_coordinate, "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
+_tab_row(tab_utility, 12 + _ROW_STEP, 'Pre-Processing Tools', pre_processing_tools_menu,
+         "Please, using the dropdown menu, select one of the many options available for pre-processing text." + GUI_IO_util.msg_Esc)
 
 statistical_tools_var.set('')
-statistical_tools_lb = tk.Label(window, text='Statistical Tools')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                               statistical_tools_lb, True)
-statistical_tools_menu = ttk.Combobox(window, width = 90, textvariable = statistical_tools_var)
+statistical_tools_menu = ttk.Combobox(tab_utility, width=80, textvariable=statistical_tools_var)
 statistical_tools_menu['values'] = ['Statistics (csv files)','Corpus/document(s) statistics (Sentences, words, lines)','Corpus/document(s) statistics (Nouns, verbs, adjectives, pronouns, ...)','N-grams & Co-occurrences']
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, statistical_tools_menu, False, False, True, False, 90, GUI_IO_util.entry_box_x_coordinate, "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
+_tab_row(tab_utility, 12 + 2 * _ROW_STEP, 'Statistical Tools', statistical_tools_menu,
+         "Please, using the dropdown menu, select the option available for statistical analyses." + GUI_IO_util.msg_Esc)
 
-visualization_lb = tk.Label(window, text='Visualization Tools')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                               visualization_lb, True)
-visualization_menu = ttk.Combobox(window, width = 90, textvariable = visualization_tools_var)
+visualization_tools_var.set('')
+visualization_menu = ttk.Combobox(tab_utility, width=80, textvariable=visualization_tools_var)
 visualization_menu['values'] = constants_util.NLP_Suite_visualization_tools_menu
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, visualization_menu, False, False, True, False, 90, GUI_IO_util.entry_box_x_coordinate, "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
+_tab_row(tab_utility, 12 + 3 * _ROW_STEP, 'Visualization Tools', visualization_menu,
+         "Please, using the dropdown menu, select one of the many options available for visualizing data.\n\nNearly all linguistic tools, however, automatically visualize results, typically in Excel charts, but also in more specialized graphical tools, such as network graphs in Gephi or GIS maps in Google Earth Pro or in Google Maps." + GUI_IO_util.msg_Esc)
 
-# (startX, startY, endX, endY) where endX is the width of window
-# https://stackoverflow.com/questions/40390746/how-to-correctly-use-tkinter-create-line-coordinates
-# window.create_line(0,y_multiplier_integer,1000,y_multiplier_integer)
-
-# leave a blank line to separate the linguistic analyses
-
-linguistic_tools_lb = tk.Label(window, text='Linguistic Analysis Tools', foreground="red",font=("Courier", 12, "bold"))
-# text.configure(font=("Times New Roman", 12, "bold"))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               linguistic_tools_lb)
-
-corpus_tools_lb = tk.Label(window, text='CORPUS Analysis Tools')
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer, corpus_tools_lb, True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate, "The NLP tools in this category apply to a corpus of files and not to single files.")
-
-# tools that apply exclusively to a corpus
-corpus_menu = ttk.Combobox(window, width = 90, textvariable = corpus_tools_var)
+# --- Linguistic Analysis tab ---------------------------------------------------
+corpus_tools_var.set('')
+corpus_menu = ttk.Combobox(tab_linguistic, width=80, textvariable=corpus_tools_var)
 corpus_menu['values'] = constants_util.NLP_Suite_corpus_tools_menu
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, corpus_menu, False, False, True, False, 90, GUI_IO_util.entry_box_x_coordinate, "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
+_tab_row(tab_linguistic, 12, 'CORPUS Analysis Tools', corpus_menu,
+         "Please, using the dropdown menu, select one of the many options available for analyzing your corpus.\n\nCORPUS TOOLS APPLY TO MULTIPLE DOCUMENTS ONLY, RATHER THAN TO A SINGLE DOCUMENT.\n\nIn INPUT the tools expect multiple documents stored in a directory (the 'corpus')." + GUI_IO_util.msg_Esc)
 
-# 'KWIC (Key Word In Context)')
-
-# corpus_document_tools_var.set('')
-corpus_document_tools_lb = tk.Label(window, text='CORPUS/DOCUMENT Analysis Tools')
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer, corpus_document_tools_lb, True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate, "The NLP tools in this category apply either to a corpus of files or to single files.")
-
-#tools that can be applied to either corpus or single document
-corpus_documents_menu = ttk.Combobox(window, width = 90, textvariable = corpus_document_tools_var)
+corpus_document_tools_var.set('')
+corpus_documents_menu = ttk.Combobox(tab_linguistic, width=80, textvariable=corpus_document_tools_var)
 corpus_documents_menu['values'] = constants_util.NLP_Suite_corpus_document_tools_menu
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, corpus_documents_menu, False, False, True, False, 90, GUI_IO_util.entry_box_x_coordinate, "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
+_tab_row(tab_linguistic, 12 + _ROW_STEP, 'CORPUS/DOCUMENT Analysis Tools', corpus_documents_menu,
+         "Please, using the dropdown menu, select one of the many options available for analyzing your corpus and/or a single document.\n\nTHE TOOLS IN THIS CATEGORY APPLY TO EITHER MULTIPLE DOCUMENTS (THE 'CORPUS') OR TO A SINGLE DOCUMENT." + GUI_IO_util.msg_Esc)
 
 sentence_tools_var.set('')
-sentence_tools_lb = tk.Label(window, text='SENTENCE Analysis Tools')
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer, sentence_tools_lb, True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate, "The NLP tools in this category apply to single sentences in files.")
-
-sentence_tools_menu = ttk.Combobox(window, width = 90, textvariable = sentence_tools_var)
+sentence_tools_menu = ttk.Combobox(tab_linguistic, width=80, textvariable=sentence_tools_var)
 sentence_tools_menu['values'] = ['Sentence analysis (ALL options GUI)']
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, sentence_tools_menu, False, False, True, False, 90, GUI_IO_util.entry_box_x_coordinate, "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
+_tab_row(tab_linguistic, 12 + 2 * _ROW_STEP, 'SENTENCE Analysis Tools', sentence_tools_menu,
+         "Please, using the dropdown menu, select one of the many options available for analyzing your corpus/document by sentence index." + GUI_IO_util.msg_Esc)
 
 def clear_selected_options(tool_selected):
     if tool_selected=='data_file_handling_tools' and data_file_handling_tools_var.get()!='':
@@ -672,24 +678,12 @@ def help_buttons(window, help_button_x_coordinate,y_multiplier_integer):
                                   "As an example, the three fields for the Stanford CoreNLP software would look like this: "
                                   "Stanford CoreNLP   C:/Program Files (x86)/stanford-corenlp-4.3.1   https://stanfordnlp.github.io/CoreNLP/download.html. "
                                   "Needless to say C:/Program Files (x86)/stanford-corenlp-4.3.1 will change, depending upon where you install CoreNLP locally.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer+1,"NLP Suite Help",
-                                  "Please, using the dropdown menu, select one of the many options available for data and file handling." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                  "Please, using the dropdown menu, select one of the many options available for pre-processing text." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                  "Please, using the dropdown menu, select the option available for statistical analyses." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                  "Please, using the dropdown menu, select one of the many options available for visualizing data.\n\nNearly all linguistic tools, however, automatically visualize results, typically in Excel charts, but also in more specialized graphical tools, such as network graphs in Gephi or GIS (Geographic Information System) maps in Google Earth Pro or in Google Maps." + GUI_IO_util.msg_Esc)
-    # leave a blank line to separate the linguistic analyses
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer+1,"NLP Suite Help",
-                                  "Please, using the dropdown menu, select one of the many options available for analyzing your corpus.\n\nCORPUS TOOLS APPLY TO MULTIPLE DOCUMENTS ONLY, RATHER THAN TO A SINGLE DOCUMENT.\n\nIn INPUT the tools expect multiple documents stored in a directory (the 'corpus')." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                  "Please, using the dropdown menu, select one of the many options available for analyzing your corpus and/or a single document.\n\nTHE TOOLS IN THIS CATEGORY, APPLY TO EITHER MULTIPLE DOCUMENTS (THE 'CORPUS') OR TO A SINGLE DOCUMENT.\n\nIn INPUT the tools expect either multiple documents stored in a directory (the 'corpus') or a single document." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                  "Please, using the dropdown menu, select one of the many options available for analyzing your corpus/document by sentence index.\n\nTHE TOOLS IN THIS CATEGORY, APPLY TO EITHER MULTIPLE DOCUMENTS (THE 'CORPUS') OR TO A SINGLE DOCUMENT; BUT THEY ALSO PROVIDE SENTENCE-BASED INFORMATION FOR MORE IN-GRAINED ANALYSES.\n\nIn INPUT the tools expect either multiple documents stored in a directory (the 'corpus') or a single document." + GUI_IO_util.msg_Esc)
-
+    # The seven tool-dropdown ?HELP buttons now live INSIDE the two notebook tabs (see _tab_row),
+    # so only the three SETUP-row help buttons are placed down the left margin here.
     return y_multiplier_integer
-y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
+# Place the three SETUP help buttons (side effect). Do NOT overwrite y_multiplier_integer: keep the
+# post-notebook value computed above so the RUN bar (GUI_bottom) lands BELOW the notebook.
+help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script is the front end for a wide collection of Java and Python Natural Language Processing (NLP) tools.\n\nThe set of tools are divided into GENERAL UTILITY TOOLS (data and file handling, pre-processing, statistical, visualization) and LINGUISTIC ANALYSIS TOOLS.\n\nLINGUISTIC ANALYSIS TOOLS are divided into tools that expect in input CORPUS DATA (i.e., multiple documents stored in a directory), CORPUS and/or SINGLE DOCUMENT, and SENTENCE.\n\nWhile some linguistic tools are specific for one of these three categories (e.g., topic modeling cannot be performed on a single document), MANY TOOLS OVERLAP. Tools that can work on a single file or a corpus are all classified under CORPUS/DOCUMENT tools. SENTENCE TOOLS still require either a corpus or a single document in input; but they also provide in output sentence-level information for more ingrained linguistic analyses.\n\nAll tools are open source freeware software released under the GNU LGPLv2.1 license (http://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html).\n\nYou can cite the NLP Suite as:\n\nFranzosi, Roberto. 2020. NLP Suite: A collection of natural language processing and visualization tools GitHub: https://github.com/NLP-Suite/NLP-Suite/wiki."

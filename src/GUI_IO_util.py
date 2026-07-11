@@ -725,24 +725,6 @@ if sys.platform == 'darwin':  # Mac OS
     NER_NER_entry_lb_pos = 720
     NER_NER_entry_pos = 800
 
-# Mac whats_in_your_corpus_main
-    whats_in_your_corpus_corpus_statistics_options_menu_lb_pos = IO_configuration_menu
-    whats_in_your_corpus_corpus_statistics_options_menu_pos = IO_configuration_menu+130
-    whats_in_your_corpus_corpus_options_menu_lb_pos = 920
-    whats_in_your_corpus_corpus_options_menu_pos = 1040
-
-    # no longer user run_button_x_coordinate instead
-    whats_in_your_corpus_open_wordclouds_GUI_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
-    whats_in_your_corpus_topics_Mallet_pos = 560
-    whats_in_your_corpus_topics_Gensim_pos = 690
-    whats_in_your_corpus_open_tm_GUI_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
-
-    whats_in_your_corpus_what_else_menu_pos = 560
-    whats_in_your_corpus_quote_checkbox_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
-    whats_in_your_corpus_open_GIS_GUI_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
-
-    whats_in_your_corpus_open_SVO_GUI_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
-
 # Windows --------------------------------------------------------------------------------------
 
 else: #windows and anything else
@@ -1113,24 +1095,6 @@ else: #windows and anything else
     NER_NER_entry_lb_pos = 660
     NER_NER_entry_pos = 720
 
-# Windows whats_in_your_corpus_main
-    whats_in_your_corpus_corpus_statistics_options_menu_lb_pos = IO_configuration_menu
-    whats_in_your_corpus_corpus_statistics_options_menu_pos = IO_configuration_menu+130
-    whats_in_your_corpus_corpus_options_menu_lb_pos = 920
-    whats_in_your_corpus_corpus_options_menu_pos = 1040
-
-    # no longer user run_button_x_coordinate instead
-    whats_in_your_corpus_open_wordclouds_GUI_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
-    whats_in_your_corpus_topics_Mallet_pos = 560
-    whats_in_your_corpus_topics_Gensim_pos = 690
-    whats_in_your_corpus_open_tm_GUI_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
-
-    whats_in_your_corpus_what_else_menu_pos = 560
-    whats_in_your_corpus_quote_checkbox_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
-    whats_in_your_corpus_open_GIS_GUI_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
-
-    whats_in_your_corpus_open_SVO_GUI_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
-
 def get_GUI_width(size_type=1):
     if sys.platform == 'darwin':  # Mac OS
         if size_type == 1: # for now we have one basic size
@@ -1427,6 +1391,9 @@ def dropdown_menu_widget2(window,textCaption, menu_values, default_value, callba
     return val
 
 def slider_widget(window,textCaption, lower_bound, upper_bound, default_value):
+    # unattended/silent mode (NLP_SILENT): skip the modal, return the recommended default
+    if os.environ.get('NLP_SILENT','').strip().lower() not in ('','0','false','no','off'):
+        return default_value
     top = tk.Toplevel(window)
     l = tk.Label(top, text= textCaption)
     l.pack() # put the widget on the window
@@ -1453,6 +1420,9 @@ def slider_widget(window,textCaption, lower_bound, upper_bound, default_value):
 # 2 widgets max for now; should allow more, dynamically
 # return a list; see comment at end of function
 def enter_value_widget(masterTitle,textCaption,numberOfWidgets=1,defaultValue='',textCaption2='',defaultValue2=''):
+    # unattended/silent mode (NLP_SILENT): skip the modal, return the default value(s)
+    if os.environ.get('NLP_SILENT','').strip().lower() not in ('','0','false','no','off'):
+        return defaultValue, defaultValue2
     value1=defaultValue
     value2=defaultValue2
     masterTitle=masterTitle + " (Esc to quit)"

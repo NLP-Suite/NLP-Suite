@@ -171,7 +171,7 @@ def analyzefile(inputFilename, inputDir, outputDir, outputFilename,  documentID,
 
 filesToOpen = []  # LINE ADDED
 
-def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutputFiles,chartPackage, dataTransformation, processType=''):
+def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutputFiles,chartPackage, dataTransformation, processType='', use_defaults=False):
 	"""
 	Runs analyzefile on the appropriate files, provided that the input paths are valid.
 	:param inputFilename:
@@ -211,8 +211,11 @@ def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutput
 
 	min_rating=5.0
 	max_rating_sd=2.0
-	min_rating = GUI_IO_util.slider_widget(window, "Please, select the minimum value of the iconicity rating. The suggested value is " + str(min_rating), 1, 7, min_rating)
-	max_rating_sd = GUI_IO_util.slider_widget(window, "Please, select the maximum value of the iconicity rating standard deviation. The suggested value is " + str(max_rating_sd), 0, 3, max_rating_sd)
+	# use_defaults=True (e.g. from the Corpus Profiler batch run) skips the interactive sliders and uses
+	# the suggested defaults, so an unattended profile never stops for a prompt the user might miss.
+	if not use_defaults:
+		min_rating = GUI_IO_util.slider_widget(window, "Please, select the minimum value of the iconicity rating. The suggested value is " + str(min_rating), 1, 7, min_rating)
+		max_rating_sd = GUI_IO_util.slider_widget(window, "Please, select the maximum value of the iconicity rating standard deviation. The suggested value is " + str(max_rating_sd), 0, 3, max_rating_sd)
 
 	global stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
 	from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
@@ -277,7 +280,8 @@ def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutput
 
 		if len(iconic_words) > 0:
 			iconic_words_set = set(iconic_words_list) # the set has only distinct words
-			mb.showwarning(title='Warning',
+			if not use_defaults:  # batch (Corpus Profiler) skips the blocking popup; keeps the print below
+				mb.showwarning(title='Warning',
 						   message='The iconicity script has found ' + str(len(iconic_words)) + ' iconic words, ' + str(len(iconic_words_set)) + ' of which distinct, (out of ' + str(total_words) + ' words in your input), using the Winter et al., 2024, scale of iconic English words.\n\nThe minimum threshold for iconicity has been set to 5.0. You may wish to increase that value.')
 
 			print(str('\n\n' + str(len(iconic_words))) + ' iconic words found, ' + str(len(iconic_words_set)) + ' of which distinct, (out of ' + str(total_words) + ' words in your input), using the Winter et al., 2024, scale of iconic English words. The minimum threshold for iconicity has been set to 5.0. You may wish to increase that value.')

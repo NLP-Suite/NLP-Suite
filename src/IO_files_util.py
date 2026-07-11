@@ -54,7 +54,8 @@ def make_directory(newDirectory,silent=True):
     if os.path.exists(newDirectory):
         if not silent:
             result = mb.askyesno('Directory already exists',
-                                        'There already exists a directory\n\n' + newDirectory + '\n\nThis directory will be replaced.\n\nAre you sure you want to continue?')
+                                        'There already exists a directory\n\n' + newDirectory + '\n\nThis directory will be replaced.\n\nAre you sure you want to continue?',
+                                        default='yes')  # unattended/NLP_SILENT: proceed (replace)
             if not result:
                 # createDir = False
                 # return createDir
@@ -87,7 +88,8 @@ def make_output_subdirectory(inputFilename, inputDir, outputDir, label, silent=T
     if os.path.exists(outputSubDir):
         if not silent:
             result = mb.askyesno('Directory already exists',
-                                        'The algorithms will create a new directory\n\n' + outputSubDir + '\n\nA directory by the same name already exists and it will be replaced.\n\nAre you sure you want to continue?')
+                                        'The algorithms will create a new directory\n\n' + outputSubDir + '\n\nA directory by the same name already exists and it will be replaced.\n\nAre you sure you want to continue?',
+                                        default='yes')  # unattended/NLP_SILENT: proceed (replace)
             if not result:
                 # createDir = False
                 # return createDir

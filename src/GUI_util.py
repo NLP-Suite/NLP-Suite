@@ -23,6 +23,45 @@ from sys import platform
 
 import os
 import tkinter.messagebox as mb
+
+# ----- Unattended / silent batch mode (set env var NLP_SILENT=1 before a tool sweep) -----------
+# When on, interactive dialogs auto-answer with SAFE defaults so a sweep runs without pausing:
+#   * yes/no & ok/cancel dialogs return their default= when one is given (yes/ok -> True), otherwise
+#     False - a conservative fallback that NEVER auto-confirms a destructive delete/move and never
+#     launches an optional side-step (geocoding, run-all-parsers, ...); the tool still runs its main job.
+#   * file/directory pickers return '' / None, so an optional secondary-file prompt is skipped.
+#   * value widgets (slider_widget, enter_value_widget) return their defaults and reminders are muted
+#     (wired in GUI_IO_util and reminders_util, which read this same flag).
+# Off by default -> normal interactive use is completely unaffected.
+silent_mode = os.environ.get('NLP_SILENT', '').strip().lower() not in ('', '0', 'false', 'no', 'off')
+
+if silent_mode:
+    import tkinter.filedialog as _fd
+    def _silent_bool(*args, **kwargs):
+        return str(kwargs.get('default', '')).lower() in ('yes', 'ok', 'y', 'true', '1')
+    def _silent_question(*args, **kwargs):
+        return 'yes' if str(kwargs.get('default', '')).lower() in ('yes', 'ok') else 'no'
+    mb.askyesno = _silent_bool
+    mb.askokcancel = _silent_bool
+    mb.askretrycancel = _silent_bool
+    mb.askquestion = _silent_question
+    mb.askyesnocancel = _silent_bool           # never returns None (which would still block a 3-way)
+    # info/warning/error popups are OK-only modals -> also block; turn them into console log lines
+    def _silent_show(title=None, message=None, *a, **k):
+        try:
+            print('[NLP_SILENT] ' + str(title) + ': ' + str(message))
+        except Exception:
+            pass
+        return 'ok'
+    mb.showinfo = _silent_show
+    mb.showwarning = _silent_show
+    mb.showerror = _silent_show
+    _fd.askopenfilename = lambda *a, **k: ''
+    _fd.askopenfilenames = lambda *a, **k: ()
+    _fd.askdirectory = lambda *a, **k: ''
+    _fd.asksaveasfilename = lambda *a, **k: ''
+    _fd.askopenfile = lambda *a, **k: None
+    _fd.asksaveasfile = lambda *a, **k: None
 from subprocess import call
 import time
 
@@ -272,14 +311,24 @@ def get_GitHub_release_version(silent = False):
         GitHub_newest_release = '0.0.0'
         return GitHub_newest_release
     release_url = 'https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/lib/release_version.txt'
-    try:
-        GitHub_newest_release = requests.get(release_url).text
-        GitHub_release_version_var.set(GitHub_newest_release)
-    except:
-        if not silent:
-            mb.showwarning(title='Internet connection error', message="The attempt to connect to GitHub failed.\n\nIt is not possible to check the latest release of the NLP Suite at this time. You can continue run your current release and try again later.")
-        GitHub_newest_release = '0.0.0'
-    return GitHub_newest_release
+    # This is a non-essential "is there a newer release?" check that runs on every launch. A single
+    # transient blip (DNS hiccup, momentary SSL, slow IPv6->IPv4 fallback) must NOT nag the user with
+    # a modal -- retry a few times with a short timeout, then fail QUIETLY to the console. The 0.0.0
+    # shown top-left already signals "couldn't check"; the user can always run the current release.
+    last_err = None
+    for attempt in range(3):
+        try:
+            resp = requests.get(release_url, timeout=6)
+            if resp.status_code == 200 and resp.text.strip():
+                GitHub_newest_release = resp.text
+                GitHub_release_version_var.set(GitHub_newest_release)
+                return GitHub_newest_release
+            last_err = 'HTTP ' + str(resp.status_code)
+        except Exception as e:
+            last_err = type(e).__name__ + ': ' + str(e)
+    print("NLP Suite version check: could not reach GitHub to check the latest release after 3 tries "
+          "(continuing with the current release). Detail: " + str(last_err))
+    return '0.0.0'
 
 def check_GitHub_release(local_release_version: str, silent = False):
     GitHub_newest_release = get_GitHub_release_version()

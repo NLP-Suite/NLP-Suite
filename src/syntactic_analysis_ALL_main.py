@@ -529,7 +529,7 @@ extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analy
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Corpus statistics (Open GUI)','N-grams & Co-Occurrences (Open GUI)', 'What\'s in Your Corpus (Open GUI)')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Corpus statistics (Open GUI)','N-grams & Co-Occurrences (Open GUI)', 'Corpus Profiler (Open GUI)')
 # extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -544,8 +544,8 @@ def open_GUI(*args):
     if extra_GUIs_menu_var.get():
         if 'Ngrams' in extra_GUIs_menu_var.get():
             run_script_util.run_script("NGrams_CoOccurrences_main.py")
-        if 'What' in extra_GUIs_menu_var.get():
-            run_script_util.run_script("whats_in_your_corpus_main.py")
+        if 'Profile' in extra_GUIs_menu_var.get():
+            run_script_util.run_script("corpus_profiler_main.py")
         if 'Corpus' in extra_GUIs_menu_var.get():
             run_script_util.run_script("statistics_txt_main.py")
 
@@ -675,7 +675,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
-readMe_message="These Python 3 scripts bring together the NLP Suite's SYNTACTIC analyses - the analysis of grammatical FORM and STRUCTURE (as opposed to MEANING, handled by the Semantic analysis GUI).\n\nYou can: parse your corpus with Stanford CoreNLP, Stanza, or spaCy to produce a CoNLL table - each token tagged with its part of speech (POSTAG), dependency relation (DEPREL), lemma, and named entity (Parsers & annotators); analyze that CoNLL table for POS and dependency-relation distributions, clause structure, and noun/verb/adjective/adverb/function-word statistics (CoNLL table analyzer); extract Subject-Verb-Object triplets - who did what to whom - via dependency parsing, optionally with Semantic Role Labelling (SVO); measure sentence length, complexity and readability and visualize sentence structure as a dependency tree (Sentence structure); and profile writing style (Style analysis).\n\nUnder 'GUIs available for more analyses' you can also open Corpus statistics, N-grams & Co-Occurrences, and What's in Your Corpus.\n\nMost syntactic analyses take a CoNLL table in input, produced by the Parsers & annotators GUI. Each button opens a dedicated GUI."
+readMe_message="These Python 3 scripts bring together the NLP Suite's SYNTACTIC analyses - the analysis of grammatical FORM and STRUCTURE (as opposed to MEANING, handled by the Semantic analysis GUI).\n\nYou can: parse your corpus with Stanford CoreNLP, Stanza, or spaCy to produce a CoNLL table - each token tagged with its part of speech (POSTAG), dependency relation (DEPREL), lemma, and named entity (Parsers & annotators); analyze that CoNLL table for POS and dependency-relation distributions, clause structure, and noun/verb/adjective/adverb/function-word statistics (CoNLL table analyzer); extract Subject-Verb-Object triplets - who did what to whom - via dependency parsing, optionally with Semantic Role Labelling (SVO); measure sentence length, complexity and readability and visualize sentence structure as a dependency tree (Sentence structure); and profile writing style (Style analysis).\n\nUnder 'GUIs available for more analyses' you can also open Corpus statistics, N-grams & Co-Occurrences, and the Corpus Profiler.\n\nMost syntactic analyses take a CoNLL table in input, produced by the Parsers & annotators GUI. Each button opens a dedicated GUI."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command,
                     videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)

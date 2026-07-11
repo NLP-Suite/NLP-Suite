@@ -56,7 +56,8 @@ def run():
 
     if csv_file_var!='':
         result = mb.askokcancel("Warning",
-                    "This is a reminder that you are now running the N-grams searches with the csv input file\n\n"+csv_file_var+'\n\nPress Cancel then Esc to clear the csv file widget if you want to run the N-grams functions using the input file(s) displayed in the I/O configuration and try again.')
+                    "This is a reminder that you are now running the N-grams searches with the csv input file\n\n"+csv_file_var+'\n\nPress Cancel then Esc to clear the csv file widget if you want to run the N-grams functions using the input file(s) displayed in the I/O configuration and try again.',
+                    default='ok')  # silent/unattended mode proceeds
         if result == False:
             return
 

@@ -18,11 +18,25 @@ import tkinter.messagebox as mb
 #   https://docs.python.org/3/library/urllib.request.html
 
 def internet_on():
-    try:
-        response = urlopen('http://www.google.com/', timeout=10)
-        return True
-    except:
-        return False
+    # A raw TCP connection to a public DNS server is the most reliable "is the internet up" check --
+    # it doesn't depend on HTTP/HTTPS, SSL certificates, or any single web host being reachable. The old
+    # check hit only http://www.google.com with a 10s timeout, so a single flaky request (SSL error,
+    # momentary timeout, that host blocked) produced a FALSE "no internet" even when the user was online.
+    import socket
+    for host in ('1.1.1.1', '8.8.8.8'):  # Cloudflare and Google public DNS
+        try:
+            with socket.create_connection((host, 53), timeout=3):
+                return True
+        except Exception:
+            continue
+    # fallback: an HTTPS fetch, in case port 53 is firewalled but the web works
+    for url in ('https://www.google.com', 'https://www.github.com'):
+        try:
+            urlopen(url, timeout=5)
+            return True
+        except Exception:
+            continue
+    return False
 
 #if internet connection is available, return True #otherwise, pop up warning
 #script can be Gensim, Stanford CoreNLP or any script that requires internet cnnection to run

@@ -461,7 +461,6 @@ def save_wordcloud(differentPOS_differentColors, inputFilename, inputDir, output
     return filesToOpen
 
 # TOP-level function for wordclouds
-# called by whats_in_your_corpus_main
 # called by wordclouds_main
 def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selectedImage, use_contour_only, wordcloud_title, prefer_horizontal, font, max_words, lemmatize, exclude_stopwords, exclude_punctuation, lowercase, differentPOS_differentColors, differentColumns_differentColors, csvField_color_list, doNotListIndividualFiles,openOutputFiles, collocation):
     # https://www.geeksforgeeks.org/generating-word-cloud-python/

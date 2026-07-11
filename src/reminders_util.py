@@ -492,6 +492,10 @@ def displayReminder(df, row_num, title, message, currentStatus, question, seeMsg
 # * in the Routine column are used for reminders that apply to any GUI
 # set silent to True if you just want to check the status of the reminder ON or OFF without asking the question
 def checkReminder(scriptName, title_options=[], message='', triggered_by_GUI_event=False, silent=False):
+    # unattended/silent mode (NLP_SILENT): mute reminder popups so a sweep doesn't pause
+    import os
+    if not silent and os.environ.get('NLP_SILENT', '').strip().lower() not in ('', '0', 'false', 'no', 'off'):
+        return ''
     # some functions that call checkReminder (getDateFromFileName) do not pass a config file but a txt filename
     if 'config' in scriptName:
         routine = get_routine_from_scriptName(scriptName)
