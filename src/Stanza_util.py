@@ -476,7 +476,7 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
 
     # check if more than one language has been annotated
     # Stanza doc to Pandas DataFrame conversion logic for multilingual annotation
-    if annotator_params!='sentiment' and len(language) > 1 or language[0]=='multilingual' or type(stanza_doc) is list:
+    if 'sentiment' not in annotator_params and len(language) > 1 or language[0]=='multilingual' or type(stanza_doc) is list:
         try:
             dicts = []
             for doc in stanza_doc:
@@ -497,7 +497,7 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
                 out_df = pd.concat([out_df, temp_df], ignore_index=True)
 
     # Stanza doc to Pandas DataFrame conversion logic for single language annotation
-    elif annotator_params!='sentiment':
+    elif 'sentiment' not in annotator_params:
         # check if the annotator is sentiment
         # if annotator_params=='sentiment':
         #     sentiment_dictionary = {}
@@ -513,7 +513,7 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
             #     temp_df['Sentence'] = sentence_dictionary[i]
             out_df = pd.concat([out_df, temp_df], ignore_index=True)
 
-    if annotator_params=='sentiment':
+    if 'sentiment' in annotator_params:
         # Stanza sentiment returns 0 (negative), 1 (neutral), 2 (positive) — a coarse 3-class scale
         doc_hyperlink = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
         sent_rows = []
