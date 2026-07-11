@@ -178,7 +178,11 @@ def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hove
     # menu -- so a tooltip can never stay stuck on screen across GUIs. Bind ONCE per window.
     try:
         if window not in _dismiss_bound_windows:
+            # FocusOut: leaving the window (launching another GUI). Button: any click anywhere -- events
+            # on child widgets propagate to the toplevel bindtag, so this also covers custom-bound
+            # tooltips (e.g. the welcome screen's ENTER button) that never go through hover_over_widget.
             window.bind('<FocusOut>', lambda e: delete_display_widget_lb(window, e, ''), add='+')
+            window.bind('<Button>', lambda e: delete_display_widget_lb(window, e, ''), add='+')
             _dismiss_bound_windows.add(window)
     except Exception:
         pass

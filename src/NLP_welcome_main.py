@@ -233,6 +233,10 @@ def display_bottom_line_buttons():
                         text_info_enter)))
     enter_button.bind('<Leave>', lambda e: (GUI_IO_util.delete_display_widget_lb(window, e, text_info_enter),
                                             (e.widget.config(background='#F0F0F0', foreground=current_color_fg_enter, text=label_enter))))
+    # Dismiss the tooltip on CLICK too: you click ENTER while the mouse is still over it, so <Leave>
+    # never fires -- without this the welcome's tooltip is left floating over the menu that opens.
+    # add='+' so the button's own launch command still runs.
+    enter_button.bind('<Button>', lambda e: GUI_IO_util.delete_display_widget_lb(window, e, text_info_enter), add='+')
 
     # display close button
     close_button = tk.Button(window, text='CLOSE', width=15, height=1,
