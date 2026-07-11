@@ -122,15 +122,24 @@ def run():
     corpus_profiler_util.build_report(outputDir, corpus_name, results, header, run_config)
     summary = corpus_profiler_util.build_paper_summary(outputDir, corpus_name, results, header, run_config)
 
-    # Open the paper-style SUMMARY (the headline read; it links to the full navigable report and
-    # the report links back). Open the single HTML file DIRECTLY -- do NOT route through
-    # OpenOutputFiles: it scans the whole output dir and, with 100+ files, shows a "too many files"
-    # summary dialog instead of opening the page.
-    try:
-        IO_files_util.openFile(GUI_util.window, summary)
-    except Exception:
-        import webbrowser
-        webbrowser.open('file:///' + summary.replace('\\', '/'))
+    # Open the paper-style SUMMARY (the headline read; it links to the full navigable report and the
+    # report links back). os.startfile (a direct Win32 ShellExecute) is the most robust path: unlike
+    # os.system('start ...') -- which IO_files_util.openFile uses -- it works even when the app is
+    # launched WITHOUT a console (pythonw / the frozen build), which is the usual reason the auto-open
+    # silently no-ops (os.system returns an exit code, never raises, so the old fallback never fired).
+    # Try startfile -> webbrowser -> openFile in turn; if all fail, print the path to open manually.
+    summary_abs = os.path.abspath(summary)
+    for _open_summary in (
+            lambda: os.startfile(summary_abs),                                              # Windows
+            lambda: __import__('webbrowser').open('file:///' + summary_abs.replace('\\', '/')),
+            lambda: IO_files_util.openFile(GUI_util.window, summary_abs)):
+        try:
+            _open_summary()
+            break
+        except Exception:
+            continue
+    else:
+        print('Corpus Profiler: could not auto-open the summary. Open it manually:\n  ' + summary_abs)
 
 
 GUI_util.run_button.configure(command=run)
