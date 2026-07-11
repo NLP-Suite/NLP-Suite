@@ -496,10 +496,13 @@ nb_height = 210
 tools_notebook = ttk.Notebook(window, style='NLP.TNotebook')
 tools_notebook.place(x=GUI_IO_util.labels_x_coordinate, y=notebook_y, width=nb_width, height=nb_height)
 
-tab_utility = ttk.Frame(tools_notebook)
 tab_linguistic = ttk.Frame(tools_notebook)
-tools_notebook.add(tab_utility, text='   General Utility Tools   ')
+tab_utility = ttk.Frame(tools_notebook)
+# Linguistic tools are the suite's raison d'être -> make them the FIRST tab, so they are the
+# default selected tab on every launch; General Utility tools follow as the supporting cast.
 tools_notebook.add(tab_linguistic, text='   Linguistic Analysis Tools   ')
+tools_notebook.add(tab_utility, text='   General Utility Tools   ')
+tools_notebook.select(tab_linguistic)
 
 # advance past the notebook so the RUN bar (GUI_bottom) lands below it
 y_multiplier_integer = y_multiplier_integer + 6
