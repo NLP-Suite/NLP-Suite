@@ -886,6 +886,113 @@ def _interpret(category, files):
         return []
 
 
+# ---------------------------------------------------------------------------------------------
+# NATIVE charts. The summary draws its OWN inline-SVG bar charts from the finding numbers, so every
+# quantitative dimension shows a chart -- independent of whether the underlying tool emitted a PNG,
+# an Excel chart (not embeddable) or a Plotly HTML. Self-contained, theme-aware (CSS vars), no files.
+# ---------------------------------------------------------------------------------------------
+def _fmt_num(v):
+    v = float(v)
+    return _thousands(v) if v == int(v) else ('%.1f' % v)
+
+
+def _svg_bar(title, pairs, max_bars=8):
+    """A horizontal bar chart as an inline SVG string (theme-aware via CSS vars). '' if no data."""
+    pairs = [(str(l), float(v)) for l, v in pairs if v is not None and float(v) > 0][:max_bars]
+    if not pairs:
+        return ''
+    mx = max(v for _, v in pairs) or 1.0
+    row_h, top, label_w, W = 22, 24, 156, 560
+    bar_area = W - label_w - 52
+    H = top + row_h * len(pairs) + 6
+    out = ['<figure class="chart"><svg viewBox="0 0 %d %d" class="svgchart" '
+           'preserveAspectRatio="xMinYMin meet" role="img">' % (W, H),
+           '<text x="0" y="15" class="svg-title">%s</text>' % _esc(title)]
+    y = top
+    for lab, val in pairs:
+        bw = max(2.0, bar_area * val / mx)
+        disp = (lab[:24] + '…') if len(lab) > 25 else lab
+        out.append('<text x="%d" y="%d" class="svg-lab" text-anchor="end">%s</text>'
+                   % (label_w - 6, y + 14, _esc(disp)))
+        out.append('<rect x="%d" y="%d" width="%.1f" height="14" rx="3" class="svg-bar"/>'
+                   % (label_w, y + 3, bw))
+        out.append('<text x="%.1f" y="%d" class="svg-val">%s</text>'
+                   % (label_w + bw + 5, y + 14, _esc(_fmt_num(val))))
+        y += row_h
+    out.append('</svg></figure>')
+    return ''.join(out)
+
+
+def _chart_specs(category, files):
+    """Return [(title, [(label, value), ...]), ...] of bar charts to draw natively for this category."""
+    import pandas as pd
+    try:
+        specs = []
+        if category == 'entities':
+            f = _find(files, 'ner_all_ner', exclude=('bydoc', 'chart', 'group', 'no_hyperlinks', 'stats'))
+            if f:
+                df = _read_csv(f)
+                if df is not None and 'NER' in df.columns:
+                    tags = df['NER'].astype(str).value_counts().head(8)
+                    specs.append(('Entity types (mentions)', list(tags.items())))
+                    if 'Word' in df.columns:
+                        named = df[~df['Word'].astype(str).str.lower().isin(_PRONOUNS)]['Word'] \
+                            .astype(str).value_counts().head(8)
+                        if len(named):
+                            specs.append(('Most-named entities', list(named.items())))
+        elif category == 'semantics':
+            for label, sub in (('Noun classes (WordNet)', 'noun'), ('Verb classes (WordNet)', 'verb')):
+                f = _find(files, 'wordnet_up_' + sub, 'frequency') or _find(files, sub, 'frequency', 'wordnet')
+                if not f:
+                    continue
+                df = _read_csv(f)
+                if df is None:
+                    continue
+                cc = next((c for c in df.columns if 'category' in str(c).lower()), None)
+                fc = next((c for c in df.columns if 'frequency' in str(c).lower()), None)
+                if cc and fc:
+                    d = df.assign(_f=pd.to_numeric(df[fc], errors='coerce')).dropna(subset=['_f']) \
+                        .sort_values('_f', ascending=False).head(8)
+                    specs.append((label, [(str(r[cc]), r['_f']) for _, r in d.iterrows()]))
+        elif category == 'sentiment':
+            for f in files:
+                b = os.path.basename(str(f)).lower()
+                if not (b.endswith('.csv') and 'sentiment' in b) or 'no_hyperlinks' in b or 'chart' in b:
+                    continue
+                df = _read_csv(f)
+                lc = next((c for c in df.columns if 'sentiment label' in str(c).lower()), None) if df is not None else None
+                if lc:
+                    vc = df[lc].astype(str).str.lower().value_counts()
+                    pairs = [(k.title(), float(vc.get(k, 0))) for k in ('positive', 'neutral', 'negative')]
+                    if any(v for _, v in pairs):
+                        specs.append(('Sentence sentiment', pairs))
+                        break
+        elif category == 'characters':
+            f = (_find(files, 'character_emotion_arcs', exclude=('chart', 'no_hyperlinks', 'bydoc'))
+                 or _find(files, 'character', 'arc', exclude=('chart',)))
+            if f:
+                df = _read_csv(f)
+                if df is not None:
+                    present = [c for c in df.columns if str(c).strip().capitalize() in _EIGHT_EMOTIONS]
+                    sums = [(str(c).strip().capitalize(), float(pd.to_numeric(df[c], errors='coerce').sum()))
+                            for c in present]
+                    sums = sorted([p for p in sums if p[1] > 0], key=lambda x: x[1], reverse=True)
+                    if sums:
+                        specs.append(('Prevailing emotions (NRC)', sums))
+        elif category == 'narrative':
+            fr = _find(files, 'role-freq', 'chart')
+            if fr:
+                df = _read_csv(fr)
+                if df is not None and 'Role' in df.columns and 'Count' in df.columns:
+                    d = df.assign(_c=pd.to_numeric(df['Count'], errors='coerce')).dropna(subset=['_c']) \
+                        .sort_values('_c', ascending=False).head(8)
+                    specs.append(('Semantic roles (SRL)', [(str(r['Role']), r['_c']) for _, r in d.iterrows()]))
+        return specs
+    except Exception as e:
+        print('Corpus Profiler: chart specs for "%s" skipped: %s' % (category, e))
+        return []
+
+
 def build_paper_summary(outputDir, corpus_name, results, header_stats, run_config,
                         report_basename='NLP_corpus_profile.html'):
     summary_path = os.path.join(outputDir, 'NLP_corpus_profile_summary.html')
@@ -963,6 +1070,12 @@ def build_paper_summary(outputDir, corpus_name, results, header_stats, run_confi
               background:var(--card); }
   figure iframe.chartframe{ display:block; width:100%%; height:460px; border:1px solid var(--rule);
                             border-radius:8px; background:#ffffff; }
+  figure.chart{ margin:18px 0; }
+  svg.svgchart{ width:100%%; height:auto; max-width:560px; display:block; }
+  .svg-title{ font:600 13px 'Segoe UI',system-ui,sans-serif; fill:currentColor; }
+  .svg-lab{ font:12px 'Segoe UI',system-ui,sans-serif; fill:var(--muted); }
+  .svg-val{ font:600 12px 'Segoe UI',system-ui,sans-serif; fill:var(--muted); }
+  rect.svg-bar{ fill:var(--accent); opacity:.88; }
   figcaption{ font-family:'Segoe UI',system-ui,sans-serif; font-size:12.5px; color:var(--muted);
               margin-top:8px; }
   figcaption .fnum{ color:var(--accent); font-weight:700; }
@@ -1009,6 +1122,13 @@ def build_paper_summary(outputDir, corpus_name, results, header_stats, run_confi
             cat_files += r.get('files', [])
         for _finding in _interpret(cat, cat_files):
             parts.append('<p class="finding">%s</p>' % _esc(_finding))
+
+        # NATIVE inline-SVG charts, drawn from the numbers -> a chart in every quantitative section,
+        # regardless of whether the tool emitted a PNG, an Excel chart, or a Plotly HTML.
+        for _ctitle, _cpairs in _chart_specs(cat, cat_files):
+            _svg = _svg_bar(_ctitle, _cpairs)
+            if _svg:
+                parts.append(_svg)
 
         # gather this dimension's outputs
         all_imgs, all_data, all_inter, gui_ptrs, errs = [], [], [], [], []
