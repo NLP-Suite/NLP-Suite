@@ -123,23 +123,36 @@ def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hove
     _tooltip_window.wm_overrideredirect(True)  # no window decorations
     _tooltip_window.wm_attributes('-topmost', True)  # stay on top
 
+    # wraplength keeps a long one-line message from running off the right edge: it wraps to
+    # multiple lines within (roughly) the main window's width instead of one very wide line.
+    try:
+        win_w = window.winfo_width()
+    except Exception:
+        win_w = 0
+    wrap = win_w - 60 if win_w and win_w > 260 else 700
+
     tooltip_lb = tk.Label(_tooltip_window, text=text_info, foreground='blue',
                           background='#FFFFDD', anchor='w', justify='left',
                           relief='solid', borderwidth=1,
-                          padx=4, pady=2,
+                          padx=4, pady=2, wraplength=wrap,
                           font=('TkDefaultFont', 9))
     tooltip_lb.pack()
 
-    # Position: use screen coordinates relative to the main window
-    # Place the tooltip above and to the left of the widget so it never overlaps
+    # Position in screen coordinates relative to the main window
     win_x = window.winfo_rootx()
     win_y = window.winfo_rooty()
-    tip_x = win_x + x_coordinate_hover_over
-    tip_y = win_y + y_coordinate - 20
 
-    # After packing, adjust y upward by the tooltip's actual height so it doesn't overlap
+    # After packing, read the tooltip's ACTUAL size, then keep it fully ON-SCREEN: if it would
+    # run off the right edge, shift it left; never let it start off the left edge either.
     _tooltip_window.update_idletasks()
+    tip_w = _tooltip_window.winfo_reqwidth()
     tip_height = _tooltip_window.winfo_reqheight()
+    screen_w = window.winfo_screenwidth()
+    tip_x = win_x + x_coordinate_hover_over
+    if tip_x + tip_w > screen_w - 10:
+        tip_x = screen_w - tip_w - 10
+    if tip_x < 10:
+        tip_x = 10
     tip_y = win_y + y_coordinate - tip_height - 2  # 2px gap above widget
 
     _tooltip_window.wm_geometry(f"+{int(tip_x)}+{int(tip_y)}")
