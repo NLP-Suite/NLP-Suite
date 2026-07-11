@@ -592,6 +592,12 @@ _PRONOUNS = {'he', 'him', 'his', 'she', 'her', 'hers', 'it', 'its', 'they', 'the
              'theirs', 'i', 'me', 'my', 'mine', 'we', 'us', 'our', 'ours', 'you', 'your', 'yours',
              'this', 'that', 'these', 'those', 'who', 'whom', 'whose', 'himself', 'herself'}
 
+# copulas / auxiliaries / modals -- dropped from the "most frequent ACTIONS" line so the verbs read as
+# real actions (know, make, find...) rather than "is / are / has". Kept elsewhere.
+_LIGHT_VERBS = frozenset({'is', 'are', 'was', 'were', 'be', 'been', 'being', 'am', "'s", "'m", "'re",
+                          'has', 'have', 'had', 'having', 'do', 'does', 'did', 'doing', "'ll", "'d",
+                          'will', 'would', 'can', 'could', 'may', 'might', 'must', 'shall', 'should', 'get'})
+
 
 def _read_csv(path):
     """Version-tolerant CSV read -> DataFrame or None (never raises)."""
@@ -732,11 +738,31 @@ def _interp_semantics(files):
 def _interp_narrative(files):
     import pandas as pd
     findings = []
-    fs = _find(files, 'svo', exclude=('sunburst', 'treemap', 'form', 'chart', 'bydoc'))
+    fs = _find(files, 'svo', exclude=('sunburst', 'treemap', 'sankey', 'network', 'form', 'chart', 'bydoc'))
     if fs:
         df = _read_csv(fs)
-        if df is not None:
-            findings.append('Subject–Verb–Object extraction produced %s triples.' % _thousands(len(df)))
+        if df is not None and len(df):
+            findings.append('Subject–Verb–Object extraction produced %s triples — the backbone of '
+                            '“who did what to whom.”' % _thousands(len(df)))
+
+            def _top(sub, label, n=6, drop=frozenset()):
+                col = next((c for c in df.columns if sub in str(c).lower()), None)
+                if not col:
+                    return None
+                vals = df[col].astype(str).str.strip()
+                low = vals.str.lower()
+                vals = vals[(vals.str.len() > 0) & (low != 'nan') & (~low.isin(_PRONOUNS | drop))
+                            & (~low.str.startswith('inferred'))]   # drop SVO placeholder tokens
+                vc = vals.value_counts()
+                if not len(vc):
+                    return None
+                return ('The most frequent %s are %s.'
+                        % (label, ', '.join('%s (%d)' % (v, int(c)) for v, c in vc.head(n).items())))
+            for _line in (_top('verb', 'actions (verbs)', drop=_LIGHT_VERBS),
+                          _top('subject', 'actors (subjects)'),
+                          _top('object', 'objects acted upon')):
+                if _line:
+                    findings.append(_line)
     fr = _find(files, 'role-freq', 'chart')
     if fr:
         df = _read_csv(fr)
@@ -935,6 +961,8 @@ def build_paper_summary(outputDir, corpus_name, results, header_stats, run_confi
   figure{ margin:22px 0; }
   figure img{ display:block; width:100%%; height:auto; border:1px solid var(--rule); border-radius:8px;
               background:var(--card); }
+  figure iframe.chartframe{ display:block; width:100%%; height:460px; border:1px solid var(--rule);
+                            border-radius:8px; background:#ffffff; }
   figcaption{ font-family:'Segoe UI',system-ui,sans-serif; font-size:12.5px; color:var(--muted);
               margin-top:8px; }
   figcaption .fnum{ color:var(--accent); font-weight:700; }
@@ -1009,8 +1037,21 @@ def build_paper_summary(outputDir, corpus_name, results, header_stats, run_confi
                             '' if len(all_imgs) - MAX_FIG_PER_SECTION == 1 else 's',
                             _esc(report_basename)))
 
-        # source-data links (csv/xlsx) + interactive artifacts
-        srcs = all_data + all_inter
+        # embed interactive HTML charts (Plotly sunburst/treemap/sankey, network graphs, migration
+        # maps) as iframes -- SVO/SRL/GIS/topics emit these instead of PNGs, so without this those key
+        # sections would show NO chart at all.
+        html_charts = [f for f in all_inter if str(f).lower().endswith(('.html', '.htm'))]
+        for hc in html_charts[:2]:
+            fig_no += 1
+            _relhc = _rel(hc, report_dir)
+            parts.append('<figure><iframe src="%s" loading="lazy" class="chartframe"></iframe>'
+                         '<figcaption><span class="fnum">Figure %d.</span> %s &nbsp;·&nbsp; '
+                         '<a href="%s">open full</a></figcaption></figure>'
+                         % (_esc(_relhc), fig_no, _esc(_humanize_file(hc)), _esc(_relhc)))
+
+        # source-data links (csv/xlsx) + remaining interactive artifacts (kml, extra charts)
+        _embedded = set(html_charts[:2])
+        srcs = all_data + [f for f in all_inter if f not in _embedded]
         if srcs:
             links = ' · '.join('<a href="%s">%s</a>' % (_esc(_rel(s, report_dir)), _esc(os.path.basename(s)))
                                for s in srcs[:12])
