@@ -107,6 +107,7 @@ def display_help_button_info(text_title,text_info):
     mb.showinfo(title=text_title, message=text_info)
 
 _tooltip_window = None  # module-level reference to the current tooltip Toplevel
+_dismiss_bound_windows = set()  # windows already wired to dismiss the tooltip on focus-out
 
 def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hover_over, text_info):
     global _tooltip_window
@@ -170,6 +171,15 @@ def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hove
             _tooltip_window = None
     try:
         _this_tip.after(6000, _auto_hide)
+    except Exception:
+        pass
+
+    # Kill the tooltip when the window loses focus -- e.g. you launch another GUI or open a dropdown
+    # menu -- so a tooltip can never stay stuck on screen across GUIs. Bind ONCE per window.
+    try:
+        if window not in _dismiss_bound_windows:
+            window.bind('<FocusOut>', lambda e: delete_display_widget_lb(window, e, ''), add='+')
+            _dismiss_bound_windows.add(window)
     except Exception:
         pass
 
