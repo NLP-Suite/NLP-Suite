@@ -157,6 +157,22 @@ def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hove
 
     _tooltip_window.wm_geometry(f"+{int(tip_x)}+{int(tip_y)}")
 
+    # Safety net: guarantee the tooltip disappears even if <Leave>/<Button> never fire (e.g. a
+    # pointer grab). Auto-hide THIS specific tooltip after a few seconds no matter what.
+    _this_tip = _tooltip_window
+    def _auto_hide(_w=_this_tip):
+        global _tooltip_window
+        try:
+            _w.destroy()
+        except Exception:
+            pass
+        if _tooltip_window is _w:
+            _tooltip_window = None
+    try:
+        _this_tip.after(6000, _auto_hide)
+    except Exception:
+        pass
+
 def delete_display_widget_lb(window, e, text_info):
     global _tooltip_window
     if _tooltip_window is not None:
@@ -324,6 +340,12 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
                      #  as set in original_background_color and original_foreground_color
                      lambda e: (e.widget.config(background=original_background_color, foreground=original_foreground_color),
                                    delete_display_widget_lb(window, e, text_info)))
+    # Also dismiss the tooltip on a CLICK. Dropdown/OptionMenu widgets grab the pointer the moment
+    # their menu opens, which swallows the <Leave> event -- without this the tooltip would stay stuck
+    # on screen forever. add='+' so we never clobber the widget's own click behavior.
+    if text_info != '':
+        widget_name.bind('<Button>',
+                         lambda e: delete_display_widget_lb(window, e, text_info), add='+')
 
 
 # when a widget has hover-over effects, the parameter no_hover_over_widget is set to False
