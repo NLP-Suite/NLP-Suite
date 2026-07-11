@@ -192,6 +192,20 @@ def _run_semantic_classes(c):
     return out
 
 
+# ---- semantics: BERT word embeddings -> interactive 2-D t-SNE semantic map (top-200 words, bounded) ----
+def _run_embeddings(c):
+    import BERT_util
+    # signature: (window, inputFilename, inputDir, outputDir, openOutputFiles, chartPackage,
+    #   dataTransformation, vis_menu_var, dim_menu_var, compute_distances_var, top_words_var,
+    #   keywords_var, lemmatize_var, remove_stopwords_var, configFileName). Defaults mirror the
+    #   Word2Vec GUI: plot vectors, 2-D t-SNE, top-200 words (bounded), lemmatize, drop stopwords.
+    out = BERT_util.word_embeddings_BERT(
+        c['window'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
+        c['chartPackage'], c['dataTransformation'],
+        'Plot word vectors', '2D', False, 200, '', True, True, c['config_filename'])
+    return _files(out)
+
+
 # ---- syntax: parts-of-speech distribution (nouns, verbs, adjectives, adverbs, pronouns) via Stanza POS ----
 def _run_pos_stats(c):
     import Stanza_util
@@ -333,8 +347,10 @@ REGISTRY = {
     # --- semantics (snapshot: WordNet noun/verb classes; deeper tools via the Semantic GUI) ---
     'semantic_classes': dict(category='semantics', kind='batch', run=_run_semantic_classes,
                              label='Noun & verb classes (WordNet top synsets)'),
+    'semantic_embeddings': dict(category='semantics', kind='batch', run=_run_embeddings,
+                             label='Word embeddings (BERT) — interactive 2-D t-SNE semantic map'),
     'semantics_more':   dict(category='semantics', kind='gui', gui_script='semantic_analysis_main.py',
-                             label='WSD · word embeddings · semantic similarity · nominalization  (opens Semantic Analysis GUI)'),
+                             label='WSD · semantic similarity · nominalization  (opens Semantic Analysis GUI)'),
     # --- syntax: parts-of-speech distribution RUNS in batch (Stanza POS); deeper CoNLL analyses via GUI ---
     'syntax_pos':       dict(category='syntax', kind='batch', run=_run_pos_stats,
                              label='Parts of speech — nouns, verbs, adjectives, adverbs, pronouns (Stanza POS)'),
@@ -561,7 +577,8 @@ _CATEGORY_LEAD = {
     'vocabulary': 'What is the vocabulary like? The profiler looked at richness, frequency and word shape.',
     'syntax':     'How is the language built? Every word was POS-tagged, so the corpus can be read as a '
                   'distribution of parts of speech — nouns, verbs, adjectives, adverbs, pronouns.',
-    'semantics':  'What do the words mean? Nouns and verbs were aggregated up to their WordNet classes.',
+    'semantics':  'What do the words mean? Nouns and verbs were aggregated up to their WordNet classes, and '
+                  'the most frequent words were embedded with BERT into a 2-D t-SNE semantic map.',
     'topics':     'What is the corpus about? Topics were surveyed.',
     'entities':   'Who, what, where and when? People, organizations, locations, gender and dates were extracted.',
     'spatial':    'Where does it all happen? Both geocodable and symbolic (narrative) space were considered.',
@@ -745,6 +762,12 @@ def _interp_semantics(files):
         if len(top):
             items = ', '.join('%s (%d)' % (str(r[catcol]), int(r['_f'])) for _, r in top.iterrows())
             findings.append('%s cluster into WordNet classes led by %s.' % (label, items))
+    # BERT word embeddings -> interactive t-SNE map (an HTML chart, linked below)
+    if any(('word2vec_vector' in os.path.basename(str(f)).lower() or 'tsne' in os.path.basename(str(f)).lower())
+           and str(f).lower().endswith(('.html', '.htm')) for f in files):
+        findings.append('BERT (all-distilroberta-v1) embedded the corpus’s most frequent words and projected them '
+                        'into an interactive 2-D t-SNE semantic map — words placed near each other are used in '
+                        'similar contexts (open the interactive chart below).')
     return findings
 
 

@@ -374,9 +374,11 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         "the noun-to-verb ratio with a chart. The deeper CoNLL analyses (dependency, clause, function words, "
         "sentence complexity, readability) open from the CoNLL Table Analyzer GUI.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-        "SEMANTICS — what the words mean. The profile runs a snapshot: nouns & verbs aggregated UP to their WordNet "
-        "top-synset classes (English + WordNet). Deeper tools — word-sense disambiguation, word embeddings, semantic "
-        "similarity, nominalization — open from the Semantic Analysis GUI.")
+        "SEMANTICS — what the words mean. The profile RUNS: (1) nouns & verbs aggregated UP to their WordNet "
+        "top-synset classes (English + WordNet), and (2) BERT word embeddings (sentence-transformers "
+        "all-distilroberta-v1) of the 200 most frequent words, projected into an interactive 2-D t-SNE semantic "
+        "map. Deeper tools — word-sense disambiguation, semantic similarity, nominalization — open from the "
+        "Semantic Analysis GUI.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
         "TOPICS — what the corpus is about. The profile now RUNS Gensim LDA topic modeling with defaults "
         "(10 topics), producing an interactive pyLDAvis map plus a topic-keywords table the summary reads. "
