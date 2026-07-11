@@ -83,7 +83,7 @@ def run():
     # up-front runtime heads-up: the CoreNLP-backed categories run Java over the whole corpus and can
     # take a very long time. Counts and Vocabulary are fast. Let the user opt into the long run knowingly.
     heavy = [aid for aid in selected
-             if corpus_profiler_util.REGISTRY[aid]['category'] in ('entities', 'semantics', 'narrative', 'arcs')
+             if corpus_profiler_util.REGISTRY[aid]['category'] in ('entities', 'semantics', 'narrative', 'characters')
              and corpus_profiler_util.REGISTRY[aid]['kind'] == 'batch']
     if heavy:
         if not mb.askyesno('This may take a while',
@@ -141,8 +141,8 @@ IO_setup_display_brief = True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(
     IO_setup_display_brief,
     GUI_width=GUI_IO_util.get_GUI_width(3),
-    GUI_height_brief=600,
-    GUI_height_full=640,
+    GUI_height_brief=640,
+    GUI_height_full=680,
     y_multiplier_integer=GUI_util.y_multiplier_integer,
     y_multiplier_integer_add=1,
     increment=1)
@@ -183,8 +183,8 @@ narrative_var = tk.IntVar()
 narrative_menu_var = tk.StringVar()
 sentiment_var = tk.IntVar()
 sentiment_menu_var = tk.StringVar()
-arcs_var = tk.IntVar()
-arcs_menu_var = tk.StringVar()
+characters_var = tk.IntVar()
+characters_menu_var = tk.StringVar()
 
 _dropdown_x = GUI_IO_util.open_setup_x_coordinate  # rough; nudge to taste
 
@@ -304,16 +304,18 @@ sentiment_menu = tk.OptionMenu(window, sentiment_menu_var, '*',
                                'BERT · spaCy · VADER · NRC · SentiWordNet  (opens Sentiment GUI)')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, sentiment_menu, False)
 
-# 9. How do characters feel over the story? (Character emotion arcs)
-arcs_var.set(1)
-arcs_checkbox = tk.Checkbutton(window, text='How do characters feel over the story?  (Character emotion arcs)',
-                               variable=arcs_var, onvalue=1, offvalue=0)
+# 9. Zooming in on characters (emotional arcs + movement in space)
+characters_var.set(1)
+characters_checkbox = tk.Checkbutton(window,
+                               text="Zooming in on characters: Characters' emotional arcs and movements in space",
+                               variable=characters_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
-                                               y_multiplier_integer, arcs_checkbox, True)
-arcs_menu_var.set('*')
-arcs_menu = tk.OptionMenu(window, arcs_menu_var, '*',
-                          'Character emotion arcs (NRC 8 emotions, per character across the story)')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, arcs_menu, False)
+                                               y_multiplier_integer, characters_checkbox, True)
+characters_menu_var.set('*')
+characters_menu = tk.OptionMenu(window, characters_menu_var, '*',
+                          'Emotion arcs (NRC 8 emotions, per character across the story)',
+                          'Movement in space (each character’s places, mapped)')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, characters_menu, False)
 
 # --- help buttons (one per row, in order) ----------------------------------------------------
 videos_lookup = {'No videos available': ''}
@@ -382,11 +384,15 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         "not a dictionary; already installed with Stanza, no extra download). The other engines (BERT, spaCy, VADER, "
         "NRC, SentiWordNet) open from the Sentiment Analysis GUI.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-        "CHARACTER EMOTION ARCS — how the people in the story feel, and how that feeling rises and falls. The profile "
-        "RUNS, with defaults, a per-character trace of NRC's eight emotions (anger, anticipation, disgust, fear, joy, "
-        "sadness, surprise, trust) across the narrative, using Stanza NER to attribute sentences to characters. It "
-        "produces an emotion-arc chart and a dominant-emotion timeline for the most-followed characters.\n\n"
-        "Sentiment arcs by actor & location and the 'shape of stories' open from the Sentiment Analysis GUI.")
+        "ZOOMING IN ON CHARACTERS — a character-centric lens, RUN with defaults. Two analyses:\n\n"
+        "• EMOTION ARCS — how each character feels and how that feeling rises and falls: a per-character trace of "
+        "NRC's eight emotions (anger, anticipation, disgust, fear, joy, sadness, surprise, trust) across the "
+        "narrative, using Stanza NER to attribute sentences to characters; produces an emotion-arc chart and a "
+        "dominant-emotion timeline per leading character.\n\n"
+        "• MOVEMENT IN SPACE — where each character goes: Stanza tracks the places each character passes through and "
+        "builds an animated migration MAP. Only the DISTINCT locations are geocoded (bounded), and we cap to the 40 "
+        "most frequent, so a big-corpus run can't stall on the network.\n\n"
+        "Whole-narrative 'shape of stories' (heavy BERT + clustering) stays in the Sentiment Analysis GUI.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                                          "NLP Suite Help", GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer - 1

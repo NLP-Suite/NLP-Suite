@@ -24,7 +24,7 @@ import html as _html
 # Category metadata (order + user-question titles). Adding/moving categories is done here.
 # ---------------------------------------------------------------------------------------------
 CATEGORY_ORDER = ['counts', 'vocabulary', 'syntax', 'semantics',
-                  'topics', 'entities', 'spatial', 'narrative', 'sentiment', 'arcs']
+                  'topics', 'entities', 'spatial', 'narrative', 'sentiment', 'characters']
 
 CATEGORY_TITLE = {
     'counts':    'How big / how varied?  (Counts & measures)',
@@ -36,7 +36,7 @@ CATEGORY_TITLE = {
     'spatial':   'Where does it all happen?  (geocodable and symbolic space)',
     'narrative': 'Who did what to whom?  (Narrative)',
     'sentiment': 'How does it feel?  (Sentiment)',
-    'arcs':      'How do characters feel over the story?  (Character emotion arcs)',
+    'characters': "Zooming in on characters: Characters' emotional arcs and movements in space",
 }
 
 
@@ -241,6 +241,38 @@ def _run_character_arcs(c):
         c['inputFilename'], c['inputDir'], c['outputDir'], c['chartPackage'], c['dataTransformation']))
 
 
+# ---- character movement in space: Stanza tracks each character's locations -> animated migration map.
+#      The map geocodes only DISTINCT locations (bounded); we further CAP to the 40 most frequent so an
+#      unattended run on a big corpus can't stall on hundreds of Nominatim calls. ----
+def _run_character_movement(c):
+    import NER_location_tracking_util
+    import charts_util
+    files = _files(NER_location_tracking_util.main(
+        c['inputFilename'], c['inputDir'], c['outputDir'], c['chartPackage'], c['dataTransformation']))
+    csvs = [f for f in files if str(f).lower().endswith('.csv')]
+    if not csvs:
+        return files
+    track_csv = csvs[0]
+    map_dir = os.path.dirname(track_csv)
+    map_input = track_csv
+    try:
+        import pandas as pd
+        df = pd.read_csv(track_csv)
+        if 'Location' in df.columns and df['Location'].nunique() > 40:
+            top_locs = df['Location'].value_counts().head(40).index
+            capped = os.path.join(map_dir, 'NLP_character_movement_top40_locations.csv')
+            df[df['Location'].isin(top_locs)].to_csv(capped, index=False, encoding='utf-8')
+            map_input = capped
+            files.append(capped)
+    except Exception:
+        pass
+    try:
+        files += _files(charts_util.animated_migration_map(map_input, map_dir, 'Entity', 'Location'))
+    except Exception as e:
+        print('Corpus Profiler: character movement map skipped: %s' % e)
+    return files
+
+
 # ---------------------------------------------------------------------------------------------
 # The registry.  id -> dict(category, label, kind, run)
 #   kind == 'batch' -> run(c) invoked during a profile; 'gui' -> surfaced as an "open tool" link.
@@ -310,11 +342,13 @@ REGISTRY = {
                              label='Sentiment (Stanza)'),
     'sentiment_more':   dict(category='sentiment', kind='gui', gui_script='sentiment_analysis_main.py',
                              label='BERT · spaCy · VADER · NRC · SentiWordNet  (opens Sentiment GUI)'),
-    # --- arcs (character emotion arcs: Stanza NER + NRC 8-emotion scoring, per character over the story) ---
+    # --- characters (a character-centric lens: emotional arcs + movement in space; both batch, Stanza-based) ---
     # Batch-only dimension -- no GUI pointer. (Whole-narrative "shape of stories" is heavy BERT+clustering
     # and GUI-coupled, like topics; it stays in the Sentiment GUI and is mentioned in this row's HELP.)
-    'character_arcs':   dict(category='arcs', kind='batch', run=_run_character_arcs,
-                             label='Character emotion arcs (NRC 8 emotions, per character across the story)'),
+    'character_arcs':     dict(category='characters', kind='batch', run=_run_character_arcs,
+                             label='Emotion arcs (NRC 8 emotions, per character across the story)'),
+    'character_movement': dict(category='characters', kind='batch', run=_run_character_movement,
+                             label='Movement in space (each character’s places, mapped)'),
 }
 
 
@@ -517,8 +551,9 @@ _CATEGORY_LEAD = {
     'spatial':    'Where does it all happen? Both geocodable and symbolic (narrative) space were considered.',
     'narrative':  'Who did what to whom? Subject-Verb-Object triples and semantic roles were derived.',
     'sentiment':  'How does the corpus feel? Sentiment was scored with a neural model.',
-    'arcs':       'How do the people in the story feel, and how does that feeling rise and fall? '
-                  'NRC’s eight emotions were traced per character across the narrative.',
+    'characters': 'Zooming in on the people of the corpus: how each character FEELS over the story '
+                  '(NRC’s eight emotions, traced per character) and where each character MOVES '
+                  '(the places they pass through, mapped).',
 }
 
 
@@ -785,11 +820,34 @@ def _interp_arcs(files):
     return findings
 
 
+def _interp_characters(files):
+    findings = _interp_arcs(files)   # emotional arcs: characters tracked + prevailing emotions
+    # movement in space: the character->location tracking table (Entity + Location columns)
+    mv = None
+    for f in files:
+        if not str(f).lower().endswith('.csv'):
+            continue
+        df = _read_csv(f)
+        if df is not None and 'Entity' in df.columns and 'Location' in df.columns:
+            mv = df
+            break
+    if mv is not None and len(mv):
+        locs = mv['Location'].astype(str).value_counts()
+        distinct = mv.assign(_e=mv['Entity'].astype(str), _l=mv['Location'].astype(str)) \
+                     .groupby('_e')['_l'].nunique().sort_values(ascending=False)
+        findings.append('Characters move through %d distinct places; the most frequented are %s.'
+                        % (locs.nunique(), ', '.join('%s (%d)' % (l, int(n)) for l, n in locs.head(5).items())))
+        if len(distinct):
+            findings.append('The most mobile character is %s, appearing across %d different places.'
+                            % (distinct.index[0], int(distinct.iloc[0])))
+    return findings
+
+
 def _interpret(category, files):
     """Dispatch to the per-category interpreter; always returns a (possibly empty) list of sentences."""
     fn = {'counts': _interp_counts, 'vocabulary': _interp_vocabulary, 'entities': _interp_entities,
           'semantics': _interp_semantics, 'narrative': _interp_narrative,
-          'sentiment': _interp_sentiment, 'arcs': _interp_arcs, 'topics': _interp_topics}.get(category)
+          'sentiment': _interp_sentiment, 'characters': _interp_characters, 'topics': _interp_topics}.get(category)
     if not fn:
         return []
     try:
