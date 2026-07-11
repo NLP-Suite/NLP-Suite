@@ -367,8 +367,11 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         "top-synset classes (English + WordNet). Deeper tools — word-sense disambiguation, word embeddings, semantic "
         "similarity, nominalization — open from the Semantic Analysis GUI.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-        "TOPICS — what the corpus is about. Topic modeling (BERTopic, Gensim LDA, MALLET) opens from the Topic "
-        "Modeling GUI; the report points you there.")
+        "TOPICS — what the corpus is about. The profile now RUNS Gensim LDA topic modeling with defaults "
+        "(10 topics), producing an interactive pyLDAvis map plus a topic-keywords table the summary reads. "
+        "NOTE: topic modeling needs many documents (hundreds) for authoritative results; on a small corpus the "
+        "topics are only indicative. Deeper engines (BERTopic, MALLET, coherence tuning) open from the Topic "
+        "Modeling GUI.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
         "NARRATIVE — who did what to whom. The profile now RUNS, with defaults, SVO (Subject-Verb-Object, via "
         "CoreNLP) and SRL (Semantic Role Labeling; skipped automatically if its transformer env isn't installed).\n\n"

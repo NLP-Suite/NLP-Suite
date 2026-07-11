@@ -224,6 +224,16 @@ def _run_sentiment(c):
     return _files(out)
 
 
+# ---- topics: Gensim LDA (pure Python). force=True bypasses the "needs 50+ files" advisory so the
+#      unattended sweep can still run it; on a small corpus the topics are indicative, not authoritative. ---
+def _run_topics(c):
+    import topic_modeling_gensim_util
+    return _files(topic_modeling_gensim_util.run_Gensim(
+        c['window'], c['inputDir'], c['outputDir'], c['config_filename'],
+        10, True, True, False, False, False,
+        c['chartPackage'], c['dataTransformation'], force=True))
+
+
 # ---- character emotion arcs: Stanza NER + NRC's 8 emotions, traced per character across the story ---
 def _run_character_arcs(c):
     import character_emotion_arcs_util
@@ -283,9 +293,11 @@ REGISTRY = {
     # --- syntax (full parse + CoNLL analyses live in the analyzer GUI) ---
     'syntax_gui':       dict(category='syntax', kind='gui', gui_script='CoNLL_table_analyzer_main.py',
                              label='POS · dependency · clause · N/V/Adj/Adv · function words · complexity · readability'),
-    # --- topics ---
-    'topics_gui':       dict(category='topics', kind='gui', gui_script='topic_modeling_main.py',
-                             label='Topic modeling (BERT / Gensim / MALLET)'),
+    # --- topics (Gensim LDA runs in batch, force-bypassing the 50-file advisory; deeper engines via GUI) ---
+    'topics_gensim':    dict(category='topics', kind='batch', run=_run_topics,
+                             label='Topic modeling (Gensim LDA)'),
+    'topics_more':      dict(category='topics', kind='gui', gui_script='topic_modeling_main.py',
+                             label='BERTopic · MALLET · coherence tuning  (opens Topic Modeling GUI)'),
     # --- narrative (SVO runs via CoreNLP; SRL via its transformer env, skipped if not installed) ---
     'narrative_svo':    dict(category='narrative', kind='batch', run=_run_svo,
                              label='SVO (Subject-Verb-Object)'),
@@ -722,6 +734,27 @@ def _interp_sentiment(files):
     return []
 
 
+def _interp_topics(files):
+    f = _find(files, 'topic_keywords') or _find(files, 'gensim', 'topic', exclude=('distribution', 'representative'))
+    if not f:
+        return []
+    df = _read_csv(f)
+    if df is None:
+        return []
+    kwcol = next((c for c in df.columns if 'keyword' in str(c).lower()), None)
+    if not kwcol or not len(df):
+        return []
+    preview = []
+    for _, r in df.head(4).iterrows():
+        kws = [k.strip() for k in str(r[kwcol]).split(',') if k.strip()]
+        if kws:
+            preview.append('“' + ', '.join(kws[:5]) + '”')
+    if not preview:
+        return []
+    return ['Gensim LDA distilled %d topics; the leading ones cluster around %s.' % (len(df), '; '.join(preview)),
+            'Topic modeling needs many documents for authoritative results — on a small corpus these are indicative.']
+
+
 _EIGHT_EMOTIONS = ('Anger', 'Anticipation', 'Disgust', 'Fear', 'Joy', 'Sadness', 'Surprise', 'Trust')
 
 
@@ -756,7 +789,7 @@ def _interpret(category, files):
     """Dispatch to the per-category interpreter; always returns a (possibly empty) list of sentences."""
     fn = {'counts': _interp_counts, 'vocabulary': _interp_vocabulary, 'entities': _interp_entities,
           'semantics': _interp_semantics, 'narrative': _interp_narrative,
-          'sentiment': _interp_sentiment, 'arcs': _interp_arcs}.get(category)
+          'sentiment': _interp_sentiment, 'arcs': _interp_arcs, 'topics': _interp_topics}.get(category)
     if not fn:
         return []
     try:

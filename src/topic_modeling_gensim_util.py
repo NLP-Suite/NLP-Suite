@@ -319,7 +319,8 @@ def malletModelling(MalletDir, outputDir, corpus,num_topics, id2word,data_lemmat
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Mallet LDA topic modeling at',True, '', True, startTime)
 
 def run_Gensim(window, inputDir, outputDir, config_filename, num_topics, remove_stopwords_var,
-                                      lemmatize, nounsOnly, run_Mallet, openOutputFiles,chartPackage, dataTransformation):
+                                      lemmatize, nounsOnly, run_Mallet, openOutputFiles,chartPackage, dataTransformation,
+                                      force=False):
     global filesToOpen
     filesToOpen=[]
     if pd.__version__[0]=='2':
@@ -332,16 +333,20 @@ def run_Gensim(window, inputDir, outputDir, config_filename, num_topics, remove_
         mb.showerror(title='Number of files error',
                      message='The selected input directory does NOT contain any file of txt type.\n\nPlease, select a different directory and try again.')
         return
-    elif numFiles == 1:
-        mb.showerror(title='Number of files error', message='The selected input directory contains only ' + str(
-            numFiles) + ' file of txt type.\n\nTopic modeling requires a large number of files to produce valid results. That is true even if the available file contains several different documents morged together.')
-        return
-    elif numFiles < 50:
-        result = mb.askyesno(title='Number of files', message='The selected input directory contains only ' + str(
-            numFiles) + ' files of txt type.\n\nTopic modeling requires a large number of files (in the hundreds at least; read TIPS file) to produce valid results.\n\nAre you sure you want to continue?',
-                             default='no')
-        if result == False:
+    # force=True (e.g. the Corpus Profiler batch) bypasses the "too few files" gate: the 50-file
+    # advisory only warns that topic modeling needs lots of data for VALID results -- it is not a
+    # hard requirement, so an automated sweep can still run it (results just carry that caveat).
+    if not force:
+        if numFiles == 1:
+            mb.showerror(title='Number of files error', message='The selected input directory contains only ' + str(
+                numFiles) + ' file of txt type.\n\nTopic modeling requires a large number of files to produce valid results. That is true even if the available file contains several different documents morged together.')
             return
+        elif numFiles < 50:
+            result = mb.askyesno(title='Number of files', message='The selected input directory contains only ' + str(
+                numFiles) + ' files of txt type.\n\nTopic modeling requires a large number of files (in the hundreds at least; read TIPS file) to produce valid results.\n\nAre you sure you want to continue?',
+                                 default='no')
+            if result == False:
+                return
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start',
                                        'Started running Gensim Topic modeling at ', True,
@@ -501,6 +506,21 @@ def run_Gensim(window, inputDir, outputDir, config_filename, num_topics, remove_
     except:
         mb.showerror(title='Output html file error', message='Gensim failed to generate the html output file.')
         return
+    filesToOpen.append(outputFilename)
+
+    # Topic-keywords CSV -- interpretable and MALLET-independent (a Gensim-only run otherwise writes no
+    # CSV, only the pyLDAvis html). The Corpus Profiler reads this to report what the topics are ABOUT.
+    try:
+        import csv as _csv
+        topics_csv = os.path.join(outputDir, 'NLP_Gensim_topic_keywords.csv')
+        with open(topics_csv, 'w', encoding='utf-8', newline='') as _fh:
+            _w = _csv.writer(_fh)
+            _w.writerow(['Topic', 'Top keywords'])
+            for _tid, _words in lda_model.show_topics(num_topics=-1, num_words=10, formatted=False):
+                _w.writerow([_tid + 1, ', '.join(_wd for _wd, _ in _words)])
+        filesToOpen.append(topics_csv)
+    except Exception:
+        pass
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Gensim topic modeling at',True,'\n\nThe file ' + outputFilename + ' was created. The results will display shortly on the web browser.')
     # \n\nYou now need to exit the server.\n\nAt command prompt, enter Ctrl+C, perhaps repeatedly, to exit the server.'
@@ -511,8 +531,11 @@ def run_Gensim(window, inputDir, outputDir, config_filename, num_topics, remove_
         pyLDAvis.show(vis)
         pyLDAvis.kill()
 
+    # Launch the interactive pyLDAvis web view -- but NOT during an unattended/batch run (NLP_SILENT),
+    # where opening a browser + a local server would derail the pipeline.
     # necessary to avoid having to do Ctrl+C to kill pyLDAvis to continue running the code
-    start_new_thread(show_web, (vis,))
+    if not os.environ.get('NLP_SILENT'):
+        start_new_thread(show_web, (vis,))
 
     if run_Mallet==True:
         # check that the CoreNLPdir as been setup
