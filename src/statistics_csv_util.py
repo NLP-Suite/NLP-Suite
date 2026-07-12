@@ -304,8 +304,23 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
         try:
             # the function computes mean, mode... skewness, kurtosis, ...
 
+            # Only NUMERIC columns can be summed/averaged etc.; a TEXT column (e.g. the N-gram text, or
+            # a document label) is a GROUP/LABEL, not data. Aggregating every non-group column applied
+            # np.mean & co. to the text N-gram column and crashed the Ngram chart/statistics step
+            # (Evan's v1.6.9 report). Restrict the aggregation to the numeric columns; the grouping
+            # field stays the label.
+            _group_cols = list(groupByField) if isinstance(groupByField, (list, tuple)) else [groupByField]
+            _numeric_cols = [c for c in df.select_dtypes(include=[np.number]).columns if c not in _group_cols]
+            if not _numeric_cols:
+                IO_user_interface_util.timed_alert(GUI_util.window, 5000, 'Input file error',
+                        "No numeric column to compute statistics on in\n\n" + str(inputFilename) +
+                        "\n\nThe statistical functions (sum, mean, median, ...) need a numeric column "
+                        "(e.g. a frequency); the grouping field (e.g. the N-gram text) is used only as "
+                        "the label.", False, '', True, silent=False)
+                return None
+
             # mode always returns a series and it must be processed lambda x: stats.mode(x, keepdims=False)[0]
-            df_group = df.groupby(groupByField).agg([np.sum, np.mean,
+            df_group = df.groupby(groupByField)[_numeric_cols].agg([np.sum, np.mean,
                                                      lambda x: stats.mode(x, keepdims=False)[0],
                                                      np.median, np.std, np.min, np.max,
                                                      stats.skew, stats.kurtosis,
