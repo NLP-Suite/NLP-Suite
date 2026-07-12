@@ -178,7 +178,7 @@ def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, ope
             # This method is most useful when you don’t know if your object is a Series or DataFrame,
             #   but you do know it has just a single column.
             #   In that case you can safely call squeeze to ensure you have a Series.
-            df = pd.read_csv(inputFilename, encoding="utf-8", index_col=False, on_bad_lines='skip', squeeze = True)
+            df = pd.read_csv(inputFilename, encoding="utf-8", index_col=False, on_bad_lines='skip').squeeze("columns")
         except:
             mb.showwarning(title='Data encoding error', message="The input file\n\n" + inputFilename + "\n\nhas character encoding that breaks the code. The statistical function only works with utf-8 compliant files.\n\nPlease, check your input file encoding and try again!")
             return None
@@ -293,7 +293,7 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
         return None
     # reading csv file
     try:
-        df = pd.read_csv(inputFilename, encoding="utf-8", on_bad_lines='skip', squeeze=True)
+        df = pd.read_csv(inputFilename, encoding="utf-8", on_bad_lines='skip').squeeze("columns")
     except:
         mb.showwarning(title='Data encoding error',
                        message="The input file\n\n" + inputFilename + "\n\nhas character encoding that breaks the code. The statistical function only works with utf-8 compliant files.\n\nPlease, check your input file encoding and try again!")

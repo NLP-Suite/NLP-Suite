@@ -17,6 +17,7 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window, "corpus profil
 
 import os
 import time
+import traceback
 import tkinter as tk
 import tkinter.messagebox as mb
 
@@ -54,12 +55,16 @@ def run():
     if outputDir == '':   # user declined to replace the existing profile folder
         return
 
-    # expand a ticked group's dropdown value into concrete analysis ids
+    # expand a ticked group's dropdown value into concrete analysis ids. Merged dropdowns (e.g. the
+    # combined Counts+Vocabulary row) decorate their entries with '--- ' group headers and '     '
+    # indents for readability, so strip those before matching REGISTRY labels. A bare group header
+    # (e.g. '--- Vocabulary') normalizes to a word that matches no analysis label -> nothing selected.
     def expand(category, menu_value):
         ids = corpus_profiler_util.analyses_in_category(category)
-        if menu_value == '*' or str(menu_value).strip() == '':
+        norm = str(menu_value).lstrip('- ').strip()
+        if norm == '*' or norm == '':
             return ids
-        return [aid for aid in ids if corpus_profiler_util.REGISTRY[aid]['label'] == menu_value]
+        return [aid for aid in ids if corpus_profiler_util.REGISTRY[aid]['label'] == norm]
 
     # GENERIC over the taxonomy: a category participates if its <cat>_var checkbox exists and is ticked.
     # Adding a new category = add its widgets + registry entries; run() needs no change.
@@ -105,42 +110,71 @@ def run():
                                        'At the end a paper-style summary opens (with an HTML report beside it); '
                                        'every individual output file is linked from them.')
 
-    results = corpus_profiler_util.run_profile(ctx, selected)
-    header = corpus_profiler_util.corpus_header_stats(inputFilename, inputDir)
+    # DIAGNOSTIC INSTRUMENTATION (temporary): the whole tail is wrapped so that ANYTHING that ends
+    # the process at the end of a run -- a raised exception, or a late SystemExit from a lazily
+    # imported util's install_all_Python_packages()==False: sys.exit(0) (SystemExit is NOT an
+    # Exception, so run_profile's per-analysis `except Exception` would let it through) -- prints its
+    # full origin traceback instead of a silent "Process finished with exit code 0". The >>> markers
+    # localize exactly how far run() got; if the LAST marker prints and the window still closes, the
+    # teardown is a .quit()/.destroy() somewhere (no exception), not a crash.
+    try:
+        results = corpus_profiler_util.run_profile(ctx, selected)
+        print('>>> Corpus Profiler: %d analyses done; building index report...' % len(results))
+        header = corpus_profiler_util.corpus_header_stats(inputFilename, inputDir)
 
-    if inputDir:
-        corpus_name = os.path.basename(inputDir.rstrip('/\\')) or 'corpus'
-    else:
-        corpus_name = os.path.splitext(os.path.basename(inputFilename))[0]
+        if inputDir:
+            corpus_name = os.path.basename(inputDir.rstrip('/\\')) or 'corpus'
+        else:
+            corpus_name = os.path.splitext(os.path.basename(inputFilename))[0]
 
-    run_config = dict(
-        subtitle='package: ' + str(package) + '  ·  language: ' + str(language) + '  ·  ' + time.strftime('%Y-%m-%d'),
-        footer='NLP Suite — Corpus Profiler.  ' + str(len(results)) +
-               ' analyses run.  Per-file detail lives in the category subfolders.',
-        inputDir=inputDir, inputFilename=inputFilename)   # so the summary can draw a corpus wordcloud
+        run_config = dict(
+            subtitle='package: ' + str(package) + '  ·  language: ' + str(language) + '  ·  ' + time.strftime('%Y-%m-%d'),
+            footer='NLP Suite — Corpus Profiler.  ' + str(len(results)) +
+                   ' analyses run.  Per-file detail lives in the category subfolders.',
+            inputDir=inputDir, inputFilename=inputFilename)   # so the summary can draw a corpus wordcloud
 
-    # build both: the navigable index (companion) and the paper-style summary (opened below)
-    corpus_profiler_util.build_report(outputDir, corpus_name, results, header, run_config)
-    summary = corpus_profiler_util.build_paper_summary(outputDir, corpus_name, results, header, run_config)
+        # build both: the navigable index (companion) and the paper-style summary (opened below)
+        corpus_profiler_util.build_report(outputDir, corpus_name, results, header, run_config)
+        print('>>> Corpus Profiler: index report built; building paper-style summary...')
+        summary = corpus_profiler_util.build_paper_summary(outputDir, corpus_name, results, header, run_config)
+        print('>>> Corpus Profiler: summary built: %s' % summary)
 
-    # Open the paper-style SUMMARY (the headline read; it links to the full navigable report and the
-    # report links back). os.startfile (a direct Win32 ShellExecute) is the most robust path: unlike
-    # os.system('start ...') -- which IO_files_util.openFile uses -- it works even when the app is
-    # launched WITHOUT a console (pythonw / the frozen build), which is the usual reason the auto-open
-    # silently no-ops (os.system returns an exit code, never raises, so the old fallback never fired).
-    # Try startfile -> webbrowser -> openFile in turn; if all fail, print the path to open manually.
-    summary_abs = os.path.abspath(summary)
-    for _open_summary in (
-            lambda: os.startfile(summary_abs),                                              # Windows
-            lambda: __import__('webbrowser').open('file:///' + summary_abs.replace('\\', '/')),
-            lambda: IO_files_util.openFile(GUI_util.window, summary_abs)):
+        # Open the paper-style SUMMARY (the headline read; it links to the full navigable report and the
+        # report links back). os.startfile (a direct Win32 ShellExecute) is the most robust path: unlike
+        # os.system('start ...') -- which IO_files_util.openFile uses -- it works even when the app is
+        # launched WITHOUT a console (pythonw / the frozen build). Try startfile -> webbrowser ->
+        # openFile in turn. NOTE: webbrowser.open RETURNS False when it cannot launch a browser (it
+        # does NOT raise), so we must check its boolean result -- otherwise a failed webbrowser.open
+        # looks like success and the summary silently never opens.
+        summary_abs = os.path.abspath(summary)
+        print('>>> Corpus Profiler: opening summary: %s' % summary_abs)
+        opened = False
         try:
-            _open_summary()
-            break
-        except Exception:
-            continue
-    else:
-        print('Corpus Profiler: could not auto-open the summary. Open it manually:\n  ' + summary_abs)
+            os.startfile(summary_abs)                                                       # Windows
+            opened = True
+        except Exception as _e:
+            print('   os.startfile failed: %s' % _e)
+        if not opened:
+            try:
+                if __import__('webbrowser').open('file:///' + summary_abs.replace('\\', '/')):
+                    opened = True
+            except Exception as _e:
+                print('   webbrowser.open failed: %s' % _e)
+        if not opened:
+            try:
+                IO_files_util.openFile(GUI_util.window, summary_abs)
+                opened = True
+            except Exception as _e:
+                print('   openFile failed: %s' % _e)
+        if not opened:
+            print('Corpus Profiler: could not auto-open the summary. Open it manually:\n  ' + summary_abs)
+
+        print('>>> Corpus Profiler: run() complete; the GUI window should remain open.')
+    except BaseException:
+        # BaseException (not Exception) so a late SystemExit is captured with its origin too.
+        print('>>> Corpus Profiler: run() tail terminated abnormally -- traceback follows:')
+        traceback.print_exc()
+        raise
 
 
 GUI_util.run_button.configure(command=run)
@@ -200,37 +234,48 @@ _dropdown_x = GUI_IO_util.open_setup_x_coordinate  # rough; nudge to taste
 
 # 1. Counts & measures
 counts_var.set(1)
-counts_checkbox = tk.Checkbutton(window, text='How big / how varied?  (Counts & measures)',
+counts_checkbox = tk.Checkbutton(window, text='How big / how varied? (Counts, measures, and vocabulary)',
                                  variable=counts_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, counts_checkbox, True)
 counts_menu_var.set('*')
 counts_menu = tk.OptionMenu(window, counts_menu_var, '*',
-                            'Statistics (sentences, words, syllables)',
-                            'N-grams',
-                            'Sentence length',
-                            'Line length')
+                            '--- Statistics (sentences, words, syllables)',
+                            '     N-grams',
+                            '     Sentence length',
+                            '     Line length',
+                            '--- Vocabulary',
+                            '     Language detection',
+                            "     Vocabulary richness (word type/token ratio or Yule's K)",
+                            '     Lexical diversity (TTR, MTLD, vocd-D)',
+                            "     Word frequency distribution (Zipf's Law)",
+                            '     TF-IDF (most distinctive words per document)',
+                            '     Hapax legomena (once-occurring words)',
+                            '     Unusual words (via NLTK)',
+                            '     Abstract / concrete vocabulary',
+                            '     Iconic vocabulary',
+                            '     Words with capital initial (proper nouns)')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, counts_menu, False)
 
-# 2. Vocabulary
-vocabulary_var.set(1)
-vocabulary_checkbox = tk.Checkbutton(window, text="What's the vocabulary like?  (Vocabulary)",
-                                     variable=vocabulary_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
-                                               y_multiplier_integer, vocabulary_checkbox, True)
-vocabulary_menu_var.set('*')
-vocabulary_menu = tk.OptionMenu(window, vocabulary_menu_var, '*',
-                                "Vocabulary richness (word type/token ratio or Yule's K)",
-                                'Lexical diversity (TTR, MTLD, vocd-D)',
-                                "Word frequency distribution (Zipf's Law)",
-                                'TF-IDF (most distinctive words per document)',
-                                'Hapax legomena (once-occurring words)',
-                                'Unusual words (via NLTK)',
-                                'Abstract / concrete vocabulary',
-                                'Iconic vocabulary',
-                                'Words with capital initial (proper nouns)',
-                                'Language detection')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, vocabulary_menu, False)
+# # 2. Vocabulary
+# vocabulary_var.set(1)
+# vocabulary_checkbox = tk.Checkbutton(window, text="What's the vocabulary like?  (Vocabulary)",
+#                                      variable=vocabulary_var, onvalue=1, offvalue=0)
+# y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
+#                                                y_multiplier_integer, vocabulary_checkbox, True)
+# vocabulary_menu_var.set('*')
+# vocabulary_menu = tk.OptionMenu(window, vocabulary_menu_var, '*',
+#                                 "Vocabulary richness (word type/token ratio or Yule's K)",
+#                                 'Lexical diversity (TTR, MTLD, vocd-D)',
+#                                 "Word frequency distribution (Zipf's Law)",
+#                                 'TF-IDF (most distinctive words per document)',
+#                                 'Hapax legomena (once-occurring words)',
+#                                 'Unusual words (via NLTK)',
+#                                 'Abstract / concrete vocabulary',
+#                                 'Iconic vocabulary',
+#                                 'Words with capital initial (proper nouns)',
+#                                 'Language detection')
+# y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, vocabulary_menu, False)
 
 # 3. Entities (English + Stanford CoreNLP)
 entities_var.set(1)
@@ -251,7 +296,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                                y_multiplier_integer, spatial_checkbox, True)
 spatial_menu_var.set('*')
 spatial_menu = tk.OptionMenu(window, spatial_menu_var, '*',
-                             'Geocodable space — geocode & map corpus locations  (opens GIS GUI)',
+                             'Geocodable space — proportional-symbol map of corpus locations (Nominatim/Google)',
+                             'Full geocoding & mapping — geocoder choice, API key, Google Earth / folium / distances  (opens GIS GUI)',
                              'Symbolic space — narrative / gendered space typology  (opens Symbolic Space GUI)')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, spatial_menu, False)
 
@@ -299,7 +345,7 @@ narrative_menu_var.set('*')
 narrative_menu = tk.OptionMenu(window, narrative_menu_var, '*',
                                'SVO (Subject-Verb-Object)',
                                'SRL (Semantic Role Labeling)',
-                               'Coreference · dialogue · 5 Ws  (opens SVO GUI)')
+                               'Coreference · 5 Ws  (opens SVO GUI)')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, narrative_menu, False)
 
 # 8. How does it feel? (Sentiment)
@@ -348,37 +394,49 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                                              "NLP Suite Help", GUI_IO_util.msg_IO_setup)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-        "COUNTS & MEASURES — how big and how varied is the corpus. Statistics (sentences/words/syllables), "
-        "n-grams, sentence & line length. Select '*' to run all, or pick one. Runs with defaults.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+        "COUNTS, MEASURES, & VOCABULARY\n\n"
+        'COUNTS & MEASURES — how big and how varied is the corpus. Statistics (sentences/words/syllables)\n\n'
         "VOCABULARY — a SNAPSHOT of the corpus's lexical character: vocabulary richness (TTR / Yule's K), lexical "
         "diversity (MTLD / vocd-D), word frequency (Zipf), TF-IDF distinctive words, hapax legomena, unusual words "
         "(NLTK), abstract/concrete, iconic vocabulary, proper nouns, language detection. Select '*' to run all; each "
         "runs with defaults.\n\nThis is a curated subset. For the FULL set of ~20 vocabulary & style options "
         "(short/vowel words, punctuation-as-pathos, objectivity/subjectivity, repetition, unigram variants, and more), "
-        "open the dedicated STYLE ANALYSIS GUI.")
+        "open the dedicated STYLE ANALYSIS GUI.""n-grams, sentence & line length. Select '*' to run all, or pick one. Runs with defaults.")
+    # y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+    #     "VOCABULARY — a SNAPSHOT of the corpus's lexical character: vocabulary richness (TTR / Yule's K), lexical "
+    #     "diversity (MTLD / vocd-D), word frequency (Zipf), TF-IDF distinctive words, hapax legomena, unusual words "
+    #     "(NLTK), abstract/concrete, iconic vocabulary, proper nouns, language detection. Select '*' to run all; each "
+    #     "runs with defaults.\n\nThis is a curated subset. For the FULL set of ~20 vocabulary & style options "
+    #     "(short/vowel words, punctuation-as-pathos, objectivity/subjectivity, repetition, unigram variants, and more), "
+    #     "open the dedicated STYLE ANALYSIS GUI.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
         "ENTITIES — who, what, where, when. A single Stanford CoreNLP pass extracts people & organizations, "
         "locations, gender, dates & time, and dialogue/quotes. ENGLISH + Stanford CoreNLP only — because gender, "
         "dialogue/quotes and normalized dates are available ONLY via CoreNLP, the whole pass uses it (NER for "
         "people/organizations/locations is also available via Stanza/spaCy in the dedicated NER GUI).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-        "WHERE DOES IT ALL HAPPEN? — the space of the corpus, in two senses. GEOCODABLE space: the place names your "
-        "text mentions (from NER) can be geocoded and mapped (Google Earth / folium / distances). SYMBOLIC space: the "
-        "non-geocodable, culturally-coded space of a narrative — kitchen vs. field, inside vs. outside, women's vs. "
-        "men's space — analysed by typology and cross-tabulated with gender. Both are network-heavy or interactive, so "
-        "this section OPENS the GIS and Symbolic-Space GUIs rather than running in the batch profile.")
+        "WHERE DOES IT ALL HAPPEN? — the space of the corpus, in two senses. GEOCODABLE space now RUNS in the "
+        "batch as a quick snapshot: the place names your text mentions (from NER) are geocoded and drawn as a "
+        "proportional-symbol map (bubble size = mentions). Only the top 40 distinct places are geocoded, so an "
+        "unattended run can't stall. Geocoder: Google if you have configured a geocode API key, otherwise "
+        "Nominatim/OpenStreetMap with folium — no key or download needed, chosen silently. As with other "
+        "dimensions, the dedicated GIS GUI offers far more control (geocoder choice, API key for speed, "
+        "Google Earth / folium / distances, manual correction of bad geocodes); the profiler is the quick "
+        "snapshot. SYMBOLIC space — the non-geocodable, culturally-coded space of a narrative (kitchen vs. field, "
+        "inside vs. outside, women's vs. men's space), analysed by typology and cross-tabulated with gender — is "
+        "interactive and still OPENS the Symbolic-Space GUI.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
         "SYNTAX — grammar & structure. The profile now RUNS, with defaults, a parts-of-speech distribution "
         "(nouns, verbs, adjectives, adverbs, pronouns) using the Stanza POS tagger, and reports the breakdown and "
         "the noun-to-verb ratio with a chart. The deeper CoNLL analyses (dependency, clause, function words, "
         "sentence complexity, readability) open from the CoNLL Table Analyzer GUI.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-        "SEMANTICS — what the words mean. The profile RUNS: (1) nouns & verbs aggregated UP to their WordNet "
-        "top-synset classes (English + WordNet), and (2) BERT word embeddings (sentence-transformers "
-        "all-distilroberta-v1) of the 200 most frequent words, projected into an interactive 2-D t-SNE semantic "
-        "map. Deeper tools — word-sense disambiguation, semantic similarity, nominalization — open from the "
-        "Semantic Analysis GUI.")
+        "SEMANTICS — what the words mean. The profile RUNS: (1) nouns & verbs aggregated UP to THREE knowledge "
+        "bases — WordNet top-synset classes (nouns & verbs), VerbNet classes (verbs) and FrameNet frames "
+        "(nouns & verbs) — three complementary lenses on meaning; and (2) BERT word embeddings "
+        "(sentence-transformers all-distilroberta-v1) of the 200 most frequent words, projected into an "
+        "interactive 2-D t-SNE semantic map. Deeper tools — word-sense disambiguation, semantic similarity, "
+        "nominalization — open from the Semantic Analysis GUI.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
         "TOPICS — what the corpus is about. The profile now RUNS Gensim LDA topic modeling with defaults "
         "(10 topics), producing an interactive pyLDAvis map plus a topic-keywords table the summary reads. "
@@ -389,8 +447,9 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         "NARRATIVE — who did what to whom. The profile now RUNS, with defaults, SVO (Subject-Verb-Object, via "
         "CoreNLP) and SRL (Semantic Role Labeling; skipped automatically if its transformer env isn't installed).\n\n"
         "Coreference — resolving 'he, she, his, they…' to WHO they actually are — underpins a great deal of the "
-        "semantic and narrative reading of a text. It is VERY slow, so rather than run it here it opens (with "
-        "dialogue and the 5 Ws) from the SVO GUI.")
+        "semantic and narrative reading of a text. It is VERY slow, so rather than run it here it opens (with the "
+        "5 Ws, and speaker-attributed dialogue) from the SVO GUI. Note: plain dialogue/quotes are already "
+        "extracted in the Entities pass above, so they are not repeated here.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
         "SENTIMENT — how the corpus feels. The profile now RUNS Stanza neural sentiment by default (a real model, "
         "not a dictionary; already installed with Stanza, no extra download). The other engines (BERT, spaCy, VADER, "

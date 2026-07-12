@@ -3750,14 +3750,20 @@ showStep(0);
     return [output_file]
 
 
-def proportional_circle_map(inputFilename, outputDir, location_col):
-    """Build a Leaflet.js proportional circle map for a location column.
+def proportional_circle_map(inputFilename, outputDir, location_col, Google_API='', top_n=50):
+    """Build a folium proportional circle map for a location column.
 
     Parameters
     ----------
     inputFilename : str   CSV file path.
     outputDir : str
     location_col : str    Column containing location names to geocode.
+    Google_API : str      Optional Google geocoding API key. When non-empty, locations are geocoded
+                          via Google (fast, high quota); if Google can't be built or its first call
+                          fails (bad key/quota), it falls back SILENTLY to Nominatim/OpenStreetMap
+                          (which needs no key). Blank -> Nominatim from the start.
+    top_n : int           Geocode only the top_n most frequent locations (bounds the network calls
+                          so an unattended run can't stall on hundreds of geocode requests).
 
     Returns
     -------
@@ -3796,7 +3802,7 @@ def proportional_circle_map(inputFilename, outputDir, location_col):
         subset = df[[location_col, lat_col, lon_col]].dropna()
         if subset.empty:
             return ''
-        freq = subset[location_col].value_counts().head(50)
+        freq = subset[location_col].value_counts().head(top_n)
         for loc_name, count in freq.items():
             row = subset[subset[location_col] == loc_name].iloc[0]
             try:
@@ -3808,25 +3814,52 @@ def proportional_circle_map(inputFilename, outputDir, location_col):
         loc_data = df[location_col].dropna().astype(str)
         if loc_data.empty:
             return ''
-        freq = loc_data.value_counts().head(50)
+        freq = loc_data.value_counts().head(top_n)
         if freq.empty:
             return ''
-        geolocator = Nominatim(user_agent='NLP_Suite_visualization')
+        # Prefer Google when an API key is supplied (fast, high quota); otherwise Nominatim. If Google
+        # can't be constructed, or its FIRST call fails (bad key / quota), fall back silently to
+        # Nominatim -- so the map still renders with no key and no user intervention.
+        use_google = bool(Google_API)
+        geolocator = None
+        if use_google:
+            try:
+                from geopy.geocoders import GoogleV3
+                geolocator = GoogleV3(api_key=Google_API)
+            except Exception:
+                use_google = False
+        if geolocator is None:
+            geolocator = Nominatim(user_agent='NLP_Suite_visualization')
         _geo_cache = {}
         for loc_name, count in freq.items():
             if loc_name in _geo_cache:
                 lat, lon = _geo_cache[loc_name]
             else:
                 try:
-                    result = geolocator.geocode(loc_name, timeout=5)
+                    result = geolocator.geocode(loc_name, timeout=10 if use_google else 5)
                     if result:
                         lat, lon = result.latitude, result.longitude
                         _geo_cache[loc_name] = (lat, lon)
                     else:
                         continue
-                    _time.sleep(1.1)
+                    if not use_google:
+                        _time.sleep(1.1)   # Nominatim enforces ~1 request/sec; Google has no such cap
                 except Exception:
-                    continue
+                    # a Google failure on the very first location -> switch to Nominatim and retry once
+                    if use_google and not _geo_cache:
+                        use_google = False
+                        geolocator = Nominatim(user_agent='NLP_Suite_visualization')
+                        try:
+                            result = geolocator.geocode(loc_name, timeout=5)
+                            if not result:
+                                continue
+                            lat, lon = result.latitude, result.longitude
+                            _geo_cache[loc_name] = (lat, lon)
+                            _time.sleep(1.1)
+                        except Exception:
+                            continue
+                    else:
+                        continue
             geo_rows.append((loc_name, lat, lon, count))
 
     if not geo_rows:

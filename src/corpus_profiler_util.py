@@ -23,12 +23,11 @@ import html as _html
 # ---------------------------------------------------------------------------------------------
 # Category metadata (order + user-question titles). Adding/moving categories is done here.
 # ---------------------------------------------------------------------------------------------
-CATEGORY_ORDER = ['counts', 'vocabulary', 'syntax', 'semantics',
+CATEGORY_ORDER = ['counts', 'syntax', 'semantics',
                   'topics', 'entities', 'spatial', 'narrative', 'sentiment', 'characters']
 
 CATEGORY_TITLE = {
-    'counts':    'How big / how varied?  (Counts & measures)',
-    'vocabulary': "What's the vocabulary like?  (Vocabulary)",
+    'counts':    'How big / how varied?  (Counts, measures & vocabulary)',
     'syntax':    'Grammar & structure — parts of speech  (Syntax)',
     'semantics': 'What do the words mean?  (Semantics)',
     'topics':    'What is it about?  (Topics)',
@@ -169,26 +168,51 @@ def _run_entities_all(c):
 
 # ---- semantics (English + WordNet) --------------------------------------------------------
 def _run_semantic_classes(c):
-    # parse POS, then aggregate nouns & verbs UP to their WordNet top-synset classes
+    # parse POS to noun/verb lemma lists, then aggregate them UP to THREE complementary knowledge bases:
+    #   WordNet  -- top-synset classes for nouns AND verbs (the interpretable "people vs things" view)
+    #   VerbNet  -- verb CLASSES (verbs only)
+    #   FrameNet -- semantic FRAMES (verbs and nouns)
+    # Same lemma lists, three lenses on meaning. Each aggregation is guarded so one failing (e.g. an
+    # NLTK corpus not downloaded) never loses the others.
     import Stanford_CoreNLP_util
     import semantic_aggregation_WordNet_util
+    import semantic_aggregation_util
     files = Stanford_CoreNLP_util.CoreNLP_annotate(
         c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
         c['chartPackage'], c['dataTransformation'], ['POS'], False,
         c['language'], c['export_json_var'], c['memory_var'],
         c['document_length_var'], c['limit_sentence_length_var'])
     out = []
-    if files:
-        pairs = []
-        if len(files) > 0 and 'verb' in str(files[0]).lower():
-            pairs.append((files[0], 'VERB'))
-        if len(files) > 1 and 'noun' in str(files[1]).lower():
-            pairs.append((files[1], 'NOUN'))
-        for f, tag in pairs:
-            r = semantic_aggregation_WordNet_util.aggregate_GoingUP(
-                '', f, c['outputDir'], c['config_filename'], tag,
-                False, c['chartPackage'], c['dataTransformation'], c['language'])
-            out += _files(r)
+    if not files:
+        return out
+    verb_file = files[0] if (len(files) > 0 and 'verb' in str(files[0]).lower()) else None
+    noun_file = files[1] if (len(files) > 1 and 'noun' in str(files[1]).lower()) else None
+    cp, dt = c['chartPackage'], c['dataTransformation']
+
+    # WordNet: nouns and verbs -> top-synset classes
+    for f, tag in ((verb_file, 'VERB'), (noun_file, 'NOUN')):
+        if not f:
+            continue
+        try:
+            out += _files(semantic_aggregation_WordNet_util.aggregate_GoingUP(
+                '', f, c['outputDir'], c['config_filename'], tag, False, cp, dt, c['language']))
+        except Exception as e:
+            print('Corpus Profiler: WordNet %s aggregation skipped: %s' % (tag, e))
+
+    # VerbNet (verbs only) + FrameNet (verbs), then FrameNet (nouns)
+    if verb_file:
+        for agg, name in ((semantic_aggregation_util.aggregate_VerbNet, 'VerbNet'),
+                          (semantic_aggregation_util.aggregate_FrameNet, 'FrameNet')):
+            try:
+                out += _files(agg(verb_file, c['outputDir'], 'VERB', cp, dt))
+            except Exception as e:
+                print('Corpus Profiler: %s VERB aggregation skipped: %s' % (name, e))
+    if noun_file:
+        try:
+            out += _files(semantic_aggregation_util.aggregate_FrameNet(
+                noun_file, c['outputDir'], 'NOUN', cp, dt))
+        except Exception as e:
+            print('Corpus Profiler: FrameNet NOUN aggregation skipped: %s' % e)
     return out
 
 
@@ -300,6 +324,44 @@ def _run_character_movement(c):
     return files
 
 
+# ---- spatial: a QUICK geocodable-space snapshot -- a proportional-symbol map of the corpus's place
+#      names. Locations come from the same Stanza NER pass Characters/movement uses; only the top-40
+#      DISTINCT places are geocoded (bounded, so an unattended run can't stall). Geocoder: Google IF a
+#      geocode API key is configured, else Nominatim/folium (no key, no download). The GIS GUI still
+#      offers the full control (geocoder choice, Google Earth / folium / distances, manual review) --
+#      this is the quick snapshot. ----
+def _run_spatial_map(c):
+    import NER_location_tracking_util
+    import charts_util
+    files = _files(NER_location_tracking_util.main(
+        c['inputFilename'], c['inputDir'], c['outputDir'], c['chartPackage'], c['dataTransformation']))
+    csvs = [f for f in files if str(f).lower().endswith('.csv')]
+    if not csvs:
+        return files
+    track_csv = csvs[0]
+    # Detect a configured Google geocode key by reading its config file DIRECTLY -- we must NOT call
+    # GIS_pipeline_util.getGoogleAPIkey here because, when the key is missing, it pops an interactive
+    # dialog (offering to open the TIPS file), which would hang the unattended profile. No file =
+    # no key = Nominatim, silently.
+    google_api = ''
+    try:
+        import GUI_IO_util
+        cfg = os.path.join(GUI_IO_util.configPath, 'Google-geocode-API_config.csv')
+        if os.path.isfile(cfg):
+            with open(cfg, encoding='utf-8', errors='ignore') as fh:
+                google_api = fh.read().strip()
+    except Exception:
+        google_api = ''
+    try:
+        map_file = charts_util.proportional_circle_map(
+            track_csv, os.path.dirname(track_csv), 'Location', Google_API=google_api, top_n=40)
+        if map_file:
+            files.append(map_file)
+    except Exception as e:
+        print('Corpus Profiler: geocodable-space map skipped: %s' % e)
+    return files
+
+
 # ---------------------------------------------------------------------------------------------
 # The registry.  id -> dict(category, label, kind, run)
 #   kind == 'batch' -> run(c) invoked during a profile; 'gui' -> surfaced as an "open tool" link.
@@ -316,32 +378,36 @@ REGISTRY = {
                              label='Line length'),
     # --- vocabulary (a curated SNAPSHOT; the full ~20-option menu lives in the Style Analysis GUI,
     #     which the report/help points to). Sourced from style_analysis_main.run(). ---
-    'yule':             dict(category='vocabulary', kind='batch', run=_run_yule,
+    'yule':             dict(category='counts', kind='batch', run=_run_yule,
                              label="Vocabulary richness (word type/token ratio or Yule's K)"),
-    'lexical_diversity': dict(category='vocabulary', kind='batch', run=_run_lexical_diversity,
+    'lexical_diversity': dict(category='counts', kind='batch', run=_run_lexical_diversity,
                              label='Lexical diversity (TTR, MTLD, vocd-D)'),
-    'word_frequency':   dict(category='vocabulary', kind='batch', run=_run_word_frequency,
+    'word_frequency':   dict(category='counts', kind='batch', run=_run_word_frequency,
                              label="Word frequency distribution (Zipf's Law)"),
-    'tfidf':            dict(category='vocabulary', kind='batch', run=_run_tfidf,
+    'tfidf':            dict(category='counts', kind='batch', run=_run_tfidf,
                              label='TF-IDF (most distinctive words per document)'),
-    'hapax':            dict(category='vocabulary', kind='batch', run=_run_hapax,
+    'hapax':            dict(category='counts', kind='batch', run=_run_hapax,
                              label='Hapax legomena (once-occurring words)'),
-    'unusual_words':    dict(category='vocabulary', kind='batch', run=_run_unusual_words,
+    'unusual_words':    dict(category='counts', kind='batch', run=_run_unusual_words,
                              label='Unusual words (via NLTK)'),
-    'abstract_concrete': dict(category='vocabulary', kind='batch', run=_run_abstract_concrete,
+    'abstract_concrete': dict(category='counts', kind='batch', run=_run_abstract_concrete,
                              label='Abstract / concrete vocabulary'),
-    'iconic':           dict(category='vocabulary', kind='batch', run=_run_iconic,
+    'iconic':           dict(category='counts', kind='batch', run=_run_iconic,
                              label='Iconic vocabulary'),
-    'capital_words':    dict(category='vocabulary', kind='batch', run=_run_word_shape('capital'),
+    'capital_words':    dict(category='counts', kind='batch', run=_run_word_shape('capital'),
                              label='Words with capital initial (proper nouns)'),
-    'language_detection': dict(category='vocabulary', kind='batch', run=_run_language_detection,
+    'language_detection': dict(category='counts', kind='batch', run=_run_language_detection,
                              label='Language detection'),
     # --- entities ---
     'entities_all':     dict(category='entities', kind='batch', run=_run_entities_all,
                              label='People, organizations, locations, gender, dates, dialogue (CoreNLP)'),
-    # --- spatial (geocoding is network-heavy & rate-limited -> pointers, not batch) ---
+    # --- spatial: a quick geocodable-space snapshot RUNS in batch (proportional-symbol map; Google if a
+    #     geocode key is configured, else Nominatim/folium). Full control (geocoder choice, API key,
+    #     Google Earth / folium / distances, manual review) stays in the GIS GUI; symbolic space its GUI. ---
+    'spatial_map':      dict(category='spatial', kind='batch', run=_run_spatial_map,
+                             label='Geocodable space — proportional-symbol map of corpus locations (Nominatim/Google)'),
     'spatial_gis':      dict(category='spatial', kind='gui', gui_script='GIS_main.py',
-                             label='Geocodable space — geocode & map corpus locations  (opens GIS GUI)'),
+                             label='Full geocoding & mapping — geocoder choice, API key, Google Earth / folium / distances  (opens GIS GUI)'),
     'spatial_symbolic': dict(category='spatial', kind='gui', gui_script='GIS_symbolic_main.py',
                              label='Symbolic space — narrative / gendered space typology  (opens Symbolic Space GUI)'),
     # --- semantics (snapshot: WordNet noun/verb classes; deeper tools via the Semantic GUI) ---
@@ -367,7 +433,7 @@ REGISTRY = {
     'narrative_srl':    dict(category='narrative', kind='batch', run=_run_srl,
                              label='SRL (Semantic Role Labeling)'),
     'narrative_more':   dict(category='narrative', kind='gui', gui_script='SVO_main.py',
-                             label='Coreference · dialogue · 5 Ws  (opens SVO GUI)'),
+                             label='Coreference · 5 Ws  (opens SVO GUI)'),
     # --- sentiment (VADER runs by default; other engines open from the Sentiment GUI) ---
     'sentiment_stanza': dict(category='sentiment', kind='batch', run=_run_sentiment,
                              label='Sentiment (Stanza)'),
@@ -420,7 +486,7 @@ def run_profile(ctx, selected):
 # so it works even if no analysis produced a statistics file.
 # ---------------------------------------------------------------------------------------------
 def corpus_header_stats(inputFilename, inputDir):
-    import glob
+    import glob, re
     paths = []
     if inputDir:
         paths = sorted(glob.glob(os.path.join(inputDir, '*.txt')))
@@ -429,15 +495,19 @@ def corpus_header_stats(inputFilename, inputDir):
     n_docs = len(paths)
     n_words = 0
     n_chars = 0
+    n_sents = 0
     for p in paths:
         try:
             with open(p, encoding='utf-8', errors='ignore') as fh:
                 text = fh.read()
             n_words += len(text.split())
             n_chars += len(text)
+            # rough sentence count: runs of end-of-sentence punctuation. Cheap and parser-free; the exact
+            # count comes from the Statistics analysis, this is just for the header/abstract averages.
+            n_sents += len(re.findall(r'[.!?]+', text))
         except Exception:
             pass
-    return dict(documents=n_docs, words=n_words, characters=n_chars)
+    return dict(documents=n_docs, words=n_words, characters=n_chars, sentences=n_sents)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -573,12 +643,13 @@ _INTERACTIVE_EXT = ('.html', '.htm', '.kml')
 
 # a natural lead-in per category so the templated prose reads as sentences, not labels
 _CATEGORY_LEAD = {
-    'counts':     'How big and how varied is the corpus? The profiler measured its size and spread.',
-    'vocabulary': 'What is the vocabulary like? The profiler looked at richness, frequency and word shape.',
+    'counts':     'How big and how varied is the corpus? The profiler measured its size and spread, and looked '
+                  'at vocabulary richness, frequency, word shape and document similarity.',
     'syntax':     'How is the language built? Every word was POS-tagged, so the corpus can be read as a '
                   'distribution of parts of speech — nouns, verbs, adjectives, adverbs, pronouns.',
-    'semantics':  'What do the words mean? Nouns and verbs were aggregated up to their WordNet classes, and '
-                  'the most frequent words were embedded with BERT into a 2-D t-SNE semantic map.',
+    'semantics':  'What do the words mean? Nouns and verbs were aggregated up to three knowledge bases — '
+                  'WordNet classes, VerbNet verb classes and FrameNet frames — and the most frequent words '
+                  'were embedded with BERT into a 2-D t-SNE semantic map.',
     'topics':     'What is the corpus about? Topics were surveyed.',
     'entities':   'Who, what, where and when? People, organizations, locations, gender and dates were extracted.',
     'spatial':    'Where does it all happen? Both geocodable and symbolic (narrative) space were considered.',
@@ -701,6 +772,41 @@ def _interp_vocabulary(files):
              % (k.mean(), k.min(), k.max()))]
 
 
+def _interp_tfidf_similarity(files):
+    # the "Document Similarity (TF-IDF Cosine)" matrix produced by the TF-IDF analysis: how much each PAIR
+    # of documents shares the same distinctive vocabulary. Read it and say what it means, plainly.
+    f = _find(files, 'tf-idf', 'similarity') or _find(files, 'tfidf', 'similarity')
+    if not f:
+        return []
+    df = _read_csv(f)
+    if df is None or df.shape[1] < 2:
+        return []
+    import pandas as pd
+    labels = df.iloc[:, 0].astype(str).tolist()
+    mat = df.iloc[:, 1:].apply(pd.to_numeric, errors='coerce')
+    n = min(len(labels), mat.shape[1])
+    vals, best = [], (None, None, -1.0)
+    for i in range(n):
+        for j in range(i + 1, n):   # off-diagonal, upper triangle only
+            v = mat.iloc[i, j]
+            if pd.notna(v):
+                vals.append(float(v))
+                if float(v) > best[2]:
+                    best = (labels[i], labels[j], float(v))
+    if not vals:
+        return []
+    line = ('Document similarity (TF-IDF cosine) gauges how much each PAIR of documents shares the same '
+            'distinctive vocabulary: 1.0 = near-identical wording, 0 = no salient words in common. The average '
+            'pairwise similarity across the corpus is %.2f' % (sum(vals) / len(vals)))
+    if best[0] is not None:
+        line += (', and the most alike documents are “%s” and “%s” (%.2f). In the heatmap, bright blocks are '
+                 'clusters of documents that talk alike, while dark rows are outliers with a vocabulary of '
+                 'their own.' % (best[0], best[1], best[2]))
+    else:
+        line += '.'
+    return [line]
+
+
 def _interp_entities(files):
     import pandas as pd
     findings = []
@@ -762,12 +868,50 @@ def _interp_semantics(files):
         if len(top):
             items = ', '.join('%s (%d)' % (str(r[catcol]), int(r['_f'])) for _, r in top.iterrows())
             findings.append('%s cluster into WordNet classes led by %s.' % (label, items))
+
+    # VerbNet verb classes and FrameNet frames -- the other two knowledge bases, same lemma lists.
+    def _top_cats(fkey, n=5):
+        f = _find(files, fkey, 'frequency')
+        if not f:
+            return None
+        df = _read_csv(f)
+        if df is None:
+            return None
+        catcol = next((c for c in df.columns if 'category' in str(c).lower()), None)
+        frqcol = next((c for c in df.columns if 'frequency' in str(c).lower()), None)
+        if not catcol or not frqcol:
+            return None
+        import pandas as pd
+        df = df.assign(_f=pd.to_numeric(df[frqcol], errors='coerce')).dropna(subset=['_f'])
+        df = df[df[catcol].astype(str).str.lower() != 'not found']   # drop the unclassified bucket
+        top = df.sort_values('_f', ascending=False).head(n)
+        if not len(top):
+            return None
+        return ', '.join('%s (%d)' % (str(r[catcol]), int(r['_f'])) for _, r in top.iterrows())
+
+    vn = _top_cats('verbnet_up_verb')
+    if vn:
+        findings.append('The same verbs sort into VerbNet classes (Levin-style syntactic-semantic verb '
+                        'classes) led by %s.' % vn)
+    fn_v = _top_cats('framenet_up_verb')
+    if fn_v:
+        findings.append('By FrameNet, the verbs evoke semantic frames led by %s.' % fn_v)
+    fn_n = _top_cats('framenet_up_noun')
+    if fn_n:
+        findings.append('Nouns evoke FrameNet frames led by %s.' % fn_n)
+
     # BERT word embeddings -> interactive t-SNE map (an HTML chart, linked below)
     if any(('word2vec_vector' in os.path.basename(str(f)).lower() or 'tsne' in os.path.basename(str(f)).lower())
            and str(f).lower().endswith(('.html', '.htm')) for f in files):
         findings.append('BERT (all-distilroberta-v1) embedded the corpus’s most frequent words and projected them '
                         'into an interactive 2-D t-SNE semantic map — words placed near each other are used in '
                         'similar contexts (open the interactive chart below).')
+    if findings:
+        # AGENCY callout (red/bold), the semantic twin of the passive-voice note in Syntax.
+        findings.append(_EMPH + 'NOMINALIZATION — recasting an action as a thing (“they decided” → “the '
+                        'decision”, “they migrated” → “the migration”) — hides who acted, the semantic twin '
+                        'of the passive and another marker of the DENIAL OF AGENCY. Run nominalization '
+                        'analysis in the Semantic Analysis GUI.')
     return findings
 
 
@@ -852,7 +996,10 @@ def _interp_topics(files):
     if not preview:
         return []
     return ['Gensim LDA distilled %d topics; the leading ones cluster around %s.' % (len(df), '; '.join(preview)),
-            'Topic modeling needs many documents for authoritative results — on a small corpus these are indicative.']
+            'Topic modeling needs many documents for authoritative results — on a small corpus these are indicative.',
+            'The profiler runs Gensim LDA (pure Python, nothing to install); MALLET (Java-based, often gives '
+            'sharper topics) and BERTopic, plus coherence tuning to choose the number of topics, are available '
+            'in the dedicated Topic Modeling GUI.']
 
 
 _EIGHT_EMOTIONS = ('Anger', 'Anticipation', 'Disgust', 'Fear', 'Joy', 'Sadness', 'Surprise', 'Trust')
@@ -897,7 +1044,8 @@ def _find_pos_df(files):
 
 
 _POS_NAMES = [('NOUN', 'nouns'), ('VERB', 'verbs'), ('ADJ', 'adjectives'),
-              ('ADV', 'adverbs'), ('PRON', 'pronouns'), ('PROPN', 'proper nouns')]
+              ('ADV', 'adverbs'), ('PRON', 'pronouns'), ('AUX', 'auxiliaries'),
+              ('PROPN', 'proper nouns')]
 
 
 def _interp_syntax(files):
@@ -908,15 +1056,38 @@ def _interp_syntax(files):
     total = int(vc.sum())
     if total == 0:
         return []
-    breakdown = ', '.join('%s %s (%.0f%%)' % (_thousands(vc.get(t, 0)), name, 100 * int(vc.get(t, 0)) / total)
-                          for t, name in _POS_NAMES if int(vc.get(t, 0)) > 0)
+    g = lambda t: int(vc.get(t, 0))
+    breakdown = ', '.join('%s %s (%.0f%%)' % (_thousands(g(t)), name, 100 * g(t) / total)
+                          for t, name in _POS_NAMES if g(t) > 0)
     findings = ['Of %s POS-tagged tokens, the parts of speech break down as %s.' % (_thousands(total), breakdown)]
-    nouns, verbs = int(vc.get('NOUN', 0)) + int(vc.get('PROPN', 0)), int(vc.get('VERB', 0))
+    nouns, verbs = g('NOUN') + g('PROPN'), g('VERB')
     if verbs:
         ratio = nouns / verbs
-        style = ('a nominal, descriptive style' if ratio > 1.5
-                 else ('a verbal, action-driven style' if ratio < 0.9 else 'a balanced style'))
-        findings.append('The noun-to-verb ratio is %.2f — %s.' % (ratio, style))
+        style = ('a nominal, descriptive style (more naming than doing)' if ratio > 1.5
+                 else ('a verbal, action-driven style (more doing than naming)' if ratio < 0.9
+                       else 'a balanced mix of naming and action'))
+        findings.append('The noun-to-verb ratio is %.2f, indicating %s.' % (ratio, style))
+    # lexical density: content words (nouns, proper nouns, verbs, adjectives, adverbs) as a share of tokens
+    content = g('NOUN') + g('PROPN') + g('VERB') + g('ADJ') + g('ADV')
+    findings.append('Lexical density — content words (nouns, verbs, adjectives, adverbs) as a share of all '
+                    'tokens — is %.0f%%; the remainder are function words (pronouns, auxiliaries, determiners, '
+                    'prepositions) that carry grammar rather than content.' % (100 * content / total))
+    # how heavily things are modified
+    if nouns:
+        extra = (' and %.2f adverbs per verb' % (g('ADV') / verbs)) if verbs else ''
+        findings.append('Modification density is %.2f adjectives per noun%s.' % (g('ADJ') / nouns, extra))
+    # auxiliaries: tense/aspect/mood, and (with passives) voice
+    if g('AUX'):
+        findings.append('Auxiliaries make up %s tokens (%.0f%%) — the be/have/do and modal verbs that mark '
+                        'tense, aspect, mood and voice; a high share often signals passives, perfects and '
+                        'hedged/modal writing.' % (_thousands(g('AUX')), 100 * g('AUX') / total))
+    if findings:
+        # AGENCY callout (red/bold): passive voice can't be read off POS counts — it needs the dependency
+        # parse. Flag it prominently because, with nominalization, it is a marker of the denial of agency.
+        findings.append(_EMPH + 'PASSIVE VOICE — “X was killed” with no killer named — backgrounds or erases '
+                        'the actor, a classic marker of the DENIAL OF AGENCY. It is invisible in POS counts '
+                        'alone; the dependency parse detects it. Run it in the CoNLL Table Analyzer GUI '
+                        '(dependency · clause · complexity · readability).')
     return findings
 
 
@@ -943,11 +1114,55 @@ def _interp_characters(files):
     return findings
 
 
+def _interp_spatial(files):
+    # read the NER location-tracking CSV (a 'Location' column) -> most-mentioned places + how many mapped
+    for cand in files:
+        if not str(cand).lower().endswith('.csv'):
+            continue
+        df = _read_csv(cand)
+        if df is None or 'Location' not in df.columns:
+            continue
+        locs = df['Location'].astype(str).str.strip()
+        locs = locs[(locs.str.len() > 0) & (locs.str.lower() != 'nan')]
+        if not len(locs):
+            continue
+        vc = locs.value_counts()
+        top = ', '.join('%s (%d)' % (p, int(cnt)) for p, cnt in vc.head(6).items())
+        mapped = min(len(vc), 40)
+        return ['The corpus names %s distinct places; the most frequent are %s. The top %s were geocoded '
+                'and drawn as a proportional-symbol map (bubble size = number of mentions). This is a quick '
+                'snapshot — the GIS GUI offers geocoder choice, an API key for speed, Google Earth / folium '
+                'output and manual review.' % (_thousands(len(vc)), top, _thousands(mapped))]
+    return []
+
+
+def _interp_counts_vocabulary(files):
+    # Counts and Vocabulary are one merged dimension now. Report them together but, when BOTH have
+    # findings, label the two sub-groups with bold sub-headings so the reader can still tell them apart.
+    counts = _interp_counts(files)
+    vocab = _interp_vocabulary(files) + _interp_tfidf_similarity(files)
+    if counts and vocab:
+        return ([_SUBHEAD + 'Counts & measures'] + counts +
+                [_SUBHEAD + 'Vocabulary'] + vocab)
+    return counts + vocab
+
+
+# A finding may be flagged for RED/BOLD emphasis by prefixing it with this sentinel; the render loop in
+# build_paper_summary strips it and styles that paragraph. Reserved for high-salience editorial callouts
+# — notably passive voice and nominalization as markers of the DENIAL OF AGENCY (open the deeper GUI).
+_EMPH = '@@EMPH@@'
+
+# A finding prefixed with this sentinel is rendered as a BOLD SUB-HEADING (not a finding paragraph) —
+# used to label sub-groups inside a merged dimension (e.g. "Counts & measures" vs "Vocabulary").
+_SUBHEAD = '@@SUB@@'
+
+
 def _interpret(category, files):
     """Dispatch to the per-category interpreter; always returns a (possibly empty) list of sentences."""
-    fn = {'counts': _interp_counts, 'vocabulary': _interp_vocabulary, 'entities': _interp_entities,
+    fn = {'counts': _interp_counts_vocabulary, 'entities': _interp_entities,
           'semantics': _interp_semantics, 'narrative': _interp_narrative, 'syntax': _interp_syntax,
-          'sentiment': _interp_sentiment, 'characters': _interp_characters, 'topics': _interp_topics}.get(category)
+          'sentiment': _interp_sentiment, 'characters': _interp_characters, 'topics': _interp_topics,
+          'spatial': _interp_spatial}.get(category)
     if not fn:
         return []
     try:
@@ -1151,7 +1366,9 @@ def build_paper_summary(outputDir, corpus_name, results, header_stats, run_confi
     n_docs = header_stats.get('documents', 0)
     n_words = header_stats.get('words', 0)
     n_chars = header_stats.get('characters', 0)
+    n_sents = header_stats.get('sentences', 0)
     avg_words = int(round(n_words / n_docs)) if n_docs else 0
+    avg_sents = int(round(n_sents / n_docs)) if n_docs else 0
     total_files = sum(len(r['files']) for r in results)
     ran = [r for r in results if r.get('kind') == 'batch' and not r.get('error')]
     failed = [r for r in results if r.get('error')]
@@ -1163,13 +1380,14 @@ def build_paper_summary(outputDir, corpus_name, results, header_stats, run_confi
     dims = ', '.join(CATEGORY_TITLE[c].split('  ')[0].rstrip('?').strip().lower() for c in cats_present)
     abstract = (
         'This report profiles the corpus <b>%s</b>, comprising <b>%s</b> document%s totaling '
-        '<b>%s</b> words (%s characters), an average of <b>%s</b> words per document. '
+        '<b>%s</b> words (%s characters), an average of <b>%s</b> words and <b>%s</b> sentences per document. '
         'The Corpus Profiler ran <b>%d</b> automated analys%s across <b>%d</b> dimension%s — %s — '
-        'producing <b>%s</b> output file%s. The findings are summarized below; every figure links to '
-        'the source data, and the full navigable index of all outputs is available in the '
-        '<a href="%s">companion report</a>.'
+        'producing <b>%s</b> output file%s. '
+        '<span style="color:#c1121f;font-weight:700">The findings are summarized below; every figure '
+        'links to the source data, and the full navigable index of all outputs is available in the '
+        '<a href="%s" style="color:inherit">companion report</a>.</span>'
         % (_esc(corpus_name), _fmt(n_docs), '' if n_docs == 1 else 's',
-           _fmt(n_words), _fmt(n_chars), _fmt(avg_words),
+           _fmt(n_words), _fmt(n_chars), _fmt(avg_words), _fmt(avg_sents),
            len(ran), 'is' if len(ran) == 1 else 'es',
            len(cats_present), '' if len(cats_present) == 1 else 's', _esc(dims),
            _fmt(total_files), '' if total_files == 1 else 's',
@@ -1280,7 +1498,14 @@ def build_paper_summary(outputDir, corpus_name, results, header_stats, run_confi
         for r in recs:
             cat_files += r.get('files', [])
         for _finding in _interpret(cat, cat_files):
-            parts.append('<p class="finding">%s</p>' % _esc(_finding))
+            if _finding.startswith(_SUBHEAD):   # bold sub-heading labelling a sub-group of the dimension
+                parts.append('<p style="font-weight:700;margin:16px 0 3px">%s</p>'
+                             % _esc(_finding[len(_SUBHEAD):]))
+            elif _finding.startswith(_EMPH):   # high-salience callout (e.g. agency markers) -> red + bold
+                parts.append('<p class="finding" style="color:#c1121f;font-weight:700">%s</p>'
+                             % _esc(_finding[len(_EMPH):]))
+            else:
+                parts.append('<p class="finding">%s</p>' % _esc(_finding))
 
         # NATIVE inline-SVG charts, drawn from the numbers -> a chart in every quantitative section,
         # regardless of whether the tool emitted a PNG, an Excel chart, or a Plotly HTML.
@@ -1327,10 +1552,12 @@ def build_paper_summary(outputDir, corpus_name, results, header_stats, run_confi
         # prominently instead of showing a blank iframe.
         html_charts = [f for f in all_inter if str(f).lower().endswith(('.html', '.htm'))]
         if html_charts:
-            links = ' &nbsp;·&nbsp; '.join('<a href="%s">▶&nbsp;%s</a>'
+            # links inherit the red so the whole how-to-open line reads as one emphasized pointer
+            links = ' &nbsp;·&nbsp; '.join('<a href="%s" style="color:inherit">▶&nbsp;%s</a>'
                                            % (_esc(_rel(h, report_dir)), _esc(_humanize_file(h)))
                                            for h in html_charts[:6])
-            parts.append('<p class="interactive"><b>Interactive charts</b> (open in browser): %s</p>' % links)
+            parts.append('<p class="interactive" style="color:#c1121f;font-weight:700">'
+                         '<b>Interactive charts</b> (open in browser): %s</p>' % links)
 
         # source-data links (csv/xlsx) + remaining artifacts (kml, extra charts)
         _linked = set(html_charts[:6])
@@ -1343,8 +1570,9 @@ def build_paper_summary(outputDir, corpus_name, results, header_stats, run_confi
 
         # GUI-only dimensions (geocoding, topics, deeper tools) -> honest pointer
         if gui_ptrs and not all_imgs and not srcs:
-            parts.append('<p class="note">This dimension is explored interactively — open the '
-                         '<b>%s</b> tool from the NLP Suite menu.</p>' % _esc(', '.join(gui_ptrs)))
+            parts.append('<p class="note" style="color:#c1121f;font-weight:700">This dimension is explored '
+                         'interactively — open the <b>%s</b> tool from the NLP Suite menu.</p>'
+                         % _esc(', '.join(gui_ptrs)))
 
         # failures surfaced, never swallowed
         for lab, err in errs:
@@ -1352,6 +1580,29 @@ def build_paper_summary(outputDir, corpus_name, results, header_stats, run_confi
                          % (_esc(lab), _esc(err)))
 
         parts.append('</section>')
+
+    # ---- capability callout: the statistical hypothesis tests available on ANY csv the profiler emits.
+    #      These are NOT run in the batch (they need the user to choose columns/groups), but the profiler
+    #      produces exactly the data they consume -- so we advertise them, with a red/bold how-to-run. ----
+    parts.append(
+        '<section class="dim"><h2 class="dim"><span class="num">+</span>Going further — statistics on '
+        'these results</h2>'
+        '<p class="lead-p">Every table above is a csv you can test statistically. The suite\'s '
+        '<b>Statistical Analyses of csv Files</b> tool runs, on any of these outputs:</p>'
+        '<ul>'
+        '<li><b>Mann-Whitney U / Kruskal-Wallis</b> — do two or more groups differ?</li>'
+        '<li><b>Log-likelihood</b> — which words are over-represented vs. another corpus (keyness)?</li>'
+        '<li><b>Chi-square (independence)</b> — is a cross-tabulated association significant?</li>'
+        '<li><b>Correlation (Spearman / Kendall)</b> — do two measures move together?</li>'
+        '<li><b>Mann-Kendall</b> — is there a monotonic trend over time?</li>'
+        '<li><b>Change-point detection</b> — when does a temporal series shift?</li>'
+        '<li><b>Permutation test</b> — a distribution-free difference between two groups</li>'
+        '<li><b>Inter-annotator agreement</b> — Cohen\'s / Fleiss\' kappa</li>'
+        '</ul>'
+        '<p class="finding" style="color:#c1121f;font-weight:700">To run any of these, open the '
+        '<b>Statistical Analyses of csv Files</b> GUI from the NLP Suite menu and choose one of this '
+        'profile\'s csv outputs as input — the profiler produces the data; the Statistics GUI tests it.</p>'
+        '</section>')
 
     # ---- methods / data footer ----
     if failed:

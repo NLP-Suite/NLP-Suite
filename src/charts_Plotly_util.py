@@ -354,9 +354,24 @@ def bubble_chart(inputFilename, outputDir, y_column, X_axis_var='', color_column
         print(f"   ERROR: column '{x_col}' or '{y_col}' not found in CSV.")
         return None
 
+    # color_column may be EITHER a csv column name (color-code the bubbles BY that category)
+    # OR an "R, G, B" string coming from the GUI's color picker (paint EVERY bubble one uniform
+    # color, e.g. "135, 207, 236" or "(135, 207, 236)"). Detect an RGB triple first; anything
+    # else is treated as a column name (the original behavior).
+    def _rgb(s):
+        try:
+            parts = [p.strip() for p in str(s).strip().strip('()').split(',')]
+            vals = [int(float(p)) for p in parts]
+            if len(vals) == 3 and all(0 <= v <= 255 for v in vals):
+                return 'rgb(%d, %d, %d)' % tuple(vals)
+        except Exception:
+            pass
+        return None
+
+    uniform_color = _rgb(color_column)
     keep_cols = [x_col, y_col]
     color_col = None
-    if color_column and color_column in df.columns:
+    if color_column and not uniform_color and color_column in df.columns:
         color_col = color_column
         keep_cols.append(color_col)
 
@@ -376,21 +391,36 @@ def bubble_chart(inputFilename, outputDir, y_column, X_axis_var='', color_column
 
     counts = df.groupby(group_cols).size().reset_index(name='Frequency')
 
-    fig = px.scatter(
-        counts,
+    # x_col / y_col were cast to str, so plotly treats them as categories and would order them by
+    # first-appearance (2, 10, 3, ...). Sort each axis NUMERICALLY when its values are numbers,
+    # else alphabetically, so numeric axes (word length, rounded sentiment, counts) read correctly.
+    def _order(series):
+        vals = list(dict.fromkeys(series.tolist()))
+        try:
+            return sorted(vals, key=lambda v: float(v))
+        except (ValueError, TypeError):
+            return sorted(vals)
+
+    scatter_kwargs = dict(
         x=x_col,
         y=y_col,
         size='Frequency',
-        color=color_col if color_col else y_col,
         hover_data={'Frequency': True, x_col: True, y_col: True},
         title='Bubble Chart: ' + x_col + ' vs. ' + y_col,
         size_max=60,
+        category_orders={x_col: _order(counts[x_col]), y_col: _order(counts[y_col])},
     )
+    if uniform_color:
+        # one user-chosen color for every bubble (no color grouping, so no legend)
+        fig = px.scatter(counts, color_discrete_sequence=[uniform_color], **scatter_kwargs)
+    else:
+        # color-code the bubbles by the chosen column (or the Y category as a fallback)
+        fig = px.scatter(counts, color=color_col if color_col else y_col, **scatter_kwargs)
 
     fig.update_layout(
         xaxis_title=x_col,
         yaxis_title=y_col,
-        showlegend=True,
+        showlegend=not bool(uniform_color),
     )
 
     outputFilename = os.path.join(outputDir, 'bubble_chart_' +
