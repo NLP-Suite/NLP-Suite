@@ -108,20 +108,25 @@ jobs:
           fi
           URL="https://api.adoptium.net/v3/binary/latest/${JAVA_MAJOR}/ga/${OS}/${ARCH}/jre/hotspot/normal/eclipse"
           echo "Downloading Temurin JRE ${JAVA_MAJOR}: $URL"
-          curl -fSL "$URL" -o "/tmp/jre.${EXT}"
-          rm -rf /tmp/jre_extract; mkdir -p /tmp/jre_extract
+          # Use WORKSPACE-RELATIVE paths, NOT /tmp. On the Windows runner, Git Bash's curl writes to
+          # the MSYS /tmp, but native Windows python resolves '/tmp/jre.zip' as C:\tmp\jre.zip -- a
+          # different location -- so extraction failed with FileNotFoundError. Relative paths resolve
+          # to the same working directory for both the MSYS and native toolchains.
+          curl -fSL "$URL" -o "jre_dl.${EXT}"
+          rm -rf jre_extract; mkdir -p jre_extract
           if [ "$EXT" = "zip" ]; then
-            python -c "import zipfile; zipfile.ZipFile('/tmp/jre.zip').extractall('/tmp/jre_extract')"
-            JAVA_BIN=$(find /tmp/jre_extract -type f -name java.exe | head -1)
+            python -c "import zipfile; zipfile.ZipFile('jre_dl.zip').extractall('jre_extract')"
+            JAVA_BIN=$(find jre_extract -type f -name java.exe | head -1)
           else
-            tar -xzf /tmp/jre.tar.gz -C /tmp/jre_extract
-            JAVA_BIN=$(find /tmp/jre_extract -type f -name java | head -1)
+            tar -xzf "jre_dl.tar.gz" -C jre_extract
+            JAVA_BIN=$(find jre_extract -type f -name java | head -1)
           fi
           if [ -z "${JAVA_BIN:-}" ]; then echo "ERROR: java not found in extracted JRE"; exit 1; fi
           HOME_DIR=$(dirname "$(dirname "$JAVA_BIN")")   # .../bin/java -> Home
           rm -rf "$JRE_DIR"; mkdir -p "$JRE_DIR"
           cp -R "$HOME_DIR/." "$JRE_DIR/"
           "$JRE_DIR/bin/$(basename "$JAVA_BIN")" -version
+          rm -rf jre_extract "jre_dl.${EXT}"   # keep the workspace clean for the archive step
           echo "Bundled Temurin JRE ${JAVA_MAJOR} at $JRE_DIR"
 
       - name: Bundle VC++ runtime DLLs into portable env (Windows only)
