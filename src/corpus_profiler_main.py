@@ -118,6 +118,22 @@ def run():
     # localize exactly how far run() got; if the LAST marker prints and the window still closes, the
     # teardown is a .quit()/.destroy() somewhere (no exception), not a crash.
     try:
+        # SILENT MODE: for the duration of the unattended batch, suppress the OK-button dialogs
+        # (showwarning / showerror / showinfo) so a stray warning from any analysis can't FREEZE the run
+        # waiting for a click -- they print to the console instead. Restored in the finally below.
+        # (askyesno/askokcancel are left alone -- they branch on the answer; timed_alert already
+        # auto-dismisses.) Modules call these as `mb.showwarning`, i.e. tkinter.messagebox.showwarning,
+        # so patching the module attributes covers them all.
+        import tkinter.messagebox as _mbmod
+        _orig_dialogs = (_mbmod.showwarning, _mbmod.showerror, _mbmod.showinfo)
+
+        def _silent_dialog(title=None, message=None, **_kw):
+            print('[Corpus Profiler: dialog suppressed] %s -- %s'
+                  % (title, str(message).replace('\n', ' ')[:300]))
+        _mbmod.showwarning = _silent_dialog
+        _mbmod.showerror = _silent_dialog
+        _mbmod.showinfo = _silent_dialog
+
         results = corpus_profiler_util.run_profile(ctx, selected)
         print('>>> Corpus Profiler: %d analyses done; building index report...' % len(results))
         header = corpus_profiler_util.corpus_header_stats(inputFilename, inputDir)
@@ -175,6 +191,12 @@ def run():
         print('>>> Corpus Profiler: run() tail terminated abnormally -- traceback follows:')
         traceback.print_exc()
         raise
+    finally:
+        # restore the real dialogs no matter how the run ended
+        try:
+            _mbmod.showwarning, _mbmod.showerror, _mbmod.showinfo = _orig_dialogs
+        except Exception:
+            pass
 
 
 GUI_util.run_button.configure(command=run)
