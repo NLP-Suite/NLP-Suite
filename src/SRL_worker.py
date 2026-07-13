@@ -338,9 +338,62 @@ def main():
     # Imported here, not at module top: transformer_srl + its submodules register the AllenNLP
     # components, but the legacy py3.8 stack only exists in the isolated SRL env where this runs.
     from transformer_srl import dataset_readers, models, predictors  # noqa: F401
-    predictor = predictors.SrlTransformersPredictor.from_path(model_path, "transformer_srl")
 
-    rows = []
+    # Use the GPU if the isolated SRL env has a CUDA-enabled torch + a visible device; otherwise stay
+    # on CPU (cuda_device=-1). On a GPU this is dramatically faster; on CPU it's a harmless no-op.
+    cuda_device = -1
+    try:
+        import torch
+        if torch.cuda.is_available():
+            cuda_device = 0
+            sys.stderr.write("SRL: CUDA GPU detected -- running on GPU.\n")
+    except Exception:
+        pass
+    predictor = predictors.SrlTransformersPredictor.from_path(model_path, "transformer_srl",
+                                                              cuda_device=cuda_device)
+
+    def _rows_for(res, doc_link, doc_date, sid, sentence):
+        # Build the CSV rows for ONE sentence's SRL result (one row per predicate/verb). Identical
+        # logic whether the result came from a batched or a single-sentence predict call.
+        out_rows = []
+        words = res.get("words", [])
+        for v in res.get("verbs", []):
+            r = roles_from_tags(words, v.get("tags", []))
+            frame = v.get("frame", v.get("sense", ""))
+            predicate_lemma = (frame.split(".")[0] if frame else v.get("verb", "")).lower()
+            # FrameNet frame: sense-based chain first; if the model mis-sensed an out-of-inventory
+            # predicate (e.g. lynched -> liquify.01), fall back to the SURFACE verb's lemma.
+            fn_frame = frame_map.get(frame, "")
+            if not fn_frame:
+                fn_frame = fl_map.get(lemmatize_verb(v.get("verb", "")), "")
+            row = {
+                "Document": doc_link,
+                "Date": doc_date,
+                "Sentence ID": sid,
+                "Sentence": sentence,
+                "Predicate": v.get("verb", ""),
+                "Frame": frame,
+                "VerbNet class": class_map.get(frame, ""),
+                "FrameNet frame": fn_frame,
+                "Description": v.get("description", ""),
+            }
+            for label, header in ROLE_COLUMNS:
+                row[header] = "; ".join(r.get(label, []))
+            # Refined thematic-role reading alongside the ARG columns (VerbAtlas if pb2va.tsv is
+            # present, else heuristic).
+            refined = []
+            for label in REFINED_ORDER:
+                for txt in r.get(label, []):
+                    role = refine_role(label, txt, predicate_lemma, sense=frame, role_map=role_map)
+                    refined.append("%s: %s" % (role, txt))
+            row["Refined roles"] = " | ".join(refined)
+            out_rows.append(row)
+        return out_rows
+
+    # PASS 1: split every document into sentences and write its HTML duplicate, collecting one
+    # prediction "unit" per sentence. Batching the model over many sentences at once (PASS 2) is the
+    # real speedup -- a per-sentence predict() call pays the full model + AllenNLP overhead every time.
+    units = []   # (doc_link, doc_date, sid, sentence)
     for f in files:
         doc_name = os.path.basename(f)
         doc_date = extract_date(doc_name)
@@ -353,44 +406,38 @@ def main():
         sentences = sentence_split(text)
         html_path = write_html_duplicate(html_dir, doc_name, sentences)
         for sid, sentence in enumerate(sentences, 1):
-            doc_link = dress_html_anchor_link(html_path, sid)
+            units.append((dress_html_anchor_link(html_path, sid), doc_date, sid, sentence))
+
+    # PASS 2: run the model in batches. predict_batch_json feeds many sentences through a single
+    # forward pass (AllenNLP handles the multi-verb-per-sentence aggregation, so each returned item
+    # has the same shape as predict()). If a batch errors (e.g. one pathological sentence), fall back
+    # to per-sentence prediction for just that batch so one bad sentence can't lose the rest.
+    BATCH = 32
+    total = len(units)
+    can_batch = hasattr(predictor, "predict_batch_json")
+    sys.stderr.write("SRL: %d sentences to process%s...\n"
+                     % (total, "" if can_batch else " (per-sentence: batch API unavailable)"))
+    rows = []
+    for i in range(0, total, BATCH):
+        chunk = units[i:i + BATCH]
+        preds = None
+        if can_batch:
             try:
-                res = predictor.predict(sentence=sentence)
+                preds = predictor.predict_batch_json([{"sentence": u[3]} for u in chunk])
             except Exception as e:
-                sys.stderr.write("SRL failed on a sentence in %s: %s\n" % (doc_name, e))
-                continue
-            words = res.get("words", [])
-            for v in res.get("verbs", []):
-                r = roles_from_tags(words, v.get("tags", []))
-                frame = v.get("frame", v.get("sense", ""))
-                predicate_lemma = (frame.split(".")[0] if frame else v.get("verb", "")).lower()
-                # FrameNet frame: sense-based chain first; if the model mis-sensed an out-of-inventory
-                # predicate (e.g. lynched -> liquify.01), fall back to the SURFACE verb's lemma.
-                fn_frame = frame_map.get(frame, "")
-                if not fn_frame:
-                    fn_frame = fl_map.get(lemmatize_verb(v.get("verb", "")), "")
-                row = {
-                    "Document": doc_link,
-                    "Date": doc_date,
-                    "Sentence ID": sid,
-                    "Sentence": sentence,
-                    "Predicate": v.get("verb", ""),
-                    "Frame": frame,
-                    "VerbNet class": class_map.get(frame, ""),
-                    "FrameNet frame": fn_frame,
-                    "Description": v.get("description", ""),
-                }
-                for label, header in ROLE_COLUMNS:
-                    row[header] = "; ".join(r.get(label, []))
-                # Refined thematic-role reading alongside the ARG columns (VerbAtlas if pb2va.tsv is
-                # present, else heuristic).
-                refined = []
-                for label in REFINED_ORDER:
-                    for txt in r.get(label, []):
-                        role = refine_role(label, txt, predicate_lemma, sense=frame, role_map=role_map)
-                        refined.append("%s: %s" % (role, txt))
-                row["Refined roles"] = " | ".join(refined)
-                rows.append(row)
+                sys.stderr.write("SRL: batch predict failed (%s); retrying that batch per sentence.\n" % e)
+                preds = None
+        if preds is None:
+            preds = []
+            for u in chunk:
+                try:
+                    preds.append(predictor.predict(sentence=u[3]))
+                except Exception as e:
+                    sys.stderr.write("SRL failed on a sentence: %s\n" % e)
+                    preds.append({"words": [], "verbs": []})
+        for (doc_link, doc_date, sid, sentence), res in zip(chunk, preds):
+            rows.extend(_rows_for(res, doc_link, doc_date, sid, sentence))
+        sys.stderr.write("SRL: processed %d/%d sentences\n" % (min(i + BATCH, total), total))
 
     with open(output_csv, "w", newline="", encoding="utf-8") as out:
         writer = csv.DictWriter(out, fieldnames=HEADERS)
