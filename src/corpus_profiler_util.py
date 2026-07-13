@@ -161,6 +161,17 @@ def _run_entities_all(c):
     if picked:
         print('>>> Entities: used the shared CoreNLP cache (%d files) -- no re-parse' % len(picked))
         return picked
+    if not _is_corenlp_package(c.get('package')):
+        # Stanza/spaCy config: run NER (people/organizations/locations) through the configured parser --
+        # no Java. Gender, dialogue/quotes and normalized dates are CoreNLP-ONLY, so they are skipped
+        # here (the summary notes this). This is what lets the profiler run entities with no CoreNLP.
+        import Stanza_util
+        print('>>> Entities: Stanza NER (config is not CoreNLP); gender/dialogue/dates skipped (CoreNLP-only)')
+        out = Stanza_util.Stanza_annotate(
+            c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
+            c['chartPackage'], c['dataTransformation'], ['NER'], False,
+            [c['language']], c['memory_var'], c['document_length_var'], c['limit_sentence_length_var'])
+        return list(dict.fromkeys(_files(out)))   # Stanza returns the file once per doc; dedupe
     import Stanford_CoreNLP_util
     NER_list = ['PERSON', 'ORGANIZATION', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
     out = Stanford_CoreNLP_util.CoreNLP_annotate(
@@ -196,14 +207,21 @@ def _run_semantic_classes(c):
         if verb_file or noun_file:
             print('>>> Semantics: used the shared CoreNLP POS cache -- no re-parse')
     if not (verb_file or noun_file):
-        import Stanford_CoreNLP_util
-        files = _files(Stanford_CoreNLP_util.CoreNLP_annotate(
-            c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
-            c['chartPackage'], c['dataTransformation'], ['POS'], False,
-            c['language'], c['export_json_var'], c['memory_var'],
-            c['document_length_var'], c['limit_sentence_length_var']))
-        verb_file = files[0] if (len(files) > 0 and 'verb' in str(files[0]).lower()) else None
-        noun_file = files[1] if (len(files) > 1 and 'noun' in str(files[1]).lower()) else None
+        if _is_corenlp_package(c.get('package')):
+            import Stanford_CoreNLP_util
+            files = _files(Stanford_CoreNLP_util.CoreNLP_annotate(
+                c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
+                c['chartPackage'], c['dataTransformation'], ['POS'], False,
+                c['language'], c['export_json_var'], c['memory_var'],
+                c['document_length_var'], c['limit_sentence_length_var']))
+            verb_file = files[0] if (len(files) > 0 and 'verb' in str(files[0]).lower()) else None
+            noun_file = files[1] if (len(files) > 1 and 'noun' in str(files[1]).lower()) else None
+        else:
+            # Non-CoreNLP config: the WordNet/VerbNet/FrameNet aggregation needs CoreNLP's noun/verb POS
+            # split, which Stanza/spaCy don't produce in that form. Skip (no Java) rather than crash;
+            # the summary notes it. (Making this run under Stanza is a separate config-aware POS refactor.)
+            print('>>> Semantics: knowledge-base aggregation needs the CoreNLP POS noun/verb split; '
+                  'skipped under a non-CoreNLP config (select CoreNLP, or use the Semantic Analysis GUI).')
 
     out = []
     if not (verb_file or noun_file):
@@ -555,15 +573,19 @@ def _prime_parse_cache(ctx, selected):
     ctx['_ner_track_files'] = None
     sel = set(selected)
 
-    # one combined CoreNLP pass covering every selected CoreNLP dimension
+    # one combined CoreNLP pass covering every selected CoreNLP dimension -- but ONLY when the user
+    # actually configured CoreNLP. Under Stanza/spaCy we must NOT fire CoreNLP (it needs Java + the
+    # engine JARs, absent on the portable build): each dimension runs through the configured parser in
+    # its own runner instead -- entities -> Stanza NER (gender/dialogue/dates are CoreNLP-only, skipped),
+    # semantics POS -> skipped (needs the CoreNLP noun/verb split), SVO -> Stanza/spaCy.
     annotators = []
-    if 'entities_all' in sel:
-        annotators += ['NER', 'gender', 'quote', 'normalized-date']
-    if 'semantic_classes' in sel:
-        annotators += ['POS']
-    if 'narrative_svo' in sel and _is_corenlp_package(ctx.get('package')):
-        annotators += ['SVO']   # SVO rides the CoreNLP pass ONLY when CoreNLP is the configured parser;
-        #                         under Stanza/spaCy, _run_svo runs SVO through that parser instead (no Java)
+    if _is_corenlp_package(ctx.get('package')):
+        if 'entities_all' in sel:
+            annotators += ['NER', 'gender', 'quote', 'normalized-date']
+        if 'semantic_classes' in sel:
+            annotators += ['POS']
+        if 'narrative_svo' in sel:
+            annotators += ['SVO']
     if len(annotators) >= 2:   # only worth combining when 2+ CoreNLP dimensions are on
         try:
             import Stanford_CoreNLP_util
@@ -945,6 +967,11 @@ def _interp_entities(files):
     import pandas as pd
     findings = []
     f = _find(files, 'ner_all_ner', exclude=('bydoc', 'chart', 'group', 'no_hyperlinks', 'stats'))
+    if not f:
+        # Stanza/spaCy NER output isn't named 'ner_all_ner'; fall back to any NER csv (the NER+Word
+        # column check below gates it, so a wrongly-picked file simply yields no findings).
+        f = _find(files, '_ner', exclude=('bydoc', 'chart', 'group', 'no_hyperlinks', 'stats',
+                                          'gender', 'svo', 'lemma'))
     if f:
         df = _read_csv(f)
         if df is not None and 'NER' in df.columns and 'Word' in df.columns:
@@ -980,6 +1007,12 @@ def _interp_entities(files):
                 vc = df[tcol].astype(str).value_counts()
                 typ = ' — mostly ' + ', '.join('%s %s' % (int(v), k.lower()) for k, v in vc.head(3).items())
             findings.append('%s time expressions were extracted and normalized%s.' % (_thousands(len(df)), typ))
+    if not fg:
+        # No gender output -> we ran NER through Stanza/spaCy (the configured parser), not CoreNLP.
+        findings.append(_EMPH + 'Gender, dialogue/quotes and normalized dates were NOT extracted — these '
+                        'are available ONLY via Stanford CoreNLP. To get them, set the NLP package to '
+                        'Stanford CoreNLP in Setup, or use the dedicated HTML Annotator (gender), SVO '
+                        '(dialogue/quotes) and CoreNLP date GUIs.')
     return findings
 
 
@@ -1033,6 +1066,13 @@ def _interp_semantics(files):
     fn_n = _top_cats('framenet_up_noun')
     if fn_n:
         findings.append('Nouns evoke FrameNet frames led by %s.' % fn_n)
+
+    if not findings:
+        # No WordNet/VerbNet/FrameNet findings -> the KB aggregation was skipped (non-CoreNLP config:
+        # it needs the CoreNLP noun/verb POS split). The BERT map below may still have run.
+        findings.append(_EMPH + 'Noun & verb knowledge-base classes (WordNet / VerbNet / FrameNet) were '
+                        'NOT computed — that aggregation needs Stanford CoreNLP’s noun/verb POS split. Set '
+                        'the NLP package to Stanford CoreNLP in Setup, or run the Semantic Analysis GUI.')
 
     # BERT word embeddings -> interactive t-SNE map (an HTML chart, linked below)
     if any(('word2vec_vector' in os.path.basename(str(f)).lower() or 'tsne' in os.path.basename(str(f)).lower())
