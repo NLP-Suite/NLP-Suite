@@ -280,17 +280,18 @@ def percentile(n):
 # chart_title_label is used as part of the chart_title
 def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outputFileNameLabel, groupByField: list, plotField: list, chart_title_label, chartPackage, dataTransformation):
     filesToOpen=[]
+    # Reject non-CSV inputs FIRST and SILENTLY (no dialog). A charting step can hand this function a
+    # PNG (e.g. the auto-generated heatmap) that slipped into the output-file list; reading a PNG's
+    # "headers" then popped a confusing, BLOCKING "Groupby field error" dialog that froze the unattended
+    # Corpus Profiler. A non-csv simply isn't groupable -- skip it and move on.
+    if not str(inputFilename).lower().endswith('.csv'):
+        print('compute_csv_column_statistics_groupBy: skipping non-csv input ' + str(inputFilename))
+        return None
     outputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', '', outputFileNameLabel + '_group_stats')
-    # filesToOpen.append(output_name)
 
     if not set(groupByField).issubset(set(IO_csv_util.get_csvfile_headers(inputFilename))):
         mb.showwarning(title='Groupby field error',
                        message="The selected groupby fields (" + ", ".join(groupByField) + ") are not in the headers (" + ", ".join(IO_csv_util.get_csvfile_headers(inputFilename)) + ") of the file " + inputFilename)
-
-    if inputFilename[-4:] != '.csv':
-        mb.showwarning(title='File type error',
-                       message="The input file\n\n" + inputFilename + "\n\nis not a csv file. The statistical function only works with input csv files.\n\nPlease, select a csv file in input and try again!")
-        return None
     # reading csv file
     try:
         df = pd.read_csv(inputFilename, encoding="utf-8", on_bad_lines='skip').squeeze("columns")
