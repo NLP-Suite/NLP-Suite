@@ -85,6 +85,48 @@ def run():
         mb.showwarning('Nothing to run', 'The selected dropdown option matched no analysis.')
         return
 
+    # PRE-FLIGHT (CoreNLP config only): Stanford CoreNLP is an EXTERNAL engine we do NOT bundle -- like
+    # Google Earth or Gephi, the user installs it once. If the configured package is CoreNLP but Java or
+    # the CoreNLP engine isn't installed, warn ONCE, clearly, BEFORE the batch (so the message isn't
+    # swallowed by the run's silent mode), and DROP the CoreNLP-requiring analyses so the rest of the
+    # profile still runs -- instead of crashing or auto-diving into the installer. Under Stanza/spaCy
+    # this whole block is skipped (those need no Java).
+    if corpus_profiler_util._is_corenlp_package(package):
+        import IO_libraries_util as _iolib
+        missing = []
+        try:
+            import subprocess as _sp
+            _jr = _sp.run([_iolib.get_java_executable(), '-version'], capture_output=True)
+            if _jr.returncode != 0:
+                missing.append('Java (JDK)')
+        except Exception:
+            missing.append('Java (JDK)')
+        try:
+            _corenlp_ok = False
+            for _row in _iolib.get_existing_software_config()[1:]:   # skip header
+                if len(_row) >= 2 and 'corenlp' in str(_row[0]).lower().replace(' ', ''):
+                    _dir = str(_row[1]).strip()
+                    _corenlp_ok = bool(_dir) and os.path.isdir(_dir)
+                    break
+            if not _corenlp_ok:
+                missing.append('Stanford CoreNLP')
+        except Exception:
+            missing.append('Stanford CoreNLP')
+        if missing:
+            _CORENLP_REQUIRING = ('entities_all', 'semantic_classes', 'narrative_svo')
+            dropped = [aid for aid in selected if aid in _CORENLP_REQUIRING]
+            selected = [aid for aid in selected if aid not in _CORENLP_REQUIRING]
+            _dropped_labels = ', '.join(corpus_profiler_util.REGISTRY[a]['label'] for a in dropped) or 'none'
+            mb.showwarning('Stanford CoreNLP not installed',
+                'The NLP package is set to STANFORD CORENLP, which the NLP Suite does NOT bundle — like '
+                'Google Earth or Gephi, you install it once.\n\nMissing: ' + ', '.join(missing) + '.\n\n'
+                'Install it from  Setup ▸ Download / install external software , OR switch the NLP package '
+                'to STANZA  (Setup ▸ NLP package & language) — Stanza needs no Java and runs everything the '
+                'profiler needs except gender, dialogue and normalized dates.\n\n'
+                'For now the profiler will run WITHOUT the CoreNLP analyses: ' + _dropped_labels + '.')
+            if not selected:
+                return
+
     # up-front runtime heads-up: the CoreNLP-backed categories run Java over the whole corpus and can
     # take a very long time. Counts and Vocabulary are fast. Let the user opt into the long run knowingly.
     heavy = [aid for aid in selected
