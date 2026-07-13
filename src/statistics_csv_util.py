@@ -825,11 +825,14 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
                                 _switched = ' Switched automatically to a heatmap (the full per-document matrix).'
                             except Exception as _hm_e:
                                 print('Chart: heatmap fallback failed, charting field totals only:', str(_hm_e))
-                            import IO_user_interface_util
-                            IO_user_interface_util.timed_alert(window, 4000, 'Chart',
-                                'Too many documents/values (' + str(_D) + ' x ' + str(_V) + ') for a legible '
-                                'grouped bar chart.' + _switched + '\n\nField totals are also charted; the full '
-                                'per-document breakdown is in the data sheet.')
+                            # Popup suppressed (fired often and wasn't informative): log to console instead.
+                            # IO_user_interface_util.timed_alert(window, 4000, 'Chart',
+                            #     'Too many documents/values (' + str(_D) + ' x ' + str(_V) + ') for a legible '
+                            #     'grouped bar chart.' + _switched + '\n\nField totals are also charted; the full '
+                            #     'per-document breakdown is in the data sheet.')
+                            print('Chart: too many documents/values (' + str(_D) + ' x ' + str(_V) +
+                                  ') for a legible grouped bar chart.' + _switched +
+                                  ' Field totals charted; full per-document breakdown is in the data sheet.')
             except Exception as _auto_e:
                 print('Auto chart-shape selection failed; keeping default layout:', str(_auto_e))
                 chart_data = None
