@@ -67,6 +67,15 @@ if not os.path.isfile(ratings):
 	sys.exit()
 data = pd.read_csv(ratings,encoding='utf-8',on_bad_lines='skip')
 data_dict = {col: list(data[col]) for col in data.columns}
+# O(1) lookup {lowercase word -> (rating, rating_sd)}. Replaces a per-word linear scan of the
+# ~14k-word ratings list (data_dict['word'].index(...)), which was a major slowdown.
+_icon = {}
+try:
+	for _w, _r, _sd in zip(data['word'].astype(str), pd.to_numeric(data['rating'], errors='coerce'), pd.to_numeric(data['rating_sd'], errors='coerce')):
+		if _w:
+			_icon[_w.strip().lower()] = (_r, _sd)
+except Exception:
+	_icon = {}
 
 
 # print data_dict
@@ -77,74 +86,44 @@ data_dict = {col: list(data[col]) for col in data.columns}
 #  	max_rating_sd = 2
 def analyzefile(inputFilename, inputDir, outputDir, outputFilename,  documentID, documentName, min_rating, max_rating_sd):
 	"""
-	Performs iconicity analysis on the text file given as input using the Winter et al. 2024 iconicity ratings.
-		ratings are on a 7-point rating scale going from (1) “Not iconic at all” and (7) “Very iconic.”
-	min_rating is hard coded at to list the most-iconic words
-		min_rating=5.0
-	rating standard deviation set at 2
- 		max_rating_sd = 2
-	Outputs results to a new CSV file in outputDir.
-	:param inputFilename: path of .txt file to analyze
-	:param outputDir: path of directory to create new output file
-	:return:
+	Performs iconicity analysis (Winter et al. 2024 ratings, 1 Not iconic-7 Very iconic).
+	min_rating / max_rating_sd threshold the 'most iconic' word list.
 	"""
-
 	global total_words
-
-	# from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
-	# read file into string
+	from Stanza_functions_util import stanzaPipeLine
 	with open(inputFilename, 'r', encoding='utf-8', errors='ignore') as myfile:
 		fulltext = myfile.read()
-	# end method if file is empty
 	if len(fulltext) < 1:
 		mb.showerror(title='File empty',
 					 message='The file ' + inputFilename + ' is empty.\n\nPlease, use anoter file and try again.')
 		print('Empty file ', inputFilename)
 		return
-
-	# otherwise, split into sentences
-	# sentences = tokenize.sent_tokenize(fulltext)
-	sentences = sentence_split_stanza_text(stanzaPipeLine(fulltext))
-
-	# check each word in sentence for iconicity and write to outputFilename
-	# analyze each sentence for iconicity
-	i = 0  # to store sentence index
-	for s in sentences:
+	# ONE Stanza pass for the WHOLE document: sentences, words and LEMMAS from a single call. Previously
+	# the pipeline was re-run per sentence AND once per WORD, plus a linear scan of the ~14k-word ratings
+	# list per word -> hours on a big corpus. Now: one pass + an O(1) dict lookup.
+	doc = stanzaPipeLine(fulltext)
+	i = 0  # sentence index
+	for sentence in doc.sentences:
 		i = i + 1
-		# print("S" + str(i) +": " + s)
 		all_words = []
 		found_words = []
-		score_list = []  # use the rating as scores to calculate the iconicity
-
-		# search for each valid word's iconicity ratings
-		words = tokenize_stanza_text(stanzaPipeLine(s.lower()))
-
-		filtered_words = [word for word in words if word.isalpha()]  # strip out words with punctuation
-		total_words = total_words + len(filtered_words)
-		for index, w in enumerate(filtered_words):
-			# don't process stopwords
-			# if w in stops:
-			# 	continue
-			lemma = lemmatize_stanza_word(stanzaPipeLine(w))
-			all_words.append(str(lemma))
-			if lemma in data_dict['word']:
-				index = data_dict['word'].index(lemma)
-				# ratings are on a 7-point rating scale going from (1) “Not iconic at all” and (7) “Very iconic.”
-				score = round(float(data_dict['rating'][index]), 2)
-				score_sd = round(float(data_dict['rating_sd'][index]), 3)
-				found_words.append('(' + str(lemma) + ', ' + str(score) + ')')
-				# min_rating is hard coded at to list the most-iconic words
-				# 	min_rating=5.0
-				# rating standard deviation set at 2
-				# 	rating_sd = 2
-				if score > min_rating and score_sd < max_rating_sd:
-					iconic_words.append([lemma, str(score), documentID, IO_csv_util.dressFilenameForCSVHyperlink(documentName)])
-					iconic_words_list.append(lemma)
-				score_list.append(score)
-				# print('score: '+ str(score) + ' LEMMA: ' + str(lemma))
-			else:
+		score_list = []  # rating scores used to compute the sentence iconicity
+		alpha_words = [word for word in sentence.words if str(word.text).isalpha()]  # strip punctuation-bearing tokens
+		total_words = total_words + len(alpha_words)
+		for word in alpha_words:
+			lemma = str(word.lemma if word.lemma else word.text).lower()
+			all_words.append(lemma)
+			rec = _icon.get(lemma)  # (rating, rating_sd) or None -- O(1)
+			if rec is None or rec[0] != rec[0]:  # not found / NaN rating
 				continue
-		# else:  # output iconicity info for this sentence
+			score = round(float(rec[0]), 2)
+			score_sd = round(float(rec[1]), 3) if rec[1] == rec[1] else 0.0
+			found_words.append('(' + lemma + ', ' + str(score) + ')')
+			if score > min_rating and score_sd < max_rating_sd:
+				iconic_words.append([lemma, str(score), documentID, IO_csv_util.dressFilenameForCSVHyperlink(documentName)])
+				iconic_words_list.append(lemma)
+			score_list.append(score)
+		s = sentence.text
 		if len(score_list) > 0:
 			iconic_median = round(float(statistics.median(score_list)), 2)
 			iconic_mean = round(float(statistics.mean(score_list)), 2)
@@ -152,8 +131,7 @@ def analyzefile(inputFilename, inputDir, outputDir, outputFilename,  documentID,
 				iconic_sd = 0
 			else:
 				iconic_sd = round(float(statistics.stdev(score_list)), 2)
-			# should sort by Document ID and Sentence ID
-			if iconic_median!=0 and iconic_mean!=0:
+			if iconic_median != 0 and iconic_mean != 0:
 				writer.writerow({'Sentence iconicity (Mean score: 1 Not iconic-7 Very iconic)': iconic_mean,
 								 'Sentence iconicity (Median score: 1 Not iconic-7 Very iconic)': iconic_median,
 								 'Standard Deviation': iconic_sd,
@@ -166,7 +144,6 @@ def analyzefile(inputFilename, inputDir, outputDir, outputFilename,  documentID,
 								 'Document ID': documentID,
 								 'Document': IO_csv_util.dressFilenameForCSVHyperlink(documentName)
 								 })
-
 	return outputFilename  # LINE ADDED
 
 filesToOpen = []  # LINE ADDED

@@ -64,6 +64,15 @@ if not os.path.isfile(ratings):
 	sys.exit()
 data = pd.read_csv(ratings,encoding='utf-8',on_bad_lines='skip')
 data_dict = {col: list(data[col]) for col in data.columns}
+# O(1) lookup {lowercase word -> Conc.M mean}. Replaces a per-word linear scan of the ~40k-word
+# ratings list (data_dict['Word'].index(...)), which was a major slowdown.
+_conc = {}
+try:
+	for _w, _s in zip(data['Word'].astype(str), pd.to_numeric(data['Conc.M'], errors='coerce')):
+		if _w:
+			_conc[_w.strip().lower()] = _s
+except Exception:
+	_conc = {}
 
 
 # print data_dict
@@ -72,56 +81,37 @@ def analyzefile(inputFilename, outputDir, outputFilename,  documentID, documentN
 	"""
 	Performs concreteness analysis on the text file given as input using the Brysbaert et al. concreteness ratings.
 	Outputs results to a new CSV file in outputDir.
-	:param inputFilename: path of .txt file to analyze
-	:param outputDir: path of directory to create new output file
-	:return:
 	"""
-
-	from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
-	# read file into string
+	from Stanza_functions_util import stanzaPipeLine
 	with open(inputFilename, 'r', encoding='utf-8', errors='ignore') as myfile:
 		fulltext = myfile.read()
-	# end method if file is empty
 	if len(fulltext) < 1:
 		mb.showerror(title='File empty',
 					 message='The file ' + inputFilename + ' is empty.\n\nPlease, use anoter file and try again.')
 		print('Empty file ', inputFilename)
 		return
-
-	# otherwise, split into sentences
-	# sentences = tokenize.sent_tokenize(fulltext)
-	sentences = sentence_split_stanza_text(stanzaPipeLine(fulltext))
-
-	# check each word in sentence for concreteness and write to outputFilename
-	# analyze each sentence for concreteness
-	i = 0  # to store sentence index
-	for s in sentences:
+	# ONE Stanza pass for the WHOLE document: sentences, words and LEMMAS all come from this single
+	# call. Previously the pipeline was re-run per sentence AND once per WORD, plus a linear scan of the
+	# ~40k-word ratings list per word -> ~3 hours on a 199-file corpus. Now: one pass + an O(1) dict lookup.
+	doc = stanzaPipeLine(fulltext)
+	i = 0  # sentence index
+	for sentence in doc.sentences:
 		i = i + 1
-		# print("S" + str(i) +": " + s)
 		all_words = []
 		found_words = []
-		total_words = 0
-		score_list = []  # use the Conc.M as scores to calculate the concreteness
-
-		# search for each valid word's concreteness ratings
-		words = tokenize_stanza_text(stanzaPipeLine(s.lower()))
-
-		filtered_words = [word for word in words if word.isalpha()]  # strip out words with punctuation
-		for index, w in enumerate(filtered_words):
-			# don't process stopwords
-			if w in stops:
+		score_list = []  # Conc.M scores used to compute the sentence concreteness
+		for word in sentence.words:
+			w = str(word.text).lower()
+			if not w.isalpha() or w in stops:  # skip punctuation-bearing tokens and stopwords
 				continue
-			lemma = lemmatize_stanza_word(stanzaPipeLine(w))
-			all_words.append(str(lemma))
-			if lemma in data_dict['Word']:
-				index = data_dict['Word'].index(lemma)
-				score = round(float(data_dict['Conc.M'][index]), 2)
-				found_words.append('(' + str(lemma) + ', ' + str(score) + ')')
+			lemma = str(word.lemma if word.lemma else word.text).lower()
+			all_words.append(lemma)
+			score = _conc.get(lemma)  # O(1) lookup in the concreteness dict
+			if score is not None and score == score:  # skip missing / NaN
+				score = round(float(score), 2)
+				found_words.append('(' + lemma + ', ' + str(score) + ')')
 				score_list.append(score)
-				# print('score: '+ str(score) + ' LEMMA: ' + str(lemma))
-			else:
-				continue
-		# else:  # output concreteness info for this sentence
+		s = sentence.text
 		if len(score_list) > 0:
 			conc_median = round(float(statistics.median(score_list)), 2)
 			conc_mean = round(float(statistics.mean(score_list)), 2)
@@ -129,8 +119,7 @@ def analyzefile(inputFilename, outputDir, outputFilename,  documentID, documentN
 				conc_sd = 0
 			else:
 				conc_sd = round(float(statistics.stdev(score_list)), 2)
-			# should sort by Document ID and Sentence ID
-			if conc_median!=0 and conc_mean!=0:
+			if conc_median != 0 and conc_mean != 0:
 				writer.writerow({'Concreteness (Mean score)': conc_mean,
 								 'Concreteness (Median score)': conc_median,
 								 'Standard Deviation': conc_sd,
@@ -143,7 +132,6 @@ def analyzefile(inputFilename, outputDir, outputFilename,  documentID, documentN
 								 'Document ID': documentID,
 								 'Document': IO_csv_util.dressFilenameForCSVHyperlink(documentName)
 								 })
-
 	return outputFilename  # LINE ADDED
 
 filesToOpen = []  # LINE ADDED
