@@ -105,10 +105,15 @@ def run():
                language=language, export_json_var=export_json_var, memory_var=memory_var,
                document_length_var=document_length_var, limit_sentence_length_var=limit_sentence_length_var)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Corpus Profiler',
-                                       'Running ' + str(len(selected)) + ' analyses with defaults.\n\n'
-                                       'At the end a paper-style summary opens (with an HTML report beside it); '
-                                       'every individual output file is linked from them.')
+    # Top-level bracket around the WHOLE sweep: "Started ... with N of M analyses checked at TIME" now,
+    # and a matching "Finished ... taking ..." at the very end (profiler_startTime feeds the elapsed).
+    _total_analyses = len(corpus_profiler_util.REGISTRY)
+    profiler_startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window, 4000, 'Corpus Profiler',
+        'Started running the Corpus Profiler with ' + str(len(selected)) + ' of ' +
+        str(_total_analyses) + ' analyses checked at', True,
+        'At the end a paper-style summary opens (with an HTML report beside it); '
+        'every individual output file is linked from them.')
 
     # DIAGNOSTIC INSTRUMENTATION (temporary): the whole tail is wrapped so that ANYTHING that ends
     # the process at the end of a run -- a raised exception, or a late SystemExit from a lazily
@@ -201,6 +206,10 @@ def run():
         if not opened:
             print('Corpus Profiler: could not auto-open the summary. Open it manually:\n  ' + summary_abs)
 
+        IO_user_interface_util.timed_alert(
+            GUI_util.window, 4000, 'Corpus Profiler',
+            'Finished running the Corpus Profiler with ' + str(len(selected)) + ' of ' +
+            str(_total_analyses) + ' analyses checked at', True, '', True, profiler_startTime)
         print('>>> Corpus Profiler: run() complete; the GUI window should remain open.')
     except BaseException:
         # BaseException (not Exception) so a late SystemExit is captured with its origin too.
