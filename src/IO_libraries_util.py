@@ -31,16 +31,23 @@ def get_java_executable():
         return _JAVA_EXECUTABLE
     exe = 'java.exe' if sys.platform.startswith('win') else 'java'
     candidates = []
+    # Two on-disk JRE layouts: Windows/Linux put the launcher at <home>/bin/java, but a macOS JRE/JDK
+    # bundle nests it at <home>/Contents/Home/bin/java. Check BOTH for every base -- otherwise a bundled
+    # macOS JRE is never found and get_java_executable() falls through to bare 'java', i.e. the macOS
+    # /usr/bin/java stub that prints "Unable to locate a Java Runtime" (exactly Evan's Mac error).
+    def _layouts(home):
+        return [os.path.join(home, 'bin', exe),
+                os.path.join(home, 'Contents', 'Home', 'bin', exe)]
     if getattr(sys, 'frozen', False):
         # PyInstaller: the app dir (next to the executable) and the onefile temp dir (_MEIPASS)
         app_dir = os.path.dirname(sys.executable)
         meipass = getattr(sys, '_MEIPASS', app_dir)
         for base in (app_dir, os.path.join(app_dir, '_internal'), meipass):
-            candidates.append(os.path.join(base, 'jre', 'bin', exe))
+            candidates += _layouts(os.path.join(base, 'jre'))
     for var in ('NLP_JAVA_HOME', 'JAVA_HOME'):
         home = os.environ.get(var)
         if home:
-            candidates.append(os.path.join(home, 'bin', exe))
+            candidates += _layouts(home)
     for c in candidates:
         try:
             if c and os.path.isfile(c):
