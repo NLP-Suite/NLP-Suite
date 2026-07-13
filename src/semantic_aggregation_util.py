@@ -151,6 +151,27 @@ def aggregate_VerbNet(inputFile, outputDir, noun_verb, chartPackage, dataTransfo
     return out
 
 
+# Cached FrameNet lemma index, built once per process: {(lemma_lower, pos): {frame names}}. The OLD
+# aggregate_FrameNet called fn.lus(regex) PER lemma, and fn.lus(pattern) regex-scans all ~13,000
+# lexical units every time -- O(lemmas x 13k), which is why FrameNet was minutes while WordNet/VerbNet
+# were seconds. Building this index is a single pass over FrameNet's frames; every lookup is then O(1).
+_FRAMENET_LEMMA_INDEX = None
+
+
+def _framenet_lemma_index(fn):
+    global _FRAMENET_LEMMA_INDEX
+    if _FRAMENET_LEMMA_INDEX is None:
+        idx = {}
+        for frame in fn.frames():                       # one pass over all frames
+            fname = frame.name
+            for lu_name in frame.lexUnit:               # keys look like 'run.v', 'give up.v', 'dog.n'
+                lemma, _sep, p = lu_name.rpartition('.')
+                if p:
+                    idx.setdefault((lemma.lower(), p.lower()), set()).add(fname)
+        _FRAMENET_LEMMA_INDEX = idx
+    return _FRAMENET_LEMMA_INDEX
+
+
 def aggregate_FrameNet(inputFile, outputDir, noun_verb, chartPackage, dataTransformation):
     """Aggregate a list of nouns or verbs to their FrameNet frame (the first frame per lemma+POS).
     NOTE: bare lemmas are polysemous; this takes the first frame."""
@@ -159,13 +180,10 @@ def aggregate_FrameNet(inputFile, outputDir, noun_verb, chartPackage, dataTransf
     pos = 'v' if noun_verb == 'VERB' else 'n'
     start = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
         'Started running FrameNet aggregation at', True, '', True)
-    def cat(lemma):
-        try:
-            frames = sorted({lu.frame.name for lu in
-                             fn.lus(re.compile(r'(?i)^' + re.escape(lemma) + r'\.' + pos + r'$'))})
-        except Exception:
-            frames = []
-        return frames[0] if frames else 'Not found'
+    index = _framenet_lemma_index(fn)   # built once; the set of frames whose LU is 'lemma.pos' matches
+    def cat(lemma):                     # exactly what fn.lus(^lemma\.pos$) returned, just precomputed
+        frames = index.get((str(lemma).lower(), pos))
+        return sorted(frames)[0] if frames else 'Not found'
     out = _aggregate_flat('FrameNet', cat, inputFile, outputDir, noun_verb, chartPackage, dataTransformation)
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
         'Finished running FrameNet aggregation at', True, '', True, start)
