@@ -422,7 +422,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         annotator_params = [annotator_params]
     outputDirSV=outputDir
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True)
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Stanford CoreNLP ' + str(annotator_params) + (' extraction' if 'SVO' in str(annotator_params).upper() else ' annotator') + ' at', True)
 
     head, scriptName = os.path.split(os.path.basename(__file__))
 
@@ -935,9 +935,9 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # set filesToVisualize because filesToOpen will include xlsx files otherwise
     filesToVisualize=filesToOpen
     if "coref" in str(annotator_params):
-        IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True, 'The coreference annotator produces a coref subdirectory inside the main output directory containing 2 separate subdirectories in turn containing, respectively, the coreferenced input text files, and statistics csv and chart files with coreference data.', True, startTime)
+        IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Stanford CoreNLP ' + str(annotator_params) + (' extraction' if 'SVO' in str(annotator_params).upper() else ' annotator') + ' at', True, 'The coreference annotator produces a coref subdirectory inside the main output directory containing 2 separate subdirectories in turn containing, respectively, the coreferenced input text files, and statistics csv and chart files with coreference data.', True, startTime)
     else:
-        IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True, '', True, startTime)
+        IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Stanford CoreNLP ' + str(annotator_params) + (' extraction' if 'SVO' in str(annotator_params).upper() else ' annotator') + ' at', True, '', True, startTime)
 
     # generate visualization output ----------------------------------------------------------------
 

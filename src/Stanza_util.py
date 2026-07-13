@@ -301,8 +301,9 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
             outputDir = create_output_directory(inputFilename, inputDir, outputDir, annotator)
 
         startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                                       'Started running Stanza ' + str(
-                                                           annotator_params) + ' annotator at',
+                                                       'Started running Stanza ' + str(annotator_params) +
+                                                       (' extraction' if 'SVO' in str(annotator_params).upper()
+                                                        else ' annotator') + ' at',
                                                        True, '', True, '', False)
 
         nlp = stanza.Pipeline(lang=short_lang, processors=processors, verbose=False)
@@ -440,7 +441,7 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
         vocab_df.to_csv(vocab_df_outputFilename, index=False, encoding=language_encoding)
         filesToOpen.append(vocab_df_outputFilename)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running Stanza ' + str(annotator_params) + ' annotator at', True, '', True, startTime, False)
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running Stanza ' + str(annotator_params) + (' extraction' if 'SVO' in str(annotator_params).upper() else ' annotator') + ' at', True, '', True, startTime, False)
 
     filesToVisualize=filesToOpen
 

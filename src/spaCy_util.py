@@ -87,7 +87,7 @@ def spaCy_annotate(configFilename, inputFilename, inputDir,
     else:
         lang=lang_list[0]
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running spaCy ' + str(annotator_params[0]) + ' annotator at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running spaCy ' + str(annotator_params[0]) + (' extraction' if 'SVO' in str(annotator_params).upper() else ' annotator') + ' at',
                                             True, '', True, '', False)
     #collecting input txt files
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFilename)
@@ -244,7 +244,7 @@ def spaCy_annotate(configFilename, inputFilename, inputDir,
             filesToOpen.append(loc_df_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                       'Finished running spaCy ' + str(annotator_params[0]) + ' annotator at',
+                                       'Finished running spaCy ' + str(annotator_params[0]) + (' extraction' if 'SVO' in str(annotator_params).upper() else ' annotator') + ' at',
                                        True,'',True, startTime)
 
     # deduplicate before visualization (each file only needs to be visualized once)
