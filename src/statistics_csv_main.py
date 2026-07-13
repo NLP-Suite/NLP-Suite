@@ -112,6 +112,9 @@ def run():
             run_mk = stat_test_option == 'Mann-Kendall (temporal trend)'
             run_cp = stat_test_option == 'Change-point detection (temporal)'
             run_perm = stat_test_option == 'Permutation test (two groups)'
+            run_bf = stat_test_option == 'Bayes factor (two groups)'
+            run_ari = stat_test_option == 'Adjusted Rand index (clustering agreement)'
+            run_sil = stat_test_option == 'Silhouette (cluster cohesion)'
             run_kappa = stat_test_option == "Inter-annotator agreement (Cohen's / Fleiss' kappa)"
 
             if run_mw_kw:
@@ -216,6 +219,39 @@ def run():
                 else:
                     outputFiles = statistics_statistical_tests_util.run_kappa_test(
                         csv_file, outputDir, rater_cols,
+                        chartPackage, dataTransformation)
+                    if outputFiles:
+                        filesToOpen.extend(outputFiles)
+
+            if run_bf:
+                if stat_value_col == '' or stat_group_col == '':
+                    mb.showwarning(title='Missing fields',
+                                   message='The Bayes factor requires a numeric Value column and a 2-group Group column.\n\nPlease, select the Value column (numeric) and the Group column (category) and try again.')
+                else:
+                    outputFiles = statistics_statistical_tests_util.run_bayes_factor_test(
+                        csv_file, outputDir, stat_value_col, stat_group_col,
+                        chartPackage, dataTransformation)
+                    if outputFiles:
+                        filesToOpen.extend(outputFiles)
+
+            if run_ari:
+                if stat_value_col == '' or stat_group_col == '':
+                    mb.showwarning(title='Missing fields',
+                                   message='The Adjusted Rand index requires two label/cluster columns.\n\nPlease, select the Value column (labeling A) and the Group column (labeling B) and try again.')
+                else:
+                    outputFiles = statistics_statistical_tests_util.run_adjusted_rand_test(
+                        csv_file, outputDir, stat_value_col, stat_group_col,
+                        chartPackage, dataTransformation)
+                    if outputFiles:
+                        filesToOpen.extend(outputFiles)
+
+            if run_sil:
+                if stat_group_col == '':
+                    mb.showwarning(title='Missing fields',
+                                   message='Silhouette requires the Group column as the cluster labels.\n\nAll numeric columns are used as features. Please, select the Group column (cluster labels) and try again.')
+                else:
+                    outputFiles = statistics_statistical_tests_util.run_silhouette_test(
+                        csv_file, outputDir, stat_group_col, None,
                         chartPackage, dataTransformation)
                     if outputFiles:
                         filesToOpen.extend(outputFiles)
@@ -716,7 +752,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 stat_test_options = ['*', 'Mann-Whitney U / Kruskal-Wallis', 'Chi-square (independence)',
                      'Correlation (Spearman / Kendall)', 'Mann-Kendall (temporal trend)',
                      'Change-point detection (temporal)', 'Permutation test (two groups)',
-                     'Log-likelihood (corpus comparison)',
+                     'Bayes factor (two groups)', 'Adjusted Rand index (clustering agreement)',
+                     'Silhouette (cluster cohesion)', 'Log-likelihood (corpus comparison)',
                      "Inter-annotator agreement (Cohen's / Fleiss' kappa)"]
 stat_test_menu = tk.OptionMenu(window, stat_test_menu_var, *stat_test_options)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.statistics_csv_csv_groupBy_field_menu_pos, y_multiplier_integer,
@@ -731,6 +768,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.statistics_cs
                                                "Mann-Kendall (temporal trend) (Value=numeric series, Group=date/time): test for a significant increasing/decreasing trend over time (+ Sen's slope).\n\n"
                                                "Change-point detection (temporal) (Value=numeric series, Group=date/time): find a single abrupt shift in the series (Pettitt's test) and the mean before/after.\n\n"
                                                "Permutation test (two groups) (Value=numeric, Group=2 categories): distribution-free test of the difference in group means by shuffling labels (+ Cohen's d).\n\n"
+                                               "Bayes factor (two groups) (Value=numeric, Group=2 categories): Bayesian evidence for a difference vs none — BF10>3 moderate, >10 strong evidence FOR a difference; BF10<1/3 evidence for NO difference (+ Cohen's d).\n\n"
+                                               "Adjusted Rand index (clustering agreement) (Value=labeling/clustering A, Group=labeling/clustering B): chance-corrected agreement between two clusterings (1=identical, 0=chance, <0=worse than chance; + NMI). The clustering equivalent of kappa.\n\n"
+                                               "Silhouette (cluster cohesion) (Group=cluster labels; all numeric columns used as features): how tight and well-separated the clusters are (-1..1; ~1=strong, ~0=overlapping), with per-cluster means.\n\n"
                                                "Log-likelihood (corpus comparison): identify words statistically over/under-represented in one corpus vs another (uses Word / Freq / Corpus columns below).\n\n"
                                                "Inter-annotator agreement (Cohen's / Fleiss' kappa): measure how well 2+ annotators/tools agree. Each selected column (Value, Group, and optionally Word / Freq / Corpus) is one annotator's labels; 2 columns → Cohen's, 3+ → Fleiss'.")
 
@@ -802,7 +842,10 @@ def activate_stat_test_options(*args):
                                      'Correlation (Spearman / Kendall)',
                                      'Mann-Kendall (temporal trend)',
                                      'Change-point detection (temporal)',
-                                     'Permutation test (two groups)')
+                                     'Permutation test (two groups)',
+                                     'Bayes factor (two groups)',
+                                     'Adjusted Rand index (clustering agreement)',
+                                     'Silhouette (cluster cohesion)')
         run_ll = option in ('*', 'Log-likelihood (corpus comparison)')
         # kappa can use every column selector (each column = one annotator)
         state_vg = 'normal' if (run_value_group or run_kappa) else 'disabled'

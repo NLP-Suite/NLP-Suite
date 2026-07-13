@@ -1137,6 +1137,281 @@ def run_permutation_test(inputFilename, outputDir, value_col, group_col,
 
 
 # ---------------------------------------------------------------------------
+#  9. Adjusted Rand Index / NMI -- agreement between two clusterings / labelings
+# ---------------------------------------------------------------------------
+def run_adjusted_rand_test(inputFilename, outputDir, labels_col1, labels_col2,
+                           chartPackage='Excel', dataTransformation='No transformation'):
+    """Agreement between TWO clusterings/labelings of the same items (rows). The Adjusted
+    Rand Index (ARI) corrects the Rand index for chance: 1 = identical partitions, 0 = chance
+    agreement, < 0 = worse than chance. It is permutation-invariant (the cluster NAMES don't
+    matter), so unlike kappa it is the right measure for CLUSTER labels -- e.g. two topic-model
+    runs, or a clustering vs a gold partition. Normalized Mutual Information (NMI, 0..1) is
+    reported alongside."""
+    filesToOpen = []
+    df = _validate_csv_input(inputFilename)
+    if df is None:
+        return filesToOpen
+    for col in [labels_col1, labels_col2]:
+        if col not in df.columns:
+            mb.showwarning(title='Column error',
+                           message='Column "' + str(col) + '" not found in the input file.')
+            return filesToOpen
+    df = df[[labels_col1, labels_col2]].dropna().copy()
+    df[labels_col1] = df[labels_col1].astype(str).str.strip()
+    df[labels_col2] = df[labels_col2].astype(str).str.strip()
+    if len(df) < 2:
+        mb.showwarning(title='Insufficient data',
+                       message='At least 2 items (rows) labeled in BOTH columns are needed.')
+        return filesToOpen
+
+    from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score
+    a = df[labels_col1].tolist()
+    b = df[labels_col2].tolist()
+    ari = float(adjusted_rand_score(a, b))
+    nmi = float(normalized_mutual_info_score(a, b))
+    if ari > 0.90:
+        interp = 'near-identical partitions'
+    elif ari > 0.65:
+        interp = 'strong agreement'
+    elif ari > 0.40:
+        interp = 'moderate agreement'
+    elif ari > 0.15:
+        interp = 'weak agreement'
+    elif ari > -0.05:
+        interp = 'chance-level agreement'
+    else:
+        interp = 'worse than chance (systematic disagreement)'
+
+    summary_df = pd.DataFrame({
+        'Statistic': ['Adjusted Rand Index (ARI)', 'Interpretation',
+                      'Normalized Mutual Information (NMI)', 'N items',
+                      'Clusters in "' + str(labels_col1) + '"',
+                      'Clusters in "' + str(labels_col2) + '"'],
+        'Value': [round(ari, 4), interp, round(nmi, 4), len(df),
+                  int(df[labels_col1].nunique()), int(df[labels_col2].nunique())]
+    })
+    out1 = _save_results_csv(summary_df, inputFilename, '', outputDir, 'adjusted_rand_index')
+    filesToOpen.append(out1)
+
+    # contingency of the two labelings -- shows how the clusters map onto each other
+    ct = pd.crosstab(df[labels_col1], df[labels_col2])
+    out2 = _save_results_csv(ct.reset_index(), inputFilename, '', outputDir, 'adjusted_rand_contingency')
+    filesToOpen.append(out2)
+    return filesToOpen
+
+
+# ---------------------------------------------------------------------------
+# 10. Bayes factor (two groups) -- Bayesian complement to a p-value
+# ---------------------------------------------------------------------------
+def _jzs_bf10_twosample(t, n1, n2, r=0.707):
+    """JZS (Rouder et al. 2009) Bayes factor BF10 for an INDEPENDENT two-sample t test with a
+    Cauchy prior of scale r on the standardized effect size. BF10 > 1 favours a difference
+    (H1); < 1 favours no difference (H0). Implemented with numerical integration (scipy) so
+    no extra dependency is needed."""
+    from scipy.integrate import quad
+    df = n1 + n2 - 2
+    n_eff = n1 * n2 / (n1 + n2)
+
+    def _integrand(g):
+        return ((1.0 + n_eff * g * r * r) ** (-0.5)
+                * (1.0 + t * t / ((1.0 + n_eff * g * r * r) * df)) ** (-(df + 1) / 2.0)
+                * (2.0 * np.pi) ** (-0.5) * g ** (-1.5) * np.exp(-1.0 / (2.0 * g)))
+
+    integ = quad(_integrand, 0, np.inf)[0]
+    return (1.0 + t * t / df) ** ((df + 1) / 2.0) * integ
+
+
+def run_bayes_factor_test(inputFilename, outputDir, value_col, group_col,
+                          chartPackage='Excel', dataTransformation='No transformation'):
+    """Bayes factor for the difference in means between TWO groups -- the Bayesian complement
+    to a p-value. BF10 is how many times more likely the data are under 'the groups differ'
+    than under 'no difference': BF10 > 3 = moderate, > 10 = strong evidence FOR a difference;
+    BF10 < 1/3 = evidence for NO difference (a p-value can never argue FOR the null; this can).
+    Cohen's d effect size is reported too."""
+    filesToOpen = []
+    df = _validate_csv_input(inputFilename)
+    if df is None:
+        return filesToOpen
+    for col in [value_col, group_col]:
+        if col not in df.columns:
+            mb.showwarning(title='Column error',
+                           message='Column "' + str(col) + '" not found in the input file.')
+            return filesToOpen
+    df = df[[value_col, group_col]].copy()
+    df[value_col] = pd.to_numeric(df[value_col], errors='coerce')
+    df[group_col] = df[group_col].astype(str)
+    df = df.dropna()
+    if df.empty:
+        mb.showwarning(title='No numeric data',
+                       message='Column "' + value_col + '" has no numeric values to test.')
+        return filesToOpen
+    labels = sorted(df[group_col].unique())
+    if len(labels) < 2:
+        mb.showwarning(title='Group error',
+                       message='Column "' + group_col + '" must have at least 2 unique values.')
+        return filesToOpen
+    if len(labels) > 2:
+        IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Bayes factor warning',
+            'More than 2 groups found. Using the first two alphabetically: ' +
+            str(labels[0]) + ' and ' + str(labels[1]) + '.', False)
+        labels = labels[:2]
+        df = df[df[group_col].isin(labels)]
+
+    a = df[df[group_col] == labels[0]][value_col].values.astype(float)
+    b = df[df[group_col] == labels[1]][value_col].values.astype(float)
+    if len(a) < 2 or len(b) < 2:
+        mb.showwarning(title='Insufficient data', message='Each group needs at least 2 observations.')
+        return filesToOpen
+
+    from scipy import stats as _st
+    t_student = float(_st.ttest_ind(a, b, equal_var=True)[0])       # pooled t drives the JZS BF
+    p_welch = float(_st.ttest_ind(a, b, equal_var=False)[1])        # Welch p, for reference
+    try:
+        bf10 = float(_jzs_bf10_twosample(t_student, len(a), len(b)))
+    except Exception as _bfe:
+        print('Bayes factor integration failed:', str(_bfe))
+        bf10 = float('nan')
+    bf01 = (1.0 / bf10) if (bf10 == bf10 and bf10 > 0) else float('nan')
+
+    def _bf_interp(bf):
+        if bf != bf:
+            return 'not available'
+        if bf > 100:
+            return 'extreme evidence for a difference'
+        if bf > 30:
+            return 'very strong evidence for a difference'
+        if bf > 10:
+            return 'strong evidence for a difference'
+        if bf > 3:
+            return 'moderate evidence for a difference'
+        if bf > 1:
+            return 'anecdotal evidence for a difference'
+        if bf > 1 / 3.0:
+            return 'anecdotal evidence for NO difference'
+        if bf > 1 / 10.0:
+            return 'moderate evidence for NO difference'
+        if bf > 1 / 30.0:
+            return 'strong evidence for NO difference'
+        return 'very strong evidence for NO difference'
+
+    mean_a, mean_b = float(np.mean(a)), float(np.mean(b))
+    pooled_sd = np.sqrt(((len(a) - 1) * np.var(a, ddof=1) + (len(b) - 1) * np.var(b, ddof=1)) /
+                        (len(a) + len(b) - 2)) if (len(a) + len(b) - 2) > 0 else 0.0
+    cohens_d = (mean_a - mean_b) / pooled_sd if pooled_sd > 0 else 0.0
+
+    summary_df = pd.DataFrame({
+        'Statistic': ['Bayes factor BF10 (difference vs none)', 'Interpretation',
+                      'Bayes factor BF01 (none vs difference)', "Cohen's d (effect size)",
+                      't statistic (pooled)', 'p-value (Welch, for reference)',
+                      'Group A', 'Group A n', 'Group A mean',
+                      'Group B', 'Group B n', 'Group B mean'],
+        'Value': [round(bf10, 4) if bf10 == bf10 else 'n/a', _bf_interp(bf10),
+                  round(bf01, 4) if bf01 == bf01 else 'n/a', round(cohens_d, 4),
+                  round(t_student, 4), round(p_welch, 6),
+                  str(labels[0]), len(a), round(mean_a, 4),
+                  str(labels[1]), len(b), round(mean_b, 4)]
+    })
+    out1 = _save_results_csv(summary_df, inputFilename, '', outputDir, 'bayes_factor')
+    filesToOpen.append(out1)
+    return filesToOpen
+
+
+# ---------------------------------------------------------------------------
+# 11. Silhouette -- how cohesive / well-separated a clustering is
+# ---------------------------------------------------------------------------
+def run_silhouette_test(inputFilename, outputDir, label_col, feature_cols=None,
+                        chartPackage='Excel', dataTransformation='No transformation'):
+    """How well-separated a clustering is. Given a cluster-label column plus numeric feature
+    columns, the silhouette score (-1..1) measures, per item, how close it is to its own
+    cluster vs the nearest other cluster. Overall ~1 = tight, well-separated clusters; ~0 =
+    overlapping; < 0 = points likely mis-assigned. Per-cluster means are reported so weak
+    clusters stand out. Features default to ALL numeric columns except the label (and obvious
+    ID columns)."""
+    filesToOpen = []
+    df = _validate_csv_input(inputFilename)
+    if df is None:
+        return filesToOpen
+    if label_col not in df.columns:
+        mb.showwarning(title='Column error',
+                       message='Cluster-label column "' + str(label_col) + '" not found.')
+        return filesToOpen
+
+    if feature_cols:
+        feats = [c for c in feature_cols if c in df.columns and c != label_col]
+    else:
+        feats = []
+        for c in df.columns:
+            if c == label_col or str(c).strip().lower() in _SKIP_COLS:
+                continue
+            if pd.to_numeric(df[c], errors='coerce').notna().mean() >= 0.5:   # majority numeric
+                feats.append(c)
+    if not feats:
+        mb.showwarning(title='No feature columns',
+                       message='Silhouette needs at least one NUMERIC feature column besides the cluster '
+                               'labels.\n\nSelect the Group column as the cluster labels; all numeric columns '
+                               'are used as features.')
+        return filesToOpen
+
+    keep = df[[label_col] + feats].copy()
+    for c in feats:
+        keep[c] = pd.to_numeric(keep[c], errors='coerce')
+    keep = keep.dropna()
+    if len(keep) < 3:
+        mb.showwarning(title='Insufficient data',
+                       message='Silhouette needs 3+ rows with a label and complete numeric features.')
+        return filesToOpen
+
+    labels = keep[label_col].astype(str).values
+    Xv = keep[feats].values.astype(float)
+    n_clusters = len(set(labels))
+    if n_clusters < 2 or n_clusters >= len(labels):
+        mb.showwarning(title='Cluster error',
+                       message='Silhouette needs at least 2 clusters and fewer clusters than items. Found ' +
+                               str(n_clusters) + ' clusters in ' + str(len(labels)) + ' items.')
+        return filesToOpen
+
+    from sklearn.metrics import silhouette_score, silhouette_samples
+    overall = float(silhouette_score(Xv, labels))
+    samp = silhouette_samples(Xv, labels)
+    if overall > 0.70:
+        interp = 'strong, well-separated clusters'
+    elif overall > 0.50:
+        interp = 'reasonable structure'
+    elif overall > 0.25:
+        interp = 'weak structure (clusters overlap)'
+    elif overall > 0:
+        interp = 'very weak / artificial structure'
+    else:
+        interp = 'no substantial structure (points likely mis-assigned)'
+
+    summary_df = pd.DataFrame({
+        'Statistic': ['Overall silhouette score', 'Interpretation', 'N clusters', 'N items', 'N features'],
+        'Value': [round(overall, 4), interp, n_clusters, len(labels), len(feats)]
+    })
+    out1 = _save_results_csv(summary_df, inputFilename, '', outputDir, 'silhouette_summary')
+    filesToOpen.append(out1)
+
+    per = pd.DataFrame({'Cluster': labels, '_s': samp}).groupby('Cluster', as_index=False).agg(
+        Mean_silhouette=('_s', 'mean'), N=('_s', 'size')).sort_values('Mean_silhouette', ascending=False)
+    per['Mean_silhouette'] = per['Mean_silhouette'].round(4)
+    out2 = _save_results_csv(per, inputFilename, '', outputDir, 'silhouette_by_cluster')
+    filesToOpen.append(out2)
+
+    try:
+        outputFiles = charts_util.run_all(
+            [[0, 1]], out2, outputDir, outputFileLabel='silhouette',
+            chartPackage=chartPackage, dataTransformation=dataTransformation,
+            chart_type_list=['bar'],
+            chart_title='Silhouette by cluster (overall=' + str(round(overall, 3)) + ')',
+            column_xAxis_label_var='Cluster', column_yAxis_label_var='Mean silhouette',
+            hover_info_column_list=[])
+        _append_chart_files(filesToOpen, outputFiles)
+    except Exception as _ce:
+        print('Silhouette chart skipped:', str(_ce))
+    return filesToOpen
+
+
+# ---------------------------------------------------------------------------
 #  Auto-detect: examine a CSV and run appropriate statistical tests
 # ---------------------------------------------------------------------------
 
