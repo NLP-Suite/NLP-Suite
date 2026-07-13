@@ -789,11 +789,41 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
                         columns_list = [[_fld, 'Count']]
                         auto_column_xAxis = _fld
                         if _D > 1 and (_smaller > _SERIES_MAX or _larger > _X_MAX):
+                            # A grouped BAR chart of D x V would be an unreadable wall of bars, so switch to
+                            # the visualization built for a big matrix: a HEATMAP (documents on x, field
+                            # values on y, colour = frequency). The legible field-totals bar is kept too,
+                            # and every number stays in the data sheet. _switched is only set (and only then
+                            # claimed in the message) if the heatmap actually rendered -- no false promises.
+                            _switched = ''
+                            try:
+                                import matplotlib
+                                matplotlib.use('Agg')
+                                import matplotlib.pyplot as _plt
+                                import seaborn as _sns
+                                _piv = data_final.pivot_table(index=_fld, columns=_grp, values=_freq_fld,
+                                                              aggfunc='sum', fill_value=0)
+                                _piv.columns = [os.path.splitext(os.path.basename(str(c)))[0] for c in _piv.columns]
+                                _plt.figure(figsize=(min(6 + 0.18 * _D, 40), min(4 + 0.28 * _V, 30)))
+                                # labels only when few enough to read; otherwise the colour field tells the story
+                                _sns.heatmap(_piv, cmap='YlOrBr', cbar_kws={'label': 'Frequency'},
+                                             xticklabels=(_D <= 40), yticklabels=(_V <= 60))
+                                _plt.xlabel('Document')
+                                _plt.ylabel(str(_fld))
+                                _plt.title('Heatmap: ' + str(_fld) + ' frequency by document (' +
+                                           str(_V) + ' × ' + str(_D) + ')')
+                                _plt.tight_layout()
+                                _hm = os.path.splitext(outputFilename)[0] + '_heatmap.png'
+                                _plt.savefig(_hm, dpi=150, bbox_inches='tight')
+                                _plt.close()
+                                filesToOpen.append(_hm)
+                                _switched = ' Switched automatically to a heatmap (the full per-document matrix).'
+                            except Exception as _hm_e:
+                                print('Chart: heatmap fallback failed, charting field totals only:', str(_hm_e))
                             import IO_user_interface_util
                             IO_user_interface_util.timed_alert(window, 4000, 'Chart',
                                 'Too many documents/values (' + str(_D) + ' x ' + str(_V) + ') for a legible '
-                                'grouped chart.\n\nCharting the field totals; the per-document breakdown is in '
-                                'the data sheet.')
+                                'grouped bar chart.' + _switched + '\n\nField totals are also charted; the full '
+                                'per-document breakdown is in the data sheet.')
             except Exception as _auto_e:
                 print('Auto chart-shape selection failed; keeping default layout:', str(_auto_e))
                 chart_data = None
