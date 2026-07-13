@@ -967,9 +967,29 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
     if 'CoreNLP_SENNA_SVO_coref' in outFilename:
         outFilename = outFilename.replace('CoreNLP_SENNA_SVO_coref','_coref')
 
-    if sys.platform == 'win32':  # Windows
-        if len(outFilename)>255:
-            mb.showwarning(title='Warning',message='The length (' + str(len(outFilename)) + ' characters) of the filename\n\n' + outFilename + '\n\nexceeds the maximum length of 255 characters allowed by Windows Operating System.\n\nPlease, reduce the filename length and try again.')
+    if sys.platform == 'win32' and len(outFilename) > 255:
+        # Windows caps a full path at 255 chars. The old behavior popped a MODAL warning -- which froze
+        # unattended runs like the Corpus Profiler -- and then returned the too-long name ANYWAY, so the
+        # write failed regardless. Instead, SHORTEN the filename to fit and just log it. Keep the HEAD and
+        # the TAIL of the name (that's where the keywords the report/interpreters match on live, e.g.
+        # "...verbnet_up_verb..." and "..._frequency.csv") and drop the redundant middle (typically the
+        # repeated corpus name); a short hash of the original keeps it collision-safe.
+        import hashlib
+        _dir, _fn = os.path.split(outFilename)
+        _stem, _ext = os.path.splitext(_fn)
+        _h = hashlib.md5(_fn.encode('utf-8')).hexdigest()[:8]
+        _room = 250 - len(_dir) - 1                       # small margin under the 255 ceiling
+        _budget = _room - len(_ext) - len(_h) - 2         # minus the two joining underscores
+        if _budget < 10:
+            _short = (_h + _ext)[:max(1, _room)]          # dir itself is huge; keep it minimal
+        else:
+            _head_len = int(_budget * 0.6)
+            _tail_len = _budget - _head_len
+            _head = _stem[:_head_len].rstrip('_ ')
+            _tail = _stem[len(_stem) - _tail_len:].lstrip('_ ') if _tail_len < len(_stem) else ''
+            _short = _head + '_' + _h + ('_' + _tail if _tail else '') + _ext
+        outFilename = os.path.join(_dir, _short)
+        print('NLP Suite: filename shortened to fit the Windows 255-char path limit ->\n  ' + outFilename)
 
     return outFilename
 
