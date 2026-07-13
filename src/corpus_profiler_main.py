@@ -145,6 +145,10 @@ def run():
         _mbmod.showinfo = _silent_dialog
         _mbmod.askyesno = _silent_ask
         _mbmod.askokcancel = _silent_ask
+        # Loud, unmistakable marker: if you DON'T see this line at the top of a run, the process is
+        # running STALE code (Python does not reload edited modules into a live process) -- fully stop
+        # and restart before trusting the dialog-suppression / speed fixes.
+        print('>>> Corpus Profiler: SILENT MODE ACTIVE -- OK/Yes-No dialogs auto-handled for this run.')
 
         results = corpus_profiler_util.run_profile(ctx, selected)
         print('>>> Corpus Profiler: %d analyses done; building index report...' % len(results))
