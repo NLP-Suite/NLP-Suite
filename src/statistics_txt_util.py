@@ -249,24 +249,25 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
 
             # words = fullText.split()
             # words = nltk.word_tokenize(fullText)
-            from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text, \
-                lemmatize_stanza_word
-            words = tokenize_stanza_text(stanzaPipeLine(docText))
+            # ONE Stanza pass per document -- tokens AND lemmas come from this single call, instead of a
+            # fresh pipeline run PER WORD (lemmatize_stanza_word(stanzaPipeLine(w.lower())) per token),
+            # which made document statistics take ~28 min on a 199-file corpus. Iterating the doc directly
+            # also fixes the tokenize_stanza_text bug that returned only the LAST sentence's tokens.
+            from Stanza_functions_util import stanzaPipeLine
+            _doc = stanzaPipeLine(docText)
+            words = [str(word.text) for sentence in _doc.sentences for word in sentence.words]
 
             if excludeStopWords:
                 words = excludeStopWords_list(words)
 
             if lemmatizeWords:
-                # lemmatizer = WordNetLemmatizer()
-                text_vocab = []
-                for w in words:
-                    if w.isalpha():
-                        # text_vocab.append(lemmatizer.lemmatize(w.lower()))
-                        from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, \
-                            lemmatize_stanza_word
-                        text_vocab.append(lemmatize_stanza_word(stanzaPipeLine(w.lower())))
-
-                words = text_vocab
+                # lemma of each token from the SAME pass (lowercased, matching the old per-word behavior)
+                _lemma_map = {}
+                for sentence in _doc.sentences:
+                    for word in sentence.words:
+                        _lemma_map.setdefault(str(word.text).lower(),
+                                              str(word.lemma).lower() if word.lemma else str(word.text).lower())
+                words = [_lemma_map.get(str(w).lower(), str(w).lower()) for w in words if str(w).isalpha()]
 
             word_counts = Counter(words)
 

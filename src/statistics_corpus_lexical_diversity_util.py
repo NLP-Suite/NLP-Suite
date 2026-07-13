@@ -17,16 +17,11 @@ import IO_files_util
 import IO_user_interface_util
 import statistics_statistical_tests_util
 
-from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
-
 
 def _tokenize(text):
-    sentences = sentence_split_stanza_text(stanzaPipeLine(text))
-    words = []
-    for s in sentences:
-        words.extend(s.lower().split())
-    words = [w for w in words if w.isalpha()]
-    return words
+    # plain lowercase whitespace split (+ alpha filter) -- identical result to the old per-sentence
+    # Stanza split, minus the pointless neural pipeline call (this was part of the ~34 min slowdown).
+    return [w for w in text.lower().split() if w.isalpha()]
 
 
 def _ttr(tokens):
@@ -48,20 +43,23 @@ def _log_ttr(tokens):
 
 
 def _mtld_forward(tokens, threshold=0.72):
+    # INCREMENTAL MTLD: maintain the current factor's running type-set and token count instead of
+    # rebuilding len(set(tokens[start:i])) over a growing slice every step (that was O(n^2) and the
+    # dominant cost). Identical factoring logic, now O(n).
     factor_count = 0.0
-    start = 0
-    for i in range(1, len(tokens) + 1):
-        segment = tokens[start:i]
-        current_ttr = _ttr(segment)
-        if current_ttr <= threshold:
+    types = set()
+    token_count = 0
+    for tok in tokens:
+        token_count += 1
+        types.add(tok)
+        if (len(types) / token_count) <= threshold:   # factor complete
             factor_count += 1
-            start = i
-    if start < len(tokens):
-        remaining = tokens[start:]
-        if len(remaining) > 0:
-            remaining_ttr = _ttr(remaining)
-            if remaining_ttr < 1.0:
-                factor_count += (1.0 - remaining_ttr) / (1.0 - threshold)
+            types = set()
+            token_count = 0
+    if token_count > 0:   # trailing partial factor
+        remaining_ttr = len(types) / token_count
+        if remaining_ttr < 1.0:
+            factor_count += (1.0 - remaining_ttr) / (1.0 - threshold)
     if factor_count == 0:
         return len(tokens)
     return len(tokens) / factor_count

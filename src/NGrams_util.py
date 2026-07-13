@@ -109,13 +109,12 @@ def readandsplit(filename, excludePunctuation, excludeArticles, excludeDetermine
         out = out.lower()
 
     if not lemmatize:
-        if not called:
-            nlp = stanza.Pipeline(lang='en', processors='tokenize')
-            called = 1
-        doc = nlp(''.join(out))
-        if index + 1 == nFiles:
-            called = 0
-        return [token.text for sentence in doc.sentences for token in sentence.tokens]
+        # Word tokens via regex (the same tokenizer the fast word-frequency tool uses) instead of the
+        # Stanza NEURAL tokenizer, which made n-grams take ~25 min on a 199-file corpus. The
+        # preprocessing above (punctuation / article / determiner / stopword removal, case) has already
+        # been applied to `out`, so this just extracts the remaining word tokens.
+        import re
+        return re.findall(r"[A-Za-z']+", out)
     else:
         if not called:
             nlp = stanza.Pipeline(lang='en', processors='tokenize,lemma')
