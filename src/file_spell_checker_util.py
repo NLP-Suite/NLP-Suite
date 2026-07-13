@@ -1118,6 +1118,20 @@ def language_detection(window, inputFilename, inputDir, outputDir, configFileNam
 
     lang_dict = dict(constants_util.languages)
 
+    # One-time detector setup. These used to be rebuilt INSIDE the per-file loop below -- reloading the
+    # spaCy model (spacy.load) and re-creating the langid identifier for every document made language
+    # detection by far the slowest analysis (minutes on a corpus that other analyses cleared in seconds).
+    # Load spaCy with the heavy components disabled: whole-document language detection (doc._.language)
+    # only needs tokenization + the language_detector pipe, not tagger/parser/NER/lemmatizer.
+    nlp_spacy = spacy.load('en_core_web_sm',
+                           disable=['tagger', 'parser', 'ner', 'lemmatizer', 'attribute_ruler'])
+    try:
+        Language.factory("language_detector", func=get_lang_detector)
+    except Exception:
+        pass  # factory already registered (global on the Language class) -- fine on repeat runs
+    nlp_spacy.add_pipe('language_detector', last=True)
+    lang_identifier = LanguageIdentifier.from_modelstring(model, norm_probs=True)
+
     with open(outputFilenameCSV, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
@@ -1188,9 +1202,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, configFileNam
             currentLine.append(['LANGID',  language, probability, fileID, IO_csv_util.dressFilenameForCSVHyperlink(filename)])
 
 # spaCY ----------------------------------------------------------
-            nlp_spacy = spacy.load('en_core_web_sm')
-            Language.factory("language_detector", func=get_lang_detector)
-            nlp_spacy.add_pipe('language_detector', last=True)
+            # (model + detector pipe built once above the loop -- not per file)
             try:
                 doc = nlp_spacy(text)
             except:
@@ -1208,7 +1220,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, configFileNam
             print('   SPACY', language, probability)  # {'language': 'en', 'score': 0.9999978351575265}
             currentLine.append(['spaCy', language, probability, fileID, IO_csv_util.dressFilenameForCSVHyperlink(filename)])
 
-            lang_identifier = LanguageIdentifier.from_modelstring(model, norm_probs=True)
+            # (lang_identifier built once above the loop -- not per file)
             try:
                 value=lang_identifier.classify(text)
             except:

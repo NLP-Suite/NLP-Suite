@@ -125,14 +125,26 @@ def run():
         # auto-dismisses.) Modules call these as `mb.showwarning`, i.e. tkinter.messagebox.showwarning,
         # so patching the module attributes covers them all.
         import tkinter.messagebox as _mbmod
-        _orig_dialogs = (_mbmod.showwarning, _mbmod.showerror, _mbmod.showinfo)
+        _orig_dialogs = (_mbmod.showwarning, _mbmod.showerror, _mbmod.showinfo,
+                         _mbmod.askyesno, _mbmod.askokcancel)
 
         def _silent_dialog(title=None, message=None, **_kw):
             print('[Corpus Profiler: dialog suppressed] %s -- %s'
                   % (title, str(message).replace('\n', ' ')[:300]))
+
+        def _silent_ask(title=None, message=None, **_kw):
+            # Never block the unattended batch on a Yes/No prompt. Honor the dialog's own declared
+            # `default` (e.g. the "Directory already exists ... replace?" prompts pass default='yes');
+            # fall back to proceed=True when no default is given ("continue?" dialogs mean yes).
+            ans = str(_kw.get('default', 'yes')).lower() != 'no'
+            print('[Corpus Profiler: auto-%s] %s -- %s'
+                  % ('yes' if ans else 'no', title, str(message).replace('\n', ' ')[:300]))
+            return ans
         _mbmod.showwarning = _silent_dialog
         _mbmod.showerror = _silent_dialog
         _mbmod.showinfo = _silent_dialog
+        _mbmod.askyesno = _silent_ask
+        _mbmod.askokcancel = _silent_ask
 
         results = corpus_profiler_util.run_profile(ctx, selected)
         print('>>> Corpus Profiler: %d analyses done; building index report...' % len(results))
@@ -194,7 +206,8 @@ def run():
     finally:
         # restore the real dialogs no matter how the run ended
         try:
-            _mbmod.showwarning, _mbmod.showerror, _mbmod.showinfo = _orig_dialogs
+            (_mbmod.showwarning, _mbmod.showerror, _mbmod.showinfo,
+             _mbmod.askyesno, _mbmod.askokcancel) = _orig_dialogs
         except Exception:
             pass
 
