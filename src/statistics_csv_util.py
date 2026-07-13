@@ -744,6 +744,11 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
                 if _grp in data_final.columns and _fld in data_final.columns and _freq_fld in data_final.columns:
                     _D = int(data_final[_grp].nunique())
                     _V = int(data_final[_fld].nunique())
+                    # WHY this block exists: a grouped bar chart of D documents x V values draws D*V bars
+                    # and needs V distinct legend colors. On a big corpus that is an unreadable wall --
+                    # e.g. the Harry Potter corpus's 199 documents x 56 values = ~11,000 bars needing 56
+                    # colors. So below we either pick a legible orientation (small dimension = series,
+                    # large = x-axis) or, when even that is too big, switch to a heatmap.
                     # The readability bottleneck is the number of COLORED SERIES (the legend), not the
                     # x-axis: a bar chart handles ~20-40 x categories fine, but not that many colors. So we
                     # make the SMALLER dimension the series (its size must be small) and the LARGER the
