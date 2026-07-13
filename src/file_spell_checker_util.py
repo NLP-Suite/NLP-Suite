@@ -1125,6 +1125,12 @@ def language_detection(window, inputFilename, inputDir, outputDir, configFileNam
     # only needs tokenization + the language_detector pipe, not tagger/parser/NER/lemmatizer.
     nlp_spacy = spacy.load('en_core_web_sm',
                            disable=['tagger', 'parser', 'ner', 'lemmatizer', 'attribute_ruler'])
+    # The parser is disabled (for speed), so add a cheap sentencizer BEFORE the language_detector --
+    # some spacy-langdetect versions iterate doc.sents, which would otherwise raise "sentence
+    # boundaries unset", break the loop, and leave the output CSV empty (then charting fails with
+    # 'NoneType has no len()').
+    if 'sentencizer' not in nlp_spacy.pipe_names:
+        nlp_spacy.add_pipe('sentencizer')
     try:
         Language.factory("language_detector", func=get_lang_detector)
     except Exception:
@@ -1210,7 +1216,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, configFileNam
                     docErrors_unknown = docErrors_unknown + 1
                     filenameSV=filename
                 print("  spaCy Unknown file read error.")
-                break # continue
+                continue  # skip this file; do NOT abort the whole run (a break here truncated the CSV)
             value = doc._.language
             language=value['language']
             language = lang_dict.get(language)
@@ -1227,8 +1233,8 @@ def language_detection(window, inputFilename, inputDir, outputDir, configFileNam
                 if filename!=filenameSV:
                     docErrors_unknown = docErrors_unknown + 1
                     filenameSV=filename
-                print("  spaCy Unknown file read error.")
-                break # continue
+                print("  langid Unknown file read error.")
+                continue  # skip this file; do NOT abort the whole run (a break here truncated the CSV)
 
 # Stanza  ----------------------------------------------------------
 
@@ -1266,20 +1272,25 @@ def language_detection(window, inputFilename, inputDir, outputDir, configFileNam
         chart_title='Frequency of Languages Detected by LANGDETECT, LANGID, spaCy, and Stanza'
         hover_label=[]
         inputFilename = outputFilenameCSV
-        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
-                                                  outputFileLabel='_bar_chart',
-                                                  chartPackage=chartPackage,
-                                                  dataTransformation=dataTransformation,
-                                                  chart_type_list=["bar"],
-                                                  chart_title=chart_title,
-                                                  column_xAxis_label_var='Language',
-                                                  hover_info_column_list=hover_label,
-                                                  count_var=1)
-        if chartPackage=='Excel' and outputFiles!=None:
-            if isinstance(outputFiles, str):
-                filesToOpen.append(outputFiles)
-            else:
-                filesToOpen.extend(outputFiles)
+        # Charting is non-fatal: the CSV is already in filesToOpen, so a charting error (e.g. an empty
+        # or single-value frequency table) must not lose the whole analysis -- log it and return the CSV.
+        try:
+            outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
+                                                      outputFileLabel='_bar_chart',
+                                                      chartPackage=chartPackage,
+                                                      dataTransformation=dataTransformation,
+                                                      chart_type_list=["bar"],
+                                                      chart_title=chart_title,
+                                                      column_xAxis_label_var='Language',
+                                                      hover_info_column_list=hover_label,
+                                                      count_var=1)
+            if chartPackage=='Excel' and outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+        except Exception as _chart_e:
+            print('Language detection: chart step skipped (' + str(_chart_e) + '); returning the CSV.')
 
     # if openOutputFiles:
     #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
