@@ -38,6 +38,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install --no-cache-dir pyinstaller
           pip install --no-cache-dir -r requirements.txt
+          # Pin setuptools < 70 as the LAST dependency step. setuptools 70 removed pkg_resources
+          # internals (incl. NullProvider) that PyInstaller's pyi_rth_pkgres runtime hook needs, so
+          # the FROZEN app crashed at launch with
+          #   AttributeError: module 'pkg_resources' has no attribute 'NullProvider'
+          # (hit on the macOS installer; the build had no setuptools pin and silently drifted onto a
+          # too-new version). Doing it last means the app bundles a pkg_resources that still exposes it.
+          # See PyInstaller issue #8554 / setuptools issue #1963.
+          pip install --no-cache-dir "setuptools<70"
 
       - name: Install Windows-only dependencies
         if: runner.os == 'Windows'
