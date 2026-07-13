@@ -406,8 +406,8 @@ REGISTRY = {
                              label='N-grams'),
     'sentence_length':  dict(category='counts', kind='batch', run=_run_sentence_length,
                              label='Sentence length'),
-    'line_length':      dict(category='counts', kind='batch', run=_run_line_length,
-                             label='Line length'),
+    # 'line_length' dropped from the profiler: line length in prose is a typesetting artifact, not a
+    # stylistic signal (meaningful only for poetry/lyrics -> use the standalone Style Analysis GUI).
     # --- vocabulary (a curated SNAPSHOT; the full ~20-option menu lives in the Style Analysis GUI,
     #     which the report/help points to). Sourced from style_analysis_main.run(). ---
     'yule':             dict(category='counts', kind='batch', run=_run_yule,
@@ -418,8 +418,9 @@ REGISTRY = {
                              label="Word frequency distribution (Zipf's Law)"),
     'tfidf':            dict(category='counts', kind='batch', run=_run_tfidf,
                              label='TF-IDF (most distinctive words per document)'),
-    'hapax':            dict(category='counts', kind='batch', run=_run_hapax,
-                             label='Hapax legomena (once-occurring words)'),
+    # 'hapax' dropped from the profiler: it re-tokenized the WHOLE corpus a SECOND time (its own n-gram
+    # pass) purely to list once-occurring words -- which the N-grams analysis already emits as a hapax
+    # file from its 1-gram results. Removing it halves the n-gram work (was "N-grams runs twice").
     'unusual_words':    dict(category='counts', kind='batch', run=_run_unusual_words,
                              label='Unusual words (via NLTK)'),
     'abstract_concrete': dict(category='counts', kind='batch', run=_run_abstract_concrete,

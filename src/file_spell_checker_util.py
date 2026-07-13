@@ -107,32 +107,24 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, 
     # https://stackoverflow.com/questions/28339622/is-there-a-corpus-of-english-words-in-nltk
     import GUI_IO_util
     NLTK_corpus_lemmatized = GUI_IO_util.wordLists_libPath + os.sep + 'NLTK_corpus_lemmatized.csv'
-    filesToOpen.append(NLTK_corpus_lemmatized)
 
     if not os.path.exists(NLTK_corpus_lemmatized):
-        mb.showwarning(title='Warning',
-                       message='The csv file of NLTK corpus of lemmatized English words was not found in the lib subdir ' + GUI_IO_util.wordLists_libPath + '\n\nThe script will now run the much slower lemmatization function.\n\nPlease, alert the NLP Suite developers of the missing file.')
-        # this approach is extremely slow
-        NLTK_english_vocab_lemmatized=[]
-        nltk.corpus = nltk.corpus.words.words()
-        NLTK_corpus_size = len(nltk.corpus)
-        for corpus_index, w in enumerate(nltk.corpus):
-            lemma = lemmatize_stanza_word(stanzaPipeLine(w))
-            NLTK_english_vocab_lemmatized.append(lemma)
-            print('   NLTK corpus word ' + str(corpus_index) + '/' + str(NLTK_corpus_size) + '  ' + w + ' / ' + lemma)
-        # this is much faster but does not lemmatize
-        # english_vocab = [w.lower() for w in nltk.corpus.words.words()]
-        outputFilename_NLTK_corpus = IO_files_util.generate_output_file_name('', '', outputDir, '.csv', 'NLTK_corpus','')
-        filesToOpen.append(outputFilename_NLTK_corpus)
-        NLTK_english_vocab_lemmatized.insert(0, 'NLTK corpus lemmatized words')
-        if IO_csv_util.list_to_csv(window, NLTK_english_vocab_lemmatized, outputFilename_NLTK_corpus): return
+        # The lemmatized-corpus cache is missing. The OLD fallback lemmatized all ~236,000 NLTK words one
+        # at a time through the Stanza neural pipeline -- it effectively never finished (no "Finished"
+        # line ever printed; this hung the Corpus Profiler). Fall back instead to the FAST un-lemmatized
+        # lowercase set: slightly less precise on inflected forms, but it returns in a fraction of a
+        # second instead of hanging the whole run.
+        print('NLTK unusual words: lemmatized cache not found at ' + NLTK_corpus_lemmatized +
+              '; using the fast un-lemmatized NLTK word set instead.')
+        NLTK_english_vocab_lemmatized = set(w.lower() for w in nltk.corpus.words.words())
     else:
+        filesToOpen.append(NLTK_corpus_lemmatized)
         with open(NLTK_corpus_lemmatized, "r", encoding="utf-8", errors="ignore") as f:
             NLTK_english_vocab = f.read()
-        NLTK_english_vocab_lemmatized = NLTK_english_vocab.split('\n') # '\n'.english_vocab()
-    NLTK_english_vocab_lemmatized.pop(0)
-    # NLTK_english_vocab_lemmatized are distinct values
-    NLTK_english_vocab_lemmatized=set(NLTK_english_vocab_lemmatized)
+        _vocab = NLTK_english_vocab.split('\n')
+        if _vocab:
+            _vocab.pop(0)   # drop the header row
+        NLTK_english_vocab_lemmatized = set(_vocab)
     # you can add words to NLTK words, e.g.,
     #   words.update(['climatisation', 'equipped'])
     # https://stackoverflow.com/questions/72099620/how-to-solve-missing-words-in-nltk-corpus-words-words
