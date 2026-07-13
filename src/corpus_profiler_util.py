@@ -471,7 +471,7 @@ REGISTRY = {
     'iconic':           dict(category='counts', kind='batch', run=_run_iconic,
                              label='Iconic vocabulary'),
     'capital_words':    dict(category='counts', kind='batch', run=_run_word_shape('capital'),
-                             label='Words with capital initial (proper nouns)'),
+                             label='Capital-initial words'),
     'language_detection': dict(category='counts', kind='batch', run=_run_language_detection,
                              label='Language detection'),
     # --- entities ---

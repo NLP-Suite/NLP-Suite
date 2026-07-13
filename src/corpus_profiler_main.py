@@ -343,7 +343,7 @@ counts_menu = tk.OptionMenu(window, counts_menu_var, '*',
                             '     Unusual words (via NLTK)',
                             '     Abstract / concrete vocabulary',
                             '     Iconic vocabulary',
-                            '     Words with capital initial (proper nouns)')
+                            '     Capital-initial words')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, counts_menu, False)
 
 # # 2. Vocabulary

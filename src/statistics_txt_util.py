@@ -857,10 +857,15 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
     else:
         hideMessage = True
 
+    # friendly display label for the Started/Finished alerts (processType itself still drives the logic
+    # below, so leave it untouched -- this only changes what the user sees, e.g. 'capital' -> the clearer
+    # 'capital-initial words').
+    _proc_label = 'capital-initial words' if 'capital' in processType.lower() else processType
+
     # ngrams already display the started running... No need to duplicate
     if not 'unigrams' in processType:
         startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
-                                               'Started running ' + processType + ' at', True)
+                                               'Started running ' + _proc_label + ' at', True)
 
     # process separately outside the loop through documents which is carried out inside compute_character_word_ngrams
     if processType == '' or "N-grams" in processType or \
@@ -954,7 +959,15 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
         sentenceID = 0  # to store sentence index
         # check each word in sentence for concreteness and write to outputFilename
 
-        sentences = sentence_split_stanza_text(stanzaPipeLine(fullText))
+        # Parse the whole document ONCE and reuse the per-sentence tokens below, instead of re-running
+        # the Stanza pipeline on EVERY sentence (stanzaPipeLine(s) per sentence was O(#sentences) full
+        # pipeline calls -- the cause of the multi-hour word-shape runs, e.g. "capital", on a large
+        # corpus). The doc's sentence.words are the same tokens (punctuation included) the old per-
+        # sentence tokenize_stanza_text produced.
+        _doc = stanzaPipeLine(fullText)
+        sentences = sentence_split_stanza_text(_doc)
+        _pre_words = ([[w.text for w in sent.words] for sent in _doc.sentences]
+                      if len(_doc.sentences) == len(sentences) else None)
 
         # analyze each sentence
         sentence_list = []
@@ -966,7 +979,12 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
             total_words = 0
             num_words_in_s = s.count(" ") + 1
 
-            words = tokenize_stanza_text(stanzaPipeLine(s))
+            # reuse the single document parse's tokens for this sentence; fall back to a per-sentence
+            # parse only if the sentence lists didn't line up 1:1
+            if _pre_words is not None:
+                words = _pre_words[sentenceID - 1]
+            else:
+                words = tokenize_stanza_text(stanzaPipeLine(s))
             words_with_stop = [word for word in words if word.isalpha()]
             #print(words_with_stop)
             # don't process stopwords
@@ -1271,7 +1289,7 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
     # ngrams already display the started running... No need to duplicate
     if not 'unigrams' in processType:
         IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
-                                               'Finished running ' + processType + ' at', True, '', True, startTime)
+                                               'Finished running ' + _proc_label + ' at', True, '', True, startTime)
 
     return filesToOpen
 
