@@ -260,19 +260,44 @@ def _run_pos_stats(c):
     return list(dict.fromkeys(_files(out)))   # Stanza returns the file once per doc; dedupe
 
 
-# ---- narrative: SVO (CoreNLP) + SRL (transformer; self-skips if its env isn't installed) ----
+def _is_corenlp_package(package):
+    # True only when the user actually configured Stanford CoreNLP (or its OpenIE mode). Everything
+    # else (Stanza, spaCy) is a Python parser -- the Suite's direction is to avoid Java/CoreNLP unless
+    # strictly necessary (gender / dialogue / normalized dates are CoreNLP-only; SVO and POS are not).
+    p = str(package).lower()
+    return ('corenlp' in p) or ('stanford' in p) or ('openie' in p)
+
+
+# ---- narrative: SVO (via the CONFIGURED parser) + SRL (transformer; self-skips if env absent) ----
 def _run_svo(c):
-    # Subject-Verb-Object triples via the CoreNLP 'SVO' annotator. Prefer the shared CoreNLP cache.
-    picked = _cache_pick_any(c.get('_corenlp_files'), 'corenlp_svo')
-    if picked:
-        print('>>> Narrative/SVO: used the shared CoreNLP cache (%d files) -- no re-parse' % len(picked))
-        return picked
-    import Stanford_CoreNLP_util
-    out = Stanford_CoreNLP_util.CoreNLP_annotate(
+    # Subject-Verb-Object triples via the CONFIGURED parser -- SVO needs no Java. CoreNLP is used ONLY
+    # when the user selected CoreNLP/OpenIE (then we also reuse the shared CoreNLP cache); otherwise SVO
+    # runs through Stanza (default) or spaCy, honoring the setup the same way the standalone SVO tool does.
+    if _is_corenlp_package(c.get('package')):
+        picked = _cache_pick_any(c.get('_corenlp_files'), 'corenlp_svo')
+        if picked:
+            print('>>> Narrative/SVO: used the shared CoreNLP cache (%d files) -- no re-parse' % len(picked))
+            return picked
+        import Stanford_CoreNLP_util
+        out = Stanford_CoreNLP_util.CoreNLP_annotate(
+            c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
+            c['chartPackage'], c['dataTransformation'], ['SVO'], False,
+            c['language'], c['export_json_var'], c['memory_var'],
+            c['document_length_var'], c['limit_sentence_length_var'])
+        return _files(out)
+    if 'spacy' in str(c.get('package', '')).lower():
+        import spaCy_util
+        out = spaCy_util.spaCy_annotate(
+            c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
+            c['chartPackage'], c['dataTransformation'], 'SVO', False,
+            c['language'], c['memory_var'], c['document_length_var'], c['limit_sentence_length_var'])
+        return _files(out)
+    # default: Stanza -- the modern Python parser, no Java (same call shape as the sentiment runner)
+    import Stanza_util
+    out = Stanza_util.Stanza_annotate(
         c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
         c['chartPackage'], c['dataTransformation'], ['SVO'], False,
-        c['language'], c['export_json_var'], c['memory_var'],
-        c['document_length_var'], c['limit_sentence_length_var'])
+        [c['language']], c['memory_var'], c['document_length_var'], c['limit_sentence_length_var'])
     return _files(out)
 
 
@@ -536,8 +561,9 @@ def _prime_parse_cache(ctx, selected):
         annotators += ['NER', 'gender', 'quote', 'normalized-date']
     if 'semantic_classes' in sel:
         annotators += ['POS']
-    if 'narrative_svo' in sel:
-        annotators += ['SVO']
+    if 'narrative_svo' in sel and _is_corenlp_package(ctx.get('package')):
+        annotators += ['SVO']   # SVO rides the CoreNLP pass ONLY when CoreNLP is the configured parser;
+        #                         under Stanza/spaCy, _run_svo runs SVO through that parser instead (no Java)
     if len(annotators) >= 2:   # only worth combining when 2+ CoreNLP dimensions are on
         try:
             import Stanford_CoreNLP_util

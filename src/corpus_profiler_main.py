@@ -103,7 +103,8 @@ def run():
     ctx = dict(window=GUI_util.window, inputFilename=inputFilename, inputDir=inputDir, outputDir=outputDir,
                config_filename=config_filename, chartPackage=chartPackage, dataTransformation=dataTransformation,
                language=language, export_json_var=export_json_var, memory_var=memory_var,
-               document_length_var=document_length_var, limit_sentence_length_var=limit_sentence_length_var)
+               document_length_var=document_length_var, limit_sentence_length_var=limit_sentence_length_var,
+               package=package)   # so runners honor the CONFIGURED parser (e.g. SVO via Stanza, not forced CoreNLP)
 
     # Top-level bracket around the WHOLE sweep: "Started ... with N of M analyses checked at TIME" now,
     # and a matching "Finished ... taking ..." at the very end (profiler_startTime feeds the elapsed).
