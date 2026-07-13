@@ -154,7 +154,13 @@ def _run_word_frequency(c):
 
 # ---- entities (English + Stanford CoreNLP) ------------------------------------------------
 def _run_entities_all(c):
-    # one CoreNLP pass yields NER (people/orgs/locations), gender, dialogue/quotes and normalized dates
+    # NER (people/orgs/locations), gender, dialogue/quotes and normalized dates. Read from the shared
+    # combined-CoreNLP cache if the parse phase produced it; otherwise run our own CoreNLP pass.
+    picked = _cache_pick_any(c.get('_corenlp_files'),
+                             'corenlp_ner', 'corenlp_gender', 'corenlp_quote', 'corenlp_normalized-date')
+    if picked:
+        print('>>> Entities: used the shared CoreNLP cache (%d files) -- no re-parse' % len(picked))
+        return picked
     import Stanford_CoreNLP_util
     NER_list = ['PERSON', 'ORGANIZATION', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
     out = Stanford_CoreNLP_util.CoreNLP_annotate(
@@ -174,20 +180,34 @@ def _run_semantic_classes(c):
     #   FrameNet -- semantic FRAMES (verbs and nouns)
     # Same lemma lists, three lenses on meaning. Each aggregation is guarded so one failing (e.g. an
     # NLTK corpus not downloaded) never loses the others.
-    import Stanford_CoreNLP_util
     import semantic_aggregation_WordNet_util
     import semantic_aggregation_util
-    files = Stanford_CoreNLP_util.CoreNLP_annotate(
-        c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
-        c['chartPackage'], c['dataTransformation'], ['POS'], False,
-        c['language'], c['export_json_var'], c['memory_var'],
-        c['document_length_var'], c['limit_sentence_length_var'])
-    out = []
-    if not files:
-        return out
-    verb_file = files[0] if (len(files) > 0 and 'verb' in str(files[0]).lower()) else None
-    noun_file = files[1] if (len(files) > 1 and 'noun' in str(files[1]).lower()) else None
     cp, dt = c['chartPackage'], c['dataTransformation']
+
+    # POS noun/verb lemma lists: prefer the shared combined-CoreNLP cache (CoreNLP_POS_lemma_Verbs /
+    # _Nouns); else run our own POS pass.
+    verb_file = noun_file = None
+    cache = c.get('_corenlp_files')
+    if cache:
+        _vf = _cache_pick(cache, 'pos_lemma_verb', exclude=('chart', 'no_hyperlinks'))
+        _nf = _cache_pick(cache, 'pos_lemma_noun', exclude=('chart', 'no_hyperlinks'))
+        verb_file = _vf[0] if _vf else None
+        noun_file = _nf[0] if _nf else None
+        if verb_file or noun_file:
+            print('>>> Semantics: used the shared CoreNLP POS cache -- no re-parse')
+    if not (verb_file or noun_file):
+        import Stanford_CoreNLP_util
+        files = _files(Stanford_CoreNLP_util.CoreNLP_annotate(
+            c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
+            c['chartPackage'], c['dataTransformation'], ['POS'], False,
+            c['language'], c['export_json_var'], c['memory_var'],
+            c['document_length_var'], c['limit_sentence_length_var']))
+        verb_file = files[0] if (len(files) > 0 and 'verb' in str(files[0]).lower()) else None
+        noun_file = files[1] if (len(files) > 1 and 'noun' in str(files[1]).lower()) else None
+
+    out = []
+    if not (verb_file or noun_file):
+        return out
 
     # WordNet: nouns and verbs -> top-synset classes
     for f, tag in ((verb_file, 'VERB'), (noun_file, 'NOUN')):
@@ -242,7 +262,11 @@ def _run_pos_stats(c):
 
 # ---- narrative: SVO (CoreNLP) + SRL (transformer; self-skips if its env isn't installed) ----
 def _run_svo(c):
-    # Subject-Verb-Object triples via the CoreNLP 'SVO' annotator, run with defaults
+    # Subject-Verb-Object triples via the CoreNLP 'SVO' annotator. Prefer the shared CoreNLP cache.
+    picked = _cache_pick_any(c.get('_corenlp_files'), 'corenlp_svo')
+    if picked:
+        print('>>> Narrative/SVO: used the shared CoreNLP cache (%d files) -- no re-parse' % len(picked))
+        return picked
     import Stanford_CoreNLP_util
     out = Stanford_CoreNLP_util.CoreNLP_annotate(
         c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
@@ -293,10 +317,14 @@ def _run_character_arcs(c):
 #      The map geocodes only DISTINCT locations (bounded); we further CAP to the 40 most frequent so an
 #      unattended run on a big corpus can't stall on hundreds of Nominatim calls. ----
 def _run_character_movement(c):
-    import NER_location_tracking_util
     import charts_util
-    files = _files(NER_location_tracking_util.main(
-        c['inputFilename'], c['inputDir'], c['outputDir'], c['chartPackage'], c['dataTransformation']))
+    files = list(c.get('_ner_track_files') or [])   # shared NER location pass, if the parse phase primed it
+    if files:
+        print('>>> Characters/movement: used the shared NER location cache -- no re-parse')
+    else:
+        import NER_location_tracking_util
+        files = _files(NER_location_tracking_util.main(
+            c['inputFilename'], c['inputDir'], c['outputDir'], c['chartPackage'], c['dataTransformation']))
     csvs = [f for f in files if str(f).lower().endswith('.csv')]
     if not csvs:
         return files
@@ -331,10 +359,14 @@ def _run_character_movement(c):
 #      offers the full control (geocoder choice, Google Earth / folium / distances, manual review) --
 #      this is the quick snapshot. ----
 def _run_spatial_map(c):
-    import NER_location_tracking_util
     import charts_util
-    files = _files(NER_location_tracking_util.main(
-        c['inputFilename'], c['inputDir'], c['outputDir'], c['chartPackage'], c['dataTransformation']))
+    files = list(c.get('_ner_track_files') or [])   # shared NER location pass, if the parse phase primed it
+    if files:
+        print('>>> Spatial: used the shared NER location cache -- no re-parse')
+    else:
+        import NER_location_tracking_util
+        files = _files(NER_location_tracking_util.main(
+            c['inputFilename'], c['inputDir'], c['outputDir'], c['chartPackage'], c['dataTransformation']))
     csvs = [f for f in files if str(f).lower().endswith('.csv')]
     if not csvs:
         return files
@@ -461,7 +493,82 @@ def analyses_in_category(category):
 #   selected   list of analysis ids to run (already expanded from the GUI '*' menus)
 # Returns a `results` list of dicts: {id, category, label, kind, files, error}
 # ---------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------
+# Shared PARSE CACHE. Each parser-dependent dimension used to launch its OWN full parse of the
+# corpus, so a battery re-parsed all files ~8 times (CoreNLP/Java is the slow one). Parse ONCE per
+# parser up front and let the dimensions read the cached annotations:
+#   * ONE combined CoreNLP pass (NER + gender + quote + normalized-date + POS + SVO) replaces up to
+#     three, routed to Entities / Semantics / Narrative by output filename.
+#   * ONE NER location-tracking pass shared by Spatial and Characters-movement.
+# Best-effort: on any failure a cache stays empty and the dimension falls back to its own parse, so
+# this can never make a run less correct -- only faster. (Stanza can't combine annotators in one call,
+# so POS/sentiment stay separate; the big win is folding the 3 CoreNLP passes into 1.)
+# ---------------------------------------------------------------------------------------------
+def _cache_pick(files, *substrs, exclude=()):
+    """Cached files whose basename contains ALL substrs and none of exclude (case-insensitive)."""
+    out = []
+    for f in files or []:
+        b = os.path.basename(str(f)).lower()
+        if all(s.lower() in b for s in substrs) and not any(x.lower() in b for x in exclude):
+            out.append(f)
+    return out
+
+
+def _cache_pick_any(files, *substrs):
+    """Cached files whose basename contains ANY of substrs (case-insensitive)."""
+    out = []
+    for f in files or []:
+        b = os.path.basename(str(f)).lower()
+        if any(s.lower() in b for s in substrs):
+            out.append(f)
+    return out
+
+
+def _prime_parse_cache(ctx, selected):
+    ctx['_corenlp_files'] = None
+    ctx['_ner_track_files'] = None
+    sel = set(selected)
+
+    # one combined CoreNLP pass covering every selected CoreNLP dimension
+    annotators = []
+    if 'entities_all' in sel:
+        annotators += ['NER', 'gender', 'quote', 'normalized-date']
+    if 'semantic_classes' in sel:
+        annotators += ['POS']
+    if 'narrative_svo' in sel:
+        annotators += ['SVO']
+    if len(annotators) >= 2:   # only worth combining when 2+ CoreNLP dimensions are on
+        try:
+            import Stanford_CoreNLP_util
+            NER_list = ['PERSON', 'ORGANIZATION', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
+            print('>>> Corpus Profiler: ONE combined CoreNLP pass for [%s] (replacing separate passes)'
+                  % ', '.join(annotators))
+            files = _files(Stanford_CoreNLP_util.CoreNLP_annotate(
+                ctx['config_filename'], ctx['inputFilename'], ctx['inputDir'], ctx['outputDir'], False,
+                ctx['chartPackage'], ctx['dataTransformation'], annotators, False,
+                ctx['language'], ctx['export_json_var'], ctx['memory_var'],
+                ctx['document_length_var'], ctx['limit_sentence_length_var'], NERs=NER_list))
+            ctx['_corenlp_files'] = files
+            print('>>> Corpus Profiler: combined CoreNLP pass cached %d output files' % len(files))
+        except Exception as e:
+            print('Corpus Profiler: combined CoreNLP pass failed (%s); dimensions will parse individually' % e)
+            ctx['_corenlp_files'] = None
+
+    # one NER location-tracking pass shared by Spatial + Characters-movement (was run twice)
+    if ('spatial_map' in sel) or ('character_movement' in sel):
+        try:
+            import NER_location_tracking_util
+            print('>>> Corpus Profiler: ONE NER location pass shared by Spatial + Characters-movement')
+            ctx['_ner_track_files'] = _files(NER_location_tracking_util.main(
+                ctx['inputFilename'], ctx['inputDir'], ctx['outputDir'],
+                ctx['chartPackage'], ctx['dataTransformation']))
+        except Exception as e:
+            print('Corpus Profiler: shared NER location pass failed (%s); dimensions will parse individually' % e)
+            ctx['_ner_track_files'] = None
+
+
 def run_profile(ctx, selected):
+    _prime_parse_cache(ctx, selected)   # parse once, cache; runners read the cache (or fall back)
     results = []
     for aid in selected:
         entry = REGISTRY.get(aid)
