@@ -48,9 +48,11 @@ def create_Plotly_chart(inputFilename,outputDir,chart_title,chart_type_list,cols
     if remove_hyperlinks:
         remove_hyperlinks,inputFilename = IO_csv_util.remove_hyperlinks(inputFilename)
     try:
-        data = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+        # low_memory=False: single-pass dtype inference avoids the "Columns (N) have mixed types"
+        # DtypeWarning on large CSVs (e.g. a big CoNLL table auto-routed here from Excel).
+        data = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip', low_memory=False)
     except pd.errors.ParserError:
-        data = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip', sep='delimiter')
+        data = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip', sep='delimiter', low_memory=False)
     except:
         print("Error: failed to read the csv file : "+inputFilename)
         return

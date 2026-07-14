@@ -19,6 +19,13 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
     scriptName=configFilename.replace("_config.csv","")
     filesToOpen=[]
 
+    # Honor "No charts": callers that only want the parsed CSV (e.g. the Corpus Profiler's POS pass)
+    # pass chartPackage='No charts' to suppress these frequency charts. Charting a per-token CoNLL
+    # table is pointless and, on a large corpus (>1M tokens), triggers the Excel->Plotly auto-switch
+    # into a giant, useless chart. Return no chart files.
+    if str(chartPackage) == 'No charts':
+        return []
+
     head, tail = os.path.split(outputFilename)
     temp_outputFilename=tail
 
