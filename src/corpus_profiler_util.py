@@ -251,6 +251,42 @@ def _run_embeddings(c):
     return _files(out)
 
 
+def _find_existing_pos_csv(c):
+    """Return [path] to a POS CoNLL table already in the output dir (from a prior/killed run on THIS
+    corpus), so a restart can skip the slow Stanza POS re-parse; [] if none is trustworthy. Accepts only
+    a CSV whose basename looks like the POS table (has 'pos' + 'stanza', not a chart / frequency / binned
+    / by-doc / lemma-list file) AND that actually has a 'POS' column; picks the largest (the CoNLL table).
+    Validation reads only the header (5 rows) -- cheap. NOTE: the table is written when the parse
+    completes, so a present, valid file means POS finished; if you ever kill DURING the POS parse, delete
+    the partial CSV before re-running."""
+    outdir = c.get('outputDir') or ''
+    if not outdir or not os.path.isdir(outdir):
+        return []
+    import glob
+    import pandas as pd
+    best, best_size = None, 0
+    for p in glob.glob(os.path.join(outdir, '**', '*.csv'), recursive=True):
+        b = os.path.basename(p).lower()
+        if 'pos' not in b or 'stanza' not in b:
+            continue
+        if any(x in b for x in ('binned', 'frequency', 'chart', 'no_hyperlinks', 'group', 'bydoc',
+                                'stats', 'lemma')):
+            continue
+        try:
+            head = pd.read_csv(p, nrows=5, encoding='utf-8', on_bad_lines='skip')
+        except Exception:
+            continue
+        if head.empty or 'POS' not in head.columns:
+            continue
+        try:
+            size = os.path.getsize(p)
+        except Exception:
+            size = 0
+        if size > best_size:
+            best, best_size = p, size
+    return [best] if best else []
+
+
 # ---- syntax: parts-of-speech distribution (nouns, verbs, adjectives, adverbs, pronouns) via Stanza POS ----
 def _run_pos_stats(c):
     # Reuse the shared Stanza POS pass if the parse-priming already ran it (Syntax + Semantics share
@@ -259,6 +295,15 @@ def _run_pos_stats(c):
     if cached:
         print('>>> Syntax/Semantics: reused the shared Stanza POS pass -- no re-parse')
         return list(dict.fromkeys(_files(cached)))
+    # A prior (or killed) run may have already produced the POS CoNLL table for THIS corpus -- the parse
+    # is the slow part (~1.5h on a large corpus). If a valid one is sitting in the output dir, REUSE it
+    # instead of re-parsing. Gated + fail-safe: only a non-empty CSV that looks like the POS table AND
+    # has a 'POS' column is accepted; anything off falls through to a fresh parse.
+    existing = _find_existing_pos_csv(c)
+    if existing:
+        print('>>> Syntax/Semantics: reusing an existing Stanza POS table (%s) -- skipping the ~hour re-parse'
+              % os.path.basename(existing[0]))
+        return list(dict.fromkeys(_files(existing)))
     import Stanza_util
     # 'No charts' (NOT c['chartPackage']): the profiler must NOT chart the raw per-token POS CoNLL
     # table. On a large corpus that table exceeds Excel's 1,048,576-row limit (Harry Potter: >1M
