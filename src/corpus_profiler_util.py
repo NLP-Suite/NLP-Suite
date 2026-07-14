@@ -424,10 +424,14 @@ def _run_svo(c):
         if picked:
             print('>>> Narrative/SVO: used the shared CoreNLP cache (%d files) -- no re-parse' % len(picked))
             return picked
+        # 'No charts' (NOT c['chartPackage']): the SVO chart branch in parsers_annotators_visualization
+        # tries to chart a 'Verb (V)' column on the CoNLL PARSE table (which has no such column) ->
+        # KeyError 'Verb (V)' (Evan's crash). The profiler doesn't need those charts -- it builds its own
+        # narrative summary from the SVO CSV -- so suppress them here for all three parsers.
         import Stanford_CoreNLP_util
         out = Stanford_CoreNLP_util.CoreNLP_annotate(
             c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
-            c['chartPackage'], c['dataTransformation'], ['SVO'], False,
+            'No charts', c['dataTransformation'], ['SVO'], False,
             c['language'], c['export_json_var'], c['memory_var'],
             c['document_length_var'], c['limit_sentence_length_var'])
         return _files(out)
@@ -435,14 +439,14 @@ def _run_svo(c):
         import spaCy_util
         out = spaCy_util.spaCy_annotate(
             c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
-            c['chartPackage'], c['dataTransformation'], 'SVO', False,
+            'No charts', c['dataTransformation'], 'SVO', False,
             c['language'], c['memory_var'], c['document_length_var'], c['limit_sentence_length_var'])
         return _files(out)
     # default: Stanza -- the modern Python parser, no Java (same call shape as the sentiment runner)
     import Stanza_util
     out = Stanza_util.Stanza_annotate(
         c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
-        c['chartPackage'], c['dataTransformation'], ['SVO'], False,
+        'No charts', c['dataTransformation'], ['SVO'], False,
         [c['language']], c['memory_var'], c['document_length_var'], c['limit_sentence_length_var'])
     return _files(out)
 

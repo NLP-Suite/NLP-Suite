@@ -44,6 +44,12 @@ def get_java_executable():
         meipass = getattr(sys, '_MEIPASS', app_dir)
         for base in (app_dir, os.path.join(app_dir, '_internal'), meipass):
             candidates += _layouts(os.path.join(base, 'jre'))
+    # Portable "run from source" layout (a zip of <root>/src/*.py + a bundled <root>/jre): this module
+    # lives in src/, so the JRE is one level UP at <root>/jre -- NOT under src/. Evan's portable Mac build
+    # is NOT a frozen PyInstaller app, so the block above is skipped; without this it never finds the
+    # bundled JRE and falls through to the macOS 'java' stub ("Unable to locate a Java Runtime").
+    _src_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    candidates += _layouts(os.path.join(_src_root, 'jre'))
     for var in ('NLP_JAVA_HOME', 'JAVA_HOME'):
         home = os.environ.get(var)
         if home:

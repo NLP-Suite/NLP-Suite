@@ -39,7 +39,12 @@ NRC_COLORS = {
 
 def _score_sentence_nrc(text):
     emotion_obj = NRCLex(text)
-    raw = emotion_obj.raw_emotion_scores
+    # NRCLex API drift: older versions expose .raw_emotion_scores (counts); some newer builds only
+    # populate .affect_frequencies (normalized). Fall back so a version mismatch doesn't crash the
+    # character emotion arcs -- either is fine here since we re-normalize over the 8 emotions below.
+    raw = getattr(emotion_obj, 'raw_emotion_scores', None)
+    if not raw:
+        raw = getattr(emotion_obj, 'affect_frequencies', None) or {}
     total = sum(raw.get(e, 0) for e in EIGHT_EMOTIONS) or 1
     return {e: raw.get(e, 0) / total for e in EIGHT_EMOTIONS}
 
