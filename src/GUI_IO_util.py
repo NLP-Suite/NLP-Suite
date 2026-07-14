@@ -71,6 +71,26 @@ if getattr(sys, 'frozen', False):
 else:
     scriptPath = os.path.dirname(os.path.abspath(__file__))
     NLPPath = os.path.normpath(os.path.dirname(os.path.abspath(__file__)) + os.sep + os.pardir)
+
+# ROBUSTNESS: NLPPath MUST be the folder that actually contains lib/ (and config/). Some portable
+# layouts anchor the guesses above on the src/ folder instead of the app root, so every resource -- and
+# the first-run defaults -- resolve under src/ (src/lib/sampleData, src/NLP_output: Evan's Mac/Windows
+# bug, requiring a reconfigure every release). Self-correct: if the current NLPPath has no lib/ but a
+# nearby candidate does, use that. This is a NO-OP for the known-good dev (source) and standard frozen
+# layouts (where NLPPath already contains lib/), so it can only fix a wrong guess, never break a right one.
+if not os.path.isdir(os.path.join(NLPPath, 'lib')):
+    _here = os.path.dirname(os.path.abspath(__file__))
+    _cands = [os.path.dirname(_here), _here, os.path.dirname(NLPPath)]
+    if getattr(sys, 'frozen', False):
+        _exe = os.path.dirname(os.path.abspath(sys.executable))
+        _cands += [_exe, os.path.dirname(_exe)]
+    for _cand in _cands:
+        try:
+            if _cand and os.path.isdir(os.path.join(_cand, 'lib')):
+                NLPPath = os.path.normpath(_cand)
+                break
+        except Exception:
+            pass
 configPath = os.path.join(NLPPath,'config')
 libPath = os.path.join(NLPPath,'lib')
 image_libPath = os.path.join(NLPPath,'lib'+os.sep+'images')
