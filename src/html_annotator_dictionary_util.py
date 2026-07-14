@@ -177,6 +177,49 @@ def dictionary_annotate(inputFile, inputDir, outputDir, configFileName, dict_fil
     # check the dictionary list if any of the reserved annotator terms (bold, color, font, span, style, weight) appear in the list
     #   reserved terms must be processed first to avoid replacing terms twice
 
+    # PERFORMANCE: compile ONE combined regex per colour group (or one for a flat dictionary) ONCE, up
+    # front, and tag every term in a SINGLE pass per file below. The old code ran a full-text re.sub
+    # PER TERM PER FILE -- on a large corpus with thousands of dialogue terms that is files x terms
+    # full-text scans (over an hour on Harry Potter). Terms are combined longest-first so a longer
+    # phrase wins over a shorter substring at the same position; reserved HTML/CSS words (span, style,
+    # color, colour names) are excluded so a later group's pass can't match inside an inserted
+    # <span ...> tag -- which is what the old per-term reserved_dictionary pre-pass tried to prevent.
+    # m.group(0) in the replacement preserves each match's original case/spacing.
+    def _build_combined_regex(term_group):
+        _reserved = set(w.lower() for w in reserved_dictionary)
+        seen, alts = set(), []
+        for t in sorted((str(x) for x in term_group), key=len, reverse=True):
+            tl = t.strip().lower()
+            if not tl or tl in seen or tl in _reserved:
+                continue
+            seen.add(tl)
+            p = _term_regex(t)
+            if p:
+                alts.append('(?:%s)' % p)
+        if not alts:
+            return None
+        try:
+            return re.compile('|'.join(alts), re.IGNORECASE)
+        except re.error as _e:
+            print("Dictionary annotator: could not build the combined regex (%s)" % _e)
+            return None
+
+    _compiled_groups = []   # list of (compiled_regex, tagAnnotations)
+    if len(csvValue_color_list) == 0:
+        _rx = _build_combined_regex(dictionary)
+        if _rx is not None:
+            _compiled_groups.append((_rx, tagAnnotations))
+    else:
+        for _gi in range(len(dictionary)):
+            _color = color_list[_gi]
+            if bold_var == True:
+                _tags = ['<span style=\"color: ' + _color + '; font-weight: bold\">', '</span>']
+            else:
+                _tags = ['<span style=\"color: ' + _color + '\">', '</span>']
+            _rx = _build_combined_regex(dictionary[_gi])
+            if _rx is not None:
+                _compiled_groups.append((_rx, _tags))
+
     # loop through every txt file and annotate via dictionary
     for file in files:
         head, tail = os.path.split(file)
@@ -187,69 +230,14 @@ def dictionary_annotate(inputFile, inputDir, outputDir, configFileName, dict_fil
         # put filename in bold
         tail='<b>' + tail + '</b>'
         writeout.append('<@#' + tail +'#@>' +'<br />\n')  # add the embedded filename (embedded  in <@# so that the merged file can be split) and a hard return
-        termID = 0
-        term_intextID = 0
-        if len(csvValue_color_list) == 0:
-            terms = dictionary
-            # check reserved_dictionary list FIRST if any of the reserved annotator terms (bold, color, font, span, style, weight) appear in the list
-            #   reserved terms must be processed first to avoid replacing terms twice
-            # process reserved tag words first to avoid re-tagging already tagged words leading to tagging errors
-            termID=0
-            term_intextID=0
-            for term in terms:
-                termID=termID+1
-                #print("Processing dictionary field '" + csv_field1_var + "' " + str(termID) + "/" + str(len(terms)) + " " + term)
-                print(f"Processing dictionary field '{csv_field1_var}' {termID}/{len(terms)} term")
-                _pat = _term_regex(term)
-                if _pat is None or re.search(_pat, text, re.IGNORECASE) is None:
-                    continue
-                for term1 in reserved_dictionary:
-                    if term1 in dictionary:
-                        _pat1 = _term_regex(term1)
-                        if _pat1:
-                            text = re.sub(_pat1, lambda m: tagAnnotations[0] + m.group(0) + tagAnnotations[1], text, flags=re.IGNORECASE)
-                        # remove term from dictionary, to avoid double processing in next tagging
-                        terms.remove(str(term1))
-                        continue
-                term_intextID=term_intextID+1
-                print("   Annotating '" + term + "' in text " + str(term_intextID) + "/" + str(len(text)))
-                # tag the matched surface form (m.group(0)) so the text's original case/spacing is preserved
-                text = re.sub(_pat, lambda m: tagAnnotations[0] + m.group(0) + tagAnnotations[1], text, flags=re.IGNORECASE)
-        else:
-            for i in range(len(dictionary)):
-                terms = dictionary[i]
-                color = color_list[i]
-                if bold_var == True:
-                    tagAnnotations = ['<span style=\"color: ' + color + '; font-weight: bold\">','</span>']
-                else:
-                    tagAnnotations = ['<span style=\"color: ' + color + '\">','</span>']
-                for term in terms:
-                    termID = termID + 1
-                    print("Processing dictionary field value " + str(termID) + "/" + str(
-                        len(terms)) + " " + term)
-                    _pat = _term_regex(term)
-                    if _pat is None:
-                        continue
-                    try:
-                        if re.search(_pat, text, re.IGNORECASE) is None:
-                            continue
-                    except:
-                        continue
-                    for term1 in reserved_dictionary:
-                        if term1 in terms:
-                            _pat1 = _term_regex(term1)
-                            if _pat1:
-                                text = re.sub(_pat1, lambda m: tagAnnotations[0] + m.group(0) + tagAnnotations[1], text, flags=re.IGNORECASE)
-                            # remove term from dictionary, to avoid double processing in next tagging
-                            terms.remove(str(term1))
-                            continue
-                    term_intextID=term_intextID+1
-                    print("   Annotating '" + term + "' in text " + str(term_intextID) + "/" + str(len(text)))
-                    # tag the matched surface form (m.group(0)) so the text's original case/spacing is preserved
-                    try:
-                        text = re.sub(_pat, lambda m: tagAnnotations[0] + m.group(0) + tagAnnotations[1], text, flags=re.IGNORECASE)
-                    except:
-                        continue
+        # Fast single-pass tagging: apply the pre-compiled combined regex(es) built once above -- ONE
+        # pass per colour group per file, instead of a full-text re.sub PER TERM. Groups are applied in
+        # order (as before), so an earlier group tags before a later one.
+        for _rx, _tags in _compiled_groups:
+            try:
+                text = _rx.sub(lambda m, _t=_tags: _t[0] + m.group(0) + _t[1], text)
+            except Exception as _e:
+                print("   Dictionary annotator: a tagging pass failed on this file (%s)" % _e)
         writeout.append(text)
         writeout.append("<br />\n<br />\n") # add 2 hard returns
 
