@@ -35,8 +35,15 @@ import spacy
 import pyLDAvis
 import pyLDAvis.gensim
 import matplotlib
-matplotlib.use('TkAgg') # may be necessary for your system
-import matplotlib.pyplot as plt
+try:
+    matplotlib.use('TkAgg')  # may be necessary for your system
+    import matplotlib.pyplot as plt
+except Exception:
+    # The portable/frozen build (python-build-standalone) has no working Tk backend
+    # ("Failed to import tkagg backend"). Fall back to the non-interactive Agg backend, which
+    # renders figures to files just fine -- which is all the Suite needs (it saves charts, not show()).
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
 
 #enable logging for gensim
 import logging

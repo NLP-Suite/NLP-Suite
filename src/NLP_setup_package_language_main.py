@@ -392,10 +392,54 @@ language_var.trace('w', check_language)
 
 check_language()
 
+def _corenlp_and_java_installed():
+    """Quiet check (no dialogs): is the Stanford CoreNLP engine installed (and Java runnable)? The
+    CoreNLP-engine presence is the RELIABLE gate; Java is only vetoed if it is DEFINITELY absent (a
+    clean non-zero `java -version`), never on a subprocess error -- so a flaky Java probe can't wrongly
+    revert a valid CoreNLP setup. (The profiler keeps its own stricter seatbelt at run time.)"""
+    try:
+        import os
+        import IO_libraries_util
+        corenlp_ok = False
+        for row in IO_libraries_util.get_existing_software_config()[1:]:   # skip header
+            if len(row) >= 2 and 'corenlp' in str(row[0]).lower().replace(' ', ''):
+                d = str(row[1]).strip()
+                corenlp_ok = bool(d) and os.path.isdir(d)
+                break
+        if not corenlp_ok:
+            return False
+        try:
+            import subprocess
+            jr = subprocess.run([IO_libraries_util.get_java_executable(), '-version'], capture_output=True)
+            if jr.returncode != 0:
+                return False
+        except Exception:
+            pass  # can't run the java probe -> don't veto (CoreNLP being installed implies Java was)
+        return True
+    except Exception:
+        return False
+
+
 def changed_NLP_package(*args):
     global y_multiplier_integer
     global y_multiplier_integer_SV2
     global parsers_display_area
+    # GATE THE CHOICE AT THE POINT OF SELECTION: Stanford CoreNLP is an EXTERNAL engine the Suite does
+    # NOT bundle (like Google Earth / Gephi). Don't allow selecting it unless Java + CoreNLP are actually
+    # installed -- otherwise every downstream tool would have to cope with a "CoreNLP configured but
+    # missing" config. Revert to Stanza (no Java) and tell the user how to install. Setting the var back
+    # re-fires this trace with 'Stanza', which skips this block, so there is no recursion.
+    if package_var.get() == 'Stanford CoreNLP' and not _corenlp_and_java_installed():
+        mb.showwarning(title='Stanford CoreNLP not installed',
+            message='Stanford CoreNLP requires Java and the CoreNLP engine, which are NOT installed on '
+                    'this machine. The NLP Suite does not bundle them — like Google Earth or Gephi, you '
+                    'install them once.\n\nInstall Java and Stanford CoreNLP from  Setup ▸ Download / '
+                    'install external software , then select Stanford CoreNLP here again.\n\nThe package '
+                    'has been reset to Stanza, which needs no Java and runs the parser, POS, lemmas, NER '
+                    'and SVO. (Gender, dialogue/quotes and normalized dates are the only CoreNLP-only '
+                    'features.)')
+        package_var.set('Stanza')
+        return
     if 'CoreNLP' in package_var.get():
         memory_var.configure(state='normal')
         document_length_var.configure(state='normal')

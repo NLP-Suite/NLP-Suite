@@ -55,7 +55,9 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
     # index_col see https://stackoverflow.com/questions/12960574/pandas-read-csv-index-col-none-not-working-with-delimiters-at-the-end-of-each-li
 
     try:
-        data = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+        # low_memory=False: read each column in one pass so pandas infers a single dtype per column
+        # (avoids the "Columns (N) have mixed types" DtypeWarning on large CSVs like a big CoNLL table).
+        data = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip', low_memory=False)
     except:
         try:
             data = pd.read_csv(inputFilename, encoding='ISO-8859-1', on_bad_lines='skip')

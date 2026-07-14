@@ -197,32 +197,14 @@ def _run_semantic_classes(c):
     import semantic_aggregation_util
     cp, dt = c['chartPackage'], c['dataTransformation']
 
-    # POS noun/verb lemma lists: prefer the shared combined-CoreNLP cache (CoreNLP_POS_lemma_Verbs /
-    # _Nouns); else run our own POS pass.
-    verb_file = noun_file = None
-    cache = c.get('_corenlp_files')
-    if cache:
-        _vf = _cache_pick(cache, 'pos_lemma_verb', exclude=('chart', 'no_hyperlinks'))
-        _nf = _cache_pick(cache, 'pos_lemma_noun', exclude=('chart', 'no_hyperlinks'))
-        verb_file = _vf[0] if _vf else None
-        noun_file = _nf[0] if _nf else None
-        if verb_file or noun_file:
-            print('>>> Semantics: used the shared CoreNLP POS cache -- no re-parse')
-    if not (verb_file or noun_file):
-        if _corenlp_available():
-            import Stanford_CoreNLP_util
-            files = _files(Stanford_CoreNLP_util.CoreNLP_annotate(
-                c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
-                c['chartPackage'], c['dataTransformation'], ['POS'], False,
-                c['language'], c['export_json_var'], c['memory_var'],
-                c['document_length_var'], c['limit_sentence_length_var']))
-            verb_file = files[0] if (len(files) > 0 and 'verb' in str(files[0]).lower()) else None
-            noun_file = files[1] if (len(files) > 1 and 'noun' in str(files[1]).lower()) else None
-        else:
-            # CoreNLP not installed: the WordNet/VerbNet/FrameNet aggregation needs CoreNLP's noun/verb
-            # POS split (Stanza/spaCy don't produce it in that form). Skip (no Java) rather than crash;
-            # the summary notes it. (Making this run under Stanza is a separate config-aware POS refactor.)
-            print('>>> Semantics: knowledge-base aggregation needs CoreNLP POS (not installed) -- skipped.')
+    # POS noun/verb lemma lists come from a STANZA POS pass -- NO CoreNLP, NO Java. The WordNet /
+    # VerbNet / FrameNet aggregators each read the FIRST column of a CSV as the lemma list (see
+    # semantic_aggregation_util._read_word_list and semantic_aggregation_WordNet_util.aggregate_GoingUP),
+    # so we split the Stanza 'All POS' table into a verb-lemma CSV and a noun-lemma CSV and feed those.
+    # This is what lets Semantics run under any configured parser -- CoreNLP is NOT required for it.
+    verb_file, noun_file = _stanza_pos_noun_verb_files(c)
+    if verb_file or noun_file:
+        print('>>> Semantics: noun/verb lemma lists from the Stanza POS pass (no CoreNLP)')
 
     out = []
     if not (verb_file or noun_file):
@@ -271,6 +253,12 @@ def _run_embeddings(c):
 
 # ---- syntax: parts-of-speech distribution (nouns, verbs, adjectives, adverbs, pronouns) via Stanza POS ----
 def _run_pos_stats(c):
+    # Reuse the shared Stanza POS pass if the parse-priming already ran it (Syntax + Semantics share
+    # one POS parse -- see _prime_parse_cache). Otherwise parse now.
+    cached = c.get('_stanza_pos_files')
+    if cached:
+        print('>>> Syntax/Semantics: reused the shared Stanza POS pass -- no re-parse')
+        return list(dict.fromkeys(_files(cached)))
     import Stanza_util
     # 'No charts' (NOT c['chartPackage']): the profiler must NOT chart the raw per-token POS CoNLL
     # table. On a large corpus that table exceeds Excel's 1,048,576-row limit (Harry Potter: >1M
@@ -282,6 +270,38 @@ def _run_pos_stats(c):
         'No charts', c['dataTransformation'], ['All POS'], False,
         [c['language']], c['memory_var'], c['document_length_var'], c['limit_sentence_length_var'])
     return list(dict.fromkeys(_files(out)))   # Stanza returns the file once per doc; dedupe
+
+
+def _stanza_pos_noun_verb_files(c):
+    """From a Stanza POS pass (no Java), write two 1-column CSVs -- verb lemmas and noun lemmas -- in
+    the first-column format the WordNet/VerbNet/FrameNet aggregators read (_read_word_list reads column
+    0). Returns (verb_file, noun_file); either may be None. This removes the CoreNLP dependency from the
+    Semantics knowledge-base aggregation."""
+    import pandas as pd
+    df = _find_pos_df(_run_pos_stats(c))   # reuses the shared Stanza POS pass when primed
+    if df is None or 'POS' not in df.columns:
+        return None, None
+    # lemma column: prefer 'Lemma', fall back to the surface word/form
+    lemcol = next((col for col in df.columns if str(col).strip().lower() == 'lemma'), None)
+    if lemcol is None:
+        lemcol = next((col for col in df.columns if str(col).strip().lower() in ('word', 'form')), None)
+    if lemcol is None:
+        return None, None
+    upos = df['POS'].astype(str).str.upper()
+
+    def _lemmas(mask):
+        s = df.loc[mask, lemcol].astype(str).str.strip().str.lower()
+        return sorted({w for w in s if w and w != 'nan' and any(ch.isalpha() for ch in w)})
+
+    verbs = _lemmas(upos == 'VERB')
+    nouns = _lemmas(upos.isin(['NOUN', 'PROPN']))
+    vpath = os.path.join(c['outputDir'], 'NLP_Stanza_POS_lemma_Verbs.csv')
+    npath = os.path.join(c['outputDir'], 'NLP_Stanza_POS_lemma_Nouns.csv')
+    if verbs:
+        pd.DataFrame({'Word': verbs}).to_csv(vpath, index=False, encoding='utf-8')
+    if nouns:
+        pd.DataFrame({'Word': nouns}).to_csv(npath, index=False, encoding='utf-8')
+    return (vpath if verbs else None), (npath if nouns else None)
 
 
 def _is_corenlp_package(package):
@@ -624,10 +644,10 @@ def _prime_parse_cache(ctx, selected):
     if _corenlp:
         if 'entities_all' in sel:
             annotators += ['NER', 'gender', 'quote', 'normalized-date']
-        if 'semantic_classes' in sel:
-            annotators += ['POS']
         if 'narrative_svo' in sel and _is_corenlp_package(ctx.get('package')):
             annotators += ['SVO']
+        # NOTE: Semantics POS is NOT taken from CoreNLP anymore -- it derives its noun/verb lemma lists
+        # from the shared Stanza POS pass below, so it works with no Java regardless of CoreNLP.
     if len(annotators) >= 2:   # only worth combining when 2+ CoreNLP dimensions are on
         try:
             import Stanford_CoreNLP_util
@@ -644,6 +664,18 @@ def _prime_parse_cache(ctx, selected):
         except Exception as e:
             print('Corpus Profiler: combined CoreNLP pass failed (%s); dimensions will parse individually' % e)
             ctx['_corenlp_files'] = None
+
+    # one shared STANZA POS pass (no Java) for Syntax (POS distribution) AND Semantics (noun/verb
+    # knowledge-base aggregation derives its lemma lists from it). Parse the corpus for POS ONCE and
+    # reuse -- a big win on a large corpus (Harry Potter POS is ~1h) versus parsing it twice.
+    ctx['_stanza_pos_files'] = None
+    if ('syntax_pos' in sel) or ('semantic_classes' in sel):
+        try:
+            print('>>> Corpus Profiler: ONE shared Stanza POS pass for Syntax + Semantics')
+            ctx['_stanza_pos_files'] = _run_pos_stats(ctx)
+        except Exception as e:
+            print('Corpus Profiler: shared Stanza POS pass failed (%s); dimensions will parse individually' % e)
+            ctx['_stanza_pos_files'] = None
 
     # one NER location-tracking pass shared by Spatial + Characters-movement (was run twice)
     if ('spatial_map' in sel) or ('character_movement' in sel):
@@ -1114,14 +1146,12 @@ def _interp_semantics(files):
         findings.append('Nouns evoke FrameNet frames led by %s.' % fn_n)
 
     if not findings:
-        # No WordNet/VerbNet/FrameNet findings -> the KB aggregation was skipped because CoreNLP + Java
-        # aren't installed (it needs the CoreNLP noun/verb POS split). The BERT map below may still have
-        # run. Tell the user what to install; the profiler uses CoreNLP automatically once it's present.
-        findings.append(_EMPH + 'Noun & verb knowledge-base classes (WordNet / VerbNet / FrameNet) were '
-                        'NOT computed: that aggregation requires Stanford CoreNLP and Java, which are not '
-                        'installed on this machine. Install both from  Setup ▸ Download / install external '
-                        'software ; the profiler will then compute them automatically on the next run — no '
-                        'need to change the NLP package.')
+        # No WordNet/VerbNet/FrameNet findings -> the KB aggregation produced nothing (e.g. the Stanza
+        # POS pass found no nouns/verbs, or the NLTK WordNet/VerbNet/FrameNet corpora aren't downloaded).
+        # This is English-only and uses Stanza POS -- NO CoreNLP is involved. The BERT map may still have run.
+        findings.append('Noun & verb knowledge-base classes (WordNet / VerbNet / FrameNet) were not '
+                        'computed for this corpus (no nouns/verbs were found, or the WordNet/VerbNet/'
+                        'FrameNet data isn’t installed; note the aggregation is English-only).')
 
     # BERT word embeddings -> interactive t-SNE map (an HTML chart, linked below)
     if any(('word2vec_vector' in os.path.basename(str(f)).lower() or 'tsne' in os.path.basename(str(f)).lower())
