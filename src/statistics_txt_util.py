@@ -244,7 +244,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
             Nwords = textstat.lexicon_count(docText, removepunct=True)
             # print('TOTAL number of words: ',Nwords)
 
-            Nsyllables = textstat.syllable_count(docText, lang='en_US')
+            Nsyllables = textstat.syllable_count(docText)   # 'en_US' is textstat's default; the lang= arg is deprecated
             # print('TOTAL number of Syllables: ',Nsyllables)
 
             # words = fullText.split()
@@ -1340,7 +1340,7 @@ def convert_txt_file(window,inputFilename,inputDir,outputDir,openOutputFiles,exc
             Nwords=str(textstat.lexicon_count(fullText, removepunct=True))
             #print('TOTAL number of words: ',Nwords)
 
-            Nsyllables =textstat.syllable_count(fullText, lang='en_US')
+            Nsyllables =textstat.syllable_count(fullText)   # 'en_US' is textstat's default; the lang= arg is deprecated
             #print('TOTAL number of Syllables: ',Nsyllables)
 
             # words = fullText.split()
@@ -1455,7 +1455,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
             outputTxtFile.write(
                 "RESULTS -----------------------------------------------------------------------------------------------------------------------------------------------\n\n")
             # Syllable count
-            str_value = "Syllable count " + str(textstat.syllable_count(text, lang='en_US'))
+            str_value = "Syllable count " + str(textstat.syllable_count(text))   # lang= deprecated; en_US is default
             outputTxtFile.write(str_value + "\n")
             # print("\n\nSyllable count ",textstat.syllable_count(text, lang='en_US'))
             # Lexicon count
