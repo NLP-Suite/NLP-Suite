@@ -161,12 +161,14 @@ def _run_entities_all(c):
     if picked:
         print('>>> Entities: used the shared CoreNLP cache (%d files) -- no re-parse' % len(picked))
         return picked
-    if not _is_corenlp_package(c.get('package')):
-        # Stanza/spaCy config: run NER (people/organizations/locations) through the configured parser --
+    if not _corenlp_available():
+        # CoreNLP + Java are NOT installed: run NER (people/organizations/locations) through Stanza --
         # no Java. Gender, dialogue/quotes and normalized dates are CoreNLP-ONLY, so they are skipped
-        # here (the summary notes this). This is what lets the profiler run entities with no CoreNLP.
+        # (the summary tells the user they need CoreNLP + Java, and how to install). NOTE: this is
+        # decided by AVAILABILITY, not the configured parser -- if CoreNLP is installed we use it for
+        # these even under a Stanza/spaCy config, since there is no Python alternative.
         import Stanza_util
-        print('>>> Entities: Stanza NER (config is not CoreNLP); gender/dialogue/dates skipped (CoreNLP-only)')
+        print('>>> Entities: Stanza NER (CoreNLP not installed); gender/dialogue/dates skipped (CoreNLP-only)')
         out = Stanza_util.Stanza_annotate(
             c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
             c['chartPackage'], c['dataTransformation'], ['NER'], False,
@@ -207,7 +209,7 @@ def _run_semantic_classes(c):
         if verb_file or noun_file:
             print('>>> Semantics: used the shared CoreNLP POS cache -- no re-parse')
     if not (verb_file or noun_file):
-        if _is_corenlp_package(c.get('package')):
+        if _corenlp_available():
             import Stanford_CoreNLP_util
             files = _files(Stanford_CoreNLP_util.CoreNLP_annotate(
                 c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
@@ -217,11 +219,10 @@ def _run_semantic_classes(c):
             verb_file = files[0] if (len(files) > 0 and 'verb' in str(files[0]).lower()) else None
             noun_file = files[1] if (len(files) > 1 and 'noun' in str(files[1]).lower()) else None
         else:
-            # Non-CoreNLP config: the WordNet/VerbNet/FrameNet aggregation needs CoreNLP's noun/verb POS
-            # split, which Stanza/spaCy don't produce in that form. Skip (no Java) rather than crash;
+            # CoreNLP not installed: the WordNet/VerbNet/FrameNet aggregation needs CoreNLP's noun/verb
+            # POS split (Stanza/spaCy don't produce it in that form). Skip (no Java) rather than crash;
             # the summary notes it. (Making this run under Stanza is a separate config-aware POS refactor.)
-            print('>>> Semantics: knowledge-base aggregation needs the CoreNLP POS noun/verb split; '
-                  'skipped under a non-CoreNLP config (select CoreNLP, or use the Semantic Analysis GUI).')
+            print('>>> Semantics: knowledge-base aggregation needs CoreNLP POS (not installed) -- skipped.')
 
     out = []
     if not (verb_file or noun_file):
@@ -291,12 +292,45 @@ def _is_corenlp_package(package):
     return ('corenlp' in p) or ('stanford' in p) or ('openie' in p)
 
 
+_CORENLP_AVAILABLE = None   # memoized per process (the user restarts between runs)
+
+
+def _corenlp_available():
+    """True iff BOTH Java and the Stanford CoreNLP engine are installed. When True the profiler USES
+    CoreNLP for the CoreNLP-ONLY features (gender, dialogue/quotes, normalized dates) even if the
+    configured parser is Stanza/spaCy -- there is no Python alternative for those. When False those
+    features are skipped and the summary tells the user they need CoreNLP + Java and how to install
+    them. Memoized: the check shells out to `java -version` and reads the external-software config once."""
+    global _CORENLP_AVAILABLE
+    if _CORENLP_AVAILABLE is not None:
+        return _CORENLP_AVAILABLE
+    ok = False
+    try:
+        import subprocess
+        import IO_libraries_util
+        jr = subprocess.run([IO_libraries_util.get_java_executable(), '-version'], capture_output=True)
+        if jr.returncode == 0:
+            for row in IO_libraries_util.get_existing_software_config()[1:]:   # skip header
+                if len(row) >= 2 and 'corenlp' in str(row[0]).lower().replace(' ', ''):
+                    d = str(row[1]).strip()
+                    ok = bool(d) and os.path.isdir(d)
+                    break
+    except Exception:
+        ok = False
+    _CORENLP_AVAILABLE = ok
+    print('>>> Corpus Profiler: Stanford CoreNLP + Java installed = %s '
+          '(CoreNLP-only features -- gender, dialogue, normalized dates -- %s)'
+          % (ok, 'will run' if ok else 'will be skipped'))
+    return ok
+
+
 # ---- narrative: SVO (via the CONFIGURED parser) + SRL (transformer; self-skips if env absent) ----
 def _run_svo(c):
     # Subject-Verb-Object triples via the CONFIGURED parser -- SVO needs no Java. CoreNLP is used ONLY
-    # when the user selected CoreNLP/OpenIE (then we also reuse the shared CoreNLP cache); otherwise SVO
-    # runs through Stanza (default) or spaCy, honoring the setup the same way the standalone SVO tool does.
-    if _is_corenlp_package(c.get('package')):
+    # when the user selected CoreNLP/OpenIE AND CoreNLP is actually installed (then we also reuse the
+    # shared CoreNLP cache); otherwise SVO runs through Stanza (default) or spaCy -- so a CoreNLP config
+    # on a machine WITHOUT CoreNLP falls back to Stanza instead of failing, since SVO is parser-agnostic.
+    if _is_corenlp_package(c.get('package')) and _corenlp_available():
         picked = _cache_pick_any(c.get('_corenlp_files'), 'corenlp_svo')
         if picked:
             print('>>> Narrative/SVO: used the shared CoreNLP cache (%d files) -- no re-parse' % len(picked))
@@ -578,18 +612,21 @@ def _prime_parse_cache(ctx, selected):
     ctx['_ner_track_files'] = None
     sel = set(selected)
 
-    # one combined CoreNLP pass covering every selected CoreNLP dimension -- but ONLY when the user
-    # actually configured CoreNLP. Under Stanza/spaCy we must NOT fire CoreNLP (it needs Java + the
-    # engine JARs, absent on the portable build): each dimension runs through the configured parser in
-    # its own runner instead -- entities -> Stanza NER (gender/dialogue/dates are CoreNLP-only, skipped),
-    # semantics POS -> skipped (needs the CoreNLP noun/verb split), SVO -> Stanza/spaCy.
+    # one combined CoreNLP pass covering every selected CoreNLP dimension. Entities (gender/dialogue/
+    # dates) and Semantics POS are added whenever CoreNLP + Java are INSTALLED -- we auto-use CoreNLP
+    # for the CoreNLP-only features even under a Stanza/spaCy config, since there's no Python
+    # alternative. If CoreNLP isn't installed, none are added and each runner degrades on its own
+    # (entities -> Stanza NER; semantics -> skipped; the summary tells the user how to install CoreNLP).
+    # SVO rides this pass ONLY when the user actually CONFIGURED CoreNLP (SVO is parser-agnostic, so it
+    # otherwise honors the Stanza/spaCy config -- no Java).
     annotators = []
-    if _is_corenlp_package(ctx.get('package')):
+    _corenlp = _corenlp_available()
+    if _corenlp:
         if 'entities_all' in sel:
             annotators += ['NER', 'gender', 'quote', 'normalized-date']
         if 'semantic_classes' in sel:
             annotators += ['POS']
-        if 'narrative_svo' in sel:
+        if 'narrative_svo' in sel and _is_corenlp_package(ctx.get('package')):
             annotators += ['SVO']
     if len(annotators) >= 2:   # only worth combining when 2+ CoreNLP dimensions are on
         try:
@@ -1013,11 +1050,15 @@ def _interp_entities(files):
                 typ = ' — mostly ' + ', '.join('%s %s' % (int(v), k.lower()) for k, v in vc.head(3).items())
             findings.append('%s time expressions were extracted and normalized%s.' % (_thousands(len(df)), typ))
     if not fg:
-        # No gender output -> we ran NER through Stanza/spaCy (the configured parser), not CoreNLP.
-        findings.append(_EMPH + 'Gender, dialogue/quotes and normalized dates were NOT extracted — these '
-                        'are available ONLY via Stanford CoreNLP. To get them, set the NLP package to '
-                        'Stanford CoreNLP in Setup, or use the dedicated HTML Annotator (gender), SVO '
-                        '(dialogue/quotes) and CoreNLP date GUIs.')
+        # No gender output -> CoreNLP + Java aren't installed, so NER ran through Stanza and the
+        # CoreNLP-only features were skipped. Tell the user WHICH tasks need CoreNLP + Java and how to
+        # install them (the profiler uses CoreNLP automatically for these once it's installed -- the
+        # user does NOT need to change the NLP package).
+        findings.append(_EMPH + 'Gender, dialogue/quotes and normalized dates were NOT extracted: these '
+                        'require Stanford CoreNLP and Java, which are not installed on this machine. '
+                        'Install both from  Setup ▸ Download / install external software  (Java, then '
+                        'Stanford CoreNLP); the profiler will then extract them automatically on the next '
+                        'run — no need to change the NLP package.')
     return findings
 
 
@@ -1073,11 +1114,14 @@ def _interp_semantics(files):
         findings.append('Nouns evoke FrameNet frames led by %s.' % fn_n)
 
     if not findings:
-        # No WordNet/VerbNet/FrameNet findings -> the KB aggregation was skipped (non-CoreNLP config:
-        # it needs the CoreNLP noun/verb POS split). The BERT map below may still have run.
+        # No WordNet/VerbNet/FrameNet findings -> the KB aggregation was skipped because CoreNLP + Java
+        # aren't installed (it needs the CoreNLP noun/verb POS split). The BERT map below may still have
+        # run. Tell the user what to install; the profiler uses CoreNLP automatically once it's present.
         findings.append(_EMPH + 'Noun & verb knowledge-base classes (WordNet / VerbNet / FrameNet) were '
-                        'NOT computed — that aggregation needs Stanford CoreNLP’s noun/verb POS split. Set '
-                        'the NLP package to Stanford CoreNLP in Setup, or run the Semantic Analysis GUI.')
+                        'NOT computed: that aggregation requires Stanford CoreNLP and Java, which are not '
+                        'installed on this machine. Install both from  Setup ▸ Download / install external '
+                        'software ; the profiler will then compute them automatically on the next run — no '
+                        'need to change the NLP package.')
 
     # BERT word embeddings -> interactive t-SNE map (an HTML chart, linked below)
     if any(('word2vec_vector' in os.path.basename(str(f)).lower() or 'tsne' in os.path.basename(str(f)).lower())
