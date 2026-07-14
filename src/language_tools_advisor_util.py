@@ -85,54 +85,68 @@ def assess_language(language):
 
     sections = []
 
-    # 1. Always-on (language independent -- tokenization / counting / bag-of-words / geometry)
-    sections.append(('Always available — language-independent (counting, frequency, topics, maps, graphs)', [
-        ('Word & character counts, sentence / document statistics', True, ''),
-        ('N-grams (word & character), word co-occurrence, KWIC (keyword-in-context)', True, ''),
+    # 1. Always-on (language independent -- counting / frequency / bag-of-words / corpus-trained
+    #    embeddings / geometry / visualization / data & file tools)
+    sections.append(('Always available — language-independent (counting, frequency, topics, maps, viz, data)', [
+        ('Corpus / document statistics — documents, words, sentences, syllables, lines', True, ''),
+        ('N-grams (word & character) & co-occurrences (+ viewers, n-gram search)', True, ''),
+        ('KWIC (keyword-in-context), word / collocation search, CoNLL-table search', True, ''),
         ('Word frequency (Zipf), TF-IDF distinctive words', True, ''),
         ('Vocabulary richness (TTR / Yule’s K), lexical diversity (MTLD / vocd-D)', True, ''),
-        ('Topic modeling — Gensim LDA, BERTopic, MALLET', True,
+        ('Topic modeling — Gensim LDA, MALLET, BERTopic', True,
          'bag-of-words; results improve with language-specific stopwords'),
-        ('Word2Vec — word embeddings trained on YOUR corpus', True, 'learns from the corpus itself'),
+        ('Word embeddings — Word2Vec / Gensim trained on YOUR corpus', True, 'learns from the corpus itself'),
         ('Word clouds', True, ''),
-        ('Document similarity / plagiarism (TF-IDF + cosine)', True, ''),
-        ('GIS — geocoding & mapping of place names, distances, movement', True, 'geocoder-dependent'),
-        ('Network graphs (Gephi)', True, ''),
-        ('Statistical measures & hypothesis tests', True, ''),
+        ('Document similarity / plagiarism (TF-IDF + cosine); word similarity (Levenshtein)', True, ''),
+        ('Language detection', True, 'identifies the language of each document'),
+        ('GIS — maps (Google Earth / Maps), geographic distances, symbolic space', True,
+         'mapping is language-independent; extracting place names from text needs NER (below)'),
+        ('Charts & network graphs — Excel, Plotly (Sankey / sunburst / treemap / boxplot / …), Gephi', True, ''),
+        ('Statistical measures & hypothesis tests (csv)', True, ''),
+        ('Data & file tools — PC-ACE & SQL databases, file check / clean / convert / split / merge / search', True, ''),
     ]))
 
     # 2. Parsing & annotation (depends on package support for THIS language)
     sections.append(('Parsing & annotation — needs a package that supports %s' % (lang or 'your language'), [
-        ('Tokenize, lemma, POS tagging', any_parser,
+        ('Parsers & annotators — tokenize, lemma, POS tagging', any_parser,
          _pkgs((in_corenlp, 'CoreNLP'), (in_stanza, 'Stanza'), (in_spacy, 'spaCy'))),
-        ('Dependency parse & SVO (Subject-Verb-Object)', can_depparse,
+        ('POS-based statistics — noun / verb / adjective / pronoun counts', any_parser,
+         _pkgs((in_corenlp, 'CoreNLP'), (in_stanza, 'Stanza'), (in_spacy, 'spaCy'))),
+        ('Dependency parse & SVO (Subject-Verb-Object) + dependency-tree viewer', can_depparse,
          _pkgs((st_ud, 'Stanza'), (in_spacy, 'spaCy'), (in_corenlp, 'CoreNLP'))),
+        ('CoNLL-table analysis — clause / noun / verb / function-word frequencies', can_depparse,
+         'reads the parsed CoNLL table'),
+        ('Sentence complexity', can_depparse, 'needs a dependency parse'),
         ('Named-Entity Recognition (people / organizations / locations)', can_ner,
          _pkgs((st_ner, 'Stanza'), (in_spacy, 'spaCy'), (in_corenlp, 'CoreNLP'))),
         ('Sentiment analysis + Shape of Stories (sentiment arc)', can_sentiment,
-         _pkgs((st_senti, 'Stanza'), (is_english, 'English tools (VADER / NRC / SentiWordNet)'))),
+         _pkgs((st_senti, 'Stanza'), (is_english, 'English dictionaries (VADER / ANEW / SentiWordNet / hedonometer)'))),
     ]))
 
     # 3. Stanford CoreNLP-only capabilities (need CoreNLP + a CoreNLP-supported language)
     sections.append(('Stanford CoreNLP-only — needs CoreNLP + Java, and a CoreNLP language', [
-        ('Gender annotation', in_corenlp, '' if in_corenlp else 'CoreNLP does not cover %s' % lang),
+        ('Gender annotation (CoreNLP + dictionaries)', in_corenlp, '' if in_corenlp else 'CoreNLP does not cover %s' % lang),
         ('Dialogue / quote extraction (speaker attribution)', in_corenlp, ''),
         ('Normalized dates & time expressions', in_corenlp, ''),
-        ('Coreference resolution', in_corenlp, ''),
+        ('Coreference resolution (pronominal)', in_corenlp, ''),
     ]))
 
     # 4. English (as shipped): the models / dictionaries / endpoints are English. Some (BERT, DBpedia
-    #    Spotlight) have multilingual variants, but the Suite ships the English ones.
+    #    Spotlight, the spell checker) have multilingual variants, but the Suite ships the English ones.
     sections.append(('English tools (as shipped) — English models / dictionaries / endpoints', [
-        ('Semantic aggregation — WordNet / VerbNet / FrameNet classes', is_english, ''),
+        ('Semantic analysis & aggregation — WordNet / VerbNet / FrameNet classes', is_english, ''),
         ('Word-sense disambiguation (WSD) & semantic similarity (WordNet)', is_english, ''),
         ('Semantic Role Labeling (SRL, transformer)', is_english, ''),
         ('Nominalization analysis', is_english, ''),
         ('Concreteness / abstractness, iconic language', is_english, ''),
-        ('Style dictionaries (objectivity/subjectivity, pathos, readability, …)', is_english, ''),
+        ('Style analysis & dictionaries — objectivity/subjectivity, pathos, ANEW, hedonometer', is_english, ''),
+        ('Readability (textstat)', is_english, 'formulas are English-calibrated'),
+        ('Hedge / uncertainty annotation', is_english, ''),
+        ('Spelling checker', is_english, 'English + a few European languages (pyspellchecker)'),
+        ('Gender guesser (who wrote it — man or woman?)', is_english, 'name-based; Western names'),
         ('BERT — word-embedding semantic map, BERT NER, BERT sentiment', is_english,
          'English models shipped (all-distilroberta); multilingual BERT (102 languages) exists'),
-        ('DBpedia & YAGO entity linking / knowledge graphs', is_english,
+        ('DBpedia & YAGO entity linking / knowledge graphs; HTML annotator', is_english,
          'uses the English DBpedia Spotlight endpoint (/en/) as shipped'),
     ]))
 
