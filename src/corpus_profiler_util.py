@@ -326,20 +326,44 @@ def _stanza_pos_noun_verb_files(c):
     df = _find_pos_df(_run_pos_stats(c))   # reuses the shared Stanza POS pass when primed
     if df is None or 'POS' not in df.columns:
         return None, None
-    # lemma column: prefer 'Lemma', fall back to the surface word/form
+    # lemma column: prefer a real 'Lemma', fall back to the surface word/form
     lemcol = next((col for col in df.columns if str(col).strip().lower() == 'lemma'), None)
+    have_real_lemma = lemcol is not None
     if lemcol is None:
         lemcol = next((col for col in df.columns if str(col).strip().lower() in ('word', 'form')), None)
     if lemcol is None:
         return None, None
     upos = df['POS'].astype(str).str.upper()
 
-    def _lemmas(mask):
-        s = df.loc[mask, lemcol].astype(str).str.strip().str.lower()
-        return sorted({w for w in s if w and w != 'nan' and any(ch.isalpha() for ch in w)})
+    # The Stanza POS pass is 'tokenize,pos' (no lemma), so when there's no real Lemma column, lemcol
+    # holds the SURFACE form. Lemmatize it (English WordNet lemmatizer) so the WordNet/VerbNet/FrameNet
+    # lookups match inflected words (ran->run, dogs->dog) -- otherwise VERB aggregation in particular
+    # badly under-counts. Semantics KB aggregation is English-only, so WordNet is the right tool; falls
+    # back to the surface form if WordNet isn't available.
+    _lemmatizer = None
+    if not have_real_lemma:
+        try:
+            from nltk.stem import WordNetLemmatizer
+            _lemmatizer = WordNetLemmatizer()
+            _lemmatizer.lemmatize('tests')   # force the WordNet corpus to load now; raises if absent
+        except Exception:
+            _lemmatizer = None
 
-    verbs = _lemmas(upos == 'VERB')
-    nouns = _lemmas(upos.isin(['NOUN', 'PROPN']))
+    def _lemmas(mask, wn_pos):
+        s = df.loc[mask, lemcol].astype(str).str.strip().str.lower()
+        words = {w for w in s if w and w != 'nan' and any(ch.isalpha() for ch in w)}
+        if _lemmatizer is not None:
+            lemmatized = set()
+            for w in words:
+                try:
+                    lemmatized.add(_lemmatizer.lemmatize(w, wn_pos))
+                except Exception:
+                    lemmatized.add(w)
+            words = lemmatized
+        return sorted(words)
+
+    verbs = _lemmas(upos == 'VERB', 'v')
+    nouns = _lemmas(upos.isin(['NOUN', 'PROPN']), 'n')
     vpath = os.path.join(c['outputDir'], 'NLP_Stanza_POS_lemma_Verbs.csv')
     npath = os.path.join(c['outputDir'], 'NLP_Stanza_POS_lemma_Nouns.csv')
     if verbs:
