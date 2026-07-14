@@ -1827,12 +1827,14 @@ def build_paper_summary(outputDir, corpus_name, results, header_stats, run_confi
         # prominently instead of showing a blank iframe.
         html_charts = [f for f in all_inter if str(f).lower().endswith(('.html', '.htm'))]
         if html_charts:
-            # links inherit the red so the whole how-to-open line reads as one emphasized pointer
-            links = ' &nbsp;·&nbsp; '.join('<a href="%s" style="color:inherit">▶&nbsp;%s</a>'
+            # Only the LABEL is red (the emphasized pointer); the chart links themselves are the accent
+            # BLUE so the reader recognizes them as hyperlinks, per convention.
+            links = ' &nbsp;·&nbsp; '.join('<a href="%s" style="color:var(--accent);font-weight:700">▶&nbsp;%s</a>'
                                            % (_esc(_rel(h, report_dir)), _esc(_humanize_file(h)))
                                            for h in html_charts[:6])
-            parts.append('<p class="interactive" style="color:#c1121f;font-weight:700">'
-                         '<b>Interactive charts</b> (open in browser): %s</p>' % links)
+            parts.append('<p class="interactive">'
+                         '<span style="color:#c1121f;font-weight:700"><b>Interactive charts</b> '
+                         '(open in browser to visualize):</span> %s</p>' % links)
 
         # source-data links (csv/xlsx) + remaining artifacts (kml, extra charts)
         _linked = set(html_charts[:6])
