@@ -29,6 +29,7 @@ import reminders_util
 import constants_util
 import config_util
 import run_script_util
+import language_tools_advisor_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -462,6 +463,18 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 open_setup_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'NLP_setup_external_software_config.csv'))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_setup_external_software_button, y_multiplier_integer,
                                                open_setup_button, False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate, "Open the NLP_setup_external_software_config.csv file containing all external software installation paths")
+
+# CORPUS LANGUAGE & NLP options available in the Suite
+corpus_language_button = tk.Button(window,
+                                   text="Which NLP tools in the Suite can I use with my corpus language?",
+                                   width=95, font=("Courier", 11, "bold"), fg='red',
+                                   command=lambda: language_tools_advisor_util.run(
+                                       outputDir=GUI_util.output_dir_path.get()))
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 30,
+                                               y_multiplier_integer,
+                                               corpus_language_button, False, False, False, False, 90,
+                                               GUI_IO_util.labels_x_coordinate + 30,
+                                               "Create an HTML file with a list of NLP tools available in the Suite for analysis of a corpus in a specific language.")
 
 # CORPUS PROFILER -- flagship one-click tool: a prominent bold red button, given a role of its own at the
 # top of the tool list. Placement/wording easy to tweak.
