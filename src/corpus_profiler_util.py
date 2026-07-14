@@ -1710,6 +1710,17 @@ def build_paper_summary(outputDir, corpus_name, results, header_stats, run_confi
   a{ color:var(--accent); }
   footer.paper{ margin-top:48px; padding-top:18px; border-top:1px solid var(--rule);
                 font-family:'Segoe UI',system-ui,sans-serif; font-size:12px; color:var(--muted); }
+  .toc{ font-family:'Segoe UI',system-ui,sans-serif; margin:26px 0 6px; padding:16px 20px;
+        border:1px solid var(--rule); border-radius:8px; background:rgba(127,127,127,.05); }
+  .toc .toc-h{ font-weight:700; font-size:12px; letter-spacing:.08em; text-transform:uppercase;
+               color:var(--muted); margin:0 0 10px; }
+  .toc ol{ margin:0; padding:0; list-style:none; columns:2; column-gap:34px; }
+  .toc li{ margin:5px 0; font-size:14px; break-inside:avoid; }
+  .toc a{ color:var(--accent); text-decoration:none; }
+  .toc a:hover{ text-decoration:underline; }
+  .toc .tnum{ display:inline-block; min-width:1.4em; color:var(--muted); font-weight:700; }
+  @media (max-width:640px){ .toc ol{ columns:1; } }
+  section.dim{ scroll-margin-top:20px; }
 </style></head><body><div class="wrap">
 """ % _esc(corpus_name))
 
@@ -1718,6 +1729,17 @@ def build_paper_summary(outputDir, corpus_name, results, header_stats, run_confi
                  % (_esc(corpus_name), _esc(run_config.get('subtitle', ''))))
 
     parts.append('<div class="abstract"><span class="lead">Abstract</span>%s</div>' % abstract)
+
+    # ---- linked Table of Contents: at a glance, what the summary covers + jump to any dimension.
+    #      The numbers match the section headings below (and the trailing statistics section). ----
+    _toc = ['<nav class="toc"><div class="toc-h">Contents</div><ol>']
+    for _i, _cat in enumerate(cats_present, 1):
+        _toc.append('<li><span class="tnum">%d.</span><a href="#sec-%d">%s</a></li>'
+                    % (_i, _i, _esc(CATEGORY_TITLE[_cat])))
+    _toc.append('<li><span class="tnum">+</span><a href="#sec-stats">Going further — statistics on '
+                'these results</a></li>')
+    _toc.append('</ol></nav>')
+    parts.append(''.join(_toc))
 
     # by-the-numbers strip
     kpis = [(_fmt(n_docs), 'documents'), (_fmt(n_words), 'words'),
@@ -1742,8 +1764,8 @@ def build_paper_summary(outputDir, corpus_name, results, header_stats, run_confi
     for cat in cats_present:
         recs = by_cat[cat]
         sec_no += 1
-        parts.append('<section class="dim"><h2 class="dim"><span class="num">%d</span>%s</h2>'
-                     % (sec_no, _esc(CATEGORY_TITLE[cat])))
+        parts.append('<section class="dim" id="sec-%d"><h2 class="dim"><span class="num">%d</span>%s</h2>'
+                     % (sec_no, sec_no, _esc(CATEGORY_TITLE[cat])))
         parts.append('<p class="lead-p">%s</p>' % _esc(_CATEGORY_LEAD.get(cat, '')))
 
         # INTERPRETATION: read this dimension's output CSVs and state what they say, in prose
@@ -1838,8 +1860,8 @@ def build_paper_summary(outputDir, corpus_name, results, header_stats, run_confi
     #      These are NOT run in the batch (they need the user to choose columns/groups), but the profiler
     #      produces exactly the data they consume -- so we advertise them, with a red/bold how-to-run. ----
     parts.append(
-        '<section class="dim"><h2 class="dim"><span class="num">+</span>Going further — statistics on '
-        'these results</h2>'
+        '<section class="dim" id="sec-stats"><h2 class="dim"><span class="num">+</span>Going further — '
+        'statistics on these results</h2>'
         '<p class="lead-p">Every table above is a csv you can test statistically. The suite\'s '
         '<b>Statistical Analyses of csv Files</b> tool runs, on any of these outputs:</p>'
         '<ul>'
