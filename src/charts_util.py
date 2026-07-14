@@ -662,6 +662,21 @@ def run_all(columns_to_be_plotted, inputFilename, outputDir, outputFileLabel,
     chart_type_list = [GUI_util.charts_type_options_widget.get().split(' ')[0]]
 
     use_Plotly = 'plotly' in chartPackage.lower()
+
+    # AUTO-SWITCH to Plotly when the caller asked for Excel but the input CSV exceeds Excel's hard
+    # 1,048,576-row cap. Excel would otherwise SKIP the chart entirely (charts_Excel_util returns on
+    # >1,048,575 rows); Plotly has no such limit and supports zoom/filter on large data. Guarded and
+    # fail-safe: any error in the row count leaves the original Excel choice untouched.
+    if not use_Plotly:
+        try:
+            _nrec, _ = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
+            if _nrec and int(_nrec) > 1048575:
+                print('charts_util: "%s" has %s rows, exceeding Excel\'s 1,048,576-row limit; '
+                      'rendering this chart with Plotly instead of Excel.'
+                      % (os.path.basename(str(inputFilename)), format(int(_nrec), ',')))
+                use_Plotly = True
+        except Exception:
+            pass
     # added by Tony, May 2022 for complete sentence index
     # the file should have a column named Sentence ID
     # the extra parameter "complete_sid" is set to True by default to avoid extra code mortification elsewhere
