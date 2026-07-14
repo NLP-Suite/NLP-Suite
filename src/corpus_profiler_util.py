@@ -271,9 +271,14 @@ def _run_embeddings(c):
 # ---- syntax: parts-of-speech distribution (nouns, verbs, adjectives, adverbs, pronouns) via Stanza POS ----
 def _run_pos_stats(c):
     import Stanza_util
+    # 'No charts' (NOT c['chartPackage']): the profiler must NOT chart the raw per-token POS CoNLL
+    # table. On a large corpus that table exceeds Excel's 1,048,576-row limit (Harry Potter: >1M
+    # tokens -> "Row numbers must be between 1 and 1048576") and a per-token table is meaningless as a
+    # chart anyway. We need only the CSV; the summary builds its own compact POS-distribution chart from
+    # the POS column (see _interp_syntax / the 'Parts of speech' spec in build_paper_summary).
     out = Stanza_util.Stanza_annotate(
         c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
-        c['chartPackage'], c['dataTransformation'], ['All POS'], False,
+        'No charts', c['dataTransformation'], ['All POS'], False,
         [c['language']], c['memory_var'], c['document_length_var'], c['limit_sentence_length_var'])
     return list(dict.fromkeys(_files(out)))   # Stanza returns the file once per doc; dedupe
 
