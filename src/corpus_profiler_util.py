@@ -1638,7 +1638,7 @@ def build_paper_summary(outputDir, corpus_name, results, header_stats, run_confi
         'producing <b>%s</b> output file%s. '
         '<span style="color:#c1121f;font-weight:700">The findings are summarized below; every figure '
         'links to the source data, and the full navigable index of all outputs is available in the '
-        '<a href="%s" style="color:inherit">companion report</a>.</span>'
+        '<a href="%s" style="color:var(--accent);font-weight:700">companion report</a>.</span>'
         % (_esc(corpus_name), _fmt(n_docs), '' if n_docs == 1 else 's',
            _fmt(n_words), _fmt(n_chars), _fmt(avg_words), _fmt(avg_sents),
            len(ran), 'is' if len(ran) == 1 else 'es',
