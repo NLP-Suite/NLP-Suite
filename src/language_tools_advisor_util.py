@@ -85,15 +85,19 @@ def assess_language(language):
 
     sections = []
 
-    # 1. Always-on (language independent)
-    sections.append(('Always available — language-independent (tokenization / counting only)', [
+    # 1. Always-on (language independent -- tokenization / counting / bag-of-words / geometry)
+    sections.append(('Always available — language-independent (counting, frequency, topics, maps, graphs)', [
         ('Word & character counts, sentence / document statistics', True, ''),
-        ('Word & character N-grams, co-occurrence', True, ''),
+        ('N-grams (word & character), word co-occurrence, KWIC (keyword-in-context)', True, ''),
         ('Word frequency (Zipf), TF-IDF distinctive words', True, ''),
         ('Vocabulary richness (TTR / Yule’s K), lexical diversity (MTLD / vocd-D)', True, ''),
-        ('Topic modeling (Gensim / BERTopic / MALLET)', True, 'bag-of-words; works on any language'),
+        ('Topic modeling — Gensim LDA, BERTopic, MALLET', True,
+         'bag-of-words; results improve with language-specific stopwords'),
+        ('Word2Vec — word embeddings trained on YOUR corpus', True, 'learns from the corpus itself'),
         ('Word clouds', True, ''),
         ('Document similarity / plagiarism (TF-IDF + cosine)', True, ''),
+        ('GIS — geocoding & mapping of place names, distances, movement', True, 'geocoder-dependent'),
+        ('Network graphs (Gephi)', True, ''),
         ('Statistical measures & hypothesis tests', True, ''),
     ]))
 
@@ -105,7 +109,7 @@ def assess_language(language):
          _pkgs((st_ud, 'Stanza'), (in_spacy, 'spaCy'), (in_corenlp, 'CoreNLP'))),
         ('Named-Entity Recognition (people / organizations / locations)', can_ner,
          _pkgs((st_ner, 'Stanza'), (in_spacy, 'spaCy'), (in_corenlp, 'CoreNLP'))),
-        ('Sentiment analysis', can_sentiment,
+        ('Sentiment analysis + Shape of Stories (sentiment arc)', can_sentiment,
          _pkgs((st_senti, 'Stanza'), (is_english, 'English tools (VADER / NRC / SentiWordNet)'))),
     ]))
 
@@ -117,13 +121,19 @@ def assess_language(language):
         ('Coreference resolution', in_corenlp, ''),
     ]))
 
-    # 4. English-only tools
-    sections.append(('English-only tools', [
+    # 4. English (as shipped): the models / dictionaries / endpoints are English. Some (BERT, DBpedia
+    #    Spotlight) have multilingual variants, but the Suite ships the English ones.
+    sections.append(('English tools (as shipped) — English models / dictionaries / endpoints', [
         ('Semantic aggregation — WordNet / VerbNet / FrameNet classes', is_english, ''),
+        ('Word-sense disambiguation (WSD) & semantic similarity (WordNet)', is_english, ''),
         ('Semantic Role Labeling (SRL, transformer)', is_english, ''),
         ('Nominalization analysis', is_english, ''),
         ('Concreteness / abstractness, iconic language', is_english, ''),
-        ('Style dictionaries (objectivity/subjectivity, pathos, …)', is_english, ''),
+        ('Style dictionaries (objectivity/subjectivity, pathos, readability, …)', is_english, ''),
+        ('BERT — word-embedding semantic map, BERT NER, BERT sentiment', is_english,
+         'English models shipped (all-distilroberta); multilingual BERT (102 languages) exists'),
+        ('DBpedia & YAGO entity linking / knowledge graphs', is_english,
+         'uses the English DBpedia Spotlight endpoint (/en/) as shipped'),
     ]))
 
     return sections, dict(code=code, in_corenlp=in_corenlp, in_stanza=in_stanza, in_spacy=in_spacy)
