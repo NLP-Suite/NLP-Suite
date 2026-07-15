@@ -197,6 +197,12 @@ def run():
         filesToOpen = [csv_full_path]
         IO_csv_util.list_to_csv(GUI_util.window, results, csv_full_path, colnum=0)
 
+        # Auto-populate the restored INPUT CSV file field with the query's output CSV.
+        try:
+            csv_file_var.set(csv_full_path)
+        except Exception:
+            pass
+
         # Auto-generate charts for cross-complex query results
         if qname.startswith('Cross-complex:') and chartPackage != 'No charts':
             _auto_chart_cross_complex(csv_full_path, outputDir, chartPackage, filesToOpen)
@@ -1283,6 +1289,53 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 save_query_button=tk.Button(window, width=15, text='Save SQL query', state='disabled', command=lambda: save_query())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+850, y_multiplier_integer,save_query_button)
 
+# ── INPUT CSV file row (restored) ──────────────────────────────────────────────────────────
+# Removed as a side effect of commit 94759275. Shows the CSV a query writes (auto-populated in
+# run() after each query) or one you pick with 'Select INPUT CSV file'. Open it / Clear the field.
+# NOTE: the WHERE-filter row above is the cross-complex-query filter now, so this row is
+# deliberately DECOUPLED from it (no _refresh_csv_columns wiring) -- the WHERE filter is untouched.
+csv_file_var = tk.StringVar()
+
+def get_csv_file(window, title, fileType):
+    initialFolder = os.path.dirname(os.path.abspath(csv_file_var.get())) if csv_file_var.get() \
+        else os.path.dirname(os.path.abspath(__file__))
+    filePath = tk.filedialog.askopenfilename(title=title, initialdir=initialFolder, filetypes=fileType)
+    if len(filePath) > 0:
+        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(filePath, 'utf-8')
+        if nRecords == 0:
+            mb.showwarning(title='Warning',
+                           message="The selected input csv file is empty.\n\nPlease, select a different file and try again.")
+        else:
+            csv_file_var.set(filePath)
+    return filePath
+
+csv_file_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width,
+                            text='Select INPUT CSV file',
+                            command=lambda: get_csv_file(window, 'Select INPUT csv file', [("csv files", "*.csv")]))
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                               csv_file_button, True)
+
+openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+                                 command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                               openInputFile_button, True, False, True, False, 90,
+                                               GUI_IO_util.IO_configuration_menu, "Open INPUT csv file")
+
+csv_file = tk.Entry(window, width=GUI_IO_util.csv_file_width - 8, textvariable=csv_file_var)
+csv_file.config(state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
+                                               csv_file, True)
+
+def _clear_csv_file():
+    """Clear the INPUT CSV file field (leaves the cross-complex WHERE filter untouched)."""
+    csv_file_var.set('')
+
+clear_csv_button = tk.Button(window, text='Clear', width=5, command=lambda: _clear_csv_file())
+y_multiplier_integer = GUI_IO_util.placeWidget(window, 1150, y_multiplier_integer, clear_csv_button,
+                                               False, False, True, False, 90,
+                                               GUI_IO_util.open_setup_x_coordinate,
+                                               "Click to clear the INPUT CSV file field.")
+
 # SQL query name — no longer on a separate row.
 # The query name is shown in the hover-over text of the SQL query text area.
 
@@ -1419,6 +1472,8 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                                          "Cross-complex query generator: select a SOURCE and TARGET complex type, then click Generate to automatically build a SQL query that navigates the PC-ACE hierarchy.\n\nOptionally filter the source by selecting a simplex name and entering a LIKE pattern (e.g. %woman% or lynching).\n\nHover over the Generate SQL query button to see the current object selection." + GUI_IO_util.msg_Esc)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, using the 'Select DB table' dropdown menu, select the table available in the SQLite database.\n\nOnce an SQLite table has been selected, use the 'Select DB table field' dropdown menu to select a specific field available in the selected table.\n\nUsing the Templates dropdown menu select the type of SQL query for which to display a standard template (e.g., UNION, JOIN). You will need to change table names and field names to the appropriate names in your database.\n\nTick the Distinct checkbox to display the SQL query as distinct\n\nClick Import SQL query to load a previously saved query.\nClick Save SQL query to save the current query to a file." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+        "The INPUT CSV file widget displays a csv filename. There are two ways to fill it:\n\n   1. Click 'Select INPUT CSV file' to choose a file of your choice.\n\n   2. It is filled AUTOMATICALLY with the query result after you click RUN.\n\nClick the small button between the 'Select...' button and the text widget to open the file and view its content.\n\nClick 'Clear' to empty the field." + GUI_IO_util.msg_openFile)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Enter an SQL query in the form SELECT ...\n\nYou can also generate a new SQL query, import a saved query or use a template from the dropdown menu.\n\nHover over the query area to see the name of the currently loaded query."+ GUI_IO_util.msg_Esc)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer+4.5,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
