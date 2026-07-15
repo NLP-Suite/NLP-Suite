@@ -71,5 +71,5 @@ So legacy modules are GUI/infra-coupled. Tests work around this by stubbing thes
 - **Style / statistics** — `statistics_txt_util`, `style_analysis_main`.
 
 ## Working notes
-- Branches: feature work lands via PRs against the repo's integration branch (`current-stable`); avoid editing files already owned by an open PR.
+- Branches: feature work lands via PRs against **`roberto`** — the integration/release branch the installer workflow (`build-installers.yml`) checks out and that `v*` release tags are built from. (`current-stable` is an older snapshot behind `roberto`; don't target it.) Avoid editing files already owned by an open PR.
 - The suite is Windows/Mac cross-platform; prefer `os.path`/`os.sep` and avoid platform-specific assumptions.
