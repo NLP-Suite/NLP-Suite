@@ -1154,6 +1154,14 @@ def language_detection(window, inputFilename, inputDir, outputDir, configFileNam
                 print("  The file is empty. It will be discarded from processing.")
                 docErrors_empty=docErrors_empty+1
                 continue
+            # Detect on a SAMPLE of the document head, not the whole file. Language is uniform within a
+            # document, so a generous head sample yields the same result; the 4 detectors (langdetect /
+            # langid / spaCy / Stanza) otherwise each process the ENTIRE text of every file, which is what
+            # made this slow on a large corpus (Harry Potter's book-length files). 20k chars (~3-4k words)
+            # is far more than any detector needs.
+            _LANG_SAMPLE_CHARS = 20000
+            if len(text) > _LANG_SAMPLE_CHARS:
+                text = text[:_LANG_SAMPLE_CHARS]
             # split text into paragraphs, paragraph = text.split('\n\n')
             # loop through paragraphs passing each para to detect_lang
             # value = detect_langs(paragraph)
