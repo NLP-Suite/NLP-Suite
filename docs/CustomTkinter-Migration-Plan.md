@@ -274,12 +274,25 @@ can't load `_imagingtk` (`invalid command name "PyImagingPhoto"` — the exact p
 (they draw with the canvas), but any code path we write that hands CTk a `CTkImage` will die in
 the bundle while working fine in a dev venv.
 
+**Phase 0 result (2026-07-15, macOS aarch64, cpython-3.10.15 python-build-standalone):**
+`tests/ctk_bundle_smoke.py` run under the bundled interpreter confirms CTk core is fine (root,
+Label/Button/OptionMenu/Frame, appearance toggle) but **raw `CTkImage` fails exactly as predicted**
+— `TypeError: bad argument type for built-in operation` from `PIL.ImageTk`. **Fix landed:**
+`ctk_bundle_util.patch_ctk_image_for_bundle()` monkeypatches the two `CTkImage` methods that touch
+ImageTk (`_get_scaled_light_photo_image` / `_get_scaled_dark_photo_image`) to build their Tk image
+through the same base64-PNG path as `GUI_util.tk_image_from_pil`. With the patch applied the smoke
+test is **green on Mac**; `CTkImage` is now usable in the bundle. ⏳ **Still pending: the same run on
+Windows** (different Tcl/Tk build) before Phase 0 is fully signed off.
+
 **Mitigations:**
-- Phase 0 ships a trivial CTk "hello" window and we run it **inside the built bundle** on both
-  OSes before committing to the migration.
-- Rule for the whole migration: images go through `tk_image_from_pil` → plain `PhotoImage`,
-  never `CTkImage`. Enforce with a grep in code review.
-- If the bundle smoke test fails for CTk itself (e.g., its font/scaling probing), the fallback
+- Phase 0 ships `tests/ctk_bundle_smoke.py` (CTk root, widgets, OptionMenu repopulation, **`CTkImage`
+  via the patch**, appearance toggle) and we run it **inside the built bundle** on both OSes before
+  committing to the migration.
+- Call `ctk_bundle_util.patch_ctk_image_for_bundle()` **once at startup, before any `CTkImage`**
+  (fold into the CTk bootstrap / `GUI_theme_util` init in Phase 1). It is idempotent and raises
+  loudly if a CustomTkinter upgrade moves the patched methods. This supersedes the earlier
+  "never use `CTkImage`" rule — with the patch, CTk's native image idiom is safe in the bundle.
+- If the bundle smoke test ever fails for CTk itself (e.g., its font/scaling probing), the fallback
   is to keep the bundled-app path on plain tk (runtime feature flag in `GUI_theme_util`:
   factories return tk widgets when CTk can't initialize) — the wrappers make this cheap.
 
