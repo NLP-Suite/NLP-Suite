@@ -700,6 +700,28 @@ def _cache_pick_any(files, *substrs):
     return out
 
 
+def _find_existing_corenlp_files(ctx):
+    """Return CoreNLP output files already in the output dir (from a prior/killed run on THIS corpus),
+    so a restart can skip the slow combined CoreNLP pass (NER/gender/quote/date -- HOURS on a large
+    corpus). [] unless BOTH an NER output and a gender output are present (the pass's signature
+    outputs), so a partial/failed prior pass isn't reused. Like the POS reuse, these appear when the
+    pass completes -- a present, valid set means it finished; if you kill DURING the CoreNLP pass,
+    delete its output subdirs before re-running."""
+    outdir = ctx.get('outputDir') or ''
+    if not outdir or not os.path.isdir(outdir):
+        return []
+    import glob
+    found = []
+    for p in glob.glob(os.path.join(outdir, '**', '*.csv'), recursive=True):
+        b = os.path.basename(p).lower()
+        if 'corenlp' in b and any(k in b for k in ('ner', 'gender', 'quote', 'normalized-date', 'svo')):
+            found.append(p)
+    has_ner = any('corenlp' in os.path.basename(f).lower() and 'ner' in os.path.basename(f).lower()
+                  for f in found)
+    has_gender = any('gender' in os.path.basename(f).lower() for f in found)
+    return found if (has_ner and has_gender) else []
+
+
 def _prime_parse_cache(ctx, selected):
     ctx['_corenlp_files'] = None
     ctx['_ner_track_files'] = None
@@ -722,21 +744,30 @@ def _prime_parse_cache(ctx, selected):
         # NOTE: Semantics POS is NOT taken from CoreNLP anymore -- it derives its noun/verb lemma lists
         # from the shared Stanza POS pass below, so it works with no Java regardless of CoreNLP.
     if len(annotators) >= 2:   # only worth combining when 2+ CoreNLP dimensions are on
-        try:
-            import Stanford_CoreNLP_util
-            NER_list = ['PERSON', 'ORGANIZATION', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
-            print('>>> Corpus Profiler: ONE combined CoreNLP pass for [%s] (replacing separate passes)'
-                  % ', '.join(annotators))
-            files = _files(Stanford_CoreNLP_util.CoreNLP_annotate(
-                ctx['config_filename'], ctx['inputFilename'], ctx['inputDir'], ctx['outputDir'], False,
-                ctx['chartPackage'], ctx['dataTransformation'], annotators, False,
-                ctx['language'], ctx['export_json_var'], ctx['memory_var'],
-                ctx['document_length_var'], ctx['limit_sentence_length_var'], NERs=NER_list))
-            ctx['_corenlp_files'] = files
-            print('>>> Corpus Profiler: combined CoreNLP pass cached %d output files' % len(files))
-        except Exception as e:
-            print('Corpus Profiler: combined CoreNLP pass failed (%s); dimensions will parse individually' % e)
-            ctx['_corenlp_files'] = None
+        # REUSE: a prior run on this corpus may already have produced the CoreNLP outputs -- and that
+        # pass is the single slowest step (Java NER/gender/quote/date, ~hours on Harry Potter). If a
+        # completed set is in the output dir, reuse it instead of re-parsing (mirrors the POS reuse).
+        existing = _find_existing_corenlp_files(ctx)
+        if existing:
+            print('>>> Corpus Profiler: reusing an existing CoreNLP pass (%d files) -- skipping the '
+                  '~hours re-parse' % len(existing))
+            ctx['_corenlp_files'] = existing
+        else:
+            try:
+                import Stanford_CoreNLP_util
+                NER_list = ['PERSON', 'ORGANIZATION', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
+                print('>>> Corpus Profiler: ONE combined CoreNLP pass for [%s] (replacing separate passes)'
+                      % ', '.join(annotators))
+                files = _files(Stanford_CoreNLP_util.CoreNLP_annotate(
+                    ctx['config_filename'], ctx['inputFilename'], ctx['inputDir'], ctx['outputDir'], False,
+                    ctx['chartPackage'], ctx['dataTransformation'], annotators, False,
+                    ctx['language'], ctx['export_json_var'], ctx['memory_var'],
+                    ctx['document_length_var'], ctx['limit_sentence_length_var'], NERs=NER_list))
+                ctx['_corenlp_files'] = files
+                print('>>> Corpus Profiler: combined CoreNLP pass cached %d output files' % len(files))
+            except Exception as e:
+                print('Corpus Profiler: combined CoreNLP pass failed (%s); dimensions will parse individually' % e)
+                ctx['_corenlp_files'] = None
 
     # one shared STANZA POS pass (no Java) for Syntax (POS distribution) AND Semantics (noun/verb
     # knowledge-base aggregation derives its lemma lists from it). Parse the corpus for POS ONCE and
