@@ -258,45 +258,60 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
     else:
         words_to_embed = all_words
 
-    print(f'\nStarted running BERT Word2Vec model on {len(words_to_embed)} words at {time.asctime( time.localtime(time.time()))}')
-    #Creates the word embeddings per word and stores each embedding as an element in a list called embeddings
-    word_vectors = model.encode(words_to_embed)
-
-    # print('\nFinished running BERT computing the vector space for ' + str(len(words)) + ' distinct words in the input file(s) at ' + time.asctime( time.localtime(time.time())))
+    # Encode UNIQUE words only. words_to_embed keeps every occurrence, so encoding it re-embeds the same
+    # token thousands of times (Harry Potter: 25,628 tokens) -- pure waste, since the dict below collapses
+    # duplicates anyway. Keep the frequency counts for the top-N plot selection further down.
+    from collections import Counter
+    _word_freq = Counter(words_to_embed)
+    _unique_words = list(_word_freq.keys())
+    print(f'\nStarted running BERT Word2Vec model on {len(_unique_words)} distinct words '
+          f'({len(words_to_embed)} tokens) at {time.asctime( time.localtime(time.time()))}')
+    word_vectors = model.encode(_unique_words)
 
     #Creates key-value pairs of words and their corresponding vectors to be added to csv file output
     # showing words and their corresponding multidimensional vectors
-    for w, e in zip(words_to_embed, word_vectors):
+    for w, e in zip(_unique_words, word_vectors):
         word_embeddings[w] = e
 
     # progress note (NOT the finish -- the real "Finished running BERT word embeddings at HH:MM
     # taking ..." timed_alert fires at the end of this function). Reworded off the old raw-asctime
     # "Finished running BERT Word2Vec model ..." line so there aren't two differently-formatted
     # "Finished" messages.
-    print(f'\nBERT Word2Vec: computed embeddings for {len(word_embeddings)} words (non-distinct); building output...')
+    print(f'\nBERT Word2Vec: computed embeddings for {len(word_embeddings)} distinct words; building output...')
 
     # Plotting the word embeddings
      ## visualization
     if not 'Do not plot' in vis_menu_var:
-        print(f'\nStarted preparing charts via t-SNE for {len(word_embeddings)} non-distinct words at {time.asctime( time.localtime(time.time()))}')
+        # t-SNE is ~O(n^2): run it on the TOP-N most frequent words only, NOT every word. On a large
+        # corpus (Harry Potter: 25k+ distinct words) t-SNE over all of them is effectively unbounded --
+        # and a 25k-point map is an unreadable hairball anyway. top_words_var is the intended cap (the
+        # profiler asks for the top 200). Falsy/0 -> all words (small corpora / the standalone "all" case).
+        import numpy as _np
+        _topn = int(top_words_var) if top_words_var else 0
+        _plot_words = ([w for w, _ in _word_freq.most_common(_topn)] if _topn > 0
+                       else list(word_embeddings.keys()))
+        _plot_vectors = _np.array([word_embeddings[w] for w in _plot_words])
+        _perplexity = float(max(1, min(30, len(_plot_words) - 1)))
+        print(f'\nStarted preparing charts via t-SNE for the top {len(_plot_words)} of '
+              f'{len(word_embeddings)} distinct words at {time.asctime( time.localtime(time.time()))}')
         if dim_menu_var == '2D':
-            tsne = TSNE(n_components=2)
-            xys = tsne.fit_transform(word_vectors)
+            tsne = TSNE(n_components=2, perplexity=_perplexity)
+            xys = tsne.fit_transform(_plot_vectors)
             xs = xys[:, 0]
             ys = xys[:, 1]
-            tsne_df = pd.DataFrame({'Word': words_to_embed, 'x': xs, 'y': ys})
+            tsne_df = pd.DataFrame({'Word': _plot_words, 'x': xs, 'y': ys})
 
             fig = word2vec_tsne_plot_util.plot_interactive_graph(tsne_df)
             fig_words = word2vec_tsne_plot_util.plot_interactive_graph_words(tsne_df)
 
 
         else:
-            tsne = TSNE(n_components=3)
-            xyzs = tsne.fit_transform(word_vectors)
+            tsne = TSNE(n_components=3, perplexity=_perplexity)
+            xyzs = tsne.fit_transform(_plot_vectors)
             xs = xyzs[:, 0]
             ys = xyzs[:, 1]
             zs = xyzs[:, 2]
-            tsne_df = pd.DataFrame({'Word': words_to_embed, 'x': xs, 'y': ys, 'z': zs})
+            tsne_df = pd.DataFrame({'Word': _plot_words, 'x': xs, 'y': ys, 'z': zs})
 
             fig = word2vec_tsne_plot_util.plot_interactive_3D_graph(tsne_df)
             fig_words = word2vec_tsne_plot_util.plot_interactive_3D_graph_words(tsne_df)
