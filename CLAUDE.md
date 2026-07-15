@@ -52,6 +52,7 @@ So legacy modules are GUI/infra-coupled. Tests work around this by stubbing thes
 - Packaging: **PyInstaller** via `NLP_Suite.spec` (release builds are tag-triggered).
 
 ## Testing (PR #1635)
+- **Everything added should have associated unit tests** — new helpers, functions, or logic land together with tests that cover them (extract testable logic out of GUI callbacks so it can be tested).
 - Run with `pytest tests/`.
 - `tests/conftest.py` replaces `GUI_util`, `IO_libraries_util`, and the heavy NLP libs (Stanza/spaCy/NLTK/pandas/…) with `MagicMock` stubs in `sys.modules` **before** the module under test is imported — neutralizing the import-time guards **without changing production code**. Real stdlib (`re`, `string`, `collections`, …) is left intact.
 - **Target pure, stdlib-only helpers** (e.g. `statistics_txt_util` word/diversity helpers, `CoNLL_util`, `semantic_aggregation_util`, regex builders). Full GUI flows are not unit-testable here.
