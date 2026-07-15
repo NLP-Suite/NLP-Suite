@@ -269,7 +269,11 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
     for w, e in zip(words_to_embed, word_vectors):
         word_embeddings[w] = e
 
-    print(f'\nFinished running BERT Word2Vec model exporting {len(word_embeddings)} non-distinct words at {time.asctime( time.localtime(time.time()))}')
+    # progress note (NOT the finish -- the real "Finished running BERT word embeddings at HH:MM
+    # taking ..." timed_alert fires at the end of this function). Reworded off the old raw-asctime
+    # "Finished running BERT Word2Vec model ..." line so there aren't two differently-formatted
+    # "Finished" messages.
+    print(f'\nBERT Word2Vec: computed embeddings for {len(word_embeddings)} words (non-distinct); building output...')
 
     # Plotting the word embeddings
      ## visualization
