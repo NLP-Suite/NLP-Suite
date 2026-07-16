@@ -880,7 +880,10 @@ def create_sqlite_from_pcace(inputDir, outputDir):
     import sqlite3
 
     if not library:
-        print("  WARNING: No PC-ACE library loaded. Please load a database first.")
+        # surface to the USER (a terminal print is invisible in a GUI tool): the caller only checks the
+        # return value, so without this the click silently does nothing.
+        mb.showwarning(title='Warning',
+                       message='No PC-ACE library loaded.\n\nPlease, load a PC-ACE database first, then try again.')
         return None
 
     head, tail = os.path.split(inputDir)
@@ -3226,7 +3229,7 @@ def generate_multi_target_query(source_name, source_simplex=None,
                     a=cte_alias, l=_ft_label))
         else:
             final_select.append("    {a}.Target_ID AS [{tgt}_ID]".format(
-                a=cte_alias, tgt=label))
+                a=cte_alias, tgt=_ft_label))
         final_from.append(
             "    LEFT JOIN {a} ON {a}.Source_ID = src_cte.Source_ID".format(a=cte_alias))
 
@@ -5980,8 +5983,6 @@ def get_text_value_simplex(data_simplex_id):
         if val is not None:
             return str(val)
     return ""
-
-    return str(res)
 
 
 def compute_identifier(data_complex_id):

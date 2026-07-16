@@ -238,6 +238,21 @@ head, scriptName = os.path.split(os.path.basename(__file__))
 # hardcode the default config at module init: config_filename_selected_config is empty this early,
 # which would make the startup I/O check falsely report the INPUT/OUTPUT fields as missing
 config_filename = 'NLP_default_IO_config.csv'
+# ...but honour an I/O config handed over by a launching GUI (--config). The config -- NOT the live vars --
+# is what set_IO_brief_values renders the INPUT/OUTPUT DIR box from, so without this we would DISPLAY the
+# default config's dirs while OPERATING on the --inputdir we were handed: an I/O box that lies about which
+# directory (and therefore which SQLite database) the query will hit.
+if '--config' in sys.argv:
+    try:
+        _handover_config = sys.argv[sys.argv.index('--config') + 1]
+        if _handover_config:
+            config_filename = _handover_config
+            # SEED config_filename_selected_config: GUI_bottom() forces 'NLP_default_IO_config.csv' whenever
+            # that var is still empty -- which it ALWAYS is in a fresh process -- clobbering the config we
+            # were handed. Seeding it makes that guard fall through and keeps our config.
+            GUI_util.config_filename_selected_config.set(config_filename)
+    except (IndexError, ValueError):
+        pass
 
 # The 4 values of config_option refer to:
 #   input file
@@ -350,7 +365,7 @@ def _ensure_indexes(db_path):
 def _disable_all_widgets():
     """Disable all data-dependent widgets (called when input is invalid)."""
     try:
-        for btn in (open_analyzer_button, view_relations_button,
+        for btn in (open_gui_menu, view_relations_button,
                     view_grammar_button, update_grammar_button,
                     add_object_btn, generate_cross_btn,
                     import_query_button, save_query_button):
@@ -372,7 +387,7 @@ def _disable_all_widgets():
 def _enable_all_widgets():
     """Enable all data-dependent widgets (called when database loads)."""
     try:
-        for btn in (open_analyzer_button, view_relations_button,
+        for btn in (open_gui_menu, view_relations_button,
                     view_grammar_button, update_grammar_button,
                     add_object_btn, generate_cross_btn,
                     import_query_button, save_query_button):
@@ -404,6 +419,21 @@ def _auto_build_sqlite(*args):
                   if f.lower().endswith(('.xlsx', '.csv')) and not f.startswith('~$')]
     if not data_files:
         _disable_all_widgets()
+        # Say WHAT is required: silently disabling every widget leaves a dead GUI with no explanation
+        # (this is what a text-corpus dir, e.g. newspaperArticles, lands on). Skip the notice when a
+        # database is already selected (e.g. --db passed by the PC-ACE analyzer) -- nothing is wrong then.
+        if not select_SQLite_DB_var.get():
+            mb.showwarning(title='Warning',
+                           message='No SQLite database available.\n\nThe input directory\n\n' + in_dir +
+                                   '\n\ncontains no xlsx or csv data files and no SQLite database, so there is '
+                                   'nothing to query.\n\nThis script needs an INPUT DIRECTORY that is ONE of:\n\n'
+                                   '1. a PC-ACE export folder (the usual case: its tables also get the PC-ACE '
+                                   'column names); or\n\n'
+                                   '2. ANY folder of xlsx/csv data files sharing overlapping ID fields — this '
+                                   'script is NOT limited to PC-ACE data — from which an SQLite database is '
+                                   'built automatically; or\n\n'
+                                   '3. a folder that already contains an SQLite (.sqlite) database.\n\n'
+                                   'Please, select such an input directory and try again.')
         return
     db_folder_name = os.path.basename(os.path.normpath(in_dir))
     # Check if SQLite already exists in the input directory
@@ -432,8 +462,11 @@ def _auto_build_sqlite(*args):
         if result != -1:
             select_SQLite_DB_var.set(result)
             _write_sqlite_version(in_dir)
-        # Restore title (remove "Loading...")
-        window.title(GUI_label + '  —  ' + db_folder_name)
+        # Restore title (remove "Loading..."). Delegate to _show_active_db so the title names the SAME thing
+        # on EVERY path -- the .sqlite actually being queried -- instead of the folder here and the filename
+        # on the reuse/direct-select paths. It also clears "Loading..." correctly when a build FAILS
+        # (result == -1), which hardcoding the folder name did not.
+        _show_active_db()
     # Enable RUN and all widgets if database and output are set
     if select_SQLite_DB_var.get() != '' and out_dir != '':
         GUI_util.run_button.configure(state='normal')
@@ -470,19 +503,88 @@ def open_pcace_analyzer():
     if not in_dir or not os.path.isdir(in_dir):
         mb.showwarning(title='Warning', message='No input directory selected.\n\nPlease, select a PC-ACE input directory first.')
         return
-    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'DB_PCACE_data_analyzer_main.py')
+    # DB_PCACE_data_analyzer_main.py does NOT exist -- the module is DB_PCACE_data_analysis_main.py (every
+    # other caller uses that name). Spawning the wrong name failed in the CHILD process, so the click did
+    # nothing at all, with no error anywhere the user could see it.
+    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'DB_PCACE_data_analysis_main.py')
     cmd = [sys.executable, script_path]
+    # hand over OUR I/O config -- see the --config note at the top of this script
+    if GUI_util.config_filename_selected_config.get():
+        cmd.extend(['--config', GUI_util.config_filename_selected_config.get()])
     if in_dir:
         cmd.extend(['--inputdir', in_dir])
     if out_dir:
         cmd.extend(['--outputdir', out_dir])
     subprocess.Popen(cmd)
 
-open_analyzer_button = tk.Button(window, text='Open PC-ACE analyzer GUI', width=25, height=1, state='disabled', command=lambda: open_pcace_analyzer())
+
+def open_statistics_csv():
+    """Launch the csv statistics GUI on the query result.
+
+    DB_SQL PRODUCES what statistics_csv CONSUMES: RUN writes the query result and drops it into the INPUT
+    CSV widget, so hand that csv straight over (--csvfile) and it lands pre-selected. Falls back to simply
+    opening the GUI when no query has been run yet."""
+    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'statistics_csv_main.py')
+    cmd = [sys.executable, script_path]
+    if GUI_util.config_filename_selected_config.get():
+        cmd.extend(['--config', GUI_util.config_filename_selected_config.get()])
+    csv_file = csv_file_var.get()
+    if csv_file and os.path.isfile(csv_file):
+        cmd.extend(['--csvfile', csv_file])
+    out_dir = outputDir.get() if hasattr(outputDir, 'get') else outputDir
+    if out_dir:
+        cmd.extend(['--outputdir', out_dir])
+    subprocess.Popen(cmd)
+
+
+def open_data_manipulation():
+    """Launch the data manipulation GUI."""
+    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data_manipulation_main.py')
+    cmd = [sys.executable, script_path]
+    # hand over OUR I/O config -- see the --config note at the top of this script
+    if GUI_util.config_filename_selected_config.get():
+        cmd.extend(['--config', GUI_util.config_filename_selected_config.get()])
+    in_dir = inputDir.get() if hasattr(inputDir, 'get') else inputDir
+    if in_dir:
+        cmd.extend(['--inputdir', in_dir])
+    out_dir = outputDir.get() if hasattr(outputDir, 'get') else outputDir
+    if out_dir:
+        cmd.extend(['--outputdir', out_dir])
+    subprocess.Popen(cmd)
+
+
+def _on_open_gui_selected(choice):
+    # NOTE: these launchers are named WITHOUT a leading underscore in this script (the other DB GUIs use
+    # _open_*); the names must match exactly or the dropdown raises NameError on selection.
+    if choice == 'Open PC-ACE data analysis GUI':
+        open_pcace_analyzer()
+    elif choice == 'Open data manipulation GUI':
+        open_data_manipulation()
+    elif choice == 'Open data statistics GUI':
+        open_statistics_csv()
+
+_open_gui_var = tk.StringVar()
+_open_gui_var.set('Open PC-ACE data analysis GUI')
+open_gui_menu = tk.OptionMenu(window, _open_gui_var,
+                              'Open PC-ACE data analysis GUI',
+                              'Open data manipulation GUI',
+                              'Open data statistics GUI',
+                              command=_on_open_gui_selected)
+
+open_gui_menu.configure(width=30)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   open_analyzer_button,
+                                   open_gui_menu,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Click to open the PC-ACE data analyzer GUI with the current input directory.")
+                                   "Use the dropdown menu to open a related GUI.\n\n"
+                                   "   Open PC-ACE data analysis GUI: opens the PC-ACE data analysis.\n"
+                                   "   Open data manipulation GUI: opens the data manipulation GUI.\n"
+                                   "   Open data statistics GUI: open the GUI for statistical analyses.")
+#
+# open_analyzer_button = tk.Button(window, text='Open PC-ACE analyzer GUI', width=25, height=1, state='disabled', command=lambda: open_pcace_analyzer())
+# y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+#                                    open_analyzer_button,
+#                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+#                                    "Click to open the PC-ACE data analyzer GUI with the current input directory.")
 
 view_relations_button = tk.Button(window, text='View table relations', width=17, height=1, state='disabled', command=lambda: view_relations())
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -647,6 +749,19 @@ def get_table_list(*args):
     select_DB_tables_var.set('')
     _populating_tables = False
 select_SQLite_DB_var.trace('w',get_table_list)
+
+
+def _show_active_db(*args):
+    """Keep the WINDOW TITLE showing the SQLite database actually being queried.
+
+    The database is otherwise invisible to the user: it is auto-built into the INPUT directory and no
+    widget is bound to select_SQLite_DB_var, so nothing on screen says which database a query will hit.
+    A trace covers every path that sets it (auto-build, reuse of an existing database, and a database
+    the user selects directly) -- the build branch alone used to set the title, so a REUSED database
+    never showed at all."""
+    db = select_SQLite_DB_var.get()
+    window.title(GUI_label + ('  —  ' + os.path.basename(db) if db else ''))
+select_SQLite_DB_var.trace('w', _show_active_db)
 
 
 def _add_typeahead(combo):
@@ -1439,7 +1554,8 @@ videos_options='No videos available'
 # TIPS_lookup = {'No TIPS available':''}
 # TIPS_options='No TIPS available'
 
-TIPS_lookup = {'SQL template queries':'TIPS_NLP_SQL Template Queries.pdf',
+TIPS_lookup = {'DB SQL GUI (what input it needs; where the database is saved)':'TIPS_NLP_DB SQL GUI.pdf',
+               'SQL template queries':'TIPS_NLP_SQL Template Queries.pdf',
                'PC-ACE tables analyzer via Pandas':'TIPS_NLP_PC-ACE Access DB Analyzer.pdf',
                'PC-ACE - Export ACCESS tables to Excel':'TIPS_NLP_PC-ACE - Export ACCESS tables to Excel.pdf',
                'SVO automatic extraction and visualization': 'TIPS_NLP_SVO extraction and visualization.pdf',
@@ -1450,7 +1566,7 @@ TIPS_lookup = {'SQL template queries':'TIPS_NLP_SQL Template Queries.pdf',
                "Gephi network graphs": "TIPS_NLP_Gephi network graphs.pdf",
                "Word clouds":"TIPS_NLP_Wordclouds Visualizing word clouds.pdf"
                }
-TIPS_options='SQL template queries', 'PC-ACE tables analyzer via Pandas', 'PC-ACE - Export ACCESS tables to Excel', 'SVO automatic extraction and visualization', 'Google Earth Pro', 'Google API Key', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs', 'Word clouds'
+TIPS_options='DB SQL GUI (what input it needs; where the database is saved)', 'SQL template queries', 'PC-ACE tables analyzer via Pandas', 'PC-ACE - Export ACCESS tables to Excel', 'SVO automatic extraction and visualization', 'Google Earth Pro', 'Google API Key', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs', 'Word clouds'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
@@ -1462,6 +1578,16 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     else:
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
+
+    # Row: Open GUI dropdown
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                "Use the dropdown menu to open a related GUI. Each one opens on the SAME corpus you are "
+                                "working on here (your INPUT/OUTPUT configuration is passed on to it).\n\n"
+                                "   Open data analysis GUI: analyze PC-ACE tables.\n\n"
+                                "   Open data validation GUI: check and clean your data (e.g., spell checking).\n\n"
+                                "   Open data manipulation GUI: reshape and edit your data.\n\n"
+                                "   Open data statistics GUI: compute descriptive statistics on a csv file, for "
+                                "instance a query result saved from the DB SQL GUI." + GUI_IO_util.msg_Esc)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Click View table relations to open the PC-ACE table relations diagram.\nClick View grammar to export the grammar.\nClick Update grammar to refresh the grammar in setup_complex.\nClick Open PC-ACE analyzer to open the PC-ACE data analyzer GUI with the current input directory." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,

@@ -11,7 +11,7 @@ import GUI_util
 import os
 import datetime
 import pandas as pd
-from subprocess import call
+import subprocess
 
 import tkinter as tk
 from tkinter import ttk
@@ -502,22 +502,23 @@ table_list = []
 table_menu_list = []
 
 def open_sql_query():
-    """Export PC-ACE tables to SQLite and open the SQL query GUI."""
-    if inputDir.get() == '':
-        mb.showwarning(title='Warning', message='No input directory selected.\n\nPlease, select a PC-ACE input directory first.')
-        return
-    db_path = DB_PCACE_data_analysis_util.create_sqlite_from_pcace(inputDir.get(), outputDir.get())
-    if db_path:
-        mb.showwarning(title='SQLite database created',
-                       message=f'PC-ACE tables have been exported to SQLite:\n\n{db_path}\n\nThe SQL query GUI will now open with this database pre-selected.')
-        # Launch DB_SQL_main.py with the database path pre-selected
-        import subprocess
-        script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'DB_SQL_main.py')
-        # Use "SQL queries" subdirectory for import/save query dialogs
-        query_dir = os.path.join(inputDir.get(), 'SQL queries')
-        if not os.path.exists(query_dir):
-            os.makedirs(query_dir)
-        subprocess.Popen([sys.executable, script_path, '--db', db_path, '--querydir', query_dir, '--inputdir', inputDir.get(), '--outputdir', outputDir.get()])
+    """Open the DB SQL GUI (same as the validation GUI's dropdown).
+
+    Nothing PC-ACE-specific is checked or exported here: DB_SQL needs SQL/SQLite input, not PC-ACE data,
+    so it validates its OWN input. It builds the SQLite itself from the xlsx/csv in the input directory,
+    applying the same DB_PCACE_data_analyzer_util.reading_list column renames -- which made the old
+    export-then-pre-select step redundant."""
+    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'DB_SQL_main.py')
+    cmd = [sys.executable, script_path]
+    # hand over OUR I/O config: it is what DB_SQL renders its INPUT/OUTPUT DIR box from, so passing the
+    # dirs alone would open it DISPLAYING the default config while operating on ours.
+    if GUI_util.config_filename_selected_config.get():
+        cmd.extend(['--config', GUI_util.config_filename_selected_config.get()])
+    if inputDir.get():
+        cmd.extend(['--inputdir', inputDir.get()])
+    if outputDir.get():
+        cmd.extend(['--outputdir', outputDir.get()])
+    subprocess.Popen(cmd)
 
 def _open_validation_gui():
     """Launch the PC-ACE data validation GUI."""
@@ -537,6 +538,23 @@ def _open_data_manipulation():
         cmd.extend(['--outputdir', outputDir.get()])
     subprocess.Popen(cmd)
 
+
+def _open_statistics_csv():
+    """Launch the csv statistics GUI.
+
+    No csv is handed over: unlike DB_SQL -- whose RUN drops the query result straight into an INPUT CSV
+    widget -- this GUI has no query result to pass, so statistics_csv opens with its INPUT CSV field empty
+    for the user to fill (its 'Select INPUT CSV file' button offers this corpus's csv files)."""
+    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'statistics_csv_main.py')
+    cmd = [sys.executable, script_path]
+    # hand over OUR I/O config: it is what statistics_csv renders its INPUT/OUTPUT box from, so without it
+    # the GUI would open displaying the DEFAULT config instead of the corpus we are working on.
+    if GUI_util.config_filename_selected_config.get():
+        cmd.extend(['--config', GUI_util.config_filename_selected_config.get()])
+    if outputDir.get():
+        cmd.extend(['--outputdir', outputDir.get()])
+    subprocess.Popen(cmd)
+
 def _on_open_gui_selected(choice):
     if choice == 'Open DB SQL GUI':
         open_sql_query()
@@ -544,6 +562,8 @@ def _on_open_gui_selected(choice):
         _open_validation_gui()
     elif choice == 'Open data manipulation GUI':
         _open_data_manipulation()
+    elif choice == 'Open data statistics GUI':
+        _open_statistics_csv()
 
 _open_gui_var = tk.StringVar()
 _open_gui_var.set('Open DB SQL GUI')
@@ -551,15 +571,17 @@ open_gui_menu = tk.OptionMenu(window, _open_gui_var,
                               'Open DB SQL GUI',
                               'Open data validation GUI',
                               'Open data manipulation GUI',
+                              'Open data statistics GUI',
                               command=_on_open_gui_selected)
 open_gui_menu.configure(width=25)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_gui_menu,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Use the dropdown menu to open a related GUI.\n\n"
-                                   "   Open DB SQL GUI: export tables to SQLite and open the SQL query GUI.\n"
+                                   "   Open DB SQL GUI: opens the SQL query GUI.\n"
                                    "   Open data validation GUI: spell-check, lemmatization, aggregate code validation.\n"
-                                   "   Open data manipulation GUI: opens the data manipulation GUI.")
+                                   "   Open data manipulation GUI: opens the data manipulation GUI.\n"
+                                   "   Open data statistics GUI: open the GUI for statistical analyses.")
 
 view_relations_button = tk.Button(window, text='View table relations', width=17,height=1,state='disabled', command=lambda: view_relations())
 # place widget with hover-over info
@@ -1752,9 +1774,17 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    # Row: Open SQL query GUI
+    # Row: Open GUI dropdown
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                "Click to export all PC-ACE tables to an SQLite database and open the SQL query GUI." + GUI_IO_util.msg_Esc)
+                                "Use the dropdown menu to open a related GUI. Each one opens on the SAME corpus you are "
+                                "working on here (your INPUT/OUTPUT configuration is passed on to it).\n\n"
+                                "   Open DB SQL GUI: run SQL queries on your data. The SQLite database is built "
+                                "automatically from the xlsx/csv tables in your input directory (and rebuilt only when "
+                                "they change), so there is nothing to export first.\n\n"
+                                "   Open data validation GUI: check and clean your data (e.g., spell checking).\n\n"
+                                "   Open data manipulation GUI: reshape and edit your data.\n\n"
+                                "   Open data statistics GUI: compute descriptive statistics on a csv file, for "
+                                "instance a query result saved from the DB SQL GUI." + GUI_IO_util.msg_Esc)
     # Row: View table relations / View grammar / Update grammar / Update identifiers / Object type / required object
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                 "Click View table relations to see PC-ACE table relations.\n"
