@@ -4,8 +4,14 @@ GO / NO-GO gate: does CustomTkinter -- and specifically the PIL.ImageTk path use
 actually work under the interpreter that ships in the NLP Suite installer (python-build-standalone)?
 That interpreter has historically broken Tk-adjacent image handling: it is the reason
 GUI_util.tk_image_from_pil exists, and it is what crashed the matplotlib 'TkAgg' backend (fixed by
-falling back to 'Agg'). If CTkImage crashes here, the migration is DEAD-ON-ARRIVAL for the portable
-build -- which is the actual delivery channel to students -- and Phase 0 fails.
+falling back to 'Agg').
+
+RESULT (2026-07-15, macOS aarch64, cpython-3.10.15 python-build-standalone): raw CTkImage FAILS
+under the bundle exactly as predicted -- `TypeError: bad argument type for built-in operation` from
+PIL.ImageTk. The fix is ctk_bundle_util.patch_ctk_image_for_bundle(), which routes CTkImage's Tk
+image construction through the same base64-PNG path as GUI_util.tk_image_from_pil. This test applies
+that patch and verifies CTkImage then works, so the gate now checks the SHIPPING approach (patched).
+Without the patch the CTkImage check fails -- see docs/CustomTkinter-Migration-Plan.md §5.1.
 
 IMPORTANT: run this INSIDE the frozen bundle / with the BUNDLED interpreter (python-build-standalone),
 not just a dev Anaconda env -- a dev env passing tells you nothing about the bundle. It needs a real
@@ -15,7 +21,15 @@ _test suffix on purpose, so pytest won't collect it).
 Usage:  <bundled-python> tests/ctk_bundle_smoke.py
 Exit code 0 = PASS (all checks), non-zero = FAIL. Prints a per-check report.
 """
+# Standalone runtime probe: customtkinter/ctk_bundle_util are optional and loaded via a runtime
+# sys.path insert, and _ctk is a deliberately None-initialised module global. None of that is
+# statically resolvable, so scope off the two Pyright rules it trips.
+# pyright: reportMissingImports=false, reportOptionalMemberAccess=false
+import os
 import sys
+
+# Import the production shim from src/ without importing GUI_util (which builds a Tk root at import).
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'src'))
 
 _results = []
 _root = None
@@ -35,6 +49,9 @@ def _check(name, fn):
 def _import_and_root():
     global _root, _ctk
     import customtkinter as ctk
+    from ctk_bundle_util import patch_ctk_image_for_bundle
+    if not patch_ctk_image_for_bundle():   # apply the bundle ImageTk workaround before any CTkImage
+        raise RuntimeError('patch_ctk_image_for_bundle() reported CustomTkinter not importable')
     _ctk = ctk
     ctk.set_appearance_mode('light')
     _root = ctk.CTk()
@@ -53,7 +70,8 @@ def _basic_widgets():
 
 
 def _ctk_image():
-    # THE risk: CTkImage -> PIL.ImageTk, which is what python-build-standalone historically breaks.
+    # THE risk: CTkImage -> PIL.ImageTk, which python-build-standalone breaks. Passes only because
+    # patch_ctk_image_for_bundle() (applied in _import_and_root) reroutes it through base64 PNG.
     from PIL import Image
     img = Image.new('RGB', (16, 16), (200, 30, 30))
     cimg = _ctk.CTkImage(light_image=img, dark_image=img, size=(16, 16))
@@ -78,7 +96,7 @@ def main():
     _check('import customtkinter + create CTk root', _import_and_root)
     if _root is not None:
         _check('basic CTk widgets render (Label/Button/OptionMenu/Frame)', _basic_widgets)
-        _check('CTkImage via PIL.ImageTk (the python-build-standalone risk)', _ctk_image)
+        _check('CTkImage (patched: base64-PNG path, the python-build-standalone risk)', _ctk_image)
         _check('appearance mode light<->dark toggle', _appearance_toggle)
         _check('teardown (destroy root)', _teardown)
     ok = bool(_results) and all(p for _, p, _ in _results)
