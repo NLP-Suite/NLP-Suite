@@ -91,11 +91,11 @@ def _run_line_length(c):
         c['window'], c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
         c['chartPackage'], c['dataTransformation']))
 
-def _run_language_detection(c):
-    import file_spell_checker_util
-    return _files(file_spell_checker_util.language_detection(
-        c['window'], c['inputFilename'], c['inputDir'], c['outputDir'], c['config_filename'],
-        False, c['chartPackage'], c['dataTransformation']))
+# NOTE: _run_language_detection() was REMOVED from the profiler (2026-07-16). It ran THREE detectors
+# (langdetect, langid, spaCy) over EVERY file -- slow on a large corpus -- to re-confirm the language the
+# user already declared in the I/O configuration (the summary header states it). Nothing interpreted its
+# output, so it contributed no finding to the report. Language detection remains available on its own from
+# the menu: "Language detection" -> style_analysis_main.py.
 
 
 # ---- vocabulary ---------------------------------------------------------------------------
@@ -633,8 +633,9 @@ REGISTRY = {
                              label='Iconic vocabulary'),
     'capital_words':    dict(category='counts', kind='batch', run=_run_word_shape('capital'),
                              label='Capital-initial words'),
-    'language_detection': dict(category='counts', kind='batch', run=_run_language_detection,
-                             label='Language detection'),
+    # 'language_detection' dropped from the profiler: THREE detectors over EVERY file (slow on a large
+    # corpus) to re-confirm the language already declared in the I/O config, and no interpreter read its
+    # output -- it produced no finding. Still available on its own: menu "Language detection".
     # NER lives in COUNTS: people/organizations/locations are a basic descriptive extraction, run with the
     # user's CONFIGURED parser (Stanza/spaCy/CoreNLP) -- no Java unless CoreNLP is the chosen parser.
     'ner':              dict(category='counts', kind='batch', run=_run_ner,
