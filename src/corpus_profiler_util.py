@@ -756,6 +756,13 @@ def _find_existing_corenlp_files(ctx):
     return found if (has_gender and has_date) else []
 
 
+def corenlp_pass_reusable(outputDir):
+    """True when a COMPLETED CoreNLP enrichment pass is already sitting in `outputDir` -- i.e. the slow Java
+    pass will be REUSED rather than re-run (the user kept the folder at setup_profile_output_dir). Callers use
+    this to avoid warning about hours that will NOT be spent."""
+    return bool(_find_existing_corenlp_files({'outputDir': outputDir}))
+
+
 def _reusable_artifacts(target_dir):
     """Human-readable labels for the expensive-to-recompute results already in `target_dir` that the profiler
     can REUSE on a re-run: a completed CoreNLP enrichment pass (gender + normalized-date) and/or a Stanza POS

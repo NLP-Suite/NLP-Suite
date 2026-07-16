@@ -98,6 +98,12 @@ def run():
     heavy = [aid for aid in selected
              if corpus_profiler_util.REGISTRY[aid]['category'] in ('entities', 'narrative')
              and corpus_profiler_util.REGISTRY[aid]['kind'] == 'batch']
+    # ...unless that Java pass is going to be REUSED: the user kept a completed CoreNLP pass in the profile
+    # folder, so it is skipped entirely and the run is quick. Warning about hours that will not be spent
+    # only teaches the user to ignore the warning.
+    if heavy and corpus_profiler_util.corenlp_pass_reusable(outputDir):
+        print('>>> Corpus Profiler: CoreNLP pass will be reused -- skipping the "may take a while" warning')
+        heavy = []
     if heavy:
         if not mb.askyesno('This may take a while',
                            "The Gender / Dialogue / Dates analysis runs Stanford CoreNLP (Java) over your ENTIRE "
