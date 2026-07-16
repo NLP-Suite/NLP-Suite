@@ -278,6 +278,19 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for Statistical Analyses of csv Files'
 config_filename = 'NLP_default_IO_config.csv'
+# ...but honour an I/O config handed over by a launching GUI (--config), e.g. DB_SQL passing on the config
+# its query result was produced under. The config -- NOT the live vars -- is what the INPUT/OUTPUT box is
+# rendered from, so without this we would DISPLAY the default config while working on the handed-over file.
+# The seed is required: GUI_bottom() forces the default whenever config_filename_selected_config is still
+# empty, which it ALWAYS is in a fresh process, silently discarding whatever we were passed.
+if '--config' in sys.argv:
+    try:
+        _handover_config = sys.argv[sys.argv.index('--config') + 1]
+        if _handover_config:
+            config_filename = _handover_config
+            GUI_util.config_filename_selected_config.set(config_filename)
+    except (IndexError, ValueError):
+        pass
 head, scriptName = os.path.split(os.path.basename(__file__))
 
 # The 4 values of config_option refer to:
@@ -939,6 +952,24 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 
 changed_filename()
 inputFilename.trace('w', changed_filename)
+
+# Handover from a launching GUI (e.g. DB_SQL passing the csv its query just produced): land the file
+# pre-selected in the INPUT CSV widget so the user does not have to hunt for it. Done AFTER GUI_bottom so
+# every widget exists. Silently ignored when launched standalone.
+if '--csvfile' in sys.argv:
+    try:
+        _csv = sys.argv[sys.argv.index('--csvfile') + 1]
+        if os.path.isfile(_csv):
+            input_csv_file_var.set(_csv)
+    except (IndexError, ValueError):
+        pass
+if '--outputdir' in sys.argv:
+    try:
+        _out = sys.argv[sys.argv.index('--outputdir') + 1]
+        if os.path.isdir(_out):
+            GUI_util.output_dir_path.set(_out)
+    except (IndexError, ValueError):
+        pass
 
 GUI_util.window.mainloop()
 

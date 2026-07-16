@@ -437,6 +437,10 @@ def _open_sql_gui():
     """Launch the DB SQL GUI."""
     script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'DB_SQL_main.py')
     cmd = [sys.executable, script_path]
+    # hand over OUR I/O config: it is what DB_SQL renders its INPUT/OUTPUT DIR box from, so passing the
+    # dirs alone would open it DISPLAYING the default config while operating on ours.
+    if GUI_util.config_filename_selected_config.get():
+        cmd.extend(['--config', GUI_util.config_filename_selected_config.get()])
     in_dir = inputDir.get() if hasattr(inputDir, 'get') else inputDir
     if in_dir:
         cmd.extend(['--inputdir', in_dir])
@@ -469,6 +473,24 @@ def _open_data_manipulation():
         cmd.extend(['--outputdir', out_dir])
     subprocess.Popen(cmd)
 
+
+def _open_statistics_csv():
+    """Launch the csv statistics GUI.
+
+    No csv is handed over: unlike DB_SQL -- whose RUN drops the query result straight into an INPUT CSV
+    widget -- this GUI has no query result to pass, so statistics_csv opens with its INPUT CSV field empty
+    for the user to fill (its 'Select INPUT CSV file' button offers this corpus's csv files)."""
+    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'statistics_csv_main.py')
+    cmd = [sys.executable, script_path]
+    # hand over OUR I/O config: it is what statistics_csv renders its INPUT/OUTPUT box from, so without it
+    # the GUI would open displaying the DEFAULT config instead of the corpus we are working on.
+    if GUI_util.config_filename_selected_config.get():
+        cmd.extend(['--config', GUI_util.config_filename_selected_config.get()])
+    out_dir = outputDir.get() if hasattr(outputDir, 'get') else outputDir
+    if out_dir:
+        cmd.extend(['--outputdir', out_dir])
+    subprocess.Popen(cmd)
+
 def _on_open_gui_selected(choice):
     if choice == 'Open DB SQL GUI':
         _open_sql_gui()
@@ -476,6 +498,8 @@ def _on_open_gui_selected(choice):
         _open_pcace_analyzer()
     elif choice == 'Open data manipulation GUI':
         _open_data_manipulation()
+    elif choice == 'Open data statistics GUI':
+        _open_statistics_csv()
 
 _open_gui_var = tk.StringVar()
 _open_gui_var.set('Open DB SQL GUI')
@@ -483,6 +507,7 @@ open_gui_menu = tk.OptionMenu(window, _open_gui_var,
                               'Open DB SQL GUI',
                               'Open PC-ACE data analysis GUI',
                               'Open data manipulation GUI',
+                              'Open data statistics GUI',
                               command=_on_open_gui_selected)
 open_gui_menu.configure(width=25)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -491,7 +516,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                    "Use the dropdown menu to open a related GUI.\n\n"
                                    "   Open DB SQL GUI: opens the SQL query GUI.\n"
                                    "   Open PC-ACE data analysis GUI: opens the PC-ACE data analysis.\n"
-                                   "   Open data manipulation GUI: opens the data manipulation GUI.")
+                                   "   Open data manipulation GUI: opens the data manipulation GUI.\n"
+                                   "   Open data statistics GUI: open the GUI for statistical analyses.")
 
 # ── Select INPUT CSV file row ───────────────────────────────────────────────
 
@@ -1192,7 +1218,15 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     # Row: Open GUI dropdown
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,
         y_multiplier_integer, "NLP Suite Help",
-        "Use the dropdown menu to open a related GUI." + GUI_IO_util.msg_Esc)
+        "Use the dropdown menu to open a related GUI. Each one opens on the SAME corpus you are working on "
+        "here (your INPUT/OUTPUT configuration is passed on to it).\n\n"
+        "   Open DB SQL GUI: run SQL queries on your data. The SQLite database is built automatically from "
+        "the xlsx/csv tables in your input directory (and rebuilt only when they change), so there is "
+        "nothing to export first.\n\n"
+        "   Open PC-ACE data analysis GUI: analyze your PC-ACE tables.\n\n"
+        "   Open data manipulation GUI: reshape and edit your data.\n\n"
+        "   Open data statistics GUI: compute descriptive statistics on a csv file, for instance a query "
+        "result saved from the DB SQL GUI." + GUI_IO_util.msg_Esc)
 
     # Row: Open csv file + Clear + Apply changes
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
