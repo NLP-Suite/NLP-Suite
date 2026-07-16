@@ -1169,7 +1169,9 @@ def display_about_release_team_cite_buttons(scriptName):
             y_multiplier_integer = 1.7
         else:
             y_multiplier_integer = 0
-        about_button = tk.Button(window, text='About', width=15, height=1, foreground="red",
+        # CTk migration (slice 2a): themed CTk buttons. foreground="red" is dropped -- the NLP Suite
+        # theme now paints these as red-filled buttons with light text (red-on-red otherwise).
+        about_button = GUI_theme_util.create_button(window, text='About', width=15, height=1,
                                 command=lambda: GUI_IO_util.about())
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
@@ -1180,7 +1182,7 @@ def display_about_release_team_cite_buttons(scriptName):
                                                        GUI_IO_util.about_button_x_coordinate,
                                                        "Click on the button to access the About page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
 
-        release_history_button = tk.Button(window, text='Release history', width=15, height=1, foreground='red',
+        release_history_button = GUI_theme_util.create_button(window, text='Release history', width=15, height=1,
                                            command=lambda: GUI_IO_util.release_history())
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
@@ -1191,7 +1193,7 @@ def display_about_release_team_cite_buttons(scriptName):
                                                        GUI_IO_util.about_button_x_coordinate,
                                                        "Click on the button to access the Release history page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
 
-        team_button = tk.Button(window, text='NLP Suite team', width=15, height=1, foreground="red",
+        team_button = GUI_theme_util.create_button(window, text='NLP Suite team', width=15, height=1,
                                 command=lambda: GUI_IO_util.list_team())
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
@@ -1202,7 +1204,7 @@ def display_about_release_team_cite_buttons(scriptName):
                                                        GUI_IO_util.release_history_button_x_coordinate,
                                                        "Click on the button to access the Team page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
 
-        cite_button = tk.Button(window, text='How to cite', width=15, height=1, foreground="red",
+        cite_button = GUI_theme_util.create_button(window, text='How to cite', width=15, height=1,
                                 command=lambda: GUI_IO_util.cite_NLP())
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window,

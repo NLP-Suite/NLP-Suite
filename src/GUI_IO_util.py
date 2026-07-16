@@ -222,6 +222,23 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
                     whole_widget_red=False, x_coordinate_hover_over= 90, text_info=''):
     if no_hover_over_widget:
         return
+
+    # CTk migration (Phase 1 slice 2a): CustomTkinter widgets draw themselves and do NOT support
+    # tk's .cget('background') / .config(background=...) -- the red/green color-flip machinery below
+    # would raise on them. CTk widgets already have a built-in hover_color, so they need no color
+    # flip: give them a TOOLTIP-ONLY hover (show text_info on <Enter>, dismiss on <Leave>/click),
+    # then return before the tk-specific code. The tk path below is untouched for plain tk widgets.
+    if 'customtkinter' in type(widget_name).__module__:
+        if text_info != '':
+            number_of_lines = text_info.count('\n')
+            y_offset = 20 if number_of_lines == 0 else (25 if number_of_lines == 1 else 30)
+            tip_y = y_coordinate - y_offset
+            widget_name.bind('<Enter>', lambda e: display_widget_info(
+                window, e, x_coordinate, tip_y, x_coordinate_hover_over, text_info), add='+')
+            widget_name.bind('<Leave>', lambda e: delete_display_widget_lb(window, e, text_info), add='+')
+            widget_name.bind('<Button>', lambda e: delete_display_widget_lb(window, e, text_info), add='+')
+        return
+
     # hover-over effect
     # background = 'red' sets the whole widget in red
     # background='#F0F0F0' sets the widget in grey
