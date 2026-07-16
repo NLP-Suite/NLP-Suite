@@ -135,3 +135,27 @@ def test_accepted_params_excludes_self_and_varargs():
     params = gtu._accepted_params(ctk.CTkButton)
     assert "self" not in params and "master" not in params
     assert "text" in params and "command" in params
+
+
+# ── the theme JSON actually loads and applies the accent (regression) ─────────
+# CTk's load_theme requires every top-level key to be a dict (it does theme[key].keys()); a stray
+# "_comment" string key raised AttributeError and silently fell back to CTk's blue theme, shipping
+# the whole suite in blue. This test loads the real file and asserts the accent red is applied.
+def test_theme_json_loads_and_applies_accent():
+    import json
+    import os
+
+    theme_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "src", "nlp_suite_theme.json")
+    assert os.path.isfile(theme_path), "nlp_suite_theme.json must ship in src/"
+
+    # Every top-level value must be a dict, or CTk's load_theme raises on theme[key].keys().
+    data = json.loads(open(theme_path, encoding="utf-8").read())
+    non_dict = [k for k, v in data.items() if not isinstance(v, dict)]
+    assert not non_dict, f"top-level theme keys must all be dicts; offenders: {non_dict}"
+
+    # Load for real through CTk and confirm the brand red reached CTkButton (not the blue fallback).
+    ctk.set_default_color_theme(theme_path)
+    from customtkinter import ThemeManager
+
+    button_fg = ThemeManager.theme["CTkButton"]["fg_color"]
+    assert gtu.NLP_SUITE_ACCENT in button_fg, f"expected accent {gtu.NLP_SUITE_ACCENT} in {button_fg}"

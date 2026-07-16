@@ -29,6 +29,7 @@ wires ``GUI_util`` / ``GUI_IO_util`` onto it.
 
 import inspect
 import tkinter as tk
+import warnings
 
 import customtkinter as ctk
 
@@ -363,17 +364,27 @@ def init_appearance(appearance_mode="system"):
     Order matters: the bundle ImageTk patch (``ctk_bundle_util.patch_ctk_image_for_bundle``) must
     run before any CTkImage is built, and the color theme must be set before any widget is created
     (CTk snapshots theme colors at construction). Falls back to CTk's stock ``blue`` theme if the
-    NLP Suite theme file can't be found, so a missing data file degrades appearance instead of
-    crashing the launch.
+    NLP Suite theme file can't be found or fails to load, so a bad/missing data file degrades
+    appearance instead of crashing the launch -- but the failure is printed, NOT swallowed silently,
+    because a silent fallback previously hid a malformed-theme bug (CTk rejects a top-level JSON key
+    whose value is not a dict, e.g. a ``"_comment"`` string) that shipped the whole suite in blue.
     """
     global _initialized
     if _initialized:
         return
     ctk_bundle_util.patch_ctk_image_for_bundle()
     path = _theme_path()
-    try:
-        ctk.set_default_color_theme(path if path else "blue")
-    except Exception:
+    if path:
+        try:
+            ctk.set_default_color_theme(path)
+        except Exception as exc:
+            warnings.warn(
+                f"failed to load NLP Suite theme '{path}' ({exc}); falling back to the stock 'blue' theme.",
+                stacklevel=2,
+            )
+            ctk.set_default_color_theme("blue")
+    else:
+        warnings.warn("nlp_suite_theme.json not found; falling back to the stock 'blue' theme.", stacklevel=2)
         ctk.set_default_color_theme("blue")
     try:
         ctk.set_appearance_mode(appearance_mode)

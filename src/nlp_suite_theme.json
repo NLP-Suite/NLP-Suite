@@ -1,5 +1,4 @@
 {
-  "_comment": "NLP Suite CustomTkinter color theme (CTk migration -- docs/CustomTkinter-Migration-Plan.md). Brand accent red #b10a0a (see GUI_util.py 'RGB red is #b10a0a'). Neutral grays are CTk's stock light/dark pairs; only the accent-bearing widgets are recolored red. Each color is a [light-mode, dark-mode] pair. Loaded via GUI_theme_util.init_appearance() -> customtkinter.set_default_color_theme().",
   "CTk": {
     "fg_color": ["gray92", "gray14"]
   },
