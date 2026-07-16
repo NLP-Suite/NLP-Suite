@@ -862,108 +862,12 @@ def export_df_to_excel(df, inputDir, outputDir, outputFilename, create_pkl_file=
     return df
 
 
-def create_sqlite_from_pcace(inputDir, outputDir):
-    """Export all loaded PC-ACE library DataFrames to a single SQLite database.
-
-    Parameters
-    ----------
-    inputDir : str
-        The PC-ACE input directory. The .sqlite file is saved here alongside the xlsx files.
-    outputDir : str
-        (Kept for backward compatibility but no longer used for database location.)
-
-    Returns
-    -------
-    str or None
-        Path to the created SQLite file, or None on failure.
-    """
-    import sqlite3
-
-    if not library:
-        # surface to the USER (a terminal print is invisible in a GUI tool): the caller only checks the
-        # return value, so without this the click silently does nothing.
-        mb.showwarning(title='Warning',
-                       message='No PC-ACE library loaded.\n\nPlease, load a PC-ACE database first, then try again.')
-        return None
-
-    head, tail = os.path.split(inputDir)
-    db_name = tail.replace(' ', '_') + '.sqlite'
-    db_path = os.path.join(inputDir, db_name)
-
-    # Remove existing database so we start fresh
-    if os.path.exists(db_path):
-        try:
-            os.remove(db_path)
-        except OSError as e:
-            print(f"  WARNING: Could not remove existing database: {e}")
-            return None
-
-    # Build a lookup of column renames from reading_list so we can ensure
-    # every table has the correct renamed columns even if the library entry
-    # was loaded from a stale pkl or without renames.
-    _rename_lookup = {}
-    for fn, rename_cols in reading_list:
-        if rename_cols:
-            base = os.path.splitext(fn)[0]
-            _rename_lookup[base] = rename_cols
-
-    conn = sqlite3.connect(db_path)
-    table_count = 0
-
-    for key, df in library.items():
-        # Skip non-DataFrame entries (empty dicts from missing tables)
-        if not isinstance(df, pd.DataFrame) or df.empty:
-            continue
-
-        # Build a clean table name from the library key
-        # e.g., 'setup_Complex.xlsx' → 'setup_Complex', 'NLP_data_xref_Simplex' → 'NLP_data_xref_Simplex'
-        table_name = key.replace('.xlsx', '').replace('-', '_').replace(' ', '_')
-
-        try:
-            # Ensure column renames from reading_list are applied.
-            # The library entry may have been loaded from pkl without renames.
-            base_key = key.replace('.xlsx', '')
-            export_df = df
-            if base_key in _rename_lookup:
-                # Only rename columns that still have the old names
-                applicable = {old: new for old, new in _rename_lookup[base_key].items()
-                              if old in df.columns and old != new}
-                if applicable:
-                    export_df = df.copy()
-                    export_df.rename(columns=applicable, inplace=True)
-
-            # Handle duplicate column names (e.g., two columns both renamed to ID_data_complex)
-            # by appending _2, _3, etc. — SQLite does not allow duplicate column names.
-            cols = list(export_df.columns)
-            if len(cols) != len(set(cols)):
-                seen = {}
-                new_cols = []
-                for c in cols:
-                    if c in seen:
-                        seen[c] += 1
-                        new_cols.append(f"{c}_{seen[c]}")
-                    else:
-                        seen[c] = 1
-                        new_cols.append(c)
-                if export_df is df:
-                    export_df = df.copy()
-                export_df.columns = new_cols
-
-            export_df.to_sql(name=table_name, con=conn, index=False, if_exists='replace')
-            table_count += 1
-        except Exception as e:
-            print(f"  WARNING: Could not export table '{table_name}': {e}")
-
-    conn.close()
-
-    if table_count == 0:
-        print("  WARNING: No tables were exported to SQLite.")
-        os.remove(db_path)
-        return None
-
-    print(f"\n  Exported {table_count} tables to SQLite database: {db_path}")
-    return db_path
-
+# NOTE: create_sqlite_from_pcace() was REMOVED here (2026-07-16). It exported the in-memory PC-ACE library
+# to SQLite so the analyzer could pre-build a database and hand it to DB_SQL. That is redundant: DB_SQL
+# builds the SQLite ITSELF from the xlsx/csv in the input directory, applying the SAME
+# DB_PCACE_data_analyzer_util.reading_list column renames (see _build_sqlite in DB_SQL_main), so both
+# paths produced the same database. Opening DB_SQL now just opens it -- it validates its own input.
+# Do not re-add: two copies of the PC-ACE->SQLite schema logic would drift apart.
 
 #######################################################################################################
 
