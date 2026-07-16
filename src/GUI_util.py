@@ -18,7 +18,19 @@ import IO_libraries_util
 #     sys.exit(0)
 
 import tkinter as tk
-window = tk.Tk()
+
+# CTk migration (docs/CustomTkinter-Migration-Plan.md, Phase 1): the shared root window becomes a
+# CustomTkinter root so the whole suite renders themed. init_appearance() MUST run first -- it
+# applies the Phase 0 bundle ImageTk patch and loads the NLP Suite color theme BEFORE any widget is
+# created (CTk snapshots theme colors at construction time). tk / ttk widgets still parent to this
+# root unchanged (CTk() is a tkinter.Tk subclass), so the rest of the migration proceeds
+# incrementally on top of this. Appearance is pinned to "light" for now: while the individual GUI
+# widgets are still plain tk/ttk, "system"/dark would render a jarring half-dark UI -- the
+# appearance-mode toggle lands once the widgets themselves are CTk (plan Phase 5).
+import customtkinter as ctk
+import GUI_theme_util
+GUI_theme_util.init_appearance("light")
+window = ctk.CTk()
 from sys import platform
 
 import os
