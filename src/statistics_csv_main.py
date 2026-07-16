@@ -318,11 +318,9 @@ csv_groupBy_field_var = tk.StringVar()
 input_csv_file_var = tk.StringVar()
 
 def get_input_csv_file(window_ref, title, fileType):
-    if input_csv_file_var.get() != '':
-        initialFolder = os.path.dirname(os.path.abspath(input_csv_file_var.get()))
-    else:
-        initialFolder = os.path.dirname(os.path.abspath(__file__))
-    filePath = tk.filedialog.askopenfilename(title=title, initialdir=initialFolder, filetypes=fileType)
+    # Offer the csv files discovered for the current corpus (newest first) with a Browse fallback,
+    # instead of dumping the user in the src folder (IO_files_util.pick_corpus_csv).
+    filePath = IO_files_util.pick_corpus_csv(window_ref, input_csv_file_var.get(), title, fileType)
     if len(filePath) > 0:
         nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(filePath, 'utf-8')
         if nRecords == 0:

@@ -1297,9 +1297,9 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 csv_file_var = tk.StringVar()
 
 def get_csv_file(window, title, fileType):
-    initialFolder = os.path.dirname(os.path.abspath(csv_file_var.get())) if csv_file_var.get() \
-        else os.path.dirname(os.path.abspath(__file__))
-    filePath = tk.filedialog.askopenfilename(title=title, initialdir=initialFolder, filetypes=fileType)
+    # Offer the csv files discovered for the current corpus (newest first) with a Browse fallback,
+    # instead of dumping the user in the src folder (IO_files_util.pick_corpus_csv).
+    filePath = IO_files_util.pick_corpus_csv(window, csv_file_var.get(), title, fileType)
     if len(filePath) > 0:
         nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(filePath, 'utf-8')
         if nRecords == 0:

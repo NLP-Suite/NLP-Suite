@@ -1360,3 +1360,25 @@ def get_corpus_CoNLL_csv(window, target_var, title='Select INPUT csv CoNLL table
             GUI_util.inputFilename.set(filePath)
     return filePath
     #         os.replace(quote_filename, target_filePath)
+
+
+def pick_corpus_csv(window, current_path='', title='Select INPUT csv file',
+                    fileType=(("csv files", "*.csv"),), path_filter=None, validator=None):
+    """Discovery-driven 'Select INPUT CSV file' picker for the general-csv GUIs (statistics on csv, DB_SQL):
+    list the csv files found for the current corpus (CoNLL_util.find_corpus_csv, newest first) with a Browse
+    fallback -- instead of dumping the user in the src folder. Returns the chosen path, or '' if the user
+    cancelled. Side-effect-free (the caller stores it and checks emptiness), so each GUI keeps its own var
+    wiring. path_filter/validator narrow the discovered list (forwarded to find_corpus_csv)."""
+    import CoNLL_util  # deferred: avoids the IO_files_util <-> CoNLL_util import cycle
+    matches = CoNLL_util.find_corpus_csv(GUI_util.output_dir_path.get(), GUI_util.inputFilename.get(),
+                                         GUI_util.input_main_dir_path.get(),
+                                         path_filter=path_filter, validator=validator)
+    chosen = select_path_from_list(window, matches,
+        'Select a csv file found for your corpus, or browse for another file:',
+        title='Available csv files', browse_filetypes=fileType, browse_title=title)
+    if chosen is None:                       # user cancelled
+        return ''
+    if chosen == '__BROWSE__':               # empty list -> browse ourselves, from the current file's folder
+        initialdir = os.path.dirname(os.path.abspath(current_path)) if current_path else ''
+        return filedialog.askopenfilename(title=title, initialdir=initialdir, filetypes=fileType) or ''
+    return chosen
