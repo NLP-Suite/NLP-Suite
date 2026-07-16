@@ -1240,8 +1240,17 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
 
     # No top help lines displayed when opening the license agreement GUI
     if config_filename!='license_config.csv':
-        intro = tk.Label(window, text=GUI_IO_util.introduction_main)
-        intro.pack()
+        # wraplength keeps the multi-line intro from blowing out the grid width (without it the very
+        # long lines make column 0 span far past the window's right edge under grid). Left-anchored
+        # (sticky='w') so it's stable regardless of the window width (which is still tuned to the old
+        # absolute layout -- window sizing is a later 2b iteration item).
+        intro = tk.Label(window, text=GUI_IO_util.introduction_main, wraplength=760, justify='left')
+        # CTk migration slice 2b: the body is grid-managed now, and Tk forbids mixing grid + pack on
+        # the same container, so the intro header goes in the reserved top grid row (row 0), spanning
+        # the full column band and centered. The logo stays .place'd in the top-left corner (place
+        # coexists with grid).
+        intro.grid(row=0, column=1, columnspan=len(GUI_IO_util._GRID_COLUMN_THRESHOLDS),
+                   padx=6, pady=(6, 4), sticky='w')
         display_logo()
         # although the release version appears in the top part of the GUI,
         #   it is run at the end otherwise a message will be displayed with an incomplete GUI

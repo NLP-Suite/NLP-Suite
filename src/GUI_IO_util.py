@@ -404,22 +404,53 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
 
 # when a widget has hover-over effects, the parameter no_hover_over_widget is set to False
 # widget_name is the name of the widget that needs to be placed in any of the GUI scripts as defined by tk.
+# CTk migration slice 2b: the legacy per-GUI absolute x-coordinate constants cluster into a handful
+# of left-to-right bands. Bucketing an x-value against these thresholds preserves the horizontal
+# ORDER of widgets on a row while dropping the exact pixel spacing (that is the point of the reflow:
+# grid columns are content-sized). Works for both the darwin and Windows constant blocks since their
+# magnitudes are comparable.
+_GRID_COLUMN_THRESHOLDS = (110, 250, 400, 560, 720, 900, 1020, 1120)
+# Top grid rows reserved for the header (intro text + logo); placeWidget content starts below.
+_GRID_HEADER_ROWS = 1
+
+
+def _x_to_column(x_coordinate):
+    """Map a legacy absolute x-coordinate to a semantic grid column index (0 = leftmost)."""
+    try:
+        x = float(x_coordinate)
+    except (TypeError, ValueError):
+        return 1
+    column = 0
+    for threshold in _GRID_COLUMN_THRESHOLDS:
+        if x >= threshold:
+            column += 1
+        else:
+            break
+    return column
+
+
 def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False, no_hover_over_widget=False, whole_widget_red=False, centerX=False, basic_y_coordinate=90, x_coordinate_hover_over = 90, text_info=''):
-    # print("widget_name",widget_name,"text_info",text_info)
-    #basic_y_coordinate = 90
-    y_step = 40 #the line-by-line increment on the GUI
+    # CTk migration slice 2b: lay widgets on a GRID instead of absolute .place(x, y=90+40*row).
+    # The legacy row counter (y_multiplier_integer) becomes the grid row; the x-coordinate becomes a
+    # semantic column. The call signature is unchanged so no GUI script needs editing. sameY keeps
+    # the row and advances to the x-derived column; centerX spans all columns, centered.
+    row = _GRID_HEADER_ROWS + int(round(float(y_multiplier_integer)))
     if centerX:
-        widget_name.place(relx=0.5, anchor=tk.CENTER, y=basic_y_coordinate + y_step*y_multiplier_integer)
+        widget_name.grid(row=row, column=0, columnspan=len(_GRID_COLUMN_THRESHOLDS) + 1,
+                         padx=6, pady=3, sticky='')
     else:
-        widget_name.place(x=x_coordinate, y=basic_y_coordinate + y_step*y_multiplier_integer)
-    # use the following command to change the color of any label to any value
-    # widget_name.config(foreground='red')
+        widget_name.grid(row=row, column=_x_to_column(x_coordinate), padx=6, pady=3, sticky='w')
 
-    # when a widget has hover-over effects, the parameter no_hover_over_widget is set to False
-    hover_over_widget(window,x_coordinate, basic_y_coordinate + y_step*y_multiplier_integer,widget_name, no_hover_over_widget, whole_widget_red, x_coordinate_hover_over, text_info)
+    # Tooltip: bind to the widget itself (GUI_theme_util.ToolTip) instead of the old
+    # coordinate-based hover_over_widget -- the absolute coordinates the latter positioned from are
+    # gone under grid. ToolTip works on both tk and CTk widgets. (Lazy import: avoids a module-level
+    # dependency of GUI_IO_util on GUI_theme_util.)
+    if not no_hover_over_widget and text_info != '':
+        import GUI_theme_util
+        GUI_theme_util.ToolTip(widget_name, text_info)
 
-    if sameY==False:
-        y_multiplier_integer = y_multiplier_integer+1
+    if not sameY:
+        y_multiplier_integer = y_multiplier_integer + 1
     return y_multiplier_integer
 
 basic_y_coordinate = 90
