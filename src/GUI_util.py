@@ -1238,6 +1238,10 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
     global select_inputFilename_button, select_input_main_dir_button, select_input_secondary_dir_button, select_output_dir_button
     # global config_input_output_alphabetic_options
 
+    # Fresh grid: clear the per-row column bookkeeping so this GUI's placeWidget calls start from an
+    # empty layout (state must not leak from any earlier build in the same process).
+    GUI_IO_util._reset_grid_layout()
+
     # No top help lines displayed when opening the license agreement GUI
     if config_filename!='license_config.csv':
         # wraplength keeps the multi-line intro from blowing out the grid width (without it the very
@@ -1249,7 +1253,7 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
         # the same container, so the intro header goes in the reserved top grid row (row 0), spanning
         # the full column band and centered. The logo stays .place'd in the top-left corner (place
         # coexists with grid).
-        intro.grid(row=0, column=1, columnspan=len(GUI_IO_util._GRID_COLUMN_THRESHOLDS),
+        intro.grid(row=0, column=1, columnspan=GUI_IO_util._GRID_TOTAL_COLUMNS,
                    padx=6, pady=(6, 4), sticky='w')
         display_logo()
         # although the release version appears in the top part of the GUI,

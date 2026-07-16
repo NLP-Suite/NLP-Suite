@@ -404,42 +404,68 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
 
 # when a widget has hover-over effects, the parameter no_hover_over_widget is set to False
 # widget_name is the name of the widget that needs to be placed in any of the GUI scripts as defined by tk.
-# CTk migration slice 2b: the legacy per-GUI absolute x-coordinate constants cluster into a handful
-# of left-to-right bands. Bucketing an x-value against these thresholds preserves the horizontal
-# ORDER of widgets on a row while dropping the exact pixel spacing (that is the point of the reflow:
-# grid columns are content-sized). Works for both the darwin and Windows constant blocks since their
-# magnitudes are comparable.
-_GRID_COLUMN_THRESHOLDS = (110, 250, 400, 560, 720, 900, 1020, 1120)
+# CTk migration slice 2b: lay widgets on a GRID instead of absolute .place(x, y=90+40*row).
+# A first cut mapped each widget's absolute x-coordinate to a *shared, fixed* column (bucketing x
+# against pixel thresholds). That broke badly: two widgets whose x-values fell in the same band
+# collided in one cell (stacked on top of each other), while sparsely-populated bands left wide
+# empty columns whose width still counted -- so content floated to the far right and, on busier
+# GUIs, spilled off the window's right edge. The absolute pixel positions simply don't survive the
+# translation to a content-sized grid.
+#
+# Instead we assign columns SEQUENTIALLY per row, in call order: column 0 is reserved for the
+# left-most "?HELP / read" zone (x below _HELP_ZONE_MAX), and every subsequent widget on that row
+# takes the next free column (1, 2, 3, ...). This preserves the horizontal ORDER the x-coordinates
+# encoded, guarantees no two widgets collide, and packs left with no stranded empty columns -- so
+# the grid's natural width stays within the window. The call signature is unchanged; no GUI script
+# needs editing.
+
+# Widgets whose legacy x is below this belong in the reserved left-most column (the "? HELP" /
+# "read" button that opens most rows). Both the darwin (help_button_x=70) and Windows constant
+# blocks put that button near x=70, well under this cutoff.
+_HELP_ZONE_MAX = 130
 # Top grid rows reserved for the header (intro text + logo); placeWidget content starts below.
 _GRID_HEADER_ROWS = 1
+# Generous fixed span for full-width (centerX) rows and the header intro. Grid columns with no
+# content collapse to zero width, so over-spanning is harmless.
+_GRID_TOTAL_COLUMNS = 16
+
+# Per-build layout state: next free content column for each grid row, and which rows have already
+# claimed the reserved help column. Reset at the start of each GUI build via _reset_grid_layout().
+_grid_row_next_col = {}
+_grid_row_help_used = set()
 
 
-def _x_to_column(x_coordinate):
-    """Map a legacy absolute x-coordinate to a semantic grid column index (0 = leftmost)."""
+def _reset_grid_layout():
+    """Clear per-row column bookkeeping so a freshly built GUI starts from an empty grid."""
+    _grid_row_next_col.clear()
+    _grid_row_help_used.clear()
+
+
+def _column_for(row, x_coordinate):
+    """Next grid column for a widget on `row`: column 0 for the first help-zone widget, otherwise
+    the next free column left-to-right. Preserves call order without ever colliding two widgets."""
     try:
         x = float(x_coordinate)
     except (TypeError, ValueError):
-        return 1
-    column = 0
-    for threshold in _GRID_COLUMN_THRESHOLDS:
-        if x >= threshold:
-            column += 1
-        else:
-            break
+        x = None
+    if x is not None and x < _HELP_ZONE_MAX and row not in _grid_row_help_used:
+        _grid_row_help_used.add(row)
+        return 0
+    column = _grid_row_next_col.get(row, 1)
+    _grid_row_next_col[row] = column + 1
     return column
 
 
 def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False, no_hover_over_widget=False, whole_widget_red=False, centerX=False, basic_y_coordinate=90, x_coordinate_hover_over = 90, text_info=''):
-    # CTk migration slice 2b: lay widgets on a GRID instead of absolute .place(x, y=90+40*row).
-    # The legacy row counter (y_multiplier_integer) becomes the grid row; the x-coordinate becomes a
-    # semantic column. The call signature is unchanged so no GUI script needs editing. sameY keeps
-    # the row and advances to the x-derived column; centerX spans all columns, centered.
+    # The legacy row counter (y_multiplier_integer) becomes the grid row; the x-coordinate now only
+    # decides ordering within that row (see the module note above). sameY keeps the same row so the
+    # next call lands in the next column over; centerX spans the full width, centered.
     row = _GRID_HEADER_ROWS + int(round(float(y_multiplier_integer)))
     if centerX:
-        widget_name.grid(row=row, column=0, columnspan=len(_GRID_COLUMN_THRESHOLDS) + 1,
+        widget_name.grid(row=row, column=0, columnspan=_GRID_TOTAL_COLUMNS,
                          padx=6, pady=3, sticky='')
     else:
-        widget_name.grid(row=row, column=_x_to_column(x_coordinate), padx=6, pady=3, sticky='w')
+        widget_name.grid(row=row, column=_column_for(row, x_coordinate), padx=6, pady=3, sticky='w')
 
     # Tooltip: bind to the widget itself (GUI_theme_util.ToolTip) instead of the old
     # coordinate-based hover_over_widget -- the absolute coordinates the latter positioned from are
