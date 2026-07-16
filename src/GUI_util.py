@@ -190,7 +190,7 @@ config_input_output_alphabetic_options=[]
 setup_IO_menu_var = tk.StringVar()
 # https://stackoverflow.com/questions/42222626/tkinter-option-menu-widget-add-command-lambda-does-not-produce-expected-command
 ###
-setup_IO_menu = tk.OptionMenu(window, setup_IO_menu_var, 'Default I/O configuration', 'Select any I/O csv config file')
+setup_IO_menu = GUI_theme_util.create_option_menu(window, variable=setup_IO_menu_var, values=['Default I/O configuration', 'Select any I/O csv config file'])
 
 IO_setup_var = tk.StringVar()
 IO_setup_brief_display_area = None
@@ -1327,8 +1327,8 @@ def display_setup_hover_over(y_multiplier_integer):
     hover_over_x_coordinate, hover_over_info = get_hover_over_info(package_display_area_value)
 
     # lay the setup widget
-    setup_menu_lb = tk.OptionMenu(window, setup_menu, "Setup preferences", "Setup NLP package (parsers & annotators) and corpus language",
-                                  "Setup external software")
+    setup_menu_lb = GUI_theme_util.create_option_menu(window, variable=setup_menu, values=["Setup preferences", "Setup NLP package (parsers & annotators) and corpus language",
+                                  "Setup external software"])
 
     if y_multiplier_integer_SV == 0:
         y_multiplier_integer_SV = y_multiplier_integer
@@ -1465,7 +1465,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
             not 'NLP_menu_main' in scriptName and \
             not "NLP_setup_" in scriptName:
         #open output csv files widget defined above since it is used earlier
-        open_csv_output_label = tk.Checkbutton(window, variable=open_csv_output_checkbox, onvalue=1, offvalue=0, command=lambda: trace_checkbox(open_csv_output_label, open_csv_output_checkbox, "Open output files", "Do NOT open output files"))
+        open_csv_output_label = GUI_theme_util.create_checkbox(window, variable=open_csv_output_checkbox, onvalue=1, offvalue=0, command=lambda: trace_checkbox(open_csv_output_label, open_csv_output_checkbox, "Open output files", "Do NOT open output files"))
         open_csv_output_label.configure(text="Open output files")
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                        y_multiplier_integer,
@@ -1491,7 +1491,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         charts_package_options = ['No charts','Excel','Python Plotly (dynamic)','Python Plotly (static)']
         # TODO EXCEL widget (same as open reminders)
         charts_package_options_widget.set('Excel')
-        charts_package_menu_lb = tk.OptionMenu(window,charts_package_options_widget,*charts_package_options)
+        charts_package_menu_lb = GUI_theme_util.create_option_menu(window, variable=charts_package_options_widget, values=charts_package_options)
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,
                                                        y_multiplier_integer,
                                                        charts_package_menu_lb,
@@ -1509,7 +1509,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                    'Comparative bar charts (Open GUI)', 'Geographic maps (Open GUI)', 'Gephi (Open GUI)', 'Sankey flowchart (Open GUI)', 'Sunburst chart (Open GUI)',
                                    'Time mapper (Open GUI)', 'Treemap chart (Open GUI)', 'Wordcloud (Open GUI)']
         charts_type_options_widget.set('Bar chart')
-        charts_type_menu_lb = tk.OptionMenu(window,charts_type_options_widget,*charts_type_options)
+        charts_type_menu_lb = GUI_theme_util.create_option_menu(window, variable=charts_type_options_widget, values=charts_type_options)
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate,
                                                        y_multiplier_integer,
@@ -1520,7 +1520,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
         data_transformation_options=['No transformation','Normalize by document size', 'Ln','Log','Square rooot','Z score']
         data_transformation_options_widget.set('No transformation')
-        data_transformation_menu_lb = tk.OptionMenu(window,data_transformation_options_widget,*data_transformation_options)
+        data_transformation_menu_lb = GUI_theme_util.create_option_menu(window, variable=data_transformation_options_widget, values=data_transformation_options)
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,
                                                        y_multiplier_integer,
@@ -1546,7 +1546,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         # if not 'data_manipulation_main.py' in scriptName and not 'data_visualization_1_main.py' in scriptName :
         data_tools_options = ['Data/corpus sampling', 'Data manipulation', 'Data statistics', 'Data visualization']
         data_tools_options_widget.set('Data tools')
-        data_tools_menu_lb = tk.OptionMenu(window, data_tools_options_widget, *data_tools_options)
+        data_tools_menu_lb = GUI_theme_util.create_option_menu(window, variable=data_tools_options_widget, values=data_tools_options)
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate,
                                                        y_multiplier_integer,
@@ -1591,13 +1591,11 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     videos_dropdown_field.set('Watch videos')
     if len(videos_lookup)==1:
         if videos_options == "No videos available":
-            videos_menu_lb = tk.OptionMenu(window, videos_dropdown_field, videos_options)
+            videos_menu_lb = GUI_theme_util.create_option_menu(window, variable=videos_dropdown_field, values=[videos_options])
         else:
-            videos_menu_lb = tk.OptionMenu(window, videos_dropdown_field, videos_options)
-            videos_menu_lb.configure(foreground="red")
+            videos_menu_lb = GUI_theme_util.create_option_menu(window, variable=videos_dropdown_field, values=[videos_options])
     else:
-        videos_menu_lb = tk.OptionMenu(window,videos_dropdown_field,*videos_options)
-        videos_menu_lb.configure(foreground="red")
+        videos_menu_lb = GUI_theme_util.create_option_menu(window, variable=videos_dropdown_field, values=videos_options)
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.watch_videos_x_coordinate,
                                                    y_multiplier_integer,
@@ -1616,13 +1614,11 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     tips_dropdown_field.set('Open TIPS files')
     if len(TIPS_lookup)==1:
         if TIPS_options == "No TIPS available":
-            tips_menu_lb = tk.OptionMenu(window, tips_dropdown_field, TIPS_options)
+            tips_menu_lb = GUI_theme_util.create_option_menu(window, variable=tips_dropdown_field, values=[TIPS_options])
         else:
-            tips_menu_lb = tk.OptionMenu(window, tips_dropdown_field, TIPS_options)
-            tips_menu_lb.configure(foreground="red")
+            tips_menu_lb = GUI_theme_util.create_option_menu(window, variable=tips_dropdown_field, values=[TIPS_options])
     else:
-        tips_menu_lb = tk.OptionMenu(window,tips_dropdown_field,*TIPS_options)
-        tips_menu_lb.configure(foreground="red")
+        tips_menu_lb = GUI_theme_util.create_option_menu(window, variable=tips_dropdown_field, values=TIPS_options)
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate,
                                                    y_multiplier_integer,
@@ -1652,19 +1648,17 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     # reminders content for specific GUIs are set in the csv file reminders
     # called from any GUI
     reminders_dropdown_field.set('Open reminders')
-    reminders_menu_lb = tk.OptionMenu(window,  reminders_dropdown_field,"No Reminders available")
+    reminders_menu_lb = GUI_theme_util.create_option_menu(window, variable=reminders_dropdown_field, values=["No Reminders available"])
 
     if len(reminder_options)==0:
         reminder_options = ["No Reminders available"]
     if len(reminder_options)==0 or len(reminder_options)==1:
         if reminder_options == ["No Reminders available"]:
-            reminders_menu_lb = tk.OptionMenu(window, reminders_dropdown_field, *reminder_options)
+            reminders_menu_lb = GUI_theme_util.create_option_menu(window, variable=reminders_dropdown_field, values=reminder_options)
         else:
-            reminders_menu_lb = tk.OptionMenu(window, reminders_dropdown_field, *reminder_options)
-            reminders_menu_lb.configure(foreground="red")
+            reminders_menu_lb = GUI_theme_util.create_option_menu(window, variable=reminders_dropdown_field, values=reminder_options)
     else:
-        reminders_menu_lb = tk.OptionMenu(window,reminders_dropdown_field,*reminder_options)
-        reminders_menu_lb.configure(foreground="red")
+        reminders_menu_lb = GUI_theme_util.create_option_menu(window, variable=reminders_dropdown_field, values=reminder_options)
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate,
                                                    y_multiplier_integer,
