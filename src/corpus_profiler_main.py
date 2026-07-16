@@ -47,11 +47,11 @@ def run():
         export_json_var, memory_var, document_length_var, limit_sentence_length_var = \
         config_util.read_NLP_package_language_config()
 
-    # everything goes under a single corpus_profile subdirectory. silent=False so, if a prior profile
-    # folder exists, the user is asked before it is replaced (re-running re-does every ticked analysis,
-    # which can take a very long time on a large corpus). Under NLP_SILENT the confirm auto-proceeds.
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
-                                                       label='corpus_profile', silent=False)
+    # everything goes under a single corpus_profile subdirectory. If a prior folder exists AND holds results
+    # the profiler can REUSE (a completed CoreNLP pass and/or a Stanza POS table -- HOURS to recompute), the
+    # user is first offered to KEEP & reuse them in place rather than the blanket wipe (so they needn't hunt
+    # for the folder to preserve); otherwise the standard 'will be replaced?' confirm. NLP_SILENT auto-proceeds.
+    outputDir = corpus_profiler_util.setup_profile_output_dir(GUI_util.window, inputFilename, inputDir, outputDir)
     if outputDir == '':   # user declined to replace the existing profile folder
         return
 
@@ -91,16 +91,19 @@ def run():
     # gracefully (Stanza NER; those features skipped) with the summary telling the user how to install
     # CoreNLP. So there is no config-based pre-flight that drops analyses or blocks the run.
 
-    # up-front runtime heads-up: the CoreNLP-backed categories run Java over the whole corpus and can
-    # take a very long time. Counts and Vocabulary are fast. Let the user opt into the long run knowingly.
+    # up-front runtime heads-up: the CoreNLP-backed work runs Java over the whole corpus and can take a very
+    # long time. The Gender/Dialogue/Dates row (entities category) is the CoreNLP-only one; Narrative SVO is
+    # CoreNLP only under a CoreNLP config. Counts (incl. NER via the configured parser), Vocabulary, Syntax
+    # and Semantics are fast (Stanza/BERT, no Java). Let the user opt into the long run knowingly.
     heavy = [aid for aid in selected
-             if corpus_profiler_util.REGISTRY[aid]['category'] in ('entities', 'semantics', 'narrative', 'characters', 'syntax')
+             if corpus_profiler_util.REGISTRY[aid]['category'] in ('entities', 'narrative')
              and corpus_profiler_util.REGISTRY[aid]['kind'] == 'batch']
     if heavy:
         if not mb.askyesno('This may take a while',
-                           "The Entities and/or Semantics analyses run Stanford CoreNLP (Java) over your ENTIRE "
-                           "corpus. On a large corpus this can take a long time — potentially hours.\n\n"
-                           "Counts and Vocabulary are fast by comparison.\n\nContinue with the full run?",
+                           "The Gender / Dialogue / Dates analysis runs Stanford CoreNLP (Java) over your ENTIRE "
+                           "corpus and can take a long time — potentially hours on a large corpus.\n\n"
+                           "Counts (including entities/NER), Vocabulary, Syntax and Semantics are fast by "
+                           "comparison.\n\nContinue with the full run?",
                            default='yes'):  # silent/unattended mode proceeds
             return
 
@@ -289,7 +292,7 @@ _dropdown_x = GUI_IO_util.open_setup_x_coordinate  # rough; nudge to taste
 
 # 1. Counts & measures
 counts_var.set(1)
-counts_checkbox = tk.Checkbutton(window, text='How big / how varied? (Counts, measures, and vocabulary)',
+counts_checkbox = tk.Checkbutton(window, text='How big / how varied? (Counts, measures, vocabulary, and entities - people, organizations, locations)',
                                  variable=counts_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, counts_checkbox, True)
@@ -307,7 +310,10 @@ counts_menu = tk.OptionMenu(window, counts_menu_var, '*',
                             '     Unusual words (via NLTK)',
                             '     Abstract / concrete vocabulary',
                             '     Iconic vocabulary',
-                            '     Capital-initial words')
+                            '     Capital-initial words',
+                            '--- Entities',
+                            '     People, organizations, locations (NER)'
+                            )
 y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, counts_menu, False)
 
 # # 2. Vocabulary
@@ -332,13 +338,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier
 
 # 3. Entities (English + Stanford CoreNLP)
 entities_var.set(1)
-entities_checkbox = tk.Checkbutton(window, text='Who, what, where, when  (Entities, via CoreNLP)',
+entities_checkbox = tk.Checkbutton(window, text='Who said what, and when? (gender, dialogue, dates) (via CoreNLP)',
                                    variable=entities_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, entities_checkbox, True)
 entities_menu_var.set('*')
 entities_menu = tk.OptionMenu(window, entities_menu_var, '*',
-                              'People, organizations, locations, gender, dates, dialogue (CoreNLP)')
+                              'Gender, dates, dialogue (via CoreNLP)')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, entities_menu, False)
 
 # 3b. Spatial — geocodable & symbolic space (network-heavy: pointers to the GIS / Symbolic Space GUIs)
@@ -454,7 +460,12 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         "(NLTK), abstract/concrete, iconic vocabulary, proper nouns, language detection. Select '*' to run all; each "
         "runs with defaults.\n\nThis is a curated subset. For the FULL set of ~20 vocabulary & style options "
         "(short/vowel words, punctuation-as-pathos, objectivity/subjectivity, repetition, unigram variants, and more), "
-        "open the dedicated STYLE ANALYSIS GUI.""n-grams, sentence & line length. Select '*' to run all, or pick one. Runs with defaults.")
+        "open the dedicated STYLE ANALYSIS GUI.\n\n"
+        "ENTITIES — people, organizations and locations (Named-Entity Recognition). Extracted with the parser "
+        "you set as your DEFAULT NLP package (Stanza, spaCy or Stanford CoreNLP); this always runs — no Java "
+        "required unless CoreNLP is your chosen parser. Gender, dialogue and dates are separate (the 'Who said "
+        "what, and when?' row — those need CoreNLP + Java).\n\n"
+        "n-grams, sentence & line length. Select '*' to run all, or pick one. Runs with defaults.")
     # y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
     #     "VOCABULARY — a SNAPSHOT of the corpus's lexical character: vocabulary richness (TTR / Yule's K), lexical "
     #     "diversity (MTLD / vocd-D), word frequency (Zipf), TF-IDF distinctive words, hapax legomena, unusual words "
@@ -463,10 +474,13 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     #     "(short/vowel words, punctuation-as-pathos, objectivity/subjectivity, repetition, unigram variants, and more), "
     #     "open the dedicated STYLE ANALYSIS GUI.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-        "ENTITIES — who, what, where, when. A single Stanford CoreNLP pass extracts people & organizations, "
-        "locations, gender, dates & time, and dialogue/quotes. ENGLISH + Stanford CoreNLP only — because gender, "
-        "dialogue/quotes and normalized dates are available ONLY via CoreNLP, the whole pass uses it (NER for "
-        "people/organizations/locations is also available via Stanza/spaCy in the dedicated NER GUI).")
+        "GENDER, DIALOGUE & DATES (Stanford CoreNLP). Three enrichments that exist ONLY in CoreNLP: character "
+        "GENDER (coreference-based), speaker-attributed DIALOGUE/QUOTES (who said what), and normalized DATES & "
+        "TIMES (SUTime — 'the next morning' resolved to an actual date). This row RUNS only when CoreNLP + Java "
+        "are installed, and uses CoreNLP whenever present REGARDLESS of your default parser, because there is no "
+        "Stanza/spaCy equivalent. If CoreNLP/Java are absent it is skipped and the summary tells you how to "
+        "enable it — your people/organizations/locations are unaffected: those (NER) are extracted in the "
+        "Counts row above with the parser you selected as the default NLP package (Stanza, spaCy or CoreNLP).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
         "WHERE DOES IT ALL HAPPEN? — the space of the corpus, in two senses. GEOCODABLE space now RUNS in the "
         "batch as a quick snapshot: the place names your text mentions (from NER) are geocoded and drawn as a "

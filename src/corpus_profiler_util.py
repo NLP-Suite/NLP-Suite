@@ -27,11 +27,11 @@ CATEGORY_ORDER = ['counts', 'syntax', 'semantics',
                   'topics', 'entities', 'spatial', 'narrative', 'sentiment', 'characters']
 
 CATEGORY_TITLE = {
-    'counts':    'How big / how varied?  (Counts, measures & vocabulary)',
+    'counts':    'How big / how varied?  (Counts, measures, vocabulary & entities)',
     'syntax':    'Grammar & structure — parts of speech  (Syntax)',
     'semantics': 'What do the words mean?  (Semantics)',
     'topics':    'What is it about?  (Topics)',
-    'entities':  'Who, what, where, when  (Entities)',
+    'entities':  'Who said what, and when?  (gender, dialogue, dates — CoreNLP)',
     'spatial':   'Where does it all happen?  (geocodable and symbolic space)',
     'narrative': 'Who did what to whom?  (Narrative)',
     'sentiment': 'How does it feel?  (Sentiment)',
@@ -153,35 +153,64 @@ def _run_word_frequency(c):
 
 
 # ---- entities (English + Stanford CoreNLP) ------------------------------------------------
-def _run_entities_all(c):
-    # NER (people/orgs/locations), gender, dialogue/quotes and normalized dates. Read from the shared
-    # combined-CoreNLP cache if the parse phase produced it; otherwise run our own CoreNLP pass.
-    picked = _cache_pick_any(c.get('_corenlp_files'),
-                             'corenlp_ner', 'corenlp_gender', 'corenlp_quote', 'corenlp_normalized-date')
-    if picked:
-        print('>>> Entities: used the shared CoreNLP cache (%d files) -- no re-parse' % len(picked))
-        return picked
-    if not _corenlp_available():
-        # CoreNLP + Java are NOT installed: run NER (people/organizations/locations) through Stanza --
-        # no Java. Gender, dialogue/quotes and normalized dates are CoreNLP-ONLY, so they are skipped
-        # (the summary tells the user they need CoreNLP + Java, and how to install). NOTE: this is
-        # decided by AVAILABILITY, not the configured parser -- if CoreNLP is installed we use it for
-        # these even under a Stanza/spaCy config, since there is no Python alternative.
-        import Stanza_util
-        print('>>> Entities: Stanza NER (CoreNLP not installed); gender/dialogue/dates skipped (CoreNLP-only)')
-        out = Stanza_util.Stanza_annotate(
+def _run_ner(c):
+    """People, organizations, locations (NER) via the CONFIGURED parser -- CoreNLP only when the default
+    NLP package IS CoreNLP (and installed), otherwise Stanza (default) or spaCy. No Java unless CoreNLP is
+    the chosen parser. NER is parser-agnostic, so the profile's entities match the parser the user selected
+    everywhere else in the Suite. Gender/dialogue/dates are NOT produced here (see _run_gender_dialogue_dates)."""
+    # Reuse the shared combined-CoreNLP cache ONLY under a CoreNLP config -- under Stanza/spaCy we honor the
+    # configured parser even if a CoreNLP enrichment pass also ran (it needs NER internally for coref/quote).
+    if _is_corenlp_package(c.get('package')) and _corenlp_available():
+        picked = _cache_pick_any(c.get('_corenlp_files'), 'corenlp_ner')
+        if picked:
+            print('>>> Entities/NER: used the shared CoreNLP cache -- no re-parse')
+            return picked
+        import Stanford_CoreNLP_util
+        NER_list = ['PERSON', 'ORGANIZATION', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
+        print('>>> Entities/NER: Stanford CoreNLP (configured parser)')
+        out = Stanford_CoreNLP_util.CoreNLP_annotate(
             c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
             c['chartPackage'], c['dataTransformation'], ['NER'], False,
-            [c['language']], c['memory_var'], c['document_length_var'], c['limit_sentence_length_var'])
-        return list(dict.fromkeys(_files(out)))   # Stanza returns the file once per doc; dedupe
+            c['language'], c['export_json_var'], c['memory_var'],
+            c['document_length_var'], c['limit_sentence_length_var'], NERs=NER_list)
+        return _files(out)
+    if 'spacy' in str(c.get('package', '')).lower():
+        import spaCy_util
+        print('>>> Entities/NER: spaCy (configured parser)')
+        out = spaCy_util.spaCy_annotate(
+            c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
+            c['chartPackage'], c['dataTransformation'], 'NER', False,
+            c['language'], c['memory_var'], c['document_length_var'], c['limit_sentence_length_var'])
+        return list(dict.fromkeys(_files(out)))
+    import Stanza_util
+    print('>>> Entities/NER: Stanza (configured parser) -- no Java')
+    out = Stanza_util.Stanza_annotate(
+        c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
+        c['chartPackage'], c['dataTransformation'], ['NER'], False,
+        [c['language']], c['memory_var'], c['document_length_var'], c['limit_sentence_length_var'])
+    return list(dict.fromkeys(_files(out)))   # Stanza returns the file once per doc; dedupe
+
+
+def _run_gender_dialogue_dates(c):
+    """Gender (coreference-based), dialogue/quotes and normalized dates -- the CoreNLP-ONLY enrichments (no
+    Stanza/spaCy equivalent). Runs whenever CoreNLP + Java are installed, REGARDLESS of the configured parser
+    (there is no Python alternative); returns [] with a note when they are not, and the summary tells the user
+    how to enable them. Reads from the shared combined-CoreNLP cache if the parse phase produced it."""
+    picked = _cache_pick_any(c.get('_corenlp_files'),
+                             'corenlp_gender', 'corenlp_quote', 'corenlp_normalized-date')
+    if picked:
+        print('>>> Gender/dialogue/dates: used the shared CoreNLP cache (%d files) -- no re-parse' % len(picked))
+        return picked
+    if not _corenlp_available():
+        print('>>> Gender/dialogue/dates: SKIPPED -- CoreNLP + Java not installed (CoreNLP-only features)')
+        return []
     import Stanford_CoreNLP_util
-    NER_list = ['PERSON', 'ORGANIZATION', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
     out = Stanford_CoreNLP_util.CoreNLP_annotate(
         c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
         c['chartPackage'], c['dataTransformation'],
-        ['NER', 'gender', 'quote', 'normalized-date'], False,
+        ['gender', 'quote', 'normalized-date'], False,
         c['language'], c['export_json_var'], c['memory_var'],
-        c['document_length_var'], c['limit_sentence_length_var'], NERs=NER_list)
+        c['document_length_var'], c['limit_sentence_length_var'])
     return _files(out)
 
 
@@ -606,9 +635,14 @@ REGISTRY = {
                              label='Capital-initial words'),
     'language_detection': dict(category='counts', kind='batch', run=_run_language_detection,
                              label='Language detection'),
-    # --- entities ---
-    'entities_all':     dict(category='entities', kind='batch', run=_run_entities_all,
-                             label='People, organizations, locations, gender, dates, dialogue (CoreNLP)'),
+    # NER lives in COUNTS: people/organizations/locations are a basic descriptive extraction, run with the
+    # user's CONFIGURED parser (Stanza/spaCy/CoreNLP) -- no Java unless CoreNLP is the chosen parser.
+    'ner':              dict(category='counts', kind='batch', run=_run_ner,
+                             label='People, organizations, locations (NER)'),
+    # --- entities: the CoreNLP-ONLY enrichments (gender, dialogue/quotes, normalized dates). Availability-
+    #     driven -- uses CoreNLP whenever installed, regardless of the configured parser; skipped otherwise. ---
+    'gender_dialogue_dates': dict(category='entities', kind='batch', run=_run_gender_dialogue_dates,
+                             label='Gender, dates, dialogue (via CoreNLP)'),
     # --- spatial: a quick geocodable-space snapshot RUNS in batch (proportional-symbol map; Google if a
     #     geocode key is configured, else Nominatim/folium). Full control (geocoder choice, API key,
     #     Google Earth / folium / distances, manual review) stays in the GIS GUI; symbolic space its GUI. ---
@@ -702,11 +736,12 @@ def _cache_pick_any(files, *substrs):
 
 def _find_existing_corenlp_files(ctx):
     """Return CoreNLP output files already in the output dir (from a prior/killed run on THIS corpus),
-    so a restart can skip the slow combined CoreNLP pass (NER/gender/quote/date -- HOURS on a large
-    corpus). [] unless BOTH an NER output and a gender output are present (the pass's signature
-    outputs), so a partial/failed prior pass isn't reused. Like the POS reuse, these appear when the
-    pass completes -- a present, valid set means it finished; if you kill DURING the CoreNLP pass,
-    delete its output subdirs before re-running."""
+    so a restart can skip the slow combined CoreNLP enrichment pass (gender/quote/date -- HOURS on a large
+    corpus). [] unless BOTH a gender output and a normalized-date output are present -- the enrichment pass's
+    signature outputs, always produced together -- so a partial/failed prior pass isn't reused. (NER is NOT
+    part of the signature: under a Stanza/spaCy config it's parsed separately and this pass has no NER file.)
+    Like the POS reuse, these appear when the pass completes; if you kill DURING it, delete its output
+    subdirs before re-running."""
     outdir = ctx.get('outputDir') or ''
     if not outdir or not os.path.isdir(outdir):
         return []
@@ -716,10 +751,61 @@ def _find_existing_corenlp_files(ctx):
         b = os.path.basename(p).lower()
         if 'corenlp' in b and any(k in b for k in ('ner', 'gender', 'quote', 'normalized-date', 'svo')):
             found.append(p)
-    has_ner = any('corenlp' in os.path.basename(f).lower() and 'ner' in os.path.basename(f).lower()
-                  for f in found)
     has_gender = any('gender' in os.path.basename(f).lower() for f in found)
-    return found if (has_ner and has_gender) else []
+    has_date = any('normalized-date' in os.path.basename(f).lower() for f in found)
+    return found if (has_gender and has_date) else []
+
+
+def _reusable_artifacts(target_dir):
+    """Human-readable labels for the expensive-to-recompute results already in `target_dir` that the profiler
+    can REUSE on a re-run: a completed CoreNLP enrichment pass (gender + normalized-date) and/or a Stanza POS
+    table. [] when none are present (so the caller falls back to the plain replace prompt)."""
+    ctx = {'outputDir': target_dir}
+    labels = []
+    try:
+        if _find_existing_corenlp_files(ctx):
+            labels.append('a completed Stanford CoreNLP pass (gender / dialogue / dates) — hours to recompute')
+    except Exception:
+        pass
+    try:
+        if _find_existing_pos_csv(ctx):
+            labels.append('a Stanza parts-of-speech table — up to ~an hour to recompute')
+    except Exception:
+        pass
+    return labels
+
+
+def setup_profile_output_dir(window, inputFilename, inputDir, outputDir):
+    """Create the profiler's corpus_profile_<name> output dir. If a prior folder exists AND holds results the
+    profiler can REUSE (a completed CoreNLP enrichment pass and/or a Stanza POS table -- each HOURS to recompute
+    on a large corpus), first offer to KEEP them and reuse IN PLACE instead of the blanket wipe -- so the user
+    needn't hunt for the right folder to preserve. Declining -> the standard 'will be replaced?' confirm (which
+    still allows abort). Returns the dir path, or '' if the user declined. (Reuse-in-place: each analysis still
+    refreshes its own outputs as it runs; leftover files from analyses no longer selected simply remain.)"""
+    import IO_files_util
+    import tkinter.messagebox as mb   # resolves the NLP_SILENT patch at call time, like the rest of the Suite
+    # mirror make_output_subdirectory's exact naming for label='corpus_profile' so we probe the SAME folder
+    if inputFilename:
+        target = os.path.join(outputDir, 'corpus_profile_' + os.path.basename(inputFilename)[0:-4])
+    elif inputDir:
+        target = os.path.join(outputDir, 'corpus_profile_' + os.path.basename(inputDir))
+    else:
+        target = os.path.join(outputDir, 'corpus_profile')
+    if os.path.isdir(target):
+        reusable = _reusable_artifacts(target)
+        if reusable and mb.askyesno(
+                'Reuse existing results?',
+                'This profile folder already exists and contains results the Corpus Profiler can REUSE, '
+                'skipping potentially HOURS of re-parsing:\n\n  - ' + '\n  - '.join(reusable) + '\n\n'
+                + target + '\n\nKeep these and reuse them?\n\n'
+                'Yes = keep & reuse (each analysis still refreshes its own outputs as it runs)\n'
+                'No = replace the whole folder and recompute everything',
+                default='yes'):
+            print('>>> Corpus Profiler: reusing the existing profile folder -- kept %s' % '; '.join(reusable))
+            return target
+    # nothing reusable, or the user chose to replace: standard create-with-replace-confirm (allows abort)
+    return IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                                                  label='corpus_profile', silent=False)
 
 
 def _prime_parse_cache(ctx, selected):
@@ -727,19 +813,26 @@ def _prime_parse_cache(ctx, selected):
     ctx['_ner_track_files'] = None
     sel = set(selected)
 
-    # one combined CoreNLP pass covering every selected CoreNLP dimension. Entities (gender/dialogue/
-    # dates) and Semantics POS are added whenever CoreNLP + Java are INSTALLED -- we auto-use CoreNLP
-    # for the CoreNLP-only features even under a Stanza/spaCy config, since there's no Python
-    # alternative. If CoreNLP isn't installed, none are added and each runner degrades on its own
-    # (entities -> Stanza NER; semantics -> skipped; the summary tells the user how to install CoreNLP).
-    # SVO rides this pass ONLY when the user actually CONFIGURED CoreNLP (SVO is parser-agnostic, so it
-    # otherwise honors the Stanza/spaCy config -- no Java).
+    # one combined CoreNLP pass covering every selected CoreNLP dimension. The gender/dialogue/dates
+    # enrichments are added whenever CoreNLP + Java are INSTALLED -- auto-used even under a Stanza/spaCy
+    # config, since there's no Python alternative. NER, by contrast, honors the CONFIGURED parser: it rides
+    # this pass ONLY when the enrichments run (coref/quote need NER internally, so extracting it is free and
+    # keeps the reuse signature) OR when CoreNLP is the chosen parser; under a Stanza/spaCy config _run_ner
+    # parses NER itself and ignores this pass's NER. SVO likewise rides only under a CoreNLP config. If
+    # CoreNLP isn't installed, nothing is added and each runner degrades on its own (NER -> configured
+    # parser; gender/dialogue/dates -> skipped; the summary tells the user how to install CoreNLP).
     annotators = []
     _corenlp = _corenlp_available()
+    _default_is_corenlp = _is_corenlp_package(ctx.get('package'))
     if _corenlp:
-        if 'entities_all' in sel:
-            annotators += ['NER', 'gender', 'quote', 'normalized-date']
-        if 'narrative_svo' in sel and _is_corenlp_package(ctx.get('package')):
+        if 'gender_dialogue_dates' in sel:
+            annotators += ['gender', 'quote', 'normalized-date']
+        # NER rides this pass ONLY when CoreNLP is the CONFIGURED parser (it's then the intended NER source,
+        # a free rider on the enrichment parse). Under a Stanza/spaCy config, _run_ner parses NER with that
+        # parser instead, so we do NOT run CoreNLP's NER annotator here -- entities stay on the chosen parser.
+        if 'ner' in sel and _default_is_corenlp:
+            annotators = ['NER'] + annotators
+        if 'narrative_svo' in sel and _default_is_corenlp:
             annotators += ['SVO']
         # NOTE: Semantics POS is NOT taken from CoreNLP anymore -- it derives its noun/verb lemma lists
         # from the shared Stanza POS pass below, so it works with no Java regardless of CoreNLP.
@@ -985,7 +1078,8 @@ _CATEGORY_LEAD = {
                   'WordNet classes, VerbNet verb classes and FrameNet frames — and the most frequent words '
                   'were embedded with BERT into a 2-D t-SNE semantic map.',
     'topics':     'What is the corpus about? Topics were surveyed.',
-    'entities':   'Who, what, where and when? People, organizations, locations, gender and dates were extracted.',
+    'entities':   'Who said what, and when? Gender, speaker-attributed dialogue/quotes and normalized dates '
+                  'were extracted (Stanford CoreNLP). People, organizations and locations appear under Counts.',
     'spatial':    'Where does it all happen? Both geocodable and symbolic (narrative) space were considered.',
     'narrative':  'Who did what to whom? Subject-Verb-Object triples and semantic roles were derived.',
     'sentiment':  'How does the corpus feel? Sentiment was scored with a neural model.',
@@ -1141,8 +1235,9 @@ def _interp_tfidf_similarity(files):
     return [line]
 
 
-def _interp_entities(files):
-    import pandas as pd
+def _interp_ner(files):
+    # People/organizations/locations (NER), extracted with the configured parser. Reported under COUNTS
+    # (NER is a basic descriptive extraction now, decoupled from the CoreNLP-only enrichments).
     findings = []
     f = _find(files, 'ner_all_ner', exclude=('bydoc', 'chart', 'group', 'no_hyperlinks', 'stats'))
     if not f:
@@ -1150,18 +1245,27 @@ def _interp_entities(files):
         # column check below gates it, so a wrongly-picked file simply yields no findings).
         f = _find(files, '_ner', exclude=('bydoc', 'chart', 'group', 'no_hyperlinks', 'stats',
                                           'gender', 'svo', 'lemma'))
-    if f:
-        df = _read_csv(f)
-        if df is not None and 'NER' in df.columns and 'Word' in df.columns:
-            tags = df['NER'].astype(str).value_counts()
-            if tags.sum() > 0:
-                top_tags = ', '.join('%s (%s)' % (t, _thousands(c)) for t, c in tags.head(5).items())
-                findings.append('The parser tagged %s entity mentions, led by %s.'
-                                % (_thousands(tags.sum()), top_tags))
-                named = df[~df['Word'].astype(str).str.lower().isin(_PRONOUNS)]['Word'].astype(str).value_counts()
-                if len(named):
-                    names = ', '.join('%s (%d)' % (w, int(c)) for w, c in named.head(6).items())
-                    findings.append('Setting pronouns aside, the most frequently named entities are %s.' % names)
+    if not f:
+        return findings
+    df = _read_csv(f)
+    if df is not None and 'NER' in df.columns and 'Word' in df.columns:
+        tags = df['NER'].astype(str).value_counts()
+        if tags.sum() > 0:
+            top_tags = ', '.join('%s (%s)' % (t, _thousands(c)) for t, c in tags.head(5).items())
+            findings.append('The parser tagged %s entity mentions, led by %s.'
+                            % (_thousands(tags.sum()), top_tags))
+            named = df[~df['Word'].astype(str).str.lower().isin(_PRONOUNS)]['Word'].astype(str).value_counts()
+            if len(named):
+                names = ', '.join('%s (%d)' % (w, int(c)) for w, c in named.head(6).items())
+                findings.append('Setting pronouns aside, the most frequently named entities are %s.' % names)
+    return findings
+
+
+def _interp_entities(files):
+    # The CoreNLP-only enrichments: gender (coref-based), dialogue/quotes and normalized dates. NER is
+    # reported separately under Counts (see _interp_ner).
+    import pandas as pd
+    findings = []
     fg = _find(files, 'gender', 'bydoc_freq', exclude=('chart',))
     if fg:
         df = _read_csv(fg)
@@ -1185,16 +1289,16 @@ def _interp_entities(files):
                 vc = df[tcol].astype(str).value_counts()
                 typ = ' — mostly ' + ', '.join('%s %s' % (int(v), k.lower()) for k, v in vc.head(3).items())
             findings.append('%s time expressions were extracted and normalized%s.' % (_thousands(len(df)), typ))
-    if not fg:
-        # No gender output -> CoreNLP + Java aren't installed, so NER ran through Stanza and the
-        # CoreNLP-only features were skipped. Tell the user WHICH tasks need CoreNLP + Java and how to
-        # install them (the profiler uses CoreNLP automatically for these once it's installed -- the
-        # user does NOT need to change the NLP package).
+    if not findings:
+        # The row ran but produced nothing -> CoreNLP + Java aren't installed (these features are CoreNLP-
+        # only, with no Stanza/spaCy equivalent). Tell the user WHAT to install; the profiler uses CoreNLP
+        # automatically for these once it's present -- no need to change the configured NLP package.
         findings.append(_EMPH + 'Gender, dialogue/quotes and normalized dates were NOT extracted: these '
                         'require Stanford CoreNLP and Java, which are not installed on this machine. '
                         'Install both from  Setup ▸ Download / install external software  (Java, then '
                         'Stanford CoreNLP); the profiler will then extract them automatically on the next '
-                        'run — no need to change the NLP package.')
+                        'run — no need to change the NLP package. (People, organizations and locations are '
+                        'still extracted, under Counts, with your configured parser.)')
     return findings
 
 
@@ -1494,14 +1598,18 @@ def _interp_spatial(files):
 
 
 def _interp_counts_vocabulary(files):
-    # Counts and Vocabulary are one merged dimension now. Report them together but, when BOTH have
-    # findings, label the two sub-groups with bold sub-headings so the reader can still tell them apart.
-    counts = _interp_counts(files)
-    vocab = _interp_vocabulary(files) + _interp_tfidf_similarity(files)
-    if counts and vocab:
-        return ([_SUBHEAD + 'Counts & measures'] + counts +
-                [_SUBHEAD + 'Vocabulary'] + vocab)
-    return counts + vocab
+    # Counts, Vocabulary and Entities (NER) are one merged dimension now. Report them together but, when
+    # 2+ sub-groups have findings, label them with bold sub-headings so the reader can still tell them apart.
+    groups = [('Counts & measures', _interp_counts(files)),
+              ('Vocabulary', _interp_vocabulary(files) + _interp_tfidf_similarity(files)),
+              ('Entities (people, organizations, locations)', _interp_ner(files))]
+    groups = [(head, f) for head, f in groups if f]
+    if len(groups) <= 1:
+        return groups[0][1] if groups else []
+    out = []
+    for head, f in groups:
+        out += [_SUBHEAD + head] + f
+    return out
 
 
 # A finding may be flagged for RED/BOLD emphasis by prefixing it with this sentinel; the render loop in
