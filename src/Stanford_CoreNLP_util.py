@@ -611,12 +611,14 @@ def CoreNLP_annotate(config_filename,inputFilename,
         if language == 'English':
             CoreNLP_nlp = subprocess.Popen(
                 [IO_libraries_util.get_java_executable(), '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
-                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer',  '-parse.maxlen', str(sentence_length), '-timeout', '999999'])
+                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-quiet', 'true', '-parse.maxlen', str(sentence_length), '-timeout', '999999'],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         else:
             CoreNLP_nlp = subprocess.Popen(
                 [IO_libraries_util.get_java_executable(), '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
-                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer','-props', language.lower(),
-                 '-parse.maxlen', str(sentence_length), '-timeout', '999999'])
+                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-quiet', 'true', '-props', language.lower(),
+                 '-parse.maxlen', str(sentence_length), '-timeout', '999999'],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     else: # Windows
         # CoreNLP_nlp = subprocess.Popen(
@@ -625,12 +627,14 @@ def CoreNLP_annotate(config_filename,inputFilename,
         if language == 'English':
             CoreNLP_nlp = subprocess.Popen(
                 [IO_libraries_util.get_java_executable(), '-mx' + str(memory_var) + "g", '-cp',  os.path.join(CoreNLPdir, '*'),
-                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen', str(sentence_length),'-timeout', '999999'])
+                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-quiet', 'true', '-parse.maxlen', str(sentence_length),'-timeout', '999999'],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         else:
             CoreNLP_nlp = subprocess.Popen(
                 [IO_libraries_util.get_java_executable(), '-mx' + str(memory_var) + "g", '-cp',  os.path.join(CoreNLPdir, '*'),
-                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-props', language.lower(),
-                 '-parse.maxlen', str(sentence_length),'-timeout', '999999'])
+                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-quiet', 'true', '-props', language.lower(),
+                 '-parse.maxlen', str(sentence_length),'-timeout', '999999'],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     time.sleep(5)
 
