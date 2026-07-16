@@ -9,7 +9,8 @@
 5. **Running the NLP Suite**
 6. **Updating the NLP Suite**
 7. **Mac Running Bash/Zsh**
-8. **Useful Conda & Pip Commands**
+8. **Semantic Role Labeling (SRL) — Optional**
+9. **Useful Conda & Pip Commands**
 
 Detailed installation instructions are available on the [NLP Suite GitHub pages](https://github.com/NLP-Suite/NLP-Suite/wiki/Install-the-NLP-Suite).
 
@@ -58,6 +59,19 @@ Detailed installation instructions are available on the [NLP Suite GitHub pages]
 - The NLP Suite updates automatically to the latest release available on GitHub every time you exit the NLP Suite. This feature relies on Git.
 - Note: if you click on the "CLOSE" button on the right lower corner, it will be successful - and is the only way. Invoking Task manager to force shut down, or directly using the "X" button on the top right might not be successful in updating.
 - Check frequently if your NLP Suite is up-to-date by visiting the current github page for release history. If you notify an incorrect release history, in addition to correcting git, the easiest solution is simply to download the entire package from GitHub all over again.  
+
+### Semantic Role Labeling (SRL) — Optional
+
+Semantic Role Labeling (the **SRL** checkbox in the SVO tool) is an **optional** feature that is **not** part of the standard installation. It runs in its own isolated Python 3.8 environment because the `transformer-srl` model pins a legacy stack (torch 1.7, allennlp, spaCy 2.x) that cannot coexist with the Suite's main packages — the same idea as Stanford CoreNLP running in its own Java runtime. (This is also why `transformer_srl` is intentionally absent from the bundled environment and should not be reported as a missing package.)
+
+To enable SRL (one time per machine; requires Anaconda/Miniconda and an internet connection):
+
+1. Open a terminal in the `NLP-Suite` folder.
+2. Run: `python setup_SRL.py`
+   - This creates a conda environment named `nlp_srl`, installs the pinned SRL dependencies, and downloads the pretrained SRL model (~400 MB).
+3. Tick the **SRL** checkbox in the SVO GUI.
+
+Until you run `setup_SRL.py`, the SVO tool simply tells you SRL is not set up; the rest of the NLP Suite is unaffected.
 
 ### Useful Anaconda & pip commands
 
