@@ -330,32 +330,40 @@ def get_GitHub_release_version(silent = False):
           "(continuing with the current release). Detail: " + str(last_err))
     return '0.0.0'
 
+def parse_release_version(version_string):
+    """'1.6.22' -> (1, 6, 22), so releases can be compared numerically.
+
+    The previous parser sliced every SECOND character ([i:i+1] for i in range(0, len, 2)), which silently
+    assumed SINGLE-DIGIT parts: it read '5.3.4' correctly but truncated '1.6.22' to ('1','6','2') -- making
+    1.6.21 and 1.6.22 indistinguishable and any two-digit release un-announceable.
+
+    Returns (0, 0, 0) for anything unparseable (empty file, 'Not Found', '0.0.0' offline sentinel) so a
+    malformed value NEVER nags the user -- this is a non-essential check. Tolerates a leading 'v' and
+    trailing whitespace/newlines, and pads short versions ('1.7' -> (1, 7, 0))."""
+    s = str(version_string or '').strip().lstrip('vV')
+    parts = []
+    for p in s.split('.'):
+        p = p.strip()
+        if not p.isdigit():
+            return (0, 0, 0)
+        parts.append(int(p))
+    if not parts:
+        return (0, 0, 0)
+    parts = (parts + [0, 0, 0])[:3]
+    return tuple(parts)
+
+
 def check_GitHub_release(local_release_version: str, silent = False):
     GitHub_newest_release = get_GitHub_release_version()
     if GitHub_newest_release == None or GitHub_newest_release == '0.0.0': # when not connected to internet
         return
-    # local_release_version = '2.3.1' # line used for testing; should be LOWER than the version on GitHub
-    # split the text string of release version (e.g., 1.5.9) into three parts separated by .
-    local_release_version_parts=[local_release_version[i:i + 1] for i in range(0, len(local_release_version), 2)]
-    GitHub_release_version_parts=[GitHub_newest_release[i:i + 1] for i in range(0, len(GitHub_newest_release), 2)]
-    old_version = False
-    # check numbers
-    if int(local_release_version_parts[0]) > int(GitHub_release_version_parts[0]):
+    local_parsed = parse_release_version(local_release_version)
+    GitHub_parsed = parse_release_version(GitHub_newest_release)
+    # (0,0,0) means we could not parse one of them -- stay quiet rather than prompt on garbage
+    if local_parsed == (0, 0, 0) or GitHub_parsed == (0, 0, 0):
         return
-    if int(local_release_version_parts[0])<int(GitHub_release_version_parts[0]):
-        old_version = True
-    else:
-        # if the first parts are the same, check the second part
-        if int(local_release_version_parts[1])>int(GitHub_release_version_parts[1]):
-            return
-        if int(local_release_version_parts[1]) < int(GitHub_release_version_parts[1]):
-            old_version = True
-        else:
-            # if the second parts are the same, check the third part
-            if int(local_release_version_parts[2]) < int(GitHub_release_version_parts[2]):
-                old_version = True
-            else:
-                return
+    # tuple comparison IS the major -> minor -> patch cascade the old nested ifs spelled out by hand
+    old_version = local_parsed < GitHub_parsed
     if 'Not Found' not in GitHub_newest_release and old_version: #GitHub_newest_release != local_release_version:
         # update is carried out in NLP_setup_update_util.py
         result = mb.askyesno("NLP Suite Outdated",
