@@ -929,37 +929,36 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
                                                    date_hover_over_label)
     update_display_area(IO_setup_display_string, IO_setup_brief_display_area)
 
-    # setup buttons to open an input file, an input directory, an output directory, and a csv config file
-    x_coordinate_hover_over = GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_file_button_brief
-    # setup a button to open an input file
-    openInputFile_button = GUI_theme_util.create_open_file_button(window,
+    # Buttons to open an input file, an input directory, an output directory, and a csv config file.
+    # Grouped in ONE transparent frame (packed side by side) and gridded as a single cell. Placed
+    # individually via their old +45px x-offsets, each landed in its own far-right grid band (6,7,8,9);
+    # cross-row content widened those bands so the four sprawled apart and the last one clipped off the
+    # window's right edge. One frame keeps them a tidy cluster at the top-right on every GUI.
+    open_buttons_frame = ctk.CTkFrame(window, fg_color="transparent")
+    openInputFile_button = GUI_theme_util.create_open_file_button(open_buttons_frame,
                                      command=lambda:IO_files_util.open_file_removing_date_from_filename(window,inputFilename.get(),True))
-    # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_file_button_brief, y_multiplier_integer,
-                                                   openInputFile_button, True, False, True, False, 90, x_coordinate_hover_over, "Open INPUT file")
+    openInputFile_button.pack(side=tk.LEFT, padx=2)
+    GUI_theme_util.ToolTip(openInputFile_button, "Open INPUT file")
 
-    # setup a button to open Windows Explorer on the selected INPUT directory
-    openInputDirectory_button = GUI_theme_util.create_open_file_button(window,
+    openInputDirectory_button = GUI_theme_util.create_open_file_button(open_buttons_frame,
                                      command=lambda: IO_files_util.open_directory_removing_date_from_directory(window,input_main_dir_path.get(),True))
-    # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_inputDir_button_brief, y_multiplier_integer,
-                                                   openInputDirectory_button, True, False, True,False, 90, x_coordinate_hover_over, "Open INPUT files directory")
+    openInputDirectory_button.pack(side=tk.LEFT, padx=2)
+    GUI_theme_util.ToolTip(openInputDirectory_button, "Open INPUT files directory")
 
-    # setup a button to open Windows Explorer on the selected OUTPUT directory
-    openOutputDirectory_button = GUI_theme_util.create_open_file_button(window,
+    openOutputDirectory_button = GUI_theme_util.create_open_file_button(open_buttons_frame,
                                      command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
-    # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_outputDir_button_brief, y_multiplier_integer,
-                                                   openOutputDirectory_button, True, False, True,False, 90, x_coordinate_hover_over, "Open OUTPUT files directory")
+    openOutputDirectory_button.pack(side=tk.LEFT, padx=2)
+    GUI_theme_util.ToolTip(openOutputDirectory_button, "Open OUTPUT files directory")
 
-    # Open csv config file
-    openInputConfigFile_button = GUI_theme_util.create_open_file_button(window,
+    openInputConfigFile_button = GUI_theme_util.create_open_file_button(open_buttons_frame,
                                      command=lambda: openConfigFile(config_filename_selected_config.get()))
-    # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_config_file_button_brief, y_multiplier_integer,
-                                                   openInputConfigFile_button, True, False, True,False, 90,
-                                                   GUI_IO_util.open_reminders_x_coordinate, "Open csv config file\nAll config files are stored in a subdirectory Config where you installed the NLP Suite; together with src, TIPS, etc.")
-    #x_coordinate_hover_over
+    openInputConfigFile_button.pack(side=tk.LEFT, padx=2)
+    GUI_theme_util.ToolTip(openInputConfigFile_button, "Open csv config file\nAll config files are stored in a subdirectory Config where you installed the NLP Suite; together with src, TIPS, etc.")
+
+    # place the whole cluster once, on the top I/O row's far-right band (no_hover_over_widget: the
+    # tooltips are attached to the individual buttons above)
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_file_button_brief, y_multiplier_integer,
+                                                   open_buttons_frame, True, True)
 def update_display_area(IO_setup_display_string,IO_setup_brief_display_area):
 # def update_display_area(IO_setup_display_string):
 #     global IO_setup_brief_display_area
