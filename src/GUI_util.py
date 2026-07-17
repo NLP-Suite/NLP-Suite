@@ -1217,51 +1217,33 @@ def display_about_release_team_cite_buttons(scriptName):
             y_multiplier_integer = 1.7
         else:
             y_multiplier_integer = 0
-        # CTk migration (slice 2a): themed CTk buttons. foreground="red" is dropped -- the NLP Suite
-        # theme now paints these as red-filled buttons with light text (red-on-red otherwise).
-        about_button = GUI_theme_util.create_button(window, text='About', width=15, height=1,
-                                command=lambda: GUI_IO_util.about())
-        # place widget with hover-over info
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                                       GUI_IO_util.about_button_x_coordinate,
-                                                       y_multiplier_integer,
-                                                       about_button,
-                                                       True, False, False, False, 90,
-                                                       GUI_IO_util.about_button_x_coordinate,
-                                                       "Click on the button to access the About page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
-
-        release_history_button = GUI_theme_util.create_button(window, text='Release history', width=15, height=1,
-                                           command=lambda: GUI_IO_util.release_history())
-        # place widget with hover-over info
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                                       GUI_IO_util.release_history_button_x_coordinate,
-                                                       y_multiplier_integer,
-                                                       release_history_button,
-                                                       True, False, False, False, 90,
-                                                       GUI_IO_util.about_button_x_coordinate,
-                                                       "Click on the button to access the Release history page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
-
-        team_button = GUI_theme_util.create_button(window, text='NLP Suite team', width=15, height=1,
-                                command=lambda: GUI_IO_util.list_team())
-        # place widget with hover-over info
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                                       GUI_IO_util.team_button_x_coordinate,
-                                                       y_multiplier_integer,
-                                                       team_button,
-                                                       True, False, False, False, 90,
-                                                       GUI_IO_util.release_history_button_x_coordinate,
-                                                       "Click on the button to access the Team page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
-
-        cite_button = GUI_theme_util.create_button(window, text='How to cite', width=15, height=1,
-                                command=lambda: GUI_IO_util.cite_NLP())
-        # place widget with hover-over info
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                                       GUI_IO_util.cite_button_x_coordinate,
-                                                       y_multiplier_integer,
-                                                       cite_button,
-                                                       False, False, False, False, 90,
-                                                       GUI_IO_util.team_button_x_coordinate,
-                                                       "Click on the button to access the How to Cite page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
+        # CTk migration: themed CTk buttons, grouped in ONE frame pinned to the window's top-right
+        # with place() instead of gridded into four separate coarse-band columns. The gridded version
+        # spilled off the right edge -- the wide 95-char SETUP/info buttons stretch the middle grid
+        # columns, pushing "NLP Suite team" and "How to cite" past the window edge. place(anchor='ne')
+        # keeps the four nav buttons flush to the top-right regardless of the grid's content width, and
+        # takes them out of the grid so they no longer widen it. (foreground="red" is dropped -- the
+        # NLP Suite theme paints these as red-filled buttons with light text.)
+        nav_bar = tk.Frame(window)
+        _nav_specs = [
+            ('About', lambda: GUI_IO_util.about(),
+             "Click on the button to access the About page of the NLP Suite GitHub repository.\nYou must be connected to the internet."),
+            ('Release history', lambda: GUI_IO_util.release_history(),
+             "Click on the button to access the Release history page of the NLP Suite GitHub repository.\nYou must be connected to the internet."),
+            ('NLP Suite team', lambda: GUI_IO_util.list_team(),
+             "Click on the button to access the Team page of the NLP Suite GitHub repository.\nYou must be connected to the internet."),
+            ('How to cite', lambda: GUI_IO_util.cite_NLP(),
+             "Click on the button to access the How to Cite page of the NLP Suite GitHub repository.\nYou must be connected to the internet."),
+        ]
+        # 2x2 block, not a single wide row: a horizontal bar of all four (~700px) either overflows the
+        # right edge or overlaps the welcome text on the left. A compact 2x2 grid fits in the open
+        # top-right corner, clear of the welcome text and above the SETUP rows.
+        for _i, (_nav_text, _nav_cmd, _nav_tip) in enumerate(_nav_specs):
+            _nav_button = GUI_theme_util.create_button(nav_bar, text=_nav_text, width=15, height=1, command=_nav_cmd)
+            _nav_button.grid(row=_i // 2, column=_i % 2, padx=(0, 8), pady=(0, 6))
+            GUI_theme_util.ToolTip(_nav_button, _nav_tip)
+        # Pin to the top-right corner. y tracks the legacy row (welcome pushes it down one line).
+        nav_bar.place(relx=1.0, x=-20, y=int(46 + y_multiplier_integer * 40), anchor='ne')
 
 global IO_setup_config_SV
 IO_setup_config_SV = ''
