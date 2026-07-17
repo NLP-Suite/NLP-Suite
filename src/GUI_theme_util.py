@@ -178,28 +178,6 @@ def create_button(master, **kwargs):
     return ctk.CTkButton(master, **translate_kwargs(ctk.CTkButton, kwargs))
 
 
-# The small "open the selected file / directory" affordance. The legacy `width=1, text=''` rendered
-# these as ~8px empty slivers (the red bars / gray box users read as broken). A folder glyph plus a
-# real width makes them read as buttons. Kept in one place so the glyph can be swapped in a single
-# edit if a platform's Tk font renders emoji as a tofu box (fallback: '...').
-OPEN_FILE_GLYPH = '\U0001F4C2'  # 📂
-
-
-def create_open_file_button(master, command=None, width=32, **kwargs):
-    """Small themed icon button for the 'open selected file/directory' action.
-
-    Built directly on CTkButton (not via :func:`create_button`) so ``width`` is honoured as pixels:
-    the char->px translation in ``create_button`` treats any width <= 60 as a character count, so a
-    ~30px icon button can't be expressed through it. Any leftover legacy ``text``/``width`` kwargs
-    are dropped in favour of the fixed glyph and the pixel width.
-    """
-    kwargs.pop('text', None)
-    kwargs.pop('width', None)
-    translated = translate_kwargs(ctk.CTkButton, kwargs)
-    translated['width'] = width
-    return ctk.CTkButton(master, text=OPEN_FILE_GLYPH, command=command, **translated)
-
-
 def create_label(master, **kwargs):
     return ctk.CTkLabel(master, **translate_kwargs(ctk.CTkLabel, kwargs))
 
@@ -213,33 +191,14 @@ def create_checkbox(master, **kwargs):
     return ctk.CTkCheckBox(master, **translate_kwargs(ctk.CTkCheckBox, kwargs))
 
 
-# Neutral grey for a "nothing available" OptionMenu (muted=True). The theme paints every menu solid
-# red, which erased the legacy red=available / black=none availability cue on the TIPS / reminders /
-# videos dropdowns. Grey-on-red restores that cue in a CTk-native way -- a greyed dropdown reads as
-# "nothing here for this GUI" at a glance. Light-mode values (appearance is pinned "light" in Phase 1).
-_MUTED_FG = "#d9d9d9"
-_MUTED_BUTTON = "#c4c4c4"
-_MUTED_BUTTON_HOVER = "#b4b4b4"
-_MUTED_TEXT = "#5f5f5f"
-
-
-def create_option_menu(master, variable=None, values=None, command=None, muted=False, **kwargs):
+def create_option_menu(master, variable=None, values=None, command=None, **kwargs):
     """tk.OptionMenu(master, var, *choices) -> CTkOptionMenu(master, variable=, values=[...]).
 
     The legacy call passes the choices as varargs; call sites converting to this factory pass them
     as ``values=[...]``. Repopulate a live menu with :func:`set_values` (never the old
     ``widget["menu"]`` mutation).
-
-    muted=True renders the menu in a neutral GREY instead of the theme red -- used for the
-    TIPS / reminders / videos dropdowns when nothing is available for the current GUI, restoring the
-    legacy red=available / grey=none availability cue the solid-red theme otherwise erased.
     """
     translated = translate_kwargs(ctk.CTkOptionMenu, kwargs)
-    if muted:
-        translated.setdefault("fg_color", _MUTED_FG)
-        translated.setdefault("button_color", _MUTED_BUTTON)
-        translated.setdefault("button_hover_color", _MUTED_BUTTON_HOVER)
-        translated.setdefault("text_color", _MUTED_TEXT)
     if variable is not None:
         translated["variable"] = variable
     if values is not None:

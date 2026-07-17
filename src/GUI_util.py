@@ -18,19 +18,7 @@ import IO_libraries_util
 #     sys.exit(0)
 
 import tkinter as tk
-
-# CTk migration (docs/CustomTkinter-Migration-Plan.md, Phase 1): the shared root window becomes a
-# CustomTkinter root so the whole suite renders themed. init_appearance() MUST run first -- it
-# applies the Phase 0 bundle ImageTk patch and loads the NLP Suite color theme BEFORE any widget is
-# created (CTk snapshots theme colors at construction time). tk / ttk widgets still parent to this
-# root unchanged (CTk() is a tkinter.Tk subclass), so the rest of the migration proceeds
-# incrementally on top of this. Appearance is pinned to "light" for now: while the individual GUI
-# widgets are still plain tk/ttk, "system"/dark would render a jarring half-dark UI -- the
-# appearance-mode toggle lands once the widgets themselves are CTk (plan Phase 5).
-import customtkinter as ctk
-import GUI_theme_util
-GUI_theme_util.init_appearance("light")
-window = ctk.CTk()
+window = tk.Tk()
 from sys import platform
 
 import os
@@ -190,7 +178,7 @@ config_input_output_alphabetic_options=[]
 setup_IO_menu_var = tk.StringVar()
 # https://stackoverflow.com/questions/42222626/tkinter-option-menu-widget-add-command-lambda-does-not-produce-expected-command
 ###
-setup_IO_menu = GUI_theme_util.create_option_menu(window, variable=setup_IO_menu_var, values=['Default I/O configuration', 'Select any I/O csv config file'])
+setup_IO_menu = tk.OptionMenu(window, setup_IO_menu_var, 'Default I/O configuration', 'Select any I/O csv config file')
 
 IO_setup_var = tk.StringVar()
 IO_setup_brief_display_area = None
@@ -227,7 +215,7 @@ reminders_dropdown_field = tk.StringVar()
 setup_menu = tk.StringVar()
 data_tools_options_widget = tk.StringVar()
 
-run_button = GUI_theme_util.create_button(window, text='RUN', width=10,height=2)
+run_button = tk.Button(window, text='RUN', width=10,height=2)
 
 # license agreement GUI
 agreement_checkbox_var=tk.IntVar()
@@ -829,7 +817,7 @@ def openConfigFile(config_filename):
 # this is the Setup INPUT/OUTPUT configuration
 def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptName, silent):
     global IO_setup_brief_display_area
-    IO_setup_button = GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Setup INPUT/OUTPUT configuration',
+    IO_setup_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Setup INPUT/OUTPUT configuration',
                 command=lambda: setup_IO_configuration_options(True, scriptName, silent=True, open_setup_IO_GUI=True))
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
@@ -858,10 +846,7 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
     # else:
     #     config_filename = config_filename_selected_config.get()
     # setup button to open a pop-up text entry widget where users can paste text to be used instead of an input file
-    # Give this its own width + label: it was an empty width=1 button (~8px under CTk, a thin red
-    # sliver) even though it opens a paste-text popup for a quick test run -- unlike the adjacent
-    # open_file_directory buttons, it has no neighbouring field to give it context.
-    openTextWidget_button = GUI_theme_util.create_button(window, width=12, text='Paste text',
+    openTextWidget_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                       command=open_paste_text_popup)
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget, y_multiplier_integer,
@@ -886,28 +871,28 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
     # setup buttons to open an input file, an input directory, an output directory, and a csv config file
     x_coordinate_hover_over = GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_file_button_brief
     # setup a button to open an input file
-    openInputFile_button = GUI_theme_util.create_open_file_button(window,
+    openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda:IO_files_util.open_file_removing_date_from_filename(window,inputFilename.get(),True))
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_file_button_brief, y_multiplier_integer,
                                                    openInputFile_button, True, False, True, False, 90, x_coordinate_hover_over, "Open INPUT file")
 
     # setup a button to open Windows Explorer on the selected INPUT directory
-    openInputDirectory_button = GUI_theme_util.create_open_file_button(window,
+    openInputDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda: IO_files_util.open_directory_removing_date_from_directory(window,input_main_dir_path.get(),True))
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_inputDir_button_brief, y_multiplier_integer,
                                                    openInputDirectory_button, True, False, True,False, 90, x_coordinate_hover_over, "Open INPUT files directory")
 
     # setup a button to open Windows Explorer on the selected OUTPUT directory
-    openOutputDirectory_button = GUI_theme_util.create_open_file_button(window,
+    openOutputDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_outputDir_button_brief, y_multiplier_integer,
                                                    openOutputDirectory_button, True, False, True,False, 90, x_coordinate_hover_over, "Open OUTPUT files directory")
 
     # Open csv config file
-    openInputConfigFile_button = GUI_theme_util.create_open_file_button(window,
+    openInputConfigFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda: openConfigFile(config_filename_selected_config.get()))
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_config_file_button_brief, y_multiplier_integer,
@@ -935,28 +920,28 @@ def IO_config_setup_full (window, y_multiplier_integer):
         # buttons are set to normal or disabled in selectFile_set_options
         if config_input_output_numeric_options[0]==1: #single CoNLL file
             # buttons are set to normal or disabled in selectFile_set_options
-            select_inputFilename_button=GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CoNLL table', command=lambda: selectFile_set_options(window,True,True,inputFilename,input_main_dir_path,'Select INPUT CoNLL table (csv file)',[('CoNLL csv file','.csv')],".csv"))
+            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CoNLL table', command=lambda: selectFile_set_options(window,True,True,inputFilename,input_main_dir_path,'Select INPUT CoNLL table (csv file)',[('CoNLL csv file','.csv')],".csv"))
         elif config_input_output_numeric_options[0]==2: #single txt file:
             # buttons are set to normal or disabled in selectFile_set_options
-            select_inputFilename_button=GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT TXT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT TXT file',[('text file','.txt')],".txt"))
+            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT TXT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT TXT file',[('text file','.txt')],".txt"))
         elif config_input_output_numeric_options[0]==3: #single csv file:
             # buttons are set to normal or disabled in selectFile_set_options
-            select_inputFilename_button=GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT csv file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT csv file',[('csv file','.csv')],".csv"))
+            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT csv file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT csv file',[('csv file','.csv')],".csv"))
         if config_input_output_numeric_options[0]==4: #any type file (used in NLP.py)
             # buttons are set to normal or disabled in selectFile_set_options
-            select_inputFilename_button=GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file (any type)', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (any file type: pdf, docx, html, txt, csv, conll); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv"),("pdf file","*.pdf"),("docx file","*.docx"),("rtf file","*.rtf"),("html file","*.html"),("CoNLL table","*.conll")], "*.*"))
+            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file (any type)', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (any file type: pdf, docx, html, txt, csv, conll); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv"),("pdf file","*.pdf"),("docx file","*.docx"),("rtf file","*.rtf"),("html file","*.html"),("CoNLL table","*.conll")], "*.*"))
         if config_input_output_numeric_options[0]==5: #txt/html
             # buttons are set to normal or disabled in selectFile_set_options
-            select_inputFilename_button=GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file (txt, html)', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, html); switch extension type below near File name:',[("txt file","*.txt"),("html file","*.html")], "*.*"))
+            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file (txt, html)', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, html); switch extension type below near File name:',[("txt file","*.txt"),("html file","*.html")], "*.*"))
         if config_input_output_numeric_options[0]==6: #txt/csv
             # buttons are set to normal or disabled in selectFile_set_options
-            select_inputFilename_button=GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file (txt, csv)', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, csv); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv")], "*.*"))
+            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file (txt, csv)', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, csv); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv")], "*.*"))
 
         # place the Select INPUT file widget
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,select_inputFilename_button,True)
 
         #setup a button to open Windows Explorer on the selected input file
-        openInputFile_button  = GUI_theme_util.create_open_file_button(window,
+        openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                             command=lambda: IO_files_util.open_file_removing_date_from_filename(window,inputFilename.get(),True))
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
             GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -979,14 +964,14 @@ def IO_config_setup_full (window, y_multiplier_integer):
     #primary INPUT directory ______________________________________________
     if config_input_output_numeric_options[1]==1: # main directory input
         # buttons are set to normal or disabled in selectFile_set_options
-        select_input_main_dir_button = GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width,
+        select_input_main_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width,
             text='Select INPUT files directory',  command = lambda: selectDirectory_set_options(window,input_main_dir_path,output_dir_path,"Select INPUT files directory",True))
         # select_input_main_dir_button.config(state="normal")
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,select_input_main_dir_button,True)
 
         #setup a button to open Windows Explorer on the selected main input directory
-        openDirectory_button  = GUI_theme_util.create_open_file_button(window,
-                            command=lambda: IO_files_util.open_directory_removing_date_from_directory(window,input_main_dir_path.get(),True))
+        openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width,
+                            text='', command=lambda: IO_files_util.open_directory_removing_date_from_directory(window,input_main_dir_path.get(),True))
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
             GUI_IO_util.IO_configuration_menu,
             y_multiplier_integer,
@@ -1009,12 +994,12 @@ def IO_config_setup_full (window, y_multiplier_integer):
     #secondary INPUT directory ______________________________________________
     if config_input_output_numeric_options[2]==1: #secondary directory input
         # buttons are set to normal or disabled in selectFile_set_options
-        select_input_secondary_dir_button = GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT secondary directory',  command=lambda: selectDirectory_set_options(window,input_main_dir_path, input_secondary_dir_path,"Select INPUT secondary TXT directory"))
+        select_input_secondary_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT secondary directory',  command=lambda: selectDirectory_set_options(window,input_main_dir_path, input_secondary_dir_path,"Select INPUT secondary TXT directory"))
         y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                             y_multiplier_integer,select_input_secondary_dir_button,True)
 
         #setup a button to open Windows Explorer on the selected secondary input directory
-        openDirectory_button  = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openExplorer(window, input_secondary_dir_path.get()))
+        openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openExplorer(window, input_secondary_dir_path.get()))
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
             GUI_IO_util.IO_configuration_menu,
             y_multiplier_integer,
@@ -1027,12 +1012,12 @@ def IO_config_setup_full (window, y_multiplier_integer):
     #OUTPUT directory ______________________________________________
     if config_input_output_numeric_options[3]==1: #output directory
         # buttons are set to normal or disabled in selectFile_set_options
-        select_output_dir_button = GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select OUTPUT files directory',  command=lambda: selectDirectory_set_options(window,input_main_dir_path,output_dir_path,"Select OUTPUT files directory"))
+        select_output_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select OUTPUT files directory',  command=lambda: selectDirectory_set_options(window,input_main_dir_path,output_dir_path,"Select OUTPUT files directory"))
         y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,select_output_dir_button,True)
 
         #setup a button to open Windows Explorer on the selected input directory
         # current_y_multiplier_integer4=y_multiplier_integer-1
-        openDirectory_button  = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
+        openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
             GUI_IO_util.IO_configuration_menu,
             y_multiplier_integer,
@@ -1172,9 +1157,7 @@ def display_about_release_team_cite_buttons(scriptName):
             y_multiplier_integer = 1.7
         else:
             y_multiplier_integer = 0
-        # CTk migration (slice 2a): themed CTk buttons. foreground="red" is dropped -- the NLP Suite
-        # theme now paints these as red-filled buttons with light text (red-on-red otherwise).
-        about_button = GUI_theme_util.create_button(window, text='About', width=15, height=1,
+        about_button = tk.Button(window, text='About', width=15, height=1, foreground="red",
                                 command=lambda: GUI_IO_util.about())
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
@@ -1185,7 +1168,7 @@ def display_about_release_team_cite_buttons(scriptName):
                                                        GUI_IO_util.about_button_x_coordinate,
                                                        "Click on the button to access the About page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
 
-        release_history_button = GUI_theme_util.create_button(window, text='Release history', width=15, height=1,
+        release_history_button = tk.Button(window, text='Release history', width=15, height=1, foreground='red',
                                            command=lambda: GUI_IO_util.release_history())
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
@@ -1196,7 +1179,7 @@ def display_about_release_team_cite_buttons(scriptName):
                                                        GUI_IO_util.about_button_x_coordinate,
                                                        "Click on the button to access the Release history page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
 
-        team_button = GUI_theme_util.create_button(window, text='NLP Suite team', width=15, height=1,
+        team_button = tk.Button(window, text='NLP Suite team', width=15, height=1, foreground="red",
                                 command=lambda: GUI_IO_util.list_team())
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
@@ -1207,7 +1190,7 @@ def display_about_release_team_cite_buttons(scriptName):
                                                        GUI_IO_util.release_history_button_x_coordinate,
                                                        "Click on the button to access the Team page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
 
-        cite_button = GUI_theme_util.create_button(window, text='How to cite', width=15, height=1,
+        cite_button = tk.Button(window, text='How to cite', width=15, height=1, foreground="red",
                                 command=lambda: GUI_IO_util.cite_NLP())
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
@@ -1330,8 +1313,8 @@ def display_setup_hover_over(y_multiplier_integer):
     hover_over_x_coordinate, hover_over_info = get_hover_over_info(package_display_area_value)
 
     # lay the setup widget
-    setup_menu_lb = GUI_theme_util.create_option_menu(window, variable=setup_menu, values=["Setup preferences", "Setup NLP package (parsers & annotators) and corpus language",
-                                  "Setup external software"])
+    setup_menu_lb = tk.OptionMenu(window, setup_menu, "Setup preferences", "Setup NLP package (parsers & annotators) and corpus language",
+                                  "Setup external software")
 
     if y_multiplier_integer_SV == 0:
         y_multiplier_integer_SV = y_multiplier_integer
@@ -1468,7 +1451,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
             not 'NLP_menu_main' in scriptName and \
             not "NLP_setup_" in scriptName:
         #open output csv files widget defined above since it is used earlier
-        open_csv_output_label = GUI_theme_util.create_checkbox(window, variable=open_csv_output_checkbox, onvalue=1, offvalue=0, command=lambda: trace_checkbox(open_csv_output_label, open_csv_output_checkbox, "Open output files", "Do NOT open output files"))
+        open_csv_output_label = tk.Checkbutton(window, variable=open_csv_output_checkbox, onvalue=1, offvalue=0, command=lambda: trace_checkbox(open_csv_output_label, open_csv_output_checkbox, "Open output files", "Do NOT open output files"))
         open_csv_output_label.configure(text="Open output files")
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                        y_multiplier_integer,
@@ -1494,7 +1477,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         charts_package_options = ['No charts','Excel','Python Plotly (dynamic)','Python Plotly (static)']
         # TODO EXCEL widget (same as open reminders)
         charts_package_options_widget.set('Excel')
-        charts_package_menu_lb = GUI_theme_util.create_option_menu(window, variable=charts_package_options_widget, values=charts_package_options)
+        charts_package_menu_lb = tk.OptionMenu(window,charts_package_options_widget,*charts_package_options)
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,
                                                        y_multiplier_integer,
                                                        charts_package_menu_lb,
@@ -1512,7 +1495,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                    'Comparative bar charts (Open GUI)', 'Geographic maps (Open GUI)', 'Gephi (Open GUI)', 'Sankey flowchart (Open GUI)', 'Sunburst chart (Open GUI)',
                                    'Time mapper (Open GUI)', 'Treemap chart (Open GUI)', 'Wordcloud (Open GUI)']
         charts_type_options_widget.set('Bar chart')
-        charts_type_menu_lb = GUI_theme_util.create_option_menu(window, variable=charts_type_options_widget, values=charts_type_options)
+        charts_type_menu_lb = tk.OptionMenu(window,charts_type_options_widget,*charts_type_options)
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate,
                                                        y_multiplier_integer,
@@ -1523,7 +1506,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
         data_transformation_options=['No transformation','Normalize by document size', 'Ln','Log','Square rooot','Z score']
         data_transformation_options_widget.set('No transformation')
-        data_transformation_menu_lb = GUI_theme_util.create_option_menu(window, variable=data_transformation_options_widget, values=data_transformation_options)
+        data_transformation_menu_lb = tk.OptionMenu(window,data_transformation_options_widget,*data_transformation_options)
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,
                                                        y_multiplier_integer,
@@ -1549,7 +1532,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         # if not 'data_manipulation_main.py' in scriptName and not 'data_visualization_1_main.py' in scriptName :
         data_tools_options = ['Data/corpus sampling', 'Data manipulation', 'Data statistics', 'Data visualization']
         data_tools_options_widget.set('Data tools')
-        data_tools_menu_lb = GUI_theme_util.create_option_menu(window, variable=data_tools_options_widget, values=data_tools_options)
+        data_tools_menu_lb = tk.OptionMenu(window, data_tools_options_widget, *data_tools_options)
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate,
                                                        y_multiplier_integer,
@@ -1577,7 +1560,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     #         charts_package_options_widget.set('Plotly')
     # charts_package_options_widget.trace('w',warning_message)
 
-    readme_button = GUI_theme_util.create_button(window, text='Read Me',command=readMe_command,width=10,height=2)
+    readme_button = tk.Button(window, text='Read Me',command=readMe_command,width=10,height=2)
     # In NLP_setup_IO_main and NLP_setup_package_language_main an extra line of widgets is added to the GUI
     # if "NLP_setup_IO_main" in scriptName:
     #     y_multiplier_integer = y_multiplier_integer +1
@@ -1594,12 +1577,13 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     videos_dropdown_field.set('Watch videos')
     if len(videos_lookup)==1:
         if videos_options == "No videos available":
-            # muted=True -> grey: no videos for this GUI (restores the legacy red=available cue)
-            videos_menu_lb = GUI_theme_util.create_option_menu(window, variable=videos_dropdown_field, values=[videos_options], muted=True)
+            videos_menu_lb = tk.OptionMenu(window, videos_dropdown_field, videos_options)
         else:
-            videos_menu_lb = GUI_theme_util.create_option_menu(window, variable=videos_dropdown_field, values=[videos_options])
+            videos_menu_lb = tk.OptionMenu(window, videos_dropdown_field, videos_options)
+            videos_menu_lb.configure(foreground="red")
     else:
-        videos_menu_lb = GUI_theme_util.create_option_menu(window, variable=videos_dropdown_field, values=videos_options)
+        videos_menu_lb = tk.OptionMenu(window,videos_dropdown_field,*videos_options)
+        videos_menu_lb.configure(foreground="red")
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.watch_videos_x_coordinate,
                                                    y_multiplier_integer,
@@ -1618,12 +1602,13 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     tips_dropdown_field.set('Open TIPS files')
     if len(TIPS_lookup)==1:
         if TIPS_options == "No TIPS available":
-            # muted=True -> grey: no TIPS for this GUI (restores the legacy red=available cue)
-            tips_menu_lb = GUI_theme_util.create_option_menu(window, variable=tips_dropdown_field, values=[TIPS_options], muted=True)
+            tips_menu_lb = tk.OptionMenu(window, tips_dropdown_field, TIPS_options)
         else:
-            tips_menu_lb = GUI_theme_util.create_option_menu(window, variable=tips_dropdown_field, values=[TIPS_options])
+            tips_menu_lb = tk.OptionMenu(window, tips_dropdown_field, TIPS_options)
+            tips_menu_lb.configure(foreground="red")
     else:
-        tips_menu_lb = GUI_theme_util.create_option_menu(window, variable=tips_dropdown_field, values=TIPS_options)
+        tips_menu_lb = tk.OptionMenu(window,tips_dropdown_field,*TIPS_options)
+        tips_menu_lb.configure(foreground="red")
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate,
                                                    y_multiplier_integer,
@@ -1653,18 +1638,19 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     # reminders content for specific GUIs are set in the csv file reminders
     # called from any GUI
     reminders_dropdown_field.set('Open reminders')
-    reminders_menu_lb = GUI_theme_util.create_option_menu(window, variable=reminders_dropdown_field, values=["No Reminders available"], muted=True)
+    reminders_menu_lb = tk.OptionMenu(window,  reminders_dropdown_field,"No Reminders available")
 
     if len(reminder_options)==0:
         reminder_options = ["No Reminders available"]
     if len(reminder_options)==0 or len(reminder_options)==1:
         if reminder_options == ["No Reminders available"]:
-            # muted=True -> grey: no reminders for this GUI (restores the legacy red=available cue)
-            reminders_menu_lb = GUI_theme_util.create_option_menu(window, variable=reminders_dropdown_field, values=reminder_options, muted=True)
+            reminders_menu_lb = tk.OptionMenu(window, reminders_dropdown_field, *reminder_options)
         else:
-            reminders_menu_lb = GUI_theme_util.create_option_menu(window, variable=reminders_dropdown_field, values=reminder_options)
+            reminders_menu_lb = tk.OptionMenu(window, reminders_dropdown_field, *reminder_options)
+            reminders_menu_lb.configure(foreground="red")
     else:
-        reminders_menu_lb = GUI_theme_util.create_option_menu(window, variable=reminders_dropdown_field, values=reminder_options)
+        reminders_menu_lb = tk.OptionMenu(window,reminders_dropdown_field,*reminder_options)
+        reminders_menu_lb.configure(foreground="red")
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate,
                                                    y_multiplier_integer,
@@ -1718,7 +1704,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
     # do not display CLOSE button for the 3 NLP_setup GUIs; the CLOSE is handled in those GUIs
     if not "NLP_setup_" in scriptName:
-        close_button = GUI_theme_util.create_button(window, text='CLOSE', width=10,height=2, command=lambda: _close_window())
+        close_button = tk.Button(window, text='CLOSE', width=10,height=2, command=lambda: _close_window())
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate,
                                                        y_multiplier_integer,
