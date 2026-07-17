@@ -312,18 +312,31 @@ def display_logo():
         return  # PIL not installed; skip logo rather than exiting the whole app
 
     try:
-        from PIL import Image
+        from PIL import Image, ImageChops
         # https://stackoverflow.com/questions/17504570/creating-simply-image-gallery-in-python-tkinter-pil
         # https://stackoverflow.com/questions/76616042/attributeerror-module-pil-image-has-no-attribute-antialias
         image_list = [GUI_IO_util.image_libPath + os.sep + "logo.png"]
         for x in image_list:
-            img = tk_image_from_pil(Image.open(x).resize((58,34), Image.LANCZOS)) #Image.ANTIALIAS))
-            logo = tk.Label(window, width=58, height=34, anchor='nw', image=img)
+            src = Image.open(x)
+            # logo.png carries ~15% of its width as BUILT-IN left whitespace (plus top/bottom padding):
+            # the ink's bounding box is ~118..708 of a 767px-wide canvas. Resizing the whole canvas
+            # scaled that padding up too, so the logo rendered as a small mark floating to the RIGHT of
+            # the ? HELP buttons' left edge -- the "off-putting gap" / "logo too small" look. Crop to
+            # the ink first (trim the white margins), THEN size the trimmed mark. Now it sits flush at
+            # the column's left edge and actually fills the column. Trim is dynamic (getbbox against a
+            # white field) so it self-corrects if the asset is ever re-exported with different padding.
+            bg = Image.new("RGB", src.size, (255, 255, 255))
+            bbox = ImageChops.difference(src.convert("RGB"), bg).getbbox()
+            if bbox:
+                src = src.crop(bbox)
+            # Trimmed aspect ~1.82; 84x46 matches the ? HELP button width (~80px) with the buttons' left edge.
+            img = tk_image_from_pil(src.resize((84, 46), Image.LANCZOS)) #Image.ANTIALIAS))
+            logo = tk.Label(window, width=84, height=46, anchor='nw', image=img)
             logo.image = img
             # Left-align the logo with the ? HELP buttons. Under the grid layout those buttons sit at
             # column 0's left padding (~6px), NOT at the legacy help_button_x_coordinate pixel (~70) --
             # so the old `help_button_x_coordinate - 12` offset left the logo floating to their right.
-            # Place it at the same left edge instead (the image carries a little of its own whitespace).
+            # Place it at the same left edge instead (the mark is now cropped flush, no built-in margin).
             logo.place(x=4, y=10)
     except Exception:
         pass  # Logo is cosmetic; skip silently if PIL/ImageTk is unavailable or incompatible
@@ -449,11 +462,12 @@ def display_release():
     # (and shoving every other column right, feeding the horizontal sprawl on the right).
     release_display = 'Release\n' + str(release_version_var.get().replace('\n','')) + "/" + str(GitHub_newest_release)
     release_lb = tk.Label(window, text=release_display, foreground="red", font=('TkDefaultFont', 9), justify='left') #height=1,
-    # CTk migration slice 2b: the logo is .place'd in the top-left corner (y=10, ~50px tall); the
-    # release label belongs directly under it. Gridding it (via placeWidget) dropped it into the tall
-    # header row 0 where it rendered ON TOP OF the logo. .place it under the logo instead -- .place
-    # coexists with the grid, same as the logo -- so it sits under the logo regardless of grid metrics.
-    release_lb.place(x=10, y=48)
+    # CTk migration slice 2b: the logo is .place'd in the top-left corner (y=10, 46px tall, so it
+    # runs to ~y=56); the release label belongs directly under it. Gridding it (via placeWidget)
+    # dropped it into the tall header row 0 where it rendered ON TOP OF the logo. .place it under the
+    # logo instead -- .place coexists with the grid, same as the logo -- so it sits under the logo
+    # regardless of grid metrics. y=62 clears the taller logo's bottom edge.
+    release_lb.place(x=10, y=62)
     import GUI_theme_util
     GUI_theme_util.ToolTip(release_lb,
                            "The two sets of numbers, separated by /, refer to the NLP Suite release on your machine (left) and the release available on GitHub (right)\nWithout internet the newest release available on GitHub cannnot be retrieved and is displayed as 0.0.0.")
