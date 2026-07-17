@@ -180,8 +180,18 @@ def run():
         else:
             corpus_name = os.path.splitext(os.path.basename(inputFilename))[0]
 
+        # Record WHICH RELEASE produced this profile: the summary is a paper-style artifact that outlives
+        # the run and gets shared, so the reader must be able to tell which version of the Suite made it
+        # (findings change as analyses are fixed or added). Read from lib/release_version.txt via the same
+        # getter the GUI's version display uses; degrade to no release stamp rather than fail the summary.
+        try:
+            _release = str(GUI_util.get_local_release_version() or '').strip()
+        except Exception:
+            _release = ''
         run_config = dict(
-            subtitle='package: ' + str(package) + '  ·  language: ' + str(language) + '  ·  ' + time.strftime('%Y-%m-%d'),
+            subtitle='package: ' + str(package) + '  ·  language: ' + str(language) +
+                     ('  ·  NLP Suite ' + _release if _release else '') +
+                     '  ·  ' + time.strftime('%Y-%m-%d'),
             footer='NLP Suite — Corpus Profiler.  ' + str(len(results)) +
                    ' analyses run.  Per-file detail lives in the category subfolders.',
             inputDir=inputDir, inputFilename=inputFilename)   # so the summary can draw a corpus wordcloud
