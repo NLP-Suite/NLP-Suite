@@ -227,13 +227,19 @@ def _run_ner(c):
         print('>>> Entities/NER: reusing an existing %s NER table (%s) -- skipping the ~hour re-parse'
               % (_ner_parser_tag(c), os.path.basename(existing[0])))
         return list(dict.fromkeys(_files(existing)))
+    # 'No charts' (NOT c['chartPackage']) -- the SAME rule as the POS pass below, for the same reason: the
+    # profiler must never chart the RAW PER-TOKEN table. On Harry Potter this NER table is 1,414,910 rows /
+    # 172MB; charting it exceeds Excel's 1,048,576-row cap, falls back to Plotly over 1.4M points, drags a
+    # ~176MB binned copy and a groupBy stats pass behind it, and stalls the sweep for hours -- to render a
+    # per-token scatter that means nothing. The profile builds its own NER charts from the by-document
+    # frequency table, and _interp_ner reads the raw csv directly, so nothing of value is lost.
     if _is_corenlp_package(c.get('package')) and _corenlp_available():
         import Stanford_CoreNLP_util
         NER_list = ['PERSON', 'ORGANIZATION', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
         print('>>> Entities/NER: Stanford CoreNLP (configured parser)')
         out = Stanford_CoreNLP_util.CoreNLP_annotate(
             c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
-            c['chartPackage'], c['dataTransformation'], ['NER'], False,
+            'No charts', c['dataTransformation'], ['NER'], False,
             c['language'], c['export_json_var'], c['memory_var'],
             c['document_length_var'], c['limit_sentence_length_var'], NERs=NER_list)
         return _files(out)
@@ -242,14 +248,14 @@ def _run_ner(c):
         print('>>> Entities/NER: spaCy (configured parser)')
         out = spaCy_util.spaCy_annotate(
             c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
-            c['chartPackage'], c['dataTransformation'], 'NER', False,
+            'No charts', c['dataTransformation'], 'NER', False,
             c['language'], c['memory_var'], c['document_length_var'], c['limit_sentence_length_var'])
         return list(dict.fromkeys(_files(out)))
     import Stanza_util
     print('>>> Entities/NER: Stanza (configured parser) -- no Java')
     out = Stanza_util.Stanza_annotate(
         c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
-        c['chartPackage'], c['dataTransformation'], ['NER'], False,
+        'No charts', c['dataTransformation'], ['NER'], False,
         [c['language']], c['memory_var'], c['document_length_var'], c['limit_sentence_length_var'])
     return list(dict.fromkeys(_files(out)))   # Stanza returns the file once per doc; dedupe
 
