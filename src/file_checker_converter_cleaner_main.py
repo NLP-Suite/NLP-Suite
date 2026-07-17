@@ -49,7 +49,7 @@ def run():
         return
 
     if menu_option=='Document converter (rtf --> txt)':
-        mb.showwarning(title='rtf --> txt converter (Mac OS)', message='In a Mac OS, there is a simple way to batch convert a set of rtf files to txt. THIS ONLY APPLIES TO MAC OS!\n\nOpen the command prompt and change directory to where the rtf files are stored, then type:\n\nfind . -name \*.rtf -print0 | xargs -0 textutil -convert txt\n\nHit return. All txt converted files will be found in the same input directory as the original rtf files.\n\nFor more information, see the post by Alexander Refsum Jensenius at:\nhttps://www.arj.no/2013/01/08/batch-convert-rtf-files-to-txt/.')
+        mb.showwarning(title='rtf --> txt converter (Mac OS)', message='In a Mac OS, there is a simple way to batch convert a set of rtf files to txt. THIS ONLY APPLIES TO MAC OS!\n\nOpen the command prompt and change directory to where the rtf files are stored, then type:\n\nfind . -name \\*.rtf -print0 | xargs -0 textutil -convert txt\n\nHit return. All txt converted files will be found in the same input directory as the original rtf files.\n\nFor more information, see the post by Alexander Refsum Jensenius at:\nhttps://www.arj.no/2013/01/08/batch-convert-rtf-files-to-txt/.')
         # return
 
     if ((check_tools!='') and (clean_tools!='')) and ((inputDir=="") and (inputFilename=="")):

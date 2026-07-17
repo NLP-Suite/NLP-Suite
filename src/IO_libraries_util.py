@@ -469,7 +469,7 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName, re
         if platform == 'win32':
             if 'client' in fileList:
                 return True
-            directory_content = wrong_dir_msg + '\n\nThe ' + programName.upper() + ' directory should contain the subdirectory \'client\n\nMOST LIKELY THE EXECUTABLE FILE WILL AUTOMATICALLY INSTALL GOOGLE EARTH PRO UNDER A directory GOOGLE IN C:\Program Files.'
+            directory_content = wrong_dir_msg + '\n\nThe ' + programName.upper() + ' directory should contain the subdirectory \'client\n\nMOST LIKELY THE EXECUTABLE FILE WILL AUTOMATICALLY INSTALL GOOGLE EARTH PRO UNDER A directory GOOGLE IN C:\\Program Files.'
             message = directory_content + unarchive_msg + select_directory_msg
 
         if platform == 'darwin':
