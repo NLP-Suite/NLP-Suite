@@ -227,7 +227,15 @@ reminders_dropdown_field = tk.StringVar()
 setup_menu = tk.StringVar()
 data_tools_options_widget = tk.StringVar()
 
-run_button = GUI_theme_util.create_button(window, text='RUN', width=10,height=2)
+# CTk migration slice 2b: RUN and CLOSE live in their OWN frame (a bottom button bar), NOT in the
+# shared content grid. Grid columns are shared across rows, so wide content widgets (a long input-file
+# entry, the IO path displays) inflate the columns the bottom chrome sits in and push RUN/CLOSE off the
+# right edge -- they were invisible on every GUI. Packing them left-to-right in a dedicated frame makes
+# their position independent of content width, so they are always visible. run_button is created here
+# at import (mains bind its command before GUI_bottom runs, so it must stay the same object), which is
+# why its master is the frame from the start.
+run_close_bar = tk.Frame(window)
+run_button = GUI_theme_util.create_button(run_close_bar, text='RUN', width=10,height=2)
 
 # license agreement GUI
 agreement_checkbox_var=tk.IntVar()
@@ -1257,6 +1265,11 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
         # coexists with grid).
         intro.grid(row=0, column=1, columnspan=GUI_IO_util._GRID_TOTAL_COLUMNS,
                    padx=6, pady=(6, 4), sticky='w')
+        # Reserve column 0's width for the .place'd logo + release label (they sit at x~58 and run to
+        # ~x190). Without this, column 0 sizes only to the ? HELP buttons (~140px) and the intro text
+        # in column 1 starts under the logo/release -- the overlap the user saw. minsize pushes column
+        # 1 (and every content label) to start clear of the logo zone.
+        window.grid_columnconfigure(0, minsize=210)
         display_logo()
         # although the release version appears in the top part of the GUI,
         #   it is run at the end otherwise a message will be displayed with an incomplete GUI
@@ -1706,15 +1719,14 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
     # there is no RUN button when setting up IO information in any of the NLP_setup scripts
     #   or in any of the GUIs that are ALL options GUIs (except for narrative_analysis where we use checkboxes instead of buttons))
-    # TODO RUN button
-    if ('narrative_analysis' in scriptName) or (not "NLP_setup_" in scriptName \
-            and (not "ALL_main" in scriptName)):
-        # place widget with hover-over info
-        y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate,
-                                                       y_multiplier_integer_SV,
-                                                       run_button, True, False, False, False, 90,
-                                                       GUI_IO_util.open_setup_x_coordinate,
-                                                       'Click on the button to run the algorithm(s) behind the selected option(s)')
+    # RUN/CLOSE go in the dedicated run_close_bar frame (see its creation note): pack them left-to-right
+    # so their position is independent of the wide content columns. The bar itself is gridded below.
+    show_run_button = ('narrative_analysis' in scriptName) or (not "NLP_setup_" in scriptName
+            and (not "ALL_main" in scriptName))
+    if show_run_button:
+        run_button.pack(in_=run_close_bar, side='left', padx=6, pady=2)
+        GUI_theme_util.ToolTip(run_button,
+                               'Click on the button to run the algorithm(s) behind the selected option(s)')
 
     # TODO CLOSE button
     def _close_window():
@@ -1733,14 +1745,19 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
     # do not display CLOSE button for the 3 NLP_setup GUIs; the CLOSE is handled in those GUIs
     if not "NLP_setup_" in scriptName:
-        close_button = GUI_theme_util.create_button(window, text='CLOSE', width=10,height=2, command=lambda: _close_window())
-        # place widget with hover-over info
-        y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate,
-                                                       y_multiplier_integer,
-                                                       close_button, True, False, False, False, 90,
-                                                       GUI_IO_util.read_button_x_coordinate,
-                                                       "Pressing the CLOSE button will trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."
-                                                       "\nYou must be connected to the internet for the auto update to work.")
+        close_button = GUI_theme_util.create_button(run_close_bar, text='CLOSE', width=10,height=2, command=lambda: _close_window())
+        close_button.pack(in_=run_close_bar, side='left', padx=6, pady=2)
+        GUI_theme_util.ToolTip(close_button,
+                               "Pressing the CLOSE button will trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."
+                               "\nYou must be connected to the internet for the auto update to work.")
+
+    # .place the RUN/CLOSE bar at the window's bottom-RIGHT corner (right-aligned, as requested).
+    # It is .place'd rather than gridded on purpose: the content grid can be wider than the visible
+    # window (wide IO rows), so a gridded sticky='e' would pin RUN/CLOSE to the grid's right edge --
+    # off-screen. relx=1.0 anchors to the VISIBLE window's right edge instead, so RUN/CLOSE stay in
+    # the bottom-right corner at any window width. (.place coexists with grid, same as the logo.)
+    if show_run_button or (not "NLP_setup_" in scriptName):
+        run_close_bar.place(relx=1.0, rely=1.0, x=-12, y=-10, anchor='se')
 
     # Any message should be displayed after the whole GUI has been displayed
 
@@ -1822,7 +1839,9 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                 conf_w, conf_h = 0, 0
             screen_w, screen_h = window.winfo_screenwidth(), window.winfo_screenheight()
             new_w = min(max(conf_w, window.winfo_reqwidth()), screen_w)
-            new_h = min(max(conf_h, window.winfo_reqheight()), screen_h - 80)
+            # +48 reserves a strip at the bottom for the .place'd RUN/CLOSE bar (it is not in the grid,
+            # so it does not count toward reqheight -- without the reserve it would overlap the chrome).
+            new_h = min(max(conf_h, window.winfo_reqheight() + 48), screen_h - 80)
             window.geometry(f"{new_w}x{new_h}")
             window.resizable(True, True)
         except Exception as _e:
