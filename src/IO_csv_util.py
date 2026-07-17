@@ -155,14 +155,30 @@ def get_csv_field_values(inputFilename, column_name, uniqueValues=True, returnLi
 
 # get the number of records and columns of a csv file
 def GetNumberOf_Records_Columns_inCSVFile(inputFilename,encodingValue='utf-8'):
+    """(number of records, number of columns) of a csv file.
+
+    Called from ~38 places, routinely on very large tables. Two deliberate choices:
+
+    dtype=str -- we only want the SHAPE, so pandas inferring (and then discarding) a type per column is
+    pure cost. Worse, inference on a mixed-type column emits a DtypeWarning on EVERY call, which buried
+    the terminal on big tables (a 1.4M-row NER table printed it over and over).
+
+    chunksize -- count the rows without ever holding the whole table in memory; the old code read the
+    entire file into a DataFrame just to take .shape off it.
+
+    Columns come from the header alone, so a header-only file still reports its column count."""
     nRecords=0
     nColumns=0
     try:
-        maxnum = pd.read_csv(inputFilename, encoding=encodingValue,on_bad_lines='skip').shape
-    except:
+        nColumns = pd.read_csv(inputFilename, encoding=encodingValue, on_bad_lines='skip',
+                               dtype=str, nrows=0).shape[1]
+        for chunk in pd.read_csv(inputFilename, encoding=encodingValue, on_bad_lines='skip',
+                                 dtype=str, chunksize=100000):
+            nRecords += len(chunk)
+    except Exception:
         # RF @@@@@
-        return nRecords, nColumns
-    return maxnum # tuple with first value number of records, second value number of columns
+        return 0, 0
+    return nRecords, nColumns # tuple with first value number of records, second value number of columns
 
 # inputFile has path
 def GetMaxValueInCSVField(inputFilename,algorithm='',columnHeader='Document ID',encodingValue='utf-8'):
