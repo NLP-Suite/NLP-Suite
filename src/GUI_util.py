@@ -1293,6 +1293,16 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
         # logo/release -- the overlap the user saw. minsize pushes column 1 (and every content label)
         # just clear of the logo zone, keeping the left column as tight as the logo allows.
         window.grid_columnconfigure(0, minsize=122)
+        # Give every coarse band column (1..N, the bands defined by _GRID_COLUMN_THRESHOLDS) a
+        # minimum width so the layout reads as regular, evenly spaced columns. Without this, a band
+        # left empty on a given row (e.g. band 3 between a Value/Group column pair) collapses to zero
+        # width under grid, shoving the two label/control pairs flush against each other in the middle
+        # while the right side sits empty -- the "squished columns" look. A per-band floor keeps the
+        # bands apart on every row regardless of which are populated. RUN/CLOSE are .place'd in their
+        # own bottom bar now, so widening the grid bands can't push them off-screen.
+        _band_count = len(GUI_IO_util._GRID_COLUMN_THRESHOLDS) + 1  # thresholds -> one more band
+        for _band in range(1, _band_count):
+            window.grid_columnconfigure(_band, minsize=150)
         display_logo()
         # although the release version appears in the top part of the GUI,
         #   it is run at the end otherwise a message will be displayed with an incomplete GUI
