@@ -886,28 +886,28 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
     # setup buttons to open an input file, an input directory, an output directory, and a csv config file
     x_coordinate_hover_over = GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_file_button_brief
     # setup a button to open an input file
-    openInputFile_button = GUI_theme_util.create_button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+    openInputFile_button = GUI_theme_util.create_open_file_button(window,
                                      command=lambda:IO_files_util.open_file_removing_date_from_filename(window,inputFilename.get(),True))
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_file_button_brief, y_multiplier_integer,
                                                    openInputFile_button, True, False, True, False, 90, x_coordinate_hover_over, "Open INPUT file")
 
     # setup a button to open Windows Explorer on the selected INPUT directory
-    openInputDirectory_button = GUI_theme_util.create_button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+    openInputDirectory_button = GUI_theme_util.create_open_file_button(window,
                                      command=lambda: IO_files_util.open_directory_removing_date_from_directory(window,input_main_dir_path.get(),True))
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_inputDir_button_brief, y_multiplier_integer,
                                                    openInputDirectory_button, True, False, True,False, 90, x_coordinate_hover_over, "Open INPUT files directory")
 
     # setup a button to open Windows Explorer on the selected OUTPUT directory
-    openOutputDirectory_button = GUI_theme_util.create_button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+    openOutputDirectory_button = GUI_theme_util.create_open_file_button(window,
                                      command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_outputDir_button_brief, y_multiplier_integer,
                                                    openOutputDirectory_button, True, False, True,False, 90, x_coordinate_hover_over, "Open OUTPUT files directory")
 
     # Open csv config file
-    openInputConfigFile_button = GUI_theme_util.create_button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+    openInputConfigFile_button = GUI_theme_util.create_open_file_button(window,
                                      command=lambda: openConfigFile(config_filename_selected_config.get()))
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_config_file_button_brief, y_multiplier_integer,
@@ -956,7 +956,7 @@ def IO_config_setup_full (window, y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,select_inputFilename_button,True)
 
         #setup a button to open Windows Explorer on the selected input file
-        openInputFile_button  = GUI_theme_util.create_button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+        openInputFile_button  = GUI_theme_util.create_open_file_button(window,
                             command=lambda: IO_files_util.open_file_removing_date_from_filename(window,inputFilename.get(),True))
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
             GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -985,8 +985,8 @@ def IO_config_setup_full (window, y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,select_input_main_dir_button,True)
 
         #setup a button to open Windows Explorer on the selected main input directory
-        openDirectory_button  = GUI_theme_util.create_button(window, width=GUI_IO_util.open_file_directory_button_width,
-                            text='', command=lambda: IO_files_util.open_directory_removing_date_from_directory(window,input_main_dir_path.get(),True))
+        openDirectory_button  = GUI_theme_util.create_open_file_button(window,
+                            command=lambda: IO_files_util.open_directory_removing_date_from_directory(window,input_main_dir_path.get(),True))
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
             GUI_IO_util.IO_configuration_menu,
             y_multiplier_integer,
@@ -1014,7 +1014,7 @@ def IO_config_setup_full (window, y_multiplier_integer):
                             y_multiplier_integer,select_input_secondary_dir_button,True)
 
         #setup a button to open Windows Explorer on the selected secondary input directory
-        openDirectory_button  = GUI_theme_util.create_button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openExplorer(window, input_secondary_dir_path.get()))
+        openDirectory_button  = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openExplorer(window, input_secondary_dir_path.get()))
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
             GUI_IO_util.IO_configuration_menu,
             y_multiplier_integer,
@@ -1032,7 +1032,7 @@ def IO_config_setup_full (window, y_multiplier_integer):
 
         #setup a button to open Windows Explorer on the selected input directory
         # current_y_multiplier_integer4=y_multiplier_integer-1
-        openDirectory_button  = GUI_theme_util.create_button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
+        openDirectory_button  = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
             GUI_IO_util.IO_configuration_menu,
             y_multiplier_integer,
