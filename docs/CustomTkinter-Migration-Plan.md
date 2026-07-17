@@ -72,8 +72,15 @@ through the plain `tk.PhotoImage(data=…)` API, bypassing `_imagingtk` entirely
 **This matters because CTk's `CTkImage` uses `PIL.ImageTk` internally.** See §5.1.
 
 Also: `Pillow` is pinned to `10.4.0` in `requirements.txt` because Pillow 12.x is incompatible
-with the bundled Tcl/Tk 8.6 runtime. CustomTkinter (5.2.x) is compatible with that pin — its
-only hard deps are `darkdetect` and `packaging`.
+with the bundled Tcl/Tk 8.6 runtime. CustomTkinter is compatible with that pin — its only hard
+dep is `darkdetect`.
+
+> **Version note (Phase 1):** the suite pins **`customtkinter==6.0.0`** — the version installed
+> in the dev/build environment and validated green by the Phase 0 bundle smoke test — *not* the
+> `5.2.x` this document first assumed. All widget-mapping and factory-wrapper work targets the
+> **6.0.0** API (e.g. `CTkLabel` has no `justify`, `CTkEntry` has neither `justify` nor `anchor`);
+> `GUI_theme_util.translate_kwargs` filters kwargs against each CTk class's real 6.0.0 signature
+> so this stays correct if the pin moves.
 
 ---
 
@@ -194,15 +201,26 @@ can coexist under a `CTk` root during the transition.
 
 ### Phase 0 — Groundwork (1 PR, small)
 
-- Add `customtkinter==5.2.*` (+ transitive `darkdetect`) to `requirements.txt`,
-  `requirements-mac.txt`, `requirements-windows.txt`, and the setup-app dependency probe
-  (`setup-app` scans source imports — verify it picks up `customtkinter`).
-- Add `nlp_suite_theme.json` (CTk color theme: accent `#b10a0a`, neutral grays) under
-  `src/` or `config/` so PyInstaller ships it.
+- Add `customtkinter==6.0.0` (+ transitive `darkdetect`) to `requirements.txt`, and the setup-app
+  dependency probe (`setup-app/Resources/environment_probe.py` scans source imports — once
+  `GUI_theme_util` `import customtkinter`, the probe requires it, which is why the pin lands here).
+  The per-OS `requirements-mac.txt` / `requirements-windows.txt` are installed *in addition* to the
+  base file, so the pin goes in `requirements.txt` **only** (adding it to all three would just
+  double-install).
+- Add `nlp_suite_theme.json` (CTk color theme: accent `#b10a0a`, neutral grays) under `src/` so
+  PyInstaller ships it (the spec's `src` collection is `.py`-only, so it needs an explicit datas
+  entry — done).
 - PyInstaller: add `collect_data_files('customtkinter')` to `NLP_Suite.spec` datas and
-  `darkdetect` to hiddenimports; same for `NetworkGraphViewer.spec` if it grows a CTk UI.
+  `customtkinter`/`darkdetect` to hiddenimports; same for `NetworkGraphViewer.spec` if it grows a
+  CTk UI.
 - **Bundle smoke test on both OSes before anything else lands** (see §5.1 — this is the
   make-or-break risk, so it goes first).
+
+> **Status (2026-07):** Phase 0's *bundle risk* work landed first (commits `19e490f2`, `24554889`:
+> `tests/ctk_bundle_smoke.py` + `src/ctk_bundle_util.py`). The remaining Phase 0 *groundwork* above
+> (requirements pin, theme JSON, spec datas/hiddenimports) was folded into **Phase 1 PR 1**
+> alongside `GUI_theme_util`, since that PR is the first thing to actually `import customtkinter`.
+> ⏳ Windows bundle smoke run still pending before Phase 0 is fully signed off (§5.1).
 
 ### Phase 1 — Shared framework (2–3 PRs, the heart of the migration)
 
@@ -333,8 +351,9 @@ hide real behavioral differences (e.g., different button texts fitting).
 
 ### 5.7 Version pins
 
-Pin `customtkinter==5.2.2` (or latest 5.2.x at Phase 0 time) in all three requirements files.
-Its deps must stay compatible with `Pillow==10.4.0` (they are — CTk does not require Pillow ≥11).
+Pin `customtkinter==6.0.0` (the version validated by the Phase 0 bundle smoke test) in
+`requirements.txt`. Its deps must stay compatible with `Pillow==10.4.0` (they are — CTk does not
+require Pillow ≥11). The base file is enough: the per-OS files install on top of it.
 
 ---
 
