@@ -153,16 +153,80 @@ def _run_word_frequency(c):
 
 
 # ---- entities (English + Stanford CoreNLP) ------------------------------------------------
-def _ner_parser_tag(c):
-    """The filename token identifying the parser _run_ner WOULD use ('corenlp' / 'spacy' / 'stanza').
-    Mirrors _run_ner's own dispatch, so the reuse below can never hand back a table produced by a
-    DIFFERENT parser than the configured one -- reusing a CoreNLP NER table under a Stanza config would
-    silently undo the whole point of making NER config-aware."""
+def _configured_parser_tag(c):
+    """The filename token for the parser the config-aware runners WOULD use ('corenlp' / 'spacy' /
+    'stanza'). Mirrors the identical dispatch in _run_ner and _run_svo, so the reuse probes can never hand
+    back a table produced by a DIFFERENT parser than the configured one -- reusing a CoreNLP table under a
+    Stanza config would silently undo the point of making those passes config-aware."""
     if _is_corenlp_package(c.get('package')) and _corenlp_available():
         return 'corenlp'
     if 'spacy' in str(c.get('package', '')).lower():
         return 'spacy'
     return 'stanza'
+
+
+def _find_existing_parse_csv(c, must, required_columns, exclude=()):
+    """Shared cross-run reuse probe: [path] to a table already in the output dir (from a prior or KILLED
+    run on THIS corpus) so a restart skips the slow re-parse; [] when nothing is trustworthy, so anything
+    unexpected falls through to a fresh parse rather than risking wrong data.
+
+      must              basename substrings ALL required, lowercase, e.g. ('svo', 'stanza')
+      required_columns  columns the file must ACTUALLY have -- the real gate; a filename alone is not
+                        evidence, and derived artifacts reuse the same words
+      exclude           extra basename substrings to reject, on top of the standard list below
+
+    The standard exclusions carry hard-won cases: derived artifacts share the parent's words AND often some
+    of its columns (a by-doc frequency table has 'Object (O)'; a filtered SVO subset has every SVO column
+    but only some rows), and a 'binned' copy can be LARGER than the real table -- 176MB vs 172MB for
+    Harry Potter NER -- so 'largest wins' picks the wrong file without them.
+
+    NOTE: the parsers write these tables when the parse COMPLETES, so a present, valid file means it
+    finished. If a run is killed DURING a parse, delete the partial csv before re-running."""
+    outdir = c.get('outputDir') or ''
+    if not outdir or not os.path.isdir(outdir):
+        return []
+    import glob
+    import pandas as pd
+    # 'lemma' is here for a measured reason, not tidiness: a Stanza SVO run writes BOTH
+    # NLP_SVO_Stanza_Dir_<corpus>.csv (0.23MB, the canonical table) and NLP_SVO_lemma_Stanza_Dir_<corpus>.csv
+    # (0.24MB, a lemmatised variant) with IDENTICAL columns -- the variant is LARGER, so 'largest wins'
+    # picks it without this. _find_existing_pos_csv already excluded it for the same reason.
+    skip = ('binned', 'frequency', 'freq', 'chart', 'no_hyperlinks', 'group', 'bydoc', 'bysent',
+            'stats', 'records', 'filter', 'lemma') + tuple(exclude)
+    best, best_size = None, 0
+    for p in glob.glob(os.path.join(outdir, '**', '*.csv'), recursive=True):
+        b = os.path.basename(p).lower()
+        if not all(m in b for m in must) or any(x in b for x in skip):
+            continue
+        try:
+            head = pd.read_csv(p, nrows=5, encoding='utf-8', on_bad_lines='skip')
+        except Exception:
+            continue
+        if head.empty or not all(col in head.columns for col in required_columns):
+            continue
+        try:
+            size = os.path.getsize(p)
+        except Exception:
+            size = 0
+        if size > best_size:
+            best, best_size = p, size
+    return [best] if best else []
+
+
+def _find_existing_svo_csv(c):
+    """[path] to this corpus's SVO table from a prior/killed run. Under a Stanza config SVO is the
+    profiler's most expensive pass -- dependency parsing, hours on a large corpus -- and it had no reuse at
+    all, so every interrupted sweep re-paid it in full. Tagged to the configured parser."""
+    return _find_existing_parse_csv(c, ('svo', _configured_parser_tag(c)),
+                                    ('Subject (S)', 'Verb (V)', 'Object (O)'))
+
+
+def _find_existing_sentiment_csv(c):
+    """[path] to this corpus's Stanza sentiment table from a prior/killed run (a second neural pass over
+    every sentence -- hours on a large corpus). Tagged 'stanza' because _run_sentiment always uses Stanza
+    with no dispatch: a CoreNLP sentiment table left by another tool must NOT be picked up."""
+    return _find_existing_parse_csv(c, ('sentiment', 'stanza'),
+                                    ('Sentiment score', 'Sentiment label'))
 
 
 def _find_existing_ner_csv(c):
@@ -183,7 +247,7 @@ def _find_existing_ner_csv(c):
         return []
     import glob
     import pandas as pd
-    tag = _ner_parser_tag(c)
+    tag = _configured_parser_tag(c)
     best, best_size = None, 0
     for p in glob.glob(os.path.join(outdir, '**', '*.csv'), recursive=True):
         b = os.path.basename(p).lower()
@@ -225,7 +289,7 @@ def _run_ner(c):
     existing = _find_existing_ner_csv(c)
     if existing:
         print('>>> Entities/NER: reusing an existing %s NER table (%s) -- skipping the ~hour re-parse'
-              % (_ner_parser_tag(c), os.path.basename(existing[0])))
+              % (_configured_parser_tag(c), os.path.basename(existing[0])))
         return list(dict.fromkeys(_files(existing)))
     # 'No charts' (NOT c['chartPackage']) -- the SAME rule as the POS pass below, for the same reason: the
     # profiler must never chart the RAW PER-TOKEN table. On Harry Potter this NER table is 1,414,910 rows /
@@ -522,6 +586,15 @@ def _run_svo(c):
         if picked:
             print('>>> Narrative/SVO: used the shared CoreNLP cache (%d files) -- no re-parse' % len(picked))
             return picked
+    # A prior (or killed) run may already hold this corpus's SVO table. Under a Stanza config this is the
+    # profiler's SINGLE most expensive pass -- dependency parsing, hours on a large corpus -- so it is the
+    # one most worth never re-paying after a crash or power cut. Checked for EVERY parser, before any parse.
+    existing = _find_existing_svo_csv(c)
+    if existing:
+        print('>>> Narrative/SVO: reusing an existing %s SVO table (%s) -- skipping the ~hours re-parse'
+              % (_configured_parser_tag(c), os.path.basename(existing[0])))
+        return list(dict.fromkeys(_files(existing)))
+    if _is_corenlp_package(c.get('package')) and _corenlp_available():
         # 'No charts' (NOT c['chartPackage']): the SVO chart branch in parsers_annotators_visualization
         # tries to chart a 'Verb (V)' column on the CoNLL PARSE table (which has no such column) ->
         # KeyError 'Verb (V)' (Evan's crash). The profiler doesn't need those charts -- it builds its own
@@ -561,6 +634,14 @@ def _run_srl(c):
 
 # ---- sentiment: Stanza neural sentiment (a real model, not a dictionary; already installed) ---
 def _run_sentiment(c):
+    # A prior (or killed) run may already hold this corpus's sentiment table -- a second neural pass over
+    # EVERY sentence (~87k on Harry Potter), hours on a large corpus, and it had no reuse. Same deal as the
+    # CoreNLP/POS/NER/SVO reuse: a valid table in the output dir is reused instead of re-parsed.
+    existing = _find_existing_sentiment_csv(c)
+    if existing:
+        print('>>> Sentiment: reusing an existing Stanza sentiment table (%s) -- skipping the ~hours re-parse'
+              % os.path.basename(existing[0]))
+        return list(dict.fromkeys(_files(existing)))
     import Stanza_util
     out = Stanza_util.Stanza_annotate(
         c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
