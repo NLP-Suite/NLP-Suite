@@ -18,6 +18,14 @@ block_cipher = None
 PROJECT_ROOT = os.path.abspath('.')
 SRC_DIR = os.path.join(PROJECT_ROOT, 'src')
 
+# ── App / Dock icon ─────────────────────────────────────────────────────────
+# PyInstaller wants a .icns on macOS and a .ico on Windows. Both are square
+# renderings of the NLP Suite wordmark (built from lib/images/logo.png).
+if sys.platform == 'darwin':
+    APP_ICON = os.path.join(PROJECT_ROOT, 'lib', 'images', 'NLP_Suite.icns')
+else:
+    APP_ICON = os.path.join(PROJECT_ROOT, 'setup_Windows', 'NLP_Suite.ico')
+
 # ── Local hidden imports ────────────────────────────────────────────────────
 # All .py files in src/ that might be imported dynamically at runtime.
 # PyInstaller can't see imports inside subprocess.call('python script.py')
@@ -276,7 +284,7 @@ exe = EXE(
     strip=False,
     upx=True,
     console=True,  # True so users can see error messages; set False for release
-    icon=None,      # TODO: add NLP Suite icon path here
+    icon=APP_ICON,  # NLP Suite Dock/taskbar icon (.icns on macOS, .ico on Windows)
 )
 
 coll = COLLECT(

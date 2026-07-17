@@ -74,6 +74,25 @@ import IO_files_util
 import IO_internet_util
 import run_script_util
 
+
+def set_window_icon():
+    # Give the window (title bar / taskbar / Dock) the NLP Suite icon instead of the bare default
+    # "blank page" Tk icon. Tk 8.6 reads PNG natively, so this needs no PIL. iconphoto(True, ...)
+    # applies to this root and every Toplevel spawned from it, so every GUI in the suite is covered.
+    # The packaged .app / .exe carries its own icon from NLP_Suite.spec; this is the from-source path.
+    global _window_icon
+    try:
+        _window_icon = tk.PhotoImage(file=GUI_IO_util.image_libPath + os.sep + "NLP_Suite_icon.png")
+        window.iconphoto(True, _window_icon)  # keep the module ref so Tk doesn't GC the image
+    except Exception:
+        pass  # icon is cosmetic; skip silently if the file or PNG support is unavailable
+
+
+_window_icon = None
+
+
+set_window_icon()
+
 y_multiplier_integer = 1
 noLicenceError=False
 
