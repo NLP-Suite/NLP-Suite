@@ -619,20 +619,27 @@ nb_style.map('Viz.TNotebook.Tab',
              background=[('selected', '#d0e0f0'), ('!selected', '#e8e8e8')],
              foreground=[('selected', 'red'), ('!selected', '#999999')])
 
-# Save the current y position for the notebook
-notebook_y = 90 + 40 * y_multiplier_integer
-
+# CTk migration slice 2b: GRID the notebook into the current row instead of .place'ing it at the old
+# pixel-y (90 + 40*y_multiplier) -- under the grid layout that y no longer matches where the chrome
+# sits, so the notebook floated over the controls. The tab frames hold .place'd children (no natural
+# size), so pin each to an explicit size with propagation OFF or the gridded notebook collapses.
+_nb_width = GUI_IO_util.get_GUI_width(3) - GUI_IO_util.labels_x_coordinate - 20
+_nb_height = 310
 notebook = ttk.Notebook(window, style='Viz.TNotebook')
-notebook.place(x=GUI_IO_util.labels_x_coordinate, y=notebook_y,
-               width=GUI_IO_util.get_GUI_width(3) - GUI_IO_util.labels_x_coordinate - 20, height=310)
+notebook.grid(row=GUI_IO_util._GRID_HEADER_ROWS + int(round(y_multiplier_integer)),
+              column=0, columnspan=GUI_IO_util._GRID_TOTAL_COLUMNS,
+              padx=(GUI_IO_util.labels_x_coordinate, 10), pady=6, sticky='we')
 
-tab_relational = ttk.Frame(notebook)
-tab_categorical = ttk.Frame(notebook)
-tab_temporal = ttk.Frame(notebook)
-tab_numeric = ttk.Frame(notebook)
-tab_geographic = ttk.Frame(notebook)
-tab_wordclouds = ttk.Frame(notebook)
-tab_tree = ttk.Frame(notebook)
+tab_relational = ttk.Frame(notebook, width=_nb_width, height=_nb_height)
+tab_categorical = ttk.Frame(notebook, width=_nb_width, height=_nb_height)
+tab_temporal = ttk.Frame(notebook, width=_nb_width, height=_nb_height)
+tab_numeric = ttk.Frame(notebook, width=_nb_width, height=_nb_height)
+tab_geographic = ttk.Frame(notebook, width=_nb_width, height=_nb_height)
+tab_wordclouds = ttk.Frame(notebook, width=_nb_width, height=_nb_height)
+tab_tree = ttk.Frame(notebook, width=_nb_width, height=_nb_height)
+for _tab in (tab_relational, tab_categorical, tab_temporal, tab_numeric,
+             tab_geographic, tab_wordclouds, tab_tree):
+    _tab.pack_propagate(False)
 
 notebook.add(tab_relational, text=' Relational ')
 notebook.add(tab_categorical, text=' Categorical ')
