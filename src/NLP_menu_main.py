@@ -509,14 +509,22 @@ nb_style.map('NLP.TNotebook.Tab',
              background=[('selected', '#d0e0f0'), ('!selected', '#e8e8e8')],
              foreground=[('selected', 'red'), ('!selected', '#999999')])
 
-notebook_y = GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step * y_multiplier_integer
 nb_width = GUI_width - GUI_IO_util.labels_x_coordinate - 20
 nb_height = 210
 tools_notebook = ttk.Notebook(window, style='NLP.TNotebook')
-tools_notebook.place(x=GUI_IO_util.labels_x_coordinate, y=notebook_y, width=nb_width, height=nb_height)
+# CTk migration slice 2b: the body is grid-managed now, so the notebook must be GRIDded too -- the
+# old .place(y = 90 + 40*y_multiplier) put it at a pixel-y the grid no longer uses, so it floated
+# over the chrome. Grid it into the current row, spanning the full column band. The tab frames hold
+# .place'd children (which give a frame no natural size), so pin each frame to an explicit size and
+# turn OFF geometry propagation, otherwise the gridded notebook would collapse to zero height.
+tools_notebook.grid(row=GUI_IO_util._GRID_HEADER_ROWS + int(round(y_multiplier_integer)),
+                    column=0, columnspan=GUI_IO_util._GRID_TOTAL_COLUMNS,
+                    padx=(GUI_IO_util.labels_x_coordinate, 10), pady=6, sticky='we')
 
-tab_linguistic = ttk.Frame(tools_notebook)
-tab_utility = ttk.Frame(tools_notebook)
+tab_linguistic = ttk.Frame(tools_notebook, width=nb_width, height=nb_height)
+tab_utility = ttk.Frame(tools_notebook, width=nb_width, height=nb_height)
+tab_linguistic.pack_propagate(False)
+tab_utility.pack_propagate(False)
 # Linguistic tools are the suite's raison d'être -> make them the FIRST tab, so they are the
 # default selected tab on every launch; General Utility tools follow as the supporting cast.
 tools_notebook.add(tab_linguistic, text='   Linguistic Analysis Tools   ')
