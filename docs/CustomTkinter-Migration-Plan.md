@@ -232,6 +232,26 @@ can coexist under a `CTk` root during the transition.
    `place_help_button`; `message_box_widget`, `enter_value_widget`, `slider_widget`,
    `dropdown_menu_widget*`, `combobox_with_search_widget` popups → CTkToplevel + wrappers.
 
+> **Status (2026-07):** PR 1 (`GUI_theme_util` compat layer + Phase 0 groundwork) merged to
+> `roberto` as **PR #1641**. PR 2 (root → `CTk()`, shared-chrome factory conversions, `GUI_top`
+> intro widget, kept the `.place()` layout — "slice 2a") lives on `ctk/phase1-core`, opened
+> against `roberto` as **PR #1645** now that PR 1 has landed there. It includes the
+> folder-icon open-button fix (the "open selected file/directory" buttons were rendering as
+> empty ~8px slivers — `width=1, text=''` — fixed via a new `GUI_theme_util.create_open_file_button`
+> themed `CTkButton`) and the logo-column tightening (logo 85×50 → 58×34, column-0 minsize
+> 210 → 122), moved here from the grid-reflow branch since both are chrome/theming fixes
+> independent of the grid engine itself.
+>
+> `placeWidget` → `grid()` ("slice 2b") lives on `ctk/phase1-grid`, stacked on `ctk/phase1-core`
+> as **fork PR #3**. First render is clean on `statistics_csv_main` and the suite is green, but
+> it's still WIP — open punch-list items: window geometry is tuned to the old absolute layout
+> (~35% empty on the right); `IO_config_setup_brief()` creates a duplicate INPUT display box
+> (two ~450px boxes render side by side, a major overflow driver, flagged with a
+> `TODO(ctk-migration)`); `NLP_menu_main`'s `ttk.Notebook` is still `.place()`d over the gridded
+> chrome and needs special-casing; multi-column GUIs (SVO, GIS) and the raw-`.place()` GUIs
+> (`data_visualization_main.py`, 140 sites) are unvalidated; and the per-GUI click-test list
+> (widest/busiest rows, the `sameY` path, notebook GUIs, baseline sanity) is still outstanding.
+
 After Phase 1, **every GUI already looks substantially better** (new chrome, themed top/bottom
 bars, help column, scrollable body) even though its own widgets are still plain tk.
 

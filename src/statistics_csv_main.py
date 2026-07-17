@@ -12,6 +12,7 @@ import tkinter.messagebox as mb
 import tkinter.filedialog
 
 import GUI_IO_util
+import GUI_theme_util
 import IO_csv_util
 import IO_user_interface_util
 import IO_files_util
@@ -369,7 +370,7 @@ input_csv_file_button = tk.Button(window, width=GUI_IO_util.select_file_director
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                input_csv_file_button, True)
 
-open_input_csv_file_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+open_input_csv_file_button = GUI_theme_util.create_open_file_button(window,
                                        command=lambda: IO_files_util.openFile(window, input_csv_file_var.get()))
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                open_input_csv_file_button,
