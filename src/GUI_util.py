@@ -317,16 +317,14 @@ def display_logo():
         # https://stackoverflow.com/questions/76616042/attributeerror-module-pil-image-has-no-attribute-antialias
         image_list = [GUI_IO_util.image_libPath + os.sep + "logo.png"]
         for x in image_list:
-            img = tk_image_from_pil(Image.open(x).resize((85,50), Image.LANCZOS)) #Image.ANTIALIAS))
-            logo = tk.Label(window, width=85, height=50, anchor='nw', image=img)
+            img = tk_image_from_pil(Image.open(x).resize((58,34), Image.LANCZOS)) #Image.ANTIALIAS))
+            logo = tk.Label(window, width=58, height=34, anchor='nw', image=img)
             logo.image = img
-            # the logo has some white spaces to its left; better cutting this so that it can be aligned with HELP? buttons
-            # -12 works for Windows; must be checked for Mac
-            if platform == "win32":
-                offset=12
-            else:
-                offset=12
-            logo.place(x=GUI_IO_util.help_button_x_coordinate-offset, y=10)
+            # Left-align the logo with the ? HELP buttons. Under the grid layout those buttons sit at
+            # column 0's left padding (~6px), NOT at the legacy help_button_x_coordinate pixel (~70) --
+            # so the old `help_button_x_coordinate - 12` offset left the logo floating to their right.
+            # Place it at the same left edge instead (the image carries a little of its own whitespace).
+            logo.place(x=4, y=10)
     except Exception:
         pass  # Logo is cosmetic; skip silently if PIL/ImageTk is unavailable or incompatible
 
@@ -445,13 +443,17 @@ def display_release():
     # get_GitHub_release_version() has a double \n\n which then overwrites the first line of the GUIs: ?HELP and Setup
     GitHub_newest_release = get_GitHub_release_version().replace('\n','')
 
-    release_display = 'Release ' + str(release_version_var.get().replace('\n','')) + "/" + str(GitHub_newest_release)
-    release_lb = tk.Label(window, text=release_display, foreground="red") #height=1,
+    # Stacked on two lines ("Release" over the two version numbers) so the label's width is just the
+    # numbers (~55px) instead of the full one-line string (~150px). That width is the binding
+    # constraint on column 0's minsize below -- a wide release label was forcing a wide left column
+    # (and shoving every other column right, feeding the horizontal sprawl on the right).
+    release_display = 'Release\n' + str(release_version_var.get().replace('\n','')) + "/" + str(GitHub_newest_release)
+    release_lb = tk.Label(window, text=release_display, foreground="red", font=('TkDefaultFont', 9), justify='left') #height=1,
     # CTk migration slice 2b: the logo is .place'd in the top-left corner (y=10, ~50px tall); the
     # release label belongs directly under it. Gridding it (via placeWidget) dropped it into the tall
     # header row 0 where it rendered ON TOP OF the logo. .place it under the logo instead -- .place
     # coexists with the grid, same as the logo -- so it sits under the logo regardless of grid metrics.
-    release_lb.place(x=GUI_IO_util.help_button_x_coordinate - 12, y=64)
+    release_lb.place(x=10, y=48)
     import GUI_theme_util
     GUI_theme_util.ToolTip(release_lb,
                            "The two sets of numbers, separated by /, refer to the NLP Suite release on your machine (left) and the release available on GitHub (right)\nWithout internet the newest release available on GitHub cannnot be retrieved and is displayed as 0.0.0.")
@@ -882,6 +884,12 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
 
     if config_input_output_numeric_options!=[0,0,0,0]:
         date_hover_over_label, IO_setup_display_string, config_input_output_alphabetic_options, missing_IO = set_IO_brief_values(config_filename, y_multiplier_integer)
+    # TODO(ctk-migration): DUPLICATE INPUT display box. set_IO_brief_values() (called just above)
+    # already creates AND places its own tk.Text(width=60) box, then this creates a SECOND identical
+    # one -- two side-by-side INPUT FILE/DIR boxes render on every GUI, ~450px each, driving the
+    # right-side overflow. Fix: make set_IO_brief_values() compute-and-return only (no widget), keep
+    # this single box, and have the refresh path display_IO_setup() update this box instead of
+    # letting set_IO_brief_values() recreate one. Verify file/dir selection still refreshes the box.
     IO_setup_brief_display_area = tk.Text(width=60, height=2)
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,
@@ -1265,11 +1273,12 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
         # coexists with grid).
         intro.grid(row=0, column=1, columnspan=GUI_IO_util._GRID_TOTAL_COLUMNS,
                    padx=6, pady=(6, 4), sticky='w')
-        # Reserve column 0's width for the .place'd logo + release label (they sit at x~58 and run to
-        # ~x190). Without this, column 0 sizes only to the ? HELP buttons (~140px) and the intro text
-        # in column 1 starts under the logo/release -- the overlap the user saw. minsize pushes column
-        # 1 (and every content label) to start clear of the logo zone.
-        window.grid_columnconfigure(0, minsize=210)
+        # Reserve column 0's width for the .place'd logo + release label (both sit at x~58; the 58px
+        # logo runs to ~x116, the now two-line release label to ~x113). Without this, column 0 sizes
+        # only to the ? HELP buttons (~100px) and the intro text in column 1 starts under the
+        # logo/release -- the overlap the user saw. minsize pushes column 1 (and every content label)
+        # just clear of the logo zone, keeping the left column as tight as the logo allows.
+        window.grid_columnconfigure(0, minsize=122)
         display_logo()
         # although the release version appears in the top part of the GUI,
         #   it is run at the end otherwise a message will be displayed with an incomplete GUI
