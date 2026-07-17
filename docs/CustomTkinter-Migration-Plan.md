@@ -235,7 +235,7 @@ can coexist under a `CTk` root during the transition.
 > **Status (2026-07):** PR 1 (`GUI_theme_util` compat layer + Phase 0 groundwork) merged to
 > `roberto` as **PR #1641**. PR 2 (root → `CTk()`, shared-chrome factory conversions, `GUI_top`
 > intro widget, kept the `.place()` layout — "slice 2a") lives on `ctk/phase1-core`, opened
-> against `roberto` as **fork PR #2** now that PR 1 has landed there. It includes the
+> against `roberto` as **PR #1645** now that PR 1 has landed there. It includes the
 > folder-icon open-button fix (the "open selected file/directory" buttons were rendering as
 > empty ~8px slivers — `width=1, text=''` — fixed via a new `GUI_theme_util.create_open_file_button`
 > themed `CTkButton`) and the logo-column tightening (logo 85×50 → 58×34, column-0 minsize
