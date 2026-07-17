@@ -1594,7 +1594,8 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     videos_dropdown_field.set('Watch videos')
     if len(videos_lookup)==1:
         if videos_options == "No videos available":
-            videos_menu_lb = GUI_theme_util.create_option_menu(window, variable=videos_dropdown_field, values=[videos_options])
+            # muted=True -> grey: no videos for this GUI (restores the legacy red=available cue)
+            videos_menu_lb = GUI_theme_util.create_option_menu(window, variable=videos_dropdown_field, values=[videos_options], muted=True)
         else:
             videos_menu_lb = GUI_theme_util.create_option_menu(window, variable=videos_dropdown_field, values=[videos_options])
     else:
@@ -1617,7 +1618,8 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     tips_dropdown_field.set('Open TIPS files')
     if len(TIPS_lookup)==1:
         if TIPS_options == "No TIPS available":
-            tips_menu_lb = GUI_theme_util.create_option_menu(window, variable=tips_dropdown_field, values=[TIPS_options])
+            # muted=True -> grey: no TIPS for this GUI (restores the legacy red=available cue)
+            tips_menu_lb = GUI_theme_util.create_option_menu(window, variable=tips_dropdown_field, values=[TIPS_options], muted=True)
         else:
             tips_menu_lb = GUI_theme_util.create_option_menu(window, variable=tips_dropdown_field, values=[TIPS_options])
     else:
@@ -1651,13 +1653,14 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     # reminders content for specific GUIs are set in the csv file reminders
     # called from any GUI
     reminders_dropdown_field.set('Open reminders')
-    reminders_menu_lb = GUI_theme_util.create_option_menu(window, variable=reminders_dropdown_field, values=["No Reminders available"])
+    reminders_menu_lb = GUI_theme_util.create_option_menu(window, variable=reminders_dropdown_field, values=["No Reminders available"], muted=True)
 
     if len(reminder_options)==0:
         reminder_options = ["No Reminders available"]
     if len(reminder_options)==0 or len(reminder_options)==1:
         if reminder_options == ["No Reminders available"]:
-            reminders_menu_lb = GUI_theme_util.create_option_menu(window, variable=reminders_dropdown_field, values=reminder_options)
+            # muted=True -> grey: no reminders for this GUI (restores the legacy red=available cue)
+            reminders_menu_lb = GUI_theme_util.create_option_menu(window, variable=reminders_dropdown_field, values=reminder_options, muted=True)
         else:
             reminders_menu_lb = GUI_theme_util.create_option_menu(window, variable=reminders_dropdown_field, values=reminder_options)
     else:

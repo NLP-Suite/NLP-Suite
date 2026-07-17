@@ -213,14 +213,33 @@ def create_checkbox(master, **kwargs):
     return ctk.CTkCheckBox(master, **translate_kwargs(ctk.CTkCheckBox, kwargs))
 
 
-def create_option_menu(master, variable=None, values=None, command=None, **kwargs):
+# Neutral grey for a "nothing available" OptionMenu (muted=True). The theme paints every menu solid
+# red, which erased the legacy red=available / black=none availability cue on the TIPS / reminders /
+# videos dropdowns. Grey-on-red restores that cue in a CTk-native way -- a greyed dropdown reads as
+# "nothing here for this GUI" at a glance. Light-mode values (appearance is pinned "light" in Phase 1).
+_MUTED_FG = "#d9d9d9"
+_MUTED_BUTTON = "#c4c4c4"
+_MUTED_BUTTON_HOVER = "#b4b4b4"
+_MUTED_TEXT = "#5f5f5f"
+
+
+def create_option_menu(master, variable=None, values=None, command=None, muted=False, **kwargs):
     """tk.OptionMenu(master, var, *choices) -> CTkOptionMenu(master, variable=, values=[...]).
 
     The legacy call passes the choices as varargs; call sites converting to this factory pass them
     as ``values=[...]``. Repopulate a live menu with :func:`set_values` (never the old
     ``widget["menu"]`` mutation).
+
+    muted=True renders the menu in a neutral GREY instead of the theme red -- used for the
+    TIPS / reminders / videos dropdowns when nothing is available for the current GUI, restoring the
+    legacy red=available / grey=none availability cue the solid-red theme otherwise erased.
     """
     translated = translate_kwargs(ctk.CTkOptionMenu, kwargs)
+    if muted:
+        translated.setdefault("fg_color", _MUTED_FG)
+        translated.setdefault("button_color", _MUTED_BUTTON)
+        translated.setdefault("button_hover_color", _MUTED_BUTTON_HOVER)
+        translated.setdefault("text_color", _MUTED_TEXT)
     if variable is not None:
         translated["variable"] = variable
     if values is not None:
