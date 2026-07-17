@@ -305,6 +305,13 @@ def visualize_chart_byGroup(inputFilename, outputDir, chartPackage, dataTransfor
 #   chart_title_label is used as part of the chart_title when plotting the fields statistics (Mean, Mode, Skewness,...)
 # X-axis
 
+# Share of a column's NON-EMPTY values that must parse as numbers before the column is treated as
+# numeric and binned. Deliberately strict: binning REPLACES the column's values, so misjudging a text
+# column destroys data. A genuine numeric column scores 1.0; a text column with stray numbers scores
+# near 0. Nothing real sits in between, so the exact cut-off is not delicate -- erring high is free.
+_NUMERIC_COLUMN_MIN_SHARE = 0.95
+
+
 def _bin_numeric_columns_for_chart(inputFilename, outputDir, value_col_indices, threshold=20, max_bins=10):
     """Numeric X-axis binning (the 'TODO Naman' note): for a FREQUENCY bar chart of numeric values,
     when a plotted column holds more than `threshold` distinct numeric values, replace those values
@@ -324,7 +331,18 @@ def _bin_numeric_columns_for_chart(inputFilename, outputDir, value_col_indices, 
                 continue
             col = df.columns[idx]
             s = pd.to_numeric(df[col], errors='coerce')
-            if s.notna().sum() == 0:                 # not a numeric column -> leave alone
+            # A column counts as numeric only when (nearly) EVERY non-empty value parses as a number.
+            # The old test was `s.notna().sum() == 0` -- i.e. skip only if NOT ONE value was numeric --
+            # which made a single stray number enough to classify a TEXT column as numeric. Because the
+            # coerced series `s` (text -> NaN) is what gets assigned back below, the whole column was then
+            # overwritten: on a real NER table, 'Multi-Word Expression' held 25,527 entity names of which
+            # just 34 looked numeric (stray years), so the binned copy kept those 34 and silently
+            # destroyed the other 25,493. Fail closed: when in doubt, leave the column alone.
+            non_empty = int(df[col].notna().sum())
+            numeric_count = int(s.notna().sum())
+            if non_empty == 0 or numeric_count == 0:
+                continue
+            if numeric_count < _NUMERIC_COLUMN_MIN_SHARE * non_empty:
                 continue
             if s.dropna().nunique() <= threshold:    # few enough distinct values already
                 continue
