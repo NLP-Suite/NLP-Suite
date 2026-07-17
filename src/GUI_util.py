@@ -1830,6 +1830,42 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     # count toward reqwidth/reqheight), never past the screen. Grow-only, so empty margin is fine but
     # nothing is ever clipped. Also make the window resizable so the user can adjust. Scheduled
     # after_idle to run after any widgets a GUI adds past GUI_bottom.
+    def _shrink_wide_fields_to_fit(target_w):
+        # Auto-shrink pass: the old .place layout let wide widgets overlap across rows; grid forces
+        # them into separate columns whose widths SUM, so busy full-IO GUIs are far wider than the
+        # screen. Iteratively narrow the widest text-entry-style widgets (they scroll internally, so
+        # the full text is still reachable) until the content fits target_w -- and only as much as
+        # needed, so fields stay as wide as they can. Labels/checkbuttons are left alone (can't shrink
+        # without reflowing text). width is in chars for tk/ttk Entry/Text, so shrinking the number
+        # narrows them; we stop each widget once it is already narrow (reqwidth <= _FLOOR_PX).
+        _SHRINKABLE = {'Entry', 'Text', 'TEntry', 'TCombobox', 'Spinbox', 'TSpinbox'}
+        _FLOOR_PX = 150
+
+        def _all_widgets(w, acc):
+            for child in w.winfo_children():
+                acc.append(child)
+                _all_widgets(child, acc)
+            return acc
+
+        candidates = [w for w in _all_widgets(window, [])
+                      if w.winfo_class() in _SHRINKABLE]
+        for _ in range(400):
+            window.update_idletasks()
+            if window.winfo_reqwidth() <= target_w:
+                break
+            shrinkable = [w for w in candidates if w.winfo_reqwidth() > _FLOOR_PX]
+            if not shrinkable:
+                break
+            widest = max(shrinkable, key=lambda w: w.winfo_reqwidth())
+            try:
+                cur = int(widest.cget('width'))
+            except (ValueError, tk.TclError):
+                break
+            new = max(4, cur - max(1, cur // 8))
+            if new >= cur:
+                break
+            widest.configure(width=new)
+
     def _fit_window_to_content():
         try:
             window.update_idletasks()
@@ -1838,6 +1874,9 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
             except (ValueError, AttributeError):
                 conf_w, conf_h = 0, 0
             screen_w, screen_h = window.winfo_screenwidth(), window.winfo_screenheight()
+            # Leave a small margin from the screen edge; shrink wide fields if content exceeds it.
+            _shrink_wide_fields_to_fit(screen_w - 40)
+            window.update_idletasks()
             new_w = min(max(conf_w, window.winfo_reqwidth()), screen_w)
             # +48 reserves a strip at the bottom for the .place'd RUN/CLOSE bar (it is not in the grid,
             # so it does not count toward reqheight -- without the reserve it would overlap the chrome).
