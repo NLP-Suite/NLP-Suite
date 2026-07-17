@@ -45,9 +45,6 @@ _PX_PER_CHAR = 8
 _PX_PER_LINE = 22
 # A CTk widget's natural (default) height, used as the floor when translating small line counts.
 _MIN_WIDGET_PX = 28
-# Above this, an incoming height/width is assumed to already be pixels (a CTk-aware caller), not
-# a legacy line/character count, so it is passed through unchanged.
-_ALREADY_PX_THRESHOLD = 60
 
 # tk keyword -> CTk keyword renames. (Colors: tk ``foreground``/``fg`` -> CTk ``text_color``.)
 _RENAME = {
@@ -92,6 +89,12 @@ _DROP = frozenset(
 def char_width_to_px(char_width, px_per_char=_PX_PER_CHAR, padding=0):
     """Translate a legacy tk character-based width into a CTk pixel width.
 
+    The input is *always* treated as a character count -- there is no magnitude cutoff that guesses
+    "this looks big, it must already be pixels". Legacy char widths in the suite run past 200 (wide
+    file-path and search entries), so any such guess would shrink exactly the widest fields. A caller
+    that genuinely holds a pixel width bypasses this multiply via ``width_is_chars=False`` in
+    :func:`translate_kwargs` (see :func:`create_slider`) instead.
+
     Returns ``None`` for a missing / non-positive / non-numeric width so the caller can drop the
     ``width`` kwarg entirely and let CTk use its own default sizing.
     """
@@ -101,13 +104,15 @@ def char_width_to_px(char_width, px_per_char=_PX_PER_CHAR, padding=0):
         return None
     if n <= 0:
         return None
-    if n > _ALREADY_PX_THRESHOLD:
-        return n  # already pixels (CTk-aware caller)
     return n * px_per_char + padding
 
 
 def line_height_to_px(char_height):
     """Translate a legacy tk line-based height (e.g. a 2-line RUN button) into a CTk pixel height.
+
+    Like :func:`char_width_to_px`, the input is always treated as a line count -- pixel-holding
+    callers use ``height_is_lines=False`` in :func:`translate_kwargs` (as :func:`create_entry` does)
+    rather than relying on a magnitude guess.
 
     Returns ``None`` for a missing / non-positive / non-numeric height so the caller drops the
     ``height`` kwarg and CTk uses its default widget height.
@@ -118,8 +123,6 @@ def line_height_to_px(char_height):
         return None
     if n <= 0:
         return None
-    if n > _ALREADY_PX_THRESHOLD:
-        return n  # already pixels
     return max(_MIN_WIDGET_PX, n * _PX_PER_LINE)
 
 
