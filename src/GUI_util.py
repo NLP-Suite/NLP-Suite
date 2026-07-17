@@ -215,6 +215,10 @@ config_filename_selected_config.set('')
 
 release_version_var=tk.StringVar()
 GitHub_release_version_var=tk.StringVar()
+# Bottom edge (window y) of the .place'd logo; set by display_logo() from the logo's real rendered
+# height and read by display_release() to sit the release label just below it. Fallback used when a
+# GUI shows the release without a logo (e.g. the welcome screen).
+_logo_bottom_y = 62
 
 open_csv_output_checkbox = tk.IntVar()
 charts_package_options_widget = tk.StringVar()
@@ -329,15 +333,33 @@ def display_logo():
             bbox = ImageChops.difference(src.convert("RGB"), bg).getbbox()
             if bbox:
                 src = src.crop(bbox)
-            # Trimmed aspect ~1.82; 84x46 matches the ? HELP button width (~80px) with the buttons' left edge.
-            img = tk_image_from_pil(src.resize((84, 46), Image.LANCZOS)) #Image.ANTIALIAS))
-            logo = tk.Label(window, width=84, height=46, anchor='nw', image=img)
+            # Cropping to the ink left the letters flush against all four edges, which read as the logo
+            # being "cut off" (the P and the tail of "Suite" ran into the frame). Add a small TRANSPARENT
+            # margin (~9% of the ink each side) so the mark has breathing room; transparent (RGBA) lets
+            # the window background show through instead of a white box. Then size it into the ~100x55
+            # label -- a hair larger than the old 84x46 so the ink itself still ~matches the ? HELP
+            # button width after the margin is added. Aspect (~1.82) is preserved, so no distortion.
+            src = src.convert("RGBA")
+            mx, my = round(src.width * 0.09), round(src.height * 0.09)
+            padded = Image.new("RGBA", (src.width + 2 * mx, src.height + 2 * my), (0, 0, 0, 0))
+            padded.paste(src, (mx, my))
+            img = tk_image_from_pil(padded.resize((100, 55), Image.LANCZOS)) #Image.ANTIALIAS))
+            logo = tk.Label(window, width=100, height=55, anchor='nw', image=img)
             logo.image = img
             # Left-align the logo with the ? HELP buttons. Under the grid layout those buttons sit at
             # column 0's left padding (~6px), NOT at the legacy help_button_x_coordinate pixel (~70) --
             # so the old `help_button_x_coordinate - 12` offset left the logo floating to their right.
             # Place it at the same left edge instead (the mark is now cropped flush, no built-in margin).
             logo.place(x=4, y=10)
+            # Publish the logo's ACTUAL rendered bottom so display_release() can sit the release label
+            # directly beneath it regardless of how tall the logo renders on a given machine/DPI.
+            # winfo_reqheight() is the label's requested height (image + borders) and is valid before
+            # the window is mapped, so this is reliable even during first build. A hard-coded y for the
+            # release label was fragile: it read as overlapping the logo wherever the logo rendered
+            # taller than assumed.
+            global _logo_bottom_y
+            logo.update_idletasks()
+            _logo_bottom_y = 10 + max(logo.winfo_reqheight(), logo.winfo_height())
     except Exception:
         pass  # Logo is cosmetic; skip silently if PIL/ImageTk is unavailable or incompatible
 
@@ -461,16 +483,16 @@ def display_release():
     # constraint on column 0's minsize below -- a wide release label was forcing a wide left column
     # (and shoving every other column right, feeding the horizontal sprawl on the right).
     release_display = 'Release\n' + str(release_version_var.get().replace('\n','')) + "/" + str(GitHub_newest_release)
-    release_lb = tk.Label(window, text=release_display, foreground="red", font=('TkDefaultFont', 9), justify='left') #height=1,
-    # CTk migration slice 2b: the logo is .place'd in the top-left corner (y=10, 46px tall, so it
-    # runs to ~y=56); the release label belongs directly under it. Gridding it (via placeWidget)
-    # dropped it into the tall header row 0 where it rendered ON TOP OF the logo. .place it under the
-    # logo instead -- .place coexists with the grid, same as the logo -- so it sits under the logo
-    # regardless of grid metrics. The logo is a two-line "NLP / Suite" mark whose ink runs to the
-    # label's bottom edge (~y=56); y=62 left only ~6px, so the red "Release" line read as touching
-    # the logo. y=72 gives a clear gap below the logo (10 + 46 + 16) while staying well above the
-    # first ? HELP button row.
-    release_lb.place(x=10, y=72)
+    # font 9 rendered too small to read ("tiny release text"); 11 is legible while the two-line stack
+    # keeps the label narrow enough to stay inside column 0's minsize (so it doesn't widen the left
+    # column / push the grid right).
+    release_lb = tk.Label(window, text=release_display, foreground="red", font=('TkDefaultFont', 11), justify='left') #height=1,
+    # CTk migration slice 2b: the logo is .place'd in the top-left corner; the release label belongs
+    # directly under it. Gridding it (via placeWidget) dropped it into the tall header row 0 where it
+    # rendered ON TOP OF the logo, so .place it instead (.place coexists with the grid). Anchor it to
+    # the logo's ACTUAL rendered bottom (_logo_bottom_y, published by display_logo) plus a fixed gap
+    # -- a hard-coded y read as overlapping wherever the logo rendered taller than assumed.
+    release_lb.place(x=10, y=_logo_bottom_y + 12)
     import GUI_theme_util
     GUI_theme_util.ToolTip(release_lb,
                            "The two sets of numbers, separated by /, refer to the NLP Suite release on your machine (left) and the release available on GitHub (right)\nWithout internet the newest release available on GitHub cannnot be retrieved and is displayed as 0.0.0.")
