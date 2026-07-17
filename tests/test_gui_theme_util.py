@@ -27,9 +27,11 @@ class TestCharWidthToPx:
     def test_missing_or_nonpositive_returns_none(self, bad):
         assert gtu.char_width_to_px(bad) is None
 
-    def test_large_value_treated_as_already_pixels(self):
-        # A CTk-aware caller passing a real pixel width must not be multiplied again.
-        assert gtu.char_width_to_px(300) == 300
+    def test_large_char_width_still_multiplied(self):
+        # No magnitude cutoff: a wide legacy entry (e.g. a 115-char file-path field) must be scaled
+        # to pixels like any other char width, not passed through as ~115px. Pixel-holding callers
+        # opt out via width_is_chars=False in translate_kwargs, not via a magic size threshold.
+        assert gtu.char_width_to_px(115) == 115 * gtu._PX_PER_CHAR
 
     def test_numeric_string_is_accepted(self):
         assert gtu.char_width_to_px("12") == 12 * gtu._PX_PER_CHAR
@@ -47,8 +49,10 @@ class TestLineHeightToPx:
     def test_missing_or_nonpositive_returns_none(self, bad):
         assert gtu.line_height_to_px(bad) is None
 
-    def test_large_value_treated_as_already_pixels(self):
-        assert gtu.line_height_to_px(440) == 440
+    def test_large_line_count_still_multiplied(self):
+        # Same rule as width: no magnitude cutoff. Pixel-holding heights bypass via
+        # height_is_lines=False (see test_entry_height_not_line_translated_when_flag_off).
+        assert gtu.line_height_to_px(20) == max(gtu._MIN_WIDGET_PX, 20 * gtu._PX_PER_LINE)
 
 
 # ── translate_kwargs (against real CTk 6.0.0 signatures) ─────────────────────
@@ -69,6 +73,12 @@ class TestTranslateKwargs:
         # create_entry passes height_is_lines=False; a raw pixel height must survive unchanged.
         out = gtu.translate_kwargs(ctk.CTkEntry, {"height": 40}, height_is_lines=False)
         assert out["height"] == 40
+
+    def test_width_not_char_translated_when_flag_off(self):
+        # The pixel escape hatch: a CTk-aware caller passes width_is_chars=False and its raw pixel
+        # width must survive unmultiplied (this replaces the old magnitude-guess passthrough).
+        out = gtu.translate_kwargs(ctk.CTkEntry, {"width": 920}, width_is_chars=False)
+        assert out["width"] == 920
 
     def test_zero_width_is_dropped_not_zeroed(self):
         # width<=0 -> None -> drop, so CTk keeps its own default sizing rather than a 0px widget.
