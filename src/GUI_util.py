@@ -568,6 +568,8 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename, config_input
             return missing_IO
         date_hover_over_label, IO_setup_display_string, config_input_output_alphabetic_options, missing_IO = \
             set_IO_brief_values(config_filename,y_multiplier_integer)
+        if IO_setup_brief_display_area is not None:
+            update_display_area(IO_setup_display_string, IO_setup_brief_display_area)
     # the full options must always be displayed, even when the brief option is selected;
     #   the reason is that the IO widgets filename, inputDir, and outputDir are used in all GUIs
     return missing_IO
@@ -787,20 +789,9 @@ def set_IO_brief_values(config_filename, y_multiplier_integer):
     # IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(os.path.basename(os.path.normpath(config_input_output_alphabetic_options[3][1])))
     IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(os.path.basename(config_input_output_alphabetic_options[3][1]))
 
-    # re-lay the widget to display the correct hover-over info
-    IO_setup_brief_display_area = tk.Text(width=60, height=2)
-    # place widget with hover-over info
-    y_multiplier_integer=0
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                                   GUI_IO_util.setup_IO_brief_coordinate,
-                                                   y_multiplier_integer,
-                                                   IO_setup_brief_display_area,
-                                                   False, False, False, False, 90,
-                                                   GUI_IO_util.setup_IO_brief_coordinate,
-                                                   date_hover_over_label)
-    update_display_area(IO_setup_display_string,IO_setup_brief_display_area)
-    # update_display_area(IO_setup_display_string)
-
+    # widget creation/placement lives in IO_config_setup_brief (the single INPUT/OUTPUT display
+    # box); this function only computes the values the caller (initial build or refresh path)
+    # displays in that box.
     return date_hover_over_label, IO_setup_display_string, config_input_output_alphabetic_options, missing_IO
 
 def open_paste_text_popup():
@@ -921,14 +912,12 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
 
     # display text area for setup brief
 
+    date_hover_over_label = ''
+    IO_setup_display_string = ''
     if config_input_output_numeric_options!=[0,0,0,0]:
         date_hover_over_label, IO_setup_display_string, config_input_output_alphabetic_options, missing_IO = set_IO_brief_values(config_filename, y_multiplier_integer)
-    # TODO(ctk-migration): DUPLICATE INPUT display box. set_IO_brief_values() (called just above)
-    # already creates AND places its own tk.Text(width=60) box, then this creates a SECOND identical
-    # one -- two side-by-side INPUT FILE/DIR boxes render on every GUI, ~450px each, driving the
-    # right-side overflow. Fix: make set_IO_brief_values() compute-and-return only (no widget), keep
-    # this single box, and have the refresh path display_IO_setup() update this box instead of
-    # letting set_IO_brief_values() recreate one. Verify file/dir selection still refreshes the box.
+    # single INPUT/OUTPUT display box (values computed by set_IO_brief_values above; the refresh
+    # path display_IO_setup() updates this same widget instead of creating a new one)
     IO_setup_brief_display_area = tk.Text(width=60, height=2)
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,
