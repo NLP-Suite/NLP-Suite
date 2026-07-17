@@ -23,10 +23,13 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+      # NO `ref:` here on purpose: checkout then defaults to the ref that TRIGGERED the run -- i.e. the
+      # v* tag being released. This used to pin `ref: roberto`, so a tag only *triggered* the build while
+      # the installers were built from roberto's tip: the tag did not describe what users downloaded, and
+      # anything sitting on roberto shipped to external users on the next tag, with no promotion step.
+      # The release job below already checks out the tag, so the two now agree.
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          ref: roberto
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
