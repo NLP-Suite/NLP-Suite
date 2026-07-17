@@ -209,8 +209,20 @@ def create_entry(master, **kwargs):
     return ctk.CTkEntry(master, **translate_kwargs(ctk.CTkEntry, kwargs, height_is_lines=False))
 
 
+# CTk's default checkbox box is 24x24 with a 3px border -- chunky next to the suite's 13pt label
+# font (the box out-measures the text's cap height, reading as oversized). Size the box to the text
+# instead: ~18px square with a 2px border tracks the 13pt glyphs. Set here (not the theme JSON, which
+# has no checkbox_width/height keys) as overridable defaults so a call site can still request its own.
+_CHECKBOX_BOX_PX = 18
+_CHECKBOX_BORDER_PX = 2
+
+
 def create_checkbox(master, **kwargs):
-    return ctk.CTkCheckBox(master, **translate_kwargs(ctk.CTkCheckBox, kwargs))
+    translated = translate_kwargs(ctk.CTkCheckBox, kwargs)
+    translated.setdefault("checkbox_width", _CHECKBOX_BOX_PX)
+    translated.setdefault("checkbox_height", _CHECKBOX_BOX_PX)
+    translated.setdefault("border_width", _CHECKBOX_BORDER_PX)
+    return ctk.CTkCheckBox(master, **translated)
 
 
 # Neutral grey for a "nothing available" OptionMenu (muted=True). The theme paints every menu solid
