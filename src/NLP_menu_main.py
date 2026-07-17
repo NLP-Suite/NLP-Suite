@@ -117,6 +117,12 @@ window = GUI_util.window
 # config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
 # config_filename = GUI_util.config_filename
 
+# A clean, native proportional UI font to replace the legacy Courier monospace used on the SETUP
+# buttons, the red info buttons, and the notebook tabs (Courier read as dated). TkDefaultFont
+# resolves to the platform's system UI font (.AppleSystemUIFont on macOS, Segoe UI on Windows).
+import tkinter.font as _tkfont
+_ui_font_family = _tkfont.nametofont('TkDefaultFont').actual('family')
+
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 setup_IO_OK_checkbox_var = tk.IntVar()
@@ -336,14 +342,35 @@ corpus_tools_var = tk.StringVar()
 corpus_document_tools_var = tk.StringVar()
 sentence_tools_var = tk.StringVar()
 
+# Each of the three SETUP rows pairs a tiny disabled status checkbox with a very wide (95-char)
+# SETUP button. Under the coarse-band grid the checkbox and its button fall into adjacent column
+# BANDS, but those bands get stretched to ~760px each by the full-width buttons -- so the checkbox
+# was stranded at the far-left edge of its column, ~700px from its button, and the two full-width
+# button columns together (~1600px) overflowed the 1350px window, clipping the far-right open-config
+# buttons off the edge. Grouping each checkbox + button in ONE frame gridded into a single band
+# fixes both: the pair renders adjacent, and the SETUP buttons share the band with the red info
+# buttons below instead of spilling into a second full-width column.
+def _place_setup_row(y, checkbox, checkbox_tip, button, button_tip,
+                     open_button, open_button_x, open_tip):
+    import GUI_theme_util
+    row_frame = tk.Frame(window)
+    checkbox.pack(in_=row_frame, side='left')
+    button.pack(in_=row_frame, side='left', padx=(4, 0))
+    # The frame is a later-created sibling of the checkbox/button (all children of `window`), so it
+    # stacks above them and would hide them; lift the two back on top of the frame.
+    checkbox.lift(row_frame)
+    button.lift(row_frame)
+    GUI_theme_util.ToolTip(checkbox, checkbox_tip)
+    GUI_theme_util.ToolTip(button, button_tip)
+    y = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y, row_frame, True, True)
+    y = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + open_button_x, y,
+                                open_button, False, False, True, False, 90,
+                                GUI_IO_util.open_reminders_x_coordinate, open_tip)
+    return y
+
 setup_IO_OK_checkbox = tk.Checkbutton(window, state='disabled',
                                       variable=setup_IO_OK_checkbox_var, onvalue=1, offvalue=0)
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                             setup_IO_OK_checkbox,
-                                             True, False, True, False,
-                                             90, GUI_IO_util.labels_x_coordinate,
-                                             "The checkbox, always disabled, is ticked ON when the I/O options have been setup.\nIf the checkbox is OFF, click on the 'SETUP default I/O options...' button to set up.")
+setup_IO_checkbox_tip = "The checkbox, always disabled, is ticked ON when the I/O options have been setup.\nIf the checkbox is OFF, click on the 'SETUP default I/O options...' button to set up."
 
 def setup_IO():
     GUI_util.setup_IO_configuration_options(False,scriptName, silent=True, open_setup_IO_GUI=True)
@@ -361,26 +388,19 @@ def setup_IO_checkbox():
     else:
         setup_IO_OK_checkbox_var.set(0)
 
-IO_setup_button = tk.Button(window, text='SETUP default I/O options: INPUT file/directory (corpus) and OUTPUT files directory', width=95, font=("Courier", 10, "bold"), command=lambda: setup_IO())
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+30,
-                                               y_multiplier_integer,
-                                               IO_setup_button, True, False, False, False, 90,
-                                               GUI_IO_util.labels_x_coordinate+30,
-                                               "You will probably use the same document(s) (i.e., corpus), written in the same language, for different analyses using different NLP tools, and exporting results to the same directory.\n Click on the SETUP button to setup Input/Output (I/O) options.\nYour selected options will be used as default in all GUIs; but you can change your preferences at any time; and every GUI also allows you to setup GUI-specific I/O options.")
+IO_setup_button = tk.Button(window, text='SETUP default I/O options: INPUT file/directory (corpus) and OUTPUT files directory', width=95, font=(_ui_font_family, 12, "bold"), command=lambda: setup_IO())
+setup_IO_button_tip = "You will probably use the same document(s) (i.e., corpus), written in the same language, for different analyses using different NLP tools, and exporting results to the same directory.\n Click on the SETUP button to setup Input/Output (I/O) options.\nYour selected options will be used as default in all GUIs; but you can change your preferences at any time; and every GUI also allows you to setup GUI-specific I/O options."
 
-open_default_IO_config_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'NLP_default_IO_config.csv'))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_IO_config_button, y_multiplier_integer,
-                                               open_default_IO_config_button, False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate, "Open the NLP_default_IO_config.csv file containing the default Input/Output options")
+open_default_IO_config_button = tk.Button(window, width=3, text='\U0001F4C2', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'NLP_default_IO_config.csv'))
+y_multiplier_integer = _place_setup_row(y_multiplier_integer,
+                                        setup_IO_OK_checkbox, setup_IO_checkbox_tip,
+                                        IO_setup_button, setup_IO_button_tip,
+                                        open_default_IO_config_button, GUI_IO_util.open_IO_config_button,
+                                        "Open the NLP_default_IO_config.csv file containing the default Input/Output options")
 
 setup_parsers_annotators_OK_checkbox = tk.Checkbutton(window, state='disabled',
                                       variable=setup_parsers_annotators_OK_checkbox_var, onvalue=1, offvalue=0)
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                             setup_parsers_annotators_OK_checkbox,
-                                             True, False, True, False,
-                                             90, GUI_IO_util.labels_x_coordinate,
-                                             "The checkbox, always disabled, is ticked ON when the parser/annotator and corpus language options have been setup.\nIf the checkbox is OFF, click on the 'SETUP default NLP parser...' button to set up.")
+setup_parsers_annotators_checkbox_tip = "The checkbox, always disabled, is ticked ON when the parser/annotator and corpus language options have been setup.\nIf the checkbox is OFF, click on the 'SETUP default NLP parser...' button to set up."
 
 NLP_package_language_config = GUI_IO_util.configPath+os.sep+'NLP_default_package_language_config.csv'
 def setup_parsers_annotators_checkbox(NLP_package_language_config):
@@ -396,26 +416,19 @@ def _setup_parsers_and_recheck():
     run_script_util.run_script("NLP_setup_package_language_main.py")
     setup_parsers_annotators_checkbox(NLP_package_language_config)
 
-NLP_package_language_setup_button = tk.Button(window, text='SETUP default NLP parsers & annotators package and default corpus language', width=95, font=("Courier", 10, "bold"), command=_setup_parsers_and_recheck)
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+30,
-                                               y_multiplier_integer,
-                                               NLP_package_language_setup_button, True, False, False, False, 90,
-                                               GUI_IO_util.labels_x_coordinate+30,
-                                               "The NLP Suite relies on a handful of external software to carry out specialized tasks (e.g., Stanford CoreNLP, Gephi).\nClick on the Setup button to select your preferred parser software (e.g., Stanford CoreNLP) and the laguage of your corpus (e.g., English)\nYour selected options will be used as default in all GUIs; but you can change your preferences at any time.")
+NLP_package_language_setup_button = tk.Button(window, text='SETUP default NLP parsers & annotators package and default corpus language', width=95, font=(_ui_font_family, 12, "bold"), command=_setup_parsers_and_recheck)
+setup_parsers_annotators_button_tip = "The NLP Suite relies on a handful of external software to carry out specialized tasks (e.g., Stanford CoreNLP, Gephi).\nClick on the Setup button to select your preferred parser software (e.g., Stanford CoreNLP) and the laguage of your corpus (e.g., English)\nYour selected options will be used as default in all GUIs; but you can change your preferences at any time."
 
-open_default_NLP_package_language_config_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, NLP_package_language_config))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_NLP_package_language_config_button, y_multiplier_integer,
-                                               open_default_NLP_package_language_config_button, False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate, "Open the NLP_default_package_language_config.csv file containing the default NLP parser and annotators and corpus language options")
+open_default_NLP_package_language_config_button = tk.Button(window, width=3, text='\U0001F4C2', command=lambda: IO_files_util.openFile(window, NLP_package_language_config))
+y_multiplier_integer = _place_setup_row(y_multiplier_integer,
+                                        setup_parsers_annotators_OK_checkbox, setup_parsers_annotators_checkbox_tip,
+                                        NLP_package_language_setup_button, setup_parsers_annotators_button_tip,
+                                        open_default_NLP_package_language_config_button, GUI_IO_util.open_NLP_package_language_config_button,
+                                        "Open the NLP_default_package_language_config.csv file containing the default NLP parser and annotators and corpus language options")
 
 setup_external_software_checkbox = tk.Checkbutton(window, state='disabled',
                                          variable=setup_external_software_OK_checkbox_var, onvalue=1, offvalue=0, command=lambda: setup_external_programs_checkbox())
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                             setup_external_software_checkbox,
-                                             True, False, True, False,
-                                             90, GUI_IO_util.labels_x_coordinate,
-                                             "The checkbox, always disabled, is ticked ON when all external software have been installed.\nIf the checkbox is OFF, click on the 'SETUP external software' button to set up.")
+setup_external_software_checkbox_tip = "The checkbox, always disabled, is ticked ON when all external software have been installed.\nIf the checkbox is OFF, click on the 'SETUP external software' button to set up."
 
 software_dir = ''
 
@@ -452,22 +465,20 @@ def setup_external_software():
     setup_external_programs_checkbox()
 
 # software_setup_button = tk.Button(window, text='Setup external software', width=95, font=("Courier", 10, "bold"), command=lambda: setup_external_software_warning())
-software_setup_button = tk.Button(window, text='SETUP external software', width=95, font=("Courier", 10, "bold"), command=lambda: setup_external_software())
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+30,
-                                               y_multiplier_integer,
-                                               software_setup_button, True, False, False, False, 90,
-                                               GUI_IO_util.labels_x_coordinate+30,
-                                               "The NLP Suite relies on a handful of external software to carry out specialized tasks (e.g., Stanford CoreNLP, Gephi)\nClick on the Setup button to download and install these freeware software packages\nYou only have to do this once")
+software_setup_button = tk.Button(window, text='SETUP external software', width=95, font=(_ui_font_family, 12, "bold"), command=lambda: setup_external_software())
+setup_external_software_button_tip = "The NLP Suite relies on a handful of external software to carry out specialized tasks (e.g., Stanford CoreNLP, Gephi)\nClick on the Setup button to download and install these freeware software packages\nYou only have to do this once"
 
-open_setup_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'NLP_setup_external_software_config.csv'))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_setup_external_software_button, y_multiplier_integer,
-                                               open_setup_button, False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate, "Open the NLP_setup_external_software_config.csv file containing all external software installation paths")
+open_setup_button = tk.Button(window, width=3, text='\U0001F4C2', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'NLP_setup_external_software_config.csv'))
+y_multiplier_integer = _place_setup_row(y_multiplier_integer,
+                                        setup_external_software_checkbox, setup_external_software_checkbox_tip,
+                                        software_setup_button, setup_external_software_button_tip,
+                                        open_setup_button, GUI_IO_util.open_setup_external_software_button,
+                                        "Open the NLP_setup_external_software_config.csv file containing all external software installation paths")
 
 # CORPUS LANGUAGE & NLP options available in the Suite
 corpus_language_button = tk.Button(window,
                                    text="Which NLP tools in the Suite can I use with my corpus language?",
-                                   width=95, font=("Courier", 11, "bold"), fg='red',
+                                   width=95, font=(_ui_font_family, 13, "bold"), fg='red',
                                    command=lambda: language_tools_advisor_util.run(
                                        outputDir=GUI_util.output_dir_path.get()))
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 30,
@@ -480,7 +491,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 # top of the tool list. Placement/wording easy to tweak.
 corpus_profiler_button = tk.Button(window,
                                    text="CORPUS PROFILER  —  what's in your corpus? one click → an HTML report and a paper-style summary",
-                                   width=95, font=("Courier", 11, "bold"), fg='red',
+                                   width=95, font=(_ui_font_family, 13, "bold"), fg='red',
                                    command=lambda: run_script_util.run_script("corpus_profiler_main.py"))
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 30,
                                                y_multiplier_integer,
@@ -498,13 +509,15 @@ try:
     nb_style.theme_use('clam')
 except Exception:
     pass
-nb_style.configure('NLP.TNotebook.Tab', font=("Courier", 11, "bold"), foreground='red', padding=[16, 5])
+nb_style.configure('NLP.TNotebook.Tab', font=(_ui_font_family, 12, "bold"), foreground='red', padding=[16, 5])
 nb_style.map('NLP.TNotebook.Tab',
              background=[('selected', '#d0e0f0'), ('!selected', '#e8e8e8')],
              foreground=[('selected', 'red'), ('!selected', '#999999')])
 
 nb_width = GUI_width - GUI_IO_util.labels_x_coordinate - 20
-nb_height = 210
+# Snug height: three ~28px rows starting at y=12 end near y=124, so 150 leaves a small bottom margin
+# instead of the ~85px of dead gray the old 210 left below the dropdowns.
+nb_height = 150
 tools_notebook = ttk.Notebook(window, style='NLP.TNotebook')
 # CTk migration slice 2b: the body is grid-managed now, so the notebook must be GRIDded too -- the
 # old .place(y = 90 + 40*y_multiplier) put it at a pixel-y the grid no longer uses, so it floated
@@ -513,7 +526,7 @@ tools_notebook = ttk.Notebook(window, style='NLP.TNotebook')
 # turn OFF geometry propagation, otherwise the gridded notebook would collapse to zero height.
 tools_notebook.grid(row=GUI_IO_util._GRID_HEADER_ROWS + int(round(y_multiplier_integer)),
                     column=0, columnspan=GUI_IO_util._GRID_TOTAL_COLUMNS,
-                    padx=(GUI_IO_util.labels_x_coordinate, 10), pady=6, sticky='we')
+                    padx=(GUI_IO_util.labels_x_coordinate, 10), pady=6, sticky='w')
 
 tab_linguistic = ttk.Frame(tools_notebook, width=nb_width, height=nb_height)
 tab_utility = ttk.Frame(tools_notebook, width=nb_width, height=nb_height)
@@ -533,7 +546,9 @@ _ROW_STEP = 42
 
 def _tab_row(parent, row_y, label_text, combobox, help_message):
     tk.Label(parent, text=label_text).place(x=10, y=row_y + 3)
-    combobox.place(x=250, y=row_y)
+    # Explicit pixel width: the themed combobox's char-based width renders only ~150px, leaving the
+    # dropdown marooned in a wide empty gray band. Stretch it to fill the row up to the ? HELP button.
+    combobox.place(x=250, y=row_y, width=_tab_help_x - 250 - 20)
     tk.Button(parent, text='? HELP',
               command=lambda m=help_message: mb.showinfo("NLP Suite Help", m)).place(x=_tab_help_x, y=row_y)
 
