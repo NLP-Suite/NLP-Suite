@@ -242,15 +242,24 @@ can coexist under a `CTk` root during the transition.
 > 210 → 122), moved here from the grid-reflow branch since both are chrome/theming fixes
 > independent of the grid engine itself.
 >
-> `placeWidget` → `grid()` ("slice 2b") lives on `ctk/phase1-grid`, stacked on `ctk/phase1-core`
-> as **fork PR #3**. First render is clean on `statistics_csv_main` and the suite is green, but
-> it's still WIP — open punch-list items: window geometry is tuned to the old absolute layout
-> (~35% empty on the right); `IO_config_setup_brief()` creates a duplicate INPUT display box
-> (two ~450px boxes render side by side, a major overflow driver, flagged with a
-> `TODO(ctk-migration)`); `NLP_menu_main`'s `ttk.Notebook` is still `.place()`d over the gridded
-> chrome and needs special-casing; multi-column GUIs (SVO, GIS) and the raw-`.place()` GUIs
-> (`data_visualization_main.py`, 140 sites) are unvalidated; and the per-GUI click-test list
-> (widest/busiest rows, the `sameY` path, notebook GUIs, baseline sanity) is still outstanding.
+> `placeWidget` → `grid()` ("slice 2b") landed as **PR #1648** (`ctk/phase1-grid`) — **done**.
+> `placeWidget` grids widgets (x-coordinate → coarse semantic column band, row counter → grid row);
+> tooltips bind `GUI_theme_util.ToolTip`; `GUI_top`'s intro is gridded in the header row. It also
+> closed out the reflow artifacts on the front-door GUI: `NLP_menu_main`'s `ttk.Notebook` is gridded
+> (was floating over the chrome) with full-width dropdowns and trimmed height; the SETUP rows group
+> each checkbox with its wide button (the coarse grid otherwise stranded the checkbox and overflowed
+> the window); the blank open-config buttons got a folder glyph; the Courier monospace on the SETUP /
+> info buttons and notebook tabs became the native system UI font; and the top nav buttons
+> (About/Release history/team/cite, in `GUI_util`) moved to a 2×2 `place()`d block in the top-right
+> corner so they stop being pushed off the right edge by the wide buttons. The earlier
+> `IO_config_setup_brief()` duplicate-INPUT-box overflow driver was also fixed on this branch.
+>
+> **Out of scope for #1648 (deferred follow-ups, not blockers):** window geometry is still tuned to
+> the old absolute layout (~35% empty on the right on some GUIs — revisit `set_window` sizing);
+> multi-column GUIs (SVO, GIS) and the raw-`.place()` GUIs (`data_visualization_main.py`, 140 sites)
+> are unvalidated against the column bucketing (Phase 4); the now-dead `hover_over_widget` machinery
+> is left for Phase 5 cleanup; and full per-GUI visual QA on Mac + Windows, light + dark, is still
+> outstanding.
 
 After Phase 1, **every GUI already looks substantially better** (new chrome, themed top/bottom
 bars, help column, scrollable body) even though its own widgets are still plain tk.
