@@ -153,6 +153,60 @@ def _run_word_frequency(c):
 
 
 # ---- entities (English + Stanford CoreNLP) ------------------------------------------------
+def _ner_parser_tag(c):
+    """The filename token identifying the parser _run_ner WOULD use ('corenlp' / 'spacy' / 'stanza').
+    Mirrors _run_ner's own dispatch, so the reuse below can never hand back a table produced by a
+    DIFFERENT parser than the configured one -- reusing a CoreNLP NER table under a Stanza config would
+    silently undo the whole point of making NER config-aware."""
+    if _is_corenlp_package(c.get('package')) and _corenlp_available():
+        return 'corenlp'
+    if 'spacy' in str(c.get('package', '')).lower():
+        return 'spacy'
+    return 'stanza'
+
+
+def _find_existing_ner_csv(c):
+    """Return [path] to an NER table already in the output dir (from a prior/killed run on THIS corpus), so
+    a restart can skip the slow NER re-parse -- Stanza NER is ~1h30m on Harry Potter, and unlike the CoreNLP
+    and POS passes it had no reuse path, so every interrupted sweep re-paid it in full. [] if none is
+    trustworthy, so anything unexpected falls through to a fresh parse.
+
+    Gated like the POS reuse: a non-empty CSV whose basename carries 'ner' AND the CONFIGURED parser's tag,
+    is not a derived artifact, and actually has an 'NER' column; largest wins (the full per-token table).
+    Validation reads only the header (5 rows) -- cheap even beside a 172MB table.
+
+    'binned' is excluded for a concrete reason: the binned copy carries 'ner' in its name and would
+    otherwise be the LARGEST match, and _bin_numeric_columns_for_chart used to gut its text columns --
+    reusing it would have resurrected destroyed data as if it were the parse."""
+    outdir = c.get('outputDir') or ''
+    if not outdir or not os.path.isdir(outdir):
+        return []
+    import glob
+    import pandas as pd
+    tag = _ner_parser_tag(c)
+    best, best_size = None, 0
+    for p in glob.glob(os.path.join(outdir, '**', '*.csv'), recursive=True):
+        b = os.path.basename(p).lower()
+        if 'ner' not in b or tag not in b:
+            continue
+        if any(x in b for x in ('binned', 'frequency', 'freq', 'chart', 'no_hyperlinks', 'group',
+                                'bydoc', 'bysent', 'stats', 'gender', 'quote', 'svo', 'lemma')):
+            continue
+        try:
+            head = pd.read_csv(p, nrows=5, encoding='utf-8', on_bad_lines='skip')
+        except Exception:
+            continue
+        if head.empty or 'NER' not in head.columns:
+            continue
+        try:
+            size = os.path.getsize(p)
+        except Exception:
+            size = 0
+        if size > best_size:
+            best, best_size = p, size
+    return [best] if best else []
+
+
 def _run_ner(c):
     """People, organizations, locations (NER) via the CONFIGURED parser -- CoreNLP only when the default
     NLP package IS CoreNLP (and installed), otherwise Stanza (default) or spaCy. No Java unless CoreNLP is
@@ -165,6 +219,15 @@ def _run_ner(c):
         if picked:
             print('>>> Entities/NER: used the shared CoreNLP cache -- no re-parse')
             return picked
+    # A prior (or killed) run may already hold this corpus's NER table -- the parse is the slow part. Same
+    # deal as the CoreNLP/POS reuse: a valid table in the output dir is reused instead of re-parsed. Checked
+    # for EVERY parser, and matched against the configured one (see _find_existing_ner_csv).
+    existing = _find_existing_ner_csv(c)
+    if existing:
+        print('>>> Entities/NER: reusing an existing %s NER table (%s) -- skipping the ~hour re-parse'
+              % (_ner_parser_tag(c), os.path.basename(existing[0])))
+        return list(dict.fromkeys(_files(existing)))
+    if _is_corenlp_package(c.get('package')) and _corenlp_available():
         import Stanford_CoreNLP_util
         NER_list = ['PERSON', 'ORGANIZATION', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
         print('>>> Entities/NER: Stanford CoreNLP (configured parser)')
