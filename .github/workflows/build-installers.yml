@@ -31,6 +31,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # A v* tag MUST ship a matching lib/release_version.txt. The app's exit-time check compares the
+      # INSTALLED file against the copy on current-stable, so when the two drift the check silently lies:
+      # that is exactly how the file sat at 5.3.4 for seven weeks while v1.6.19..v1.6.22 shipped, telling
+      # every user they were up to date. Bumping it is manual, so guard it here -- this costs seconds and
+      # fails BEFORE the ~20-minute PyInstaller build, rather than publishing installers that misreport
+      # their own version. `shell: bash` because the Windows runner defaults to pwsh.
+      - name: Verify release_version.txt matches the tag
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          FILE_VERSION="$(tr -d ' \t\r\n' < lib/release_version.txt)"
+          echo "tag=${GITHUB_REF_NAME} -> expected '${TAG_VERSION}' | lib/release_version.txt='${FILE_VERSION}'"
+          if [ "${TAG_VERSION}" != "${FILE_VERSION}" ]; then
+            echo "::error::lib/release_version.txt says '${FILE_VERSION}' but the tag is '${GITHUB_REF_NAME}'. Set lib/release_version.txt to '${TAG_VERSION}', commit it, delete and re-create the tag on that commit. Shipping them out of sync breaks the in-app update check."
+            exit 1
+          fi
+          echo "OK: release_version.txt matches the tag."
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
