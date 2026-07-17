@@ -79,7 +79,61 @@ def _run_ngrams(c):
         chartPackage=c['chartPackage'], dataTransformation=c['dataTransformation'])
     return _files(out)
 
+def _sentence_length_from_conll(conll_path, c):
+    """Build the sentence-length table + chart by GROUPING an existing CoNLL parse (one token row each,
+    with Sentence ID + Document ID) -- no parsing. Same output columns/filename/chart as the stock
+    compute_sentence_length, so the summary reads it identically. [] if the table lacks the needed columns
+    or anything goes wrong (the caller then falls back to a real parse)."""
+    try:
+        import pandas as pd
+        import IO_files_util
+        import charts_util
+        df = pd.read_csv(conll_path, encoding='utf-8', on_bad_lines='skip')
+        if not {'Form', 'Sentence ID', 'Document ID'}.issubset(df.columns):
+            return []
+        outdir = IO_files_util.make_output_subdirectory(c['inputFilename'], c['inputDir'], c['outputDir'],
+                                                        label='Statistics_txt_sent_length', silent=True)
+        if not outdir:
+            return []
+        outfile = IO_files_util.generate_output_file_name(c['inputFilename'], c['inputDir'], outdir, '.csv',
+                                                          'sentence_length')
+        has_doc = 'Document' in df.columns
+        rows = []
+        # token COUNT per (document, sentence) is the sentence length; join Forms for the sentence text
+        for (docid, sentid), g in df.groupby(['Document ID', 'Sentence ID'], sort=True):
+            forms = [str(x) for x in g['Form'].tolist() if str(x) != 'nan']
+            rows.append([len(forms), int(sentid) if str(sentid).isdigit() else sentid, ' '.join(forms),
+                         int(docid) if str(docid).isdigit() else docid,
+                         g['Document'].iloc[0] if has_doc else ''])
+        out_df = pd.DataFrame(rows, columns=['Sentence length (in words)', 'Sentence ID', 'Sentence',
+                                             'Document ID', 'Document'])
+        out_df.to_csv(outfile, index=False, encoding='utf-8')
+        files = [outfile]
+        charts = charts_util.plot(outfile, outdir, columns=['Sentence length (in words)'],
+                                  title='Sentence Length (In Words)', x_label='Sentence length (in words)',
+                                  file_label='Sent', plot_list=['Sentence length (in words)'],
+                                  title_label='Sentence Lengths')
+        if charts:
+            files += charts if isinstance(charts, list) else [charts]
+        return files
+    except Exception as e:
+        print('Corpus Profiler: sentence-length-from-parse failed (%s); parsing instead' % e)
+        return []
+
+
 def _run_sentence_length(c):
+    # FAST PATH: the corpus is already Stanza-parsed (POS and/or NER), and BOTH CoNLL tables carry Form +
+    # Sentence ID + Document ID -- so sentence lengths are a GROUPBY, not a third parse. The stock
+    # compute_sentence_length runs a full Stanza pipeline per document AND AGAIN per sentence (~O(#sentences)
+    # pipeline calls -> ~1h25m on Harry Potter, longer than the neural NER parse). Derive from the cached
+    # parse when we have one; fall back to the stock function otherwise.
+    conll = (_find_existing_pos_csv(c) or _find_existing_ner_csv(c))
+    if conll:
+        out = _sentence_length_from_conll(conll[0], c)
+        if out:
+            print('>>> Sentence length: derived from the existing Stanza parse (%s) -- no re-parse'
+                  % os.path.basename(conll[0]))
+            return out
     import statistics_txt_util
     return _files(statistics_txt_util.compute_sentence_length(
         c['inputFilename'], c['inputDir'], c['outputDir'], c['config_filename'],
