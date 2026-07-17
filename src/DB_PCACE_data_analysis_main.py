@@ -1276,7 +1276,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate+300,
                                    "Use the dropdown menu to select the simplex data type value (e.g., police) for which you want to find simplex & complex objects usage.")
 
-value_parent_object_checkbox = tk.Checkbutton(window, text='Get simplex/complex objects of selected data type (& value)', variable=value_parent_object_var, onvalue=1, offvalue=0)
+# wraplength: this label is the widest widget in the far-right grid band; left as one line it ran
+# past the window's right edge (grid never auto-shrinks a Checkbutton). Wrapping to ~two lines keeps
+# the full text on-screen without touching the layout.
+value_parent_object_checkbox = tk.Checkbutton(window, text='Get simplex/complex objects of selected data type (& value)', variable=value_parent_object_var, onvalue=1, offvalue=0, wraplength=230, justify='left')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+150, y_multiplier_integer,
                                    value_parent_object_checkbox,
