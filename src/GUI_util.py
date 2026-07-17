@@ -361,7 +361,7 @@ def check_GitHub_release(local_release_version: str, silent = False):
         result = mb.askyesno("NLP Suite Outdated",
                     "You are running the NLP Suite release version " + str(local_release_version).rstrip() + ", an OLD version." +
                     "\n\nA NEW version of the NLP Suite has been released on GitHub: " + str(GitHub_newest_release) +
-                    "\n\nThe OLD and NEW release versions are displayed on the top left-hand corner of the GUI, local OLD version left of \ GitHUB new version right of \ (0.0.0 is displayed when you are not connected to the internet to access GitHub)." +
+                    "\n\nThe OLD and NEW release versions are displayed on the top left-hand corner of the GUI, local OLD version left of \\ GitHUB new version right of \\ (0.0.0 is displayed when you are not connected to the internet to access GitHub)." +
                     "\n\nTo update to the newer release, EXIT the NLP Suite NOW by clicking on the CLOSE button and fire up the NLP Suite again.\n\nThe NLP Suite is automatically updated every time you exit the NLP Suite and fire it up again." +
                     "\n\nThe update features of the NLP Suite rely on Git. Please download Git at this link https://git-scm.com/downloads, if it hasn’t been installed already." +
                     "\n\nWOULD YOU LIKE TO SEE WHAT IS NEW IN THE RELEASE VERSION " + str(GitHub_newest_release).rstrip() + "?")

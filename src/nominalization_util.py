@@ -101,7 +101,7 @@ def _nominalization_base_verb(noun_lemma):
 
 def nominalized_verb_detection(docID,doc,dateStr, sent,check_ending,nominalized_verbs_list):
 
-    first_section = re.compile("^(.+?)\.")
+    first_section = re.compile(r"^(.+?)\.")
     noun_cnt = Counter()
     nominalized_cnt = Counter()
 

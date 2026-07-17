@@ -343,7 +343,7 @@ def remove_hyperlinks(inputFilename):
 def rename_header(inputFilename, header1, header2):
     headerFound=False
     if not inputFilename.endswith('.csv'):
-        mb.showwarning(title="File type error", message='The file\n\n' + inputFilename + "\n\is not an expected csv file with headers.\n\nPlease, check the file and try again.")
+        mb.showwarning(title="File type error", message='The file\n\n' + inputFilename + "\nis not an expected csv file with headers.\n\nPlease, check the file and try again.")
         return headerFound
     headers = get_csvfile_headers(inputFilename)
     for header in headers:

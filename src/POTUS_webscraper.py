@@ -16,7 +16,7 @@ import os
 import shutil
 
 base_url = "https://www.presidency.ucsb.edu/" # base website url for link redirects
-out_path = tk.filedialog.askdirectory(title='Select a directory where to save the scraped POTUS files. The fiiles will be saved in a subdirectory "\data" of the selected directory.\n Press Esc or Cancel to exit.')
+out_path = tk.filedialog.askdirectory(title='Select a directory where to save the scraped POTUS files. The fiiles will be saved in a subdirectory "\\data" of the selected directory.\n Press Esc or Cancel to exit.')
 
 out_path = out_path # folder for output saving
 if out_path=='':

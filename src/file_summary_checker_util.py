@@ -318,8 +318,8 @@ def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,open
         outputFilename = IO_files_util.generate_output_file_name('', compilations_path, outputDir, '.csv', 'SSR', 'MA', '', '', '', False, True)
     fName=GUI_IO_util.libPath+os.sep+'wordLists'+os.sep+'social-actor-list.csv'
     if not os.path.isfile(fName):
-        print("The file "+fName+" could not be found. The routine expects a csv dictionary file 'social-actor-list.csv' in a directory 'lib\wordLists' expected to be a subdirectory of the main NLP directory.\n\nPlease, check your lib\wordLists directory and try again.")
-        mb.showerror(title='File not found', message='The file '+fName+" could not be found.\n\nThe routine expects a csv dictionary file 'social-actor-list.csv' in a directory 'lib\wordLists' expected to be a subdirectory of the main NLP directory.\n\nPlease, check your lib\wordLists directory and try again.")
+        print("The file "+fName+" could not be found. The routine expects a csv dictionary file 'social-actor-list.csv' in a directory 'lib\\wordLists' expected to be a subdirectory of the main NLP directory.\n\nPlease, check your lib\\wordLists directory and try again.")
+        mb.showerror(title='File not found', message='The file '+fName+" could not be found.\n\nThe routine expects a csv dictionary file 'social-actor-list.csv' in a directory 'lib\\wordLists' expected to be a subdirectory of the main NLP directory.\n\nPlease, check your lib\\wordLists directory and try again.")
         sys.exit()
     actors = load_soc_actors(fName)
     f = open(outputFilename, 'w', encoding='utf-8',errors='ignore')

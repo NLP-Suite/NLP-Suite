@@ -23,7 +23,7 @@ def extract_topn_from_vector(feature_names, sorted_items, topn):
 
 
 #https://github.com/matejMartinc/scalable_semantic_shift/blob/a105c8409db0996c99f0df11d40c35017eb3337c/interpretation.py#L85
-def sense_keywords(d, o_path, re_pattern='[^a-zA-Z\'\-’ ]', mf_prop=1, topn=10, ngram_range=(1, 2), add_stopwords=None):
+def sense_keywords(d, o_path, re_pattern=r"[^a-zA-Z'\-’ ]", mf_prop=1, topn=10, ngram_range=(1, 2), add_stopwords=None):
     
     regex = re.compile(re_pattern)
     sp = spacy.load('en_core_web_sm')

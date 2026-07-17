@@ -1872,31 +1872,31 @@ def TimeMapper(data, outputFilename, var, date_format_var, cumulative, monthly=N
 
     if date_format_var == 'yyyy':  # creates year variable based on yyyy format
         for i in range(0, len(data[date_field])):
-            year.append(re.search('\d{4}', data[date_field][i])[0])
+            year.append(re.search(r'\d{4}', data[date_field][i])[0])
             data['year'] = year
     elif date_format_var == 'mm-yyyy':  # creates year and month variable in yyyy-mm format
         for i in range(0, len(data[date_field])):
-            date.append(re.search('\d.*\d', data[date_field][i])[0])
+            date.append(re.search(r'\d.*\d', data[date_field][i])[0])
         for i in range(0, len(data[date_field])):
-            year.append(re.search('\d{4}', date[i])[0])
+            year.append(re.search(r'\d{4}', date[i])[0])
         for i in range(0, len(data[date_field])):
             month.append(year[i] + '-' + date[i][0:2])
         data['year'] = year
         data['month'] = month
     elif date_format_var == 'yyyy-mm':  # creates year and month variable in yyyy-mm format
         for i in range(0, len(data[date_field])):
-            date.append(re.search('\d.*\d', data[date_field][i])[0])
+            date.append(re.search(r'\d.*\d', data[date_field][i])[0])
         for i in range(0, len(data[date_field])):
-            year.append(re.search('\d{4}', date[i])[0])
+            year.append(re.search(r'\d{4}', date[i])[0])
         for i in range(0, len(data[date_field])):
             month.append(year[i] + '-' + date[i][-2:])
         data['year'] = year
         data['month'] = month
     elif date_format_var == 'dd-mm-yyyy':  # creates year,month and day variable in yyyy-mm-dd format
         for i in range(0, len(data[date_field])):
-            date.append(re.search('\d.*\d', data[date_field][i])[0])
+            date.append(re.search(r'\d.*\d', data[date_field][i])[0])
         for i in range(0, len(data[date_field])):
-            year.append(re.search('\d{4}', date[i])[0])
+            year.append(re.search(r'\d{4}', date[i])[0])
         for i in range(0, len(data[date_field])):
             month.append(year[i] + '-' + date[i][3:5])
         for i in range(0, len(data[date_field])):
@@ -1907,12 +1907,12 @@ def TimeMapper(data, outputFilename, var, date_format_var, cumulative, monthly=N
     elif date_format_var == 'mm-dd-yyyy':  # creates year,month and day variable in yyyy-mm-dd format
         for i in range(0, len(data[date_field])):
             try:
-                date.append(re.search('\d.*\d', data[date_field][i])[0])
+                date.append(re.search(r'\d.*\d', data[date_field][i])[0])
             except:
                 continue
         for i in range(0, len(data[date_field])):
             try:
-                year.append(re.search('\d{4}', date[i])[0])
+                year.append(re.search(r'\d{4}', date[i])[0])
             except:
                 continue
         for i in range(0, len(data[date_field])):
@@ -1930,9 +1930,9 @@ def TimeMapper(data, outputFilename, var, date_format_var, cumulative, monthly=N
         data['day'] = day
     elif date_format_var == 'yyyy-mm-dd':  # creates year,month and day variable in yyyy-mm-dd format
         for i in range(0, len(data[date_field])):
-            date.append(re.search('\d.*\d', data[date_field][i])[0])
+            date.append(re.search(r'\d.*\d', data[date_field][i])[0])
         for i in range(0, len(data[date_field])):
-            year.append(re.search('\d{4}', date[i])[0])
+            year.append(re.search(r'\d{4}', date[i])[0])
         for i in range(0, len(data[date_field])):
             month.append(year[i] + '-' + date[i][5:7])
         data['year'] = year
@@ -1940,9 +1940,9 @@ def TimeMapper(data, outputFilename, var, date_format_var, cumulative, monthly=N
         data['day'] = date
     elif date_format_var == 'yyyy-dd-mm':  # creates year,month and day variable in yyyy-mm-dd format
         for i in range(0, len(data[date_field])):
-            date.append(re.search('\d.*\d', data[date_field][i])[0])
+            date.append(re.search(r'\d.*\d', data[date_field][i])[0])
         for i in range(0, len(data[date_field])):
-            year.append(re.search('\d{4}', date[i])[0])
+            year.append(re.search(r'\d{4}', date[i])[0])
         for i in range(0, len(data[date_field])):
             month.append(year[i] + '-' + date[i][-2:])
         for i in range(0, len(data[date_field])):
