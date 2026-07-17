@@ -132,7 +132,8 @@ def _accepted_params(cls):
     return {
         name
         for name, p in params.items()
-        if name not in ("self", "master", "args", "kwargs") and p.kind not in (p.VAR_POSITIONAL, p.VAR_KEYWORD)
+        if name not in ("self", "master", "args", "kwargs")
+        and p.kind not in (p.VAR_POSITIONAL, p.VAR_KEYWORD)
     }
 
 
@@ -182,7 +183,7 @@ def create_button(master, **kwargs):
 # these as ~8px empty slivers (the red bars / gray box users read as broken). A folder glyph plus a
 # real width makes them read as buttons. Kept in one place so the glyph can be swapped in a single
 # edit if a platform's Tk font renders emoji as a tofu box (fallback: '...').
-OPEN_FILE_GLYPH = '\U0001F4C2'  # 📂
+OPEN_FILE_GLYPH = "\U0001f4c2"  # 📂
 
 
 def create_open_file_button(master, command=None, width=32, **kwargs):
@@ -193,10 +194,10 @@ def create_open_file_button(master, command=None, width=32, **kwargs):
     ~30px icon button can't be expressed through it. Any leftover legacy ``text``/``width`` kwargs
     are dropped in favour of the fixed glyph and the pixel width.
     """
-    kwargs.pop('text', None)
-    kwargs.pop('width', None)
+    kwargs.pop("text", None)
+    kwargs.pop("width", None)
     translated = translate_kwargs(ctk.CTkButton, kwargs)
-    translated['width'] = width
+    translated["width"] = width
     return ctk.CTkButton(master, text=OPEN_FILE_GLYPH, command=command, **translated)
 
 
@@ -206,14 +207,16 @@ def create_label(master, **kwargs):
 
 def create_entry(master, **kwargs):
     # tk.Entry has no height; only width is character-based.
-    return ctk.CTkEntry(master, **translate_kwargs(ctk.CTkEntry, kwargs, height_is_lines=False))
+    return ctk.CTkEntry(
+        master, **translate_kwargs(ctk.CTkEntry, kwargs, height_is_lines=False)
+    )
 
 
 # CTk's default checkbox box is 24x24 with a 3px border -- chunky next to the suite's 13pt label
 # font (the box out-measures the text's cap height, reading as oversized). Size the box to the text
 # instead: ~18px square with a 2px border tracks the 13pt glyphs. Set here (not the theme JSON, which
 # has no checkbox_width/height keys) as overridable defaults so a call site can still request its own.
-_CHECKBOX_BOX_PX = 18
+_CHECKBOX_BOX_PX = 16
 _CHECKBOX_BORDER_PX = 2
 
 
@@ -235,7 +238,9 @@ _MUTED_BUTTON_HOVER = "#b4b4b4"
 _MUTED_TEXT = "#5f5f5f"
 
 
-def create_option_menu(master, variable=None, values=None, command=None, muted=False, **kwargs):
+def create_option_menu(
+    master, variable=None, values=None, command=None, muted=False, **kwargs
+):
     """tk.OptionMenu(master, var, *choices) -> CTkOptionMenu(master, variable=, values=[...]).
 
     The legacy call passes the choices as varargs; call sites converting to this factory pass them
@@ -268,7 +273,9 @@ def create_combobox(master, values=None, **kwargs):
     return ctk.CTkComboBox(master, **translated)
 
 
-def create_slider(master, from_=None, to=None, length=None, orient=None, resolution=None, **kwargs):
+def create_slider(
+    master, from_=None, to=None, length=None, orient=None, resolution=None, **kwargs
+):
     """tk.Scale(...) -> CTkSlider(...).
 
     Maps the tk names CTk renamed: ``length`` (px long dimension) -> ``width``, ``orient`` ->
@@ -276,7 +283,9 @@ def create_slider(master, from_=None, to=None, length=None, orient=None, resolut
     CTkSlider has no built-in value label; call sites that need one add a small CTkLabel bound to
     the same variable (the legacy ``slider_widget`` popup already does this by hand).
     """
-    translated = translate_kwargs(ctk.CTkSlider, kwargs, width_is_chars=False, height_is_lines=False)
+    translated = translate_kwargs(
+        ctk.CTkSlider, kwargs, width_is_chars=False, height_is_lines=False
+    )
     if from_ is not None:
         translated["from_"] = from_
     if to is not None:
@@ -400,7 +409,9 @@ def _theme_path():
         candidates.append(os.path.join(GUI_IO_util.scriptPath, "nlp_suite_theme.json"))
     except Exception:
         pass
-    candidates.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "nlp_suite_theme.json"))
+    candidates.append(
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "nlp_suite_theme.json")
+    )
     for path in candidates:
         try:
             if os.path.isfile(path):
@@ -440,7 +451,10 @@ def init_appearance(appearance_mode="system"):
             )
             ctk.set_default_color_theme("blue")
     else:
-        warnings.warn("nlp_suite_theme.json not found; falling back to the stock 'blue' theme.", stacklevel=2)
+        warnings.warn(
+            "nlp_suite_theme.json not found; falling back to the stock 'blue' theme.",
+            stacklevel=2,
+        )
         ctk.set_default_color_theme("blue")
     try:
         ctk.set_appearance_mode(appearance_mode)
