@@ -858,7 +858,10 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
     # else:
     #     config_filename = config_filename_selected_config.get()
     # setup button to open a pop-up text entry widget where users can paste text to be used instead of an input file
-    openTextWidget_button = GUI_theme_util.create_button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+    # Give this its own width + label: it was an empty width=1 button (~8px under CTk, a thin red
+    # sliver) even though it opens a paste-text popup for a quick test run -- unlike the adjacent
+    # open_file_directory buttons, it has no neighbouring field to give it context.
+    openTextWidget_button = GUI_theme_util.create_button(window, width=12, text='Paste text',
                                       command=open_paste_text_popup)
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget, y_multiplier_integer,

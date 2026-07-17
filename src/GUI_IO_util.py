@@ -111,7 +111,9 @@ remindersPath = os.path.join(NLPPath, 'reminders')
 # The function places and displays a message for each ? HELP button in the GUIs
 def place_help_button(window,x_coordinate,y_coordinate,text_title,text_info):
     import GUI_theme_util
-    help_button = GUI_theme_util.create_button(window, text='? HELP', command=lambda: display_help_button_info(text_title, text_info))
+    # Give '? HELP' an explicit character width so CTk doesn't fall back to its 140px default
+    # (which makes every help button look oversized). 10 chars matches the Read Me/RUN chrome buttons.
+    help_button = GUI_theme_util.create_button(window, text='? HELP', width=10, command=lambda: display_help_button_info(text_title, text_info))
     # place widget with hover-over info
     y_multiplier_integer = placeWidget(window, x_coordinate,
                                                    y_coordinate,
