@@ -466,8 +466,11 @@ def display_release():
     # runs to ~y=56); the release label belongs directly under it. Gridding it (via placeWidget)
     # dropped it into the tall header row 0 where it rendered ON TOP OF the logo. .place it under the
     # logo instead -- .place coexists with the grid, same as the logo -- so it sits under the logo
-    # regardless of grid metrics. y=62 clears the taller logo's bottom edge.
-    release_lb.place(x=10, y=62)
+    # regardless of grid metrics. The logo is a two-line "NLP / Suite" mark whose ink runs to the
+    # label's bottom edge (~y=56); y=62 left only ~6px, so the red "Release" line read as touching
+    # the logo. y=72 gives a clear gap below the logo (10 + 46 + 16) while staying well above the
+    # first ? HELP button row.
+    release_lb.place(x=10, y=72)
     import GUI_theme_util
     GUI_theme_util.ToolTip(release_lb,
                            "The two sets of numbers, separated by /, refer to the NLP Suite release on your machine (left) and the release available on GitHub (right)\nWithout internet the newest release available on GitHub cannnot be retrieved and is displayed as 0.0.0.")
