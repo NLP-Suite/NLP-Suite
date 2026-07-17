@@ -382,7 +382,7 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
                                                              'sentence_length')
     csv_headers = ['Sentence length (in words)', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
 
-    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text
+    from Stanza_functions_util import stanzaPipeLine
 
     with open(outputFilename, 'w', newline="", encoding='utf-8', errors='ignore') as csvOut:
         writer = csv.writer(csvOut)
@@ -394,19 +394,24 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
             print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
             with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
                 text = inputFile.read().replace("\n", " ")
-                sentences = sentence_split_stanza_text(stanzaPipeLine(text))
+                # ONE Stanza parse per document: the sentence objects it returns already carry their
+                # tokens, so word counts come straight off this parse. Previously each sentence was
+                # RE-PARSED with a fresh stanzaPipeLine(sentence) call inside the loop below -- ~O(#sentences)
+                # full pipeline runs (~69,600 on Harry Potter, ~1h25m) purely to re-count words the parse
+                # above had already produced.
+                sentences = stanzaPipeLine(text).sentences
                 if len(sentences)==0:
                     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
                                                                    'The input file\n\n' + doc + '\n\nappears to be empty. Please, check the file and try again.',
                                                                    False, '', True, '', False)
                     continue
                 for sentence in sentences:
-                    tokens = tokenize_stanza_text(stanzaPipeLine(sentence))
-                    if len(tokens) > 100:
+                    n_tokens = len(sentence.words)
+                    if n_tokens > 100:
                         long_sentences = long_sentences + 1
                     sentenceID = sentenceID + 1
                     writer.writerow(
-                        [int(len(tokens)), sentenceID, sentence, fileID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                        [int(n_tokens), sentenceID, sentence.text, fileID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
         csvOut.close()
         head, scriptName = os.path.split(os.path.basename(__file__))
         reminder_status = reminders_util.checkReminder(scriptName,
