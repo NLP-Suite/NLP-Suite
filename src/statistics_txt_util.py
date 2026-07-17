@@ -382,23 +382,23 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
                                                              'sentence_length')
     csv_headers = ['Sentence length (in words)', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
 
-    # Sentence LENGTH is a word count, not a linguistic parse. NLTK's punkt sentence splitter + word
-    # tokenizer produce the identical metric in ~10s on a 1.1M-word corpus; the previous full Stanza
-    # pipeline (tokenize + LEMMA) over every document took ~36 min for the same numbers (and, before that,
-    # a fresh Stanza parse PER SENTENCE -> ~1h25m). Token counts include punctuation, so they stay
-    # comparable to the old Stanza counts and the >100-word "very long sentence" threshold. Fall back to
-    # Stanza (one parse per document) only if NLTK/punkt is unavailable.
-    _use_nltk = True
+    # The Suite tokenizes/sentence-splits with the CONFIGURED neural parser (Stanza/spaCy, per
+    # NLP_setup_package_language_main) -- NOT a rule-based tool like NLTK. Sentence length still doesn't need
+    # LEMMAS, though, so use a TOKENIZE-ONLY Stanza pipeline instead of the shared stanzaPipeLine singleton
+    # (which carries 'tokenize, lemma' -- the lemma pass roughly doubles the work for a word count). Falls
+    # back to that shared pipeline if a tokenize-only one can't be built.
+    #
+    # True speed comes from NOT re-parsing: the canonical flow is text -> configured parser -> CoNLL table
+    # -> analysis, and the Corpus Profiler already DERIVES this from the parser's CoNLL table (~2s). A
+    # standalone run with no such table has to parse here; on a large corpus that is minutes, not seconds --
+    # inherent to honoring the neural parser.
     try:
-        import nltk
-        try:
-            nltk.data.find('tokenizers/punkt')
-        except LookupError:
-            nltk.download('punkt', quiet=True)
-        nltk.sent_tokenize('Probe sentence. Second one.')   # confirm it works before relying on it
+        import stanza
+        _sent_pipe = stanza.Pipeline(lang='en', processors='tokenize', verbose=False)
+        _count_units = lambda sent: sent.tokens          # tokenize-only: count tokens
     except Exception:
-        _use_nltk = False
-        from Stanza_functions_util import stanzaPipeLine
+        from Stanza_functions_util import stanzaPipeLine as _sent_pipe
+        _count_units = lambda sent: sent.words
 
     with open(outputFilename, 'w', newline="", encoding='utf-8', errors='ignore') as csvOut:
         writer = csv.writer(csvOut)
@@ -410,11 +410,9 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
             print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
             with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
                 text = inputFile.read().replace("\n", " ")
-                # (sentence text, token count) pairs -- one lightweight pass per document, no neural parse
-                if _use_nltk:
-                    sent_len_pairs = [(s, len(nltk.word_tokenize(s))) for s in nltk.sent_tokenize(text)]
-                else:
-                    sent_len_pairs = [(sent.text, len(sent.words)) for sent in stanzaPipeLine(text).sentences]
+                # ONE parse per document with the configured parser; sentence objects carry their tokens, so
+                # counts come straight off this parse (no per-sentence re-parse, no wasted lemma pass).
+                sent_len_pairs = [(sent.text, len(_count_units(sent))) for sent in _sent_pipe(text).sentences]
                 if len(sent_len_pairs)==0:
                     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
                                                                    'The input file\n\n' + doc + '\n\nappears to be empty. Please, check the file and try again.',
