@@ -1046,8 +1046,17 @@ def _prime_parse_cache(ctx, selected):
 
 
 def run_profile(ctx, selected):
+    import time as _time
+    import IO_user_interface_util
     _prime_parse_cache(ctx, selected)   # parse once, cache; runners read the cache (or fall back)
     results = []
+    # UNIFORM per-analysis progress: some runners print their own "Started/Finished ... taking X" (the
+    # parser utils via timed_alert), others print nothing -- so the log was inconsistent and a stalled
+    # analysis was invisible (an analysis that never prints "Finished" is exactly where a hang is). Bracket
+    # EVERY analysis here with the same wording the rest of the suite uses, plus an (i of N) counter for the
+    # long unattended run.
+    _batch = [a for a in selected if REGISTRY.get(a, {}).get('kind') == 'batch']
+    _n, _done = len(_batch), 0
     for aid in selected:
         entry = REGISTRY.get(aid)
         if entry is None:
@@ -1055,12 +1064,19 @@ def run_profile(ctx, selected):
         rec = dict(id=aid, category=entry['category'], label=entry['label'],
                    kind=entry['kind'], files=[], error='', gui_script=entry.get('gui_script', ''))
         if entry['kind'] == 'batch':
+            _done += 1
+            _t0 = _time.time()
+            print('\nStarted running %s (%d of %d) at %s'
+                  % (entry['label'], _done, _n, _time.strftime('%H:%M:%S')))
             try:
                 rec['files'] = entry['run'](ctx) or []
+                _dur = IO_user_interface_util.convert_time(_time.time() - _t0)[3]
+                print('Finished running %s (%d of %d)%s.'
+                      % (entry['label'], _done, _n, (' taking ' + _dur) if _dur else ''))
             except Exception as e:
                 # no silent failure: record the error; the report shows it; the profile continues
                 rec['error'] = str(e)
-                print('Corpus Profiler: analysis "%s" failed: %s' % (aid, e))
+                print('Corpus Profiler: analysis "%s" FAILED: %s' % (aid, e))
         # kind == 'gui': nothing to run -- the report surfaces it as an "open the tool" pointer
         results.append(rec)
     return results
