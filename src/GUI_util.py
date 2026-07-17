@@ -439,12 +439,14 @@ def display_release():
 
     release_display = 'Release ' + str(release_version_var.get().replace('\n','')) + "/" + str(GitHub_newest_release)
     release_lb = tk.Label(window, text=release_display, foreground="red") #height=1,
-    # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.help_button_x_coordinate,
-                                                   y_multiplier_integer,
-                                                   release_lb, True, False, False, False, 90,
-                                                   GUI_IO_util.help_button_x_coordinate,
-                                                   "The two sets of numbers, separated by /, refer to the NLP Suite release on your machine (left) and the release available on GitHub (right)\nWithout internet the newest release available on GitHub cannnot be retrieved and is displayed as 0.0.0.")
+    # CTk migration slice 2b: the logo is .place'd in the top-left corner (y=10, ~50px tall); the
+    # release label belongs directly under it. Gridding it (via placeWidget) dropped it into the tall
+    # header row 0 where it rendered ON TOP OF the logo. .place it under the logo instead -- .place
+    # coexists with the grid, same as the logo -- so it sits under the logo regardless of grid metrics.
+    release_lb.place(x=GUI_IO_util.help_button_x_coordinate - 12, y=64)
+    import GUI_theme_util
+    GUI_theme_util.ToolTip(release_lb,
+                           "The two sets of numbers, separated by /, refer to the NLP Suite release on your machine (left) and the release available on GitHub (right)\nWithout internet the newest release available on GitHub cannnot be retrieved and is displayed as 0.0.0.")
     # check and display a possible warning message
     if GitHub_newest_release != '0.0.0':
         check_GitHub_release(local_release_version)
@@ -1802,6 +1804,30 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
     # check_GitHub_release(local_release_version)
     window.protocol("WM_DELETE_WINDOW", _close_window)
+
+    # CTk migration slice 2b: the grid's natural width is content-driven (a wide input-file entry,
+    # the far-right RUN/CLOSE column, busy multi-control rows) and can exceed the fixed geometry
+    # set_window() guessed -- which clipped RUN/CLOSE off the right edge on several GUIs. Once every
+    # widget is laid out, GROW the window to fit its content: never below the configured size (so
+    # notebook GUIs keep the vertical space their .place'd notebook needs -- .place'd widgets don't
+    # count toward reqwidth/reqheight), never past the screen. Grow-only, so empty margin is fine but
+    # nothing is ever clipped. Also make the window resizable so the user can adjust. Scheduled
+    # after_idle to run after any widgets a GUI adds past GUI_bottom.
+    def _fit_window_to_content():
+        try:
+            window.update_idletasks()
+            try:
+                conf_w, conf_h = (int(v) for v in str(GUI_size).lower().split('x')[:2])
+            except (ValueError, AttributeError):
+                conf_w, conf_h = 0, 0
+            screen_w, screen_h = window.winfo_screenwidth(), window.winfo_screenheight()
+            new_w = min(max(conf_w, window.winfo_reqwidth()), screen_w)
+            new_h = min(max(conf_h, window.winfo_reqheight()), screen_h - 80)
+            window.geometry(f"{new_w}x{new_h}")
+            window.resizable(True, True)
+        except Exception as _e:
+            print('fit-window-to-content skipped:', _e)
+    window.after_idle(_fit_window_to_content)
 
     return package_display_area_value
 

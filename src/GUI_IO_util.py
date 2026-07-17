@@ -405,61 +405,77 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
 # when a widget has hover-over effects, the parameter no_hover_over_widget is set to False
 # widget_name is the name of the widget that needs to be placed in any of the GUI scripts as defined by tk.
 # CTk migration slice 2b: lay widgets on a GRID instead of absolute .place(x, y=90+40*row).
-# A first cut mapped each widget's absolute x-coordinate to a *shared, fixed* column (bucketing x
-# against pixel thresholds). That broke badly: two widgets whose x-values fell in the same band
-# collided in one cell (stacked on top of each other), while sparsely-populated bands left wide
-# empty columns whose width still counted -- so content floated to the far right and, on busier
-# GUIs, spilled off the window's right edge. The absolute pixel positions simply don't survive the
-# translation to a content-sized grid.
 #
-# Instead we assign columns SEQUENTIALLY per row, in call order: column 0 is reserved for the
-# left-most "?HELP / read" zone (x below _HELP_ZONE_MAX), and every subsequent widget on that row
-# takes the next free column (1, 2, 3, ...). This preserves the horizontal ORDER the x-coordinates
-# encoded, guarantees no two widgets collide, and packs left with no stranded empty columns -- so
-# the grid's natural width stays within the window. The call signature is unchanged; no GUI script
-# needs editing.
+# Two earlier cuts each failed one way:
+#   1. Map each x to a *fixed shared column* with fine pixel thresholds. Preserved absolute
+#      position but (a) collided widgets whose x fell in the same band into one cell (stacked on
+#      top of each other) and (b) spread the union of all rows across ~9 columns, so one wide
+#      widget (a file-path entry) pushed the right-hand columns off the window's edge.
+#   2. Assign columns *sequentially in call order* (col 0 = help, then 1, 2, ...). Never collided
+#      and packed compactly, but THREW AWAY absolute position: shared rows that place widgets at
+#      fixed x's out of call order -- above all the bottom chrome (Read Me | videos | TIPS |
+#      reminders | SETUP | RUN | CLOSE, RUN at x=940 and CLOSE at x=1090) -- had RUN/CLOSE
+#      appended after the (wide) SETUP widget and shoved off-screen. RUN vanished on every GUI.
+#
+# This version keeps position AND avoids both failures: bucket x into a SMALL number of coarse,
+# order-preserving bands (so RUN lands right, Read Me lands left, labels/entries line up), and on a
+# collision within a row BUMP to the next free column instead of stacking. Coarse bands (6, not 9)
+# keep the populated-column count -- and therefore the total width -- inside the window; the bump
+# guarantees no two widgets ever share a cell. Call signature unchanged; no GUI script needs editing.
 
-# Widgets whose legacy x is below this belong in the reserved left-most column (the "? HELP" /
-# "read" button that opens most rows). Both the darwin (help_button_x=70) and Windows constant
-# blocks put that button near x=70, well under this cutoff.
-_HELP_ZONE_MAX = 130
+# Coarse left-to-right band edges. A widget's base column = how many edges its x is >= (so x<130 ->
+# col 0, the "?HELP / Read Me / read" zone; x>=900 -> col 5, the RUN/CLOSE zone). Chosen so the
+# bottom-chrome x's (70/200/370/570/770/940/1090 on Mac; similar on Windows) distribute one-per-band
+# across cols 0..5, and the per-GUI label/control x's fall in sensible bands. Magnitudes are
+# comparable across the darwin and Windows constant blocks, so one set of edges serves both.
+_GRID_COLUMN_THRESHOLDS = (130, 330, 520, 700, 900)
 # Top grid rows reserved for the header (intro text + logo); placeWidget content starts below.
 _GRID_HEADER_ROWS = 1
 # Generous fixed span for full-width (centerX) rows and the header intro. Grid columns with no
 # content collapse to zero width, so over-spanning is harmless.
 _GRID_TOTAL_COLUMNS = 16
 
-# Per-build layout state: next free content column for each grid row, and which rows have already
-# claimed the reserved help column. Reset at the start of each GUI build via _reset_grid_layout().
-_grid_row_next_col = {}
-_grid_row_help_used = set()
+# Per-build layout state: the set of columns already occupied on each grid row (so a collision can
+# bump right to the next free one). Reset at the start of each GUI build via _reset_grid_layout().
+_grid_row_used_cols = {}
 
 
 def _reset_grid_layout():
     """Clear per-row column bookkeeping so a freshly built GUI starts from an empty grid."""
-    _grid_row_next_col.clear()
-    _grid_row_help_used.clear()
+    _grid_row_used_cols.clear()
 
 
-def _column_for(row, x_coordinate):
-    """Next grid column for a widget on `row`: column 0 for the first help-zone widget, otherwise
-    the next free column left-to-right. Preserves call order without ever colliding two widgets."""
+def _base_column(x_coordinate):
+    """Coarse, order-preserving band for a legacy absolute x-coordinate (0 = leftmost)."""
     try:
         x = float(x_coordinate)
     except (TypeError, ValueError):
-        x = None
-    if x is not None and x < _HELP_ZONE_MAX and row not in _grid_row_help_used:
-        _grid_row_help_used.add(row)
-        return 0
-    column = _grid_row_next_col.get(row, 1)
-    _grid_row_next_col[row] = column + 1
+        return 1
+    column = 0
+    for edge in _GRID_COLUMN_THRESHOLDS:
+        if x >= edge:
+            column += 1
+        else:
+            break
+    return column
+
+
+def _column_for(row, x_coordinate):
+    """Grid column for a widget on `row`: its x-derived band, bumped right to the next free column
+    if that band is already taken on this row. Preserves horizontal position without ever stacking
+    two widgets in one cell."""
+    used = _grid_row_used_cols.setdefault(row, set())
+    column = _base_column(x_coordinate)
+    while column in used:
+        column += 1
+    used.add(column)
     return column
 
 
 def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False, no_hover_over_widget=False, whole_widget_red=False, centerX=False, basic_y_coordinate=90, x_coordinate_hover_over = 90, text_info=''):
-    # The legacy row counter (y_multiplier_integer) becomes the grid row; the x-coordinate now only
-    # decides ordering within that row (see the module note above). sameY keeps the same row so the
-    # next call lands in the next column over; centerX spans the full width, centered.
+    # The legacy row counter (y_multiplier_integer) becomes the grid row; the x-coordinate picks the
+    # column band on that row (see the module note above). sameY keeps the same row so successive
+    # calls fill it left to right; centerX spans the full width, centered.
     row = _GRID_HEADER_ROWS + int(round(float(y_multiplier_integer)))
     if centerX:
         widget_name.grid(row=row, column=0, columnspan=_GRID_TOTAL_COLUMNS,
