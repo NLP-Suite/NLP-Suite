@@ -73,5 +73,6 @@ So legacy modules are GUI/infra-coupled. Tests work around this by stubbing thes
 - **Style / statistics** — `statistics_txt_util`, `style_analysis_main`.
 
 ## Working notes
-- Branches: feature work lands via PRs against **`roberto`** — the integration/release branch the installer workflow (`build-installers.yml`) checks out and that `v*` release tags are built from. (`current-stable` is an older snapshot behind `roberto`; don't target it.) Avoid editing files already owned by an open PR.
+- **Branches — two tiers.** Feature work (yours and collaborators') lands via PRs against **`roberto`**, the **integration/staging** branch. **`current-stable`** is what **external users get**: it is what the app's exit-time update check reads (`GUI_util.get_GitHub_release_version`) and what `NLP_setup_update_util` pulls. Only Roberto promotes `roberto` → `current-stable`, deliberately; collaborators never target `current-stable`. Avoid editing files already owned by an open PR.
+- **Releases.** `v*` tags are built by `build-installers.yml`, which checks out **the tagged commit** (cut tags from `current-stable`, after promotion). `lib/release_version.txt` must equal the tag minus the leading `v` — CI fails the build otherwise, because the update check compares the installed file against `current-stable`'s copy and silently lies when they drift.
 - The suite is Windows/Mac cross-platform; prefer `os.path`/`os.sep` and avoid platform-specific assumptions.
