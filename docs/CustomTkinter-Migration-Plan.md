@@ -15,58 +15,49 @@ testing checklist.
 
 ## 0. Design premise: color is a signal, not styling (read first)
 
-> **Reviewer redirect (Roberto, 2026-07).** The first cut of the theme painted *every* widget in
-> the brand red `#b10a0a`. That shipped briefly and was reverted: the solid-red theme made GUIs
-> read as noise, and — more fundamentally — it **overwrote a load-bearing convention**. In the NLP
-> Suite, **red already means something**: a red *Open TIPS* / *Watch videos* / *Open reminders*
-> dropdown signals that that resource *exists for this GUI*; grey means none is available (the
-> in-app tooltips literally promise "when TIPS are available the widget is red, otherwise black").
-> A blanket-red theme erases that signal, and no amount of layout polish restores it — it's the
-> premise, not the finish.
-
-So the accent is **reserved for meaning**. The rule for the whole migration:
-
-- **Neutral / muted by default.** Ordinary controls — the majority of buttons, checkboxes, option
-  menus, comboboxes — are a neutral grey. They carry no special meaning, so they get no accent.
-- **Red only where it carries information.** Exactly two things earn the brand red:
-  1. the **availability signal** on the *TIPS / videos / reminders* dropdowns (red = available for
-     this GUI, grey = none), and
-  2. the single **RUN** primary-action button per GUI (the one "do the thing" affordance).
-
-This is a *redirect, not a rejection* of the grid work: the grid engine (§2.2) stands, and the
-incremental path below is exactly right once the theme honors this premise. The theme-JSON default
-colors and the `accent=`/`muted=` opt-ins in `GUI_theme_util` are what encode it — see the widget
-mapping (§3) and the Phase 1 accent-signal slice note (§4).
-
-### 0.1 Amendment (2026-07-18, pilot 2) — **red = active, grey = inactive** ⚠️ needs Roberto's sign-off
-
-The neutral cut above shipped and was tried on screen. It has its own failure, the mirror image of
-the first one: with every ordinary control painted a filled mid-grey, **the whole GUI reads as
-disabled**. Grey is the universal "you can't click this" cue, and the neutral theme spent it on the
-majority of live controls — so nothing looked actionable.
-
-The theme is therefore now:
+**The current rule** (cut 3, set on pilot 2, 2026-07-18) — ⚠️ *needs Roberto's sign-off before it
+goes past pilot 2*:
 
 - **Brand red `#b10a0a` = ENABLED.** Every interactive widget's default fill.
 - **Flat grey = DISABLED.** Applied automatically whenever `state='disabled'` is set.
 
-**Why this does not simply re-break §0.** Roberto's objection had two parts. Part (a), the erased
-availability cue, survives intact: a TIPS / videos / reminders dropdown with nothing behind it is
-*exactly* an inactive control, so it greys out, and a red one still means "a resource exists here".
-The old convention becomes a special case of the general rule rather than a casualty of it. Part
-(b), "the wall of red reads as noise", is **not** answered — red is no longer *salient*, so RUN and
-the available dropdowns no longer stand out from ordinary buttons. That is a deliberate trade made
-by Cora on the pilot, and **Roberto should confirm it** before it goes further than pilot 2. Two
-one-liner fallbacks if he prefers otherwise: flip the theme JSON's fills back to neutral (the §0
-cut), or to a light bordered surface (red border + red text, solid red kept for RUN/signal only).
+Color here is **information, not decoration** — that premise is fixed even though the encoding has
+moved twice. The theme JSON plus the `accent=`/`muted=` opt-ins in `GUI_theme_util` are what encode
+it (§3).
 
-**What makes it work mechanically.** CustomTkinter does *not* repaint a widget on
-`state='disabled'` — it only swaps in `text_color_disabled` and leaves the fill alone, so a disabled
-button would be indistinguishable from an enabled one and the whole scheme would collapse.
-`GUI_theme_util._StateFillMixin` closes that gap: it captures the enabled fill at construction and
-repaints on every state change, at construction or via a later `configure(state=…)`. Call sites keep
-using plain `configure(state=…)` unchanged, which matters because the suite toggles disabled state
-constantly (§5.4). It also restores a *call-site* color on re-enable, so a custom fill is not lost.
+### 0.1 How we got here — two reverted cuts
+
+**Cut 1: solid red on every widget.** Shipped briefly, reverted. It read as noise, and more
+fundamentally it **overwrote a load-bearing convention**: in this suite **red already means
+something** — a red *Open TIPS* / *Watch videos* / *Open reminders* dropdown signals that the
+resource *exists for this GUI*, grey means none is available (the in-app tooltips literally promise
+"when TIPS are available the widget is red, otherwise black"). A blanket-red theme erases that
+signal, and no amount of layout polish restores it. — *Roberto, 2026-07*
+
+**Cut 2: neutral grey default, red reserved for RUN + the availability dropdowns.** Also shipped,
+also reverted — the mirror-image failure. With every ordinary control a filled mid-grey, **the whole
+GUI read as disabled**: grey is the universal "you can't click this" cue, and the neutral theme spent
+it on the majority of live controls, so nothing looked actionable.
+
+**Why cut 3 does not simply re-break cut 1.** Roberto's objection had two parts. Part (a), the erased
+availability cue, survives intact: a TIPS / videos / reminders dropdown with nothing behind it *is*
+an inactive control, so it greys out, and a red one still means "a resource exists here" — the old
+convention becomes a special case of the general rule rather than a casualty of it. Part (b), "the
+wall of red reads as noise", is **not** answered: red is no longer *salient*, so RUN and the
+available dropdowns no longer stand out from ordinary buttons. That is a deliberate trade made by
+Cora on the pilot. Two one-liner fallbacks if Roberto prefers otherwise: flip the theme JSON's fills
+back to neutral (cut 2), or to a light bordered surface (red border + red text, solid red kept for
+RUN/signal only).
+
+### 0.2 What makes it work mechanically
+
+CustomTkinter does *not* repaint a widget on `state='disabled'` — it only swaps in
+`text_color_disabled` and leaves the fill alone, so a disabled button would be indistinguishable from
+an enabled one and the scheme would collapse. `GUI_theme_util._StateFillMixin` closes that gap: it
+captures the enabled fill at construction and repaints on every state change, whether at construction
+or via a later `configure(state=…)`. Call sites keep using plain `configure(state=…)` unchanged,
+which matters because the suite toggles disabled state constantly (§5.4). It also restores a
+*call-site* color on re-enable, so a custom fill is not lost.
 
 ---
 
@@ -157,10 +148,9 @@ Concretely, we introduce one new shared module, **`src/GUI_theme_util.py`** (nam
 debate), that:
 
 1. Owns `customtkinter` setup: appearance mode, the NLP Suite theme, and widget-scaling defaults.
-   The theme is **neutral grey by default**; the brand red `#b10a0a` (the color at
-   `GUI_util.py:188-190`) is an *opt-in accent*, applied only to the two things that carry meaning
-   (§0): the availability-signal dropdowns and the RUN button. It is **never** the default fill for
-   ordinary widgets — that was the reverted first cut.
+   Per §0 the theme fills interactive widgets with the brand red `#b10a0a` (the color at
+   `GUI_util.py:188-190`) as the **enabled** state and flat grey as **disabled**, the latter applied
+   automatically by `_StateFillMixin` (§0.2).
 2. Exposes thin factory wrappers so GUI scripts stop calling `tk.Button(...)` directly:
    `create_button`, `create_checkbox`, `create_label`, `create_entry`, `create_option_menu`,
    `create_combobox`, `create_slider`, `create_textbox`. Each wrapper accepts the *old tk-style
@@ -267,10 +257,8 @@ can coexist under a `CTk` root during the transition.
   The per-OS `requirements-mac.txt` / `requirements-windows.txt` are installed *in addition* to the
   base file, so the pin goes in `requirements.txt` **only** (adding it to all three would just
   double-install).
-- Add `nlp_suite_theme.json` (CTk color theme: **neutral grays as the default fill**; brand red
-  `#b10a0a` reserved as an opt-in accent per §0, not painted on every widget) under `src/` so
-  PyInstaller ships it (the spec's `src` collection is `.py`-only, so it needs an explicit datas
-  entry — done).
+- Add `nlp_suite_theme.json` (CTk color theme, encoding the §0 rule) under `src/` so PyInstaller
+  ships it (the spec's `src` collection is `.py`-only, so it needs an explicit datas entry — done).
 - PyInstaller: add `collect_data_files('customtkinter')` to `NLP_Suite.spec` datas and
   `customtkinter`/`darkdetect` to hiddenimports; same for `NetworkGraphViewer.spec` if it grows a
   CTk UI.
@@ -293,70 +281,38 @@ can coexist under a `CTk` root during the transition.
    `place_help_button`; `message_box_widget`, `enter_value_widget`, `slider_widget`,
    `dropdown_menu_widget*`, `combobox_with_search_widget` popups → CTkToplevel + wrappers.
 
-> **Status (2026-07):** PR 1 (`GUI_theme_util` compat layer + Phase 0 groundwork) merged to
-> `roberto` as **PR #1641**. PR 2 (root → `CTk()`, shared-chrome factory conversions, `GUI_top`
-> intro widget, kept the `.place()` layout — "slice 2a") lives on `ctk/phase1-core`, opened
-> against `roberto` as **PR #1645** now that PR 1 has landed there. It includes the
-> folder-icon open-button fix (the "open selected file/directory" buttons were rendering as
-> empty ~8px slivers — `width=1, text=''` — fixed via a new `GUI_theme_util.create_open_file_button`
-> themed `CTkButton`) and the logo-column tightening (logo 85×50 → 58×34, column-0 minsize
-> 210 → 122), moved here from the grid-reflow branch since both are chrome/theming fixes
-> independent of the grid engine itself.
+> **Status (2026-07):**
 >
-> `placeWidget` → `grid()` ("slice 2b") landed as **PR #1648** (`ctk/phase1-grid`) — **done**.
-> `placeWidget` grids widgets (x-coordinate → coarse semantic column band, row counter → grid row);
-> tooltips bind `GUI_theme_util.ToolTip`; `GUI_top`'s intro is gridded in the header row. It also
-> closed out the reflow artifacts on the front-door GUI: `NLP_menu_main`'s `ttk.Notebook` is gridded
-> (was floating over the chrome) with full-width dropdowns and trimmed height; the SETUP rows group
-> each checkbox with its wide button (the coarse grid otherwise stranded the checkbox and overflowed
-> the window); the blank open-config buttons got a folder glyph; the Courier monospace on the SETUP /
-> info buttons and notebook tabs became the native system UI font; and the top nav buttons
-> (About/Release history/team/cite, in `GUI_util`) moved to a 2×2 `place()`d block in the top-right
-> corner so they stop being pushed off the right edge by the wide buttons. The earlier
-> `IO_config_setup_brief()` duplicate-INPUT-box overflow driver was also fixed on this branch.
+> - **PR 1** — `GUI_theme_util` compat layer + Phase 0 groundwork. Merged to `roberto` as **#1641**.
+> - **Slice 2a** (`ctk/phase1-core`, **#1645**) — root → `CTk()`, shared-chrome factory conversions,
+>   `GUI_top` intro widget; kept the `.place()` layout. Also `create_open_file_button` (the
+>   open file/directory buttons were rendering as empty ~8 px slivers, `width=1, text=''`) and a
+>   tightened logo column (logo 85×50 → 58×34, column-0 minsize 210 → 122).
+> - **Slice 2b** (`ctk/phase1-grid`, **#1648**) — `placeWidget` → `grid()`: x-coordinate → coarse
+>   semantic column band, row counter → grid row; tooltips bind `GUI_theme_util.ToolTip`; `GUI_top`'s
+>   intro gridded into the header row. Also cleared the reflow artifacts on the front-door GUI
+>   (gridded notebook, SETUP checkbox grouped with its wide button, folder glyphs on the blank
+>   open-config buttons, Courier → native UI font, top-nav buttons moved to a 2×2 `place()`d
+>   top-right block) and the `IO_config_setup_brief()` duplicate-INPUT-box overflow.
+> - **Slice 3** (`ctk/phase1-popups`, base `ctk/phase1-grid`) — 4 of the 5 popups → `CTkToplevel` +
+>   wrappers: `slider_widget` (CTkSlider plus a value label, since CTkSlider has no built-in readout;
+>   integer steps, returns `int` to match `tk.Scale`), `dropdown_menu_widget`/`2`, and
+>   `enter_value_widget` (was a second bare `tk.Tk()` with its own `mainloop()`; now parented to
+>   `GUI_util.window` and driven by `wait_window()`).
+> - **Accent-signal slice** (`ctk/phase1-accent-signal`) — implemented the cut-2 neutral theme, since
+>   **superseded by cut 3** on pilot 2 (§0.1). The `accent=`/`muted=` opt-ins it added to
+>   `create_button` / `create_option_menu` remain in use.
 >
-> **Out of scope for #1648 (deferred follow-ups, not blockers):** window geometry is still tuned to
-> the old absolute layout (~35% empty on the right on some GUIs — revisit `set_window` sizing);
-> multi-column GUIs (SVO, GIS) and the raw-`.place()` GUIs (`data_visualization_main.py`, 140 sites)
-> are unvalidated against the column bucketing (Phase 4); the now-dead `hover_over_widget` machinery
-> is left for Phase 5 cleanup; and full per-GUI visual QA on Mac + Windows, light + dark, is still
-> outstanding.
+> **Deferred out of slice 3 to Phase 4** (both carry an in-code marker): `message_box_widget` — its
+> buttons and countdown labels are `.place()`d at offsets computed from the packed `tk.Message`'s
+> height and it fires on every RUN, so the geometry needs on-screen QA — and
+> `combobox_with_search_widget`, which is unfinished and whose only call site is commented out.
 >
-> **Slice 3 (2026-07-17)** — the popup dialogs of Phase-1 item 3 → `CTkToplevel` + `GUI_theme_util`
-> wrappers. Stacked fork PR `coralynnkc/NLP-Suite` (`ctk/phase1-popups`, base `ctk/phase1-grid`).
-> **Converted (4 of the 5):** `slider_widget` (CTkSlider + a value label since CTkSlider has no built-in
-> readout; pinned to integer steps and returns an `int`, matching `tk.Scale`'s default resolution=1 and
-> every caller's integer use), `dropdown_menu_widget` and `dropdown_menu_widget2` (CTkToplevel +
-> `create_combobox`/`create_button`; dropped the dead `pack()`-then-`grid()` and moved OK out of the
-> combobox's grid cell — the two overlapped, invisible with translucent tk widgets, broken with opaque
-> CTk ones), and `enter_value_widget` (was a second bare `tk.Tk()` + its own `mainloop()`; now a
-> CTkToplevel parented to `GUI_util.window`, driven by `wait_window()`). Verified: a headless
-> construction smoke fires each popup's OK path and checks return values/types; `tests/gui_smoke.py`
-> (44 ok, 0 missing golden — unchanged) and `pytest` (33 passed) show no regression.
-> **Deliberately deferred to Phase 4 (as §4 already lists them):** `message_box_widget` (its OK/Yes/No
-> buttons + countdown labels are `.place()`d at pixel offsets computed from the packed `tk.Message`'s
-> height, and it fires on every RUN — the geometry needs on-screen QA) and `combobox_with_search_widget`
-> (unfinished; only call site is commented out). Both carry an in-code marker noting the deferral.
-> Still outstanding: on-screen QA of the converted modals on Mac + Windows (they can't be visually
-> verified headlessly).
->
-> **Accent-signal slice (2026-07-17)** — implements the §0 redirect after the solid-red theme was
-> reverted. Stacked fork branch `ctk/phase1-accent-signal` (base `ctk/phase1-popups`). Three moves:
-> (1) `nlp_suite_theme.json` — every interactive widget's default fill flipped from brand red to a
-> neutral grey (`CTkButton`, `CTkCheckBox`, `CTkOptionMenu`, `CTkComboBox`, `CTkRadioButton`,
-> `CTkSlider`, `CTkSwitch`, `CTkProgressBar`, `CTkSegmentedButton`, and the `DropdownMenu` hover);
-> entries/textboxes/frames were already neutral and are untouched. (2) `GUI_theme_util` — added an
-> `accent=True` opt-in to `create_button` and `create_option_menu` that paints the brand red
-> (`create_option_menu` already had `muted=True` for the "nothing available" grey; `accent` is its
-> complement for the "available" red). (3) `GUI_util` — the **RUN** button and the *available*
-> branches of the TIPS / videos / reminders dropdowns now pass `accent=True`; their *unavailable*
-> branches keep `muted=True`. Net effect: neutral grey everywhere, red only on RUN and on a dropdown
-> that actually has a resource — the availability cue is restored and the "wall of red" is gone.
-> Verified: `tests/gui_smoke.py` and `pytest` green (theme is data + kwarg plumbing, no golden/label
-> change). **Still outstanding:** on-screen QA on Mac + Windows to confirm the grey reads as
-> actionable (not disabled) and the red reads as signal; and a call whether RUN should keep the red
-> accent or go neutral like the rest (left red here as the single primary-action affordance — a
-> one-line flip if Roberto prefers otherwise).
+> **Deferred out of #1648, not blockers:** window geometry is still tuned to the old absolute layout
+> (~35% empty on the right on some GUIs — revisit `set_window` sizing); multi-column GUIs (SVO, GIS)
+> and the raw-`.place()` GUIs (`data_visualization_main.py`, 140 sites) are unvalidated against the
+> column bucketing (Phase 4); the now-dead `hover_over_widget` machinery awaits Phase 5 cleanup; and
+> per-GUI visual QA on Mac + Windows, light + dark, is outstanding throughout.
 
 After Phase 1, **every GUI already looks substantially better** (new chrome, themed top/bottom
 bars, help column, scrollable body) even though its own widgets are still plain tk.
@@ -373,58 +329,72 @@ Prove the mechanical conversion recipe end-to-end and refine the wrappers:
 Write down every deviation the pilots force into the per-file checklist (§6) before mass
 conversion.
 
-> **Status (2026-07-18) — pilot 1 `wordclouds_main.py`: done** (branch `ctk/phase2-wordclouds`).
-> 29 constructors → factories, 3 `OptionMenu` → `create_option_menu(values=[...])`, the open-image
-> sliver → `create_open_file_button`, `ttk.Style`/`theme_use` dropped, dynamic csv-field
-> repopulation → `set_values`. Launched and screenshotted on macOS: neutral greys with red only on
-> RUN and the *available* TIPS / videos / reminders dropdowns, exactly the §0 premise.
+> **Status: Phase 2 complete (2026-07-18).** All three pilots done. Every durable finding below is
+> already a §6 checklist item — **§6 plus the §3 mapping, not this narrative, is what a Phase 3
+> contributor works from.** Each pilot added at least one *silent-failure* item to it.
 >
-> **Three legacy idioms CTk does not support** turned up, all of which recur suite-wide and are now
-> checklist items in §6: `.config(` (raises; 53 sites in this one file), `widget['state']` (raises),
-> and `widget['values'] = …` (**silently no-ops** — the nastiest, and *not* caught by the `["menu"]`
-> grep). Assume every Phase 3 file has all three.
+> **Pilot 1 — `wordclouds_main.py`** (`ctk/phase2-wordclouds`). 29 constructors → factories, 3
+> `OptionMenu` → `create_option_menu(values=[...])`, open-image sliver → `create_open_file_button`,
+> `ttk.Style`/`theme_use` dropped, dynamic csv-field repopulation → `set_values`. Surfaced the three
+> legacy idioms CTk rejects — `.config(` (raises; 53 sites in this file alone), `widget['state']`
+> (raises), `widget['values'] = …` (**silently no-ops**, and *not* caught by the `["menu"]` grep).
+> Assume every Phase 3 file has all three. Two shared-layer fixes forced:
+> 1. `create_entry` now adds a 14 px chrome allowance to the char→px width translation (new
+>    `width_padding` arg on `translate_kwargs`) — CTkEntry reserves internal padding, so small
+>    entries lost ~2 cells and the 4-char "Max no. of words" box rendered `100` as `10C`. The §5.2
+>    tail arriving; expect more.
+> 2. `tests/gui_smoke.py` stubbed `customtkinter` as a **blanket MagicMock**, which answers every call
+>    and subscript and so absorbed *all three* idiom bugs silently — wordclouds passed a smoke run
+>    while broken, recording **0 widgets**. Replaced with a hand-written stub reproducing the real
+>    contracts, pinned against real CTk in `tests/test_gui_theme_util.py` so a CTk upgrade can't drift
+>    them apart. **This is a prerequisite for trusting Phase 3**, not a nicety: without it the smoke
+>    suite goes progressively blind as the other ~45 GUIs convert.
 >
-> **Two shared-layer fixes the pilot forced:**
-> 1. `GUI_theme_util.create_entry` now adds a 14 px chrome allowance to the char→px width
->    translation (new `width_padding` arg on `translate_kwargs`). CTkEntry reserves internal padding
->    around its text area, so small entries lost ~2 cells — the 4-char "Max no. of words" box
->    rendered `100` as `10C`. This is the §5.2 tail arriving; expect more of it.
-> 2. `tests/gui_smoke.py` stubbed `customtkinter` as a **blanket MagicMock**, which answers every
->    call and subscript and therefore absorbed *all three* idiom bugs silently (wordclouds passed a
->    smoke run while broken, recording **0 widgets**). Replaced with a hand-written stub that
->    reproduces the three real CTk contracts and records `text=`. Without this the smoke suite would
->    have gone progressively blind exactly as Phase 3 converts the other ~45 GUIs — **this fix is a
->    prerequisite for trusting the batch phase**, not a nicety. The contracts it emulates are pinned
->    against real CTk in `tests/test_gui_theme_util.py` so a CTk upgrade can't drift them apart.
+> **Pilot 2 — `NLP_menu_main.py`** (`ctk/phase2-menu`). 8 buttons + 3 checkboxes → factories, 3
+> open-config buttons, 7 `ttk.Combobox` → `create_combobox`, and the suite's **only `ttk.Notebook` →
+> `CTkTabview`**, which took the `ttk.Style`/`theme_use('clam')` block and the now-unused ttk import
+> with it; the seven `.place()`d tab rows became a 3-column grid per tab frame. Two findings, both
+> silent-failure:
+> 1. **`textvariable=` is dropped by `CTkComboBox`** — it has only `variable=`, and all ~56 legacy
+>    `ttk.Combobox` sites bind with `textvariable=`. `translate_kwargs` filters unknown kwargs
+>    silently, so the widget renders fine with **no bound variable**: every `.trace` dead, RUN
+>    dispatch quietly broken. `create_combobox` now renames it — it can't go in the global `_RENAME`
+>    table because `CTkCheckBox` has *both* names with different meanings (`textvariable` = its label).
+> 2. **`CTkTabview` tab frames, not `ttk.Frame`s, must parent CTk children** — CTk reads its
+>    background off the master and a `ttk.Frame` has no queryable `bg`. Converting the notebook was
+>    the fix.
 >
-> Still outstanding for pilot 1: Windows QA, and the deferred #1648 window-geometry item (the window
-> is still sized to the old absolute layout, so the rightmost column clips) — not introduced here.
+> This pilot is also where the theme reversed to cut 3 (§0.1) — the neutral theme read as "everything
+> disabled" on screen.
 >
-> **Status (2026-07-18) — pilot 2 `NLP_menu_main.py`: done** (branch `ctk/phase2-menu`).
-> 8 buttons + 3 checkboxes → factories, 3 open-config buttons → `create_open_file_button`, the 7
-> `ttk.Combobox` tool dropdowns → `create_combobox`, and the suite's **only `ttk.Notebook` →
-> `CTkTabview`** (§3's mapping), which also took the `ttk.Style`/`theme_use('clam')` block and the
-> now-unused `from tkinter import ttk` with it. The seven `.place()`d tab rows became a 3-column grid
-> inside each tab frame, so the dropdowns stretch with the tab instead of being pinned to computed
-> pixel spans.
+> **Pilot 3 — `NLP_setup_IO_main.py`** (`ctk/phase2-setup-io`). Smallest by widget count (13) but the
+> only one exercising the **config plumbing**, so it was verified by *equivalence* rather than by eye:
+> the `get_IO_options_list` / `get_IO_options_str` round-trip driven across all three checkbox states
+> against the pre-conversion file, byte-identical output. **Reuse that check for the remaining
+> `NLP_setup_*` GUIs** — a widget swap that quietly changes what lands in a config file is invisible
+> on screen. Three findings:
+> 1. **`create_label(textvariable=…)` dropped the variable.** `CTkLabel` supports it, but only by
+>    forwarding out of `**kwargs` — it is not a named parameter of `__init__`, so the signature filter
+>    dropped it and the path labels rendered CTk's literal `"CTkLabel"`. Fixed in `create_label`.
+>    "CTk accepts this kwarg" and "`translate_kwargs` passes it through" are different questions.
+>    7 more raw `tk.Label(…textvariable=…)` sites remain suite-wide.
+> 2. **`tk.OptionMenu` int choices must become strings** — `CTkOptionMenu` renders `values` as text
+>    and writes selections back as strings. The bound `IntVar` can stay as-is.
+> 3. **Widgets that used to overlap *exactly* now sit side by side.** This GUI stacked a second label
+>    on the one `GUI_top` lays out, purely to carry a richer date tooltip; absolute placement made the
+>    two coincide, the grid renders the path **twice**. Fixed rather than re-stacked:
+>    `GUI_util.IO_path_labels` publishes the canonical labels and the GUI binds a `ToolTip` to them —
+>    what the coordinate-free class was for. Expect more wherever a GUI re-places a shared-chrome
+>    widget.
 >
-> **Two shared-layer findings, both of the silent-failure kind:**
-> 1. **`textvariable=` is dropped by `CTkComboBox`** — it only has `variable=`. Every one of the ~56
->    legacy `ttk.Combobox` sites in the suite binds its var as `textvariable=`, and
->    `translate_kwargs` filters unknown kwargs *silently*, so the widget would render fine with **no
->    bound variable at all** — every `.trace` on it dead, the RUN dispatch quietly broken.
->    `create_combobox` now renames it. The rename can't go in the global `_RENAME` table because
->    `CTkCheckBox` has **both** names with different meanings (`textvariable` = its label). This is a
->    fourth entry in the §6 family alongside `.config(`, `widget['state']`, and `widget['values']=`.
-> 2. **`CTkTabview` tab frames, not `ttk.Frame`s, must parent the CTk children.** CTk widgets read
->    their background off the master, and a `ttk.Frame` has no queryable `bg` — so keeping the ttk
->    notebook while putting CTk dropdowns inside it is not safe. Converting the notebook was the fix.
+> One deliberate behavior change: `activate_fields()` was never called at startup (the call sat
+> commented out), so date widgets began life *visually* enabled. Harmless under stock tk; under §0's
+> red-active/grey-inactive rule the GUI was lying about what is clickable. Now called once after
+> build, with `warn=False` so the startup sync doesn't fire a popup at a user who has touched nothing.
 >
-> Pilot 2 is also where the **red = active / grey = inactive** theme reversal happened (§0.1) — the
-> neutral theme read as "everything disabled" on screen. Verified: `tests/gui_smoke.py` (44 ok, 0
-> missing golden) and `pytest` (47 passed, incl. 4 new headless `_StateFillMixin` state-round-trip
-> tests) green; launched on macOS. **Still outstanding:** Roberto's call on §0.1, Windows QA, and the
-> deferred #1648 window-geometry item. Pilot 3 (`NLP_setup_IO_main.py`) not yet started.
+> **Verified across the pilots:** `tests/gui_smoke.py` (44 ok, 0 missing golden), `pytest` (50
+> passed), plus a headless harness for pilot 3 (it is in `KNOWN_SKIP`); all three launched on macOS.
+> **Outstanding: Windows QA, Roberto's call on §0, and the deferred #1648 window-geometry item.**
 
 ### Phase 3 — Batch conversion (~6–8 PRs, 5–8 GUIs each)
 
@@ -530,9 +500,9 @@ hide real behavioral differences (e.g., different button texts fitting).
 
 ### 5.7 Version pins
 
-Pin `customtkinter==6.0.0` (the version validated by the Phase 0 bundle smoke test) in
-`requirements.txt`. Its deps must stay compatible with `Pillow==10.4.0` (they are — CTk does not
-require Pillow ≥11). The base file is enough: the per-OS files install on top of it.
+`customtkinter==6.0.0` in `requirements.txt` only — see §1.3 (why that version, and its API
+implications) and Phase 0 (why the base file only). Its deps must stay compatible with
+`Pillow==10.4.0`; they are, since CTk does not require Pillow ≥11.
 
 ---
 
@@ -558,6 +528,21 @@ For each `*_main.py` PR:
       `translate_kwargs` drops unknown kwargs silently — so the widget renders fine with **no bound
       variable**, killing every `.trace` on it with no error. `create_combobox` renames it; the check
       is that combobox call sites go through the factory (grep `ttk.Combobox(`).
+- [ ] **Labels bound to a variable go through `create_label`** (grep `tk.Label(.*textvariable`).
+      `CTkLabel` forwards `textvariable` to its inner tk label out of `**kwargs`, so it is invisible
+      to `translate_kwargs`' signature filter — a raw call drops it and the label displays CTk's
+      literal `"CTkLabel"` placeholder forever. Third member of the silent-drop family.
+- [ ] **`tk.OptionMenu` int choices converted to strings** (grep `tk.OptionMenu(` for numeric
+      varargs). `CTkOptionMenu` renders `values` as text and writes selections back as strings; the
+      bound `IntVar` can stay as-is.
+- [ ] **No widget re-placed on top of one `GUI_top`/`GUI_bottom` already lays out.** Several GUIs
+      stack a duplicate on the shared chrome's widget to attach their own hover text — the absolute
+      layout hid it, the grid renders it twice. Bind a `GUI_theme_util.ToolTip` to the shared widget
+      instead (`GUI_util.IO_path_labels` publishes the INPUT path labels for exactly this).
+- [ ] **Startup state sync:** if the GUI has an `activate_fields`-style enable/disable routine, it
+      must run once *after* the widgets are built. Under §0's red-active/grey-inactive theme a
+      widget that starts un-synced is actively mislabeled as clickable. Suppress any user-facing
+      warning on that first call.
 - [ ] No `["menu"]` OptionMenu manipulation left (grep `["menu"]`).
 - [ ] No `ttk.Style`/`theme_use` left.
 - [ ] No new `CTkImage`/`ImageTk` usage (grep).

@@ -308,7 +308,25 @@ def create_open_file_button(master, command=None, width=32, **kwargs):
 
 
 def create_label(master, **kwargs):
-    return ctk.CTkLabel(master, **translate_kwargs(ctk.CTkLabel, kwargs))
+    """tk.Label(...) -> CTkLabel(...).
+
+    ``textvariable=`` is forwarded by hand. CTkLabel supports it, but only by passing it on to its
+    inner ``tkinter.Label`` out of ``**kwargs`` -- it is not a named parameter of
+    ``CTkLabel.__init__``, so :func:`translate_kwargs`' signature filter drops it *silently*. The
+    label then renders CTk's literal ``"CTkLabel"`` placeholder and never tracks the variable, which
+    is what the file/directory path labels did on first conversion. Same silent-drop class as the
+    ``textvariable`` rename in :func:`create_combobox`.
+
+    The placeholder is also blanked whenever a variable is bound: CTkLabel sets its ``text`` before
+    configuring the tk attributes, so a leftover default would otherwise win until the variable's
+    next write.
+    """
+    textvariable = kwargs.pop("textvariable", None)
+    translated = translate_kwargs(ctk.CTkLabel, kwargs)
+    if textvariable is not None:
+        translated["textvariable"] = textvariable
+        translated.setdefault("text", "")
+    return ctk.CTkLabel(master, **translated)
 
 
 # A CTkEntry reserves internal horizontal padding around its text area, so a bare chars*px width

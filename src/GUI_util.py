@@ -973,6 +973,14 @@ def update_display_area(IO_setup_display_string,IO_setup_brief_display_area):
     # IO_setup_brief_display_area.pack(side=tk.LEFT)
     IO_setup_brief_display_area.configure(state='disabled')
 
+
+# The canonical INPUT path labels laid out by IO_config_setup_full, published by key so a GUI can
+# attach its own richer hover text to them. NLP_setup_IO_main used to place a SECOND label over the
+# same path to carry its date tooltip: under the absolute layout the two landed on identical
+# coordinates and read as one, but the grid gives each its own column, so the path rendered twice.
+IO_path_labels = {}
+
+
 def IO_config_setup_full (window, y_multiplier_integer):
 
     # global so that they are recognized wherever they are used (e.g., select_input_secondary_dir_button in shape_of_stories_GUI)
@@ -1010,7 +1018,8 @@ def IO_config_setup_full (window, y_multiplier_integer):
             openInputFile_button, True, False, True, False, 90,
             GUI_IO_util.IO_configuration_menu, "Open INPUT file")
 
-        inputFile_lb = tk.Label(window, textvariable=inputFilename)
+        inputFile_lb = GUI_theme_util.create_label(window, textvariable=inputFilename)
+        IO_path_labels['input_file'] = inputFile_lb
         date_label=''
         if '(Date: ' in str(inputFilename.get()):
             date_label='The input file has a date embedded in the filename'
@@ -1040,7 +1049,8 @@ def IO_config_setup_full (window, y_multiplier_integer):
             openDirectory_button,True, False, True, False, 90,
                         GUI_IO_util.IO_configuration_menu, "Open INPUT files directory")
 
-        inputMainDir_lb = tk.Label(window, textvariable=input_main_dir_path)
+        inputMainDir_lb = GUI_theme_util.create_label(window, textvariable=input_main_dir_path)
+        IO_path_labels['input_main_dir'] = inputMainDir_lb
         date_label=''
         if '(Date: ' in str(input_main_dir_path.get()):
             date_label='The input directory contains txt files with a date embedded in the filename'

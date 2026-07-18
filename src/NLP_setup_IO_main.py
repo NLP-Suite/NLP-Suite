@@ -16,6 +16,7 @@ import tkinter.messagebox as mb
 import tkinter as tk
 
 import GUI_IO_util
+import GUI_theme_util
 import config_util
 import reminders_util
 import IO_files_util
@@ -131,6 +132,21 @@ config_input_output_alphabetic_options, missing_IO, config_file_exists = config_
 # TODO Must relay the widget here to display hover-over information, although the widget has been laid in GUI_util
 # the index for config_input_output_numeric_options starts at 0 with I/O configuration label
 
+
+def add_path_hover_over_info(label_key, text):
+    """Attach this GUI's date hover-over text to the INPUT path label GUI_top already placed.
+
+    This GUI has always wanted a richer tooltip on those labels than GUI_top gives them (the
+    long-standing TODO above), and used to get it by placing a second label bound to the same
+    variable at the same coordinates. Now that widgets are grid-managed the two no longer coincide,
+    so the path rendered twice; binding a ToolTip to the existing widget is what the coordinate-free
+    tooltip machinery makes possible.
+    """
+    widget = GUI_util.IO_path_labels.get(label_key)
+    if widget is not None and text:
+        GUI_theme_util.ToolTip(widget, text)
+
+
 Error = False
 # FILE INPUT
 if config_input_output_numeric_options[0]!=0:
@@ -151,8 +167,6 @@ if config_input_output_numeric_options[0]!=0:
 
     GUI_util.inputFilename.set(config_input_output_alphabetic_options[0][1] + label)
 
-    inputFile_lb = tk.Label(window, textvariable=GUI_util.inputFilename)
-
     date_hover_over_label = ''
     date_hover_over_label = ''
     if '  (Date: ' in label:
@@ -166,14 +180,11 @@ if config_input_output_numeric_options[0]!=0:
     else:
         filename_embeds_date_var.set(0)
         date_hover_over_label = 'The input file has no date embedded in the filename'
-    # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                                   GUI_IO_util.entry_box_x_coordinate,
-                                                   y_multiplier_integer,
-                                                   inputFile_lb,
-                                                   False, False, False, False, 90,
-                                                   GUI_IO_util.IO_configuration_menu,
-                                                   date_hover_over_label)
+    # Attach the date info to the path label GUI_top already laid out, rather than placing a second
+    # label showing the same path (see GUI_util.IO_path_labels). The row is still consumed so the
+    # widgets below keep their alignment with the I/O rows above.
+    add_path_hover_over_info('input_file', date_hover_over_label)
+    y_multiplier_integer = y_multiplier_integer + 1
 
 # TODO Must relay the widget here to display hover-over information, although the widget has been laid in GUI_util
 # DIR INPUT
@@ -201,7 +212,6 @@ if config_input_output_numeric_options[1]!=0: # input dir
     else:
         GUI_util.input_main_dir_path.set(config_input_output_alphabetic_options[1][1])
 
-    inputMainDir_lb = tk.Label(window, textvariable=GUI_util.input_main_dir_path)
     date_hover_over_label = ''
     if '  (Date: ' in label:
         filename_embeds_multiple_items_var.set(1)
@@ -216,14 +226,8 @@ if config_input_output_numeric_options[1]!=0: # input dir
         filename_embeds_date_var.set(0)
         date_hover_over_label = 'The txt files in the selected input directory have no date embedded in the filename'
 
-    # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                                   GUI_IO_util.entry_box_x_coordinate,
-                                                   y_multiplier_integer,
-                                                   inputMainDir_lb,
-                                                   False, False, False, False, 90,
-                                                   GUI_IO_util.IO_configuration_menu,
-                                                   date_hover_over_label)
+    add_path_hover_over_info('input_main_dir', date_hover_over_label)
+    y_multiplier_integer = y_multiplier_integer + 1
 
 if config_input_output_numeric_options[2]!=0: # input secondary dir
     GUI_util.input_secondary_dir_path.set(config_input_output_alphabetic_options[2][1])
@@ -235,33 +239,36 @@ if config_input_output_numeric_options[3] != 0: # output dir
     y_multiplier_integer = y_multiplier_integer +1
 
 
-def activate_fields(*args):
+def activate_fields(*args, warn=True):
+    # warn=False runs the enable/disable choreography without the mismatched-options popup, so the
+    # widget states can be synced once at GUI startup (see the activate_fields call below the
+    # widgets) without nagging the user about a configuration they have not touched yet.
     # print("filename_embeds_multiple_items_var.get()",filename_embeds_multiple_items_var.get())
     if filename_embeds_multiple_items_var.get():
-        item_separator.config(state='normal')
-        sort_order_menu.config(state='normal')
-        date_checkbox.config(state='normal')
+        item_separator.configure(state='normal')
+        sort_order_menu.configure(state='normal')
+        date_checkbox.configure(state='normal')
     else:
-        # date_checkbox.config(state='disabled')
-        item_separator.config(state='disabled')
+        # date_checkbox.configure(state='disabled')
+        item_separator.configure(state='disabled')
         items_separator_var.set('_')
-        sort_order_menu.config(state='disabled')
+        sort_order_menu.configure(state='disabled')
         sort_order_var.set('0')
         # filename_embeds_date_var.set(0)
 
     if filename_embeds_date_var.get():
-        if (not filename_embeds_multiple_items_var.get()):
+        if warn and (not filename_embeds_multiple_items_var.get()):
             mb.showwarning(title='Warning', message='You have selected the option of a date embedded in filename(s) but you have not ticked the checkbox "Filename embeds multiple itmes" and the "Separator" character(s).\n\nUnless your filenames are in the format 1981.txt, 1982.txt,... or 12-21-1995.txt, 12-22-1995.txt, ... with the date field as the only item in the filenames, you should tick the checkbox "Filename embeds multiple itmes" and the select the "Separator" character(s), otherwse the default "_" character separator will be used.')
-        date_format_menu.config(state="normal")
-        date_position_menu.config(state='normal')
+        date_format_menu.configure(state="normal")
+        date_position_menu.configure(state='normal')
     else:
         date_format_var.set('')
         date_position_var.set(0)
-        date_format_menu.config(state="disabled")
-        date_position_menu.config(state="disabled")
+        date_format_menu.configure(state="disabled")
+        date_position_menu.configure(state="disabled")
 
 filename_embeds_multiple_items_var.set(0)
-filename_embeds_multiple_items_checkbox = tk.Checkbutton(window, text='Filename embeds multiple items', variable=filename_embeds_multiple_items_var, onvalue=1, offvalue=0, command=lambda: activate_fields())
+filename_embeds_multiple_items_checkbox = GUI_theme_util.create_checkbox(window, text='Filename embeds multiple items', variable=filename_embeds_multiple_items_var, onvalue=1, offvalue=0, command=lambda: activate_fields())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                GUI_IO_util.labels_x_coordinate,
@@ -273,7 +280,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                'the newspaper name, the date of publication, the page number, and the column number.'
                                                '\nClick on the ?HELP button for more information.')
 
-items_separator_lb = tk.Label(window, text='Separator ')
+items_separator_lb = GUI_theme_util.create_label(window, text='Separator ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,
                                                y_multiplier_integer, items_separator_lb, True)
 
@@ -328,7 +335,7 @@ def set_default_options():
 
 set_default_options()
 
-item_separator = tk.Entry(window, textvariable=items_separator_var, width=3)
+item_separator = GUI_theme_util.create_entry(window, textvariable=items_separator_var, width=3)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                GUI_IO_util.open_reminders_x_coordinate, #date_format_coordinate
@@ -340,11 +347,17 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                '\nIn New York Time_01-15-1999_4_3, _ is the character separating the 3 items embedded in filename: newspaper name, date, page number, column number.'
                                                '\nClick on the ?HELP button for more information.')
 
-sort_order_lb = tk.Label(window, text='Sort order ')
+sort_order_lb = GUI_theme_util.create_label(window, text='Sort order ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, # date_position_lb_coordinate
                                                y_multiplier_integer, sort_order_lb, True)
 
-sort_order_menu = tk.OptionMenu(window,sort_order_var, 1,2,3,4,5,6,7,8,9)
+# CTkOptionMenu renders its values as label text and writes the selected one back to the variable,
+# so the item-position menus list their 1..9 choices as strings where tk.OptionMenu took ints. The
+# bound variables are unchanged: sort_order_var is a StringVar, and date_position_var is an IntVar
+# whose .set('4')/.get() round-trip still yields the int every caller reads.
+item_position_values = [str(position) for position in range(1, 10)]
+
+sort_order_menu = GUI_theme_util.create_option_menu(window, variable=sort_order_var, values=item_position_values)
 
 # sort_order = tk.Entry(window, textvariable=sort_order_var, width=10)
 # place widget with hover-over info
@@ -361,7 +374,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
 set_default_options()
 
 # date_checkbox = tk.Checkbutton(window, text='Filename embeds date', state='disabled', variable=filename_embeds_date_var, onvalue=1, offvalue=0)
-date_checkbox = tk.Checkbutton(window, text='Filename embeds date', variable=filename_embeds_date_var, onvalue=1, offvalue=0, command=lambda: activate_fields())
+date_checkbox = GUI_theme_util.create_checkbox(window, text='Filename embeds date', variable=filename_embeds_date_var, onvalue=1, offvalue=0, command=lambda: activate_fields())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                GUI_IO_util.labels_x_coordinate,
@@ -374,12 +387,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                '\nClick on the ?HELP button for more information.')
 
 
-date_format_lb = tk.Label(window,text='Date format ')
+date_format_lb = GUI_theme_util.create_label(window,text='Date format ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,
                                                y_multiplier_integer, date_format_lb, True)
 
 
-date_format_menu = tk.OptionMenu(window, date_format_var, 'mm-dd-yyyy', 'dd-mm-yyyy','yyyy-mm-dd','yyyy-dd-mm','yyyy-mm','yyyy')
+date_format_menu = GUI_theme_util.create_option_menu(window, variable=date_format_var,
+                                                     values=['mm-dd-yyyy', 'dd-mm-yyyy', 'yyyy-mm-dd', 'yyyy-dd-mm', 'yyyy-mm', 'yyyy'])
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                GUI_IO_util.open_reminders_x_coordinate, # date_format_coordinate
@@ -391,7 +405,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
 
 # set_default_options()
 
-date_position_menu_lb = tk.Label(window, text='Date item position ')
+date_position_menu_lb = GUI_theme_util.create_label(window, text='Date item position ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, #date_position_lb_coordinate
                                                y_multiplier_integer, date_position_menu_lb, True)
 
@@ -409,7 +423,7 @@ except:
 # else:
 #     date_position_var.set(2) # default value
 
-date_position_menu = tk.OptionMenu(window,date_position_var, 1,2,3,4,5,6,7,8,9)
+date_position_menu = GUI_theme_util.create_option_menu(window, variable=date_position_var, values=item_position_values)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                GUI_IO_util.date_position_coordinate,
@@ -421,7 +435,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                '\nIn New York Time_01-15-1999_4_3, 2 is the date position as the second embedded item.'
                                                '\nClick on the ?HELP button for more information.')
 
-# activate_fields()
+# Sync the widget states to the checkboxes now that every gated widget exists. Under the CTk theme
+# this is no longer cosmetic: a disabled widget is painted a flat grey and an enabled one the brand
+# red, so leaving the date/separator widgets un-synced at startup paints them as clickable while
+# activate_fields would disable them on the very first checkbox click.
+activate_fields(warn=False)
 
 err_msg = ""
 if config_filename == 'NLP_default_IO_config.csv':
@@ -838,7 +856,7 @@ def close_GUI(IO_configuration_upon_entry):
                 save_config(config_input_output_alphabetic_options)
     NLP_setup_update_util.exit_window()
 
-close_button = tk.Button(window, text='CLOSE', width=10, height=2, command=lambda: close_GUI(IO_configuration_upon_entry))
+close_button = GUI_theme_util.create_button(window, text='CLOSE', width=10, height=2, command=lambda: close_GUI(IO_configuration_upon_entry))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate,
                                                y_multiplier_integer,

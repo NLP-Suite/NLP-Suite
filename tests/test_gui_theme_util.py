@@ -292,6 +292,28 @@ class TestCreateCombobox:
         assert gtu.translate_kwargs(ctk.CTkComboBox, {"textvariable": "VAR"}) == {}
 
 
+# ── label textvariable (Phase 2 pilot 3: path labels rendered the literal "CTkLabel") ──
+class TestCreateLabelTextvariable:
+    def test_ctklabel_does_not_name_textvariable_in_its_signature(self):
+        # The CTk contract create_label works around: CTkLabel *supports* textvariable, but only by
+        # forwarding it to its inner tk.Label out of **kwargs -- so a signature-based filter like
+        # translate_kwargs cannot see it. Same silent-drop class as the combobox rename above.
+        import inspect
+
+        assert "textvariable" not in inspect.signature(ctk.CTkLabel.__init__).parameters
+
+    def test_bare_textvariable_would_be_dropped_by_translate_kwargs(self):
+        assert gtu.translate_kwargs(ctk.CTkLabel, {"textvariable": "VAR"}) == {}
+
+    def test_ctklabel_placeholder_text_is_not_empty(self):
+        # Why create_label must blank `text` when a variable is bound: CTk's default is a visible
+        # placeholder, and it is applied before the tk attributes, so it would win on screen.
+        import inspect
+
+        default = inspect.signature(ctk.CTkLabel.__init__).parameters["text"].default
+        assert default and default != ""
+
+
 # ── entry width chrome allowance (Phase 2 pilot: a 4-char box clipped "100" to "10C") ──
 class TestEntryWidthPadding:
     def test_translate_kwargs_adds_width_padding(self):
