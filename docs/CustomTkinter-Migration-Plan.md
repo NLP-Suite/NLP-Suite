@@ -426,6 +426,28 @@ tools; GIS tools; DB/SQL + PCACE; statistical/visualization tools; remaining set
 > `file_search_byWord`, `file_spell_checker`) are tranche 2. Note `file_manager_main.py:532` has the
 > dynamic-`OptionMenu` idiom and `file_checker_pre_processing_pipeline` is in `gui_smoke`'s
 > `KNOWN_SKIP` — verify that one by launching.
+>
+> **Status — tranche 2, the heavy half (2026-07-18, `ctk/phase3-file-tools-2`):** `file_manager`,
+> `file_splitter`, `file_matcher`, `file_search_byWord`, `file_spell_checker` — same recipe: tk
+> constructors → factories, 14 `tk.OptionMenu` → `create_option_menu(values=[...])`, `.config(` →
+> `.configure(`.
+>
+> - `file_manager_main.py:500` had the dynamic-`OptionMenu` idiom flagged in tranche 1 —
+>   `m = widget["menu"]; m.delete(0, "end"); m.add_command(...)` repopulating the csv-column dropdown
+>   after a file is picked. Replaced with `GUI_theme_util.set_values(select_csv_field_menu,
+>   menu_values)`; the numeric-column-header fallback path now stringifies before setting.
+> - 8 more `.configure(width=N)` post-construction sites (the tranche-1 shared-layer gap, not a new
+>   one) across `file_manager` (folder/date separators, date position), `file_splitter` (Begin/End
+>   K-sentence entries, search-words entry), and `file_search_byWord` (-K/+K entries) — all moved to
+>   `GUI_theme_util.set_char_width()`.
+> - No new bugs surfaced this tranche; the two shared-layer patterns from tranche 1 (width-after-
+>   construction, dynamic OptionMenu) accounted for every non-mechanical edit.
+>
+> Verified: `pytest` (56 passed), `gui_smoke.py` (48 ok / 0 missing golden across all touched files;
+> the one crash, `topic_modeling_main.py`, is a pre-existing missing `pdfminer` import this tranche
+> doesn't touch). All five launched and screenshotted on macOS.
+>
+> Phase 3's file-tools group is now complete.
 
 ### Phase 4 — Hard cases (1 PR each)
 

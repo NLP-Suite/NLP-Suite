@@ -698,6 +698,23 @@ def activateRunButton(config_filename,IO_setup_display_brief,scriptName, missing
 #    input filename, input dir, secondary input dir, output dir
 #__________________________________________________________________________________________________________________
 
+# The INPUT/OUTPUT display is a fixed-width two-line label, so a long corpus folder name (the
+# common case -- these are named after the corpus) would run past its right edge. Elide the middle
+# rather than the tail: the distinguishing part of these names is as often at the end
+# ("newspaperArticles_1920_cleaned") as at the start. The full paths stay reachable through the
+# four open-file/directory buttons to the right of the display.
+_IO_NAME_MAX_CHARS = 30
+
+
+def _elide_IO_name(name, max_chars=_IO_NAME_MAX_CHARS):
+    name = str(name)
+    if len(name) <= max_chars:
+        return name
+    keep = max_chars - 3
+    head_chars = (keep + 1) // 2
+    return name[:head_chars] + '...' + name[len(name) - (keep - head_chars):]
+
+
 def set_IO_brief_values(config_filename, y_multiplier_integer):
     global config_input_output_alphabetic_options, IO_setup_brief_display_area
     missing_IO = ''
@@ -766,11 +783,11 @@ def set_IO_brief_values(config_filename, y_multiplier_integer):
         # if config_input_output_alphabetic_options[0][1]!='': # str(config_input_output_alphabetic_options[0][1])!='':
         #head is path, tail is filename
         head, tail = os.path.split(config_input_output_alphabetic_options[0][1])
-        IO_setup_display_string = "INPUT FILE: " + str(tail)
+        IO_setup_display_string = "INPUT FILE: " + _elide_IO_name(tail)
     # else:
     # check input directory config_input_output_numeric_options[1]!=0:
     if config_input_output_alphabetic_options[1][1]!= '':
-        IO_setup_display_string = "INPUT DIR: " + str(os.path.basename(os.path.normpath(config_input_output_alphabetic_options[1][1])))
+        IO_setup_display_string = "INPUT DIR: " + _elide_IO_name(os.path.basename(os.path.normpath(config_input_output_alphabetic_options[1][1])))
         temp_str=IO_setup_display_string.replace("INPUT DIR: ","")
         # temp_str=temp_str.replace("Date: ","Date ")
         # temp_str=temp_str.replace("(Date: ","_")
@@ -789,7 +806,7 @@ def set_IO_brief_values(config_filename, y_multiplier_integer):
     output_dir_path.set(config_input_output_alphabetic_options[3][1])
 
     # IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(os.path.basename(os.path.normpath(config_input_output_alphabetic_options[3][1])))
-    IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(os.path.basename(config_input_output_alphabetic_options[3][1]))
+    IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + _elide_IO_name(os.path.basename(config_input_output_alphabetic_options[3][1]))
 
     # widget creation/placement lives in IO_config_setup_brief (the single INPUT/OUTPUT display
     # box); this function only computes the values the caller (initial build or refresh path)
@@ -920,7 +937,13 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
         date_hover_over_label, IO_setup_display_string, config_input_output_alphabetic_options, missing_IO = set_IO_brief_values(config_filename, y_multiplier_integer)
     # single INPUT/OUTPUT display box (values computed by set_IO_brief_values above; the refresh
     # path display_IO_setup() updates this same widget instead of creating a new one)
-    IO_setup_brief_display_area = tk.Text(width=60, height=2)
+    # The INPUT/OUTPUT summary is read-only two-line text, not an editable field. A bare tk.Text
+    # rendered it as an unthemed white box whose 60-char request the grid never honoured, so
+    # "INPUT DIR: newspaperArticles" wrapped across BOTH of its two lines and pushed the OUTPUT DIR
+    # line out of sight entirely. A CTkLabel sized in characters holds both lines, picks up the
+    # theme, and cannot wrap. Written through update_display_area() below.
+    IO_setup_brief_display_area = GUI_theme_util.create_label(
+        window, text='', width=44, justify='left', anchor='w')
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                    GUI_IO_util.setup_IO_brief_coordinate,
@@ -964,14 +987,12 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
 def update_display_area(IO_setup_display_string,IO_setup_brief_display_area):
 # def update_display_area(IO_setup_display_string):
 #     global IO_setup_brief_display_area
-    # since IO_setup_brief_display_area is a disabled widget,
-    #   it must be turned to normal temporarily or it will not update
-    IO_setup_brief_display_area.configure(state='normal')
-    IO_setup_brief_display_area.delete(0.1, tk.END)
+    # The display area is a CTkLabel (see IO_config_setup_brief): set its text rather than the old
+    # normal/delete/insert/disabled dance a tk.Text needed. Callers outside this module
+    # (semantic_analysis_main, syntactic_analysis_ALL_main, DB_PCACE_data_analysis_main) pass this
+    # same global widget, so the one implementation covers them.
     IO_setup_var.set(IO_setup_display_string)
-    IO_setup_brief_display_area.insert("end", str(IO_setup_display_string))
-    # IO_setup_brief_display_area.pack(side=tk.LEFT)
-    IO_setup_brief_display_area.configure(state='disabled')
+    IO_setup_brief_display_area.configure(text=str(IO_setup_display_string))
 
 
 # The canonical INPUT path labels laid out by IO_config_setup_full, published by key so a GUI can

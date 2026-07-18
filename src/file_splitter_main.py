@@ -13,6 +13,7 @@ import tkinter.messagebox as mb
 from subprocess import call
 
 import GUI_IO_util
+import GUI_theme_util
 import IO_files_util
 import IO_user_interface_util
 import file_checker_util
@@ -262,12 +263,12 @@ window.bind("<Escape>", clear)
 
 # setup GUI widgets
 
-split_mergedFile_separator_entry_begin = tk.Entry(window, width=GUI_IO_util.widget_width_extra_short,
+split_mergedFile_separator_entry_begin = GUI_theme_util.create_entry(window, width=GUI_IO_util.widget_width_extra_short,
                                                   textvariable=split_mergedFile_separator_entry_begin_var)
-split_mergedFile_separator_entry_end = tk.Entry(window, width=GUI_IO_util.widget_width_extra_short, textvariable=split_mergedFile_separator_entry_end_var)
+split_mergedFile_separator_entry_end = GUI_theme_util.create_entry(window, width=GUI_IO_util.widget_width_extra_short, textvariable=split_mergedFile_separator_entry_end_var)
 
 split_mergedFile_var.set(0)
-split_mergedFile_checkbox = tk.Checkbutton(window,
+split_mergedFile_checkbox = GUI_theme_util.create_checkbox(window,
                                            text='Split a merged file with filename embedded in separator strings',
                                            state='normal', variable=split_mergedFile_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -305,16 +306,16 @@ display_split_mergedFile_separator(y_multiplier_integer)
 y_multiplier_integer = y_multiplier_integer + 1
 
 docLength_var.set(0)
-docLength_checkbox = tk.Checkbutton(window, text='Split by number of words', variable=docLength_var, onvalue=1,
+docLength_checkbox = GUI_theme_util.create_checkbox(window, text='Split by number of words', variable=docLength_var, onvalue=1,
                                     offvalue=0, command=lambda: activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                docLength_checkbox, True)
 
-# current_docLength_lb = tk.Label(window, text='Word count in selected file')
+# current_docLength_lb = GUI_theme_util.create_label(window, text='Word count in selected file')
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.current_docLength_lb_pos, y_multiplier_integer,
 #                                                current_docLength_lb, True)
 
-split_docLength = tk.Entry(window, width=GUI_IO_util.widget_width_extra_short, textvariable=split_docLength_var)
+split_docLength = GUI_theme_util.create_entry(window, width=GUI_IO_util.widget_width_extra_short, textvariable=split_docLength_var)
 split_docLength.configure(state="disabled")
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.file_splitter_split_mergedFile_separator_entry_begin_pos,
@@ -323,7 +324,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.file_splitter
                                                GUI_IO_util.file_splitter_split_mergedFile_separator_entry_begin_pos,
                                                "Enter the maximum number of the desired words count in split files")
 
-current_docLength = tk.Entry(window, width=GUI_IO_util.widget_width_extra_short, state="disabled", textvariable=current_docLength_var)
+current_docLength = GUI_theme_util.create_entry(window, width=GUI_IO_util.widget_width_extra_short, state="disabled", textvariable=current_docLength_var)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.file_splitter_split_mergedFile_separator_entry_end_pos,
                                                y_multiplier_integer,
@@ -331,7 +332,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.file_splitter
                                                GUI_IO_util.file_splitter_split_mergedFile_separator_entry_end_pos,
                                                "The widget, always disabled, displays the number of words in the input file")
 
-# split_docLength_lb = tk.Label(window, text='Max word count in split files')
+# split_docLength_lb = GUI_theme_util.create_label(window, text='Max word count in split files')
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.file_splitter_split_docLength_lb_pos, y_multiplier_integer,
 #                                                split_docLength_lb, True)
 
@@ -347,18 +348,19 @@ def getDocLength():
 getDocLength()
 
 extract_BME_K_sentences_var.set(0) # Beginning Middle and End
-extract_BME_K_sentences_checkbox = tk.Checkbutton(window, text='Split by Beginning-Middle-End K-sentences (extract sentences)',
+extract_BME_K_sentences_checkbox = GUI_theme_util.create_checkbox(window, text='Split by Beginning-Middle-End K-sentences (extract sentences)',
                                             variable=extract_BME_K_sentences_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                extract_BME_K_sentences_checkbox, True)
 
-# Begin_K_sent_entry_lb = tk.Label(window,
+# Begin_K_sent_entry_lb = GUI_theme_util.create_label(window,
 #                                     text='Begin K-sentences')
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.file_splitter_split_mergedFile_separator_entry_begin_pos, y_multiplier_integer,
 #                                                Begin_K_sent_entry_lb, True)
 
-Begin_K_sent_entry = tk.Entry(window, textvariable=Begin_K_sent_var)
-Begin_K_sent_entry.configure(width=GUI_IO_util.widget_width_extra_short, state='disabled')
+Begin_K_sent_entry = GUI_theme_util.create_entry(window, textvariable=Begin_K_sent_var)
+Begin_K_sent_entry.configure(state='disabled')
+GUI_theme_util.set_char_width(Begin_K_sent_entry, GUI_IO_util.widget_width_extra_short)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.file_splitter_split_mergedFile_separator_entry_begin_pos,
                                                y_multiplier_integer,
@@ -366,13 +368,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.file_splitter
                                                GUI_IO_util.file_splitter_split_mergedFile_separator_entry_begin_pos,
                                                "Enter the beginning number of sentences to be extracted from your input file(s)")
 
-# End_K_sent_entry_lb = tk.Label(window,
+# End_K_sent_entry_lb = GUI_theme_util.create_label(window,
 #                                     text='End K-sentences')
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.file_splitter_split_mergedFile_separator_entry_end_pos, y_multiplier_integer,
 #                                                End_K_sent_entry_lb, True)
 
-End_K_sent_entry = tk.Entry(window, textvariable=End_K_sent_var)
-End_K_sent_entry.configure(width=GUI_IO_util.widget_width_extra_short, state='disabled')
+End_K_sent_entry = GUI_theme_util.create_entry(window, textvariable=End_K_sent_var)
+End_K_sent_entry.configure(state='disabled')
+GUI_theme_util.set_char_width(End_K_sent_entry, GUI_IO_util.widget_width_extra_short)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.file_splitter_split_mergedFile_separator_entry_end_pos,
                                                y_multiplier_integer,
@@ -391,24 +394,24 @@ def getTOCFile():
 
 
 TOC_var.set(0)
-TOC_checkbox = tk.Checkbutton(window, text='Split using Table of Contents (TOC)', variable=TOC_var, onvalue=1,
+TOC_checkbox = GUI_theme_util.create_checkbox(window, text='Split using Table of Contents (TOC)', variable=TOC_var, onvalue=1,
                               offvalue=0, command=lambda: activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                TOC_checkbox, True)
 
-TOC_filename = tk.Entry(window, width=GUI_IO_util.widget_width_extra_long, textvariable=TOC_filename_var)
+TOC_filename = GUI_theme_util.create_entry(window, width=GUI_IO_util.widget_width_extra_long, textvariable=TOC_filename_var)
 TOC_filename.configure(state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                TOC_filename)
 
 keyword_var.set(0)
-keyword_checkbox = tk.Checkbutton(window, text='Split by word(s)', variable=keyword_var, onvalue=1, offvalue=0,
+keyword_checkbox = GUI_theme_util.create_checkbox(window, text='Split by word(s)', variable=keyword_var, onvalue=1, offvalue=0,
                                   command=lambda: activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                keyword_checkbox, True)
 
 keyword_value_var.set('')
-keyword_value = tk.Entry(window, width=GUI_IO_util.widget_width_medium, textvariable=keyword_value_var)
+keyword_value = GUI_theme_util.create_entry(window, width=GUI_IO_util.widget_width_medium, textvariable=keyword_value_var)
 keyword_value.configure(state="disabled")
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu,
@@ -418,42 +421,43 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configurat
                                                "Enter the comma-separated, case-sensitive word(s) to be used as criterion for splitting the file(s)")
 
 lemmatize_var.set(0)
-lemmatize_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=lemmatize_var, onvalue=1, offvalue=0)
+lemmatize_checkbox = GUI_theme_util.create_checkbox(window, text='Lemmatize', variable=lemmatize_var, onvalue=1, offvalue=0)
 lemmatize_checkbox.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.file_splitter_lemmatize_pos, y_multiplier_integer,
                                                lemmatize_checkbox, True)
 
 first_occurrence_var.set(0)
-first_occurrence_checkbox = tk.Checkbutton(window, text='First occurrence', variable=first_occurrence_var, onvalue=1,
+first_occurrence_checkbox = GUI_theme_util.create_checkbox(window, text='First occurrence', variable=first_occurrence_var, onvalue=1,
                                            offvalue=0)
 first_occurrence_checkbox.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.file_splitter_first_occurrence_pos, y_multiplier_integer,
                                                first_occurrence_checkbox)
 
 extract_sentences_var.set(0)
-extract_sentences_checkbox = tk.Checkbutton(window, text='Split by word(s) (extract sentences)',
+extract_sentences_checkbox = GUI_theme_util.create_checkbox(window, text='Split by word(s) (extract sentences)',
                                             variable=extract_sentences_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                extract_sentences_checkbox, True)
 
 extract_sentences_search_words_var.set('')
-search_words_entry = tk.Entry(window, textvariable=extract_sentences_search_words_var)
-search_words_entry.configure(width=GUI_IO_util.widget_width_extra_long, state='disabled')
+search_words_entry = GUI_theme_util.create_entry(window, textvariable=extract_sentences_search_words_var)
+search_words_entry.configure(state='disabled')
+GUI_theme_util.set_char_width(search_words_entry, GUI_IO_util.widget_width_extra_long)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                search_words_entry)
 
 # extract_BME_K_sentences_var.set(0) # Beginning Middle and End
-# extract_BME_K_sentences_checkbox = tk.Checkbutton(window, text='Split by Beginning-Middle-End K-sentences (extract sentences)',
+# extract_BME_K_sentences_checkbox = GUI_theme_util.create_checkbox(window, text='Split by Beginning-Middle-End K-sentences (extract sentences)',
 #                                             variable=extract_BME_K_sentences_var, onvalue=1, offvalue=0)
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
 #                                                extract_BME_K_sentences_checkbox, True)
 #
-# # Begin_K_sent_entry_lb = tk.Label(window,
+# # Begin_K_sent_entry_lb = GUI_theme_util.create_label(window,
 # #                                     text='Begin K-sentences')
 # # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.file_splitter_split_mergedFile_separator_entry_begin_pos, y_multiplier_integer,
 # #                                                Begin_K_sent_entry_lb, True)
 #
-# Begin_K_sent_entry = tk.Entry(window, textvariable=Begin_K_sent_var)
+# Begin_K_sent_entry = GUI_theme_util.create_entry(window, textvariable=Begin_K_sent_var)
 # Begin_K_sent_entry.configure(width=3, state='disabled')
 # # place widget with hover-over info
 # y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.file_splitter_split_mergedFile_separator_entry_begin_pos,
@@ -462,12 +466,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
 #                                                GUI_IO_util.file_splitter_split_mergedFile_separator_entry_begin_pos,
 #                                                "Enter the beginning number of sentences to be extracted from your input file(s)")
 #
-# # End_K_sent_entry_lb = tk.Label(window,
+# # End_K_sent_entry_lb = GUI_theme_util.create_label(window,
 # #                                     text='End K-sentences')
 # # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.file_splitter_split_mergedFile_separator_entry_end_pos, y_multiplier_integer,
 # #                                                End_K_sent_entry_lb, True)
 #
-# End_K_sent_entry = tk.Entry(window, textvariable=End_K_sent_var)
+# End_K_sent_entry = GUI_theme_util.create_entry(window, textvariable=End_K_sent_var)
 # End_K_sent_entry.configure(width=3, state='disabled')
 # # place widget with hover-over info
 # y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.file_splitter_split_mergedFile_separator_entry_end_pos,
@@ -477,44 +481,44 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
 #                                                "Enter the end number of sentences to be extracted from your input file(s)")
 
 string_var.set(0)
-string_checkbox = tk.Checkbutton(window, text='Split by string', variable=string_var, onvalue=1, offvalue=0,
+string_checkbox = GUI_theme_util.create_checkbox(window, text='Split by string', variable=string_var, onvalue=1, offvalue=0,
                                  command=lambda: getDocLength())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                string_checkbox, True)
 
 string_value_var.set('')
-string_value = tk.Entry(window, width=GUI_IO_util.widget_width_extra_long, textvariable=string_value_var)
+string_value = GUI_theme_util.create_entry(window, width=GUI_IO_util.widget_width_extra_long, textvariable=string_value_var)
 string_value.configure(state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                string_value)
 
 blankLine_var.set(0)
-blankLine_checkbox = tk.Checkbutton(window, text='Split by an empty blank line', variable=blankLine_var, onvalue=1,
+blankLine_checkbox = GUI_theme_util.create_checkbox(window, text='Split by an empty blank line', variable=blankLine_var, onvalue=1,
                                     offvalue=0, command=lambda:activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                blankLine_checkbox)
 
 number_var.set(0)
-number_checkbox = tk.Checkbutton(window, text='Split by a line that starts with a number (like a bullet point)',
+number_checkbox = GUI_theme_util.create_checkbox(window, text='Split by a line that starts with a number (like a bullet point)',
                                  variable=number_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                number_checkbox, True)
 # post_num is the string behind each number
 # (if the numbers in the txt are in the form of "1. ", "2. ", then the post_num should be ". ")
 
-post_num_string_value_lb = tk.Label(window,
+post_num_string_value_lb = GUI_theme_util.create_label(window,
                                     text='Enter characters to be expected after a bullet-point number (e.g., . )')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.file_splitter_post_num_string_value_lb_pos, y_multiplier_integer,
                                                post_num_string_value_lb, True)
 
 post_num_string_value_var.set('')
-post_num_string_value = tk.Entry(window, width=GUI_IO_util.widget_width_extra_short, textvariable=post_num_string_value_var)
+post_num_string_value = GUI_theme_util.create_entry(window, width=GUI_IO_util.widget_width_extra_short, textvariable=post_num_string_value_var)
 post_num_string_value.configure(state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.file_splitter_post_num_string_value_pos, y_multiplier_integer,
                                                post_num_string_value)
 
 split_csv_by_documentID_var.set(0)
-split_csv_by_documentID_checkbox = tk.Checkbutton(window, text='Split csv merged file into separate files by Document ID',
+split_csv_by_documentID_checkbox = GUI_theme_util.create_checkbox(window, text='Split csv merged file into separate files by Document ID',
                                  variable=split_csv_by_documentID_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                split_csv_by_documentID_checkbox)
