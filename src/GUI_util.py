@@ -239,7 +239,9 @@ data_tools_options_widget = tk.StringVar()
 # at import (mains bind its command before GUI_bottom runs, so it must stay the same object), which is
 # why its master is the frame from the start.
 run_close_bar = tk.Frame(window)
-run_button = GUI_theme_util.create_button(run_close_bar, text='RUN', width=10,height=2)
+# accent=True -> brand red: RUN is the single primary-action button per GUI, one of the two things
+# that earn the accent (see GUI_theme_util / the migration plan's §0). Every other button is neutral.
+run_button = GUI_theme_util.create_button(run_close_bar, text='RUN', width=10,height=2, accent=True)
 
 # license agreement GUI
 agreement_checkbox_var=tk.IntVar()
@@ -1653,9 +1655,10 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
             # muted=True -> grey: no videos for this GUI (restores the legacy red=available cue)
             videos_menu_lb = GUI_theme_util.create_option_menu(window, variable=videos_dropdown_field, values=[videos_options], muted=True)
         else:
-            videos_menu_lb = GUI_theme_util.create_option_menu(window, variable=videos_dropdown_field, values=[videos_options])
+            # accent=True -> red: a video IS available for this GUI
+            videos_menu_lb = GUI_theme_util.create_option_menu(window, variable=videos_dropdown_field, values=[videos_options], accent=True)
     else:
-        videos_menu_lb = GUI_theme_util.create_option_menu(window, variable=videos_dropdown_field, values=videos_options)
+        videos_menu_lb = GUI_theme_util.create_option_menu(window, variable=videos_dropdown_field, values=videos_options, accent=True)
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.watch_videos_x_coordinate,
                                                    y_multiplier_integer,
@@ -1677,9 +1680,10 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
             # muted=True -> grey: no TIPS for this GUI (restores the legacy red=available cue)
             tips_menu_lb = GUI_theme_util.create_option_menu(window, variable=tips_dropdown_field, values=[TIPS_options], muted=True)
         else:
-            tips_menu_lb = GUI_theme_util.create_option_menu(window, variable=tips_dropdown_field, values=[TIPS_options])
+            # accent=True -> red: a TIPS file IS available for this GUI
+            tips_menu_lb = GUI_theme_util.create_option_menu(window, variable=tips_dropdown_field, values=[TIPS_options], accent=True)
     else:
-        tips_menu_lb = GUI_theme_util.create_option_menu(window, variable=tips_dropdown_field, values=TIPS_options)
+        tips_menu_lb = GUI_theme_util.create_option_menu(window, variable=tips_dropdown_field, values=TIPS_options, accent=True)
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate,
                                                    y_multiplier_integer,
@@ -1718,9 +1722,10 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
             # muted=True -> grey: no reminders for this GUI (restores the legacy red=available cue)
             reminders_menu_lb = GUI_theme_util.create_option_menu(window, variable=reminders_dropdown_field, values=reminder_options, muted=True)
         else:
-            reminders_menu_lb = GUI_theme_util.create_option_menu(window, variable=reminders_dropdown_field, values=reminder_options)
+            # accent=True -> red: a reminder IS available for this GUI
+            reminders_menu_lb = GUI_theme_util.create_option_menu(window, variable=reminders_dropdown_field, values=reminder_options, accent=True)
     else:
-        reminders_menu_lb = GUI_theme_util.create_option_menu(window, variable=reminders_dropdown_field, values=reminder_options)
+        reminders_menu_lb = GUI_theme_util.create_option_menu(window, variable=reminders_dropdown_field, values=reminder_options, accent=True)
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate,
                                                    y_multiplier_integer,
