@@ -1784,6 +1784,11 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                "Pressing the CLOSE button will trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."
                                "\nYou must be connected to the internet for the auto update to work.")
 
+    # Every widget is now placed, so let wide widgets span to the next occupied column on their row
+    # instead of inflating a column that every other row shares. Must run before the run_close_bar
+    # height is reserved below, since it changes how tall/wide the content grid ends up.
+    GUI_IO_util.apply_row_spans(window)
+
     # .place the RUN/CLOSE bar at the window's bottom-RIGHT corner (right-aligned, as requested).
     # It is .place'd rather than gridded on purpose: the content grid can be wider than the visible
     # window (wide IO rows), so a gridded sticky='e' would pin RUN/CLOSE to the grid's right edge --
@@ -1791,6 +1796,16 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     # the bottom-right corner at any window width. (.place coexists with grid, same as the logo.)
     if show_run_button or (not "NLP_setup_" in scriptName):
         run_close_bar.place(relx=1.0, rely=1.0, x=-12, y=-10, anchor='se')
+
+        # A .place'd bar floats OVER the grid and reserves no space, so whenever the content grid
+        # grew tall enough to reach into the bottom strip, RUN/CLOSE sat on top of the last content
+        # row (the Setup/reminders row). Whether it collided depended on the window height, which is
+        # why it looked intermittent. Reserve a spacer row below the last content row, as tall as the
+        # bar, so grid content can never flow underneath it.
+        window.update_idletasks()
+        bar_height = run_close_bar.winfo_reqheight() + 20  # + the y=-10 offset and a little breathing room
+        spacer_row = window.grid_size()[1]
+        window.grid_rowconfigure(spacer_row, minsize=bar_height)
 
     # Any message should be displayed after the whole GUI has been displayed
 
