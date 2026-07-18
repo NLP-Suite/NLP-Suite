@@ -1,15 +1,14 @@
-import tkinter as tk
-from tkinter import ttk
-import tkinter.messagebox as mb
 import os
-import collections
+import tkinter as tk
+import tkinter.messagebox as mb
+from tkinter import ttk
 
 import GUI_IO_util
 import GUI_util
 import Stanza_util
-import spaCy_util
-import reminders_util
 import config_util
+import reminders_util
+import spaCy_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
