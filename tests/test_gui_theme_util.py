@@ -337,6 +337,20 @@ class TestCreateLabelTextvariable:
         assert default and default != ""
 
 
+# ── label pixel width (NLP_welcome's marquee is sized from the window width, already in pixels) ──
+class TestCreateLabelWidthUnits:
+    def test_default_treats_width_as_characters(self):
+        # A converted tk.Label call site: width=20 means 20 characters.
+        out = gtu.translate_kwargs(ctk.CTkLabel, {"width": 20}, width_is_chars=True)
+        assert out["width"] == gtu.char_width_to_px(20)
+
+    def test_pixel_width_passes_through_untouched(self):
+        # What create_label(width_is_chars=False) buys: the window width stays the window width
+        # instead of becoming 1250 * 8 = 10,000px, which would silently inflate its grid column.
+        out = gtu.translate_kwargs(ctk.CTkLabel, {"width": 1250}, width_is_chars=False)
+        assert out["width"] == 1250
+
+
 # ── entry width chrome allowance (Phase 2 pilot: a 4-char box clipped "100" to "10C") ──
 class TestEntryWidthPadding:
     def test_translate_kwargs_adds_width_padding(self):

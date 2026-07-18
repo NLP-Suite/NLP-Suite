@@ -353,8 +353,16 @@ def create_open_file_button(master, command=None, width=32, **kwargs):
     return _ThemedButton(master, text=OPEN_FILE_GLYPH, command=command, **translated)
 
 
-def create_label(master, **kwargs):
+def create_label(master, width_is_chars=True, **kwargs):
     """tk.Label(...) -> CTkLabel(...).
+
+    ``width_is_chars=False`` passes ``width`` through as PIXELS instead of multiplying it by
+    :data:`_PX_PER_CHAR`. tk.Label's ``width`` is a character count, so char->px is the right default
+    for a converted call site -- but a few labels are sized from a pixel budget the GUI already
+    holds (NLP_welcome's scrolling banner is given the window width so the marquee text does not
+    jitter as characters rotate). Multiplying such a width by 8 requests a ~10,000px label, which
+    silently inflates the grid column it sits in. Mirrors ``width_is_chars`` in
+    :func:`translate_kwargs`, which :func:`create_slider` already uses for the same reason.
 
     ``textvariable=`` is forwarded by hand. CTkLabel supports it, but only by passing it on to its
     inner ``tkinter.Label`` out of ``**kwargs`` -- it is not a named parameter of
@@ -368,7 +376,7 @@ def create_label(master, **kwargs):
     next write.
     """
     textvariable = kwargs.pop("textvariable", None)
-    translated = translate_kwargs(ctk.CTkLabel, kwargs)
+    translated = translate_kwargs(ctk.CTkLabel, kwargs, width_is_chars=width_is_chars)
     if textvariable is not None:
         translated["textvariable"] = textvariable
         translated.setdefault("text", "")

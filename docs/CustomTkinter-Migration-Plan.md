@@ -280,7 +280,38 @@ Per-file recipe: swap `tk.X(` → `GUI_theme_util.create_x(`; convert `["menu"]`
 `set_values(...)`; delete `ttk.Style`/`theme_use`; run the GUI and walk §6; screenshot before/after.
 
 Tranches group by shared quirks: file tools ✅; CoNLL tools ✅; sentiment/annotator tools; GIS tools;
-DB/SQL + PCACE; statistical/visualization tools; remaining setup GUIs.
+DB/SQL + PCACE; statistical/visualization tools; remaining setup GUIs. Plus **`NLP_welcome_main`** ✅,
+which belongs to no tranche — see below.
+
+> **✅ `NLP_welcome_main` (2026-07-18, `ctk/welcome-gui`)** — converted on its own because it shares
+> nothing with the tranches: it is the only GUI that builds a **hand-written `grid()` layout** rather
+> than going through `placeWidget`, and it calls neither `GUI_top` nor `GUI_bottom`. It was also the
+> **last GUI still entirely raw tk** on the CTk root, so the suite's front door was a set of grey
+> platform plates on the themed ground. ~9 constructors → factories, 4 buttons, 0 dropdowns.
+>
+> Three things generalize past this file:
+>
+> 1. **A pixel budget passed to a character-based `width`.** The scrolling marquee was
+>    `tk.Label(width=GUI_IO_util.get_GUI_width(1))` — 1250 *pixels* handed to a kwarg tk reads as
+>    *characters*. Harmless under tk (the window geometry clipped it); under the factories it asks for
+>    a ~10,000 px label and silently inflates its grid column. New
+>    `create_label(..., width_is_chars=False)`, mirroring the flag `create_slider` already uses.
+>    **Grep any `width=` whose value comes from `get_GUI_width` or another pixel source.**
+> 2. **Overlapping `columnspan`s.** The bottom row spanned 3 columns from each of columns 1 and 2 (so
+>    1–3 and 2–4 overlapped) and CLOSE spanned from column 5 into two *phantom* columns past the
+>    6-column grid, stretching it past the window's right edge. Invisible while the layout was
+>    absolute; a real overflow under grid. Any hand-gridded GUI reaching Phase 4 wants this check.
+> 3. **`tk.Canvas` needs painting by hand.** CTk has no canvas, so the three screenshot panels stay
+>    `tk.Canvas` (a sanctioned exception like `Listbox`) — but `normalize_legacy_backgrounds` skips
+>    Canvas, and the default white fill + 2 px focus highlight framed every image in a bordered plate.
+>    Set `background=GUI_theme_util.window_bg()` and `highlightthickness=0` at construction.
+>
+> Also retired here: the last two per-platform tooltip **x/y coordinate blocks** in a GUI script, and
+> with them the hand-swapped hover colors (`CTkButton` has `hover_color`) and the extra `<Button>`
+> bind that existed only because clicking ENTER never fires `<Leave>` — `ToolTip` hides on
+> `<ButtonPress>`. Both `text_info` strings preserved verbatim.
+>
+> `NLP_welcome_main` is in `gui_smoke`'s `KNOWN_SKIP`, so it was verified by launching.
 
 > **✅ File tools (2026-07-18, `ctk/phase3-file-tools` + `-2`)** — all 11 file GUIs. ~116 constructors
 > → factories, 22 `tk.OptionMenu` → `create_option_menu`. The recipe held; the tranche surfaced **one
@@ -436,6 +467,10 @@ For each `*_main.py` PR. **The starred items are silent failures — no exceptio
       factories translate `width=` on the way in, but a legacy GUI often builds a widget bare and sizes
       it afterwards — that call bypasses the factory and CTk reads the number as **pixels**. Use
       `GUI_theme_util.set_char_width(widget, chars)`.
+- [ ] ⭐ **No `width=` fed from a PIXEL source through the char-based default** (grep `width=` for
+      values from `get_GUI_width`, `winfo_*`, or a screen metric). The factories multiply `width` by
+      ~8 px because tk's is a character count, so a pixel budget becomes an ~8× oversized widget that
+      silently inflates its grid column. Pass `width_is_chars=False` (`create_label`) instead.
 - [ ] ⭐ **`tk.Scale` over an integral range converted with `integer=True`** (grep `tk.Scale(`).
       `tk.Scale.get()` returned an `int`, `CTkSlider.get()` returns a `float`, and every call site
       feeds an integer consumer — a stray `6.0` only breaks at RUN (CoreNLP's `-mx6.0g`, a float

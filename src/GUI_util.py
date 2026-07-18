@@ -494,14 +494,19 @@ def display_release():
     # font 9 rendered too small to read ("tiny release text"); 11 is legible while the two-line stack
     # keeps the label narrow enough to stay inside column 0's minsize (so it doesn't widen the left
     # column / push the grid right).
-    release_lb = tk.Label(window, text=release_display, foreground="red", font=('TkDefaultFont', 11), justify='left') #height=1,
+    import GUI_theme_util
+    # Painted at creation rather than left to normalize_legacy_backgrounds: display_release() is called
+    # LAST on the welcome window (it has to be -- it returns the versions close_NLP needs), i.e. after
+    # normalization has already run, so a default tk background survives as a grey plate under the
+    # release text. Setting it here fixes it wherever display_release is called, in any order.
+    release_lb = tk.Label(window, text=release_display, foreground="red", font=('TkDefaultFont', 11),
+                          justify='left', background=GUI_theme_util.window_bg()) #height=1,
     # CTk migration slice 2b: the logo is .place'd in the top-left corner; the release label belongs
     # directly under it. Gridding it (via placeWidget) dropped it into the tall header row 0 where it
     # rendered ON TOP OF the logo, so .place it instead (.place coexists with the grid). Anchor it to
     # the logo's ACTUAL rendered bottom (_logo_bottom_y, published by display_logo) plus a fixed gap
     # -- a hard-coded y read as overlapping wherever the logo rendered taller than assumed.
     release_lb.place(x=10, y=_logo_bottom_y + 12)
-    import GUI_theme_util
     GUI_theme_util.ToolTip(release_lb,
                            "The two sets of numbers, separated by /, refer to the NLP Suite release on your machine (left) and the release available on GitHub (right)\nWithout internet the newest release available on GitHub cannnot be retrieved and is displayed as 0.0.0.")
     # check and display a possible warning message
