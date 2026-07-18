@@ -359,6 +359,93 @@ def same_document_check(jgram):
     return True
 
 
+def _find_matching_conll_table(inputDocs, search_dirs):
+    """Path to a CoNLL parse table that covers EXACTLY this corpus, so sentence length can be DERIVED from
+    it (grouping on Sentence ID) rather than re-parsed. '' when none clearly matches.
+
+    Deliberately conservative: requires Form/Word + Sentence ID + Document ID + Document columns AND that
+    EVERY input document appears in the table's Document column. Any doubt -> '' -> a real parse, because
+    deriving from a partial or different-corpus table would silently produce wrong sentence lengths. Skips
+    the sentence-length output itself and derived artifacts (frequency / binned / chart / by-doc)."""
+    import glob
+    import re as _re
+    import pandas as pd
+    want = {os.path.splitext(os.path.basename(str(d)))[0].lower() for d in inputDocs if str(d)}
+    if not want:
+        return ''
+    best, best_size, seen = '', 0, set()
+    for base in search_dirs:
+        if not base or not os.path.isdir(base):
+            continue
+        for p in glob.glob(os.path.join(base, '**', '*.csv'), recursive=True):
+            rp = os.path.normcase(os.path.abspath(p))
+            if rp in seen:
+                continue
+            seen.add(rp)
+            b = os.path.basename(p).lower()
+            if any(x in b for x in ('sentence_length', 'binned', 'frequency', 'freq', 'chart',
+                                    'no_hyperlinks', 'group', 'bydoc', 'bysent', 'stats')):
+                continue
+            try:
+                cols = set(pd.read_csv(p, nrows=5, encoding='utf-8', on_bad_lines='skip').columns)
+            except Exception:
+                continue
+            # a genuine PER-TOKEN parse table (the profiler's own signature): 'Form' + a parse annotation
+            # column. Column NAMES alone are not enough -- a Word2Vec vector table also has Word/Sentence
+            # ID/Document ID but ONE row per word TYPE, which would derive nonsense sentence lengths.
+            if not ('Form' in cols and (cols & {'POS', 'NER', 'xpos', 'upos', 'deprel', 'head', 'feats'})
+                    and {'Sentence ID', 'Document ID', 'Document'} <= cols):
+                continue
+            try:
+                docvals = pd.read_csv(p, usecols=['Document'], encoding='utf-8',
+                                      on_bad_lines='skip')['Document'].astype(str).unique()
+            except Exception:
+                continue
+            have = set()
+            for v in docvals:
+                m = _re.search(r'([^\\/"]+?)\.txt', v, _re.I)
+                have.add((m.group(1) if m else os.path.splitext(os.path.basename(v.strip('"')))[0]).lower())
+            if want <= have:   # the table covers every input document
+                try:
+                    size = os.path.getsize(p)
+                except Exception:
+                    size = 0
+                if size > best_size:
+                    best, best_size = p, size
+    return best
+
+
+def _sentence_length_from_conll(conll_path, outputFilename, csv_headers):
+    """Derive the sentence-length table by GROUPING an existing CoNLL parse (one token row each, carrying
+    Sentence ID + Document ID) -- the canonical 'parse once -> analyze' flow, no re-parse. Writes the same
+    columns compute_sentence_length writes. Returns the sentence count, or -1 if the table is unusable."""
+    import pandas as pd
+    try:
+        df = pd.read_csv(conll_path, encoding='utf-8', on_bad_lines='skip')
+    except Exception:
+        return -1
+    formcol = 'Form' if 'Form' in df.columns else ('Word' if 'Word' in df.columns else None)
+    if not formcol or not {'Sentence ID', 'Document ID'}.issubset(df.columns):
+        return -1
+    has_doc = 'Document' in df.columns
+    try:
+        with open(outputFilename, 'w', newline="", encoding='utf-8', errors='ignore') as csvOut:
+            writer = csv.writer(csvOut)
+            writer.writerow(csv_headers)
+            n = 0
+            for (docid, sentid), g in df.groupby(['Document ID', 'Sentence ID'], sort=True):
+                forms = [str(x) for x in g[formcol].tolist() if str(x) != 'nan']
+                writer.writerow([len(forms),
+                                 int(sentid) if str(sentid).isdigit() else sentid,
+                                 ' '.join(forms),
+                                 int(docid) if str(docid).isdigit() else docid,
+                                 g['Document'].iloc[0] if has_doc else ''])
+                n += 1
+        return n
+    except Exception:
+        return -1
+
+
 def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, chartPackage, dataTransformation):
     filesToOpen = []
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
@@ -366,6 +453,9 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
     if Ndocs == 0:
         return
 
+    # keep the ORIGINAL output dir to search for a reusable CoNLL table (the sub-dir made below holds only
+    # this analysis's own output)
+    conll_search_dir = outputDir
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='Statistics_txt_sent_length',
                                                        silent=True)
@@ -382,61 +472,70 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
                                                              'sentence_length')
     csv_headers = ['Sentence length (in words)', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
 
-    # The Suite tokenizes/sentence-splits with the CONFIGURED neural parser (Stanza/spaCy, per
-    # NLP_setup_package_language_main) -- NOT a rule-based tool like NLTK. Sentence length still doesn't need
-    # LEMMAS, though, so use a TOKENIZE-ONLY Stanza pipeline instead of the shared stanzaPipeLine singleton
-    # (which carries 'tokenize, lemma' -- the lemma pass roughly doubles the work for a word count). Falls
-    # back to that shared pipeline if a tokenize-only one can't be built.
-    #
-    # True speed comes from NOT re-parsing: the canonical flow is text -> configured parser -> CoNLL table
-    # -> analysis, and the Corpus Profiler already DERIVES this from the parser's CoNLL table (~2s). A
-    # standalone run with no such table has to parse here; on a large corpus that is minutes, not seconds --
-    # inherent to honoring the neural parser.
-    try:
-        import stanza
-        _sent_pipe = stanza.Pipeline(lang='en', processors='tokenize', verbose=False)
-        _count_units = lambda sent: sent.tokens          # tokenize-only: count tokens
-    except Exception:
-        from Stanza_functions_util import stanzaPipeLine as _sent_pipe
-        _count_units = lambda sent: sent.words
+    # Canonical flow: reuse the CONFIGURED parser's CoNLL table if one covering THIS corpus already exists
+    # (derive sentence length by grouping on Sentence ID -> seconds) instead of re-parsing. Only a table
+    # whose documents cover every input doc is accepted (_find_matching_conll_table); any doubt falls
+    # through to a real parse below.
+    derived_from_conll = False
+    _conll = _find_matching_conll_table(inputDocs, [conll_search_dir, inputDir])
+    if _conll:
+        if _sentence_length_from_conll(_conll, outputFilename, csv_headers) > 0:
+            print('>>> Sentence length: derived from an existing parse table (%s) -- no re-parse'
+                  % os.path.basename(_conll))
+            derived_from_conll = True
 
-    with open(outputFilename, 'w', newline="", encoding='utf-8', errors='ignore') as csvOut:
-        writer = csv.writer(csvOut)
-        writer.writerow(csv_headers)
-        for doc in inputDocs:
-            sentenceID = 0
-            fileID = fileID + 1
-            head, tail = os.path.split(doc)
-            print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
-            with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
-                text = inputFile.read().replace("\n", " ")
-                # ONE parse per document with the configured parser; sentence objects carry their tokens, so
-                # counts come straight off this parse (no per-sentence re-parse, no wasted lemma pass).
-                sent_len_pairs = [(sent.text, len(_count_units(sent))) for sent in _sent_pipe(text).sentences]
-                if len(sent_len_pairs)==0:
-                    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
-                                                                   'The input file\n\n' + doc + '\n\nappears to be empty. Please, check the file and try again.',
-                                                                   False, '', True, '', False)
-                    continue
-                for sentence_text, n_tokens in sent_len_pairs:
-                    if n_tokens > 100:
-                        long_sentences = long_sentences + 1
-                    sentenceID = sentenceID + 1
-                    writer.writerow(
-                        [int(n_tokens), sentenceID, sentence_text, fileID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
-        csvOut.close()
-        head, scriptName = os.path.split(os.path.basename(__file__))
-        reminder_status = reminders_util.checkReminder(scriptName,
-                                                       reminders_util.title_options_TIPS_file,
-                                                       reminders_util.message_TIPS_file,
-                                                       True)
-        if reminder_status == 'Yes' or reminder_status == 'ON':  # 'Yes' the old way of saving reminders
-            answer = tk.messagebox.askyesno("TIPS file on memory issues", str(Ndocs) + " file(s) processed in input.\n\n" +
-                                            "Output csv file written to the output directory " + outputDir + "\n\n" +
-                                            str(
-                                                long_sentences) + " SENTENCES WERE LONGER THAN 100 WORDS (the average sentence length in modern English is 20 words).\n\nVery long sentences can tax memory resources and slow down NLP processing.\n\nYou should consider editing these sentences if parsing takes too long or runs out of memory.\n\nPlease, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.\n\nDo you want to open the TIPS file now?")
-            if answer:
-                TIPS_util.open_TIPS('TIPS_NLP_Stanford CoreNLP memory issues.pdf')
+    if not derived_from_conll:
+        # The Suite tokenizes/sentence-splits with the CONFIGURED neural parser (Stanza/spaCy, per
+        # NLP_setup_package_language_main) -- NOT a rule-based tool like NLTK. Sentence length still doesn't
+        # need LEMMAS, though, so use a TOKENIZE-ONLY Stanza pipeline instead of the shared stanzaPipeLine
+        # singleton (which carries 'tokenize, lemma' -- the lemma pass roughly doubles the work for a word
+        # count). Falls back to that shared pipeline if a tokenize-only one can't be built. On a large corpus
+        # this is minutes, not the derive-from-CoNLL ~seconds -- inherent to a fresh neural parse.
+        try:
+            import stanza
+            _sent_pipe = stanza.Pipeline(lang='en', processors='tokenize', verbose=False)
+            _count_units = lambda sent: sent.tokens          # tokenize-only: count tokens
+        except Exception:
+            from Stanza_functions_util import stanzaPipeLine as _sent_pipe
+            _count_units = lambda sent: sent.words
+
+        with open(outputFilename, 'w', newline="", encoding='utf-8', errors='ignore') as csvOut:
+            writer = csv.writer(csvOut)
+            writer.writerow(csv_headers)
+            for doc in inputDocs:
+                sentenceID = 0
+                fileID = fileID + 1
+                head, tail = os.path.split(doc)
+                print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
+                with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
+                    text = inputFile.read().replace("\n", " ")
+                    # ONE parse per document with the configured parser; sentence objects carry their tokens,
+                    # so counts come straight off this parse (no per-sentence re-parse, no wasted lemma pass).
+                    sent_len_pairs = [(sent.text, len(_count_units(sent))) for sent in _sent_pipe(text).sentences]
+                    if len(sent_len_pairs)==0:
+                        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
+                                                                       'The input file\n\n' + doc + '\n\nappears to be empty. Please, check the file and try again.',
+                                                                       False, '', True, '', False)
+                        continue
+                    for sentence_text, n_tokens in sent_len_pairs:
+                        if n_tokens > 100:
+                            long_sentences = long_sentences + 1
+                        sentenceID = sentenceID + 1
+                        writer.writerow(
+                            [int(n_tokens), sentenceID, sentence_text, fileID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+            csvOut.close()
+            head, scriptName = os.path.split(os.path.basename(__file__))
+            reminder_status = reminders_util.checkReminder(scriptName,
+                                                           reminders_util.title_options_TIPS_file,
+                                                           reminders_util.message_TIPS_file,
+                                                           True)
+            if reminder_status == 'Yes' or reminder_status == 'ON':  # 'Yes' the old way of saving reminders
+                answer = tk.messagebox.askyesno("TIPS file on memory issues", str(Ndocs) + " file(s) processed in input.\n\n" +
+                                                "Output csv file written to the output directory " + outputDir + "\n\n" +
+                                                str(
+                                                    long_sentences) + " SENTENCES WERE LONGER THAN 100 WORDS (the average sentence length in modern English is 20 words).\n\nVery long sentences can tax memory resources and slow down NLP processing.\n\nYou should consider editing these sentences if parsing takes too long or runs out of memory.\n\nPlease, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.\n\nDo you want to open the TIPS file now?")
+                if answer:
+                    TIPS_util.open_TIPS('TIPS_NLP_Stanford CoreNLP memory issues.pdf')
 
     filesToOpen.append(outputFilename)
 
