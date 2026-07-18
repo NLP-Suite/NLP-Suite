@@ -546,6 +546,26 @@ def set_values(widget, values, default=None):
     return values
 
 
+def clamp_tooltip_position(x, y, tip_width, tip_height, screen_width, screen_height, widget_top, margin=8):
+    """Nudge a tooltip's top-left corner so the whole card stays on screen.
+
+    The naive position (just below/right of the widget) runs off the right edge for the buttons
+    docked on the right side of a GUI, so the tip gets clipped by the screen. Slide it left until it
+    fits; if it would also fall off the bottom, flip it above the widget (``widget_top`` is the
+    widget's root y). Returns the adjusted ``(x, y)``.
+    """
+    if x + tip_width > screen_width - margin:
+        x = screen_width - margin - tip_width
+    x = max(margin, x)
+    if y + tip_height > screen_height - margin:
+        flipped = widget_top - tip_height - margin
+        if flipped >= margin:
+            y = flipped
+        else:
+            y = max(margin, screen_height - margin - tip_height)
+    return x, y
+
+
 class ToolTip:
     """Lightweight hover tooltip bound to a widget's ``<Enter>``/``<Leave>`` events.
 
@@ -585,14 +605,18 @@ class ToolTip:
         if self._tip is not None or not self.text:
             return
         try:
+            widget_top = self.widget.winfo_rooty()
             x = self.widget.winfo_rootx() + 20
-            y = self.widget.winfo_rooty() + self.widget.winfo_height() + 8
+            y = widget_top + self.widget.winfo_height() + 8
         except Exception:
             return
         self._tip = tip = tk.Toplevel(self.widget)
         tip.wm_overrideredirect(True)
         tip.configure(background=_TIP_BORDER)  # 1px of the Toplevel shows through as the border
-        tip.wm_geometry(f"+{x}+{y}")
+        # Park it off-screen for the first map: the card has to be laid out before its size is known,
+        # and the size is what decides whether it fits. Showing it at the naive spot first would make
+        # a right-edge tip visibly jump left.
+        tip.wm_geometry("+10000+10000")
         label = tk.Label(
             tip,
             text=self.text,
@@ -605,6 +629,17 @@ class ToolTip:
         # The border is drawn by the parent's background rather than relief='solid': Tk's solid
         # relief paints a black frame that reads as heavy against a dark fill.
         label.pack(padx=1, pady=1, ipadx=8, ipady=6)
+        tip.update_idletasks()
+        x, y = clamp_tooltip_position(
+            x,
+            y,
+            tip.winfo_reqwidth(),
+            tip.winfo_reqheight(),
+            tip.winfo_screenwidth(),
+            tip.winfo_screenheight(),
+            widget_top,
+        )
+        tip.wm_geometry(f"+{x}+{y}")
 
     def _hide(self, _event=None):
         self._cancel()

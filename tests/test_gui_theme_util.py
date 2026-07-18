@@ -513,3 +513,31 @@ class TestNormalizeLegacyBackgroundsOnScreen:
         label_default = tk.Label(ctk_root).cget("background")
         assert ctk_root.winfo_rgb(ctk_root.cget("background")) != ctk_root.winfo_rgb(label_default)
         assert gtu.normalize_legacy_backgrounds(ctk_root) > 0
+
+
+class TestClampTooltipPosition:
+    """Right-docked buttons put the naive tooltip position past the right screen edge."""
+
+    SCREEN = (1440, 900)
+
+    def clamp(self, x, y, w=300, h=60, widget_top=100):
+        return gtu.clamp_tooltip_position(x, y, w, h, *self.SCREEN, widget_top)
+
+    def test_a_tip_that_already_fits_is_left_alone(self):
+        assert self.clamp(200, 150) == (200, 150)
+
+    def test_a_tip_running_off_the_right_edge_slides_left(self):
+        x, _ = self.clamp(1300, 150)
+        assert x + 300 <= 1440
+
+    def test_a_tip_wider_than_the_screen_still_starts_on_screen(self):
+        x, _ = gtu.clamp_tooltip_position(1300, 150, 2000, 60, *self.SCREEN, 100)
+        assert x == 8
+
+    def test_a_tip_running_off_the_bottom_flips_above_the_widget(self):
+        _, y = self.clamp(200, 880, widget_top=850)
+        assert y + 60 <= 850
+
+    def test_no_room_above_or_below_clamps_into_the_screen(self):
+        _, y = gtu.clamp_tooltip_position(200, 880, 300, 60, *self.SCREEN, 20)
+        assert 8 <= y and y + 60 <= 900
