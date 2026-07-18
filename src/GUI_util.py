@@ -1947,6 +1947,11 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
     def _fit_window_to_content():
         try:
+            # Runs before the geometry pass: repainting can change a widget's requested size.
+            GUI_theme_util.normalize_legacy_backgrounds(window)
+        except Exception as _e:
+            print('legacy background normalization skipped:', _e)
+        try:
             window.update_idletasks()
             try:
                 conf_w, conf_h = (int(v) for v in str(GUI_size).lower().split('x')[:2])

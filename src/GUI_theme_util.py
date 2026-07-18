@@ -60,6 +60,16 @@ _ACCENT_TEXT = ["#FFFFFF", "#F5E9E9"]
 _ACCENT_MENU_BUTTON = ["#8a0808", "#9e0d0d"]
 _ACCENT_MENU_BUTTON_HOVER = ["#6d0606", "#7a0a0a"]
 
+# Hover-tooltip surface. The tips are an *overlay* on top of the GUI, not a document element, so
+# they invert against the light window rather than sitting on it: a dark charcoal card reads as
+# floating and, unlike the classic pale-yellow sticky note, never competes with the content it
+# covers. Square corners and a hairline border rather than a rounded card with a drop shadow --
+# an ``overrideredirect`` Toplevel has no per-pixel alpha on Windows or Linux, so a radius would
+# render as light corner triangles; the border supplies the edge definition the shadow would.
+_TIP_BG = "#24262b"
+_TIP_TEXT = "#f2f3f5"
+_TIP_BORDER = "#3a3d44"
+
 # Legacy tk widths are in characters; CTk widths are in pixels. Rough average glyph advance for the
 # suite's UI font. Tuned once here; per-call-site tweaks happen during the pilot/batch phases.
 _PX_PER_CHAR = 8
@@ -507,8 +517,8 @@ class ToolTip:
     machinery, which reconstructed popup positions from the same absolute pixel constants the grid
     migration removes. Bind to the widget itself instead; the ``text`` strings (the suite's main
     in-app documentation) are preserved verbatim by the callers. The tooltip surface is a plain
-    ``tk.Toplevel`` (the classic yellow tip), which renders fine under a CTk root and needs no CTk
-    theming of its own.
+    ``tk.Toplevel`` -- a dark charcoal card (see ``_TIP_BG``), which renders fine under a CTk root
+    and needs no CTk theming of its own.
     """
 
     def __init__(self, widget, text, delay_ms=500, wraplength=420):
@@ -545,18 +555,20 @@ class ToolTip:
             return
         self._tip = tip = tk.Toplevel(self.widget)
         tip.wm_overrideredirect(True)
+        tip.configure(background=_TIP_BORDER)  # 1px of the Toplevel shows through as the border
         tip.wm_geometry(f"+{x}+{y}")
         label = tk.Label(
             tip,
             text=self.text,
             justify="left",
-            background="#ffffe0",
-            foreground="#000000",
-            relief="solid",
-            borderwidth=1,
+            background=_TIP_BG,
+            foreground=_TIP_TEXT,
+            borderwidth=0,
             wraplength=self.wraplength,
         )
-        label.pack(ipadx=4, ipady=3)
+        # The border is drawn by the parent's background rather than relief='solid': Tk's solid
+        # relief paints a black frame that reads as heavy against a dark fill.
+        label.pack(padx=1, pady=1, ipadx=8, ipady=6)
 
     def _hide(self, _event=None):
         self._cancel()
@@ -566,6 +578,73 @@ class ToolTip:
             except Exception:
                 pass
             self._tip = None
+
+
+def window_bg():
+    """The current CTk window fill as a ``#rrggbb`` string, for painting legacy tk widgets.
+
+    Reads the live theme rather than a constant so it tracks nlp_suite_theme.json and the appearance
+    mode. Falls back to the light-mode default if CTk's theme is not loaded (headless tests).
+    """
+    try:
+        color = ctk.ThemeManager.theme["CTk"]["fg_color"]
+    except Exception:
+        return "#f7f7f8"
+    if isinstance(color, (list, tuple)):
+        index = 1 if str(ctk.get_appearance_mode()).lower() == "dark" else 0
+        color = color[index]
+    return color
+
+
+# Plain-tk widgets left over from the pre-CTk GUIs (the logo holder, the release label, the
+# introduction paragraph, the nav/RUN-CLOSE container frames) default to the *platform's* button
+# face -- roughly #ececec on macOS. That was invisible against the old gray92 window; against the
+# lightened near-white ground of the CTk theme it reads as a set of grey plates floating on white.
+# ``normalize_legacy_backgrounds`` repaints them to the themed window fill.
+#
+# Only widgets still sitting at the platform default are touched, identified by comparing the
+# resolved RGB of their current background against the root's own default. A widget any call site
+# deliberately colored (a red flag label, a white text field, the dark tooltip card) differs from
+# that default and is left exactly as it is.
+_LEGACY_BG_CLASSES = frozenset({"Label", "Frame", "Canvas", "Checkbutton", "Radiobutton", "Toplevel"})
+
+
+def normalize_legacy_backgrounds(root):
+    """Repaint default-background legacy tk widgets under *root* to the themed window fill.
+
+    Walks the whole widget tree; CTk widgets are skipped (they are themed already, and their
+    ``configure`` does not take a tk ``background``). Best-effort: any widget that refuses the
+    option is left alone rather than raising into GUI construction.
+    """
+    target = window_bg()
+    try:
+        default_rgb = root.winfo_rgb(root.cget("background"))
+        target_rgb = root.winfo_rgb(target)
+    except Exception:
+        return 0
+
+    repainted = 0
+    stack = [root]
+    while stack:
+        widget = stack.pop()
+        try:
+            stack.extend(widget.winfo_children())
+        except Exception:
+            continue
+        if isinstance(widget, ctk.CTkBaseClass) or widget.winfo_class() not in _LEGACY_BG_CLASSES:
+            continue
+        try:
+            current = widget.winfo_rgb(widget.cget("background"))
+        except Exception:
+            continue
+        if current != default_rgb or current == target_rgb:
+            continue
+        try:
+            widget.configure(background=target)
+            repainted += 1
+        except tk.TclError:
+            pass
+    return repainted
 
 
 def _theme_path():

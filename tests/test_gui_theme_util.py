@@ -352,3 +352,52 @@ class TestEntryWidthPadding:
         assert "width" not in gtu.translate_kwargs(
             ctk.CTkEntry, {"width": 0}, height_is_lines=False, width_padding=14
         )
+
+
+# ── themed window fill / legacy tk background normalization ──────────────────
+class TestWindowBg:
+    def test_returns_a_hex_color_from_the_live_theme(self):
+        color = gtu.window_bg()
+        assert isinstance(color, str)
+        assert color.startswith("#") and len(color) == 7
+
+    def test_resolves_the_light_half_of_a_color_pair(self, monkeypatch):
+        # CTk theme entries are [light, dark] pairs; the light value is picked in light mode.
+        monkeypatch.setitem(ctk.ThemeManager.theme, "CTk", {"fg_color": ["#aabbcc", "#112233"]})
+        monkeypatch.setattr(ctk, "get_appearance_mode", lambda: "Light")
+        assert gtu.window_bg() == "#aabbcc"
+
+    def test_resolves_the_dark_half_in_dark_mode(self, monkeypatch):
+        monkeypatch.setitem(ctk.ThemeManager.theme, "CTk", {"fg_color": ["#aabbcc", "#112233"]})
+        monkeypatch.setattr(ctk, "get_appearance_mode", lambda: "Dark")
+        assert gtu.window_bg() == "#112233"
+
+    def test_falls_back_when_the_theme_is_unavailable(self, monkeypatch):
+        monkeypatch.setattr(ctk, "ThemeManager", None)
+        assert gtu.window_bg() == "#f7f7f8"
+
+    def test_a_plain_string_color_is_passed_through(self, monkeypatch):
+        monkeypatch.setitem(ctk.ThemeManager.theme, "CTk", {"fg_color": "#123456"})
+        assert gtu.window_bg() == "#123456"
+
+
+class TestNormalizeLegacyBackgrounds:
+    def test_ctk_widget_classes_are_never_repainted(self):
+        # The walk must skip CTk widgets: they are themed already and take fg_color, not background.
+        assert "CTkFrame" not in gtu._LEGACY_BG_CLASSES
+        assert "CTkLabel" not in gtu._LEGACY_BG_CLASSES
+
+    def test_covers_the_legacy_container_and_text_classes(self):
+        # These are the tk classes the pre-CTk GUIs still build directly (logo holder, release
+        # label, introduction paragraph, nav / RUN-CLOSE frames).
+        assert {"Label", "Frame", "Canvas"} <= gtu._LEGACY_BG_CLASSES
+
+    def test_unresolvable_root_is_a_no_op_rather_than_an_error(self):
+        class _Broken:
+            def cget(self, _option):
+                raise RuntimeError("no display")
+
+            def winfo_rgb(self, _color):
+                raise RuntimeError("no display")
+
+        assert gtu.normalize_legacy_backgrounds(_Broken()) == 0

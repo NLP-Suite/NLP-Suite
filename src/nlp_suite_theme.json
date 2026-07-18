@@ -1,13 +1,13 @@
 {
   "CTk": {
     "fg_color": [
-      "gray92",
+      "#f7f7f8",
       "gray14"
     ]
   },
   "CTkToplevel": {
     "fg_color": [
-      "gray92",
+      "#f7f7f8",
       "gray14"
     ]
   },
@@ -15,15 +15,15 @@
     "corner_radius": 6,
     "border_width": 0,
     "fg_color": [
-      "gray86",
+      "#ededf0",
       "gray17"
     ],
     "top_fg_color": [
-      "gray81",
+      "#e2e3e8",
       "gray20"
     ],
     "border_color": [
-      "gray65",
+      "#c9ccd1",
       "gray28"
     ]
   },
@@ -68,7 +68,7 @@
     "corner_radius": 6,
     "border_width": 2,
     "fg_color": [
-      "#F9F9FA",
+      "#FFFFFF",
       "#343638"
     ],
     "border_color": [
@@ -231,7 +231,7 @@
     "corner_radius": 6,
     "border_width": 1,
     "fg_color": [
-      "#F9F9FA",
+      "#FFFFFF",
       "#343638"
     ],
     "border_color": [
@@ -304,7 +304,7 @@
     "corner_radius": 6,
     "border_width": 0,
     "fg_color": [
-      "#F9F9FA",
+      "#FFFFFF",
       "#1D1E1E"
     ],
     "border_color": [

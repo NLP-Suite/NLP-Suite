@@ -155,12 +155,22 @@ def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hove
         win_w = 0
     wrap = win_w - 60 if win_w and win_w > 260 else 700
 
-    tooltip_lb = tk.Label(_tooltip_window, text=text_info, foreground='blue',
-                          background='#FFFFDD', anchor='w', justify='left',
-                          relief='solid', borderwidth=1,
-                          padx=4, pady=2, wraplength=wrap,
+    # Same dark-card surface as GUI_theme_util.ToolTip -- the two tooltip implementations must not
+    # look like two different products. Colors are sourced from there so there is one definition.
+    try:
+        import GUI_theme_util
+        tip_bg, tip_fg, tip_border = (GUI_theme_util._TIP_BG, GUI_theme_util._TIP_TEXT,
+                                      GUI_theme_util._TIP_BORDER)
+    except Exception:
+        tip_bg, tip_fg, tip_border = '#24262b', '#f2f3f5', '#3a3d44'
+
+    _tooltip_window.configure(background=tip_border)
+    tooltip_lb = tk.Label(_tooltip_window, text=text_info, foreground=tip_fg,
+                          background=tip_bg, anchor='w', justify='left',
+                          borderwidth=0,
+                          padx=8, pady=6, wraplength=wrap,
                           font=('TkDefaultFont', 9))
-    tooltip_lb.pack()
+    tooltip_lb.pack(padx=1, pady=1)
 
     # Position in screen coordinates relative to the main window
     win_x = window.winfo_rootx()
