@@ -472,6 +472,43 @@ def _column_for(row, x_coordinate):
     return column
 
 
+def apply_row_spans(window):
+    """Let every placed widget span from its own column to the next occupied one on its row.
+
+    Grid columns are shared by ALL rows, so a wide widget sitting in a single column forces that
+    column wide for every other row too. A long checkbox label or a long path entry -- effectively
+    alone on its own row -- was therefore inflating the columns that the dense option rows also use,
+    and pushing those rows off the right edge of the window. Spanning restores the pre-grid
+    (absolute-x) semantics: a widget occupies the horizontal space up to wherever the NEXT widget on
+    its row begins, so its width is distributed over that span instead of charged to one shared
+    column. On wordclouds_main this takes the grid's requested width from 2183px to 1496px.
+
+    Call once per GUI, after every widget has been placed (GUI_util.GUI_bottom does this).
+    Widgets that already span deliberately (centerX rows, the header) are left alone.
+    """
+    by_row = {}
+    for child in window.grid_slaves():
+        info = child.grid_info()
+        if int(info.get('columnspan', 1)) > 1:
+            continue
+        by_row.setdefault(int(info['row']), []).append((int(info['column']), child))
+
+    if not by_row:
+        return
+
+    # Stop at the last column anything actually occupies rather than _GRID_TOTAL_COLUMNS: stretching
+    # the trailing widget across the unused tail just spreads padding into empty columns.
+    last_column = max(column for row_items in by_row.values() for column, _ in row_items) + 1
+
+    for row_items in by_row.values():
+        row_items.sort(key=lambda pair: pair[0])
+        for index, (column, child) in enumerate(row_items):
+            next_column = row_items[index + 1][0] if index + 1 < len(row_items) else last_column
+            span = max(1, next_column - column)
+            if span > 1:
+                child.grid_configure(columnspan=span)
+
+
 def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False, no_hover_over_widget=False, whole_widget_red=False, centerX=False, basic_y_coordinate=90, x_coordinate_hover_over = 90, text_info=''):
     # The legacy row counter (y_multiplier_integer) becomes the grid row; the x-coordinate picks the
     # column band on that row (see the module note above). sameY keeps the same row so successive
@@ -481,7 +518,10 @@ def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False
         widget_name.grid(row=row, column=0, columnspan=_GRID_TOTAL_COLUMNS,
                          padx=6, pady=3, sticky='')
     else:
-        widget_name.grid(row=row, column=_column_for(row, x_coordinate), padx=6, pady=3, sticky='w')
+        # padx=4 rather than 6: horizontal padding is charged twice per column, so on a ~9-column GUI
+        # the difference is ~36px -- enough to keep the widest row inside the window without having to
+        # make every GUI wider.
+        widget_name.grid(row=row, column=_column_for(row, x_coordinate), padx=4, pady=3, sticky='w')
 
     # Tooltip: bind to the widget itself (GUI_theme_util.ToolTip) instead of the old
     # coordinate-based hover_over_widget -- the absolute coordinates the latter positioned from are
