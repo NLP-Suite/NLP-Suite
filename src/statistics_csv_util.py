@@ -280,12 +280,13 @@ def percentile(n):
 # chart_title_label is used as part of the chart_title
 def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outputFileNameLabel, groupByField: list, plotField: list, chart_title_label, chartPackage, dataTransformation):
     filesToOpen=[]
-    # Reject non-CSV inputs FIRST and SILENTLY (no dialog). A charting step can hand this function a
-    # PNG (e.g. the auto-generated heatmap) that slipped into the output-file list; reading a PNG's
-    # "headers" then popped a confusing, BLOCKING "Groupby field error" dialog that froze the unattended
-    # Corpus Profiler. A non-csv simply isn't groupable -- skip it and move on.
+    # Reject non-CSV inputs FIRST and SILENTLY (no dialog, no console line). A charting step can hand this
+    # function a PNG (e.g. the auto-generated heatmap) that slipped into the output-file list; reading a
+    # PNG's "headers" then popped a confusing, BLOCKING "Groupby field error" dialog that froze the
+    # unattended Corpus Profiler. A non-csv simply isn't groupable -- skip it and move on. (Was printing
+    # 'skipping non-csv input ...' once per PNG -- pages of noise on a large corpus; the skip is expected,
+    # not worth announcing.)
     if not str(inputFilename).lower().endswith('.csv'):
-        print('compute_csv_column_statistics_groupBy: skipping non-csv input ' + str(inputFilename))
         return None
     outputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', '', outputFileNameLabel + '_group_stats')
 
