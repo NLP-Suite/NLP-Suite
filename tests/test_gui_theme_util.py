@@ -147,17 +147,17 @@ def test_accepted_params_excludes_self_and_varargs():
     assert "text" in params and "command" in params
 
 
-# ── the theme JSON loads, and the default fill is NEUTRAL (regression) ─────────
+# ── the theme JSON loads, and the default fill is the brand RED (regression) ──
 # Two things this guards:
 #   1. CTk's load_theme requires every top-level key to be a dict (it does theme[key].keys()); a
 #      stray "_comment" string key raised AttributeError and silently fell back to CTk's blue theme,
 #      shipping the whole suite in blue. We confirm the file's own colors reached ThemeManager.
-#   2. The default widget fill must be NEUTRAL grey, not the brand red -- red is a *signal* opted
-#      into via accent=True, never the default (the solid-red first cut was reverted; see plan §0).
+#   2. The default (enabled) widget fill must be the brand red: the theme encodes red = ACTIVE,
+#      grey = INACTIVE (see plan §0 and the pilot-2 note in §4).
 _CTK_BLUE_FALLBACK = {"#3B8ED0", "#1F6AA5"}  # CTk's stock "blue" CTkButton fg -- the bug's fingerprint
 
 
-def test_theme_json_loads_neutral_default_not_blue_fallback():
+def test_theme_json_loads_red_default_not_blue_fallback():
     import json
     import os
 
@@ -177,17 +177,66 @@ def test_theme_json_loads_neutral_default_not_blue_fallback():
         loaded_fg = ThemeManager.theme[cls]["fg_color"]
         assert loaded_fg == data[cls]["fg_color"], f"{cls} fg didn't load from the file (blue fallback?)"
         assert not _CTK_BLUE_FALLBACK.intersection(loaded_fg), f"{cls} is on the blue fallback"
-        # The premise: neutral by default, never the brand red.
-        assert gtu.NLP_SUITE_ACCENT not in loaded_fg, f"{cls} default fill must be neutral, not brand red"
+        # The premise: red = ACTIVE, so an enabled control's default fill is the brand red.
+        assert gtu.NLP_SUITE_ACCENT in loaded_fg, f"{cls} default fill must be the brand red"
 
 
-# ── the accent is red, opt-in, and distinct from the muted 'nothing available' grey ──
-def test_accent_constants_are_the_brand_red_and_distinct_from_muted():
-    # The RUN button and the "available" TIPS/videos/reminders dropdowns opt into this red.
+# ── the accent is red, and the inactive greys are distinct from it ──
+def test_accent_is_brand_red_and_distinct_from_the_inactive_greys():
     assert gtu.NLP_SUITE_ACCENT in gtu._ACCENT_FG
-    # accent (available, red) and muted (nothing available, grey) must be visibly different cues.
+    # "inactive" must never be confusable with "active": disabled fill, the muted
+    # nothing-available fill, and the accent are three distinct values.
+    assert gtu.NLP_SUITE_ACCENT not in gtu._DISABLED_FILL
     assert gtu._ACCENT_FG != gtu._MUTED_FG
     assert gtu.NLP_SUITE_ACCENT != gtu._MUTED_FG
+
+
+# ── grey means inactive: the fill repaint CTk does not do by itself ──
+class _Recorder:
+    """Stand-in for a CTk widget: records the color options configure() applies."""
+
+    def __init__(self, **colors):
+        self.colors = dict(colors)
+
+    def configure(self, require_redraw=False, **kwargs):
+        self.colors.update(kwargs)
+
+    def cget(self, attribute_name):
+        return self.colors.get(attribute_name)
+
+
+class _FakeButton(gtu._StateFillMixin, _Recorder):
+    # At runtime _StateFillMixin's base is `object`, so super() lands on _Recorder here -- letting
+    # the state logic be exercised headlessly, with no display and no real CTk widget.
+    _STATE_FILL_KEYS = ("fg_color", "border_color")
+
+
+class TestStateFillMixin:
+    def test_disabled_at_construction_is_painted_grey(self):
+        w = _FakeButton(fg_color=gtu._ACCENT_FG, border_color="#8a0808", state="disabled")
+        assert w.colors["fg_color"] == gtu._DISABLED_FILL
+        assert w.colors["border_color"] == gtu._DISABLED_BORDER
+
+    def test_enabled_widget_keeps_its_theme_fill(self):
+        w = _FakeButton(fg_color=gtu._ACCENT_FG, border_color="#8a0808")
+        assert w.colors["fg_color"] == gtu._ACCENT_FG
+
+    def test_configure_disabled_then_normal_round_trips(self):
+        # The choreography in §5.4: GUIs flip state constantly, and re-enabling must restore the
+        # ORIGINAL fill -- including a call site's custom color, not a hardcoded theme default.
+        custom = ["#123456", "#123456"]
+        w = _FakeButton(fg_color=custom, border_color="#654321")
+        w.configure(state="disabled")
+        assert w.colors["fg_color"] == gtu._DISABLED_FILL
+        w.configure(state="normal")
+        assert w.colors["fg_color"] == custom
+        assert w.colors["border_color"] == "#654321"
+
+    def test_configure_without_state_does_not_repaint(self):
+        w = _FakeButton(fg_color=gtu._ACCENT_FG, border_color="#8a0808")
+        w.configure(state="disabled")
+        w.configure(text="new label")
+        assert w.colors["fg_color"] == gtu._DISABLED_FILL, "a non-state configure must not re-enable"
 
 
 # ── the CTk widget contracts that broke legacy tk idioms during the Phase 2 pilot ──
@@ -216,6 +265,31 @@ class TestCTkLegacyIdiomContracts:
 
         for cls in (ctk.CTkComboBox, ctk.CTkOptionMenu):
             assert "values" in inspect.signature(cls.__init__).parameters
+
+    def test_combobox_takes_variable_not_textvariable(self):
+        # Phase 2 pilot 2: every legacy ttk.Combobox binds its var as `textvariable=`, but
+        # CTkComboBox only has `variable=` -- so translate_kwargs would drop it SILENTLY, leaving a
+        # widget whose .trace callbacks never fire. create_combobox renames it; this pins the CTk
+        # side of that contract (and that CTkCheckBox keeps BOTH names with different meanings,
+        # which is why the rename can't live in the global _RENAME table).
+        import inspect
+
+        combobox_params = inspect.signature(ctk.CTkComboBox.__init__).parameters
+        assert "variable" in combobox_params
+        assert "textvariable" not in combobox_params
+
+        checkbox_params = inspect.signature(ctk.CTkCheckBox.__init__).parameters
+        assert {"variable", "textvariable"} <= set(checkbox_params)
+
+
+class TestCreateCombobox:
+    def test_textvariable_is_renamed_to_variable(self):
+        out = gtu.translate_kwargs(ctk.CTkComboBox, {"variable": "VAR", "width": 80})
+        assert out["variable"] == "VAR"
+
+    def test_bare_textvariable_would_be_dropped_by_translate_kwargs(self):
+        # The failure create_combobox exists to prevent: no rename -> no variable at all.
+        assert gtu.translate_kwargs(ctk.CTkComboBox, {"textvariable": "VAR"}) == {}
 
 
 # ── entry width chrome allowance (Phase 2 pilot: a 4-char box clipped "100" to "10C") ──

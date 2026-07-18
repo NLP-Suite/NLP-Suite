@@ -38,6 +38,36 @@ incremental path below is exactly right once the theme honors this premise. The 
 colors and the `accent=`/`muted=` opt-ins in `GUI_theme_util` are what encode it — see the widget
 mapping (§3) and the Phase 1 accent-signal slice note (§4).
 
+### 0.1 Amendment (2026-07-18, pilot 2) — **red = active, grey = inactive** ⚠️ needs Roberto's sign-off
+
+The neutral cut above shipped and was tried on screen. It has its own failure, the mirror image of
+the first one: with every ordinary control painted a filled mid-grey, **the whole GUI reads as
+disabled**. Grey is the universal "you can't click this" cue, and the neutral theme spent it on the
+majority of live controls — so nothing looked actionable.
+
+The theme is therefore now:
+
+- **Brand red `#b10a0a` = ENABLED.** Every interactive widget's default fill.
+- **Flat grey = DISABLED.** Applied automatically whenever `state='disabled'` is set.
+
+**Why this does not simply re-break §0.** Roberto's objection had two parts. Part (a), the erased
+availability cue, survives intact: a TIPS / videos / reminders dropdown with nothing behind it is
+*exactly* an inactive control, so it greys out, and a red one still means "a resource exists here".
+The old convention becomes a special case of the general rule rather than a casualty of it. Part
+(b), "the wall of red reads as noise", is **not** answered — red is no longer *salient*, so RUN and
+the available dropdowns no longer stand out from ordinary buttons. That is a deliberate trade made
+by Cora on the pilot, and **Roberto should confirm it** before it goes further than pilot 2. Two
+one-liner fallbacks if he prefers otherwise: flip the theme JSON's fills back to neutral (the §0
+cut), or to a light bordered surface (red border + red text, solid red kept for RUN/signal only).
+
+**What makes it work mechanically.** CustomTkinter does *not* repaint a widget on
+`state='disabled'` — it only swaps in `text_color_disabled` and leaves the fill alone, so a disabled
+button would be indistinguishable from an enabled one and the whole scheme would collapse.
+`GUI_theme_util._StateFillMixin` closes that gap: it captures the enabled fill at construction and
+repaints on every state change, at construction or via a later `configure(state=…)`. Call sites keep
+using plain `configure(state=…)` unchanged, which matters because the suite toggles disabled state
+constantly (§5.4). It also restores a *call-site* color on re-enable, so a custom fill is not lost.
+
 ---
 
 ## 1. Current state (audit)
@@ -369,7 +399,32 @@ conversion.
 >
 > Still outstanding for pilot 1: Windows QA, and the deferred #1648 window-geometry item (the window
 > is still sized to the old absolute layout, so the rightmost column clips) — not introduced here.
-> Pilots 2 (`NLP_menu_main.py`) and 3 (`NLP_setup_IO_main.py`) not yet started.
+>
+> **Status (2026-07-18) — pilot 2 `NLP_menu_main.py`: done** (branch `ctk/phase2-menu`).
+> 8 buttons + 3 checkboxes → factories, 3 open-config buttons → `create_open_file_button`, the 7
+> `ttk.Combobox` tool dropdowns → `create_combobox`, and the suite's **only `ttk.Notebook` →
+> `CTkTabview`** (§3's mapping), which also took the `ttk.Style`/`theme_use('clam')` block and the
+> now-unused `from tkinter import ttk` with it. The seven `.place()`d tab rows became a 3-column grid
+> inside each tab frame, so the dropdowns stretch with the tab instead of being pinned to computed
+> pixel spans.
+>
+> **Two shared-layer findings, both of the silent-failure kind:**
+> 1. **`textvariable=` is dropped by `CTkComboBox`** — it only has `variable=`. Every one of the ~56
+>    legacy `ttk.Combobox` sites in the suite binds its var as `textvariable=`, and
+>    `translate_kwargs` filters unknown kwargs *silently*, so the widget would render fine with **no
+>    bound variable at all** — every `.trace` on it dead, the RUN dispatch quietly broken.
+>    `create_combobox` now renames it. The rename can't go in the global `_RENAME` table because
+>    `CTkCheckBox` has **both** names with different meanings (`textvariable` = its label). This is a
+>    fourth entry in the §6 family alongside `.config(`, `widget['state']`, and `widget['values']=`.
+> 2. **`CTkTabview` tab frames, not `ttk.Frame`s, must parent the CTk children.** CTk widgets read
+>    their background off the master, and a `ttk.Frame` has no queryable `bg` — so keeping the ttk
+>    notebook while putting CTk dropdowns inside it is not safe. Converting the notebook was the fix.
+>
+> Pilot 2 is also where the **red = active / grey = inactive** theme reversal happened (§0.1) — the
+> neutral theme read as "everything disabled" on screen. Verified: `tests/gui_smoke.py` (44 ok, 0
+> missing golden) and `pytest` (47 passed, incl. 4 new headless `_StateFillMixin` state-round-trip
+> tests) green; launched on macOS. **Still outstanding:** Roberto's call on §0.1, Windows QA, and the
+> deferred #1648 window-geometry item. Pilot 3 (`NLP_setup_IO_main.py`) not yet started.
 
 ### Phase 3 — Batch conversion (~6–8 PRs, 5–8 GUIs each)
 
@@ -499,6 +554,10 @@ For each `*_main.py` PR:
       parameter `require_redraw`** — so it *silently does nothing*, no exception. Use
       `GUI_theme_util.set_values(...)` / `widget.configure(k=v)`. **The `["menu"]` grep below does
       not catch this** (it is the `ttk.Combobox` analogue).
+- [ ] **No `textvariable=` left on a converted Combobox.** `CTkComboBox` has only `variable=`, and
+      `translate_kwargs` drops unknown kwargs silently — so the widget renders fine with **no bound
+      variable**, killing every `.trace` on it with no error. `create_combobox` renames it; the check
+      is that combobox call sites go through the factory (grep `ttk.Combobox(`).
 - [ ] No `["menu"]` OptionMenu manipulation left (grep `["menu"]`).
 - [ ] No `ttk.Style`/`theme_use` left.
 - [ ] No new `CTkImage`/`ImageTk` usage (grep).

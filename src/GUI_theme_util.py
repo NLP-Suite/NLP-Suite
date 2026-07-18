@@ -29,19 +29,29 @@ wires ``GUI_util`` / ``GUI_IO_util`` onto it.
 
 import inspect
 import tkinter as tk
+from typing import TYPE_CHECKING
 import warnings
 
 import customtkinter as ctk
 
 import ctk_bundle_util
 
-# NLP Suite brand accent (see GUI_util.py "RGB red is #b10a0a"). The theme's default widget fill is
-# NEUTRAL GREY (see nlp_suite_theme.json + the plan's §0): red is a *signal*, not the default. It is
-# opted into via ``accent=True`` on create_button / create_option_menu, and only two things earn it --
-# the RUN primary-action button and the "available" state of the TIPS / videos / reminders dropdowns.
-# The first migration cut painted every widget this red; that erased the red=available cue and was
-# reverted. Light-mode value first, dark-mode second (CTk color pairs); appearance is pinned "light"
-# in Phase 1 but both are supplied so the accent survives a later dark-mode enable.
+# NLP Suite brand accent (see GUI_util.py "RGB red is #b10a0a"), and the theme's default fill for
+# every ENABLED interactive widget. The rule the theme encodes is **red = active, grey = inactive**:
+# an enabled control is brand red, a disabled one is a flat grey (see _StateFillMixin, which does the
+# repaint CTk itself does not do).
+#
+# History, because this reverses twice (plan §0): the first migration cut painted every widget red;
+# that was reverted to a neutral-grey default on reviewer instruction, because red carried the
+# availability cue on the TIPS / videos / reminders dropdowns (red = a resource exists for this GUI,
+# grey = none) and a blanket red erased it. The neutral cut then read as *disabled everywhere*, so
+# red-active/grey-inactive is the third position: it keeps the availability cue working, since a
+# dropdown with nothing behind it is exactly an inactive control, but it does spend the red that
+# used to make RUN and the TIPS dropdowns stand out. That trade is deliberate and needs Roberto's
+# sign-off -- see the pilot-2 note in the plan's §4.
+#
+# Light-mode value first, dark-mode second (CTk color pairs); appearance is pinned "light" in Phase 1
+# but both are supplied so the accent survives a later dark-mode enable.
 NLP_SUITE_ACCENT = "#b10a0a"
 _ACCENT_FG = ["#b10a0a", "#c81414"]
 _ACCENT_HOVER = ["#8a0808", "#9e0d0d"]
@@ -183,6 +193,77 @@ def translate_kwargs(cls, kwargs, width_is_chars=True, height_is_lines=True, wid
 
 
 # ---------------------------------------------------------------------------------------------
+# Grey means INACTIVE.
+#
+# The theme paints enabled controls as a light surface with a border (they read as pressable) and
+# reserves a flat grey fill for disabled ones. CustomTkinter does not do that second half by itself:
+# ``state='disabled'`` only swaps in ``text_color_disabled`` and leaves the fill untouched, so a
+# disabled button would look identical to an enabled one. The mixin below closes that gap -- it
+# repaints the fill whenever ``state`` is set, at construction or later via ``configure(state=...)``.
+#
+# It lives in the shared layer rather than at call sites because the suite toggles disabled state
+# constantly (plan §5.4) through plain ``configure(state=...)`` calls, which keep working unchanged.
+# ---------------------------------------------------------------------------------------------
+
+_DISABLED_FILL = ["#DFE1E4", "#2F3336"]
+_DISABLED_BORDER = ["#CBCFD3", "#3A3E42"]
+
+# CTkBaseClass (not a concrete widget class) so the mixin's bind/unbind signatures stay
+# compatible with every widget it is combined with.
+_MixinBase = ctk.CTkBaseClass if TYPE_CHECKING else object
+
+
+# At runtime this is a plain mixin (base `object`), so it composes with whichever concrete CTk widget
+# class it is combined with -- and so tests/gui_smoke.py's hand-written CTk stub, which has no widget
+# base class to inherit from, can still import this module. The type-checking-only base just tells
+# Pyright where the cget/configure it calls come from.
+class _StateFillMixin(_MixinBase):
+    """Repaint a CTk widget's fill to the flat 'inactive' grey while its state is ``disabled``.
+
+    ``_STATE_FILL_KEYS`` names the color options a subclass wants swapped; the enabled values are
+    captured from the live widget at construction, so a call site that passed its own ``fg_color``
+    (e.g. the accent red on RUN) gets that color back when it is re-enabled.
+    """
+
+    _STATE_FILL_KEYS = ("fg_color",)
+
+    def __init__(self, *args, **kwargs):
+        state = kwargs.get("state", "normal")
+        super().__init__(*args, **kwargs)
+        self._enabled_fill = {key: self.cget(key) for key in self._STATE_FILL_KEYS}
+        if str(state) == "disabled":
+            self._paint_for_state("disabled")
+
+    def configure(self, require_redraw=False, **kwargs):
+        state = kwargs.get("state")
+        super().configure(require_redraw, **kwargs)
+        if state is not None:
+            self._paint_for_state(str(state))
+
+    def _paint_for_state(self, state):
+        if state == "disabled":
+            colors = {key: _DISABLED_FILL for key in self._STATE_FILL_KEYS}
+            if "border_color" in colors:
+                colors["border_color"] = _DISABLED_BORDER
+        else:
+            colors = dict(self._enabled_fill)
+        # No 'state' key here, so this cannot recurse back into _paint_for_state.
+        super().configure(require_redraw=True, **colors)
+
+
+class _ThemedButton(_StateFillMixin, ctk.CTkButton):
+    _STATE_FILL_KEYS = ("fg_color", "border_color")
+
+
+class _ThemedOptionMenu(_StateFillMixin, ctk.CTkOptionMenu):
+    _STATE_FILL_KEYS = ("fg_color", "button_color")
+
+
+class _ThemedComboBox(_StateFillMixin, ctk.CTkComboBox):
+    _STATE_FILL_KEYS = ("fg_color", "button_color")
+
+
+# ---------------------------------------------------------------------------------------------
 # Widget factories. Each mirrors the tk constructor call signature its call sites already use
 # (master first, then keyword args) so the mechanical conversion is a name swap.
 # ---------------------------------------------------------------------------------------------
@@ -201,7 +282,7 @@ def create_button(master, accent=False, **kwargs):
         translated.setdefault("fg_color", _ACCENT_FG)
         translated.setdefault("hover_color", _ACCENT_HOVER)
         translated.setdefault("text_color", _ACCENT_TEXT)
-    return ctk.CTkButton(master, **translated)
+    return _ThemedButton(master, **translated)
 
 
 # The small "open the selected file / directory" affordance. The legacy `width=1, text=''` rendered
@@ -223,7 +304,7 @@ def create_open_file_button(master, command=None, width=32, **kwargs):
     kwargs.pop("width", None)
     translated = translate_kwargs(ctk.CTkButton, kwargs)
     translated["width"] = width
-    return ctk.CTkButton(master, text=OPEN_FILE_GLYPH, command=command, **translated)
+    return _ThemedButton(master, text=OPEN_FILE_GLYPH, command=command, **translated)
 
 
 def create_label(master, **kwargs):
@@ -263,16 +344,17 @@ def create_checkbox(master, **kwargs):
     return ctk.CTkCheckBox(master, **translated)
 
 
-# The TIPS / videos / reminders dropdowns carry a three-state availability cue:
-#   * accent=True -> brand RED: a resource IS available for this GUI (the legacy "red" state).
-#   * default     -> neutral GREY (the theme default): an ordinary control, no special meaning.
-#   * muted=True  -> a LIGHTER washed-out grey: explicitly "nothing available for this GUI".
-# muted is deliberately lighter than the neutral default so "no resource here" reads as inert rather
-# than merely un-accented. Light-mode values (appearance is pinned "light" in Phase 1).
-_MUTED_FG = "#d9d9d9"
-_MUTED_BUTTON = "#c4c4c4"
-_MUTED_BUTTON_HOVER = "#b4b4b4"
-_MUTED_TEXT = "#5f5f5f"
+# The TIPS / videos / reminders dropdowns carry the availability cue:
+#   * accent=True -> brand RED: a resource IS available for this GUI (the legacy "red" state). Under
+#     the red-active theme this is also the default fill, so accent= is now a no-op for buttons; it
+#     is kept because it documents intent at the call site and survives a theme change.
+#   * muted=True  -> the inactive GREY: explicitly "nothing available for this GUI".
+# muted deliberately matches the disabled palette (_DISABLED_FILL): a dropdown with nothing behind it
+# IS an inactive control, so it should read exactly like one. Light-mode values first.
+_MUTED_FG = "#DFE1E4"
+_MUTED_BUTTON = "#D2D5D8"
+_MUTED_BUTTON_HOVER = "#C6C9CC"
+_MUTED_TEXT = "#8A9099"
 
 
 def create_option_menu(master, variable=None, values=None, command=None, muted=False, accent=False, **kwargs):
@@ -308,14 +390,26 @@ def create_option_menu(master, variable=None, values=None, command=None, muted=F
         translated["values"] = list(values)
     if command is not None:
         translated["command"] = command
-    return ctk.CTkOptionMenu(master, **translated)
+    return _ThemedOptionMenu(master, **translated)
 
 
 def create_combobox(master, values=None, **kwargs):
+    """ttk.Combobox(...) -> CTkComboBox(...).
+
+    ``textvariable=`` is renamed to CTk's ``variable=``. This rename lives here rather than in the
+    global ``_RENAME`` table because the two names mean *different* things on other classes:
+    CTkCheckBox has both, where ``textvariable`` drives its label and ``variable`` its value. Without
+    the rename the kwarg is silently dropped (it is not in CTkComboBox's signature), leaving a
+    combobox with no bound variable -- so every ``.trace`` on it stops firing and the widget looks
+    fine while doing nothing. Same silent-failure class as the ``widget['values'] = ...`` write in
+    the plan's §6 checklist.
+    """
+    if "textvariable" in kwargs and "variable" not in kwargs:
+        kwargs["variable"] = kwargs.pop("textvariable")
     translated = translate_kwargs(ctk.CTkComboBox, kwargs)
     if values is not None:
         translated["values"] = list(values)
-    return ctk.CTkComboBox(master, **translated)
+    return _ThemedComboBox(master, **translated)
 
 
 def create_slider(
