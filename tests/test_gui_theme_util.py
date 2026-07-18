@@ -401,3 +401,115 @@ class TestNormalizeLegacyBackgrounds:
                 raise RuntimeError("no display")
 
         assert gtu.normalize_legacy_backgrounds(_Broken()) == 0
+
+    def test_every_legacy_class_has_a_probe_factory(self):
+        # A class in _LEGACY_BG_CLASSES with no probe can never resolve its default background,
+        # so it would be silently skipped forever.
+        assert gtu._LEGACY_BG_CLASSES <= set(gtu._PROBE_CLASSES)
+
+    def test_unknown_class_probes_to_none_and_is_cached(self):
+        cache = {}
+        assert gtu._class_default_rgb(None, "NotAWidgetClass", cache) is None
+        assert cache == {"NotAWidgetClass": None}
+
+
+# The repaint itself needs a live Tk display; skipped on a headless box.
+@pytest.fixture
+def ctk_root():
+    tk = pytest.importorskip("tkinter")
+    try:
+        root = ctk.CTk()
+    except tk.TclError as exc:  # pragma: no cover - headless CI
+        pytest.skip(f"no display: {exc}")
+    yield root
+    root.destroy()
+
+
+class TestResolveAppearanceColor:
+    def test_a_plain_string_is_returned_unchanged(self):
+        assert gtu.resolve_appearance_color("#123456") == "#123456"
+
+    def test_picks_the_light_half_in_light_mode(self, monkeypatch):
+        monkeypatch.setattr(ctk, "get_appearance_mode", lambda: "Light")
+        assert gtu.resolve_appearance_color(["#aabbcc", "#112233"]) == "#aabbcc"
+
+    def test_picks_the_dark_half_in_dark_mode(self, monkeypatch):
+        monkeypatch.setattr(ctk, "get_appearance_mode", lambda: "Dark")
+        assert gtu.resolve_appearance_color(["#aabbcc", "#112233"]) == "#112233"
+
+    def test_falls_back_to_the_light_half_when_the_mode_is_unreadable(self, monkeypatch):
+        def _boom():
+            raise RuntimeError("no appearance tracker")
+
+        monkeypatch.setattr(ctk, "get_appearance_mode", _boom)
+        assert gtu.resolve_appearance_color(["#aabbcc", "#112233"]) == "#aabbcc"
+
+
+class TestComboBoxDropdownArrow:
+    def test_the_theme_pairs_that_made_the_chevron_black(self):
+        # The bug in one assertion: the combobox's arrow is drawn in its text_color, which must stay
+        # dark for the white entry field -- but the arrow itself sits on the red button strip.
+        combo = ctk.ThemeManager.theme["CTkComboBox"]
+        menu = ctk.ThemeManager.theme["CTkOptionMenu"]
+        assert gtu.resolve_appearance_color(combo["text_color"]) != gtu.resolve_appearance_color(
+            menu["text_color"]
+        )
+        # ...and the strip it sits on is the same red the option menu uses, hence the mismatch.
+        assert gtu.resolve_appearance_color(combo["button_color"]) != gtu.resolve_appearance_color(
+            combo["fg_color"]
+        )
+
+    def _arrow_fills(self, widget):
+        canvas = widget._canvas
+        return [canvas.itemcget(i, "fill") for i in canvas.find_withtag("dropdown_arrow")]
+
+    def test_combobox_arrow_matches_the_option_menu_arrow(self, ctk_root):
+        combo = gtu.create_combobox(ctk_root, values=["a", "b"])
+        menu = gtu.create_option_menu(ctk_root, values=["a", "b"])
+        ctk_root.update_idletasks()
+        assert self._arrow_fills(combo) == self._arrow_fills(menu) != []
+
+    def test_combobox_arrow_is_not_the_entry_text_color(self, ctk_root):
+        # Regression: the chevron used to inherit text_color (near-black) on the red strip.
+        combo = gtu.create_combobox(ctk_root, values=["a", "b"])
+        ctk_root.update_idletasks()
+        text_color = gtu.resolve_appearance_color(combo.cget("text_color"))
+        assert text_color not in self._arrow_fills(combo)
+
+    def test_disabling_repaints_the_arrow_to_the_muted_tone(self, ctk_root):
+        combo = gtu.create_combobox(ctk_root, values=["a", "b"])
+        combo.configure(state="disabled")
+        ctk_root.update_idletasks()
+        expected = gtu.resolve_appearance_color(
+            ctk.ThemeManager.theme["CTkOptionMenu"]["text_color_disabled"]
+        )
+        assert self._arrow_fills(combo) == [expected]
+
+
+class TestNormalizeLegacyBackgroundsOnScreen:
+    def test_default_background_widgets_are_repainted_to_the_theme_fill(self, ctk_root):
+        import tkinter as tk
+
+        plain = tk.Label(ctk_root, text="x")
+        frame = tk.Frame(ctk_root)
+        assert gtu.normalize_legacy_backgrounds(ctk_root) >= 2
+        assert plain.cget("background") == gtu.window_bg()
+        assert frame.cget("background") == gtu.window_bg()
+
+    def test_deliberately_colored_widgets_survive(self, ctk_root):
+        import tkinter as tk
+
+        red = tk.Label(ctk_root, text="x", background="red")
+        gtu.normalize_legacy_backgrounds(ctk_root)
+        assert red.cget("background") == "red"
+
+    def test_repaints_even_though_the_ctk_root_is_not_at_the_platform_default(self, ctk_root):
+        # Regression: the reference default used to be read off the root. The root is a ctk.CTk, so
+        # its background is already the themed fill while a fresh tk.Label still reports the
+        # platform default -- every legacy widget then looked "deliberately colored" and nothing was
+        # repainted (grey logo / release / introduction plates on the near-white ground).
+        import tkinter as tk
+
+        label_default = tk.Label(ctk_root).cget("background")
+        assert ctk_root.winfo_rgb(ctk_root.cget("background")) != ctk_root.winfo_rgb(label_default)
+        assert gtu.normalize_legacy_backgrounds(ctk_root) > 0

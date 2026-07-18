@@ -218,6 +218,20 @@ def translate_kwargs(cls, kwargs, width_is_chars=True, height_is_lines=True, wid
 _DISABLED_FILL = ["#DFE1E4", "#2F3336"]
 _DISABLED_BORDER = ["#CBCFD3", "#3A3E42"]
 
+
+def resolve_appearance_color(color):
+    """Pick the half of a CTk ``[light, dark]`` color pair that matches the appearance mode.
+
+    A plain string is returned unchanged, so this is safe to call on any theme value.
+    """
+    if isinstance(color, (list, tuple)):
+        try:
+            index = 1 if str(ctk.get_appearance_mode()).lower() == "dark" else 0
+        except Exception:
+            index = 0
+        return color[index]
+    return color
+
 # CTkBaseClass (not a concrete widget class) so the mixin's bind/unbind signatures stay
 # compatible with every widget it is combined with.
 _MixinBase = ctk.CTkBaseClass if TYPE_CHECKING else object
@@ -271,6 +285,28 @@ class _ThemedOptionMenu(_StateFillMixin, ctk.CTkOptionMenu):
 
 class _ThemedComboBox(_StateFillMixin, ctk.CTkComboBox):
     _STATE_FILL_KEYS = ("fg_color", "button_color")
+
+    # CTkComboBox draws its dropdown arrow in ``text_color`` -- the SAME option that colors the entry
+    # text. The entry sits on a white field so that text must stay near-black (gray10), but the arrow
+    # sits on the widget's red ``button_color`` strip, so it rendered as a black chevron on red.
+    # CTkOptionMenu has no such conflict (its text and arrow both sit on red, so its white text_color
+    # gives a white chevron) -- hence the menu GUI's comboboxes looked wrong next to every other GUI's
+    # option menus. CTk exposes no separate arrow color, so recolor the canvas item after each draw:
+    # _draw runs on construction, resize, hover and every configure, so this survives all of them.
+    def _draw(self, no_color_updates=False):
+        super()._draw(no_color_updates)
+        self._recolor_dropdown_arrow()
+
+    def _recolor_dropdown_arrow(self):
+        # Match CTkOptionMenu's own text color rather than a hardcoded white, so the two widget
+        # types stay in step if the theme's accent is ever re-toned.
+        try:
+            menu_theme = ctk.ThemeManager.theme["CTkOptionMenu"]
+            key = "text_color_disabled" if str(self._state) == tk.DISABLED else "text_color"
+            self._canvas.itemconfig("dropdown_arrow",
+                                    fill=resolve_appearance_color(menu_theme[key]))
+        except Exception:
+            pass  # cosmetic only -- never let arrow tinting break widget construction
 
 
 # ---------------------------------------------------------------------------------------------
@@ -590,10 +626,7 @@ def window_bg():
         color = ctk.ThemeManager.theme["CTk"]["fg_color"]
     except Exception:
         return "#f7f7f8"
-    if isinstance(color, (list, tuple)):
-        index = 1 if str(ctk.get_appearance_mode()).lower() == "dark" else 0
-        color = color[index]
-    return color
+    return resolve_appearance_color(color)
 
 
 # Plain-tk widgets left over from the pre-CTk GUIs (the logo holder, the release label, the
@@ -603,10 +636,51 @@ def window_bg():
 # ``normalize_legacy_backgrounds`` repaints them to the themed window fill.
 #
 # Only widgets still sitting at the platform default are touched, identified by comparing the
-# resolved RGB of their current background against the root's own default. A widget any call site
-# deliberately colored (a red flag label, a white text field, the dark tooltip card) differs from
-# that default and is left exactly as it is.
+# resolved RGB of their current background against THAT WIDGET CLASS's default. A widget any call
+# site deliberately colored (a red flag label, a white text field, the dark tooltip card) differs
+# from its class default and is left exactly as it is.
+#
+# The reference must NOT be the root's own background: the root is a ``ctk.CTk``, so its background
+# is already the themed fill (#f7f7f8), while a fresh tk.Label still reports the platform default
+# (systemWindowBackgroundColor / #ececec on macOS). Comparing against the root made every legacy
+# widget look "deliberately colored", so nothing was ever repainted -- the logo, release label and
+# introduction paragraph stayed as grey plates on the near-white ground.
 _LEGACY_BG_CLASSES = frozenset({"Label", "Frame", "Canvas", "Checkbutton", "Radiobutton", "Toplevel"})
+
+# winfo_class() name -> constructor used to probe that class's default background. Toplevel is
+# probed with a Frame (both resolve to the same platform window background on macOS and Windows)
+# so normalizing never has to flash a real top-level window on screen.
+_PROBE_CLASSES = {
+    "Label": tk.Label,
+    "Frame": tk.Frame,
+    "Canvas": tk.Canvas,
+    "Checkbutton": tk.Checkbutton,
+    "Radiobutton": tk.Radiobutton,
+    "Toplevel": tk.Frame,
+}
+
+
+def _class_default_rgb(root, widget_class, cache):
+    """Resolved RGB of *widget_class*'s default background, memoized in *cache*."""
+    if widget_class in cache:
+        return cache[widget_class]
+    rgb = None
+    factory = _PROBE_CLASSES.get(widget_class)
+    if factory is not None:
+        probe = None
+        try:
+            probe = factory(root)
+            rgb = probe.winfo_rgb(probe.cget("background"))
+        except Exception:
+            rgb = None
+        finally:
+            if probe is not None:
+                try:
+                    probe.destroy()
+                except Exception:
+                    pass
+    cache[widget_class] = rgb
+    return rgb
 
 
 def normalize_legacy_backgrounds(root):
@@ -618,11 +692,11 @@ def normalize_legacy_backgrounds(root):
     """
     target = window_bg()
     try:
-        default_rgb = root.winfo_rgb(root.cget("background"))
         target_rgb = root.winfo_rgb(target)
     except Exception:
         return 0
 
+    default_cache = {}
     repainted = 0
     stack = [root]
     while stack:
@@ -631,13 +705,17 @@ def normalize_legacy_backgrounds(root):
             stack.extend(widget.winfo_children())
         except Exception:
             continue
-        if isinstance(widget, ctk.CTkBaseClass) or widget.winfo_class() not in _LEGACY_BG_CLASSES:
+        if isinstance(widget, ctk.CTkBaseClass):
+            continue
+        widget_class = widget.winfo_class()
+        if widget_class not in _LEGACY_BG_CLASSES:
             continue
         try:
             current = widget.winfo_rgb(widget.cget("background"))
         except Exception:
             continue
-        if current != default_rgb or current == target_rgb:
+        default_rgb = _class_default_rgb(root, widget_class, default_cache)
+        if default_rgb is None or current != default_rgb or current == target_rgb:
             continue
         try:
             widget.configure(background=target)
