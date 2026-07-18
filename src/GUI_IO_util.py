@@ -1344,6 +1344,10 @@ def Dialog2Display(title: str):
 
 
 def message_box_widget(window, message_title, message_text, buttonType='OK', timeout=3000):
+    # CTk migration: intentionally NOT converted in Phase 1 slice 3. This is a Phase 4 hard case -- the
+    # OK/Yes/No buttons and countdown labels are .place()'d at pixel offsets computed from the packed
+    # tk.Message's height, and this dialog fires on every RUN's Started/Finished notice, so a reskin
+    # needs on-screen QA of that geometry. Left on plain tk until then.
     global yes_no_button
     yes_no_button = ""
     # if not 'Started' in message_text and not 'Finished' in message_text:
@@ -1461,6 +1465,9 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
 # https://pythonguides.com/python-tkinter-search-box/
 # left unfinished
 def combobox_with_search_widget(item_names):
+    # CTk migration: intentionally NOT converted in Phase 1 slice 3. Phase 4 hard case -- the function
+    # is unfinished (its only call site is commented out) and spins its own tk.Tk()/mainloop(); it needs
+    # to be completed, not mechanically reskinned. Left on plain tk until then.
     ws = tk.Tk()
     ws.focus_force()
     ws.title("NLP Suite")
@@ -1503,21 +1510,25 @@ def combobox_with_search_widget(item_names):
 
 # creating popup menu in tkinter
 def dropdown_menu_widget(window,textCaption, menu_values, default_value, callback):
+    # CTk migration slice 3: themed CTkToplevel parented to the caller's window + GUI_theme_util
+    # wrappers. The legacy code packed the combobox and then re-gridded it (the pack call was dead) and
+    # gridded the OK button into the SAME cell (0,1) as the combobox, so they overlapped -- harmless-
+    # looking with translucent tk widgets, visibly broken with opaque CTk ones. The rebuild drops the
+    # dead pack and gives OK its own column.
+    import customtkinter as ctk
+    import GUI_theme_util
 
     class App():
         def __init__(self,master):
-            top = self.top = Toplevel()
+            top = self.top = ctk.CTkToplevel(master)
             top.wm_title(textCaption)
             top.focus_force()
-            self.menuButton = ttk.Combobox(top, width=len(textCaption)+30)
-            self.menuButton['values'] = menu_values
-            self.menuButton.pack() # put the widget on the window
-
-            self.menuButton.grid(row=0, column=1) # , sticky=W)
+            self.menuButton = GUI_theme_util.create_combobox(top, values=menu_values, width=len(textCaption)+30)
+            self.menuButton.grid(row=0, column=1, padx=8, pady=8)
             self.callback = callback
 
-            ok_button = tk.Button(self.top, text='OK', command=self.get_value)
-            ok_button.grid(row=0, column=1)
+            ok_button = GUI_theme_util.create_button(self.top, text='OK', command=self.get_value)
+            ok_button.grid(row=0, column=2, padx=8, pady=8)
 
         def get_value(self):
             val = self.menuButton.get()
@@ -1528,6 +1539,11 @@ def dropdown_menu_widget(window,textCaption, menu_values, default_value, callbac
 
 # modified dropdown_menu_widget that will stay open without command=lambda:
 def dropdown_menu_widget2(window,textCaption, menu_values, default_value, callback):
+    # CTk migration slice 3: themed CTkToplevel + wrappers; same overlap fix as dropdown_menu_widget
+    # (drop the dead pack, OK button into its own column).
+    import customtkinter as ctk
+    import GUI_theme_util
+
     def get_value():
         global val
         val = menuButton.get()
@@ -1535,18 +1551,14 @@ def dropdown_menu_widget2(window,textCaption, menu_values, default_value, callba
         callback(val)
         # top.update()
 
-    top = Toplevel()
+    top = ctk.CTkToplevel(window)
     top.wm_title(textCaption)
     top.focus_force()
-    menuButton = ttk.Combobox(top, width=len(textCaption)+30)
-    menuButton['values'] = menu_values
-    menuButton.pack() # put the widget on the window
+    menuButton = GUI_theme_util.create_combobox(top, values=menu_values, width=len(textCaption)+30)
+    menuButton.grid(row=0, column=1, padx=8, pady=8)
 
-    menuButton.grid(row=0, column=1) # , sticky=W)
-    callback = callback
-
-    ok_button = tk.Button(top, text='OK', command=get_value)
-    ok_button.grid(row=0, column=1)
+    ok_button = GUI_theme_util.create_button(top, text='OK', command=get_value)
+    ok_button.grid(row=0, column=2, padx=8, pady=8)
 
     window.wait_window(top)
 
@@ -1556,25 +1568,37 @@ def slider_widget(window,textCaption, lower_bound, upper_bound, default_value):
     # unattended/silent mode (NLP_SILENT): skip the modal, return the recommended default
     if os.environ.get('NLP_SILENT','').strip().lower() not in ('','0','false','no','off'):
         return default_value
-    top = tk.Toplevel(window)
-    l = tk.Label(top, text= textCaption)
-    l.pack() # put the widget on the window
-    s = tk.Scale(top, from_= lower_bound, to=upper_bound, orient=tk.HORIZONTAL)
-    s.set(default_value)
-    s.pack() # put the widget on the window
+    # CTk migration slice 3: themed CTkToplevel + GUI_theme_util wrappers. Two behaviour-preserving
+    # notes: (1) CTkSlider has no built-in value readout (tk.Scale drew one), so a small label mirrors
+    # the current value; (2) tk.Scale's default resolution is 1 (integer steps) and every caller uses
+    # the result as an integer count, so pin the slider to integer steps and return an int -- CTkSlider
+    # is otherwise continuous and .get() returns a float.
+    import customtkinter as ctk
+    import GUI_theme_util
+    top = ctk.CTkToplevel(window)
+    GUI_theme_util.create_label(top, text=textCaption, wraplength=460).pack(padx=16, pady=(14, 6))
+    value_lb = GUI_theme_util.create_label(top, text=str(default_value))
+    s = GUI_theme_util.create_slider(top, from_=lower_bound, to=upper_bound,
+                                     orient='horizontal', resolution=1, length=300)
+    s.configure(command=lambda v: value_lb.configure(text=str(int(round(float(v))))))
+    try:
+        s.set(float(default_value))
+    except (TypeError, ValueError):
+        s.set(lower_bound)
+    s.pack(padx=16, pady=4)
+    value_lb.pack(pady=(0, 8))
 
     def get_value():
         global val
-        val = s.get()
+        val = int(round(float(s.get())))
         top.destroy()
-        top.update()
 
     def _delete_window():
         mb.showwarning(title = "Invalid Operation", message = "Please click OK to save your choice of parameter.")
 
     top.protocol("WM_DELETE_WINDOW", _delete_window)
 
-    tk.Button(top, text='OK', command=lambda: get_value()).pack()
+    GUI_theme_util.create_button(top, text='OK', command=get_value).pack(pady=(0, 14))
     window.wait_window(top)
     return val
 
@@ -1585,64 +1609,59 @@ def enter_value_widget(masterTitle,textCaption,numberOfWidgets=1,defaultValue=''
     # unattended/silent mode (NLP_SILENT): skip the modal, return the default value(s)
     if os.environ.get('NLP_SILENT','').strip().lower() not in ('','0','false','no','off'):
         return defaultValue, defaultValue2
-    value1=defaultValue
-    value2=defaultValue2
+    # CTk migration slice 3: was a second bare tk.Tk() root driven by its own mainloop(); now a themed
+    # CTkToplevel parented to the suite's root window (GUI_util.window) and driven by wait_window() --
+    # the RUN callback that calls this is already inside that root's mainloop. The entry values are read
+    # into `result` on OK/Return/Escape *before* the window is destroyed, matching the old "quit the
+    # mainloop, then read the entries" flow; closing via the window's X now returns the defaults instead
+    # of raising on a destroyed widget.
+    import customtkinter as ctk
+    import GUI_theme_util
+    import GUI_util
     masterTitle=masterTitle + " (Esc to quit)"
+    result = {'v1': defaultValue, 'v2': defaultValue2}
 
-    # TODO should not restrict to 2; should have a loop
-    if numberOfWidgets==2:
-        # TODO should have a list and break it up assigning values in a loop
-        value2=defaultValue2
-    master = tk.Tk()
+    master = ctk.CTkToplevel(GUI_util.window)
+    master.title(masterTitle)
     master.focus_force()
 
-    tk.Label(master,width=len(textCaption),text=textCaption).grid(row=0)
+    GUI_theme_util.create_label(master, text=textCaption).grid(row=0, column=0, padx=8, pady=6)
     # TODO should not restrict to 2; should have a loop
     if numberOfWidgets==2:
-        tk.Label(master, width=len(textCaption2),text=textCaption2).grid(row=1)
+        GUI_theme_util.create_label(master, text=textCaption2).grid(row=1, column=0, padx=8, pady=6)
 
-    master.title(masterTitle)
-    # the width in tk.Entry determines the overall width of the widget;
-    #   MUST be entered
-    #   + 30 to add room for - [] and X in a widget window
-    e1 = tk.Entry(master,width=len(masterTitle)+30)
+    # the old tk.Entry width was len(masterTitle)+30 characters; keep the character-based width (the
+    # wrapper converts characters -> pixels).
+    e1 = GUI_theme_util.create_entry(master, width=len(masterTitle)+30)
+    e1.grid(row=0, column=1, padx=8, pady=6)
+    # TODO 2 could be a larger number; should have a loop
+    if numberOfWidgets==2:
+        e2 = GUI_theme_util.create_entry(master, width=len(masterTitle)+30)
+        e2.grid(row=1, column=1, padx=8, pady=6)
+
+    e1.insert(0, defaultValue) # display a default value
+    # TODO 2 could be a larger number; should have a loop
+    if numberOfWidgets==2:
+        e2.insert(0, defaultValue2) # display a default value
     e1.focus_force()
 
-    # TODO 2 could be a larger number; should have a loop
-    if numberOfWidgets==2:
-        e2 = tk.Entry(master,width=len(masterTitle)+30)
+    def _accept(event=None):
+        result['v1'] = str(e1.get())
+        # TODO 2 could be a larger number; should have a loop
+        if numberOfWidgets==2:
+            result['v2'] = str(e2.get())
+        master.destroy()
 
-    e1.grid(row=0, column=1)
-    # TODO 2 could be a larger number; should have a loop
-    if numberOfWidgets==2:
-        e2.grid(row=1, column=1)
+    GUI_theme_util.create_button(master, text='OK', command=_accept).grid(row=3, column=0,
+                                                                          sticky='w', padx=8, pady=4)
+    master.bind('<Return>', _accept)
+    master.bind('<Escape>', _accept)
 
-    e1.insert(len(textCaption), defaultValue) # display a default value
-    # TODO 2 could be a larger number; should have a loop
-    if numberOfWidgets==2:
-        e2.insert(len(textCaption2), defaultValue2) # display a default value
-
-    tk.Button(master,
-              text='OK',
-              command=master.quit).grid(row=3,
-                                        column=0,
-                                        sticky=tk.W,
-                                        pady=4)
-    def func(event):
-        master.quit()
-    master.bind('<Return>', func)
-    master.bind('<Escape>', func)
-
-    master.mainloop()
-    value1=str(e1.get())
-    # TODO 2 could be a larger number; should have a loop
-    if numberOfWidgets==2:
-        value2=str(e2.get())
-    master.destroy()
+    master.wait_window()
     # convert to list; value1 is checked for length in calling function
     #   so do not convert if empty or its length will be the length of ['']
     # if value1!='':
     #     value1=list(value1.split(" "))
-    return value1, value2
+    return result['v1'], result['v2']
 
 
