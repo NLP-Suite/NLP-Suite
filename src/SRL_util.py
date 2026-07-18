@@ -145,6 +145,14 @@ def run_SRL(window, inputFilename, inputDir, outputDir, chartPackage='No charts'
         window, 2000, 'Analysis start',
         'Started running SRL (Semantic Role Labeling) at', True, '', True)
 
+    # Set the expectation the moment the silence begins: SRL runs in a separate, isolated engine whose
+    # output is captured (see subprocess.run below), so -- unlike every other NLP Suite algorithm -- it
+    # CANNOT print 'Processing file X/N' progress. Without this line a large-corpus run looks frozen.
+    print(">>> SRL: contrary to other NLP Suite algorithms, SRL CANNOT display 'Processing file' progress -- "
+          "it runs in a separate, isolated engine whose output is not streamed back. The window will appear "
+          "idle (or 'Not Responding') until SRL finishes; on a large corpus this can take hours. This is "
+          "expected, NOT a freeze -- please let it run to completion.")
+
     try:
         proc = subprocess.run(
             [srl_python(), SRL_WORKER, input_path, output_csv, srl_model()],
