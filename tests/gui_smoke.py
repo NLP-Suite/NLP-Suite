@@ -146,6 +146,88 @@ _STUB_ROOTS = {'stanza','spacy','nltk','torch','torchvision','transformers','sen
                'spacy_langdetect','spacytextblob','contractions','unidecode','chardet','pdfplumber',
                'docx','fitz','striprtf','pyLDAvis','little_mallet_wrapper','tkcolorpicker','tkinterdnd2',
                'pymupdf','pdf2image','pytesseract','wikipediaapi','geotext','reverse_geocoder'}
+# ---------- fake customtkinter ----------
+# customtkinter (CTk migration, GUI_theme_util) can't be imported for real here: its widget classes
+# subclass real tkinter.Frame/tkinter.Tk AT IMPORT TIME (e.g. CTkBaseClass(tkinter.Frame, ...)),
+# which the fake tkinter's `_rec` function stand-ins can't satisfy (you can't subclass a function),
+# and constructing a real CTk widget needs a live Tk root this headless harness deliberately lacks.
+#
+# It is stubbed HAND-WRITTEN rather than as a MagicMock tree (which is what it was through Phase 1).
+# A MagicMock answers every call and every subscript, so it silently absorbs exactly the breakages a
+# tk->CTk conversion introduces. All three bugs found converting the first pilot (wordclouds_main)
+# passed a MagicMock-stubbed smoke run untouched:
+#   * `widget.config(...)`      -- real CTk RAISES AttributeError ("use 'configure' instead").
+#   * `widget['state']`         -- real CTk resolves __getitem__ against the underlying tk frame,
+#                                  which has no such option -> TclError.
+#   * `widget['values'] = [...]` -- tkinter's __setitem__ passes the dict as CTkComboBox.configure's
+#                                  first POSITIONAL arg (require_redraw), so it SILENTLY no-ops.
+# So the stub below reproduces those three contracts and nothing else it doesn't have to. It also
+# records `text=` into _texts like `_rec` does, which keeps GOLDEN label checks working for GUIs once
+# their widgets move to GUI_theme_util factories.
+class _CTkWidget(object):
+    # The parameters are spelled out (rather than a bare **k) because GUI_theme_util.translate_kwargs
+    # filters translated kwargs against `inspect.signature(cls.__init__)`: a `(*a, **k)` stub reports
+    # an EMPTY accepted-parameter set, so every kwarg -- `text` included -- would be dropped and the
+    # GOLDEN label checks would silently record nothing. This list is deliberately permissive; the
+    # exact per-class kwarg filtering is covered against the REAL CTk classes by the pytest suite.
+    def __init__(self, master=None, text=None, width=None, height=None, state=None, command=None,
+                 variable=None, textvariable=None, values=None, font=None, image=None, anchor=None,
+                 corner_radius=None, border_width=None, placeholder_text=None, fg_color=None,
+                 hover_color=None, text_color=None, button_color=None, button_hover_color=None,
+                 checkbox_width=None, checkbox_height=None, onvalue=None, offvalue=None,
+                 from_=None, to=None, orientation=None, number_of_steps=None, **k):
+        self._opts = dict(k)
+        self._opts.update({key: val for key, val in (
+            ('text', text), ('state', state), ('values', values), ('width', width),
+            ('height', height), ('variable', variable), ('textvariable', textvariable),
+        ) if val is not None})
+        if text is not None:
+            try: _texts.append(str(text))
+            except Exception: pass
+
+    def config(self, *a, **k):
+        # Mirrors customtkinter.CTkBaseClass.config, which exists only to raise.
+        raise AttributeError("'config' is not implemented for CTk widgets. "
+                             "For consistency, always use 'configure' instead.")
+
+    def configure(self, require_redraw=False, **k):
+        if not isinstance(require_redraw, bool):
+            # The `widget['x'] = y` silent no-op: tkinter's __setitem__ lands the option dict here.
+            raise TypeError("CTk configure() got a non-bool as require_redraw (%r) -- this is the "
+                            "`widget[key] = value` idiom, which silently no-ops on CTk widgets. "
+                            "Use widget.configure(key=value) or GUI_theme_util.set_values()."
+                            % (require_redraw,))
+        t = k.get('text')
+        if t is not None:
+            try: _texts.append(str(t))
+            except Exception: pass
+        self._opts.update(k)
+
+    def cget(self, key):
+        return self._opts.get(key, '')
+
+    def __getitem__(self, key):
+        raise TypeError("CTk widgets do not support widget[%r] lookup (it resolves against the "
+                        "underlying tk frame and raises TclError). Use widget.cget(%r)." % (key, key))
+
+    def __setitem__(self, key, value):
+        raise TypeError("CTk widgets do not support widget[%r] = ... (it silently no-ops). "
+                        "Use widget.configure(%s=...) or GUI_theme_util.set_values()." % (key, key))
+
+    def __getattr__(self, _n):
+        return MagicMock()
+
+_ctk = types.ModuleType('customtkinter')
+for _n in ('CTk','CTkToplevel','CTkFrame','CTkScrollableFrame','CTkLabel','CTkButton','CTkEntry',
+           'CTkCheckBox','CTkOptionMenu','CTkComboBox','CTkSlider','CTkSwitch','CTkTextbox',
+           'CTkRadioButton','CTkProgressBar','CTkSegmentedButton','CTkTabview','CTkImage','CTkFont',
+           'CTkCanvas','CTkScrollbar'):
+    setattr(_ctk, _n, type(_n, (_CTkWidget,), {}))
+for _fn in ('set_appearance_mode','set_default_color_theme','set_widget_scaling',
+            'deactivate_automatic_dpi_awareness','get_appearance_mode'):
+    setattr(_ctk, _fn, lambda *a, **k: None)
+_ctk.__version__ = '6.0.0'
+sys.modules['customtkinter'] = _ctk
 
 
 class _StubLoader(importlib.abc.Loader):

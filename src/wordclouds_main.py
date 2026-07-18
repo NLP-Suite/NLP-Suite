@@ -9,7 +9,6 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Wordclouds",['
 
 import os
 import tkinter as tk
-import tkinter.ttk as ttk
 import tkinter.messagebox as mb
 from subprocess import call
 
@@ -17,6 +16,7 @@ from subprocess import call
 import IO_internet_util
 import IO_files_util
 import GUI_IO_util
+import GUI_theme_util
 import IO_csv_util
 import reminders_util
 import config_util
@@ -213,7 +213,7 @@ def clear(e):
     wordclouds_var.set('Python WordCloud')
     font_var.set('Default')
     differentColumns_differentColor_var.set(0)
-    differentColumns_differentColor_checkbox.config(state='normal')
+    differentColumns_differentColor_checkbox.configure(state='normal')
     wordcloud_title_var.set('')
     selectedImage_var.set('')
     use_contour_only_var.set(1)
@@ -245,11 +245,12 @@ extra_GUIs_var = tk.IntVar()
 extra_GUIs_menu_var = tk.StringVar()
 
 extra_GUIs_var.set(0)
-extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_GUI_options())
+extra_GUIs_checkbox = GUI_theme_util.create_checkbox(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_GUI_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Statistics csv file','Data visualization','Parsers & annotators')
+extra_GUIs_menu = GUI_theme_util.create_option_menu(window, variable=extra_GUIs_menu_var,
+                                                    values=['Statistics csv file', 'Data visualization', 'Parsers & annotators'])
 extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -279,32 +280,33 @@ def activate_GUI_options():
 wordclouds_var.set('Python WordCloud')
 selectedImage_var.set('')
 use_contour_only_var.set(1)
-wordclouds = tk.OptionMenu(window,wordclouds_var,'Python WordCloud','TagCrowd','Tagul','Tagxedo','Wordclouds','Wordle')
+wordclouds = GUI_theme_util.create_option_menu(window, variable=wordclouds_var,
+                                               values=['Python WordCloud', 'TagCrowd', 'Tagul', 'Tagxedo', 'Wordclouds', 'Wordle'])
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+120, y_multiplier_integer,wordclouds,True)
-wordclouds_lb = tk.Label(window, text='Select the word cloud service you wish to use (txt file(s)/CoNLL table)')
+wordclouds_lb = GUI_theme_util.create_label(window, text='Select the word cloud service you wish to use (txt file(s)/CoNLL table)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,wordclouds_lb)
 
 y_multiplier_integer_SV=y_multiplier_integer
 
 differentPOS_differentColor_var.set(0)
-differentPOS_differentColor_checkbox = tk.Checkbutton(window, variable=differentPOS_differentColor_var,
+differentPOS_differentColor_checkbox = GUI_theme_util.create_checkbox(window, variable=differentPOS_differentColor_var,
                                                        onvalue=1, offvalue=0)
 
-wordcloud_title_lb = tk.Label(window, text='Wordcloud title')
+wordcloud_title_lb = GUI_theme_util.create_label(window, text='Wordcloud title')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,wordcloud_title_lb,True)
 
-wordcloud_title = tk.Entry(window, width=GUI_IO_util.widget_width_medium,textvariable=wordcloud_title_var)
-# selectedImage.config(state='disabled')
+wordcloud_title = GUI_theme_util.create_entry(window, width=GUI_IO_util.widget_width_medium,textvariable=wordcloud_title_var)
+# selectedImage.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordcloud_title, y_multiplier_integer,
                                    wordcloud_title,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "Enter a preferred title for the wordcloud image.\n"
                                    "If left blank, the chart title will be automatically created from the input fiilename or input directory.")
 
-prefer_horizontal_checkbox = tk.Checkbutton(window, variable=prefer_horizontal_var,
+prefer_horizontal_checkbox = GUI_theme_util.create_checkbox(window, variable=prefer_horizontal_var,
                                                        onvalue=1, offvalue=0)
 
-prefer_horizontal_checkbox.config(text="Horizontal")
+prefer_horizontal_checkbox.configure(text="Horizontal")
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_lowercase_pos, y_multiplier_integer,
                                    prefer_horizontal_checkbox,
@@ -321,25 +323,25 @@ prefer_horizontal_var.trace('w',warnUser)
 # font_list = wordclouds_util.get_font_list()
 
 font_var.set('Default')
-font_lb = tk.Label(window, text='Font')
+font_lb = GUI_theme_util.create_label(window, text='Font')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_collocation_pos, y_multiplier_integer,
                                    font_lb,
                                    True, False, True, False, 90, GUI_IO_util.wordclouds_font_lb,
                                    "Select the font you want to use in the wordclouds visualization; default font is the Adobe Droid Sans Mono font.")
 
-font = ttk.Combobox(window, width = 15, textvariable = font_var)
+font = GUI_theme_util.create_combobox(window, width = 15, textvariable = font_var)
 # font['values'] = font_list
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_font_menu, y_multiplier_integer,font)
-# font.config(state='disabled')
+# font.configure(state='disabled')
 
 max_words_var=tk.StringVar()
 max_words_var.set(100)
 
-max_words_lb = tk.Label(window, text='Max no. of words')
+max_words_lb = GUI_theme_util.create_label(window, text='Max no. of words')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,max_words_lb,True)
-max_words=tk.Entry(window, width=4,textvariable=max_words_var)
-max_words.config(state='normal')
+max_words=GUI_theme_util.create_entry(window, width=4,textvariable=max_words_var)
+max_words.configure(state='normal')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_max_words_number, y_multiplier_integer,
                                    max_words,
@@ -347,9 +349,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_max
                                    "Enter the maximum number of words to be displayed on the wordclouds image.\nIncrease the number, if words are not displayed as expected.")
 
 lemmatize_var.set(1)
-lemmatize_checkbox = tk.Checkbutton(window, variable=lemmatize_var,
+lemmatize_checkbox = GUI_theme_util.create_checkbox(window, variable=lemmatize_var,
                                                        onvalue=1, offvalue=0)
-lemmatize_checkbox.config(text="Lemmas")
+lemmatize_checkbox.configure(text="Lemmas")
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_lemmas_pos, y_multiplier_integer,
                                    lemmatize_checkbox,
@@ -357,10 +359,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_lem
                                    "Untick the checkbox to NOT lemmatize words; tick the checkbox to lemmatize words in the corpus."
                                    "\nLemmatization is based on Stanza.\nLemmatization is NOT applied when a csv file is used in input.")
 
-stopwords_checkbox = tk.Checkbutton(window, variable=exclude_stopwords_var,
+stopwords_checkbox = GUI_theme_util.create_checkbox(window, variable=exclude_stopwords_var,
                                                        onvalue=1, offvalue=0)
 
-stopwords_checkbox.config(text="Stopwords")
+stopwords_checkbox.configure(text="Stopwords")
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_stopwords_pos, y_multiplier_integer,
                                    stopwords_checkbox,
@@ -368,37 +370,37 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_sto
                                    "Untick the checkbox to INCLUDE stopwords; tick the checkbox to EXCLUDE stopwords."
                                    "\nStopwords are provided by the Wordclouds package and printed in command line/terminal when stopwords are included.")
 
-punctuation_checkbox = tk.Checkbutton(window, variable=exclude_punctuation_var,
+punctuation_checkbox = GUI_theme_util.create_checkbox(window, variable=exclude_punctuation_var,
                                                        onvalue=1, offvalue=0)
 
-punctuation_checkbox.config(text="Punctuation")
+punctuation_checkbox.configure(text="Punctuation")
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_punctuation_pos, y_multiplier_integer,
                                    punctuation_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.wordclouds_punctuation_pos,
                                    "Untick the checkbox to EXCLUDE punctuation; tick the checkbox to INCLUDE punctuation.\nPunctuation is NOT applied when a csv file is used in input.")
 
-lowercase_checkbox = tk.Checkbutton(window, variable=lowercase_var,
+lowercase_checkbox = GUI_theme_util.create_checkbox(window, variable=lowercase_var,
                                                        onvalue=1, offvalue=0)
 
-lowercase_checkbox.config(text="Lowercase")
+lowercase_checkbox.configure(text="Lowercase")
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_lowercase_pos, y_multiplier_integer,
                                    lowercase_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "Untick the checkbox to NOT process corpus words in lowercase; tick the checkbox to process corpus words in lowercase")
 
-collocation_checkbox = tk.Checkbutton(window, variable=collocation_var,
+collocation_checkbox = GUI_theme_util.create_checkbox(window, variable=collocation_var,
                                                        onvalue=1, offvalue=0)
 
-collocation_checkbox.config(text="Collocation")
+collocation_checkbox.configure(text="Collocation")
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_collocation_pos, y_multiplier_integer,
                                    collocation_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "Tick the checkbox to process multiple words together (e.g., standing up); untick the checkbox NOT to process multiple words together;\nTICKING THE COLLOCATION CHECKBOX MAY RESULT IN THE UNWANTED DUPLICATION OF SOME WORDS")
 
-differentPOS_differentColor_checkbox.config(text="Different colors by POS tags")
+differentPOS_differentColor_checkbox.configure(text="Different colors by POS tags")
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_color_by_POS_tags, y_multiplier_integer,
                                    differentPOS_differentColor_checkbox,
@@ -412,10 +414,10 @@ if os.path.isfile(inputFilename.get()):
     if inputFilename.get().endswith('csv'):
         menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
 
-prepare_image_checkbox = tk.Checkbutton(window, variable=prepare_image_var,
+prepare_image_checkbox = GUI_theme_util.create_checkbox(window, variable=prepare_image_var,
                                                        onvalue=1, offvalue=0)
 
-prepare_image_checkbox.config(text="Prepare image")
+prepare_image_checkbox.configure(text="Prepare image")
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    prepare_image_checkbox,
@@ -423,7 +425,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "Tick/untick the checkbox to open the web service Removebg to prepare an image for use in the Python wordclouds algorithm")
 
 # width=20,
-select_image_file_button=tk.Button(window, text='Select png image file',command=lambda: get_image(window,'Select INPUT png file', [("png files", "*.png")]))
+select_image_file_button=GUI_theme_util.create_button(window, text='Select png image file',command=lambda: get_image(window,'Select INPUT png file', [("png files", "*.png")]))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    select_image_file_button,
@@ -431,7 +433,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "Click on the button to select the png image file")
 
 # setup a button to open Windows Explorer on open the png image file
-openImage_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', state='disabled',
+openImage_button = GUI_theme_util.create_open_file_button(window, state='disabled',
                                  command=lambda: IO_files_util.openFile(window,
                                                                         selectedImage_var.get()))
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
@@ -439,13 +441,13 @@ openImage_button = tk.Button(window, width=GUI_IO_util.open_file_directory_butto
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_openImage_button, y_multiplier_integer,
                                                openImage_button, True, False, True,False, 90, GUI_IO_util.wordclouds_openImage_button, "Open png image file")
 
-selectedImage=tk.Entry(window, width=GUI_IO_util.wordclouds_selectedImage_width,textvariable=selectedImage_var)
-selectedImage.config(state='disabled')
+selectedImage=GUI_theme_util.create_entry(window, width=GUI_IO_util.wordclouds_selectedImage_width,textvariable=selectedImage_var)
+selectedImage.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_selectedImage_file_path, y_multiplier_integer,selectedImage, True)
 
 use_contour_only_var.set(1)
-use_contour_only_checkbox = tk.Checkbutton(window, variable=use_contour_only_var, onvalue=1, offvalue=0)
-use_contour_only_checkbox.config(text="Use image contour only")
+use_contour_only_checkbox = GUI_theme_util.create_checkbox(window, variable=use_contour_only_var, onvalue=1, offvalue=0)
+use_contour_only_checkbox.configure(text="Use image contour only")
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.contour_only_pos, y_multiplier_integer,
                                    use_contour_only_checkbox,
@@ -462,8 +464,8 @@ def get_image(window,title,fileType):
 
 # labeling each group of words with separate colors"
 differentColumns_differentColor_var.set(0)
-differentColumns_differentColor_checkbox = tk.Checkbutton(window, variable=differentColumns_differentColor_var, onvalue=1, offvalue=0)
-differentColumns_differentColor_checkbox.config(text="Use different colors for different columns (csv file as INPUT)")
+differentColumns_differentColor_checkbox = GUI_theme_util.create_checkbox(window, variable=differentColumns_differentColor_var, onvalue=1, offvalue=0)
+differentColumns_differentColor_checkbox.configure(text="Use different colors for different columns (csv file as INPUT)")
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    differentColumns_differentColor_checkbox,
@@ -483,13 +485,12 @@ if os.path.isfile(inputFilename.get()):
     if inputFilename.get().endswith('csv'):
         menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
 
-field_lb = tk.Label(window, text='Select csv field')
+field_lb = GUI_theme_util.create_label(window, text='Select csv field')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,field_lb,True)
 
-if menu_values!='':
-    csv_field_menu = tk.OptionMenu(window, csv_field_var, *menu_values)
-else:
-    csv_field_menu = tk.OptionMenu(window, csv_field_var, menu_values)
+# CTkOptionMenu takes its items as a list, so the legacy empty/non-empty varargs branch collapses.
+csv_field_menu = GUI_theme_util.create_option_menu(window, variable=csv_field_var,
+                                                   values=list(menu_values) if menu_values else [''])
 csv_field_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_select_csv_field, y_multiplier_integer,
@@ -506,27 +507,27 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_sel
 #                 mb.showwarning(title='Input file error', message='The Python 3 wordclouds algorithm expects in input a csv type file.\n\nPlease, select a csv input file and try again.')
 #                 # differentColumns_differentColors_var.set(0)
 #                 return
-#             differentColumns_differentColor_checkbox.config(state='normal')
+#             differentColumns_differentColor_checkbox.configure(state='normal')
 #             csv_field_menu.configure(state='normal')
 #
 #     else:
-#         differentColumns_differentColor_checkbox.config(state='disabled')
+#         differentColumns_differentColor_checkbox.configure(state='disabled')
 #         csv_field_menu.configure(state='disabled')
 # differentColumns_differentColor_var.trace('w',activateCsvOptions)
 #
 # activateCsvOptions()
 
 color_var.set(0)
-color_checkbox = tk.Checkbutton(window, text='Color ', state='disabled',variable=color_var, onvalue=1, offvalue=0)
+color_checkbox = GUI_theme_util.create_checkbox(window, text='Color ', state='disabled',variable=color_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_color_checkbox_pos, y_multiplier_integer,
                                    color_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.wordclouds_color_checkbox_pos,
                                    "Tick the 'Color' checkbox to open the RGB color pallette to select the desired color for your selected csv field")
 
-color_lb = tk.Label(window, text='RGB color code ')
+color_lb = GUI_theme_util.create_label(window, text='RGB color code ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_RGB_lb,y_multiplier_integer,color_lb,True)
-color_entry = tk.Entry(window, width=10, textvariable=color_style_var)
+color_entry = GUI_theme_util.create_entry(window, width=10, textvariable=color_style_var)
 color_entry.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_RGB,y_multiplier_integer,color_entry,True)
 
@@ -537,8 +538,6 @@ def activate_color_palette(*args):
     # PIL being the commmon module for both packages, you need to check for PIL and trap PIL to tell the user to install pillow
     from tkcolorpicker import askcolor
     if color_var.get()==1:
-        style = ttk.Style(window)
-        style.theme_use('clam')
         color_list = askcolor((255, 255, 0), window)
         color_style = color_list[0]
         color_style_var.set(color_style)
@@ -550,10 +549,10 @@ def update_csvFields():
     csv_field_menu.configure(state="normal")
     color_var.set(0)
 
-add_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: update_csvFields())
+add_button = GUI_theme_util.create_button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: update_csvFields())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_add_button,y_multiplier_integer,add_button, True)
 
-reset_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width, height=1,state='disabled',command=lambda: clear_field_color_list())
+reset_button = GUI_theme_util.create_button(window, text='Reset ', width=GUI_IO_util.reset_button_width, height=1,state='disabled',command=lambda: clear_field_color_list())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_reset_button,y_multiplier_integer,reset_button,True)
 
 def showList():
@@ -562,13 +561,13 @@ def showList():
     else:
         mb.showwarning(title='Warning', message='The currently selected combination of csv fields and colors is:\n\n' + ','.join(csvField_color_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
 
-show_columns_button = tk.Button(window, text='Show',width=GUI_IO_util.show_button_width, height=1,state='disabled',command=lambda: showList())
+show_columns_button = GUI_theme_util.create_button(window, text='Show',width=GUI_IO_util.show_button_width, height=1,state='disabled',command=lambda: showList())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_show_button,y_multiplier_integer,show_columns_button)
 
 def activateCsvField(*args):
     if csv_field_var.get()!='':
         color_checkbox.configure(state='normal')
-        state = str(csv_field_menu['state'])
+        state = str(csv_field_menu.cget('state'))
         if state != 'disabled':
             if csv_field_var.get() in csvField_color_list:
                 mb.showwarning(title='Warning', message='The selected csv field value, ' + csv_field_var.get() + ', has already been selected.\n\nPlease, select a different value. You can display all selected values by clicking on SHOW.')
@@ -595,40 +594,40 @@ def activate_Python_options(*args):
     if not 'Python' in wordclouds_var.get():
         selectedImage_var.set('')
         use_contour_only_var.set(1)
-        use_contour_only_checkbox.config(state='disabled')
-        prepare_image_checkbox.config(state='disabled')
-        select_image_file_button.config(state='disabled')
-        openImage_button.config(state='disabled')
-        differentColumns_differentColor_checkbox.config(state='disabled')
-        prefer_horizontal_checkbox.config(state='disabled')
-        font.config(state='disabled')
-        max_words.config(state='disabled')
-        lemmatize_checkbox.config(state='disabled')
-        stopwords_checkbox.config(state='disabled')
-        punctuation_checkbox.config(state='disabled')
-        lowercase_checkbox.config(state='disabled')
-        collocation_checkbox.config(state='disabled')
-        differentPOS_differentColor_checkbox.config(state='disabled')
+        use_contour_only_checkbox.configure(state='disabled')
+        prepare_image_checkbox.configure(state='disabled')
+        select_image_file_button.configure(state='disabled')
+        openImage_button.configure(state='disabled')
+        differentColumns_differentColor_checkbox.configure(state='disabled')
+        prefer_horizontal_checkbox.configure(state='disabled')
+        font.configure(state='disabled')
+        max_words.configure(state='disabled')
+        lemmatize_checkbox.configure(state='disabled')
+        stopwords_checkbox.configure(state='disabled')
+        punctuation_checkbox.configure(state='disabled')
+        lowercase_checkbox.configure(state='disabled')
+        collocation_checkbox.configure(state='disabled')
+        differentPOS_differentColor_checkbox.configure(state='disabled')
     else:
-        differentColumns_differentColor_checkbox.config(state='normal')
-        prefer_horizontal_checkbox.config(state='normal')
-        font.config(state='normal')
-        max_words.config(state='normal')
-        lemmatize_checkbox.config(state='normal')
-        stopwords_checkbox.config(state='normal')
-        punctuation_checkbox.config(state='normal')
-        lowercase_checkbox.config(state='normal')
-        collocation_checkbox.config(state='normal')
-        differentPOS_differentColor_checkbox.config(state='normal')
+        differentColumns_differentColor_checkbox.configure(state='normal')
+        prefer_horizontal_checkbox.configure(state='normal')
+        font.configure(state='normal')
+        max_words.configure(state='normal')
+        lemmatize_checkbox.configure(state='normal')
+        stopwords_checkbox.configure(state='normal')
+        punctuation_checkbox.configure(state='normal')
+        lowercase_checkbox.configure(state='normal')
+        collocation_checkbox.configure(state='normal')
+        differentPOS_differentColor_checkbox.configure(state='normal')
         exclude_stopwords_var.set(1)
         exclude_punctuation_var.set(1)
         lowercase_var.set(1)
         collocation_var.set(0)
 
-        prepare_image_checkbox.config(state='normal')
-        select_image_file_button.config(state='normal')
-        openImage_button.config(state='normal')
-        use_contour_only_checkbox.config(state='normal')
+        prepare_image_checkbox.configure(state='normal')
+        select_image_file_button.configure(state='normal')
+        openImage_button.configure(state='normal')
+        use_contour_only_checkbox.configure(state='normal')
 
 wordclouds_var.trace('w',activate_Python_options)
 activate_Python_options()
@@ -640,21 +639,18 @@ def changed_filename(*args):
     if os.path.isfile(inputFilename.get()):
         if not inputFilename.get().endswith('csv'):
             differentColumns_differentColor_var.set(0)
-            differentColumns_differentColor_checkbox.config(state='disabled')
+            differentColumns_differentColor_checkbox.configure(state='disabled')
             csv_field_menu.configure(state='disabled')
             return
         else:
-            differentColumns_differentColor_checkbox.config(state='normal')
+            differentColumns_differentColor_checkbox.configure(state='normal')
             csv_field_menu.configure(state='normal')
             menu_values = IO_csv_util.get_csvfile_headers(inputFilename.get())
-            m = csv_field_menu["menu"]
-            m.delete(0, "end")
-            for s in menu_values:
-                m.add_command(label=s, command=lambda value=s: csv_field_var.set(value))
+            GUI_theme_util.set_values(csv_field_menu, menu_values)
             # activateCsvOptions()
     else:
         differentColumns_differentColor_var.set(0)
-        differentColumns_differentColor_checkbox.config(state='disabled')
+        differentColumns_differentColor_checkbox.configure(state='disabled')
         csv_field_menu.configure(state='disabled')
         return
 inputFilename.trace('w',changed_filename)
@@ -663,22 +659,22 @@ input_main_dir_path.trace('w',changed_filename)
 changed_filename()
 
 doNotCreateIntermediateFiles_var.set(1)
-doNotCreateIntermediateFiles_checkbox = tk.Checkbutton(window, variable=doNotCreateIntermediateFiles_var, onvalue=1, offvalue=0)
-doNotCreateIntermediateFiles_checkbox.config(text="Do NOT produce intermediate word cloud files when processing all txt files in a directory")
+doNotCreateIntermediateFiles_checkbox = GUI_theme_util.create_checkbox(window, variable=doNotCreateIntermediateFiles_var, onvalue=1, offvalue=0)
+doNotCreateIntermediateFiles_checkbox.configure(text="Do NOT produce intermediate word cloud files when processing all txt files in a directory")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,doNotCreateIntermediateFiles_checkbox)
 
 def changeLabel_nomin(*args):
     if doNotCreateIntermediateFiles_var.get()==1:
-        doNotCreateIntermediateFiles_checkbox.config(text="Do NOT produce intermediate word cloud files when processing all txt files in a directory")
+        doNotCreateIntermediateFiles_checkbox.configure(text="Do NOT produce intermediate word cloud files when processing all txt files in a directory")
     else:
-        doNotCreateIntermediateFiles_checkbox.config(text="Produce intermediate word cloud files when processing all txt files in a directory")
+        doNotCreateIntermediateFiles_checkbox.configure(text="Produce intermediate word cloud files when processing all txt files in a directory")
 doNotCreateIntermediateFiles_var.trace('w',changeLabel_nomin)
 
 def turnOff_doNotCreateIntermediateFiles_checkbox(*args):
     if len(input_main_dir_path.get())>0:
-        doNotCreateIntermediateFiles_checkbox.config(state='normal')
+        doNotCreateIntermediateFiles_checkbox.configure(state='normal')
     else:
-        doNotCreateIntermediateFiles_checkbox.config(state='disabled')
+        doNotCreateIntermediateFiles_checkbox.configure(state='disabled')
 input_main_dir_path.trace('w',turnOff_doNotCreateIntermediateFiles_checkbox)
 
 videos_lookup = {'Wordcloud 1':'https://youtu.be/CfRV9V7-OCM', 'Wordcloud 2':'https://youtu.be/5Q-AvG45rHY'}
@@ -749,6 +745,8 @@ reminders_util.checkReminder(scriptName, title, message)
 import wordclouds_util
 import run_script_util
 font_list = wordclouds_util.get_font_list()
-font['values'] = font_list
+# NOT font['values'] = font_list: tkinter's __setitem__ forwards the dict as CTkComboBox.configure's
+# first positional arg (require_redraw), so the legacy form silently sets nothing under CTk.
+GUI_theme_util.set_values(font, font_list)
 
 GUI_util.window.mainloop()

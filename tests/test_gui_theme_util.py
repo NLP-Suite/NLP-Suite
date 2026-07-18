@@ -188,3 +188,48 @@ def test_accent_constants_are_the_brand_red_and_distinct_from_muted():
     # accent (available, red) and muted (nothing available, grey) must be visibly different cues.
     assert gtu._ACCENT_FG != gtu._MUTED_FG
     assert gtu.NLP_SUITE_ACCENT != gtu._MUTED_FG
+
+
+# ── the CTk widget contracts that broke legacy tk idioms during the Phase 2 pilot ──
+# These pin behaviours of the REAL customtkinter that a tk->CTk conversion trips over, and that
+# tests/gui_smoke.py's hand-written CTk stub deliberately reproduces. If a CustomTkinter upgrade
+# changes any of them, these fail here -- telling us the smoke stub has drifted from reality --
+# instead of the smoke suite quietly going blind to a whole class of conversion bug.
+class TestCTkLegacyIdiomContracts:
+    def test_config_raises_so_conversions_must_use_configure(self):
+        # ~50 legacy .config(...) call sites per GUI; CTk implements config() only to raise.
+        with pytest.raises(AttributeError, match="configure"):
+            ctk.CTkButton.config(object(), state="disabled")
+
+    def test_configure_first_positional_is_require_redraw(self):
+        # This is why `widget['values'] = [...]` SILENTLY no-ops instead of raising: tkinter's
+        # __setitem__ does configure({key: value}), landing the dict on require_redraw.
+        import inspect
+
+        for cls in (ctk.CTkComboBox, ctk.CTkOptionMenu):
+            params = list(inspect.signature(cls.configure).parameters)
+            assert params[1] == "require_redraw", f"{cls.__name__}.configure signature changed"
+
+    def test_set_values_is_the_supported_repopulation_path(self):
+        # The positive counterpart: configure(values=...) is a real keyword on both menu classes.
+        import inspect
+
+        for cls in (ctk.CTkComboBox, ctk.CTkOptionMenu):
+            assert "values" in inspect.signature(cls.__init__).parameters
+
+
+# ── entry width chrome allowance (Phase 2 pilot: a 4-char box clipped "100" to "10C") ──
+class TestEntryWidthPadding:
+    def test_translate_kwargs_adds_width_padding(self):
+        out = gtu.translate_kwargs(ctk.CTkEntry, {"width": 4}, height_is_lines=False, width_padding=14)
+        assert out["width"] == gtu.char_width_to_px(4) + 14
+
+    def test_width_padding_defaults_to_zero_for_other_widgets(self):
+        # Only entries opt in; a button's width translation must be unchanged.
+        assert gtu.translate_kwargs(ctk.CTkButton, {"width": 4})["width"] == gtu.char_width_to_px(4)
+
+    def test_padding_is_not_applied_to_a_dropped_width(self):
+        # A non-positive/non-numeric width still drops out entirely rather than becoming bare padding.
+        assert "width" not in gtu.translate_kwargs(
+            ctk.CTkEntry, {"width": 0}, height_is_lines=False, width_padding=14
+        )
