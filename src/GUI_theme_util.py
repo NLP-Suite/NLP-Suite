@@ -467,6 +467,25 @@ def create_textbox(master, **kwargs):
     return ctk.CTkTextbox(master, **translate_kwargs(ctk.CTkTextbox, kwargs))
 
 
+def set_char_width(widget, char_width):
+    """Resize an already-built widget to a legacy tk *character* width.
+
+    The factories translate ``width=`` on the way in, but a legacy GUI often builds a widget bare and
+    sizes it afterwards -- ``menu.configure(width=2)``, ``entry.configure(width=widget_width_long)``.
+    That call bypasses the factory entirely and CTk reads the number as **pixels**, so a ``width=2``
+    dropdown collapses to a 2px sliver and a 60-char entry to 60px. No exception, just a widget too
+    small to read: the same silent-failure family as the dropped ``textvariable``.
+
+    Entries get the same chrome allowance :func:`create_entry` adds, so N characters stay N
+    characters whichever path sized the widget.
+    """
+    padding = _ENTRY_PADDING_PX if isinstance(widget, ctk.CTkEntry) else 0
+    px = char_width_to_px(char_width, padding=padding)
+    if px is not None:
+        widget.configure(width=px)
+    return px
+
+
 def set_values(widget, values, default=None):
     """Repopulate a CTkOptionMenu / CTkComboBox's items -- the CTk replacement for the legacy
     ``menu = widget["menu"]; menu.delete(0, "end"); menu.add_command(...)`` idiom.

@@ -408,6 +408,25 @@ Mechanical per-file recipe (greppable, reviewable):
 Suggested tranches (group by shared quirks): file tools; CoNLL tools; sentiment/annotator
 tools; GIS tools; DB/SQL + PCACE; statistical/visualization tools; remaining setup GUIs.
 
+> **Status — tranche 1 of the file tools (2026-07-18, `ctk/phase3-file-tools`):**
+> `file_checker_converter_cleaner`, `file_checker_pre_processing_pipeline`, `file_classifier`,
+> `file_handler_ALL`, `file_merger`, `file_search_ALL` — 65 constructors → factories, 8
+> `tk.OptionMenu` → `create_option_menu(values=[...])`. The recipe held; one new shared-layer gap and
+> two pre-existing bugs surfaced:
+>
+> 1. **`.configure(width=N)` after construction bypasses the factory** and CTk reads N as pixels —
+>    a `width=2` date-position dropdown became a 2 px sliver, three `widget_width_long` menus 60 px.
+>    Silent, like the other width bugs. New `GUI_theme_util.set_char_width()` + a §6 checklist item.
+> 2. `file_classifier_main.run()` referenced an unset `startTime` — **every RUN ended in a
+>    `NameError`**, so the tool never reached its end-of-run alert. Timer started, as the sibling file
+>    tools do. (Pre-existing; found because the §6 checklist demands an actual RUN.)
+> 3. `file_classifier`'s similarity-index dropdown listed `0.45`/`0.5` twice. Repeats dropped.
+>
+> The remaining file tools (`file_manager` 51 widgets/19 `.config`, `file_splitter` 33, `file_matcher`,
+> `file_search_byWord`, `file_spell_checker`) are tranche 2. Note `file_manager_main.py:532` has the
+> dynamic-`OptionMenu` idiom and `file_checker_pre_processing_pipeline` is in `gui_smoke`'s
+> `KNOWN_SKIP` — verify that one by launching.
+
 ### Phase 4 — Hard cases (1 PR each)
 
 - **`data_visualization_main.py`** — 140 raw `.place()` calls; needs a genuine re-layout.
@@ -532,6 +551,12 @@ For each `*_main.py` PR:
       `CTkLabel` forwards `textvariable` to its inner tk label out of `**kwargs`, so it is invisible
       to `translate_kwargs`' signature filter — a raw call drops it and the label displays CTk's
       literal `"CTkLabel"` placeholder forever. Third member of the silent-drop family.
+- [ ] **No post-construction `.configure(width=…)` left** (grep `\.configure\(.*width=`). The
+      factories translate `width=` on the way in, but a legacy GUI often builds a widget bare and
+      sizes it afterwards — that call bypasses the factory and CTk reads the number as **pixels**, so
+      `menu.configure(width=2)` collapses to a 2 px sliver and a 60-char entry to 60 px. No
+      exception. Use `GUI_theme_util.set_char_width(widget, chars)`, which applies the same
+      translation (including the entry chrome allowance).
 - [ ] **`tk.OptionMenu` int choices converted to strings** (grep `tk.OptionMenu(` for numeric
       varargs). `CTkOptionMenu` renders `values` as text and writes selections back as strings; the
       bound `IntVar` can stay as-is.

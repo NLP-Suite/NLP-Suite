@@ -14,6 +14,7 @@ from subprocess import call
 import pandas as pd
 
 import GUI_IO_util
+import GUI_theme_util
 import IO_files_util
 import config_util
 import statistics_txt_util
@@ -261,11 +262,12 @@ extra_GUIs_menu_var.trace('w',open_GUI)
 
 
 extra_GUIs_var.set(0)
-extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0) #, command=lambda: activate_all_options())
+extra_GUIs_checkbox = GUI_theme_util.create_checkbox(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0) #, command=lambda: activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'File checker/converter/cleaner','Spell checker','File splitter','File word search')
+extra_GUIs_menu = GUI_theme_util.create_option_menu(window, variable=extra_GUIs_menu_var,
+                    values=['File checker/converter/cleaner', 'Spell checker', 'File splitter', 'File word search'])
 # extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -274,15 +276,15 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
                                    "Select other related types of analysis you wish to perform")
 
 utf8_var.set(1)
-utf8_checkbox = tk.Checkbutton(window, text='Check input document(s) for utf-8 encoding', variable=utf8_var, onvalue=1, offvalue=0)
+utf8_checkbox = GUI_theme_util.create_checkbox(window, text='Check input document(s) for utf-8 encoding', variable=utf8_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,utf8_checkbox)
 
 ASCII_var.set(1)
-ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & quotes and % to percent', variable=ASCII_var, onvalue=1, offvalue=0)
+ASCII_checkbox = GUI_theme_util.create_checkbox(window, text='Convert non-ASCII apostrophes & quotes and % to percent', variable=ASCII_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,ASCII_checkbox)
 
 language_detect_var.set(1)
-language_detect_checkbox = tk.Checkbutton(window,text="Language detection", variable=language_detect_var, onvalue=1, offvalue=0)
+language_detect_checkbox = GUI_theme_util.create_checkbox(window,text="Language detection", variable=language_detect_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                     language_detect_checkbox, False, False, True,False, 90,
@@ -292,7 +294,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 
 spelling_var.set(1)
-spelling_checkbox = tk.Checkbutton(window,text="Spelling checker", variable=spelling_var, onvalue=1, offvalue=0)
+spelling_checkbox = GUI_theme_util.create_checkbox(window,text="Spelling checker", variable=spelling_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                     spelling_checkbox, True, False, True,False, 90,
@@ -300,7 +302,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
                     "Tick the checkbox to run different spelling checker algorithms: Pyspellchecker, Textblob, NLP Suite Typo checking")
 
 spelling_auto_correct_var.set(0)
-spelling_auto_correct_checkbox = tk.Checkbutton(window,text="Spelling auto-correct", variable=spelling_auto_correct_var, onvalue=1, offvalue=0)
+spelling_auto_correct_checkbox = GUI_theme_util.create_checkbox(window,text="Spelling auto-correct", variable=spelling_auto_correct_var, onvalue=1, offvalue=0)
 spelling_auto_correct_checkbox.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
@@ -309,7 +311,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coor
                     "Tick the checkbox to run the spelling auto-correct algorithm: AUTOCORRECT\nPLEASE, be sure to check auto-corrections very carefully")
 
 NLTK_unusual_var.set(1)
-NLTK_unusual_checkbox = tk.Checkbutton(window,text="NLTK unusual words", variable=NLTK_unusual_var, onvalue=1, offvalue=0)
+NLTK_unusual_checkbox = GUI_theme_util.create_checkbox(window,text="NLTK unusual words", variable=NLTK_unusual_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                     NLTK_unusual_checkbox, False, False, True,False, 90,
@@ -317,7 +319,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
                     "Tick the checkbox to obtain an NLTK list of unusual words as an indicator of possible misspellings")
 
 lower_case_words_after_end_of_sentence_var.set(1)
-lower_case_words_after_end_of_sentencecheckbox = tk.Checkbutton(window,text="Lower-case words after end-of-sentence punctuation (e.g., . ? !)", variable=lower_case_words_after_end_of_sentence_var, onvalue=1, offvalue=0)
+lower_case_words_after_end_of_sentencecheckbox = GUI_theme_util.create_checkbox(window,text="Lower-case words after end-of-sentence punctuation (e.g., . ? !)", variable=lower_case_words_after_end_of_sentence_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                     lower_case_words_after_end_of_sentencecheckbox, False, False, True,False, 90,
@@ -326,7 +328,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 
 word_length_var.set(1)
-word_length_checkbox = tk.Checkbutton(window,text="Word length", variable=word_length_var, onvalue=1, offvalue=0)
+word_length_checkbox = GUI_theme_util.create_checkbox(window,text="Word length", variable=word_length_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                     word_length_checkbox, False, False, True,False, 90,
@@ -334,7 +336,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
                     "Tick the checkbox to check word length as an indicator of possible misspellings")
 
 sentence_length_var.set(1)
-sentence_length_checkbox = tk.Checkbutton(window,text="Sentence length", variable=sentence_length_var, onvalue=1, offvalue=0)
+sentence_length_checkbox = GUI_theme_util.create_checkbox(window,text="Sentence length", variable=sentence_length_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                     sentence_length_checkbox, False, False, True,False, 90,

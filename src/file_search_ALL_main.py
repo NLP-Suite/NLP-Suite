@@ -7,6 +7,7 @@ import tkinter as tk
 import os
 
 import GUI_IO_util
+import GUI_theme_util
 import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -59,7 +60,7 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_
 
 y_multiplier_integer = 0
 
-open_CoNLL_search_GUI_button = tk.Button(window, text='CoNLL table searches (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: run_script_util.run_script("CoNLL_table_analyzer_main.py"))
+open_CoNLL_search_GUI_button = GUI_theme_util.create_button(window, text='CoNLL table searches (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: run_script_util.run_script("CoNLL_table_analyzer_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_CoNLL_search_GUI_button,
@@ -67,48 +68,48 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "Click on the button to open the GUI")
 
 
-open_file_search_GUI_button = tk.Button(window, text='File searches (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: run_script_util.run_script("file_manager_main.py"))
+open_file_search_GUI_button = GUI_theme_util.create_button(window, text='File searches (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: run_script_util.run_script("file_manager_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_file_search_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_nGram_VIEWER_search_GUI_button = tk.Button(window, text='N-grams/co-occurrences searches (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: run_script_util.run_script("NGrams_CoOccurrences_main.py"))
+open_nGram_VIEWER_search_GUI_button = GUI_theme_util.create_button(window, text='N-grams/co-occurrences searches (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: run_script_util.run_script("NGrams_CoOccurrences_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_nGram_VIEWER_search_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_word_sense_search_GUI_button = tk.Button(window, text='Search word(s) for different word senses (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: run_script_util.run_script("word2vec_main.py"))
+open_word_sense_search_GUI_button = GUI_theme_util.create_button(window, text='Search word(s) for different word senses (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: run_script_util.run_script("word2vec_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_word_sense_search_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_word_distance_search_GUI_button = tk.Button(window, text='Search word(s) for distance to other words in the semantic space (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: run_script_util.run_script("word2vec_main.py"))
+open_word_distance_search_GUI_button = GUI_theme_util.create_button(window, text='Search word(s) for distance to other words in the semantic space (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: run_script_util.run_script("word2vec_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_word_distance_search_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_WordNet_search_GUI_button = tk.Button(window, text='WordNet searches (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: run_script_util.run_script("semantic_aggregation_main.py"))
+open_WordNet_search_GUI_button = GUI_theme_util.create_button(window, text='WordNet searches (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: run_script_util.run_script("semantic_aggregation_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_WordNet_search_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_word_search_GUI_button = tk.Button(window, text='Words/collocations searches (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: run_script_util.run_script("file_search_byWord_main.py"))
+open_word_search_GUI_button = GUI_theme_util.create_button(window, text='Words/collocations searches (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: run_script_util.run_script("file_search_byWord_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_word_search_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
-export_csv_field_GUI_button = tk.Button(window, text='Export csv field content to csv/txt file (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: run_script_util.run_script("data_manipulation_main.py"))
+export_csv_field_GUI_button = GUI_theme_util.create_button(window, text='Export csv field content to csv/txt file (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: run_script_util.run_script("data_manipulation_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    export_csv_field_GUI_button,

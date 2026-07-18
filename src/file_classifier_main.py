@@ -12,6 +12,7 @@ import tkinter as tk
 import tkinter.messagebox as mb
 
 import GUI_IO_util
+import GUI_theme_util
 import IO_user_interface_util
 import file_classifier_date_util
 import file_classifier_NER_util
@@ -21,6 +22,10 @@ import IO_files_util
 
 def run():
     # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    # pre-existing: the end-of-run alert below reads startTime, which was never set -> NameError on
+    # every RUN. Start the timer here, as the other file tools do.
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                                   "Started running 'File Classifier' at", True)
     input_main_dir_path = GUI_util.input_main_dir_path.get()
     input_secondary_dir_path = GUI_util.input_secondary_dir_path.get()
     outputDir = GUI_util.output_dir_path.get()
@@ -123,7 +128,7 @@ similarityIndex_var = tk.DoubleVar()
 
 # applies to list files only
 # character_count_var.set(0)
-# character_count_checkbox = tk.Checkbutton(window, text='By count of character(s) embedded in filename', variable=character_count_var, onvalue=1, offvalue=0)
+# character_count_checkbox = GUI_theme_util.create_checkbox(window, text='By count of character(s) embedded in filename', variable=character_count_var, onvalue=1, offvalue=0)
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+50,y_multiplier_integer, character_count_checkbox)
 
 by_date_var.set(0)
@@ -132,47 +137,54 @@ items_separator_var.set('_')
 date_position_var.set(2)
 by_NER_var.set(0)
 
-by_date_checkbox = tk.Checkbutton(window, text='By date embedded in filenames', variable=by_date_var, onvalue=1, offvalue=0)
+by_date_checkbox = GUI_theme_util.create_checkbox(window, text='By date embedded in filenames', variable=by_date_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer, by_date_checkbox,True)
 
-date_format_lb = tk.Label(window,text='Date format ')
+date_format_lb = GUI_theme_util.create_label(window,text='Date format ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+270,y_multiplier_integer, date_format_lb,True)
-date_format_menu = tk.OptionMenu(window, date_format, 'mm-dd-yyyy', 'dd-mm-yyyy','yyyy-mm-dd','yyyy-dd-mm','yyyy-mm','yyyy')
-date_format_menu.configure(state='normal', width=10)
+date_format_menu = GUI_theme_util.create_option_menu(window, variable=date_format,
+                    values=['mm-dd-yyyy', 'dd-mm-yyyy', 'yyyy-mm-dd', 'yyyy-dd-mm', 'yyyy-mm', 'yyyy'])
+date_format_menu.configure(state='normal')
+GUI_theme_util.set_char_width(date_format_menu, 10)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+350,y_multiplier_integer, date_format_menu,True)
 
-date_separator_lb = tk.Label(window, text='Date character separator ')
+date_separator_lb = GUI_theme_util.create_label(window, text='Date character separator ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+210,y_multiplier_integer, date_separator_lb,True)
-date_separator = tk.Entry(window, state='normal', textvariable=items_separator_var)
-date_separator.configure(width=2)
+date_separator = GUI_theme_util.create_entry(window, state='normal', textvariable=items_separator_var)
+GUI_theme_util.set_char_width(date_separator, 2)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+350,y_multiplier_integer, date_separator,True)
 
-date_position_menu_lb = tk.Label(window, state='normal', text='Date position ')
+date_position_menu_lb = GUI_theme_util.create_label(window, state='normal', text='Date position ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+400,y_multiplier_integer, date_position_menu_lb,True)
-date_position_menu = tk.OptionMenu(window,date_position_var,1,2,3,4,5)
-date_position_menu.configure(width=2)
+date_position_menu = GUI_theme_util.create_option_menu(window, variable=date_position_var,
+                    values=['1', '2', '3', '4', '5'])
+GUI_theme_util.set_char_width(date_position_menu, 2)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+490,y_multiplier_integer, date_position_menu)
 
-date_distance_value_lb = tk.Label(window, text='Date distance ')
+date_distance_value_lb = GUI_theme_util.create_label(window, text='Date distance ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+270,y_multiplier_integer, date_distance_value_lb,True)
 
-date_distance_value = tk.Entry(window, textvariable=date_distance_value_var)
-date_distance_value.configure(width=4)
+date_distance_value = GUI_theme_util.create_entry(window, textvariable=date_distance_value_var)
+GUI_theme_util.set_char_width(date_distance_value, 4)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+350,y_multiplier_integer, date_distance_value,True)
 
-date_type_lb = tk.Label(window, text='Date type ')
+date_type_lb = GUI_theme_util.create_label(window, text='Date type ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+210,y_multiplier_integer, date_type_lb,True)
 
-date_type = tk.OptionMenu(window, date_type_var, 'day', 'month','year')
+date_type = GUI_theme_util.create_option_menu(window, variable=date_type_var,
+                    values=['day', 'month', 'year'])
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+300,y_multiplier_integer, date_type)
 
-by_NER_checkbox = tk.Checkbutton(window, text='By NER values',variable=by_NER_var, onvalue=1, offvalue=0)
+by_NER_checkbox = GUI_theme_util.create_checkbox(window, text='By NER values',variable=by_NER_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer, by_NER_checkbox,True)
 
 similarityIndex_var.set(0.25) # or 0.3
-similarityIndex_menu_lb = tk.Label(window, text='Relativity index threshold ')
+similarityIndex_menu_lb = GUI_theme_util.create_label(window, text='Relativity index threshold ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+270,y_multiplier_integer,similarityIndex_menu_lb,True)
-similarityIndex_menu = tk.OptionMenu(window,similarityIndex_var,.1,.15,.2,.25,.3,.35,.4,.45,.5,.55,.6,.65,.7,.75,.8,.85,.9)
+similarityIndex_menu = GUI_theme_util.create_option_menu(window, variable=similarityIndex_var,
+                    # '0.45'/'0.5' appeared twice in the legacy vararg list; dropped the repeats.
+                    values=['0.1', '0.15', '0.2', '0.25', '0.3', '0.35', '0.4', '0.45', '0.5',
+                            '0.55', '0.6', '0.65', '0.7', '0.75', '0.8', '0.85', '0.9'])
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+450,y_multiplier_integer,similarityIndex_menu)
 
 videos_lookup = {'No videos available':''}

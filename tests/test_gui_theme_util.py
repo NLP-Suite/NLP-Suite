@@ -140,6 +140,29 @@ class TestSetValues:
         assert w.selected == "x"
 
 
+# ── set_char_width ───────────────────────────────────────────────────────────
+class TestSetCharWidth:
+    def test_translates_chars_to_pixels(self):
+        w = _FakeMenu()
+        px = gtu.set_char_width(w, 10)
+        assert px == gtu.char_width_to_px(10)
+        assert w.configured == {"width": px}
+
+    def test_entry_gets_the_same_chrome_allowance_as_create_entry(self):
+        entry = ctk.CTkEntry.__new__(ctk.CTkEntry)  # no display needed; isinstance is all that matters
+        entry.configure = lambda **kwargs: recorded.update(kwargs)
+        recorded = {}
+        px = gtu.set_char_width(entry, 4)
+        assert px == gtu.char_width_to_px(4, padding=gtu._ENTRY_PADDING_PX)
+        assert recorded == {"width": px}
+
+    @pytest.mark.parametrize("bad", [None, 0, -3, "wide"])
+    def test_unusable_width_leaves_the_widget_alone(self, bad):
+        w = _FakeMenu()
+        assert gtu.set_char_width(w, bad) is None
+        assert w.configured is None
+
+
 # ── _accepted_params sanity ──────────────────────────────────────────────────
 def test_accepted_params_excludes_self_and_varargs():
     params = gtu._accepted_params(ctk.CTkButton)

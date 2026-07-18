@@ -11,6 +11,7 @@ import os
 import tkinter as tk
 
 import GUI_IO_util
+import GUI_theme_util
 import IO_user_interface_util
 import file_merger_util
 
@@ -125,19 +126,19 @@ window.bind("<Escape>", clear)
 
 # MERGE ________________________________________________________
 
-# merge_files_lb = tk.Label(window, text='Merge files',font=("Courier", 12, "bold"))
+# merge_files_lb = GUI_theme_util.create_label(window, text='Merge files',font=("Courier", 12, "bold"))
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,merge_files_lb)
 
 merge_save_fileName_var.set(0)
-merge_save_fileName_checkbox = tk.Checkbutton(window, text='Save filename in output', variable=merge_save_fileName_var, onvalue=1, offvalue=0)
+merge_save_fileName_checkbox = GUI_theme_util.create_checkbox(window, text='Save filename in output', variable=merge_save_fileName_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,merge_save_fileName_checkbox,True)
 
 merge_embed_filenames_inStringSeparators_var.set(0)
-merge_embed_filenames_inStringSeparators_checkbox = tk.Checkbutton(window, text='Embed filename in separators', variable=merge_embed_filenames_inStringSeparators_var, onvalue=1, offvalue=0)
+merge_embed_filenames_inStringSeparators_checkbox = GUI_theme_util.create_checkbox(window, text='Embed filename in separators', variable=merge_embed_filenames_inStringSeparators_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_merger_merge_embed_filenames_inStringSeparators_pos,y_multiplier_integer,merge_embed_filenames_inStringSeparators_checkbox,True)
 
-merge_separator_entry_begin = tk.Entry(window,width=10,textvariable=merge_separator_entry_begin_var)
-merge_separator_entry_end = tk.Entry(window,width=10,textvariable=merge_separator_entry_end_var)
+merge_separator_entry_begin = GUI_theme_util.create_entry(window,width=10,textvariable=merge_separator_entry_begin_var)
+merge_separator_entry_end = GUI_theme_util.create_entry(window,width=10,textvariable=merge_separator_entry_end_var)
 
 def display_merge_separator(y_multiplier_integer):
     merge_separator_entry_begin_var.set("<@#")
@@ -150,18 +151,18 @@ def display_merge_separator(y_multiplier_integer):
 display_merge_separator(y_multiplier_integer)
 
 merge_embed_subdir_name_var.set(0)
-merge_embed_subdir_name_checkbox = tk.Checkbutton(window, state='disabled', text='Embed subdirname', variable=merge_embed_subdir_name_var, onvalue=1, offvalue=0)
+merge_embed_subdir_name_checkbox = GUI_theme_util.create_checkbox(window, state='disabled', text='Embed subdirname', variable=merge_embed_subdir_name_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_merger_merge_embed_subdir_name_pos,y_multiplier_integer,merge_embed_subdir_name_checkbox,True)
 
-character_separator_lb = tk.Label(window, text='Character separator')
+character_separator_lb = GUI_theme_util.create_label(window, text='Character separator')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_merger_character_separator_lb_pos,y_multiplier_integer,character_separator_lb,True)
 
 merge_character_separator_var.set("__")
-merge_character_separator = tk.Entry(window,width=5,state='disabled',textvariable=merge_character_separator_var)
+merge_character_separator = GUI_theme_util.create_entry(window,width=5,state='disabled',textvariable=merge_character_separator_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_merger_merge_character_separator_pos,y_multiplier_integer,merge_character_separator)
 
 merge_subdir_var.set(0)
-merge_subdir_checkbox = tk.Checkbutton(window, text='Process subdirectories', variable=merge_subdir_var, onvalue=1, offvalue=0)
+merge_subdir_checkbox = GUI_theme_util.create_checkbox(window, text='Process subdirectories', variable=merge_subdir_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,merge_subdir_checkbox)
 
 def activate_all_options(*args):
