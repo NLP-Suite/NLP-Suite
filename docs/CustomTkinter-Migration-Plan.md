@@ -343,6 +343,34 @@ Prove the mechanical conversion recipe end-to-end and refine the wrappers:
 Write down every deviation the pilots force into the per-file checklist (§6) before mass
 conversion.
 
+> **Status (2026-07-18) — pilot 1 `wordclouds_main.py`: done** (branch `ctk/phase2-wordclouds`).
+> 29 constructors → factories, 3 `OptionMenu` → `create_option_menu(values=[...])`, the open-image
+> sliver → `create_open_file_button`, `ttk.Style`/`theme_use` dropped, dynamic csv-field
+> repopulation → `set_values`. Launched and screenshotted on macOS: neutral greys with red only on
+> RUN and the *available* TIPS / videos / reminders dropdowns, exactly the §0 premise.
+>
+> **Three legacy idioms CTk does not support** turned up, all of which recur suite-wide and are now
+> checklist items in §6: `.config(` (raises; 53 sites in this one file), `widget['state']` (raises),
+> and `widget['values'] = …` (**silently no-ops** — the nastiest, and *not* caught by the `["menu"]`
+> grep). Assume every Phase 3 file has all three.
+>
+> **Two shared-layer fixes the pilot forced:**
+> 1. `GUI_theme_util.create_entry` now adds a 14 px chrome allowance to the char→px width
+>    translation (new `width_padding` arg on `translate_kwargs`). CTkEntry reserves internal padding
+>    around its text area, so small entries lost ~2 cells — the 4-char "Max no. of words" box
+>    rendered `100` as `10C`. This is the §5.2 tail arriving; expect more of it.
+> 2. `tests/gui_smoke.py` stubbed `customtkinter` as a **blanket MagicMock**, which answers every
+>    call and subscript and therefore absorbed *all three* idiom bugs silently (wordclouds passed a
+>    smoke run while broken, recording **0 widgets**). Replaced with a hand-written stub that
+>    reproduces the three real CTk contracts and records `text=`. Without this the smoke suite would
+>    have gone progressively blind exactly as Phase 3 converts the other ~45 GUIs — **this fix is a
+>    prerequisite for trusting the batch phase**, not a nicety. The contracts it emulates are pinned
+>    against real CTk in `tests/test_gui_theme_util.py` so a CTk upgrade can't drift them apart.
+>
+> Still outstanding for pilot 1: Windows QA, and the deferred #1648 window-geometry item (the window
+> is still sized to the old absolute layout, so the rightmost column clips) — not introduced here.
+> Pilots 2 (`NLP_menu_main.py`) and 3 (`NLP_setup_IO_main.py`) not yet started.
+
 ### Phase 3 — Batch conversion (~6–8 PRs, 5–8 GUIs each)
 
 Mechanical per-file recipe (greppable, reviewable):
@@ -460,6 +488,17 @@ For each `*_main.py` PR:
 - [ ] All `tk.`/`ttk.` widget constructors replaced with `GUI_theme_util` factories
       (grep: `tk.Button(`, `tk.Checkbutton(`, `tk.Label(`, `tk.Entry(`, `tk.OptionMenu(`,
       `ttk.Combobox(`, `tk.Scale(`, `tk.Text(`).
+- [ ] **No `.config(` left** (grep `\.config\(` → `.configure(`). CTk implements `config()` *only to
+      raise* `AttributeError`. This is the single highest-volume edit in a conversion — 53 sites in
+      the first pilot alone.
+- [ ] **No `widget['option']` reads left** (grep `\w\['`) — e.g. `menu['state']`. CTk resolves
+      `__getitem__` against the underlying tk frame, which has no such option → `TclError`.
+      Use `widget.cget('option')`.
+- [ ] **No `widget['values'] = …` / `widget[k] = v` writes left.** The dangerous one: tkinter's
+      `__setitem__` calls `configure({k: v})`, which lands the dict on CTk's **first positional
+      parameter `require_redraw`** — so it *silently does nothing*, no exception. Use
+      `GUI_theme_util.set_values(...)` / `widget.configure(k=v)`. **The `["menu"]` grep below does
+      not catch this** (it is the `ttk.Combobox` analogue).
 - [ ] No `["menu"]` OptionMenu manipulation left (grep `["menu"]`).
 - [ ] No `ttk.Style`/`theme_use` left.
 - [ ] No new `CTkImage`/`ImageTk` usage (grep).
