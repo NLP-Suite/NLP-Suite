@@ -1,7 +1,8 @@
 # CTk empty-button status
 
 Tracking widgets that render with **no visible content** — the small blank slivers and unlabeled
-squares users read as "the GUI is broken". Audited 2026-07-18 against `ctk/phase1-grid`.
+squares users read as "the GUI is broken". First audited 2026-07-18 against `ctk/phase1-grid`;
+re-measured 2026-07-18 against `ctk/phase3-gis-tools` (`e860eb9d`).
 
 ## Background
 
@@ -30,43 +31,59 @@ Every GUI already converted in Phases 2–3 went through this swap. The sites be
 remaining in **unconverted** GUIs — they will be fixed as their tranche lands, so this doc is a
 checklist for those tranches rather than separate work.
 
+## ✅ Fixed since the first audit
+
+The **sentiment / annotator / semantic tranche** (`d297d1d1`, PR #13) cleared 5 of the original 21
+sites, all via the `create_open_file_button` swap:
+
+| GUI | was line | what it opened |
+|---|---|---|
+| `html_annotator_main.py` | 226 | annotator dictionary file (started `state='disabled'`) |
+| `html_annotator_gender_main.py` | 229 | annotator dictionary file (started `state='disabled'`) |
+| `semantic_aggregation_main.py` | 316 | input csv file |
+| `semantic_analysis_main.py` | 516 | input csv file |
+| `semantic_analysis_main.py` | 642 | WSI keywords file |
+
+That leaves **one** `state='disabled'` site open (`DB_SQL_main.py:1433`) — the two annotator ones are
+done. The remaining `html_annotator_gender_main.py:374` grep hit is a **commented-out** line, not a
+live widget.
+
 ## Remaining empty open-file buttons
 
-21 sites across 18 files. All are the `width=1, text=''` pattern above unless noted.
+**17 sites across 15 files.** All are the `width=1, text=''` pattern above unless noted. Line numbers
+are unchanged from the first audit — none of the remaining files have been touched yet.
 
 | GUI | line | what it opens |
 |---|---|---|
 | `data_visualization_main.py` | 569 | input csv file |
 | `data_visualization_main.py` | 1015 | comparative csv (literal `width=1`, parented to `tab_categorical`) |
-| `DB_SQL_main.py` | 1433 | input file |
+| `DB_SQL_main.py` | 1433 | input file (starts `state='disabled'`) |
 | `DB_PCACE_data_validation_main.py` | 546 | input file |
 | `GIS_main.py` | 535 | input csv file |
 | `GIS_main.py` | 779 | API config file (also a `tk.Button()` placeholder at 774 — see below) |
 | `GIS_distance_main.py` | 259 | input file |
 | `GIS_symbolic_main.py` | 310 | input file |
-| `html_annotator_main.py` | 226 | annotator dictionary file (starts `state='disabled'`) |
-| `html_annotator_gender_main.py` | 229 | annotator dictionary file (starts `state='disabled'`) |
 | `NGrams_CoOccurrences_main.py` | 740 | input csv file |
 | `NLP_setup_external_software_main.py` | 77 | config file |
 | `NLP_setup_external_software_main.py` | 118 | software website |
 | `NLP_setup_external_software_main.py` | 153 | software directory |
 | `NLP_setup_package_language_main.py` | 161 | config file |
 | `sample_corpus_main.py` | 161 | sample corpus file |
-| `semantic_aggregation_main.py` | 316 | input csv file |
-| `semantic_analysis_main.py` | 516 | input csv file |
-| `semantic_analysis_main.py` | 642 | WSI keywords file |
 | `SRL_main.py` | 109 | input csv file |
 | `data_manipulation_main.py` | 221 | input file |
 | `word2vec_main.py` | 301 | word-distance file |
 
-Three of these carry `state='disabled'` at construction, so under the CTk theme they correctly start
-grey — but grey *and* blank is still unreadable. The glyph is what makes the disabled state legible
-as "this button has nothing to open yet".
+> The four `GIS_*` rows (and the `GIS_main.py:774` placeholder below) are **in flight** on
+> `ctk/phase3-gis-tools` as of this re-measure — expect them to clear with that tranche.
+
+The one remaining `state='disabled'` site starts grey under the CTk theme, correctly — but grey *and*
+blank is still unreadable. The glyph is what makes the disabled state legible as "this button has
+nothing to open yet".
 
 ## Secondary: placeholder `tk.Button()` forward declarations
 
-Five sites construct a **master-less, argument-less** button purely to declare the name before a
-conditional branch reassigns it:
+All five sites still open. Each constructs a **master-less, argument-less** button purely to declare
+the name before a conditional branch reassigns it:
 
 | File | line | reassigned at |
 |---|---|---|
@@ -82,8 +99,9 @@ nothing and removes the hazard.
 
 ## Secondary: unlabeled checkboxes
 
-Ten `tk.Checkbutton(window, text='', ...)` sites render as bare squares whose meaning lives only in
-an adjacent explanatory label and their hover tooltips:
+All ten still open (the DB/PCACE tranche has not landed). Each `tk.Checkbutton(window, text='', ...)`
+renders as a bare square whose meaning lives only in an adjacent explanatory label and its hover
+tooltip:
 
 | GUI | lines |
 |---|---|
@@ -100,10 +118,29 @@ sentence one row up is fragile, and it is invisible to the golden-label checks i
 ## Re-measuring
 
 ```
-grep -n "tk\.Button(.*text=''" src/*.py     # empty open-file buttons
 grep -n "tk\.Button()" src/*.py             # placeholder declarations
 grep -n "tk\.Checkbutton(.*text=''" src/*.py
 ```
 
-A converted GUI should return **zero** hits for the first two. Note that `create_open_file_button`
-discards any `text`/`width` passed to it, so a converted site cannot regress silently.
+⚠️ **Do not** count empty open-file buttons with `grep -n "tk\.Button(.*text=''"`. Most of these
+constructors wrap across lines, with `text=''` on a line of its own — that grep under-reports (it
+misses `GIS_main.py:779`, among others) and so can report a GUI clean while the sliver is still
+there. Scan across lines instead:
+
+```
+python3 - <<'EOF'
+import glob, os, re
+pat = re.compile(r"tk\.Button\(\s*[^)]*?text\s*=\s*''[^)]*?\)", re.S)
+for f in sorted(glob.glob('src/*.py')):
+    src = open(f, encoding='utf-8', errors='replace').read()
+    lines = src.split('\n')
+    for m in pat.finditer(src):
+        n = src[:m.start()].count('\n') + 1
+        tag = ' [COMMENTED]' if lines[n-1].lstrip().startswith('#') else ''
+        print(f"{os.path.basename(f)}:{n}{tag}")
+EOF
+```
+
+A converted GUI should return **zero** live hits from that scan and from the `tk.Button()` grep.
+Note that `create_open_file_button` discards any `text`/`width` passed to it, so a converted site
+cannot regress silently.
