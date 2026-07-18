@@ -283,6 +283,14 @@ def _find_existing_sentiment_csv(c):
                                     ('Sentiment score', 'Sentiment label'))
 
 
+def _find_existing_srl_csv(c):
+    """[path] to this corpus's SRL table from a prior/killed run. SRL is a heavy transformer pass in the
+    isolated py3.8 env -- HOURS on a large corpus, and (unlike CoreNLP/POS/NER/SVO/sentiment) it was the ONE
+    expensive pass with no reuse, so an interrupted sweep re-paid it in full. Signature: 'srl' in the name
+    with the SRL output columns (Predicate + Frame + the ARG0 role), not a derived/frequency artifact."""
+    return _find_existing_parse_csv(c, ('srl',), ('Predicate', 'Frame', 'ARG0 (Agent)'))
+
+
 def _find_existing_ner_csv(c):
     """Return [path] to an NER table already in the output dir (from a prior/killed run on THIS corpus), so
     a restart can skip the slow NER re-parse -- Stanza NER is ~1h30m on Harry Potter, and unlike the CoreNLP
@@ -681,6 +689,14 @@ def _run_srl(c):
     import SRL_util
     if not SRL_util.is_available():
         return []
+    # A prior (or killed) run may already hold this corpus's SRL table. SRL is the heaviest pass with the
+    # least feedback -- a transformer in an isolated py3.8 subprocess, HOURS on a large corpus, no progress
+    # output -- and it was the last expensive pass without reuse, so an interruption re-paid it in full.
+    existing = _find_existing_srl_csv(c)
+    if existing:
+        print('>>> Narrative/SRL: reusing an existing SRL table (%s) -- skipping the ~hours re-run'
+              % os.path.basename(existing[0]))
+        return list(dict.fromkeys(_files(existing)))
     import GUI_util
     return _files(SRL_util.run_SRL(GUI_util.window, c['inputFilename'], c['inputDir'],
                                    c['outputDir'], c['chartPackage'], c['dataTransformation']))
