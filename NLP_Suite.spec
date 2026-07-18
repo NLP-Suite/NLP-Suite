@@ -168,9 +168,6 @@ _third_party_hiddenimports = [
     'chardet', 'tqdm', 'psutil', 'json', 'csv', 'pickle',
     'collections', 'functools', 'itertools', 'statistics',
     'SPARQLWrapper',
-    # CustomTkinter GUI reskin (CTk migration). darkdetect is CTk's appearance-mode dep and is
-    # imported conditionally inside CTk, so PyInstaller needs it listed explicitly.
-    'customtkinter', 'darkdetect',
 ]
 
 # Collect stanza and spacy data files (language models etc.)
@@ -184,12 +181,6 @@ try:
 except Exception:
     _spacy_datas = []
 _nltk_datas = []  # nltk downloads data at runtime
-# CustomTkinter ships its own bundled color themes / assets that it loads at runtime
-# (set_default_color_theme, widget drawing); collect them so the reskin renders in the bundle.
-try:
-    _ctk_datas = collect_data_files('customtkinter')
-except Exception:
-    _ctk_datas = []
 
 # ── Data files to bundle ────────────────────────────────────────────────────
 # These are copied alongside the executable so the app can find them at runtime.
@@ -219,11 +210,8 @@ def _collect_tree(src_dir, dest_prefix):
 _project_datas = []
 
 # All src/*.py files (needed because GUIs check for .py files and some launch via subprocess).
-# Also ship the CustomTkinter theme JSON (CTk migration): GUI_theme_util.init_appearance() loads
-# it from <exe>/src via GUI_IO_util.scriptPath, so it must sit alongside the .py files, not in
-# _internal (the .py-only filter would otherwise drop it).
 for f in os.listdir(SRC_DIR):
-    if (f.endswith('.py') or f == 'nlp_suite_theme.json') and not f.startswith('_'):
+    if f.endswith('.py') and not f.startswith('_'):
         _project_datas.append((os.path.join(SRC_DIR, f), 'src'))
 
 # Library data (recursive)
@@ -256,7 +244,7 @@ a = Analysis(
     [os.path.join(SRC_DIR, 'NLP_menu_main.py')],
     pathex=[SRC_DIR],
     binaries=[],
-    datas=_project_datas + _stanza_datas + _spacy_datas + _nltk_datas + _ctk_datas,
+    datas=_project_datas + _stanza_datas + _spacy_datas + _nltk_datas,
     hiddenimports=_local_modules + _third_party_hiddenimports,
     hookspath=[],
     hooksconfig={},

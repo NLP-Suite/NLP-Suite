@@ -145,18 +145,7 @@ _STUB_ROOTS = {'stanza','spacy','nltk','torch','torchvision','transformers','sen
                'transformer_srl','wikipedia','newspaper','tweepy','praw','umap','hdbscan','bertopic',
                'spacy_langdetect','spacytextblob','contractions','unidecode','chardet','pdfplumber',
                'docx','fitz','striprtf','pyLDAvis','little_mallet_wrapper','tkcolorpicker','tkinterdnd2',
-               'pymupdf','pdf2image','pytesseract','wikipediaapi','geotext','reverse_geocoder',
-               'customtkinter'}
-# customtkinter (CTk migration, GUI_theme_util) can't be handled like the fake-tkinter widgets above:
-# its real widget classes subclass real tkinter.Frame/tkinter.Tk AT IMPORT TIME (e.g. CTkBaseClass(
-# tkinter.Frame, ...)), which the fake tkinter's `_rec` function stand-ins can't satisfy (you can't
-# subclass a function), and constructing a real CTk widget needs a live Tk root/mainloop this headless
-# harness deliberately doesn't have. Stubbing it as a MagicMock tree -- like the other heavy libs --
-# sidesteps that: GUI_theme_util.translate_kwargs()'s `inspect.signature(cls.__init__)` introspection
-# resolves against Mock.__init__ (yielding an empty/harmless accepted-params set) and construction
-# calls just return a fresh MagicMock, so import and use of GUI_theme_util succeeds without ever
-# building a real widget. The GOLDEN-checked labels (DB_SQL, corpus_profiler) are built with plain
-# tk.Button/tk.Checkbutton, not GUI_theme_util factories, so they're unaffected and still recorded.
+               'pymupdf','pdf2image','pytesseract','wikipediaapi','geotext','reverse_geocoder'}
 
 
 class _StubLoader(importlib.abc.Loader):

@@ -106,12 +106,6 @@ SPARQLWrapper
 
 # GUI
 tkcolorpicker
-# CustomTkinter GUI reskin (CTk migration -- docs/CustomTkinter-Migration-Plan.md). Pinned to the
-# version validated by the Phase 0 bundle smoke test (tests/ctk_bundle_smoke.py) under the portable
-# python-build-standalone interpreter; darkdetect is CTk's only hard runtime dep (pulled in
-# transitively). CTk 6.0.0 is compatible with the Pillow==10.4.0 pin above. Base-file only: the
-# per-OS requirements-mac/-windows files are installed *in addition* to this one.
-customtkinter==6.0.0
 
 # Auto-update via git
 pygit2
