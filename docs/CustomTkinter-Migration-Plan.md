@@ -13,6 +13,33 @@ testing checklist.
 
 ---
 
+## 0. Design premise: color is a signal, not styling (read first)
+
+> **Reviewer redirect (Roberto, 2026-07).** The first cut of the theme painted *every* widget in
+> the brand red `#b10a0a`. That shipped briefly and was reverted: the solid-red theme made GUIs
+> read as noise, and — more fundamentally — it **overwrote a load-bearing convention**. In the NLP
+> Suite, **red already means something**: a red *Open TIPS* / *Watch videos* / *Open reminders*
+> dropdown signals that that resource *exists for this GUI*; grey means none is available (the
+> in-app tooltips literally promise "when TIPS are available the widget is red, otherwise black").
+> A blanket-red theme erases that signal, and no amount of layout polish restores it — it's the
+> premise, not the finish.
+
+So the accent is **reserved for meaning**. The rule for the whole migration:
+
+- **Neutral / muted by default.** Ordinary controls — the majority of buttons, checkboxes, option
+  menus, comboboxes — are a neutral grey. They carry no special meaning, so they get no accent.
+- **Red only where it carries information.** Exactly two things earn the brand red:
+  1. the **availability signal** on the *TIPS / videos / reminders* dropdowns (red = available for
+     this GUI, grey = none), and
+  2. the single **RUN** primary-action button per GUI (the one "do the thing" affordance).
+
+This is a *redirect, not a rejection* of the grid work: the grid engine (§2.2) stands, and the
+incremental path below is exactly right once the theme honors this premise. The theme-JSON default
+colors and the `accent=`/`muted=` opt-ins in `GUI_theme_util` are what encode it — see the widget
+mapping (§3) and the Phase 1 accent-signal slice note (§4).
+
+---
+
 ## 1. Current state (audit)
 
 Numbers below were measured on `current-stable` (July 2026).
@@ -99,8 +126,11 @@ CTk layout is months of work and guarantees regressions. Instead:
 Concretely, we introduce one new shared module, **`src/GUI_theme_util.py`** (name open to
 debate), that:
 
-1. Owns `customtkinter` setup: appearance mode, the NLP Suite theme (accent red `#b10a0a`,
-   the suite's brand color per the note at `GUI_util.py:188-190`), and widget-scaling defaults.
+1. Owns `customtkinter` setup: appearance mode, the NLP Suite theme, and widget-scaling defaults.
+   The theme is **neutral grey by default**; the brand red `#b10a0a` (the color at
+   `GUI_util.py:188-190`) is an *opt-in accent*, applied only to the two things that carry meaning
+   (§0): the availability-signal dropdowns and the RUN button. It is **never** the default fill for
+   ordinary widgets — that was the reverted first cut.
 2. Exposes thin factory wrappers so GUI scripts stop calling `tk.Button(...)` directly:
    `create_button`, `create_checkbox`, `create_label`, `create_entry`, `create_option_menu`,
    `create_combobox`, `create_slider`, `create_textbox`. Each wrapper accepts the *old tk-style
@@ -207,7 +237,8 @@ can coexist under a `CTk` root during the transition.
   The per-OS `requirements-mac.txt` / `requirements-windows.txt` are installed *in addition* to the
   base file, so the pin goes in `requirements.txt` **only** (adding it to all three would just
   double-install).
-- Add `nlp_suite_theme.json` (CTk color theme: accent `#b10a0a`, neutral grays) under `src/` so
+- Add `nlp_suite_theme.json` (CTk color theme: **neutral grays as the default fill**; brand red
+  `#b10a0a` reserved as an opt-in accent per §0, not painted on every widget) under `src/` so
   PyInstaller ships it (the spec's `src` collection is `.py`-only, so it needs an explicit datas
   entry — done).
 - PyInstaller: add `collect_data_files('customtkinter')` to `NLP_Suite.spec` datas and
@@ -278,6 +309,24 @@ can coexist under a `CTk` root during the transition.
 > (unfinished; only call site is commented out). Both carry an in-code marker noting the deferral.
 > Still outstanding: on-screen QA of the converted modals on Mac + Windows (they can't be visually
 > verified headlessly).
+>
+> **Accent-signal slice (2026-07-17)** — implements the §0 redirect after the solid-red theme was
+> reverted. Stacked fork branch `ctk/phase1-accent-signal` (base `ctk/phase1-popups`). Three moves:
+> (1) `nlp_suite_theme.json` — every interactive widget's default fill flipped from brand red to a
+> neutral grey (`CTkButton`, `CTkCheckBox`, `CTkOptionMenu`, `CTkComboBox`, `CTkRadioButton`,
+> `CTkSlider`, `CTkSwitch`, `CTkProgressBar`, `CTkSegmentedButton`, and the `DropdownMenu` hover);
+> entries/textboxes/frames were already neutral and are untouched. (2) `GUI_theme_util` — added an
+> `accent=True` opt-in to `create_button` and `create_option_menu` that paints the brand red
+> (`create_option_menu` already had `muted=True` for the "nothing available" grey; `accent` is its
+> complement for the "available" red). (3) `GUI_util` — the **RUN** button and the *available*
+> branches of the TIPS / videos / reminders dropdowns now pass `accent=True`; their *unavailable*
+> branches keep `muted=True`. Net effect: neutral grey everywhere, red only on RUN and on a dropdown
+> that actually has a resource — the availability cue is restored and the "wall of red" is gone.
+> Verified: `tests/gui_smoke.py` and `pytest` green (theme is data + kwarg plumbing, no golden/label
+> change). **Still outstanding:** on-screen QA on Mac + Windows to confirm the grey reads as
+> actionable (not disabled) and the red reads as signal; and a call whether RUN should keep the red
+> accent or go neutral like the rest (left red here as the single primary-action affordance — a
+> one-line flip if Roberto prefers otherwise).
 
 After Phase 1, **every GUI already looks substantially better** (new chrome, themed top/bottom
 bars, help column, scrollable body) even though its own widgets are still plain tk.

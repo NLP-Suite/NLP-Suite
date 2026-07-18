@@ -35,8 +35,20 @@ import customtkinter as ctk
 
 import ctk_bundle_util
 
-# NLP Suite brand accent (see GUI_util.py "RGB red is #b10a0a"). Mirrored in nlp_suite_theme.json.
+# NLP Suite brand accent (see GUI_util.py "RGB red is #b10a0a"). The theme's default widget fill is
+# NEUTRAL GREY (see nlp_suite_theme.json + the plan's §0): red is a *signal*, not the default. It is
+# opted into via ``accent=True`` on create_button / create_option_menu, and only two things earn it --
+# the RUN primary-action button and the "available" state of the TIPS / videos / reminders dropdowns.
+# The first migration cut painted every widget this red; that erased the red=available cue and was
+# reverted. Light-mode value first, dark-mode second (CTk color pairs); appearance is pinned "light"
+# in Phase 1 but both are supplied so the accent survives a later dark-mode enable.
 NLP_SUITE_ACCENT = "#b10a0a"
+_ACCENT_FG = ["#b10a0a", "#c81414"]
+_ACCENT_HOVER = ["#8a0808", "#9e0d0d"]
+_ACCENT_TEXT = ["#FFFFFF", "#F5E9E9"]
+# The OptionMenu arrow-button portion is a shade darker than the body, matching CTk's convention.
+_ACCENT_MENU_BUTTON = ["#8a0808", "#9e0d0d"]
+_ACCENT_MENU_BUTTON_HOVER = ["#6d0606", "#7a0a0a"]
 
 # Legacy tk widths are in characters; CTk widths are in pixels. Rough average glyph advance for the
 # suite's UI font. Tuned once here; per-call-site tweaks happen during the pilot/batch phases.
@@ -175,8 +187,20 @@ def translate_kwargs(cls, kwargs, width_is_chars=True, height_is_lines=True):
 # ---------------------------------------------------------------------------------------------
 
 
-def create_button(master, **kwargs):
-    return ctk.CTkButton(master, **translate_kwargs(ctk.CTkButton, kwargs))
+def create_button(master, accent=False, **kwargs):
+    """tk.Button(...) -> CTkButton(...).
+
+    ``accent=True`` paints the button in the brand red instead of the neutral theme default -- used
+    for the single RUN primary-action button per GUI (the one control that earns the accent among
+    buttons; see the plan's §0). An explicit ``fg_color``/``hover_color``/``text_color`` at the call
+    site still wins, so the accent is only a default.
+    """
+    translated = translate_kwargs(ctk.CTkButton, kwargs)
+    if accent:
+        translated.setdefault("fg_color", _ACCENT_FG)
+        translated.setdefault("hover_color", _ACCENT_HOVER)
+        translated.setdefault("text_color", _ACCENT_TEXT)
+    return ctk.CTkButton(master, **translated)
 
 
 # The small "open the selected file / directory" affordance. The legacy `width=1, text=''` rendered
@@ -228,31 +252,41 @@ def create_checkbox(master, **kwargs):
     return ctk.CTkCheckBox(master, **translated)
 
 
-# Neutral grey for a "nothing available" OptionMenu (muted=True). The theme paints every menu solid
-# red, which erased the legacy red=available / black=none availability cue on the TIPS / reminders /
-# videos dropdowns. Grey-on-red restores that cue in a CTk-native way -- a greyed dropdown reads as
-# "nothing here for this GUI" at a glance. Light-mode values (appearance is pinned "light" in Phase 1).
+# The TIPS / videos / reminders dropdowns carry a three-state availability cue:
+#   * accent=True -> brand RED: a resource IS available for this GUI (the legacy "red" state).
+#   * default     -> neutral GREY (the theme default): an ordinary control, no special meaning.
+#   * muted=True  -> a LIGHTER washed-out grey: explicitly "nothing available for this GUI".
+# muted is deliberately lighter than the neutral default so "no resource here" reads as inert rather
+# than merely un-accented. Light-mode values (appearance is pinned "light" in Phase 1).
 _MUTED_FG = "#d9d9d9"
 _MUTED_BUTTON = "#c4c4c4"
 _MUTED_BUTTON_HOVER = "#b4b4b4"
 _MUTED_TEXT = "#5f5f5f"
 
 
-def create_option_menu(
-    master, variable=None, values=None, command=None, muted=False, **kwargs
-):
+def create_option_menu(master, variable=None, values=None, command=None, muted=False, accent=False, **kwargs):
     """tk.OptionMenu(master, var, *choices) -> CTkOptionMenu(master, variable=, values=[...]).
 
     The legacy call passes the choices as varargs; call sites converting to this factory pass them
     as ``values=[...]``. Repopulate a live menu with :func:`set_values` (never the old
     ``widget["menu"]`` mutation).
 
-    muted=True renders the menu in a neutral GREY instead of the theme red -- used for the
-    TIPS / reminders / videos dropdowns when nothing is available for the current GUI, restoring the
-    legacy red=available / grey=none availability cue the solid-red theme otherwise erased.
+    The theme default is a neutral grey (red is not the default fill -- see the plan's §0). The two
+    flags opt into the availability cue on the TIPS / videos / reminders dropdowns:
+
+    * ``accent=True`` -> brand RED, i.e. a resource IS available for this GUI.
+    * ``muted=True``  -> a lighter grey, i.e. nothing is available for this GUI.
+
+    They are complements; passing neither leaves the neutral default (used by ordinary dropdowns like
+    the Setup and I/O-config menus). ``accent`` takes precedence if both are somehow passed.
     """
     translated = translate_kwargs(ctk.CTkOptionMenu, kwargs)
-    if muted:
+    if accent:
+        translated.setdefault("fg_color", _ACCENT_FG)
+        translated.setdefault("button_color", _ACCENT_MENU_BUTTON)
+        translated.setdefault("button_hover_color", _ACCENT_MENU_BUTTON_HOVER)
+        translated.setdefault("text_color", _ACCENT_TEXT)
+    elif muted:
         translated.setdefault("fg_color", _MUTED_FG)
         translated.setdefault("button_color", _MUTED_BUTTON)
         translated.setdefault("button_hover_color", _MUTED_BUTTON_HOVER)
