@@ -149,14 +149,15 @@ def _accepted_params(cls):
     }
 
 
-def translate_kwargs(cls, kwargs, width_is_chars=True, height_is_lines=True):
+def translate_kwargs(cls, kwargs, width_is_chars=True, height_is_lines=True, width_padding=0):
     """Translate legacy tk widget kwargs into kwargs valid for CustomTkinter class ``cls``.
 
     Pure function (no widget is created), so it is unit-testable against the real CTk classes via
     signature introspection without a display. Rules:
 
     * ``foreground``/``fg`` -> ``text_color``.
-    * ``width`` (characters) -> pixels via :func:`char_width_to_px` when ``width_is_chars``.
+    * ``width`` (characters) -> pixels via :func:`char_width_to_px` when ``width_is_chars``,
+      plus ``width_padding`` px of chrome allowance (see :func:`create_entry`).
     * ``height`` (lines) -> pixels via :func:`line_height_to_px` when ``height_is_lines``.
     * native-tk chrome kwargs (``relief``, ``bd``, ``bg``, ...) are dropped.
     * anything the target CTk class does not accept is dropped (never passed through blindly).
@@ -167,7 +168,7 @@ def translate_kwargs(cls, kwargs, width_is_chars=True, height_is_lines=True):
         if key in _DROP:
             continue
         if key == "width" and width_is_chars:
-            value = char_width_to_px(value)
+            value = char_width_to_px(value, padding=width_padding)
             if value is None:
                 continue
         elif key == "height" and height_is_lines:
@@ -229,10 +230,20 @@ def create_label(master, **kwargs):
     return ctk.CTkLabel(master, **translate_kwargs(ctk.CTkLabel, kwargs))
 
 
+# A CTkEntry reserves internal horizontal padding around its text area, so a bare chars*px width
+# yields fewer usable character cells than the legacy tk.Entry did. That is invisible on the wide
+# file-path entries but clips the small ones: the Phase 2 pilot's 4-char "Max no. of words" box
+# rendered "100" as "10C". Add the chrome back so a width=N entry still shows N characters.
+_ENTRY_PADDING_PX = 14
+
+
 def create_entry(master, **kwargs):
     # tk.Entry has no height; only width is character-based.
     return ctk.CTkEntry(
-        master, **translate_kwargs(ctk.CTkEntry, kwargs, height_is_lines=False)
+        master,
+        **translate_kwargs(
+            ctk.CTkEntry, kwargs, height_is_lines=False, width_padding=_ENTRY_PADDING_PX
+        ),
     )
 
 
