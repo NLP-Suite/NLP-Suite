@@ -12,6 +12,7 @@ import tkinter.messagebox as mb
 from subprocess import call
 
 import GUI_IO_util
+import GUI_theme_util
 import IO_files_util
 import IO_csv_util
 import reminders_util
@@ -173,14 +174,14 @@ html_annotator_add_dictionary_var=tk.IntVar() # to add new annotations via dicti
 html_annotator_dictionary_file_var=tk.StringVar() # dictionary file used to annotate
 html_annotator_extractor_var=tk.IntVar() # to extract annotations in csv format from an annotated file
 
-knowledge_graphs_DBpedia_YAGO_button = tk.Button(window, width=GUI_IO_util.widget_width_long, text='HTML annotate corpus using the DBpedia, YAGO & Wikipedia knowledge graphs (Open GUI)', command=lambda: run_script_util.run_script("knowledge_graphs_main.py"))
+knowledge_graphs_DBpedia_YAGO_button = GUI_theme_util.create_button(window, width=GUI_IO_util.widget_width_long, text='HTML annotate corpus using the DBpedia, YAGO & Wikipedia knowledge graphs (Open GUI)', command=lambda: run_script_util.run_script("knowledge_graphs_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    knowledge_graphs_DBpedia_YAGO_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-semantic_aggregation_WordNet_button = tk.Button(window, width=GUI_IO_util.widget_width_long, text='HTML annotate corpus using the WordNet knowledge graphs (Open GUI)', command=lambda: run_script_util.run_script("semantic_aggregation_main.py"))
+semantic_aggregation_WordNet_button = GUI_theme_util.create_button(window, width=GUI_IO_util.widget_width_long, text='HTML annotate corpus using the WordNet knowledge graphs (Open GUI)', command=lambda: run_script_util.run_script("semantic_aggregation_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    semantic_aggregation_WordNet_button,
@@ -199,22 +200,22 @@ def clear_dictionary_list():
     csv_field_value_menu.configure(state='normal')
     csvValue_color_list.clear()
 
-html_gender_annotator_button = tk.Button(window, width=GUI_IO_util.widget_width_long, text='HTML gender annotator (Open GUI)',  command=lambda: run_script_util.run_script("html_annotator_gender_main.py"))
+html_gender_annotator_button = GUI_theme_util.create_button(window, width=GUI_IO_util.widget_width_long, text='HTML gender annotator (Open GUI)',  command=lambda: run_script_util.run_script("html_annotator_gender_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    html_gender_annotator_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-html_dictionary_annotator_checkbox = tk.Checkbutton(window, text='HTML annotate corpus using csv dictionary',  variable=html_annotator_dictionary_var, onvalue=1, offvalue=0)
+html_dictionary_annotator_checkbox = GUI_theme_util.create_checkbox(window, text='HTML annotate corpus using csv dictionary',  variable=html_annotator_dictionary_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,html_dictionary_annotator_checkbox,True)
 
 html_annotator_add_dictionary_var.set(0)
-html_annotator_add_dictionary_checkbox = tk.Checkbutton(window, text='Add annotations to a previously annotated HTML file using csv dictionary', variable=html_annotator_add_dictionary_var, onvalue=1, offvalue=0)
+html_annotator_add_dictionary_checkbox = GUI_theme_util.create_checkbox(window, text='Add annotations to a previously annotated HTML file using csv dictionary', variable=html_annotator_add_dictionary_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_add_dictionary_description,y_multiplier_integer,html_annotator_add_dictionary_checkbox)
 
-annotator_dictionary_button=tk.Button(window, width=20, text='Select csv dictionary file',command=lambda: get_dictionary_file(window,'Select INPUT csv dictionary file', [("dictionary files", "*.csv")]))
-annotator_dictionary_button.config(state='disabled')
+annotator_dictionary_button=GUI_theme_util.create_button(window, width=20, text='Select csv dictionary file',command=lambda: get_dictionary_file(window,'Select INPUT csv dictionary file', [("dictionary files", "*.csv")]))
+annotator_dictionary_button.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    annotator_dictionary_button,
@@ -223,14 +224,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 
 #setup a button to open Windows Explorer on the selected input directory
 current_y_multiplier_integer=y_multiplier_integer-1
-openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, state='disabled', text='', command=lambda: IO_files_util.openFile(window, html_annotator_dictionary_file.get()))
+openInputFile_button  = GUI_theme_util.create_open_file_button(window, state='disabled', command=lambda: IO_files_util.openFile(window, html_annotator_dictionary_file.get()))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.html_annotator_openInputFile_button, y_multiplier_integer,
     openInputFile_button, True, False, True, False, 90, GUI_IO_util.html_annotator_openInputFile_button, "Open displayed csv dictionary file")
 
-html_annotator_dictionary_file=tk.Entry(window, width=GUI_IO_util.html_annotator_dictionary_width,textvariable=html_annotator_dictionary_file_var)
-html_annotator_dictionary_file.config(state='disabled')
+html_annotator_dictionary_file=GUI_theme_util.create_entry(window, width=GUI_IO_util.html_annotator_dictionary_width,textvariable=html_annotator_dictionary_file_var)
+html_annotator_dictionary_file.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_dictionary_file_button, y_multiplier_integer,html_annotator_dictionary_file)
 
 menu_values=''
@@ -238,19 +239,17 @@ if os.path.isfile(html_annotator_dictionary_file.get()):
     if html_annotator_dictionary_file.get().endswith('csv'):
         menu_values=IO_csv_util.get_csvfile_headers(html_annotator_dictionary_file.get())
 
-field_lb = tk.Label(window, text='Select csv field 1')
+field_lb = GUI_theme_util.create_label(window, text='Select csv field 1')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,field_lb,True)
-if menu_values!='':
-    csv_field1_menu = tk.OptionMenu(window, csv_field1_var, *menu_values)
-else:
-    csv_field1_menu = tk.OptionMenu(window, csv_field1_var, menu_values)
+csv_field1_menu = GUI_theme_util.create_option_menu(window, variable=csv_field1_var,
+                                            values=list(menu_values) if menu_values != '' else [menu_values])
 csv_field1_menu.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_csv_field1_menu,y_multiplier_integer,csv_field1_menu,True)
 
-add_dictValue_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: csv_field_value_menu.configure(state="normal"))
+add_dictValue_button = GUI_theme_util.create_button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: csv_field_value_menu.configure(state="normal"))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_add_dictValue_button,y_multiplier_integer,add_dictValue_button, True)
 
-reset_dictValue_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: clear_dictionary_list())
+reset_dictValue_button = GUI_theme_util.create_button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: clear_dictionary_list())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_reset_dictValue_button,y_multiplier_integer,reset_dictValue_button,True)
 
 def showKeywordList():
@@ -259,29 +258,32 @@ def showKeywordList():
     else:
         mb.showwarning(title='Warning', message='The currently selected combination of csv field values and colors are:\n\n' + ','.join(csvValue_color_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
 
-show_keywords_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: showKeywordList())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_show_keywords_button,y_multiplier_integer,show_keywords_button,True)
+show_keywords_button = GUI_theme_util.create_button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: showKeywordList())
+# end the row here (sameY=False) instead of piling the field-2/value/color widgets below onto the
+# same row: that packed 12 widgets into one grid row, and since grid columns are shared across the
+# whole window, each new widget bumped into its own never-reused column, dragging the window ~700px
+# past the screen edge (docs/ctk_GUI_overflow_status.md). Splitting across rows lets the field-2/value
+# widgets reuse the columns field-1's row already paid for.
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_show_keywords_button,y_multiplier_integer,show_keywords_button)
 
 # OK_button = tk.Button(window, text='OK', width=3,height=1,state='disabled',command=lambda: accept_keyword_list())
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+330,y_multiplier_integer,OK_button,True)
 
-field2_lb = tk.Label(window, text='Select csv field 2')
+field2_lb = GUI_theme_util.create_label(window, text='Select csv field 2')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_csv_field2_lb,y_multiplier_integer,field2_lb,True)
-if menu_values!='':
-    csv_field2_menu = tk.OptionMenu(window, csv_field2_var, *menu_values)
-else:
-    csv_field2_menu = tk.OptionMenu(window, csv_field2_var, menu_values)
+csv_field2_menu = GUI_theme_util.create_option_menu(window, variable=csv_field2_var,
+                                            values=list(menu_values) if menu_values != '' else [menu_values])
 csv_field2_menu.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_csv_field2_menu,y_multiplier_integer,csv_field2_menu,True)
 
-value_lb = tk.Label(window, text='Select csv field value ')
+value_lb = GUI_theme_util.create_label(window, text='Select csv field value ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_value_lb,y_multiplier_integer,value_lb,True)
-if menu_values!='':
-    csv_field_value_menu = tk.OptionMenu(window, csv_field_value_var, *menu_values)
-else:
-    csv_field_value_menu = tk.OptionMenu(window, csv_field_value_var, menu_values)
+csv_field_value_menu = GUI_theme_util.create_option_menu(window, variable=csv_field_value_var,
+                                            values=list(menu_values) if menu_values != '' else [menu_values])
 csv_field_value_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_csv_field_value_menu,y_multiplier_integer,csv_field_value_menu,True)
+# end this row too, so 'Select color'/the color dropdown/Bold below reuse these columns rather than
+# extending the row further right
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_csv_field_value_menu,y_multiplier_integer,csv_field_value_menu)
 
 def changed_dictionary_filename(*args):
     csvValue_color_list.clear()
@@ -296,16 +298,10 @@ def changed_dictionary_filename(*args):
             menu_values=IO_csv_util.get_csvfile_headers(html_annotator_dictionary_file.get())
         else:
             return
-    m = csv_field1_menu["menu"]
-    m.delete(0,"end")
-    for s in menu_values:
-        m.add_command(label=s,command=lambda value=s:csv_field1_var.set(value))
+    GUI_theme_util.set_values(csv_field1_menu, menu_values)
 
     if len(menu_values)>1:
-        m1 = csv_field2_menu["menu"]
-        m1.delete(0,"end")
-        for s in menu_values:
-            m1.add_command(label=s,command=lambda value=s:csv_field2_var.set(value))
+        GUI_theme_util.set_values(csv_field2_menu, menu_values)
 
     # set default value of csv_field1_var to
     #	first column of csv file
@@ -326,11 +322,16 @@ else:
 
 color_menu=['black','blue','green','pink','red','yellow']
 
-color_palette_dict_lb = tk.Label(window, text='Select color')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_color_palette_dict_lb,y_multiplier_integer,color_palette_dict_lb,True)
-color_palette_dict_menu = tk.OptionMenu(window, color_palette_dict_var,*color_menu)
+color_palette_dict_lb = GUI_theme_util.create_label(window, text='Select color')
+# reuse the 'Select csv field 1' row's x-coordinates rather than the dedicated (far-right)
+# html_annotator_color_palette_dict_lb/menu constants: this row's grid columns are otherwise brand
+# new ones the window has to grow to fit, since it's the only row that needs them -- reusing an
+# earlier row's columns lets this content share width already paid for (see the row-split note above
+# 'Select csv field 2', and docs/ctk_GUI_overflow_status.md).
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,color_palette_dict_lb,True)
+color_palette_dict_menu = GUI_theme_util.create_option_menu(window, variable=color_palette_dict_var, values=color_menu)
 color_palette_dict_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_color_palette_dict_menu, y_multiplier_integer,color_palette_dict_menu, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_csv_field1_menu, y_multiplier_integer,color_palette_dict_menu, True)
 
 def get_csv_fieldValues(*args):
     csv_field_value_var.set('')
@@ -345,10 +346,7 @@ def get_csv_fieldValues(*args):
     else:
         menu_field_values = IO_csv_util.get_csv_field_values(html_annotator_dictionary_file.get(), csv_field1_var.get())
 
-    m2 = csv_field_value_menu["menu"]
-    m2.delete(0,"end")
-    for s in menu_field_values:
-        m2.add_command(label=s,command=lambda value=s:csv_field_value_var.set(value))
+    GUI_theme_util.set_values(csv_field_value_menu, menu_field_values)
     if csv_field1_var.get()!='' or csv_field2_var.get()!='':
         if csv_field_value_var.get()=='':
             csv_field_value_menu.configure(state="normal")
@@ -366,7 +364,7 @@ def activate_color_palette_dict_menu(*args):
     if color_palette_dict_var.get()!='':
         reset_dictValue_button.configure(state='normal')
         show_keywords_button.configure(state='normal')
-        state = str(color_palette_dict_menu['state'])
+        state = str(color_palette_dict_menu.cget('state'))
         if state != 'disabled':
             if color_palette_dict_var.get() in csvValue_color_list:
                 mb.showwarning(title='Warning', message='The selected color, ' + color_palette_dict_var.get() + ', has already been selected.\n\nPlease, select a different value. You can display all selected values by clicking on SHOW.')
@@ -386,22 +384,23 @@ def activate_color_palette_dict_menu(*args):
 color_palette_dict_var.trace('w',activate_color_palette_dict_menu)
 
 bold_dict_var.set(1)
-bold_checkbox = tk.Checkbutton(window, text='Bold', state='disabled',variable=bold_dict_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_bold_checkbox,y_multiplier_integer,bold_checkbox)
+bold_checkbox = GUI_theme_util.create_checkbox(window, text='Bold', state='disabled',variable=bold_dict_var, onvalue=1, offvalue=0)
+# reuses the '+' button's column on the 'Select csv field 1' row -- see the note above 'Select color'
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_add_dictValue_button,y_multiplier_integer,bold_checkbox)
 
 def activateDictionary(*args):
     if html_annotator_dictionary_var.get()==1 or html_annotator_add_dictionary_var.get()==1:
-        annotator_dictionary_button.config(state='normal')
-        openInputFile_button.config(state='normal')
-        html_annotator_dictionary_file.config(state='normal')
+        annotator_dictionary_button.configure(state='normal')
+        openInputFile_button.configure(state='normal')
+        html_annotator_dictionary_file.configure(state='normal')
         csv_field1_menu.configure(state='normal')
         # csv_field2_menu.configure(state='normal')
         # csv_field_value_menu.configure(state='normal')
     else:
         html_annotator_dictionary_file_var.set('')
-        annotator_dictionary_button.config(state='disabled')
-        openInputFile_button.config(state='disabled')
-        html_annotator_dictionary_file.config(state='disabled')
+        annotator_dictionary_button.configure(state='disabled')
+        openInputFile_button.configure(state='disabled')
+        html_annotator_dictionary_file.configure(state='disabled')
         csv_field1_menu.configure(state='disabled')
         # csv_field2_menu.configure(state='disabled')
         # csv_field_value_menu.configure(state='disabled')
@@ -412,7 +411,7 @@ activateDictionary()
 
 def di_activateCsvFieldValue(*args):
     if csv_field_value_var.get()!='':
-        state = str(csv_field_value_menu['state'])
+        state = str(csv_field_value_menu.cget('state'))
         if state != 'disabled':
             if csv_field_value_var.get() in csvValue_color_list:
                 mb.showwarning(title='Warning', message='The selected csv field value, ' + csv_field_value_var.get() + ', has already been selected.\n\nPlease, select a different value. You can display all selected values by clicking on SHOW.')
@@ -448,11 +447,11 @@ def get_dictionary_file(window,title,fileType):
     initialFolder = os.path.dirname(os.path.abspath(__file__))
     filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
     if len(filePath)>0:
-        html_annotator_dictionary_file.config(state='normal')
+        html_annotator_dictionary_file.configure(state='normal')
         html_annotator_dictionary_file_var.set(filePath)
 
 html_annotator_extractor_var.set(0)
-html_annotator_extractor_checkbox = tk.Checkbutton(window, text='Extract HTML annotations', variable=html_annotator_extractor_var, onvalue=1, offvalue=0)
+html_annotator_extractor_checkbox = GUI_theme_util.create_checkbox(window, text='Extract HTML annotations', variable=html_annotator_extractor_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,html_annotator_extractor_checkbox)
 
 videos_lookup = {'No videos available':''}
@@ -480,7 +479,15 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, click on the button to open the gender annotator GUI for annotating text by gender (male/female), either via Stanford CoreNLP gender annotator or various gender databases (US Census, US Social Security, Carnegie Mellon).')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox \'HTML annotate corpus using csv dictionary\' if you wish to annotate txt file(s) using a csv dictionary (i.e., a list of words to be annotated).\n\nYou can also tick the checkbox \'Add annotations to a previously annotated HTML file using csv dictionary\' if you wish to annotate a previously annotated file using a csv dictionary.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, click on the \'Select dictionary file\' button to select the csv file that contains dictionary values.\n\nThe button becomes available only when using the dictionary as an annotator (see the widget above \'Annotate corpus (using dictionary)\'.\n\nOnce selected, you can open the dictionary file by clicking on the little square widget.')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'The widgets become available only when a csv dictionary file has been selected (via the widget above \'Select dictionary file\').\n\nSelect csv field 1 is the column that contains the values used to annotate the input txt file(s). The FIRST COLUMN of the dictionary file is taken as the default column. YOU CAN SELECT A DIFFERENT COLUMN FROM THE DROPDOWN MENU Select csv field 1.\n\nIf the dictionary file contains more columns, you can select a SECOND COLUMN using the dropdown menu in Select csv field 2 to be used if you wish to use different colors for different items listed in this column. YOU CAN SELECT A DIFFERENT COLUMN FROM THE DROPDOWN MENU Select csv field 2. For example, column 1 contains words to be annotated in different colors by specific categories of field 2 (e.g., \'he\' to be annotated by a \'Gender\' column with the value \'Male\').\n\nThe specific values will have to be selected together with the specific color to be used. YOU CAN ACHIEVE THE SAME RESULT BY ANNOTATING THE SAME HTML FILE MULTIPLE TIMES USING A DIFFERENT DICTIONARY FILE ASSOCIATED EACH TIME TO A DIFFERENT COLOR.\n\n\nPress + for multiple selections.\nPress RESET (or ESCape) to delete all values entered and start fresh.\nPress Show to display all selected values.')
+    dictValue_widgets_msg = 'The widgets become available only when a csv dictionary file has been selected (via the widget above \'Select dictionary file\').\n\nSelect csv field 1 is the column that contains the values used to annotate the input txt file(s). The FIRST COLUMN of the dictionary file is taken as the default column. YOU CAN SELECT A DIFFERENT COLUMN FROM THE DROPDOWN MENU Select csv field 1.\n\nIf the dictionary file contains more columns, you can select a SECOND COLUMN using the dropdown menu in Select csv field 2 to be used if you wish to use different colors for different items listed in this column. YOU CAN SELECT A DIFFERENT COLUMN FROM THE DROPDOWN MENU Select csv field 2. For example, column 1 contains words to be annotated in different colors by specific categories of field 2 (e.g., \'he\' to be annotated by a \'Gender\' column with the value \'Male\').\n\nThe specific values will have to be selected together with the specific color to be used. YOU CAN ACHIEVE THE SAME RESULT BY ANNOTATING THE SAME HTML FILE MULTIPLE TIMES USING A DIFFERENT DICTIONARY FILE ASSOCIATED EACH TIME TO A DIFFERENT COLOR.\n\n\nPress + for multiple selections.\nPress RESET (or ESCape) to delete all values entered and start fresh.\nPress Show to display all selected values.'
+    # this explanation now covers 3 content rows (select csv field 1 / select csv field 2 & value /
+    # select color & bold) instead of 1 -- they were split across rows to stop the row from running
+    # off the right edge of the window (see docs/ctk_GUI_overflow_status.md). help_buttons()'s local
+    # counter must place one '? HELP' per content row (GUI_bottom's own trailing row is positioned off
+    # the count this function returns), so 1 message -> 3 identical calls keeps the two counters synced.
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", dictValue_widgets_msg)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", dictValue_widgets_msg)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", dictValue_widgets_msg)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox if you wish to run the Python 3 HTML_annotator_extractor script to extract all matched terms in your corpus as tagged in the HTML file(s).\n\nIn INPUT, the script expects previously annotated .html file(s) via DBpedia or dictionary.\n\nIn OUTPUT the script generates a csv file with the filename and term annotated, and whether it was annotated using DBpedia or dictionary.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

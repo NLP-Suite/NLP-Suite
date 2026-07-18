@@ -26,18 +26,36 @@ one clips its label with no way to read it.
 |---|---|---|
 | `NER_main.py` | +132 | **0** |
 | `CoNLL_table_analyzer_main.py` | +106 | **0** |
+| `html_annotator_main.py` | +687 (reqwidth 2157 vs. 1470 screen) | **0** (reqwidth 1420) |
+| `semantic_aggregation_main.py` | not clipped, but only 34px from the screen edge (reqwidth 1436) | **0**, 51px margin (reqwidth 1419) |
+| `semantic_analysis_main.py` | +164 (reqwidth 1634 vs. 1470 screen; missed by the sweep below — found via a bug report about the 'maximum number of keywords' slider) | **0** (reqwidth 1426) |
+
+Fixed via **per-GUI row-splitting**, the technique the "still overflowing" section below calls for: a
+legacy row crammed many widgets onto one line via `sameY=True` chaining, and since grid columns are
+shared by the whole window (see `apply_row_spans` in `GUI_IO_util.py`), each widget whose
+`x_coordinate` collided with one already used *on that row* got bumped into a brand-new column nothing
+else in the GUI reused — summing to far more width than the screen. The fix: end the row earlier
+(`sameY=False`) and give the trailing widgets their own row, reusing an `x_coordinate` that already
+lands in a column an *earlier* row pays for (so the shared column costs nothing extra). Splitting a row
+this way adds a content row that the GUI's local `help_buttons()` counter doesn't know about — that
+counter is independent of the main `y_multiplier_integer` sequence, and `GUI_bottom`'s own trailing
+widgets are positioned off the row `help_buttons()` returns, so an unsynced split causes the *next*
+symptom: new content silently overlapping `GUI_bottom`'s row instead of running off-screen. Every row
+split must add one matching `place_help_button(...)` call (reusing the same message) to keep the two
+counters aligned. Verified with a real (not stubbed) Tk instance and `mainloop` patched to a no-op —
+the stubbed `tests/gui_smoke.py` harness can't measure pixel geometry since its fake tkinter never lays
+anything out.
 
 ## Still overflowing
 
 These are wider than the screen even after every shrinkable entry hits the 150px floor — their width
 is driven by things the shrink pass leaves alone (long labels, checkbox text, dropdowns, button rows).
 Fixing them needs per-GUI layout work (shorter labels, moving widgets to another row), not a
-general-purpose knob.
+general-purpose knob — see the row-splitting technique above.
 
 | GUI | overflow (px) |
 |---|---|
 | `sample_corpus_main.py` | +426 |
-| `html_annotator_main.py` | +379 |
 | `DB_PCACE_data_analysis_main.py` | +301 |
 | `file_search_byWord_main.py` | +191 |
 | `wordclouds_main.py` | +169 |
@@ -45,7 +63,6 @@ general-purpose knob.
 | `file_manager_main.py` | +103 |
 | `DB_PCACE_data_validation_main.py` | +59 |
 | `SVO_main.py` | +48 |
-| `semantic_aggregation_main.py` | +34 |
 
 `NLP_welcome_main.py` reports +8656 but is a false positive: its content is `.place()`d, not gridded,
 so `reqwidth` is not meaningful there.

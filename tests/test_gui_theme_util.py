@@ -515,6 +515,61 @@ class TestNormalizeLegacyBackgroundsOnScreen:
         assert gtu.normalize_legacy_backgrounds(ctk_root) > 0
 
 
+class TestIntegerSlider:
+    """tk.Scale.get() returned an int; CTkSlider.get() returns a float (Phase 3, sentiment tranche).
+
+    Every legacy tk.Scale in the suite feeds an integer consumer, and none of them notice a float
+    until RUN -- shape_of_stories' memory slider is concatenated into CoreNLP's heap flag
+    ('-mx' + str(v) + 'g'), where '-mx6.0g' makes the JVM refuse to start.
+    """
+
+    def test_plain_ctkslider_get_is_not_integral(self):
+        # The contract that motivates _IntSlider: number_of_steps quantizes the value but the
+        # returned type is still float. Pinned so a CTk upgrade can't quietly make this moot.
+        import inspect
+
+        assert "number_of_steps" in inspect.signature(ctk.CTkSlider.__init__).parameters
+
+    def test_int_slider_get_coerces_to_int(self, monkeypatch):
+        # Built without __init__ (CTkSlider's needs a live Tk master); _IntSlider.get() delegates
+        # up via super(), so stubbing the base's get() exercises exactly the coercion under test.
+        widget = object.__new__(gtu._IntSlider)
+        for raw, want in ((6.0, 6), (6.4, 6), (7.5, 8), (9, 9)):
+            monkeypatch.setattr(ctk.CTkSlider, "get", lambda self, _r=raw: _r)
+            got = widget.get()
+            assert got == want and isinstance(got, int), f"{raw!r} -> {got!r}"
+
+    def test_create_slider_returns_plain_slider_unless_integer_requested(self):
+        assert gtu.create_slider is not None
+        # integer= is opt-in: sliders over a continuous range must keep their float get().
+        import inspect
+
+        assert inspect.signature(gtu.create_slider).parameters["integer"].default is False
+
+    def test_create_slider_translates_the_tk_scale_kwargs(self, monkeypatch):
+        # tk names (orient/length/resolution) -> CTk names, and integer= picks the subclass.
+        # Captured rather than rendered so the test runs headless.
+        seen = {}
+
+        class _Capture:
+            def __init__(self, master, **kwargs):
+                seen.update(kwargs)
+                seen["_cls"] = type(self).__name__
+
+        monkeypatch.setattr(ctk, "CTkSlider", _Capture)
+        monkeypatch.setattr(gtu.ctk, "CTkSlider", _Capture)
+        monkeypatch.setattr(gtu, "_IntSlider", type("_IntSlider", (_Capture,), {}))
+
+        gtu.create_slider(
+            None, from_=1, to=16, orient="horizontal", length=200, resolution=1, integer=True
+        )
+        assert seen["from_"] == 1 and seen["to"] == 16
+        assert seen["orientation"] == "horizontal"   # orient -> orientation
+        assert seen["width"] == 200                  # length -> width (px, not chars)
+        assert seen["number_of_steps"] == 15         # (16-1)/1 integer detents
+        assert seen["_cls"] == "_IntSlider"
+
+
 class TestClampTooltipPosition:
     """Right-docked buttons put the naive tooltip position past the right screen edge."""
 

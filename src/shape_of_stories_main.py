@@ -23,6 +23,7 @@ import shape_of_stories_visualization_util as viz
 
 import config_util
 import GUI_IO_util
+import GUI_theme_util
 import IO_files_util
 import IO_csv_util
 import reminders_util
@@ -429,24 +430,23 @@ NMF_var=tk.IntVar()
 best_topic_estimation_var=tk.IntVar()
 
 sentiment_analysis_var.set(0)
-sentiment_analysis_checkbox = tk.Checkbutton(window, text='Sentiment Analysis', variable=sentiment_analysis_var,
+sentiment_analysis_checkbox = GUI_theme_util.create_checkbox(window, text='Sentiment Analysis', variable=sentiment_analysis_var,
                         onvalue=1, offvalue=0, command=lambda: check_IO_requirements(GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get()))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,sentiment_analysis_checkbox,True)
 
-sentiment_analysis_lb = tk.Label(window,text='Select the Sentiment Analysis algorithm')
+sentiment_analysis_lb = GUI_theme_util.create_label(window,text='Select the Sentiment Analysis algorithm')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.shape_of_stories_sentiment_analysis_lb_pos,y_multiplier_integer,sentiment_analysis_lb,True)
 
 sentiment_analysis_menu_var.set('BERT (English model)')
-sentiment_analysis_menu = tk.OptionMenu(window,sentiment_analysis_menu_var,'Large Language Models (LLM):', '   BERT (English model)', '   BERT (Multilingual model)', 'Neural network approaches:', '   spaCy','   Stanford CoreNLP','   Stanza','','Dictionary approaches:','   ANEW','   hedonometer','   SentiWordNet','   VADER')
+sentiment_analysis_menu = GUI_theme_util.create_option_menu(window,variable=sentiment_analysis_menu_var,values=['Large Language Models (LLM):', '   BERT (English model)', '   BERT (Multilingual model)', 'Neural network approaches:', '   spaCy','   Stanford CoreNLP','   Stanza','','Dictionary approaches:','   ANEW','   hedonometer','   SentiWordNet','   VADER'])
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.shape_of_stories_sentiment_analysis_menu_pos,y_multiplier_integer,sentiment_analysis_menu,True)
 
 #memory options
 
-memory_var_lb = tk.Label(window, text='Memory ')
+memory_var_lb = GUI_theme_util.create_label(window, text='Memory ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.shape_of_stories_memory_lb_pos,y_multiplier_integer,memory_var_lb,True)
 
-memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
-memory_var.pack()
+memory_var = GUI_theme_util.create_slider(window, from_=1, to=16, orient='horizontal', resolution=1, integer=True)
 memory_var.set(6)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.shape_of_stories_memory_pos,y_multiplier_integer,memory_var)
 
@@ -461,27 +461,27 @@ def activate_warning(*args):
 sentiment_analysis_menu_var.trace("w",activate_warning)
 
 corpus_analysis_var.set(0)
-corpus_analysis_checkbox = tk.Checkbutton(window, text='Compute & visualize corpus statistics', variable=corpus_analysis_var, onvalue=1, offvalue=0)
+corpus_analysis_checkbox = GUI_theme_util.create_checkbox(window, text='Compute & visualize corpus statistics', variable=corpus_analysis_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,corpus_analysis_checkbox)
 
 
 hierarchical_clustering_var.set(1)
-hierarchical_clustering_checkbox = tk.Checkbutton(window, text='Hierarchical Clustering (HC)', variable=hierarchical_clustering_var, onvalue=1, offvalue=0)
+hierarchical_clustering_checkbox = GUI_theme_util.create_checkbox(window, text='Hierarchical Clustering (HC)', variable=hierarchical_clustering_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,hierarchical_clustering_checkbox)
 
 
 SVD_var.set(1)
-SVD_checkbox = tk.Checkbutton(window, text='Singular Value Decomposition (SVD)', variable=SVD_var, onvalue=1, offvalue=0)
+SVD_checkbox = GUI_theme_util.create_checkbox(window, text='Singular Value Decomposition (SVD)', variable=SVD_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,SVD_checkbox)
 
 
 NMF_var.set(1)
-NMF_checkbox = tk.Checkbutton(window, text='Non-Negative Matrix Factorization (NMF)', variable=NMF_var, onvalue=1, offvalue=0)
+NMF_checkbox = GUI_theme_util.create_checkbox(window, text='Non-Negative Matrix Factorization (NMF)', variable=NMF_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,NMF_checkbox)
 
 # RF
 best_topic_estimation_var.set(0)
-best_topic_estimation_checkbox = tk.Checkbutton(window, text='Best topic estimation', variable=best_topic_estimation_var, onvalue=1, offvalue=0)
+best_topic_estimation_checkbox = GUI_theme_util.create_checkbox(window, text='Best topic estimation', variable=best_topic_estimation_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,best_topic_estimation_checkbox)
 
 def check_IO_requirements(inputFilename, inputDir):

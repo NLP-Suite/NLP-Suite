@@ -16,6 +16,7 @@ import IO_files_util
 import IO_user_interface_util
 import lib_util
 import GUI_IO_util
+import GUI_theme_util
 import reminders_util
 import sentiment_analysis_hedonometer_util
 import sentiment_analysis_SentiWordNet_util
@@ -520,12 +521,12 @@ window.bind("<Escape>", clear)
 #setup GUI widgets
 
 extra_GUIs_var.set(0)
-extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+extra_GUIs_checkbox = GUI_theme_util.create_checkbox(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 # extra_GUIs_checkbox.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'File pre-processing tools','Compute document statistics')
+extra_GUIs_menu = GUI_theme_util.create_option_menu(window,variable=extra_GUIs_menu_var,values=['File pre-processing tools','Compute document statistics'])
 extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -547,10 +548,10 @@ def open_GUI(*args):
             run_script_util.run_script("file_checker_pre_processing_pipeline_main.py")
 extra_GUIs_menu_var.trace('w',open_GUI)
 
-mean_checkbox = tk.Checkbutton(window, text='Calculate sentence mean', variable=mean_var, onvalue=1, offvalue=0)
+mean_checkbox = GUI_theme_util.create_checkbox(window, text='Calculate sentence mean', variable=mean_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,mean_checkbox,True)
 
-median_checkbox = tk.Checkbutton(window, text='Calculate sentence median', variable=median_var, onvalue=1, offvalue=0)
+median_checkbox = GUI_theme_util.create_checkbox(window, text='Calculate sentence median', variable=median_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.sentiment_analysis_median_checkbox_pos,y_multiplier_integer,median_checkbox)
 
 def display_reminder(*args):
@@ -594,28 +595,28 @@ SA_algorithm_var.trace('w',display_reminder)
 SA_algorithms=['*','Large Language Models (LLM):','   BERT (English model)','   BERT (Multilingual model)','','Neural network approaches:','   Stanford CoreNLP','   Stanza','','Dictionary approaches:','   ANEW','   hedonometer','   NRC (emotion wheel)','   spaCy (TextBlob)','   SentiWordNet','   VADER','','Character-level:','   Character Emotion Arcs (NER + NRC)']
 
 SA_algorithm_var.set('*')
-SA_algorithm_lb = tk.Label(window, text='Select sentiment analysis algorithm')
+SA_algorithm_lb = GUI_theme_util.create_label(window, text='Select sentiment analysis algorithm')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,SA_algorithm_lb,True)
 
-SA_algorithm_menu = tk.OptionMenu(window,SA_algorithm_var,*SA_algorithms)
+SA_algorithm_menu = GUI_theme_util.create_option_menu(window,variable=SA_algorithm_var,values=SA_algorithms)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.sentiment_analysis_SA_algorithm_menu_pos, y_multiplier_integer,SA_algorithm_menu)
 
 y_multiplier_integerSV=y_multiplier_integer-1
 
 sentence_index_var.set(0)
-sentence_index_checkbox = tk.Checkbutton(window, state='disabled', text='Do sentiments fluctuate across a document (Sentiment scores by sentence index)', variable=sentence_index_var, onvalue=1, offvalue=0)
+sentence_index_checkbox = GUI_theme_util.create_checkbox(window, state='disabled', text='Do sentiments fluctuate across a document (Sentiment scores by sentence index)', variable=sentence_index_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,sentence_index_checkbox)
 
 shape_of_stories_var.set(0)
-shape_of_stories_checkbox = tk.Checkbutton(window, text='Do sentiments fluctuate across documents (Open \'Shape of stories\' GUI)', variable=shape_of_stories_var, onvalue=1, offvalue=0)
+shape_of_stories_checkbox = GUI_theme_util.create_checkbox(window, text='Do sentiments fluctuate across documents (Open \'Shape of stories\' GUI)', variable=shape_of_stories_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,shape_of_stories_checkbox)
 
 character_arcs_checkbox_var = tk.IntVar()
 character_arcs_checkbox_var.set(0)
-character_arcs_checkbox = tk.Checkbutton(window, text='Do sentiments fluctuate across actors and/or locations? (Sentiment scores by NER values)', variable=character_arcs_checkbox_var, onvalue=1, offvalue=0)
+character_arcs_checkbox = GUI_theme_util.create_checkbox(window, text='Do sentiments fluctuate across actors and/or locations? (Sentiment scores by NER values)', variable=character_arcs_checkbox_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,character_arcs_checkbox)
 
-ALL_options_button = tk.Button(window, text='Sentiments/emotions (ALL options GUI)', command=lambda: run_script_util.run_script("sentiments_emotions_ALL_main.py"))
+ALL_options_button = GUI_theme_util.create_button(window, text='Sentiments/emotions (ALL options GUI)', command=lambda: run_script_util.run_script("sentiments_emotions_ALL_main.py"))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,ALL_options_button)
 
 def activate_all_options(*args):
@@ -626,9 +627,9 @@ def activate_all_options(*args):
 def activate_SOS(*args):
     # the Shape of Stories is only available when processing a directory and using CoreNLP
     if input_main_dir_path.get()=='' or (not 'BERT' in SA_algorithm_var.get().strip() and 'spaCy' not in SA_algorithm_var.get().strip() and SA_algorithm_var.get().strip()!='Stanza' and SA_algorithm_var.get().strip()!='Stanford CoreNLP'):
-        shape_of_stories_checkbox.config(state='disabled')
+        shape_of_stories_checkbox.configure(state='disabled')
     else:
-        shape_of_stories_checkbox.config(state='normal')
+        shape_of_stories_checkbox.configure(state='normal')
 shape_of_stories_var.trace('w',activate_SOS)
 inputFilename.trace('w',activate_SOS)
 input_main_dir_path.trace('w',activate_SOS)

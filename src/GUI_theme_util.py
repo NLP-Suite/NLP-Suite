@@ -476,8 +476,27 @@ def create_combobox(master, values=None, **kwargs):
     return _ThemedComboBox(master, **translated)
 
 
+class _IntSlider(ctk.CTkSlider):
+    """A CTkSlider whose ``get()`` returns an ``int``, as ``tk.Scale.get()`` did.
+
+    ``tk.Scale(from_=1, to=16)`` returns a Python ``int``; ``CTkSlider.get()`` returns a ``float``
+    (``number_of_steps`` quantizes the value but still hands back e.g. ``6.0``, and an unstepped
+    slider returns the raw drag position such as ``6.4``). Every legacy call site feeds that number
+    straight into something that wants an integer, so the difference does not surface until RUN:
+    ``shape_of_stories``' memory slider builds CoreNLP's heap flag by string concatenation
+    (``'-mx' + str(memory_var) + 'g'`` in ``Stanford_CoreNLP_util``), and ``-mx6.0g`` makes the JVM
+    refuse to start; ``semantic_analysis``' k-means bounds become a non-integer ``n_clusters``.
+
+    Coercing here rather than at each call site keeps the compat-layer promise that a converted
+    widget behaves like the tk one it replaced.
+    """
+
+    def get(self):
+        return int(round(super().get()))
+
+
 def create_slider(
-    master, from_=None, to=None, length=None, orient=None, resolution=None, **kwargs
+    master, from_=None, to=None, length=None, orient=None, resolution=None, integer=False, **kwargs
 ):
     """tk.Scale(...) -> CTkSlider(...).
 
@@ -485,6 +504,10 @@ def create_slider(
     ``orientation``, and ``resolution`` (step size) -> ``number_of_steps`` when a range is known.
     CTkSlider has no built-in value label; call sites that need one add a small CTkLabel bound to
     the same variable (the legacy ``slider_widget`` popup already does this by hand).
+
+    ``integer=True`` returns an :class:`_IntSlider`, restoring ``tk.Scale``'s integer ``get()``.
+    Use it whenever the replaced ``tk.Scale`` had an integer range -- see the class docstring for
+    what a stray ``6.0`` costs downstream.
     """
     translated = translate_kwargs(
         ctk.CTkSlider, kwargs, width_is_chars=False, height_is_lines=False
@@ -504,7 +527,7 @@ def create_slider(
                 translated["number_of_steps"] = steps
         except (TypeError, ValueError, ZeroDivisionError):
             pass
-    return ctk.CTkSlider(master, **translated)
+    return (_IntSlider if integer else ctk.CTkSlider)(master, **translated)
 
 
 def create_textbox(master, **kwargs):

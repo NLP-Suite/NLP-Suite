@@ -11,11 +11,11 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window,"semantic_aggre
 
 import os
 import tkinter as tk
-from tkinter import ttk
 import tkinter.messagebox as mb
 import pandas as pd
 
 import GUI_IO_util
+import GUI_theme_util
 import config_util
 import IO_files_util
 import CoNLL_util
@@ -308,12 +308,12 @@ def select_input_csv(window):
     return filePath
 
 
-csv_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: select_input_csv(window))
-# csv_file_button.config(state='disabled')
+csv_file_button=GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: select_input_csv(window))
+# csv_file_button.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,csv_file_button,True)
 
 #setup a button to open Windows Explorer on the selected input directory
-openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
+openInputFile_button = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 # the two x-coordinate and x-coordinate_hover_over must have the same values
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
@@ -321,17 +321,17 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
     y_multiplier_integer,
     openInputFile_button, True, False, True, False, 90, GUI_IO_util.IO_configuration_menu, "Open INPUT csv file")
 
-csv_file=tk.Entry(window, width=GUI_IO_util.WordNet_csv_file_width,textvariable=csv_file_var)
-csv_file.config(state='disabled')
+csv_file=GUI_theme_util.create_entry(window, width=GUI_IO_util.WordNet_csv_file_width,textvariable=csv_file_var)
+csv_file.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,csv_file)
 
 extra_GUIs_var.set(0)
-extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+extra_GUIs_checkbox = GUI_theme_util.create_checkbox(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 # extra_GUIs_checkbox.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Parsers and annotators','CoNLL table analyzer','Word Sense Induction (via BERT)')
+extra_GUIs_menu = GUI_theme_util.create_option_menu(window,variable=extra_GUIs_menu_var,values=['Parsers and annotators','CoNLL table analyzer','Word Sense Induction (via BERT)'])
 # extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -355,22 +355,22 @@ def open_GUI(*args):
             run_script_util.run_script("Word2Vec_main.py")
 extra_GUIs_menu_var.trace('w',open_GUI)
 
-lexical_category_lb = tk.Label(window, text='Lexical categories ')
+lexical_category_lb = GUI_theme_util.create_label(window, text='Lexical categories ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                lexical_category_lb,True)
 
-noun_verb_menu = tk.OptionMenu(window, noun_verb_menu_var, 'NOUN', 'VERB')
-noun_verb_menu.configure(width=9, state="normal")
+noun_verb_menu = GUI_theme_util.create_option_menu(window, variable=noun_verb_menu_var, values=['NOUN', 'VERB'], width=9)
+noun_verb_menu.configure(state="normal")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                                noun_verb_menu)
 
-knowledge_base_lb = tk.Label(window, text='Knowledge base ')
+knowledge_base_lb = GUI_theme_util.create_label(window, text='Knowledge base ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                knowledge_base_lb,True)
 
 knowledge_base_menu_var.set('*')
-knowledge_base_menu = tk.OptionMenu(window, knowledge_base_menu_var, '*', 'FrameNet', 'VerbNet', 'WordNet')
-knowledge_base_menu.configure(width=9, state="normal")
+knowledge_base_menu = GUI_theme_util.create_option_menu(window, variable=knowledge_base_menu_var, values=['*', 'FrameNet', 'VerbNet', 'WordNet'], width=9)
+knowledge_base_menu.configure(state="normal")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                                knowledge_base_menu)
 
@@ -402,7 +402,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_co
 # aggregation. WordNet-only (VerbNet/FrameNet use the SRL/SemLink route). Distinct from the Word2Vec GUI's
 # BERT Word Sense INDUCTION (discovers senses, no inventory). See docs/Semantic_Aggregation_GUI_design.md sec 8.
 
-CoNLL_button = tk.Button(window, text='CoNLL-based tools of semantic aggregation (Open GUI)', width=50, height=1, command=lambda: CoNLL_util.open_analyzer_for_current_corpus(run_parser_var.get()))
+CoNLL_button = GUI_theme_util.create_button(window, text='CoNLL-based tools of semantic aggregation (Open GUI)', width=50, height=1, command=lambda: CoNLL_util.open_analyzer_for_current_corpus(run_parser_var.get()))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                              CoNLL_button,
@@ -411,7 +411,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
                                              "Click to open the CoNLL table analyzer GUI.")
 
 run_parser_var.set(0)
-run_parser_checkbox = tk.Checkbutton(window, text='Run the default parser (Open GUI)', variable=run_parser_var,
+run_parser_checkbox = GUI_theme_util.create_checkbox(window, text='Run the default parser (Open GUI)', variable=run_parser_var,
                                     onvalue=1, offvalue=0, command=lambda: activate_all_options(disambiguate_var.get()))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
@@ -466,7 +466,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x
 #                                              "\nLemmatized values will be used to find their WordNet aggregate value (e.g., the verb 'walk' as 'motion')")
 
 disaggregate_var.set(0)
-disaggregate_checkbox = tk.Checkbutton(window, text='Zoom IN/DOWN to find related words', variable=disaggregate_var,
+disaggregate_checkbox = GUI_theme_util.create_checkbox(window, text='Zoom IN/DOWN to find related words', variable=disaggregate_var,
                                     onvalue=1, offvalue=0, command=lambda: activate_all_options(noun_verb_menu_var.get()))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -487,13 +487,10 @@ def activate_keyword_menu():
         if x and x not in wordNet_keyword_list:
             wordNet_keyword_list.append(x)
     keyWord_entry_var.set('')
-    try:
-        keyWord_entry['values'] = list(semantic_aggregation_util.get_categories(knowledge_base_menu_var.get(), noun_verb_menu_var.get()))
-    except tk.TclError:
-        pass
+    GUI_theme_util.set_values(keyWord_entry, semantic_aggregation_util.get_categories(knowledge_base_menu_var.get(), noun_verb_menu_var.get()))
     activate_all_options(noun_verb_menu_var.get())
 
-add_keyword_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled',
+add_keyword_button = GUI_theme_util.create_button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled',
                                command=lambda: activate_keyword_menu())
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
@@ -502,7 +499,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coor
                                              90, GUI_IO_util.entry_box_x_coordinate,
                                              "Click on the + button to add another synset")
 
-reset_keywords_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width, height=1, state='disabled',
+reset_keywords_button = GUI_theme_util.create_button(window, text='Reset ', width=GUI_IO_util.reset_button_width, height=1, state='disabled',
                                   command=lambda: clear_keyword_list())
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_reset_pos, y_multiplier_integer,
@@ -514,7 +511,7 @@ def showKeywordList():
     mb.showwarning(title='Warning', message='The currently selected keywords are:\n\n' + ','.join(
         wordNet_keyword_list) + '\n\nPress OK to approve selection; press the RESET button (or ESCape) to start fresh and select different keywords.')
 
-show_keywords_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width, height=1, state='disabled',
+show_keywords_button = GUI_theme_util.create_button(window, text='Show', width=GUI_IO_util.show_button_width, height=1, state='disabled',
                                  command=lambda: showKeywordList())
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_show_pos, y_multiplier_integer,
@@ -538,25 +535,32 @@ keyWord_var.set('')
 #                                              "Pick a category for the selected Knowledge base: the list updates automatically to show WordNet top synsets (25 noun / 15 verb), the 429 VerbNet classes, or the 1,221 FrameNet frames. For a lower-level WordNet synset or a specific member word, type it in the 'Type a category' field instead.\n" \
 #                                              "The use of this widget is mutually exclusive with the widget 'Type a category'. You can use one or the other.")
 
-keyWord_entry_lb = tk.Label(window, text='Pick or type a category ')
+keyWord_entry_lb = GUI_theme_util.create_label(window, text='Pick or type a category ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                                keyWord_entry_lb, True)
 
-keyWord_entry = ttk.Combobox(window, width=GUI_IO_util.WordNet_keyWord_entry_width, textvariable=keyWord_entry_var, values=noun_verb_menu_options)
+keyWord_entry = GUI_theme_util.create_combobox(window, width=GUI_IO_util.WordNet_keyWord_entry_width, textvariable=keyWord_entry_var, values=noun_verb_menu_options)
 keyWord_entry.configure(state="disabled")
-# place widget with hover-over info
+# end the row here (sameY=False) instead of adding OK as a 7th widget on it: the row's other 6
+# widgets already occupy every grid column up through this one, so OK would always be bumped into a
+# brand-new, never-reused column regardless of its x-coordinate -- pushing the window right up against
+# the screen edge (docs/ctk_GUI_overflow_status.md). A fresh row lets OK reuse a column an earlier,
+# wider row already paid for instead.
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_keyWord_menu_pos+70, y_multiplier_integer,
                                              keyWord_entry,
-                                             True, False, True, False,
+                                             False, False, True, False,
                                              90, GUI_IO_util.labels_x_coordinate,
                                              "Enter the comma-separated categories you want to use - a WordNet synset, VerbNet class, or FrameNet frame - for NOUN or VERB. Particularly useful for searching lower-level synsets (e.g., 'ethnic group' instead of 'person').\n" \
                                              "The use of this widget is mutually exclusive with the widget 'Pick a category'. You can use one or the other.")
 
-OK_button = tk.Button(window, text='OK', width=GUI_IO_util.OK_button_width, height=1, state='disabled', command=lambda: accept_WordNet_list())
+OK_button = GUI_theme_util.create_button(window, text='OK', width=GUI_IO_util.OK_button_width, height=1, state='disabled', command=lambda: accept_WordNet_list())
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 # the two x-coordinate and x-coordinate_hover_over must have the same values
+# reuse WordNet_keyWord_menu_pos (roughly under the combobox above) rather than WordNet_OK_button_pos:
+# on its own row that column already carries a wide widget elsewhere in the GUI (the I/O brief display
+# label), so OK adds no extra width -- see the row-split note above.
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
-    GUI_IO_util.WordNet_OK_button_pos,
+    GUI_IO_util.WordNet_keyWord_menu_pos+70,
     y_multiplier_integer,
     OK_button, False, False, True, False, 90, GUI_IO_util.WordNet_keyWord_menu_pos, "Click OK when done entering the categories you typed. ")
 #
@@ -610,7 +614,7 @@ keyWord_var.trace('w', add_wordNet_keyword)
 keyWord_entry_var.trace('w', add_wordNet_keyword)
 
 annotate_file_var.set(0)
-annotate_file_checkbox = tk.Checkbutton(window, text='Annotate corpus (using csv output file from Zoom IN/DOWN)', variable=annotate_file_var, onvalue=1, offvalue=0, command=lambda: activate_all_options(noun_verb_menu_var.get(), True))
+annotate_file_checkbox = GUI_theme_util.create_checkbox(window, text='Annotate corpus (using csv output file from Zoom IN/DOWN)', variable=annotate_file_var, onvalue=1, offvalue=0, command=lambda: activate_all_options(noun_verb_menu_var.get(), True))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                              annotate_file_checkbox,
@@ -620,7 +624,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indente
 
 
 aggregate_lemmatized_var.set(0)
-aggregate_lemmatized_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP (classify/aggregate lemmatized words in csv file)', variable=aggregate_lemmatized_var,
+aggregate_lemmatized_checkbox = GUI_theme_util.create_checkbox(window, text='Zoom OUT/UP (classify/aggregate lemmatized words in csv file)', variable=aggregate_lemmatized_var,
                                    onvalue=1, offvalue=0, command=lambda: activate_all_options(noun_verb_menu_var.get()))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -642,7 +646,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 #                                              "\nLemmatized values will be used to find their WordNet aggregate value (e.g., the verb 'walk' as 'motion')")
 
 aggregate_POS_var.set(0)
-aggregate_POS_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP (aggregate nouns & verbs from input text document(s) into WordNet, VerbNet, FrameNet categories)', variable=aggregate_POS_var,
+aggregate_POS_checkbox = GUI_theme_util.create_checkbox(window, text='Zoom OUT/UP (aggregate nouns & verbs from input text document(s) into WordNet, VerbNet, FrameNet categories)', variable=aggregate_POS_var,
                                     onvalue=1, offvalue=0, command=lambda: activate_all_options(noun_verb_menu_var.get()))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -693,7 +697,7 @@ def activate_all_options(noun_verb, fromaggregate=False):
     # all options FALSE
     # GUI_util.select_inputFilename_button.configure(state="disabled")
     # csv_file_var.set('')
-    # csv_file_button.config(state='disabled')
+    # csv_file_button.configure(state='disabled')
     # disambiguate_checkbox.configure(state='normal')
     annotate_file_checkbox.configure(state='normal')
     aggregate_lemmatized_checkbox.configure(state='normal')
@@ -701,8 +705,8 @@ def activate_all_options(noun_verb, fromaggregate=False):
     # aggregate_bySentenceID_checkbox.configure(state='normal')
 
     keyWord_entry.configure(state="disabled")
-    add_keyword_button.configure(width=GUI_IO_util.add_button_width, height=1, state="disabled")
-    reset_keywords_button.configure(width=GUI_IO_util.reset_button_width, height=1, state="disabled")
+    add_keyword_button.configure(state="disabled")
+    reset_keywords_button.configure(state="disabled")
 
     if disaggregate_var.get() == True:
         aggregate_lemmatized_checkbox.configure(state='disabled')
@@ -713,13 +717,13 @@ def activate_all_options(noun_verb, fromaggregate=False):
         # aggregate_bySentenceID_checkbox.configure(state='disabled')
         # single Pick-or-type Combobox: enable it, the + (add to list) and the OK button
         keyWord_entry.configure(state="normal")
-        add_keyword_button.configure(width=GUI_IO_util.add_button_width, height=1, state="normal")
+        add_keyword_button.configure(state="normal")
         OK_button.configure(state="normal")
         # RESET button: enabled when there is something to clear (box or accumulated list)
         if keyWord_entry_var.get() == '' and len(wordNet_keyword_list) == 0:
-            reset_keywords_button.configure(width=GUI_IO_util.reset_button_width, height=1, state="disabled")
+            reset_keywords_button.configure(state="disabled")
         else:
-            reset_keywords_button.configure(width=GUI_IO_util.reset_button_width, height=1, state="normal")
+            reset_keywords_button.configure(state="normal")
     else:
         keyWord_var.set('')
         wordNet_keyword_list.clear()
@@ -747,7 +751,7 @@ def activate_all_options(noun_verb, fromaggregate=False):
             filePath=get_csv_file(window, 'Select INPUT csv dictionary file', [("dictionary files", "*.csv")], True)
             if filePath=='':
                 return
-        csv_file_button.config(state='normal')
+        csv_file_button.configure(state='normal')
     # else:
     #     asked = False
 
@@ -763,7 +767,7 @@ def activate_all_options(noun_verb, fromaggregate=False):
                 filePath =get_csv_file(window, 'Select INPUT csv file', [("csv files", "*.csv")], True)
                 if filePath == '':
                     return
-        csv_file_button.config(state='normal')
+        csv_file_button.configure(state='normal')
         GUI_util.select_inputFilename_button.configure(state="normal")
         # disambiguate_checkbox.configure(state='disabled')
         annotate_file_checkbox.configure(state='disabled')
@@ -836,10 +840,7 @@ def setNounVerbMenu(*args):
             csv_file_var.set(hidden_verb_lemma_csv.get())
     # KB-aware picker: WordNet top synsets (by NOUN/VERB), the 429 VerbNet classes, or the 1,221 FrameNet frames
     noun_verb_menu_options = tuple(semantic_aggregation_util.get_categories(knowledge_base_menu_var.get(), noun_verb_menu_var.get()))
-    try:
-        keyWord_entry['values'] = list(noun_verb_menu_options)
-    except tk.TclError:
-        pass  # keyWord_entry is still a plain Entry until swapped to a Combobox
+    GUI_theme_util.set_values(keyWord_entry, noun_verb_menu_options)
     if noun_verb_menu_optionsSV != noun_verb_menu_options:
         clear_keyword_list()
 
@@ -857,10 +858,7 @@ def filter_category_combobox(event):
         return
     typed = keyWord_entry_var.get().strip().lower()
     full = list(semantic_aggregation_util.get_categories(knowledge_base_menu_var.get(), noun_verb_menu_var.get()))
-    try:
-        keyWord_entry['values'] = full if not typed else [v for v in full if typed in v.lower()]
-    except tk.TclError:
-        pass  # keyWord_entry is still a plain Entry until swapped to a Combobox
+    GUI_theme_util.set_values(keyWord_entry, full if not typed else [v for v in full if typed in v.lower()])
 
 try:
     keyWord_entry.bind('<KeyRelease>', filter_category_combobox)
@@ -916,8 +914,12 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     #                               "Word Sense Disambiguation (WSD). Disambiguates each NOUN/VERB in its sentence context (Lesk; NLTK) and aggregates to the context-correct WordNet category — the precision alternative to the bare-lemma 'first sense.' INPUT: a CoNLL table. OUTPUT: each word with its disambiguated WordNet category + frequency csv/chart. WordNet-only (VerbNet/FrameNet use the SRL route). Distinct from the Word2Vec GUI's BERT Word Sense Induction, which discovers a word's senses in your corpus. Refs: Lesk 1986; Navigli 2009." + webSearch)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "The 'CoNLL-based tools of semantic aggregation' button opens the CoNLL Table Analyzer GUI, handing it the CoNLL table of the corpus currently selected in your INPUT/OUTPUT configuration. There you can run the semantic-aggregation tools that need a CoNLL table: classify NOUNS and VERBS into WordNet, VerbNet, and FrameNet categories; Word Sense Disambiguation (WSD); and aggregation by sentence index.\n\nThe algorithm looks in the current OUTPUT directory for a CoNLL table matching your corpus and opens the analyzer already loaded with it - no need to hunt for the file.\n\nTick 'Run the default parser' to first parse your corpus: the button then opens the Parsers/Annotators GUI, which runs the configured parser (Stanford CoreNLP, Stanza, or spaCy - whichever is set in the Setup NLP package/language configuration) and, on completion, opens the CoNLL Table Analyzer loaded with the fresh CoNLL table. Leave it unticked to reuse a CoNLL table already present in the output directory.\n\nIf no CoNLL table is found and 'Run the default parser' is not ticked, you will be prompted to open the analyzer and select a CoNLL table manually." + webSearch)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to run the 'Zoom IN/DOWN' algorithm. It builds a list of related words from the selected Knowledge base:\n\n- WordNet (NOUN & VERB): from a starting synset (e.g., 'person') it goes DOWN the lexical hierarchy via hyponymy (X is a kind of Y) and meronymy (X is a part of Y) - e.g., 'person' yields 'police', 'woman', etc. NOUNS have 25 top-level synsets and VERBS have 15 (the 'Pick a category' dropdown).\n\n- VerbNet (VERB only): from a verb class (e.g., 'murder-42.1') or a member verb (e.g., 'murder'), it lists the member verbs of that class.\n\n- FrameNet (NOUN & VERB): from a frame (e.g., 'Killing') or a word, it lists the lexical units of that frame.\n\nFor WordNet you can use the 'Pick a category' dropdown or type a synset in 'Type a category'. For VerbNet/FrameNet, pick or type the class or frame.\n\nMultiple comma-separated starting values are allowed (e.g., 'person' and 'animal' for fairy tales where a talking fox is a social actor).\n\nPress the + button for multiple selections.\n\nPress RESET (or ESCape) to delete all values entered and start fresh.\n\nPress SHOW to display all selected values.\n\nIn INPUT all that is required is the starting keywords you select or enter; the algorithm uses only the lexical database (WordNet/VerbNet/FrameNet) and does not use the document(s) selected in your I/O configuration.\n\nIn OUTPUT the script creates a csv word list (and, for WordNet, a verbose multi-column file with the selected category, its definitions, sense frequencies, and examples of use)." + webSearch)
+    zoom_in_down_msg = "Please, tick the checkbox if you wish to run the 'Zoom IN/DOWN' algorithm. It builds a list of related words from the selected Knowledge base:\n\n- WordNet (NOUN & VERB): from a starting synset (e.g., 'person') it goes DOWN the lexical hierarchy via hyponymy (X is a kind of Y) and meronymy (X is a part of Y) - e.g., 'person' yields 'police', 'woman', etc. NOUNS have 25 top-level synsets and VERBS have 15 (the 'Pick a category' dropdown).\n\n- VerbNet (VERB only): from a verb class (e.g., 'murder-42.1') or a member verb (e.g., 'murder'), it lists the member verbs of that class.\n\n- FrameNet (NOUN & VERB): from a frame (e.g., 'Killing') or a word, it lists the lexical units of that frame.\n\nFor WordNet you can use the 'Pick a category' dropdown or type a synset in 'Type a category'. For VerbNet/FrameNet, pick or type the class or frame.\n\nMultiple comma-separated starting values are allowed (e.g., 'person' and 'animal' for fairy tales where a talking fox is a social actor).\n\nPress the + button for multiple selections.\n\nPress RESET (or ESCape) to delete all values entered and start fresh.\n\nPress SHOW to display all selected values.\n\nIn INPUT all that is required is the starting keywords you select or enter; the algorithm uses only the lexical database (WordNet/VerbNet/FrameNet) and does not use the document(s) selected in your I/O configuration.\n\nIn OUTPUT the script creates a csv word list (and, for WordNet, a verbose multi-column file with the selected category, its definitions, sense frequencies, and examples of use)." + webSearch
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", zoom_in_down_msg)
+    # the OK button moved to its own row (see the row-split note above) -- one more call keeps this
+    # function's row counter in sync with the extra content row, since GUI_bottom's own trailing
+    # widgets are positioned off the count this function returns.
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", zoom_in_down_msg)
     # y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
     #                               "You can enter one or more comma-separated categories into the 'Type a category' field, ignoring the pre-selected dropdown values. Enter a WordNet synset (e.g., 'ethnic group' instead of 'person' to restrict to a lower level and get a much shorter list), a VerbNet class (e.g., 'murder-42.1') or member verb, or a FrameNet frame (e.g., 'Killing').\n\nPress OK when finished." + webSearch)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",

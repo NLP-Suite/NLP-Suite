@@ -264,8 +264,16 @@ try:
     spec.loader.exec_module(mod)
     print('SMOKE_OK')
 except SystemExit as e:
-    print('SMOKE_OK' if (e.code or 0) == 0 else 'SMOKE_FAIL')
-    if (e.code or 0) != 0:
+    # A mid-import sys.exit(0) is NOT a pass: the module stopped before building its widgets, so the
+    # run proves nothing about the GUI. Reporting it as OK is how shape_of_stories/semantic_analysis
+    # sat at "OK (4 widgets)" -- those 4 were a timed_alert popup -- while the GUI body never ran.
+    # (Stanza_util sys.exit()s at import when stanza's resources.json is missing, which is an env
+    # condition, not a code defect -- hence its own status rather than a crash.)
+    if (e.code or 0) == 0:
+        print('SMOKE_EXIT')
+        traceback.print_exc()
+    else:
+        print('SMOKE_FAIL')
         traceback.print_exc()
 except BaseException:
     print('SMOKE_FAIL')
@@ -282,21 +290,30 @@ def _smoke_one(target):
     except subprocess.TimeoutExpired:
         return False, [], '(timed out)'
     ok = 'SMOKE_OK' in p.stdout
+    exited = 'SMOKE_EXIT' in p.stdout
     texts = [ln[6:] for ln in p.stdout.splitlines() if ln.startswith('WTEXT\t')]
     err_tail = ''
     if not ok:
         err = (p.stdout + '\n' + p.stderr).strip().splitlines()
         err_tail = '\n      '.join(err[-6:])
-    return ok, texts, err_tail
+    return ok, exited, texts, err_tail
 
 
 def main():
     gui_files = sorted(os.path.basename(f) for f in glob.glob(os.path.join(_SRC, '*_main.py'))
                        if not any(s in os.path.basename(f) for s in _NOT_GUI))
     print('GUI construction smoke test: %d *_main.py GUIs under %s\n' % (len(gui_files), _SRC))
-    crashed, missing, skipped = [], [], []
+    crashed, missing, skipped, uncovered = [], [], [], []
     for f in gui_files:
-        ok, texts, err_tail = _smoke_one(f)
+        ok, exited, texts, err_tail = _smoke_one(f)
+        if exited:
+            # sys.exit(0) partway through the import: the GUI body never ran, so this run verified
+            # nothing. Not a crash (usually a missing model/resource in this env), but not a pass.
+            uncovered.append(f)
+            print('UNCOV  %-52s (exited during import -- GUI body never built; verify by launching)' % f)
+            if err_tail:
+                print('      ' + err_tail)
+            continue
         if not ok:
             if f in KNOWN_SKIP:
                 skipped.append(f)
@@ -322,14 +339,17 @@ def main():
         else:
             print('OK     %-52s (built; %d widgets)' % (f, len(texts)))
 
-    print('\n%d GUIs: %d ok, %d crashed, %d missing golden, %d skipped (stub-limited).'
-          % (len(gui_files), len(gui_files) - len(crashed) - len(missing) - len(skipped),
-             len(crashed), len(missing), len(skipped)))
+    print('\n%d GUIs: %d ok, %d crashed, %d missing golden, %d uncovered, %d skipped (stub-limited).'
+          % (len(gui_files),
+             len(gui_files) - len(crashed) - len(missing) - len(skipped) - len(uncovered),
+             len(crashed), len(missing), len(uncovered), len(skipped)))
     if crashed:
         print('  CRASHED (real -- fix these): ' + ', '.join(crashed))
     if missing:
         print('  MISSING GOLDEN (a required widget label is gone!): '
               + ', '.join('%s -> %s' % (f, ','.join(a)) for f, a in missing))
+    if uncovered:
+        print('  UNCOVERED (imported nothing here -- verify by launching): ' + ', '.join(uncovered))
     if skipped:
         print('  skipped: ' + ', '.join(skipped))
     # Green ONLY if no real crash and no golden regression. Skips don't fail the run.
