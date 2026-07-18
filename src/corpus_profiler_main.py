@@ -559,7 +559,14 @@ readMe_message = ("The Corpus Profiler runs a battery of NLP analyses on your co
                   "file opened automatically. Every individual output file (csv, xlsx, charts, maps) is written to a "
                   "category subfolder and LINKED from the report, so hundreds of files become depth-on-demand rather "
                   "than a flood.\n\nTick the analysis groups you want (or all), select '*' in a group's dropdown to run "
-                  "everything in it, and press RUN. For full control over any single analysis, open its dedicated GUI.")
+                  "everything in it, and press RUN. For full control over any single analysis, open its dedicated GUI."
+                  "\n\nSome passes run heavy NLP models (Stanford CoreNLP, and SRL - Semantic Role Labeling) and "
+                  "can take a LONG time on a large corpus - hours. SRL in particular runs in a separate, isolated "
+                  "engine and shows NO progress while it works: a silent, seemingly frozen window during SRL is "
+                  "EXPECTED, not a crash - let it finish.\n\nIf a run is interrupted (a crash, a power cut), just "
+                  "run it again and choose to KEEP the existing profile folder when asked: every completed pass "
+                  "(CoreNLP, POS, NER, SVO, sentiment, SRL) is reused from disk, so you RESUME where you left off "
+                  "rather than restart from zero.")
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command,
