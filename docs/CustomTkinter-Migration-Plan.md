@@ -260,6 +260,24 @@ can coexist under a `CTk` root during the transition.
 > are unvalidated against the column bucketing (Phase 4); the now-dead `hover_over_widget` machinery
 > is left for Phase 5 cleanup; and full per-GUI visual QA on Mac + Windows, light + dark, is still
 > outstanding.
+>
+> **Slice 3 (2026-07-17)** — the popup dialogs of Phase-1 item 3 → `CTkToplevel` + `GUI_theme_util`
+> wrappers. Stacked fork PR `coralynnkc/NLP-Suite` (`ctk/phase1-popups`, base `ctk/phase1-grid`).
+> **Converted (4 of the 5):** `slider_widget` (CTkSlider + a value label since CTkSlider has no built-in
+> readout; pinned to integer steps and returns an `int`, matching `tk.Scale`'s default resolution=1 and
+> every caller's integer use), `dropdown_menu_widget` and `dropdown_menu_widget2` (CTkToplevel +
+> `create_combobox`/`create_button`; dropped the dead `pack()`-then-`grid()` and moved OK out of the
+> combobox's grid cell — the two overlapped, invisible with translucent tk widgets, broken with opaque
+> CTk ones), and `enter_value_widget` (was a second bare `tk.Tk()` + its own `mainloop()`; now a
+> CTkToplevel parented to `GUI_util.window`, driven by `wait_window()`). Verified: a headless
+> construction smoke fires each popup's OK path and checks return values/types; `tests/gui_smoke.py`
+> (44 ok, 0 missing golden — unchanged) and `pytest` (33 passed) show no regression.
+> **Deliberately deferred to Phase 4 (as §4 already lists them):** `message_box_widget` (its OK/Yes/No
+> buttons + countdown labels are `.place()`d at pixel offsets computed from the packed `tk.Message`'s
+> height, and it fires on every RUN — the geometry needs on-screen QA) and `combobox_with_search_widget`
+> (unfinished; only call site is commented out). Both carry an in-code marker noting the deferral.
+> Still outstanding: on-screen QA of the converted modals on Mac + Windows (they can't be visually
+> verified headlessly).
 
 After Phase 1, **every GUI already looks substantially better** (new chrome, themed top/bottom
 bars, help column, scrollable body) even though its own widgets are still plain tk.
