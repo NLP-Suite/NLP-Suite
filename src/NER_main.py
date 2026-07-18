@@ -14,6 +14,7 @@ import tkinter.messagebox as mb
 from subprocess import call
 
 import GUI_IO_util
+import GUI_theme_util
 import IO_files_util
 import reminders_util
 import config_util
@@ -348,24 +349,24 @@ GUI=''
 def open_GUI1():
     run_script_util.run_script("file_checker_converter_cleaner_main.py")
 
-pre_processing_button = tk.Button(window, text='Pre-processing tools (file checking & cleaning GUI)',command=open_GUI1)
+pre_processing_button = GUI_theme_util.create_button(window, text='Pre-processing tools (file checking & cleaning GUI)',command=open_GUI1)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                pre_processing_button)
 
-NER_entry_lb = tk.Label(window, text='NER packages')
+NER_entry_lb = GUI_theme_util.create_label(window, text='NER packages')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,NER_entry_lb,True)
 
 NER_packages_var = tk.StringVar()
 NER_packages_var.set('BERT (English language model)')
 # IBM https://ibm.github.io/zshot/ "pip install zshot" — placeholder; not yet implemented
-NER_packages_menu = tk.OptionMenu(window,NER_packages_var,'*', 'BERT (English language model)','IBM','spaCy','Stanford CoreNLP','Stanza')
+NER_packages_menu = GUI_theme_util.create_option_menu(window,variable=NER_packages_var,values=['*', 'BERT (English language model)','IBM','spaCy','Stanford CoreNLP','Stanza'])
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_packages_menu_pos, y_multiplier_integer,
                     NER_packages_menu, False, False, True, False,
                     90, GUI_IO_util.labels_x_coordinate,
                     "Select the NER package you wish to use as NER annotator")
 
-NER_tag_lb = tk.Label(window, text='NER tags')
+NER_tag_lb = GUI_theme_util.create_label(window, text='NER tags')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,NER_tag_lb,True)
 
 # NER tags menu
@@ -378,14 +379,11 @@ NER_tags_OntoNotes = ['All NER tags', '--- All quantitative expressions', 'CARDI
 NER_tags_BERT = NER_tags_OntoNotes
 
 NER_tag_var.set('All NER tags') #--- All NER tags
-NER_menu = tk.OptionMenu(window,NER_tag_var,*NER_tags_CoreNLP)
+NER_menu = GUI_theme_util.create_option_menu(window,variable=NER_tag_var,values=NER_tags_CoreNLP)
 
 # repopulate the NER tags dropdown to match the selected package's NER scheme
 def set_NER_menu_options(tags_list):
-    menu = NER_menu['menu']
-    menu.delete(0, 'end')
-    for tag in tags_list:
-        menu.add_command(label=tag, command=lambda value=tag: NER_tag_var.set(value))
+    GUI_theme_util.set_values(NER_menu, tags_list)
 
 # the package's full set of real tags (excludes the 'All NER tags' and '--- ...' selectors)
 def _full_tag_set(pkg):
@@ -402,7 +400,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_menu_pos
                     90, GUI_IO_util.labels_x_coordinate,
                     "Options currently available only for Stanford CoreNLP.\nSelect the NER tag(s) you wish to search for. Click on the + or Reset buttons when the widget is disabled to add new NER tags or to start fresh.")
 
-add_NER_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: activate_NER_Options(True,False))
+add_NER_button = GUI_theme_util.create_button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: activate_NER_Options(True,False))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                     add_NER_button, True, False, True, False,
@@ -410,7 +408,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x
                     "Click on the + button, when available, to add a new NEW tag. Option currently available only for Stanford CoreNLP.\nSelect the NER tag(s) you wish to search for. Click on the + or Reset buttons when the widget is disabled to add new NER tags or to start fresh.")
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget,y_multiplier_integer,add_NER_button, True)
 
-reset_NER_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: clear_NER_list(coming_from_add=False,coming_from_reset=True))
+reset_NER_button = GUI_theme_util.create_button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: clear_NER_list(coming_from_add=False,coming_from_reset=True))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_reset_NER_button_pos, y_multiplier_integer,
                     reset_NER_button, True, False, True, False,
@@ -419,10 +417,10 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_reset_NER_bu
 
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_reset_NER_button_pos,y_multiplier_integer,reset_NER_button,True)
 
-NER_entry_lb = tk.Label(window, text='NER list')
+NER_entry_lb = GUI_theme_util.create_label(window, text='NER list')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_entry_lb_pos,y_multiplier_integer,NER_entry_lb,True)
 
-NER_entry = tk.Entry(window,width=GUI_IO_util.widget_width_medium,textvariable=NER_entry_var)
+NER_entry = GUI_theme_util.create_entry(window,width=GUI_IO_util.widget_width_medium,textvariable=NER_entry_var)
 NER_entry.configure(state="disabled")
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_entry_pos, y_multiplier_integer,
@@ -432,7 +430,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_entry_po
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_entry_pos,y_multiplier_integer,NER_entry)
 
 NER_entity_timeline_var = tk.IntVar()
-NER_entity_timeline_checkbox = tk.Checkbutton(window, text='NER Entity Timeline (when people/places/organizations appear across narrative, via Stanza)', variable=NER_entity_timeline_var, onvalue=1, offvalue=0)
+NER_entity_timeline_checkbox = GUI_theme_util.create_checkbox(window, text='NER Entity Timeline (when people/places/organizations appear across narrative, via Stanza)', variable=NER_entity_timeline_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,NER_entity_timeline_checkbox)
 
 def clear(e):

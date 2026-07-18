@@ -7,11 +7,11 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window, "CoNLL table_a
 
 import os
 import tkinter as tk
-from tkinter import ttk
 import tkinter.messagebox as mb
 from subprocess import call
 
 import GUI_IO_util
+import GUI_theme_util
 import CoNLL_util
 import CoNLL_table_search_util
 import statistics_csv_util
@@ -642,27 +642,27 @@ window.bind("<Escape>", clear_on_escape)
 
 
 
-csv_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: IO_files_util.get_corpus_CoNLL_csv(window, csv_file_var,'Select INPUT csv CoNLL table file', [("csv files", "*.csv")],True))
+csv_file_button=GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: IO_files_util.get_corpus_CoNLL_csv(window, csv_file_var,'Select INPUT csv CoNLL table file', [("csv files", "*.csv")],True))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                csv_file_button, True)
 
 #setup a button to open Windows Explorer on the selected input directory
-openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
+openInputFile_button = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,openInputFile_button,
                     True, False, True,False, 90, GUI_IO_util.IO_configuration_menu, "Open INPUT csv CoNLL table file")
 
-csv_file=tk.Entry(window, width=GUI_IO_util.csv_file_width,textvariable=csv_file_var)
-csv_file.config(state='disabled')
+csv_file=GUI_theme_util.create_entry(window, width=GUI_IO_util.csv_file_width,textvariable=csv_file_var)
+csv_file.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,csv_file)
 
 extra_GUIs_var.set(0)
-extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+extra_GUIs_checkbox = GUI_theme_util.create_checkbox(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 # extra_GUIs_checkbox.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Ngrams searches & VIEWER','Word searches','Wordnet searches','Data manipulation GUI for more options on querying the CoNLL table','Corpus statistics','Style analysis')
+extra_GUIs_menu = GUI_theme_util.create_option_menu(window,variable=extra_GUIs_menu_var,values=['Ngrams searches & VIEWER','Word searches','Wordnet searches','Data manipulation GUI for more options on querying the CoNLL table','Corpus statistics','Style analysis'])
 extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -700,7 +700,7 @@ def run_parser_toggled():
         GUI_util.run_button.configure(state='normal')
     else:
         GUI_util.run_button.configure(state='disabled' if error else 'normal')
-run_parser_checkbox = tk.Checkbutton(window, text='Run the default parser (Open GUI)', variable=run_parser_var,
+run_parser_checkbox = GUI_theme_util.create_checkbox(window, text='Run the default parser (Open GUI)', variable=run_parser_var,
                                     onvalue=1, offvalue=0, command=lambda: run_parser_toggled())
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -710,24 +710,24 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
                                              "Tick the checkbox to run the default parser on the currently selected I/O corpus and prepare the CoNLL table before opening the GUI.")
 
 all_analyses_var = tk.IntVar()
-all_analyses_checkbox = tk.Checkbutton(window, state='disabled', variable = all_analyses_var, text='Basic CoNLL analyses',
+all_analyses_checkbox = GUI_theme_util.create_checkbox(window, state='disabled', variable = all_analyses_var, text='Basic CoNLL analyses',
                                 onvalue=1, offvalue=0, command = lambda: activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                     y_multiplier_integer, all_analyses_checkbox,True)
 
 all_analyses.set('*')
-all_analyses_menu = tk.OptionMenu(window, all_analyses, '*', 'Clause analysis', 'Noun analysis', 'Verb analysis', 'Adjective analysis', 'Adverb analysis', 'Function (junk/stop) words analysis','Content/Function ratio analysis')
+all_analyses_menu = GUI_theme_util.create_option_menu(window, variable=all_analyses, values=['*', 'Clause analysis', 'Noun analysis', 'Verb analysis', 'Adjective analysis', 'Adverb analysis', 'Function (junk/stop) words analysis','Content/Function ratio analysis'])
 all_analyses_menu.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                all_analyses_menu,False)
 
 advanced_analyses_var = tk.IntVar()
-advanced_analyses_checkbox = tk.Checkbutton(window, state='disabled', variable = advanced_analyses_var, text='Advanced CoNLL analyses',
+advanced_analyses_checkbox = GUI_theme_util.create_checkbox(window, state='disabled', variable = advanced_analyses_var, text='Advanced CoNLL analyses',
                                 onvalue=1, offvalue=0, command = lambda: activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                     y_multiplier_integer, advanced_analyses_checkbox,True)
 advanced_analyses.set('*')
-advanced_analyses_menu = tk.OptionMenu(window, advanced_analyses, '*', 'Classification of Nouns & Verbs via FrameNet, VerbNet, WordNet','Beginning-End K sentences analyzer (repetition finder)','Word Sense Disambiguation (WSD)','Zoom OUT/UP by Sentence Index')
+advanced_analyses_menu = GUI_theme_util.create_option_menu(window, variable=advanced_analyses, values=['*', 'Classification of Nouns & Verbs via FrameNet, VerbNet, WordNet','Beginning-End K sentences analyzer (repetition finder)','Word Sense Disambiguation (WSD)','Zoom OUT/UP by Sentence Index'])
 advanced_analyses_menu.configure(state='disabled')
 # sameY=True: keep the dropdown on the Advanced-analyses checkbox row and let the repetition-finder
 # Begin K / End K fields share THAT SAME row (placed to its right by show_hide_K_sentence_widgets()
@@ -738,20 +738,20 @@ _adv_K_row = y_multiplier_integer  # the dropdown's own row; the K fields go her
 y_multiplier_integer = _adv_K_row + 1  # subsequent widgets resume on the next row
 
 # WordNet_var = tk.IntVar()
-# WordNet_checkbox = tk.Checkbutton(window, state='disabled', variable=WordNet_var,  text='Classification of Nouns & Verbs via FrameNet, VerbNet, WordNet', onvalue=1,
+# WordNet_checkbox = GUI_theme_util.create_checkbox(window, state='disabled', variable=WordNet_var,  text='Classification of Nouns & Verbs via FrameNet, VerbNet, WordNet', onvalue=1,
 #                                   offvalue=0, command = lambda:  activate_all_options())
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
 #                                                     y_multiplier_integer, WordNet_checkbox)
 
 search_token_var = tk.IntVar()
-searchToken_checkbox = tk.Checkbutton(window, state='disabled', variable=search_token_var,  text='Search token/word', onvalue=1,
+searchToken_checkbox = GUI_theme_util.create_checkbox(window, state='disabled', variable=search_token_var,  text='Search token/word', onvalue=1,
                                   offvalue=0, command = lambda:  activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                     y_multiplier_integer, searchToken_checkbox,True)
 
 searchField_kw_var.set('e.g.: father or * for all tokens in the CoNLL table')
 # search_kw_var = tk.IntVar()
-# searchKw_checkbox = tk.Checkbutton(window, state='disabled', variable=search_token_var,  text='Search token/word', onvalue=1,
+# searchKw_checkbox = GUI_theme_util.create_checkbox(window, state='disabled', variable=search_token_var,  text='Search token/word', onvalue=1,
 #                                   offvalue=0, command = lambda:  activate_all_options())
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+70,
 #                                                     y_multiplier_integer, searchKw_checkbox,True)
@@ -759,7 +759,7 @@ searchField_kw_var.set('e.g.: father or * for all tokens in the CoNLL table')
 # used to place noun/verb checkboxes starting at the top level
 y_multiplier_integer_top = y_multiplier_integer
 
-entry_searchField_kw = tk.Entry(window, width=GUI_IO_util.combobox_width, state='disabled', textvariable=searchField_kw_var)
+entry_searchField_kw = GUI_theme_util.create_entry(window, width=GUI_IO_util.combobox_width, state='disabled', textvariable=searchField_kw_var)
 # place widget with hover-over info
 #labels_x_indented_coordinate+140
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,
@@ -769,13 +769,13 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration
     "Enter the CASE SENSITIVE word (ONE WORD ONLY) that you would like to search (* for any word). All searches are done WITHIN EACH SENTENCE for the EXACT word.")
 
 # search_POS_var = tk.IntVar()
-# searchPOS_checkbox = tk.Checkbutton(window, state='disabled', variable=search_POS_var,  text='Search POS', onvalue=1,
+# searchPOS_checkbox = GUI_theme_util.create_checkbox(window, state='disabled', variable=search_POS_var,  text='Search POS', onvalue=1,
 #                                   offvalue=0, command = lambda:  activate_all_options())
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+130,
 #                                                     y_multiplier_integer, searchPOS_checkbox,True)
 # searchField_POS_var.set('e.g.: NN*')
 #
-# entry_searchField_POS = tk.Entry(window, width=GUI_IO_util.combobox_width, state='disabled', textvariable=searchField_POS_var)
+# entry_searchField_POS = GUI_theme_util.create_entry(window, width=GUI_IO_util.combobox_width, state='disabled', textvariable=searchField_POS_var)
 # # place widget with hover-over info
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+70,
 #     y_multiplier_integer,
@@ -786,17 +786,18 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration
 
 # Search type var (FORM/LEMMA)
 searchedCoNLLField_var.set('FORM')
-searchedCoNLLdescription_csv_field_menu_lb = tk.Label(window, text='CoNLL search field')
+searchedCoNLLdescription_csv_field_menu_lb = GUI_theme_util.create_label(window, text='CoNLL search field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                searchedCoNLLdescription_csv_field_menu_lb,True)
 
-searchedCoNLLdescription_csv_field_menu_lb = tk.OptionMenu(window, searchedCoNLLField_var, 'FORM', 'LEMMA')
-searchedCoNLLdescription_csv_field_menu_lb.configure(width=GUI_IO_util.combobox_width, state='disabled')
+searchedCoNLLdescription_csv_field_menu_lb = GUI_theme_util.create_option_menu(window, variable=searchedCoNLLField_var, values=['FORM', 'LEMMA'])
+GUI_theme_util.set_char_width(searchedCoNLLdescription_csv_field_menu_lb, GUI_IO_util.combobox_width)
+searchedCoNLLdescription_csv_field_menu_lb.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                searchedCoNLLdescription_csv_field_menu_lb)
 
 k_words_var.set(0)
-k_words_checkbox = tk.Checkbutton(window, text="Before-After K words",
+k_words_checkbox = GUI_theme_util.create_checkbox(window, text="Before-After K words",
                               variable=k_words_var, onvalue=1, offvalue=0, command = lambda: activate_all_options())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate,
@@ -805,13 +806,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_inde
                                                GUI_IO_util.labels_x_indented_coordinate,
                                                "Tick the checkbox if you want to search the CoNLL table for the selected word and extract a number of words BEFORE and AFTER the search word.\nTHE OPTION IS NOT AVAILABLE YET.")
 
-before_K_words_entry_lb = tk.Label(window,
+before_K_words_entry_lb = GUI_theme_util.create_label(window,
                                     text='Before K-words')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                                before_K_words_entry_lb, True)
 
-before_K_words_entry = tk.Entry(window, textvariable=before_K_words_var)
-before_K_words_entry.configure(width=GUI_IO_util.widget_width_extra_short, state='disabled')
+before_K_words_entry = GUI_theme_util.create_entry(window, textvariable=before_K_words_var)
+GUI_theme_util.set_char_width(before_K_words_entry, GUI_IO_util.widget_width_extra_short)
+before_K_words_entry.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+130,
                                                y_multiplier_integer,
@@ -819,13 +821,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminder
                                                GUI_IO_util.file_splitter_split_mergedFile_separator_entry_begin_pos,
                                                "Enter the integer number of words (do not enter -) to be extracted BEFORE the selected search word")
 
-after_K_words_entry_lb = tk.Label(window,
+after_K_words_entry_lb = GUI_theme_util.create_label(window,
                                     text='After K-words')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                                after_K_words_entry_lb, True)
 
-after_K_words_entry = tk.Entry(window, textvariable=after_K_words_var)
-after_K_words_entry.configure(width=GUI_IO_util.widget_width_extra_short, state='disabled')
+after_K_words_entry = GUI_theme_util.create_entry(window, textvariable=after_K_words_var)
+GUI_theme_util.set_char_width(after_K_words_entry, GUI_IO_util.widget_width_extra_short)
+after_K_words_entry.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate+120,
                                                y_multiplier_integer,
@@ -834,18 +837,18 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_
                                                "Enter the integer number of words (do not enter +) to be extracted AFTER the selected search word")
 
 
-search_token_lb = tk.Label(window, text='Searched token')
+search_token_lb = GUI_theme_util.create_label(window, text='Searched token')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                search_token_lb, True)
 
 # POSTAG variable
 postag_var.set('*')
-POS_lb = tk.Label(window, text='POSTAG')
+POS_lb = GUI_theme_util.create_label(window, text='POSTAG')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+140, y_multiplier_integer,
                                                POS_lb, True)
 
-postag_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = postag_var)
-postag_menu_lb['values'] = postag_menu
+postag_menu_lb = GUI_theme_util.create_combobox(window, width = GUI_IO_util.combobox_width, textvariable = postag_var)
+GUI_theme_util.set_values(postag_menu_lb, postag_menu)
 postag_menu_lb.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                postag_menu_lb,True)
@@ -853,29 +856,29 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
 # DEPREL variable
 
 deprel_var.set('*')
-DEPREL_lb = tk.Label(window, text='DEPREL')
+DEPREL_lb = GUI_theme_util.create_label(window, text='DEPREL')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                                DEPREL_lb, True)
 
-deprel_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = deprel_var)
-deprel_menu_lb['values'] = deprel_menu
+deprel_menu_lb = GUI_theme_util.create_combobox(window, width = GUI_IO_util.combobox_width, textvariable = deprel_var)
+GUI_theme_util.set_values(deprel_menu_lb, deprel_menu)
 deprel_menu_lb.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+70, y_multiplier_integer,
                                                deprel_menu_lb)
 
 # Co-Occurring POSTAG menu
-CoOc_lb = tk.Label(window, text='Co-occurring tokens')
+CoOc_lb = GUI_theme_util.create_label(window, text='Co-occurring tokens')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                CoOc_lb, True)
 
 co_postag_var.set('*')
 
-POSTAG_CoOc_lb = tk.Label(window, text='POSTAG')
+POSTAG_CoOc_lb = GUI_theme_util.create_label(window, text='POSTAG')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+140, y_multiplier_integer,
                                                POSTAG_CoOc_lb, True)
 
-co_postag_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = co_postag_var)
-co_postag_menu_lb['values'] = postag_menu
+co_postag_menu_lb = GUI_theme_util.create_combobox(window, width = GUI_IO_util.combobox_width, textvariable = co_postag_var)
+GUI_theme_util.set_values(co_postag_menu_lb, postag_menu)
 co_postag_menu_lb.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                co_postag_menu_lb, True)
@@ -883,18 +886,18 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
 co_deprel_menu = '*','acl - clausal modifier of noun (adjectival clause)', 'acl:relcl - relative clause modifier', 'acomp - adjectival complement', 'advcl - adverbial clause modifier', 'advmod - adverbial modifier', 'agent - agent', 'amod - adjectival modifier', 'appos - appositional modifier', 'arg - argument', 'aux - auxiliary', 'auxpass - passive auxiliary', 'case - case marking', 'cc - coordinating conjunction', 'ccomp - clausal complement with internal subject', 'cc:preconj - preconjunct','compound - compound','compound:prt - phrasal verb particle','conj - conjunct','cop - copula conjunction','csubj - clausal subject','csubjpass - clausal passive subject','dep - unspecified dependency','det - determiner','det:predet - predeterminer','discourse - discourse element','dislocated - dislocated element','dobj - direct object','expl - expletive','foreign - foreign words','goeswith - goes with','iobj - indirect object','list - list','mark - marker','mod - modifier','mwe - multi-word expression','name - name','neg - negation modifier','nn - noun compound modifier','nmod - nominal modifier','nmod:npmod - noun phrase as adverbial modifier','nmod:poss - possessive nominal modifier','nmod:tmod - temporal modifier','nummod - numeric modifier','npadvmod - noun phrase adverbial modifier','nsubj - nominal subject','nsubjpass - passive nominal subject','num - numeric modifier','number - element of compound number','parataxis - parataxis','pcomp - prepositional complement','pobj - object of a preposition','poss - possession modifier', 'possessive - possessive modifier','preconj - preconjunct','predet - predeterminer','prep - prepositional modifier','prepc - prepositional clausal modifier','prt - phrasal verb particle','punct - punctuation','quantmod - quantifier phrase modifier','rcmod - relative clause modifier','ref - referent','remnant - remnant in ellipsis','reparandum - overridden disfluency','ROOT - root','sdep - semantic dependent','subj - subject','tmod - temporal modifier','vmod - reduced non-finite verbal modifier','vocative - vocative','xcomp - clausal complement with external subject','xsubj - controlling subject','# - #'
 
 co_deprel_var.set('*')
-DEPREL_CoOc_lb = tk.Label(window, text='DEPREL')
+DEPREL_CoOc_lb = GUI_theme_util.create_label(window, text='DEPREL')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                                DEPREL_CoOc_lb, True)
 
-co_deprel_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = co_deprel_var)
-co_deprel_menu_lb['values'] = deprel_menu
+co_deprel_menu_lb = GUI_theme_util.create_combobox(window, width = GUI_IO_util.combobox_width, textvariable = co_deprel_var)
+GUI_theme_util.set_values(co_deprel_menu_lb, deprel_menu)
 co_deprel_menu_lb.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+70
                                              , y_multiplier_integer,co_deprel_menu_lb)
 
 # WordNet_var = tk.IntVar()
-# WordNet_checkbox = tk.Checkbutton(window, state='disabled', variable=WordNet_var,  text='WordNet classification of Nouns & Verbs', onvalue=1,
+# WordNet_checkbox = GUI_theme_util.create_checkbox(window, state='disabled', variable=WordNet_var,  text='WordNet classification of Nouns & Verbs', onvalue=1,
 #                                   offvalue=0, command = lambda:  activate_all_options())
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
 #                                                     y_multiplier_integer, WordNet_checkbox)
@@ -922,10 +925,10 @@ def changed_filename(tracedInputFile):
 # the repetition finder (or '*'), and DISAPPEAR otherwise. show_hide_K_sentence_widgets() (bound
 # below via .trace) does the place/place_forget; run() reads Begin_K_sent_var / End_K_sent_var.
 # _adv_K_row was captured earlier, directly below the Advanced-analyses dropdown.
-Begin_K_sent_entry_lb = tk.Label(window, text='Begin K')
-Begin_K_sent_entry = tk.Entry(window, width=GUI_IO_util.widget_width_extra_short, textvariable=Begin_K_sent_var)
-End_K_sent_entry_lb = tk.Label(window, text='End K')
-End_K_sent_entry = tk.Entry(window, width=GUI_IO_util.widget_width_extra_short, textvariable=End_K_sent_var)
+Begin_K_sent_entry_lb = GUI_theme_util.create_label(window, text='Begin K')
+Begin_K_sent_entry = GUI_theme_util.create_entry(window, width=GUI_IO_util.widget_width_extra_short, textvariable=Begin_K_sent_var)
+End_K_sent_entry_lb = GUI_theme_util.create_label(window, text='End K')
+End_K_sent_entry = GUI_theme_util.create_entry(window, width=GUI_IO_util.widget_width_extra_short, textvariable=End_K_sent_var)
 
 def show_hide_K_sentence_widgets(*args):
     sel = advanced_analyses.get()

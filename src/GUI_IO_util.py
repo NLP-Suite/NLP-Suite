@@ -566,7 +566,10 @@ if sys.platform == 'darwin':  # Mac OS
     widget_width_long = 60
     widget_width_extra_long = 90
 
-    add_button_width = 1
+    # add_button_width used to be 1 (-> 8px via char_width_to_px): too narrow to render the '+'
+    # glyph at all, the same ~8px-empty-sliver failure create_open_file_button's OPEN_FILE_GLYPH
+    # fix documents for other icon buttons. Match reset_button_width so '+' actually renders.
+    add_button_width = 3
     reset_button_width = 3
     show_button_width = 3
     OK_button_width = 2
@@ -956,7 +959,8 @@ else: #windows and anything else
     widget_width_long = 100
     widget_width_extra_long = 120
 
-    add_button_width = 2
+    # see the Mac block above: was 2 (16px), too narrow to render the '+' glyph. Match reset_button_width.
+    add_button_width = 4
     reset_button_width = 4
     show_button_width = 4
     OK_button_width = 3

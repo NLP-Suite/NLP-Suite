@@ -22,6 +22,7 @@ from subprocess import call
 
 
 import GUI_IO_util
+import GUI_theme_util
 import IO_files_util
 import GUI_util
 import Stanford_CoreNLP_coreference_util
@@ -276,15 +277,15 @@ corefed_txt_file_var= tk.StringVar()
 def open_GUI():
     run_script_util.run_script("file_checker_converter_cleaner_main.py")
 
-pre_processing_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Pre-processing tools (file checking & cleaning GUI)',command=open_GUI)
+pre_processing_button = GUI_theme_util.create_button(window, width=GUI_IO_util.widget_width_short, text='Pre-processing tools (file checking & cleaning GUI)',command=open_GUI)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                pre_processing_button)
 
-CoRef_lb = tk.Label(window, text='Coreference resolution')
+CoRef_lb = GUI_theme_util.create_label(window, text='Coreference resolution')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,CoRef_lb,True)
 
 CoRef_var.set('Stanford CoreNLP')
-CoRef_var_menu = tk.OptionMenu(window,CoRef_var,'Stanford CoreNLP','Stanza','BERT')
+CoRef_var_menu = GUI_theme_util.create_option_menu(window,variable=CoRef_var,values=['Stanford CoreNLP','Stanza','BERT'])
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.coreference_CoRef_var_menu_pos, y_multiplier_integer,
                     CoRef_var_menu, False, False, True, False,
@@ -314,7 +315,7 @@ CoRef_var.trace('w',activate_options)
 #
 
 manual_Coref_var.set(0)
-manual_Coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced document ', variable=manual_Coref_var,
+manual_Coref_checkbox = GUI_theme_util.create_checkbox(window, text='Manually edit coreferenced document ', variable=manual_Coref_var,
                                        onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                manual_Coref_checkbox)
@@ -335,7 +336,7 @@ def get_corefed_txt_file(window,title,fileType,annotate):
         continue_manual_Coref_var_checkbox.configure(state='disabled')
     return filePath
 
-corefed_txt_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT corefed TXT file',command=lambda: get_corefed_txt_file(window,'Select INPUT csv file', [("coreferenced file", "*.txt")],True))
+corefed_txt_file_button=GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT corefed TXT file',command=lambda: get_corefed_txt_file(window,'Select INPUT csv file', [("coreferenced file", "*.txt")],True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    corefed_txt_file_button,
@@ -343,7 +344,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "Click on the button to select a previosuly coreferenced txt file for further manual coreference")
 
 #setup a button to open Windows Explorer on the selected input directory
-openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, corefed_txt_file_var.get()))
+openInputFile_button = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openFile(window, corefed_txt_file_var.get()))
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 # the two x-coordinate and x-coordinate_hover_over must have the same values
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
@@ -351,19 +352,19 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
     y_multiplier_integer,
     openInputFile_button, True, False, True, False, 90, GUI_IO_util.IO_configuration_menu, "Open coreferenced txt file")
 
-corefed_txt_file=tk.Entry(window, width=GUI_IO_util.coreference_corefed_txt_file_width,textvariable=corefed_txt_file_var)
-corefed_txt_file.config(state='disabled')
+corefed_txt_file=GUI_theme_util.create_entry(window, width=GUI_IO_util.coreference_corefed_txt_file_width,textvariable=corefed_txt_file_var)
+corefed_txt_file.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,corefed_txt_file)
 
 split_coreferenced_files_var.set(0)
-split_coreferenced_files_checkbox = tk.Checkbutton(window, text='Split merged coreferenced file (with filenames embedded in <@# #@>) for manual editing to fit memory', variable=split_coreferenced_files_var,
+split_coreferenced_files_checkbox = GUI_theme_util.create_checkbox(window, text='Split merged coreferenced file (with filenames embedded in <@# #@>) for manual editing to fit memory', variable=split_coreferenced_files_var,
                                        onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                split_coreferenced_files_checkbox)
-split_coreferenced_files_checkbox.config(state='disabled')
+split_coreferenced_files_checkbox.configure(state='disabled')
 
 continue_manual_Coref_var.set(0)
-continue_manual_Coref_var_checkbox = tk.Checkbutton(window, text='Continue manual coreferencing of previously coreferenced document', variable=continue_manual_Coref_var,
+continue_manual_Coref_var_checkbox = GUI_theme_util.create_checkbox(window, text='Continue manual coreferencing of previously coreferenced document', variable=continue_manual_Coref_var,
                                        onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                continue_manual_Coref_var_checkbox)

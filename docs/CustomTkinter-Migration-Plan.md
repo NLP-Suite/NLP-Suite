@@ -449,6 +449,38 @@ tools; GIS tools; DB/SQL + PCACE; statistical/visualization tools; remaining set
 >
 > Phase 3's file-tools group is now complete.
 
+> **Status — CoNLL tools (2026-07-18, `ctk/phase3-conll-tools`):** `parsers_annotators_main`,
+> `CoNLL_table_analyzer_main`, `NER_main`, `coreference_main`, `sentence_analysis_main`,
+> `syntactic_analysis_ALL_main`, `nominalization_main`, `SVO_main` — the parser-pipeline / CoNLL-table
+> group (every file here consumes the text → parser → CoNLL flow or a CoNLL table directly). Same
+> recipe: ~113 tk/ttk constructors → factories, 6 `tk.OptionMenu` → `create_option_menu(values=[...])`,
+> 4 `ttk.Combobox` → `create_combobox`, `.config(` → `.configure(`.
+>
+> - `CoNLL_table_analyzer_main.py` had all three shared-layer gaps from tranches 1-2 at once: the
+>   dynamic `["menu"]` idiom on its `parser_menu` (in `parsers_annotators_main.py`, not this file —
+>   see below), 4 `ttk.Combobox` sites writing `widget['values'] = ...` (the Combobox analogue of the
+>   OptionMenu bug — same silent-no-op family, now `GUI_theme_util.set_values(...)`), and 3
+>   post-construction `.configure(width=..., state=...)` calls bundling a pixel-width bug with a state
+>   change (`GUI_theme_util.set_char_width()` + a separate `.configure(state=...)`). Its `from tkinter
+>   import ttk` import went dead once all four Comboboxes converted and was removed.
+> - `parsers_annotators_main.py:752` had the dynamic-`OptionMenu` idiom (`m = parser_menu["menu"]; ...`)
+>   repopulating the parser dropdown when the configured NLP package changes — replaced with
+>   `GUI_theme_util.set_values(parser_menu, [s.lstrip() for s in parsers])`. It also had a `tk.Label()`
+>   built empty and filled in later via repeated `.config(text=...)` (a status message toggled by a
+>   checkbox trace) and a `try: parser_lb.config(...) except NameError: parser_lb = tk.Label(...)`
+>   lazy-init pattern — both converted to the `create_label`/`.configure` factory forms, preserving the
+>   NameError-driven lazy init as-is.
+> - `SVO_main.py` and `nominalization_main.py`/`coreference_main.py`/`syntactic_analysis_ALL_main.py`
+>   each had 1-3 `create_open_file_button` sliver sites (the `width=1/N, text=''` pattern from earlier
+>   tranches). No new bug classes surfaced.
+>
+> Verified: `pytest` (56 passed), `gui_smoke.py` (48 ok / 0 missing golden across all touched files;
+> the one crash, `topic_modeling_main.py`, is the same pre-existing missing-`pdfminer` issue, untouched
+> by this tranche). All eight launched under the real Anaconda env (construct + run without exception);
+> `CoNLL_table_analyzer_main.py` additionally screenshotted on macOS, confirming the red-active/
+> grey-inactive theme, disabled comboboxes/entries, and repopulated dropdowns all render correctly.
+> Outstanding: Windows QA (as with every prior tranche).
+
 ### Phase 4 — Hard cases (1 PR each)
 
 - **`data_visualization_main.py`** — 140 raw `.place()` calls; needs a genuine re-layout.

@@ -231,6 +231,12 @@ reminders_dropdown_field = tk.StringVar()
 setup_menu = tk.StringVar()
 data_tools_options_widget = tk.StringVar()
 
+# The single reusable "Setup" dropdown widget/tooltip built by display_setup_hover_over(). Some
+# GUIs (SVO_main.py, parsers_annotators_main.py) call setup_parsers_annotators() themselves on top
+# of the call GUI_bottom() already makes -- see the comment in display_setup_hover_over.
+setup_menu_lb = None
+setup_menu_tooltip = None
+
 # CTk migration slice 2b: RUN and CLOSE live in their OWN frame (a bottom button bar), NOT in the
 # shared content grid. Grid columns are shared across rows, so wide content widgets (a long input-file
 # entry, the IO path displays) inflate the columns the bottom chrome sits in and push RUN/CLOSE off the
@@ -1412,25 +1418,39 @@ def get_hover_over_info(package_display_area_value):
     return hover_over_x_coordinate, hover_over_info
 
 def display_setup_hover_over(y_multiplier_integer):
-    global y_multiplier_integer_SV
+    global y_multiplier_integer_SV, setup_menu_lb, setup_menu_tooltip
 
     error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 
     hover_over_x_coordinate, hover_over_info = get_hover_over_info(package_display_area_value)
 
-    # lay the setup widget
-    setup_menu_lb = GUI_theme_util.create_option_menu(window, variable=setup_menu, values=["Setup preferences", "Setup NLP package (parsers & annotators) and corpus language",
-                                  "Setup external software"])
-
     if y_multiplier_integer_SV == 0:
         y_multiplier_integer_SV = y_multiplier_integer
-    # place widget with hover-over info
-    # TODO SETUP button
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate,
-                                                   y_multiplier_integer_SV,
-                                                   setup_menu_lb, True, False, False, False, 90,
-                                                   hover_over_x_coordinate,
-                                                   hover_over_info)
+
+    # setup_parsers_annotators() (and so this function) can run more than once per GUI: GUI_bottom()
+    # always calls it once, and a couple of GUIs (SVO_main.py, parsers_annotators_main.py) call it
+    # again themselves to refresh the NLP-package display. Re-creating the option menu on every call
+    # used to grid a brand new widget each time; since a column collision on the same row bumps to
+    # the next free column instead of overlapping, each extra call added another visible "Setup"
+    # button further right -- and, since grid columns are shared across every row, widened columns
+    # that OTHER rows share too, pushing their trailing widgets off the window's right edge. Build
+    # the widget once and just refresh its tooltip text on later calls.
+    if setup_menu_lb is None:
+        setup_menu_lb = GUI_theme_util.create_option_menu(window, variable=setup_menu, values=["Setup preferences", "Setup NLP package (parsers & annotators) and corpus language",
+                                      "Setup external software"])
+        # place widget; hover-over info is bound manually below (no_hover_over_widget=True) so the
+        # tooltip instance can be kept and its text refreshed on later calls instead of stacking a
+        # new <Enter>/<Leave> binding each time.
+        y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate,
+                                                       y_multiplier_integer_SV,
+                                                       setup_menu_lb, True, True, False, False, 90,
+                                                       hover_over_x_coordinate,
+                                                       hover_over_info)
+        setup_menu_tooltip = GUI_theme_util.ToolTip(setup_menu_lb, hover_over_info)
+    else:
+        y_multiplier_integer = y_multiplier_integer_SV + 1
+        if setup_menu_tooltip is not None:
+            setup_menu_tooltip.text = hover_over_info
 
     # y_multiplier_integer=y_multiplier_integer-1
     return y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var
@@ -1917,7 +1937,19 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         # needed, so fields stay as wide as they can. Labels/checkbuttons are left alone (can't shrink
         # without reflowing text). width is in chars for tk/ttk Entry/Text, so shrinking the number
         # narrows them; we stop each widget once it is already narrow (reqwidth <= _FLOOR_PX).
+        # CTk widgets are NOT selectable by winfo_class(): a CTkEntry is a *Frame* wrapping an inner
+        # tk Entry, so it reports class 'Frame'. Filtering on class alone therefore matched only the
+        # INNER tk Entry, whose width is in CHARACTERS -- shrinking it leaves the outer frame's pixel
+        # width untouched, so the loop span 400 no-op iterations and every CTk GUI whose content is
+        # wider than the screen stayed clipped (NER_main, CoNLL_table_analyzer_main). Select CTk
+        # widgets by isinstance and shrink their PIXEL width; keep the legacy tk/ttk classes for the
+        # not-yet-migrated GUIs. Dropdowns (CTkOptionMenu) are excluded on purpose: unlike an entry
+        # they do not scroll, so narrowing one clips its label text with no way to read it.
         _SHRINKABLE = {'Entry', 'Text', 'TEntry', 'TCombobox', 'Spinbox', 'TSpinbox'}
+        _CTK_SHRINKABLE = tuple(
+            c for c in (getattr(ctk, n, None) for n in ('CTkEntry', 'CTkComboBox', 'CTkTextbox'))
+            if c is not None
+        )
         _FLOOR_PX = 150
 
         def _all_widgets(w, acc):
@@ -1926,8 +1958,17 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                 _all_widgets(child, acc)
             return acc
 
-        candidates = [w for w in _all_widgets(window, [])
-                      if w.winfo_class() in _SHRINKABLE]
+        # A CTk widget's inner tk Entry/Text would otherwise be picked up as a second, useless
+        # candidate; skip anything that lives inside a CTk widget we already track.
+        ctk_widgets = [w for w in _all_widgets(window, []) if isinstance(w, _CTK_SHRINKABLE)]
+        candidates = list(ctk_widgets)
+        for w in _all_widgets(window, []):
+            if w.winfo_class() not in _SHRINKABLE:
+                continue
+            if any(str(w).startswith(str(c) + '.') for c in ctk_widgets):
+                continue
+            candidates.append(w)
+
         for _ in range(400):
             window.update_idletasks()
             if window.winfo_reqwidth() <= target_w:
@@ -1940,9 +1981,16 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                 cur = int(widest.cget('width'))
             except (ValueError, tk.TclError):
                 break
-            new = max(4, cur - max(1, cur // 8))
+            if isinstance(widest, _CTK_SHRINKABLE):
+                # CTk width is in PIXELS: step down ~12% but never below the readable floor.
+                new = max(_FLOOR_PX, cur - max(8, cur // 8))
+            else:
+                # tk/ttk width is in CHARACTERS.
+                new = max(4, cur - max(1, cur // 8))
             if new >= cur:
-                break
+                # already at the floor -- drop it so the loop moves on to the next widest
+                candidates.remove(widest)
+                continue
             widest.configure(width=new)
 
     def _fit_window_to_content():

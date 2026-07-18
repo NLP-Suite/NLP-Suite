@@ -12,6 +12,7 @@ import tkinter.messagebox as mb
 from subprocess import call
 
 import GUI_IO_util
+import GUI_theme_util
 import IO_files_util
 import statistics_txt_util
 import run_script_util
@@ -213,29 +214,29 @@ def clear(e):
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
-style_analysis_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Style analysis (Open GUI)',command=lambda: run_script_util.run_script("style_analysis_main.py"))
+style_analysis_button = GUI_theme_util.create_button(window, width=GUI_IO_util.widget_width_short, text='Style analysis (Open GUI)',command=lambda: run_script_util.run_script("style_analysis_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    style_analysis_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the style analysis GUI")
 
-extract_sentences_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Search/Extract sentences from corpus (Open GUI)',command=lambda: run_script_util.run_script("file_search_byWord_main.py"))
+extract_sentences_button = GUI_theme_util.create_button(window, width=GUI_IO_util.widget_width_short, text='Search/Extract sentences from corpus (Open GUI)',command=lambda: run_script_util.run_script("file_search_byWord_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    extract_sentences_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the search/extract GUI")
 
-compute_sentence_length_checkbox = tk.Checkbutton(window, text='Compute sentence length', variable=compute_sentence_length_var, onvalue=1, offvalue=0)
+compute_sentence_length_checkbox = GUI_theme_util.create_checkbox(window, text='Compute sentence length', variable=compute_sentence_length_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,compute_sentence_length_checkbox)
 
 sentence_complexity_var.set(0)
-sentence_complexity_checkbox = tk.Checkbutton(window, text='Sentence complexity', variable=sentence_complexity_var, onvalue=1, offvalue=0)
+sentence_complexity_checkbox = GUI_theme_util.create_checkbox(window, text='Sentence complexity', variable=sentence_complexity_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,sentence_complexity_checkbox)
 
 text_readability_var.set(0)
-text_readability_checkbox = tk.Checkbutton(window, text='Sentence/text readability (via textstat)', variable=text_readability_var, onvalue=1, offvalue=0)
+text_readability_checkbox = GUI_theme_util.create_checkbox(window, text='Sentence/text readability (via textstat)', variable=text_readability_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,text_readability_checkbox)
 
 def getScript(script):
@@ -247,7 +248,7 @@ def getScript(script):
 visualize_bySentenceIndex_options_var.trace('w', lambda x,y,z: getScript(visualize_bySentenceIndex_options_var.get()))
 
 visualize_sentence_structure_var.set(0)
-visualize_sentence_structure_checkbox = tk.Checkbutton(window, text='Visualize sentence structure (via dependency tree)', variable=visualize_sentence_structure_var, onvalue=1, offvalue=0)
+visualize_sentence_structure_checkbox = GUI_theme_util.create_checkbox(window, text='Visualize sentence structure (via dependency tree)', variable=visualize_sentence_structure_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    visualize_sentence_structure_checkbox,
