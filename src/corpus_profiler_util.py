@@ -733,8 +733,13 @@ def _run_topics(c):
 # ---- character emotion arcs: Stanza NER + NRC's 8 emotions, traced per character across the story ---
 def _run_character_arcs(c):
     import character_emotion_arcs_util
+    # hand over the corpus's existing Stanza NER table if one is on disk: character_emotion_arcs otherwise
+    # builds its OWN Stanza NER pipeline and re-parses the whole corpus (~1.5h). Deriving from the cached
+    # table is seconds + the same NRC scoring. None -> it parses (its own progress print).
+    _ner = _find_existing_ner_csv(c)
     return _files(character_emotion_arcs_util.main(
-        c['inputFilename'], c['inputDir'], c['outputDir'], c['chartPackage'], c['dataTransformation']))
+        c['inputFilename'], c['inputDir'], c['outputDir'], c['chartPackage'], c['dataTransformation'],
+        conll_ner_table=(_ner[0] if _ner else None)))
 
 
 # ---- character movement in space: Stanza tracks each character's locations -> animated migration map.

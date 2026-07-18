@@ -106,6 +106,52 @@ def analyze_file(filepath, nlp_pipeline, doc_id):
     return rows
 
 
+def analyze_conll_table(conll_path):
+    """Same output as analyze_file, but DERIVED from an existing Stanza NER CoNLL table (Form + NER +
+    Sentence ID + Document ID, one token per row) instead of re-parsing the corpus with Stanza NER. The
+    Corpus Profiler already produced that table, so this turns a full ~1.5h re-NER into a groupby + the
+    same (fast, lexicon-based) NRC scoring. Per (document, sentence, PERSON character) a row with the 8 NRC
+    emotion scores; character-name normalization is per document, exactly as analyze_file does it. Returns
+    [] if the table lacks the needed columns (the caller then parses)."""
+    import pandas as pd
+    df = pd.read_csv(conll_path, encoding='utf-8', on_bad_lines='skip')
+    formcol = 'Form' if 'Form' in df.columns else ('Word' if 'Word' in df.columns else None)
+    if not formcol or not {'NER', 'Sentence ID', 'Document ID'}.issubset(df.columns):
+        return []
+    has_mwe = 'Multi-Word Expression' in df.columns
+    has_doc = 'Document' in df.columns
+    rows = []
+    for doc_id, doc_g in df.groupby('Document ID', sort=True):
+        canonical_map = {}   # per-document, like analyze_file
+        doc_link = doc_g['Document'].iloc[0] if has_doc else ''
+        for sent_id, g in doc_g.groupby('Sentence ID', sort=True):
+            forms = [str(x) for x in g[formcol].tolist() if str(x) != 'nan']
+            sent_text = ' '.join(forms)
+            # PERSON entities: the Multi-Word Expression column holds the full name (e.g. 'Harry Potter'
+            # for both its tokens); fall back to the token Form. Same set semantics as
+            # _extract_persons_from_sentence(sent) over sent.ents of type PERSON.
+            persons = set()
+            for _, r in g[g['NER'].astype(str).str.contains('PERSON', na=False)].iterrows():
+                mwe = str(r['Multi-Word Expression']) if has_mwe else ''
+                name = (mwe if mwe and mwe.lower() != 'nan' else str(r[formcol])).strip()
+                if name and name.lower() != 'nan':
+                    persons.add(name)
+            scores = _score_sentence_nrc(sent_text)
+            normalized = {_normalize_character_name(p, canonical_map) for p in persons} or {"_NARRATOR/UNATTRIBUTED_"}
+            for character in normalized:
+                row = {
+                    'Document ID': int(doc_id) if str(doc_id).isdigit() else doc_id,
+                    'Document': doc_link,
+                    'Sentence ID': int(sent_id) if str(sent_id).isdigit() else sent_id,
+                    'Sentence': sent_text,
+                    'Character': character,
+                }
+                for e in EIGHT_EMOTIONS:
+                    row[e.capitalize()] = round(scores[e], 4)
+                rows.append(row)
+    return rows
+
+
 def plot_character_arcs(df, character, outputDir, base_name, window_size=5):
     char_df = df[df['Character'] == character].copy()
     char_df = char_df.sort_values('Sentence ID').reset_index(drop=True)
@@ -208,21 +254,13 @@ def plot_dominant_emotion_timeline(df, character, outputDir, base_name):
 
 def main(inputFilename, inputDir, outputDir, chartPackage='Excel',
          dataTransformation='No transformation', min_sentences=5, top_n_characters=5,
-         window_size=5):
+         window_size=5, conll_ner_table=None):
 
     filesToOpen = []
 
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
                                                         label='character_emotion_arcs', silent=True)
     if outputDir == '':
-        return filesToOpen
-
-    import stanza
-    try:
-        nlp = stanza.Pipeline(lang='en', processors='tokenize,ner', use_gpu=False)
-    except Exception as e:
-        mb.showerror(title='Stanza Error',
-                     message=f'Could not initialize Stanza NER pipeline.\n\n{str(e)}')
         return filesToOpen
 
     startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
@@ -236,16 +274,34 @@ def main(inputFilename, inputDir, outputDir, chartPackage='Excel',
                  [e.capitalize() for e in EIGHT_EMOTIONS]
 
     all_rows = []
-    if inputFilename and os.path.exists(inputFilename):
-        all_rows = analyze_file(inputFilename, nlp, 1)
-    elif inputDir and os.path.isdir(inputDir):
-        doc_id = 0
-        txt_files = sorted([f for f in os.listdir(inputDir) if f.endswith('.txt')])
-        for file in txt_files:
-            doc_id += 1
-            filepath = os.path.join(inputDir, file)
-            rows = analyze_file(filepath, nlp, doc_id)
-            all_rows.extend(rows)
+    # REUSE: when the caller (Corpus Profiler) hands us a Stanza NER CoNLL table it already produced, DERIVE
+    # characters + sentences from it -- no re-parse. This pass otherwise builds its OWN Stanza NER pipeline
+    # and re-parses the whole corpus (~1.5h on Harry Potter). Falls back to parsing when no table is given.
+    if conll_ner_table:
+        print('>>> Character Emotion Arcs: derived from an existing Stanza NER table (%s) -- no re-parse'
+              % os.path.basename(conll_ner_table))
+        try:
+            all_rows = analyze_conll_table(conll_ner_table)
+        except Exception as e:
+            print('Character Emotion Arcs: could not derive from the NER table (%s); parsing instead' % e)
+            all_rows = []
+
+    if not all_rows:
+        import stanza
+        try:
+            nlp = stanza.Pipeline(lang='en', processors='tokenize,ner', use_gpu=False)
+        except Exception as e:
+            mb.showerror(title='Stanza Error',
+                         message=f'Could not initialize Stanza NER pipeline.\n\n{str(e)}')
+            return filesToOpen
+        if inputFilename and os.path.exists(inputFilename):
+            print("Processing file 1/1 " + os.path.basename(inputFilename))
+            all_rows = analyze_file(inputFilename, nlp, 1)
+        elif inputDir and os.path.isdir(inputDir):
+            txt_files = sorted([f for f in os.listdir(inputDir) if f.endswith('.txt')])
+            for doc_id, file in enumerate(txt_files, 1):
+                print("Processing file " + str(doc_id) + "/" + str(len(txt_files)) + ' ' + file)
+                all_rows.extend(analyze_file(os.path.join(inputDir, file), nlp, doc_id))
 
     if not all_rows:
         mb.showwarning(title='No data', message='No text data found to analyze.')
