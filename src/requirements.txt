@@ -95,13 +95,12 @@ twython
 nrclex
 #
 # BERT
-transformers
+transformers<4.52  # bert-extractive-summarizer imports TransfoXLModel, removed from transformers in 4.52
 sentence_transformers
 contextualSpellCheck
 tensorflow
 protobuf==3.20
 sentencepiece
-summarizer
 bert-extractive-summarizer
 bertopic
 
