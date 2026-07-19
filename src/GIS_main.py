@@ -16,9 +16,9 @@ import pandas as pd
 pd.options.mode.chained_assignment = None
 
 import tkinter as tk
-from tkinter import ttk
 
 import GUI_IO_util
+import GUI_theme_util
 import config_util # used for Google API
 import reminders_util
 import constants_util
@@ -284,7 +284,7 @@ def run():
                 filesToOpen.extend(outputFiles)
                 csv_file_var.set(outputFiles[1])
                 NER_extractor_var.set(0)
-                NER_extractor_checkbox.config(state='disabled')
+                NER_extractor_checkbox.configure(state='disabled')
                 geocode_locations_var.set(0)
 
         if len(filesToOpen)>0:
@@ -360,7 +360,7 @@ inputIsGeocoded = False
 def clear(e):
     csv_file_var.set('')
     NER_extractor_var.set(1)
-    NER_extractor_checkbox.config(state='disabled')
+    NER_extractor_checkbox.configure(state='disabled')
     NER_package_var.set('Stanza')
     location_menu_var.set('')
     geocode_locations_var.set(1)
@@ -393,7 +393,7 @@ def check_csv_file_headers(csv_file):
         location_menu='NER'
         geocoder_var.set('Nominatim')
         geocoder = 'Nominatim'
-        location_field.config(state='disabled')
+        location_field.configure(state='disabled')
     if ('Location' in headers and not 'Latitude' in headers) or "Word" in headers:
         geocode_locations_var.set(1)
         geocode_locations_checkbox.configure(state='disabled')
@@ -406,7 +406,7 @@ def check_csv_file_headers(csv_file):
             location_menu='Location' #RF
     elif 'Latitude' in headers and 'Longitude' in headers:
         NER_extractor_var.set(0)
-        NER_extractor_checkbox.config(state='disabled')
+        NER_extractor_checkbox.configure(state='disabled')
         geocode_locations_var.set(0)
         geocode_locations_checkbox.configure(state='disabled')
         geocode_locations=False
@@ -420,14 +420,14 @@ def check_csv_file_headers(csv_file):
         csv_file_var.set('')
         NER_extractor_var.set(1)
         NER_extractor = True
-        NER_extractor_checkbox.config(state='disabled')
+        NER_extractor_checkbox.configure(state='disabled')
         # cannotRun = True
         # return cannotRun
     else: # no location or lat long
         geocoder_var.set('Nominatim')
         geocode_locations_var.set(1)
         geocode_locations=True
-        NER_extractor_checkbox.config(state='disabled')
+        NER_extractor_checkbox.configure(state='disabled')
         NER_extractor_var.set(1)
         NER_extractor = True
 
@@ -435,7 +435,7 @@ def check_csv_file_headers(csv_file):
         geocode_locations_var.set(0)
         geocode_locations_checkbox.configure(state='disabled')
         geocode_locations=0
-        geocode_locations_checkbox.config(state='disabled')
+        geocode_locations_checkbox.configure(state='disabled')
     else:
         if location_menu_var.get()=='':
             mb.showwarning(title='Warning',
@@ -464,11 +464,8 @@ def display_csv_file_options():
     if csv_file_var.get() == '':
         return cannotRun
     menu_values = IO_csv_util.get_csvfile_headers(csv_file_var.get())
-    # must change all 3 widgets where menus must be updated after changing the filename
-    m = location_field["menu"]
-    m.delete(0, "end")
-    for s in menu_values:
-        m.add_command(label=s, command=lambda value=s: location_menu_var.set(value))
+    # must change the location menu after changing the filename
+    GUI_theme_util.set_values(location_field, menu_values)
     # if Google_Earth_OpenGUI.get() == False:
     #     # GIS_package_var.set('Google Earth Pro & Google Maps')
     #     GIS_package_var.set('Python folium pin map & heatmap')
@@ -527,23 +524,23 @@ def get_csv_file(window,title,fileType,annotate):
             display_csv_file_options()
     return filePath
 
-csv_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: get_csv_file(window,'Select INPUT csv file', [("dictionary files", "*.csv")],True))
+csv_file_button=GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: get_csv_file(window,'Select INPUT csv file', [("dictionary files", "*.csv")],True))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                csv_file_button, True)
 
 #setup a button to open Windows Explorer on the selected input directory
-openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
+openInputFile_button = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,openInputFile_button,
                     True, False, True,False, 90, GUI_IO_util.IO_configuration_menu, "Open INPUT csv dictionary file")
 
-csv_file=tk.Entry(window, width=GUI_IO_util.csv_file_width,textvariable=csv_file_var)
-csv_file.config(state='disabled')
+csv_file=GUI_theme_util.create_entry(window, width=GUI_IO_util.csv_file_width,textvariable=csv_file_var)
+csv_file.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,csv_file)
 
 map_characters_var = tk.IntVar()
-map_characters_checkbox = tk.Checkbutton(window, variable=map_characters_var, onvalue=1, offvalue=0)
-map_characters_checkbox.config(text="MAP characters moving in time and geocodable space")
+map_characters_checkbox = GUI_theme_util.create_checkbox(window, variable=map_characters_var, onvalue=1, offvalue=0,
+                                                         text="MAP characters moving in time and geocodable space")
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                     map_characters_checkbox, True,
                     x_coordinate_hover_over=GUI_IO_util.labels_x_coordinate,
@@ -555,7 +552,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 
 # same row: shortcut to the non-geocodable sibling (this GUI has no 'GUIs available' dropdown).
 # NOTE (layout): x=560 is chosen to clear the long checkbox label; verify/nudge if it overlaps.
-open_symbolic_button = tk.Button(window, text='Open Symbolic (non-geocodable) Space GUI',
+open_symbolic_button = GUI_theme_util.create_button(window, text='Open Symbolic (non-geocodable) Space GUI',
                                  command=lambda: run_script_util.run_script("GIS_symbolic_main.py"))
 y_multiplier_integer = GUI_IO_util.placeWidget(window, 560, y_multiplier_integer, open_symbolic_button, False,
                     x_coordinate_hover_over=560,
@@ -567,11 +564,12 @@ NER_extractor_var.set(0)
 NER_package_var = tk.StringVar()
 NER_package_var.set('Stanza')
 
-NER_extractor_checkbox = tk.Checkbutton(window, variable=NER_extractor_var, onvalue=1, offvalue=0)
-NER_extractor_checkbox.config(text="EXTRACT locations (via NER)")
+NER_extractor_checkbox = GUI_theme_util.create_checkbox(window, variable=NER_extractor_var, onvalue=1, offvalue=0,
+                                                        text="EXTRACT locations (via NER)")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,NER_extractor_checkbox, True)
 
-NER_package_menu = tk.OptionMenu(window, NER_package_var, 'BERT', 'Stanza', 'spaCy', 'Stanford CoreNLP')
+NER_package_menu = GUI_theme_util.create_option_menu(window, variable=NER_package_var,
+                                                     values=['BERT', 'Stanza', 'spaCy', 'Stanford CoreNLP'])
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                 NER_package_menu,
@@ -587,26 +585,24 @@ if os.path.isfile(inputFilename.get()):
 else:
     menu_values = ' '
 
-location_field_lb = tk.Label(window, text='Select the column containing location names')
+location_field_lb = GUI_theme_util.create_label(window, text='Select the column containing location names')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,location_field_lb,True)
-if menu_values!=' ':
-    location_field = tk.OptionMenu(window, location_menu_var,*menu_values)
-else:
-    location_field = tk.OptionMenu(window, location_menu_var,menu_values)
+location_field_values = list(menu_values) if menu_values != ' ' else [menu_values]
+location_field = GUI_theme_util.create_option_menu(window, variable=location_menu_var, values=location_field_values)
 
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,location_field)
 
 geocode_locations_var.set(0)
-geocode_locations_checkbox = tk.Checkbutton(window, variable=geocode_locations_var, onvalue=1, offvalue=0)
-geocode_locations_checkbox.config(text="GEOCODE locations")
+geocode_locations_checkbox = GUI_theme_util.create_checkbox(window, variable=geocode_locations_var, onvalue=1, offvalue=0,
+                                                            text="GEOCODE locations")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,geocode_locations_checkbox, True)
 
 
-geocoder_lb = tk.Label(window, text='Geocoder')
+geocoder_lb = GUI_theme_util.create_label(window, text='Geocoder')
 
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.label_columns,y_multiplier_integer,geocoder_lb,True)
 geocoder_var.set('Nominatim')
-geocoder = tk.OptionMenu(window,geocoder_var,'Nominatim','Google')
+geocoder = GUI_theme_util.create_option_menu(window, variable=geocoder_var, values=['Nominatim', 'Google'])
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                     geocoder, False, False, True, False,
@@ -633,25 +629,25 @@ geocoder_var.trace('w',activate_Google_API_geocode)
 
 # split lines
 
-country_bias_lb = tk.Label(window, text='Country bias')
+country_bias_lb = GUI_theme_util.create_label(window, text='Country bias')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.label_columns,y_multiplier_integer,country_bias_lb,True)
 
 country_menu = constants_util.ISO_GIS_country_menu
 
 country_bias_var.set('')
-country_bias = ttk.Combobox(window, width = GUI_IO_util.country_bias_width, textvariable = country_bias_var)
-country_bias['values'] = country_menu
-country_bias.configure(state='disabled')
+country_bias = GUI_theme_util.create_combobox(window, width = GUI_IO_util.country_bias_width,
+                                              textvariable = country_bias_var, values=country_menu,
+                                              state='disabled')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                     country_bias, True, False, True, False,
                     90, GUI_IO_util.labels_x_coordinate, "Select a country to privilege geocoding locations in that country when similar locations are found in other countries (e.g., Rome, Georgia, US, and Rome, Italy)")
 
-area_lb = tk.Label(window, text='Area')
+area_lb = GUI_theme_util.create_label(window, text='Area')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,y_multiplier_integer,area_lb,True)
 
 area_var.set('e.g., (34.98527, -85.59790), (30.770444, -81.521974)')
-area=tk.Entry(window, width=GUI_IO_util.area_width,textvariable=area_var)
+area=GUI_theme_util.create_entry(window, width=GUI_IO_util.area_width,textvariable=area_var)
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.area_pos, y_multiplier_integer,
                     area, True, False, True,False, 90,
@@ -659,7 +655,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.area_pos, y_mult
                     "For Nominatim, you can enter the latitude and longiture of upper left-hand corner and lower right-hand corner of a rectangular area to privilege locations in that area (e.g., Rome, Georgia, vs. Rome, New York)")
 
 restrict_var.set(0)
-restrict_checkbox = tk.Checkbutton(window, text="Restrict", variable=restrict_var, onvalue=1, offvalue=0)
+restrict_checkbox = GUI_theme_util.create_checkbox(window, text="Restrict", variable=restrict_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.restrict_pos, y_multiplier_integer,
                     restrict_checkbox, False, False, True,False, 90,
@@ -667,8 +663,8 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.restrict_pos, y_
                     "For Nominatim, after entering area latitude and longitude, you can restrict locations to that specific area or leave it open for Nominatim to decide")
 
 map_locations_var.set(0)
-map_locations_checkbox = tk.Checkbutton(window, variable=map_locations_var, onvalue=1, offvalue=0)
-map_locations_checkbox.config(text="MAP locations")
+map_locations_checkbox = GUI_theme_util.create_checkbox(window, variable=map_locations_var, onvalue=1, offvalue=0,
+                                                        text="MAP locations")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,map_locations_checkbox,True)
 
 def display_txt_file_options(*args):
@@ -682,7 +678,7 @@ def display_txt_file_options(*args):
                 cannotRun = True
             else:
                 location_menu_var.set('')
-                location_field.config(state='disabled')
+                location_field.configure(state='disabled')
                 NER_extractor_var.set(1)
                 NER_extractor = True
                 NER_extractor_checkbox.configure(state='disabled')
@@ -697,7 +693,7 @@ def display_txt_file_options(*args):
                 map_locations = True
         else:
             location_menu_var.set('')
-            location_field.config(state='disabled')
+            location_field.configure(state='disabled')
     else:
         display_csv_file_options()
     return cannotRun
@@ -730,11 +726,14 @@ def call_reminders(*args):
         return
 map_locations_var.trace('w',call_reminders)
 
-GIS_package_lb = tk.Label(window, text='Software')
+GIS_package_lb = GUI_theme_util.create_label(window, text='Software')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.label_columns,y_multiplier_integer,GIS_package_lb,True)
 
 GIS_package_var.set('Python folium pin map & heatmap')
-GIS_package = tk.OptionMenu(window,GIS_package_var,'Python folium pin map & heatmap','Proportional circle map','Google Earth Pro & Google Maps','Google Earth Pro','Google Maps','QGIS','Tableau','TimeMapper')
+GIS_package = GUI_theme_util.create_option_menu(window, variable=GIS_package_var,
+                                                values=['Python folium pin map & heatmap', 'Proportional circle map',
+                                                        'Google Earth Pro & Google Maps', 'Google Earth Pro',
+                                                        'Google Maps', 'QGIS', 'Tableau', 'TimeMapper'])
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                     GIS_package, True, False, True, False,
@@ -742,8 +741,8 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coor
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,GIS_package,True)
 
 Google_Earth_OpenGUI.set(0)
-GIS_package2_checkbox = tk.Checkbutton(window, variable=Google_Earth_OpenGUI, onvalue=1, offvalue=0)
-GIS_package2_checkbox.config(text="Google Earth Pro - Open GUI")
+GIS_package2_checkbox = GUI_theme_util.create_checkbox(window, variable=Google_Earth_OpenGUI, onvalue=1, offvalue=0,
+                                                       text="Google Earth Pro - Open GUI")
 
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
@@ -764,21 +763,21 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coo
 # y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
 #                     map_characters_help_button, False)
 
-open_API_config_lb = tk.Label(window, text='View Google API key')
+open_API_config_lb = GUI_theme_util.create_label(window, text='View Google API key')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,open_API_config_lb,True)
 
 open_API_config_var.set('Google Maps')
-API = tk.OptionMenu(window,open_API_config_var,'Google Maps','Google geocoding')
+API = GUI_theme_util.create_option_menu(window, variable=open_API_config_var,
+                                        values=['Google Maps', 'Google geocoding'])
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.label_columns, y_multiplier_integer,API, True)
 
-open_API_config_button=tk.Button()
+open_API_config_button = None
 if 'Maps' in open_API_config_var.get():
     config_file = 'Google-Maps-API_config.csv'
 else:
     config_file = 'Google-geocode-API_config.csv'
-open_API_config_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width,
-                                     text='',
-                                     command=lambda:GIS_pipeline_util.getGoogleAPIkey(window,  config_file,True))
+open_API_config_button = GUI_theme_util.create_open_file_button(
+    window, command=lambda:GIS_pipeline_util.getGoogleAPIkey(window,  config_file,True))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                     open_API_config_button, False, False, True, False,

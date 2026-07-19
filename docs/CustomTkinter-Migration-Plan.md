@@ -279,9 +279,9 @@ under §0's rule the GUI was lying about what is clickable. Now called once afte
 Per-file recipe: swap `tk.X(` → `GUI_theme_util.create_x(`; convert `["menu"]` manipulation →
 `set_values(...)`; delete `ttk.Style`/`theme_use`; run the GUI and walk §6; screenshot before/after.
 
-Tranches group by shared quirks: file tools ✅; CoNLL tools ✅; sentiment/annotator tools; GIS tools;
-DB/SQL + PCACE; statistical/visualization tools; remaining setup GUIs. Plus **`NLP_welcome_main`** ✅,
-which belongs to no tranche — see below.
+Tranches group by shared quirks: file tools ✅; CoNLL tools ✅; sentiment/annotator tools ✅; GIS tools
+✅; DB/SQL + PCACE; statistical/visualization tools; remaining setup GUIs. Plus **`NLP_welcome_main`**
+✅, which belongs to no tranche — see below.
 
 > **✅ `NLP_welcome_main` (2026-07-18, `ctk/welcome-gui`)** — converted on its own because it shares
 > nothing with the tranches: it is the only GUI that builds a **hand-written `grid()` layout** rather
@@ -359,6 +359,46 @@ which belongs to no tranche — see below.
 >
 > Verified: `pytest` (86 passed), `gui_smoke.py` (0 crashed / 0 missing golden); the two `UNCOV` files
 > re-run with `Stanza_util` stubbed build every widget. **macOS launch + Windows QA outstanding.**
+>
+> **✅ GIS tools (2026-07-18, `ctk/phase3-gis-tools`)** — `GIS_main`, `GIS_distance_main`,
+> `GIS_symbolic_main`, `GIS_Google_Earth_main`. ~137 constructors → factories (46 in
+> `GIS_Google_Earth_main` alone: 2 Button, 7 Checkbutton, 18 Label, 6 Entry, 13 OptionMenu), 5 dynamic
+> `["menu"]`/`widget['menu']` repopulation blocks → `set_values(...)`, 1 Combobox
+> (`GIS_main`'s `country_bias`, carrying both the `textvariable=` *and* `['values']=` ⭐ idioms on the
+> same widget), 3 `create_open_file_button` swaps + the `GIS_main.py:774` placeholder `tk.Button()` →
+> `None`. Two `util` modules the widget scripts import (`GIS_folium_util`, `GIS_geocode_util`, etc.)
+> touch `tkinter` only for `messagebox`/`filedialog` — sanctioned stdlib, left alone.
+>
+> Three findings, none new bug *classes* — each is a previously-catalogued §6 idiom, but worth naming:
+>
+> 1. **A `run()`-breaking bug found by reading, not by RUN.** `GIS_Google_Earth_main.py`'s `run()` had
+>    `bold_var_list = italic_var_list` immediately followed by `italic_var_list = bold_var_list` — since
+>    the second line makes `italic_var_list` a function-local, Python raises `UnboundLocalError` on the
+>    *first* line, every single RUN. Fixed to match the `globals()[...]` pattern every sibling list on
+>    the same block already uses. Same class as the `file_classifier` `startTime` `NameError` from the
+>    file-tools tranche, but Pyright's `reportUnboundVariable` caught this one before a RUN was needed.
+> 2. **A vestigial `.pack()` next to a `placeWidget`-gridded widget** (`GIS_Google_Earth_main.py:527`,
+>    the icon-preview `image_lb`) — the same landmine §6 already documents for `shape_of_stories` /
+>    `semantic_analysis`; deleted.
+> 3. **Four duplicate `if menu_values != X: OptionMenu(*menu_values) else: OptionMenu(menu_values)`
+>    blocks** in `GIS_Google_Earth_main.py`, all guarding a placeholder that only ever held a single
+>    space character — both branches always produced the same one-item menu. Collapsed to one
+>    `create_option_menu(..., values=[menu_values])` call per site; the real values arrive later via
+>    `set_values()` once a csv is picked, unaffected by the collapse.
+>
+> `GIS_Google_Earth_main.py`'s existing `ImageTk.PhotoImage` icon-preview fetch (not `CTkImage`) is a
+> live instance of the §5.1 bundle risk — pre-existing, untouched, flagged for the eventual bundle pass
+> rather than fixed here (scope discipline: this tranche converts widgets, not the image pipeline).
+>
+> Verified: `pytest` (88 passed), `gui_smoke.py` (0 crashed / 0 missing golden new to this tranche;
+> `GIS_main.py` is `UNCOV` — its module-level `Stanza_util`/`spaCy_util`/`BERT_util` imports exit
+> without a model cache, same pre-existing gap as the sentiment tranche's 11 `UNCOV` files;
+> `GIS_Google_Earth_main.py` was already in `KNOWN_SKIP` pre-conversion). `GIS_distance_main.py` and
+> `GIS_symbolic_main.py` launched clean on macOS with zero/negative width overflow;
+> `GIS_Google_Earth_main.py` launched clean but overflows **+388px** on the 1470x956 reference screen
+> (added to `docs/ctk_GUI_overflow_status.md`); `GIS_main.py` needs a full Anaconda env to launch (heavy
+> ML deps missing in the dev sandbox) — **user verifying by launch**. All 3 empty-open-file-button sites
+> for this tranche cleared from `docs/ctk_empty_button_status.md`. **Windows QA outstanding.**
 
 ### Phase 4 — Hard cases (1 PR each)
 

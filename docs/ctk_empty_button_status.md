@@ -50,8 +50,12 @@ live widget.
 
 ## Remaining empty open-file buttons
 
-**17 sites across 15 files.** All are the `width=1, text=''` pattern above unless noted. Line numbers
+**13 sites across 12 files.** All are the `width=1, text=''` pattern above unless noted. Line numbers
 are unchanged from the first audit — none of the remaining files have been touched yet.
+
+> **GIS tools (2026-07-18, `ctk/phase3-gis-tools`)** cleared their 3 sites (`GIS_main.py` 535 + 779,
+> `GIS_distance_main.py` 259, `GIS_symbolic_main.py` 310) via `create_open_file_button`, and the
+> `GIS_main.py:774` placeholder (see below) is now `= None`.
 
 | GUI | line | what it opens |
 |---|---|---|
@@ -59,10 +63,6 @@ are unchanged from the first audit — none of the remaining files have been tou
 | `data_visualization_main.py` | 1015 | comparative csv (literal `width=1`, parented to `tab_categorical`) |
 | `DB_SQL_main.py` | 1433 | input file (starts `state='disabled'`) |
 | `DB_PCACE_data_validation_main.py` | 546 | input file |
-| `GIS_main.py` | 535 | input csv file |
-| `GIS_main.py` | 779 | API config file (also a `tk.Button()` placeholder at 774 — see below) |
-| `GIS_distance_main.py` | 259 | input file |
-| `GIS_symbolic_main.py` | 310 | input file |
 | `NGrams_CoOccurrences_main.py` | 740 | input csv file |
 | `NLP_setup_external_software_main.py` | 77 | config file |
 | `NLP_setup_external_software_main.py` | 118 | software website |
@@ -73,23 +73,19 @@ are unchanged from the first audit — none of the remaining files have been tou
 | `data_manipulation_main.py` | 221 | input file |
 | `word2vec_main.py` | 301 | word-distance file |
 
-> The four `GIS_*` rows (and the `GIS_main.py:774` placeholder below) are **in flight** on
-> `ctk/phase3-gis-tools` as of this re-measure — expect them to clear with that tranche.
-
 The one remaining `state='disabled'` site starts grey under the CTk theme, correctly — but grey *and*
 blank is still unreadable. The glyph is what makes the disabled state legible as "this button has
 nothing to open yet".
 
 ## Secondary: placeholder `tk.Button()` forward declarations
 
-All five sites still open. Each constructs a **master-less, argument-less** button purely to declare
-the name before a conditional branch reassigns it:
+Four sites construct a **master-less, argument-less** button purely to declare the name before a
+conditional branch reassigns it:
 
 | File | line | reassigned at |
 |---|---|---|
 | `GUI_util.py` | 198 | 1020–1035 (`select_inputFilename_button`, per input type) |
 | `GUI_util.py` | 199–201 | later in `IO_config_setup_*` (dir-select buttons) |
-| `GIS_main.py` | 774 | 779 (`open_API_config_button`) |
 
 `tk.Button()` with no master attaches to Tk's **default root**, not to `GUI_util.window`. Today they
 are never placed, so nothing renders — but they are live widgets on a root the suite does not manage,

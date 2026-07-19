@@ -46,6 +46,18 @@ counters aligned. Verified with a real (not stubbed) Tk instance and `mainloop` 
 the stubbed `tests/gui_smoke.py` harness can't measure pixel geometry since its fake tkinter never lays
 anything out.
 
+## Partial fix: the I/O summary label
+
+`GUI_util.IO_config_setup_brief`'s `IO_setup_brief_display_area` (the "INPUT DIR: .../OUTPUT DIR: ..."
+box on the top row of every brief-mode GUI) was a `CTkLabel` fixed at `width=44` chars (352px), sized
+for a worst-case long path. Brief mode only ever shows a directory *basename*, so on GIS_Google_Earth_main
+this rendered ~110px of dead space after the printed text and pushed every column to its right —
+visibly, the "Select csv field" dropdown on the group row was clipped flush against the window's right
+edge (user report). Narrowed the default to `width=30`; a `CTkLabel`'s width is a floor, not a cap (an
+unusually long path still renders in full, just wider), so this only tightens the common case. This is
+shared code, so every brief-mode GUI gets a bit of the gap closed, not just GIS_Google_Earth_main (whose
+overflow dropped +388 → +276 — the row-splitting fix below is still needed to reach 0).
+
 ## Still overflowing
 
 These are wider than the screen even after every shrinkable entry hits the 150px floor — their width
@@ -57,6 +69,7 @@ general-purpose knob — see the row-splitting technique above.
 |---|---|
 | `sample_corpus_main.py` | +426 |
 | `DB_PCACE_data_analysis_main.py` | +301 |
+| `GIS_Google_Earth_main.py` | +276 (was +388; narrowing `IO_setup_brief_display_area` above closed part of it) |
 | `file_search_byWord_main.py` | +191 |
 | `wordclouds_main.py` | +169 |
 | `DB_SQL_main.py` | +139 |
@@ -66,6 +79,13 @@ general-purpose knob — see the row-splitting technique above.
 
 `NLP_welcome_main.py` reports +8656 but is a false positive: its content is `.place()`d, not gridded,
 so `reqwidth` is not meaningful there.
+
+`GIS_main.py` (Phase 3 GIS tranche, `ctk/phase3-gis-tools`) could not be measured in this sandbox —
+its module-level `Stanza_util`/`spaCy_util`/`Stanford_CoreNLP_util`/`BERT_util` imports pull in
+multi-hundred-MB models and exit before the window builds when optional ML deps (`sentencepiece`,
+`tensorflow`, ...) are missing, same pre-existing gap as its `gui_smoke` `UNCOV` status. Needs
+measuring in a full Anaconda env. `GIS_distance_main.py` (+0) and `GIS_symbolic_main.py` (-88) measured
+clean on the 1470x956 reference screen.
 
 Every other GUI measured zero or negative (fits with room to spare).
 

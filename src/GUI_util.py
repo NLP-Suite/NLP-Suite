@@ -953,8 +953,15 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
     # "INPUT DIR: newspaperArticles" wrapped across BOTH of its two lines and pushed the OUTPUT DIR
     # line out of sight entirely. A CTkLabel sized in characters holds both lines, picks up the
     # theme, and cannot wrap. Written through update_display_area() below.
+    # width=44 (352px) was sized for a worst-case long path, but brief mode only ever shows a
+    # basename (e.g. "INPUT DIR: newspaperArticles"), so most GUIs rendered a wide empty label with
+    # ~100-150px of dead space between the printed text and the next widget (the open-file-directory
+    # button cluster) -- the "gap after the I/O directories column" reported on several GUIs. A
+    # CTkLabel's width is a floor, not a cap (it grows to fit longer text -- verified: a >44-char
+    # line still renders in full, just wider), so shrinking the default here only tightens the
+    # common case without clipping an unusually long path.
     IO_setup_brief_display_area = GUI_theme_util.create_label(
-        window, text='', width=44, justify='left', anchor='w')
+        window, text='', width=30, justify='left', anchor='w')
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                    GUI_IO_util.setup_IO_brief_coordinate,
