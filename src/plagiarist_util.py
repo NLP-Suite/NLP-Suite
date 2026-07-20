@@ -1,19 +1,14 @@
 # Written by Roberto Franzosi & Claude
-# Pure-Python replacement for the Java Lucene.jar "Find the plagiarist" /
-# "Similarities between documents" tool. Computes pairwise document similarity
-# with TF-IDF + cosine similarity (scikit-learn) and writes the same output
-# files the Java program produced, so the existing charting and grouping code
-# keeps working unchanged:
+# "Find the plagiarist" / "Similarities between documents" tool. Computes pairwise
+# document similarity with TF-IDF + cosine similarity (scikit-learn) and writes:
 #   - document_duplicates.txt
-#   - Lucene_classes_freq.csv                      [Classes of Percentage Duplication, Frequency, List of Documents in Category]
-#   - Lucene_classes_time_freq.csv (if dates)      [Year, 0-10%, ... 90-100%]
-#   - Lucene_document_instance_classes_freq.csv    [File Name, 0-10%, ... 90-100%]
+#   - document_similarity_classes_freq.csv                      [Classes of Percentage Duplication, Frequency, List of Documents in Category]
+#   - document_similarity_classes_time_freq.csv (if dates)      [Year, 0-10%, ... 90-100%]
+#   - document_similarity_document_instance_classes_freq.csv    [File Name, 0-10%, ... 90-100%]
 #
-# NOTE ON SCORES: the old tool scored with Lucene MoreLikeThis (an asymmetric,
-# query-vs-document relevance score); this uses symmetric TF-IDF cosine
-# similarity, which is the more principled measure of "how similar are two
-# documents". Absolute percentages therefore differ from the Java version, so
-# the 80% duplicate threshold may need re-tuning on a real corpus.
+# NOTE ON SCORES: similarity is the symmetric TF-IDF cosine between two documents.
+# Earlier releases used a different (asymmetric) scoring, so absolute percentages
+# differ from older output -- the 80% duplicate threshold may need re-tuning on a real corpus.
 
 import sys
 import GUI_util
@@ -92,7 +87,7 @@ def _extract_year(filename, date_pos, date_format, delimiter):
 
 def compute_and_write(input_dir, output_dir, stopwords_path, threshold,
                       embeds_date=False, date_format='', date_pos=1, delimiter='_'):
-    """Compute pairwise similarity and write the Lucene-compatible output files.
+    """Compute pairwise similarity and write the document-similarity output files.
 
     *threshold* is a fraction in [0,1]; pairs at or above it are "duplicates".
     Returns a dict of output file paths (keys: duplicates_txt, classes_freq,
@@ -133,8 +128,8 @@ def compute_and_write(input_dir, output_dir, stopwords_path, threshold,
     os.makedirs(output_dir, exist_ok=True)
     out = {}
 
-    # ---- Lucene_document_instance_classes_freq.csv -------------------------
-    p3 = os.path.join(output_dir, 'Lucene_document_instance_classes_freq.csv')
+    # ---- document_similarity_document_instance_classes_freq.csv -------------------------
+    p3 = os.path.join(output_dir, 'document_similarity_document_instance_classes_freq.csv')
     with open(p3, 'w', newline='', encoding='utf-8-sig') as f:
         w = csv.writer(f)
         w.writerow(['File Name'] + CLASS_LABELS)
@@ -142,8 +137,8 @@ def compute_and_write(input_dir, output_dir, stopwords_path, threshold,
             w.writerow([names[i]] + doc_bands[i])
     out['document_instance'] = p3
 
-    # ---- Lucene_classes_freq.csv -------------------------------------------
-    p1 = os.path.join(output_dir, 'Lucene_classes_freq.csv')
+    # ---- document_similarity_classes_freq.csv -------------------------------------------
+    p1 = os.path.join(output_dir, 'document_similarity_classes_freq.csv')
     with open(p1, 'w', newline='', encoding='utf-8-sig') as f:
         w = csv.writer(f)
         w.writerow(['Classes of Percentage Duplication', 'Frequency',
@@ -153,7 +148,7 @@ def compute_and_write(input_dir, output_dir, stopwords_path, threshold,
             w.writerow([CLASS_LABELS[b], len(docs), '; '.join(docs)])
     out['classes_freq'] = p1
 
-    # ---- Lucene_classes_time_freq.csv (only if filenames embed dates) ------
+    # ---- document_similarity_classes_time_freq.csv (only if filenames embed dates) ------
     if embeds_date:
         year_bands = {}
         for i in range(n):
@@ -164,7 +159,7 @@ def compute_and_write(input_dir, output_dir, stopwords_path, threshold,
             for b in range(10):
                 acc[b] += doc_bands[i][b]
         if year_bands:
-            p2 = os.path.join(output_dir, 'Lucene_classes_time_freq.csv')
+            p2 = os.path.join(output_dir, 'document_similarity_classes_time_freq.csv')
             with open(p2, 'w', newline='', encoding='utf-8-sig') as f:
                 w = csv.writer(f)
                 w.writerow(['Year'] + CLASS_LABELS)

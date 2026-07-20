@@ -97,7 +97,7 @@ def ancestor(inputDir, outputDir):
 
 
 """
-This function read in Lucene_document_classes_freq.csv and group articles from the same newspaper together.
+This function read in document_similarity_document_classes_freq.csv and group articles from the same newspaper together.
 The result csv file showcase for every newspaper, the distribution of plagiarism score.
 
 Key: The way we compute distribution of plagiarism score for newspaper is by adding up all scores for the same 
@@ -145,7 +145,7 @@ def group_newspaper(document_class_csv, outputFilename):
             writer.writerow(to_write)
 
 
-def plagiarist(inputDir, outputDir, open_csv_output_checkbox, 
+def plagiarist(inputDir, outputDir, open_csv_output_checkbox, chartPackage, dataTransformation,
                similarityIndex_Plagiarist_var, fileName_embeds_date, DateFormat, DatePosition, DateCharacterSeparator):
     if similarityIndex_Plagiarist_var < .8:
         mb.showwarning(title='Similarity Index warning', message="The level of similarity was set at " + str(
@@ -159,9 +159,11 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox,
             "separator was entered.\n\nPlease enter the separator and try again.")
         return
 
-    # Python (scikit-learn TF-IDF + cosine similarity) replacement for the former
-    # Java Lucene.jar. It writes the same output files, so the charting below is
-    # unchanged.
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                                   'Started running PLAGIARIST at', True, '', True, '', True)
+
+    # scikit-learn TF-IDF + cosine similarity; writes the document-similarity output
+    # files consumed by the charting below.
     result = plagiarist_util.run(inputDir, outputDir, lib_stopwords,
                                  similarityIndex_Plagiarist_var,
                                  fileName_embeds_date, DateFormat, DatePosition,
@@ -171,22 +173,22 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox,
 
     filesToOpen.append(outputDir + os.sep + "document_duplicates.txt")
 
-    outputFilenameCSV_1 = outputDir + os.sep + "Lucene_classes_freq.csv"
+    outputFilenameCSV_1 = outputDir + os.sep + "document_similarity_classes_freq.csv"
     filesToOpen.append(outputFilenameCSV_1)
 
-    outputFilenameCSV_2 = outputDir + os.sep + "Lucene_classes_time_freq.csv"
+    outputFilenameCSV_2 = outputDir + os.sep + "document_similarity_classes_time_freq.csv"
     if fileName_embeds_date and os.path.isfile(outputFilenameCSV_2):
         filesToOpen.append(outputFilenameCSV_2)
 
-    outputFilenameCSV_3 = outputDir + os.sep + "Lucene_document_instance_classes_freq.csv"
+    outputFilenameCSV_3 = outputDir + os.sep + "document_similarity_document_instance_classes_freq.csv"
     filesToOpen.append(outputFilenameCSV_3)
 
-    outputFilenameCSV_4 = outputDir + os.sep + "Lucene_Document_classes_freq.csv"
+    outputFilenameCSV_4 = outputDir + os.sep + "document_similarity_Document_classes_freq.csv"
     group_newspaper(outputFilenameCSV_3, outputFilenameCSV_4)
     filesToOpen.append(outputFilenameCSV_4)
 
     if chartPackage!='No charts':
-        # Lucene_classes_freq.csv; outputFilenameCSV_1
+        # document_similarity_classes_freq.csv; outputFilenameCSV_1
         outputDir=outputDir
         inputFilename = outputFilenameCSV_1
         columns_to_be_plotted_xAxis=[]
@@ -206,7 +208,7 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox,
             else:
                 filesToOpen.extend(outputFiles)
 
-        # Plot Lucene_classes_time_freq.csv line plot (temporal plot); outputFilenameCSV_2
+        # Plot document_similarity_classes_time_freq.csv line plot (temporal plot); outputFilenameCSV_2
         if fileName_embeds_date and os.path.isfile(outputFilenameCSV_2):
             # columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=[[0,1], [0,2], [0,3], [0,4], [0,5], [0,6],[0,7], [0,8], [0,9],[0,10]]
             # hover_label=['','','','','','','','','','']
@@ -228,12 +230,12 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox,
                 else:
                     filesToOpen.extend(outputFiles)
 
-        # No plot for Lucene_document_classes_freq.csv
+        # No plot for document_similarity_document_classes_freq.csv
         #   because it could potentially have thousands of documents
         # 	inputFilename = outputFilenameCSV_3
 
 
-        # Lucene_Document_classes_freq.csv; outputFilenameCSV_4
+        # document_similarity_Document_classes_freq.csv; outputFilenameCSV_4
         columns_to_be_plotted_xAxis=[]
         columns_to_be_plotted_yAxis=[[0, 1],[0, 2],[0, 3]]
         hover_label = ['']
@@ -728,9 +730,8 @@ TIPS_lookup = {'Check the character\'s name tag': 'TIPS_NLP_Word similarity (Lev
                'Find the character\'s home (By NER)': 'TIPS_NLP_File classifier (By NER).pdf',
                'NER (Named Entity Recognition)': 'TIPS_NLP_NER (Named Entity Recognition).pdf',
                'Find the missing character': 'TIPS_NLP_Find the missing character.pdf',
-               'Check the character\'s name tag': 'TIPS_NLP_Word similarity (Levenshtein edit distance).pdf',
                'Find the intruder': 'TIPS_NLP_Find the intruder.pdf',
-               'Find the plagiarist': 'TIPS_NLP_Find the plagiarist (via Lucene).pdf',
+               'Find the plagiarist': 'TIPS_NLP_Find the plagiarist.pdf',
                'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
                'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf"}
                # 'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
@@ -767,7 +768,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to run the Python 3 script 'Find the intruder'. The script checks the documents grouped together in a directory, as perhaps all describing a specific event, to see whether any of them do not belong to the group. The script uses NER values for 'Location','Date','Organization', and 'Person' as criteria for checking files.\n\nPlease, using the dropdown menu, select a value for the similarity index. The similarity index, based on cosine similarity, is used to compute the degree of similarity between documents. The default value is set as 0.2. If you set a high value >.6, then every document may be an intruder; so, the recommended value should be <.4.\n\nIn INPUT the script expects the path to a directory containing several folders, each folder containing a set of related documents (e.g., all describing the same event).\n\nIn OUTPUT, the script creates two csv files: One includes a list of irrelevant files, and the folder they are in; The other csv file contains the frequency of having intruders in the input folders.\n\nNo Excel charts are produced since the csv output lists only one record of frequencies and percentages.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to run the 'Find the plagiarist' tool. It uses TF-IDF with cosine similarity to compute the percentage of similarity between any two documents.\n\nIn INPUT the tool expects:\n   1. the file stopwords.txt stored in the lib subdirectory;\n   2. a directory that contains all the files to be compared.\n\nIn OUTPUT, the tool produces four output files: \n   1. document_duplicates.txt that shows the summary of duplicated files;\n   2. Lucene_classes_freq.csv that shows how many documents fall into each class of frequency (e.g., 100 documents have 10%-20% similarity with other files);\n   3. Lucene_classes_time_freq.csv that shows, for each year, how many documents fall into each class of frequency (e.g., in 1897, 100 documents have 10%-20% similarity with other files);\n  4. Lucene_document_classes_freq.csv that shows for each document, how many documents fall into each class of frequency (e.g., for the document “The Oglethorpe Echo_09-19-1919_1_1.txt”, 10 other documents have 10%-20% frequency of similarity with it).\n\nThe default threshold for similarity is set at 80%. Documents that get a score over this value are considered duplicates of the candidate document. Because the similarity is now computed with TF-IDF cosine similarity rather than the former Lucene scoring, you may wish to re-check this threshold on your corpus. Lowering the level would give too many false positives (too many documents wrongly classified as similar); raising the level may exclude too many documents.")
+                                  "Please, tick the checkbox if you wish to run the 'Find the plagiarist' tool. It uses TF-IDF with cosine similarity to compute the percentage of similarity between any two documents.\n\nIn INPUT the tool expects:\n   1. the file stopwords.txt stored in the lib subdirectory;\n   2. a directory that contains all the files to be compared.\n\nIn OUTPUT, the tool produces four output files: \n   1. document_duplicates.txt that shows the summary of duplicated files;\n   2. document_similarity_classes_freq.csv that shows how many documents fall into each class of frequency (e.g., 100 documents have 10%-20% similarity with other files);\n   3. document_similarity_classes_time_freq.csv that shows, for each year, how many documents fall into each class of frequency (e.g., in 1897, 100 documents have 10%-20% similarity with other files);\n  4. document_similarity_document_classes_freq.csv that shows for each document, how many documents fall into each class of frequency (e.g., for the document “The Oglethorpe Echo_09-19-1919_1_1.txt”, 10 other documents have 10%-20% frequency of similarity with it).\n\nThe default threshold for similarity is set at 80%. Documents that get a score over this value are considered duplicates of the candidate document. Because the similarity is computed with TF-IDF cosine similarity, and earlier releases used a different scoring, you may wish to re-check this threshold on your corpus. Lowering the level would give too many false positives (too many documents wrongly classified as similar); raising the level may exclude too many documents.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

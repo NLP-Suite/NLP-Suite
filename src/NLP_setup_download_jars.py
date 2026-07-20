@@ -15,7 +15,8 @@ def download_file(url, file_name):
 
 
 def download_jars():
-    names = ['Lucene.jar','WordNet_Search_DOWN.jar', 'WordNet_Search_UP.jar']
+    # Lucene.jar removed: the 'Find the plagiarist' tool is now pure-Python (scikit-learn TF-IDF), no jar needed
+    names = ['WordNet_Search_DOWN.jar', 'WordNet_Search_UP.jar']
     for name in names:
         full_url = prefix + name
         print(f'Downloading {name}...')
