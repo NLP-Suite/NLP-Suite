@@ -8,16 +8,17 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Summary CoreNLP Checker",['nltk','stanfordcorenlp','os','tkinter','glob'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Summary checker",['nltk','os','tkinter','glob'])==False:
     sys.exit(0)
 
-from stanfordcorenlp import StanfordCoreNLP # python wrapper for Stanford CoreNLP
 import os
 from glob import glob
 import IO_files_util
 import GUI_IO_util
 import charts_util
 import IO_user_interface_util
+import config_util
+import basic_NLP_util
 
 # check WordNet
 IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','WordNet')
@@ -27,6 +28,81 @@ import tkinter.messagebox as mb
 lemmatizer = WordNetLemmatizer()
 filesToOpen = []
 terminal_out = sys.stdout
+
+
+# --- config-aware parser adapter --------------------------------------------------------------------
+# Drop-in replacement for the StanfordCoreNLP object this tool used to hardcode: it exposes the SAME
+# pos_tag(text) / ner(text) / word_tokenize(text) / close() API, but is backed by whichever NLP package
+# the user selected in the NLP Suite setup (Stanford CoreNLP / Stanza / spaCy). POS is returned as Penn
+# tags (NN, NNS, ...) and NER as the CoreNLP-style tags this tool checks (PERSON / LOCATION / ORGANIZATION
+# / DATE), so the analysis code below is UNCHANGED regardless of the parser. Parser libraries are imported
+# lazily, so a Stanza/spaCy user is not forced to install the Stanford CoreNLP wrapper.
+# Validated against real Stanza 1.10 and spaCy 3.4: both reproduce the CoreNLP-shaped noun/PERSON/LOCATION/
+# DATE output. NOTE: entity RESULTS still differ by model (e.g. Stanza tags a newspaper name LAW not ORG) --
+# that is model behaviour, not a bug, and is what must be validated on a real corpus.
+class _ConfigParser:
+    # OntoNotes entity types produced by Stanza/spaCy -> the tags this tool's analysis code checks
+    _NER_MAP = {'PERSON': 'PERSON', 'ORG': 'ORGANIZATION',
+                'GPE': 'LOCATION', 'LOC': 'LOCATION', 'FAC': 'LOCATION', 'DATE': 'DATE'}
+
+    def __init__(self, package, language, CoreNLPDir):
+        p = (package or '').lower()
+        self._corenlp = None
+        self._pipe = None
+        self._cache_text = None
+        self._cache_doc = None
+        if 'spacy' in p:
+            self.kind = 'spacy'
+            import spacy
+            self._pipe = spacy.load(basic_NLP_util._lang_code(language) + '_core_web_sm')
+        elif 'stanford' in p or 'corenlp' in p:
+            self.kind = 'corenlp'
+            from stanfordcorenlp import StanfordCoreNLP  # python wrapper for Stanford CoreNLP
+            self._corenlp = StanfordCoreNLP(CoreNLPDir)
+        else:  # Stanza is the NLP Suite's default Python parser
+            self.kind = 'stanza'
+            import stanza
+            self._pipe = stanza.Pipeline(basic_NLP_util._lang_code(language),
+                                         processors='tokenize,pos,ner', verbose=False)
+
+    # cache the last parse so a pos_tag() + ner() pair on the same text only parses once
+    def _doc(self, text):
+        if text != self._cache_text:
+            self._cache_text, self._cache_doc = text, self._pipe(text)
+        return self._cache_doc
+
+    def pos_tag(self, text):
+        if self.kind == 'corenlp':
+            return self._corenlp.pos_tag(text)
+        if self.kind == 'stanza':
+            return [(w.text, w.xpos or '') for s in self._doc(text).sentences for w in s.words]
+        return [(t.text, t.tag_) for t in self._doc(text)]  # spaCy tag_ = Penn
+
+    def ner(self, text):
+        if self.kind == 'corenlp':
+            return self._corenlp.ner(text)
+        out = []
+        if self.kind == 'stanza':
+            for s in self._doc(text).sentences:
+                for t in s.tokens:
+                    tag = t.ner.split('-')[-1] if (t.ner and t.ner != 'O') else 'O'  # strip BIOES
+                    out.append((t.text, self._NER_MAP.get(tag, tag)))
+        else:  # spaCy
+            for t in self._doc(text):
+                tag = t.ent_type_ or 'O'
+                out.append((t.text, self._NER_MAP.get(tag, tag)))
+        return out
+
+    def word_tokenize(self, text):
+        if self.kind == 'corenlp':
+            return self._corenlp.word_tokenize(text)
+        if self.kind == 'stanza':
+            return [w.text for s in self._doc(text).sentences for w in s.words]
+        return [t.text for t in self._doc(text)]
+
+    def close(self):
+        if self._corenlp is not None:
+            self._corenlp.close()
 
 #This fuction reads the social actor list from the same directory
 #and save that into a set called "my_soc_actors"
@@ -273,7 +349,7 @@ def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,open
         sys.exit()
 
     if len(compilations_path)==0:
-        tk.messagebox.showerror(title='Summary directory not found', message='The summary checker script requires a secondary input directory for the summary files.\n\nNo secondary directory entered. Please, select the secondary input directory and try again.')
+        mb.showerror(title='Summary directory not found', message='The summary checker script requires a secondary input directory for the summary files.\n\nNo secondary directory entered. Please, select the secondary input directory and try again.')
         sys.exit()
 
     if len(outputDir)==0:
@@ -325,7 +401,11 @@ def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,open
     f = open(outputFilename, 'w', encoding='utf-8',errors='ignore')
     sys.stdout = f
     dirs = glob(articles_path+os.sep + '*' + os.sep)
-    nlp = StanfordCoreNLP(CoreNLPDir)
+    # use the NLP parser the user selected in the setup (Stanford CoreNLP / Stanza / spaCy)
+    _cfg = config_util.read_NLP_package_language_config()
+    _package = _cfg[1] if (_cfg and len(_cfg) > 1 and _cfg[1]) else 'Stanford CoreNLP'
+    _language = _cfg[4] if (_cfg and len(_cfg) > 4 and _cfg[4]) else 'English'
+    nlp = _ConfigParser(_package, _language, CoreNLPDir)
     num_id = 0
     num_dir = 0
     for compilation in glob(compilations_path+os.sep+'*'):

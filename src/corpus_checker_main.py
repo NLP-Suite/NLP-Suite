@@ -29,6 +29,7 @@ import file_summary_checker_util
 import file_find_non_related_documents_util
 import run_script_util
 import plagiarist_util
+import config_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -296,13 +297,28 @@ def run():
 
     global filesToOpen
     filesToOpen = []
-    # check that the CoreNLPdir has been setup
-    CoreNLPdir, existing_software_config, errorFound = IO_libraries_util.external_software_install('social_science_research_main',
-                                                                                         'Stanford CoreNLP',
-                                                                                         '',
-                                                                                         silent=False, errorFound=False)
-    if CoreNLPdir==None or CoreNLPdir=='':
-        return filesToOpen
+    # 'Find the missing character' is now config-aware (Stanford CoreNLP / Stanza / spaCy), so it needs the
+    # Stanford CoreNLP directory ONLY when CoreNLP is the selected package. The other tools here still use
+    # CoreNLP, so we relax the requirement only when missing_character is the sole selected operation on a
+    # non-CoreNLP package.
+    try:
+        _package = (config_util.read_NLP_package_language_config()[1] or '')
+    except Exception:
+        _package = ''
+    _missing_char_only = (missing_character_var and not check_filename_var and not character_var
+                          and not character_home_var and not intruder_var and not ancestor_var
+                          and not plagiarist_var and not Levenshtein_var)
+    _skip_corenlp = _missing_char_only and ('corenlp' not in _package.lower()) and ('stanford' not in _package.lower())
+
+    CoreNLPdir = ''
+    if not _skip_corenlp:
+        # check that the CoreNLPdir has been setup
+        CoreNLPdir, existing_software_config, errorFound = IO_libraries_util.external_software_install('corpus_checker_main',
+                                                                                             'Stanford CoreNLP',
+                                                                                             '',
+                                                                                             silent=False, errorFound=False)
+        if CoreNLPdir==None or CoreNLPdir=='':
+            return filesToOpen
 
     if (check_filename_var == False and character_var == False and character_home_var == False and missing_character_var == False and intruder_var == False and Levenshtein_var==False and ancestor_var == False and plagiarist_var == False):
         mb.showwarning(title='No options selected',
@@ -347,7 +363,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
 
-GUI_label = 'Graphical User Interface (GUI) for Various Tools for Social Science Research'
+GUI_label = 'Graphical User Interface (GUI) for the Corpus checker'
 config_filename = 'NLP_default_IO_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
 
