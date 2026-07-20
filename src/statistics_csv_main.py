@@ -108,6 +108,7 @@ def run():
             run_mw_kw = stat_test_option in ('*', 'Mann-Whitney U / Kruskal-Wallis')
             run_ll = stat_test_option in ('*', 'Log-likelihood (corpus comparison)')
             run_chi = stat_test_option == 'Chi-square (independence)'
+            run_crosstab = stat_test_option == 'Cross-tabulation (contingency table)'
             run_corr = stat_test_option == 'Correlation (Spearman / Kendall)'
             run_mk = stat_test_option == 'Mann-Kendall (temporal trend)'
             run_cp = stat_test_option == 'Change-point detection (temporal)'
@@ -156,6 +157,17 @@ def run():
                                    message='The Chi-square test of independence requires two categorical columns.\n\nPlease, select the Value column (variable A) and the Group column (variable B) and try again.')
                 else:
                     outputFiles = statistics_statistical_tests_util.run_chi_square_test(
+                        csv_file, outputDir, stat_value_col, stat_group_col,
+                        chartPackage, dataTransformation)
+                    if outputFiles:
+                        filesToOpen.extend(outputFiles)
+
+            if run_crosstab:
+                if stat_value_col == '' or stat_group_col == '':
+                    mb.showwarning(title='Missing fields',
+                                   message='Cross-tabulation requires two categorical columns.\n\nPlease, select the Value column (variable A = rows) and the Group column (variable B = columns) and try again.')
+                else:
+                    outputFiles = statistics_statistical_tests_util.run_crosstab(
                         csv_file, outputDir, stat_value_col, stat_group_col,
                         chartPackage, dataTransformation)
                     if outputFiles:
@@ -761,6 +773,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                                "Use the dropdown menu to select a specific test or * for all available tests.")
 
 stat_test_options = ['*', 'Mann-Whitney U / Kruskal-Wallis', 'Chi-square (independence)',
+                     'Cross-tabulation (contingency table)',
                      'Correlation (Spearman / Kendall)', 'Mann-Kendall (temporal trend)',
                      'Change-point detection (temporal)', 'Permutation test (two groups)',
                      'Bayes factor (two groups)', 'Adjusted Rand index (clustering agreement)',
@@ -775,6 +788,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.statistics_cs
                                                "Mann-Whitney U / Kruskal-Wallis (Value=numeric, Group=category): compare a numeric variable across groups "
                                                "(2 groups → Mann-Whitney; 3+ groups → Kruskal-Wallis with Dunn's post-hoc).\n\n"
                                                "Chi-square (independence) (Value=category A, Group=category B): test whether two categorical variables are associated (+ Cramer's V).\n\n"
+                                               "Cross-tabulation (contingency table) (Value=category A=rows, Group=category B=columns): the A x B counts table (with row/column totals) plus a row-percentage table and a grouped-bar chart. Descriptive only -- no significance test (use Chi-square for that).\n\n"
                                                "Correlation (Spearman / Kendall) (Value=Y numeric, Group=X numeric): test monotonic association between two numeric variables.\n\n"
                                                "Mann-Kendall (temporal trend) (Value=numeric series, Group=date/time): test for a significant increasing/decreasing trend over time (+ Sen's slope).\n\n"
                                                "Change-point detection (temporal) (Value=numeric series, Group=date/time): find a single abrupt shift in the series (Pettitt's test) and the mean before/after.\n\n"
@@ -850,6 +864,7 @@ def activate_stat_test_options(*args):
         # tests that use the Value column (var A) + Group column (var B)
         run_value_group = option in ('*', 'Mann-Whitney U / Kruskal-Wallis',
                                      'Chi-square (independence)',
+                                     'Cross-tabulation (contingency table)',
                                      'Correlation (Spearman / Kendall)',
                                      'Mann-Kendall (temporal trend)',
                                      'Change-point detection (temporal)',
@@ -925,10 +940,14 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "   Mann-Whitney U / Kruskal-Wallis (Value=numeric, Group=category): compare a numeric variable across groups "
                                   "(2 groups → Mann-Whitney U; 3+ groups → Kruskal-Wallis with Dunn's post-hoc).\n"
                                   "   Chi-square (independence) (Value=category A, Group=category B): test association between two categorical variables (+ Cramer's V).\n"
+                                  "   Cross-tabulation (contingency table) (Value=category A=rows, Group=category B=columns): the A x B counts table (with row/column totals), a row-percentage table, and a grouped-bar chart. Descriptive only - no significance test.\n"
                                   "   Correlation (Spearman / Kendall) (Value=Y, Group=X, both numeric): test monotonic association between two numeric variables.\n"
                                   "   Mann-Kendall (temporal trend) (Value=numeric series, Group=date/time): test for a significant trend over time (+ Sen's slope).\n"
                                   "   Change-point detection (temporal) (Value=numeric series, Group=date/time): find a single abrupt shift in the series (Pettitt's test).\n"
                                   "   Permutation test (two groups) (Value=numeric, Group=2 categories): distribution-free test of the difference in group means (+ Cohen's d).\n"
+                                  "   Bayes factor (two groups) (Value=numeric, Group=2 categories): Bayesian evidence for a difference vs none (BF10>3 moderate, >10 strong evidence FOR a difference; BF10<1/3 evidence for NO difference; + Cohen's d).\n"
+                                  "   Adjusted Rand index (clustering agreement) (Value=clustering A, Group=clustering B): chance-corrected agreement between two clusterings (1=identical, 0=chance, <0=worse than chance; + NMI). The clustering equivalent of kappa.\n"
+                                  "   Silhouette (cluster cohesion) (Group=cluster labels; all numeric columns used as features): how tight and well-separated the clusters are (-1..1; ~1=strong, ~0=overlapping), with per-cluster means.\n"
                                   "   Log-likelihood (corpus comparison): identify words statistically over/under-represented in one corpus vs another.\n"
                                   "   Inter-annotator agreement (Cohen's / Fleiss' kappa): measure how well 2+ annotators/tools agree; each selected column is one annotator (2 → Cohen's, 3+ → Fleiss').")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",

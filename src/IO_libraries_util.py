@@ -116,6 +116,10 @@ def install_all_Python_packages(window, calling_script, modules_to_try):
                 module = 'python-docx'  # python-docx would always break the code; must pass docx
             if 'vlc' in module:
                 module = 'python-vlc'
+            if module == 'summarizer':
+                # the 'summarizer' module is provided by 'bert-extractive-summarizer';
+                # PyPI's own 'summarizer' package is an unrelated, abandoned project
+                module = 'bert-extractive-summarizer'
             missingModules.append(module)
             if 'spellchecker' in missingModules:
                 # rename the module to the software_name to be installed

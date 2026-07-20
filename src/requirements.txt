@@ -95,13 +95,15 @@ twython
 nrclex
 #
 # BERT
-transformers
+# transformers 4.52 removed TransfoXLModel, which bert-extractive-summarizer 0.10.1 imports at load time
+transformers<4.52
 sentence_transformers
 contextualSpellCheck
 tensorflow
 protobuf==3.20
 sentencepiece
-summarizer
+# 'summarizer' (the module BERT_util imports) is provided by bert-extractive-summarizer;
+# the PyPI 'summarizer' package is an unrelated, abandoned project — do NOT add it
 bert-extractive-summarizer
 bertopic
 

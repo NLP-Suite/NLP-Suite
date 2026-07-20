@@ -232,6 +232,63 @@ def run_chi_square_test(inputFilename, outputDir, col1, col2,
 
 
 # ---------------------------------------------------------------------------
+#  1b. Cross-tabulation (contingency table) -- descriptive, no significance test
+# ---------------------------------------------------------------------------
+
+def run_crosstab(inputFilename, outputDir, col1, col2,
+                 chartPackage='Excel', dataTransformation='No transformation'):
+    """Standalone cross-tabulation of two categorical columns: row variable = col1 (A),
+    column variable = col2 (B). Unlike run_chi_square_test this runs NO significance test -- it just
+    surfaces the A x B grid (e.g., gender x space). Outputs a counts table (with row/column totals), a
+    row-percentage table (how B distributes within each A), and a grouped-bar chart of the counts."""
+    filesToOpen = []
+
+    df = _validate_csv_input(inputFilename)
+    if df is None:
+        return filesToOpen
+
+    for col in [col1, col2]:
+        if col not in df.columns:
+            mb.showwarning(title='Column error',
+                           message='Column "' + col + '" not found in the input file.')
+            return filesToOpen
+
+    df = df[[col1, col2]].dropna()
+    if len(df) == 0:
+        mb.showwarning(title='Insufficient data',
+                       message='No rows remain after dropping blank values in the two selected columns.\n\n'
+                                   'Please, select two populated categorical columns and try again.')
+        return filesToOpen
+
+    # counts table with row/column totals (the 'Total' margins)
+    counts = pd.crosstab(df[col1], df[col2], margins=True, margins_name='Total').reset_index()
+    out1 = _save_results_csv(counts, inputFilename, '', outputDir, 'crosstab_counts')
+    filesToOpen.append(out1)
+
+    # row-percentage table: each row sums to 100% -- how col2 distributes within each col1 category
+    row_pct = (pd.crosstab(df[col1], df[col2], normalize='index') * 100).round(2).reset_index()
+    out2 = _save_results_csv(row_pct, inputFilename, '', outputDir, 'crosstab_row_pct')
+    filesToOpen.append(out2)
+
+    # grouped-bar chart of the raw counts (no margins): col1 categories on X, one series per col2 category
+    chart_df = pd.crosstab(df[col1], df[col2]).reset_index()
+    chart_csv = _save_results_csv(chart_df, inputFilename, '', outputDir, 'crosstab_chart')
+    filesToOpen.append(chart_csv)
+
+    column_pairs = [[0, c] for c in range(1, chart_df.shape[1])]
+    outputFiles = charts_util.run_all(
+        column_pairs, chart_csv, outputDir, outputFileLabel='crosstab',
+        chartPackage=chartPackage, dataTransformation=dataTransformation,
+        chart_type_list=['bar'],
+        chart_title='Cross-tabulation: ' + col1 + ' x ' + col2,
+        column_xAxis_label_var=col1, column_yAxis_label_var='Count',
+        hover_info_column_list=[])
+    _append_chart_files(filesToOpen, outputFiles)
+
+    return filesToOpen
+
+
+# ---------------------------------------------------------------------------
 #  2. Mann-Whitney U Test
 # ---------------------------------------------------------------------------
 

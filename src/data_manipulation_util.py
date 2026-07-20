@@ -315,5 +315,159 @@ def MERGE(outputDir, operation_results_text_list):
 
     return outputFilename
 
-# PURGE ------------------------------------------------------------------------------------------
+# DROP rows ------------------------------------------------------------------------------------------
 # https://www.geeksforgeeks.org/drop-rows-from-the-dataframe-based-on-certain-condition-applied-on-a-column/
+
+# each entry: filepath,field,comparator,where_value,and_or  (same record format as EXTRACT).
+# DROP removes the rows that MATCH the WHERE condition(s), keeping all columns.
+def drop(outputDir, operation_results_text_list):
+    if len(operation_results_text_list) == 0:
+        mb.showwarning(title='Missing field(s)',
+                       message='No field/condition has been selected for the DROP operation.\n\nPlease, select a field, a comparator, and a WHERE value, then try again.')
+        return
+    filepath = operation_results_text_list[0].split(',')[0]
+    df = pd.read_csv(filepath, encoding='utf-8', on_bad_lines='skip')
+    queryStr = ''
+    prev_and_or = 'and'
+    for s in operation_results_text_list:
+        parts = s.split(',')
+        header = parts[1]
+        sign = parts[2] if len(parts) > 2 else "''"
+        value = parts[3] if len(parts) > 3 else "''"
+        and_or = parts[4] if len(parts) > 4 else "''"
+        if sign == "''" or value == "''":
+            continue
+        if sign == '=':
+            sign = '=='
+        if sign == '<>':
+            sign = '!='
+        if ' ' in header:
+            header = '`' + header + '`'
+        if "'" not in value and not value.isdigit():
+            value = "'" + value + "'"
+        cond = header + sign + value
+        if queryStr == '':
+            queryStr = cond
+        else:
+            conj = prev_and_or if prev_and_or in ('and', 'or') else 'and'
+            queryStr = queryStr + ' ' + conj + ' ' + cond
+        prev_and_or = and_or
+    if queryStr == '':
+        mb.showwarning(title='Missing condition',
+                       message='The DROP operation requires a WHERE condition (a field, a comparator, and a value).\n\nPlease, enter a condition and try again.')
+        return
+    matching = df.query(queryStr, engine='python')
+    df_result = df.drop(matching.index)
+    outputFilename = IO_files_util.generate_output_file_name(filepath, os.path.dirname(filepath),
+                                                             outputDir, '.csv', 'drop',
+                                                             '', '', '', '', False, True)
+    df_result.to_csv(outputFilename, encoding='utf-8', index=False)
+    return outputFilename
+
+
+# SPLIT field ------------------------------------------------------------------------------------------
+# the inverse of CONCATENATE. entry: filepath,field,separator.
+# Splits one field into several new columns (field_1, field_2, ...) at the separator; keeps the original.
+def split_field(outputDir, operation_results_text_list):
+    if len(operation_results_text_list) == 0:
+        mb.showwarning(title='Missing field',
+                       message='No field has been selected for the SPLIT operation.\n\nPlease, select a field and a character separator, then try again.')
+        return
+    parts = operation_results_text_list[0].split(',')
+    filepath = parts[0]
+    field = parts[1]
+    separator = parts[2] if len(parts) > 2 else ''
+    if separator == '':
+        mb.showwarning(title='Missing separator',
+                       message='The SPLIT operation requires a character separator.\n\nPlease, enter the separator and try again.')
+        return
+    df = pd.read_csv(filepath, encoding='utf-8', on_bad_lines='skip')
+    if field not in df.columns:
+        mb.showwarning(title='Field error', message='Field "' + field + '" was not found in the input file.')
+        return
+    pieces = df[field].astype(str).apply(lambda x: x.split(separator))
+    max_parts = int(pieces.map(len).max()) if len(pieces) else 0
+    for k in range(max_parts):
+        df[field + '_' + str(k + 1)] = pieces.map(lambda p, k=k: p[k] if k < len(p) else '')
+    outputFilename = IO_files_util.generate_output_file_name(filepath, os.path.dirname(filepath),
+                                                             outputDir, '.csv', 'split',
+                                                             '', '', '', '', False, True)
+    df.to_csv(outputFilename, encoding='utf-8', index=False)
+    return outputFilename
+
+
+# SORT rows ------------------------------------------------------------------------------------------
+# entries: filepath,field (one per sort key). Sorts ascending by the selected field(s).
+def sort_rows(outputDir, operation_results_text_list):
+    if len(operation_results_text_list) == 0:
+        mb.showwarning(title='Missing field',
+                       message='No field has been selected for the SORT operation.\n\nPlease, select at least one field and try again.')
+        return
+    filepath = operation_results_text_list[0].split(',')[0]
+    fields = [s.split(',')[1] for s in operation_results_text_list if s.split(',')[1] != '']
+    if not fields:
+        mb.showwarning(title='Missing field', message='The SORT operation requires at least one field.')
+        return
+    df = pd.read_csv(filepath, encoding='utf-8', on_bad_lines='skip')
+    missing = [f for f in fields if f not in df.columns]
+    if missing:
+        mb.showwarning(title='Field error', message='Field(s) not found in the input file: ' + ', '.join(missing))
+        return
+    df = df.sort_values(by=fields, ascending=True, kind='stable')
+    outputFilename = IO_files_util.generate_output_file_name(filepath, os.path.dirname(filepath),
+                                                             outputDir, '.csv', 'sort',
+                                                             '', '', '', '', False, True)
+    df.to_csv(outputFilename, encoding='utf-8', index=False)
+    return outputFilename
+
+
+# DEDUPLICATE rows -----------------------------------------------------------------------------------
+# entries: filepath,field (0+ key fields). With key field(s), duplicates are judged on those; with none, on the whole row.
+def deduplicate(outputDir, operation_results_text_list):
+    if len(operation_results_text_list) == 0:
+        mb.showwarning(title='Missing input',
+                       message='Nothing has been selected for the DEDUPLICATE operation.\n\nPlease, click OK (optionally after selecting one or more key fields) and try again.')
+        return
+    filepath = operation_results_text_list[0].split(',')[0]
+    fields = [s.split(',')[1] for s in operation_results_text_list if s.split(',')[1] != '']
+    df = pd.read_csv(filepath, encoding='utf-8', on_bad_lines='skip')
+    if fields:
+        missing = [f for f in fields if f not in df.columns]
+        if missing:
+            mb.showwarning(title='Field error', message='Field(s) not found in the input file: ' + ', '.join(missing))
+            return
+        df = df.drop_duplicates(subset=fields)
+    else:
+        df = df.drop_duplicates()
+    outputFilename = IO_files_util.generate_output_file_name(filepath, os.path.dirname(filepath),
+                                                             outputDir, '.csv', 'deduplicate',
+                                                             '', '', '', '', False, True)
+    df.to_csv(outputFilename, encoding='utf-8', index=False)
+    return outputFilename
+
+
+# RENAME field ---------------------------------------------------------------------------------------
+# entry: filepath,field,new_name  (the new name is taken from the Character separator box in the GUI).
+def rename_field(outputDir, operation_results_text_list):
+    if len(operation_results_text_list) == 0:
+        mb.showwarning(title='Missing field',
+                       message='No field has been selected for the RENAME operation.\n\nPlease, select a field, enter the new name in the separator box, and try again.')
+        return
+    parts = operation_results_text_list[0].split(',')
+    filepath = parts[0]
+    field = parts[1]
+    new_name = parts[2] if len(parts) > 2 else ''
+    if new_name == '':
+        mb.showwarning(title='Missing new name',
+                       message='The RENAME operation requires a new field name.\n\nPlease, type the new name in the Character separator box and try again.')
+        return
+    df = pd.read_csv(filepath, encoding='utf-8', on_bad_lines='skip')
+    if field not in df.columns:
+        mb.showwarning(title='Field error', message='Field "' + field + '" was not found in the input file.')
+        return
+    df = df.rename(columns={field: new_name})
+    outputFilename = IO_files_util.generate_output_file_name(filepath, os.path.dirname(filepath),
+                                                             outputDir, '.csv', 'rename',
+                                                             '', '', '', '', False, True)
+    df.to_csv(outputFilename, encoding='utf-8', index=False)
+    return outputFilename

@@ -500,3 +500,4 @@ Your current version of Stanford CoreNLP will run anyway, but you should update 
 *,Narrative analysis: every option opens its own GUI,"Every checkbox in this Narrative analysis GUI is an ""Open GUI"" option: ticking one and clicking RUN opens a separate, dedicated GUI (NER, gender, sentiment arcs, coreference, GIS, SVO, shape of stories, ...) where you carry out that specific task with its own options.
 
 This GUI does not run the analyses itself; it is a launcher that takes you to the right tool.",ON
+*,Merge option,"Please, select next the field to be used as KEY for merging files.",ON
