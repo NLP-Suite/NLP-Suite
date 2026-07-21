@@ -90,7 +90,7 @@ def assess_language(language):
     sections.append(('Always available — language-independent (counting, frequency, topics, maps, viz, data)', [
         ('Corpus / document statistics — documents, words, sentences, syllables, lines', True, ''),
         ('N-grams (word & character) & co-occurrences (+ viewers, n-gram search)', True, ''),
-        ('KWIC (keyword-in-context), word / collocation search, CoNLL-table search', True, ''),
+        ('Word / collocation search, CoNLL-table search', True, ''),
         ('Word frequency (Zipf), TF-IDF distinctive words', True, ''),
         ('Vocabulary richness (TTR / Yule’s K), lexical diversity (MTLD / vocd-D)', True, ''),
         ('Topic modeling — Gensim LDA, MALLET, BERTopic', True,
