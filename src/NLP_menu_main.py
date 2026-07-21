@@ -235,6 +235,11 @@ pydict["N-grams search"] = ["NGrams_CoOccurrences_main.py", 1]
 pydict["N-grams/Co-Occurrences VIEWER"] = ["NGrams_CoOccurrences_main.py", 1]
 pydict["Corpus checker (PC-ACE data)"] = ["corpus_checker_PCACE_data_main.py", 1]
 pydict["Data manipulation (ALL options GUI)"] = ["data_manipulation_main.py", 1]
+# The duplicate-detection tool is filed under 'Find the plagiarist' and 'Similarities between
+# documents', so a user searching this menu for 'duplicate' -- the plain word for what it does --
+# found nothing at all. Same synonym treatment the N-grams entries already get.
+pydict["Duplicate documents (find near-duplicates via TF-IDF)"] = ["corpus_checker_PCACE_data_main.py", 1]
+pydict["Duplicates (documents that copy one another)"] = ["corpus_checker_PCACE_data_main.py", 1]
 pydict["File checker (A pre-processing pipeline of data quality control)"] = ["file_checker_pre_processing_pipeline_main.py", 1]
 pydict["File checker (file content)"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File checker (file content utf-8 encoding)"] = ["file_checker_converter_cleaner_main.py", 1]
