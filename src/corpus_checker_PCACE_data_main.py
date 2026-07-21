@@ -306,7 +306,7 @@ def run():
     CoreNLPdir = ''
     if config_aware_parser_util.requires_CoreNLP():
         # check that the CoreNLPdir has been setup
-        CoreNLPdir, existing_software_config, errorFound = IO_libraries_util.external_software_install('corpus_checker_main',
+        CoreNLPdir, existing_software_config, errorFound = IO_libraries_util.external_software_install('corpus_checker_PCACE_data_main',
                                                                                              'Stanford CoreNLP',
                                                                                              '',
                                                                                              silent=False, errorFound=False)
@@ -356,7 +356,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
 
-GUI_label = 'Graphical User Interface (GUI) for the Corpus checker'
+GUI_label = 'Graphical User Interface (GUI) for the Corpus checker (PC-ACE data)'
 config_filename = 'NLP_default_IO_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
 
