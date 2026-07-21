@@ -178,7 +178,7 @@ pydict["Clause analysis (via CoNLL) GUI"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["Noun analysis (via CoNLL) GUI"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["Verb analysis (via CoNLL) GUI"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["Function words analysis (via CoNLL) GUI"] = ["CoNLL_table_analyzer_main.py", 1]
-pydict["NER tags (e.g., Location, Time) (GUI)"] = ["Stanford_CoreNLP_NER_main.py", 1]
+pydict["NER tags (e.g., Location, Time) (GUI)"] = ["NER_main.py", 1]
 pydict["Words/collocations (GUI)"] = ["file_search_byWord_main.py", 1]
 pydict["WordNet categories (GUI)"] = ["semantic_aggregation_main.py", 1]
 
