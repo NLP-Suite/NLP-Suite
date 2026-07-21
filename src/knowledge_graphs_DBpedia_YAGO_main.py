@@ -97,12 +97,22 @@ def run():
                                                                config_filename,
                                                                ontology_list, color1, colorlist, chartPackage, dataTransformation)
 
+    elif 'Wiki' in knowledge_graphs_var:
+        import knowledge_graphs_Wikipedia_util
+        # Wikipedia has no ontology, so no class list is passed: the annotator links every PROPER NOUN
+        # that has an article. See the module header for why it does not annotate common nouns as well.
+        color1 = 'black'
+        filesToOpen = knowledge_graphs_Wikipedia_util.Wikipedia_annotate(inputFilename, inputDir, outputDir,
+                                                                         config_filename,
+                                                                         color1, colorlist, chartPackage,
+                                                                         dataTransformation)
+
     elif knowledge_graphs_var:
-        # a knowledge base WAS selected, but no annotator implements it (Wikipedia). Saying 'no options
-        # selected' here sent the user back to a dropdown they had already used.
+        # a knowledge base was selected that no annotator implements. Saying 'no options selected' here
+        # would send the user back to a dropdown they had already used.
         mb.showwarning(title='Knowledge base not yet available',
                        message='Annotation against ' + knowledge_graphs_var + ' is not yet implemented in '
-                       'the NLP Suite.\n\nPlease, select DBpedia or YAGO instead, and try again.')
+                       'the NLP Suite.\n\nPlease, select DBpedia, YAGO or Wikipedia instead, and try again.')
         return
     else:
         mb.showwarning(title='Warning', message='There are no options selected.\n\nPlease, select one of the available options and try again.')
@@ -510,6 +520,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.knowledge_sho
                                                "Click the Show button to see all selected options")
 
 firstTime = False
+# a one-element list, not a plain bool, so the trace callback can set it without a global declaration
+firstTime_Wikipedia = [False]
 
 # https://www.python.org/download/mac/tcltk/
 # https://stackoverflow.com/questions/24207870/cant-reenable-menus-in-python-tkinter-on-mac
@@ -598,23 +610,27 @@ def activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,con
         search_entry.configure(state="normal")
         # sub_class_entry.configure(state="normal")
     else:
+        # Wikipedia HAS an annotator, but it takes no ontology class: Wikipedia has no ontology, so an
+        # article either exists for a name or it does not. The class and search widgets therefore stay
+        # disabled by design -- but the colour palette is enabled, since the annotation still needs a
+        # colour, and a reminder explains why there is nothing else to fill in. Without that the row of
+        # grey widgets reads as a broken GUI rather than as a knowledge base that needs no configuring.
         ontology_class.configure(state='disabled')
         search_entry.configure(state="disabled")
         # sub_class_entry.configure(state="disabled")
-        # Wikipedia is offered in the dropdown but nothing implements it: run() dispatches on DBpedia and
-        # YAGO alone, and no util annotates against Wikipedia. Selecting it therefore greys out every
-        # widget below and, on RUN, reports 'no options selected' -- which reads as a bug rather than as
-        # the missing feature it is. Say so plainly at the moment of selection.
         if 'Wiki' in knowledge_graphs_var.get():
-            mb.showwarning(title='Knowledge base not yet available',
-                           message='Annotation against Wikipedia is not yet implemented in the NLP Suite; '
-                           'the option is listed here because it is planned.\n\nThat is why the ontology '
-                           'class and search fields below stay greyed out: there is nothing to configure '
-                           'yet, and pressing RUN will not annotate anything.\n\nPlease, select DBpedia or '
-                           'YAGO instead. Both build on Wikipedia data: DBpedia and YAGO extract their '
-                           'structured knowledge from Wikipedia and Wikidata, so annotating with either '
-                           'already links your corpus to Wikipedia content, and with an ontology besides.')
-            window.focus_force()
+            color_palette_DBpedia_YAGO_menu.configure(state='normal')
+            if firstTime_Wikipedia[0] == False:
+                mb.showinfo(title='Wikipedia annotation',
+                            message='Wikipedia has no ontology, so there is no class to select: the '
+                            'annotator links every PROPER NOUN in your corpus that has a Wikipedia '
+                            'article. That is why the ontology class and search fields stay greyed '
+                            'out.\n\nOnly proper nouns are annotated. Nearly every common noun has an '
+                            'article too -- sheriff and lynching both do -- so annotating those as well '
+                            'would turn each document into a wall of links.\n\nPlease, select a colour '
+                            'for the annotation, then press RUN.')
+                window.focus_force()
+                firstTime_Wikipedia[0] = True
 knowledge_graphs_var.trace('w',callback = lambda x,y,z: activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry))
 
 videos_lookup = {'No videos available':''}
