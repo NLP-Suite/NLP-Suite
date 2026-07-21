@@ -17,11 +17,12 @@ from collections import Counter
 import string
 from nltk.stem.porter import PorterStemmer
 import stanza
-try:
-    stanza.download('en')
-except:
-    import IO_internet_util
-    IO_internet_util.check_internet_availability_warning("statistics_txt_util.py (stanza.download(en))")
+import IO_internet_util
+# report a failed model download in a dialog: the bare except used to swallow the real error and
+# only ask the internet-check question, never retrying, so the reason reached the terminal alone
+IO_internet_util.download_with_warning("statistics_txt_util.py (stanza.download(en))",
+                                      lambda: stanza.download('en'),
+                                      "the Stanza English language model")
 
 # from nltk import tokenize
 # from nltk import word_tokenize

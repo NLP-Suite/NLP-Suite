@@ -52,6 +52,53 @@ def check_internet_availability_warning(script):
     else:
         return True
 
+
+def report_download_failure(script, err, resource='a language model'):
+    """Show, in the GUI, WHY a model download failed.
+
+    Without this the exception reaches the terminal only. A user who launched the Suite from the app --
+    which is everyone outside development -- then sees the window close with no explanation at all,
+    because the traceback goes to a console they never look at."""
+    detail = type(err).__name__ + ': ' + str(err)
+    print("Download failed in '" + script + "': " + detail)
+    mb.showerror(title='Language model could not be downloaded',
+                 message="The NLP Suite could not download " + resource + " needed by '" + script + "'.\n\n"
+                 "TECHNICAL DETAIL\n" + detail + "\n\n"
+                 "The models are fetched from the internet the FIRST time they are used, then cached, so "
+                 "this normally happens only once.\n\n"
+                 "WHAT TO DO\n"
+                 "  1. Check that you are connected to the internet, and try again.\n"
+                 "  2. A VPN, a proxy or an institutional firewall may block the download even when other "
+                 "sites open normally: the models come from raw.githubusercontent.com and "
+                 "huggingface.co.\n"
+                 "  3. If you cannot reach those sites, you can select a different NLP package (Stanford "
+                 "CoreNLP or spaCy) in the NLP Suite setup, under 'Setup NLP package and language'.\n\n"
+                 "The analysis cannot run until the model is available.")
+
+
+def download_with_warning(script, download_function, resource='a language model'):
+    """Download a model, surfacing any failure in the GUI instead of only on the terminal.
+
+    On failure the user is offered the usual internet-check bypass (for VPN or proxy users whose
+    connection the Suite's own check cannot see); if they accept, the download is RETRIED -- the previous
+    code offered the bypass but never tried again, so answering Yes changed nothing and the script
+    carried on to crash later with an unhandled ConnectionError.
+
+    Returns True when the model is available, False when it is not, so callers can degrade instead of
+    dying."""
+    try:
+        download_function()
+        return True
+    except Exception as err:
+        if check_internet_availability_warning(script):
+            try:
+                download_function()
+                return True
+            except Exception as retry_err:
+                err = retry_err
+        report_download_failure(script, err, resource)
+        return False
+
 """
 'strict' to raise a ValueError exception if there is an encoding error. The default value of None has the same effect.
 'ignore' ignores errors. Note that ignoring encoding errors can lead to data loss. IT WILL SIMPLY TAKE OUT THE OFFENDING CHARACTER

@@ -24,19 +24,24 @@ if not IO_libraries_util.install_all_Python_packages(GUI_util.window,"Stanza_fun
     sys.exit(0)
 
 import stanza
-try:
-    stanza.download('en')
-except:
-    import IO_internet_util
-    IO_internet_util.check_internet_availability_warning("Stanza_functions_util.py (stanza.download(en))")
-
 import IO_internet_util
 
 # should make the Stanza pipeline parametrized by lang selected by user
 # @@@
-# check internet connection
-if IO_internet_util.check_internet_availability_warning("Stanza_functions_util.py"):
-    stanzaPipeLine = stanza.Pipeline(lang='en', processors= 'tokenize, lemma')
+# The download and the pipeline are built together, and BOTH report failure in a dialog. Previously the
+# download caught its exception only to show the internet-check question without ever retrying, and the
+# pipeline below was built with no try at all: answering Yes therefore led straight to an unhandled
+# ConnectionError, printed to a terminal the user never sees, and the process exited silently.
+stanzaPipeLine = None
+if IO_internet_util.download_with_warning("Stanza_functions_util.py (stanza.download(en))",
+                                          lambda: stanza.download('en'),
+                                          "the Stanza English language model"):
+    try:
+        stanzaPipeLine = stanza.Pipeline(lang='en', processors= 'tokenize, lemma')
+    except Exception as e:
+        # the model can be missing or corrupt even when the download call itself returned
+        IO_internet_util.report_download_failure("Stanza_functions_util.py", e,
+                                                 "the Stanza English language model")
 
 # in INPUT the function takes a document or sentence or even word as string
 #   e.g., "Robert went to Italy on vacation"

@@ -21,11 +21,12 @@ import pandas as pd
 from collections import defaultdict
 import tkinter.messagebox as mb
 import stanza
-try:
-    stanza.download('en')
-except:
-    import IO_internet_util
-    IO_internet_util.check_internet_availability_warning("wordclouds_util.py (stanza.download(en))")
+import IO_internet_util
+# report a failed model download in a dialog: the bare except used to swallow the real error and
+# only ask the internet-check question, never retrying, so the reason reached the terminal alone
+IO_internet_util.download_with_warning("wordclouds_util.py (stanza.download(en))",
+                                      lambda: stanza.download('en'),
+                                      "the Stanza English language model")
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator, get_single_color_func
 import matplotlib.pyplot as plt #pip install matplotlib
 import csv
