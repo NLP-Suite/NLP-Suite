@@ -11,12 +11,13 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Find Non-related Documents",['stanza','stanfordcorenlp','os','tkinter','glob'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Find Non-related Documents",['stanza','os','tkinter','glob'])==False:
     sys.exit(0)
 
-from stanfordcorenlp import StanfordCoreNLP # python wrapper for Stanford CoreNLP
 import os
 from glob import glob
+import tkinter.messagebox as mb
+import config_aware_parser_util
 
 import GUI_IO_util
 import IO_files_util
@@ -31,7 +32,7 @@ def load_soc_actors():
     fName= GUI_IO_util.wordLists_libPath + os.sep + 'social-actor-list.csv'
     my_soc_actors = set()
     if not os.path.isfile(fName):
-        print("The file "+fileName+" could not be found. The routine expects a csv dictionary file 'social-actor-list.csv' in a directory 'lib' expected to be a subdirectory of the directory where the concreteness_analysis.py script is stored.\n\nPlease, check your lib directory and try again.")
+        print("The file "+fName+" could not be found. The routine expects a csv dictionary file 'social-actor-list.csv' in a directory 'lib' expected to be a subdirectory of the directory where the concreteness_analysis.py script is stored.\n\nPlease, check your lib directory and try again.")
         mb.showerror(title='File not found', message='The routine expects a csv dictionary file "social-actor-list.csv" in a directory "lib" expected to be a subdirectory of the directory where the concreteness_analysis.py script is stored.\n\nPlease, check your lib directory and try again')
         sys.exit()
     with open(fName, encoding='utf-8', errors='ignore') as fin:
@@ -178,7 +179,8 @@ def main(CoreNLPDir, inputDir, outputDir,openOutputFiles, chartPackage, dataTran
     print("Group identifier (Folder name),Documents in group,Intruder document,Group path,Document path,Similarity index ( <"+str(similarityIndex_base)+")")
     actors = load_soc_actors()
     dirs = glob(inputDir+'/*/')
-    nlp = StanfordCoreNLP(CoreNLPDir)
+    # use the NLP parser the user selected in the setup (Stanford CoreNLP / Stanza / spaCy)
+    nlp = config_aware_parser_util.get_parser(CoreNLPDir)
     num_folder = 0
     num_doc = 0
     for dir in dirs:

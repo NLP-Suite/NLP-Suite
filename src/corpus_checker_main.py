@@ -1,12 +1,13 @@
 # Written by Roberto Franzosi
 
 # Modified by Cynthia Dong and Elaine Dong (Oct 24 2019; Feb 6 2020)
+# Modified by Claude Code, July 2026
 
 import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window, "Social Science Research",
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "Corpus Checker",
                                           ['os', 'tkinter', 'subprocess', 'csv']) == False:
     sys.exit(0)
 
@@ -29,7 +30,7 @@ import file_summary_checker_util
 import file_find_non_related_documents_util
 import run_script_util
 import plagiarist_util
-import config_util
+import config_aware_parser_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -297,21 +298,13 @@ def run():
 
     global filesToOpen
     filesToOpen = []
-    # 'Find the missing character' is now config-aware (Stanford CoreNLP / Stanza / spaCy), so it needs the
-    # Stanford CoreNLP directory ONLY when CoreNLP is the selected package. The other tools here still use
-    # CoreNLP, so we relax the requirement only when missing_character is the sole selected operation on a
-    # non-CoreNLP package.
-    try:
-        _package = (config_util.read_NLP_package_language_config()[1] or '')
-    except Exception:
-        _package = ''
-    _missing_char_only = (missing_character_var and not check_filename_var and not character_var
-                          and not character_home_var and not intruder_var and not ancestor_var
-                          and not plagiarist_var and not Levenshtein_var)
-    _skip_corenlp = _missing_char_only and ('corenlp' not in _package.lower()) and ('stanford' not in _package.lower())
-
+    # Both parsing tools in this GUI ('Find the missing character' and 'Find the intruder') are now
+    # config-aware (Stanford CoreNLP / Stanza / spaCy); every other option either opens another GUI or is
+    # pure Python (the plagiarist uses scikit-learn TF-IDF). So the Stanford CoreNLP directory is required
+    # ONLY when CoreNLP is the package selected in the NLP Suite setup -- Stanza/spaCy users are no longer
+    # forced to install CoreNLP to use this GUI.
     CoreNLPdir = ''
-    if not _skip_corenlp:
+    if config_aware_parser_util.requires_CoreNLP():
         # check that the CoreNLPdir has been setup
         CoreNLPdir, existing_software_config, errorFound = IO_libraries_util.external_software_install('corpus_checker_main',
                                                                                              'Stanford CoreNLP',
