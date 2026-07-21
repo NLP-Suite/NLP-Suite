@@ -477,7 +477,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                                check_filename_checkbox)
 
 character_var.set(0)
-character_checkbox = tk.Checkbutton(window, text='Find the character & the ancestor (via WordNet)',
+character_checkbox = tk.Checkbutton(window, text='Find the character & the ancestor (via WordNet, VerbNet, FrameNet)',
                                     variable=character_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                character_checkbox)
