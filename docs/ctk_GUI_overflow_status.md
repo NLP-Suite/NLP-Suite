@@ -88,6 +88,14 @@ general-purpose knob — see the row-splitting technique above.
 `NLP_welcome_main.py` reports +8656 but is a false positive: its content is `.place()`d, not gridded,
 so `reqwidth` is not meaningful there.
 
+`data_visualization_main.py` (Phase 4, `ctk/phase4-data-visualization`) measured **−10** (fits) after
+its re-layout. Before Phase 4 it was in the same `.place()`d-content boat as `NLP_welcome` — its ~140
+widgets were absolutely positioned inside `ttk.Notebook` tab frames, so `reqwidth` was meaningless. The
+conversion to a `CTkTabview` with grid rows (each row a transparent `CTkFrame` whose widgets pack
+left-to-right) makes it measurable, and it fits on the 1470×956 reference screen with room to spare —
+no row-splitting needed. The tabview is a fixed 320px tall (a floor for its 7-row Numeric tab); if a
+future row is added the height may need bumping so the last row is not clipped by the tab body.
+
 `GIS_main.py` (Phase 3 GIS tranche, `ctk/phase3-gis-tools`) could not be measured in this sandbox —
 its module-level `Stanza_util`/`spaCy_util`/`Stanford_CoreNLP_util`/`BERT_util` imports pull in
 multi-hundred-MB models and exit before the window builds when optional ML deps (`sentencepiece`,

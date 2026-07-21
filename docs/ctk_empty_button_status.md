@@ -50,7 +50,7 @@ live widget.
 
 ## Remaining empty open-file buttons
 
-**9 sites across 7 files remain** (13 sites at the first audit). All are the `width=1,
+**7 sites across 5 files remain** (13 sites at the first audit). All are the `width=1,
 text=''` pattern above unless noted. Line numbers are unchanged from the first audit for files not
 yet touched.
 
@@ -68,10 +68,13 @@ yet touched.
 > (`NLP_setup_external_software_main.py` 77 + 118 + 153, `NLP_setup_package_language_main.py` 161)
 > via `create_open_file_button`.
 
+> **data_visualization (2026-07-21, `ctk/phase4-data-visualization`)** cleared its 2 sites (the
+> `open_input_csv_file_button` on the window's csv-file row, and `openInputFile_button_comparative`
+> on the Categorical tab's Comparative row) via `create_open_file_button`, as part of the Phase 4
+> re-layout of the whole GUI (7 notebook tabs, ~140 `.place()` calls → `CTkTabview` + grid rows).
+
 | GUI | line | what it opens |
 |---|---|---|
-| `data_visualization_main.py` | 569 | input csv file |
-| `data_visualization_main.py` | 1015 | comparative csv (literal `width=1`, parented to `tab_categorical`) |
 | `sample_corpus_main.py` | 161 | sample corpus file |
 | `SRL_main.py` | 109 | input csv file |
 | `data_manipulation_main.py` | 221 | input file |

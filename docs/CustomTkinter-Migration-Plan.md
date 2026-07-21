@@ -236,7 +236,21 @@ shared-layer gaps (each now a §6 item) and still-open items appear below.
 
 ### Phase 4 — Hard cases (1 PR each)
 
-- **`data_visualization_main.py`** — 140 raw `.place()` calls; genuine re-layout.
+- ✅ **`data_visualization_main.py`** (`ctk/phase4-data-visualization`, 2026-07-21) — the last GUI still
+  hand-`.place()`ing its widgets (~140 calls across a 7-tab `ttk.Notebook`). Converted the notebook to
+  **`CTkTabview`** (its `.add(name)` frames are real `CTkFrame`s, so the tab children get a valid CTk
+  master — a `ttk.Frame` can't parent CTk widgets, §3) and rebuilt every absolute-pixel row as a grid
+  row: two module-level helpers, `tab_row(tab, i)` (a transparent `CTkFrame` gridded in column 0 whose
+  widgets pack left-to-right, keeping each row's internal columns independent — the §2.2 shared-column
+  pitfall) and `tab_help(tab, i, msg)` (the per-row `? HELP` button in column 1). All ~126 ctors →
+  factories; the `changed_filename` menu-repopulation (11 `["menu"]` OptionMenu mutations + 10
+  `["values"]` Combobox writes, both silent no-ops on CTk) → `set_values`; the run dispatch's
+  `notebook.index(notebook.select())` → a name→index map over `CTkTabview.get()`; deleted the notebook's
+  `ttk.Style`/`theme_use` block and the two tkcolorpicker `ttk.Style(...)`/`theme_use('clam')` lines;
+  cleared its 2 empty open-file buttons. Verified under **real Tk + real CTk** (the stubbed `gui_smoke`
+  can't measure geometry): constructs with no geometry-manager conflict, **overflow −10** (fits), and
+  `changed_filename` + tab dispatch exercised across all 7 tabs with a real csv. `pytest` + `gui_smoke`
+  clean (126 widgets, 0 crashed). **macOS launch + Windows QA outstanding.**
 - **Row-splitting** for the overflow backlog: `DB_SQL_main` (+167), `NLP_setup_package_language` (+731),
   `DB_PCACE_data_analysis` (+297), `GIS_Google_Earth` (+388) — see `docs/ctk_GUI_overflow_status.md`.
 - **`narrative_analysis_ALL_main.py`**, **`license_GUI.py`** — a few `.place()` each.
