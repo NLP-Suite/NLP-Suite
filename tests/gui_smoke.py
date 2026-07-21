@@ -229,6 +229,15 @@ for _n in ('CTk','CTkToplevel','CTkFrame','CTkScrollableFrame','CTkLabel','CTkBu
            'CTkRadioButton','CTkProgressBar','CTkSegmentedButton','CTkTabview','CTkImage','CTkFont',
            'CTkCanvas','CTkScrollbar'):
     setattr(_ctk, _n, type(_n, (_CTkWidget,), {}))
+# create_textbox() reads this real CTkTextbox class attribute directly (see its docstring: `state`,
+# `wrap`, etc. are never named __init__ params, only forwarded through it) -- without it here the
+# stub would silently re-introduce the very bug that gap fix exists to catch.
+_ctk.CTkTextbox._valid_tk_text_attributes = {
+    "autoseparators", "cursor", "exportselection", "insertborderwidth", "insertofftime",
+    "insertontime", "insertwidth", "maxundo", "padx", "pady", "selectborderwidth", "spacing1",
+    "spacing2", "spacing3", "state", "tabs", "takefocus", "undo", "wrap",
+    "xscrollcommand", "yscrollcommand",
+}
 for _fn in ('set_appearance_mode','set_default_color_theme','set_widget_scaling',
             'deactivate_automatic_dpi_awareness','get_appearance_mode'):
     setattr(_ctk, _fn, lambda *a, **k: None)

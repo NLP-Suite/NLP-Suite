@@ -12,7 +12,6 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window,
 
 import os
 import tkinter as tk
-import tkinter.ttk as ttk
 import tkinter.messagebox as mb
 import tkinter.filedialog as filedialog
 import pandas as pd
@@ -21,6 +20,7 @@ import subprocess
 import IO_csv_util
 import IO_files_util
 import GUI_IO_util
+import GUI_theme_util
 import IO_user_interface_util
 import TIPS_util
 import DB_PCACE_data_analysis_util
@@ -74,7 +74,7 @@ def run():
         return
 
     GUI_util.window.focus_set()
-    GUI_util.window.config(cursor='watch')
+    GUI_util.window.configure(cursor='watch')
     GUI_util.window.update()
 
     if not _ensure_database_loaded(inputDir):
@@ -382,7 +382,7 @@ def run():
             'Finished running PC-ACE data validation aggregate code assessment at',
             True, '', True, startTime, False)
 
-    GUI_util.window.config(cursor='')
+    GUI_util.window.configure(cursor='')
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -515,14 +515,14 @@ def _on_open_gui_selected(choice):
 
 _open_gui_var = tk.StringVar()
 _open_gui_var.set('Open DB SQL GUI')
-open_gui_menu = tk.OptionMenu(window, _open_gui_var,
-                              'Open DB SQL GUI',
+open_gui_menu = GUI_theme_util.create_option_menu(window, variable=_open_gui_var,
+                              values=['Open DB SQL GUI',
                               'Open PC-ACE data analysis GUI',
                               'Open data manipulation GUI',
                               'Open data statistics GUI',
-                              'Open corpus checker (PC-ACE data) GUI',
+                              'Open corpus checker (PC-ACE data) GUI'],
                               command=_on_open_gui_selected)
-open_gui_menu.configure(width=25)
+GUI_theme_util.set_char_width(open_gui_menu, 25)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_gui_menu,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
@@ -552,14 +552,14 @@ def get_csv_file(window, title, fileType, annotate):
             csv_file_var.set(filePath)
     return filePath
 
-csv_file_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width,
+csv_file_button = GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width,
                             text='Select INPUT CSV file',
                             command=lambda: get_csv_file(window, 'Select INPUT csv file', [("csv files", "*.csv")], True))
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                csv_file_button, True)
 
 # Button to open the selected CSV file
-openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+openInputFile_button = GUI_theme_util.create_open_file_button(window,
                                  command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                openInputFile_button,
@@ -568,8 +568,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configurat
 
 # CSV file path entry
 # GUI_IO_util.csv_file_width - 8
-csv_file_entry = tk.Entry(window, width=115, textvariable=csv_file_var)
-csv_file_entry.config(state='disabled')
+csv_file_entry = GUI_theme_util.create_entry(window, width=115, textvariable=csv_file_var)
+csv_file_entry.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                                csv_file_entry, True)
 
@@ -577,8 +577,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.entry_box_x_c
 def _clear_csv_file():
     csv_file_var.set('')
 
-clear_csv_button = tk.Button(window, text='Clear', width=5, command=lambda: _clear_csv_file())
-clear_csv_button.config(state='disabled')
+clear_csv_button = GUI_theme_util.create_button(window, text='Clear', width=5, command=lambda: _clear_csv_file())
+clear_csv_button.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_file_button_brief, y_multiplier_integer,
                                                clear_csv_button, True, False, True, False, 90,
                                                GUI_IO_util.run_button_x_coordinate,
@@ -586,11 +586,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configurat
 
 def _on_csv_file_changed(*args):
     if csv_file_var.get():
-        clear_csv_button.config(state='normal')
-        apply_changes_button.config(state='normal')
+        clear_csv_button.configure(state='normal')
+        apply_changes_button.configure(state='normal')
     else:
-        clear_csv_button.config(state='disabled')
-        apply_changes_button.config(state='disabled')
+        clear_csv_button.configure(state='disabled')
+        apply_changes_button.configure(state='disabled')
 
 def _apply_changes():
     """Detect CSV type from column headers and dispatch to the right apply function."""
@@ -622,8 +622,8 @@ def _apply_changes():
     else:
         _apply_aggregate_corrections()
 
-apply_changes_button = tk.Button(window, text='Apply changes', width=12, command=_apply_changes)
-apply_changes_button.config(state='disabled')
+apply_changes_button = GUI_theme_util.create_button(window, text='Apply changes', width=12, command=_apply_changes)
+apply_changes_button.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_file_button_brief+60, y_multiplier_integer,
                                                apply_changes_button, False, False, True, False, 90,
                                                GUI_IO_util.open_reminders_x_coordinate,
@@ -643,12 +643,12 @@ csv_file_var.trace_add('write', _on_csv_file_changed)
 # ── Spell-check / near-duplicate detection ────────────────────────────────────
 # ══════════════════════════════════════════════════════════════════════════════
 
-spell_check_lb = tk.Label(window, text='Spell-check simplex values')
+spell_check_lb = GUI_theme_util.create_label(window, text='Spell-check simplex values')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    spell_check_lb, True)
 
 spell_check_var = tk.IntVar()
-spell_check_checkbox = tk.Checkbutton(window, text='Run spell-check', variable=spell_check_var, onvalue=1, offvalue=0)
+spell_check_checkbox = GUI_theme_util.create_checkbox(window, text='Run spell-check', variable=spell_check_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    spell_check_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
@@ -658,14 +658,17 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_c
                                    "to scan every text simplex in the database.\n\n"
                                    "Produces a review CSV with suggested corrections and an Accept?/Reject column.")
 
-def _combobox_release_focus(event):
+def _combobox_release_focus(*args):
+    # CTkComboBox has no ttk-style '<<ComboboxSelected>>' virtual event -- it fires a
+    # command=(value) callback on selection instead, so this is now wired via command=
+    # at each combobox's construction rather than bound after the fact.
     window.focus_set()
 
 spell_check_simplex_var = tk.StringVar()
 spell_check_simplex_var.set('ALL text simplexes')
-spell_check_simplex_menu = ttk.Combobox(window, textvariable=spell_check_simplex_var, width=30, state='readonly')
-spell_check_simplex_menu['values'] = ['ALL text simplexes']
-spell_check_simplex_menu.bind('<<ComboboxSelected>>', _combobox_release_focus)
+spell_check_simplex_menu = GUI_theme_util.create_combobox(window, textvariable=spell_check_simplex_var, width=30, state='readonly',
+                                    command=_combobox_release_focus)
+GUI_theme_util.set_values(spell_check_simplex_menu, ['ALL text simplexes'])
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 200, y_multiplier_integer,
                                    spell_check_simplex_menu,
                                    False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 200,
@@ -705,12 +708,12 @@ def _apply_spell_check_corrections(csv_path=None):
 # ── Lemmatize simplex values (Stanza) ─────────────────────────────────────────
 # ══════════════════════════════════════════════════════════════════════════════
 
-lemmatize_lb = tk.Label(window, text='Lemmatize simplex values')
+lemmatize_lb = GUI_theme_util.create_label(window, text='Lemmatize simplex values')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    lemmatize_lb, True)
 
 lemmatize_var = tk.IntVar()
-lemmatize_checkbox = tk.Checkbutton(window, text='Run lemmatization', variable=lemmatize_var, onvalue=1, offvalue=0)
+lemmatize_checkbox = GUI_theme_util.create_checkbox(window, text='Run lemmatization', variable=lemmatize_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    lemmatize_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
@@ -724,14 +727,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_c
 _stanza_languages = Stanza_util.list_all_languages()
 lemmatize_lang_var = tk.StringVar()
 lemmatize_lang_var.set('English')
-lemmatize_lang_menu = ttk.Combobox(window, textvariable=lemmatize_lang_var, width=20,
-                                    values=_stanza_languages, state='disabled')
+lemmatize_lang_menu = GUI_theme_util.create_combobox(window, textvariable=lemmatize_lang_var, width=20,
+                                    values=_stanza_languages, state='disabled',
+                                    command=_combobox_release_focus)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 200, y_multiplier_integer,
                                    lemmatize_lang_menu,
                                    False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 200,
                                    "Select the language for Stanza lemmatization.\n"
                                    "All languages supported by Stanza are listed.")
-lemmatize_lang_menu.bind('<<ComboboxSelected>>', _combobox_release_focus)
 
 def _apply_lemmatization_corrections(csv_path=None):
     """Apply accepted lemmatization corrections from the CSV back to data_SimplexText."""
@@ -766,12 +769,13 @@ def _apply_lemmatization_corrections(csv_path=None):
 
 _noun_simplex_list = []
 
-lemmatize_nouns_lb = tk.Label(window, text='Simplex types to lemmatize as NOUNS')
+lemmatize_nouns_lb = GUI_theme_util.create_label(window, text='Simplex types to lemmatize as NOUNS')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    lemmatize_nouns_lb, True)
 
 lemmatize_nouns_var = tk.StringVar()
-lemmatize_nouns_menu = ttk.Combobox(window, textvariable=lemmatize_nouns_var, width=30, state='disabled')
+lemmatize_nouns_menu = GUI_theme_util.create_combobox(window, textvariable=lemmatize_nouns_var, width=30, state='disabled',
+                                    command=_combobox_release_focus)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    lemmatize_nouns_menu,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
@@ -779,7 +783,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_c
                                    "Examples: Name of individual actor, Name of collective actor,\n"
                                    "Physical objects, Role in organizations, Nome attore, etc.\n\n"
                                    "Stanza will apply NOUN lemmatization to values from these simplexes.")
-lemmatize_nouns_menu.bind('<<ComboboxSelected>>', _combobox_release_focus)
 
 def _update_noun_hover():
     """Update hover-overs for the NOUN combobox and + button to show current selections."""
@@ -795,10 +798,9 @@ def _update_noun_hover():
                  "Stanza will apply NOUN lemmatization to values from these simplexes." + selected)
     y_pos = GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step * _noun_btn_y
     add_noun_button.bind('<Enter>',
-        lambda e, t=btn_tip: (e.widget.config(background='red', foreground='black'),
-                          GUI_IO_util.display_widget_info(window, e,
-                              GUI_IO_util.open_TIPS_x_coordinate + 280, y_pos - 20,
-                              GUI_IO_util.open_TIPS_x_coordinate + 280, t)))
+        lambda e, t=btn_tip: GUI_IO_util.display_widget_info(window, e,
+            GUI_IO_util.open_TIPS_x_coordinate + 280, y_pos - 20,
+            GUI_IO_util.open_TIPS_x_coordinate + 280, t))
     lemmatize_nouns_menu.bind('<Enter>',
         lambda e, t=combo_tip: GUI_IO_util.display_widget_info(window, e,
             GUI_IO_util.open_TIPS_x_coordinate, y_pos - 20,
@@ -816,14 +818,14 @@ def _reset_noun_simplexes():
     lemmatize_nouns_var.set('')
     _update_noun_hover()
 
-add_noun_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled', command=_add_noun_simplex)
+add_noun_button = GUI_theme_util.create_button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled', command=_add_noun_simplex)
 _noun_btn_y = y_multiplier_integer
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 230, y_multiplier_integer,
                                    add_noun_button,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 280,
                                    "Click + to add the selected simplex type to the NOUN lemmatization list.")
 
-reset_noun_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width, height=1, state='disabled', command=_reset_noun_simplexes)
+reset_noun_button = GUI_theme_util.create_button(window, text='Reset', width=GUI_IO_util.reset_button_width, height=1, state='disabled', command=_reset_noun_simplexes)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 270, y_multiplier_integer,
                                    reset_noun_button,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 320,
@@ -833,19 +835,19 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_c
 
 _verb_simplex_list = []
 
-lemmatize_verbs_lb = tk.Label(window, text='as VERBS')
+lemmatize_verbs_lb = GUI_theme_util.create_label(window, text='as VERBS')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 380, y_multiplier_integer,
                                    lemmatize_verbs_lb, True)
 
 lemmatize_verbs_var = tk.StringVar()
-lemmatize_verbs_menu = ttk.Combobox(window, textvariable=lemmatize_verbs_var, width=30, state='disabled')
+lemmatize_verbs_menu = GUI_theme_util.create_combobox(window, textvariable=lemmatize_verbs_var, width=30, state='disabled',
+                                    command=_combobox_release_focus)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 450, y_multiplier_integer,
                                    lemmatize_verbs_menu,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 470,
                                    "Select a simplex type that contains VERB values, then click + to add it.\n\n"
                                    "Examples: Verbal phrase, Nominalization, Frase verbale, etc.\n\n"
                                    "Stanza will apply VERB lemmatization to values from these simplexes.")
-lemmatize_verbs_menu.bind('<<ComboboxSelected>>', _combobox_release_focus)
 
 def _update_verb_hover():
     """Update hover-overs for the VERB combobox and + button to show current selections."""
@@ -860,10 +862,9 @@ def _update_verb_hover():
                  "Stanza will apply VERB lemmatization to values from these simplexes." + selected)
     y_pos = GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step * _verb_btn_y
     add_verb_button.bind('<Enter>',
-        lambda e, t=btn_tip: (e.widget.config(background='red', foreground='black'),
-                          GUI_IO_util.display_widget_info(window, e,
-                              GUI_IO_util.open_TIPS_x_coordinate + 700, y_pos - 20,
-                              GUI_IO_util.open_TIPS_x_coordinate + 700, t)))
+        lambda e, t=btn_tip: GUI_IO_util.display_widget_info(window, e,
+            GUI_IO_util.open_TIPS_x_coordinate + 700, y_pos - 20,
+            GUI_IO_util.open_TIPS_x_coordinate + 700, t))
     lemmatize_verbs_menu.bind('<Enter>',
         lambda e, t=combo_tip: GUI_IO_util.display_widget_info(window, e,
             GUI_IO_util.open_TIPS_x_coordinate + 470, y_pos - 20,
@@ -881,14 +882,14 @@ def _reset_verb_simplexes():
     lemmatize_verbs_var.set('')
     _update_verb_hover()
 
-add_verb_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled', command=_add_verb_simplex)
+add_verb_button = GUI_theme_util.create_button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled', command=_add_verb_simplex)
 _verb_btn_y = y_multiplier_integer
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate, y_multiplier_integer,
                                    add_verb_button,
                                    True, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
                                    "Click + to add the selected simplex type to the VERB lemmatization list.")
 
-reset_verb_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width, height=1, state='disabled', command=_reset_verb_simplexes)
+reset_verb_button = GUI_theme_util.create_button(window, text='Reset', width=GUI_IO_util.reset_button_width, height=1, state='disabled', command=_reset_verb_simplexes)
 
 # Enable/disable NOUN/VERB widgets based on Run lemmatization checkbox
 def _toggle_lemmatize_widgets(*args):
@@ -919,7 +920,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_
 # ── Aggregate code validation ─────────────────────────────────────────────────
 # ══════════════════════════════════════════════════════════════════════════════
 
-agg_lb = tk.Label(window, text='Aggregate code validation')
+agg_lb = GUI_theme_util.create_label(window, text='Aggregate code validation')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    agg_lb, True)
 
@@ -946,35 +947,35 @@ def _remove_db_dir():
 
 def _refresh_db_listbox():
     names = [os.path.basename(d) for d in _agg_db_dirs]
-    agg_db_menu['values'] = names
+    GUI_theme_util.set_values(agg_db_menu, names)
     if names:
         agg_db_var.set(names[-1])
     else:
         agg_db_var.set('')
 
 agg_db_var = tk.StringVar()
-agg_db_menu = ttk.Combobox(window, textvariable=agg_db_var, width=80, state='readonly')
+agg_db_menu = GUI_theme_util.create_combobox(window, textvariable=agg_db_var, width=80, state='readonly',
+                                    command=_combobox_release_focus)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    agg_db_menu,
                                    True, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
                                    "List of PC-ACE database directories to compare.\n"
                                    "Use + to add directories, − to remove.\n"
                                    "The INPUT directory (if set) is automatically included.")
-agg_db_menu.bind('<<ComboboxSelected>>', _combobox_release_focus)
 
 _init_input = GUI_util.input_main_dir_path.get() if hasattr(GUI_util.input_main_dir_path, 'get') else GUI_util.input_main_dir_path
 if _init_input and os.path.isdir(str(_init_input)) and os.path.isfile(os.path.join(str(_init_input), 'data_Complex.xlsx')):
     _agg_db_dirs.append(str(_init_input))
     _refresh_db_listbox()
 
-add_db_button = tk.Button(window, text='+', width=2, command=_add_db_dir)
+add_db_button = GUI_theme_util.create_button(window, text='+', width=2, command=_add_db_dir)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate, y_multiplier_integer,
                                    add_db_button,
                                    True, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
                                    "Click + to add a PC-ACE database directory for cross-DB comparison.\n"
                                    "Add 2 or more databases to compare aggregate codes across them.")
 
-remove_db_button = tk.Button(window, text='−', width=2, command=_remove_db_dir)
+remove_db_button = GUI_theme_util.create_button(window, text='−', width=2, command=_remove_db_dir)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate + 35, y_multiplier_integer,
                                    remove_db_button,
                                    False, False, True, False, 90, GUI_IO_util.run_button_x_coordinate,
@@ -988,8 +989,9 @@ _AGG_MODE_SIDE_BY_SIDE = 'Side-by-side code mapping'
 _AGG_MODE_BOTH = '*'
 
 agg_mode_var = tk.StringVar()
-agg_mode_menu = ttk.Combobox(window, textvariable=agg_mode_var, width=25, state='readonly',
-                              values=[_AGG_MODE_BOTH, _AGG_MODE_CROSS_DB, _AGG_MODE_SIDE_BY_SIDE])
+agg_mode_menu = GUI_theme_util.create_combobox(window, textvariable=agg_mode_var, width=25, state='readonly',
+                              values=[_AGG_MODE_BOTH, _AGG_MODE_CROSS_DB, _AGG_MODE_SIDE_BY_SIDE],
+                              command=_combobox_release_focus)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    agg_mode_menu,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
@@ -1010,12 +1012,11 @@ def _on_agg_mode_change(*args):
 
 agg_mode_var.trace('w', _on_agg_mode_change)
 
-agg_mode_menu.bind('<<ComboboxSelected>>', _combobox_release_focus)
-
 # ── Original simplex + Aggregate code simplexes (same row as checkboxes) ────
 
 agg_orig_var = tk.StringVar()
-agg_orig_menu = ttk.Combobox(window, textvariable=agg_orig_var, width=30, state='readonly')
+agg_orig_menu = GUI_theme_util.create_combobox(window, textvariable=agg_orig_var, width=30, state='readonly',
+                                   command=_combobox_release_focus)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    agg_orig_menu,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
@@ -1023,20 +1024,17 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_c
                                    "This is the simplex whose values were coded into aggregate categories.\n"
                                    "e.g., 'Name of individual actor', 'Verbal phrase', 'Nome attore'.")
 
-agg_orig_menu.bind('<<ComboboxSelected>>', _combobox_release_focus)
-
 _agg_simplex_list = []
 
 agg_simplex_var = tk.StringVar()
-agg_simplex_menu = ttk.Combobox(window, textvariable=agg_simplex_var, width=30, state='readonly')
+agg_simplex_menu = GUI_theme_util.create_combobox(window, textvariable=agg_simplex_var, width=30, state='readonly',
+                                   command=_combobox_release_focus)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate + 230, y_multiplier_integer,
                                    agg_simplex_menu,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate + 230,
                                    "AGGREGATE CODES: select an aggregate code simplex, then click + to add it.\n"
                                    "You can add multiple aggregate code simplexes.\n"
                                    "Use Reset to clear the list and start over.")
-
-agg_simplex_menu.bind('<<ComboboxSelected>>', _combobox_release_focus)
 
 def _add_agg_simplex():
     sel = agg_simplex_var.get()
@@ -1065,13 +1063,13 @@ def _refresh_agg_simplex_display():
             agg_simplex_selected_label.winfo_y() - 20,
             GUI_IO_util.labels_x_indented_coordinate, t))
 
-agg_add_button = tk.Button(window, text='+', width=2, command=_add_agg_simplex)
+agg_add_button = GUI_theme_util.create_button(window, text='+', width=2, command=_add_agg_simplex)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate, y_multiplier_integer,
                                    agg_add_button,
                                    True, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
                                    "Click + to add the selected aggregate code simplex to the list.")
 
-agg_reset_button = tk.Button(window, text='Reset', width=5, command=_reset_agg_simplex)
+agg_reset_button = GUI_theme_util.create_button(window, text='Reset', width=5, command=_reset_agg_simplex)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate+35, y_multiplier_integer,
                                    agg_reset_button,
                                    False, False, True, False, 90, GUI_IO_util.run_button_x_coordinate,
@@ -1080,7 +1078,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_
 agg_simplex_selected_var = tk.StringVar()
 _entry_width = (GUI_IO_util.close_button_x_coordinate + 80 - GUI_IO_util.labels_x_indented_coordinate) * 2 // 11
 _entry_width = 165
-agg_simplex_selected_label = tk.Entry(window, textvariable=agg_simplex_selected_var, width=_entry_width, state='readonly')
+agg_simplex_selected_label = GUI_theme_util.create_entry(window, textvariable=agg_simplex_selected_var, width=_entry_width, state='readonly')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    agg_simplex_selected_label,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
@@ -1113,7 +1111,7 @@ def _apply_aggregate_corrections():
     proceed = file_filename_util.backup_files('', inputDir_val, 'Apply aggregate corrections', fileType='.xlsx')
     if not proceed:
         return
-    GUI_util.window.config(cursor='watch')
+    GUI_util.window.configure(cursor='watch')
     GUI_util.window.update()
     try:
         n_applied = DB_PCACE_data_analysis_util.apply_aggregate_corrections(
@@ -1133,7 +1131,7 @@ def _apply_aggregate_corrections():
     except Exception as e:
         mb.showerror(title='Apply corrections error', message=f'Failed:\n\n{e}')
     finally:
-        GUI_util.window.config(cursor='')
+        GUI_util.window.configure(cursor='')
 
 
 
@@ -1169,7 +1167,7 @@ def _on_inputDir_change(*args):
     dir_val = inputDir.get() if hasattr(inputDir, 'get') else inputDir
     if not dir_val or not os.path.isdir(dir_val):
         _set_all_widgets_state('disabled')
-        spell_check_simplex_menu['values'] = ['ALL text simplexes']
+        GUI_theme_util.set_values(spell_check_simplex_menu, ['ALL text simplexes'])
         spell_check_simplex_var.set('ALL text simplexes')
         return
     if not os.path.isfile(os.path.join(dir_val, 'data_Complex.xlsx')):
@@ -1185,10 +1183,10 @@ def _on_inputDir_change(*args):
                 if vt == 1:
                     text_names.append(sn)
             sorted_text = sorted(text_names)
-            spell_check_simplex_menu['values'] = ['ALL text simplexes'] + sorted_text
+            GUI_theme_util.set_values(spell_check_simplex_menu, ['ALL text simplexes'] + sorted_text)
             # Populate noun and verb comboboxes with all text simplex names
-            lemmatize_nouns_menu['values'] = sorted_text
-            lemmatize_verbs_menu['values'] = sorted_text
+            GUI_theme_util.set_values(lemmatize_nouns_menu, sorted_text)
+            GUI_theme_util.set_values(lemmatize_verbs_menu, sorted_text)
             # Auto-add likely noun/verb simplexes to the backing lists
             _noun_keywords = ['name', 'nome', 'individual', 'individuo', 'collective', 'collettivo',
                               'organization', 'organizzazione', 'institution', 'istituzione',
@@ -1209,14 +1207,14 @@ def _on_inputDir_change(*args):
             _agg_db_dirs.append(dir_val)
             _refresh_db_listbox()
             all_sorted = sorted(simplex_names)
-            agg_orig_menu['values'] = all_sorted
-            agg_simplex_menu['values'] = all_sorted
+            GUI_theme_util.set_values(agg_orig_menu, all_sorted)
+            GUI_theme_util.set_values(agg_simplex_menu, all_sorted)
             agg_orig_var.set('')
             _agg_simplex_list.clear()
             _refresh_agg_simplex_display()
         except Exception as e:
             print(f"  Could not populate simplex dropdown: {e}")
-            spell_check_simplex_menu['values'] = ['ALL text simplexes']
+            GUI_theme_util.set_values(spell_check_simplex_menu, ['ALL text simplexes'])
 
 if hasattr(inputDir, 'trace'):
     inputDir.trace('w', _on_inputDir_change)

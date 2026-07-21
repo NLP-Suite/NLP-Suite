@@ -14,13 +14,13 @@ import pandas as pd
 import subprocess
 
 import tkinter as tk
-from tkinter import ttk
 import tkinter.messagebox as mb
 
 
 import IO_csv_util
 import IO_files_util
 import GUI_IO_util
+import GUI_theme_util
 import TIPS_util
 import DB_PCACE_data_analysis_util
 import Gephi_util
@@ -134,7 +134,7 @@ def run():
     if search_simplex_value != '':
         # Populate search results dropdown (in case user clicked RUN without pressing Enter first)
         dropdown_results = DB_PCACE_data_analysis_util.build_search_results_dropdown(search_simplex_value)
-        search_simplex_results['values'] = dropdown_results
+        GUI_theme_util.set_values(search_simplex_results, dropdown_results)
         # Do NOT auto-select first item — let user selection determine single vs. all export
 
         if search_simplex_result != '':
@@ -217,7 +217,7 @@ def run():
         else:
             # No checkbox selected: if identifier dropdown has items, export ALL story forms;
             # otherwise fall back to default higher_lower tabular export
-            dropdown_vals = complex_identifiers['values']
+            dropdown_vals = complex_identifiers.cget('values')
             n_objects = len(dropdown_vals) if dropdown_vals else 0
             if n_objects > 0:
                 proceed = True
@@ -429,7 +429,7 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_
 
 select_DB_tables_var=tk.StringVar()
 # Hidden combobox — referenced by changed_filename but not displayed in the current layout
-select_DB_tables = ttk.Combobox(window, textvariable=select_DB_tables_var, width=GUI_IO_util.widget_width_short)
+select_DB_tables = GUI_theme_util.create_combobox(window, textvariable=select_DB_tables_var, width=GUI_IO_util.widget_width_short)
 select_DB_tables.configure(state='disabled')
 select_DB_table_fields_var=tk.StringVar()
 view_relations_var=tk.IntVar()
@@ -465,7 +465,7 @@ def clear(e):
     simplex_list=[]
     simplex_value_var.set(simplex_list)
     simplex_value_var.set('')
-    simplex_value['values'] = []
+    GUI_theme_util.set_values(simplex_value, [])
 
     complex_identifiers_var.set('')
 
@@ -579,14 +579,14 @@ def _on_open_gui_selected(choice):
 
 _open_gui_var = tk.StringVar()
 _open_gui_var.set('Open DB SQL GUI')
-open_gui_menu = tk.OptionMenu(window, _open_gui_var,
-                              'Open DB SQL GUI',
+open_gui_menu = GUI_theme_util.create_option_menu(window, variable=_open_gui_var,
+                              values=['Open DB SQL GUI',
                               'Open data validation GUI',
                               'Open data manipulation GUI',
                               'Open data statistics GUI',
-                              'Open corpus checker (PC-ACE data) GUI',
+                              'Open corpus checker (PC-ACE data) GUI'],
                               command=_on_open_gui_selected)
-open_gui_menu.configure(width=25)
+GUI_theme_util.set_char_width(open_gui_menu, 25)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_gui_menu,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
@@ -599,14 +599,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                    "corpus your PC-ACE tables were coded from (are documents filed under the right "
                                    "event? are names spelled consistently? are some documents duplicates?).")
 
-view_relations_button = tk.Button(window, text='View table relations', width=17,height=1,state='disabled', command=lambda: view_relations())
+view_relations_button = GUI_theme_util.create_button(window, text='View table relations', width=17,height=1,state='disabled', command=lambda: view_relations())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    view_relations_button,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click to open a pdf file of the PC-ACE table relations. These relations are ALWAYS the same across any type of application of PC-ACE (e.g., Avanti! or Lynchings).\nTo view the grammar of data collection for a specific PC-ACE implementation click on the button View grrammar.")
 
-view_grammar_button = tk.Button(window, text='View grammar (as text)', width=17,height=1,state='disabled', command=lambda: view_grammar())
+view_grammar_button = GUI_theme_util.create_button(window, text='View grammar (as text)', width=17,height=1,state='disabled', command=lambda: view_grammar())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    view_grammar_button,
@@ -629,14 +629,14 @@ def visualize_grammar_tree():
     else:
         mb.showwarning(title='Warning', message='No grammar structure found.\n\nPlease, make sure the PC-ACE database is loaded.')
 
-visualize_grammar_tree_button = tk.Button(window, text='View grammar (as tree)', width=20, height=1, state='disabled',
+visualize_grammar_tree_button = GUI_theme_util.create_button(window, text='View grammar (as tree)', width=20, height=1, state='disabled',
     command=lambda: visualize_grammar_tree())
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    visualize_grammar_tree_button,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "Click to export the grammar as a parent-child CSV and visualize it as an interactive D3.js hierarchical tree.\nThe tree shows complex objects and their simplex children, color-coded by type.")
 
-update_grammar_button = tk.Button(window, text='Update grammar', width=17,height=1,state='disabled', command=lambda: update_grammar())
+update_grammar_button = GUI_theme_util.create_button(window, text='Update grammar', width=17,height=1,state='disabled', command=lambda: update_grammar())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                    update_grammar_button,
@@ -644,7 +644,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
                                    "Click to update the grammmar used for the selected, specific implementation of the PC-ACE database saved in setup_complex.xlsx and setup_complex.pkl.\nThe grammar will be saved in setup_complex.xlsx and setup_complex.pkl.\nClick on the button View table relations to visualize the general table relations in the PC-ACE databasee, regardless of a selected, specific implementation (i./e., grammar setup).")
 
 
-update_identifier_button = tk.Button(window, text='Update identifiers', width=17,height=1,state='disabled', command=lambda: update_identifiers())
+update_identifier_button = GUI_theme_util.create_button(window, text='Update identifiers', width=17,height=1,state='disabled', command=lambda: update_identifiers())
 # place widget with hover-over info
 _update_id_btn_y_row = y_multiplier_integer  # save for dynamic hover-over
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
@@ -653,11 +653,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_c
                                    "Click to update the current complex objects identifiers saved in the table data_Complex.xlsx and data_Complex.pkl")
 
 
-object_type_lb = tk.Label(window, text='Object ')
+object_type_lb = GUI_theme_util.create_label(window, text='Object ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,object_type_lb,True)
 
 object_type_var= tk.StringVar()
-object_type_var_menu = tk.OptionMenu(window,object_type_var, 'Complex','Simplex')
+object_type_var_menu = GUI_theme_util.create_option_menu(window, variable=object_type_var,
+                                                          values=['Complex', 'Simplex'])
 object_type_var_menu.configure(state='disabled')
 object_type_var.set('')
 # place widget with hover-over info
@@ -669,9 +670,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 setup_complex_menu, setup_simplex_menu = DB_PCACE_data_analysis_util.get_setup_complex_simplex_names() # os.path.join(inputDir.get())
 
 required_object_var=tk.StringVar()
-required_object = ttk.Combobox(window, textvariable = required_object_var, width=GUI_IO_util.widget_width_short)
+required_object = GUI_theme_util.create_combobox(window, textvariable = required_object_var, width=GUI_IO_util.widget_width_short)
 required_object.configure(state='disabled')
-required_object['values'] = setup_complex_menu
+GUI_theme_util.set_values(required_object, setup_complex_menu)
 # place widget with hover-over info
 _required_object_y_row = y_multiplier_integer  # save for dynamic hover-over
 _required_object_base_text = ("You can use the dropdown menu to scroll through the list of available objects.\n"
@@ -691,21 +692,21 @@ def _update_required_object_dropdown(*args):
     except:
         c_menu, s_menu = [], []
     if obj_type == 'Complex':
-        required_object['values'] = c_menu
+        GUI_theme_util.set_values(required_object, c_menu)
         n = len(c_menu)
         if c_menu:
             required_object_var.set(c_menu[0])
         else:
             required_object_var.set('')
     elif obj_type == 'Simplex':
-        required_object['values'] = s_menu
+        GUI_theme_util.set_values(required_object, s_menu)
         n = len(s_menu)
         if s_menu:
             required_object_var.set(s_menu[0])
         else:
             required_object_var.set('')
     else:
-        required_object['values'] = []
+        GUI_theme_util.set_values(required_object, [])
         n = 0
         required_object_var.set('')
     _update_combo_hover(required_object, _required_object_y_row,
@@ -835,19 +836,20 @@ def _merge_grammar_objects():
     count_str = f"{count} data instance(s)" if count >= 0 else "unknown"
 
     # Ask user to pick target
-    merge_win = tk.Toplevel(window)
+    import customtkinter as ctk
+    merge_win = ctk.CTkToplevel(window)
     merge_win.title(f"Merge {obj_type}: {source_name}")
     merge_win.geometry("450x200")
     merge_win.resizable(False, False)
 
-    tk.Label(merge_win, text=f"Merge '{source_name}' ({count_str}) INTO:", font=('', 10, 'bold')).pack(pady=(15, 5))
+    GUI_theme_util.create_label(merge_win, text=f"Merge '{source_name}' ({count_str}) INTO:", font=('', 10, 'bold')).pack(pady=(15, 5))
 
     target_var = tk.StringVar()
     target_var.set(targets[0])
-    target_combo = ttk.Combobox(merge_win, textvariable=target_var, values=targets, state='readonly', width=40)
+    target_combo = GUI_theme_util.create_combobox(merge_win, textvariable=target_var, values=targets, state='readonly', width=40)
     target_combo.pack(pady=5)
 
-    tk.Label(merge_win, text=f"All data from '{source_name}' will be reassigned\n"
+    GUI_theme_util.create_label(merge_win, text=f"All data from '{source_name}' will be reassigned\n"
                               f"to the selected target. '{source_name}' will then\n"
                               f"be removed from the grammar.", fg='gray').pack(pady=5)
 
@@ -871,11 +873,11 @@ def _merge_grammar_objects():
             else:
                 mb.showwarning(title='Merge failed', message=msg)
 
-    tk.Button(merge_win, text='Merge', width=10, command=_do_merge).pack(pady=10)
+    GUI_theme_util.create_button(merge_win, text='Merge', width=10, command=_do_merge).pack(pady=10)
 
 import tkinter.simpledialog
 
-rename_button = tk.Button(window, text='Rename', width=8, height=1, state='disabled', command=_rename_grammar_object)
+rename_button = GUI_theme_util.create_button(window, text='Rename', width=8, height=1, state='disabled', command=_rename_grammar_object)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    rename_button,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
@@ -884,7 +886,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                    "Only the name in the setup table is changed — data references use IDs\n"
                                    "and are not affected.")
 
-remove_button = tk.Button(window, text='Remove', width=8, height=1, state='disabled', command=_remove_grammar_object)
+remove_button = GUI_theme_util.create_button(window, text='Remove', width=8, height=1, state='disabled', command=_remove_grammar_object)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 80, y_multiplier_integer,
                                    remove_button,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
@@ -892,7 +894,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                    "SAFETY: the object must have 0 data instances to be removed.\n"
                                    "If it has data, use Merge first to reassign data to another object.")
 
-merge_button = tk.Button(window, text='Merge', width=8, height=1, state='disabled', command=_merge_grammar_objects)
+merge_button = GUI_theme_util.create_button(window, text='Merge', width=8, height=1, state='disabled', command=_merge_grammar_objects)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 160, y_multiplier_integer,
                                    merge_button,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
@@ -901,13 +903,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                    "The source object is then removed from the grammar.\n\n"
                                    "Use this to consolidate duplicates (e.g., 'City', 'City 2', 'Comune' → 'City').")
 
-merge_info_lb = tk.Label(window, text='Select Object type and name above, then click Rename / Remove / Merge',
+merge_info_lb = GUI_theme_util.create_label(window, text='Select Object type and name above, then click Rename / Remove / Merge',
                          font=('', 8), fg='gray')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 240, y_multiplier_integer,
                                    merge_info_lb,
                                    False, True, False, False, 90, GUI_IO_util.labels_x_coordinate, '')
 
-# select_DB_tables_lb = tk.Label(window, text='PC-ACE table ')
+# select_DB_tables_lb = GUI_theme_util.create_label(window, text='PC-ACE table ')
 # # open_setup_x_coordinate
 # # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate,y_multiplier_integer,select_DB_tables_lb,True)
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,y_multiplier_integer,select_DB_tables_lb,True)
@@ -917,7 +919,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 # if os.path.isdir(inputDir.get()):
 #     table_list = DB_PCACE_data_analysis_util.import_PCACE_tables(inputDir.get(), outputDir.get())
 #     table_menu_values = ", ".join(table_list)
-# select_DB_tables = ttk.Combobox(window, width=GUI_IO_util.widget_width_short, textvariable=select_DB_tables_var)
+# select_DB_tables = GUI_theme_util.create_combobox(window, width=GUI_IO_util.widget_width_short, textvariable=select_DB_tables_var)
 # select_DB_tables.configure(state='disabled')
 # select_DB_tables['values'] = table_menu_values
 # # place widget with hover-over info
@@ -928,12 +930,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 #
 
 
-from_dataID_setupID_lb = tk.Label(window, text='From data ID to setup ID ')
+from_dataID_setupID_lb = GUI_theme_util.create_label(window, text='From data ID to setup ID ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,from_dataID_setupID_lb,True)
 
 from_dataID_setupID_objectType_var = tk.StringVar()
 from_dataID_setupID_objectType_var.set('')
-from_dataID_setupID_menu = tk.OptionMenu(window, from_dataID_setupID_objectType_var, 'Complex', 'Simplex')
+from_dataID_setupID_menu = GUI_theme_util.create_option_menu(window, variable=from_dataID_setupID_objectType_var,
+                                                              values=['Complex', 'Simplex'])
 from_dataID_setupID_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu-50, y_multiplier_integer,
@@ -941,10 +944,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
                                    True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "Use the dropdown menu to select the type of object - complex or simplex - to go from data ID to setup name")
 
-enter_data_ID_lb = tk.Label(window, text='Enter data ID')
+enter_data_ID_lb = GUI_theme_util.create_label(window, text='Enter data ID')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate,y_multiplier_integer,enter_data_ID_lb,True)
 
-enter_data_ID = tk.Entry(window,width=GUI_IO_util.widget_width_extra_short,textvariable=enter_data_ID_var)
+enter_data_ID = GUI_theme_util.create_entry(window,width=GUI_IO_util.widget_width_extra_short,textvariable=enter_data_ID_var)
 enter_data_ID.configure(state="disabled")
 # place widget with hover-over info
 
@@ -953,7 +956,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
     enter_data_ID, True, False, True, False, 90,
     GUI_IO_util.open_reminders_x_coordinate+100, "Enter the numeric data ID value")
 
-setup_name = tk.Entry(window,width=GUI_IO_util.widget_width_short,textvariable=setup_name_var,state='disabled')
+setup_name = GUI_theme_util.create_entry(window,width=GUI_IO_util.widget_width_short,textvariable=setup_name_var,state='disabled')
 # setup_name.configure(state="disabled")
 # place widget with hover-over info
 
@@ -963,15 +966,15 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
     GUI_IO_util.open_setup_x_coordinate, "Extracted setup name")
 
 
-complex_objects_lb = tk.Label(window, text='Complex ')
+complex_objects_lb = GUI_theme_util.create_label(window, text='Complex ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,complex_objects_lb,True)
 
 # setup_complex_menu, setup_simplex_menu = DB_PCACE_data_analysis_util.get_setup_complex_simplex_names() # os.path.join(inputDir.get())
 
 setup_complex_var=tk.StringVar()
-setup_complex = ttk.Combobox(window, textvariable = setup_complex_var, width=GUI_IO_util.widget_width_short)
+setup_complex = GUI_theme_util.create_combobox(window, textvariable = setup_complex_var, width=GUI_IO_util.widget_width_short)
 setup_complex.configure(state='disabled')
-setup_complex['values'] = setup_complex_menu
+GUI_theme_util.set_values(setup_complex, setup_complex_menu)
 # place widget with hover-over info
 _setup_complex_y_row = y_multiplier_integer  # save for dynamic hover-over
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+90, y_multiplier_integer,
@@ -984,7 +987,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "No checkbox: RUN exports the story form for the selected identifier.")
 
 # FIRST checkbox ---------------------------------------------------
-identifiers_checkbox = tk.Checkbutton(window, text='', variable=identifiers_var, onvalue=1, offvalue=0, state='disabled')
+identifiers_checkbox = GUI_theme_util.create_checkbox(window, text='IDs', variable=identifiers_var, onvalue=1, offvalue=0, state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate-10, y_multiplier_integer,
                                    identifiers_checkbox,
@@ -992,7 +995,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
                                    "IDENTIFIER mode: export a compact summary with human-readable Identifier strings for the selected complex object and its children (e.g., '(mob lynched Negro)').\nOutput file suffix: _IDENTIFIER.\nUse this for a quick overview of all instances.")
 
 # SECOND checkbox ---------------------------------------------------
-extended_headers_checkbox = tk.Checkbutton(window, text='', variable=extended_headers_var, onvalue=1, offvalue=0, state='disabled')
+extended_headers_checkbox = GUI_theme_util.create_checkbox(window, text='Ext hdrs', variable=extended_headers_var, onvalue=1, offvalue=0, state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+10, y_multiplier_integer,
                                    extended_headers_checkbox,
@@ -1000,7 +1003,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
                                    "EXTENDED HEADERS mode: export a fully expanded table with every simplex value in its own column (e.g., 'Participant-S > Individual > Name of individual').\nOutput file suffix: _ALL.\nUse this for detailed analysis, charting, and frequency computation.")
 
 # THIRD checkbox ---------------------------------------------------
-parents_children_checkbox = tk.Checkbutton(window, text='', variable=parents_children_var, onvalue=1, offvalue=0, state='disabled')
+parents_children_checkbox = GUI_theme_util.create_checkbox(window, text='Par/child', variable=parents_children_var, onvalue=1, offvalue=0, state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+30, y_multiplier_integer,
                                    parents_children_checkbox,
@@ -1009,7 +1012,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
 
 # FOURTH checkbox ---------------------------------------------------
 document_sources_var = tk.IntVar()
-document_sources_checkbox = tk.Checkbutton(window, text='', variable=document_sources_var, onvalue=1, offvalue=0, state='disabled')
+document_sources_checkbox = GUI_theme_util.create_checkbox(window, text='Docs', variable=document_sources_var, onvalue=1, offvalue=0, state='disabled')
 
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+50, y_multiplier_integer,
@@ -1020,7 +1023,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
 # FIFTH checkbox ---------------------------------------------------
 comments_var = tk.IntVar()
 comments_var.set(0)
-comments_checkbox = tk.Checkbutton(window, text='', variable=comments_var, onvalue=1, offvalue=0, state='disabled')
+comments_checkbox = GUI_theme_util.create_checkbox(window, text='Comments', variable=comments_var, onvalue=1, offvalue=0, state='disabled')
 
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+70, y_multiplier_integer,
@@ -1030,7 +1033,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
 
 comments_type_var = tk.StringVar()
 comments_type_var.set('')
-comments_menu = tk.OptionMenu(window, comments_type_var, '*', 'Users comments', 'Verifiers comments')
+comments_menu = GUI_theme_util.create_option_menu(window, variable=comments_type_var,
+                                                   values=['*', 'Users comments', 'Verifiers comments'])
 comments_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+95, y_multiplier_integer,
@@ -1038,15 +1042,15 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "Use the dropdown menu to extract the comments left by users and/or verifiers for specific objects (e.g., Semantic triplets (SVO)).")
 
-complex_identifiers_lb = tk.Label(window, text='Complex identifier')
+complex_identifiers_lb = GUI_theme_util.create_label(window, text='Complex identifier')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,y_multiplier_integer,complex_identifiers_lb,True)
 
 complex_identifiers_menu = DB_PCACE_data_analysis_util.build_macro_event_dropdown_menu(inputDir.get())
 
 complex_identifiers_var=tk.StringVar()
-complex_identifiers = ttk.Combobox(window, textvariable = complex_identifiers_var, width=GUI_IO_util.widget_width_short)
+complex_identifiers = GUI_theme_util.create_combobox(window, textvariable = complex_identifiers_var, width=GUI_IO_util.widget_width_short)
 complex_identifiers.configure(state='disabled')
-complex_identifiers['values'] = complex_identifiers_menu
+GUI_theme_util.set_values(complex_identifiers, complex_identifiers_menu)
 _complex_id_y_row = y_multiplier_integer  # save for dynamic hover-over
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+150, y_multiplier_integer,
                                    complex_identifiers,
@@ -1082,16 +1086,11 @@ def _update_combo_hover(combo, y_row, x_coord, x_hover, count, base_text):
     count_line = f'{count} item(s) listed.' if count > 0 else 'No items listed.'
     tip = count_line + '\n' + base_text
     combo.bind('<Enter>',
-        lambda e, t=tip: (
-            e.widget.config(ttk.Style().map('Red.TCombobox',
-                foreground=[('readonly', 'red')],
-                selectforeground=[('readonly', 'red')])),
-            GUI_IO_util.display_widget_info(window, e, x_coord,
-                GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step * y_row,
-                x_hover, t)))
+        lambda e, t=tip: GUI_IO_util.display_widget_info(window, e, x_coord,
+            GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step * y_row,
+            x_hover, t))
     combo.bind('<Leave>',
-        lambda e: (e.widget.config(background=combo.cget('background'), foreground=combo.cget('foreground')),
-                   GUI_IO_util.delete_display_widget_lb(window, e, '')))
+        lambda e: GUI_IO_util.delete_display_widget_lb(window, e, ''))
 
 def update_complex_identifier_dropdown(*args):
     """When user selects a hierarchical complex type, update the Complex identifier dropdown
@@ -1101,7 +1100,7 @@ def update_complex_identifier_dropdown(*args):
     selected_type = setup_complex_var.get()
     if selected_type:
         identifier_list = DB_PCACE_data_analysis_util.build_story_dropdown(selected_type)
-        complex_identifiers['values'] = identifier_list
+        GUI_theme_util.set_values(complex_identifiers, identifier_list)
         if identifier_list:
             complex_identifiers_var.set(identifier_list[0])
         else:
@@ -1109,13 +1108,14 @@ def update_complex_identifier_dropdown(*args):
     else:
         # Reset to macro event list
         macro_list = DB_PCACE_data_analysis_util.build_macro_event_dropdown_menu(inputDir.get())
-        complex_identifiers['values'] = macro_list
+        GUI_theme_util.set_values(complex_identifiers, macro_list)
         if macro_list:
             complex_identifiers_var.set(macro_list[0])
         else:
             complex_identifiers_var.set('')
     # Update hover-over with item count
-    n = len(complex_identifiers['values']) if complex_identifiers['values'] else 0
+    _complex_id_values = complex_identifiers.cget('values')
+    n = len(_complex_id_values) if _complex_id_values else 0
     _update_combo_hover(complex_identifiers, _complex_id_y_row,
         GUI_IO_util.open_setup_x_coordinate+150, GUI_IO_util.open_reminders_x_coordinate, n,
         "Auto-populated when a Complex type is selected. Lists all instances of the selected complex type (ID - Identifier).\n"
@@ -1124,16 +1124,16 @@ def update_complex_identifier_dropdown(*args):
 
 setup_complex_var.trace('w', update_complex_identifier_dropdown)
 
-simplex_objects_lb = tk.Label(window, text='Simplex ')
+simplex_objects_lb = GUI_theme_util.create_label(window, text='Simplex ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,simplex_objects_lb, True)
 
 # setup_simplex_menu = DB_PCACE_data_analysis_util.get_complex_simplex_names(os.path.join(inputDir.get()))
 #
 setup_simplex_var = tk.StringVar()
 
-setup_simplex = ttk.Combobox(window, textvariable = setup_simplex_var, width=GUI_IO_util.widget_width_short)
+setup_simplex = GUI_theme_util.create_combobox(window, textvariable = setup_simplex_var, width=GUI_IO_util.widget_width_short)
 setup_simplex.configure(state='disabled')
-setup_simplex['values'] = setup_simplex_menu
+GUI_theme_util.set_values(setup_simplex, setup_simplex_menu)
 # place widget with hover-over info
 _setup_simplex_y_row = y_multiplier_integer  # save for dynamic hover-over
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+90, y_multiplier_integer,
@@ -1148,7 +1148,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 
 # FIRST simplex checkbox: Export values to CSV
 simplex_export_values_var = tk.IntVar()
-simplex_export_values_checkbox = tk.Checkbutton(window, text='', variable=simplex_export_values_var, onvalue=1, offvalue=0, state='disabled')
+simplex_export_values_checkbox = GUI_theme_util.create_checkbox(window, text='Values', variable=simplex_export_values_var, onvalue=1, offvalue=0, state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate-10, y_multiplier_integer,
                                    simplex_export_values_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
@@ -1156,7 +1156,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminder
 
 # SECOND simplex checkbox: Charts (bar/pie of frequencies)
 simplex_charts_var = tk.IntVar()
-simplex_charts_checkbox = tk.Checkbutton(window, text='', variable=simplex_charts_var, onvalue=1, offvalue=0, state='disabled')
+simplex_charts_checkbox = GUI_theme_util.create_checkbox(window, text='Charts', variable=simplex_charts_var, onvalue=1, offvalue=0, state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+10, y_multiplier_integer,
                                    simplex_charts_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
@@ -1164,7 +1164,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminder
 
 # THIRD simplex checkbox: Timechart (date simplexes)
 simplex_timechart_var = tk.IntVar()
-simplex_timechart_checkbox = tk.Checkbutton(window, text='', variable=simplex_timechart_var, onvalue=1, offvalue=0, state='disabled')
+simplex_timechart_checkbox = GUI_theme_util.create_checkbox(window, text='Timechart', variable=simplex_timechart_var, onvalue=1, offvalue=0, state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+30, y_multiplier_integer,
                                    simplex_timechart_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
@@ -1172,7 +1172,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminder
 
 # FOURTH simplex checkbox: GIS map (geocode + map location simplexes)
 simplex_GIS_var = tk.IntVar()
-simplex_GIS_checkbox = tk.Checkbutton(window, text='', variable=simplex_GIS_var, onvalue=1, offvalue=0, state='disabled')
+simplex_GIS_checkbox = GUI_theme_util.create_checkbox(window, text='GIS map', variable=simplex_GIS_var, onvalue=1, offvalue=0, state='disabled')
 _gis_checkbox_y_row = y_multiplier_integer  # save for dynamic hover-over
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+50, y_multiplier_integer,
                                    simplex_GIS_checkbox,
@@ -1182,13 +1182,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminder
                                    "First run is slow (~1 req/sec for Nominatim); subsequent runs use disk cache.")
 
 simplex_values_var = tk.StringVar()
-simplex_values_lb = tk.Label(window, text='Simplex values')
+simplex_values_lb = GUI_theme_util.create_label(window, text='Simplex values')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                    simplex_values_lb, True)
 
-simplex_values = ttk.Combobox(window, textvariable = simplex_values_var, width=GUI_IO_util.widget_width_short)
+simplex_values = GUI_theme_util.create_combobox(window, textvariable = simplex_values_var, width=GUI_IO_util.widget_width_short)
 simplex_values.configure(state='disabled')
-simplex_values['values'] = []
+GUI_theme_util.set_values(simplex_values, [])
 _simplex_val_y_row = y_multiplier_integer  # save for dynamic hover-over
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+150, y_multiplier_integer,
                                    simplex_values,
@@ -1218,22 +1218,23 @@ def _populate_simplex_values(*args):
     """Populate the Simplex values dropdown when a simplex is selected."""
     simplex_name = setup_simplex_var.get()
     if not simplex_name:
-        simplex_values['values'] = []
+        GUI_theme_util.set_values(simplex_values, [])
         simplex_values_var.set('')
         return
     try:
         vals = DB_PCACE_data_analysis_util.get_simplex_values_by_name(simplex_name)
-        simplex_values['values'] = vals
+        GUI_theme_util.set_values(simplex_values, vals)
         if vals:
             simplex_values_var.set(vals[0])
         else:
             simplex_values_var.set('')
     except Exception as e:
         print(f"  Could not populate simplex values: {e}")
-        simplex_values['values'] = []
+        GUI_theme_util.set_values(simplex_values, [])
         simplex_values_var.set('')
     # Update hover-over with item count
-    n = len(simplex_values['values']) if simplex_values['values'] else 0
+    _simplex_values_values = simplex_values.cget('values')
+    n = len(_simplex_values_values) if _simplex_values_values else 0
     _update_combo_hover(simplex_values, _simplex_val_y_row,
         GUI_IO_util.open_setup_x_coordinate+150, GUI_IO_util.open_setup_x_coordinate, n,
         "Auto-populated when a Simplex type is selected.\n"
@@ -1243,11 +1244,12 @@ def _populate_simplex_values(*args):
 
 setup_simplex_var.trace('w', _populate_simplex_values)
 
-simplex_value_type_lb = tk.Label(window, text='Simplex data type ')
+simplex_value_type_lb = GUI_theme_util.create_label(window, text='Simplex data type ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,simplex_value_type_lb,True)
 
 simplex_value_type_var= tk.StringVar()
-simplex_value_type_menu = tk.OptionMenu(window, simplex_value_type_var, 'text','date', 'number')
+simplex_value_type_menu = GUI_theme_util.create_option_menu(window, variable=simplex_value_type_var,
+                                                             values=['text', 'date', 'number'])
 simplex_value_type_menu.configure(state='disabled')
 simplex_value_type_var.set('')
 # place widget with hover-over info
@@ -1261,7 +1263,7 @@ inputDirSV = ''
 simplex_value_var = tk.StringVar()
 # simplex_value_var.set(simplex_list)
 # simplex_value_var = simplex_list
-simplex_value = ttk.Combobox(window, textvariable = simplex_value_var, width=GUI_IO_util.widget_width_short)
+simplex_value = GUI_theme_util.create_combobox(window, textvariable = simplex_value_var, width=GUI_IO_util.widget_width_short)
 simplex_value.configure(state='disabled')
 
 try:
@@ -1269,7 +1271,7 @@ try:
 except:
     simplex_list=[]
 simplex_value_menu = simplex_list
-simplex_value['values'] = simplex_value_menu
+GUI_theme_util.set_values(simplex_value, simplex_value_menu)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    simplex_value,
@@ -1279,7 +1281,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
 # wraplength: this label is the widest widget in the far-right grid band; left as one line it ran
 # past the window's right edge (grid never auto-shrinks a Checkbutton). Wrapping to ~two lines keeps
 # the full text on-screen without touching the layout.
-value_parent_object_checkbox = tk.Checkbutton(window, text='Get simplex/complex objects of selected data type (& value)', variable=value_parent_object_var, onvalue=1, offvalue=0, wraplength=230, justify='left')
+value_parent_object_checkbox = GUI_theme_util.create_checkbox(window, text='Get simplex/complex objects of selected data type (& value)', variable=value_parent_object_var, onvalue=1, offvalue=0, wraplength=230, justify='left')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+150, y_multiplier_integer,
                                    value_parent_object_checkbox,
@@ -1292,7 +1294,7 @@ def activate_date_number_text(*args):
     else:
         simplex_value.configure(state='disabled')
     simplex_list = DB_PCACE_data_analysis_util.get_data_simplex_text_date_number(simplex_value_type_var.get())
-    simplex_value['values'] = simplex_list
+    GUI_theme_util.set_values(simplex_value, simplex_list)
     if simplex_list:
         simplex_value_var.set(simplex_list[0])
     else:
@@ -1301,11 +1303,11 @@ simplex_value_type_var.trace('w',activate_date_number_text)
 
 # Search simplex value → story form row ___________________________________________
 
-search_simplex_lb = tk.Label(window, text='Search simplex value')
+search_simplex_lb = GUI_theme_util.create_label(window, text='Search simplex value')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,search_simplex_lb,True)
 
 search_simplex_var = tk.StringVar()
-search_simplex_entry = tk.Entry(window, textvariable=search_simplex_var, width=20, state='disabled')
+search_simplex_entry = GUI_theme_util.create_entry(window, textvariable=search_simplex_var, width=20, state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu-50, y_multiplier_integer,
                                    search_simplex_entry,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
@@ -1315,13 +1317,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
                                    "Enter (in this field): search and populate results.\n"
                                    "Enter (in results dropdown): export the story form for the selected object.")
 
-search_simplex_results_lb = tk.Label(window, text='Search results')
+search_simplex_results_lb = GUI_theme_util.create_label(window, text='Search results')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,y_multiplier_integer,search_simplex_results_lb,True)
 
 search_simplex_results_var = tk.StringVar()
-search_simplex_results = ttk.Combobox(window, textvariable=search_simplex_results_var, width=GUI_IO_util.widget_width_short)
+search_simplex_results = GUI_theme_util.create_combobox(window, textvariable=search_simplex_results_var, width=GUI_IO_util.widget_width_short)
 search_simplex_results.configure(state='disabled')
-search_simplex_results['values'] = []
+GUI_theme_util.set_values(search_simplex_results, [])
 _search_results_y_row = y_multiplier_integer  # save for dynamic hover-over
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+150, y_multiplier_integer,
                                    search_simplex_results,
@@ -1354,7 +1356,7 @@ def run_simplex_search(*args):
         return
     results = DB_PCACE_data_analysis_util.build_search_results_dropdown(search_term)
     print(f"  build_search_results_dropdown returned {len(results)} results: {results[:3]}")
-    search_simplex_results['values'] = results
+    GUI_theme_util.set_values(search_simplex_results, results)
     if results:
         search_simplex_results_var.set(results[0])
         mb.showwarning(title='Search results',
@@ -1374,10 +1376,10 @@ def run_simplex_search(*args):
 
 search_simplex_entry.bind('<Return>', run_simplex_search)
 
-select_parents_lb = tk.Label(window, text='Parents ')
+select_parents_lb = GUI_theme_util.create_label(window, text='Parents ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,select_parents_lb,True)
 
-select_parents = ttk.Combobox(window, width=GUI_IO_util.widget_width_short, textvariable=complex_parents_var, state='disabled')
+select_parents = GUI_theme_util.create_combobox(window, width=GUI_IO_util.widget_width_short, textvariable=complex_parents_var, state='disabled')
 # select_parents.configure(state='disabled')
 # place widget with hover-over info
 _select_parents_y_row = y_multiplier_integer  # save for dynamic hover-over
@@ -1386,10 +1388,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "The menu displays a list of complex objects parent of the 'Complex' or 'Simplex' selected in the widgets above.")
 
-select_children_lb = tk.Label(window, text='Complex children ')
+select_children_lb = GUI_theme_util.create_label(window, text='Complex children ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,y_multiplier_integer,select_children_lb,True)
 
-select_children = ttk.Combobox(window, width=GUI_IO_util.widget_width_short, textvariable=complex_children_var, state='disabled')
+select_children = GUI_theme_util.create_combobox(window, width=GUI_IO_util.widget_width_short, textvariable=complex_children_var, state='disabled')
 # select_children.configure(state='disabled')
 # place widget with hover-over info
 _select_children_y_row = y_multiplier_integer  # save for dynamic hover-over
@@ -1438,12 +1440,10 @@ def _update_last_updated_hovers(in_dir, out_dir):
     else:
         gis_tip = gis_base + f'\n\nGeocoding has not been run yet for this database.\nCache will be saved to: {found_cache_path}'
     simplex_GIS_checkbox.bind('<Enter>',
-        lambda e, t=gis_tip: (
-            e.widget.config(background='light sea green', foreground='black'),
-            GUI_IO_util.display_widget_info(window, e,
-                GUI_IO_util.open_reminders_x_coordinate+70,
-                GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step * _gis_checkbox_y_row,
-                GUI_IO_util.open_TIPS_x_coordinate, t)))
+        lambda e, t=gis_tip: GUI_IO_util.display_widget_info(window, e,
+            GUI_IO_util.open_reminders_x_coordinate+70,
+            GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step * _gis_checkbox_y_row,
+            GUI_IO_util.open_TIPS_x_coordinate, t))
 
     # ── Update identifiers (data_Complex.xlsx) ─────────────────────────────
     id_xlsx_path = os.path.join(in_dir, 'data_Complex.xlsx')
@@ -1454,12 +1454,10 @@ def _update_last_updated_hovers(in_dir, out_dir):
     else:
         id_tip = id_base + '\n\ndata_Complex.xlsx not found.'
     update_identifier_button.bind('<Enter>',
-        lambda e, t=id_tip: (
-            e.widget.config(background='red', foreground='black'),
-            GUI_IO_util.display_widget_info(window, e,
-                GUI_IO_util.open_reminders_x_coordinate+20,
-                GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step * _update_id_btn_y_row,
-                GUI_IO_util.open_TIPS_x_coordinate, t)))
+        lambda e, t=id_tip: GUI_IO_util.display_widget_info(window, e,
+            GUI_IO_util.open_reminders_x_coordinate+20,
+            GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step * _update_id_btn_y_row,
+            GUI_IO_util.open_TIPS_x_coordinate, t))
 
 error = False
 database_already_loaded = False
@@ -1497,7 +1495,7 @@ def changed_filename(*args):
                 # keep only table name and Strip off the .csv extension
                 table_values.append(table[:len(table)-5])
             table_menu_values = table_values # ", ".join(table_values)
-            select_DB_tables['values'] = table_menu_values
+            GUI_theme_util.set_values(select_DB_tables, table_menu_values)
         # if error:
         #     return
         if len(table_menu_values)>0:
@@ -1517,9 +1515,9 @@ def changed_filename(*args):
             readDir = True
 
         setup_complex_menu, setup_simplex_menu = DB_PCACE_data_analysis_util.get_setup_complex_simplex_names() # os.path.join(inputDir.get())
-        setup_complex['values'] = setup_complex_menu
+        GUI_theme_util.set_values(setup_complex, setup_complex_menu)
         # Populate the Simplex dropdown immediately (before identifier building which can fail)
-        setup_simplex['values'] = setup_simplex_menu
+        GUI_theme_util.set_values(setup_simplex, setup_simplex_menu)
         if len(setup_simplex_menu) > 0:
             setup_simplex.configure(state='normal')
             setup_simplex_var.set('')
@@ -1547,13 +1545,13 @@ def changed_filename(*args):
         # Do NOT pre-populate until the user picks Complex or Simplex.
         obj_type = object_type_var.get()
         if obj_type == 'Complex':
-            required_object['values'] = setup_complex_menu
+            GUI_theme_util.set_values(required_object, setup_complex_menu)
             _req_n = len(setup_complex_menu)
         elif obj_type == 'Simplex':
-            required_object['values'] = setup_simplex_menu
+            GUI_theme_util.set_values(required_object, setup_simplex_menu)
             _req_n = len(setup_simplex_menu)
         else:
-            required_object['values'] = []
+            GUI_theme_util.set_values(required_object, [])
             required_object_var.set('')
             _req_n = 0
         _update_combo_hover(required_object, _required_object_y_row,
@@ -1598,12 +1596,12 @@ def changed_filename(*args):
             if not database_already_loaded:
                 try:
                     complex_identifiers_menu = DB_PCACE_data_analysis_util.build_macro_event_dropdown_menu(inputDir.get())
-                    complex_identifiers['values'] = complex_identifiers_menu
+                    GUI_theme_util.set_values(complex_identifiers, complex_identifiers_menu)
                     if complex_identifiers_menu:
                         complex_identifiers_var.set(complex_identifiers_menu[0])
                     # Populate hierarchical complex dropdown
                     hierarchical_complex_menu = DB_PCACE_data_analysis_util.build_hierarchical_complex_dropdown_menu(inputDir.get())
-                    complex_identifiers['values'] = complex_identifiers_menu
+                    GUI_theme_util.set_values(complex_identifiers, complex_identifiers_menu)
                 except Exception as e:
                     print(f"  WARNING: Could not build identifier/hierarchical menus: {e}")
                 database_already_loaded = True
@@ -1667,7 +1665,7 @@ def activate_parents_children(*args):
                 #                                    False, '', True, '', False)
                 # mb.showwarning(title='Warning',
                 #                message="The selected complex '" + str(setup_complex_var.get()) + "' has " + str(len(parents_complex_list)) + " complex parents. Only the first one is displayed. Use the dropdown menu to scroll through all available complex parent names.")
-        select_parents['values'] = parents_complex_list
+        GUI_theme_util.set_values(select_parents, parents_complex_list)
 
         if len(children_complex_list_all)>0:
             complex_children_var.set(str(children_complex_list_all[0]))
@@ -1679,7 +1677,7 @@ def activate_parents_children(*args):
         #
         simplex_children_all_list, simplex_children_required_list = DB_PCACE_data_analysis_util.get_setup_complex_simplex_children(setup_complex_var.get())
         setup_simplex_menu = simplex_children_all_list
-        setup_simplex['values'] = setup_simplex_menu
+        GUI_theme_util.set_values(setup_simplex, setup_simplex_menu)
         if len(setup_simplex_menu)>0:
             setup_simplex_var.set(str(simplex_children_all_list[0]))
         # if len(simplex_children_list)>0:
@@ -1706,7 +1704,7 @@ def activate_parents_children(*args):
         else:
             mb.showwarning(title='Warning',
                            message="The selected complex '" + str(setup_complex_var.get()) + "' has no complex children.")
-        select_children['values'] = children_complex_list_all
+        GUI_theme_util.set_values(select_children, children_complex_list_all)
 
         # Update hover-over with item counts for parents, children, and simplex
         _update_combo_hover(select_parents, _select_parents_y_row,
@@ -1735,7 +1733,7 @@ def activate_parents_children(*args):
             #     mb.showwarning(title='Warning',
             #                    message="The selected simplex " + str(setup_simplex_var.get()) + " has " + str(
             #                        len(parents_complex_list)) + " complex parents. Only the first one is displayed. Use the dropdown menu to scroll through all available complex parent names.")
-            select_parents['values'] = parents_complex_list
+            GUI_theme_util.set_values(select_parents, parents_complex_list)
             # Update hover-over with item count for parents
             _update_combo_hover(select_parents, _select_parents_y_row,
                 GUI_IO_util.labels_x_coordinate+90, GUI_IO_util.labels_x_coordinate,

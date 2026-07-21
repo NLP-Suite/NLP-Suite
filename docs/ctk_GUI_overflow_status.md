@@ -29,6 +29,12 @@ one clips its label with no way to read it.
 | `html_annotator_main.py` | +687 (reqwidth 2157 vs. 1470 screen) | **0** (reqwidth 1420) |
 | `semantic_aggregation_main.py` | not clipped, but only 34px from the screen edge (reqwidth 1436) | **0**, 51px margin (reqwidth 1419) |
 | `semantic_analysis_main.py` | +164 (reqwidth 1634 vs. 1470 screen; missed by the sweep below — found via a bug report about the 'maximum number of keywords' slider) | **0** (reqwidth 1426) |
+| `DB_PCACE_data_validation_main.py` | +59 | **0**, 58px margin (reqwidth 1412) |
+
+`DB_PCACE_data_validation_main.py` fits **incidentally** to the Phase 3 DB/PCACE-tranche widget-factory
+conversion (`tk.Combobox`/`Entry`/`Button` → `create_combobox`/`create_entry`/`create_button`), not via
+row-splitting — the char→px translation happened to net narrower than the raw tk widths it replaced on
+this particular GUI. Contrast `DB_SQL_main.py` below, where the same conversion made the overflow worse.
 
 Fixed via **per-GUI row-splitting**, the technique the "still overflowing" section below calls for: a
 legacy row crammed many widgets onto one line via `sameY=True` chaining, and since grid columns are
@@ -68,13 +74,12 @@ general-purpose knob — see the row-splitting technique above.
 | GUI | overflow (px) |
 |---|---|
 | `sample_corpus_main.py` | +426 |
-| `DB_PCACE_data_analysis_main.py` | +301 |
+| `DB_PCACE_data_analysis_main.py` | +297 (was +301, essentially unchanged by the Phase 3 DB/PCACE widget-factory conversion) |
 | `GIS_Google_Earth_main.py` | +276 (was +388; narrowing `IO_setup_brief_display_area` above closed part of it) |
 | `file_search_byWord_main.py` | +191 |
 | `wordclouds_main.py` | +169 |
-| `DB_SQL_main.py` | +139 |
+| `DB_SQL_main.py` | +167 (was +139; the Phase 3 DB/PCACE widget-factory conversion made this one WORSE — CTk's char→px multiplier for its many comboboxes/buttons nets wider than the raw tk widths it replaced. Needs the same row-splitting technique as the fixed GUIs above.) |
 | `file_manager_main.py` | +103 |
-| `DB_PCACE_data_validation_main.py` | +59 |
 | `SVO_main.py` | +48 |
 
 `NLP_welcome_main.py` reports +8656 but is a false positive: its content is `.place()`d, not gridded,

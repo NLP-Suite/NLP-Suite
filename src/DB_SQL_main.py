@@ -10,7 +10,6 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window, "DB_SQL_main.p
 
 import os
 import tkinter as tk
-import tkinter.ttk as ttk
 import tkinter.messagebox as mb
 import sqlite3, pandas as pd
 from subprocess import call
@@ -20,6 +19,7 @@ import subprocess
 import IO_csv_util
 import IO_files_util
 import GUI_IO_util
+import GUI_theme_util
 import IO_user_interface_util
 import TIPS_util
 import DB_PCACE_data_analysis_util as DB_PCACE_data_analyzer_util
@@ -565,13 +565,13 @@ def _on_open_gui_selected(choice):
 
 _open_gui_var = tk.StringVar()
 _open_gui_var.set('Open PC-ACE data analysis GUI')
-open_gui_menu = tk.OptionMenu(window, _open_gui_var,
-                              'Open PC-ACE data analysis GUI',
+open_gui_menu = GUI_theme_util.create_option_menu(window, variable=_open_gui_var,
+                              values=['Open PC-ACE data analysis GUI',
                               'Open data manipulation GUI',
-                              'Open data statistics GUI',
+                              'Open data statistics GUI'],
                               command=_on_open_gui_selected)
 
-open_gui_menu.configure(width=30)
+GUI_theme_util.set_char_width(open_gui_menu, 30)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_gui_menu,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
@@ -580,37 +580,38 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                    "   Open data manipulation GUI: opens the data manipulation GUI.\n"
                                    "   Open data statistics GUI: open the GUI for statistical analyses.")
 #
-# open_analyzer_button = tk.Button(window, text='Open PC-ACE analyzer GUI', width=25, height=1, state='disabled', command=lambda: open_pcace_analyzer())
+# open_analyzer_button = GUI_theme_util.create_button(window, text='Open PC-ACE analyzer GUI', width=25, height=1, state='disabled', command=lambda: open_pcace_analyzer())
 # y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
 #                                    open_analyzer_button,
 #                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
 #                                    "Click to open the PC-ACE data analyzer GUI with the current input directory.")
 
-view_relations_button = tk.Button(window, text='View table relations', width=17, height=1, state='disabled', command=lambda: view_relations())
+view_relations_button = GUI_theme_util.create_button(window, text='View table relations', width=17, height=1, state='disabled', command=lambda: view_relations())
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    view_relations_button,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click to open a pdf file of the PC-ACE table relations.")
 
-view_grammar_button = tk.Button(window, text='View grammar', width=17, height=1, state='disabled', command=lambda: view_grammar())
+view_grammar_button = GUI_theme_util.create_button(window, text='View grammar', width=17, height=1, state='disabled', command=lambda: view_grammar())
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+150, y_multiplier_integer,
                                    view_grammar_button,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click to export the grammar used for the selected PC-ACE database.")
 
-update_grammar_button = tk.Button(window, text='Update grammar', width=17, height=1, state='disabled', command=lambda: update_grammar())
+update_grammar_button = GUI_theme_util.create_button(window, text='Update grammar', width=17, height=1, state='disabled', command=lambda: update_grammar())
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+300, y_multiplier_integer,
                                    update_grammar_button,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click to update the grammar saved in setup_complex.xlsx and setup_complex.pkl.")
 
 # ── Update REQUIRED boolean ─────────────────────────────────────────────
-object_type_lb = tk.Label(window, text='Object ')
+object_type_lb = GUI_theme_util.create_label(window, text='Object ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+450, y_multiplier_integer,
                                    object_type_lb, True)
 
 object_type_var_sql = tk.StringVar()
-object_type_var_sql_menu = tk.OptionMenu(window, object_type_var_sql, 'Complex', 'Simplex')
+object_type_var_sql_menu = GUI_theme_util.create_option_menu(window, variable=object_type_var_sql,
+                                                              values=['Complex', 'Simplex'])
 object_type_var_sql_menu.configure(state='disabled')
 object_type_var_sql.set('')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+500, y_multiplier_integer,
@@ -637,9 +638,9 @@ def _update_combo_hover(combo, y_row, x_coord, x_hover, count, base_text):
         lambda e: GUI_IO_util.delete_display_widget_lb(window, e, ''))
 
 required_object_var_sql = tk.StringVar()
-required_object_sql = ttk.Combobox(window, textvariable=required_object_var_sql, width=GUI_IO_util.widget_width_short)
+required_object_sql = GUI_theme_util.create_combobox(window, textvariable=required_object_var_sql, width=GUI_IO_util.widget_width_short)
 required_object_sql.configure(state='disabled')
-required_object_sql['values'] = _sql_setup_complex_menu
+GUI_theme_util.set_values(required_object_sql, _sql_setup_complex_menu)
 _required_object_sql_base_text = ("You can use the dropdown menu to scroll through the list of available objects.\n"
     "You can also select a complex or simplex object, then press Enter or click RUN to toggle its REQUIRED boolean value (from False to True or viceversa).\n"
     "The value is set in the setup_xref_Complex-Complex table or setup_xref_Simplex-Complex table. The xlsx, pkl, and grammar files will be updated.")
@@ -659,14 +660,14 @@ def _update_required_object_dropdown_sql(*args):
     except:
         c_menu, s_menu = [], []
     if obj_type == 'Complex':
-        required_object_sql['values'] = c_menu
+        GUI_theme_util.set_values(required_object_sql, c_menu)
         n = len(c_menu)
         if c_menu:
             required_object_var_sql.set(c_menu[0])
         else:
             required_object_var_sql.set('')
     elif obj_type == 'Simplex':
-        required_object_sql['values'] = s_menu
+        GUI_theme_util.set_values(required_object_sql, s_menu)
         n = len(s_menu)
         if s_menu:
             required_object_var_sql.set(s_menu[0])
@@ -674,7 +675,7 @@ def _update_required_object_dropdown_sql(*args):
             required_object_var_sql.set('')
     else:
         # Do not pre-populate until user picks Complex or Simplex
-        required_object_sql['values'] = []
+        GUI_theme_util.set_values(required_object_sql, [])
         n = 0
         required_object_var_sql.set('')
     _update_combo_hover(required_object_sql, _required_object_sql_y_row,
@@ -741,10 +742,7 @@ def get_table_list(*args):
         table_menu_values.append(row[0])
     cur.close()
     conn.close()
-    m = select_DB_tables_menu["menu"]
-    m.delete(0, "end")
-    for s in table_menu_values:
-        m.add_command(label=s, command=lambda value=s: select_DB_tables_var.set(value))
+    GUI_theme_util.set_values(select_DB_tables_menu, table_menu_values)
     # Populate but do not display a value — user must explicitly select
     select_DB_tables_var.set('')
     _populating_tables = False
@@ -765,13 +763,13 @@ select_SQLite_DB_var.trace('w', _show_active_db)
 
 
 def _add_typeahead(combo):
-    """Add keyboard typeahead to a ttk.Combobox: type a letter to jump to
+    """Add keyboard typeahead to a combobox: type a letter to jump to
     the first matching item."""
     def _on_key(event):
         ch = event.char.lower()
         if not ch or not ch.isalpha():
             return
-        values = combo['values']
+        values = combo.cget('values')
         if not values:
             return
         for val in values:
@@ -782,12 +780,12 @@ def _add_typeahead(combo):
     combo.bind('<KeyPress>', _on_key)
 
 # ── Cross-complex query generator ─────────────────────────────────────────
-cross_complex_lb = tk.Label(window, text='Cross-complex query')
+cross_complex_lb = GUI_theme_util.create_label(window, text='Cross-complex query')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer, cross_complex_lb, True)
 
 # OBJECT 1 ---------------------------------------------------------------------------------------
 source_complex_var = tk.StringVar()
-source_complex_menu = ttk.Combobox(window, textvariable=source_complex_var, state='disabled', width=20)
+source_complex_menu = GUI_theme_util.create_combobox(window, textvariable=source_complex_var, state='disabled', width=20)
 _add_typeahead(source_complex_menu)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 130, y_multiplier_integer,
                                                source_complex_menu, True, False, True, False, 90,
@@ -796,7 +794,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 
 # OBJECT 2 ---------------------------------------------------------------------------------------
 source_simplex_var = tk.StringVar()
-source_simplex_menu = ttk.Combobox(window, textvariable=source_simplex_var, state='disabled', width=20)
+source_simplex_menu = GUI_theme_util.create_combobox(window, textvariable=source_simplex_var, state='disabled', width=20)
 _add_typeahead(source_simplex_menu)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 310, y_multiplier_integer,
                                                source_simplex_menu, True, False, True, False, 90,
@@ -805,7 +803,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 
 # OBJECT 3 ---------------------------------------------------------------------------------------
 target_complex_var = tk.StringVar()
-target_complex_menu = ttk.Combobox(window, textvariable=target_complex_var, state='disabled', width=20)
+target_complex_menu = GUI_theme_util.create_combobox(window, textvariable=target_complex_var, state='disabled', width=20)
 _add_typeahead(target_complex_menu)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 500, y_multiplier_integer,
                                                target_complex_menu, True, False, True, False, 90,
@@ -813,7 +811,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                                "Object 3 (COMPLEX): select a complex type to be joined with Object 1 (e.g. Simple process, City). Click + to add more.")
 # OBJECT 4 ---------------------------------------------------------------------------------------
 target_simplex_var = tk.StringVar()
-target_simplex_menu = ttk.Combobox(window, textvariable=target_simplex_var, state='disabled', width=20)
+target_simplex_menu = GUI_theme_util.create_combobox(window, textvariable=target_simplex_var, state='disabled', width=20)
 _add_typeahead(target_simplex_menu)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 680, y_multiplier_integer,
                                                target_simplex_menu, True, False, True, False, 90,
@@ -821,20 +819,20 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                                "Object 4 (SIMPLEX): select the simplex to be displayed for Object 3 (e.g., Verbal phrase; * for all simplex)")
 
 # + ADD OBJECTS ---------------------------------------------------------------------------------------
-add_object_btn = tk.Button(window, width=2, text='+', state='disabled')
+add_object_btn = GUI_theme_util.create_button(window, width=2, text='+', state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 840, y_multiplier_integer,
                                                add_object_btn, True, False, True, False, 90,
                                                GUI_IO_util.labels_x_coordinate+400,
                                                "Click on + to add another set of objects.\nEach + saves the current 4-object selection and resets the dropdowns for the next set (Object 5, 6, 7, 8...).")
 # EXPAND OBJECTS ---------------------------------------------------------------------------------------
 expand_complex_var = tk.IntVar(value=1)
-expand_complex_cb = tk.Checkbutton(window, text='', variable=expand_complex_var, onvalue=1, offvalue=0, state='disabled')
+expand_complex_cb = GUI_theme_util.create_checkbox(window, text='Expand', variable=expand_complex_var, onvalue=1, offvalue=0, state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 880, y_multiplier_integer,
                                                expand_complex_cb, True, False, True, False, 90,
                                                GUI_IO_util.open_reminders_x_coordinate,
                                                "Expand any complex object with no simplex attributes to its lowest complex with available simplex children.")
 
-generate_cross_btn = tk.Button(window, width=15, text='Generate SQL query', state='disabled')
+generate_cross_btn = GUI_theme_util.create_button(window, width=15, text='Generate SQL query', state='disabled')
 _gen_btn_y_row = y_multiplier_integer  # save for dynamic hover-over re-binding
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 960, y_multiplier_integer,
                                                generate_cross_btn, False, False, True, False, 90,
@@ -842,13 +840,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                                "Click to generate the SQL query for the selected objects.\nClick RUN after the SQL query is displayed in the SQL query area.")
 
 # ── WHERE filter row ──────────────────────────────────────────────────────
-where_filter_lb = tk.Label(window, text='WHERE filter')
+where_filter_lb = GUI_theme_util.create_label(window, text='WHERE filter')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                where_filter_lb, True)
 
 # Simplex to filter on (populated dynamically when source complex is selected)
 where_simplex_var = tk.StringVar()
-where_simplex_menu = ttk.Combobox(window, textvariable=where_simplex_var, state='disabled', width=20)
+where_simplex_menu = GUI_theme_util.create_combobox(window, textvariable=where_simplex_var, state='disabled', width=20)
 _add_typeahead(where_simplex_menu)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 130, y_multiplier_integer,
                                                where_simplex_menu, True, False, True, False, 90,
@@ -857,7 +855,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 
 # Operator (=, LIKE, !=)
 where_operator_var = tk.StringVar()
-where_operator_menu = ttk.Combobox(window, textvariable=where_operator_var, state='disabled', width=5,
+where_operator_menu = GUI_theme_util.create_combobox(window, textvariable=where_operator_var, state='disabled', width=5,
                                     values=['LIKE', '=', '!=', 'NOT LIKE'])
 where_operator_var.set('LIKE')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 310, y_multiplier_integer,
@@ -867,7 +865,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 
 # Value entry
 where_value_var = tk.StringVar()
-where_value_entry = tk.Entry(window, textvariable=where_value_var, width=25, state='disabled')
+where_value_entry = GUI_theme_util.create_entry(window, textvariable=where_value_var, width=25, state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 400, y_multiplier_integer,
                                                where_value_entry, False, False, True, False, 90,
                                                GUI_IO_util.labels_x_coordinate + 400,
@@ -921,12 +919,10 @@ def _update_extra_targets_label(*args):
                            + selection_line)
     # Re-bind hover-over with updated text
     generate_cross_btn.bind('<Enter>',
-        lambda e, t=_gen_btn_hover_text: (
-            e.widget.config(background='red', foreground='black'),
-            GUI_IO_util.display_widget_info(window, e,
-                GUI_IO_util.labels_x_coordinate + 960,
-                GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step * _gen_btn_y_row,
-                GUI_IO_util.open_setup_x_coordinate, t)))
+        lambda e, t=_gen_btn_hover_text: GUI_IO_util.display_widget_info(window, e,
+            GUI_IO_util.labels_x_coordinate + 960,
+            GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step * _gen_btn_y_row,
+            GUI_IO_util.open_setup_x_coordinate, t))
 
 
 def _add_object():
@@ -1116,7 +1112,7 @@ def _populate_cross_complex_menus(*args):
                        (target_complex_menu, target_complex_var),
                        (source_simplex_menu, source_simplex_var),
                        (target_simplex_menu, target_simplex_var)]:
-        combo['values'] = ()
+        GUI_theme_util.set_values(combo, ())
         var.set('')
     _saved_pairs.clear()
     _update_extra_targets_label()
@@ -1129,8 +1125,8 @@ def _populate_cross_complex_menus(*args):
         cur.execute("SELECT Name FROM setup_Complex ORDER BY Name")
         names = [row[0] for row in cur.fetchall()]
         _complex_names_cache = names
-        source_complex_menu['values'] = names
-        target_complex_menu['values'] = names
+        GUI_theme_util.set_values(source_complex_menu, names)
+        GUI_theme_util.set_values(target_complex_menu, names)
         # Do NOT auto-populate — user must explicitly select objects
         source_complex_var.set('')
         target_complex_var.set('')
@@ -1142,7 +1138,7 @@ def _populate_cross_complex_menus(*args):
 
 def _populate_simplex_menu(complex_var, simplex_combo, simplex_var):
     """Populate a simplex Combobox based on the selected complex type."""
-    simplex_combo['values'] = ()
+    GUI_theme_util.set_values(simplex_combo, ())
     simplex_var.set('')
     cname = complex_var.get()
     if not cname:
@@ -1164,7 +1160,7 @@ def _populate_simplex_menu(complex_var, simplex_combo, simplex_var):
                            ORDER BY ss.Name""", (cid,))
             names = [r[0] for r in cur.fetchall()]
             if names:
-                simplex_combo['values'] = ['*'] + names
+                GUI_theme_util.set_values(simplex_combo, ['*'] + names)
                 simplex_var.set('*')
         cur.close()
         conn.close()
@@ -1184,12 +1180,10 @@ source_complex_var.trace('w', _populate_source_simplex)
 target_complex_var.trace('w', _populate_target_simplex)
 
 # ── DB table / field selection row ────────────────────────────────────────
-select_DB_tables_lb = tk.Label(window, text='DB tables ')
+select_DB_tables_lb = GUI_theme_util.create_label(window, text='DB tables ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,select_DB_tables_lb,True)
-if len(table_menu_values)==0:
-    select_DB_tables_menu = tk.OptionMenu(window, select_DB_tables_var, table_menu_values)
-else:
-    select_DB_tables_menu = tk.OptionMenu(window,select_DB_tables_var, *table_menu_values)
+select_DB_tables_menu = GUI_theme_util.create_option_menu(window, variable=select_DB_tables_var,
+                                                           values=table_menu_values)
 select_DB_tables_menu.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+70,y_multiplier_integer,select_DB_tables_menu,True)
 
@@ -1288,10 +1282,7 @@ def get_table_fields_list(*args):
     fields = r.keys()
     table_fields_menu_values=fields
     cur.close()
-    m = select_DB_table_fields_menu["menu"]
-    m.delete(0, "end")
-    for s in table_fields_menu_values:
-        m.add_command(label=s, command=lambda value=s: select_DB_table_fields_var.set(value))
+    GUI_theme_util.set_values(select_DB_table_fields_menu, table_fields_menu_values)
     # Populate but do not display a value — user must explicitly select
     select_DB_table_fields_var.set('')
     conn.close()
@@ -1308,25 +1299,27 @@ def get_table_fields_name(*args):
 select_DB_table_fields_var.trace('w',get_table_fields_name)
 
 
-select_DB_table_fields_lb = tk.Label(window, text='DB table fields')
+select_DB_table_fields_lb = GUI_theme_util.create_label(window, text='DB table fields')
 
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 280, y_multiplier_integer,
                                                select_DB_table_fields_lb, True, False, True, False, 90,
                                                GUI_IO_util.labels_x_coordinate+28,
                                                "Use the dropdown menu to list the fields of the selected DB table.")
 
-if len(table_fields_menu_values)==0:
-    select_DB_table_fields_menu = tk.OptionMenu(window, select_DB_table_fields_var, table_fields_menu_values)
-else:
-    select_DB_table_fields_menu = tk.OptionMenu(window,select_DB_table_fields_var, *table_fields_menu_values)
+select_DB_table_fields_menu = GUI_theme_util.create_option_menu(window, variable=select_DB_table_fields_var,
+                                                                 values=table_fields_menu_values)
 select_DB_table_fields_menu.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+380,y_multiplier_integer,select_DB_table_fields_menu,True)
 
-auto_SQL_lb = tk.Label(window, text='Templates')
+auto_SQL_lb = GUI_theme_util.create_label(window, text='Templates')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+510,y_multiplier_integer,auto_SQL_lb,True)
 
 auto_SQL_var=tk.StringVar()
-auto_SQL_value = tk.OptionMenu(window,auto_SQL_var,'SQL standard','SQL count', 'SQL duplicates', 'SQL join', 'SQL left join', 'SQL union', 'SQL unmatched', 'SQL update', 'SQL subquery', 'SQL group concat', 'SQL case')
+auto_SQL_value = GUI_theme_util.create_option_menu(window, variable=auto_SQL_var,
+                                                    values=['SQL standard', 'SQL count', 'SQL duplicates',
+                                                            'SQL join', 'SQL left join', 'SQL union',
+                                                            'SQL unmatched', 'SQL update', 'SQL subquery',
+                                                            'SQL group concat', 'SQL case'])
 auto_SQL_value.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 600, y_multiplier_integer,
                                                auto_SQL_value, True, False, True, False, 90,
@@ -1334,7 +1327,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                                "Use the dropdown menu to import an SQL query template.")
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,auto_SQL_value,True)
 
-distinct_checkbox = tk.Checkbutton(window, text='Distinct', variable=distinct_var, onvalue=1, offvalue=0, state='disabled')
+distinct_checkbox = GUI_theme_util.create_checkbox(window, text='Distinct', variable=distinct_var, onvalue=1, offvalue=0, state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 680, y_multiplier_integer,
                                                distinct_checkbox, True, False, True, False, 90,
                                                GUI_IO_util.labels_x_coordinate+680,
@@ -1398,10 +1391,10 @@ def save_query():
             mb.showwarning(title='Warning',
                            message='The SQL query has been saved to\n\n' + filePath)
 
-import_query_button=tk.Button(window, width=15, text='Import SQL query', state='disabled', command=lambda: import_query(window,'Select INPUT SQL query file', [("SQL files", "*.txt")]))
+import_query_button=GUI_theme_util.create_button(window, width=15, text='Import SQL query', state='disabled', command=lambda: import_query(window,'Select INPUT SQL query file', [("SQL files", "*.txt")]))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+770, y_multiplier_integer,import_query_button,True)
 
-save_query_button=tk.Button(window, width=15, text='Save SQL query', state='disabled', command=lambda: save_query())
+save_query_button=GUI_theme_util.create_button(window, width=15, text='Save SQL query', state='disabled', command=lambda: save_query())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+850, y_multiplier_integer,save_query_button)
 
 # ── INPUT CSV file row (restored) ──────────────────────────────────────────────────────────
@@ -1424,20 +1417,20 @@ def get_csv_file(window, title, fileType):
             csv_file_var.set(filePath)
     return filePath
 
-csv_file_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width,
+csv_file_button = GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width,
                             text='Select INPUT CSV file',
                             command=lambda: get_csv_file(window, 'Select INPUT csv file', [("csv files", "*.csv")]))
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                csv_file_button, True)
 
-openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+openInputFile_button = GUI_theme_util.create_open_file_button(window,
                                  command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                openInputFile_button, True, False, True, False, 90,
                                                GUI_IO_util.IO_configuration_menu, "Open INPUT csv file")
 
-csv_file = tk.Entry(window, width=GUI_IO_util.csv_file_width - 8, textvariable=csv_file_var)
-csv_file.config(state='disabled')
+csv_file = GUI_theme_util.create_entry(window, width=GUI_IO_util.csv_file_width - 8, textvariable=csv_file_var)
+csv_file.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                                csv_file, True)
 
@@ -1445,7 +1438,7 @@ def _clear_csv_file():
     """Clear the INPUT CSV file field (leaves the cross-complex WHERE filter untouched)."""
     csv_file_var.set('')
 
-clear_csv_button = tk.Button(window, text='Clear', width=5, command=lambda: _clear_csv_file())
+clear_csv_button = GUI_theme_util.create_button(window, text='Clear', width=5, command=lambda: _clear_csv_file())
 y_multiplier_integer = GUI_IO_util.placeWidget(window, 1150, y_multiplier_integer, clear_csv_button,
                                                False, False, True, False, 90,
                                                GUI_IO_util.open_setup_x_coordinate,
@@ -1454,7 +1447,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, 1150, y_multiplier_intege
 # SQL query name — no longer on a separate row.
 # The query name is shown in the hover-over text of the SQL query text area.
 
-SQL_query_entry = tk.Text(window,height=12,state='disabled')
+SQL_query_entry = GUI_theme_util.create_textbox(window,height=12,state='disabled')
 _sql_entry_y_row = y_multiplier_integer  # save for dynamic hover-over
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,SQL_query_entry)
 
@@ -1476,30 +1469,15 @@ def _update_sql_query_hover(*args):
 query_name_var.trace('w', _update_sql_query_hover)
 _update_sql_query_hover()  # Initial bind
 
-# Right-align the SQL query text area and Save button
-# with the CLOSE button at the bottom of the GUI.
-# The CLOSE button (width=10, height=2) starts at close_button_x_coordinate
-# and is approximately 90 pixels wide on Windows, 100 on Mac.
-_close_right_edge = GUI_IO_util.close_button_x_coordinate + 90
-
-def _align_widgets_to_close(event=None):
-    target_right = _close_right_edge
-    text_left = GUI_IO_util.labels_x_coordinate
-
-    # Align SQL query text area
-    SQL_query_entry.place(width=target_right - text_left)
-
-    # Align Save SQL query button so its right edge matches
-    window.update_idletasks()
-    save_btn_width = save_query_button.winfo_reqwidth()
-    save_query_button.place(x=target_right - save_btn_width)
-
-    # Align Generate and + Target buttons to same right edge as Save SQL query
-    gen_btn_width = generate_cross_btn.winfo_reqwidth()
-    generate_cross_btn.place(x=target_right - gen_btn_width)
-    # No alignment needed for + button (it sits inline)
-
-window.after(100, _align_widgets_to_close)
+# NOTE: a former `_align_widgets_to_close` here tried to right-align the SQL query text area and
+# the Save/Generate buttons against the CLOSE button by calling `.place(width=...)` / `.place(x=...)`
+# on widgets already gridded by placeWidget. Tk's geometry managers are mutually exclusive per
+# widget -- the first `place()` call on a grid-managed widget switches it to place-managed and
+# defaults every UNSPECIFIED option (y, in every one of these calls) to 0, so it was already
+# teleporting these widgets to the window's top-left corner under stock tk. Under CTk it fails
+# louder: `CTkBaseClass.place()` raises ValueError for width/height outright ("must be passed to
+# the constructor, not place"), reported by Tk's callback handler every time the `after(100, ...)`
+# timer fired. Removed rather than ported -- there was no working layout left to preserve.
 
 y_multiplier_integer=y_multiplier_integer+4.5
 

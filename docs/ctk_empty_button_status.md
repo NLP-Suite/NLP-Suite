@@ -50,19 +50,21 @@ live widget.
 
 ## Remaining empty open-file buttons
 
-**13 sites across 12 files.** All are the `width=1, text=''` pattern above unless noted. Line numbers
-are unchanged from the first audit — none of the remaining files have been touched yet.
+**11 sites across 8 files remain** (13 sites at the first audit). All are the `width=1,
+text=''` pattern above unless noted. Line numbers are unchanged from the first audit for files not
+yet touched.
 
 > **GIS tools (2026-07-18, `ctk/phase3-gis-tools`)** cleared their 3 sites (`GIS_main.py` 535 + 779,
 > `GIS_distance_main.py` 259, `GIS_symbolic_main.py` 310) via `create_open_file_button`, and the
 > `GIS_main.py:774` placeholder (see below) is now `= None`.
 
+> **DB/PCACE tools (2026-07-20, `ctk/phase3-db-pcace`)** cleared their 2 sites (`DB_SQL_main.py` 1433,
+> `DB_PCACE_data_validation_main.py` 546) via `create_open_file_button`.
+
 | GUI | line | what it opens |
 |---|---|---|
 | `data_visualization_main.py` | 569 | input csv file |
 | `data_visualization_main.py` | 1015 | comparative csv (literal `width=1`, parented to `tab_categorical`) |
-| `DB_SQL_main.py` | 1433 | input file (starts `state='disabled'`) |
-| `DB_PCACE_data_validation_main.py` | 546 | input file |
 | `NGrams_CoOccurrences_main.py` | 740 | input csv file |
 | `NLP_setup_external_software_main.py` | 77 | config file |
 | `NLP_setup_external_software_main.py` | 118 | software website |
@@ -72,10 +74,6 @@ are unchanged from the first audit — none of the remaining files have been tou
 | `SRL_main.py` | 109 | input csv file |
 | `data_manipulation_main.py` | 221 | input file |
 | `word2vec_main.py` | 301 | word-distance file |
-
-The one remaining `state='disabled'` site starts grey under the CTk theme, correctly — but grey *and*
-blank is still unreadable. The glyph is what makes the disabled state legible as "this button has
-nothing to open yet".
 
 ## Secondary: placeholder `tk.Button()` forward declarations
 
@@ -95,21 +93,14 @@ nothing and removes the hazard.
 
 ## Secondary: unlabeled checkboxes
 
-All ten still open (the DB/PCACE tranche has not landed). Each `tk.Checkbutton(window, text='', ...)`
-renders as a bare square whose meaning lives only in an adjacent explanatory label and its hover
-tooltip:
-
-| GUI | lines |
-|---|---|
-| `DB_PCACE_data_analysis_main.py` | 971, 979, 987, 996, 1007 (mode selectors) |
-| `DB_PCACE_data_analysis_main.py` | 1135, 1143, 1151, 1159 (simplex export options) |
-| `DB_SQL_main.py` | 831 (`expand_complex_cb`) |
-
-These are **not** a grid-migration regression — they are placed with `sameY=True`, so `_column_for`
-bumps each to the next free column and left-to-right order (the order the explanatory label names
-them in) is preserved. But a labelless checkbox depending on positional correspondence with a
-sentence one row up is fragile, and it is invisible to the golden-label checks in
-`tests/gui_smoke.py`. Worth giving each a short inline label when the DB/PCACE tranche lands.
+✅ **Cleared (2026-07-20, `ctk/phase3-db-pcace`).** All ten sites now carry a short inline label
+(`identifiers_checkbox` → "IDs", `extended_headers_checkbox` → "Ext hdrs", `parents_children_checkbox`
+→ "Par/child", `document_sources_checkbox` → "Docs", `comments_checkbox` → "Comments",
+`simplex_export_values_checkbox` → "Values", `simplex_charts_checkbox` → "Charts",
+`simplex_timechart_checkbox` → "Timechart", `simplex_GIS_checkbox` → "GIS map" in
+`DB_PCACE_data_analysis_main.py`; `expand_complex_cb` → "Expand" in `DB_SQL_main.py`), so each reads on
+its own instead of depending on positional correspondence with an explanatory label a row up. The
+adjacent full-sentence label and hover tooltip are unchanged.
 
 ## Re-measuring
 

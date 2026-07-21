@@ -539,9 +539,19 @@ def create_slider(
 
 
 def create_textbox(master, **kwargs):
-    # tk.Text width is characters, height is lines; CTkTextbox has a built-in scrollbar so the
-    # manual tk.Scrollbar pairing at the call site is dropped during conversion.
-    return ctk.CTkTextbox(master, **translate_kwargs(ctk.CTkTextbox, kwargs))
+    """tk.Text(...) -> CTkTextbox(...). Built-in scrollbar drops the manual tk.Scrollbar pairing.
+
+    A handful of native tk.Text attributes (``state``, ``wrap``, ``undo``, ...) are never named
+    parameters of ``CTkTextbox.__init__`` -- it forwards them to its internal ``tkinter.Text`` via a
+    ``**kwargs`` catch-all instead. ``translate_kwargs``' signature filter only keeps *named*
+    parameters, so it silently drops them: a legacy ``tk.Text(..., state='disabled')`` would convert
+    to a textbox that is always enabled, no exception anywhere. Pull them out first and forward them
+    unfiltered (they need no char/px translation).
+    """
+    text_kwargs = {k: kwargs.pop(k) for k in list(kwargs) if k in ctk.CTkTextbox._valid_tk_text_attributes}
+    translated = translate_kwargs(ctk.CTkTextbox, kwargs)
+    translated.update(text_kwargs)
+    return ctk.CTkTextbox(master, **translated)
 
 
 def set_char_width(widget, char_width):

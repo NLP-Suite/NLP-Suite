@@ -315,6 +315,28 @@ class TestCreateCombobox:
         assert gtu.translate_kwargs(ctk.CTkComboBox, {"textvariable": "VAR"}) == {}
 
 
+# ── textbox state (Phase 3 DB/PCACE tranche: a disabled tk.Text stayed always-enabled) ──
+class TestCreateTextboxState:
+    def test_ctktextbox_does_not_name_state_in_its_signature(self):
+        # CTkTextbox forwards state/wrap/undo/... to its inner tkinter.Text via **kwargs instead of
+        # naming them -- so translate_kwargs' signature filter cannot see them, same silent-drop
+        # class as the combobox/label textvariable cases below.
+        import inspect
+
+        assert "state" not in inspect.signature(ctk.CTkTextbox.__init__).parameters
+
+    def test_bare_state_would_be_dropped_by_translate_kwargs(self):
+        assert gtu.translate_kwargs(ctk.CTkTextbox, {"state": "disabled"}) == {}
+
+    def test_create_textbox_pulls_valid_tk_text_attributes_out_before_filtering(self):
+        # Pure-logic check mirroring create_textbox's own split, without building a real widget
+        # (widget construction needs a live Tk display -- see tests/gui_smoke.py instead).
+        kwargs = {"height": 12, "state": "disabled", "wrap": "word"}
+        text_kwargs = {k: kwargs.pop(k) for k in list(kwargs) if k in ctk.CTkTextbox._valid_tk_text_attributes}
+        assert text_kwargs == {"state": "disabled", "wrap": "word"}
+        assert gtu.translate_kwargs(ctk.CTkTextbox, kwargs) == {"height": gtu.line_height_to_px(12)}
+
+
 # ── label textvariable (Phase 2 pilot 3: path labels rendered the literal "CTkLabel") ──
 class TestCreateLabelTextvariable:
     def test_ctklabel_does_not_name_textvariable_in_its_signature(self):
