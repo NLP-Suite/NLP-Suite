@@ -164,7 +164,9 @@ def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, ope
     if columnNumber != []:
         loopValue=columnNumber
     else:
-        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(outputFilename)
+        # the INPUT csv, not outputFilename: the output file has not been written yet, so its column
+        # count was wrong and the loop below ran zero times, producing an empty statistics csv
+        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
         loopValue=range(nColumns-1)
     # insert headers
     headers=['Column header','Number of documents',
@@ -519,6 +521,10 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
                     '.csv', file_label + '_freq') # + '_col-freq'
     # the outputFilename may get too long and lead to code breakdown when saving the file
+    # Bound BEFORE the branch chain. It used to be initialised only inside the grouped branch, so an
+    # UNGROUPED run never defined it and the read further down raised UnboundLocalError. Reported by
+    # Evan on both Mac and Windows: grouped frequencies worked, ungrouped field frequencies did not.
+    chart_data = None
     if len(plot_cols) == 0:
         mb.showwarning('Missing field', 'You have not selected the csv field for which to compute frequencies.\n\nPlease, select the field and try again.')
         return filesToOpen

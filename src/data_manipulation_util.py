@@ -89,6 +89,18 @@ def get_comparator(phrase: str) -> str:
         return ''
         # assert False, "Invalid comparator phrase"
 
+def check_fields_selected(headers, operation):
+    """False, with an explanation, when any record carries no field name.
+
+    A record is 'path,field'; with no field chosen it is 'path,' and the field parses as an empty
+    string. That empty string reached get_cols as df[''] and raised KeyError: '' -- a traceback in a
+    terminal the user never sees, instead of a message naming the selection that is missing.
+    """
+    if any(str(h).strip() == '' for h in headers):
+        mb.showwarning(title='Field not selected', message='The ' + operation + ' operation needs a field selected for EVERY csv file listed.\n\nAt least one of the files listed has no field.\n\nPlease, select a field for each file -- click the + button to add a file, then pick its field from the dropdown -- then click OK and RUN again.')
+        return False
+    return True
+
 def select_csv(files,cols=None):
     df = []
     for file in files:
@@ -139,6 +151,9 @@ def append(outputDir, operation_results_text_list):
         if ' ' in tempHeaders: # avoid a query error later for a multi-word header
             tempHeaders = "`" + tempHeaders + "`"
 
+    if not check_fields_selected(headers, 'APPEND'):
+        return ''
+
     outputFilename = IO_files_util.generate_output_file_name(files[0], os.path.dirname(files[0]),
                                                              outputDir,
                                                              '.csv','append',
@@ -176,15 +191,22 @@ def concatenate(outputDir,operation_results_text_list):
     # data_cols, headers,
     i = 0
     for s in operation_results_text_list:
-        files = files + [s.split(',')[0]]
-        headers = headers + [s.split(',')[1]]
+        # tolerant parse: a record is 'path,field,separator', but a record missing its field or its
+        # separator used to raise IndexError here -- a traceback, before the check below could report
+        # which selection was missing
+        parts = s.split(',')
+        files = files + [parts[0]]
+        headers = headers + [parts[1] if len(parts) > 1 else '']
         tempHeaders=str(headers[i])
         i = i + 1
         if ' ' in tempHeaders: # avoid a query error later for a multi-word header
             tempHeaders = "`" + tempHeaders + "`"
             headers = [tempHeaders]
         if i == 1:
-            sep = s.split(',')[2]
+            sep = parts[2] if len(parts) > 2 else ''
+
+    if not check_fields_selected(headers, 'CONCATENATE'):
+        return ''
 
     outputFilename = IO_files_util.generate_output_file_name(files[0], os.path.dirname(files[0]),
                                                              outputDir,
