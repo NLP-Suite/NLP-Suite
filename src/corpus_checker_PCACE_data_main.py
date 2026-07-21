@@ -548,9 +548,8 @@ def clear(e):
     extra_GUIs_menu_var.set('')
     activate_extra_GUIs()  # untick must also grey the dropdown out, or checkbox and menu disagree
     similarityIndex_Intruder_var.set(0.2)
-    similarityIndex_Plagiarist_var.set(0.2)
+    similarityIndex_Plagiarist_var.set(0.8)
     GUI_util.clear("Escape")
-
 
 window.bind("<Escape>", clear)
 
