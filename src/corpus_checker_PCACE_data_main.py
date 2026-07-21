@@ -350,8 +350,8 @@ GUI_util.run_button.configure(command=run)
 IO_setup_display_brief=False
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=560, # height at brief display
-                             GUI_height_full=640, # height at full display
+                             GUI_height_brief=600, # height at brief display
+                             GUI_height_full=680, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -404,6 +404,41 @@ keyWord_entry_var = tk.StringVar()
 ancestor_var = tk.IntVar()
 ancestor_menu_var = tk.StringVar()
 selectedFile_var = tk.StringVar()  # the noun/verb file to be used for ancestor
+
+extra_GUIs_var = tk.IntVar()
+extra_GUIs_menu_var = tk.StringVar()
+
+#setup GUI widgets
+
+def activate_extra_GUIs():
+    # the dropdown is clickable only while the checkbox is ticked. Without this command the checkbox would be
+    # inert: the menu would stay enabled, a user could pick a GUI before ticking, open_GUI would grey the menu
+    # out and return, and nothing could switch it back on -- a disabled OptionMenu cannot be clicked.
+    extra_GUIs_menu.configure(state='normal' if extra_GUIs_var.get() else 'disabled')
+
+extra_GUIs_var.set(0)
+extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_extra_GUIs())
+# extra_GUIs_checkbox.configure(state='disabled')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
+
+extra_GUIs_menu_var.set('')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'PC-ACE data analysis (Open GUI)','PC-ACE data validation (Open GUI)')
+extra_GUIs_menu.configure(state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                   extra_GUIs_menu,
+                                   False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                   "Select other related types of analysis you wish to perform" \
+                                    "\nThe selected GUI will open without having to press RUN")
+
+def open_GUI(*args):
+    if not extra_GUIs_var.get():
+        return
+    if 'validation' in extra_GUIs_menu_var.get():
+        run_script_util.run_script("DB_PCACE_data_validation_main.py")
+    elif 'analysis' in extra_GUIs_menu_var.get():
+        run_script_util.run_script("DB_PCACE_data_analysis_main.py")
+extra_GUIs_menu_var.trace('w',open_GUI)
 
 fileName_embeds_date_checkbox = tk.Checkbutton(window, text='Filename embeds date', state="disabled",
                                                variable=fileName_embeds_date, onvalue=1, offvalue=0)
@@ -503,6 +538,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_co
 
 
 def clear(e):
+    extra_GUIs_var.set(0)
+    extra_GUIs_menu_var.set('')
+    activate_extra_GUIs()  # untick must also grey the dropdown out, or checkbox and menu disagree
     similarityIndex_Intruder_var.set(0.2)
     similarityIndex_Plagiarist_var.set(0.2)
     GUI_util.clear("Escape")
@@ -764,6 +802,8 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                                         'Please, tick the \'GUIs available\' checkbox if you wish to see and select the range of other available tools suitable for sentiment analysis.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if the filenames processed by the scripts 'Check the filenames well-formedness' and 'Find the plagiarist' embed a date (e.g., The New York Times_12-23-1992).\n\nOnce you have ticked the 'Filename embeds date' option, you will need to provide the following information:\n   1. the date format of the date embedded in the filename (default mm-dd-yyyy);\n   2. the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _);\n   3. the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers).\n\nIF THE FILENAME EMBEDS A DATE AND THE DATE IS THE ONLY FIELD AVAILABLE IN THE FILENAME (e.g., 2000.txt), enter . in the 'Date character separator' field and enter 1 in the 'Date position' field.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
