@@ -1119,9 +1119,9 @@ if __name__ == '__main__':
                    'Statistical descriptive measures': "TIPS_NLP_Statistical measures.pdf",
                    'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
                    'DB SQL GUI (what input it needs; where the database is saved)': 'TIPS_NLP_DB SQL GUI.pdf',
-                   'SQL template queries': 'TIPS_NLP_SQL Template Queries.pdf'
-                   }
-    TIPS_options = 'Data manipulation GUI', 'csv files - Problems & solutions', 'Statistical tools in the NLP Suite', 'Statistical descriptive measures', 'DB SQL GUI (what input it needs; where the database is saved)', 'SQL template queries', 'Excel smoothing data series'
+                   'SQL template queries': 'TIPS_NLP_SQL Template Queries.pdf',
+               'Filtering data (thresholds, values, stop words)':'TIPS_NLP_Filtering Function.pdf'}
+    TIPS_options = 'Data manipulation GUI', 'csv files - Problems & solutions', 'Statistical tools in the NLP Suite', 'Statistical descriptive measures', 'DB SQL GUI (what input it needs; where the database is saved)', 'SQL template queries', 'Excel smoothing data series','Filtering data (thresholds, values, stop words)'
 
 
     # add all the lines to the end to every special GUI

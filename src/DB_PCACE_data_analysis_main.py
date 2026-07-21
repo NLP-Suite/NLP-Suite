@@ -1775,9 +1775,9 @@ TIPS_lookup = {'PC-ACE tables analyzer via Pandas':'TIPS_NLP_PC-ACE Access DB An
                "Geocoding": "TIPS_NLP_GIS_Geocoding.pdf",
                "Geocoding: How to Improve Nominatim": "TIPS_NLP_GIS_Geocoding Nominatim.pdf",
                "Gephi network graphs": "TIPS_NLP_Gephi network graphs.pdf",
-               "Word clouds":"TIPS_NLP_Wordclouds Visualizing word clouds.pdf"
-               }
-TIPS_options='PC-ACE tables analyzer via Pandas', 'PC-ACE - Export ACCESS tables to Excel', 'SVO automatic extraction and visualization', 'Google Earth Pro', 'Google API Key', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs', 'Word clouds'
+               "Word clouds":"TIPS_NLP_Wordclouds Visualizing word clouds.pdf",
+               'Filtering data in PC-ACE':'TIPS_NLP_Filtering Function.pdf'}
+TIPS_options='PC-ACE tables analyzer via Pandas', 'PC-ACE - Export ACCESS tables to Excel', 'SVO automatic extraction and visualization', 'Google Earth Pro', 'Google API Key', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs', 'Word clouds','Filtering data in PC-ACE'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
