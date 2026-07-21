@@ -555,6 +555,16 @@ def _open_statistics_csv():
         cmd.extend(['--outputdir', outputDir.get()])
     subprocess.Popen(cmd)
 
+def _open_corpus_checker():
+    """Launch the corpus checker (PC-ACE data) GUI.
+
+    No directory is handed over. This GUI's INPUT is the directory of PC-ACE table exports, whereas the
+    corpus checker expects the DOCUMENT corpus those tables were coded from -- one subdirectory per event,
+    each holding that event's txt articles. Seeding it with our inputDir would prefill a path of the wrong
+    shape, so the corpus checker opens on its own configured directories."""
+    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'corpus_checker_PCACE_data_main.py')
+    subprocess.Popen([sys.executable, script_path])
+
 def _on_open_gui_selected(choice):
     if choice == 'Open DB SQL GUI':
         open_sql_query()
@@ -564,6 +574,8 @@ def _on_open_gui_selected(choice):
         _open_data_manipulation()
     elif choice == 'Open data statistics GUI':
         _open_statistics_csv()
+    elif choice == 'Open corpus checker (PC-ACE data) GUI':
+        _open_corpus_checker()
 
 _open_gui_var = tk.StringVar()
 _open_gui_var.set('Open DB SQL GUI')
@@ -572,6 +584,7 @@ open_gui_menu = tk.OptionMenu(window, _open_gui_var,
                               'Open data validation GUI',
                               'Open data manipulation GUI',
                               'Open data statistics GUI',
+                              'Open corpus checker (PC-ACE data) GUI',
                               command=_on_open_gui_selected)
 open_gui_menu.configure(width=25)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -581,7 +594,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                    "   Open DB SQL GUI: opens the SQL query GUI.\n"
                                    "   Open data validation GUI: spell-check, lemmatization, aggregate code validation.\n"
                                    "   Open data manipulation GUI: opens the data manipulation GUI.\n"
-                                   "   Open data statistics GUI: open the GUI for statistical analyses.")
+                                   "   Open data statistics GUI: open the GUI for statistical analyses.\n"
+                                   "   Open corpus checker (PC-ACE data) GUI: run reliability checks on the DOCUMENT "
+                                   "corpus your PC-ACE tables were coded from (are documents filed under the right "
+                                   "event? are names spelled consistently? are some documents duplicates?).")
 
 view_relations_button = tk.Button(window, text='View table relations', width=17,height=1,state='disabled', command=lambda: view_relations())
 # place widget with hover-over info
@@ -1784,7 +1800,12 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                 "   Open data validation GUI: check and clean your data (e.g., spell checking).\n\n"
                                 "   Open data manipulation GUI: reshape and edit your data.\n\n"
                                 "   Open data statistics GUI: compute descriptive statistics on a csv file, for "
-                                "instance a query result saved from the DB SQL GUI." + GUI_IO_util.msg_Esc)
+                                "instance a query result saved from the DB SQL GUI.\n\n"
+                                "   Open corpus checker (PC-ACE data) GUI: run a pipeline of reliability checks on the "
+                                "DOCUMENT corpus your PC-ACE tables were coded from, rather than on the tables "
+                                "themselves: whether documents are filed under the right event, whether the same "
+                                "people and places are spelled consistently, and whether some documents are "
+                                "duplicates of others." + GUI_IO_util.msg_Esc)
     # Row: View table relations / View grammar / Update grammar / Update identifiers / Object type / required object
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                 "Click View table relations to see PC-ACE table relations.\n"
