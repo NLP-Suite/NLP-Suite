@@ -494,7 +494,7 @@ TIPS_lookup = {"Narrative analysis":"TIPS_NLP_Things to do with words Narrative 
                "SVO (Subject-Verb-Object extractor)":"TIPS_NLP_SVO extraction and visualization.pdf",
                'Shape of stories':"TIPS_NLP_Shape of stories.pdf",
                "Annotator":"TIPS_NLP_Annotator.pdf",
-               "DBpedia":"TIPS_NLP_Annotator DBpedia.pdf","YAGO":"TIPS_NLP_Annotator YAGO.pdf",
+               "DBpedia":"TIPS_NLP_Annotator DBpedia.pdf","YAGO":"TIPS_NLP_YAGO.pdf",
                'DBpedia ontology classes':'TIPS_NLP_Annotator DBpedia ontology classes.pdf',
                'YAGO (schema.org) ontology classes':'TIPS_NLP_Annotator YAGO (schema.org) ontology classes.pdf',
                "Annotator (via dictionary)":"TIPS_NLP_Annotator dictionary.pdf",
