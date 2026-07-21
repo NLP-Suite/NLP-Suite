@@ -64,14 +64,14 @@ yet touched.
 > **Statistical/visualization tools (2026-07-21, `ctk/phase3-stats-viz`)** cleared their 2 sites
 > (`NGrams_CoOccurrences_main.py` 740, `word2vec_main.py` 301) via `create_open_file_button`.
 
+> **Remaining setup GUIs (2026-07-21, `ctk/phase3-setup-gui`)** cleared their 4 sites
+> (`NLP_setup_external_software_main.py` 77 + 118 + 153, `NLP_setup_package_language_main.py` 161)
+> via `create_open_file_button`.
+
 | GUI | line | what it opens |
 |---|---|---|
 | `data_visualization_main.py` | 569 | input csv file |
 | `data_visualization_main.py` | 1015 | comparative csv (literal `width=1`, parented to `tab_categorical`) |
-| `NLP_setup_external_software_main.py` | 77 | config file |
-| `NLP_setup_external_software_main.py` | 118 | software website |
-| `NLP_setup_external_software_main.py` | 153 | software directory |
-| `NLP_setup_package_language_main.py` | 161 | config file |
 | `sample_corpus_main.py` | 161 | sample corpus file |
 | `SRL_main.py` | 109 | input csv file |
 | `data_manipulation_main.py` | 221 | input file |

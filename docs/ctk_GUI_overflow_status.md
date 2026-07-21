@@ -76,11 +76,14 @@ general-purpose knob — see the row-splitting technique above.
 | `sample_corpus_main.py` | +426 |
 | `DB_PCACE_data_analysis_main.py` | +297 (was +301, essentially unchanged by the Phase 3 DB/PCACE widget-factory conversion) |
 | `GIS_Google_Earth_main.py` | +276 (was +388; narrowing `IO_setup_brief_display_area` above closed part of it) |
+| `NLP_setup_package_language_main.py` | +731 (uncoverable before this tranche — the GUI crashed on open, see below) |
 | `file_search_byWord_main.py` | +191 |
 | `wordclouds_main.py` | +169 |
 | `DB_SQL_main.py` | +167 (was +139; the Phase 3 DB/PCACE widget-factory conversion made this one WORSE — CTk's char→px multiplier for its many comboboxes/buttons nets wider than the raw tk widths it replaced. Needs the same row-splitting technique as the fixed GUIs above.) |
 | `file_manager_main.py` | +103 |
 | `SVO_main.py` | +48 |
+
+`NLP_setup_package_language_main.py` (remaining-setup-GUIs tranche, `ctk/phase3-setup-gui`) is driven by two disabled "display value" `CTkLabel`s the shrink pass doesn't touch (it only targets Entry-like widgets, §Background above): `package_display_area` (`width=package_display_area_width`, 60/80 chars → up to 640px) and `parsers_display_area` (`width=80` chars, 640px), both recreated on every NLP-package change. Before this tranche the GUI could not even be measured — a vestigial `.pack()` next to each of its three `tk.Scale`s (the same class of bug fixed in the sentiment/annotator/semantic tranche) raised `TclError` the moment `placeWidget` grids the window, so it crashed on open. Converting to `create_slider` and dropping the three `.pack()` calls fixed the crash and, along the way, surfaced a second pre-existing bug: `changed_NLP_package_set_parsers()` re-creates `parsers_lb`/`parsers_display_area` on every call (3x during startup alone) without destroying the previous instance -- under old `.place()` the leftovers just sat invisibly on top of each other, but under grid each one that lands on an already-occupied column band gets bumped into a fresh column, so the leaks alone were adding ~1280px. Fixed by destroying the previous pair before creating the new one. The remaining +731 is genuine layout width from the two display labels and needs the row-splitting technique other overflowing GUIs above are waiting on.
 
 `NLP_welcome_main.py` reports +8656 but is a false positive: its content is `.place()`d, not gridded,
 so `reqwidth` is not meaningful there.

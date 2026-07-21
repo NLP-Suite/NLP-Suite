@@ -10,35 +10,27 @@ look, retiring the absolute-pixel layout that makes the current GUIs janky and p
 
 ## 0. Design premise: color is a signal, not styling
 
-**Current rule** (cut 3, set on pilot 2, 2026-07-18) — ⚠️ *needs Roberto's sign-off before it goes
-past pilot 2*:
+**Current rule** (cut 3, 2026-07-18) — ⚠️ *needs Roberto's sign-off before it goes past pilot 2*:
 
-- **Brand red `#b10a0a` = ENABLED.** Every interactive widget's default fill.
-- **Flat grey = DISABLED.** Applied automatically whenever `state='disabled'` is set.
+- **Brand red `#b10a0a` = ENABLED** (every interactive widget's default fill).
+- **Flat grey = DISABLED** (applied automatically whenever `state='disabled'` is set).
 
-Color is **information, not decoration** — fixed premise, though the encoding has moved twice.
-`nlp_suite_theme.json` plus `accent=`/`muted=` opt-ins in `GUI_theme_util` encode it.
+Color is **information, not decoration**. `nlp_suite_theme.json` plus `accent=`/`muted=` opt-ins in
+`GUI_theme_util` encode it.
 
-### 0.1 History and rationale
-
-Two reverted cuts: **cut 1** (solid red everywhere) read as noise and overwrote a load-bearing
-convention — a red *Open TIPS*/*videos*/*reminders* dropdown already signals the resource *exists*.
-**Cut 2** (neutral grey default, red only for RUN + availability dropdowns) was the mirror failure —
-every control filled mid-grey made the whole GUI read as disabled.
-
-Cut 3 keeps Roberto's availability cue (an empty dropdown greys out; a red one still means "a resource
-exists here" — the old convention becomes a special case of the general rule) but does **not** answer
-"the wall of red reads as noise" — RUN no longer stands out. A deliberate trade by Cora. Two one-liner
-fallbacks if Roberto prefers: flip the theme JSON fills back to neutral (cut 2), or to a light bordered
+Two earlier cuts were reverted: **cut 1** (solid red everywhere) read as noise and overwrote the
+load-bearing convention that a red *Open TIPS/videos/reminders* dropdown signals a resource *exists*;
+**cut 2** (neutral grey default, red only for RUN + availability dropdowns) made every GUI read as
+disabled. Cut 3 keeps Roberto's availability cue (empty dropdown greys out; red = "a resource exists")
+but does **not** solve "the wall of red reads as noise" — a deliberate trade by Cora. Two one-liner
+fallbacks if Roberto prefers: flip the theme JSON fills to neutral (cut 2), or to a light bordered
 surface (red border + text, solid red for RUN/signal only).
 
-### 0.2 What makes it work mechanically
-
-CTk does *not* repaint on `state='disabled'` — it swaps `text_color_disabled` and leaves the fill
-alone. `GUI_theme_util._StateFillMixin` closes the gap: it captures the enabled fill at construction and
-repaints on every state change (at construction or via later `configure(state=…)`), and restores a
-*call-site* color on re-enable. Call sites keep using plain `configure(state=…)` unchanged — which
-matters, since the suite toggles disabled state constantly (§5.4).
+**Mechanics:** CTk does *not* repaint on `state='disabled'` — it swaps `text_color_disabled` and leaves
+the fill alone. `GUI_theme_util._StateFillMixin` closes the gap: it captures the enabled fill at
+construction and repaints on every state change, restoring a *call-site* color on re-enable. Call sites
+keep using plain `configure(state=…)` unchanged — which matters, since the suite toggles disabled state
+constantly (§5.4).
 
 ---
 
@@ -70,13 +62,11 @@ Measured on `current-stable`, July 2026.
 5. GUIs launch each other as **separate processes** (`run_script_util.run_script`), so each owns its own
    root — no multi-window state.
 
-### 1.2 Why it looks janky
+**Why it looks janky:** nothing reflows on resize; long labels overlap entries; every Mac/Windows
+difference needs its own constant; default tk widgets look 1990s on Windows; the 40 px grid forces tall
+GUIs off-screen (the long-standing "scrollbar does not scroll" TODO). No dark mode, no HiDPI story.
 
-Nothing reflows on resize; long labels overlap entries; every Mac/Windows difference needs its own
-constant; default tk widgets look 1990s on Windows. The 40 px grid forces tall GUIs off-screen (the
-long-standing "scrollbar does not scroll" TODO, `GUI_util.py:66-80`). No dark mode, no HiDPI story.
-
-### 1.3 Packaging constraints (read before touching anything)
+### 1.2 Packaging constraints (read before touching anything)
 
 The suite ships as a PyInstaller bundle (`NLP_Suite.spec`) with a **portable python-build-standalone
 interpreter** in `python-env/` that **statically embeds Tcl/Tk**, so `PIL.ImageTk` **crashes**
@@ -87,8 +77,8 @@ interpreter** in `python-env/` that **statically embeds Tcl/Tk**, so `PIL.ImageT
 `Pillow` is pinned to `10.4.0` (12.x breaks the bundled Tcl/Tk 8.6). CTk is compatible; its only hard
 dep is `darkdetect`.
 
-> **Version note:** the suite pins **`customtkinter==6.0.0`** (not `5.2.x`). All wrapper work targets
-> the 6.0.0 API (e.g. `CTkLabel` has no `justify`; `CTkEntry` has neither `justify` nor `anchor`).
+> **Version note:** the suite pins **`customtkinter==6.0.0`** (not `5.2.x`). All wrapper work targets the
+> 6.0.0 API (e.g. `CTkLabel` has no `justify`; `CTkEntry` has neither `justify` nor `anchor`).
 > `GUI_theme_util.translate_kwargs` filters kwargs against each CTk class's real 6.0.0 signature.
 
 ---
@@ -97,24 +87,23 @@ dep is `darkdetect`.
 
 ### 2.1 Compatibility layer, not 50 rewrites
 
-With ~50 scripts and ~1,600 widget instantiations, hand-crafting CTk layouts is months of work and
-guarantees regressions. Instead:
+With ~50 scripts and ~1,600 widget instantiations, hand-crafting CTk layouts guarantees regressions.
+Instead:
 
-> **Keep the `placeWidget(...)` call signature and the row-counter idiom every GUI uses, but
-> reimplement it (and the widget constructors) inside the shared modules.** GUI scripts then need only
-> mechanical, greppable edits.
+> **Keep the `placeWidget(...)` call signature and the row-counter idiom every GUI uses, but reimplement
+> it (and the widget constructors) inside the shared modules.** GUI scripts then need only mechanical,
+> greppable edits.
 
-**`src/GUI_theme_util.py`** owns: (1) CTk setup — appearance mode, the theme (§0), widget-scaling;
-(2) factory wrappers so scripts stop calling `tk.Button(...)` directly (`create_button`,
+**`src/GUI_theme_util.py`** owns: (1) CTk setup — appearance mode, theme (§0), widget-scaling; (2)
+factory wrappers so scripts stop calling `tk.Button(...)` directly (`create_button`,
 `create_open_file_button`, `create_checkbox`, `create_label`, `create_entry`, `create_option_menu`,
 `create_combobox`, `create_slider`, `create_textbox`) — each accepts *old tk-style args* (char-based
-`width=`, etc.) and translates them; (3) a real `ToolTip` class (`<Enter>`/`<Leave>` binding) replacing
-`hover_over_widget`.
+`width=`, etc.) and translates them; (3) a real `ToolTip` class replacing `hover_over_widget`.
 
-Existing shared functions are rewritten in place: `GUI_util.window` → `customtkinter.CTk()` (same
-module-level singleton — changing the import-time side effect is out of scope); `placeWidget` keeps its
-signature but maps onto `grid()`; `GUI_top`/`GUI_bottom`/`place_help_button` rebuilt on the new layout.
-Because all 50 GUIs funnel through these, most visual change lands in two files.
+Shared functions are rewritten in place: `GUI_util.window` → `customtkinter.CTk()` (same module-level
+singleton); `placeWidget` keeps its signature but maps onto `grid()`; `GUI_top`/`GUI_bottom`/
+`place_help_button` rebuilt on the new layout. Because all 50 GUIs funnel through these, most visual
+change lands in two files.
 
 ### 2.2 Layout: absolute pixels → semantic grid
 
@@ -128,18 +117,16 @@ into columns.
 | 2 | `entry_box_x_coordinate` | entries, dropdowns, file paths |
 | 3–6 | per-GUI ad-hoc constants | trailing small buttons (`+`, `Reset`, `Show`, open-file) |
 
-`placeWidget` translation: `y_multiplier_integer` → `row=` (`sameY=True` → same row, next free column);
-`x_coordinate` → nearest semantic column via lookup (old constants keep working *unedited*);
-`y_step=40` → `pady` + natural height; `centerX=True` → `columnspan` + `sticky=''`. The body lives in a
-**`CTkScrollableFrame`**, finally fixing "GUI taller than the screen".
+`placeWidget` translation: `y_multiplier_integer` → `row=`; `sameY=True` → same row, next free column;
+`x_coordinate` → nearest semantic column via lookup (old constants keep working *unedited*); `y_step=40`
+→ `pady` + natural height; `centerX=True` → `columnspan` + `sticky=''`. The body lives in a
+**`CTkScrollableFrame`**, fixing "GUI taller than the screen".
 
 Two load-bearing grid helpers: **`_column_for(row, x)`** bumps a widget to the next free column if its
 band is taken (so two widgets never stack in one cell); **`apply_row_spans(window)`** lets each widget
 span to the next occupied column on its row (grid columns are shared by *all* rows, so one long label
-alone on a row inflated the columns dense rows also use — spanning restored pre-grid semantics, cutting
-`wordclouds_main` from 2183 px to 1496 px). Called once per GUI by `GUI_bottom`.
-
-Raw `.place()` calls bypassing the helper must be converted by hand — see Phase 4.
+alone on a row inflated the columns dense rows use — spanning restored pre-grid semantics). Called once
+per GUI by `GUI_bottom`. Raw `.place()` calls bypassing the helper must be converted by hand (Phase 4).
 
 ### 2.3 Deliberately NOT changed
 
@@ -147,7 +134,7 @@ Out of scope: the module-level `tk.Tk()`-at-import architecture and top-level sc
 `StringVar`/`IntVar` + `.trace('w', …)` pattern (CTk accepts the same `variable=`/`textvariable=`
 objects — optionally modernize `.trace('w')` → `.trace_add('write')` in files touched anyway, never as a
 standalone sweep); the subprocess-per-GUI launch model; any `run()` logic, config formats, or I/O
-behavior; `tk.Menu` menu bars (CTk cannot theme native menus — they stay stock).
+behavior; `tk.Menu` menu bars (CTk cannot theme native menus).
 
 ---
 
@@ -187,174 +174,84 @@ compat layer makes that possible, since CTk and tk widgets coexist under a `CTk`
 
 ### Phase 0 — Groundwork ✅
 
-Pin `customtkinter==6.0.0` in `requirements.txt` **only** (per-OS files install *in addition*); ship
-`nlp_suite_theme.json` under `src/` with an explicit PyInstaller datas entry; add
-`collect_data_files('customtkinter')` + `customtkinter`/`darkdetect` hiddenimports to the spec.
-
-> Bundle-risk work landed first (`19e490f2`, `24554889`: `tests/ctk_bundle_smoke.py` +
-> `src/ctk_bundle_util.py`); remaining groundwork folded into Phase 1 PR 1.
-> ⏳ **Windows bundle smoke run still pending** before Phase 0 is fully signed off (§5.1).
+Pin `customtkinter==6.0.0` in `requirements.txt` **only**; ship `nlp_suite_theme.json` under `src/` with
+an explicit PyInstaller datas entry; add `collect_data_files('customtkinter')` +
+`customtkinter`/`darkdetect` hiddenimports to the spec. Bundle-risk work (`tests/ctk_bundle_smoke.py` +
+`src/ctk_bundle_util.py`) landed first. ⏳ **Windows bundle smoke run still pending** (§5.1).
 
 ### Phase 1 — Shared framework ✅ (mostly)
 
 - **PR 1** (#1641) — `GUI_theme_util` compat layer + Phase 0 groundwork.
 - **Slice 2a** (#1645) — root → `CTk()`, shared-chrome factories, `GUI_top` intro widget; kept
-  `.place()`. Added `create_open_file_button` + a tightened logo column.
-- **Slice 2b** (#1648) — `placeWidget` → `grid()`; tooltips bind `ToolTip`. Cleared front-door reflow
-  artifacts and the `IO_config_setup_brief()` duplicate-INPUT-box overflow.
-- **Slice 3** (`ctk/phase1-popups`) — 4 of 5 popups → `CTkToplevel`: `slider_widget` (integer steps,
-  returns `int`), `dropdown_menu_widget`/`2`, `enter_value_widget` (was a second bare `tk.Tk()` +
-  `mainloop()`; now parented to `GUI_util.window` + `wait_window()`).
-- **Accent-signal slice** — implemented cut 2, since superseded by cut 3 (§0.1); its `accent=`/`muted=`
+  `.place()`. Added `create_open_file_button`.
+- **Slice 2b** (#1648) — `placeWidget` → `grid()`; tooltips bind `ToolTip`.
+- **Slice 3** (`ctk/phase1-popups`) — 4 of 5 popups → `CTkToplevel`: `slider_widget` (integer steps),
+  `dropdown_menu_widget`/`2`, `enter_value_widget` (was a second bare `tk.Tk()` + `mainloop()`; now
+  parented + `wait_window()`).
+- **Accent-signal slice** — implemented cut 2, since superseded by cut 3 (§0); its `accent=`/`muted=`
   opt-ins remain in use.
 
 > **Deferred to Phase 4** (both carry in-code markers): `message_box_widget` (buttons/countdown labels
-> `.place()`d at offsets from the packed `tk.Message`'s height, fires every RUN — needs on-screen QA);
-> `combobox_with_search_widget` (unfinished, its only call site commented out).
-> **Deferred, not blockers:** window geometry still tuned to the old layout (`set_window` sizing); dead
-> `hover_over_widget` machinery awaits Phase 5; per-GUI Mac+Windows / light+dark QA outstanding.
+> `.place()`d at offsets, fires every RUN — needs on-screen QA); `combobox_with_search_widget`
+> (unfinished, only call site commented out).
+> **Deferred, not blockers:** window geometry still tuned to the old layout; dead `hover_over_widget`
+> machinery awaits Phase 5; per-GUI Mac+Windows / light+dark QA outstanding.
 
-### Phase 2 — Pilot GUIs ✅ (complete 2026-07-18)
+### Phase 2 — Pilot GUIs ✅ (2026-07-18)
 
 Three pilots proved the recipe: **`wordclouds_main`** (checkbox label-tracing, dynamic OptionMenu,
-disabled-state toggling, tkcolorpicker, Combobox), **`NLP_menu_main`** (front door; the logo path, the
-suite's only `ttk.Notebook`), **`NLP_setup_IO_main`** (config plumbing).
+disabled-state toggling, tkcolorpicker, Combobox), **`NLP_menu_main`** (front door; logo path, the
+suite's only `ttk.Notebook`), **`NLP_setup_IO_main`** (config plumbing). **Every durable finding is now
+a §6 checklist item.** Two findings worth keeping:
 
-**Every durable finding is now a §6 checklist item.** Two findings worth keeping here:
-
-1. **`tests/gui_smoke.py` stubbed `customtkinter` as a blanket `MagicMock`**, which answered every call
-   and absorbed *all three* idiom bugs silently — wordclouds passed a smoke run while broken, recording
-   0 widgets. Replaced with a hand-written stub reproducing the real contracts, pinned against real CTk
-   in `tests/test_gui_theme_util.py`. **Prerequisite for trusting Phase 3.**
+1. **`tests/gui_smoke.py` had stubbed `customtkinter` as a blanket `MagicMock`**, which absorbed all
+   three idiom bugs silently (wordclouds passed while broken, 0 widgets). Replaced with a hand-written
+   stub reproducing the real contracts, pinned against real CTk in `tests/test_gui_theme_util.py`.
 2. **Verify config-touching GUIs by equivalence, not by eye.** Pilot 3 drove the
    `get_IO_options_list`/`get_IO_options_str` round-trip across all checkbox states, byte-identical.
-   **Reuse for the remaining `NLP_setup_*` GUIs.**
+   Reuse for the remaining `NLP_setup_*` GUIs.
 
-One deliberate change: `NLP_setup_IO_main`'s `activate_fields()` (call was commented out) now runs once
-after build (`warn=False`) — under §0 the un-synced date widgets were lying about what is clickable.
+`NLP_setup_IO_main`'s `activate_fields()` now runs once after build (`warn=False`). **Outstanding:
+Windows QA, and Roberto's call on §0.**
 
-**Outstanding: Windows QA, and Roberto's call on §0.**
+### Phase 3 — Batch conversion ✅ (complete except deferrals)
 
-### Phase 3 — Batch conversion (~6–8 PRs, 5–8 GUIs each)
-
-Per-file recipe: swap `tk.X(` → `GUI_theme_util.create_x(`; convert `["menu"]` → `set_values(...)`;
-delete `ttk.Style`/`theme_use`; run the GUI and walk §6; screenshot before/after.
-
-Tranches: file tools ✅; CoNLL tools ✅; sentiment/annotator/semantic ✅; GIS tools ✅; DB/SQL + PCACE ✅;
-statistical/visualization ✅ (partial — `charts_Excel_main.py` deferred); remaining setup GUIs. Plus
-**`NLP_welcome_main`** ✅ (belongs to no tranche).
+Per-file recipe: swap `tk.X(` → `create_x(`; convert `["menu"]` → `set_values(...)`; delete
+`ttk.Style`/`theme_use`; run the GUI and walk §6; screenshot before/after.
 
 Every completed tranche was verified per §6: `pytest` + `gui_smoke.py` clean, files launched on macOS.
-**Windows QA outstanding on every tranche.** New shared-layer gaps found along the way (each now a §6
-item) are the value; already-catalogued idioms in each tranche are not re-listed here.
+**Windows QA outstanding on every tranche.** Already-catalogued idioms are not re-listed; only new
+shared-layer gaps (each now a §6 item) and still-open items appear below.
 
-**✅ `NLP_welcome_main`** (`ctk/welcome-gui`) — the only GUI with a hand-written `grid()` layout (no
-`GUI_top`/`GUI_bottom`) and the last all-raw-tk GUI. ~9 constructors → factories. Three generalizable
-findings, now §6 items: (1) a **pixel budget passed to a char-based `width`** (`get_GUI_width(1)` =
-1250 px handed to a chars kwarg → ~10,000 px label) — new `create_label(..., width_is_chars=False)`;
-(2) **overlapping/phantom `columnspan`s** overflowing the grid (a hand-gridded-GUI check for Phase 4);
-(3) **`tk.Canvas` needs painting by hand** — CTk has no canvas, so screenshot panels stay `tk.Canvas`
-(sanctioned like `Listbox`) but `normalize_legacy_backgrounds` skips it — set
-`background=GUI_theme_util.window_bg()` + `highlightthickness=0` at construction. Also retired the last
-per-platform tooltip x/y blocks and hand-swapped hover colors (`CTkButton` has `hover_color`; `ToolTip`
-hides on `<ButtonPress>`). In `gui_smoke` `KNOWN_SKIP` — verified by launching.
-
-**✅ File tools** (`ctk/phase3-file-tools` + `-2`) — all 11 file GUIs. ~116 constructors → factories, 22
-OptionMenus. One new shared-layer gap + two pre-existing bugs: (1) **`.configure(width=N)` after
-construction bypasses the factory** (CTk reads N as pixels; a `width=2` dropdown → 2 px). New
-`set_char_width()` + §6 item; 11 sites. (2) `file_classifier_main.run()` referenced an unset
-`startTime` — **every RUN a `NameError`**, found only because §6 demands a real RUN. (3)
-`file_classifier`'s similarity-index dropdown listed `0.45`/`0.5` twice. `file_checker_pre_processing_pipeline`
-in `KNOWN_SKIP`.
-
-**✅ CoNLL tools** (`ctk/phase3-conll-tools`) — `parsers_annotators`, `CoNLL_table_analyzer`, `NER`,
-`coreference`, `sentence_analysis`, `syntactic_analysis_ALL`, `nominalization`, `SVO`. ~113
-constructors → factories, 6 OptionMenus, 4 Comboboxes. No new bug classes. `CoNLL_table_analyzer_main.py`
-had **all three known silent idioms at once** — the worked example. `parsers_annotators_main.py` has a
-`try: lb.config(...) except NameError: lb = tk.Label(...)` lazy-init, preserved in factory form.
-
-**✅ Sentiment / annotator / semantic** (`ctk/phase3-sentiment-annotator`) — `sentiment_analysis`,
-`sentiments_emotions_ALL`, `shape_of_stories`, `html_annotator`, `html_annotator_gender`,
-`semantic_analysis`, `semantic_aggregation`. ~107 constructors → factories, 12 OptionMenus, 1 Combobox,
-4 sliders. `semantic_aggregation_main.py` had **four** silent idioms at once — the worked example. Two
-new gaps, now §6 items: (1) **`tk.Scale.get()` → `int` but `CTkSlider.get()` → `float`** — breaks only
-at RUN (CoreNLP's `-mx6.0g`). New `create_slider(..., integer=True)`; 4 sites. (2) **a vestigial
-`.pack()` next to a `tk.Scale` is a hard `TclError`** now `placeWidget` grids — `shape_of_stories` and
-`semantic_analysis` could not open. Dropped. **`gui_smoke` blindness #3 (fixed here):** a mid-import
-`sys.exit(0)` was reported `SMOKE_OK`; now its own `UNCOV` status, which exposed **11 GUIs with zero
-smoke coverage** in a bare env — they **must be verified by launching**.
-
-**✅ GIS tools** (`ctk/phase3-gis-tools`) — `GIS_main`, `GIS_distance_main`, `GIS_symbolic_main`,
-`GIS_Google_Earth_main`. ~137 constructors → factories (46 in `GIS_Google_Earth_main`), 5 dynamic
-`["menu"]` blocks → `set_values`, 1 Combobox (`GIS_main`'s `country_bias`, carrying both `textvariable=`
-*and* `['values']=` idioms), 3 `create_open_file_button`. Findings (all known idiom *classes*):
-(1) a `run()`-breaking `UnboundLocalError` in `GIS_Google_Earth_main.py` (`bold_var_list =
-italic_var_list` then `italic_var_list = bold_var_list`) — Pyright's `reportUnboundVariable` caught it;
-(2) a vestigial `.pack()` next to a gridded widget (`:527`); (3) four dead
-`if x != v: OptionMenu(*x) else OptionMenu(x)` blocks collapsed to one `create_option_menu`. Live §5.1
-instance flagged: `GIS_Google_Earth_main.py`'s `ImageTk.PhotoImage` icon preview (untouched, for the
-bundle pass). `GIS_Google_Earth_main.py` overflows **+388px** (see `docs/ctk_GUI_overflow_status.md`);
-`GIS_main.py` needs a full Anaconda env to launch (**user verifying**).
-
-**✅ DB/SQL + PCACE** (2026-07-20, `ctk/phase3-db-pcace`) — `DB_SQL_main.py`,
-`DB_PCACE_data_validation_main.py`, `DB_PCACE_data_analysis_main.py` (the tranche's three biggest files,
-1663/1401/1915 lines). ~119 constructors → factories, 8 OptionMenus, 17 Comboboxes, 1 `tk.Text` →
-`create_textbox` (its first use in the suite), 1 `tk.Toplevel` → `CTkToplevel` (the Merge dialog). Two
-new shared-layer gaps, both fixed in `GUI_theme_util`:
-
-1. **`create_textbox` silently dropped `state=`.** `CTkTextbox.__init__` forwards native `tk.Text`
-   attrs (`state`, `wrap`, `undo`, …) via a `**kwargs` catch-all, so `translate_kwargs`' signature
-   filter dropped `state='disabled'` (`SQL_query_entry` would open editable). Caught by reading
-   `CTkTextbox.__init__`, not by a RUN. Fixed by pulling `CTkTextbox._valid_tk_text_attributes` out
-   before the filter; the `gui_smoke` stub needed the same class attr. New `TestCreateTextboxState`.
-2. **`CTkComboBox` has no `<<ComboboxSelected>>` virtual event.** Both PCACE files bound it (mostly to
-   return focus) — a permanent no-op post-conversion. Fixed by moving each handler to `command=` at
-   construction (the bound `variable=`'s `.trace` still fires normally).
-
-Three known idioms in new shapes: a `.place()` on a gridded widget in `DB_SQL_main.py`'s
-`_align_widgets_to_close` (was *already* silently teleporting all three widgets to (0,0) under stock tk;
-CTk raises `ValueError` for `.place(width=…)` — removed, no working layout to preserve); more dead
-if/else `OptionMenu` branches (`table_menu_values`/`table_fields_menu_values`, always `[]` at
-construction); a `ttk.Style()` hover hack + manual `.config(background=…)` hover recolors (3 sites,
-dropped — CTk's `hover_color` covers it). Also cleared the 10 unlabeled-checkbox sites and 2 empty
-open-file buttons flagged in `docs/ctk_empty_button_status.md`.
-
-> Overflow after conversion: `DB_PCACE_data_validation_main.py` **0** (was +59);
-> `DB_PCACE_data_analysis_main.py` +297 (was +301); `DB_SQL_main.py` **+167, worse than its +139** — the
-> char→px translation nets wider here; still needs the row-splitting technique other tranches used
-> (`docs/ctk_GUI_overflow_status.md`). All three verified by headless real-Tk construction +
-> enable/disable choreography, combobox `command=` callbacks, `set_values()` repopulation, ESC reset,
-> the Merge dialog. `DB_PCACE_data_validation_main.py` is `UNCOV` (module-level `Stanza_util` import
-> exits without a model cache). **Windows QA outstanding.**
-
-**✅ Statistical/visualization** (2026-07-21, `ctk/phase3-stats-viz`) — `topic_modeling_main.py`,
-`statistics_txt_main.py`, `style_analysis_main.py`, `word2vec_main.py`, `corpus_profiler_main.py`,
-`NGrams_CoOccurrences_main.py`. ~120 constructors → factories, 15 static-value OptionMenus. No new
-shared-layer gaps; known idiom classes recurred (post-construction `.configure(width=…)` on 4 entries,
-numeric `tk.OptionMenu` choices stringified, 2 empty open-file buttons cleared — `docs/
-ctk_empty_button_status.md` updated). One pre-existing bug fixed: `NGrams_CoOccurrences_main.py`'s `+K`
-entry was bound to an x-coordinate expression instead of `plus_K_words_var`, so RUN always silently read
-`0`. `charts_Excel_main.py` **deferred** — classic-Mac CR-only line endings need normalizing first.
-`pytest` + `gui_smoke.py` clean; `style_analysis_main.py` (`UNCOV` under stubs) verified by a headless
-real-Tk launch instead. All six fit with room to spare. **Windows QA outstanding.**
+| Tranche (branch) | Scope | New shared-layer gap → §6 item | Still open |
+|---|---|---|---|
+| **`NLP_welcome_main`** (`ctk/welcome-gui`) | only hand-`grid()`ed GUI, last all-raw-tk | (1) pixel budget → char `width=` (`create_label(width_is_chars=False)`); (2) overlapping/phantom `columnspan`s; (3) `tk.Canvas` needs hand-painting (`background=window_bg()`, `highlightthickness=0`) | `KNOWN_SKIP` — verify by launching |
+| **File tools** (`ctk/phase3-file-tools[-2]`) | 11 GUIs, ~116 ctors, 22 OptionMenus | `.configure(width=N)` post-construction bypasses factory → `set_char_width()` | `file_checker_pre_processing_pipeline` in `KNOWN_SKIP`. Fixed: `file_classifier.run()` unset `startTime` NameError every RUN |
+| **CoNLL tools** (`ctk/phase3-conll-tools`) | `parsers_annotators`, `CoNLL_table_analyzer`, `NER`, `coreference`, `sentence_analysis`, `syntactic_analysis_ALL`, `nominalization`, `SVO`; ~113 ctors | none | `CoNLL_table_analyzer_main` had all three silent idioms at once (worked example) |
+| **Sentiment/annotator/semantic** (`ctk/phase3-sentiment-annotator`) | `sentiment_analysis`, `sentiments_emotions_ALL`, `shape_of_stories`, `html_annotator[_gender]`, `semantic_analysis`, `semantic_aggregation`; ~107 ctors | `tk.Scale.get()`→int but `CTkSlider.get()`→float (breaks at RUN, CoreNLP `-mx6.0g`) → `create_slider(integer=True)` | `gui_smoke` blindness #3 fixed: mid-import `sys.exit(0)` was `SMOKE_OK`, now `UNCOV` — exposed 11 GUIs with zero smoke coverage. `semantic_aggregation_main` had four silent idioms at once |
+| **GIS tools** (`ctk/phase3-gis-tools`) | `GIS_main`, `GIS_distance`, `GIS_symbolic`, `GIS_Google_Earth`; ~137 ctors (46 in Google_Earth) | none | `GIS_Google_Earth_main` overflows +388px (`docs/ctk_GUI_overflow_status.md`) + live §5.1 `ImageTk` icon preview (untouched, for bundle pass); `GIS_main` needs full Anaconda env to launch (**user verifying**). Fixed: `run()`-breaking `UnboundLocalError` in Google_Earth |
+| **DB/SQL + PCACE** (`ctk/phase3-db-pcace`) | `DB_SQL_main`, `DB_PCACE_data_validation`, `DB_PCACE_data_analysis` (1663/1401/1915 lines); ~119 ctors, 17 Comboboxes, first `create_textbox`/`CTkToplevel` uses | (1) `create_textbox` silently dropped `state=` (CTkTextbox `**kwargs` catch-all) → pull `_valid_tk_text_attributes` out before filter; (2) `CTkComboBox` has no `<<ComboboxSelected>>` → move handler to `command=` | Overflow: validation **0** (was +59); analysis +297; **`DB_SQL_main` +167, worse than its +139** → Phase 4 row-splitting. `DB_PCACE_data_validation` `UNCOV` |
+| **Statistical/visualization** (`ctk/phase3-stats-viz`) | `topic_modeling`, `statistics_txt`, `style_analysis`, `word2vec`, `corpus_profiler`, `NGrams_CoOccurrences`; ~120 ctors, 15 OptionMenus | none | **`charts_Excel_main` deferred** (classic-Mac CR-only line endings need normalizing first). Fixed: `NGrams_CoOccurrences` `+K` entry bound to an x-coord expr, RUN always read `0`. `style_analysis` `UNCOV` |
+| **Remaining setup GUIs** (`ctk/phase3-setup-gui`) | `NLP_setup_external_software`, `NLP_setup_package_language` (IO done in Phase 2); 37 ctors, 3 sliders | none | Overflow: external_software **0**; **`NLP_setup_package_language` +731** (two disabled wide "display value" labels the Entry-only shrink pass skips) → Phase 4 row-splitting. Both `UNCOV`. Fixed in package_language: vestigial `.pack()` next to each of 3 `tk.Scale`s (GUI couldn't open); `changed_NLP_package_set_parsers()` recreated labels without destroying predecessors (per-leftover +640px column); `parsers_display_area['text']` read → `.cget('text')`; two `['values'] = …` writes → `set_values` |
 
 ### Phase 4 — Hard cases (1 PR each)
 
-- **`data_visualization_main.py`** — 140 raw `.place()` calls; needs a genuine re-layout.
-- **`narrative_analysis_ALL_main.py`**, **`DB_SQL_main.py`** (row-splitting for its +167 overflow),
-  **`license_GUI.py`** — a few each.
+- **`data_visualization_main.py`** — 140 raw `.place()` calls; genuine re-layout.
+- **Row-splitting** for the overflow backlog: `DB_SQL_main` (+167), `NLP_setup_package_language` (+731),
+  `DB_PCACE_data_analysis` (+297), `GIS_Google_Earth` (+388) — see `docs/ctk_GUI_overflow_status.md`.
+- **`narrative_analysis_ALL_main.py`**, **`license_GUI.py`** — a few `.place()` each.
+- **`charts_Excel_main.py`** — normalize CR-only line endings, then convert.
 - `message_box_widget` countdown timers, `combobox_with_search_widget`, any Listbox sites.
 
 ### Phase 5 — Cleanup and polish (1–2 PRs)
 
-Delete the dead x-coordinate constant blocks from `GUI_IO_util.py` (both platform branches, several
-hundred lines) and the ignored tooltip-coordinate params from `placeWidget` + all call sites
-(mechanical, once nothing reads them). Add an appearance-mode toggle in the Setup GUI persisted via
-`config_util`. Refresh `docs/` and wiki screenshots. Final packaging pass: rebuild installers on Mac +
-Windows, full bundle QA.
+Delete the dead x-coordinate constant blocks from `GUI_IO_util.py` (both platform branches) and the
+ignored tooltip-coordinate params from `placeWidget` + all call sites (mechanical, once nothing reads
+them). Add an appearance-mode toggle in the Setup GUI persisted via `config_util`. Refresh `docs/` and
+wiki screenshots. Final packaging pass: rebuild installers on Mac + Windows, full bundle QA.
 
-> **Build-pipeline note:** `.github/workflows/build-installers.yml` checks out `ref: roberto`, so Phase
-> 0 and Phase 5 spec/requirements changes must also reach `roberto` to affect installer builds.
+> **Build-pipeline note:** `.github/workflows/build-installers.yml` checks out `ref: roberto`, so Phase 0
+> and Phase 5 spec/requirements changes must also reach `roberto` to affect installer builds.
 
 ---
 
@@ -362,17 +259,17 @@ Windows, full bundle QA.
 
 ### 5.1 ⚠️ `CTkImage` vs. the bundled portable Python (highest risk)
 
-`CTkImage` goes through `PIL.ImageTk`, which **crashes** under the shipped interpreter (§1.3). CTk's
+`CTkImage` goes through `PIL.ImageTk`, which **crashes** under the shipped interpreter (§1.2). CTk's
 *widgets* don't need ImageTk (they draw with the canvas), but any code path handing CTk a `CTkImage`
 dies in the bundle while working in a dev venv.
 
-**Phase 0 result (2026-07-15, macOS aarch64, cpython-3.10.15):** `tests/ctk_bundle_smoke.py` confirms
-CTk core is fine but raw `CTkImage` fails as predicted (`TypeError: bad argument type…`). **Fix landed:**
-`ctk_bundle_util.patch_ctk_image_for_bundle()` monkeypatches the two `CTkImage` methods that touch
-ImageTk to use the base64-PNG path — smoke green on Mac. ⏳ **Still pending: the Windows run.**
+**Phase 0 result (2026-07-15, macOS aarch64):** `tests/ctk_bundle_smoke.py` confirms CTk core is fine
+but raw `CTkImage` fails as predicted. **Fix landed:** `ctk_bundle_util.patch_ctk_image_for_bundle()`
+monkeypatches the two `CTkImage` methods that touch ImageTk to use the base64-PNG path — smoke green on
+Mac. ⏳ **Windows run still pending.**
 
 - Call `patch_ctk_image_for_bundle()` **once at startup, before any `CTkImage`**. Idempotent; raises
-  loudly if a CTk upgrade moves the patched methods. Supersedes the earlier "never use `CTkImage`" rule.
+  loudly if a CTk upgrade moves the patched methods.
 - If the bundle smoke test ever fails for CTk itself, fall back to plain tk in the bundle (runtime
   feature flag in `GUI_theme_util`: factories return tk widgets when CTk can't initialize).
 
@@ -392,7 +289,7 @@ suite's main in-app documentation.
 ### 5.4 Disabled-state churn
 
 GUIs toggle `state='disabled'/'normal'` constantly. CTk supports `configure(state=…)` on all mapped
-widgets, but *visual* feedback depends on `_StateFillMixin` (§0.2) — verify each GUI's enable/disable
+widgets, but *visual* feedback depends on `_StateFillMixin` (§0) — verify each GUI's enable/disable
 choreography by eye, including its startup sync.
 
 ### 5.5 Window geometry
@@ -408,7 +305,7 @@ both**, because today's per-platform constants sometimes hide real behavioral di
 
 ### 5.7 Version pins
 
-`customtkinter==6.0.0` in `requirements.txt` only (§1.3, Phase 0). Its deps must stay compatible with
+`customtkinter==6.0.0` in `requirements.txt` only (§1.2, Phase 0). Its deps must stay compatible with
 `Pillow==10.4.0`; they are, since CTk does not require Pillow ≥ 11.
 
 ---
@@ -489,8 +386,7 @@ For each `*_main.py` PR. **The starred items are silent failures — no exceptio
 | 4 — hard cases | 1 week | `data_visualization_main.py` dominates. |
 | 5 — cleanup/polish | 3–4 days | Mostly deletion + screenshots + installer rebuild. |
 
-Total: roughly **6–8 calendar weeks** for one person, less wall-clock if Phase 3 tranches are farmed out
-— the compat layer's whole design is to make Phase 3 safe for contributors who don't know the internals.
+Total: roughly **6–8 calendar weeks** for one person, less wall-clock if Phase 3 tranches are farmed out.
 
 ---
 
