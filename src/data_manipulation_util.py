@@ -5,11 +5,65 @@ import IO_libraries_util
 if IO_libraries_util.install_all_Python_packages(GUI_util.window,"data_manipulation_util.py", ['os', 'tkinter', 'pandas', 'functools'])==False:
     sys.exit(0)
 
+import csv
 import pandas as pd
 import tkinter.messagebox as mb
 import os.path
 
 import IO_files_util
+
+def distinct_values(csv_path, column, limit=500):
+    """The distinct values of ONE column, sorted, as strings -- for offering in a pick-list.
+
+    The WHERE clause required the user to TYPE the value to test against, case-sensitively, so you had
+    to know already what the column held and a single typo silently matched nothing. Reading the values
+    lets the GUI offer them instead.
+
+    Returns [] rather than raising on every failure -- no file, no such column, unreadable csv -- because
+    this only fills a convenience list: a file that cannot be read here must still be typed against by
+    hand, not bring the GUI down.
+
+    Numeric-looking values sort numerically, so a Year column reads 1892, 1893, ... and not 1892, 18930,
+    19. *limit* caps the list, since a free-text column can hold tens of thousands of distinct values
+    that no dropdown can usefully show.
+    """
+    if not csv_path or not column or not os.path.isfile(csv_path):
+        return []
+
+    # the stdlib csv module rather than pandas: only one column is wanted, the file is streamed instead
+    # of loaded whole, and it sidesteps encoding_errors, which needs pandas >= 1.3 while this environment
+    # runs 1.2.4. It also keeps the helper testable, since the test suite stubs pandas out.
+    values = set()
+    try:
+        with open(csv_path, 'r', encoding='utf-8', errors='ignore', newline='') as fin:
+            reader = csv.reader(fin)
+            try:
+                headers = next(reader)
+            except StopIteration:
+                return []                      # empty file
+            if column not in headers:
+                return []
+            idx = headers.index(column)
+            for row in reader:
+                if idx < len(row):             # short rows are skipped, not fatal
+                    text = row[idx].strip()
+                    if text:
+                        values.add(text)
+                        if len(values) > limit * 4:
+                            break              # stop reading a huge free-text column early
+    except Exception:
+        return []
+
+    def sort_key(text):
+        # the raw text is the final tiebreaker: without it 'COBB' and 'Cobb' share a key, and since the
+        # values come out of a set their order would vary from run to run
+        try:
+            return (0, float(text), '', text)
+        except ValueError:
+            return (1, 0.0, text.lower(), text)
+
+    return sorted(values, key=sort_key)[:limit]
+
 
 def listToString(s, sep):
     str1 = ""

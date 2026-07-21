@@ -7,6 +7,7 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window,"data_manipulat
 
 import os
 import tkinter as tk
+from tkinter import ttk
 from subprocess import call
 import tkinter.messagebox as mb
 
@@ -751,13 +752,30 @@ if __name__ == '__main__':
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                    where_lb, True)
 
-    where_entry = tk.Entry(window, width=30, textvariable=where_entry_var)
+    # A Combobox rather than an Entry: it occupies the same slot and is still free to type into, but it
+    # can also DROP DOWN the values actually present in the selected field. Typing the value blind, case
+    # sensitively, meant a user had to know the column's contents by heart, and a single typo matched
+    # nothing at all while looking like a legitimate result.
+    where_entry = ttk.Combobox(window, width=27, textvariable=where_entry_var, values=[])
     where_entry.configure(state="disabled")
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate + 100, y_multiplier_integer,
                                                    where_entry,
                                                    True, False, False, False, 90,
                                                    GUI_IO_util.labels_x_indented_coordinate,
-                                                   "Enter the value to test the selected field against in the WHERE clause (CASE SENSITIVE).\n\nExample: to keep only the rows where Year >= 1997, select the >= comparator and enter 1997 here.\n\nAvailable for the DROP and EXTRACT operations only; the box is disabled until you select a comparator.")
+                                                   "Enter the value to test the selected field against in the WHERE clause (CASE SENSITIVE), or click the arrow to pick from the values found in that field.\n\nExample: to keep only the rows where Year >= 1997, select the >= comparator and enter 1997 here.\n\nThe list shows the distinct values of the field selected above, so you do not have to remember how they are spelled or capitalised. Long lists are cut at 500 values; you can always type a value that is not shown.\n\nAvailable for the DROP and EXTRACT operations only; the box is disabled until you select a comparator.")
+
+    def _refresh_where_values(*args):
+        """Fill the WHERE dropdown with the distinct values of the currently selected field."""
+        try:
+            values = data_manipulation_util.distinct_values(selectedCsvFile_var.get(),
+                                                            select_csv_field_var.get())
+        except Exception:
+            values = []   # a convenience list must never stop the user typing a value by hand
+        where_entry.configure(values=values)
+
+    # refresh when either the field or the csv file changes; both determine what the values are
+    select_csv_field_var.trace('w', _refresh_where_values)
+    selectedCsvFile_var.trace('w', _refresh_where_values)
 
     comp_menu_values=['<>', '=', '>', '>=', '<', '<=']
     comparator_menu = tk.OptionMenu(window, comparator_var, *comp_menu_values) #, command=lambda:extractSelection()
