@@ -39,7 +39,8 @@ from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
 import csv
 import subprocess
 import time
-from fuzzywuzzy import fuzz, process
+from fuzzywuzzy import process
+import string_similarity_util
 import stanza
 
 import file_cleaner_util
@@ -272,17 +273,18 @@ def check_for_typo_sub_dir(inputDir, outputDir, inputCsvDictionaryFile, openOutp
 
 # -------------------Angel-----------------End of fuzzywuzzy
 
-def fuzzywuzzy_check_dist(input_word, checklist, similarity_value): #similarity_value will be on a scale 1-100
-    exist_typo = False
-    for word in checklist:
-        # TODO see also pyslpellchecker https://pypi.org/project/pyspellchecker/ which is based on
-        #   Peter Norvig’s blog post on setting up a simple spell checking algorithm based on Levenshtein's edit distance
-        # It uses a Levenshtein Distance
-        dist = fuzz.ratio(input_word, word[0])
-        if dist>= similarity_value and dist<100:#cannot be 100 as that means matching a typo with another typo
-                exist_typo = True
-                return exist_typo, word[0], word[1]
-    return exist_typo, '', ''
+def check_word_similarity(input_word, checklist, similarity_value): #similarity_value will be on a scale 1-100
+    # TODO see also pyslpellchecker https://pypi.org/project/pyspellchecker/ which is based on
+    #   Peter Norvig’s blog post on setting up a simple spell checking algorithm based on Levenshtein's edit distance
+    # Similarity is a true Levenshtein edit distance computed in string_similarity_util. It used to be
+    # fuzzywuzzy's fuzz.ratio, which silently degraded to difflib's Ratcliff/Obershelp matcher whenever the
+    # optional python-Levenshtein C library was absent -- so the score depended on the installation, and the
+    # comparison was case-sensitive ('COBB' vs 'Cobb' scored 25, and the same name was read as two).
+    match = string_similarity_util.best_match(input_word, checklist, similarity_value)
+    if match is None:
+        return False, '', ''
+    matched_word, matched_frequency, score, edit_distance = match
+    return True, matched_word, matched_frequency
 
 # -------------------Angel-----------------End of fuzzywuzzy
 
@@ -561,8 +563,8 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
         #                 if respelled_word != word:
         #                     header_rows = [[word, respelled_word, sentence_number + 1, document_number + 1, sentence, document[1],
         #                                     IO_csv_util.dressFilenameForCSVHyperlink(document[2]), '']]
-        #                     # value_tuple = fuzzywuzzy_check_dist(word, checker_against, similarity_value)  # Angel
-        #                     # value_tuple = fuzzywuzzy_check_dist(word, header_rows, similarity_value)  # Angel
+        #                     # value_tuple = check_word_similarity(word, checker_against, similarity_value)  # Angel
+        #                     # value_tuple = check_word_similarity(word, header_rows, similarity_value)  # Angel
         #                     # if value_tuple[0]:  # a close match been found
         #                     #     header_row.append(value_tuple[1])  # returned similar word from check_edit_list
         #                     #     header_row.append(
@@ -684,7 +686,7 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
                 if respelled_word!=word:
                     # should check edit distance only if the word is misspelled
                     #value_tuple = check_edit_dist(word, checker_against, similarity_value)
-                    value_tuple = fuzzywuzzy_check_dist(word,checker_against,similarity_value) #Angel
+                    value_tuple = check_word_similarity(word,checker_against,similarity_value) #Angel
                 #else:
                 #    value_tuple=[False, '', '']
                     if value_tuple[0]:  # a close match been found
@@ -697,7 +699,7 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
                     #header_row.append('')
                     #header_row.append('')
                 if spell_status in ["Potential typo", "Potential new spell"]:
-                    value_tuple = fuzzywuzzy_check_dist(word, checker_against, similarity_value)
+                    value_tuple = check_word_similarity(word, checker_against, similarity_value)
                     if value_tuple[0]:  # a close match been found
                         header_row.append(value_tuple[1:])  # returned similar word from check_edit_list
                         # header_row.append(value_tuple[2])  # returned similar word frequency from check_edit_list
@@ -728,7 +730,7 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
                     if header_row[-1] == each_ner:
                         checker_against = ner_dict.get(each_ner)
                         #value_tuple = check_edit_dist(word[0], checker_against, similarity_value)
-                        value_tuple = fuzzywuzzy_check_dist(word[0], checker_against, similarity_value) #Angel
+                        value_tuple = check_word_similarity(word[0], checker_against, similarity_value) #Angel
                         if value_tuple[0]:
                             header_row.append(value_tuple[1])  # returned similar word from check_edit_list
                             header_row.append(value_tuple[2])  # returned similar word frequency from check_edit_list
