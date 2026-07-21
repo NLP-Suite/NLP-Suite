@@ -370,7 +370,7 @@ TIPS_lookup = {"Lemmas & stopwords":"TIPS_NLP_NLP Basic language.pdf",
                'Statistical measures': 'TIPS_NLP_Statistical measures.pdf',
                'Stopwords':'TIPS_NLP_Stopwords.pdf'}
 
-TIPS_options = 'Lemmas & stopwords', 'Word embeddings with BERT', 'Word Sense Induction (via BERT & K-means)', 'Word Sense Disambiguation (WSD) (via CoNLL & WordNet)', 'Word2Vec with Gensim', 'csv files - Problems & solutions', 'Statistical measures','Stopwords'
+TIPS_options = 'Lemmas & stopwords', 'Word embeddings with BERT', 'Word Sense Induction (WSI) (via BERT & K-means)', 'Word Sense Disambiguation (WSD) (via CoNLL & WordNet)', 'Word2Vec with Gensim', 'csv files - Problems & solutions', 'Statistical measures','Stopwords'
 
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     if not IO_setup_display_brief:

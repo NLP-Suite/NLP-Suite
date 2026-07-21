@@ -1012,7 +1012,6 @@ TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                "Geocoding": "TIPS_NLP_GIS_Geocoding.pdf",
                "Geocoding: How to Improve Nominatim":"TIPS_NLP_GIS_Geocoding Nominatim.pdf",
                "Google Earth Pro": "TIPS_NLP_GIS_Google Earth Pro.pdf",
-               "Google Earth Pro KML Options": "TIPS_NLP_GIS_Google Earth Pro KML options.pdf",
                "HTML": "TIPS_NLP_GIS_Google Earth Pro HTML.pdf",
                "Google Earth Pro Icon": "TIPS_NLP_GIS_Google Earth Pro Icon.pdf",
                "Google Earth Pro Description": "TIPS_NLP_GIS_Google Earth Pro Description.pdf"}
