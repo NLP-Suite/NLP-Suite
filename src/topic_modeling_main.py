@@ -307,8 +307,9 @@ if current_process().name == 'MainProcess':
                    'Topic modeling and corpus size': 'TIPS_NLP_Topic modeling and corpus size.pdf',
                    'Lemmas & stopwords':'TIPS_NLP_NLP Basic language.pdf',
                    'csv files - Problems & solutions': 'TIPS_NLP_csv files - Problems & solutions.pdf',
-                   'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
-    TIPS_options = 'Topic modeling', 'Topic modeling in Gensim', 'Topic modeling in Mallet', 'Topic modeling and corpus size', 'Lemmas & stopwords', 'csv files - Problems & solutions', 'Statistical measures'
+                   'Statistical measures': 'TIPS_NLP_Statistical measures.pdf',
+                   'Stopwords':'TIPS_NLP_Stopwords.pdf'}
+    TIPS_options = 'Topic modeling', 'Topic modeling in Gensim', 'Topic modeling in Mallet', 'Topic modeling and corpus size', 'Lemmas & stopwords', 'csv files - Problems & solutions', 'Statistical measures','Stopwords'
 
 
     # add all the lines to the end to every special GUI
