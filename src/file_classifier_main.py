@@ -169,7 +169,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 similarityIndex_var.set(0.25) # or 0.3
 similarityIndex_menu_lb = tk.Label(window, text='Relativity index threshold ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+270,y_multiplier_integer,similarityIndex_menu_lb,True)
-similarityIndex_menu = tk.OptionMenu(window,similarityIndex_var,.1,.15,.2,.25,.3,.35,.4,.45,.5,.45,.5,.55,.6,.65,.7,.75,.8,.85,.9)
+similarityIndex_menu = tk.OptionMenu(window,similarityIndex_var,.1,.15,.2,.25,.3,.35,.4,.45,.5,.55,.6,.65,.7,.75,.8,.85,.9)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+450,y_multiplier_integer,similarityIndex_menu)
 
 videos_lookup = {'No videos available':''}

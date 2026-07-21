@@ -516,7 +516,7 @@ similarityIndex_Intruder_menu_lb = tk.Label(window, text='Relativity index thres
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                                similarityIndex_Intruder_menu_lb, True)
 similarityIndex_Intruder_menu = tk.OptionMenu(window, similarityIndex_Intruder_var, .1, .15, .2, .25, .3, .35, .4, .45,
-                                              .5, .45, .5, .55, .6, .65, .7, .75, .8, .85, .9)
+                                              .5, .55, .6, .65, .7, .75, .8, .85, .9)
 similarityIndex_Intruder_menu.configure(state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 170, y_multiplier_integer,
                                                similarityIndex_Intruder_menu,
@@ -533,7 +533,7 @@ similarityIndex_Plagiarist_var.set(.8)
 similarityIndex_Plagiarist_menu_lb = tk.Label(window, text='Similarity index ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                                similarityIndex_Plagiarist_menu_lb, True)
-similarityIndex_Plagiarist_menu = tk.OptionMenu(window, similarityIndex_Plagiarist_var, .4, .45, .5, .45, .5, .55, .6,
+similarityIndex_Plagiarist_menu = tk.OptionMenu(window, similarityIndex_Plagiarist_var, .4, .45, .5, .55, .6,
                                                 .65, .7, .75, .8, .85, .9)
 similarityIndex_Plagiarist_menu.configure(state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 170, y_multiplier_integer,
