@@ -14,6 +14,7 @@ import tkinter as tk
 from subprocess import call
 
 import GUI_IO_util
+import GUI_theme_util
 import IO_files_util
 import file_spell_checker_util
 import statistics_txt_util
@@ -425,12 +426,13 @@ complexity_readability_analysis_menu_var=tk.StringVar()
 vocabulary_analysis_menu_var=tk.StringVar()
 
 extra_GUIs_var.set(0)
-extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for style analysis ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+extra_GUIs_checkbox = GUI_theme_util.create_checkbox(window, text='GUIs available for style analysis ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 # extra_GUIs_checkbox.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Spelling/grammar checker (Open GUI)','Corpus statistics (Open GUI)','N-grams & Co-Occurrences (Open GUI)','Nominalization (Open GUI)','CoNLL table analyzer (Open GUI)','WordNet (Open GUI)','Corpus Profiler (Open GUI)')
+extra_GUIs_menu = GUI_theme_util.create_option_menu(window, variable=extra_GUIs_menu_var,
+                              values=['Spelling/grammar checker (Open GUI)','Corpus statistics (Open GUI)','N-grams & Co-Occurrences (Open GUI)','Nominalization (Open GUI)','CoNLL table analyzer (Open GUI)','WordNet (Open GUI)','Corpus Profiler (Open GUI)'])
 extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -460,13 +462,14 @@ def open_GUI(*args):
 extra_GUIs_menu_var.trace('w',open_GUI)
 
 complexity_readability_analysis_var.set(0)
-complexity_readability_analysis_checkbox = tk.Checkbutton(window, text='Complexity/readability analysis', variable=complexity_readability_analysis_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+complexity_readability_analysis_checkbox = GUI_theme_util.create_checkbox(window, text='Complexity/readability analysis', variable=complexity_readability_analysis_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,complexity_readability_analysis_checkbox,True)
 
 complexity_readability_analysis_menu_var.set('*')
 # complexity_readability_analysis_lb = tk.Label(window, text='Select the complexity/readability analysis you wish to perform')
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,complexity_readability_analysis_lb,True)
-complexity_readability_analysis_menu = tk.OptionMenu(window,complexity_readability_analysis_menu_var,'*','Sentence complexity','Text readability')
+complexity_readability_analysis_menu = GUI_theme_util.create_option_menu(window, variable=complexity_readability_analysis_menu_var,
+                              values=['*','Sentence complexity','Text readability'])
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    complexity_readability_analysis_menu,
@@ -474,34 +477,35 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
                                    "Select the complexity/readability analysis you wish to perform (* for all); widget disabled until checkbox ticked.")
 
 vocabulary_analysis_var.set(0)
-vocabulary_analysis_checkbox = tk.Checkbutton(window, text='Vocabulary analysis', variable=vocabulary_analysis_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+vocabulary_analysis_checkbox = GUI_theme_util.create_checkbox(window, text='Vocabulary analysis', variable=vocabulary_analysis_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,vocabulary_analysis_checkbox,True)
 
 # # vocabulary_analysis_menu_var.set('*')
 # # vocabulary_analysis_lb = tk.Label(window, text='Select the vocabulary analysis you wish to perform')
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,vocabulary_analysis_lb,True)
-vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*',
-                                         'Vocabulary (via unigrams) - List of all words/tokens in input document(s)',
-                                         'Vocabulary (via Hapax legomena, once-occurring words)',
-                                         'Vocabulary (via Hapax legomena, once-occurring unigrams)',
-                                         'Vocabulary (via Stanza multilanguage lemmatizer) - List of all words/tokens in input document(s)',
-                                         'Vocabulary (via NLTK unusual words)',
-                                         'Vocabulary richness (word type/token ratio or Yule’s K)',
-                                         'Abstract/concrete vocabulary',
-                                         'Iconic vocabulary',
-                                         'Objectivity/subjectivity (via spaCy)',
-                                         'Punctuation as figures of pathos (? !)',
-                                         'Sentence length',
-                                         'Word length',
-                                         'Vowel words',
-                                         'Words with capital initial (proper nouns)',
-                                         'Language detection',
-                                         'TF-IDF (most distinctive words per document)',
-                                         'Lexical diversity (TTR, MTLD, vocd-D)',
-                                         "Word frequency distribution (Zipf's Law)",
-                                         'Repetition: Words in first K and last K sentences',
-                                         'Repetition: Last K words of a sentence/First K words of next sentence',
-                                         'Repetition across sentences (special ngrams)')
+vocabulary_analysis_menu = GUI_theme_util.create_option_menu(window, variable=vocabulary_analysis_menu_var,
+                              values=['*',
+                                     'Vocabulary (via unigrams) - List of all words/tokens in input document(s)',
+                                     'Vocabulary (via Hapax legomena, once-occurring words)',
+                                     'Vocabulary (via Hapax legomena, once-occurring unigrams)',
+                                     'Vocabulary (via Stanza multilanguage lemmatizer) - List of all words/tokens in input document(s)',
+                                     'Vocabulary (via NLTK unusual words)',
+                                     'Vocabulary richness (word type/token ratio or Yule’s K)',
+                                     'Abstract/concrete vocabulary',
+                                     'Iconic vocabulary',
+                                     'Objectivity/subjectivity (via spaCy)',
+                                     'Punctuation as figures of pathos (? !)',
+                                     'Sentence length',
+                                     'Word length',
+                                     'Vowel words',
+                                     'Words with capital initial (proper nouns)',
+                                     'Language detection',
+                                     'TF-IDF (most distinctive words per document)',
+                                     'Lexical diversity (TTR, MTLD, vocd-D)',
+                                     "Word frequency distribution (Zipf's Law)",
+                                     'Repetition: Words in first K and last K sentences',
+                                     'Repetition: Last K words of a sentence/First K words of next sentence',
+                                     'Repetition across sentences (special ngrams)'])
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    vocabulary_analysis_menu,
@@ -510,7 +514,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_vocabulary_analysis_menu_pos, y_multiplier_integer,vocabulary_analysis_menu)
 
 gender_guesser_var.set(0)
-gender_guesser_checkbox = tk.Checkbutton(window, text='Who wrote the text - Gender guesser', variable=gender_guesser_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+gender_guesser_checkbox = GUI_theme_util.create_checkbox(window, text='Who wrote the text - Gender guesser', variable=gender_guesser_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,gender_guesser_checkbox)
 gender_guesser_checkbox.configure(state='normal')
 

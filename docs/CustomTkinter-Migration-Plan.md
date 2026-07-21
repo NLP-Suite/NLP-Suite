@@ -241,7 +241,8 @@ Per-file recipe: swap `tk.X(` → `GUI_theme_util.create_x(`; convert `["menu"]`
 delete `ttk.Style`/`theme_use`; run the GUI and walk §6; screenshot before/after.
 
 Tranches: file tools ✅; CoNLL tools ✅; sentiment/annotator/semantic ✅; GIS tools ✅; DB/SQL + PCACE ✅;
-statistical/visualization; remaining setup GUIs. Plus **`NLP_welcome_main`** ✅ (belongs to no tranche).
+statistical/visualization ✅ (partial — `charts_Excel_main.py` deferred); remaining setup GUIs. Plus
+**`NLP_welcome_main`** ✅ (belongs to no tranche).
 
 Every completed tranche was verified per §6: `pytest` + `gui_smoke.py` clean, files launched on macOS.
 **Windows QA outstanding on every tranche.** New shared-layer gaps found along the way (each now a §6
@@ -325,6 +326,17 @@ open-file buttons flagged in `docs/ctk_empty_button_status.md`.
 > enable/disable choreography, combobox `command=` callbacks, `set_values()` repopulation, ESC reset,
 > the Merge dialog. `DB_PCACE_data_validation_main.py` is `UNCOV` (module-level `Stanza_util` import
 > exits without a model cache). **Windows QA outstanding.**
+
+**✅ Statistical/visualization** (2026-07-21, `ctk/phase3-stats-viz`) — `topic_modeling_main.py`,
+`statistics_txt_main.py`, `style_analysis_main.py`, `word2vec_main.py`, `corpus_profiler_main.py`,
+`NGrams_CoOccurrences_main.py`. ~120 constructors → factories, 15 static-value OptionMenus. No new
+shared-layer gaps; known idiom classes recurred (post-construction `.configure(width=…)` on 4 entries,
+numeric `tk.OptionMenu` choices stringified, 2 empty open-file buttons cleared — `docs/
+ctk_empty_button_status.md` updated). One pre-existing bug fixed: `NGrams_CoOccurrences_main.py`'s `+K`
+entry was bound to an x-coordinate expression instead of `plus_K_words_var`, so RUN always silently read
+`0`. `charts_Excel_main.py` **deferred** — classic-Mac CR-only line endings need normalizing first.
+`pytest` + `gui_smoke.py` clean; `style_analysis_main.py` (`UNCOV` under stubs) verified by a headless
+real-Tk launch instead. All six fit with room to spare. **Windows QA outstanding.**
 
 ### Phase 4 — Hard cases (1 PR each)
 

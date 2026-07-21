@@ -16,6 +16,7 @@ from subprocess import call
 
 import IO_user_interface_util
 import GUI_IO_util
+import GUI_theme_util
 import IO_files_util
 import charts_util
 import config_util
@@ -477,11 +478,12 @@ useLemma = tk.IntVar()
 fullInfo = tk.IntVar()
 
 extra_GUIs_var.set(0)
-extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+extra_GUIs_checkbox = GUI_theme_util.create_checkbox(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Word searches','Wordnet searches','CoNLL table analyzer', 'Corpus statistics', 'Style analysis')
+extra_GUIs_menu = GUI_theme_util.create_option_menu(window, variable=extra_GUIs_menu_var,
+                              values=['Word searches','Wordnet searches','CoNLL table analyzer', 'Corpus statistics', 'Style analysis'])
 extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -511,13 +513,13 @@ def open_GUI(*args):
 extra_GUIs_menu_var.trace('w',open_GUI)
 
 Ngrams_compute_var.set(0)
-Ngrams_compute_checkbox = tk.Checkbutton(window, text='Compute N-grams', variable=Ngrams_compute_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+Ngrams_compute_checkbox = GUI_theme_util.create_checkbox(window, text='Compute N-grams', variable=Ngrams_compute_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,Ngrams_compute_checkbox,True)
 
 ngrams_menu_var.set('Word')
 # ngrams_menu_lb = tk.Label(window, text='N-grams type')
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_ngrams_menu_pos,y_multiplier_integer,ngrams_menu_lb,True)
-ngrams_menu = tk.OptionMenu(window, ngrams_menu_var, 'Character', 'Word') #,'DEPREL','POSTAG')
+ngrams_menu = GUI_theme_util.create_option_menu(window, variable=ngrams_menu_var, values=['Character', 'Word']) #,'DEPREL','POSTAG')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    ngrams_menu,
@@ -525,19 +527,20 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
                                    "Select the N-grams type")
 
 ngrams_size.set(3)
-ngrams_number_menu_lb = tk.Label(window, text='N-grams')
+ngrams_number_menu_lb = GUI_theme_util.create_label(window, text='N-grams')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ngrams_number_menu_lb,True)
-ngrams_number_menu = tk.OptionMenu(window, ngrams_size, 1, 2, 3, 4, 5, 6)
+ngrams_number_menu = GUI_theme_util.create_option_menu(window, variable=ngrams_size, values=['1', '2', '3', '4', '5', '6'])
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+80, y_multiplier_integer,
                                    ngrams_number_menu,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate+80,
                                    "Select the number of N-grams to be computed. 1-grams and hapax legomena (once-occurring words) are always computed automatically.")
 
-ngrams_options_menu_lb = tk.Label(window, text='Options')
+ngrams_options_menu_lb = GUI_theme_util.create_label(window, text='Options')
 ngrams_options_menu_var.set('Case sensitive (default)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,ngrams_options_menu_lb,True)
-ngrams_options_menu = tk.OptionMenu(window, ngrams_options_menu_var, 'Case sensitive (default)', 'Case insensitive', 'Hapax legomena (once-occurring words)','Hapax legomena (once-occurring unigrams)','Lemmatize','Normalize N-grams', 'Exclude punctuation (word N-grams only)','Exclude articles (word N-grams only)','Exclude determiners (word N-grams only)','Exclude ALL stopwords (word N-grams only)','By sentence index','Collocation statistics (PMI, log-likelihood, chi-squared, t-score)','Repetition of words (last K words of a sentence/first N words of next sentence)','Repetition of words across sentences (special ngrams)')
+ngrams_options_menu = GUI_theme_util.create_option_menu(window, variable=ngrams_options_menu_var,
+                              values=['Case sensitive (default)', 'Case insensitive', 'Hapax legomena (once-occurring words)','Hapax legomena (once-occurring unigrams)','Lemmatize','Normalize N-grams', 'Exclude punctuation (word N-grams only)','Exclude articles (word N-grams only)','Exclude determiners (word N-grams only)','Exclude ALL stopwords (word N-grams only)','By sentence index','Collocation statistics (PMI, log-likelihood, chi-squared, t-score)','Repetition of words (last K words of a sentence/first N words of next sentence)','Repetition of words across sentences (special ngrams)'])
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+70, y_multiplier_integer,
                                    ngrams_options_menu,
@@ -545,13 +548,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_co
                                    "Select the N-grams option; hit + button to add multiple options; Reset to start fresh; Show to display current selection.\nThe case-sensitive option will display the sum of all different cases and the individual cases (e.g., It is, it Is, It Is).")
 
 
-add_ngrams_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: activate_Ngrams_compute_var())
+add_ngrams_button = GUI_theme_util.create_button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: activate_Ngrams_compute_var())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_add_ngrams_button_pos,y_multiplier_integer,add_ngrams_button, True)
 
-reset_ngrams_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset_ngrams_options_list())
+reset_ngrams_button = GUI_theme_util.create_button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset_ngrams_options_list())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_reset_ngrams_button_pos,y_multiplier_integer,reset_ngrams_button,True)
 
-show_ngrams_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_ngrams_options_list())
+show_ngrams_button = GUI_theme_util.create_button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_ngrams_options_list())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_show_ngrams_button_pos,y_multiplier_integer,show_ngrams_button)
 
 
@@ -608,29 +611,30 @@ activate_default_ngrams_options()
 
 
 search_words_var.set('')
-search_words_lb = tk.Label(window, text='Search word(s)')
+search_words_lb = GUI_theme_util.create_label(window, text='Search word(s)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,search_words_lb,True)
-search_words_entry = tk.Entry(window, textvariable=search_words_var)
-search_words_entry.configure(width=GUI_IO_util.widget_width_long)
+search_words_entry = GUI_theme_util.create_entry(window, textvariable=search_words_var)
+GUI_theme_util.set_char_width(search_words_entry, GUI_IO_util.widget_width_long)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_search_words_entry_pos, y_multiplier_integer,
                                    search_words_entry,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Enter the comma-separated words/collocations (multi-word expressions) to be searched by the options 'Search N-grams csv file' or the VIEWER.\nIn output, one record will be produced HORIZONTALLY with different headers in the output csv file for each search word.\nUse the File Search by Word GUI to produce records organized VERTICALLY, different records in the output csv file for each search word.")
 
-viewer_menu_lb = tk.Label(window, text='Search options')
+viewer_menu_lb = GUI_theme_util.create_label(window, text='Search options')
 viewer_options_menu_var.set('Case sensitive (default)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,viewer_menu_lb,True)
-viewer_options_menu = tk.OptionMenu(window, viewer_options_menu_var, 'Case sensitive (default)', 'Case insensitive', 'Lemmatize', 'Exact match (default)','Partial match','Search within sentence (default)', 'Search within document','Normalize results','Scale results')
+viewer_options_menu = GUI_theme_util.create_option_menu(window, variable=viewer_options_menu_var,
+                              values=['Case sensitive (default)', 'Case insensitive', 'Lemmatize', 'Exact match (default)','Partial match','Search within sentence (default)', 'Search within document','Normalize results','Scale results'])
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_viewer_options_menu_pos,y_multiplier_integer,viewer_options_menu, True)
 
-add_viewer_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: activate_viewer_var())
+add_viewer_button = GUI_theme_util.create_button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: activate_viewer_var())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_add_ngrams_button_pos,y_multiplier_integer,add_viewer_button, True)
 
-reset_viewer_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset_viewer_options_list())
+reset_viewer_button = GUI_theme_util.create_button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset_viewer_options_list())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_reset_ngrams_button_pos,y_multiplier_integer,reset_viewer_button,True)
 
-show_viewer_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_viewer_options_list())
+show_viewer_button = GUI_theme_util.create_button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_viewer_options_list())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_show_ngrams_button_pos,y_multiplier_integer,show_viewer_button,False)
 
 def reset_viewer_options_list():
@@ -695,7 +699,7 @@ def activate_default_viewer_options(*args):
 activate_default_viewer_options()
 
 Ngrams_search_var.set(0)
-Ngrams_search_checkbox = tk.Checkbutton(window, text='Search N-grams csv file', variable=Ngrams_search_var, onvalue=1, offvalue=0, command=lambda: get_csv_file(window,'Select INPUT csv file', [("dictionary files", "*.csv")],True))
+Ngrams_search_checkbox = GUI_theme_util.create_checkbox(window, text='Search N-grams csv file', variable=Ngrams_search_var, onvalue=1, offvalue=0, command=lambda: get_csv_file(window,'Select INPUT csv file', [("dictionary files", "*.csv")],True))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                     Ngrams_search_checkbox,
@@ -737,24 +741,25 @@ def get_csv_file(window,title,fileType,annotate):
     return filePath
 
 #setup a button to open Windows Explorer on the selected input directory
-openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
+openInputFile_button = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,openInputFile_button,
                     True, False, True,False, 90, GUI_IO_util.open_TIPS_x_coordinate, "Open INPUT csv N-grams file")
 
-csv_file=tk.Entry(window, width=GUI_IO_util.widget_width_long,textvariable=csv_file_var)
-csv_file.config(state='disabled')
+csv_file=GUI_theme_util.create_entry(window, width=GUI_IO_util.widget_width_long,textvariable=csv_file_var)
+csv_file.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+80, y_multiplier_integer,csv_file,True)
 
-minus_K_lb = tk.Label(window, text='-K')
+minus_K_lb = GUI_theme_util.create_label(window, text='-K')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,(GUI_IO_util.style_add_ngrams_button_pos)+130,y_multiplier_integer,minus_K_lb,True)
 
 minus_K_words_var = tk.IntVar()
 plus_K_words_var = tk.IntVar()
 
 minus_K_words_var.set(0)
-minus_K_words_entry = tk.Entry(window, textvariable=minus_K_words_var) #extract_sentences_search_words_var)
-minus_K_words_entry.configure(width=3, state='disabled')
+minus_K_words_entry = GUI_theme_util.create_entry(window, textvariable=minus_K_words_var) #extract_sentences_search_words_var)
+minus_K_words_entry.configure(state='disabled')
+GUI_theme_util.set_char_width(minus_K_words_entry, 3)
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window, (GUI_IO_util.style_add_ngrams_button_pos)+150, y_multiplier_integer,
                     minus_K_words_entry, True, False, True, False,
@@ -762,12 +767,15 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window, (GUI_IO_util.style_add_ngra
                     "Enter the integer number of words (do not enter -) preceding the search word to be extracted, for context, together with the search sentences\n"
                     "The option does not apply to N-grams VIEWER or Co-Occurrences VIEWER")
 
-plus_K_lb = tk.Label(window, text='+K')
+plus_K_lb = GUI_theme_util.create_label(window, text='+K')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,(GUI_IO_util.style_show_ngrams_button_pos)+90,y_multiplier_integer,plus_K_lb,True)
 
 plus_K_words_var.set(0)
-plus_K_words_entry = tk.Entry(window, textvariable=(GUI_IO_util.style_show_ngrams_button_pos)+115) #extract_sentences_search_words_var)
-plus_K_words_entry.configure(width=3, state='disabled')
+# was textvariable=(GUI_IO_util.style_show_ngrams_button_pos)+115 -- an x-coordinate, not a Variable, so the
+# +K field was never bound to plus_K_words_var and RUN always read 0 regardless of what the user typed
+plus_K_words_entry = GUI_theme_util.create_entry(window, textvariable=plus_K_words_var)
+plus_K_words_entry.configure(state='disabled')
+GUI_theme_util.set_char_width(plus_K_words_entry, 3)
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window, (GUI_IO_util.style_show_ngrams_button_pos)+115, y_multiplier_integer,
                     plus_K_words_entry, False, False, True, False,
@@ -776,7 +784,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window, (GUI_IO_util.style_show_ngr
                     "The option does not apply to N-grams VIEWER or Co-Occurrences VIEWER")
 
 ngrams_viewer_var.set(0)
-Ngrams_viewer_checkbox = tk.Checkbutton(window, text='N-grams VIEWER', variable=ngrams_viewer_var, onvalue=1, offvalue=0, command=lambda: activate_all_options() )
+Ngrams_viewer_checkbox = GUI_theme_util.create_checkbox(window, text='N-grams VIEWER', variable=ngrams_viewer_var, onvalue=1, offvalue=0, command=lambda: activate_all_options() )
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    Ngrams_viewer_checkbox,
@@ -784,7 +792,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
                                    "The N-grams VIEWER option requires in input file(s) with a date embedded in the filename")
 
 CoOcc_Viewer_var.set(0)
-CoOcc_viewer_checkbox = tk.Checkbutton(window, text='Co-Occurrences VIEWER', variable=CoOcc_Viewer_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+CoOcc_viewer_checkbox = GUI_theme_util.create_checkbox(window, text='Co-Occurrences VIEWER', variable=CoOcc_Viewer_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    CoOcc_viewer_checkbox,
@@ -807,20 +815,21 @@ def date_processing():
         date_options.set(0)
 
 date_options.set(0)
-date_options_checkbox = tk.Checkbutton(window, text='Date options', variable=date_options, onvalue=1, offvalue=0, command=lambda: date_processing())
+date_options_checkbox = GUI_theme_util.create_checkbox(window, text='Date options', variable=date_options, onvalue=1, offvalue=0, command=lambda: date_processing())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_indented_coordinate,y_multiplier_integer,date_options_checkbox,True)
 
 # date_options_checkbox.configure(state='disabled')
 
-date_options_msg= tk.Label(window)
-date_options_msg.config(text="Date option OFF")
+date_options_msg= GUI_theme_util.create_label(window)
+date_options_msg.configure(text="Date option OFF")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,date_options_msg,True)
 
 temporal_aggregation_var.set('year')
-temporal_aggregation_lb = tk.Label(window,text='Aggregate by ')
+temporal_aggregation_lb = GUI_theme_util.create_label(window,text='Aggregate by ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos,y_multiplier_integer,temporal_aggregation_lb,True)
 
-temporal_aggregation_menu = tk.OptionMenu(window, temporal_aggregation_var, 'group of years', 'year', 'quarter','month') #,'day'
+temporal_aggregation_menu = GUI_theme_util.create_option_menu(window, variable=temporal_aggregation_var,
+                              values=['group of years', 'year', 'quarter','month']) #,'day'
 temporal_aggregation_menu.configure(state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos,y_multiplier_integer,temporal_aggregation_menu)
 
@@ -843,11 +852,11 @@ temporal_aggregation_var.trace('w',get_year_group)
 
 def check_dateFields(*args):
     if date_options.get() == 1:
-        date_options_msg.config(text="Date option ON")
-        temporal_aggregation_menu.config(state="normal")
+        date_options_msg.configure(text="Date option ON")
+        temporal_aggregation_menu.configure(state="normal")
     else:
-        date_options_msg.config(text="Date option OFF")
-        temporal_aggregation_menu.config(state="disabled")
+        date_options_msg.configure(text="Date option OFF")
+        temporal_aggregation_menu.configure(state="disabled")
 date_options.trace('w',check_dateFields)
 
 def clear(e):
@@ -891,7 +900,7 @@ def activate_all_options():
     show_viewer_button.configure(state='disabled')
     # within_sentence_co_occurrence_search_checkbox.configure(state='disabled')
     search_words_entry.configure(state='normal')
-    date_options_checkbox.config(state='normal')
+    date_options_checkbox.configure(state='normal')
     if "INPUT FILE" in GUI_util.IO_setup_var.get():
         input_label= 'INPUT FILE'
     else:
@@ -936,8 +945,8 @@ def activate_all_options():
         Ngrams_compute_checkbox.configure(state='disabled')
         Ngrams_search_checkbox.configure(state='disabled')
         search_words_entry.configure(state='normal')
-        date_options_checkbox.config(state='normal')
-        viewer_options_menu.config(state='normal')
+        date_options_checkbox.configure(state='normal')
+        viewer_options_menu.configure(state='normal')
 
     elif Ngrams_search_var.get():
         extra_GUIs_checkbox.configure(state='disabled')
@@ -951,8 +960,8 @@ def activate_all_options():
 
     else:
         # search_words_entry.configure(state='disabled')
-        date_options_checkbox.config(state='disabled')
-        viewer_options_menu.config(state='disabled')
+        date_options_checkbox.configure(state='disabled')
+        viewer_options_menu.configure(state='disabled')
 
 activate_all_options()
 

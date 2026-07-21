@@ -50,7 +50,7 @@ live widget.
 
 ## Remaining empty open-file buttons
 
-**11 sites across 8 files remain** (13 sites at the first audit). All are the `width=1,
+**9 sites across 7 files remain** (13 sites at the first audit). All are the `width=1,
 text=''` pattern above unless noted. Line numbers are unchanged from the first audit for files not
 yet touched.
 
@@ -61,11 +61,13 @@ yet touched.
 > **DB/PCACE tools (2026-07-20, `ctk/phase3-db-pcace`)** cleared their 2 sites (`DB_SQL_main.py` 1433,
 > `DB_PCACE_data_validation_main.py` 546) via `create_open_file_button`.
 
+> **Statistical/visualization tools (2026-07-21, `ctk/phase3-stats-viz`)** cleared their 2 sites
+> (`NGrams_CoOccurrences_main.py` 740, `word2vec_main.py` 301) via `create_open_file_button`.
+
 | GUI | line | what it opens |
 |---|---|---|
 | `data_visualization_main.py` | 569 | input csv file |
 | `data_visualization_main.py` | 1015 | comparative csv (literal `width=1`, parented to `tab_categorical`) |
-| `NGrams_CoOccurrences_main.py` | 740 | input csv file |
 | `NLP_setup_external_software_main.py` | 77 | config file |
 | `NLP_setup_external_software_main.py` | 118 | software website |
 | `NLP_setup_external_software_main.py` | 153 | software directory |
@@ -73,7 +75,6 @@ yet touched.
 | `sample_corpus_main.py` | 161 | sample corpus file |
 | `SRL_main.py` | 109 | input csv file |
 | `data_manipulation_main.py` | 221 | input file |
-| `word2vec_main.py` | 301 | word-distance file |
 
 ## Secondary: placeholder `tk.Button()` forward declarations
 

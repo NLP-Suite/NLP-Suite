@@ -13,6 +13,7 @@ import tkinter as tk
 from subprocess import call
 
 import GUI_IO_util
+import GUI_theme_util
 import run_script_util
 
 
@@ -243,12 +244,13 @@ window.bind("<Escape>", clear)
 
 
 extra_GUIs_var.set(0)
-extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+extra_GUIs_checkbox = GUI_theme_util.create_checkbox(window, text='GUIs available for more analyses', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 # extra_GUIs_checkbox.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'N-grams & Co-occurrences', 'CoNLL Table Analyzer (Open GUI)','Style Analysis (Open GUI)','Corpus Profiler (Open GUI)')
+extra_GUIs_menu = GUI_theme_util.create_option_menu(window, variable=extra_GUIs_menu_var,
+                              values=['N-grams & Co-occurrences', 'CoNLL Table Analyzer (Open GUI)','Style Analysis (Open GUI)','Corpus Profiler (Open GUI)'])
 extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -276,21 +278,21 @@ def open_GUI(*args):
 extra_GUIs_menu_var.trace('w',open_GUI)
 
 corpus_statistics_var.set(0)
-corpus_statistics_checkbox = tk.Checkbutton(window,text="Compute corpus statistics", variable=corpus_statistics_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+corpus_statistics_checkbox = GUI_theme_util.create_checkbox(window,text="Compute corpus statistics", variable=corpus_statistics_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,corpus_statistics_checkbox,True)
 
 corpus_statistics_options_menu_var.set('*')
 
-corpus_statistics_options_menu = tk.OptionMenu(window,corpus_statistics_options_menu_var,
-                                                '*',
-                                               'Compute frequencies of sentences, words, syllables, and top-20 words',
-                                               'Compute sentence length',
-                                               'Compute line length',
-                                               'Compute TF-IDF (most distinctive words per document)',
-                                               'Compute Lexical diversity (TTR, MTLD, vocd-D)',
-                                               'Compute Readability scores (Flesch, Gunning Fog, Coleman-Liau)',
-                                               "Compute Word frequency distribution (Zipf's Law)",
-                                               )
+corpus_statistics_options_menu = GUI_theme_util.create_option_menu(window, variable=corpus_statistics_options_menu_var,
+                              values=['*',
+                                     'Compute frequencies of sentences, words, syllables, and top-20 words',
+                                     'Compute sentence length',
+                                     'Compute line length',
+                                     'Compute TF-IDF (most distinctive words per document)',
+                                     'Compute Lexical diversity (TTR, MTLD, vocd-D)',
+                                     'Compute Readability scores (Flesch, Gunning Fog, Coleman-Liau)',
+                                     "Compute Word frequency distribution (Zipf's Law)",
+                                     ])
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    corpus_statistics_options_menu,
@@ -300,9 +302,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_corpus_statistics_options_menu_pos,y_multiplier_integer,corpus_statistics_options_menu, True)
 
 corpus_text_options_menu_var.set('')
-corpus_options_menu_lb = tk.Label(window, text='Text options')
+corpus_options_menu_lb = GUI_theme_util.create_label(window, text='Text options')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_corpus_text_options_menu_lb_pos,y_multiplier_integer,corpus_options_menu_lb,True)
-corpus_text_options_menu = tk.OptionMenu(window, corpus_text_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation')
+corpus_text_options_menu = GUI_theme_util.create_option_menu(window, variable=corpus_text_options_menu_var,
+                              values=['*','Lemmatize words', 'Exclude stopwords & punctuation'])
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_corpus_options_menu_men_pos,y_multiplier_integer,corpus_text_options_menu)
 
 def activate_corpus_options(*args):
@@ -315,7 +318,7 @@ def activate_corpus_options(*args):
 corpus_statistics_var.trace('w',activate_corpus_options)
 
 corpus_statistics_byPOS_var.set(0)
-corpus_statistics_byPOS_checkbox = tk.Checkbutton(window,text="Compute corpus statistics by POS (Part of Speech) tag value", variable=corpus_statistics_byPOS_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+corpus_statistics_byPOS_checkbox = GUI_theme_util.create_checkbox(window,text="Compute corpus statistics by POS (Part of Speech) tag value", variable=corpus_statistics_byPOS_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    corpus_statistics_byPOS_checkbox,
