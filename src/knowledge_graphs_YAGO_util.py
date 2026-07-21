@@ -17,7 +17,7 @@ import ssl
 import pandas as pd
 import requests
 import stanza
-from fuzzywuzzy import fuzz
+import string_similarity_util
 
 import IO_files_util
 import IO_user_interface_util
@@ -265,6 +265,9 @@ def _batch_query_yago(lemmas, categories, cat_colors, default_color, session):
 
 
 def _select_best_uri(uris, phrase_tr):
+    if not uris:
+        # max() over an empty list raises ValueError, so an empty SPARQL result would have crashed the run
+        return None
     uri_names = [str(x).split("/")[-1] for x in uris]
     cleaned = [split("_Q[0-9]+", name)[0] for name in uri_names]
 
@@ -272,7 +275,14 @@ def _select_best_uri(uris, phrase_tr):
         if name.lower().replace("_", " ") == phrase_tr.lower():
             return uris[idx]
 
-    scores = [fuzz.ratio(phrase_tr, c) for c in cleaned]
+    # string_similarity_util computes a real Levenshtein ratio. fuzz.ratio used the python-Levenshtein C
+    # library only when it happened to be installed and otherwise fell back, with nothing but a warning, to
+    # difflib's Ratcliff/Obershelp matcher -- so WHICH entity a phrase was linked to depended on the
+    # installation. It also compared case-sensitively and against the raw YAGO name, leaving the
+    # underscores in: 'Atlanta_Georgia' scored against 'Atlanta Georgia' was penalised for two differences
+    # that carry no meaning. The exact-match test above already folds case and underscores; the fuzzy test
+    # now does the same, so a correct candidate is no longer scored down for the shape of its URI.
+    scores = [string_similarity_util.similarity(phrase_tr, c.replace("_", " ")) for c in cleaned]
     best_idx = scores.index(max(scores))
     if scores[best_idx] > 42:
         return uris[best_idx]
