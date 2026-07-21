@@ -39,7 +39,10 @@ def run():
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
-    if ontology_class_var.get()=='':
+    # Only DBpedia and YAGO annotate BY ontology class. Wikipedia has no ontology -- an article either
+    # exists for a name or it does not -- so its class widget is deliberately disabled, and demanding a
+    # class here made the option impossible to run: the guard returned before ever reaching the dispatch.
+    if ontology_class_var.get()=='' and ('DBpedia' in knowledge_graphs_var or 'YAGO' in knowledge_graphs_var):
         msg = 'The "Ontology class" widget is empty.\n\nPlease, use the dropdown menu to select an Ontology class and try again.'
         if 'DBpedia' in knowledge_graphs_var:
             msg = msg + '\n\nFor DBpedia, select the "Thing" class to tag all classes.'
@@ -101,11 +104,17 @@ def run():
         import knowledge_graphs_Wikipedia_util
         # Wikipedia has no ontology, so no class list is passed: the annotator links every PROPER NOUN
         # that has an article. See the module header for why it does not annotate common nouns as well.
+        #
+        # The colour comes STRAIGHT from the palette widget, not from colorlist. colorlist is built by
+        # pairing each selected ontology CLASS with a colour, and Wikipedia selects no classes -- so it
+        # would arrive empty and the annotation would fall back to black, the same colour as the
+        # surrounding text, leaving the links invisible.
         color1 = 'black'
+        wikipedia_color = color_palette_var.get() or 'blue'
         filesToOpen = knowledge_graphs_Wikipedia_util.Wikipedia_annotate(inputFilename, inputDir, outputDir,
                                                                          config_filename,
-                                                                         color1, colorlist, chartPackage,
-                                                                         dataTransformation)
+                                                                         color1, [wikipedia_color],
+                                                                         chartPackage, dataTransformation)
 
     elif knowledge_graphs_var:
         # a knowledge base was selected that no annotator implements. Saying 'no options selected' here
