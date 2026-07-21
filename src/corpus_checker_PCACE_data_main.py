@@ -7,7 +7,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window, "Corpus Checker",
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "Corpus Checker (PC-ACE data)",
                                           ['os', 'tkinter', 'subprocess', 'csv']) == False:
     sys.exit(0)
 
@@ -736,6 +736,7 @@ TIPS_lookup = {'Corpus checker (PC-ACE data) - the whole pipeline': 'TIPS_NLP_Co
                'Check the character\'s name tag': 'TIPS_NLP_Word similarity (Levenshtein edit distance).pdf',
                'Filename well-formedness': 'TIPS_NLP_Filename checker.pdf',
                'WordNet': 'TIPS_NLP_WordNet.pdf',
+               'Lexical databases (WordNet, VerbNet, FrameNet)': 'TIPS_NLP_Lexical databases (WordNet, VerbNet, FrameNet).pdf',
                'Find the character\'s home (By date)': 'TIPS_NLP_File classifier (By date).pdf',
                'Find the character\'s home (By NER)': 'TIPS_NLP_File classifier (By NER).pdf',
                'NER (Named Entity Recognition)': 'TIPS_NLP_NER (Named Entity Recognition).pdf',
@@ -745,7 +746,7 @@ TIPS_lookup = {'Corpus checker (PC-ACE data) - the whole pipeline': 'TIPS_NLP_Co
                'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
                'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf"}
                # 'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
-TIPS_options = 'Corpus checker (PC-ACE data) - the whole pipeline', 'Filename well-formedness', 'WordNet', 'Find the character\'s home (By date)', 'Find the character\'s home (By NER)', 'NER (Named Entity Recognition)', 'Find the missing character', 'Check the character\'s name tag', 'Find the intruder', 'Find the plagiarist', 'CoNLL Table', 'POSTAG (Part of Speech Tags)' #, 'Java download install run'
+TIPS_options = 'Corpus checker (PC-ACE data) - the whole pipeline', 'Filename well-formedness', 'WordNet', 'Lexical databases (WordNet, VerbNet, FrameNet)', 'Find the character\'s home (By date)', 'Find the character\'s home (By NER)', 'NER (Named Entity Recognition)', 'Find the missing character', 'Check the character\'s name tag', 'Find the intruder', 'Find the plagiarist', 'CoNLL Table', 'POSTAG (Part of Speech Tags)' #, 'Java download install run'
 
 
 # add all the lines to the end to every special GUI
