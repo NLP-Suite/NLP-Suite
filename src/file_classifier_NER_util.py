@@ -10,7 +10,7 @@ import IO_libraries_util
 if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Find Non-related Documents",['stanza','tkinter','stanfordcorenlp','os','tkinter','glob'])==False:
     sys.exit(0)
 
-from stanfordcorenlp import StanfordCoreNLP # python wrapper for Stanford CoreNLP
+import config_aware_parser_util  # picks the parser (CoreNLP / Stanza / spaCy) selected in the NLP Suite setup
 import os
 from glob import glob
 import tkinter.messagebox as mb
@@ -29,10 +29,10 @@ def load_soc_actors():
     fName= GUI_IO_util.wordLists_libPath + os.sep + 'social-actor-list.csv'
     my_soc_actors = set()
     if not os.path.isfile(fName):
-        print("The file "+fileName+" could not be found. The routine expects a csv dictionary file 'social-actor-list.csv' in a directory 'lib' expected to be a subdirectory of the directory where the concreteness_analysis.py script is stored.\n\nPlease, check your lib directory and try again.")
+        print("The file "+fName+" could not be found. The routine expects a csv dictionary file 'social-actor-list.csv' in a directory 'lib' expected to be a subdirectory of the directory where the concreteness_analysis.py script is stored.\n\nPlease, check your lib directory and try again.")
         mb.showerror(title='File not found', message='The routine expects a csv dictionary file "social-actor-list.csv" in a directory "lib" expected to be a subdirectory of the directory where the concreteness_analysis.py script is stored.\n\nPlease, check your lib directory and try again')
         sys.exit()
-    with open(fName) as fin:
+    with open(fName, encoding='utf-8', errors='ignore') as fin:
         for line in fin:
                 # save the list of "social actors"
                 my_soc_actors.add(line.strip().split(',')[0])
@@ -169,13 +169,19 @@ def find(doc_dir, soc_acts, nlp, compare, sim_base, f, terminal_output):
 def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, chartPackage, dataTransformation, relativity_threshold):
 
     filesToOpen = []
-    # check that the CoreNLPdir has been setup
-    CoreNLPDir, existing_software_config, errorFound = IO_libraries_util.external_software_install('file_classifier_NER_util',
-                                                                                         'Stanford CoreNLP',
-                                                                                         '',
-                                                                                         silent=False, errorFound=False)
-    if CoreNLPDir==None:
-        return filesToOpen
+    # The tool runs on whichever NLP package was selected in the NLP Suite setup, so the Stanford CoreNLP
+    # directory is demanded ONLY when CoreNLP is that package. The four NER tags this classifier reads
+    # (LOCATION, DATE, ORGANIZATION, PERSON) all exist in the OntoNotes model behind Stanza and spaCy, so
+    # nothing here depends on CoreNLP's finer-grained entity types.
+    CoreNLPDir = ''
+    if config_aware_parser_util.requires_CoreNLP():
+        # check that the CoreNLPdir has been setup
+        CoreNLPDir, existing_software_config, errorFound = IO_libraries_util.external_software_install('file_classifier_NER_util',
+                                                                                             'Stanford CoreNLP',
+                                                                                             '',
+                                                                                             silent=False, errorFound=False)
+        if CoreNLPDir==None:
+            return filesToOpen
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                        'Started running the File Classifier by NER values at', True,
@@ -197,7 +203,7 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, chartPack
         sys.stdout = terminal_output
         return filesToOpen
 
-    nlp = StanfordCoreNLP(CoreNLPDir)
+    nlp = config_aware_parser_util.get_parser(CoreNLPDir)
     compare = {}
     num_folder = 0
     sys.stdout = terminal_output
