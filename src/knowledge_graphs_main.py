@@ -10,13 +10,13 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window,"knowledge_grap
 
 import os
 import tkinter as tk
-from tkinter import ttk
 import tkinter.messagebox as mb
 
 import GUI_IO_util
 import IO_files_util
 import reminders_util
 import constants_util
+import GUI_theme_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -289,13 +289,13 @@ bold_DBpedia_YAGO_var= tk.IntVar() # display in bod the selected color selected 
 
 y_multiplier_integerSV= y_multiplier_integer
 
-knowledge_graphs_menu_lb = tk.Label(window, text='Knowledge bases (Knowledge graphs)')
+knowledge_graphs_menu_lb = GUI_theme_util.create_label(window, text='Knowledge bases (Knowledge graphs)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,knowledge_graphs_menu_lb,True)
 
 knowledge_graphs_var=tk.StringVar()
 knowledge_graphs_var.set('')
 # knowledge_graphs_menu_options=('DBpedia','YAGO','Wikipedia') #, 'Wikidata'
-knowledge_graphs_menu = tk.OptionMenu(window,knowledge_graphs_var,'DBpedia','YAGO','Wikipedia')
+knowledge_graphs_menu = GUI_theme_util.create_option_menu(window, variable=knowledge_graphs_var, values=['DBpedia','YAGO','Wikipedia'])
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu,
                                                y_multiplier_integer,
@@ -309,10 +309,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configurat
 # knowledge_graphs_YAGO_checkbox = tk.Checkbutton(window, text='HTML annotate corpus via YAGO',variable=knowledge_graphs_YAGO_var, onvalue=1, offvalue=0,command=lambda: activate_DBpedia_YAGO_menu())
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget,y_multiplier_integer,knowledge_graphs_YAGO_checkbox,True)
 
-confidence_level_lb = tk.Label(window, text='DBpedia confidence level')
+confidence_level_lb = GUI_theme_util.create_label(window, text='DBpedia confidence level')
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_graphs_YAGO_checkbox_pos,y_multiplier_integerSV,confidence_level_lb,True)
 
-confidence_level_entry = tk.Scale(window, from_=0.0, to=1.0, resolution = 0.1, orient=tk.HORIZONTAL)
+confidence_level_entry = GUI_theme_util.create_slider(window, from_=0.0, to=1.0, resolution = 0.1, orient=tk.HORIZONTAL)
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+520,y_multiplier_integer,confidence_level_entry)
 confidence_level_entry.set(.5)
 
@@ -363,11 +363,11 @@ sub_class_entry_var.trace ('w',add_DBpedia_YAGO_sub_class)
 #   https://mail.python.org/pipermail/tkinter-discuss/2012-January/003041.html
 
 # ontology_class = GUI_IO_util.combobox_with_search_widget(constants_util.DBpedia_ontology_class_menu)
-ontology_class_lb = tk.Label(window, text='Ontology class')
+ontology_class_lb = GUI_theme_util.create_label(window, text='Ontology class')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ontology_class_lb,True)
 
 ontology_class_var.set('')
-ontology_class = ttk.Combobox(window, state='disabled', width = GUI_IO_util.widget_width_long, textvariable = ontology_class_var)
+ontology_class = GUI_theme_util.create_combobox(window, state='disabled', width = GUI_IO_util.widget_width_long, textvariable = ontology_class_var)
 # ontology_class['values'] = constants_util.DBpedia_ontology_class_menu
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu,
@@ -381,15 +381,15 @@ def search_items(search_value):
     else:
         item_names = constants_util.YAGO_ontology_class_menu
     if search_value == "" or search_value == " ":
-        ontology_class['values'] = item_names
+        GUI_theme_util.set_values(ontology_class, item_names)
     else:
         value_to_display = []
         for value in item_names:
             if search_value in value.lower():
                 value_to_display.append(value)
-        ontology_class['values'] = value_to_display
+        GUI_theme_util.set_values(ontology_class, value_to_display)
         if len(value_to_display)>0:
-            ontology_class.set(ontology_class['values'][0])
+            ontology_class.set(value_to_display[0])
 
 # https://stackoverflow.com/questions/27262580/tkinter-binding-mouse-double-click
 def mouse_click(event):
@@ -417,7 +417,7 @@ ontology_class.bind('<Button-1>', mouse_click) # bind left mouse click
 ontology_class.bind('<Double-1>', double_click) # bind double left clicks
 
 search_variable = tk.StringVar()
-search_entry = tk.Entry(window, state='disabled', width=GUI_IO_util.widget_width_long, textvariable=search_variable)
+search_entry = GUI_theme_util.create_entry(window, state='disabled', width=GUI_IO_util.widget_width_long, textvariable=search_variable)
 # place widget with hover-over info
 # " + knowledge_graphs_var.get() + "
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate,
@@ -426,7 +426,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_c
                                                GUI_IO_util.IO_configuration_menu+20,
                                                "Enter a string to be used for searching the list of ontology class values for case-insensitive substring matches")
 
-search_button = tk.Button(window, text="Search", command=lambda: search_items(search_entry.get()))
+search_button = GUI_theme_util.create_button(window, text="Search", command=lambda: search_items(search_entry.get()))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate,
                                                y_multiplier_integer,
@@ -435,10 +435,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_
                                                "Click the Search button to search the list of ontology class values for the string entered")
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.close_button_x_coordinate, y_multiplier_integer,search_button)
 
-sub_class_entry_lb = tk.Label(window, text='Ontology sub-class')
+sub_class_entry_lb = GUI_theme_util.create_label(window, text='Ontology sub-class')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,sub_class_entry_lb,True)
 
-sub_class_entry = tk.Entry(window,width=GUI_IO_util.widget_width_long,textvariable=sub_class_entry_var)
+sub_class_entry = GUI_theme_util.create_entry(window,width=GUI_IO_util.knowledge_sub_class_entry_width,textvariable=sub_class_entry_var)
 sub_class_entry.configure(state="disabled")
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu,
@@ -448,7 +448,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configurat
                                                "Enter the comma-separated ontology sub-classes you wish to use; get the sub-classes from the TIPS_NLP_Annotator DBpedia ontology classes.pdf or TIPS_NLP_Annotator YAGO (schema.org) ontology classes.pdf.")
 
 create_HTML_files_var.set(0)
-create_HTML_files_checkbox = tk.Checkbutton(window, text='Create HTML output files', state='disabled',variable=create_HTML_files_var, onvalue=1, offvalue=0)
+create_HTML_files_checkbox = GUI_theme_util.create_checkbox(window, text='Create HTML output files', state='disabled',variable=create_HTML_files_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_indented_coordinate,
                                                y_multiplier_integer,
@@ -457,7 +457,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_inde
                                                "Create in output separate HTML files for every input txt file in addition to the default csv file output. Keep in mind that the process is relatively slow...")
 
 bold_DBpedia_YAGO_var.set(1)
-bold_DBpedia_YAGO_checkbox = tk.Checkbutton(window, text='Bold', state='disabled',variable=bold_DBpedia_YAGO_var, onvalue=1, offvalue=0)
+bold_DBpedia_YAGO_checkbox = GUI_theme_util.create_checkbox(window, text='Bold', state='disabled',variable=bold_DBpedia_YAGO_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu,
                                                y_multiplier_integer,
@@ -466,9 +466,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configurat
                                                "When creating output HTML files, you can choose to annotate in bold a selected ontology class/sub-class (bold is typically more visible...)")
 
 color_palette_var.set('')
-color_palette_DBpedia_YAGO_lb = tk.Label(window, text='Color')
+color_palette_DBpedia_YAGO_lb = GUI_theme_util.create_label(window, text='Color')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate,y_multiplier_integer,color_palette_DBpedia_YAGO_lb,True)
-color_palette_DBpedia_YAGO_menu = tk.OptionMenu(window, color_palette_var,'black','blue','green','pink','red','yellow')
+color_palette_DBpedia_YAGO_menu = GUI_theme_util.create_option_menu(window, variable=color_palette_var, values=['black','blue','green','pink','red','yellow'])
 color_palette_DBpedia_YAGO_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+50,
@@ -477,7 +477,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminder
                                                GUI_IO_util.open_reminders_x_coordinate+50,
                                                "When creating output HTML files, you can choose a specific color for a specific ontology class... Default color is blue.")
 
-add_class_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: activate_class_var())
+add_class_button = GUI_theme_util.create_button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: activate_class_var())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.knowledge_plus_button,
                                                y_multiplier_integer,
@@ -494,7 +494,7 @@ def activate_class_var():
     else:
         add_class_button.configure(state='disabled')
 
-reset_class_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: clear_ontology_list())
+reset_class_button = GUI_theme_util.create_button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: clear_ontology_list())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.knowledge_reset_button,
                                                y_multiplier_integer,
@@ -522,7 +522,7 @@ def show_class_color_list():
         # mb.showwarning(title='Warning', message='The currently selected combination of ontology classes and colors are:\n\n' + ','.join(ontology_color_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
         mb.showwarning(title='Warning', message='The currently selected combination of ontology classes and colors are:\n\n' + class_color_string + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
 
-show_class_color_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_class_color_list())
+show_class_color_button = GUI_theme_util.create_button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_class_color_list())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.knowledge_show_button,
                                                y_multiplier_integer,
@@ -555,7 +555,7 @@ def activate_class_options(*args):
         mb.showwarning(title='Warning', message='The class "'+ ontology_class_var.get() + '" is already in your selection list: '+ str(ontology_list) + '.\n\nPlease, select another class.')
         window.focus_force()
         return
-    state = str(ontology_class['state'])
+    state = str(ontology_class.cget('state'))
     if state != 'disabled':
         if ontology_class_var.get() != '':
             if ontology_class_var.get() not in str(ontology_list):
@@ -584,7 +584,7 @@ def activate_class_color_combo(*args):
     accept_DBpedia_YAGO_list()  # get current value and store into the dict
     if color_palette_var.get()!='':
         # accept_DBpedia_YAGO_list()  # get current value and store into the dict
-        state = str(color_palette_DBpedia_YAGO_menu['state'])
+        state = str(color_palette_DBpedia_YAGO_menu.cget('state'))
         # 'active' for mac; 'normal' for windows
         if state != 'disabled': # normal/active
             color_palette_DBpedia_YAGO_menu.configure(state='disabled')
@@ -604,7 +604,7 @@ def activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,con
     else:
         ontology_class.configure(state='normal')
     if 'DBpedia' in knowledge_graphs_var.get():
-        ontology_class['values'] = constants_util.DBpedia_ontology_class_menu
+        GUI_theme_util.set_values(ontology_class, constants_util.DBpedia_ontology_class_menu)
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate,
                                                        y_multiplier_integerSV, confidence_level_lb,True)
         # place widget with hover-over info
@@ -615,10 +615,10 @@ def activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,con
                                                        "DBpedia allows you to set confidence levels for your annotation (.5 is the recommended default value in a range between 0 and 1).\nThe higher the confidence level the less likely you are to find DBpedia entries; the lower the level and the more likely you are to find extraneous entries")
 
     else:
-        confidence_level_lb.place_forget()  # invisible
-        confidence_level_entry.place_forget()  # invisible
+        confidence_level_lb.grid_remove()  # invisible
+        confidence_level_entry.grid_remove()  # invisible
     if 'YAGO' in knowledge_graphs_var.get():
-        ontology_class['values'] = constants_util.YAGO_ontology_class_menu
+        GUI_theme_util.set_values(ontology_class, constants_util.YAGO_ontology_class_menu)
     if 'DBpedia' in knowledge_graphs_var.get() or 'YAGO' in knowledge_graphs_var.get():
         # display the reminder only once in the same GUI or the trace will display it many times
         if firstTime==False:

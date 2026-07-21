@@ -31,6 +31,7 @@ import file_find_non_related_documents_util
 import run_script_util
 import plagiarist_util
 import config_aware_parser_util
+import GUI_theme_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -417,12 +418,12 @@ def activate_extra_GUIs():
     extra_GUIs_menu.configure(state='normal' if extra_GUIs_var.get() else 'disabled')
 
 extra_GUIs_var.set(0)
-extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_extra_GUIs())
+extra_GUIs_checkbox = GUI_theme_util.create_checkbox(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_extra_GUIs())
 # extra_GUIs_checkbox.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'PC-ACE data analysis (Open GUI)','PC-ACE data validation (Open GUI)')
+extra_GUIs_menu = GUI_theme_util.create_option_menu(window, variable=extra_GUIs_menu_var, values=['PC-ACE data analysis (Open GUI)','PC-ACE data validation (Open GUI)'])
 extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -440,83 +441,83 @@ def open_GUI(*args):
         run_script_util.run_script("DB_PCACE_data_analysis_main.py")
 extra_GUIs_menu_var.trace('w',open_GUI)
 
-fileName_embeds_date_checkbox = tk.Checkbutton(window, text='Filename embeds date', state="disabled",
+fileName_embeds_date_checkbox = GUI_theme_util.create_checkbox(window, text='Filename embeds date', state="disabled",
                                                variable=fileName_embeds_date, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                fileName_embeds_date_checkbox, True)
 
-date_format_lb = tk.Label(window, text='Date format ')
+date_format_lb = GUI_theme_util.create_label(window, text='Date format ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                                date_format_lb, True)
-date_format_menu = tk.OptionMenu(window, date_format, 'mm-dd-yyyy', 'dd-mm-yyyy', 'yyyy-mm-dd', 'yyyy-dd-mm', 'yyyy-mm',
-                                 'yyyy')
-date_format_menu.configure(width=10, state="disabled")
+date_format_menu = GUI_theme_util.create_option_menu(window, variable=date_format, values=['mm-dd-yyyy', 'dd-mm-yyyy', 'yyyy-mm-dd', 'yyyy-dd-mm', 'yyyy-mm',
+                                 'yyyy'], width=10)
+date_format_menu.configure(state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 90, y_multiplier_integer,
                                                date_format_menu, True)
 
-items_separator_var_lb = tk.Label(window, text='Date character separator ')
+items_separator_var_lb = GUI_theme_util.create_label(window, text='Date character separator ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 210, y_multiplier_integer,
                                                items_separator_var_lb, True)
-items_separator_var_menu = tk.Entry(window, textvariable=items_separator_var)
-items_separator_var_menu.configure(width=2, state="disabled")
+items_separator_var_menu = GUI_theme_util.create_entry(window, textvariable=items_separator_var, width=2)
+items_separator_var_menu.configure(state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 360, y_multiplier_integer,
                                                items_separator_var_menu, True)
 
-date_position_var_menu_lb = tk.Label(window, text='Date position ')
+date_position_var_menu_lb = GUI_theme_util.create_label(window, text='Date position ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 390, y_multiplier_integer,
                                                date_position_var_menu_lb, True)
-date_position_var_menu = tk.OptionMenu(window, date_position_var, 1, 2, 3, 4, 5)
-date_position_var_menu.configure(width=4, state="disabled")
+date_position_var_menu = GUI_theme_util.create_option_menu(window, variable=date_position_var, values=[1, 2, 3, 4, 5], width=4)
+date_position_var_menu.configure(state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 490, y_multiplier_integer,
                                                date_position_var_menu)
 
 check_filename_var.set(0)
-check_filename_checkbox = tk.Checkbutton(window, text='Check the filenames well-formedness',
+check_filename_checkbox = GUI_theme_util.create_checkbox(window, text='Check the filenames well-formedness',
                                          variable=check_filename_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                check_filename_checkbox)
 
 character_var.set(0)
-character_checkbox = tk.Checkbutton(window, text='Find the character & the ancestor (via WordNet, VerbNet, FrameNet)',
+character_checkbox = GUI_theme_util.create_checkbox(window, text='Find the character & the ancestor (via WordNet, VerbNet, FrameNet)',
                                     variable=character_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                character_checkbox)
 
 missing_character_var.set(0)
-missing_character_checkbox = tk.Checkbutton(window, text='Find the missing character', variable=missing_character_var,
+missing_character_checkbox = GUI_theme_util.create_checkbox(window, text='Find the missing character', variable=missing_character_var,
                                             onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                missing_character_checkbox, True)
 
 NER_var.set(0)
-NER_checkbox = tk.Checkbutton(window, text='NER (Named Entity Recognition) ', state="disabled", variable=NER_var,
+NER_checkbox = GUI_theme_util.create_checkbox(window, text='NER (Named Entity Recognition) ', state="disabled", variable=NER_var,
                               onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                                NER_checkbox)
 
 Levenshtein_var.set(0)
-Levenshtein_checkbox = tk.Checkbutton(window, text="Check the character's name tag", variable=Levenshtein_var,
+Levenshtein_checkbox = GUI_theme_util.create_checkbox(window, text="Check the character's name tag", variable=Levenshtein_var,
                                       onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                Levenshtein_checkbox)
 
 character_home_var.set(0)
-character_home_checkbox = tk.Checkbutton(window, text="Find the character's home", variable=character_home_var,
+character_home_checkbox = GUI_theme_util.create_checkbox(window, text="Find the character's home", variable=character_home_var,
                                          onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                character_home_checkbox)
 
 intruder_var.set(0)
-intruder_checkbox = tk.Checkbutton(window, text='Find the intruder', variable=intruder_var, onvalue=1, offvalue=0)
+intruder_checkbox = GUI_theme_util.create_checkbox(window, text='Find the intruder', variable=intruder_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                intruder_checkbox, True)
 
 similarityIndex_Intruder_var.set(0.2)
-similarityIndex_Intruder_menu_lb = tk.Label(window, text='Relativity index threshold')
+similarityIndex_Intruder_menu_lb = GUI_theme_util.create_label(window, text='Relativity index threshold')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                                similarityIndex_Intruder_menu_lb, True)
-similarityIndex_Intruder_menu = tk.OptionMenu(window, similarityIndex_Intruder_var, .1, .15, .2, .25, .3, .35, .4, .45,
-                                              .5, .55, .6, .65, .7, .75, .8, .85, .9)
+similarityIndex_Intruder_menu = GUI_theme_util.create_option_menu(window, variable=similarityIndex_Intruder_var, values=[.1, .15, .2, .25, .3, .35, .4, .45,
+                                              .5, .55, .6, .65, .7, .75, .8, .85, .9])
 similarityIndex_Intruder_menu.configure(state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 170, y_multiplier_integer,
                                                similarityIndex_Intruder_menu,
@@ -525,16 +526,16 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_co
                                                "Select the threshold BELOW which a document is flagged as an intruder, i.e., as not belonging to the folder (event) it is filed in.\n\nThe index is a cosine similarity computed between the social actors and named entities of a document and those of all the other documents filed in the same folder.\n\nThe default value is 0.2. Raising the threshold flags more documents: set it above .6 and nearly every document becomes an intruder. The recommended range is below .4.")
 
 plagiarist_var.set(0)
-plagiarist_checkbox = tk.Checkbutton(window, text='Find the plagiarist', variable=plagiarist_var, onvalue=1, offvalue=0)
+plagiarist_checkbox = GUI_theme_util.create_checkbox(window, text='Find the plagiarist', variable=plagiarist_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                plagiarist_checkbox, True)
 
 similarityIndex_Plagiarist_var.set(.8)
-similarityIndex_Plagiarist_menu_lb = tk.Label(window, text='Similarity index ')
+similarityIndex_Plagiarist_menu_lb = GUI_theme_util.create_label(window, text='Similarity index ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                                similarityIndex_Plagiarist_menu_lb, True)
-similarityIndex_Plagiarist_menu = tk.OptionMenu(window, similarityIndex_Plagiarist_var, .4, .45, .5, .55, .6,
-                                                .65, .7, .75, .8, .85, .9)
+similarityIndex_Plagiarist_menu = GUI_theme_util.create_option_menu(window, variable=similarityIndex_Plagiarist_var, values=[.4, .45, .5, .55, .6,
+                                                .65, .7, .75, .8, .85, .9])
 similarityIndex_Plagiarist_menu.configure(state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 170, y_multiplier_integer,
                                                similarityIndex_Plagiarist_menu,
@@ -556,13 +557,13 @@ window.bind("<Escape>", clear)
 
 def activate_dateOptions(*args):
     if fileName_embeds_date.get() == False:
-        date_format_menu.configure(width=10, state="disabled")
-        items_separator_var_menu.configure(width=2, state="disabled")
-        date_position_var_menu.configure(width=4, state="disabled")
+        date_format_menu.configure(state="disabled")
+        items_separator_var_menu.configure(state="disabled")
+        date_position_var_menu.configure(state="disabled")
     else:
-        date_format_menu.configure(width=10, state="normal")
-        items_separator_var_menu.configure(width=2, state="normal")
-        date_position_var_menu.configure(width=4, state="normal")
+        date_format_menu.configure(state="normal")
+        items_separator_var_menu.configure(state="normal")
+        date_position_var_menu.configure(state="normal")
 
 
 fileName_embeds_date.trace('w', activate_dateOptions)

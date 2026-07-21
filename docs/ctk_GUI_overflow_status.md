@@ -73,7 +73,8 @@ general-purpose knob — see the row-splitting technique above.
 
 | GUI | overflow (px) |
 |---|---|
-| `sample_corpus_main.py` | +426 |
+| `sample_corpus_main.py` | +419 (was +426; essentially unchanged by the final Phase 3 tranche's widget-factory conversion, `ctk/phase3-remaining-tools`) |
+| `data_manipulation_main.py` | +157 (newly measured in the final Phase 3 tranche -- never catalogued here before since the GUI was still all-raw-tk. Driven by the single-row operations layout, which packs a field dropdown + separator entry + WHERE button + two '+' buttons + OK button across one wide row.) |
 | `DB_PCACE_data_analysis_main.py` | +297 (was +301, essentially unchanged by the Phase 3 DB/PCACE widget-factory conversion) |
 | `GIS_Google_Earth_main.py` | +276 (was +388; narrowing `IO_setup_brief_display_area` above closed part of it) |
 | `NLP_setup_package_language_main.py` | +731 (uncoverable before this tranche — the GUI crashed on open, see below) |
@@ -102,6 +103,10 @@ multi-hundred-MB models and exit before the window builds when optional ML deps 
 `tensorflow`, ...) are missing, same pre-existing gap as its `gui_smoke` `UNCOV` status. Needs
 measuring in a full Anaconda env. `GIS_distance_main.py` (+0) and `GIS_symbolic_main.py` (-88) measured
 clean on the 1470x956 reference screen.
+
+The final Phase 3 tranche's other 4 GUIs (`ctk/phase3-remaining-tools`, 2026-07-21) all measured
+clean on the 1470x956 reference screen: `SRL_main.py` (-88), `knowledge_graphs_DBpedia_YAGO_main.py`
+(-236), `corpus_checker_PCACE_data_main.py` (-224), `statistics_csv_main.py` (-58).
 
 Every other GUI measured zero or negative (fits with room to spare).
 

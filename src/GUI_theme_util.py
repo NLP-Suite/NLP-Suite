@@ -459,7 +459,11 @@ def create_option_menu(master, variable=None, values=None, command=None, muted=F
     if variable is not None:
         translated["variable"] = variable
     if values is not None:
-        translated["values"] = list(values)
+        # CTkOptionMenu's internal DropdownMenu calls value.ljust(...) on every item unconditionally --
+        # a legacy tk.OptionMenu(var, 1, 2, 3) or a float threshold list (.1, .15, ...) crashes with
+        # AttributeError: 'int'/'float' object has no attribute 'ljust' the moment the widget is built.
+        # A bound IntVar/DoubleVar still parses the string back fine at .get() time.
+        translated["values"] = [str(v) for v in values]
     if command is not None:
         translated["command"] = command
     return _ThemedOptionMenu(master, **translated)
@@ -480,7 +484,9 @@ def create_combobox(master, values=None, **kwargs):
         kwargs["variable"] = kwargs.pop("textvariable")
     translated = translate_kwargs(ctk.CTkComboBox, kwargs)
     if values is not None:
-        translated["values"] = list(values)
+        # same non-string crash as create_option_menu -- CTkComboBox feeds its values into the same
+        # DropdownMenu, whose .ljust(...) call requires strings.
+        translated["values"] = [str(v) for v in values]
     return _ThemedComboBox(master, **translated)
 
 
@@ -580,7 +586,9 @@ def set_values(widget, values, default=None):
     Pass ``default`` to also select an item (e.g. the first) after repopulating. Returns the
     normalized list actually set.
     """
-    values = list(values)
+    # non-string items (int/float column indices, thresholds, ...) crash CTk's DropdownMenu -- see
+    # create_option_menu.
+    values = [str(v) for v in values]
     widget.configure(values=values)
     if default is not None:
         widget.set(default)

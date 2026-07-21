@@ -10,6 +10,7 @@ import tkinter.messagebox as mb
 import config_util
 import IO_files_util
 import GUI_IO_util
+import GUI_theme_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -143,7 +144,7 @@ y_multiplier_integer= y_multiplier_integer +.5
 #                                                corpus_sampling_lb)
 
 sample_by_documentID_var = tk.IntVar()
-sample_by_documentID_checkbox = tk.Checkbutton(window, text='Sample files by Document ID', variable=sample_by_documentID_var,
+sample_by_documentID_checkbox = GUI_theme_util.create_checkbox(window, text='Sample files by Document ID', variable=sample_by_documentID_var,
                                     onvalue=1, command=lambda:activate_all_options())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -151,14 +152,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Tick the checkbox if you wish to sample your corpus by Document Ids contained in a csv file (csv file created by one of the NLP Suite algorithms)")
 
-sample_by_documentID_button = tk.Button(window, text='Select csv file',width=GUI_IO_util.widget_width_extra_short,command=lambda: get_file(window,'Select INPUT csv file', [("csv files", "*.csv")]))
+sample_by_documentID_button = GUI_theme_util.create_button(window, text='Select csv file',width=GUI_IO_util.widget_width_extra_short,command=lambda: get_file(window,'Select INPUT csv file', [("csv files", "*.csv")]))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                sample_by_documentID_button, True, False, True, False, 90,
                                                GUI_IO_util.IO_configuration_menu, "Click on the button to select the input csv file")
 
 # setup a button to open Windows Explorer on open the csv file
-openFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+openFile_button = GUI_theme_util.create_open_file_button(window,
                                  command=lambda: IO_files_util.openFile(window,
                                                                         selectedFile_var.get()))
 
@@ -169,12 +170,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief
                                                openFile_button, True, False, True, False, 90, GUI_IO_util.setup_pop_up_text_widget, "Open selected csv file")
 
 selectedFile_var.set('')
-selectedFile=tk.Entry(window, width=GUI_IO_util.widget_width_medium,textvariable=selectedFile_var)
-selectedFile.config(state='disabled')
+selectedFile=GUI_theme_util.create_entry(window, width=GUI_IO_util.widget_width_medium,textvariable=selectedFile_var)
+selectedFile.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate+80, y_multiplier_integer,selectedFile)
 
 sample_by_date_var = tk.IntVar()
-sample_by_date_checkbox = tk.Checkbutton(window, text='Sample files by date in filename', variable=sample_by_date_var,
+sample_by_date_checkbox = GUI_theme_util.create_checkbox(window, text='Sample files by date in filename', variable=sample_by_date_var,
                                     onvalue=1, command=lambda:activate_all_options())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -230,14 +231,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 #                                                GUI_IO_util.open_reminders_x_coordinate,
 #                                                'Select the date position in the filename, starting with 1 if the date is the first item in the filename\nIn New York Time_01-15-1999_4_3, 2 is the date position as the second embedded item')
 
-where_lb = tk.Label(window, text='WHERE clause')
+where_lb = GUI_theme_util.create_label(window, text='WHERE clause')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                where_lb, True)
 
 date_menu_var = tk.StringVar()
 date_values = ['Entire date', 'month', 'day', 'year']
 
-date_menu = tk.OptionMenu(window, date_menu_var, *date_values)  # , command=lambda:extractSelection()
+date_menu = GUI_theme_util.create_option_menu(window, variable=date_menu_var, values=date_values)  # , command=lambda:extractSelection()
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                GUI_IO_util.IO_configuration_menu + 100,
@@ -251,7 +252,7 @@ comparator_var = tk.StringVar()
 comp_menu_values = ['<>', '=', '>', '>=', '<', '<=']
 ##
 # select_csv_field_extract_menu = tk.OptionMenu(window, select_csv_field_extract_var, *menu_values, command=lambda:activate_csv_fields_selection('extract', extract_var.get(), False, False))
-comparator_menu = tk.OptionMenu(window, comparator_var, *comp_menu_values)  # , command=lambda:extractSelection()
+comparator_menu = GUI_theme_util.create_option_menu(window, variable=comparator_var, values=comp_menu_values)  # , command=lambda:extractSelection()
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                GUI_IO_util.setup_IO_brief_coordinate,
@@ -263,35 +264,34 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
 
 date_value_var = tk.StringVar()
 date_value_var.set('')
-date_value = tk.Entry(window,width=GUI_IO_util.widget_width_medium,textvariable=date_value_var)
+date_value = GUI_theme_util.create_entry(window,width=GUI_IO_util.widget_width_medium,textvariable=date_value_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate+80, y_multiplier_integer,
                     date_value, False, False, True, False,
                     90, GUI_IO_util.date_char_sep_lb_coordinate,
                     "Enter the date value to be used in filtering files by date (e.g., 1995, 12-11-1898)")
 
-date_distance_value_lb = tk.Label(window, text='Date distance ')
+date_distance_value_lb = GUI_theme_util.create_label(window, text='Date distance ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer, date_distance_value_lb,True)
 
 date_distance_value_var=tk.StringVar()
-date_distance_value = tk.Entry(window, textvariable=date_distance_value_var)
-date_distance_value.configure(width=4)
+date_distance_value = GUI_theme_util.create_entry(window, textvariable=date_distance_value_var, width=4)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+100, y_multiplier_integer,
                     date_distance_value, True, False, True, False,
                     90, GUI_IO_util.IO_configuration_menu+100,
                     "Enter the distance as an integer value to be used in computing the distance between dates (e.g., 1, 6 for a distance of 1 or 6 day/month/year)")
 
-date_type_lb = tk.Label(window, text='Date type ')
+date_type_lb = GUI_theme_util.create_label(window, text='Date type ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+210,y_multiplier_integer, date_type_lb,True)
 
 date_type_var=tk.StringVar()
-date_type = tk.OptionMenu(window, date_type_var, 'day', 'month','year')
+date_type = GUI_theme_util.create_option_menu(window, variable=date_type_var, values=['day', 'month','year'])
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+300, y_multiplier_integer,
                     date_type, False, False, True, False,
                     90, GUI_IO_util.IO_configuration_menu+100,
                     "Select the date type to be used to compute the date distance (e.g., month)")
 
 sample_by_keywords_inFilename_var = tk.IntVar()
-sample_by_keywords_inFilename_checkbox = tk.Checkbutton(window, text='Sample files by string in filename', variable=sample_by_keywords_inFilename_var,
+sample_by_keywords_inFilename_checkbox = GUI_theme_util.create_checkbox(window, text='Sample files by string in filename', variable=sample_by_keywords_inFilename_var,
                                     onvalue=1, command=lambda:activate_all_options())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -301,7 +301,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 
 keywords_inFilename_var = tk.StringVar()
 keywords_inFilename_var.set('')
-keywords_inFilename_value = tk.Entry(window,width=GUI_IO_util.widget_width_long,textvariable=keywords_inFilename_var)
+keywords_inFilename_value = GUI_theme_util.create_entry(window,width=GUI_IO_util.widget_width_long,textvariable=keywords_inFilename_var)
 
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                     keywords_inFilename_value, False, False, True, False,
@@ -310,7 +310,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration
 
 sample_by_keywords_inDocument_var = tk.IntVar()
 sample_by_keywords_inDocument_var.set(0)
-sample_by_keywords_inDocument_checkbox = tk.Checkbutton(window, text='Sample corpus by search word(s)', variable=sample_by_keywords_inDocument_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
+sample_by_keywords_inDocument_checkbox = GUI_theme_util.create_checkbox(window, text='Sample corpus by search word(s)', variable=sample_by_keywords_inDocument_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                     sample_by_keywords_inDocument_checkbox, True, False, True, False,
@@ -319,7 +319,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 keywords_inDocument_var = tk.StringVar()
 keywords_inDocument_var.set('')
-keywords_inDocument_value = tk.Entry(window,width=GUI_IO_util.widget_width_long,textvariable=keywords_inDocument_var)
+keywords_inDocument_value = GUI_theme_util.create_entry(window,width=GUI_IO_util.widget_width_long,textvariable=keywords_inDocument_var)
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                     keywords_inDocument_value, False, False, True, False,

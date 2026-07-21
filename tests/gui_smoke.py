@@ -170,6 +170,26 @@ _STUB_ROOTS = {'stanza','spacy','nltk','torch','torchvision','transformers','sen
 # So the stub below reproduces those three contracts and nothing else it doesn't have to. It also
 # records `text=` into _texts like `_rec` does, which keeps GOLDEN label checks working for GUIs once
 # their widgets move to GUI_theme_util factories.
+def _check_values_are_strings(values):
+    # Real CTkOptionMenu/CTkComboBox feed `values=` into customtkinter's DropdownMenu, whose
+    # _add_menu_commands() calls value.ljust(...) on every item UNCONDITIONALLY -- a legacy
+    # tk.OptionMenu(var, 1, 2, 3) or a float-threshold list (.1, .15, ...) passed straight through
+    # crashes with AttributeError the moment the real widget builds. A MagicMock/permissive stub
+    # would swallow this silently (found only by importing a real Tk + real CTk root, which this
+    # headless harness deliberately avoids), so mirror the crash here too.
+    if values is None:
+        return
+    for v in values:
+        if not isinstance(v, str):
+            raise TypeError(
+                "CTkOptionMenu/CTkComboBox values=%r contains a non-string item (%r) -- CTk's "
+                "DropdownMenu calls value.ljust(...) on every item and crashes on int/float. "
+                "Coerce with values=[str(v) for v in ...] (or pass through set_values/"
+                "create_option_menu/create_combobox, which now str()-coerce automatically)."
+                % (values, v)
+            )
+
+
 class _CTkWidget(object):
     # The parameters are spelled out (rather than a bare **k) because GUI_theme_util.translate_kwargs
     # filters translated kwargs against `inspect.signature(cls.__init__)`: a `(*a, **k)` stub reports
@@ -190,6 +210,7 @@ class _CTkWidget(object):
         if text is not None:
             try: _texts.append(str(text))
             except Exception: pass
+        _check_values_are_strings(values)
 
     def config(self, *a, **k):
         # Mirrors customtkinter.CTkBaseClass.config, which exists only to raise.
@@ -207,6 +228,7 @@ class _CTkWidget(object):
         if t is not None:
             try: _texts.append(str(t))
             except Exception: pass
+        _check_values_are_strings(k.get('values'))
         self._opts.update(k)
 
     def cget(self, key):

@@ -313,8 +313,8 @@ YOU CAN GO BACK TO THE ORIGINAL DISPLAY BY CLICKING THE REFRESH BUTTON IN YOUR B
 *,Word2Vec Eucledian distance,The Word2Vec algorithms compute the Eucledian distance of every word with every other word for the 10 most frequent words. You can use this csv file to locate the most significant words in the Cartesian space.,OFF
 *,NLP setup options,"Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.
 
-Your selected corpus language is .
-Your selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is .
+Your selected corpus language is English.
+Your selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is Stanza.
 
 You can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language.",OFF
 *,SVO output,"The SVO pipeline will create in output an SVO subdirectory inside the main output directory.

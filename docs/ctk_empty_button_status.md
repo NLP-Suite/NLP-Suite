@@ -2,7 +2,8 @@
 
 Tracking widgets that render with **no visible content** — the small blank slivers and unlabeled
 squares users read as "the GUI is broken". First audited 2026-07-18 against `ctk/phase1-grid`;
-re-measured 2026-07-18 against `ctk/phase3-gis-tools` (`e860eb9d`).
+re-measured 2026-07-18 against `ctk/phase3-gis-tools` (`e860eb9d`). **Fully cleared 2026-07-21**
+against `ctk/phase3-remaining-tools`.
 
 ## Background
 
@@ -48,11 +49,10 @@ That leaves **one** `state='disabled'` site open (`DB_SQL_main.py:1433`) — the
 done. The remaining `html_annotator_gender_main.py:374` grep hit is a **commented-out** line, not a
 live widget.
 
-## Remaining empty open-file buttons
+## Open-file buttons (all cleared)
 
-**7 sites across 5 files remain** (13 sites at the first audit). All are the `width=1,
-text=''` pattern above unless noted. Line numbers are unchanged from the first audit for files not
-yet touched.
+All were the `width=1, text=''` pattern above unless noted. Line numbers are unchanged from the
+first audit for files not yet touched at the time.
 
 > **GIS tools (2026-07-18, `ctk/phase3-gis-tools`)** cleared their 3 sites (`GIS_main.py` 535 + 779,
 > `GIS_distance_main.py` 259, `GIS_symbolic_main.py` 310) via `create_open_file_button`, and the
@@ -73,11 +73,13 @@ yet touched.
 > on the Categorical tab's Comparative row) via `create_open_file_button`, as part of the Phase 4
 > re-layout of the whole GUI (7 notebook tabs, ~140 `.place()` calls → `CTkTabview` + grid rows).
 
-| GUI | line | what it opens |
-|---|---|---|
-| `sample_corpus_main.py` | 161 | sample corpus file |
-| `SRL_main.py` | 109 | input csv file |
-| `data_manipulation_main.py` | 221 | input file |
+> **Final Phase 3 tranche (2026-07-21, `ctk/phase3-remaining-tools`)** cleared the last 3 sites
+> (`sample_corpus_main.py` 161, `SRL_main.py` 109, `data_manipulation_main.py` 221) via
+> `create_open_file_button`. **This table is now empty** -- every GUI in `src/` has been converted
+> except the Phase 4 hard cases (`charts_Excel_main.py`, `narrative_analysis_ALL_main.py`,
+> `license_GUI.py`), which were never counted here since they were always tracked separately.
+
+All sites cleared.
 
 ## Secondary: placeholder `tk.Button()` forward declarations
 
