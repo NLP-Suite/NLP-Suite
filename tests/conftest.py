@@ -50,6 +50,10 @@ _INFRA_STUBS = [
 # helpers. Dotted submodules must be registered explicitly so that
 # ``from nltk.stem.porter import PorterStemmer`` resolves against the stub.
 _HEAVY_STUBS = [
+    # CI installs pytest and nothing else, so anything imported at module top by a module under
+    # test must be stubbed here or collection fails -- and a collection error aborts the WHOLE run,
+    # not just the one file. requests is imported by the DBpedia/YAGO/Wikipedia annotators.
+    "requests",
     "stanza",
     "spacy",
     "textstat",
