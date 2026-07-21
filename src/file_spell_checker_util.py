@@ -21,7 +21,7 @@ from tkinter import filedialog
 # import nltk
 import pandas
 import pandas as pd
-from stanfordcorenlp import StanfordCoreNLP # python wrapper for Stanford CoreNLP
+import config_aware_parser_util  # picks the parser (CoreNLP / Stanza / spaCy) selected in the NLP Suite setup
 import collections
 import tkinter.messagebox as mb
 from autocorrect import Speller
@@ -445,14 +445,19 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
     ner_dict = {}
     all_words_in_documents = set()
     word_occurrences = {}  # Key: word, Value: list of (filename, sentence_number)
-    # check that the CoreNLPdir has been setup
-    CoreNLPDir, existing_software_config, errorFound = IO_libraries_util.external_software_install('file_spell_checker_util',
-                                                                                         'Stanford CoreNLP',
-                                                                                         '',
-                                                                                         silent=False, errorFound=False)
+    # The tool runs on whichever NLP package was selected in the NLP Suite setup, so the Stanford CoreNLP
+    # directory is demanded ONLY when CoreNLP is that package; Stanza/spaCy users are not sent off to
+    # install Java and CoreNLP for a tool that no longer needs them.
+    CoreNLPDir = ''
+    if config_aware_parser_util.requires_CoreNLP():
+        # check that the CoreNLPdir has been setup
+        CoreNLPDir, existing_software_config, errorFound = IO_libraries_util.external_software_install('file_spell_checker_util',
+                                                                                             'Stanford CoreNLP',
+                                                                                             '',
+                                                                                             silent=False, errorFound=False)
 
-    if CoreNLPDir == None or CoreNLPDir=='':
-        return
+        if CoreNLPDir == None or CoreNLPDir=='':
+            return
     if by_all_tokens_var or inputCsvDictionaryFile!='':
         pass
     else:
@@ -486,13 +491,46 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity start', 'Started running Word similarity at',
                                                  True, '', True, '', True)
 
-    # TODO which annotators is it using? We do not need all annotators! Sentence splitter and tokenizer (and NER)
-    p = subprocess.Popen(
-        [IO_libraries_util.get_java_executable(), '-mx' + str(5) + "g", '-cp', os.path.join(CoreNLPDir, '*'),
-         'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
-    time.sleep(5)
+    # Warn BEFORE any parsing: CITY/COUNTRY/STATE_OR_PROVINCE exist only in CoreNLP's model, so under
+    # Stanza/spaCy they match nothing and the run would end with an empty output the user would read as
+    # 'no misspellings found'.
+    if not by_all_tokens_var and inputCsvDictionaryFile == '':
+        unsupported = config_aware_parser_util.unsupported_NER_tags(NERs)
+        if unsupported:
+            package, _ = config_aware_parser_util.configured_package_language()
+            usable = [n for n in NERs if n not in unsupported]
+            if not usable:
+                mb.showwarning(title='NER tags not available',
+                               message='The NER tag(s) ' + ', '.join(unsupported) + ' are only computed by Stanford '
+                               'CoreNLP.\n\n' + package + ', the NLP package selected in the NLP Suite setup, uses a '
+                               'model in which cities, states and countries are all a single LOCATION entity.\n\nNo '
+                               'other NER tag was selected, so there would be nothing to check.\n\nPlease, select '
+                               'LOCATION, ORGANIZATION or PERSON instead, or select Stanford CoreNLP in the NLP Suite '
+                               'setup, and try again.')
+                return
+            mb.showwarning(title='NER tags not available',
+                           message='The NER tag(s) ' + ', '.join(unsupported) + ' are only computed by Stanford '
+                           'CoreNLP.\n\n' + package + ', the NLP package selected in the NLP Suite setup, uses a model '
+                           'in which cities, states and countries are all a single LOCATION entity.\n\nThe run will '
+                           'continue using the remaining tag(s): ' + ', '.join(usable) + '.')
+            NERs = usable
 
-    print('Starting to run Stanford CoreNLP to prepare data for each folder and file.')
+    # The CoreNLP SERVER is a Java process, so it is started only when CoreNLP is the configured package.
+    # Stanza and spaCy run in-process and need nothing started or torn down.
+    p = None
+    if config_aware_parser_util.requires_CoreNLP():
+        # TODO which annotators is it using? We do not need all annotators! Sentence splitter and tokenizer (and NER)
+        p = subprocess.Popen(
+            [IO_libraries_util.get_java_executable(), '-mx' + str(5) + "g", '-cp', os.path.join(CoreNLPDir, '*'),
+             'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
+        time.sleep(5)
+
+    print('Starting to run ' + config_aware_parser_util.configured_package_language()[0] +
+          ' to prepare data for each folder and file.')
+
+    # Built ONCE, outside the per-file loop. It used to be rebuilt for every file, which was merely
+    # wasteful for CoreNLP (an HTTP client) but would reload the whole Stanza/spaCy model per document.
+    NLP = config_aware_parser_util.get_parser(CoreNLPDir)
 
     files=IO_files_util.getFileList('', inputDir, fileType='txt', silent=False, configFileName='')
     nDocs = len(files)
@@ -520,7 +558,6 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
         with open(dir_path, 'r', encoding='utf-8', errors='ignore') as src:
             text = src.read().replace("\n", " ")
             text = text.replace("%", "percent")
-            NLP = StanfordCoreNLP('http://localhost', port=9000)
         from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
         sentences = sentence_split_stanza_text(stanzaPipeLine(text))
         documents.append([sentences, filename, dir_path])
@@ -797,7 +834,9 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
         filesToOpen=[] # empty the list to avoid opening files twice
 
-    p.kill()
+    NLP.close()
+    if p is not None:  # only CoreNLP starts a Java server; there is nothing to kill for Stanza/spaCy
+        p.kill()
 
     return filesToOpen
 

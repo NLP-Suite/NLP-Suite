@@ -120,6 +120,20 @@ def requires_CoreNLP():
     return ('stanford' in p) or ('corenlp' in p)
 
 
+# Stanford CoreNLP's model emits fine-grained location entities that the OntoNotes model behind Stanza
+# and spaCy simply does not have: there, a city, a state and a country are all GPE, which _NER_MAP folds
+# into LOCATION. Requesting one of these under Stanza/spaCy matches nothing whatsoever, so a caller must
+# say so rather than hand back an empty result and let the user read it as "no misspellings found".
+_CORENLP_ONLY_NER = {'CITY', 'COUNTRY', 'STATE_OR_PROVINCE'}
+
+
+def unsupported_NER_tags(requested):
+    """Of the requested NER tags, those the CONFIGURED package cannot produce (empty list for CoreNLP)."""
+    if requires_CoreNLP():
+        return []
+    return [t for t in requested if str(t).upper() in _CORENLP_ONLY_NER]
+
+
 def get_parser(CoreNLPDir=''):
     """Convenience: build a ConfigParser for the configured package/language."""
     package, language = configured_package_language()
