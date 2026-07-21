@@ -106,9 +106,9 @@ def run():
         run_script_util.run_script("semantic_aggregation_main.py")
 
     if characters_DBpedia_YAGO_var == True or characters_DBpedia_YAGO_var == True or space_DBpedia_YAGO_var==True or action_DBpedia_YAGO_var == True:
-        if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_DBpedia_YAGO_main.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_main.py') == False:
             return
-        run_script_util.run_script("knowledge_graphs_DBpedia_YAGO_main.py")
+        run_script_util.run_script("knowledge_graphs_main.py")
 
     if characters_byGender_CoreNLP_var == True or characters_DBpedia_YAGO_var == True or characters_byGender_dict_var == True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_gender_main.py') == False:

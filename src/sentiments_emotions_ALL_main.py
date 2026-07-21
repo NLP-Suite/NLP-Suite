@@ -84,7 +84,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_YAGO_GUI_button = tk.Button(window, text='YAGO searches (Emotion ontology class) (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: run_script_util.run_script("knowledge_graphs_DBpedia_YAGO_main.py"))
+open_YAGO_GUI_button = tk.Button(window, text='YAGO searches (Emotion ontology class) (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: run_script_util.run_script("knowledge_graphs_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_YAGO_GUI_button,

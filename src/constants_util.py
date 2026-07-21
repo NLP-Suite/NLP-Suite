@@ -632,7 +632,7 @@ NLP_Suite_corpus_document_tools_menu = \
 'Specialized tools --------------------------------------------------------------------------------', \
 '', \
 'Geographic maps: From texts to maps via Google Earth Pro and Google Maps', \
-'Knowledge graphs: DBpedia & YAGO', \
+'Knowledge graphs: DBpedia, YAGO & Wikipedia', \
 'NER (Named Entity Recognition) annotator', \
 'Narrative analysis (ALL options GUI)', \
 'Semantic analysis', \

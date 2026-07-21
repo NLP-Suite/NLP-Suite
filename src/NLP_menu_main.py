@@ -217,7 +217,7 @@ pydict["CoreNLP annotator - gender (male & female names; via CoreNLP and diction
 pydict["CoreNLP annotator - quote"] = ["parsers_annotators_main.py", 1]
 pydict["CoreNLP annotator - coreference (pronominal)"] = ["coreference_main.py", 1]
 pydict["SVO (Subject-Verb-Object) extractor & visualization"] = ["SVO_main.py", 1]
-pydict["Knowledge graphs: DBpedia & YAGO"] = ["knowledge_graphs_DBpedia_YAGO_main.py", 1]
+pydict["Knowledge graphs: DBpedia, YAGO & Wikipedia"] = ["knowledge_graphs_main.py", 1]
 pydict["HTML annotator - dictionary, gender, DBpedia, YAGO, WordNet - (All options GUI)"] = ["html_annotator_main.py", 1]
 pydict["HTML annotator extractor"] = ["html_annotator_main.py", 1]
 pydict["Annotator - hedge/uncertainty"] = ["", 0]

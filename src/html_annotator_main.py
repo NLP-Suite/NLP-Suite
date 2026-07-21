@@ -46,9 +46,9 @@ def run():
     filesToOpen=[]
 
     if knowledge_graphs_DBpedia_YAGO_var==True:
-        if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_DBpedia_YAGO_main.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_main.py') == False:
             return
-        run_script_util.run_script("knowledge_graphs_DBpedia_YAGO_main.py")
+        run_script_util.run_script("knowledge_graphs_main.py")
 
     if semantic_aggregation_WordNet_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('semantic_aggregation_main.py') == False:
@@ -173,7 +173,7 @@ html_annotator_add_dictionary_var=tk.IntVar() # to add new annotations via dicti
 html_annotator_dictionary_file_var=tk.StringVar() # dictionary file used to annotate
 html_annotator_extractor_var=tk.IntVar() # to extract annotations in csv format from an annotated file
 
-knowledge_graphs_DBpedia_YAGO_button = tk.Button(window, width=GUI_IO_util.widget_width_long, text='HTML annotate corpus using the DBpedia & YAGO knowledge graphs (Open GUI)', command=lambda: run_script_util.run_script("knowledge_graphs_DBpedia_YAGO_main.py"))
+knowledge_graphs_DBpedia_YAGO_button = tk.Button(window, width=GUI_IO_util.widget_width_long, text='HTML annotate corpus using the DBpedia, YAGO & Wikipedia knowledge graphs (Open GUI)', command=lambda: run_script_util.run_script("knowledge_graphs_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    knowledge_graphs_DBpedia_YAGO_button,

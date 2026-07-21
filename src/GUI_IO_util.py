@@ -577,7 +577,7 @@ if sys.platform == 'darwin':  # Mac OS
     wordclouds_reset_button = wordclouds_color_by_POS_tags + 55 # 965
     wordclouds_show_button = wordclouds_color_by_POS_tags + 128 # 1038
 
-#Mac: knowledge_graphs_DBpedia_YAGO_main.py
+#Mac: knowledge_graphs_main.py
     confidence_level_entry_pos = 870
     DBpedia_YAGO_ontology_width = 70
     knowledge_sub_class_entry_width = 70
@@ -962,7 +962,7 @@ else: #windows and anything else
     wordclouds_reset_button = wordclouds_color_by_POS_tags + 35
     wordclouds_show_button = wordclouds_color_by_POS_tags + 85
 
-# Windows: knowledge_graphs_DBpedia_YAGO_main.py
+# Windows: knowledge_graphs_main.py
     confidence_level_entry_pos = 770
     DBpedia_YAGO_ontology_width = 70
     knowledge_sub_class_entry_width = 70
