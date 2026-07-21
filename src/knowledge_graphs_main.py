@@ -111,10 +111,12 @@ def run():
         # surrounding text, leaving the links invisible.
         color1 = 'black'
         wikipedia_color = color_palette_var.get() or 'blue'
+        proper_nouns_only = ontology_class_var.get() != WIKIPEDIA_SCOPE_ALL_CONTENT
         filesToOpen = knowledge_graphs_Wikipedia_util.Wikipedia_annotate(inputFilename, inputDir, outputDir,
                                                                          config_filename,
                                                                          color1, [wikipedia_color],
-                                                                         chartPackage, dataTransformation)
+                                                                         chartPackage, dataTransformation,
+                                                                         proper_nouns_only)
 
     elif knowledge_graphs_var:
         # a knowledge base was selected that no annotator implements. Saying 'no options selected' here
@@ -531,6 +533,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.knowledge_sho
 firstTime = False
 # a one-element list, not a plain bool, so the trace callback can set it without a global declaration
 firstTime_Wikipedia = [False]
+# Wikipedia has no ontology classes, so its 'Ontology class' dropdown offers these two scopes
+# instead. Annotating proper nouns ONLY is a decision of the Suite, not of Wikipedia, which carries
+# articles for common nouns just as readily -- so the researcher gets to make it.
+WIKIPEDIA_SCOPE_PROPER_NOUNS = 'Proper nouns only (people, places, organizations)'
+WIKIPEDIA_SCOPE_ALL_CONTENT = 'All content words (also common nouns)'
+WIKIPEDIA_SCOPES = [WIKIPEDIA_SCOPE_PROPER_NOUNS, WIKIPEDIA_SCOPE_ALL_CONTENT]
 
 # https://www.python.org/download/mac/tcltk/
 # https://stackoverflow.com/questions/24207870/cant-reenable-menus-in-python-tkinter-on-mac
@@ -539,6 +547,10 @@ firstTime_Wikipedia = [False]
 # https://www.python.org/downloads/
 
 def activate_class_options(*args):
+    # for Wikipedia this dropdown is a scope selector, not a class list: leave it enabled and
+    # keep its value out of ontology_list, which drives the DBpedia/YAGO class machinery
+    if 'Wiki' in knowledge_graphs_var.get():
+        return
     if ontology_class_var.get() in ontology_list:
         mb.showwarning(title='Warning', message='The class "'+ ontology_class_var.get() + '" is already in your selection list: '+ str(ontology_list) + '.\n\nPlease, select another class.')
         window.focus_force()
@@ -619,27 +631,35 @@ def activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,con
         search_entry.configure(state="normal")
         # sub_class_entry.configure(state="normal")
     else:
-        # Wikipedia HAS an annotator, but it takes no ontology class: Wikipedia has no ontology, so an
-        # article either exists for a name or it does not. The class and search widgets therefore stay
-        # disabled by design -- but the colour palette is enabled, since the annotation still needs a
-        # colour, and a reminder explains why there is nothing else to fill in. Without that the row of
-        # grey widgets reads as a broken GUI rather than as a knowledge base that needs no configuring.
-        ontology_class.configure(state='disabled')
+        # Wikipedia has no ontology, so there is no CLASS to select -- but WHAT TO ANNOTATE is still a
+        # decision, and a scholarly one that belongs to the researcher rather than to this code.
+        # Wikipedia carries articles for common nouns as readily as for names and would link them
+        # without complaint; confining the annotation to proper nouns is the Suite's choice. The same
+        # dropdown therefore offers the two scopes: it already sits in the row where DBpedia and YAGO
+        # make their own what-to-annotate choice.
         search_entry.configure(state="disabled")
         # sub_class_entry.configure(state="disabled")
         if 'Wiki' in knowledge_graphs_var.get():
+            ontology_class['values'] = WIKIPEDIA_SCOPES
+            if ontology_class_var.get() not in WIKIPEDIA_SCOPES:
+                ontology_class_var.set(WIKIPEDIA_SCOPE_PROPER_NOUNS)
+            ontology_class.configure(state='normal')
             color_palette_DBpedia_YAGO_menu.configure(state='normal')
             if firstTime_Wikipedia[0] == False:
                 mb.showinfo(title='Wikipedia annotation',
-                            message='Wikipedia has no ontology, so there is no class to select: the '
-                            'annotator links every PROPER NOUN in your corpus that has a Wikipedia '
-                            'article. That is why the ontology class and search fields stay greyed '
-                            'out.\n\nOnly proper nouns are annotated. Nearly every common noun has an '
-                            'article too -- sheriff and lynching both do -- so annotating those as well '
-                            'would turn each document into a wall of links.\n\nPlease, select a colour '
-                            'for the annotation, then press RUN.')
+                            message='Wikipedia has no ontology, so the "Ontology class" dropdown offers '
+                            'instead a choice of WHAT to annotate:\n\n   ' + WIKIPEDIA_SCOPE_PROPER_NOUNS +
+                            '\n   ' + WIKIPEDIA_SCOPE_ALL_CONTENT + '\n\nProper nouns is the default and '
+                            'gives you entity linking: which name refers to which person, place or '
+                            'organization.\n\nNearly every common noun has an article too -- sheriff and '
+                            'lynching both do -- so the wider setting links a large share of the words in '
+                            'a document. Choose it when your question is which CONCEPTS have an '
+                            'encyclopaedic presence, rather than which people and places are '
+                            'named.\n\nPlease, select a colour for the annotation, then press RUN.')
                 window.focus_force()
                 firstTime_Wikipedia[0] = True
+        else:
+            ontology_class.configure(state='disabled')
 knowledge_graphs_var.trace('w',callback = lambda x,y,z: activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry))
 
 videos_lookup = {'No videos available':''}

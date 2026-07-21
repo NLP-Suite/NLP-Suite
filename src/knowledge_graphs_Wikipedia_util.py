@@ -7,11 +7,14 @@
 # It is the right tool when a corpus names people, places and organizations that never made it into an
 # ontology, which is the normal case for local nineteenth-century material.
 #
-# WHAT IT ANNOTATES: PROPER NOUNS ONLY (Stanza NNP/NNPS, including multi-word sequences such as
-# 'The Atlanta Constitution'). This is a deliberate restriction. Practically every common noun has a
-# Wikipedia article -- 'sheriff' and 'lynching' both resolve -- so annotating content words as DBpedia
-# and YAGO do, minus their ontology filter, would turn every page into a wall of links and say nothing.
-# Restricting to proper nouns makes the output ENTITY linking, which is what a knowledge graph gives.
+# WHAT IT ANNOTATES is the RESEARCHER's choice, offered in the GUI, not a property of Wikipedia:
+# Wikipedia carries articles for common nouns as readily as for names and would link them without
+# complaint. The default is PROPER NOUNS ONLY (Stanza NNP/NNPS, including multi-word sequences such as
+# 'The Atlanta Constitution'), which gives entity linking -- which name refers to which person, place
+# or organization. The alternative also looks up common nouns; since practically every one of them has
+# an article ('sheriff' and 'lynching' both resolve), that links a large share of the words in a
+# document, which is what you want only when the question is which CONCEPTS have an encyclopaedic
+# presence rather than which people and places are named.
 #
 # HOW: the MediaWiki API takes up to 50 titles per request and reports, in one round trip, which exist,
 # what they normalize to, and where they redirect -- so 'The Atlanta Constitution' correctly resolves to
@@ -113,6 +116,41 @@ def _collect_proper_noun_phrases(doc):
     return phrases
 
 
+# Universal POS tags that carry no lexical content and must never be looked up. YAGO's own collector
+# skips only VERB, DET, ADP, PRON and AUX, so conjunctions reach it: annotating 'and' against Wikipedia
+# is pure noise. This set is kept here rather than widened in the YAGO module, so that changing what
+# Wikipedia annotates does not quietly change what YAGO annotates.
+FUNCTION_POS = frozenset({'VERB', 'AUX', 'DET', 'ADP', 'PRON', 'CCONJ', 'SCONJ', 'PART',
+                          'INTJ', 'PUNCT', 'SYM', 'NUM', 'X'})
+
+
+def _collect_content_words(doc):
+    """Proper-noun sequences PLUS the content words of the document, lemmatized.
+
+    The wider of the two scopes the GUI offers. Walks the document the way _build_html does, so every
+    phrase it yields is one that can later be found in the cache.
+    """
+    phrases = set()
+    for sent in doc.sentences:
+        run = ''
+        for word in sent.words:
+            if word.xpos in ('NNP', 'NNPS'):
+                run += word.lemma + ' '
+                continue
+            if run:
+                phrase = run.strip()
+                if _eligible(phrase):
+                    phrases.add(phrase)
+                run = ''
+            if word.pos not in FUNCTION_POS and _eligible(word.lemma):
+                phrases.add(word.lemma)
+        if run:
+            phrase = run.strip()
+            if _eligible(phrase):
+                phrases.add(phrase)
+    return phrases
+
+
 def _batch_query_wikipedia(phrases, color, session):
     """{phrase: (url, 'Wikipedia article', color)} for phrases that have an article; None otherwise.
 
@@ -188,11 +226,18 @@ def _batch_query_wikipedia(phrases, color, session):
 
 
 def Wikipedia_annotate(inputFile, inputDir, outputDir, configFileName, color1, colorls,
-                       chartPackage='Excel', dataTransformation='No transformation'):
+                       chartPackage='Excel', dataTransformation='No transformation',
+                       proper_nouns_only=True):
     """Annotate every proper noun that has a Wikipedia article. Returns the files to open.
 
     Unlike DBpedia and YAGO this takes no ontology class, because Wikipedia has no ontology: an article
-    either exists for a name or it does not."""
+    either exists for a name or it does not.
+
+    *proper_nouns_only* is the RESEARCHER's choice, not a property of Wikipedia, which carries articles
+    for common nouns just as readily. True (the default) gives entity linking -- which name refers to
+    which person, place or organization. False looks up common nouns as well, which suits a question
+    about which CONCEPTS have an encyclopaedic presence, at the cost of linking a large share of the
+    words in every document."""
     ssl._create_default_https_context = ssl._create_unverified_context
 
     filesToOpen = []
@@ -209,7 +254,8 @@ def Wikipedia_annotate(inputFile, inputDir, outputDir, configFileName, color1, c
     startTime = IO_user_interface_util.timed_alert(
         GUI_util.window, 2000, 'Analysis start',
         'Started running Wikipedia Knowledge Graph at', True,
-        '\nAnnotating the proper nouns that have a Wikipedia article, in ' + str(color) + '.',
+        '\nAnnotating the ' + ('proper nouns' if proper_nouns_only else 'content words')
+        + ' that have a Wikipedia article, in ' + str(color) + '.',
         True, '', False)
 
     session = requests.Session()
@@ -225,8 +271,12 @@ def Wikipedia_annotate(inputFile, inputDir, outputDir, configFileName, color1, c
 
         doc = nlp(contents)
 
-        candidates = _collect_proper_noun_phrases(doc)
-        print("   " + str(len(candidates)) + " unique proper nouns to look up")
+        if proper_nouns_only:
+            candidates = _collect_proper_noun_phrases(doc)
+            print("   " + str(len(candidates)) + " unique proper nouns to look up")
+        else:
+            candidates = _collect_content_words(doc)
+            print("   " + str(len(candidates)) + " unique content words to look up")
 
         cache = _batch_query_wikipedia(candidates, color, session)
         matched = sum(1 for v in cache.values() if v is not None)
