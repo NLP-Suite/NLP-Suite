@@ -97,6 +97,13 @@ def run():
                                                                config_filename,
                                                                ontology_list, color1, colorlist, chartPackage, dataTransformation)
 
+    elif knowledge_graphs_var:
+        # a knowledge base WAS selected, but no annotator implements it (Wikipedia). Saying 'no options
+        # selected' here sent the user back to a dropdown they had already used.
+        mb.showwarning(title='Knowledge base not yet available',
+                       message='Annotation against ' + knowledge_graphs_var + ' is not yet implemented in '
+                       'the NLP Suite.\n\nPlease, select DBpedia or YAGO instead, and try again.')
+        return
     else:
         mb.showwarning(title='Warning', message='There are no options selected.\n\nPlease, select one of the available options and try again.')
         return
@@ -594,6 +601,20 @@ def activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,con
         ontology_class.configure(state='disabled')
         search_entry.configure(state="disabled")
         # sub_class_entry.configure(state="disabled")
+        # Wikipedia is offered in the dropdown but nothing implements it: run() dispatches on DBpedia and
+        # YAGO alone, and no util annotates against Wikipedia. Selecting it therefore greys out every
+        # widget below and, on RUN, reports 'no options selected' -- which reads as a bug rather than as
+        # the missing feature it is. Say so plainly at the moment of selection.
+        if 'Wiki' in knowledge_graphs_var.get():
+            mb.showwarning(title='Knowledge base not yet available',
+                           message='Annotation against Wikipedia is not yet implemented in the NLP Suite; '
+                           'the option is listed here because it is planned.\n\nThat is why the ontology '
+                           'class and search fields below stay greyed out: there is nothing to configure '
+                           'yet, and pressing RUN will not annotate anything.\n\nPlease, select DBpedia or '
+                           'YAGO instead. Both build on Wikipedia data: DBpedia and YAGO extract their '
+                           'structured knowledge from Wikipedia and Wikidata, so annotating with either '
+                           'already links your corpus to Wikipedia content, and with an ontology besides.')
+            window.focus_force()
 knowledge_graphs_var.trace('w',callback = lambda x,y,z: activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry))
 
 videos_lookup = {'No videos available':''}
