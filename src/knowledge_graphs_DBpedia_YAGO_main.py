@@ -392,7 +392,7 @@ search_variable = tk.StringVar()
 search_entry = tk.Entry(window, state='disabled', width=GUI_IO_util.widget_width_long, textvariable=search_variable)
 # place widget with hover-over info
 # " + knowledge_graphs_var.get() + "
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu+20,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate,
                                                y_multiplier_integer,
                                                search_entry, True, False, False, False, 90,
                                                GUI_IO_util.IO_configuration_menu+20,
@@ -410,7 +410,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_
 sub_class_entry_lb = tk.Label(window, text='Ontology sub-class')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,sub_class_entry_lb,True)
 
-sub_class_entry = tk.Entry(window,width=GUI_IO_util.knowledge_sub_class_entry_width,textvariable=sub_class_entry_var)
+sub_class_entry = tk.Entry(window,width=GUI_IO_util.widget_width_long,textvariable=sub_class_entry_var)
 sub_class_entry.configure(state="disabled")
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu,
