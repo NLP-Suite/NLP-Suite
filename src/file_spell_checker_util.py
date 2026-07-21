@@ -695,6 +695,10 @@ def check_for_typo(inputDir, outputDir, inputCsvDictionaryFile, openOutputFiles,
         headers2.extend(['Corrected Word', 'Spell Status'])
         header_rowID=0
         processed_wordID=0
+        # Built ONCE, before the loop. It used to be built at the point of the respelled_word call BELOW the
+        # check_spell() call that already needs it, which made 'speller' a local read before assignment:
+        # the first word longer than 3 characters raised UnboundLocalError and the run died.
+        speller = SpellChecker()
         word_index = headers1.index('Words')
         sentence_index = headers1.index('Sentence')
         document_index = headers1.index('Document')
@@ -943,6 +947,7 @@ def spellchecking_pyspellchecker(text: str, inputFilename) -> (str, DataFrame):
     new_str_list = []
     original_str_list = []
     new_str_list_for_df = []
+    import nltk.tokenize.treebank  # the module-level 'import nltk' is commented out; this call needs it
     treebank = nltk.tokenize.treebank.TreebankWordDetokenizer()
     speller = SpellChecker()
     # for word in nltk.word_tokenize(text):
@@ -968,6 +973,7 @@ def spellchecking_text_blob(text: str, inputFilename) -> (str, DataFrame):
     new_str_list = []
     new_str_list_for_df = []
     original_str_list = []
+    import nltk.tokenize.treebank  # the module-level 'import nltk' is commented out; this call needs it
     treebank = nltk.tokenize.treebank.TreebankWordDetokenizer()
     # for word in nltk.word_tokenize(text):
     from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text

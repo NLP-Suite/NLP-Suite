@@ -42,6 +42,9 @@ def run():
         mb.showwarning("Warning", "No options have been selected.\n\nPlease, tick either the 'By date embedded in filenames' or 'By NER values' checkbox and try again.")
         return
 
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
+                                                 'Started running the File Classifier at', True, '', True, '', True)
+
     if by_date_var:
         if date_distance_value.isnumeric()==False:
             mb.showwarning("Warning", "The required 'Date distance' is expected to be a number.\n\nPlease, enter a 'Date distance' numeric value and try again.")
