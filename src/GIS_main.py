@@ -792,9 +792,22 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x
 def activate_Google_API_Google_Maps(*args):
     global GIS_package2_checkbox
     if not 'folium' in GIS_package_var.get() and not 'Google' in GIS_package_var.get() and len(GIS_package_var.get())>0:
-        GIS_package_var.set('')
-        mb.showwarning(title='Warning',
-                       message="The selected software option is not available yet. Sorry!\n\nSelect any of the Google options and try again.")
+        # QGIS is not unavailable, it is simply not AUTOMATED: the Suite geocodes and writes the kml, and
+        # the user maps it in QGIS. Telling them it is 'not available yet' hid a workflow that works and
+        # that the 24 QGIS TIPS in the dropdown below document step by step.
+        if 'QGIS' in GIS_package_var.get():
+            GIS_package_var.set('')
+            mb.showinfo(title='Mapping in QGIS',
+                        message="The NLP Suite does not drive QGIS directly; it prepares the map data and you "
+                        "open it in QGIS.\n\nPlease, select any of the Google or folium options to geocode "
+                        "your locations and write the kml file, then import that file into QGIS.\n\nThe TIPS "
+                        "dropdown at the bottom of this GUI carries 24 QGIS documents covering the whole "
+                        "process: importing the kml, dot, heat, feature and frequency maps, styling points "
+                        "and attributes, and what to do about the common QGIS errors.")
+        else:
+            GIS_package_var.set('')
+            mb.showwarning(title='Warning',
+                           message="The selected software option is not available yet. Sorry!\n\nSelect any of the Google options and try again.")
         return
     if 'Maps' in GIS_package_var.get():
         key = GIS_pipeline_util.getGoogleAPIkey(window,'Google-Maps-API_config.csv')
@@ -829,8 +842,34 @@ TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                "Google Earth Pro KML Options":"TIPS_NLP_GIS_Google Earth Pro KML options.pdf",
                "HTML":"TIPS_NLP_GIS_Google Earth Pro HTML.pdf",
                "Google Earth Pro Icon":"TIPS_NLP_GIS_Google Earth Pro Icon.pdf",
-               "Google Earth Pro Description":"TIPS_NLP_GIS_Google Earth Pro Description.pdf"}
-TIPS_options='utf-8 encoding','csv files - Problems & solutions','Statistical measures','GIS (Geographic Information System): Mapping Locations','Symbolic (non-geocodable) space','Extracting locations: NER (Named Entity Recognition)','Geocoding','Geocoding: How to Improve Nominatim', 'Google Earth Pro', 'Google API Key', 'HTML', 'Google Earth Pro Icon', 'Google Earth Pro Description'
+               "Google Earth Pro Description":"TIPS_NLP_GIS_Google Earth Pro Description.pdf",
+               # QGIS is not driven by the Suite: it writes the kml, the user maps it in QGIS by hand.
+               # These 24 documents describe that manual work and had no entry, so nothing could open them.
+               'QGIS: Getting started KML (PC-ACE) files coordinate systems and QGIS project files':'TIPS_NLP_QGIS Getting started KML (PC-ACE) files coordinate systems and QGIS project files.pdf',
+               'QGIS: Import a KML file in QGIS':'TIPS_NLP_QGIS Import a KML file in QGIS.pdf',
+               'QGIS: Import data from Excel in QGIS':'TIPS_NLP_QGIS Import data from Excel in QGIS.pdf',
+               'QGIS: Import more attributes than NAME and DESCRIPTION':'TIPS_NLP_QGIS Import more attributes than NAME and DESCRIPTION.pdf',
+               'QGIS: Join data (mapping multiple variables)':'TIPS_NLP_QGIS Join data (mapping multiple variables).pdf',
+               'QGIS: Dot map':'TIPS_NLP_QGIS Dot map.pdf',
+               'QGIS: Feature map':'TIPS_NLP_QGIS Feature map.pdf',
+               'QGIS: Heat map':'TIPS_NLP_QGIS Heat map.pdf',
+               'QGIS: Frequency map (graduated color map choropleth)':'TIPS_NLP_QGIS Frequency map (graduated color map choropleth).pdf',
+               'QGIS: Frequency map (proportional symbol)':'TIPS_NLP_QGIS Frequency map (proportional symbol).pdf',
+               'QGIS: Shape files':'TIPS_NLP_QGIS Shape files.pdf',
+               'QGIS: Change dots style':'TIPS_NLP_QGIS Change dots style.pdf',
+               'QGIS: Change pin style':'TIPS_NLP_QGIS Change pin style.pdf',
+               'QGIS: Change pin or map colors':'TIPS_NLP_QGIS Change pin or map colors.pdf',
+               'QGIS: Change style of displayed data':'TIPS_NLP_QGIS Change style of displayed data.pdf',
+               'QGIS: Display attributes attached to a data point':'TIPS_NLP_QGIS Display attributes attached to a data point.pdf',
+               'QGIS: Display different attributes':'TIPS_NLP_QGIS Display different attributes.pdf',
+               'QGIS: View data behind layers':'TIPS_NLP_QGIS View data behind layers.pdf',
+               'QGIS: Finishing touches in producing a map':'TIPS_NLP_QGIS Finishing touches in producing a map.pdf',
+               'QGIS: Data points not visible on the map':'TIPS_NLP_QGIS Data points not visible on the map.pdf',
+               'QGIS: KML file error':'TIPS_NLP_QGIS KML file error.pdf',
+               'QGIS: Layer error':'TIPS_NLP_QGIS Layer error.pdf',
+               'QGIS: Map not visible on the screen':'TIPS_NLP_QGIS Map not visible on the screen.pdf',
+               'QGIS: Shapefile error':'TIPS_NLP_QGIS Shapefile error.pdf'}
+TIPS_options='utf-8 encoding','csv files - Problems & solutions','Statistical measures','GIS (Geographic Information System): Mapping Locations','Symbolic (non-geocodable) space','Extracting locations: NER (Named Entity Recognition)','Geocoding','Geocoding: How to Improve Nominatim', 'Google Earth Pro', 'Google API Key', 'HTML', 'Google Earth Pro Icon', 'Google Earth Pro Description','QGIS: Getting started KML (PC-ACE) files coordinate systems and QGIS project files','QGIS: Import a KML file in QGIS','QGIS: Import data from Excel in QGIS','QGIS: Import more attributes than NAME and DESCRIPTION','QGIS: Join data (mapping multiple variables)','QGIS: Dot map','QGIS: Feature map','QGIS: Heat map','QGIS: Frequency map (graduated color map choropleth)','QGIS: Frequency map (proportional symbol)','QGIS: Shape files','QGIS: Change dots style','QGIS: Change pin style','QGIS: Change pin or map colors','QGIS: Change style of displayed data','QGIS: Display attributes attached to a data point','QGIS: Display different attributes','QGIS: View data behind layers','QGIS: Finishing touches in producing a map','QGIS: Data points not visible on the map','QGIS: KML file error','QGIS: Layer error','QGIS: Map not visible on the screen','QGIS: Shapefile error'
 
 
 # add all the lines to the end to every special GUI
