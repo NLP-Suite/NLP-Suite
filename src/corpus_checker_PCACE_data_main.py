@@ -519,7 +519,10 @@ similarityIndex_Intruder_menu = tk.OptionMenu(window, similarityIndex_Intruder_v
                                               .5, .45, .5, .55, .6, .65, .7, .75, .8, .85, .9)
 similarityIndex_Intruder_menu.configure(state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 170, y_multiplier_integer,
-                                               similarityIndex_Intruder_menu)
+                                               similarityIndex_Intruder_menu,
+                                               False, False, False, False, 90,
+                                               GUI_IO_util.entry_box_x_coordinate + 170,
+                                               "Select the threshold BELOW which a document is flagged as an intruder, i.e., as not belonging to the folder (event) it is filed in.\n\nThe index is a cosine similarity computed between the social actors and named entities of a document and those of all the other documents filed in the same folder.\n\nThe default value is 0.2. Raising the threshold flags more documents: set it above .6 and nearly every document becomes an intruder. The recommended range is below .4.")
 
 plagiarist_var.set(0)
 plagiarist_checkbox = tk.Checkbutton(window, text='Find the plagiarist', variable=plagiarist_var, onvalue=1, offvalue=0)
@@ -534,7 +537,10 @@ similarityIndex_Plagiarist_menu = tk.OptionMenu(window, similarityIndex_Plagiari
                                                 .65, .7, .75, .8, .85, .9)
 similarityIndex_Plagiarist_menu.configure(state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 170, y_multiplier_integer,
-                                               similarityIndex_Plagiarist_menu)
+                                               similarityIndex_Plagiarist_menu,
+                                               False, False, False, False, 90,
+                                               GUI_IO_util.entry_box_x_coordinate + 170,
+                                               "Select the threshold AT OR ABOVE which two documents are considered duplicates of one another (how much the sources copied from each other).\n\nSimilarity is computed as a TF-IDF cosine similarity between the two documents.\n\nThe default value is 0.8, i.e., 80%. Lowering it gives too many false positives, with documents wrongly classified as similar; raising it may exclude genuine duplicates. Because earlier releases scored similarity differently, it is worth re-checking this threshold on your own corpus.")
 
 
 def clear(e):
