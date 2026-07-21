@@ -672,8 +672,12 @@ TIPS_lookup = {'NLP Suite: Package description': 'TIPS_NLP_NLP Suite Package des
                'Text encoding (utf-8)': 'TIPS_NLP_Text encoding (utf-8).pdf',
                'Excel - Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
-               'Statistical measures':'TIPS_NLP_Statistical measures.pdf',}
-TIPS_options = 'NLP Suite: Package description', 'pip install & Anaconda environments', 'Text encoding (utf-8)','Excel - Enabling Macros','csv files - Problems & solutions', 'Statistical measures', 'Setup Input/Output configuration for your corpus', 'Setup external software (e.g., MALLET)', 'Things to do with words: NLP approach', 'English Language Benchmarks',  'NLP Suite: General tools', 'NLP Suite: Tools of linguistic analysis', 'NLP basic language', 'Things to do with words: Overall view', 'Things to do with words: Content analysis', 'Things to do with words: Frame analysis', 'Things to do with words: Narrative analysis', 'Things to do with words: Rhetoric (Arguments)', 'Things to do with words: Rhetoric (Tropes & Figures)', 'Style analysis'
+               'Statistical measures':'TIPS_NLP_Statistical measures.pdf',
+               'Python: download, install, run':'TIPS_NLP_Python download install run.pdf',
+               'Anaconda & pip useful commands':'TIPS_NLP_Anaconda & pip useful commands.pdf',
+               'NLP software options':'TIPS_NLP_NLP software options.pdf',
+               'Acknowledgments: external programs':'TIPS_NLP_Acknowledgments External Programs.pdf'}
+TIPS_options = 'NLP Suite: Package description', 'pip install & Anaconda environments', 'Text encoding (utf-8)','Excel - Enabling Macros','csv files - Problems & solutions', 'Statistical measures', 'Setup Input/Output configuration for your corpus', 'Setup external software (e.g., MALLET)', 'Things to do with words: NLP approach', 'English Language Benchmarks',  'NLP Suite: General tools', 'NLP Suite: Tools of linguistic analysis', 'NLP basic language', 'Things to do with words: Overall view', 'Things to do with words: Content analysis', 'Things to do with words: Frame analysis', 'Things to do with words: Narrative analysis', 'Things to do with words: Rhetoric (Arguments)', 'Things to do with words: Rhetoric (Tropes & Figures)', 'Style analysis','Python: download, install, run','Anaconda & pip useful commands','NLP software options','Acknowledgments: external programs'
 
 
 # reminders content for specific GUIs are set in the csv file reminders
