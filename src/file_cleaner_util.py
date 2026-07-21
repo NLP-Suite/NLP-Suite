@@ -556,162 +556,155 @@ def remove_blank_lines(window,inputFilename,inputDir, outputDir='', configFileNa
 #outputDir = sys.argv[4]
 
 
-# Check whether a sentence is title
-# criteria for title are no puntuation and a shorter (user determined) sentence
-def isTitle(sentence,Title_length_limit):
-    if sentence[-1] not in string.punctuation:
-        if len(sentence) < Title_length_limit:
-            # print sentence
-            return True
-    if sentence.isupper():
-        # print sentence
+# Newspaper titles (headlines) --------------------------------------------------------------------
+#
+# Newspaper headlines are typeset without a full stop, and every sentence splitter -- CoreNLP, Stanza,
+# spaCy alike -- breaks on . ! ? and nothing else. A headline is therefore swallowed into the first
+# sentence of the article, which shifts the FIRST sentence of every document in a newspaper corpus:
+# sentence counts, sentence-length statistics, SVO extraction and the sentence IDs the annotators key
+# on are all affected. This routine detects the headline and subheads and writes three versions of the
+# corpus: titles punctuated, titles removed, and the titles alone.
+
+# Only these END a sentence for a splitter. The previous test used all of string.punctuation, so a
+# headline closing with a comma or a quotation mark counted as already punctuated and was left alone.
+TITLE_SENTENCE_STOPPERS = '.!?'
+
+# Headlines and subheads lead the article. Without a positional test any unpunctuated fragment
+# anywhere in the document -- an OCR break, a table row, a truncated final line -- read as a title.
+TITLE_LEAD_PARAGRAPHS = 10
+
+
+def isTitle(sentence, Title_length_limit, position=0, lead_paragraphs=TITLE_LEAD_PARAGRAPHS):
+    """True when *sentence* looks like a headline or subhead.
+
+    Returns a real boolean: the previous version fell off the end and returned None, which reads as
+    false in an if-statement but is not false, and cannot be asserted on in a test.
+    """
+    text = (sentence or '').strip()
+    if not text:
+        return False
+    if text[-1] in TITLE_SENTENCE_STOPPERS:
+        return False                      # already ends a sentence; the splitter handles it
+    if lead_paragraphs is not None and position >= lead_paragraphs:
+        return False
+    if len(text) < Title_length_limit:
         return True
-    if sentence.istitle():
-        # print sentence
+    if text.isupper():
         return True
+    if text.istitle():
+        return True
+    return False
+
+
+def punctuate_title(title):
+    """Add the full stop the headline lacks -- the whole point of the routine."""
+    text = (title or '').strip()
+    if not text:
+        return ''
+    return text if text[-1] in TITLE_SENTENCE_STOPPERS else text + '.'
+
 
 def newspaper_titles(window,inputFilename,inputDir,outputDir, configFileName, openOutputFiles,chartPackage, dataTransformation):
     from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
 
-    if inputDir=='' and inputFilename!='':
-        NUM_DOCUMENT=1
-    else:
-        NUM_DOCUMENT = len(glob.glob(os.path.join(inputDir, '*.txt')))
-    if NUM_DOCUMENT==0:
+    #collecting input txt files; getFileList accepts a single file OR a directory
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
+    nDocs = len(inputDocs)
+    if nDocs == 0:
         return
-    Title_length_limit = 100
+
+    Title_length_limit = 20   # the default the TIPS documents; 100 characters is a whole sentence
 
     # Title length pop up widget
     # window, textCaption, lower_bound, upper_bound, default_value
     val = GUI_IO_util.slider_widget(GUI_util.window,
                                          "Please, select the value for number of characters in a document title. The suggested value is " + str(
-                                             Title_length_limit) + ".", 1, 1000, 100)
+                                             Title_length_limit) + ".", 1, 1000, Title_length_limit)
     Title_length_limit = val
-
-    TITLENESS = 'NO'
-
-    titleness = True
-    if TITLENESS == "NO":
-        titleness = False
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running the newspaper titles function at',
                                                  True, '', True, '', False)
 
-    # DOCUMENTS WITH TITLES
-    count = 0
+    # The three folders the TIPS documents, written under the OUTPUT directory. They used to be created
+    # inside the INPUT directory, so every run dropped three folders of txt files into the corpus being
+    # analysed -- which the next tool to glob that directory would then read as input.
+    root = os.path.join(outputDir, 'ExtractTitles')
+    path_articlesWithTitles = os.path.join(root, 'articlesWithTitles')
+    path_articlesWithoutTitles = os.path.join(root, 'articlesWithoutTitles')
+    path_titles = os.path.join(root, 'titles')
+    for d in (path_articlesWithTitles, path_articlesWithoutTitles, path_titles):
+        if not os.path.exists(d):
+            os.makedirs(d)
+
     titles = []
-
-    if inputFilename != "":
-        temp_inputDir, tail = os.path.split(inputFilename)
-    else:
-        temp_inputDir = inputDir
-
-    path_aritclesWithTitles = os.path.join(temp_inputDir, 'documents_with_titles')
-
-    if not os.path.exists(path_aritclesWithTitles):
-        os.makedirs(path_aritclesWithTitles)
-
-    #collecting input txt files
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
-    nDocs = len(inputDocs)
+    docs_with_titles = 0
     docID = 0
-    if nDocs==0:
-        return
-    print("\n\nProcessing documents with titles...\n\n")
+    print("\n\nProcessing documents for titles...\n\n")
     for filename in inputDocs:
         docID = docID + 1
         head, tail = os.path.split(filename)
         print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
+
+        # ONE pass per document. The two output folders used to be produced by two separate loops, each
+        # re-reading the file and re-running the Stanza tokenizer over every paragraph of it.
         with open(filename,'r', encoding='utf-8', errors='ignore') as fn:
-            # newspaper_titles
             paragraphs = get_paragraphs(fn)
-            file_path = os.path.join(path_aritclesWithTitles,tail)
-            with open(file_path, 'w', encoding='utf-8',errors='ignore') as out:
-                for paragraph in paragraphs:
-                    if isTitle(paragraph,Title_length_limit):
-                        if paragraph and paragraph[-1]!='.':
-                            out.write(paragraph + '.\n')
-                        else:
-                            out.write(paragraph)
-                    else:
-                        # for one in sent_tokenize(paragraph):#.decode('utf-8')):
-                        for one in tokenize_stanza_text(stanzaPipeLine(paragraph)):
-                            out.write(one)#.encode('utf-8'))
-                            out.write(' ')
-                        out.write('\n')
-                # titles.append((title,filename))
-        count += 1
 
-    # DOCUMENTS WITHOUT TITLES
-    count = 0
-    titles = []
-    docID = 0
+        doc_titles = []
+        body_paragraphs = []
+        for position, paragraph in enumerate(paragraphs):
+            if isTitle(paragraph, Title_length_limit, position):
+                doc_titles.append(paragraph)
+            else:
+                body_paragraphs.append(' '.join(tokenize_stanza_text(stanzaPipeLine(paragraph))))
 
-    path_documents = os.path.join(temp_inputDir,'documents_no_titles')
-    if not os.path.exists(path_documents):
-        os.makedirs(path_documents)
-    for filename in inputDocs:
-        docID = docID + 1
-        head, tail = os.path.split(filename)
-        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
-        with open(filename,'r', encoding='utf-8', errors='ignore') as fn:
-            # newspaper_titles
-            paragraphs = get_paragraphs(fn)
-            file_path = os.path.join(path_documents,tail)
-            with open(file_path, 'w', encoding='utf-8',errors='ignore') as out:
-                title = []
-                for paragraph in paragraphs:
-                    if isTitle(paragraph,Title_length_limit):
-                        title.append(paragraph)
-                    else:
-                        # for one in sent_tokenize(paragraph):#.decode('utf-8')):
-                        for one in tokenize_stanza_text(stanzaPipeLine(paragraph)):
-                            out.write(one)
-                            out.write(' ')
-                        out.write('\n')
-                titles.append((title,filename))
-        count += 1
-        # print(count)
+        with open(os.path.join(path_articlesWithTitles, tail), 'w', encoding='utf-8', errors='ignore') as out:
+            for title in doc_titles:
+                out.write(punctuate_title(title) + '\n')
+            for paragraph in body_paragraphs:
+                out.write(paragraph + '\n')
 
-    # TITLES ONLY
-    path_title = os.path.join(temp_inputDir,'document_titles_only')
-    if not os.path.exists(path_title):
-        os.makedirs(path_title)
-    titles_file = os.path.join(path_title,'titles.txt')
+        with open(os.path.join(path_articlesWithoutTitles, tail), 'w', encoding='utf-8', errors='ignore') as out:
+            for paragraph in body_paragraphs:
+                out.write(paragraph + '\n')
+
+        if doc_titles:
+            docs_with_titles += 1
+        titles.append((doc_titles, tail))     # the basename, not the full path
+
+    titles_file = os.path.join(path_titles,'titles.txt')
     with open(titles_file,'w',encoding='utf_8',errors='ignore') as output:
-        count = 0
-        for i,title in enumerate(titles):
-            if title:
-                count += 1
+        for i, (doc_titles, name) in enumerate(titles, 1):
+            if not doc_titles:
+                continue
+            output.write('Document %d: %s\n' % (i, name))
+            for t in doc_titles:
+                output.write(punctuate_title(t) + '\n')
             output.write('\n')
-            # a boundary can be added
-            if titleness:
-                output.write('Document %d: %s ' % (i,title[1]))
-            output.write('\n')
-            for t in title[0]:
-                if t and t[-1]!='.':
-                    t = t + '. \n'
-                output.write(t)
-                output.write('\n')
 
-    msgString = ''
-    if count==0:
-        if NUM_DOCUMENT==1:
-            msgString="The document has not generated separate titles."
+    # a csv as well, so the titles can be read straight into the Suite's csv tools
+    titles_csv = os.path.join(path_titles, 'NLP_titles.csv')
+    csv_rows = [['Document ID', 'Document', 'Title ID', 'Title', 'Title punctuated']]
+    for i, (doc_titles, name) in enumerate(titles, 1):
+        for j, t in enumerate(doc_titles, 1):
+            csv_rows.append([i, name, j, t, punctuate_title(t)])
+    IO_csv_util.list_to_csv(window, csv_rows, titles_csv)
+
+    # the counts used to be swapped in the message -- '%s documents out of %d' was filled with
+    # (total, count) -- and the count itself was wrong, since 'if title' tested a tuple that is never
+    # empty, so every document was counted as having produced a title
+    if docs_with_titles == 0:
+        if nDocs == 1:
+            msgString = "The document has not generated separate titles."
         else:
-            msgString="No documents have generated separate titles."
+            msgString = "No documents have generated separate titles."
     else:
-        msgString = "%s documents out of %d have generated titles." % (NUM_DOCUMENT,count) + "\n\nThe percentage of documents processed is %.2f" % ((float(count)/nDocs) * 100)
-    # msgString=" %s documents out of %d have generated titles." % (NUM_DOCUMENT, count)
-    if count>0:
-        if inputFilename!="":
-            msgString=msgString+"\n\nThe files were saved in the subdirectory\n\n" + str(path_documents) + "\n\nof the input file directory\n\n"+inputDir
-        else:
-            msgString=msgString+"\n\nThe files were saved in the subdirectory\n\n" + str(path_documents) + "\n\nof the input directory\n\n"+inputDir
+        msgString = ("%d document(s) out of %d generated titles." % (docs_with_titles, nDocs)
+                     + "\n\nThe percentage of documents with titles is %.2f%%" % (float(docs_with_titles) / nDocs * 100)
+                     + "\n\nThe files were saved in the subdirectories of\n\n" + str(root))
 
     mb.showwarning(title='Document titles', message=msgString)
-    # always open outputDir
-    IO_files_util.openExplorer(window, head)
+    IO_files_util.openExplorer(window, root)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the newspaper titles function at', True, '', True, startTime, False)
 
