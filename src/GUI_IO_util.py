@@ -169,6 +169,16 @@ def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hove
     tip_w = _tooltip_window.winfo_reqwidth()
     tip_height = _tooltip_window.winfo_reqheight()
     screen_w = window.winfo_screenwidth()
+    # Grid layout (see placeWidget): the caller could not know where the widget would end up, so it
+    # passed None. Read the widget's real position now that Tk has laid the window out. y_coordinate
+    # holds only the multi-line nudge computed in hover_over_widget, so ADD the widget's y to it.
+    if x_coordinate_hover_over is None:
+        try:
+            x_coordinate_hover_over = e.widget.winfo_rootx() - win_x
+            y_coordinate = y_coordinate + (e.widget.winfo_rooty() - win_y)
+        except Exception:
+            x_coordinate_hover_over, y_coordinate = 90, 90
+
     tip_x = win_x + x_coordinate_hover_over
     if tip_x + tip_w > screen_w - 10:
         tip_x = screen_w - tip_w - 10
@@ -320,11 +330,20 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
         # there should not be more than 2 line breaks
         number_of_lines = text_info.count('\n')
         if number_of_lines == 0:
-            y_coordinate = y_coordinate - 20
+            nudge = -20
         elif number_of_lines == 1:
-            y_coordinate = y_coordinate - 25
+            nudge = -25
         elif number_of_lines == 2:
-            y_coordinate = y_coordinate - 30
+            nudge = -30
+        else:
+            nudge = 0
+        if y_coordinate is None:
+            # Grid layout (see placeWidget): the widget has no known pixel position yet, so y_coordinate
+            # carries ONLY this nudge and display_widget_info adds the widget's live position at hover
+            # time. Under the old absolute layout the position was known here and the nudge applied to it.
+            y_coordinate = nudge
+        else:
+            y_coordinate = y_coordinate + nudge
 
         # combobox is the ttk menu object; the regular config breaks
         # https://stackoverflow.com/questions/71733010/ttkcombobox-foreground-color-change-doesnt-work-properly-whats-wrong
@@ -382,21 +401,133 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
                          lambda e: delete_display_widget_lb(window, e, text_info), add='+')
 
 
+# ---------------------------------------------------------------------------------------------------
+# GRID LAYOUT (ported from Coralynn Kelly-Cataldo's ctk/phase1-grid, WITHOUT the CustomTkinter reskin)
+#
+# The GUIs were laid out in absolute pixels (.place(x=, y=)) measured on Windows. Tk takes its default
+# font from the operating system -- roughly 9pt on Windows against 13pt on macOS -- so the same label
+# is about 40% wider on a Mac, and rows that fit here run off the edge there. Per-platform coordinate
+# tables cannot fix that for good: every new label would have to be measured on two machines.
+#
+# Under grid, Tk computes positions from the widgets' own requested sizes, so each platform lays itself
+# out correctly and the coordinate constants stop deciding anything. placeWidget keeps its signature,
+# so no call site changes: the x-coordinate now names a column and y_multiplier_integer a row.
+# ---------------------------------------------------------------------------------------------------
+
+# A widget's legacy x-coordinate is kept verbatim and turned into a column only at the end, by
+# finalize_grid_layout(). Assigning columns as widgets arrive cannot work: whether two x-coordinates
+# deserve separate columns is only knowable once every x in the GUI is known.
+# y_multiplier_integer is not always an integer: GUIs step by halves (1.5, 2.5, ...) to squeeze an
+# extra line in, and display_release passes -0.9. Rounding those to whole rows merges lines that have
+# to stay apart -- Python's round() sends BOTH 1.5 and 2.5 to 2, which piled three of sample_corpus's
+# rows on top of one another. Scaling by 10 first gives every distinct multiplier its own row. Rows
+# nothing lands in collapse to zero height, so the unused ones cost nothing.
+_GRID_ROW_SCALE = 10
+_GRID_HEADER_ROWS = 10  # rows held above y_multiplier 0 for the intro/release header
+# Span used by full-width (centerX) rows and by the intro header. Grid creates columns on demand and
+# empty ones collapse to zero width, so a span past the last real column costs nothing.
+_GRID_TOTAL_COLUMNS = 64
+_GRID_PAD_X = 4  # charged on BOTH sides of every column, so across a wide GUI this is worth ~40px
+_GRID_PAD_Y = 3
+
+_grid_placements = {}  # row -> [(x, widget), ...] in placement order
+_grid_centered = []  # [(row, widget), ...] for centerX rows
+_grid_columns = {}  # x -> column, built by finalize_grid_layout
+
+
+def _reset_grid_layout():
+    """Start a fresh GUI with an empty layout.
+
+    Each GUI is normally its own process, but the smoke test builds them all in one, and placements
+    left behind by an earlier GUI would put this one's columns in the wrong places.
+    """
+    _grid_placements.clear()
+    del _grid_centered[:]
+    _grid_columns.clear()
+
+
+def _column_for_x(x):
+    """Column for a legacy x-coordinate, using the map finalize_grid_layout built.
+
+    Before finalize (and for a widget a GUI callback adds afterwards, e.g. the icon preview in
+    GIS_Google_Earth) fall back to the nearest known x at or to the left of this one, so the widget
+    still lands in the right region rather than at the far left.
+    """
+    if x in _grid_columns:
+        return _grid_columns[x]
+    to_the_left = [known for known in _grid_columns if known <= x]
+    return _grid_columns[max(to_the_left)] if to_the_left else 0
+
+
+def finalize_grid_layout(window):
+    """Assign every widget its column, now that all of the GUI's x-coordinates are known.
+
+    Distinct x-coordinates, sorted, become consecutive columns. Two widgets sharing an x share a
+    column -- which is what the absolute layout meant by placing them at the same x (the INPUT and
+    OUTPUT display areas sit on top of each other and only one matters at a time). Each widget then
+    spans to the next distinct x ON ITS ROW, so it owns exactly the horizontal space the absolute
+    layout gave it, and its width is spread across that span instead of being charged to a single
+    column that every other row also has to pay for.
+
+    Called by GUI_util.GUI_bottom once the GUI is built. Safe to call again.
+    """
+    if not _grid_placements:
+        return
+    x_values = sorted({x for row_items in _grid_placements.values() for x, _ in row_items})
+    _grid_columns.clear()
+    for column, x in enumerate(x_values):
+        _grid_columns[x] = column
+    last_column = len(x_values)
+
+    for row, row_items in _grid_placements.items():
+        ordered = sorted(row_items, key=lambda placement: placement[0])
+        for i, (x, widget) in enumerate(ordered):
+            # the next DISTINCT x on this row -- widgets sharing an x share the cell, so they must not
+            # cut each other's span down to zero
+            next_x = next((other_x for other_x, _ in ordered[i + 1:] if other_x > x), None)
+            end_column = _grid_columns[next_x] if next_x is not None else last_column
+            column = _grid_columns[x]
+            try:
+                widget.grid_configure(row=row, column=column, columnspan=max(1, end_column - column))
+            except Exception:
+                pass  # a GUI may have destroyed or re-placed the widget since; layout is cosmetic
+    for row, widget in _grid_centered:
+        try:
+            widget.grid_configure(row=row, column=0, columnspan=max(last_column, 1))
+        except Exception:
+            pass
+
+
 # when a widget has hover-over effects, the parameter no_hover_over_widget is set to False
 # widget_name is the name of the widget that needs to be placed in any of the GUI scripts as defined by tk.
 def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False, no_hover_over_widget=False, whole_widget_red=False, centerX=False, basic_y_coordinate=90, x_coordinate_hover_over = 90, text_info=''):
-    # print("widget_name",widget_name,"text_info",text_info)
-    #basic_y_coordinate = 90
-    y_step = 40 #the line-by-line increment on the GUI
+    # The signature is unchanged from the absolute-coordinate version, so every call site -- including
+    # the hand-tuned '+ 270' style offsets -- keeps working: x_coordinate is recorded as-is and becomes
+    # a column in finalize_grid_layout, and y_multiplier_integer becomes the grid row.
+    # basic_y_coordinate is accepted and ignored: grid derives the vertical position from the row.
+    row = _GRID_HEADER_ROWS + int(round(float(y_multiplier_integer) * _GRID_ROW_SCALE))
     if centerX:
-        widget_name.place(relx=0.5, anchor=tk.CENTER, y=basic_y_coordinate + y_step*y_multiplier_integer)
+        _grid_centered.append((row, widget_name))
+        widget_name.grid(row=row, column=0, columnspan=_GRID_TOTAL_COLUMNS,
+                         padx=6, pady=_GRID_PAD_Y, sticky='')
     else:
-        widget_name.place(x=x_coordinate, y=basic_y_coordinate + y_step*y_multiplier_integer)
+        try:
+            x = float(x_coordinate)
+        except (TypeError, ValueError):
+            x = 0.0
+        _grid_placements.setdefault(row, []).append((x, widget_name))
+        # Provisional: the real column is settled by finalize_grid_layout once every x is known. Grid
+        # it now anyway so the widget is managed from the outset and anything that measures the window
+        # mid-build sees a plausible layout.
+        widget_name.grid(row=row, column=_column_for_x(x),
+                         padx=_GRID_PAD_X, pady=_GRID_PAD_Y, sticky='w')
     # use the following command to change the color of any label to any value
     # widget_name.config(foreground='red')
 
     # when a widget has hover-over effects, the parameter no_hover_over_widget is set to False
-    hover_over_widget(window,x_coordinate, basic_y_coordinate + y_step*y_multiplier_integer,widget_name, no_hover_over_widget, whole_widget_red, x_coordinate_hover_over, text_info)
+    # The two None arguments are the widget's absolute x/y, which no longer exist at placement time
+    # under grid; the tooltip resolves its own position from the live widget at hover time instead.
+    hover_over_widget(window, None, None, widget_name, no_hover_over_widget, whole_widget_red, None, text_info)
 
     if sameY==False:
         y_multiplier_integer = y_multiplier_integer+1

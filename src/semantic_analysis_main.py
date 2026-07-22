@@ -576,7 +576,6 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
     "Tick the checkbox to run the word sense induction (WSI) algorithm to automatically identify the different senses expressed by a word used in your corpus based on Lucy & Bamman, 2021, BERT model.\nAdjust the various options in the next line of widgets to control the model parameters.")
 
 k_means_min_var = tk.Scale(window, from_=2, to=9, orient=tk.HORIZONTAL)
-k_means_min_var.pack()
 k_means_min_var.set(4)
 # place widget with hover-over info # memory_pos
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate,
@@ -586,7 +585,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminder
                                                "Use the slider widget to set the K-means MINIMUM value you wish to use for word sense induction")
 
 k_means_max_var = tk.Scale(window, from_=3, to=15, orient=tk.HORIZONTAL)
-k_means_max_var.pack()
 k_means_max_var.set(6)
 # place widget with hover-over info # memory_pos
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate-40,
@@ -608,7 +606,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_
                                                "Use the dropdown menu to select the N-grams to be used in computing the highest scoring N-grams to return as cluster key terms ")
 
 top_keywords_var = tk.Scale(window, from_=5, to=20, orient=tk.HORIZONTAL)
-top_keywords_var.pack()
 top_keywords_var.set(10)
 # place widget with hover-over info # memory_pos
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate+50,

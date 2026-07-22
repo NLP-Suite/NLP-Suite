@@ -295,7 +295,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                                memory_var_lb, True)
 
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
-memory_var.pack()
 memory_var.set(4)
 # place widget with hover-over info # memory_pos
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+70,
@@ -309,7 +308,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_co
                                                document_length_var_lb, True)
 
 document_length_var = tk.Scale(window, from_=40000, to=90000, orient=tk.HORIZONTAL)
-document_length_var.pack()
 document_length_var.set(90000)
 # place widget with hover-over info # document_length_pos
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate+130,
@@ -323,7 +321,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.sentence_lengt
                                                limit_sentence_length_var_lb,True)
 
 limit_sentence_length_var = tk.Scale(window, from_=70, to=400, orient=tk.HORIZONTAL)
-limit_sentence_length_var.pack()
 limit_sentence_length_var.set(100)
 # place widget with hover-over info # sentence_length_pos
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.sentence_length_pos,

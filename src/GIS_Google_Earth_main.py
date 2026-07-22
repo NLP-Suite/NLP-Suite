@@ -524,7 +524,6 @@ def display_icon_image(pic_url, y_multiplier_integer_save):
         image_lb.image = tk_img
     else:
         image_lb.image = ''
-    image_lb.pack(padx=1, pady=1)
     GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 650, y_multiplier_integer_save, image_lb, False)
 
 # image_lb.config(state='normal')
