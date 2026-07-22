@@ -129,6 +129,12 @@ _guiu.setup_parsers_annotators.return_value = (0, 'Stanza', ['Dependency parser'
                                                '', '', 'utf-8', 0, 4, 90000, 100)
 sys.modules['GUI_util'] = _guiu
 
+# reminders_util is stubbed for a side-effect reason, not an import one: its real checkReminder reads
+# and REWRITES reminders/reminders.csv, a tracked file. Building 54 GUIs therefore left the repo with a
+# permanently modified reminders.csv (pandas' to_csv writes CRLF where the committed file has LF), so
+# `git status` was never clean after a smoke run. A test harness must not touch the working tree.
+sys.modules['reminders_util'] = MagicMock()
+
 # ---------- stub ENTIRE heavy dependency trees (submodules included) via a meta-path finder ----------
 # A flat MagicMock in sys.modules can't satisfy `from nltk.stem.porter import X` or
 # `from plotly.subplots import Y` (those need real sub-package resolution). A finder that returns a
