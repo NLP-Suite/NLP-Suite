@@ -299,12 +299,12 @@ def display_logo():
             img = tk_image_from_pil(Image.open(x).resize((85,50), Image.LANCZOS)) #Image.ANTIALIAS))
             logo = tk.Label(window, width=85, height=50, anchor='nw', image=img)
             logo.image = img
-            # The logo stays .place'd -- it floats above the grid in the top-left corner and reserving a
-            # grid cell for it would push the intro down. (place coexists with grid; pack does not.)
-            # x is a small fixed margin rather than help_button_x_coordinate-12: under grid the ? HELP
-            # buttons sit at the left edge of column 0, not at the legacy x~50, so the old offset left
-            # the logo floating to their right and overlapping the intro text.
-            logo.place(x=4, y=10)
+            # the logo has some white spaces to its left; better cutting this so that it can be aligned with HELP? buttons
+            # The logo stays .place'd -- it floats above the grid in the top-left corner, and giving it a
+            # grid cell would push the intro down. (place coexists with grid; pack does not.) The legacy
+            # x still holds: finalize_grid_layout reproduces the left margin, so the ? HELP buttons are
+            # where they always were.
+            logo.place(x=GUI_IO_util.help_button_x_coordinate - 12, y=10)
     except Exception:
         pass  # Logo is cosmetic; skip silently if PIL/ImageTk is unavailable or incompatible
 
@@ -1231,12 +1231,10 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
         # The body is grid-managed now and Tk refuses to mix grid with pack on the same container, so
         # the intro goes into the reserved top grid row. The logo stays .place'd in the top-left corner
         # (place coexists with grid; pack does not).
-        intro.grid(row=0, column=1, columnspan=GUI_IO_util._GRID_TOTAL_COLUMNS,
-                   padx=6, pady=(6, 4), sticky='w')
-        # Reserve column 0's width for the .place'd logo, which sits outside the grid and so contributes
-        # nothing to its sizing. Without this floor the column narrows to the ? HELP buttons and the
-        # intro text starts underneath the logo.
-        window.grid_columnconfigure(0, minsize=122)
+        # The left padding clears the .place'd logo, which floats outside the grid and so contributes
+        # nothing to its sizing -- without it the intro text starts underneath the logo.
+        intro.grid(row=0, column=0, columnspan=GUI_IO_util._GRID_TOTAL_COLUMNS,
+                   padx=(130, 6), pady=(6, 4), sticky='w')
         display_logo()
         # although the release version appears in the top part of the GUI,
         #   it is run at the end otherwise a message will be displayed with an incomplete GUI

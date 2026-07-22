@@ -427,7 +427,11 @@ _GRID_HEADER_ROWS = 10  # rows held above y_multiplier 0 for the intro/release h
 # Span used by full-width (centerX) rows and by the intro header. Grid creates columns on demand and
 # empty ones collapse to zero width, so a span past the last real column costs nothing.
 _GRID_TOTAL_COLUMNS = 64
-_GRID_PAD_X = 4  # charged on BOTH sides of every column, so across a wide GUI this is worth ~40px
+# No horizontal padding: the spacing between widgets comes from the per-column minimum widths that
+# finalize_grid_layout derives from the legacy x-coordinates. Padding on top of those would be charged
+# on both sides of every column -- ~220px across a GUI with 28 of them -- and push the last widgets on
+# each row off the right edge.
+_GRID_PAD_X = 0
 _GRID_PAD_Y = 3
 
 _grid_placements = {}  # row -> [(x, widget), ...] in placement order
@@ -469,15 +473,38 @@ def finalize_grid_layout(window):
     layout gave it, and its width is spread across that span instead of being charged to a single
     column that every other row also has to pay for.
 
+    Crucially, each column also gets a MINIMUM width equal to the gap between its x-coordinate and the
+    next one. Column order alone is not enough: it preserves which widget comes before which, but
+    throws away the distances that were the whole point of hand-tuning the coordinates. Without the
+    minimums every column shrinks to its widest occupant, the designed gaps vanish, and the layout
+    collapses leftwards into a jumble -- with the ? HELP column flush against the window edge, because
+    even the left margin was only ever a distance (x=50) and not a widget.
+
+    With them, Windows reproduces the tuned layout almost exactly, since the minimums ARE the tuned
+    coordinates. A column only exceeds its minimum where its content genuinely needs more room -- which
+    is what happens on a Mac, where the bigger default font makes everything wider. That is the whole
+    trick: the gaps stay fixed, the widgets are allowed to grow, and the window grows with them.
+
     Called by GUI_util.GUI_bottom once the GUI is built. Safe to call again.
     """
     if not _grid_placements:
         return
     x_values = sorted({x for row_items in _grid_placements.values() for x, _ in row_items})
+    # Column 0 is a spacer holding the left margin -- the first x-coordinate is a distance from the
+    # window edge, so content starts at column 1.
     _grid_columns.clear()
     for column, x in enumerate(x_values):
-        _grid_columns[x] = column
-    last_column = len(x_values)
+        _grid_columns[x] = column + 1
+    last_column = len(x_values) + 1
+
+    try:
+        window.grid_columnconfigure(0, minsize=int(x_values[0]))
+        for i in range(len(x_values) - 1):
+            window.grid_columnconfigure(i + 1, minsize=int(x_values[i + 1] - x_values[i]))
+        # the last column has no following x to measure against: let its content decide
+        window.grid_columnconfigure(len(x_values), minsize=0)
+    except Exception:
+        pass  # a minimum is an optimisation; the layout still works without it
 
     for row, row_items in _grid_placements.items():
         ordered = sorted(row_items, key=lambda placement: placement[0])
