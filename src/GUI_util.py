@@ -435,15 +435,17 @@ def display_release():
                                                    release_lb, True, False, False, False, 90,
                                                    GUI_IO_util.help_button_x_coordinate,
                                                    "The two sets of numbers, separated by /, refer to the NLP Suite release on your machine (left) and the release available on GitHub (right)\nWithout internet the newest release available on GitHub cannnot be retrieved and is displayed as 0.0.0.")
-    # The release label is placed here, at the end of GUI_bottom -- AFTER finalize_grid_layout has run
-    # (it must, because reading the GitHub version needs the network and the GUI has to be visible
-    # first). So it never got a span, and its ~107px sat in the narrow left column (a 70px gap),
-    # forcing that column wide and shoving every row 37px to the right -- enough to push the top row's
-    # rightmost button off a DPI-clamped screen. Span it across the header instead, exactly like the
-    # intro, so its width is absorbed and the left column keeps its tuned gap. It is alone on its row,
-    # so the span is free.
+    # On a grid GUI the release label is placed here, at the end of GUI_bottom -- AFTER
+    # finalize_grid_layout has run (it must, because reading the GitHub version needs the network and
+    # the GUI has to be visible first). So it never got a span, and its ~107px sat in the narrow left
+    # column (a 70px gap), forcing that column wide and shoving every row 37px to the right -- enough to
+    # push the top row's rightmost button off a DPI-clamped screen. Span it across the header instead,
+    # exactly like the intro. Guard on grid_layout_enabled: for .place GUIs (the welcome splash, the
+    # opt-outs) placeWidget already .place'd the label at the top-left, and a bare grid_configure() would
+    # RE-grid it (grid wins over place) and drop it to the bottom of the window.
     try:
-        release_lb.grid_configure(columnspan=GUI_IO_util._GRID_TOTAL_COLUMNS)
+        if GUI_IO_util.grid_layout_enabled:
+            release_lb.grid_configure(columnspan=GUI_IO_util._GRID_TOTAL_COLUMNS)
     except Exception:
         pass
     # check and display a possible warning message
