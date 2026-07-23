@@ -1418,7 +1418,8 @@ def list_team():
     # webbrowser.open_new_tab("https://github.com/NLP-Suite/NLP-Suite/wiki/The-NLP-Suite-Team")
 
 def cite_NLP():
-    url = "https://github.com/NLP-Suite/NLP-Suite/wiki/About#How-to-Cite-the-NLP-Suite"
+    # The How-to-Cite page is its own wiki page now, not an anchor under About.
+    url = "https://github.com/NLP-Suite/NLP-Suite/wiki/How-to-Cite-the-NLP-Suite"
     IO_libraries_util.open_url(NLP_Suite_website_name, url)
     #
     # # check internet connection
