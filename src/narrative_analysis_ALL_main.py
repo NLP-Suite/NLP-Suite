@@ -285,7 +285,9 @@ extra_GUIs_menu_var.trace('w', open_extra_GUI)
 # ── 1. Characters: Who & Whom ──
 
 characters_lb = tk.Label(window, text='Characters: Who & Whom', foreground="red",font=("Courier", 12, "bold"))
-characters_lb.place(x=GUI_IO_util.labels_x_coordinate, y=GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step*y_multiplier_integer - 17)
+# Section title on its own grid row (it used to .place-float at an absolute y, which the grid layout no
+# longer matches -- it landed on the checkboxes). help_buttons() skips a row to keep ? HELP aligned.
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer, characters_lb, False, True)
 
 characters_NER_var.set(0)
 characters_NER_checkbox = tk.Checkbutton(window,text="Via NER", variable=characters_NER_var, onvalue=1, offvalue=0)
@@ -332,7 +334,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analys
 # ── 2. Action: What ──
 
 action_lb = tk.Label(window, text='Action: What', foreground="red",font=("Courier", 12, "bold"))
-action_lb.place(x=GUI_IO_util.labels_x_coordinate, y=GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step*y_multiplier_integer - 17)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer, action_lb, False, True)
 
 action_POS_var.set(0)
 action_POS_checkbox = tk.Checkbutton(window, text="Via POS verb tags", variable=action_POS_var, onvalue=1, offvalue=0)
@@ -367,7 +369,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analys
 # ── 3. Characters in action: Who does/says What ──
 
 character_action_lb = tk.Label(window, text='Characters in action: Who does/says What', foreground="red",font=("Courier", 12, "bold"))
-character_action_lb.place(x=GUI_IO_util.labels_x_coordinate, y=GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step*y_multiplier_integer - 17)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer, character_action_lb, False, True)
 
 SVO_var.set(0)
 SVO_checkbox = tk.Checkbutton(window, text="SVOs (Who, What, Whom)",variable=SVO_var, onvalue=1, offvalue=0)
@@ -392,7 +394,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_anal
 # ── 4. Scenes/settings: When & Where ──
 
 scene_lb = tk.Label(window, text='Scenes/settings: When & Where',foreground="red",font=("Courier", 12, "bold"))
-scene_lb.place(x=GUI_IO_util.labels_x_coordinate, y=GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step*y_multiplier_integer - 17)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer, scene_lb, False, True)
 
 time_NER_var.set(0)
 time_NER_checkbox = tk.Checkbutton(window, text="Time (NER)",variable=time_NER_var, onvalue=1, offvalue=0)
@@ -440,7 +442,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analys
 # ── 5. Characters & emotions: How they feel ──
 
 emotions_lb = tk.Label(window, text='Characters & emotions: How they feel', foreground="red",font=("Courier", 12, "bold"))
-emotions_lb.place(x=GUI_IO_util.labels_x_coordinate, y=GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step*y_multiplier_integer - 17)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer, emotions_lb, False, True)
 
 characters_sentiment_arcs_var.set(0)
 characters_sentiment_arcs_checkbox = tk.Checkbutton(window,text="Sentiment arcs by character (Stanza NER + NRC)", variable=characters_sentiment_arcs_var, onvalue=1, offvalue=0)
@@ -519,19 +521,24 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                       GUI_IO_util.msg_IO_setup)
     # 0. GUIs available for narrative analysis
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer, "NLP Suite Help","Please, tick the 'GUIs available' checkbox to see and select other available tools suitable for narrative analysis (e.g., topic modeling, style analysis, sentiment analysis). The selected GUI will open without having to press RUN.")
-    # 1. Characters: Who & Whom (identity row; no extra row for label — label floats above)
+    # 1. Characters: Who & Whom -- the section title now takes its own grid row, so skip a ? HELP slot
+    y_multiplier_integer = y_multiplier_integer + 1  # Characters section-title row
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer, "NLP Suite Help","Please, tick any of the checkboxes to extract the story characters using different NLP tools.")
     # 1. Characters: Who & Whom (coreference + semantic space row)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox to resolve coreferences: who do all those 'he', 'she', 'they' refer to? (via CoreNLP). Or tick 'Characters in their semantic space' to explore how close characters are to other words (actions, places, concepts) using BERT embeddings.")
-    # 2. Action: What (label floats above)
+    # 2. Action: What (section title takes its own grid row)
+    y_multiplier_integer = y_multiplier_integer + 1  # Action section-title row
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkboxes to extract action via the POS annotator (Part of Speech) with verb tags, one of the three lexical databases WordNet, VerbNet or FrameNet (which aggregate the action verbs into semantic categories - WordNet senses, VerbNet classes, or FrameNet frames - via the semantic aggregation GUI), or the knowledge bases DBpedia/YAGO.")
-    # 3. Characters in action: Who does/says What (label floats above)
+    # 3. Characters in action: Who does/says What (section title takes its own grid row)
+    y_multiplier_integer = y_multiplier_integer + 1  # Characters-in-action section-title row
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkboxes to extract SVO triplets (Subject-Verb-Object), dialogue (who says what, via CoreNLP quote annotator), or narrative elements.")
-    # 4. Scenes/settings: When & Where (time + space row; label floats above)
+    # 4. Scenes/settings: When & Where (section title takes its own grid row; then time + space row)
+    y_multiplier_integer = y_multiplier_integer + 1  # Scenes/settings section-title row
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help","Please, tick the checkboxes to analyze the TEMPORAL and/or SPATIAL dimensions of stories via NER, CoreNLP, GIS, WordNet, and/or DBpedia/YAGO.")
     # 4. Scenes/settings: When & Where (DBpedia + movement tracking row)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help","Please, tick the checkboxes to analyze space via DBpedia/YAGO or to track how characters move across geographic locations over time (entity-location co-occurrence via Stanza NER).")
-    # 5. Characters & emotions: How they feel (label floats above)
+    # 5. Characters & emotions: How they feel (section title takes its own grid row)
+    y_multiplier_integer = y_multiplier_integer + 1  # Characters & emotions section-title row
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkboxes to analyze characters' emotional trajectories: sentiment arcs by character (via Stanza NER + NRC) or the overall shape of stories.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
 
