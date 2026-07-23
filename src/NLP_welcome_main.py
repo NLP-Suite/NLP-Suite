@@ -198,7 +198,7 @@ def display_bottom_line_buttons():
     enter_button = tk.Button(window, text='Enter NLP Suite', width=20, height=2, foreground="red",
                              font=("Arial", 14, "bold"),
                              command=lambda: run_NLP())
-    enter_button.grid(row=8, column=3, columnspan=2, rowspan=2, pady=50)
+    enter_button.grid(row=8, column=3, columnspan=2, rowspan=2, pady=30)  # was 50; trims ~40px of splash height
 
     window.update()
 
