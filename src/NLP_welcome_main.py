@@ -305,6 +305,14 @@ def place_banner():
 run_slides()
 update_images()  # this MUST be before displaying logo, text, and buttons
 
+# NLP_welcome builds its OWN .grid() layout and never calls GUI_top, so the grid layout flag is left
+# on by default. Turn it off BEFORE display_logo / display_release / the button row -- all of which are
+# GUI_util helpers that check the flag -- so they use the same absolute .place positions as the menu
+# (logo at help_button_x-12, release under it, the button row at the top). Left on, display_logo would
+# put the logo at the grid's tighter left margin (x=6, not x=38) and the buttons would grid to the
+# bottom of the splash.
+GUI_IO_util.grid_layout_enabled = False
+
 GUI_util.display_logo()
 display_text()
 
@@ -312,11 +320,6 @@ display_text()
 # GUI_util.display_release()
 
 scriptName = 'NLP_welcome_main.py'
-# NLP_welcome builds its OWN .grid() layout and never calls GUI_top, so the grid layout flag is left
-# on and display_about_release_team_cite_buttons (which routes through placeWidget) would grid these
-# buttons at a high row -- dropping them to the bottom of the splash instead of their intended spot.
-# Turn the flag off so those buttons take their original absolute .place positions.
-GUI_IO_util.grid_layout_enabled = False
 GUI_util.display_about_release_team_cite_buttons(scriptName)
 
 place_banner()
