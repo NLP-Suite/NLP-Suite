@@ -605,764 +605,376 @@ def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False
 basic_y_coordinate = 90
 y_step = 40 #the line-by-line increment on the GUI
 
-if sys.platform == 'darwin':  # Mac OS
-    about_button_x_coordinate = 330
-    release_history_button_x_coordinate = 510
-    team_button_x_coordinate = 690
-    cite_button_x_coordinate = 870
-
-    help_button_x_coordinate = 70
-    labels_x_coordinate = 150  # start point of all labels in the second column (first column after ? HELP)
-    labels_x_indented_coordinate = 160
-    labels_x_indented_indented_coordinate = 170
-    entry_box_x_coordinate = 470 #start point of all labels in the third column (second column after ? HELP); where IO filename, dir, etc. are displayed
-
-    widget_width_extra_short = 10
-    widget_width_short = 30
-    widget_width_medium = 45
-    widget_width_long = 60
-    widget_width_extra_long = 90
-
-    add_button_width = 1
-    reset_button_width = 3
-    show_button_width = 3
-    OK_button_width = 2
-
-# top line of widgets MAC
-    select_file_directory_button_width=23
-    IO_button_name_width=25
-    open_file_directory_button_width = 1
-
-    IO_configuration_menu = 405 # position of menu of default and GUI specific IO options
-    setup_pop_up_text_widget = 638 # widget to eventually open a text widget to enter text
-    setup_IO_brief_coordinate = 685 # Position of text entry for Input and Output display
-    open_IO_config_button = 650
-
-    # 4 small widgets to the right of top line MAC
-    open_file_button_brief = 715 # the left-most button of the four buttons displayed on the far right of top line of every GUI
-    open_inputDir_button_brief = 760
-    open_outputDir_button_brief = 805
-    open_config_file_button_brief = 850
-
-# bottom line of widgets MAC
-    read_button_x_coordinate = 70
-    watch_videos_x_coordinate = 200
-    open_TIPS_x_coordinate = 370
-    open_reminders_x_coordinate = 570
-    open_NLP_package_language_config_button = 650
-    open_setup_external_software_button = 650
-    open_setup_x_coordinate = 770
-    run_button_x_coordinate = 940
-    close_button_x_coordinate = 1090
-
-
-# --------------------------------------------------- special internal GUI specific values MAC
-
-# Mac NLP_setup_package_language_main
-    all_widget_pos = 500
-    package_display_area_width = 60
-    language_widget_width=50
-    plus_column = 992
-    reset_column = 1045
-    show_column = 1125
-
-    memory_pos = 220
-    document_length_lb = 510
-    document_length_pos = 670
-    sentence_length_lb = 680
-    sentence_length_pos = 800
-
-# MAC NLP_setup_IO_main Mac
-    date_format_coordinate = 550
-    date_char_sep_lb_coordinate = 690
-    date_char_sep_coordinate = 825
-    date_position_lb_coordinate = 900
-    date_position_coordinate = 970
-
-# MAC NLP_setup_external_software_main.py
-    missing_software_display_area_width = 55
-    download_install = 320
-    website_url_placement = 600
-
-# MAC OK
-    countdownLabelOK1_X = 70
-    countdownLabelOK2_X= 280
-
-    # MAC Yes No reminder
-    countdownLabel1_X = 125
-    countdownLabel2_X = 335
-    no_reminder = 65
-
-# MAC DB_SQL_main
-    SQLite_DB_file_width = 80
-    simplex_complex_files_dropdown = 425 # Complex/Simplex objects do you want to see? dropdowns
-    select_DB_table_field = 500
-
-# MAC GIS_Google_Earth_main.py
-    reset_button = 552
-    icon_type_button = 520
-    group_label = 1125
-    select_icon_color = 820
-    display_icon = select_icon_color + 100
-
-# MAC GIS_distance_main.py
-    GIS_distance_labels_align = 150+370 #TODO changed from labels_x_coordinate+350 to GIS_distance_labels_align
-
-# MAC GIS_main.py
-    label_columns  = 300
-
-    csv_file_width=85
-    country_bias_width=25
-    area_width=40
-
-    area_pos = 810
-    restrict_pos = 1200
-
-# MAC SVO_main Mac
-    SVO_1st_column = 120
-
-    # 120 labels_x_coordinate
-    filter_S = 230
-    open_S_dictionary = 320
-    SVO_2nd_column = 550 # filter & dictionary options for Verbs; now open_reminders_x_coordinate
-    # 550 open_reminders_x_coordinate
-    filter_V = 660
-    open_V_dictionary = 750
-    SVO_3rd_column = 940 # filter & dictionary options for Objects; now run_button_x_coordinate
-    # 940 run_button_x_coordinate
-    filter_O = 1050
-    open_O_dictionary = 1140
-
-    SVO_2nd_column_top = 400
-    SVO_3rd_column_top = 800
-
-    dictionary_S_width=30
-    dictionary_V_width=30
-    dictionary_O_width=30
-
-# MAC CoNLL_table_analyzer_main
-    combobox_position = 210
-    combobox_width = 40
-
-# MAC narrative_analysis_ALL_main.py
-
-    narrative_analysis_2nd_column = 360
-    narrative_analysis_3rd_column = 570
-    narrative_analysis_4th_column = 820
-    narrative_analysis_5th_column = 1100
-
-# Mac wordclouds_main.py
-    wordcloud_title = labels_x_indented_coordinate + 120
-    wordclouds_font_lb = 940
-    wordclouds_font_menu = 985
-
-    wordclouds_max_words_number = wordcloud_title
-    wordclouds_stopwords_pos = 400
-    wordclouds_lemmas_pos = 545
-    wordclouds_punctuation_pos = 680
-    wordclouds_lowercase_pos = 840
-    wordclouds_collocation_pos = 985
-    wordclouds_color_by_POS_tags = 1130
-
-    wordclouds_openImage_button = wordclouds_font_lb+15
-    wordclouds_selectedImage_width = 60
-    wordclouds_selectedImage_file_path = wordclouds_stopwords_pos
-    contour_only_pos = wordclouds_collocation_pos
-
-    wordclouds_select_csv_field = wordcloud_title
-    wordclouds_color_checkbox_pos = wordclouds_lemmas_pos
-    wordclouds_RGB_lb = wordclouds_punctuation_pos # 680
-    wordclouds_RGB = wordclouds_lowercase_pos # 840
-    wordclouds_add_button = wordclouds_color_by_POS_tags # 910
-    wordclouds_reset_button = wordclouds_color_by_POS_tags + 55 # 965
-    wordclouds_show_button = wordclouds_color_by_POS_tags + 128 # 1038
-
-#Mac: knowledge_graphs_main.py
-    confidence_level_entry_pos = 870
-    DBpedia_YAGO_ontology_width = 70
-    knowledge_sub_class_entry_width = 70
-    knowledge_bold_checkbox = open_reminders_x_coordinate
-    knowledge_plus_button =  labels_x_indented_coordinate
-    knowledge_reset_button = knowledge_plus_button + 45
-    knowledge_show_button = knowledge_reset_button + 65
-
-# Mac: file_splitter_main.py
-    file_splitter_post_num_string_value_lb_pos = 600
-    file_splitter_post_num_string_value_pos = 1020
-    file_splitter_split_mergedFile_separator_entry_begin_pos = 560
-
-    file_splitter_split_mergedFile_separator_entry_end_pos = 640
-    file_splitter_current_docLength_pos = 580
-    file_splitter_split_docLength_lb_pos = 735
-    file_splitter_lemmatize_pos = 1060
-    file_splitter_first_occurrence_pos = 1170
-
-# Mac: html_annotator_gender_main.py
-
-    html_annotator_gender_annotator_dictionary_file_width = 60
-    html_annotator_gender_select_dictionary_file_button = 350
-    html_annotator_gender_select_dictionary_file_annotator = 460
-    html_annotator_gender_SS_folder_width = 65
-    html_annotator_gender_by_type_dropdown = 575
-    html_annotator_gender_firstName_entry_lb_pos = 660
-    html_annotator_gender_firstName_entry_pos = 760 # 790
-    html_annotator_gender_select_SS_folder = 1070
-
-# Mac: html_annotator_main.py
-    html_annotator_add_dictionary_description = 450
-
-    html_annotator_openInputFile_button = 380
-    html_annotator_dictionary_width = 80
-    html_annotator_dictionary_file_button = 460
-
-    html_annotator_csv_field1_menu = 280
-    html_annotator_add_dictValue_button = 380
-    html_annotator_reset_dictValue_button = 440
-    html_annotator_show_keywords_button = 527
-
-    html_annotator_csv_field2_lb = 640
-    html_annotator_csv_field2_menu = 770
-    html_annotator_value_lb = 865
-    html_annotator_csv_field_value_menu = 1020
-    html_annotator_color_palette_dict_lb = 1100
-    html_annotator_color_palette_dict_menu = 1190
-    html_annotator_bold_checkbox = 1270
-
-# Mac: semantic_aggregation_main
-#     WordNet_csv_file_width = 130
-#     WordNet_keyWord_entry_width = et_b40
-#     WordNet_dict_WordNet_filename_width = 80
-#
-#     WordNet_reset_pos = 450
-#     WordNet_show_pos = 500
-#     WordNet_noun_verb_menu_pos = 570
-#     WordNet_keyWord_menu_pos = 690
-#     WordNet_keyWord_entry_lb_pos = 830
-#     WordNet_keyWord_entry_pos = 950
-#     WordNet_OK_button_pos = 1230
-#
-#     WordNet_extract_improper_nouns_pos = 650
-#     WordNet_dict_WordNet_filename_pos = open_setup_x_coordinate
-#     WordNet_dict_WordNet_filename_lb_pos = open_TIPS_x_coordinate
-
-    WordNet_csv_file_width = 90
-    WordNet_keyWord_entry_width = 42
-    WordNet_dict_WordNet_filename_width = 45
-
-    WordNet_reset_pos = 516
-    WordNet_show_pos = 580
-    WordNet_noun_verb_menu_pos = 660
-    WordNet_keyWord_menu_pos = 780
-    WordNet_keyWord_entry_lb_pos = 840
-    WordNet_keyWord_entry_pos = 950
-    WordNet_OK_button_pos = IO_configuration_menu+open_config_file_button_brief
-
-    WordNet_extract_improper_nouns_pos = 690
-    WordNet_dict_WordNet_filename_pos = open_setup_x_coordinate
-    WordNet_dict_WordNet_filename_lb_pos = open_TIPS_x_coordinate
-
-# Mac: style_analysis_main
-    style_ngrams_menu_pos = 260
-    style_ngrams_options_menu_pos = 260
-    style_add_ngrams_button_pos = 950
-    style_reset_ngrams_button_pos = 990
-    style_show_ngrams_button_pos = 1050
-
-    style_corpus_statistics_options_menu_pos = 490
-
-    style_corpus_text_options_menu_lb_pos = 950
-    style_corpus_options_menu_men_pos = 1050
-
-    style_complexity_readability_analysis_menu_pos = 750
-
-    style_vocabulary_analysis_menu_pos = 750
-
-# Mac NGrams_Co_occurrences_Viewer
-    NGrams_Co_occurrences_Viewer_search_words_entry_pos = 300
-    NGrams_Co_occurrences_Viewer_CoOcc_Viewer_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
-    NGrams_Co_occurrences_Viewer_date_options_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
-    NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos = open_reminders_x_coordinate #535#510
-    NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos = NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos + 90 # 625 #600
-    NGrams_Co_occurrences_Viewer_viewer_options_menu_pos = NGrams_Co_occurrences_Viewer_date_options_pos
-    NGrams_Co_occurrences_Viewer_add_viewer_button_pos = NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos
-    NGrams_Co_occurrences_Viewer_reset_viewer_button_pos = 594
-    NGrams_Co_occurrences_Viewer_show_viewer_button_pos = 680
-
-# Mac: data_visualization_1_main
-
-    visualization_csv_field_menu_pos = 260
-    visualization_add_button_pos = 983
-    visualization_reset_button_pos = 1030
-    visualization_show_button_pos = 1092
-
-    visualization_csv_field_dynamic_network_lb_pos = setup_pop_up_text_widget
-    visualization_dynamic_network_field_pos = open_setup_x_coordinate  # 740
-
-    visualization_filename_label_lb_pos = 320 # IO_configuration_menu
-    visualization_filename_label_pos = 470 #open_reminders_x_coordinate
-
-    visualization_csv_field2_lb_pos = run_button_x_coordinate # 920
-    visualization_csv_field2_menu_pos = visualization_csv_field2_lb_pos + 90 #120#1020
-
-    visualization_K_sent_begin_lb = visualization_csv_field_menu_pos
-    visualization_K_sent_begin_pos = visualization_csv_field_menu_pos
-    visualization_K_sent_end_lb_pos = visualization_filename_label_lb_pos
-    visualization_K_sent_end_pos = visualization_filename_label_pos
-    visualization_split_pos = open_setup_x_coordinate
-    visualization_do_not_split_pos = visualization_csv_field2_menu_pos # open_reminders_x_coordinate + 400
-
-# Mac: shape_of_stories
-
-    shape_of_stories_sentiment_analysis_lb_pos = IO_configuration_menu
-    shape_of_stories_sentiment_analysis_menu_pos = setup_IO_brief_coordinate
-    shape_of_stories_memory_lb_pos = 820
-    shape_of_stories_memory_pos = 890
-
-# Mac: parsers_annotators
-
-    parsers_annotators_parser_lb_pos = labels_x_indented_coordinate + 10
-    parsers_annotators_parser_menu_pos = open_TIPS_x_coordinate # IO_configuration_menu
-    parsers_annotators_parser_open_CoNLL_pos = open_TIPS_x_coordinate
-    parsers_annotators_parser_annotator_pos = open_TIPS_x_coordinate
-    parsers_annotators_parser_manual_coref_edit_pos = 800
-    parsers_annotators_parser_openGUI_pos = 920
-
-# Mac: file_search_byWord
-
-    file_search_byWord_widget_width = 57
-    file_search_byWord_selectedCsvFile_pos = 510
-    file_search_byWord_add_search_button_pos = setup_IO_brief_coordinate
-    file_search_byWord_reset_search_button_pos = setup_IO_brief_coordinate + 40
-    file_search_byWord_show_search_button_pos = setup_IO_brief_coordinate + 100
-    file_search_byWord_openInputFile_button_pos = IO_configuration_menu
-    file_search_byWord_keyword_value_pos = 510
-    file_search_byWord_extract_sentences_search_words_entry_pos = 510
-
-    # Mac Word2Vec
-    Word2Vec_vector_size_entry_pos = 280
-    Word2Vec_window_size_lb_pos = Word2Vec_vector_size_entry_pos
-    Word2Vec_window_size_entry_pos= Word2Vec_window_size_lb_pos+260
-    Word2Vec_min_count_lb_pos=setup_pop_up_text_widget
-    Word2Vec_min_count_entry_pos = Word2Vec_min_count_lb_pos +150
-    Word2Vec_top_words_pos = 1000
-
-# Mac statistics_csv
-
-    statistics_csv_reset_csv_button_pos = 420
-    statistics_csv_show_csv_button_pos = 480
-    statistics_csv_csv_field_lb_pos = 550
-    statistics_csv_csv_field_menu_pos = 620
-    statistics_csv_csv_groupBy_field_lb_pos = 180
-    statistics_csv_csv_groupBy_field_menu_pos = 280
-    statistics_csv_add_field2_button_pos = statistics_csv_csv_field_menu_pos #620
-    statistics_csv_csv_hover_over_field_lb_pos = 660
-    statistics_csv_csv_hover_over_field_menu_pos = 760
-
-# Mac sentiment_analysis
-    sentiment_analysis_median_checkbox_pos = IO_configuration_menu
-    sentiment_analysis_SA_algorithm_menu_pos = IO_configuration_menu
-
-# Mac file_merger
-
-    file_merger_merge_embed_filenames_inStringSeparators_pos = IO_configuration_menu
-    file_merger_merge_separator_entry_begin_pos = 560
-    file_merger_merge_separator_entry_end_pos = 640
-    file_merger_merge_embed_subdir_name_pos = 730
-    file_merger_character_separator_lb_pos = 890
-    file_merger_merge_character_separator_pos = 1020
-
-# Mac file_matcher
-
-    file_matcher_openInputFile_button_pos = 270
-    file_matcher_selectedCsvFile_pos = 320
-    file_matcher_source_file_type_menu_pos = 490
-    file_matcher_target_file_type_menu_lb_pos = 650
-    file_matcher_target_file_type_menu_pos = 760
-    file_matcher_character_value_pos = 490
-    file_matcher_number_of_items_lb_pos = 650
-    file_matcher_number_of_items_value_pos = 760
-    file_matcher_include_exclude_pos = 880
-
-# Mac coreference
-    coreference_corefed_txt_file_width = 90
-    coreference_CoRef_var_menu_pos = 320
-
-    # Mac NER
-    NER_NER_packages_menu_pos = 250
-    NER_NER_menu_pos = 250
-    NER_reset_NER_button_pos = 600
-    NER_NER_entry_lb_pos = 720
-    NER_NER_entry_pos = 800
-
-# Windows --------------------------------------------------------------------------------------
-
-else: #windows and anything else
-    about_button_x_coordinate = 230
-    release_history_button_x_coordinate = 400
-    team_button_x_coordinate = 570
-    cite_button_x_coordinate = 740
-
-    help_button_x_coordinate = 50
-    labels_x_coordinate = 120  # start point of all labels in the second column (first column after ? HELP)
-    labels_x_indented_coordinate = 140
-    labels_x_indented_indented_coordinate = 160
-
-    widget_width_extra_short = 10
-    widget_width_short = 50
-    widget_width_medium = 70
-    widget_width_long = 100
-    widget_width_extra_long = 120
-
-    add_button_width = 2
-    reset_button_width = 4
-    show_button_width = 4
-    OK_button_width = 3
+# Widget coordinate constants. These were once split into a Mac block and a Windows block, but the
+# grid layout (see placeWidget / finalize_grid_layout) derives pixel positions from the widgets'
+# own sizes, so the per-platform split was redundant -- the numbers now only set column order and
+# the gap between columns. One set (formerly the Windows values) serves both platforms.
+about_button_x_coordinate = 230
+release_history_button_x_coordinate = 400
+team_button_x_coordinate = 570
+cite_button_x_coordinate = 740
+
+help_button_x_coordinate = 50
+labels_x_coordinate = 120  # start point of all labels in the second column (first column after ? HELP)
+labels_x_indented_coordinate = 140
+labels_x_indented_indented_coordinate = 160
+
+widget_width_extra_short = 10
+widget_width_short = 50
+widget_width_medium = 70
+widget_width_long = 100
+widget_width_extra_long = 120
+
+add_button_width = 2
+reset_button_width = 4
+show_button_width = 4
+OK_button_width = 3
 
 # top line of widgets Windows
-    select_file_directory_button_width=30
-    IO_button_name_width=30
-    open_file_directory_button_width = 3
-    IO_configuration_menu = 350 # position of menu of default and GUI specific IO options
-    setup_pop_up_text_widget = 560  # widget to eventually open a text widget to enter text
-    setup_IO_brief_coordinate = 610 # Position of text entry for Input and Output display
-    entry_box_x_coordinate = 400 #start point of all labels in the third column (second column after ? HELP)
+select_file_directory_button_width=30
+IO_button_name_width=30
+open_file_directory_button_width = 3
+IO_configuration_menu = 350 # position of menu of default and GUI specific IO options
+setup_pop_up_text_widget = 560  # widget to eventually open a text widget to enter text
+setup_IO_brief_coordinate = 610 # Position of text entry for Input and Output display
+entry_box_x_coordinate = 400 #start point of all labels in the third column (second column after ? HELP)
 
-    # 4 small widgets to the right of top line Windows
-    # reference to IO_configuration_menu+
-    open_file_button_brief = 760 # the left-most button of the four buttons displayed on the far right of top line of every GUI
-    open_inputDir_button_brief = 800
-    open_outputDir_button_brief = 840
-    open_config_file_button_brief = 880
+# 4 small widgets to the right of top line Windows
+# reference to IO_configuration_menu+
+open_file_button_brief = 760 # the left-most button of the four buttons displayed on the far right of top line of every GUI
+open_inputDir_button_brief = 800
+open_outputDir_button_brief = 840
+open_config_file_button_brief = 880
 
 # top line of widgets Windows
-    read_button_x_coordinate = 50
-    watch_videos_x_coordinate = 170
-    open_TIPS_x_coordinate = 350
-    open_reminders_x_coordinate = 550
-    open_setup_x_coordinate = 750
-    open_IO_config_button = 820
-    open_NLP_package_language_config_button = 820
-    open_setup_external_software_button = 820
-    run_button_x_coordinate = 940
-    close_button_x_coordinate = 1050
+read_button_x_coordinate = 50
+watch_videos_x_coordinate = 170
+open_TIPS_x_coordinate = 350
+open_reminders_x_coordinate = 550
+open_setup_x_coordinate = 750
+open_IO_config_button = 820
+open_NLP_package_language_config_button = 820
+open_setup_external_software_button = 820
+run_button_x_coordinate = 940
+close_button_x_coordinate = 1050
 
 # WINDOWS special internal GUI specific values WINDOWS -----------------------------------------------------------
 
-    # all + Reset Show are separeted by 35 points and 50 points
+# all + Reset Show are separeted by 35 points and 50 points
 
 # Windows NLP_setup_package_language_main
-    all_widget_pos = 450
-    package_display_area_width = 80
-    language_widget_width=70
-    plus_column = 920
-    reset_column = 960
-    show_column = 1020
+all_widget_pos = 450
+package_display_area_width = 80
+language_widget_width=70
+plus_column = 920
+reset_column = 960
+show_column = 1020
 
-    memory_pos = 180
-    document_length_lb = all_widget_pos
-    document_length_pos = 590
-    sentence_length_lb = 680
-    sentence_length_pos = 800
+memory_pos = 180
+document_length_lb = all_widget_pos
+document_length_pos = 590
+sentence_length_lb = 680
+sentence_length_pos = 800
 
 # Windows NLP_setup_IO_main
-    date_format_coordinate = 530
-    date_char_sep_lb_coordinate = 620
-    date_char_sep_coordinate = 745
-    date_position_lb_coordinate = open_setup_x_coordinate # 810
-    date_position_coordinate = open_setup_x_coordinate + 130 # 880
+date_format_coordinate = 530
+date_char_sep_lb_coordinate = 620
+date_char_sep_coordinate = 745
+date_position_lb_coordinate = open_setup_x_coordinate # 810
+date_position_coordinate = open_setup_x_coordinate + 130 # 880
 
 # Windows NLP_setup_external_software_main.py
-    missing_software_display_area_width = 85
-    download_install = 320
-    website_url_placement = 600
+missing_software_display_area_width = 85
+download_install = 320
+website_url_placement = 600
 
 # Windows OK
-    countdownLabelOK1_X = 40
-    countdownLabelOK2_X = 230
+countdownLabelOK1_X = 40
+countdownLabelOK2_X = 230
 
 # Windows Yes No reminder
-    countdownLabel1_X = 90
-    countdownLabel2_X = 280
-    no_reminder = 45
+countdownLabel1_X = 90
+countdownLabel2_X = 280
+no_reminder = 45
 
 # Windows DB_SQL_main
-    SQLite_DB_file_width = 100
-    simplex_complex_files_dropdown = 390  # Complex/Simplex objects do you want to see? dropdowns
-    select_DB_table_field = 500
+SQLite_DB_file_width = 100
+simplex_complex_files_dropdown = 390  # Complex/Simplex objects do you want to see? dropdowns
+select_DB_table_field = 500
 
 # Windows SVO_main
-    SVO_1st_column = 120
+SVO_1st_column = 120
 
-    date_character_separator_label = 920
-    date_character_separator_menu = 1050
-    date_position_label = 1100
-    date_position_menu = 1160
+date_character_separator_label = 920
+date_character_separator_menu = 1050
+date_position_label = 1100
+date_position_menu = 1160
 
-    # 120 labels_x_coordinate
-    filter_S = 230
-    open_S_dictionary = 320
-    SVO_2nd_column = 550 # filter & dictionary options for Verbs; now open_reminders_x_coordinate
-    # 550 open_reminders_x_coordinate
-    filter_V = 660
-    open_V_dictionary = 750
-    SVO_3rd_column = 940 # filter & dictionary options for Objects; now run_button_x_coordinate
-    # 940 run_button_x_coordinate
-    filter_O = 1050
-    open_O_dictionary = 1140
+# 120 labels_x_coordinate
+filter_S = 230
+open_S_dictionary = 320
+SVO_2nd_column = 550 # filter & dictionary options for Verbs; now open_reminders_x_coordinate
+# 550 open_reminders_x_coordinate
+filter_V = 660
+open_V_dictionary = 750
+SVO_3rd_column = 940 # filter & dictionary options for Objects; now run_button_x_coordinate
+# 940 run_button_x_coordinate
+filter_O = 1050
+open_O_dictionary = 1140
 
-    SVO_2nd_column_top = 400
-    SVO_3rd_column_top = 800
+SVO_2nd_column_top = 400
+SVO_3rd_column_top = 800
 
-    dictionary_S_width=45
-    dictionary_V_width=45
-    dictionary_O_width=45
+dictionary_S_width=45
+dictionary_V_width=45
+dictionary_O_width=45
 
 # Windows GIS_main.py
-    label_columns  = 300
-    csv_file_width = 130
-    country_bias_width = 35
-    area_width = 50
-    area_pos = 800
-    restrict_pos = 1150
+label_columns  = 300
+csv_file_width = 130
+country_bias_width = 35
+area_width = 50
+area_pos = 800
+restrict_pos = 1150
 
 # Windows CoNLL_table_analyzer_main
-    combobox_position = 200
-    combobox_width = 50
+combobox_position = 200
+combobox_width = 50
 
 # Windows narrative_analysis_ALL_main.py
-    narrative_analysis_2nd_column = 320
-    narrative_analysis_3rd_column = 510
-    narrative_analysis_4th_column = 740
-    narrative_analysis_5th_column = 980
+narrative_analysis_2nd_column = 320
+narrative_analysis_3rd_column = 510
+narrative_analysis_4th_column = 740
+narrative_analysis_5th_column = 980
 
 # Windows wordclouds_main.py
 
-    wordcloud_title = labels_x_indented_coordinate + 120
-    wordclouds_font_lb = 870 # 270
-    wordclouds_font_menu = 910 # 310 wordclouds_collocation_pos
+wordcloud_title = labels_x_indented_coordinate + 120
+wordclouds_font_lb = 870 # 270
+wordclouds_font_menu = 910 # 310 wordclouds_collocation_pos
 
-    wordclouds_max_words_number = wordcloud_title
-    wordclouds_stopwords_pos = 340
-    wordclouds_lemmas_pos = 470
-    wordclouds_punctuation_pos = 590
-    wordclouds_lowercase_pos = 730
-    wordclouds_collocation_pos = 870
-    wordclouds_color_by_POS_tags = 1010
+wordclouds_max_words_number = wordcloud_title
+wordclouds_stopwords_pos = 340
+wordclouds_lemmas_pos = 470
+wordclouds_punctuation_pos = 590
+wordclouds_lowercase_pos = 730
+wordclouds_collocation_pos = 870
+wordclouds_color_by_POS_tags = 1010
 
-    wordclouds_openImage_button = wordclouds_font_lb
-    wordclouds_selectedImage_width = 100
-    wordclouds_selectedImage_file_path = wordclouds_stopwords_pos
-    contour_only_pos = wordclouds_color_by_POS_tags
+wordclouds_openImage_button = wordclouds_font_lb
+wordclouds_selectedImage_width = 100
+wordclouds_selectedImage_file_path = wordclouds_stopwords_pos
+contour_only_pos = wordclouds_color_by_POS_tags
 
-    wordclouds_select_csv_field = wordcloud_title
-    wordclouds_color_checkbox_pos = wordclouds_punctuation_pos
-    wordclouds_RGB_lb = wordclouds_lowercase_pos #730
-    wordclouds_RGB = wordclouds_lowercase_pos + 100 #800
-    wordclouds_add_button = wordclouds_color_by_POS_tags # 1010
-    wordclouds_reset_button = wordclouds_color_by_POS_tags + 35
-    wordclouds_show_button = wordclouds_color_by_POS_tags + 85
+wordclouds_select_csv_field = wordcloud_title
+wordclouds_color_checkbox_pos = wordclouds_punctuation_pos
+wordclouds_RGB_lb = wordclouds_lowercase_pos #730
+wordclouds_RGB = wordclouds_lowercase_pos + 100 #800
+wordclouds_add_button = wordclouds_color_by_POS_tags # 1010
+wordclouds_reset_button = wordclouds_color_by_POS_tags + 35
+wordclouds_show_button = wordclouds_color_by_POS_tags + 85
 
 # Windows: knowledge_graphs_main.py
-    confidence_level_entry_pos = 770
-    DBpedia_YAGO_ontology_width = 70
-    knowledge_sub_class_entry_width = 70
-    knowledge_bold_checkbox = open_TIPS_x_coordinate
-    knowledge_plus_button =  labels_x_indented_coordinate
-    knowledge_reset_button = knowledge_plus_button + 35
-    knowledge_show_button = knowledge_reset_button + 50
+confidence_level_entry_pos = 770
+DBpedia_YAGO_ontology_width = 70
+knowledge_sub_class_entry_width = 70
+knowledge_bold_checkbox = open_TIPS_x_coordinate
+knowledge_plus_button =  labels_x_indented_coordinate
+knowledge_reset_button = knowledge_plus_button + 35
+knowledge_show_button = knowledge_reset_button + 50
 
 # Windows: file_splitter_main.py
-    file_splitter_post_num_string_value_lb_pos = 500
-    file_splitter_post_num_string_value_pos = 900
-    file_splitter_split_mergedFile_separator_entry_begin_pos = 580
-    file_splitter_split_mergedFile_separator_entry_end_pos = 690
-    current_docLength_lb_pos = IO_configuration_menu
-    file_splitter_current_docLength_pos = 520
-    file_splitter_split_docLength_lb_pos = 650
-    file_splitter_split_docLength_pos = 830
-    file_splitter_lemmatize_pos = file_splitter_split_docLength_pos
-    file_splitter_first_occurrence_pos = 950
+file_splitter_post_num_string_value_lb_pos = 500
+file_splitter_post_num_string_value_pos = 900
+file_splitter_split_mergedFile_separator_entry_begin_pos = 580
+file_splitter_split_mergedFile_separator_entry_end_pos = 690
+current_docLength_lb_pos = IO_configuration_menu
+file_splitter_current_docLength_pos = 520
+file_splitter_split_docLength_lb_pos = 650
+file_splitter_split_docLength_pos = 830
+file_splitter_lemmatize_pos = file_splitter_split_docLength_pos
+file_splitter_first_occurrence_pos = 950
 
 # Windows: html_annotator_gender_main.py
-    html_annotator_gender_annotator_dictionary_file_width = 100
-    html_annotator_gender_select_dictionary_file_button = 305
-    html_annotator_gender_select_dictionary_file_annotator = 370
-    html_annotator_gender_SS_folder_width = 110
-    html_annotator_gender_by_type_dropdown = 470
-    html_annotator_gender_firstName_entry_lb_pos = 660
-    html_annotator_gender_firstName_entry_pos = 770 # 790
-    html_annotator_gender_select_SS_folder = 1070
+html_annotator_gender_annotator_dictionary_file_width = 100
+html_annotator_gender_select_dictionary_file_button = 305
+html_annotator_gender_select_dictionary_file_annotator = 370
+html_annotator_gender_SS_folder_width = 110
+html_annotator_gender_by_type_dropdown = 470
+html_annotator_gender_firstName_entry_lb_pos = 660
+html_annotator_gender_firstName_entry_pos = 770 # 790
+html_annotator_gender_select_SS_folder = 1070
 
 # Windows: html_annotator_main.py
-    html_annotator_add_dictionary_description = 420
+html_annotator_add_dictionary_description = 420
 
-    html_annotator_openInputFile_button = 320
-    html_annotator_dictionary_width = 100
-    html_annotator_dictionary_file_button = 370
+html_annotator_openInputFile_button = 320
+html_annotator_dictionary_width = 100
+html_annotator_dictionary_file_button = 370
 
-    html_annotator_csv_field1_menu = 240
-    html_annotator_add_dictValue_button = 350
-    html_annotator_reset_dictValue_button = 380
-    html_annotator_show_keywords_button = 430
+html_annotator_csv_field1_menu = 240
+html_annotator_add_dictValue_button = 350
+html_annotator_reset_dictValue_button = 380
+html_annotator_show_keywords_button = 430
 
-    html_annotator_csv_field2_lb = 500
-    html_annotator_csv_field2_menu = 600
-    html_annotator_value_lb = 740
-    html_annotator_csv_field_value_menu = 870
-    html_annotator_color_palette_dict_lb = 1000
-    html_annotator_color_palette_dict_menu = 1080
-    html_annotator_bold_checkbox = 1180
+html_annotator_csv_field2_lb = 500
+html_annotator_csv_field2_menu = 600
+html_annotator_value_lb = 740
+html_annotator_csv_field_value_menu = 870
+html_annotator_color_palette_dict_lb = 1000
+html_annotator_color_palette_dict_menu = 1080
+html_annotator_bold_checkbox = 1180
 
 # Windows: semantic_aggregation_main
-    WordNet_csv_file_width = 130
-    WordNet_keyWord_entry_width = 75
-    WordNet_dict_WordNet_filename_width = 80
+WordNet_csv_file_width = 130
+WordNet_keyWord_entry_width = 75
+WordNet_dict_WordNet_filename_width = 80
 
-    WordNet_reset_pos = 430
-    WordNet_show_pos = 475
-    WordNet_noun_verb_menu_pos = 570
-    WordNet_keyWord_menu_pos = 690
-    WordNet_keyWord_entry_lb_pos = 830
-    WordNet_keyWord_entry_pos = 950
-    WordNet_OK_button_pos = IO_configuration_menu+open_config_file_button_brief
+WordNet_reset_pos = 430
+WordNet_show_pos = 475
+WordNet_noun_verb_menu_pos = 570
+WordNet_keyWord_menu_pos = 690
+WordNet_keyWord_entry_lb_pos = 830
+WordNet_keyWord_entry_pos = 950
+WordNet_OK_button_pos = IO_configuration_menu+open_config_file_button_brief
 
-    WordNet_extract_improper_nouns_pos = 650
-    WordNet_dict_WordNet_filename_pos = open_setup_x_coordinate
-    WordNet_dict_WordNet_filename_lb_pos = open_TIPS_x_coordinate
+WordNet_extract_improper_nouns_pos = 650
+WordNet_dict_WordNet_filename_pos = open_setup_x_coordinate
+WordNet_dict_WordNet_filename_lb_pos = open_TIPS_x_coordinate
 
 # Windows: style_analysis_main
-    style_ngrams_menu_pos = 260
-    style_ngrams_options_menu_pos = 260
-    style_add_ngrams_button_pos = 950
-    style_reset_ngrams_button_pos = 990
-    style_show_ngrams_button_pos = 1050
+style_ngrams_menu_pos = 260
+style_ngrams_options_menu_pos = 260
+style_add_ngrams_button_pos = 950
+style_reset_ngrams_button_pos = 990
+style_show_ngrams_button_pos = 1050
 
-    style_corpus_statistics_options_menu_pos = 490
+style_corpus_statistics_options_menu_pos = 490
 
-    style_corpus_text_options_menu_lb_pos = 950
-    style_corpus_options_menu_men_pos = 1050
+style_corpus_text_options_menu_lb_pos = 950
+style_corpus_options_menu_men_pos = 1050
 
-    style_complexity_readability_analysis_menu_pos = 750
+style_complexity_readability_analysis_menu_pos = 750
 
-    style_vocabulary_analysis_menu_pos = 750
+style_vocabulary_analysis_menu_pos = 750
 
 # Windows NGrams_Co_occurrences_Viewer
-    NGrams_Co_occurrences_Viewer_search_words_entry_pos = 260
-    NGrams_Co_occurrences_Viewer_CoOcc_Viewer_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
-    NGrams_Co_occurrences_Viewer_date_options_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
-    NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos =  open_reminders_x_coordinate # 500
-    NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos = open_reminders_x_coordinate + 100
-    NGrams_Co_occurrences_Viewer_viewer_options_menu_pos = NGrams_Co_occurrences_Viewer_date_options_pos
-    NGrams_Co_occurrences_Viewer_add_viewer_button_pos = NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos  # 500
-    NGrams_Co_occurrences_Viewer_reset_viewer_button_pos = NGrams_Co_occurrences_Viewer_add_viewer_button_pos + 40  # 540
-    NGrams_Co_occurrences_Viewer_show_viewer_button_pos = NGrams_Co_occurrences_Viewer_reset_viewer_button_pos + 60  # 560
+NGrams_Co_occurrences_Viewer_search_words_entry_pos = 260
+NGrams_Co_occurrences_Viewer_CoOcc_Viewer_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
+NGrams_Co_occurrences_Viewer_date_options_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
+NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos =  open_reminders_x_coordinate # 500
+NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos = open_reminders_x_coordinate + 100
+NGrams_Co_occurrences_Viewer_viewer_options_menu_pos = NGrams_Co_occurrences_Viewer_date_options_pos
+NGrams_Co_occurrences_Viewer_add_viewer_button_pos = NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos  # 500
+NGrams_Co_occurrences_Viewer_reset_viewer_button_pos = NGrams_Co_occurrences_Viewer_add_viewer_button_pos + 40  # 540
+NGrams_Co_occurrences_Viewer_show_viewer_button_pos = NGrams_Co_occurrences_Viewer_reset_viewer_button_pos + 60  # 560
 
 # Windows: data_visualization_1_main
 
-    visualization_csv_field_menu_pos = 280
-    visualization_add_button_pos = 1105
-    visualization_reset_button_pos = 1140
-    visualization_show_button_pos = 1190
+visualization_csv_field_menu_pos = 280
+visualization_add_button_pos = 1105
+visualization_reset_button_pos = 1140
+visualization_show_button_pos = 1190
 
-    visualization_csv_field_dynamic_network_lb_pos = setup_pop_up_text_widget
-    visualization_dynamic_network_field_pos = open_setup_x_coordinate # 830
+visualization_csv_field_dynamic_network_lb_pos = setup_pop_up_text_widget
+visualization_dynamic_network_field_pos = open_setup_x_coordinate # 830
 
-    visualization_filename_label_lb_pos = 320 # IO_configuration_menu
-    visualization_filename_label_pos = 470 #open_reminders_x_coordinate
+visualization_filename_label_lb_pos = 320 # IO_configuration_menu
+visualization_filename_label_pos = 470 #open_reminders_x_coordinate
 
-    visualization_csv_field2_lb_pos = run_button_x_coordinate # 920
-    visualization_csv_field2_menu_pos = visualization_csv_field2_lb_pos + 90#1020
+visualization_csv_field2_lb_pos = run_button_x_coordinate # 920
+visualization_csv_field2_menu_pos = visualization_csv_field2_lb_pos + 90#1020
 
-    visualization_K_sent_begin_lb = visualization_csv_field_menu_pos
-    visualization_K_sent_begin_pos = visualization_csv_field_menu_pos
-    visualization_K_sent_end_lb_pos = visualization_filename_label_lb_pos
-    visualization_K_sent_end_pos = visualization_filename_label_pos
-    visualization_split_pos = open_setup_x_coordinate
-    visualization_do_not_split_pos = visualization_csv_field2_menu_pos # open_reminders_x_coordinate + 400
+visualization_K_sent_begin_lb = visualization_csv_field_menu_pos
+visualization_K_sent_begin_pos = visualization_csv_field_menu_pos
+visualization_K_sent_end_lb_pos = visualization_filename_label_lb_pos
+visualization_K_sent_end_pos = visualization_filename_label_pos
+visualization_split_pos = open_setup_x_coordinate
+visualization_do_not_split_pos = visualization_csv_field2_menu_pos # open_reminders_x_coordinate + 400
 
 # Windows: shape_of_stories
 
-    shape_of_stories_sentiment_analysis_lb_pos = IO_configuration_menu
-    shape_of_stories_sentiment_analysis_menu_pos = setup_IO_brief_coordinate
-    shape_of_stories_memory_lb_pos = 820
-    shape_of_stories_memory_pos = 890
+shape_of_stories_sentiment_analysis_lb_pos = IO_configuration_menu
+shape_of_stories_sentiment_analysis_menu_pos = setup_IO_brief_coordinate
+shape_of_stories_memory_lb_pos = 820
+shape_of_stories_memory_pos = 890
 
 # Windows: parsers_annotators
 
-    parsers_annotators_parser_lb_pos = labels_x_indented_coordinate + 10 # 150
-    parsers_annotators_parser_menu_pos = open_TIPS_x_coordinate # IO_configuration_menu
-    parsers_annotators_parser_open_CoNLL_pos = open_TIPS_x_coordinate
-    parsers_annotators_parser_annotator_pos = open_TIPS_x_coordinate
-    parsers_annotators_parser_manual_coref_edit_pos = 800
-    parsers_annotators_parser_openGUI_pos = 920
+parsers_annotators_parser_lb_pos = labels_x_indented_coordinate + 10 # 150
+parsers_annotators_parser_menu_pos = open_TIPS_x_coordinate # IO_configuration_menu
+parsers_annotators_parser_open_CoNLL_pos = open_TIPS_x_coordinate
+parsers_annotators_parser_annotator_pos = open_TIPS_x_coordinate
+parsers_annotators_parser_manual_coref_edit_pos = 800
+parsers_annotators_parser_openGUI_pos = 920
 
 # Windows: file_search_byWord
 
-    file_search_byWord_widget_width = 100
-    file_search_byWord_selectedCsvFile_pos = 430
-    file_search_byWord_add_search_button_pos = setup_IO_brief_coordinate
-    file_search_byWord_reset_search_button_pos = setup_IO_brief_coordinate+35
-    file_search_byWord_show_search_button_pos = setup_IO_brief_coordinate+85
-    file_search_byWord_openInputFile_button_pos = IO_configuration_menu
-    file_search_byWord_keyword_value_pos = 430
-    file_search_byWord_extract_sentences_search_words_entry_pos = 430
+file_search_byWord_widget_width = 100
+file_search_byWord_selectedCsvFile_pos = 430
+file_search_byWord_add_search_button_pos = setup_IO_brief_coordinate
+file_search_byWord_reset_search_button_pos = setup_IO_brief_coordinate+35
+file_search_byWord_show_search_button_pos = setup_IO_brief_coordinate+85
+file_search_byWord_openInputFile_button_pos = IO_configuration_menu
+file_search_byWord_keyword_value_pos = 430
+file_search_byWord_extract_sentences_search_words_entry_pos = 430
 
 # Windows Word2Vec
-    Word2Vec_vector_size_entry_pos = 260
-    Word2Vec_window_size_lb_pos = Word2Vec_vector_size_entry_pos
-    Word2Vec_window_size_entry_pos= Word2Vec_window_size_lb_pos+220
-    Word2Vec_min_count_lb_pos=setup_pop_up_text_widget
-    Word2Vec_min_count_entry_pos = Word2Vec_min_count_lb_pos +150
-    Word2Vec_top_words_pos = 800
+Word2Vec_vector_size_entry_pos = 260
+Word2Vec_window_size_lb_pos = Word2Vec_vector_size_entry_pos
+Word2Vec_window_size_entry_pos= Word2Vec_window_size_lb_pos+220
+Word2Vec_min_count_lb_pos=setup_pop_up_text_widget
+Word2Vec_min_count_entry_pos = Word2Vec_min_count_lb_pos +150
+Word2Vec_top_words_pos = 800
 
 # Windows statistics_csv
 
-    statistics_csv_reset_csv_button_pos = 420
-    statistics_csv_show_csv_button_pos = 480
-    statistics_csv_csv_field_lb_pos = 550
-    statistics_csv_csv_field_menu_pos = 620
-    statistics_csv_csv_groupBy_field_lb_pos = 180
-    statistics_csv_csv_groupBy_field_menu_pos = 280
-    statistics_csv_add_field2_button_pos = statistics_csv_csv_field_menu_pos #620
-    statistics_csv_csv_hover_over_field_lb_pos = 660
-    statistics_csv_csv_hover_over_field_menu_pos = 760
+statistics_csv_reset_csv_button_pos = 420
+statistics_csv_show_csv_button_pos = 480
+statistics_csv_csv_field_lb_pos = 550
+statistics_csv_csv_field_menu_pos = 620
+statistics_csv_csv_groupBy_field_lb_pos = 180
+statistics_csv_csv_groupBy_field_menu_pos = 280
+statistics_csv_add_field2_button_pos = statistics_csv_csv_field_menu_pos #620
+statistics_csv_csv_hover_over_field_lb_pos = 660
+statistics_csv_csv_hover_over_field_menu_pos = 760
 
 # Windows sentiment_analysis
-    sentiment_analysis_median_checkbox_pos = IO_configuration_menu
-    sentiment_analysis_SA_algorithm_menu_pos = IO_configuration_menu
+sentiment_analysis_median_checkbox_pos = IO_configuration_menu
+sentiment_analysis_SA_algorithm_menu_pos = IO_configuration_menu
 
 # Windows file_merger
 
-    file_merger_merge_embed_filenames_inStringSeparators_pos = IO_configuration_menu
-    file_merger_merge_separator_entry_begin_pos = 560
-    file_merger_merge_separator_entry_end_pos = 640
-    file_merger_merge_embed_subdir_name_pos = 730
-    file_merger_character_separator_lb_pos = 890
-    file_merger_merge_character_separator_pos = 1020
+file_merger_merge_embed_filenames_inStringSeparators_pos = IO_configuration_menu
+file_merger_merge_separator_entry_begin_pos = 560
+file_merger_merge_separator_entry_end_pos = 640
+file_merger_merge_embed_subdir_name_pos = 730
+file_merger_character_separator_lb_pos = 890
+file_merger_merge_character_separator_pos = 1020
 
 # Windows file_matcher
 
-    file_matcher_openInputFile_button_pos = 220
-    file_matcher_selectedCsvFile_pos = 270
-    file_matcher_source_file_type_menu_pos = 490
-    file_matcher_target_file_type_menu_lb_pos = 650
-    file_matcher_target_file_type_menu_pos = 760
-    file_matcher_character_value_pos = 490
-    file_matcher_number_of_items_lb_pos = 650
-    file_matcher_number_of_items_value_pos = 760
-    file_matcher_include_exclude_pos = 880
+file_matcher_openInputFile_button_pos = 220
+file_matcher_selectedCsvFile_pos = 270
+file_matcher_source_file_type_menu_pos = 490
+file_matcher_target_file_type_menu_lb_pos = 650
+file_matcher_target_file_type_menu_pos = 760
+file_matcher_character_value_pos = 490
+file_matcher_number_of_items_lb_pos = 650
+file_matcher_number_of_items_value_pos = 760
+file_matcher_include_exclude_pos = 880
 
 # Windows coreference
-    coreference_corefed_txt_file_width = 130
-    coreference_CoRef_var_menu_pos = 270
+coreference_corefed_txt_file_width = 130
+coreference_CoRef_var_menu_pos = 270
 
 # Windows NER
 
-    NER_NER_packages_menu_pos = 220
-    NER_NER_menu_pos = 220
-    NER_reset_NER_button_pos = 590
-    NER_NER_entry_lb_pos = 660
-    NER_NER_entry_pos = 720
+NER_NER_packages_menu_pos = 220
+NER_NER_menu_pos = 220
+NER_reset_NER_button_pos = 590
+NER_NER_entry_lb_pos = 660
+NER_NER_entry_pos = 720
 
 def get_GUI_width(size_type=1):
     if sys.platform == 'darwin':  # Mac OS
