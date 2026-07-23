@@ -25,7 +25,7 @@ import GUI_IO_util
 import NLP_setup_update_util
 import run_script_util
 
-GUI_size = str(GUI_IO_util.get_GUI_width(2)) + 'x600'
+GUI_size = str(GUI_IO_util.get_GUI_width(2)) + 'x560'
 
 GUI_util.set_window(GUI_size, '', '', '')
 
