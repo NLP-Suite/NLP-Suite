@@ -156,7 +156,10 @@ def main():
                 title = ''
         if not title:
             title = f.replace('_main.py', '').replace('_', ' ')
-        bad = overflow is None or overflow > 4 or (overlaps or 0) > 0
+        # Opted-out GUIs use the legacy .place layout (hand-tuned, user-maintained). Their overlap
+        # measurement isn't a grid problem and can false-positive (e.g. DB_SQL's side-by-side buttons
+        # read as a 35px logical overlap that doesn't show on screen), so flag them on overflow only.
+        bad = overflow is None or overflow > 4 or ((overlaps or 0) > 0 and opted != 1)
         status = 'BUILD?' if overflow is None else ('OFF' if bad else 'OK')
         note = '' if overflow is None else 'overflow %d px &middot; overlaps %d' % (overflow, overlaps)
         cards.append(dict(status=status, file=f, title=title, note=note, opted=(opted == 1),

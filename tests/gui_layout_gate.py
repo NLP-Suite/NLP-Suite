@@ -40,6 +40,7 @@ import IO_libraries_util
 IO_libraries_util.install_all_Python_packages = lambda *a, **k: True
 IO_libraries_util.check_java_installation = lambda *a, **k: True
 import GUI_util
+import GUI_IO_util
 GUI_util.window.mainloop = lambda *a, **k: None
 target = sys.argv[1]
 try:
@@ -97,8 +98,9 @@ for i in range(len(S)):
             overlaps += 1
             if not worst:
                 worst = "%s@%d..%d / %s@%d..%d row~%d" % (a[4], a[0], a[2], b[4], b[0], b[2], a[1])
-print("VERDICT overflow=%d max_right=%d win=%d overlaps=%d %s"
-      % (overflow, max_right, win_w, overlaps, ("| " + worst) if worst else ""))
+opted = 0 if GUI_IO_util.grid_layout_enabled else 1
+print("VERDICT overflow=%d max_right=%d win=%d overlaps=%d opted=%d %s"
+      % (overflow, max_right, win_w, overlaps, opted, ("| " + worst) if worst else ""))
 '''.replace("{src}", _SRC)
 
 
@@ -122,8 +124,10 @@ def main():
             fails.append(f); print('FAIL   %-46s (no build)' % f)
             log.append('%s: no build\n%s' % (f, p.stdout[-400:] + p.stderr[-400:])); continue
         d = dict(kv.split('=') for kv in line.split() if '=' in kv)
-        overflow, overlaps = int(d['overflow']), int(d['overlaps'])
-        bad = overflow > 4 or overlaps > 0
+        overflow, overlaps, opted = int(d['overflow']), int(d['overlaps']), int(d.get('opted', 0))
+        # opted-out GUIs use legacy .place (hand-tuned); overlap there isn't a grid problem and can
+        # false-positive (DB_SQL's side-by-side buttons), so flag them on overflow only.
+        bad = overflow > 4 or (overlaps > 0 and not opted)
         tag = 'FAIL  ' if bad else 'ok    '
         detail = line[len('VERDICT '):]
         print('%s %-46s %s' % (tag, f, detail))
