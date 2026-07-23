@@ -619,20 +619,23 @@ nb_style.map('Viz.TNotebook.Tab',
              background=[('selected', '#d0e0f0'), ('!selected', '#e8e8e8')],
              foreground=[('selected', 'red'), ('!selected', '#999999')])
 
-# Save the current y position for the notebook
-notebook_y = 90 + 40 * y_multiplier_integer
-
 notebook = ttk.Notebook(window, style='Viz.TNotebook')
-notebook.place(x=GUI_IO_util.labels_x_coordinate, y=notebook_y,
-               width=GUI_IO_util.get_GUI_width(3) - GUI_IO_util.labels_x_coordinate - 20, height=310)
 
-tab_relational = ttk.Frame(notebook)
-tab_categorical = ttk.Frame(notebook)
-tab_temporal = ttk.Frame(notebook)
-tab_numeric = ttk.Frame(notebook)
-tab_geographic = ttk.Frame(notebook)
-tab_wordclouds = ttk.Frame(notebook)
-tab_tree = ttk.Frame(notebook)
+# The notebook used to be .place'd at a hard-coded y (90 + 40*row) matching the old absolute layout.
+# Under the grid layout the top rows no longer sit at that y, so the notebook landed on top of them.
+# The tabs hold .place'd children, which do NOT drive the frame's size, so give each tab an explicit
+# size; the notebook then has a size and can be handed to placeWidget, which grids it as its own row
+# below the top widgets on both platforms (and still .place's it correctly if this GUI is ever opted
+# out of grid).
+nb_width = GUI_IO_util.get_GUI_width(3) - GUI_IO_util.labels_x_coordinate - 20
+nb_height = 280
+tab_relational = ttk.Frame(notebook, width=nb_width, height=nb_height)
+tab_categorical = ttk.Frame(notebook, width=nb_width, height=nb_height)
+tab_temporal = ttk.Frame(notebook, width=nb_width, height=nb_height)
+tab_numeric = ttk.Frame(notebook, width=nb_width, height=nb_height)
+tab_geographic = ttk.Frame(notebook, width=nb_width, height=nb_height)
+tab_wordclouds = ttk.Frame(notebook, width=nb_width, height=nb_height)
+tab_tree = ttk.Frame(notebook, width=nb_width, height=nb_height)
 
 notebook.add(tab_relational, text=' Relational ')
 notebook.add(tab_categorical, text=' Categorical ')
@@ -642,7 +645,9 @@ notebook.add(tab_geographic, text=' Geographic ')
 notebook.add(tab_wordclouds, text=' Wordclouds ')
 notebook.add(tab_tree, text=' Hierarchical tree ')
 
-# Advance y_multiplier_integer past the notebook area (280px / 40px per row = 7 rows)
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
+                                               y_multiplier_integer, notebook, False, True)
+# Advance past the notebook so widgets below it don't land on its (tall) row.
 y_multiplier_integer = y_multiplier_integer + 7
 
 # ── Tab 1: Relational ────────────────────────────────────────────────────────
