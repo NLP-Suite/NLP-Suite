@@ -459,6 +459,12 @@ def csv_data_pivot(inputFilename, index, values, no_hyperlinks=True):
 # in INPUT the function can use either a csv file or a data frame
 # in OUTPUT the function returns a csv file with frequencies for the selected field
 
+# Distinct "chart switched to heatmap" notices already printed this process. SVO charts many fields
+# and calls compute_csv_column_frequencies more than once per field, so the notice used to repeat
+# endlessly on the console; we now print each distinct notice once.
+_chart_shape_warned = set()
+
+
 # plot_cols, hover_col, group_cols are single lists with the column headers (alphabetic, rather than column number)
 #   plot_cols=['POS'], hover_col=[], group_cols=[Sentence ID', 'Sentence', 'Document ID', 'Document']
 def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputDir,
@@ -837,9 +843,12 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
                             #     'Too many documents/values (' + str(_D) + ' x ' + str(_V) + ') for a legible '
                             #     'grouped bar chart.' + _switched + '\n\nField totals are also charted; the full '
                             #     'per-document breakdown is in the data sheet.')
-                            print('Chart: too many documents/values (' + str(_D) + ' x ' + str(_V) +
-                                  ') for a legible grouped bar chart.' + _switched +
-                                  ' Field totals charted; full per-document breakdown is in the data sheet.')
+                            _shape_msg = ('Chart: too many documents/values (' + str(_D) + ' x ' + str(_V) +
+                                          ') for a legible grouped bar chart.' + _switched +
+                                          ' Field totals charted; full per-document breakdown is in the data sheet.')
+                            if _shape_msg not in _chart_shape_warned:
+                                _chart_shape_warned.add(_shape_msg)
+                                print(_shape_msg)
             except Exception as _auto_e:
                 print('Auto chart-shape selection failed; keeping default layout:', str(_auto_e))
                 chart_data = None
