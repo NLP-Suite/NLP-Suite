@@ -236,8 +236,8 @@ def main():
     out_path = os.path.join(_HERE, 'gui_gallery.html')
     with open(out_path, 'w', encoding='utf-8') as fh:
         fh.write(html)
-    print('\n%d GUIs (%d grid, %d special), %d flagged.  Open: %s'
-          % (len(cards), len(grid), len(special), n_off, out_path))
+    print('\n%d GUIs (%d grid OK, %d special OK), %d flagged.  Open: %s'
+          % (len(cards), len(grid_ok), len(special_ok), n_off, out_path))
     return 0
 
 
