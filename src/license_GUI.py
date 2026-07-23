@@ -3,7 +3,10 @@ import os
 import tkinter as tk
 import tkinter.messagebox as mb
 
+import customtkinter as ctk
+
 import GUI_IO_util
+import GUI_theme_util
 import GUI_util
 import config_util
 
@@ -27,9 +30,17 @@ current_config_input_output_alphabetic_options = ['', '', '', '', ]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
-text_area = tk.Text()
-# text_area.configure(height=440)
-text_area.pack()
+# Reserve a fixed-height strip for the agreement checkbox by packing it to the bottom FIRST --
+# packed before the textbox, it claims its space out of the window before the textbox's
+# fill='both', expand=True consumes the rest, so the checkbox can never sit on top of scrolled text.
+checkbox_frame = ctk.CTkFrame(GUI_util.window, fg_color='transparent')
+checkbox_frame.pack(side='bottom', fill='x')
+
+# The license text's headings are hand-aligned with leading tabs, authored for the monospace
+# font tk.Text used by default (TkFixedFont) -- CTkTextbox defaults to a proportional UI font,
+# which throws that alignment off. Keep it monospace so the tab layout still lines up.
+text_area = GUI_theme_util.create_textbox(GUI_util.window, wrap='word', font=('Courier', 13))
+text_area.pack(side='top', fill='both', expand=True)
 
 if (os.path.isfile(os.path.join(GUI_IO_util.libPath, 'LICENSE-NLP-Suite-1.0.txt'))):
 	f= open(os.path.join(GUI_IO_util.libPath, "LICENSE-NLP-Suite-1.0.txt"))
@@ -45,8 +56,8 @@ else:
 text_area.insert(tk.END, f.read())
 
 agreement_checkbox_var=tk.IntVar()
-agreement_checkbox = tk.Checkbutton(GUI_util.window, variable=agreement_checkbox_var, onvalue=1, offvalue=0, text="I have read and agree with the license terms")
-agreement_checkbox.place(x=10, y=500)
+agreement_checkbox = GUI_theme_util.create_checkbox(checkbox_frame, variable=agreement_checkbox_var, onvalue=1, offvalue=0, text="I have read and agree with the license terms")
+agreement_checkbox.pack(side='left', padx=10, pady=10)
 agreement_checkbox_var.set(0)
 
 def save_agreement(*args):
@@ -62,7 +73,7 @@ def save_agreement(*args):
 		config_util.write_IO_config_file(GUI_util.window, config_filename, config_input_output_numeric_options,
 									  current_config_input_output_alphabetic_options)
 		GUI_util.window.destroy()
-agreement_checkbox_var.trace('w',save_agreement)
+agreement_checkbox_var.trace_add('write', save_agreement)
 
 # sidebar
 # sidebar = tk.Frame(GUI_util.window, width=900, bg='white', height=640, relief='sunken', borderwidth=2)

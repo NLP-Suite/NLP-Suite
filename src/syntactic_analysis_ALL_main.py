@@ -14,6 +14,7 @@ import tkinter as tk
 from subprocess import call
 
 import GUI_IO_util
+import GUI_theme_util
 import IO_files_util
 import file_spell_checker_util
 import statistics_txt_util
@@ -508,28 +509,28 @@ vocabulary_analysis_menu_var=tk.StringVar()
 
 
 
-csv_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: IO_files_util.get_corpus_CoNLL_csv(window, csv_file_var,'Select INPUT csv CoNLL table file', [("csv files", "*.csv")],True))
+csv_file_button=GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: IO_files_util.get_corpus_CoNLL_csv(window, csv_file_var,'Select INPUT csv CoNLL table file', [("csv files", "*.csv")],True))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                csv_file_button, True)
 
 #setup a button to open Windows Explorer on the selected input directory
-openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
+openInputFile_button = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,openInputFile_button,
                     True, False, True,False, 90, GUI_IO_util.IO_configuration_menu, "Open INPUT csv CoNLL table file")
 
-csv_file=tk.Entry(window, width=GUI_IO_util.csv_file_width,textvariable=csv_file_var)
-csv_file.config(state='disabled')
+csv_file=GUI_theme_util.create_entry(window, width=GUI_IO_util.csv_file_width,textvariable=csv_file_var)
+csv_file.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,csv_file)
 
 
 extra_GUIs_var.set(0)
-extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0)
+extra_GUIs_checkbox = GUI_theme_util.create_checkbox(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0)
 # extra_GUIs_checkbox.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Corpus statistics (Open GUI)','N-grams & Co-Occurrences (Open GUI)', 'Corpus Profiler (Open GUI)')
+extra_GUIs_menu = GUI_theme_util.create_option_menu(window,variable=extra_GUIs_menu_var,values=['Corpus statistics (Open GUI)','N-grams & Co-Occurrences (Open GUI)', 'Corpus Profiler (Open GUI)'])
 # extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -553,7 +554,7 @@ extra_GUIs_menu_var.trace('w',open_GUI)
 
 
 #setup a button to open Windows Explorer on the selected input directory
-openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, WSI_keywords_var.get()))
+openInputFile_button  = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openFile(window, WSI_keywords_var.get()))
 # openInputFile_button.configure(state='disabled')
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 # the two x-coordinate and x-coordinate_hover_over must have the same values
@@ -561,26 +562,32 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.labels_x_indented_coordinate + 250, y_multiplier_integer,
     openInputFile_button, True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate + 250, "Open csv dictionary file")
 
-parsers_annotators_button=tk.Button(window, width=90, text='Parsers & annotators (Open GUI)',command=lambda: run_script_util.run_script("parsers_annotators_main.py"))
+# width=90 (chars) -> 720px via char_width_to_px, deliberately a near-full-width hub button. Placed
+# in the same narrow grid column as 'Setup INPUT/OUTPUT configuration' above, it forced that whole
+# column to 720px -- and since grid columns are shared across every row, that pushed the I/O row's
+# LATER columns ('Default I/O configuration', Paste text, the folder icons) far off to the right.
+# centerX=True spans the full row (the mechanism placeWidget already has for this) instead of
+# claiming one shared column, so the button stays full-width without inflating anything else.
+parsers_annotators_button=GUI_theme_util.create_button(window, width=90, text='Parsers & annotators (Open GUI)',command=lambda: run_script_util.run_script("parsers_annotators_main.py"))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               parsers_annotators_button, False)
+                                               parsers_annotators_button, False, False, False, True)
 
-CoNLL_table_button=tk.Button(window, width=90, text='CoNLL table analyzer (Open GUI)',command=lambda: run_script_util.run_script("CoNLL_table_analyzer_main.py"))
+CoNLL_table_button=GUI_theme_util.create_button(window, width=90, text='CoNLL table analyzer (Open GUI)',command=lambda: run_script_util.run_script("CoNLL_table_analyzer_main.py"))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               CoNLL_table_button, False)
+                                               CoNLL_table_button, False, False, False, True)
 
-SVO_button=tk.Button(window, width=90, text='Subject-Verb-Object (SVO) (Open GUI)',command=lambda: run_script_util.run_script("SVO_main.py"))
+SVO_button=GUI_theme_util.create_button(window, width=90, text='Subject-Verb-Object (SVO) (Open GUI)',command=lambda: run_script_util.run_script("SVO_main.py"))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               SVO_button, False)
+                                               SVO_button, False, False, False, True)
 
 
-sentence_structure_button=tk.Button(window, width=90, text='Sentence structure (Open GUI)',command=lambda: run_script_util.run_script("sentence_analysis_main.py"))
+sentence_structure_button=GUI_theme_util.create_button(window, width=90, text='Sentence structure (Open GUI)',command=lambda: run_script_util.run_script("sentence_analysis_main.py"))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               sentence_structure_button, False)
+                                               sentence_structure_button, False, False, False, True)
 
-style_analysis_button=tk.Button(window, width=90, text='Style analysis (Open GUI)',command=lambda: run_script_util.run_script("style_analysis_main.py"))
+style_analysis_button=GUI_theme_util.create_button(window, width=90, text='Style analysis (Open GUI)',command=lambda: run_script_util.run_script("style_analysis_main.py"))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               style_analysis_button, False)
+                                               style_analysis_button, False, False, False, True)
 
 # vocabulary_analysis_var.set(0)
 # vocabulary_analysis_checkbox = tk.Checkbutton(window, text='More syntactic analyses', variable=vocabulary_analysis_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())

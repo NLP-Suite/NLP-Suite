@@ -1242,16 +1242,20 @@ def select_path_from_list(window, paths, intro_text, title='Available files',
     the folder of the currently highlighted file, and returns the browsed path directly (so the caller no
     longer needs its own filedialog for the non-empty-list case)."""
     import tkinter as tk
+
+    import customtkinter as ctk
+
+    import GUI_theme_util
     if not paths:
         return '__BROWSE__'
     paths = list(paths)               # local copy; the Remove-file button may delete entries
     result = {'value': None}
-    top = tk.Toplevel(window)
+    top = ctk.CTkToplevel(window)
     top.title(title)
     top.transient(window)
     top.grab_set()
-    tk.Label(top, text=intro_text, justify='left', wraplength=820).pack(padx=12, pady=(12, 6), anchor='w')
-    frame = tk.Frame(top)
+    GUI_theme_util.create_label(top, text=intro_text, justify='left', wraplength=820).pack(padx=12, pady=(12, 6), anchor='w')
+    frame = ctk.CTkFrame(top, fg_color='transparent')
     frame.pack(padx=12, fill='both', expand=True)
     sb = tk.Scrollbar(frame)
     sb.pack(side='right', fill='y')
@@ -1322,13 +1326,13 @@ def select_path_from_list(window, paths, intro_text, title='Available files',
         lb.selection_set(min(i, len(paths) - 1))
 
     lb.bind('<Double-Button-1>', lambda e: do_select())
-    btns = tk.Frame(top)
+    btns = ctk.CTkFrame(top, fg_color='transparent')
     btns.pack(pady=10)
-    tk.Button(btns, text='Select', width=12, command=do_select).pack(side='left', padx=5)
-    tk.Button(btns, text='Open file', width=10, command=do_open).pack(side='left', padx=5)
-    tk.Button(btns, text='Remove file', width=11, command=do_remove).pack(side='left', padx=5)
-    tk.Button(btns, text='Browse for another file...', width=22, command=do_browse).pack(side='left', padx=5)
-    tk.Button(btns, text='Cancel', width=10, command=top.destroy).pack(side='left', padx=5)
+    GUI_theme_util.create_button(btns, text='Select', width=12, command=do_select, accent=True).pack(side='left', padx=5)
+    GUI_theme_util.create_button(btns, text='Open file', width=10, command=do_open).pack(side='left', padx=5)
+    GUI_theme_util.create_button(btns, text='Remove file', width=11, command=do_remove).pack(side='left', padx=5)
+    GUI_theme_util.create_button(btns, text='Browse for another file...', width=22, command=do_browse).pack(side='left', padx=5)
+    GUI_theme_util.create_button(btns, text='Cancel', width=10, command=top.destroy).pack(side='left', padx=5)
     top.wait_window()
     return result['value']
 

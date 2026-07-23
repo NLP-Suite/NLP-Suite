@@ -44,6 +44,7 @@ import spacy
 # python -m spacy download en_core_web_sm)
 
 import GUI_IO_util
+import GUI_theme_util
 #@@@
 # import topic_modeling_bert_util
 import topic_modeling_mallet_util
@@ -175,12 +176,12 @@ if current_process().name == 'MainProcess':
     Gensim_MALLET_var = tk.IntVar()
     optimize_intervals_var = tk.IntVar()
 
-    num_topics_lb = tk.Label(window, text='Number of topics ')
+    num_topics_lb = GUI_theme_util.create_label(window, text='Number of topics ')
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                    num_topics_lb, True)
 
     num_topics_var.set(20)
-    num_topics_entry = tk.Entry(window, width=5, textvariable=num_topics_var)
+    num_topics_entry = GUI_theme_util.create_entry(window, width=5, textvariable=num_topics_var)
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate + 100, y_multiplier_integer,
                                                    num_topics_entry,
@@ -188,7 +189,7 @@ if current_process().name == 'MainProcess':
                                                    GUI_IO_util.labels_x_coordinate,
                                                    "Enter the number of topics to be used. Try different number of topics for better results (e.g., 70, 5).")
     BERT_var.set(0)
-    BERT_checkbox = tk.Checkbutton(window, text='Topic modeling (via BERTopic)', variable=BERT_var,
+    BERT_checkbox = GUI_theme_util.create_checkbox(window, text='Topic modeling (via BERTopic)', variable=BERT_var,
                                                onvalue=1, offvalue=0, command=lambda: activate_options())
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -197,13 +198,13 @@ if current_process().name == 'MainProcess':
                                                GUI_IO_util.labels_x_coordinate,
                                                "Tick/untick the checkbox to run the BERtopic LLM (Large Language Model) topic modeling.\nBERTopic was developed by Maarten Grootendorst in 2022.\nBERTopic is based on BERT, released by Google in October 2018.")
     split_docs_var.set(0)
-    split_docs_checkbox = tk.Checkbutton(window, text='Split documents into sentences (recommended for datasets consisting of a small number of long documents)', variable=split_docs_var, onvalue=1, offvalue=0, command=lambda: activate_options())
+    split_docs_checkbox = GUI_theme_util.create_checkbox(window, text='Split documents into sentences (recommended for datasets consisting of a small number of long documents)', variable=split_docs_var, onvalue=1, offvalue=0, command=lambda: activate_options())
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                    split_docs_checkbox)
 
     MALLET_var.set(0)
-    MALLET_checkbox = tk.Checkbutton(window, text='Topic modeling (via MALLET)', variable=MALLET_var,
+    MALLET_checkbox = GUI_theme_util.create_checkbox(window, text='Topic modeling (via MALLET)', variable=MALLET_var,
                                                onvalue=1, offvalue=0, command=lambda: activate_options())
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -213,14 +214,14 @@ if current_process().name == 'MainProcess':
                                                    "Tick/untick the checkbox to run the java-based MALLET LDA (Latent Dirichlet Allocation) topic modeling algorithm, first released in 2002.\nMALLET was developed by Andrew McCallum of the University of Massachusetts Amherst.\nMALLET does not come with any visual displays of its own.")
 
     optimize_intervals_var.set(1)
-    optimize_intervals_checkbox = tk.Checkbutton(window, text='Optimize topic intervals',
+    optimize_intervals_checkbox = GUI_theme_util.create_checkbox(window, text='Optimize topic intervals',
                                                  variable=optimize_intervals_var,
                                                  onvalue=1, offvalue=0)
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                    optimize_intervals_checkbox)
 
     Gensim_var.set(0)
-    Gensim_checkbox = tk.Checkbutton(window, text='Topic modeling (via Gensim)', variable=Gensim_var,
+    Gensim_checkbox = GUI_theme_util.create_checkbox(window, text='Topic modeling (via Gensim)', variable=Gensim_var,
                                                onvalue=1, offvalue=0, command=lambda: activate_options())
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -229,23 +230,23 @@ if current_process().name == 'MainProcess':
                                                    GUI_IO_util.labels_x_coordinate,
                                                    "Tick/untick the checkbox to run the Gensim LDA (Latent Dirichlet Allocation) topic modeling algorithm.\nGensim uses the MALLET algorithm and displays the results in beautiful interactive visuals.")
     remove_stopwords_var.set(1)
-    remove_stopwords_checkbox = tk.Checkbutton(window, text='Remove stopwords', variable=remove_stopwords_var,
+    remove_stopwords_checkbox = GUI_theme_util.create_checkbox(window, text='Remove stopwords', variable=remove_stopwords_var,
                                                onvalue=1, offvalue=0)
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                    remove_stopwords_checkbox)
 
     lemmatize_var.set(1)
-    lemmatize_checkbox = tk.Checkbutton(window, text='Lemmatize words (Nouns, verbs, adverbs, adjectives)', variable=lemmatize_var, onvalue=1, offvalue=0)
+    lemmatize_checkbox = GUI_theme_util.create_checkbox(window, text='Lemmatize words (Nouns, verbs, adverbs, adjectives)', variable=lemmatize_var, onvalue=1, offvalue=0)
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                    lemmatize_checkbox)
 
     nounsOnly_var.set(0)
-    nounsOnly_checkbox = tk.Checkbutton(window, text='Use nouns only (lemmatized)', variable=nounsOnly_var, onvalue=1, offvalue=0)
+    nounsOnly_checkbox = GUI_theme_util.create_checkbox(window, text='Use nouns only (lemmatized)', variable=nounsOnly_var, onvalue=1, offvalue=0)
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+20, y_multiplier_integer,
                                                    nounsOnly_checkbox)
 
     Gensim_MALLET_var.set(0)
-    Gensim_MALLET_checkbox = tk.Checkbutton(window, text='Run MALLET (Topic coherence values and plot visualization)', variable=Gensim_MALLET_var, onvalue=1, offvalue=0)
+    Gensim_MALLET_checkbox = GUI_theme_util.create_checkbox(window, text='Run MALLET (Topic coherence values and plot visualization)', variable=Gensim_MALLET_var, onvalue=1, offvalue=0)
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                    Gensim_MALLET_checkbox)
 

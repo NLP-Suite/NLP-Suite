@@ -22,6 +22,7 @@ import tkinter as tk
 import tkinter.messagebox as mb
 
 import GUI_IO_util
+import GUI_theme_util
 import IO_user_interface_util
 import IO_files_util
 import config_util
@@ -308,27 +309,28 @@ _dropdown_x = GUI_IO_util.open_setup_x_coordinate  # rough; nudge to taste
 
 # 1. Counts & measures
 counts_var.set(1)
-counts_checkbox = tk.Checkbutton(window, text='How big / how varied? (Counts, measures, vocabulary, and entities - people, organizations, locations)',
+counts_checkbox = GUI_theme_util.create_checkbox(window, text='How big / how varied? (Counts, measures, vocabulary, and entities - people, organizations, locations)',
                                  variable=counts_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, counts_checkbox, True)
 counts_menu_var.set('*')
-counts_menu = tk.OptionMenu(window, counts_menu_var, '*',
-                            '--- Statistics (sentences, words, syllables)',
-                            '     N-grams',
-                            '     Sentence length',
-                            '--- Vocabulary',
-                            "     Vocabulary richness (word type/token ratio or Yule's K)",
-                            '     Lexical diversity (TTR, MTLD, vocd-D)',
-                            "     Word frequency distribution (Zipf's Law)",
-                            '     TF-IDF (most distinctive words per document)',
-                            '     Unusual words (via NLTK)',
-                            '     Abstract / concrete vocabulary',
-                            '     Iconic vocabulary',
-                            '     Capital-initial words',
-                            '--- Entities',
-                            '     People, organizations, locations (NER)'
-                            )
+counts_menu = GUI_theme_util.create_option_menu(window, variable=counts_menu_var,
+                              values=['*',
+                                     '--- Statistics (sentences, words, syllables)',
+                                     '     N-grams',
+                                     '     Sentence length',
+                                     '--- Vocabulary',
+                                     "     Vocabulary richness (word type/token ratio or Yule's K)",
+                                     '     Lexical diversity (TTR, MTLD, vocd-D)',
+                                     "     Word frequency distribution (Zipf's Law)",
+                                     '     TF-IDF (most distinctive words per document)',
+                                     '     Unusual words (via NLTK)',
+                                     '     Abstract / concrete vocabulary',
+                                     '     Iconic vocabulary',
+                                     '     Capital-initial words',
+                                     '--- Entities',
+                                     '     People, organizations, locations (NER)'
+                                     ])
 y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, counts_menu, False)
 
 # # 2. Vocabulary
@@ -353,98 +355,104 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier
 
 # 3. Entities (English + Stanford CoreNLP)
 entities_var.set(1)
-entities_checkbox = tk.Checkbutton(window, text='Who said what, and when? (gender, dialogue, dates) (via CoreNLP)',
+entities_checkbox = GUI_theme_util.create_checkbox(window, text='Who said what, and when? (gender, dialogue, dates) (via CoreNLP)',
                                    variable=entities_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, entities_checkbox, True)
 entities_menu_var.set('*')
-entities_menu = tk.OptionMenu(window, entities_menu_var, '*',
-                              'Gender, dates, dialogue (via CoreNLP)')
+entities_menu = GUI_theme_util.create_option_menu(window, variable=entities_menu_var,
+                              values=['*', 'Gender, dates, dialogue (via CoreNLP)'])
 y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, entities_menu, False)
 
 # 3b. Spatial — geocodable & symbolic space (network-heavy: pointers to the GIS / Symbolic Space GUIs)
 spatial_var.set(1)
-spatial_checkbox = tk.Checkbutton(window, text='Where does it all happen?  (geocodable and symbolic space)',
+spatial_checkbox = GUI_theme_util.create_checkbox(window, text='Where does it all happen?  (geocodable and symbolic space)',
                                   variable=spatial_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, spatial_checkbox, True)
 spatial_menu_var.set('*')
-spatial_menu = tk.OptionMenu(window, spatial_menu_var, '*',
-                             'Geocodable space — proportional-symbol map of corpus locations (Nominatim/Google)',
-                             'Full geocoding & mapping — geocoder choice, API key, Google Earth / folium / distances  (opens GIS GUI)',
-                             'Symbolic space — narrative / gendered space typology  (opens Symbolic Space GUI)')
+spatial_menu = GUI_theme_util.create_option_menu(window, variable=spatial_menu_var,
+                              values=['*',
+                                     'Geocodable space — proportional-symbol map of corpus locations (Nominatim/Google)',
+                                     'Full geocoding & mapping — geocoder choice, API key, Google Earth / folium / distances  (opens GIS GUI)',
+                                     'Symbolic space — narrative / gendered space typology  (opens Symbolic Space GUI)'])
 y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, spatial_menu, False)
 
 # 4. Grammar & structure (Syntax) — batch parse + CoNLL analyses live in the analyzer GUI
 syntax_var.set(1)
-syntax_checkbox = tk.Checkbutton(window, text='Grammar & structure  (Syntax)',
+syntax_checkbox = GUI_theme_util.create_checkbox(window, text='Grammar & structure  (Syntax)',
                                  variable=syntax_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, syntax_checkbox, True)
 syntax_menu_var.set('*')
-syntax_menu = tk.OptionMenu(window, syntax_menu_var, '*',
-                            'POS · dependency · clause · N/V/Adj/Adv · function words · complexity · readability')
+syntax_menu = GUI_theme_util.create_option_menu(window, variable=syntax_menu_var,
+                              values=['*',
+                                     'POS · dependency · clause · N/V/Adj/Adv · function words · complexity · readability'])
 y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, syntax_menu, False)
 
 # 5. What do the words mean? (Semantics)
 semantics_var.set(1)
-semantics_checkbox = tk.Checkbutton(window, text='What do the words mean?  (Semantics)',
+semantics_checkbox = GUI_theme_util.create_checkbox(window, text='What do the words mean?  (Semantics)',
                                     variable=semantics_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, semantics_checkbox, True)
 semantics_menu_var.set('*')
-semantics_menu = tk.OptionMenu(window, semantics_menu_var, '*',
-                               'Noun & verb classes (WordNet top synsets)',
-                               'WSD · word embeddings · semantic similarity · nominalization  (opens Semantic Analysis GUI)')
+semantics_menu = GUI_theme_util.create_option_menu(window, variable=semantics_menu_var,
+                              values=['*',
+                                     'Noun & verb classes (WordNet top synsets)',
+                                     'WSD · word embeddings · semantic similarity · nominalization  (opens Semantic Analysis GUI)'])
 y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, semantics_menu, False)
 
 # 6. What is it about? (Topics)
 topics_var.set(1)
-topics_checkbox = tk.Checkbutton(window, text='What is it about?  (Topics)',
+topics_checkbox = GUI_theme_util.create_checkbox(window, text='What is it about?  (Topics)',
                                  variable=topics_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, topics_checkbox, True)
 topics_menu_var.set('*')
-topics_menu = tk.OptionMenu(window, topics_menu_var, '*',
-                            'Topic modeling (BERT / Gensim / MALLET)')
+topics_menu = GUI_theme_util.create_option_menu(window, variable=topics_menu_var,
+                              values=['*', 'Topic modeling (BERT / Gensim / MALLET)'])
 y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, topics_menu, False)
 
 # 7. Who did what to whom? (Narrative)
 narrative_var.set(1)
-narrative_checkbox = tk.Checkbutton(window, text='Who did what to whom?  (Narrative)',
+narrative_checkbox = GUI_theme_util.create_checkbox(window, text='Who did what to whom?  (Narrative)',
                                     variable=narrative_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, narrative_checkbox, True)
 narrative_menu_var.set('*')
-narrative_menu = tk.OptionMenu(window, narrative_menu_var, '*',
-                               'SVO (Subject-Verb-Object)',
-                               'SRL (Semantic Role Labeling)',
-                               'Coreference · 5 Ws  (opens SVO GUI)')
+narrative_menu = GUI_theme_util.create_option_menu(window, variable=narrative_menu_var,
+                              values=['*',
+                                     'SVO (Subject-Verb-Object)',
+                                     'SRL (Semantic Role Labeling)',
+                                     'Coreference · 5 Ws  (opens SVO GUI)'])
 y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, narrative_menu, False)
 
 # 8. How does it feel? (Sentiment)
 sentiment_var.set(1)
-sentiment_checkbox = tk.Checkbutton(window, text='How does it feel?  (Sentiment)',
+sentiment_checkbox = GUI_theme_util.create_checkbox(window, text='How does it feel?  (Sentiment)',
                                     variable=sentiment_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, sentiment_checkbox, True)
 sentiment_menu_var.set('*')
-sentiment_menu = tk.OptionMenu(window, sentiment_menu_var, '*',
-                               'Sentiment (Stanza)',
-                               'BERT · spaCy · VADER · NRC · SentiWordNet  (opens Sentiment GUI)')
+sentiment_menu = GUI_theme_util.create_option_menu(window, variable=sentiment_menu_var,
+                              values=['*',
+                                     'Sentiment (Stanza)',
+                                     'BERT · spaCy · VADER · NRC · SentiWordNet  (opens Sentiment GUI)'])
 y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, sentiment_menu, False)
 
 # 9. Zooming in on characters (emotional arcs + movement in space)
 characters_var.set(1)
-characters_checkbox = tk.Checkbutton(window,
+characters_checkbox = GUI_theme_util.create_checkbox(window,
                                text="Zooming in on characters: Characters' emotional arcs and movements in time and space",
                                variable=characters_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, characters_checkbox, True)
 characters_menu_var.set('*')
-characters_menu = tk.OptionMenu(window, characters_menu_var, '*',
-                          'Emotion arcs (NRC 8 emotions, per character across the story)',
-                          'Movement in time & space (each character’s places over the story, mapped)')
+characters_menu = GUI_theme_util.create_option_menu(window, variable=characters_menu_var,
+                              values=['*',
+                                     'Emotion arcs (NRC 8 emotions, per character across the story)',
+                                     'Movement in time & space (each character’s places over the story, mapped)'])
 y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, characters_menu, False)
 
 # --- help buttons (one per row, in order) ----------------------------------------------------

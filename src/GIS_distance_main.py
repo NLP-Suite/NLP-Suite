@@ -29,6 +29,7 @@ import tkinter.messagebox as mb
 
 import IO_files_util
 import GUI_IO_util
+import GUI_theme_util
 import GIS_file_check_util
 import GIS_distance_util
 import GIS_geocode_util
@@ -251,30 +252,31 @@ def select_csv_file():
     if f:
         _apply_selected_csv(f)
 
-csv_file_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width,
+csv_file_button = GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width,
                             text='Select INPUT CSV file', command=lambda: select_csv_file())
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                csv_file_button, True)
 
-openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
-                                 command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
+openInputFile_button = GUI_theme_util.create_open_file_button(
+    window, command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                     openInputFile_button, True, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
                     "Open the selected INPUT csv file")
 
-csv_file = tk.Entry(window, width=GUI_IO_util.csv_file_width, textvariable=csv_file_var)
-csv_file.config(state='disabled')
+csv_file = GUI_theme_util.create_entry(window, width=GUI_IO_util.csv_file_width, textvariable=csv_file_var)
+csv_file.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, csv_file)
 
 extra_GUIs_var.set(0)
-extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ', variable=extra_GUIs_var,
+extra_GUIs_checkbox = GUI_theme_util.create_checkbox(window, text='GUIs available for more analyses ', variable=extra_GUIs_var,
                                      onvalue=1, offvalue=0, command=lambda: open_GUI())
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                extra_GUIs_checkbox, True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window, extra_GUIs_menu_var, 'GIS: Mapping locations (Open GUI)',
-                                'Google Earth (Open GUI)', 'Symbolic (non-geocodable) space (Open GUI)')
+extra_GUIs_menu = GUI_theme_util.create_option_menu(window, variable=extra_GUIs_menu_var,
+                                values=['GIS: Mapping locations (Open GUI)',
+                                        'Google Earth (Open GUI)', 'Symbolic (non-geocodable) space (Open GUI)'])
 extra_GUIs_menu.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                     extra_GUIs_menu, False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
@@ -321,9 +323,10 @@ def clear(e):
 window.bind("<Escape>", clear)
 
 encoding_var.set('utf-8')
-encodingValue = tk.OptionMenu(window,encoding_var,'utf-8','utf-16-le','utf-32-le','latin-1','ISO-8859-1')
+encodingValue = GUI_theme_util.create_option_menu(window, variable=encoding_var,
+                                                  values=['utf-8', 'utf-16-le', 'utf-32-le', 'latin-1', 'ISO-8859-1'])
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+350, y_multiplier_integer,encodingValue,True)
-encoding_lb = tk.Label(window, text='Select the encoding type (utf-8 default)')
+encoding_lb = GUI_theme_util.create_label(window, text='Select the encoding type (utf-8 default)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,encoding_lb)
 
 # geocode_var.set(0)
@@ -333,31 +336,31 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 #                                                y_multiplier_integer, geocode_checkbox)
 
 compute_pairwise_distances_var.set(0)
-compute_pairwise_distances_checkbox = tk.Checkbutton(window, variable=compute_pairwise_distances_var, onvalue=1, offvalue=0)
-compute_pairwise_distances_checkbox.config(text="Compute pairwise distances (all-pairs of distinct locations)")
+compute_pairwise_distances_checkbox = GUI_theme_util.create_checkbox(window, variable=compute_pairwise_distances_var, onvalue=1, offvalue=0,
+                                                                     text="Compute pairwise distances (all-pairs of distinct locations)")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, compute_pairwise_distances_checkbox,True)
 
 pairwise_scope_var.set('per-document')
-pairwise_scope_menu = tk.OptionMenu(window, pairwise_scope_var, '*', 'per-document', 'whole-corpus')
-pairwise_scope_menu.configure(state='disabled')   # enabled when the pairwise checkbox is ticked
+pairwise_scope_menu = GUI_theme_util.create_option_menu(window, variable=pairwise_scope_var,
+                                                        values=['*', 'per-document', 'whole-corpus'],
+                                                        state='disabled')   # enabled when the pairwise checkbox is ticked
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+350, y_multiplier_integer, pairwise_scope_menu)
 
 compute_baseline_distances_var.set(0)
-compute_baseline_distances_checkbox = tk.Checkbutton(window, variable=compute_baseline_distances_var, onvalue=1, offvalue=0)
-compute_baseline_distances_checkbox.config(text="Compute distances from baseline location")
+compute_baseline_distances_checkbox = GUI_theme_util.create_checkbox(window, variable=compute_baseline_distances_var, onvalue=1, offvalue=0,
+                                                                     text="Compute distances from baseline location")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, compute_baseline_distances_checkbox,True)
 
-baselineLocation_value_lb = tk.Label(window, text='Enter location ')
+baselineLocation_value_lb = GUI_theme_util.create_label(window, text='Enter location ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+350,y_multiplier_integer,baselineLocation_value_lb,True)
-baselineLocation_entry = tk.Entry(window, textvariable=baselineLocation_entry_var)
-baselineLocation_entry.configure(width=50, state='disabled')
+baselineLocation_entry = GUI_theme_util.create_entry(window, textvariable=baselineLocation_entry_var, width=50, state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+450,y_multiplier_integer,baselineLocation_entry)
 
 compute_consecutive_distances_var.set(0)
-compute_consecutive_distances_checkbox = tk.Checkbutton(window, variable=compute_consecutive_distances_var, onvalue=1, offvalue=0)
-compute_consecutive_distances_checkbox.config(text="Compute distances between consecutive locations (movement per document)")
+compute_consecutive_distances_checkbox = GUI_theme_util.create_checkbox(window, variable=compute_consecutive_distances_var, onvalue=1, offvalue=0,
+                                                                        text="Compute distances between consecutive locations (movement per document)")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, compute_consecutive_distances_checkbox)
 
@@ -376,6 +379,7 @@ def activate_options(*args):
 
 compute_pairwise_distances_var.trace('w',activate_options)
 compute_baseline_distances_var.trace('w',activate_options)
+activate_options()
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'

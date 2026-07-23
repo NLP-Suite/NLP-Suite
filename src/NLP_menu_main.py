@@ -18,12 +18,14 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window,"NLP",['os','tk
 import os
 from sys import platform
 import tkinter as tk
-from tkinter import ttk
 import tkinter.messagebox as mb
 from subprocess import call
 import webbrowser
 
+import customtkinter as ctk
+
 import GUI_IO_util
+import GUI_theme_util
 import IO_files_util
 import reminders_util
 import constants_util
@@ -116,6 +118,12 @@ y_multiplier_integer = GUI_util.y_multiplier_integer + 0
 window = GUI_util.window
 # config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
 # config_filename = GUI_util.config_filename
+
+# A clean, native proportional UI font to replace the legacy Courier monospace used on the SETUP
+# buttons, the red info buttons, and the notebook tabs (Courier read as dated). TkDefaultFont
+# resolves to the platform's system UI font (.AppleSystemUIFont on macOS, Segoe UI on Windows).
+import tkinter.font as _tkfont
+_ui_font_family = _tkfont.nametofont('TkDefaultFont').actual('family')
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
@@ -342,14 +350,38 @@ corpus_tools_var = tk.StringVar()
 corpus_document_tools_var = tk.StringVar()
 sentence_tools_var = tk.StringVar()
 
-setup_IO_OK_checkbox = tk.Checkbutton(window, state='disabled',
+# Each of the three SETUP rows pairs a tiny disabled status checkbox with a very wide (95-char)
+# SETUP button. Under the coarse-band grid the checkbox and its button fall into adjacent column
+# BANDS, but those bands get stretched to ~760px each by the full-width buttons -- so the checkbox
+# was stranded at the far-left edge of its column, ~700px from its button, and the two full-width
+# button columns together (~1600px) overflowed the 1350px window, clipping the far-right open-config
+# buttons off the edge. Grouping each checkbox + button in ONE frame gridded into a single band
+# fixes both: the pair renders adjacent, and the SETUP buttons share the band with the red info
+# buttons below instead of spilling into a second full-width column.
+def _place_setup_row(y, checkbox, checkbox_tip, button, button_tip,
+                     open_button, open_button_x, open_tip):
+    # Transparent so the row reads as part of the window background rather than as a grey plate
+    # behind the checkbox/button pair.
+    row_frame = ctk.CTkFrame(window, fg_color='transparent')
+    checkbox.pack(in_=row_frame, side='left')
+    button.pack(in_=row_frame, side='left', padx=(4, 0))
+    # The frame is a later-created sibling of the checkbox/button (all children of `window`), so it
+    # stacks above them and would hide them; lift the two back on top of the frame.
+    checkbox.lift(row_frame)
+    button.lift(row_frame)
+    GUI_theme_util.ToolTip(checkbox, checkbox_tip)
+    GUI_theme_util.ToolTip(button, button_tip)
+    y = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y, row_frame, True, True)
+    y = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + open_button_x, y,
+                                open_button, False, False, True, False, 90,
+                                GUI_IO_util.open_reminders_x_coordinate, open_tip)
+    return y
+
+# CTkCheckBox defaults its label to the literal string "CTkCheckBox", so these status-only
+# checkboxes must pass text='' explicitly (tk.Checkbutton defaulted to no label).
+setup_IO_OK_checkbox = GUI_theme_util.create_checkbox(window, text='', state='disabled',
                                       variable=setup_IO_OK_checkbox_var, onvalue=1, offvalue=0)
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                             setup_IO_OK_checkbox,
-                                             True, False, True, False,
-                                             90, GUI_IO_util.labels_x_coordinate,
-                                             "The checkbox, always disabled, is ticked ON when the I/O options have been setup.\nIf the checkbox is OFF, click on the 'SETUP default I/O options...' button to set up.")
+setup_IO_checkbox_tip = "The checkbox, always disabled, is ticked ON when the I/O options have been setup.\nIf the checkbox is OFF, click on the 'SETUP default I/O options...' button to set up."
 
 def setup_IO():
     GUI_util.setup_IO_configuration_options(False,scriptName, silent=True, open_setup_IO_GUI=True)
@@ -367,26 +399,19 @@ def setup_IO_checkbox():
     else:
         setup_IO_OK_checkbox_var.set(0)
 
-IO_setup_button = tk.Button(window, text='SETUP default I/O options: INPUT file/directory (corpus) and OUTPUT files directory', width=95, font=("Courier", 10, "bold"), command=lambda: setup_IO())
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+30,
-                                               y_multiplier_integer,
-                                               IO_setup_button, True, False, False, False, 90,
-                                               GUI_IO_util.labels_x_coordinate+30,
-                                               "You will probably use the same document(s) (i.e., corpus), written in the same language, for different analyses using different NLP tools, and exporting results to the same directory.\n Click on the SETUP button to setup Input/Output (I/O) options.\nYour selected options will be used as default in all GUIs; but you can change your preferences at any time; and every GUI also allows you to setup GUI-specific I/O options.")
+IO_setup_button = GUI_theme_util.create_button(window, text='SETUP default I/O options: INPUT file/directory (corpus) and OUTPUT files directory', width=95, font=(_ui_font_family, 12, "bold"), command=lambda: setup_IO())
+setup_IO_button_tip = "You will probably use the same document(s) (i.e., corpus), written in the same language, for different analyses using different NLP tools, and exporting results to the same directory.\n Click on the SETUP button to setup Input/Output (I/O) options.\nYour selected options will be used as default in all GUIs; but you can change your preferences at any time; and every GUI also allows you to setup GUI-specific I/O options."
 
-open_default_IO_config_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'NLP_default_IO_config.csv'))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_IO_config_button, y_multiplier_integer,
-                                               open_default_IO_config_button, False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate, "Open the NLP_default_IO_config.csv file containing the default Input/Output options")
+open_default_IO_config_button = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'NLP_default_IO_config.csv'))
+y_multiplier_integer = _place_setup_row(y_multiplier_integer,
+                                        setup_IO_OK_checkbox, setup_IO_checkbox_tip,
+                                        IO_setup_button, setup_IO_button_tip,
+                                        open_default_IO_config_button, GUI_IO_util.open_IO_config_button,
+                                        "Open the NLP_default_IO_config.csv file containing the default Input/Output options")
 
-setup_parsers_annotators_OK_checkbox = tk.Checkbutton(window, state='disabled',
+setup_parsers_annotators_OK_checkbox = GUI_theme_util.create_checkbox(window, text='', state='disabled',
                                       variable=setup_parsers_annotators_OK_checkbox_var, onvalue=1, offvalue=0)
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                             setup_parsers_annotators_OK_checkbox,
-                                             True, False, True, False,
-                                             90, GUI_IO_util.labels_x_coordinate,
-                                             "The checkbox, always disabled, is ticked ON when the parser/annotator and corpus language options have been setup.\nIf the checkbox is OFF, click on the 'SETUP default NLP parser...' button to set up.")
+setup_parsers_annotators_checkbox_tip = "The checkbox, always disabled, is ticked ON when the parser/annotator and corpus language options have been setup.\nIf the checkbox is OFF, click on the 'SETUP default NLP parser...' button to set up."
 
 NLP_package_language_config = GUI_IO_util.configPath+os.sep+'NLP_default_package_language_config.csv'
 def setup_parsers_annotators_checkbox(NLP_package_language_config):
@@ -402,26 +427,19 @@ def _setup_parsers_and_recheck():
     run_script_util.run_script("NLP_setup_package_language_main.py")
     setup_parsers_annotators_checkbox(NLP_package_language_config)
 
-NLP_package_language_setup_button = tk.Button(window, text='SETUP default NLP parsers & annotators package and default corpus language', width=95, font=("Courier", 10, "bold"), command=_setup_parsers_and_recheck)
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+30,
-                                               y_multiplier_integer,
-                                               NLP_package_language_setup_button, True, False, False, False, 90,
-                                               GUI_IO_util.labels_x_coordinate+30,
-                                               "The NLP Suite relies on a handful of external software to carry out specialized tasks (e.g., Stanford CoreNLP, Gephi).\nClick on the Setup button to select your preferred parser software (e.g., Stanford CoreNLP) and the laguage of your corpus (e.g., English)\nYour selected options will be used as default in all GUIs; but you can change your preferences at any time.")
+NLP_package_language_setup_button = GUI_theme_util.create_button(window, text='SETUP default NLP parsers & annotators package and default corpus language', width=95, font=(_ui_font_family, 12, "bold"), command=_setup_parsers_and_recheck)
+setup_parsers_annotators_button_tip = "The NLP Suite relies on a handful of external software to carry out specialized tasks (e.g., Stanford CoreNLP, Gephi).\nClick on the Setup button to select your preferred parser software (e.g., Stanford CoreNLP) and the laguage of your corpus (e.g., English)\nYour selected options will be used as default in all GUIs; but you can change your preferences at any time."
 
-open_default_NLP_package_language_config_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, NLP_package_language_config))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_NLP_package_language_config_button, y_multiplier_integer,
-                                               open_default_NLP_package_language_config_button, False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate, "Open the NLP_default_package_language_config.csv file containing the default NLP parser and annotators and corpus language options")
+open_default_NLP_package_language_config_button = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openFile(window, NLP_package_language_config))
+y_multiplier_integer = _place_setup_row(y_multiplier_integer,
+                                        setup_parsers_annotators_OK_checkbox, setup_parsers_annotators_checkbox_tip,
+                                        NLP_package_language_setup_button, setup_parsers_annotators_button_tip,
+                                        open_default_NLP_package_language_config_button, GUI_IO_util.open_NLP_package_language_config_button,
+                                        "Open the NLP_default_package_language_config.csv file containing the default NLP parser and annotators and corpus language options")
 
-setup_external_software_checkbox = tk.Checkbutton(window, state='disabled',
+setup_external_software_checkbox = GUI_theme_util.create_checkbox(window, text='', state='disabled',
                                          variable=setup_external_software_OK_checkbox_var, onvalue=1, offvalue=0, command=lambda: setup_external_programs_checkbox())
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                             setup_external_software_checkbox,
-                                             True, False, True, False,
-                                             90, GUI_IO_util.labels_x_coordinate,
-                                             "The checkbox, always disabled, is ticked ON when all external software have been installed.\nIf the checkbox is OFF, click on the 'SETUP external software' button to set up.")
+setup_external_software_checkbox_tip = "The checkbox, always disabled, is ticked ON when all external software have been installed.\nIf the checkbox is OFF, click on the 'SETUP external software' button to set up."
 
 software_dir = ''
 
@@ -458,22 +476,23 @@ def setup_external_software():
     setup_external_programs_checkbox()
 
 # software_setup_button = tk.Button(window, text='Setup external software', width=95, font=("Courier", 10, "bold"), command=lambda: setup_external_software_warning())
-software_setup_button = tk.Button(window, text='SETUP external software', width=95, font=("Courier", 10, "bold"), command=lambda: setup_external_software())
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+30,
-                                               y_multiplier_integer,
-                                               software_setup_button, True, False, False, False, 90,
-                                               GUI_IO_util.labels_x_coordinate+30,
-                                               "The NLP Suite relies on a handful of external software to carry out specialized tasks (e.g., Stanford CoreNLP, Gephi)\nClick on the Setup button to download and install these freeware software packages\nYou only have to do this once")
+software_setup_button = GUI_theme_util.create_button(window, text='SETUP external software', width=95, font=(_ui_font_family, 12, "bold"), command=lambda: setup_external_software())
+setup_external_software_button_tip = "The NLP Suite relies on a handful of external software to carry out specialized tasks (e.g., Stanford CoreNLP, Gephi)\nClick on the Setup button to download and install these freeware software packages\nYou only have to do this once"
 
-open_setup_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'NLP_setup_external_software_config.csv'))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_setup_external_software_button, y_multiplier_integer,
-                                               open_setup_button, False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate, "Open the NLP_setup_external_software_config.csv file containing all external software installation paths")
+open_setup_button = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'NLP_setup_external_software_config.csv'))
+y_multiplier_integer = _place_setup_row(y_multiplier_integer,
+                                        setup_external_software_checkbox, setup_external_software_checkbox_tip,
+                                        software_setup_button, setup_external_software_button_tip,
+                                        open_setup_button, GUI_IO_util.open_setup_external_software_button,
+                                        "Open the NLP_setup_external_software_config.csv file containing all external software installation paths")
 
 # CORPUS LANGUAGE & NLP options available in the Suite
-corpus_language_button = tk.Button(window,
+# The legacy fg='red' is dropped on both of these: under the red-active theme the button FILL is
+# already brand red, so red label text would be invisible on it. They keep their emphasis via the
+# bold 13pt font instead.
+corpus_language_button = GUI_theme_util.create_button(window,
                                    text="Which NLP tools in the Suite can I use with my corpus language?",
-                                   width=95, font=("Courier", 11, "bold"), fg='red',
+                                   width=95, font=(_ui_font_family, 13, "bold"),
                                    command=lambda: language_tools_advisor_util.run(
                                        outputDir=GUI_util.output_dir_path.get()))
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 30,
@@ -484,9 +503,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 
 # CORPUS PROFILER -- flagship one-click tool: a prominent bold red button, given a role of its own at the
 # top of the tool list. Placement/wording easy to tweak.
-corpus_profiler_button = tk.Button(window,
+corpus_profiler_button = GUI_theme_util.create_button(window,
                                    text="CORPUS PROFILER  —  what's in your corpus? one click → an HTML report and a paper-style summary",
-                                   width=95, font=("Courier", 11, "bold"), fg='red',
+                                   width=95, font=(_ui_font_family, 13, "bold"),
                                    command=lambda: run_script_util.run_script("corpus_profiler_main.py"))
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 30,
                                                y_multiplier_integer,
@@ -499,84 +518,92 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 # Each Combobox keeps the SAME textvariable as before, so the existing traces (getScript),
 # the RUN dispatch, and the Esc-clear all keep working UNCHANGED. Mirrors the placed-notebook
 # pattern already used in data_visualization_main.py.
-nb_style = ttk.Style()
-try:
-    nb_style.theme_use('clam')
-except Exception:
-    pass
-nb_style.configure('NLP.TNotebook.Tab', font=("Courier", 11, "bold"), foreground='red', padding=[16, 5])
-nb_style.map('NLP.TNotebook.Tab',
-             background=[('selected', '#d0e0f0'), ('!selected', '#e8e8e8')],
-             foreground=[('selected', 'red'), ('!selected', '#999999')])
+# Phase 2 pilot 2: the ttk.Notebook is the suite's ONLY one, and §3 of the migration plan maps it
+# to CTkTabview. That also removes a parenting hazard: CTk widgets detect their background from the
+# master, and a ttk.Frame has no queryable `bg`, so parenting the CTkComboBoxes into ttk tab frames
+# is not safe. CTkTabview.add(name) returns a real CTkFrame, so the dropdowns get a valid CTk master.
+# The ttk.Style/theme_use block that themed the old tabs is gone with it (§6 checklist).
+TAB_LINGUISTIC = 'Linguistic Analysis Tools'
+TAB_UTILITY = 'General Utility Tools'
 
-notebook_y = GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step * y_multiplier_integer
 nb_width = GUI_width - GUI_IO_util.labels_x_coordinate - 20
-nb_height = 210
-tools_notebook = ttk.Notebook(window, style='NLP.TNotebook')
-tools_notebook.place(x=GUI_IO_util.labels_x_coordinate, y=notebook_y, width=nb_width, height=nb_height)
+# Room for the segmented tab strip plus three gridded rows (CTk rows are content-sized, so this is
+# a floor rather than the pixel arithmetic the .place'd layout needed).
+nb_height = 190
+tools_notebook = ctk.CTkTabview(window, width=nb_width, height=nb_height,
+                                segmented_button_font=(_ui_font_family, 12, "bold"))
+# The body is grid-managed (slice 2b), so the tabview is gridded into the current row spanning the
+# full column band -- a .place() here would put it at a pixel-y the grid no longer uses.
+tools_notebook.grid(row=GUI_IO_util._GRID_HEADER_ROWS + int(round(y_multiplier_integer)),
+                    column=0, columnspan=GUI_IO_util._GRID_TOTAL_COLUMNS,
+                    padx=(GUI_IO_util.labels_x_coordinate, 10), pady=6, sticky='w')
 
-tab_linguistic = ttk.Frame(tools_notebook)
-tab_utility = ttk.Frame(tools_notebook)
-# Linguistic tools are the suite's raison d'être -> make them the FIRST tab, so they are the
-# default selected tab on every launch; General Utility tools follow as the supporting cast.
-tools_notebook.add(tab_linguistic, text='   Linguistic Analysis Tools   ')
-tools_notebook.add(tab_utility, text='   General Utility Tools   ')
-tools_notebook.select(tab_linguistic)
+# Linguistic tools are the suite's raison d'être -> add them FIRST and select them, so they are the
+# default tab on every launch; General Utility tools follow as the supporting cast.
+tab_linguistic = tools_notebook.add(TAB_LINGUISTIC)
+tab_utility = tools_notebook.add(TAB_UTILITY)
+tools_notebook.set(TAB_LINGUISTIC)
 
 # advance past the notebook so the RUN bar (GUI_bottom) lands below it
 y_multiplier_integer = y_multiplier_integer + 6
 
-_tab_help_x = nb_width - 95
-_ROW_STEP = 42
+def _tab_row(parent, row, label_text, combobox, help_message):
+    """Grid one label / dropdown / ? HELP row into a tab frame.
 
-def _tab_row(parent, row_y, label_text, combobox, help_message):
-    tk.Label(parent, text=label_text).place(x=10, y=row_y + 3)
-    combobox.place(x=250, y=row_y)
-    tk.Button(parent, text='? HELP',
-              command=lambda m=help_message: mb.showinfo("NLP Suite Help", m)).place(x=_tab_help_x, y=row_y)
+    Was three .place() calls at hand-computed pixel offsets; the dropdown column now carries the
+    weight so it absorbs the tab's width instead of being pinned to a computed pixel span.
+    """
+    parent.grid_columnconfigure(1, weight=1)
+    GUI_theme_util.create_label(parent, text=label_text).grid(
+        row=row, column=0, sticky='w', padx=(10, 8), pady=6)
+    combobox.grid(row=row, column=1, sticky='ew', pady=6)
+    GUI_theme_util.create_button(
+        parent, text='? HELP', width=9,
+        command=lambda m=help_message: mb.showinfo("NLP Suite Help", m)).grid(
+        row=row, column=2, sticky='e', padx=(12, 10), pady=6)
 
 # --- General Utility tab -------------------------------------------------------
 data_file_handling_tools_var.set('')
-data_file_handling_tools_menu = ttk.Combobox(tab_utility, width=80, textvariable=data_file_handling_tools_var)
-data_file_handling_tools_menu['values'] = constants_util.NLP_Suite_data_file_handling_tools_menu
-_tab_row(tab_utility, 12, 'Data & Files Handling Tools', data_file_handling_tools_menu,
+data_file_handling_tools_menu = GUI_theme_util.create_combobox(tab_utility, width=80, textvariable=data_file_handling_tools_var,
+    values=constants_util.NLP_Suite_data_file_handling_tools_menu)
+_tab_row(tab_utility, 0, 'Data & Files Handling Tools', data_file_handling_tools_menu,
          "Please, using the dropdown menu, select one of the many options available for data and file handling." + GUI_IO_util.msg_Esc)
 
 pre_processing_tools_var.set('')
-pre_processing_tools_menu = ttk.Combobox(tab_utility, width=80, textvariable=pre_processing_tools_var)
-pre_processing_tools_menu['values'] = constants_util.NLP_Suite_pre_processing_tools_menu
-_tab_row(tab_utility, 12 + _ROW_STEP, 'Pre-Processing Tools', pre_processing_tools_menu,
+pre_processing_tools_menu = GUI_theme_util.create_combobox(tab_utility, width=80, textvariable=pre_processing_tools_var,
+    values=constants_util.NLP_Suite_pre_processing_tools_menu)
+_tab_row(tab_utility, 1, 'Pre-Processing Tools', pre_processing_tools_menu,
          "Please, using the dropdown menu, select one of the many options available for pre-processing text." + GUI_IO_util.msg_Esc)
 
 statistical_tools_var.set('')
-statistical_tools_menu = ttk.Combobox(tab_utility, width=80, textvariable=statistical_tools_var)
-statistical_tools_menu['values'] = ['Statistics (csv files)','Corpus/document(s) statistics (Sentences, words, lines)','Corpus/document(s) statistics (Nouns, verbs, adjectives, pronouns, ...)','N-grams & Co-occurrences']
-_tab_row(tab_utility, 12 + 2 * _ROW_STEP, 'Statistical Tools', statistical_tools_menu,
+statistical_tools_menu = GUI_theme_util.create_combobox(tab_utility, width=80, textvariable=statistical_tools_var,
+    values=['Statistics (csv files)','Corpus/document(s) statistics (Sentences, words, lines)','Corpus/document(s) statistics (Nouns, verbs, adjectives, pronouns, ...)','N-grams & Co-occurrences'])
+_tab_row(tab_utility, 2, 'Statistical Tools', statistical_tools_menu,
          "Please, using the dropdown menu, select the option available for statistical analyses." + GUI_IO_util.msg_Esc)
 
 visualization_tools_var.set('')
-visualization_menu = ttk.Combobox(tab_utility, width=80, textvariable=visualization_tools_var)
-visualization_menu['values'] = constants_util.NLP_Suite_visualization_tools_menu
-_tab_row(tab_utility, 12 + 3 * _ROW_STEP, 'Visualization Tools', visualization_menu,
+visualization_menu = GUI_theme_util.create_combobox(tab_utility, width=80, textvariable=visualization_tools_var,
+    values=constants_util.NLP_Suite_visualization_tools_menu)
+_tab_row(tab_utility, 3, 'Visualization Tools', visualization_menu,
          "Please, using the dropdown menu, select one of the many options available for visualizing data.\n\nNearly all linguistic tools, however, automatically visualize results, typically in Excel charts, but also in more specialized graphical tools, such as network graphs in Gephi or GIS maps in Google Earth Pro or in Google Maps." + GUI_IO_util.msg_Esc)
 
 # --- Linguistic Analysis tab ---------------------------------------------------
 corpus_tools_var.set('')
-corpus_menu = ttk.Combobox(tab_linguistic, width=80, textvariable=corpus_tools_var)
-corpus_menu['values'] = constants_util.NLP_Suite_corpus_tools_menu
-_tab_row(tab_linguistic, 12, 'CORPUS Analysis Tools', corpus_menu,
+corpus_menu = GUI_theme_util.create_combobox(tab_linguistic, width=80, textvariable=corpus_tools_var,
+    values=constants_util.NLP_Suite_corpus_tools_menu)
+_tab_row(tab_linguistic, 0, 'CORPUS Analysis Tools', corpus_menu,
          "Please, using the dropdown menu, select one of the many options available for analyzing your corpus.\n\nCORPUS TOOLS APPLY TO MULTIPLE DOCUMENTS ONLY, RATHER THAN TO A SINGLE DOCUMENT.\n\nIn INPUT the tools expect multiple documents stored in a directory (the 'corpus')." + GUI_IO_util.msg_Esc)
 
 corpus_document_tools_var.set('')
-corpus_documents_menu = ttk.Combobox(tab_linguistic, width=80, textvariable=corpus_document_tools_var)
-corpus_documents_menu['values'] = constants_util.NLP_Suite_corpus_document_tools_menu
-_tab_row(tab_linguistic, 12 + _ROW_STEP, 'CORPUS/DOCUMENT Analysis Tools', corpus_documents_menu,
+corpus_documents_menu = GUI_theme_util.create_combobox(tab_linguistic, width=80, textvariable=corpus_document_tools_var,
+    values=constants_util.NLP_Suite_corpus_document_tools_menu)
+_tab_row(tab_linguistic, 1, 'CORPUS/DOCUMENT Analysis Tools', corpus_documents_menu,
          "Please, using the dropdown menu, select one of the many options available for analyzing your corpus and/or a single document.\n\nTHE TOOLS IN THIS CATEGORY APPLY TO EITHER MULTIPLE DOCUMENTS (THE 'CORPUS') OR TO A SINGLE DOCUMENT." + GUI_IO_util.msg_Esc)
 
 sentence_tools_var.set('')
-sentence_tools_menu = ttk.Combobox(tab_linguistic, width=80, textvariable=sentence_tools_var)
-sentence_tools_menu['values'] = ['Sentence analysis (ALL options GUI)']
-_tab_row(tab_linguistic, 12 + 2 * _ROW_STEP, 'SENTENCE Analysis Tools', sentence_tools_menu,
+sentence_tools_menu = GUI_theme_util.create_combobox(tab_linguistic, width=80, textvariable=sentence_tools_var,
+    values=['Sentence analysis (ALL options GUI)'])
+_tab_row(tab_linguistic, 2, 'SENTENCE Analysis Tools', sentence_tools_menu,
          "Please, using the dropdown menu, select one of the many options available for analyzing your corpus/document by sentence index." + GUI_IO_util.msg_Esc)
 
 def clear_selected_options(tool_selected):

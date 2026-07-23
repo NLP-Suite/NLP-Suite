@@ -12,6 +12,7 @@ import tkinter.messagebox as mb
 import tkinter.filedialog
 
 import GUI_IO_util
+import GUI_theme_util
 import IO_csv_util
 import IO_user_interface_util
 import IO_files_util
@@ -376,20 +377,20 @@ def refresh_run_button():
     except Exception as e:
         print('refresh_run_button: could not re-evaluate RUN button:', e)
 
-input_csv_file_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',
+input_csv_file_button = GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',
                                   command=lambda: get_input_csv_file(window, 'Select INPUT csv file', [("csv files", "*.csv")]))
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                input_csv_file_button, True)
 
-open_input_csv_file_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+open_input_csv_file_button = GUI_theme_util.create_open_file_button(window,
                                        command=lambda: IO_files_util.openFile(window, input_csv_file_var.get()))
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                open_input_csv_file_button,
                                                True, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
                                                "Open INPUT csv file")
 
-input_csv_file_entry = tk.Entry(window, width=GUI_IO_util.csv_file_width, textvariable=input_csv_file_var)
-input_csv_file_entry.config(state='disabled')
+input_csv_file_entry = GUI_theme_util.create_entry(window, width=GUI_IO_util.csv_file_width, textvariable=input_csv_file_var)
+input_csv_file_entry.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                                input_csv_file_entry)
 
@@ -433,7 +434,7 @@ window.bind("<Escape>", clear)
 
 
 all_csv_stats_var.set(0)
-all_csv_field_checkbox = tk.Checkbutton(window, text='Compute statistics on all csv-file fields (numeric fields only)',
+all_csv_field_checkbox = GUI_theme_util.create_checkbox(window, text='Compute statistics on all csv-file fields (numeric fields only)',
                                         variable=all_csv_stats_var, onvalue=1, offvalue=0,
                                         command=lambda: get_script_to_run(
                                             'Compute statistics on all csv-file fields (numeric fields only)'))
@@ -445,7 +446,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "\nCount, Mean, Mode, Median, Standard deviation, Minimum, Maximum, Skewness, Kurtosis, 25% quantile, 50% quantile; 75% quantile")
 
 csv_field_freq_var.set(0)
-csv_field_checkbox = tk.Checkbutton(window, text='Compute frequencies of csv-file field(s)',
+csv_field_checkbox = GUI_theme_util.create_checkbox(window, text='Compute frequencies of csv-file field(s)',
                                     variable=csv_field_freq_var, onvalue=1, offvalue=0,
                                     command=lambda: get_script_to_run('Compute frequencies of selected csv-file field'))
 # place widget with hover-over info
@@ -485,7 +486,7 @@ def activate_viewer_options(*args):
 
 activate_viewer_options()
 
-add_csv_field_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='normal',command=lambda: activate_viewer_options())
+add_csv_field_button = GUI_theme_util.create_button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='normal',command=lambda: activate_viewer_options())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate+20, y_multiplier_integer,
                                                add_csv_field_button, True, False, False, False, 90,
@@ -493,25 +494,25 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_c
                                                "Click on the + button to add another csv file field")
 
 menu_values = ['']
-reset_csv_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset_csv_list())
+reset_csv_button = GUI_theme_util.create_button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset_csv_list())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_reset_csv_button_pos, y_multiplier_integer,
                                    reset_csv_button,
                                    True, False, True, False, 90, GUI_IO_util.statistics_csv_reset_csv_button_pos,
                                    "Click the 'Reset ' button to clear all selected csv field, group-by field and hover-over field, and start fresh")
 
-show_csv_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_csv_list())
+show_csv_button = GUI_theme_util.create_button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_csv_list())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_show_csv_button_pos, y_multiplier_integer,
                                    show_csv_button,
                                    True, False, True, False, 90, GUI_IO_util.statistics_csv_show_csv_button_pos,
                                    "Click the 'Show' button to display the currrently selected csv field, group-by field and hover-over field")
 
-csv_field_lb = tk.Label(window, text='csv field')
+csv_field_lb = GUI_theme_util.create_label(window, text='csv field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_csv_field_lb_pos, y_multiplier_integer,
                                                csv_field_lb, True)
 
-csv_field_menu = tk.OptionMenu(window, csv_field_var, *menu_values)
+csv_field_menu = GUI_theme_util.create_option_menu(window, variable=csv_field_var, values=menu_values)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+110, y_multiplier_integer,
                                    csv_field_menu,
@@ -560,7 +561,7 @@ def activate_hover_over_field_menu():
         csv_hover_over_field_menu.configure(state="normal")
 
 # add extra group_by field
-add_field3_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled',
+add_field3_button = GUI_theme_util.create_button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled',
                               command=lambda: activate_groupBy_field_menu())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
@@ -568,11 +569,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "Click the + button, when available, to add another group-by field to aggregate the data")
 
-csv_groupBy_field_lb = tk.Label(window, text='Group-by field')
+csv_groupBy_field_lb = GUI_theme_util.create_label(window, text='Group-by field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_csv_groupBy_field_lb_pos, y_multiplier_integer,
                                                csv_groupBy_field_lb, True)
 
-csv_groupBy_field_menu = tk.OptionMenu(window, csv_groupBy_field_var, *menu_values)
+csv_groupBy_field_menu = GUI_theme_util.create_option_menu(window, variable=csv_groupBy_field_var, values=menu_values)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_csv_groupBy_field_menu_pos, y_multiplier_integer,
                                    csv_groupBy_field_menu,
@@ -581,7 +582,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv
                                    "\nMULTIPLE GROUP-BY FIELDS CAN BE SELECTED")
 
 # add extra hover_over field
-add_field2_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled',
+add_field2_button = GUI_theme_util.create_button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled',
                               command=lambda: activate_hover_over_field_menu())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+110, y_multiplier_integer,
@@ -589,11 +590,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
                                    True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "Click the + button, when available, to add another hover-over field")
 
-csv_hover_over_field_lb = tk.Label(window, text='Hover-over field')
+csv_hover_over_field_lb = GUI_theme_util.create_label(window, text='Hover-over field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                                csv_hover_over_field_lb, True)
 
-csv_hover_over_field_menu = tk.OptionMenu(window, csv_hover_over_field_var, *menu_values)
+csv_hover_over_field_menu = GUI_theme_util.create_option_menu(window, variable=csv_hover_over_field_var, values=menu_values)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+120, y_multiplier_integer,
                                    csv_hover_over_field_menu,
@@ -724,16 +725,9 @@ def changed_filename(*args):
     csv_file = input_csv_file_var.get() if input_csv_file_var.get() else inputFilename.get()
     if csv_file != '' and csv_file[-4:] == '.csv':
         menu_values = IO_csv_util.get_csvfile_headers(csv_file)
-        m = csv_field_menu["menu"]
-        m1 = csv_hover_over_field_menu["menu"]
-        m2 = csv_groupBy_field_menu["menu"]
-        m.delete(0, "end")
-        m1.delete(0, "end")
-        m2.delete(0, "end")
-        for s in menu_values:
-            m.add_command(label=s, command=lambda value=s: csv_field_var.set(value))
-            m1.add_command(label=s, command=lambda value=s: csv_hover_over_field_var.set(value))
-            m2.add_command(label=s, command=lambda value=s: csv_groupBy_field_var.set(value))
+        GUI_theme_util.set_values(csv_field_menu, menu_values)
+        GUI_theme_util.set_values(csv_hover_over_field_menu, menu_values)
+        GUI_theme_util.set_values(csv_groupBy_field_menu, menu_values)
         # populate stat test column menus
         for stat_menu, stat_var in [
             (stat_value_col_menu, stat_value_col_var),
@@ -742,10 +736,7 @@ def changed_filename(*args):
             (stat_freq_col1_menu, stat_freq_col1_var),
             (stat_freq_col2_menu, stat_freq_col2_var),
             (stat_corpus_col_menu, stat_corpus_col_var)]:
-            sm = stat_menu["menu"]
-            sm.delete(0, "end")
-            for s in menu_values:
-                sm.add_command(label=s, command=lambda value=s, sv=stat_var: sv.set(value))
+            GUI_theme_util.set_values(stat_menu, menu_values)
     activate_all_options(menu_values)
 
 # at the bottom of the script after laying out the GUI
@@ -764,7 +755,7 @@ stat_freq_col1_var = tk.StringVar()
 stat_freq_col2_var = tk.StringVar()
 stat_corpus_col_var = tk.StringVar()
 
-stat_test_checkbox = tk.Checkbutton(window, text='Hypothesis tests',
+stat_test_checkbox = GUI_theme_util.create_checkbox(window, text='Hypothesis tests',
                                     variable=stat_test_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                stat_test_checkbox,
@@ -779,7 +770,7 @@ stat_test_options = ['*', 'Mann-Whitney U / Kruskal-Wallis', 'Chi-square (indepe
                      'Bayes factor (two groups)', 'Adjusted Rand index (clustering agreement)',
                      'Silhouette (cluster cohesion)', 'Log-likelihood (corpus comparison)',
                      "Inter-annotator agreement (Cohen's / Fleiss' kappa)"]
-stat_test_menu = tk.OptionMenu(window, stat_test_menu_var, *stat_test_options)
+stat_test_menu = GUI_theme_util.create_option_menu(window, variable=stat_test_menu_var, values=stat_test_options)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.statistics_csv_csv_groupBy_field_menu_pos, y_multiplier_integer,
                                                stat_test_menu,
                                                False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
@@ -800,56 +791,56 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.statistics_cs
                                                "Inter-annotator agreement (Cohen's / Fleiss' kappa): measure how well 2+ annotators/tools agree. Each selected column (Value, Group, and optionally Word / Freq / Corpus) is one annotator's labels; 2 columns → Cohen's, 3+ → Fleiss'.")
 
 # Mann-Whitney / Kruskal-Wallis field selectors
-stat_value_col_lb = tk.Label(window, text='Value column')
+stat_value_col_lb = GUI_theme_util.create_label(window, text='Value column')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                stat_value_col_lb, True)
-stat_value_col_menu = tk.OptionMenu(window, stat_value_col_var, *menu_values)
+stat_value_col_menu = GUI_theme_util.create_option_menu(window, variable=stat_value_col_var, values=menu_values)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.statistics_csv_csv_groupBy_field_menu_pos, y_multiplier_integer,
                                                stat_value_col_menu,
                                                True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                                "Select the numeric column to compare across groups (e.g., Sentiment score, Frequency)")
 
-stat_group_col_lb = tk.Label(window, text='Group column')
+stat_group_col_lb = GUI_theme_util.create_label(window, text='Group column')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                                stat_group_col_lb, True)
-stat_group_col_menu = tk.OptionMenu(window, stat_group_col_var, *menu_values)
+stat_group_col_menu = GUI_theme_util.create_option_menu(window, variable=stat_group_col_var, values=menu_values)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+110, y_multiplier_integer,
                                                stat_group_col_menu,
                                                False, False, True, False, 90, GUI_IO_util.statistics_csv_csv_groupBy_field_lb_pos,
                                                "Select the categorical column that defines groups to compare (e.g., Document, Corpus)")
 
 # Log-likelihood field selectors
-stat_word_col_lb = tk.Label(window, text='Word column')
+stat_word_col_lb = GUI_theme_util.create_label(window, text='Word column')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                stat_word_col_lb, True)
-stat_word_col_menu = tk.OptionMenu(window, stat_word_col_var, *menu_values)
+stat_word_col_menu = GUI_theme_util.create_option_menu(window, variable=stat_word_col_var, values=menu_values)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.statistics_csv_csv_groupBy_field_menu_pos, y_multiplier_integer,
                                                stat_word_col_menu,
                                                True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                                "Select the column containing words/tokens for corpus comparison")
 
-stat_freq_col1_lb = tk.Label(window, text='Freq column 1')
+stat_freq_col1_lb = GUI_theme_util.create_label(window, text='Freq column 1')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                                stat_freq_col1_lb, True)
-stat_freq_col1_menu = tk.OptionMenu(window, stat_freq_col1_var, *menu_values)
+stat_freq_col1_menu = GUI_theme_util.create_option_menu(window, variable=stat_freq_col1_var, values=menu_values)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+110, y_multiplier_integer,
                                                stat_freq_col1_menu,
                                                False, False, True, False, 90, GUI_IO_util.statistics_csv_csv_groupBy_field_lb_pos,
                                                "Select the frequency column for corpus 1 (or the shared frequency column when using a corpus identifier)")
 
-stat_freq_col2_lb = tk.Label(window, text='Freq column 2')
+stat_freq_col2_lb = GUI_theme_util.create_label(window, text='Freq column 2')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                                stat_freq_col2_lb, True)
-stat_freq_col2_menu = tk.OptionMenu(window, stat_freq_col2_var, *menu_values)
+stat_freq_col2_menu = GUI_theme_util.create_option_menu(window, variable=stat_freq_col2_var, values=menu_values)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+110, y_multiplier_integer,
                                                stat_freq_col2_menu,
                                                True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                                "Select the frequency column for corpus 2 (leave empty if using a corpus identifier column)")
 
-stat_corpus_col_lb = tk.Label(window, text='Corpus ID column')
+stat_corpus_col_lb = GUI_theme_util.create_label(window, text='Corpus ID column')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                stat_corpus_col_lb, True)
-stat_corpus_col_menu = tk.OptionMenu(window, stat_corpus_col_var, *menu_values)
+stat_corpus_col_menu = GUI_theme_util.create_option_menu(window, variable=stat_corpus_col_var, values=menu_values)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.statistics_csv_csv_groupBy_field_menu_pos, y_multiplier_integer,
                                                stat_corpus_col_menu,
                                                False, False, True, False, 90, GUI_IO_util.statistics_csv_csv_groupBy_field_lb_pos,

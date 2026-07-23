@@ -12,6 +12,7 @@ import os
 import tkinter as tk
 import IO_files_util
 import GUI_IO_util
+import GUI_theme_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -101,28 +102,28 @@ SRL_var = tk.IntVar()
 
 
 
-csv_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: IO_files_util.get_corpus_CoNLL_csv(window, csv_file_var,'Select INPUT csv CoNLL table file', [("csv files", "*.csv")],True))
+csv_file_button=GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: IO_files_util.get_corpus_CoNLL_csv(window, csv_file_var,'Select INPUT csv CoNLL table file', [("csv files", "*.csv")],True))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                csv_file_button, True)
 
 #setup a button to open Windows Explorer on the selected input directory
-openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
+openInputFile_button = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,openInputFile_button,
                     True, False, True,False, 90, GUI_IO_util.IO_configuration_menu, "Open INPUT csv CoNLL table file")
 
-csv_file=tk.Entry(window, width=GUI_IO_util.csv_file_width,textvariable=csv_file_var)
-csv_file.config(state='disabled')
+csv_file=GUI_theme_util.create_entry(window, width=GUI_IO_util.csv_file_width,textvariable=csv_file_var)
+csv_file.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,csv_file)
 
 
 extra_GUIs_var.set(0)
-extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: open_GUI())
+extra_GUIs_checkbox = GUI_theme_util.create_checkbox(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: open_GUI())
 # extra_GUIs_checkbox.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Subject-Verb-Object (SVO)','Semantic analysis (Open GUI)','Parsers & annotators (Open GUI)','N-grams & Co-Occurrences (Open GUI)','CoNLL table analyzer (Open GUI)','WordNet (Open GUI)','What\'s in Your Corpus (Open GUI)')
+extra_GUIs_menu = GUI_theme_util.create_option_menu(window, variable=extra_GUIs_menu_var, values=['Subject-Verb-Object (SVO)','Semantic analysis (Open GUI)','Parsers & annotators (Open GUI)','N-grams & Co-Occurrences (Open GUI)','CoNLL table analyzer (Open GUI)','WordNet (Open GUI)','What\'s in Your Corpus (Open GUI)'])
 extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -152,8 +153,7 @@ def open_GUI(*args):
 extra_GUIs_menu_var.trace('w',open_GUI)
 
 SRL_var.set(1)
-SRL_checkbox = tk.Checkbutton(window, variable=SRL_var, onvalue=1, offvalue=0)
-SRL_checkbox.config(text="Semantic Role Labelling (SRL)")
+SRL_checkbox = GUI_theme_util.create_checkbox(window, variable=SRL_var, onvalue=1, offvalue=0, text="Semantic Role Labelling (SRL)")
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer,

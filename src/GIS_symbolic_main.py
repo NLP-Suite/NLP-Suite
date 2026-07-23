@@ -16,6 +16,7 @@ import tkinter as tk
 from tkinter import filedialog
 import IO_files_util
 import GUI_IO_util
+import GUI_theme_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -302,19 +303,19 @@ def select_csv_file():
     if f:
         _apply_selected_csv(f)
 
-csv_file_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width,
+csv_file_button = GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width,
                             text='Select INPUT CSV file', command=lambda: select_csv_file())
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, csv_file_button, True)
 
-openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
-                                 command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
+openInputFile_button = GUI_theme_util.create_open_file_button(
+    window, command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                openInputFile_button, True, False, True, False, 90,
                                                GUI_IO_util.IO_configuration_menu, "Open the INPUT csv file")
 
-csv_file = tk.Entry(window, width=GUI_IO_util.csv_file_width, textvariable=csv_file_var)
-csv_file.config(state='disabled')
+csv_file = GUI_theme_util.create_entry(window, width=GUI_IO_util.csv_file_width, textvariable=csv_file_var)
+csv_file.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, csv_file)
 
 
@@ -341,20 +342,20 @@ def open_GUI(*args):
                        message="The selected option is not available.\n\nPlease, select a different option and try again.")
 
 extra_GUIs_var.set(0)
-extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ',
+extra_GUIs_checkbox = GUI_theme_util.create_checkbox(window, text='GUIs available for more analyses ',
                                      variable=extra_GUIs_var, onvalue=1, offvalue=0,
                                      command=lambda: open_GUI())
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                extra_GUIs_checkbox, True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window, extra_GUIs_menu_var,
-                                'GIS — map geocodable space (Open GUI)',
-                                'SVO — who did what where (Open GUI)',
-                                'NER — extract place mentions (Open GUI)',
-                                'Semantic analysis (Open GUI)',
-                                'Narrative analysis (Open GUI)')
-extra_GUIs_menu.configure(state='disabled')
+extra_GUIs_menu = GUI_theme_util.create_option_menu(window, variable=extra_GUIs_menu_var,
+                                values=['GIS — map geocodable space (Open GUI)',
+                                        'SVO — who did what where (Open GUI)',
+                                        'NER — extract place mentions (Open GUI)',
+                                        'Semantic analysis (Open GUI)',
+                                        'Narrative analysis (Open GUI)'],
+                                state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                extra_GUIs_menu, False, False, True, False, 90,
                                                GUI_IO_util.IO_configuration_menu,
@@ -373,8 +374,8 @@ extra_GUIs_menu_var.trace('w', open_GUI)
 
 # ---- BUILD — extract the actor-in-space table from a text corpus -----------
 extract_var.set(0)
-extract_checkbox = tk.Checkbutton(window, variable=extract_var, onvalue=1, offvalue=0)
-extract_checkbox.config(text="Extract characters in non-geocodable space from a corpus  (BUILD)")
+extract_checkbox = GUI_theme_util.create_checkbox(window, variable=extract_var, onvalue=1, offvalue=0,
+                                                  text="Extract characters in non-geocodable space from a corpus  (BUILD)")
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                extract_checkbox, False, False, False, False, 90,
                                                GUI_IO_util.labels_x_coordinate,
@@ -387,8 +388,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 
 # ---- Row 1: DYNAMIC — movement through non-geocodable space ----------------
 map_var.set(0)
-map_checkbox = tk.Checkbutton(window, variable=map_var, onvalue=1, offvalue=0)
-map_checkbox.config(text="MAP characters moving in time and non-geocodable space  (DYNAMIC)")
+map_checkbox = GUI_theme_util.create_checkbox(window, variable=map_var, onvalue=1, offvalue=0,
+                                              text="MAP characters moving in time and non-geocodable space  (DYNAMIC)")
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                map_checkbox, False, False, False, False, 90,
                                                GUI_IO_util.labels_x_coordinate,
@@ -400,8 +401,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 
 # ---- Row 2: STATIC — distribution across non-geocodable space --------------
 distribution_var.set(0)
-distribution_checkbox = tk.Checkbutton(window, variable=distribution_var, onvalue=1, offvalue=0)
-distribution_checkbox.config(text="Distribution of characters across non-geocodable space  (STATIC)")
+distribution_checkbox = GUI_theme_util.create_checkbox(window, variable=distribution_var, onvalue=1, offvalue=0,
+                                                       text="Distribution of characters across non-geocodable space  (STATIC)")
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                distribution_checkbox, False, False, False, False, 90,
                                                GUI_IO_util.labels_x_coordinate,
@@ -412,11 +413,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 
 # ---- Column pickers (populated from the selected CSV's headers) -----------
 def _column_menu(col_var):
-    menu = tk.OptionMenu(window, col_var, '')
-    menu.configure(state='disabled')
-    return menu
+    return GUI_theme_util.create_option_menu(window, variable=col_var, values=[''], state='disabled')
 
-location_col_label = tk.Label(window, text='Location column  (both)')
+location_col_label = GUI_theme_util.create_label(window, text='Location column  (both)')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                location_col_label, True)
 location_col_menu = _column_menu(location_col_var)
@@ -428,7 +427,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configurat
                                                "table from the BUILD step, pick 'space_noun' (the raw place word) or "
                                                "'space_type' (its category, e.g. domestic_interior).")
 
-sequence_col_label = tk.Label(window, text='Sequence column  (DYNAMIC)')
+sequence_col_label = GUI_theme_util.create_label(window, text='Sequence column  (DYNAMIC)')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                sequence_col_label, True)
 sequence_col_menu = _column_menu(sequence_col_var)
@@ -439,7 +438,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configurat
                                                "so the movement view knows the sequence. Only used by the dynamic view."
                                                "\n\nIn a Social-actors table from the BUILD step, pick 'Sentence ID'.")
 
-attribute_col_label = tk.Label(window, text='Attribute column  (STATIC)')
+attribute_col_label = GUI_theme_util.create_label(window, text='Attribute column  (STATIC)')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                attribute_col_label, True)
 attribute_col_menu = _column_menu(attribute_col_var)
@@ -470,10 +469,7 @@ def refresh_columns(*args):
     for col_var, menu in ((location_col_var, location_col_menu),
                           (attribute_col_var, attribute_col_menu),
                           (sequence_col_var, sequence_col_menu)):
-        m = menu['menu']
-        m.delete(0, 'end')
-        for opt in [''] + cols:
-            m.add_command(label=opt, command=lambda v=col_var, o=opt: v.set(o))
+        GUI_theme_util.set_values(menu, [''] + cols)
         col_var.set('')
         menu.configure(state='normal' if cols else 'disabled')
 

@@ -16,6 +16,7 @@ import webbrowser
 import time
 
 import GUI_IO_util
+import GUI_theme_util
 import IO_files_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -57,7 +58,7 @@ software_download_var = tk.StringVar()
 software_install_var = tk.StringVar()
 y_multiplier_integer=0
 
-missing_software_lb = tk.Label(window,text='Missing external software')
+missing_software_lb = GUI_theme_util.create_label(window,text='Missing external software')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, missing_software_lb, True)
 
@@ -65,7 +66,7 @@ y_multiplier_integer_SV=y_multiplier_integer
 
 missing_software_var = tk.StringVar()
 
-missing_software_display_area = tk.Entry(width=GUI_IO_util.missing_software_display_area_width, state='disabled', textvariable=missing_software_var)
+missing_software_display_area = GUI_theme_util.create_entry(window, width=GUI_IO_util.missing_software_display_area_width, state='disabled', textvariable=missing_software_var)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.website_url_placement, y_multiplier_integer,
                                                missing_software_display_area, True, False, True, False, 90,
@@ -74,33 +75,32 @@ def openConfigFile():
     IO_files_util.openFile(window, GUI_IO_util.configPath + os.sep + config_filename)
     time.sleep(10) # wait 10 seconds to give enough time to save any changes to the csv config file
 
-openInputConfigFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
-                                 command=lambda: openConfigFile())
+openInputConfigFile_button = GUI_theme_util.create_open_file_button(window, command=lambda: openConfigFile())
 # place widget with hover-over info
 x_coordinate_hover_over=1150
 y_multiplier_integer = GUI_IO_util.placeWidget(window,x_coordinate_hover_over, y_multiplier_integer,
                                                openInputConfigFile_button, False, False, True,False, 90,
                                                GUI_IO_util.open_reminders_x_coordinate, "Open csv config file 'NLP_setup_external_software_config.csv'\nYou can manually enter any external software installation path (in case of errors with the setup algorithm)")
 
-software_download_lb = tk.Label(window,text='Software DOWNLOAD from web')
+software_download_lb = GUI_theme_util.create_label(window,text='Software DOWNLOAD from web')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, software_download_lb, True)
 software_download_var.set('')
 # 'SENNA' was removed from SVO options; way too slow
 # temporarily excluded '*'
-software_download_menu = tk.OptionMenu(window, software_download_var, 'Stanford CoreNLP', 'Gephi','Google Earth Pro','Java (JDK)','MALLET','WordNet')
+software_download_menu = GUI_theme_util.create_option_menu(window, variable=software_download_var, values=['Stanford CoreNLP', 'Gephi', 'Google Earth Pro', 'Java (JDK)', 'MALLET', 'WordNet'])
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                                software_download_menu, True, False, True, False, 90,
                                                GUI_IO_util.labels_x_coordinate, "Select the FREEWARE external software to be downloaded; the software website url will be displayed after selection. YOU CAN MAKE MULTIPLE SELECTIONS AND SAVE UPON CLOSING."
                                                                                       "\nYOU MUST BE CONNECTED TO THE INTERNET FOR DOWNLOADING SOFTWARE.\nThe software installation directory will be automatically displayed after selection so that it can be saved in the config file NLP_setup_external_software_config.csv when you CLOSE.")
 
-software_website = tk.Label(height=1, anchor='w', text='Website url')
+software_website = GUI_theme_util.create_label(window, height=1, anchor='w', text='Website url')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.website_url_placement,
                                                y_multiplier_integer, software_website, True)
 
 software_website_url_var=tk.StringVar()
-software_website_display_area = tk.Entry(width=GUI_IO_util.missing_software_display_area_width, state='disabled', textvariable=software_website_url_var)
+software_website_display_area = GUI_theme_util.create_entry(window, width=GUI_IO_util.missing_software_display_area_width, state='disabled', textvariable=software_website_url_var)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.website_url_placement, y_multiplier_integer,
                                                software_website_display_area, True, False, True, False, 90,
@@ -115,8 +115,7 @@ def openWebsite(software_website_url):
         mb.showwarning(title='Warning',
                    message='There is no external software website url.\n\nPlease, using the dropdown menu "Software DOWNLOAD" select the software website and try again.')
 
-openWebsite_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
-                                 command=lambda: openWebsite(software_website_url_var.get()))
+openWebsite_button = GUI_theme_util.create_open_file_button(window, command=lambda: openWebsite(software_website_url_var.get()))
 # place widget with hover-over info
 x_coordinate_hover_over=1150
 y_multiplier_integer = GUI_IO_util.placeWidget(window,x_coordinate_hover_over, y_multiplier_integer,
@@ -130,12 +129,12 @@ def openSoftwareDir(software_dir):
         mb.showwarning(title='Warning',
                 message='There is no external software directory to open.\n\nPlease, using the dropdown menu "Software INSTALL" select the software and try again.')
 
-software_install_lb = tk.Label(window,text='Software INSTALL on your machine')
+software_install_lb = GUI_theme_util.create_label(window,text='Software INSTALL on your machine')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, software_install_lb, True)
 software_install_var.set('')
 # temporarily excluded '*'
-software_install_menu = tk.OptionMenu(window, software_install_var, 'Stanford CoreNLP', 'Gephi','Google Earth Pro','Java (JDK)','MALLET','WordNet')
+software_install_menu = GUI_theme_util.create_option_menu(window, variable=software_install_var, values=['Stanford CoreNLP', 'Gephi', 'Google Earth Pro', 'Java (JDK)', 'MALLET', 'WordNet'])
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                                software_install_menu, True, False, True, False, 90,
@@ -144,14 +143,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_co
 
 
 software_install_dir_var=tk.StringVar()
-software_install_area = tk.Entry(width=GUI_IO_util.missing_software_display_area_width, state='disabled', textvariable=software_install_dir_var)
+software_install_area = GUI_theme_util.create_entry(window, width=GUI_IO_util.missing_software_display_area_width, state='disabled', textvariable=software_install_dir_var)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.website_url_placement, y_multiplier_integer,
                                                software_install_area, True, False, True, False, 90,
                                                GUI_IO_util.watch_videos_x_coordinate, "The widget, always disabled, displays the installation directory of the external software selected in the 'Software installation on your machine' dropdown menu.")
 
-opensoftware_dir_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
-                                 command=lambda: openSoftwareDir(software_install_dir_var.get()))
+opensoftware_dir_button = GUI_theme_util.create_open_file_button(window, command=lambda: openSoftwareDir(software_install_dir_var.get()))
 # place widget with hover-over info
 x_coordinate_hover_over=1150
 y_multiplier_integer = GUI_IO_util.placeWidget(window,x_coordinate_hover_over, y_multiplier_integer,
@@ -299,7 +297,7 @@ def close_GUI():
             save_external_software_config()
     NLP_setup_update_util.exit_window()
 
-close_button = tk.Button(window, text='CLOSE', width=10, height=2, command=lambda: close_GUI())
+close_button = GUI_theme_util.create_button(window, text='CLOSE', width=10, height=2, command=lambda: close_GUI())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate,
                                                y_multiplier_integer,

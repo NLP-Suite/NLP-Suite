@@ -15,6 +15,7 @@ from datetime import datetime
 
 import GUI_util
 import GUI_IO_util
+import GUI_theme_util
 import IO_files_util
 import reminders_util
 import Stanford_CoreNLP_util
@@ -202,23 +203,23 @@ new_SS_folder_var=tk.StringVar()
 last_SS_year_var=tk.IntVar()
 new_SS_folders=[]
 
-CoreNLP_gender_annotator_checkbox = tk.Checkbutton(window, text='Annotate nouns & pronouns gender (via CoreNLP Gender annotator - Neural Network)', variable=CoreNLP_gender_annotator_var, onvalue=1, offvalue=0)
+CoreNLP_gender_annotator_checkbox = GUI_theme_util.create_checkbox(window, text='Annotate nouns & pronouns gender (via CoreNLP Gender annotator - Neural Network)', variable=CoreNLP_gender_annotator_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,CoreNLP_gender_annotator_checkbox)
 
 # TODO list of male/female names https://nlp.stanford.edu/projects/gender.shtml
-CoreNLP_download_gender_file_checkbox = tk.Checkbutton(window, text='Download CoreNLP gender file', variable=CoreNLP_download_gender_file_var, onvalue=1, offvalue=0)
+CoreNLP_download_gender_file_checkbox = GUI_theme_util.create_checkbox(window, text='Download CoreNLP gender file', variable=CoreNLP_download_gender_file_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,CoreNLP_download_gender_file_checkbox,True)
 
-CoreNLP_upload_gender_file_checkbox = tk.Checkbutton(window, text='Upload CoreNLP gender file', variable=CoreNLP_upload_gender_file_var, onvalue=1, offvalue=0)
+CoreNLP_upload_gender_file_checkbox = GUI_theme_util.create_checkbox(window, text='Upload CoreNLP gender file', variable=CoreNLP_upload_gender_file_var, onvalue=1, offvalue=0)
 # html_annotator_gender_select_dictionary_file_annotator
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,CoreNLP_upload_gender_file_checkbox)
 
 annotator_dictionary_var.set(0)
-annotator_dictionary_checkbox = tk.Checkbutton(window, text='Annotate first names by gender (via selected dictionary file)', variable=annotator_dictionary_var, onvalue=1, offvalue=0)
+annotator_dictionary_checkbox = GUI_theme_util.create_checkbox(window, text='Annotate first names by gender (via selected dictionary file)', variable=annotator_dictionary_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,annotator_dictionary_checkbox)
 
-annotator_dictionary_button=tk.Button(window, text='Select dictionary file ',command=lambda: get_dictionary_file(window,'Select INPUT dictionary file', [("dictionary files", "*.csv")]))
-annotator_dictionary_button.config(state='disabled')
+annotator_dictionary_button=GUI_theme_util.create_button(window, text='Select dictionary file ',command=lambda: get_dictionary_file(window,'Select INPUT dictionary file', [("dictionary files", "*.csv")]))
+annotator_dictionary_button.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    annotator_dictionary_button,
@@ -226,15 +227,15 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
                                    "The lib/nameGender subdirectory contains several US names files (Carnegie Mellon list, US Social Security list, US census, NLTK)\nBut... you can also selected a file of names of your own chosing")
 
 #setup a button to open Windows Explorer on the selected input directory
-openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, state='disabled', text='', command=lambda: IO_files_util.openFile(window, annotator_dictionary_file_var.get()))
+openInputFile_button  = GUI_theme_util.create_open_file_button(window, state='disabled', command=lambda: IO_files_util.openFile(window, annotator_dictionary_file_var.get()))
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 # the two x-coordinate and x-coordinate_hover_over must have the same values
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.html_annotator_gender_select_dictionary_file_button, y_multiplier_integer,
     openInputFile_button, True, False, True, False, 90, GUI_IO_util.html_annotator_gender_select_dictionary_file_button, "Open csv dictionary file")
 
-annotator_dictionary_file=tk.Entry(window, width=GUI_IO_util.html_annotator_gender_annotator_dictionary_file_width,textvariable=annotator_dictionary_file_var)
-annotator_dictionary_file.config(state='disabled')
+annotator_dictionary_file=GUI_theme_util.create_entry(window, width=GUI_IO_util.html_annotator_gender_annotator_dictionary_file_width,textvariable=annotator_dictionary_file_var)
+annotator_dictionary_file.configure(state='disabled')
 # html_annotator_gender_select_dictionary_file_annotator
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,annotator_dictionary_file)
 
@@ -242,7 +243,7 @@ def get_dictionary_file(window,title,fileType):
     #annotator_dictionary_var.set('')
     filePath = tk.filedialog.askopenfilename(title = title, initialdir =GUI_IO_util.namesGender_libPath, filetypes = fileType)
     if len(filePath)>0:
-        # annotator_dictionary_file.config(state='normal')
+        # annotator_dictionary_file.configure(state='normal')
         annotator_dictionary_file_var.set(filePath)
 
 # personal_pronouns_var.set(1)
@@ -250,7 +251,7 @@ def get_dictionary_file(window,title,fileType):
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,personal_pronouns_checkbox)
 #
 plot_var.set(0)
-plot_checkbox = tk.Checkbutton(window, text='Process names via US SS', variable=plot_var, onvalue=1, offvalue=0)
+plot_checkbox = GUI_theme_util.create_checkbox(window, text='Process names via US SS', variable=plot_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.labels_x_coordinate,
@@ -258,11 +259,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
     plot_checkbox, True, False, True, False, 90,
     GUI_IO_util.labels_x_coordinate, "Tick the checkbox to search for use of first names by state/year of birth using the US Social Security first names databases")
 
-year_state_lb = tk.Label(window, text='By US state/year')
+year_state_lb = GUI_theme_util.create_label(window, text='By US state/year')
 # html_annotator_gender_select_dictionary_file_annotator
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,year_state_lb,True)
 
-year_state_menu = tk.OptionMenu(window,year_state_var, 'State', 'Year of birth', 'State & Year of birth')
+year_state_menu = GUI_theme_util.create_option_menu(window,variable=year_state_var,values=['State', 'Year of birth', 'State & Year of birth'])
 year_state_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
@@ -271,10 +272,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
     year_state_menu, True, False, True, False, 90,
     GUI_IO_util.html_annotator_gender_by_type_dropdown, "Use the dropdown menu to select the desired first name search")
 
-firstName_entry_lb = tk.Label(window, text='Enter name(s)')
+firstName_entry_lb = GUI_theme_util.create_label(window, text='Enter name(s)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,y_multiplier_integer,firstName_entry_lb,True)
 
-firstName_entry = tk.Entry(window,width=GUI_IO_util.widget_width_short,textvariable=firstName_entry_var)
+firstName_entry = GUI_theme_util.create_entry(window,width=GUI_IO_util.widget_width_short,textvariable=firstName_entry_var)
 firstName_entry.configure(state="disabled")
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
@@ -283,7 +284,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
     firstName_entry, False, False, True, False, 90,
     GUI_IO_util.html_annotator_gender_firstName_entry_pos, "Enter the comma-separated first names whose use by state/year of birth you wish to process")
 
-open_SS_website_button=tk.Button(window, text='Open US SS website ',command=lambda: open_SS_website())
+open_SS_website_button=GUI_theme_util.create_button(window, text='Open US SS website ',command=lambda: open_SS_website())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.labels_x_indented_coordinate,
@@ -293,7 +294,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
 #
 # https://www.ssa.gov/oact/babynames/limits.html
 new_SS_folders_var.set(0)
-new_SS_folders_checkbox = tk.Checkbutton(window, text='Generate new US Social Security files (by US State, Year of birth, US State & Year of birth)', variable=new_SS_folders_var, onvalue=1, offvalue=0, command=lambda: get_new_SS_folders(window))
+new_SS_folders_checkbox = GUI_theme_util.create_checkbox(window, text='Generate new US Social Security files (by US State, Year of birth, US State & Year of birth)', variable=new_SS_folders_var, onvalue=1, offvalue=0, command=lambda: get_new_SS_folders(window))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.open_TIPS_x_coordinate,
@@ -366,7 +367,7 @@ def process_namesbystate_folder(input_folder, output_file):
         f.write('State,Gender,Year of birth,Name,Frequency\n' + output_data)
 
 # new_SS_select_button=tk.Button(window, width=20, text='Select new SS folders',command=lambda: get_new_SS_folders(window))
-# new_SS_select_button.config(state='disabled')
+# new_SS_select_button.configure(state='disabled')
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,new_SS_select_button,True)
 #
 # #setup a button to open Windows Explorer on the selected input directory
@@ -379,13 +380,13 @@ def process_namesbystate_folder(input_folder, output_file):
 #     open_new_SS_folder_button, True, False, True, False, 90, GUI_IO_util.html_annotator_gender_select_dictionary_file_button, "Open SS file directory")
 #
 # new_SS_folder=tk.Entry(window, width=GUI_IO_util.html_annotator_gender_SS_folder_width,textvariable=new_SS_folder_var)
-# new_SS_folder.config(state='disabled')
+# new_SS_folder.configure(state='disabled')
 # # html_annotator_gender_select_dictionary_file_annotator
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,new_SS_folder,True)
 
 # last_SS_year_var.set(2021)
 # last_SS_year=tk.Entry(window, width=6,textvariable=last_SS_year_var)
-# last_SS_year.config(state='disabled')
+# last_SS_year.configure(state='disabled')
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_gender_select_SS_folder, y_multiplier_integer,last_SS_year)
 
 # def checkUSSSUpdate():
@@ -405,18 +406,18 @@ def activate_all_options(*args):
     plot_checkbox.configure(state="normal")
     CoreNLP_download_gender_file_checkbox.configure(state='disabled')
     CoreNLP_upload_gender_file_checkbox.configure(state='disabled')
-    annotator_dictionary_button.config(state='disabled')
-    openInputFile_button.config(state='disabled')
-    annotator_dictionary_file.config(state='disabled')
+    annotator_dictionary_button.configure(state='disabled')
+    openInputFile_button.configure(state='disabled')
+    annotator_dictionary_file.configure(state='disabled')
     # personal_pronouns_checkbox.configure(state='disabled')
     # year_state_var.set('')
     year_state_menu.configure(state='disabled')
     firstName_entry.configure(state="disabled")
     # new_SS_folders_checkbox.configure(state="disabled")
-    # new_SS_select_button.config(state='disabled')
-    # open_new_SS_folder_button.config(state='disabled')
+    # new_SS_select_button.configure(state='disabled')
+    # open_new_SS_folder_button.configure(state='disabled')
     # new_SS_folder_var.set("")
-    # new_SS_folder.config(state='disabled')
+    # new_SS_folder.configure(state='disabled')
     new_SS_folders.clear()
     if CoreNLP_gender_annotator_var.get()==True:
         annotator_dictionary_checkbox.configure(state="disabled")
@@ -427,9 +428,9 @@ def activate_all_options(*args):
         # checkUSSSUpdate()
         CoreNLP_gender_annotator_checkbox.configure(state="normal")
         plot_checkbox.configure(state="disabled")
-        annotator_dictionary_button.config(state='normal')
-        openInputFile_button.config(state='normal')
-        # annotator_dictionary_file.config(state='normal')
+        annotator_dictionary_button.configure(state='normal')
+        openInputFile_button.configure(state='normal')
+        # annotator_dictionary_file.configure(state='normal')
         # personal_pronouns_checkbox.configure(state='normal')
     if plot_var.get()==True:
         # checkUSSSUpdate()
@@ -437,9 +438,9 @@ def activate_all_options(*args):
         annotator_dictionary_checkbox.configure(state="disabled")
         new_SS_folders_checkbox.configure(state="normal")
         year_state_menu.configure(state='normal')
-        # new_SS_select_button.config(state='normal')
-        # open_new_SS_folder_button.config(state='normal')
-        # new_SS_select_button.config(state='normal')
+        # new_SS_select_button.configure(state='normal')
+        # open_new_SS_folder_button.configure(state='normal')
+        # new_SS_select_button.configure(state='normal')
     else:
         year_state_menu.configure(state='disabled')
         firstName_entry.configure(state="disabled")
@@ -448,9 +449,9 @@ def activate_all_options(*args):
     if year_state_var.get()!='':
         firstName_entry.configure(state="normal")
     # if new_SS_folders_checkbox:
-    #     new_SS_select_button.config(state='normal')
+    #     new_SS_select_button.configure(state='normal')
     # else:
-    #     new_SS_select_button.config(state='disabled')
+    #     new_SS_select_button.configure(state='disabled')
 
 CoreNLP_gender_annotator_var.trace('w',activate_all_options)
 annotator_dictionary_var.trace('w',activate_all_options)

@@ -12,6 +12,7 @@ import tkinter as tk
 import IO_user_interface_util
 import file_matcher_util
 import GUI_IO_util
+import GUI_theme_util
 import IO_files_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -138,90 +139,94 @@ def add_csvFile(window,title,fileType):
     initialFolder = os.path.dirname(os.path.abspath(__file__))
     filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
     if len(filePath)>0:
-        selectedCsvFile.config(state='normal')
+        selectedCsvFile.configure(state='normal')
         selectedCsvFile_var.set(filePath)
 
-add_file_button = tk.Button(window, text='Select csv file', command=lambda: add_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
+add_file_button = GUI_theme_util.create_button(window, text='Select csv file', command=lambda: add_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer, add_file_button,
     True, False, True, False, 90, GUI_IO_util.labels_x_coordinate, "Click on the button to select the csv file to be used to find file matches")
 
-openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, selectedCsvFile_var.get()))
+openInputFile_button = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openFile(window, selectedCsvFile_var.get()))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_matcher_openInputFile_button_pos, y_multiplier_integer,openInputFile_button,
     True, False, True, False, 90, GUI_IO_util.file_matcher_openInputFile_button_pos, "Open INPUT csv file")
 
-selectedCsvFile = tk.Entry(window,width=GUI_IO_util.widget_width_extra_long,state='disabled',textvariable=selectedCsvFile_var)
+selectedCsvFile = GUI_theme_util.create_entry(window,width=GUI_IO_util.widget_width_extra_long,state='disabled',textvariable=selectedCsvFile_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_matcher_selectedCsvFile_pos,y_multiplier_integer,selectedCsvFile)
 
 find_var.set(1)
-find_checkbox = tk.Checkbutton(window, text='Match files', variable=find_var, onvalue=1, offvalue=0)
+find_checkbox = GUI_theme_util.create_checkbox(window, text='Match files', variable=find_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer, find_checkbox,True)
 
-source_file_type_menu_lb = tk.Label(window, text='Source file type ')
+source_file_type_menu_lb = GUI_theme_util.create_label(window, text='Source file type ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,source_file_type_menu_lb,True)
 
-source_file_type_menu = tk.OptionMenu(window,source_file_type_menu_var,'*','bmp','csv','doc','docx','gexf','html','jpg','kml','pdf','png','tif','txt','xls','xlsm','xlsx')
+source_file_type_menu = GUI_theme_util.create_option_menu(window, variable=source_file_type_menu_var,
+                    values=['*', 'bmp', 'csv', 'doc', 'docx', 'gexf', 'html', 'jpg', 'kml', 'pdf',
+                            'png', 'tif', 'txt', 'xls', 'xlsm', 'xlsx'])
 source_file_type_menu.configure(state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_matcher_source_file_type_menu_pos,y_multiplier_integer,source_file_type_menu,True)
 
-target_file_type_menu_lb = tk.Label(window, text='Target file type ')
+target_file_type_menu_lb = GUI_theme_util.create_label(window, text='Target file type ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_matcher_target_file_type_menu_lb_pos,y_multiplier_integer,target_file_type_menu_lb,True)
 
-target_file_type_menu = tk.OptionMenu(window,target_file_type_menu_var,'*','bmp','csv','doc','docx','gexf','html','jpg','kml','pdf','png','tif','txt','xls','xlsm','xlsx')
+target_file_type_menu = GUI_theme_util.create_option_menu(window, variable=target_file_type_menu_var,
+                    values=['*', 'bmp', 'csv', 'doc', 'docx', 'gexf', 'html', 'jpg', 'kml', 'pdf',
+                            'png', 'tif', 'txt', 'xls', 'xlsm', 'xlsx'])
 target_file_type_menu.configure(state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_matcher_target_file_type_menu_pos,y_multiplier_integer,target_file_type_menu)
 
 matching_var.set(1)
-matching_checkbox = tk.Checkbutton(window, variable=matching_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox_NoLabel(matching_var, matching_checkbox, "Exact match", "Partial match (by number of embedded items)"))
-matching_checkbox.config(text="Exact match")
+matching_checkbox = GUI_theme_util.create_checkbox(window, variable=matching_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox_NoLabel(matching_var, matching_checkbox, "Exact match", "Partial match (by number of embedded items)"))
+matching_checkbox.configure(text="Exact match")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,matching_checkbox,True)
 
 character_value_var.set('_')
-character_lb = tk.Label(window, text='Separator character(s)')
+character_lb = GUI_theme_util.create_label(window, text='Separator character(s)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer, character_lb,True)
 
-character_value = tk.Entry(window, width=2,textvariable=character_value_var)
+character_value = GUI_theme_util.create_entry(window, width=2,textvariable=character_value_var)
 character_value.configure(state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_matcher_character_value_pos,y_multiplier_integer, character_value,True)
 
-number_of_items_lb = tk.Label(window, text='Number of items')
+number_of_items_lb = GUI_theme_util.create_label(window, text='Number of items')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_matcher_number_of_items_lb_pos,y_multiplier_integer, number_of_items_lb,True)
 
-number_of_items_value = tk.Entry(window, width=2,textvariable=number_of_items_var)
+number_of_items_value = GUI_theme_util.create_entry(window, width=2,textvariable=number_of_items_var)
 number_of_items_value.configure(state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_matcher_number_of_items_value_pos,y_multiplier_integer, number_of_items_value,True)
 
 include_exclude_var.set(1)
-include_exclude_checkbox = tk.Checkbutton(window, variable=include_exclude_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox_NoLabel(include_exclude_var, include_exclude_checkbox, "Include first # items only", "Exclude first # items"))
+include_exclude_checkbox = GUI_theme_util.create_checkbox(window, variable=include_exclude_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox_NoLabel(include_exclude_var, include_exclude_checkbox, "Include first # items only", "Exclude first # items"))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_matcher_include_exclude_pos,y_multiplier_integer, include_exclude_checkbox)
-include_exclude_checkbox.config(text='Include first # items only',state="disabled")
+include_exclude_checkbox.configure(text='Include first # items only',state="disabled")
 
 copy_var.set(0)
-copy_checkbox = tk.Checkbutton(window, variable=copy_var, onvalue=1, offvalue=0)
-copy_checkbox.config(text="COPY processed files")
+copy_checkbox = GUI_theme_util.create_checkbox(window, variable=copy_var, onvalue=1, offvalue=0)
+copy_checkbox.configure(text="COPY processed files")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,copy_checkbox,True)
 
 move_var.set(0)
-move_checkbox = tk.Checkbutton(window, variable=move_var, onvalue=1, offvalue=0)
-move_checkbox.config(state='disabled',text="MOVE processed files")
+move_checkbox = GUI_theme_util.create_checkbox(window, variable=move_var, onvalue=1, offvalue=0)
+move_checkbox.configure(state='disabled',text="MOVE processed files")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,move_checkbox)
 
 def activate_options(*args):
-    copy_checkbox.config(state='normal')
-    move_checkbox.config(state='normal')
+    copy_checkbox.configure(state='normal')
+    move_checkbox.configure(state='normal')
     if copy_var.get()==True:
-        move_checkbox.config(state='disabled')
+        move_checkbox.configure(state='disabled')
         move_var.set(0)
     if move_var.get()==True:
-        copy_checkbox.config(state='disabled')
+        copy_checkbox.configure(state='disabled')
         copy_var.set(0)
         # TODO need to set move_var.set(0)
         #	but the question gets repeated twice
         # command = mb.askyesno("MOVE files", "You have selected to MOVE any mathed files from the INPUT directory to the OUTPUT directory?\n\nAre you sure you want to do that? Matched files will be removed from their original locations.",default='no')
         # if command==False:
         # 	move_var.set(0)
-        # 	copy_checkbox.config(state='normal')
+        # 	copy_checkbox.configure(state='normal')
 copy_var.trace('w',activate_options)
 move_var.trace('w',activate_options)
 
@@ -233,14 +238,14 @@ def activate_find_options(*args):
         target_file_type_menu.configure(state="normal")
         # currently the matcher only works with exact match
         # need to use a csv file for partial matches
-        # matching_checkbox.config(text="Exact match",state='normal')
-        matching_checkbox.config(text="Exact match",state='normal')
+        # matching_checkbox.configure(text="Exact match",state='normal')
+        matching_checkbox.configure(text="Exact match",state='normal')
         matching_var.set(1)
     else:
         source_file_type_menu.configure(state="disabled")
         target_file_type_menu.configure(state="disabled")
         matching_var.set(1)
-        matching_checkbox.config(text="Exact match",state='disabled')
+        matching_checkbox.configure(text="Exact match",state='disabled')
 find_var.trace('w',activate_find_options)
 
 activate_find_options()
@@ -251,11 +256,11 @@ def activate_numberEmbeddedItems_options(*args):
     if matching_var.get()==1:
         character_value.configure(state="disabled")
         number_of_items_value.configure(state="disabled")
-        include_exclude_checkbox.config(state="disabled")
+        include_exclude_checkbox.configure(state="disabled")
     else:
         character_value.configure(state="normal")
         number_of_items_value.configure(state="normal")
-        include_exclude_checkbox.config(state="normal")
+        include_exclude_checkbox.configure(state="normal")
 matching_var.trace('w',activate_numberEmbeddedItems_options)
 activate_numberEmbeddedItems_options()
 

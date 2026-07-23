@@ -11,6 +11,7 @@ import tkinter.messagebox as mb
 
 import reminders_util
 import GUI_IO_util
+import GUI_theme_util
 import IO_files_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -175,18 +176,19 @@ window.bind("<Escape>", clear)
 
 ## option for stopwords
 remove_stopwords_var.set(1)
-remove_stopwords_checkbox = tk.Checkbutton(window, text='Remove stopwords & punctuation', variable=remove_stopwords_var, onvalue=1, offvalue=0)
+remove_stopwords_checkbox = GUI_theme_util.create_checkbox(window, text='Remove stopwords & punctuation', variable=remove_stopwords_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,remove_stopwords_checkbox,True)
 
 ## option for Lemmatization
 lemmatize_var.set(1)
-lemmatize_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=lemmatize_var, onvalue=1, offvalue=0)
+lemmatize_checkbox = GUI_theme_util.create_checkbox(window, text='Lemmatize', variable=lemmatize_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget,y_multiplier_integer,lemmatize_checkbox)
 
-vis_var_lb = tk.Label(window,text='Select visualization option')
+vis_var_lb = GUI_theme_util.create_label(window,text='Select visualization option')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,vis_var_lb,True)
 vis_menu_var.set('Plot word vectors')
-vis_menu = tk.OptionMenu(window,vis_menu_var, 'Do not plot word vectors', 'Plot word vectors')
+vis_menu = GUI_theme_util.create_option_menu(window, variable=vis_menu_var,
+                              values=['Do not plot word vectors', 'Plot word vectors'])
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,
     y_multiplier_integer,
@@ -196,7 +198,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration
 
 #### 2D or 3D plot
 dim_menu_var.set('2D')
-dim_menu = tk.OptionMenu(window,dim_menu_var, '2D', '3D')
+dim_menu = GUI_theme_util.create_option_menu(window, variable=dim_menu_var, values=['2D', '3D'])
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget,y_multiplier_integer,dim_menu)
 
 def activate_plot_options(*args):
@@ -211,7 +213,7 @@ vis_menu_var.trace('w',activate_plot_options)
 
 ## option for BERT
 BERT_var.set(0)
-BERT_checkbox = tk.Checkbutton(window, text='Word embeddings (via BERT (English language model))', variable=BERT_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
+BERT_checkbox = GUI_theme_util.create_checkbox(window, text='Word embeddings (via BERT (English language model))', variable=BERT_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
     y_multiplier_integer,
@@ -221,7 +223,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 ## option for Gensim
 Gensim_var.set(0)
-Gensim_checkbox = tk.Checkbutton(window, text='Word2Vec (via Gensim)', variable=Gensim_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
+Gensim_checkbox = GUI_theme_util.create_checkbox(window, text='Word2Vec (via Gensim)', variable=Gensim_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
     y_multiplier_integer,
     Gensim_checkbox,
@@ -229,40 +231,40 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
     "Word2Vec is one of the word embedding techniques in the Natural Language Processing. Word2Vec turns text into a numerical form, the vectors of similar words clustered together in vector space.\nThe vectors used to represent words are called neural word embeddings.\nWord2Vec was developed at Google by Tomas Mikolov and his team in 2013.")
 
 ## option for Gensim model architecture
-sg_lb = tk.Label(window,text='Training model architecture')
+sg_lb = GUI_theme_util.create_label(window,text='Training model architecture')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,sg_lb,True)
 sg_menu_var.set('Skip-Gram')
-sg_menu = tk.OptionMenu(window,sg_menu_var, 'Skip-Gram','CBOW')
+sg_menu = GUI_theme_util.create_option_menu(window, variable=sg_menu_var, values=['Skip-Gram','CBOW'])
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,sg_menu)
 
 ## option for Gensim vector size
-vector_size_lb = tk.Label(window,text='Vector size')
+vector_size_lb = GUI_theme_util.create_label(window,text='Vector size')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,vector_size_lb,True)
 
 vector_size_var.set(100)
-vector_size_entry = tk.Entry(window,width=5,textvariable=vector_size_var)
+vector_size_entry = GUI_theme_util.create_entry(window,width=5,textvariable=vector_size_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_vector_size_entry_pos,y_multiplier_integer,vector_size_entry, True)
 
 ## option for window size
-window_lb = tk.Label(window,text='Window size')
+window_lb = GUI_theme_util.create_label(window,text='Window size')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,window_lb,True)
 
 window_var.set(5)
-window_size_entry = tk.Entry(window,width=5,textvariable=window_var)
+window_size_entry = GUI_theme_util.create_entry(window,width=5,textvariable=window_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_window_size_entry_pos,y_multiplier_integer,window_size_entry, True)
 
 ## option for minimum count
-min_count_lb = tk.Label(window,text='Minimum count')
+min_count_lb = GUI_theme_util.create_label(window,text='Minimum count')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_min_count_lb_pos,y_multiplier_integer,min_count_lb,True)
 
 min_count_var.set(5)
-min_count_entry = tk.Entry(window,width=5,textvariable=min_count_var)
+min_count_entry = GUI_theme_util.create_entry(window,width=5,textvariable=min_count_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_min_count_entry_pos,y_multiplier_integer,min_count_entry)
 
 ## option for visualization method
 
 compute_distances_var.set(1)
-compute_distances_checkbox = tk.Checkbutton(window, text='Compute word distances', variable=compute_distances_var, onvalue=1, offvalue=0)
+compute_distances_checkbox = GUI_theme_util.create_checkbox(window, text='Compute word distances', variable=compute_distances_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
     y_multiplier_integer,
@@ -271,11 +273,11 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
     "Tick/untick the checkbox to (not)compute Eucledian 2-dimensional and n-dimensional distances and cosine similarity between words.\nComputing word similarities can be computationally demanding and time consuming, but VERY useful in locating words in a semantic space.\nYOU DO NOT NEED TO RE-RUN WORD2VC ON A SET OF TXT FILES. YOU CAN USE A CSV VECTOR FILE PREVIOUSLY COMPUTED.")
 
 ## option for number of words for Euclidean distance
-top_words_lb = tk.Label(window,text='Number of top words for Euclidean distance & cosine similarity combinations')
+top_words_lb = GUI_theme_util.create_label(window,text='Number of top words for Euclidean distance & cosine similarity combinations')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,top_words_lb,True)
 
 top_words_var.set(200)
-top_words_entry = tk.Entry(window,width=5,textvariable=top_words_var)
+top_words_entry = GUI_theme_util.create_entry(window,width=5,textvariable=top_words_var)
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_top_words_pos,
     y_multiplier_integer,
@@ -290,7 +292,7 @@ def get_word_distance_file(window,title,fileType):
     if len(word_distance_filePath)>0:
         word_distance_file_var.set(word_distance_filePath)
 
-word_distance_button=tk.Button(window, text='Select distance file ',command=lambda: get_word_distance_file(window,'Select INPUT distance file', [("distance files", "*.csv")]))
+word_distance_button=GUI_theme_util.create_button(window, text='Select distance file ',command=lambda: get_word_distance_file(window,'Select INPUT distance file', [("distance files", "*.csv")]))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    word_distance_button,
@@ -298,7 +300,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
                                    "Select the previously-computed word distance csv file to be used for searching ")
 
 #setup a button to open Windows Explorer on the selected input directory
-open_word_distance_file_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, word_distance_file_var.get()))
+open_word_distance_file_button = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openFile(window, word_distance_file_var.get()))
 # openInputFile_button.configure(state='disabled')
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 # the two x-coordinate and x-coordinate_hover_over must have the same values
@@ -307,8 +309,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
     open_word_distance_file_button, True, False, True, False, 90, GUI_IO_util.IO_configuration_menu, "Open word_distance csv file")
 
 # word_distance_entry_var = tk.StringVar()
-word_distance_file = tk.Entry(window, textvariable=word_distance_file_var)
-word_distance_file.configure(state='disabled',width=GUI_IO_util.widget_width_extra_long)
+word_distance_file = GUI_theme_util.create_entry(window, textvariable=word_distance_file_var)
+word_distance_file.configure(state='disabled')
+GUI_theme_util.set_char_width(word_distance_file, GUI_IO_util.widget_width_extra_long)
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+100,
     y_multiplier_integer,
@@ -317,11 +320,12 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration
     "Previously-computed word distance csv file ")
 
 keywords_var.set('')
-keywords_lb = tk.Label(window, text='Keywords')
+keywords_lb = GUI_theme_util.create_label(window, text='Keywords')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,keywords_lb,True)
 
-keywords_entry = tk.Entry(window, textvariable=keywords_var)
-keywords_entry.configure(state='normal',width=GUI_IO_util.widget_width_extra_long)
+keywords_entry = GUI_theme_util.create_entry(window, textvariable=keywords_var)
+keywords_entry.configure(state='normal')
+GUI_theme_util.set_char_width(keywords_entry, GUI_IO_util.widget_width_extra_long)
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,
     y_multiplier_integer,

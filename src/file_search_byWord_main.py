@@ -14,6 +14,7 @@ import tkinter.messagebox as mb
 from subprocess import call
 
 import GUI_IO_util
+import GUI_theme_util
 import IO_files_util
 import file_search_byWord_util
 import IO_user_interface_util
@@ -246,12 +247,14 @@ window.bind("<Escape>", clear)
 #setup GUI widgets
 
 extra_GUIs_var.set(0)
-extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+extra_GUIs_checkbox = GUI_theme_util.create_checkbox(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 # extra_GUIs_checkbox.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Spell checker', 'CoNLL table searches', 'N-grams_Co-Occurrences searches & VIEWER','Wordnet searches', 'Style analysis')
+extra_GUIs_menu = GUI_theme_util.create_option_menu(window, variable=extra_GUIs_menu_var,
+                    values=['Spell checker', 'CoNLL table searches', 'N-grams_Co-Occurrences searches & VIEWER',
+                            'Wordnet searches', 'Style analysis'])
 extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -280,19 +283,21 @@ def open_GUI(*args):
 extra_GUIs_menu_var.trace('w',open_GUI)
 
 search_options_menu_var.set('Case sensitive (default)')
-search_options_menu_lb = tk.Label(window, text='Search options')
+search_options_menu_lb = GUI_theme_util.create_label(window, text='Search options')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,search_options_menu_lb,True)
 
-search_options_menu = tk.OptionMenu(window, search_options_menu_var, 'Case sensitive (default)','Case insensitive','Lemmatize', 'Exact match (default)','Partial match','Search within sentence (default)', 'Search within document')
+search_options_menu = GUI_theme_util.create_option_menu(window, variable=search_options_menu_var,
+                    values=['Case sensitive (default)', 'Case insensitive', 'Lemmatize', 'Exact match (default)',
+                            'Partial match', 'Search within sentence (default)', 'Search within document'])
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,search_options_menu, True)
 
-add_search_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: activate_search_var())
+add_search_button = GUI_theme_util.create_button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: activate_search_var())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_add_search_button_pos,y_multiplier_integer,add_search_button, True)
 
-reset_search_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset_search_options_list())
+reset_search_button = GUI_theme_util.create_button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset_search_options_list())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_reset_search_button_pos,y_multiplier_integer,reset_search_button,True)
 
-show_search_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_search_options_list())
+show_search_button = GUI_theme_util.create_button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_search_options_list())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_show_search_button_pos,y_multiplier_integer,show_search_button)
 
 def reset_search_options_list():
@@ -365,10 +370,10 @@ search_options_menu_var.trace('w',activate_search_options)
 activate_search_options()
 
 search_by_dictionary_var.set(0)
-search_by_dictionary_checkbox = tk.Checkbutton(window, text='Search corpus by dictionary value', variable=search_by_dictionary_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+search_by_dictionary_checkbox = GUI_theme_util.create_checkbox(window, text='Search corpus by dictionary value', variable=search_by_dictionary_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,search_by_dictionary_checkbox)
 
-dictionary_button=tk.Button(window, width=20, text='Select dictionary file',command=lambda: get_dictionary_file(window,'Select INPUT dictionary file', [("dictionary files", "*.csv")]))
+dictionary_button=GUI_theme_util.create_button(window, width=20, text='Select dictionary file',command=lambda: get_dictionary_file(window,'Select INPUT dictionary file', [("dictionary files", "*.csv")]))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,dictionary_button,True)
 
 def get_dictionary_file(window,title,fileType):
@@ -376,23 +381,23 @@ def get_dictionary_file(window,title,fileType):
     filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
     if len(filePath)>0:
         #always disabled; user cannot tinker with the selection
-        #selectedCsvFile.config(state='disabled')
+        #selectedCsvFile.configure(state='disabled')
         selectedCsvFile_var.set(filePath)
 
 #setup a button to open Windows Explorer on the selected input directory
 # current_y_multiplier_integer=y_multiplier_integer-1
-openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, selectedCsvFile_var.get()))
+openInputFile_button = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openFile(window, selectedCsvFile_var.get()))
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 # the two x-coordinate and x-coordinate_hover_over must have the same values
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.file_search_byWord_openInputFile_button_pos, y_multiplier_integer,
     openInputFile_button, True, False, True, False, 90, GUI_IO_util.file_search_byWord_openInputFile_button_pos, "Open selected csv dictionary file")
 
-selectedCsvFile = tk.Entry(window,width=GUI_IO_util.file_search_byWord_widget_width,state='disabled',textvariable=selectedCsvFile_var)
+selectedCsvFile = GUI_theme_util.create_entry(window,width=GUI_IO_util.file_search_byWord_widget_width,state='disabled',textvariable=selectedCsvFile_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_selectedCsvFile_pos,y_multiplier_integer,selectedCsvFile)
 
 search_by_keyword_var.set(0)
-search_by_keyword_checkbox = tk.Checkbutton(window, text='Search corpus by word(s)', variable=search_by_keyword_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+search_by_keyword_checkbox = GUI_theme_util.create_checkbox(window, text='Search corpus by word(s)', variable=search_by_keyword_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                     search_by_keyword_checkbox, True, False, True, False,
@@ -400,7 +405,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
                     "Tick the checkbox to search for word(s) in your document sentence or document (depending upon your selected option) (e.g, coming out, standing in line, boyfriend).")
 
 keyword_value_var.set('')
-keyword_value = tk.Entry(window,width=GUI_IO_util.file_search_byWord_widget_width,textvariable=keyword_value_var)
+keyword_value = GUI_theme_util.create_entry(window,width=GUI_IO_util.file_search_byWord_widget_width,textvariable=keyword_value_var)
 # keyword_value.configure(state="disabled")
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_extract_sentences_search_words_entry_pos, y_multiplier_integer,
@@ -408,26 +413,33 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWo
                     90, GUI_IO_util.read_button_x_coordinate,
                     "Enter the comma-separated words/set of words that a document sentence or document (depending upon your selected option) must contain (e.g, coming out, standing in line, boyfriend).\nIn output, a separate record will be produced VERTICALLY for each comma-separated entry.\nUse the Co-ccurrence option (tick the checkbox at the end of the line) to produce records organized HORIZONTALLY, different headers in the output csv file for each search word.")
 
-minus_K_lb = tk.Label(window, text='-K')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,1050,y_multiplier_integer,minus_K_lb,True)
+# row-splitting fix (docs/ctk_GUI_overflow_status.md): this used to be one 9-widget row via a chain
+# of x_coordinate+N offsets (1050..1240) that all fell in the same column band, each bumping into a
+# brand-new grid column. Split across 2 rows, cycling through the handful of bands
+# (labels_x_coordinate / extract_sentences_search_words_entry_pos / open_reminders_x_coordinate /
+# open_setup_x_coordinate / run_button_x_coordinate) every other row in this GUI already pays for.
+minus_K_lb = GUI_theme_util.create_label(window, text='-K')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate,y_multiplier_integer,minus_K_lb,True)
 
 minus_K_words_sentences_var.set(0)
-minus_K_words_entry = tk.Entry(window, textvariable=minus_K_words_sentences_var) #extract_sentences_search_words_var)
-minus_K_words_entry.configure(width=3, state='disabled')
+minus_K_words_entry = GUI_theme_util.create_entry(window, textvariable=minus_K_words_sentences_var) #extract_sentences_search_words_var)
+minus_K_words_entry.configure(state='disabled')
+GUI_theme_util.set_char_width(minus_K_words_entry, 3)
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window, 1080, y_multiplier_integer,
-                    minus_K_words_entry, True, False, True, False,
+y_multiplier_integer=GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
+                    minus_K_words_entry, False, False, True, False,
                     90, GUI_IO_util.open_TIPS_x_coordinate,
                     "Enter the integer number of words (do not enter -) preceding the search word to be extracted, for context, together with the search sentences.\nA wordcloud of the -K +K words will be generated using default wordcloud values (e.g., max words = 100, exclude stopwords & punctuation).\nThe -K +K options apply only to searches within sentences.")
 
-plus_K_lb = tk.Label(window, text='+K')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,1120,y_multiplier_integer,plus_K_lb,True)
+plus_K_lb = GUI_theme_util.create_label(window, text='+K')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,plus_K_lb,True)
 
 plus_K_words_sentences_var.set(0)
-plus_K_words_entry = tk.Entry(window, textvariable=plus_K_words_sentences_var) #extract_sentences_search_words_var)
-plus_K_words_entry.configure(width=3, state='disabled')
+plus_K_words_entry = GUI_theme_util.create_entry(window, textvariable=plus_K_words_sentences_var) #extract_sentences_search_words_var)
+plus_K_words_entry.configure(state='disabled')
+GUI_theme_util.set_char_width(plus_K_words_entry, 3)
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window, 1150, y_multiplier_integer,
+y_multiplier_integer=GUI_IO_util.placeWidget(window, GUI_IO_util.file_search_byWord_extract_sentences_search_words_entry_pos, y_multiplier_integer,
                     plus_K_words_entry, True, False, True, False,
                     90, GUI_IO_util.open_TIPS_x_coordinate,
                     "Enter the integer number of words (do not enter +) following the search word to be extracted, for context, together with the search sentences.\nA wordcloud of the words for the -K +K sentences will be generated using default wordcloud values (e.g., max words = 100, exclude stopwords & punctuation).\nThe -K +K options apply only to searches within sentences.")
@@ -435,11 +447,11 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window, 1150, y_multiplier_integer,
 extract_sentences_var = tk.IntVar()
 extract_sentences_var.set(0)
 # extract sentences, besides words
-extract_sentences_checkbox = tk.Checkbutton(window, text='', variable=extract_sentences_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+extract_sentences_checkbox = GUI_theme_util.create_checkbox(window, text='', variable=extract_sentences_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 extract_sentences_checkbox.configure(state='disabled')
 
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,1180, y_multiplier_integer,
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                     extract_sentences_checkbox, True, False, True, False,
                     90, GUI_IO_util.open_TIPS_x_coordinate,
                     "Tick the checkbox if you want to extract all -K +K SENTENCES (not words) occurring BEFORE and AFTER each found search word.\nSentences containing (and not containing) the search words will be exported as text files for any further processing.\nWordcloud sub-directories will also be created with the appropriate txt and wordcloud files.\nThe option applies only to searches within sentences.")
@@ -447,11 +459,11 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,1180, y_multiplier_integer,
 coOccurring_keywords_var = tk.IntVar()
 coOccurring_keywords_var.set(0)
 # search for ALL keywords in the same document
-coOccurring_keywords_checkbox = tk.Checkbutton(window, text='', variable=coOccurring_keywords_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+coOccurring_keywords_checkbox = GUI_theme_util.create_checkbox(window, text='', variable=coOccurring_keywords_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 coOccurring_keywords_checkbox.configure(state='disabled')
 
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,1210, y_multiplier_integer,
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                     coOccurring_keywords_checkbox, True, False, True, False,
                     90, GUI_IO_util.labels_x_coordinate,
                     "Tick the checkbox if you want to search for the listed comma-separated keywords as CO-OCCURRING in the same sentence or document, depending on the selected search option (within sentence or document).")
@@ -459,11 +471,11 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,1210, y_multiplier_integer,
 create_subcorpus_var = tk.IntVar()
 create_subcorpus_var.set(0)
 # Create subcorpus of files
-create_subcorpus_checkbox = tk.Checkbutton(window, text='', variable=create_subcorpus_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+create_subcorpus_checkbox = GUI_theme_util.create_checkbox(window, text='', variable=create_subcorpus_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 create_subcorpus_checkbox.configure(state='disabled')
 
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,1240, y_multiplier_integer,
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                     create_subcorpus_checkbox, False, False, True, False,
                     90, GUI_IO_util.open_reminders_x_coordinate,
                     "Tick the checkbox to create a subdirectory for the subcorpus of files containing the search word(s).\nThe subdirectory will be created inside the input files directory with the name 'subcorpus_search'.")
@@ -493,7 +505,7 @@ def activate_all_options(*args):
         search_by_keyword_checkbox.configure(state='disabled')
         extract_sentences_checkbox.configure(state='disabled')
     elif search_by_dictionary_var.get() == True:
-        dictionary_button.config(state='normal')
+        dictionary_button.configure(state='normal')
         extra_GUIs_checkbox.configure(state='disabled')
         search_by_keyword_checkbox.configure(state='disabled')
         keyword_value.configure(state='disabled')
@@ -507,7 +519,7 @@ def activate_all_options(*args):
     elif search_by_keyword_var.get() == True:
         extra_GUIs_checkbox.configure(state='disabled')
         search_by_dictionary_checkbox.configure(state='disabled')
-        dictionary_button.config(state='disabled')
+        dictionary_button.configure(state='disabled')
         selectedCsvFile_var.set('')
         keyword_value.configure(state='normal')
         extract_sentences_checkbox.configure(state='normal')
@@ -565,7 +577,12 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, use the dropdown menu to set up the search criteria. Multiple criteria can be selected by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nWhen running the search as case sensitive, a sentence containing the word 'King' will not be selected in output if you search for 'king')\n\nWhen running the search with the wrd 'king' as Partial match, a sentence containing the word 'king' (e.g., kingdom) will be selected in output. Use the 'Exact match (default)' option to only select 'king'.\n\nWhen lemmatizing, the scripts would search 'coming out' in all its lemmatized forms: 'coming out', 'come out', 'comes out', 'came out'. Lemmatzing relies on Stanza. WHEN LEMMATIZING THE INPUT TEXT, SEARCH WORDS WILL ALSO BE LEMMATIZED.\n\nWhen searching 'Within sentence' combinations of words or collocations will be searched and displayed within SENTENCE otherwise within DOCUMENT.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to search input txt file(s) using the values contained in a csv dictionary file.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click to select a csv file containing a list of values to be used as a dictionary for searching the input file(s).\n\nEntries in the file, one per line, can be single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nThe little square button to the right will allow you to open the selected csv file.\n\nThe csv filename will be displayed in the entry widget to the right.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to search input txt file(s) by single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nThe widget where you can enter your comma-separated, case-sensitive words/collocations will become available once you select the option. Enter there the comma-separated, case-sensitive words/set of words that a sentence must contain in order to be extracted from input and saved in output (e.g, coming out, standing in line, boyfriend).\n\nTick the checkbox at the end of the line if you want to search for words CO-OCCURRING TOGETHER in the same sentence or document, depending upon the selected search option (within sentence or within document).\n\nIn INPUT the scripts expect a single txt file or a set of txt files in a directory.\n\nIn OUTPUT the scripts generate a csv file with information about the document, sentence, word/collocation searched, and, most importantly, about the relative position where the search word appears in a document.\nWhen -K +K words are entered, the algorith will generate a wordcloud of all the extracted -K +K words (& sentences) using wordcloud default values (e.g., max words = 100, exclude stopwords & punctuation).\nTick the checkbox at the end of the line to export SENTENCES, rather than words.\nWhen the checkbox 'Create subcorpus of files' is ticked, the algorithm will export all the txt files that contain the search words to a directory called 'subcorpus_search' inside the input directory. A set of csv files are also exported but to the selected output directory.")
+    # row-splitting fix (docs/ctk_GUI_overflow_status.md): the search-by-word(s)/-K/+K/extract-
+    # sentences/co-occurring/subcorpus row now spans 2 grid rows (see the split above), so this needs
+    # a matching second '?' HELP button to keep this counter aligned with the main body's row count.
+    search_by_word_row_msg = "Please, tick the checkbox to search input txt file(s) by single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nThe widget where you can enter your comma-separated, case-sensitive words/collocations will become available once you select the option. Enter there the comma-separated, case-sensitive words/set of words that a sentence must contain in order to be extracted from input and saved in output (e.g, coming out, standing in line, boyfriend).\n\nTick the checkbox at the end of the line if you want to search for words CO-OCCURRING TOGETHER in the same sentence or document, depending upon the selected search option (within sentence or within document).\n\nIn INPUT the scripts expect a single txt file or a set of txt files in a directory.\n\nIn OUTPUT the scripts generate a csv file with information about the document, sentence, word/collocation searched, and, most importantly, about the relative position where the search word appears in a document.\nWhen -K +K words are entered, the algorith will generate a wordcloud of all the extracted -K +K words (& sentences) using wordcloud default values (e.g., max words = 100, exclude stopwords & punctuation).\nTick the checkbox at the end of the line to export SENTENCES, rather than words.\nWhen the checkbox 'Create subcorpus of files' is ticked, the algorithm will export all the txt files that contain the search words to a directory called 'subcorpus_search' inside the input directory. A set of csv files are also exported but to the selected output directory."
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", search_by_word_row_msg)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", search_by_word_row_msg)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
 

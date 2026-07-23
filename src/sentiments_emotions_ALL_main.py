@@ -3,10 +3,10 @@
 import GUI_util
 
 from subprocess import call
-import tkinter as tk
 import os
 
 import GUI_IO_util
+import GUI_theme_util
 import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -63,42 +63,42 @@ window.bind("<Escape>", clear)
 
 y_multiplier_integer = 0
 
-open_rhetoric_GUI_button = tk.Button(window, text='Vocabulary Analysis (punctuation and repetition) (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: run_script_util.run_script("style_analysis_main.py"))
+open_rhetoric_GUI_button = GUI_theme_util.create_button(window, text='Vocabulary Analysis (punctuation and repetition) (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: run_script_util.run_script("style_analysis_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_rhetoric_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_WordNet_GUI_button = tk.Button(window, text='WordNet searches (NOUN: feeling; VERB: emotion) (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: run_script_util.run_script("semantic_aggregation_main.py"))
+open_WordNet_GUI_button = GUI_theme_util.create_button(window, text='WordNet searches (NOUN: feeling; VERB: emotion) (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: run_script_util.run_script("semantic_aggregation_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_WordNet_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-search_GUI_button = tk.Button(window, text='Search corpus for words of emotions/sentiment; ALL search options (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: run_script_util.run_script("file_search_ALL_main.py"))
+search_GUI_button = GUI_theme_util.create_button(window, text='Search corpus for words of emotions/sentiment; ALL search options (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: run_script_util.run_script("file_search_ALL_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    search_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_YAGO_GUI_button = tk.Button(window, text='YAGO searches (Emotion ontology class) (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: run_script_util.run_script("knowledge_graphs_main.py"))
+open_YAGO_GUI_button = GUI_theme_util.create_button(window, text='YAGO searches (Emotion ontology class) (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: run_script_util.run_script("knowledge_graphs_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_YAGO_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_sentiment_analysis_GUI_button = tk.Button(window, text='Sentiment Analysis (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: run_script_util.run_script("sentiment_analysis_main.py"))
+open_sentiment_analysis_GUI_button = GUI_theme_util.create_button(window, text='Sentiment Analysis (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: run_script_util.run_script("sentiment_analysis_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_sentiment_analysis_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_shape_of_stories_GUI_button = tk.Button(window, text='Shape of Stories (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: run_script_util.run_script("shape_of_stories_main.py"))
+open_shape_of_stories_GUI_button = GUI_theme_util.create_button(window, text='Shape of Stories (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: run_script_util.run_script("shape_of_stories_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_shape_of_stories_GUI_button,

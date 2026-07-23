@@ -14,6 +14,7 @@ import tkinter as tk
 from subprocess import call
 
 import GUI_IO_util
+import GUI_theme_util
 import IO_files_util
 import file_spell_checker_util
 import statistics_txt_util
@@ -508,28 +509,28 @@ vocabulary_analysis_menu_var=tk.StringVar()
 
 
 
-csv_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: IO_files_util.get_corpus_CoNLL_csv(window, csv_file_var,'Select INPUT csv CoNLL table file', [("csv files", "*.csv")],True))
+csv_file_button=GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: IO_files_util.get_corpus_CoNLL_csv(window, csv_file_var,'Select INPUT csv CoNLL table file', [("csv files", "*.csv")],True))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                csv_file_button, True)
 
 #setup a button to open Windows Explorer on the selected input directory
-openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
+openInputFile_button = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,openInputFile_button,
                     True, False, True,False, 90, GUI_IO_util.IO_configuration_menu, "Open INPUT csv CoNLL table file")
 
-csv_file=tk.Entry(window, width=GUI_IO_util.csv_file_width,textvariable=csv_file_var)
-csv_file.config(state='disabled')
+csv_file=GUI_theme_util.create_entry(window, width=GUI_IO_util.csv_file_width,textvariable=csv_file_var)
+csv_file.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,csv_file)
 
 
 extra_GUIs_var.set(0)
-extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+extra_GUIs_checkbox = GUI_theme_util.create_checkbox(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 # extra_GUIs_checkbox.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Coreference resolution (Open GUI)','Spelling/grammar checker (Open GUI)','Corpus statistics (Open GUI)','N-grams & Co-Occurrences (Open GUI)','Nominalization (Open GUI)','CoNLL table analyzer (Open GUI)','WordNet (Open GUI)','Corpus Profiler (Open GUI)')
+extra_GUIs_menu = GUI_theme_util.create_option_menu(window,variable=extra_GUIs_menu_var,values=['Coreference resolution (Open GUI)','Spelling/grammar checker (Open GUI)','Corpus statistics (Open GUI)','N-grams & Co-Occurrences (Open GUI)','Nominalization (Open GUI)','CoNLL table analyzer (Open GUI)','WordNet (Open GUI)','Corpus Profiler (Open GUI)'])
 extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -565,7 +566,7 @@ extra_GUIs_menu_var.trace('w',open_GUI)
 ## option for WSI via BERT
 # Word sense induction (WSI) is the problem of automatically identifying the different senses expressed by a word used in a collection of documents.
 WSI_var.set(0)
-WSI_checkbox = tk.Checkbutton(window, text='Word Sense Induction (WSI) (via BERT (English language model))', variable=WSI_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
+WSI_checkbox = GUI_theme_util.create_checkbox(window, text='Word Sense Induction (WSI) (via BERT (English language model))', variable=WSI_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,WSI_checkbox,True)
 
 # place widget with hover-over info
@@ -575,8 +576,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
     True, False, False, False, 90, GUI_IO_util.labels_x_coordinate,
     "Tick the checkbox to run the word sense induction (WSI) algorithm to automatically identify the different senses expressed by a word used in your corpus based on Lucy & Bamman, 2021, BERT model.\nAdjust the various options in the next line of widgets to control the model parameters.")
 
-k_means_min_var = tk.Scale(window, from_=2, to=9, orient=tk.HORIZONTAL)
-k_means_min_var.pack()
+k_means_min_var = GUI_theme_util.create_slider(window, from_=2, to=9, orient='horizontal', resolution=1, integer=True)
 k_means_min_var.set(4)
 # place widget with hover-over info # memory_pos
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate,
@@ -585,8 +585,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminder
                                                GUI_IO_util.open_reminders_x_coordinate,
                                                "Use the slider widget to set the K-means MINIMUM value you wish to use for word sense induction")
 
-k_means_max_var = tk.Scale(window, from_=3, to=15, orient=tk.HORIZONTAL)
-k_means_max_var.pack()
+k_means_max_var = GUI_theme_util.create_slider(window, from_=3, to=15, orient='horizontal', resolution=1, integer=True)
 k_means_max_var.set(6)
 # place widget with hover-over info # memory_pos
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate-40,
@@ -595,23 +594,33 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_
                                                GUI_IO_util.open_reminders_x_coordinate,
                                                "Use the slider widget to set the K-means MAXIMUM value you wish to use for word sense induction")
 
-ngrams_lb = tk.Label(window,text='N-grams')
+ngrams_lb = GUI_theme_util.create_label(window,text='N-grams')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate-55,y_multiplier_integer,ngrams_lb,True)
+# the shared grid column this label sits in is sized by other rows (the folder-icon toolbar and the
+# 'Data tools' menu also land here), leaving ~90px of dead space after the short "N-grams" text before
+# its dropdown; right-aligning the label closes that gap without touching the shared column width.
+ngrams_lb.grid_configure(sticky='e')
 ngrams_menu_var = tk.StringVar()
 ngrams_menu_var.set('1-grams')
-ngrams_menu = tk.OptionMenu(window,ngrams_menu_var, '1-grams (unigrams)','2-grams (bigrams)','3-grams (trigrams)','4-grams (quadgrams)')
+ngrams_menu = GUI_theme_util.create_option_menu(window,variable=ngrams_menu_var,values=['1-grams (unigrams)','2-grams (bigrams)','3-grams (trigrams)','4-grams (quadgrams)'])
 # place widget with hover-over info # memory_pos
+# end the row here (sameY=False) instead of adding the keywords slider as a 6th widget: columns 1 and
+# 3-6 are already claimed on this row, so the slider (200px wide, like the two above) would always be
+# bumped into a brand-new column that nothing else in the GUI shares -- pushing the window ~200px past
+# the screen edge (docs/ctk_GUI_overflow_status.md). Giving it its own row below lets it reuse the
+# k_means_max slider's column instead.
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate+25,
                                                y_multiplier_integer,
-                                               ngrams_menu, True, False, False, False, 90,
+                                               ngrams_menu, False, False, False, False, 90,
                                                GUI_IO_util.open_TIPS_x_coordinate,
                                                "Use the dropdown menu to select the N-grams to be used in computing the highest scoring N-grams to return as cluster key terms ")
 
-top_keywords_var = tk.Scale(window, from_=5, to=20, orient=tk.HORIZONTAL)
-top_keywords_var.pack()
+top_keywords_var = GUI_theme_util.create_slider(window, from_=5, to=20, orient='horizontal', resolution=1, integer=True)
 top_keywords_var.set(10)
 # place widget with hover-over info # memory_pos
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate+50,
+# reuse k_means_max_var's x-coordinate (open_setup_x_coordinate-40): on its own row that column
+# already carries a same-width (200px) slider, so this adds no extra width -- see the note above.
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate-40,
                                                y_multiplier_integer,
                                                top_keywords_var, False, False, False, False, 90,
                                                GUI_IO_util.run_button_x_coordinate,
@@ -619,7 +628,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_
 
 WSI_keywords_var = tk.StringVar()
 WSI_keywords_var.set('')
-WSI_keywords_lb = tk.Label(window, text='Keywords (WSI)')
+WSI_keywords_lb = GUI_theme_util.create_label(window, text='Keywords (WSI)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,WSI_keywords_lb,True)
 
 WSIdictionary_file_var=tk.StringVar() # dictionary file used to annotate
@@ -630,7 +639,7 @@ def get_dictionary_file(window,title,fileType):
         # WSIdictionary_file.config(state='normal')
         WSI_keywords_var.set(filePath)
 
-WSIdictionary_button=tk.Button(window, text='Select dictionary file ',command=lambda: get_dictionary_file(window,'Select INPUT dictionary file', [("dictionary files", "*.csv")]))
+WSIdictionary_button=GUI_theme_util.create_button(window, text='Select dictionary file ',command=lambda: get_dictionary_file(window,'Select INPUT dictionary file', [("dictionary files", "*.csv")]))
 # WSIdictionary_button.config(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate + 100, y_multiplier_integer,
@@ -639,7 +648,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
                                    "Click to select a csv file containing a list of words for which disambiguation is sought.\nIf disambiguation is sought for only a few words, please, enter them comma-separated in the entry widget.")
 
 #setup a button to open Windows Explorer on the selected input directory
-openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, WSI_keywords_var.get()))
+openInputFile_button  = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openFile(window, WSI_keywords_var.get()))
 # openInputFile_button.configure(state='disabled')
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 # the two x-coordinate and x-coordinate_hover_over must have the same values
@@ -647,8 +656,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.labels_x_indented_coordinate + 250, y_multiplier_integer,
     openInputFile_button, True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate + 250, "Open csv dictionary file")
 
-WSI_keywords_entry = tk.Entry(window, textvariable=WSI_keywords_var)
-WSI_keywords_entry.configure(state='normal',width=GUI_IO_util.widget_width_extra_long)
+WSI_keywords_entry = GUI_theme_util.create_entry(window, width=GUI_IO_util.widget_width_extra_long, textvariable=WSI_keywords_var)
+WSI_keywords_entry.configure(state='normal')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+100,
     y_multiplier_integer,
@@ -657,41 +666,41 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration
     "Enter the comma-separated, case-sensitive words to be used to compute word sense induction")
 
 WSD_var.set(0)
-WSD_checkbox = tk.Checkbutton(window, text='Word Sense Disambiguation (WSD) (via CoNLL)', variable=WSD_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+WSD_checkbox = GUI_theme_util.create_checkbox(window, text='Word Sense Disambiguation (WSD) (via CoNLL)', variable=WSD_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,WSD_checkbox,False)
 
 SRL_var.set(0)
-SRL_checkbox = tk.Checkbutton(window, text='Semantic Role Labelling (SRL) (Open GUI)', variable=SRL_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+SRL_checkbox = GUI_theme_util.create_checkbox(window, text='Semantic Role Labelling (SRL) (Open GUI)', variable=SRL_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,SRL_checkbox,False)
 
 SSC_var.set(0)
-SSC_checkbox = tk.Checkbutton(window, text='DOCUMENT embeddings: Semantic similarity & clustering', variable=SSC_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+SSC_checkbox = GUI_theme_util.create_checkbox(window, text='DOCUMENT embeddings: Semantic similarity & clustering', variable=SSC_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,SSC_checkbox,False)
 
-classify_words_by_semantic_closeness_button=tk.Button(window, width=90, text='WORD embeddings: Classify words by semantic proximity: Word2Vec & word embeddings (Open GUI)',command=lambda: run_script_util.run_script("Word2Vec_main.py"))
+classify_words_by_semantic_closeness_button=GUI_theme_util.create_button(window, width=90, text='WORD embeddings: Classify words by semantic proximity: Word2Vec & word embeddings (Open GUI)',command=lambda: run_script_util.run_script("Word2Vec_main.py"))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                classify_words_by_semantic_closeness_button, False)
 
-semantic_aggregation_button=tk.Button(window, width=90, text='Aggregate words by semantics (Open GUI)',command=lambda: run_script_util.run_script("semantic_aggregation_main.py"))
+semantic_aggregation_button=GUI_theme_util.create_button(window, width=90, text='Aggregate words by semantics (Open GUI)',command=lambda: run_script_util.run_script("semantic_aggregation_main.py"))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                semantic_aggregation_button, False)
 
 
 vocabulary_analysis_var.set(0)
-vocabulary_analysis_checkbox = tk.Checkbutton(window, text='More semantic analyses', variable=vocabulary_analysis_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+vocabulary_analysis_checkbox = GUI_theme_util.create_checkbox(window, text='More semantic analyses', variable=vocabulary_analysis_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,vocabulary_analysis_checkbox,True)
 
 # # vocabulary_analysis_menu_var.set('*')
 # # vocabulary_analysis_lb = tk.Label(window, text='Select the vocabulary analysis you wish to perform')
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,vocabulary_analysis_lb,True)
 # place widget with hover-over info
-vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*',
+vocabulary_analysis_menu = GUI_theme_util.create_option_menu(window,variable=vocabulary_analysis_menu_var,values=['*',
                                          'Coreference resolution (Open GUI)',
                                          'Nominalization',
                                          'Abstract/concrete vocabulary',
                                          'Iconic vocabulary',
                                          'Objectivity/subjectivity (via spaCy)',
-                                         'Topic modelling')
+                                         'Topic modelling'])
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    vocabulary_analysis_menu,
                                    False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
@@ -766,6 +775,12 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                   "Please, use the 'Select INPUT CSV file' button to choose the CoNLL table to analyze.\n\nThe button first LISTS all CoNLL tables found for your current corpus - searching the output directory, the input directory, and the default output directory - so you can pick one directly without hunting for the file (each is labelled by its parser/corpus subfolder, e.g. a Stanza dependency parse vs a CoreNLP parse). You can also choose 'Browse for another file' to select any other CoNLL csv. If no CoNLL table is found, a file dialog opens directly.\n\nA CoNLL table is a csv file produced by a parser (spaCy, Stanford CoreNLP, or Stanza) via the Parsers & annotators GUI, in which each token is labeled with a part-of-speech tag (POSTAG), a Dependency Relation tag (DEPREL), and other linguistic information.\n\nThe selected file is validated to ensure it is a properly formatted CoNLL table." + GUI_IO_util.msg_openFile)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          'Please, tick the \'GUIs available\' checkbox if you wish to see and select the range of other available tools suitable for stylistic analysis.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                  "NLP Suite Help",
+                                  "Please, tick the checkbox to run word Sense Induction (WSI) via BERT.")
+    # the keywords slider moved to its own row (see the row-split note above 'top_keywords_var'), so
+    # one more call keeps this function's row counter in sync -- GUI_bottom's own trailing widgets are
+    # positioned off the count this function returns.
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
                                   "Please, tick the checkbox to run word Sense Induction (WSI) via BERT.")

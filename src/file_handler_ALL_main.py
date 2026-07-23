@@ -7,6 +7,7 @@ import tkinter as tk
 import os
 
 import GUI_IO_util
+import GUI_theme_util
 import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -59,42 +60,42 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_
 
 y_multiplier_integer = 0
 
-open_CoNLL_search_GUI_button = tk.Button(window, text='General file manager (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: run_script_util.run_script("file_manager_main.py"))
+open_CoNLL_search_GUI_button = GUI_theme_util.create_button(window, text='General file manager (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: run_script_util.run_script("file_manager_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_CoNLL_search_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_file_search_GUI_button = tk.Button(window, text='File checker/converter/cleaner (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: run_script_util.run_script("file_checker_converter_cleaner_main.py"))
+open_file_search_GUI_button = GUI_theme_util.create_button(window, text='File checker/converter/cleaner (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: run_script_util.run_script("file_checker_converter_cleaner_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_file_search_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_file_search_GUI_button = tk.Button(window, text='File classifier (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: run_script_util.run_script("file_classifier_main.py"))
+open_file_search_GUI_button = GUI_theme_util.create_button(window, text='File classifier (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: run_script_util.run_script("file_classifier_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_file_search_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_word_search_GUI_button = tk.Button(window, text='File matcher (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: run_script_util.run_script("file_matcher_main.py"))
+open_word_search_GUI_button = GUI_theme_util.create_button(window, text='File matcher (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: run_script_util.run_script("file_matcher_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_word_search_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_nGram_VIEWER_search_GUI_button = tk.Button(window, text='File merger (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: run_script_util.run_script("file_merger_main.py"))
+open_nGram_VIEWER_search_GUI_button = GUI_theme_util.create_button(window, text='File merger (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: run_script_util.run_script("file_merger_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_nGram_VIEWER_search_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_WordNet_search_GUI_button = tk.Button(window, text='File splitter (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: run_script_util.run_script("file_splitter_main.py"))
+open_WordNet_search_GUI_button = GUI_theme_util.create_button(window, text='File splitter (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: run_script_util.run_script("file_splitter_main.py"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_WordNet_search_GUI_button,

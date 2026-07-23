@@ -18,6 +18,7 @@ import importlib
 from subprocess import call
 
 import GUI_IO_util
+import GUI_theme_util
 import IO_files_util
 import reminders_util
 import config_util
@@ -188,67 +189,47 @@ window.bind("<Escape>", clear)
 #setup GUI widgets
 # CHECK ________________________________________________________
 
-# check_files_lb = tk.Label(window, text='Check files',font=("Courier", 12, "bold"))
+# check_files_lb = GUI_theme_util.create_label(window, text='Check files',font=("Courier", 12, "bold"))
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,check_files_lb)
 
 check_tools_var.set('')
-check_lb = tk.Label(window, text='Check Files')
+check_lb = GUI_theme_util.create_label(window, text='Check Files')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,check_lb,True)
-check_menu = tk.OptionMenu(window,check_tools_var,
-                    'Check utf-8 encoding compliance',
-                    'Check end-of-line typesetting hyphenation',
-                    'Check empty file',
-                    'Check sentence length (extracting sentences)',
-                    'Language detector',
-                    'Predict encoding (via chardet)',
-                    'Spelling checker/Unusual words (via nltk)',
-                    'Spelling checker (via SpellChecker)')
+check_menu = GUI_theme_util.create_option_menu(window, variable=check_tools_var,
+                    values=['Check utf-8 encoding compliance', 'Check end-of-line typesetting hyphenation', 'Check empty file', 'Check sentence length (extracting sentences)', 'Language detector', 'Predict encoding (via chardet)', 'Spelling checker/Unusual words (via nltk)', 'Spelling checker (via SpellChecker)'])
                     # 'Vocabulary richness (Yule\'s K)',
                     # 'Short words',
                     # 'Vowel words')
 
-check_menu.configure(width=GUI_IO_util.widget_width_long)
+GUI_theme_util.set_char_width(check_menu, GUI_IO_util.widget_width_long)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,check_menu)
 
 #setup GUI widgets
 # CONVERT ________________________________________________________
 
-# convert_files_lb = tk.Label(window, text='Convert files',font=("Courier", 12, "bold"))
+# convert_files_lb = GUI_theme_util.create_label(window, text='Convert files',font=("Courier", 12, "bold"))
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,convert_files_lb)
 
 convert_tools_var.set('')
-convert_lb = tk.Label(window, text='Convert Files')
+convert_lb = GUI_theme_util.create_label(window, text='Convert Files')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,convert_lb,True)
-convert_menu = tk.OptionMenu(window,convert_tools_var,
-                    'Document converter (csv --> txt)',
-                    'Document converter (docx --> txt)',
-                    'Document converter (pdf --> txt) (via pdfminer)',
-                    'Document converter (pdf --> txt) (via pytesseract)',
-                    'Document converter (rtf --> txt)')
+convert_menu = GUI_theme_util.create_option_menu(window, variable=convert_tools_var,
+                    values=['Document converter (csv --> txt)', 'Document converter (docx --> txt)', 'Document converter (pdf --> txt) (via pdfminer)', 'Document converter (pdf --> txt) (via pytesseract)', 'Document converter (rtf --> txt)'])
 
-convert_menu.configure(width=GUI_IO_util.widget_width_long)
+GUI_theme_util.set_char_width(convert_menu, GUI_IO_util.widget_width_long)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,convert_menu)
 
 clean_tools_var.set('')
-clean_lb = tk.Label(window, text='Clean Files')
+clean_lb = GUI_theme_util.create_label(window, text='Clean Files')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,clean_lb,True)
-clean_menu = tk.OptionMenu(window,clean_tools_var,
-                    'Change to ASCII non-ASCII apostrophes & quotes and % to percent',
-                    'Find & Replace string',
-                    'Find & Replace string (via csv file)',
-                    'Remove blank lines from text file(s)',
-                    'Remove all end-of-line hard carriage returns',
-                    'Remove end-of-line typesetting hyphenation and join split parts',
-                    'Remove all characters between a set of characters (e.g., []) from text file(s)',
-                     'Add missing blank after punctuation (e.g., blank between wrongly joined sentences)',
-                    'Add full stop (.) at the end of paragraphs without end-of-paragraph punctuation',
-                    'Separate titles from documents (newspaper articles)')
+clean_menu = GUI_theme_util.create_option_menu(window, variable=clean_tools_var,
+                    values=['Change to ASCII non-ASCII apostrophes & quotes and % to percent', 'Find & Replace string', 'Find & Replace string (via csv file)', 'Remove blank lines from text file(s)', 'Remove all end-of-line hard carriage returns', 'Remove end-of-line typesetting hyphenation and join split parts', 'Remove all characters between a set of characters (e.g., []) from text file(s)', 'Add missing blank after punctuation (e.g., blank between wrongly joined sentences)', 'Add full stop (.) at the end of paragraphs without end-of-paragraph punctuation', 'Separate titles from documents (newspaper articles)'])
 
-clean_menu.configure(width=GUI_IO_util.widget_width_long)
+GUI_theme_util.set_char_width(clean_menu, GUI_IO_util.widget_width_long)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,clean_menu)
 
 bydictionary_value_var.set(0)
-bydictionary_value_checkbox = tk.Checkbutton(window, state='disabled', text='Replace strings in input file(s) via a csv file containg two columns: old string, new string.', variable=bydictionary_value_var,
+bydictionary_value_checkbox = GUI_theme_util.create_checkbox(window, state='disabled', text='Replace strings in input file(s) via a csv file containg two columns: old string, new string.', variable=bydictionary_value_var,
                                       onvalue=1, offvalue=0, command=lambda: activate_all_options())
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 # the two x-coordinate and x-coordinate_hover_over must have the same values
@@ -256,7 +237,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
     bydictionary_value_checkbox, False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate, 'Tick the checkbox to clean txt files by replacing strings via a csv file containg two columns: old string, new string..\nOnly the first two columns will be considered; any other colum will be ignored.')
 
-dictionary_button=tk.Button(window, width=20, text='Select csv file',command=lambda: get_dictionary_file(window,'Select INPUT string '
+dictionary_button=GUI_theme_util.create_button(window, width=20, text='Select csv file',command=lambda: get_dictionary_file(window,'Select INPUT string '
                                                                                                                 'replace file', [("csv files", "*.csv")]))
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 # the two x-coordinate and x-coordinate_hover_over must have the same values
@@ -269,19 +250,19 @@ def get_dictionary_file(window,title,fileType):
     filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
     if len(filePath)>0:
         #always disabled; user cannot tinker with the selection
-        #selectedCsvFile.config(state='disabled')
+        #selectedCsvFile.configure(state='disabled')
         selectedCsvFile_var.set(filePath)
 
 #setup a button to open Windows Explorer on the selected input directory
 # current_y_multiplier_integer=y_multiplier_integer-1
-openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, selectedCsvFile_var.get()))
+openInputFile_button = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openFile(window, selectedCsvFile_var.get()))
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 # the two x-coordinate and x-coordinate_hover_over must have the same values
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.file_search_byWord_openInputFile_button_pos, y_multiplier_integer,
     openInputFile_button, True, False, True, False, 90, GUI_IO_util.file_search_byWord_openInputFile_button_pos, "Open selected string-replace csv file")
 
-selectedCsvFile = tk.Entry(window,width=GUI_IO_util.file_search_byWord_widget_width,state='disabled',textvariable=selectedCsvFile_var)
+selectedCsvFile = GUI_theme_util.create_entry(window,width=GUI_IO_util.file_search_byWord_widget_width,state='disabled',textvariable=selectedCsvFile_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_selectedCsvFile_pos,y_multiplier_integer,selectedCsvFile)
 
 

@@ -18,10 +18,48 @@ import IO_libraries_util
 #     sys.exit(0)
 
 import tkinter as tk
-window = tk.Tk()
+import os
+
+# CTk migration (docs/CustomTkinter-Migration-Plan.md, Phase 1): the shared root window becomes a
+# CustomTkinter root so the whole suite renders themed. init_appearance() MUST run first -- it
+# applies the Phase 0 bundle ImageTk patch and loads the NLP Suite color theme BEFORE any widget is
+# created (CTk snapshots theme colors at construction time). tk / ttk widgets still parent to this
+# root unchanged (CTk() is a tkinter.Tk subclass), so the rest of the migration proceeds
+# incrementally on top of this.
+import customtkinter as ctk
+import GUI_theme_util
+
+# Phase 5: the mode is now a persisted user preference (defaults to "light", the pre-Phase-5
+# hardcoded value) set via the "Appearance mode" option in NLP_setup_package_language_main.py and
+# read back here through config_util.read_appearance_mode_config -- EXCEPT at this exact bootstrap
+# point config_util cannot be imported: several call chains reach GUI_util while config_util is
+# still mid-import (e.g. NLP_setup_package_language_main.py -> GUI_IO_util -> config_util ->
+# IO_user_interface_util -> IO_csv_util -> GUI_util, a cycle that predates this change), so
+# `import config_util` here would sometimes hand back a module object with none of its functions
+# defined yet. Read the tiny config file directly with stdlib only instead; config_util owns the
+# real read/write helpers used everywhere else (the Setup GUI, this fallback duplicates just enough
+# of GUI_IO_util's NLPPath lookup to avoid re-entering that cycle).
+def _bootstrap_appearance_mode():
+    import csv
+    if getattr(sys, 'frozen', False):
+        nlp_path = os.path.dirname(sys.executable)
+    else:
+        nlp_path = os.path.normpath(os.path.dirname(os.path.abspath(__file__)) + os.sep + os.pardir)
+    config_path = os.path.join(nlp_path, 'config', 'NLP_appearance_config.csv')
+    try:
+        with open(config_path, newline='', encoding='utf-8') as f:
+            rows = list(csv.reader(f))
+        value = rows[1][0].strip().lower()
+        if value in ('system', 'light', 'dark'):
+            return value
+    except Exception:
+        pass
+    return 'light'
+
+GUI_theme_util.init_appearance(_bootstrap_appearance_mode())
+window = ctk.CTk()
 from sys import platform
 
-import os
 import tkinter.messagebox as mb
 
 # ----- Unattended / silent batch mode (set env var NLP_SILENT=1 before a tool sweep) -----------
@@ -178,7 +216,7 @@ config_input_output_alphabetic_options=[]
 setup_IO_menu_var = tk.StringVar()
 # https://stackoverflow.com/questions/42222626/tkinter-option-menu-widget-add-command-lambda-does-not-produce-expected-command
 ###
-setup_IO_menu = tk.OptionMenu(window, setup_IO_menu_var, 'Default I/O configuration', 'Select any I/O csv config file')
+setup_IO_menu = GUI_theme_util.create_option_menu(window, variable=setup_IO_menu_var, values=['Default I/O configuration', 'Select any I/O csv config file'])
 
 IO_setup_var = tk.StringVar()
 IO_setup_brief_display_area = None
@@ -203,6 +241,10 @@ config_filename_selected_config.set('')
 
 release_version_var=tk.StringVar()
 GitHub_release_version_var=tk.StringVar()
+# Bottom edge (window y) of the .place'd logo; set by display_logo() from the logo's real rendered
+# height and read by display_release() to sit the release label just below it. Fallback used when a
+# GUI shows the release without a logo (e.g. the welcome screen).
+_logo_bottom_y = 62
 
 open_csv_output_checkbox = tk.IntVar()
 charts_package_options_widget = tk.StringVar()
@@ -215,7 +257,23 @@ reminders_dropdown_field = tk.StringVar()
 setup_menu = tk.StringVar()
 data_tools_options_widget = tk.StringVar()
 
-run_button = tk.Button(window, text='RUN', width=10,height=2)
+# The single reusable "Setup" dropdown widget/tooltip built by display_setup_hover_over(). Some
+# GUIs (SVO_main.py, parsers_annotators_main.py) call setup_parsers_annotators() themselves on top
+# of the call GUI_bottom() already makes -- see the comment in display_setup_hover_over.
+setup_menu_lb = None
+setup_menu_tooltip = None
+
+# CTk migration slice 2b: RUN and CLOSE live in their OWN frame (a bottom button bar), NOT in the
+# shared content grid. Grid columns are shared across rows, so wide content widgets (a long input-file
+# entry, the IO path displays) inflate the columns the bottom chrome sits in and push RUN/CLOSE off the
+# right edge -- they were invisible on every GUI. Packing them left-to-right in a dedicated frame makes
+# their position independent of content width, so they are always visible. run_button is created here
+# at import (mains bind its command before GUI_bottom runs, so it must stay the same object), which is
+# why its master is the frame from the start.
+run_close_bar = tk.Frame(window)
+# accent=True -> brand red: RUN is the single primary-action button per GUI, one of the two things
+# that earn the accent (see GUI_theme_util / the migration plan's §0). Every other button is neutral.
+run_button = GUI_theme_util.create_button(run_close_bar, text='RUN', width=10,height=2, accent=True)
 
 # license agreement GUI
 agreement_checkbox_var=tk.IntVar()
@@ -292,21 +350,50 @@ def display_logo():
         return  # PIL not installed; skip logo rather than exiting the whole app
 
     try:
-        from PIL import Image
+        from PIL import Image, ImageChops
         # https://stackoverflow.com/questions/17504570/creating-simply-image-gallery-in-python-tkinter-pil
         # https://stackoverflow.com/questions/76616042/attributeerror-module-pil-image-has-no-attribute-antialias
         image_list = [GUI_IO_util.image_libPath + os.sep + "logo.png"]
         for x in image_list:
-            img = tk_image_from_pil(Image.open(x).resize((85,50), Image.LANCZOS)) #Image.ANTIALIAS))
-            logo = tk.Label(window, width=85, height=50, anchor='nw', image=img)
+            src = Image.open(x)
+            # logo.png carries ~15% of its width as BUILT-IN left whitespace (plus top/bottom padding):
+            # the ink's bounding box is ~118..708 of a 767px-wide canvas. Resizing the whole canvas
+            # scaled that padding up too, so the logo rendered as a small mark floating to the RIGHT of
+            # the ? HELP buttons' left edge -- the "off-putting gap" / "logo too small" look. Crop to
+            # the ink first (trim the white margins), THEN size the trimmed mark. Now it sits flush at
+            # the column's left edge and actually fills the column. Trim is dynamic (getbbox against a
+            # white field) so it self-corrects if the asset is ever re-exported with different padding.
+            bg = Image.new("RGB", src.size, (255, 255, 255))
+            bbox = ImageChops.difference(src.convert("RGB"), bg).getbbox()
+            if bbox:
+                src = src.crop(bbox)
+            # Cropping to the ink left the letters flush against all four edges, which read as the logo
+            # being "cut off" (the P and the tail of "Suite" ran into the frame). Add a small TRANSPARENT
+            # margin (~9% of the ink each side) so the mark has breathing room; transparent (RGBA) lets
+            # the window background show through instead of a white box. Then size it into the ~100x55
+            # label -- a hair larger than the old 84x46 so the ink itself still ~matches the ? HELP
+            # button width after the margin is added. Aspect (~1.82) is preserved, so no distortion.
+            src = src.convert("RGBA")
+            mx, my = round(src.width * 0.09), round(src.height * 0.09)
+            padded = Image.new("RGBA", (src.width + 2 * mx, src.height + 2 * my), (0, 0, 0, 0))
+            padded.paste(src, (mx, my))
+            img = tk_image_from_pil(padded.resize((100, 55), Image.LANCZOS)) #Image.ANTIALIAS))
+            logo = tk.Label(window, width=100, height=55, anchor='nw', image=img)
             logo.image = img
-            # the logo has some white spaces to its left; better cutting this so that it can be aligned with HELP? buttons
-            # -12 works for Windows; must be checked for Mac
-            if platform == "win32":
-                offset=12
-            else:
-                offset=12
-            logo.place(x=GUI_IO_util.help_button_x_coordinate-offset, y=10)
+            # Left-align the logo with the ? HELP buttons. Under the grid layout those buttons sit at
+            # column 0's left padding (~6px), NOT at the legacy help_button_x_coordinate pixel (~70) --
+            # so the old `help_button_x_coordinate - 12` offset left the logo floating to their right.
+            # Place it at the same left edge instead (the mark is now cropped flush, no built-in margin).
+            logo.place(x=4, y=10)
+            # Publish the logo's ACTUAL rendered bottom so display_release() can sit the release label
+            # directly beneath it regardless of how tall the logo renders on a given machine/DPI.
+            # winfo_reqheight() is the label's requested height (image + borders) and is valid before
+            # the window is mapped, so this is reliable even during first build. A hard-coded y for the
+            # release label was fragile: it read as overlapping the logo wherever the logo rendered
+            # taller than assumed.
+            global _logo_bottom_y
+            logo.update_idletasks()
+            _logo_bottom_y = 10 + max(logo.winfo_reqheight(), logo.winfo_height())
     except Exception:
         pass  # Logo is cosmetic; skip silently if PIL/ImageTk is unavailable or incompatible
 
@@ -425,14 +512,29 @@ def display_release():
     # get_GitHub_release_version() has a double \n\n which then overwrites the first line of the GUIs: ?HELP and Setup
     GitHub_newest_release = get_GitHub_release_version().replace('\n','')
 
-    release_display = 'Release ' + str(release_version_var.get().replace('\n','')) + "/" + str(GitHub_newest_release)
-    release_lb = tk.Label(window, text=release_display, foreground="red") #height=1,
-    # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.help_button_x_coordinate,
-                                                   y_multiplier_integer,
-                                                   release_lb, True, False, False, False, 90,
-                                                   GUI_IO_util.help_button_x_coordinate,
-                                                   "The two sets of numbers, separated by /, refer to the NLP Suite release on your machine (left) and the release available on GitHub (right)\nWithout internet the newest release available on GitHub cannnot be retrieved and is displayed as 0.0.0.")
+    # Stacked on two lines ("Release" over the two version numbers) so the label's width is just the
+    # numbers (~55px) instead of the full one-line string (~150px). That width is the binding
+    # constraint on column 0's minsize below -- a wide release label was forcing a wide left column
+    # (and shoving every other column right, feeding the horizontal sprawl on the right).
+    release_display = 'Release\n' + str(release_version_var.get().replace('\n','')) + "/" + str(GitHub_newest_release)
+    # font 9 rendered too small to read ("tiny release text"); 11 is legible while the two-line stack
+    # keeps the label narrow enough to stay inside column 0's minsize (so it doesn't widen the left
+    # column / push the grid right).
+    import GUI_theme_util
+    # Painted at creation rather than left to normalize_legacy_backgrounds: display_release() is called
+    # LAST on the welcome window (it has to be -- it returns the versions close_NLP needs), i.e. after
+    # normalization has already run, so a default tk background survives as a grey plate under the
+    # release text. Setting it here fixes it wherever display_release is called, in any order.
+    release_lb = tk.Label(window, text=release_display, foreground="red", font=('TkDefaultFont', 11),
+                          justify='left', background=GUI_theme_util.window_bg()) #height=1,
+    # CTk migration slice 2b: the logo is .place'd in the top-left corner; the release label belongs
+    # directly under it. Gridding it (via placeWidget) dropped it into the tall header row 0 where it
+    # rendered ON TOP OF the logo, so .place it instead (.place coexists with the grid). Anchor it to
+    # the logo's ACTUAL rendered bottom (_logo_bottom_y, published by display_logo) plus a fixed gap
+    # -- a hard-coded y read as overlapping wherever the logo rendered taller than assumed.
+    release_lb.place(x=10, y=_logo_bottom_y + 12)
+    GUI_theme_util.ToolTip(release_lb,
+                           "The two sets of numbers, separated by /, refer to the NLP Suite release on your machine (left) and the release available on GitHub (right)\nWithout internet the newest release available on GitHub cannnot be retrieved and is displayed as 0.0.0.")
     # check and display a possible warning message
     if GitHub_newest_release != '0.0.0':
         check_GitHub_release(local_release_version)
@@ -505,6 +607,8 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename, config_input
             return missing_IO
         date_hover_over_label, IO_setup_display_string, config_input_output_alphabetic_options, missing_IO = \
             set_IO_brief_values(config_filename,y_multiplier_integer)
+        if IO_setup_brief_display_area is not None:
+            update_display_area(IO_setup_display_string, IO_setup_brief_display_area)
     # the full options must always be displayed, even when the brief option is selected;
     #   the reason is that the IO widgets filename, inputDir, and outputDir are used in all GUIs
     return missing_IO
@@ -631,6 +735,23 @@ def activateRunButton(config_filename,IO_setup_display_brief,scriptName, missing
 #    input filename, input dir, secondary input dir, output dir
 #__________________________________________________________________________________________________________________
 
+# The INPUT/OUTPUT display is a fixed-width two-line label, so a long corpus folder name (the
+# common case -- these are named after the corpus) would run past its right edge. Elide the middle
+# rather than the tail: the distinguishing part of these names is as often at the end
+# ("newspaperArticles_1920_cleaned") as at the start. The full paths stay reachable through the
+# four open-file/directory buttons to the right of the display.
+_IO_NAME_MAX_CHARS = 30
+
+
+def _elide_IO_name(name, max_chars=_IO_NAME_MAX_CHARS):
+    name = str(name)
+    if len(name) <= max_chars:
+        return name
+    keep = max_chars - 3
+    head_chars = (keep + 1) // 2
+    return name[:head_chars] + '...' + name[len(name) - (keep - head_chars):]
+
+
 def set_IO_brief_values(config_filename, y_multiplier_integer):
     global config_input_output_alphabetic_options, IO_setup_brief_display_area
     missing_IO = ''
@@ -699,11 +820,11 @@ def set_IO_brief_values(config_filename, y_multiplier_integer):
         # if config_input_output_alphabetic_options[0][1]!='': # str(config_input_output_alphabetic_options[0][1])!='':
         #head is path, tail is filename
         head, tail = os.path.split(config_input_output_alphabetic_options[0][1])
-        IO_setup_display_string = "INPUT FILE: " + str(tail)
+        IO_setup_display_string = "INPUT FILE: " + _elide_IO_name(tail)
     # else:
     # check input directory config_input_output_numeric_options[1]!=0:
     if config_input_output_alphabetic_options[1][1]!= '':
-        IO_setup_display_string = "INPUT DIR: " + str(os.path.basename(os.path.normpath(config_input_output_alphabetic_options[1][1])))
+        IO_setup_display_string = "INPUT DIR: " + _elide_IO_name(os.path.basename(os.path.normpath(config_input_output_alphabetic_options[1][1])))
         temp_str=IO_setup_display_string.replace("INPUT DIR: ","")
         # temp_str=temp_str.replace("Date: ","Date ")
         # temp_str=temp_str.replace("(Date: ","_")
@@ -722,22 +843,11 @@ def set_IO_brief_values(config_filename, y_multiplier_integer):
     output_dir_path.set(config_input_output_alphabetic_options[3][1])
 
     # IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(os.path.basename(os.path.normpath(config_input_output_alphabetic_options[3][1])))
-    IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(os.path.basename(config_input_output_alphabetic_options[3][1]))
+    IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + _elide_IO_name(os.path.basename(config_input_output_alphabetic_options[3][1]))
 
-    # re-lay the widget to display the correct hover-over info
-    IO_setup_brief_display_area = tk.Text(width=60, height=2)
-    # place widget with hover-over info
-    y_multiplier_integer=0
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                                   GUI_IO_util.setup_IO_brief_coordinate,
-                                                   y_multiplier_integer,
-                                                   IO_setup_brief_display_area,
-                                                   False, False, False, False, 90,
-                                                   GUI_IO_util.setup_IO_brief_coordinate,
-                                                   date_hover_over_label)
-    update_display_area(IO_setup_display_string,IO_setup_brief_display_area)
-    # update_display_area(IO_setup_display_string)
-
+    # widget creation/placement lives in IO_config_setup_brief (the single INPUT/OUTPUT display
+    # box); this function only computes the values the caller (initial build or refresh path)
+    # displays in that box.
     return date_hover_over_label, IO_setup_display_string, config_input_output_alphabetic_options, missing_IO
 
 def open_paste_text_popup():
@@ -817,7 +927,7 @@ def openConfigFile(config_filename):
 # this is the Setup INPUT/OUTPUT configuration
 def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptName, silent):
     global IO_setup_brief_display_area
-    IO_setup_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Setup INPUT/OUTPUT configuration',
+    IO_setup_button = GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Setup INPUT/OUTPUT configuration',
                 command=lambda: setup_IO_configuration_options(True, scriptName, silent=True, open_setup_IO_GUI=True))
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
@@ -846,7 +956,10 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
     # else:
     #     config_filename = config_filename_selected_config.get()
     # setup button to open a pop-up text entry widget where users can paste text to be used instead of an input file
-    openTextWidget_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+    # Give this its own width + label: it was an empty width=1 button (~8px under CTk, a thin red
+    # sliver) even though it opens a paste-text popup for a quick test run -- unlike the adjacent
+    # open_file_directory buttons, it has no neighbouring field to give it context.
+    openTextWidget_button = GUI_theme_util.create_button(window, width=12, text='Paste text',
                                       command=open_paste_text_popup)
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget, y_multiplier_integer,
@@ -855,9 +968,26 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
 
     # display text area for setup brief
 
+    date_hover_over_label = ''
+    IO_setup_display_string = ''
     if config_input_output_numeric_options!=[0,0,0,0]:
         date_hover_over_label, IO_setup_display_string, config_input_output_alphabetic_options, missing_IO = set_IO_brief_values(config_filename, y_multiplier_integer)
-    IO_setup_brief_display_area = tk.Text(width=60, height=2)
+    # single INPUT/OUTPUT display box (values computed by set_IO_brief_values above; the refresh
+    # path display_IO_setup() updates this same widget instead of creating a new one)
+    # The INPUT/OUTPUT summary is read-only two-line text, not an editable field. A bare tk.Text
+    # rendered it as an unthemed white box whose 60-char request the grid never honoured, so
+    # "INPUT DIR: newspaperArticles" wrapped across BOTH of its two lines and pushed the OUTPUT DIR
+    # line out of sight entirely. A CTkLabel sized in characters holds both lines, picks up the
+    # theme, and cannot wrap. Written through update_display_area() below.
+    # width=44 (352px) was sized for a worst-case long path, but brief mode only ever shows a
+    # basename (e.g. "INPUT DIR: newspaperArticles"), so most GUIs rendered a wide empty label with
+    # ~100-150px of dead space between the printed text and the next widget (the open-file-directory
+    # button cluster) -- the "gap after the I/O directories column" reported on several GUIs. A
+    # CTkLabel's width is a floor, not a cap (it grows to fit longer text -- verified: a >44-char
+    # line still renders in full, just wider), so shrinking the default here only tightens the
+    # common case without clipping an unusually long path.
+    IO_setup_brief_display_area = GUI_theme_util.create_label(
+        window, text='', width=30, justify='left', anchor='w')
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                    GUI_IO_util.setup_IO_brief_coordinate,
@@ -868,48 +998,53 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
                                                    date_hover_over_label)
     update_display_area(IO_setup_display_string, IO_setup_brief_display_area)
 
-    # setup buttons to open an input file, an input directory, an output directory, and a csv config file
-    x_coordinate_hover_over = GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_file_button_brief
-    # setup a button to open an input file
-    openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+    # Buttons to open an input file, an input directory, an output directory, and a csv config file.
+    # Grouped in ONE transparent frame (packed side by side) and gridded as a single cell. Placed
+    # individually via their old +45px x-offsets, each landed in its own far-right grid band (6,7,8,9);
+    # cross-row content widened those bands so the four sprawled apart and the last one clipped off the
+    # window's right edge. One frame keeps them a tidy cluster at the top-right on every GUI.
+    open_buttons_frame = ctk.CTkFrame(window, fg_color="transparent")
+    openInputFile_button = GUI_theme_util.create_open_file_button(open_buttons_frame,
                                      command=lambda:IO_files_util.open_file_removing_date_from_filename(window,inputFilename.get(),True))
-    # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_file_button_brief, y_multiplier_integer,
-                                                   openInputFile_button, True, False, True, False, 90, x_coordinate_hover_over, "Open INPUT file")
+    openInputFile_button.pack(side=tk.LEFT, padx=2)
+    GUI_theme_util.ToolTip(openInputFile_button, "Open INPUT file")
 
-    # setup a button to open Windows Explorer on the selected INPUT directory
-    openInputDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+    openInputDirectory_button = GUI_theme_util.create_open_file_button(open_buttons_frame,
                                      command=lambda: IO_files_util.open_directory_removing_date_from_directory(window,input_main_dir_path.get(),True))
-    # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_inputDir_button_brief, y_multiplier_integer,
-                                                   openInputDirectory_button, True, False, True,False, 90, x_coordinate_hover_over, "Open INPUT files directory")
+    openInputDirectory_button.pack(side=tk.LEFT, padx=2)
+    GUI_theme_util.ToolTip(openInputDirectory_button, "Open INPUT files directory")
 
-    # setup a button to open Windows Explorer on the selected OUTPUT directory
-    openOutputDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+    openOutputDirectory_button = GUI_theme_util.create_open_file_button(open_buttons_frame,
                                      command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
-    # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_outputDir_button_brief, y_multiplier_integer,
-                                                   openOutputDirectory_button, True, False, True,False, 90, x_coordinate_hover_over, "Open OUTPUT files directory")
+    openOutputDirectory_button.pack(side=tk.LEFT, padx=2)
+    GUI_theme_util.ToolTip(openOutputDirectory_button, "Open OUTPUT files directory")
 
-    # Open csv config file
-    openInputConfigFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+    openInputConfigFile_button = GUI_theme_util.create_open_file_button(open_buttons_frame,
                                      command=lambda: openConfigFile(config_filename_selected_config.get()))
-    # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_config_file_button_brief, y_multiplier_integer,
-                                                   openInputConfigFile_button, True, False, True,False, 90,
-                                                   GUI_IO_util.open_reminders_x_coordinate, "Open csv config file\nAll config files are stored in a subdirectory Config where you installed the NLP Suite; together with src, TIPS, etc.")
-    #x_coordinate_hover_over
+    openInputConfigFile_button.pack(side=tk.LEFT, padx=2)
+    GUI_theme_util.ToolTip(openInputConfigFile_button, "Open csv config file\nAll config files are stored in a subdirectory Config where you installed the NLP Suite; together with src, TIPS, etc.")
+
+    # place the whole cluster once, on the top I/O row's far-right band (no_hover_over_widget: the
+    # tooltips are attached to the individual buttons above)
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_file_button_brief, y_multiplier_integer,
+                                                   open_buttons_frame, True, True)
 def update_display_area(IO_setup_display_string,IO_setup_brief_display_area):
 # def update_display_area(IO_setup_display_string):
 #     global IO_setup_brief_display_area
-    # since IO_setup_brief_display_area is a disabled widget,
-    #   it must be turned to normal temporarily or it will not update
-    IO_setup_brief_display_area.configure(state='normal')
-    IO_setup_brief_display_area.delete(0.1, tk.END)
+    # The display area is a CTkLabel (see IO_config_setup_brief): set its text rather than the old
+    # normal/delete/insert/disabled dance a tk.Text needed. Callers outside this module
+    # (semantic_analysis_main, syntactic_analysis_ALL_main, DB_PCACE_data_analysis_main) pass this
+    # same global widget, so the one implementation covers them.
     IO_setup_var.set(IO_setup_display_string)
-    IO_setup_brief_display_area.insert("end", str(IO_setup_display_string))
-    # IO_setup_brief_display_area.pack(side=tk.LEFT)
-    IO_setup_brief_display_area.configure(state='disabled')
+    IO_setup_brief_display_area.configure(text=str(IO_setup_display_string))
+
+
+# The canonical INPUT path labels laid out by IO_config_setup_full, published by key so a GUI can
+# attach its own richer hover text to them. NLP_setup_IO_main used to place a SECOND label over the
+# same path to carry its date tooltip: under the absolute layout the two landed on identical
+# coordinates and read as one, but the grid gives each its own column, so the path rendered twice.
+IO_path_labels = {}
+
 
 def IO_config_setup_full (window, y_multiplier_integer):
 
@@ -920,35 +1055,36 @@ def IO_config_setup_full (window, y_multiplier_integer):
         # buttons are set to normal or disabled in selectFile_set_options
         if config_input_output_numeric_options[0]==1: #single CoNLL file
             # buttons are set to normal or disabled in selectFile_set_options
-            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CoNLL table', command=lambda: selectFile_set_options(window,True,True,inputFilename,input_main_dir_path,'Select INPUT CoNLL table (csv file)',[('CoNLL csv file','.csv')],".csv"))
+            select_inputFilename_button=GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CoNLL table', command=lambda: selectFile_set_options(window,True,True,inputFilename,input_main_dir_path,'Select INPUT CoNLL table (csv file)',[('CoNLL csv file','.csv')],".csv"))
         elif config_input_output_numeric_options[0]==2: #single txt file:
             # buttons are set to normal or disabled in selectFile_set_options
-            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT TXT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT TXT file',[('text file','.txt')],".txt"))
+            select_inputFilename_button=GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT TXT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT TXT file',[('text file','.txt')],".txt"))
         elif config_input_output_numeric_options[0]==3: #single csv file:
             # buttons are set to normal or disabled in selectFile_set_options
-            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT csv file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT csv file',[('csv file','.csv')],".csv"))
+            select_inputFilename_button=GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT csv file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT csv file',[('csv file','.csv')],".csv"))
         if config_input_output_numeric_options[0]==4: #any type file (used in NLP.py)
             # buttons are set to normal or disabled in selectFile_set_options
-            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file (any type)', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (any file type: pdf, docx, html, txt, csv, conll); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv"),("pdf file","*.pdf"),("docx file","*.docx"),("rtf file","*.rtf"),("html file","*.html"),("CoNLL table","*.conll")], "*.*"))
+            select_inputFilename_button=GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file (any type)', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (any file type: pdf, docx, html, txt, csv, conll); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv"),("pdf file","*.pdf"),("docx file","*.docx"),("rtf file","*.rtf"),("html file","*.html"),("CoNLL table","*.conll")], "*.*"))
         if config_input_output_numeric_options[0]==5: #txt/html
             # buttons are set to normal or disabled in selectFile_set_options
-            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file (txt, html)', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, html); switch extension type below near File name:',[("txt file","*.txt"),("html file","*.html")], "*.*"))
+            select_inputFilename_button=GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file (txt, html)', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, html); switch extension type below near File name:',[("txt file","*.txt"),("html file","*.html")], "*.*"))
         if config_input_output_numeric_options[0]==6: #txt/csv
             # buttons are set to normal or disabled in selectFile_set_options
-            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file (txt, csv)', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, csv); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv")], "*.*"))
+            select_inputFilename_button=GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file (txt, csv)', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, csv); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv")], "*.*"))
 
         # place the Select INPUT file widget
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,select_inputFilename_button,True)
 
         #setup a button to open Windows Explorer on the selected input file
-        openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+        openInputFile_button  = GUI_theme_util.create_open_file_button(window,
                             command=lambda: IO_files_util.open_file_removing_date_from_filename(window,inputFilename.get(),True))
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
             GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
             openInputFile_button, True, False, True, False, 90,
             GUI_IO_util.IO_configuration_menu, "Open INPUT file")
 
-        inputFile_lb = tk.Label(window, textvariable=inputFilename)
+        inputFile_lb = GUI_theme_util.create_label(window, textvariable=inputFilename)
+        IO_path_labels['input_file'] = inputFile_lb
         date_label=''
         if '(Date: ' in str(inputFilename.get()):
             date_label='The input file has a date embedded in the filename'
@@ -964,21 +1100,22 @@ def IO_config_setup_full (window, y_multiplier_integer):
     #primary INPUT directory ______________________________________________
     if config_input_output_numeric_options[1]==1: # main directory input
         # buttons are set to normal or disabled in selectFile_set_options
-        select_input_main_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width,
+        select_input_main_dir_button = GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width,
             text='Select INPUT files directory',  command = lambda: selectDirectory_set_options(window,input_main_dir_path,output_dir_path,"Select INPUT files directory",True))
         # select_input_main_dir_button.config(state="normal")
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,select_input_main_dir_button,True)
 
         #setup a button to open Windows Explorer on the selected main input directory
-        openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width,
-                            text='', command=lambda: IO_files_util.open_directory_removing_date_from_directory(window,input_main_dir_path.get(),True))
+        openDirectory_button  = GUI_theme_util.create_open_file_button(window,
+                            command=lambda: IO_files_util.open_directory_removing_date_from_directory(window,input_main_dir_path.get(),True))
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
             GUI_IO_util.IO_configuration_menu,
             y_multiplier_integer,
             openDirectory_button,True, False, True, False, 90,
                         GUI_IO_util.IO_configuration_menu, "Open INPUT files directory")
 
-        inputMainDir_lb = tk.Label(window, textvariable=input_main_dir_path)
+        inputMainDir_lb = GUI_theme_util.create_label(window, textvariable=input_main_dir_path)
+        IO_path_labels['input_main_dir'] = inputMainDir_lb
         date_label=''
         if '(Date: ' in str(input_main_dir_path.get()):
             date_label='The input directory contains txt files with a date embedded in the filename'
@@ -994,36 +1131,36 @@ def IO_config_setup_full (window, y_multiplier_integer):
     #secondary INPUT directory ______________________________________________
     if config_input_output_numeric_options[2]==1: #secondary directory input
         # buttons are set to normal or disabled in selectFile_set_options
-        select_input_secondary_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT secondary directory',  command=lambda: selectDirectory_set_options(window,input_main_dir_path, input_secondary_dir_path,"Select INPUT secondary TXT directory"))
+        select_input_secondary_dir_button = GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT secondary directory',  command=lambda: selectDirectory_set_options(window,input_main_dir_path, input_secondary_dir_path,"Select INPUT secondary TXT directory"))
         y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                             y_multiplier_integer,select_input_secondary_dir_button,True)
 
         #setup a button to open Windows Explorer on the selected secondary input directory
-        openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openExplorer(window, input_secondary_dir_path.get()))
+        openDirectory_button  = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openExplorer(window, input_secondary_dir_path.get()))
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
             GUI_IO_util.IO_configuration_menu,
             y_multiplier_integer,
             openDirectory_button,True, False, True, False, 90, GUI_IO_util.IO_configuration_menu, "Open INPUT files SECONDARY directory")
 
-        inputSecondaryDir_lb = tk.Label(window, textvariable=input_secondary_dir_path)
+        inputSecondaryDir_lb = GUI_theme_util.create_label(window, textvariable=input_secondary_dir_path)
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,
                                                        y_multiplier_integer, inputSecondaryDir_lb)
 
     #OUTPUT directory ______________________________________________
     if config_input_output_numeric_options[3]==1: #output directory
         # buttons are set to normal or disabled in selectFile_set_options
-        select_output_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select OUTPUT files directory',  command=lambda: selectDirectory_set_options(window,input_main_dir_path,output_dir_path,"Select OUTPUT files directory"))
+        select_output_dir_button = GUI_theme_util.create_button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select OUTPUT files directory',  command=lambda: selectDirectory_set_options(window,input_main_dir_path,output_dir_path,"Select OUTPUT files directory"))
         y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,select_output_dir_button,True)
 
         #setup a button to open Windows Explorer on the selected input directory
         # current_y_multiplier_integer4=y_multiplier_integer-1
-        openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
+        openDirectory_button  = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
             GUI_IO_util.IO_configuration_menu,
             y_multiplier_integer,
             openDirectory_button, True, False, True, False, 90, GUI_IO_util.IO_configuration_menu, "Open OUTPUT files directory")
 
-        outputDir_lb = tk.Label(window, textvariable=output_dir_path)
+        outputDir_lb = GUI_theme_util.create_label(window, textvariable=output_dir_path)
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,
                                                        y_multiplier_integer, outputDir_lb)
 
@@ -1157,49 +1294,33 @@ def display_about_release_team_cite_buttons(scriptName):
             y_multiplier_integer = 1.7
         else:
             y_multiplier_integer = 0
-        about_button = tk.Button(window, text='About', width=15, height=1, foreground="red",
-                                command=lambda: GUI_IO_util.about())
-        # place widget with hover-over info
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                                       GUI_IO_util.about_button_x_coordinate,
-                                                       y_multiplier_integer,
-                                                       about_button,
-                                                       True, False, False, False, 90,
-                                                       GUI_IO_util.about_button_x_coordinate,
-                                                       "Click on the button to access the About page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
-
-        release_history_button = tk.Button(window, text='Release history', width=15, height=1, foreground='red',
-                                           command=lambda: GUI_IO_util.release_history())
-        # place widget with hover-over info
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                                       GUI_IO_util.release_history_button_x_coordinate,
-                                                       y_multiplier_integer,
-                                                       release_history_button,
-                                                       True, False, False, False, 90,
-                                                       GUI_IO_util.about_button_x_coordinate,
-                                                       "Click on the button to access the Release history page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
-
-        team_button = tk.Button(window, text='NLP Suite team', width=15, height=1, foreground="red",
-                                command=lambda: GUI_IO_util.list_team())
-        # place widget with hover-over info
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                                       GUI_IO_util.team_button_x_coordinate,
-                                                       y_multiplier_integer,
-                                                       team_button,
-                                                       True, False, False, False, 90,
-                                                       GUI_IO_util.release_history_button_x_coordinate,
-                                                       "Click on the button to access the Team page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
-
-        cite_button = tk.Button(window, text='How to cite', width=15, height=1, foreground="red",
-                                command=lambda: GUI_IO_util.cite_NLP())
-        # place widget with hover-over info
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                                       GUI_IO_util.cite_button_x_coordinate,
-                                                       y_multiplier_integer,
-                                                       cite_button,
-                                                       False, False, False, False, 90,
-                                                       GUI_IO_util.team_button_x_coordinate,
-                                                       "Click on the button to access the How to Cite page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
+        # CTk migration: themed CTk buttons, grouped in ONE frame pinned to the window's top-right
+        # with place() instead of gridded into four separate coarse-band columns. The gridded version
+        # spilled off the right edge -- the wide 95-char SETUP/info buttons stretch the middle grid
+        # columns, pushing "NLP Suite team" and "How to cite" past the window edge. place(anchor='ne')
+        # keeps the four nav buttons flush to the top-right regardless of the grid's content width, and
+        # takes them out of the grid so they no longer widen it. (foreground="red" is dropped -- the
+        # NLP Suite theme paints these as red-filled buttons with light text.)
+        nav_bar = tk.Frame(window)
+        _nav_specs = [
+            ('About', lambda: GUI_IO_util.about(),
+             "Click on the button to access the About page of the NLP Suite GitHub repository.\nYou must be connected to the internet."),
+            ('Release history', lambda: GUI_IO_util.release_history(),
+             "Click on the button to access the Release history page of the NLP Suite GitHub repository.\nYou must be connected to the internet."),
+            ('NLP Suite team', lambda: GUI_IO_util.list_team(),
+             "Click on the button to access the Team page of the NLP Suite GitHub repository.\nYou must be connected to the internet."),
+            ('How to cite', lambda: GUI_IO_util.cite_NLP(),
+             "Click on the button to access the How to Cite page of the NLP Suite GitHub repository.\nYou must be connected to the internet."),
+        ]
+        # 2x2 block, not a single wide row: a horizontal bar of all four (~700px) either overflows the
+        # right edge or overlaps the welcome text on the left. A compact 2x2 grid fits in the open
+        # top-right corner, clear of the welcome text and above the SETUP rows.
+        for _i, (_nav_text, _nav_cmd, _nav_tip) in enumerate(_nav_specs):
+            _nav_button = GUI_theme_util.create_button(nav_bar, text=_nav_text, width=15, height=1, command=_nav_cmd)
+            _nav_button.grid(row=_i // 2, column=_i % 2, padx=(0, 8), pady=(0, 6))
+            GUI_theme_util.ToolTip(_nav_button, _nav_tip)
+        # Pin to the top-right corner. y tracks the legacy row (welcome pushes it down one line).
+        nav_bar.place(relx=1.0, x=-20, y=int(46 + y_multiplier_integer * 40), anchor='ne')
 
 global IO_setup_config_SV
 IO_setup_config_SV = ''
@@ -1221,10 +1342,52 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
     global select_inputFilename_button, select_input_main_dir_button, select_input_secondary_dir_button, select_output_dir_button
     # global config_input_output_alphabetic_options
 
+    # Fresh grid: clear the per-row column bookkeeping so this GUI's placeWidget calls start from an
+    # empty layout (state must not leak from any earlier build in the same process).
+    GUI_IO_util._reset_grid_layout()
+
     # No top help lines displayed when opening the license agreement GUI
     if config_filename!='license_config.csv':
-        intro = tk.Label(window, text=GUI_IO_util.introduction_main)
-        intro.pack()
+        # wraplength keeps the multi-line intro from blowing out the grid width (without it the very
+        # long lines make column 0 span far past the window's right edge under grid). Left-anchored
+        # (sticky='w') so it's stable regardless of the window width (which is still tuned to the old
+        # absolute layout -- window sizing is a later 2b iteration item).
+        #
+        # Stays a plain tk.Label rather than create_label (CTkLabel): swapping the widget class was
+        # tried and reverted -- CTkLabel's own vertical chrome around 5 wrapped lines rendered a few
+        # px taller than tk.Label's, which pushed grid row 1 (and the first "? HELP" button in it)
+        # down far enough to collide with release_lb, a SEPARATE widget positioned by a hardcoded
+        # .place() offset from the logo (display_release(), independent of the grid entirely). Fix
+        # only what was actually broken instead: tk.Label's default text color is platform BLACK,
+        # invisible against a dark window background now that dark mode is reachable (Phase 5) --
+        # normalize_legacy_backgrounds() (called later in GUI_bottom) already repaints this label's
+        # BACKGROUND to the themed fill, matching release_lb's own pattern (explicit foreground +
+        # themed background on a plain tk.Label), so only the foreground was ever missing.
+        _intro_text_color = GUI_theme_util.resolve_appearance_color(["gray10", "#DCE4EE"])
+        intro = tk.Label(window, text=GUI_IO_util.introduction_main, wraplength=760, justify='left',
+                         foreground=_intro_text_color)
+        # CTk migration slice 2b: the body is grid-managed now, and Tk forbids mixing grid + pack on
+        # the same container, so the intro header goes in the reserved top grid row (row 0), spanning
+        # the full column band and centered. The logo stays .place'd in the top-left corner (place
+        # coexists with grid).
+        intro.grid(row=0, column=1, columnspan=GUI_IO_util._GRID_TOTAL_COLUMNS,
+                   padx=6, pady=(6, 4), sticky='w')
+        # Reserve column 0's width for the .place'd logo + release label (both sit at x~58; the 58px
+        # logo runs to ~x116, the now two-line release label to ~x113). Without this, column 0 sizes
+        # only to the ? HELP buttons (~100px) and the intro text in column 1 starts under the
+        # logo/release -- the overlap the user saw. minsize pushes column 1 (and every content label)
+        # just clear of the logo zone, keeping the left column as tight as the logo allows.
+        window.grid_columnconfigure(0, minsize=122)
+        # Give every coarse band column (1..N, the bands defined by _GRID_COLUMN_THRESHOLDS) a
+        # minimum width so the layout reads as regular, evenly spaced columns. Without this, a band
+        # left empty on a given row (e.g. band 3 between a Value/Group column pair) collapses to zero
+        # width under grid, shoving the two label/control pairs flush against each other in the middle
+        # while the right side sits empty -- the "squished columns" look. A per-band floor keeps the
+        # bands apart on every row regardless of which are populated. RUN/CLOSE are .place'd in their
+        # own bottom bar now, so widening the grid bands can't push them off-screen.
+        _band_count = len(GUI_IO_util._GRID_COLUMN_THRESHOLDS) + 1  # thresholds -> one more band
+        for _band in range(1, _band_count):
+            window.grid_columnconfigure(_band, minsize=150)
         display_logo()
         # although the release version appears in the top part of the GUI,
         #   it is run at the end otherwise a message will be displayed with an incomplete GUI
@@ -1306,25 +1469,39 @@ def get_hover_over_info(package_display_area_value):
     return hover_over_x_coordinate, hover_over_info
 
 def display_setup_hover_over(y_multiplier_integer):
-    global y_multiplier_integer_SV
+    global y_multiplier_integer_SV, setup_menu_lb, setup_menu_tooltip
 
     error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 
     hover_over_x_coordinate, hover_over_info = get_hover_over_info(package_display_area_value)
 
-    # lay the setup widget
-    setup_menu_lb = tk.OptionMenu(window, setup_menu, "Setup preferences", "Setup NLP package (parsers & annotators) and corpus language",
-                                  "Setup external software")
-
     if y_multiplier_integer_SV == 0:
         y_multiplier_integer_SV = y_multiplier_integer
-    # place widget with hover-over info
-    # TODO SETUP button
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate,
-                                                   y_multiplier_integer_SV,
-                                                   setup_menu_lb, True, False, False, False, 90,
-                                                   hover_over_x_coordinate,
-                                                   hover_over_info)
+
+    # setup_parsers_annotators() (and so this function) can run more than once per GUI: GUI_bottom()
+    # always calls it once, and a couple of GUIs (SVO_main.py, parsers_annotators_main.py) call it
+    # again themselves to refresh the NLP-package display. Re-creating the option menu on every call
+    # used to grid a brand new widget each time; since a column collision on the same row bumps to
+    # the next free column instead of overlapping, each extra call added another visible "Setup"
+    # button further right -- and, since grid columns are shared across every row, widened columns
+    # that OTHER rows share too, pushing their trailing widgets off the window's right edge. Build
+    # the widget once and just refresh its tooltip text on later calls.
+    if setup_menu_lb is None:
+        setup_menu_lb = GUI_theme_util.create_option_menu(window, variable=setup_menu, values=["Setup preferences", "Setup NLP package (parsers & annotators) and corpus language",
+                                      "Setup external software"])
+        # place widget; hover-over info is bound manually below (no_hover_over_widget=True) so the
+        # tooltip instance can be kept and its text refreshed on later calls instead of stacking a
+        # new <Enter>/<Leave> binding each time.
+        y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate,
+                                                       y_multiplier_integer_SV,
+                                                       setup_menu_lb, True, True, False, False, 90,
+                                                       hover_over_x_coordinate,
+                                                       hover_over_info)
+        setup_menu_tooltip = GUI_theme_util.ToolTip(setup_menu_lb, hover_over_info)
+    else:
+        y_multiplier_integer = y_multiplier_integer_SV + 1
+        if setup_menu_tooltip is not None:
+            setup_menu_tooltip.text = hover_over_info
 
     # y_multiplier_integer=y_multiplier_integer-1
     return y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var
@@ -1451,7 +1628,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
             not 'NLP_menu_main' in scriptName and \
             not "NLP_setup_" in scriptName:
         #open output csv files widget defined above since it is used earlier
-        open_csv_output_label = tk.Checkbutton(window, variable=open_csv_output_checkbox, onvalue=1, offvalue=0, command=lambda: trace_checkbox(open_csv_output_label, open_csv_output_checkbox, "Open output files", "Do NOT open output files"))
+        open_csv_output_label = GUI_theme_util.create_checkbox(window, variable=open_csv_output_checkbox, onvalue=1, offvalue=0, command=lambda: trace_checkbox(open_csv_output_label, open_csv_output_checkbox, "Open output files", "Do NOT open output files"))
         open_csv_output_label.configure(text="Open output files")
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                        y_multiplier_integer,
@@ -1477,7 +1654,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         charts_package_options = ['No charts','Excel','Python Plotly (dynamic)','Python Plotly (static)']
         # TODO EXCEL widget (same as open reminders)
         charts_package_options_widget.set('Excel')
-        charts_package_menu_lb = tk.OptionMenu(window,charts_package_options_widget,*charts_package_options)
+        charts_package_menu_lb = GUI_theme_util.create_option_menu(window, variable=charts_package_options_widget, values=charts_package_options)
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,
                                                        y_multiplier_integer,
                                                        charts_package_menu_lb,
@@ -1495,7 +1672,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                    'Comparative bar charts (Open GUI)', 'Geographic maps (Open GUI)', 'Gephi (Open GUI)', 'Sankey flowchart (Open GUI)', 'Sunburst chart (Open GUI)',
                                    'Time mapper (Open GUI)', 'Treemap chart (Open GUI)', 'Wordcloud (Open GUI)']
         charts_type_options_widget.set('Bar chart')
-        charts_type_menu_lb = tk.OptionMenu(window,charts_type_options_widget,*charts_type_options)
+        charts_type_menu_lb = GUI_theme_util.create_option_menu(window, variable=charts_type_options_widget, values=charts_type_options)
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate,
                                                        y_multiplier_integer,
@@ -1506,7 +1683,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
         data_transformation_options=['No transformation','Normalize by document size', 'Ln','Log','Square rooot','Z score']
         data_transformation_options_widget.set('No transformation')
-        data_transformation_menu_lb = tk.OptionMenu(window,data_transformation_options_widget,*data_transformation_options)
+        data_transformation_menu_lb = GUI_theme_util.create_option_menu(window, variable=data_transformation_options_widget, values=data_transformation_options)
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,
                                                        y_multiplier_integer,
@@ -1532,7 +1709,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         # if not 'data_manipulation_main.py' in scriptName and not 'data_visualization_1_main.py' in scriptName :
         data_tools_options = ['Data/corpus sampling', 'Data manipulation', 'Data statistics', 'Data visualization']
         data_tools_options_widget.set('Data tools')
-        data_tools_menu_lb = tk.OptionMenu(window, data_tools_options_widget, *data_tools_options)
+        data_tools_menu_lb = GUI_theme_util.create_option_menu(window, variable=data_tools_options_widget, values=data_tools_options)
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate,
                                                        y_multiplier_integer,
@@ -1560,7 +1737,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     #         charts_package_options_widget.set('Plotly')
     # charts_package_options_widget.trace('w',warning_message)
 
-    readme_button = tk.Button(window, text='Read Me',command=readMe_command,width=10,height=2)
+    readme_button = GUI_theme_util.create_button(window, text='Read Me',command=readMe_command,width=10,height=2)
     # In NLP_setup_IO_main and NLP_setup_package_language_main an extra line of widgets is added to the GUI
     # if "NLP_setup_IO_main" in scriptName:
     #     y_multiplier_integer = y_multiplier_integer +1
@@ -1577,13 +1754,13 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     videos_dropdown_field.set('Watch videos')
     if len(videos_lookup)==1:
         if videos_options == "No videos available":
-            videos_menu_lb = tk.OptionMenu(window, videos_dropdown_field, videos_options)
+            # muted=True -> grey: no videos for this GUI (restores the legacy red=available cue)
+            videos_menu_lb = GUI_theme_util.create_option_menu(window, variable=videos_dropdown_field, values=[videos_options], muted=True)
         else:
-            videos_menu_lb = tk.OptionMenu(window, videos_dropdown_field, videos_options)
-            videos_menu_lb.configure(foreground="red")
+            # accent=True -> red: a video IS available for this GUI
+            videos_menu_lb = GUI_theme_util.create_option_menu(window, variable=videos_dropdown_field, values=[videos_options], accent=True)
     else:
-        videos_menu_lb = tk.OptionMenu(window,videos_dropdown_field,*videos_options)
-        videos_menu_lb.configure(foreground="red")
+        videos_menu_lb = GUI_theme_util.create_option_menu(window, variable=videos_dropdown_field, values=videos_options, accent=True)
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.watch_videos_x_coordinate,
                                                    y_multiplier_integer,
@@ -1602,13 +1779,13 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     tips_dropdown_field.set('Open TIPS files')
     if len(TIPS_lookup)==1:
         if TIPS_options == "No TIPS available":
-            tips_menu_lb = tk.OptionMenu(window, tips_dropdown_field, TIPS_options)
+            # muted=True -> grey: no TIPS for this GUI (restores the legacy red=available cue)
+            tips_menu_lb = GUI_theme_util.create_option_menu(window, variable=tips_dropdown_field, values=[TIPS_options], muted=True)
         else:
-            tips_menu_lb = tk.OptionMenu(window, tips_dropdown_field, TIPS_options)
-            tips_menu_lb.configure(foreground="red")
+            # accent=True -> red: a TIPS file IS available for this GUI
+            tips_menu_lb = GUI_theme_util.create_option_menu(window, variable=tips_dropdown_field, values=[TIPS_options], accent=True)
     else:
-        tips_menu_lb = tk.OptionMenu(window,tips_dropdown_field,*TIPS_options)
-        tips_menu_lb.configure(foreground="red")
+        tips_menu_lb = GUI_theme_util.create_option_menu(window, variable=tips_dropdown_field, values=TIPS_options, accent=True)
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate,
                                                    y_multiplier_integer,
@@ -1638,19 +1815,19 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     # reminders content for specific GUIs are set in the csv file reminders
     # called from any GUI
     reminders_dropdown_field.set('Open reminders')
-    reminders_menu_lb = tk.OptionMenu(window,  reminders_dropdown_field,"No Reminders available")
+    reminders_menu_lb = GUI_theme_util.create_option_menu(window, variable=reminders_dropdown_field, values=["No Reminders available"], muted=True)
 
     if len(reminder_options)==0:
         reminder_options = ["No Reminders available"]
     if len(reminder_options)==0 or len(reminder_options)==1:
         if reminder_options == ["No Reminders available"]:
-            reminders_menu_lb = tk.OptionMenu(window, reminders_dropdown_field, *reminder_options)
+            # muted=True -> grey: no reminders for this GUI (restores the legacy red=available cue)
+            reminders_menu_lb = GUI_theme_util.create_option_menu(window, variable=reminders_dropdown_field, values=reminder_options, muted=True)
         else:
-            reminders_menu_lb = tk.OptionMenu(window, reminders_dropdown_field, *reminder_options)
-            reminders_menu_lb.configure(foreground="red")
+            # accent=True -> red: a reminder IS available for this GUI
+            reminders_menu_lb = GUI_theme_util.create_option_menu(window, variable=reminders_dropdown_field, values=reminder_options, accent=True)
     else:
-        reminders_menu_lb = tk.OptionMenu(window,reminders_dropdown_field,*reminder_options)
-        reminders_menu_lb.configure(foreground="red")
+        reminders_menu_lb = GUI_theme_util.create_option_menu(window, variable=reminders_dropdown_field, values=reminder_options, accent=True)
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate,
                                                    y_multiplier_integer,
@@ -1677,15 +1854,14 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
     # there is no RUN button when setting up IO information in any of the NLP_setup scripts
     #   or in any of the GUIs that are ALL options GUIs (except for narrative_analysis where we use checkboxes instead of buttons))
-    # TODO RUN button
-    if ('narrative_analysis' in scriptName) or (not "NLP_setup_" in scriptName \
-            and (not "ALL_main" in scriptName)):
-        # place widget with hover-over info
-        y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate,
-                                                       y_multiplier_integer_SV,
-                                                       run_button, True, False, False, False, 90,
-                                                       GUI_IO_util.open_setup_x_coordinate,
-                                                       'Click on the button to run the algorithm(s) behind the selected option(s)')
+    # RUN/CLOSE go in the dedicated run_close_bar frame (see its creation note): pack them left-to-right
+    # so their position is independent of the wide content columns. The bar itself is gridded below.
+    show_run_button = ('narrative_analysis' in scriptName) or (not "NLP_setup_" in scriptName
+            and (not "ALL_main" in scriptName))
+    if show_run_button:
+        run_button.pack(in_=run_close_bar, side='left', padx=6, pady=2)
+        GUI_theme_util.ToolTip(run_button,
+                               'Click on the button to run the algorithm(s) behind the selected option(s)')
 
     # TODO CLOSE button
     def _close_window():
@@ -1704,14 +1880,34 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
     # do not display CLOSE button for the 3 NLP_setup GUIs; the CLOSE is handled in those GUIs
     if not "NLP_setup_" in scriptName:
-        close_button = tk.Button(window, text='CLOSE', width=10,height=2, command=lambda: _close_window())
-        # place widget with hover-over info
-        y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate,
-                                                       y_multiplier_integer,
-                                                       close_button, True, False, False, False, 90,
-                                                       GUI_IO_util.read_button_x_coordinate,
-                                                       "Pressing the CLOSE button will trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."
-                                                       "\nYou must be connected to the internet for the auto update to work.")
+        close_button = GUI_theme_util.create_button(run_close_bar, text='CLOSE', width=10,height=2, command=lambda: _close_window())
+        close_button.pack(in_=run_close_bar, side='left', padx=6, pady=2)
+        GUI_theme_util.ToolTip(close_button,
+                               "Pressing the CLOSE button will trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."
+                               "\nYou must be connected to the internet for the auto update to work.")
+
+    # Every widget is now placed, so let wide widgets span to the next occupied column on their row
+    # instead of inflating a column that every other row shares. Must run before the run_close_bar
+    # height is reserved below, since it changes how tall/wide the content grid ends up.
+    GUI_IO_util.apply_row_spans(window)
+
+    # .place the RUN/CLOSE bar at the window's bottom-RIGHT corner (right-aligned, as requested).
+    # It is .place'd rather than gridded on purpose: the content grid can be wider than the visible
+    # window (wide IO rows), so a gridded sticky='e' would pin RUN/CLOSE to the grid's right edge --
+    # off-screen. relx=1.0 anchors to the VISIBLE window's right edge instead, so RUN/CLOSE stay in
+    # the bottom-right corner at any window width. (.place coexists with grid, same as the logo.)
+    if show_run_button or (not "NLP_setup_" in scriptName):
+        run_close_bar.place(relx=1.0, rely=1.0, x=-12, y=-10, anchor='se')
+
+        # A .place'd bar floats OVER the grid and reserves no space, so whenever the content grid
+        # grew tall enough to reach into the bottom strip, RUN/CLOSE sat on top of the last content
+        # row (the Setup/reminders row). Whether it collided depended on the window height, which is
+        # why it looked intermittent. Reserve a spacer row below the last content row, as tall as the
+        # bar, so grid content can never flow underneath it.
+        window.update_idletasks()
+        bar_height = run_close_bar.winfo_reqheight() + 20  # + the y=-10 offset and a little breathing room
+        spacer_row = window.grid_size()[1]
+        window.grid_rowconfigure(spacer_row, minsize=bar_height)
 
     # Any message should be displayed after the whole GUI has been displayed
 
@@ -1775,6 +1971,104 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
     # check_GitHub_release(local_release_version)
     window.protocol("WM_DELETE_WINDOW", _close_window)
+
+    # CTk migration slice 2b: the grid's natural width is content-driven (a wide input-file entry,
+    # the far-right RUN/CLOSE column, busy multi-control rows) and can exceed the fixed geometry
+    # set_window() guessed -- which clipped RUN/CLOSE off the right edge on several GUIs. Once every
+    # widget is laid out, GROW the window to fit its content: never below the configured size (so
+    # notebook GUIs keep the vertical space their .place'd notebook needs -- .place'd widgets don't
+    # count toward reqwidth/reqheight), never past the screen. Grow-only, so empty margin is fine but
+    # nothing is ever clipped. Also make the window resizable so the user can adjust. Scheduled
+    # after_idle to run after any widgets a GUI adds past GUI_bottom.
+    def _shrink_wide_fields_to_fit(target_w):
+        # Auto-shrink pass: the old .place layout let wide widgets overlap across rows; grid forces
+        # them into separate columns whose widths SUM, so busy full-IO GUIs are far wider than the
+        # screen. Iteratively narrow the widest text-entry-style widgets (they scroll internally, so
+        # the full text is still reachable) until the content fits target_w -- and only as much as
+        # needed, so fields stay as wide as they can. Labels/checkbuttons are left alone (can't shrink
+        # without reflowing text). width is in chars for tk/ttk Entry/Text, so shrinking the number
+        # narrows them; we stop each widget once it is already narrow (reqwidth <= _FLOOR_PX).
+        # CTk widgets are NOT selectable by winfo_class(): a CTkEntry is a *Frame* wrapping an inner
+        # tk Entry, so it reports class 'Frame'. Filtering on class alone therefore matched only the
+        # INNER tk Entry, whose width is in CHARACTERS -- shrinking it leaves the outer frame's pixel
+        # width untouched, so the loop span 400 no-op iterations and every CTk GUI whose content is
+        # wider than the screen stayed clipped (NER_main, CoNLL_table_analyzer_main). Select CTk
+        # widgets by isinstance and shrink their PIXEL width; keep the legacy tk/ttk classes for the
+        # not-yet-migrated GUIs. Dropdowns (CTkOptionMenu) are excluded on purpose: unlike an entry
+        # they do not scroll, so narrowing one clips its label text with no way to read it.
+        _SHRINKABLE = {'Entry', 'Text', 'TEntry', 'TCombobox', 'Spinbox', 'TSpinbox'}
+        _CTK_SHRINKABLE = tuple(
+            c for c in (getattr(ctk, n, None) for n in ('CTkEntry', 'CTkComboBox', 'CTkTextbox'))
+            if c is not None
+        )
+        _FLOOR_PX = 150
+
+        def _all_widgets(w, acc):
+            for child in w.winfo_children():
+                acc.append(child)
+                _all_widgets(child, acc)
+            return acc
+
+        # A CTk widget's inner tk Entry/Text would otherwise be picked up as a second, useless
+        # candidate; skip anything that lives inside a CTk widget we already track.
+        ctk_widgets = [w for w in _all_widgets(window, []) if isinstance(w, _CTK_SHRINKABLE)]
+        candidates = list(ctk_widgets)
+        for w in _all_widgets(window, []):
+            if w.winfo_class() not in _SHRINKABLE:
+                continue
+            if any(str(w).startswith(str(c) + '.') for c in ctk_widgets):
+                continue
+            candidates.append(w)
+
+        for _ in range(400):
+            window.update_idletasks()
+            if window.winfo_reqwidth() <= target_w:
+                break
+            shrinkable = [w for w in candidates if w.winfo_reqwidth() > _FLOOR_PX]
+            if not shrinkable:
+                break
+            widest = max(shrinkable, key=lambda w: w.winfo_reqwidth())
+            try:
+                cur = int(widest.cget('width'))
+            except (ValueError, tk.TclError):
+                break
+            if isinstance(widest, _CTK_SHRINKABLE):
+                # CTk width is in PIXELS: step down ~12% but never below the readable floor.
+                new = max(_FLOOR_PX, cur - max(8, cur // 8))
+            else:
+                # tk/ttk width is in CHARACTERS.
+                new = max(4, cur - max(1, cur // 8))
+            if new >= cur:
+                # already at the floor -- drop it so the loop moves on to the next widest
+                candidates.remove(widest)
+                continue
+            widest.configure(width=new)
+
+    def _fit_window_to_content():
+        try:
+            # Runs before the geometry pass: repainting can change a widget's requested size.
+            GUI_theme_util.normalize_legacy_backgrounds(window)
+        except Exception as _e:
+            print('legacy background normalization skipped:', _e)
+        try:
+            window.update_idletasks()
+            try:
+                conf_w, conf_h = (int(v) for v in str(GUI_size).lower().split('x')[:2])
+            except (ValueError, AttributeError):
+                conf_w, conf_h = 0, 0
+            screen_w, screen_h = window.winfo_screenwidth(), window.winfo_screenheight()
+            # Leave a small margin from the screen edge; shrink wide fields if content exceeds it.
+            _shrink_wide_fields_to_fit(screen_w - 40)
+            window.update_idletasks()
+            new_w = min(max(conf_w, window.winfo_reqwidth()), screen_w)
+            # +48 reserves a strip at the bottom for the .place'd RUN/CLOSE bar (it is not in the grid,
+            # so it does not count toward reqheight -- without the reserve it would overlap the chrome).
+            new_h = min(max(conf_h, window.winfo_reqheight() + 48), screen_h - 80)
+            window.geometry(f"{new_w}x{new_h}")
+            window.resizable(True, True)
+        except Exception as _e:
+            print('fit-window-to-content skipped:', _e)
+    window.after_idle(_fit_window_to_content)
 
     return package_display_area_value
 

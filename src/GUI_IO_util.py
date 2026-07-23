@@ -110,7 +110,10 @@ remindersPath = os.path.join(NLPPath, 'reminders')
 
 # The function places and displays a message for each ? HELP button in the GUIs
 def place_help_button(window,x_coordinate,y_coordinate,text_title,text_info):
-    help_button = tk.Button(window, text='? HELP', command=lambda: display_help_button_info(text_title, text_info))
+    import GUI_theme_util
+    # Give '? HELP' an explicit character width so CTk doesn't fall back to its 140px default
+    # (which makes every help button look oversized). 10 chars matches the Read Me/RUN chrome buttons.
+    help_button = GUI_theme_util.create_button(window, text='? HELP', width=10, command=lambda: display_help_button_info(text_title, text_info))
     # place widget with hover-over info
     y_multiplier_integer = placeWidget(window, x_coordinate,
                                                    y_coordinate,
@@ -152,12 +155,22 @@ def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hove
         win_w = 0
     wrap = win_w - 60 if win_w and win_w > 260 else 700
 
-    tooltip_lb = tk.Label(_tooltip_window, text=text_info, foreground='blue',
-                          background='#FFFFDD', anchor='w', justify='left',
-                          relief='solid', borderwidth=1,
-                          padx=4, pady=2, wraplength=wrap,
+    # Same dark-card surface as GUI_theme_util.ToolTip -- the two tooltip implementations must not
+    # look like two different products. Colors are sourced from there so there is one definition.
+    try:
+        import GUI_theme_util
+        tip_bg, tip_fg, tip_border = (GUI_theme_util._TIP_BG, GUI_theme_util._TIP_TEXT,
+                                      GUI_theme_util._TIP_BORDER)
+    except Exception:
+        tip_bg, tip_fg, tip_border = '#24262b', '#f2f3f5', '#3a3d44'
+
+    _tooltip_window.configure(background=tip_border)
+    tooltip_lb = tk.Label(_tooltip_window, text=text_info, foreground=tip_fg,
+                          background=tip_bg, anchor='w', justify='left',
+                          borderwidth=0,
+                          padx=8, pady=6, wraplength=wrap,
                           font=('TkDefaultFont', 9))
-    tooltip_lb.pack()
+    tooltip_lb.pack(padx=1, pady=1)
 
     # Position in screen coordinates relative to the main window
     win_x = window.winfo_rootx()
@@ -222,6 +235,23 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
                     whole_widget_red=False, x_coordinate_hover_over= 90, text_info=''):
     if no_hover_over_widget:
         return
+
+    # CTk migration (Phase 1 slice 2a): CustomTkinter widgets draw themselves and do NOT support
+    # tk's .cget('background') / .config(background=...) -- the red/green color-flip machinery below
+    # would raise on them. CTk widgets already have a built-in hover_color, so they need no color
+    # flip: give them a TOOLTIP-ONLY hover (show text_info on <Enter>, dismiss on <Leave>/click),
+    # then return before the tk-specific code. The tk path below is untouched for plain tk widgets.
+    if 'customtkinter' in type(widget_name).__module__:
+        if text_info != '':
+            number_of_lines = text_info.count('\n')
+            y_offset = 20 if number_of_lines == 0 else (25 if number_of_lines == 1 else 30)
+            tip_y = y_coordinate - y_offset
+            widget_name.bind('<Enter>', lambda e: display_widget_info(
+                window, e, x_coordinate, tip_y, x_coordinate_hover_over, text_info), add='+')
+            widget_name.bind('<Leave>', lambda e: delete_display_widget_lb(window, e, text_info), add='+')
+            widget_name.bind('<Button>', lambda e: delete_display_widget_lb(window, e, text_info), add='+')
+        return
+
     # hover-over effect
     # background = 'red' sets the whole widget in red
     # background='#F0F0F0' sets the widget in grey
@@ -384,22 +414,135 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
 
 # when a widget has hover-over effects, the parameter no_hover_over_widget is set to False
 # widget_name is the name of the widget that needs to be placed in any of the GUI scripts as defined by tk.
+# CTk migration slice 2b: lay widgets on a GRID instead of absolute .place(x, y=90+40*row).
+#
+# Two earlier cuts each failed one way:
+#   1. Map each x to a *fixed shared column* with fine pixel thresholds. Preserved absolute
+#      position but (a) collided widgets whose x fell in the same band into one cell (stacked on
+#      top of each other) and (b) spread the union of all rows across ~9 columns, so one wide
+#      widget (a file-path entry) pushed the right-hand columns off the window's edge.
+#   2. Assign columns *sequentially in call order* (col 0 = help, then 1, 2, ...). Never collided
+#      and packed compactly, but THREW AWAY absolute position: shared rows that place widgets at
+#      fixed x's out of call order -- above all the bottom chrome (Read Me | videos | TIPS |
+#      reminders | SETUP | RUN | CLOSE, RUN at x=940 and CLOSE at x=1090) -- had RUN/CLOSE
+#      appended after the (wide) SETUP widget and shoved off-screen. RUN vanished on every GUI.
+#
+# This version keeps position AND avoids both failures: bucket x into a SMALL number of coarse,
+# order-preserving bands (so RUN lands right, Read Me lands left, labels/entries line up), and on a
+# collision within a row BUMP to the next free column instead of stacking. Coarse bands (6, not 9)
+# keep the populated-column count -- and therefore the total width -- inside the window; the bump
+# guarantees no two widgets ever share a cell. Call signature unchanged; no GUI script needs editing.
+
+# Coarse left-to-right band edges. A widget's base column = how many edges its x is >= (so x<130 ->
+# col 0, the "?HELP / Read Me / read" zone; x>=900 -> col 5, the RUN/CLOSE zone). Chosen so the
+# bottom-chrome x's (70/200/370/570/770/940/1090 on Mac; similar on Windows) distribute one-per-band
+# across cols 0..5, and the per-GUI label/control x's fall in sensible bands. Magnitudes are
+# comparable across the darwin and Windows constant blocks, so one set of edges serves both.
+_GRID_COLUMN_THRESHOLDS = (130, 330, 520, 700, 900)
+# Top grid rows reserved for the header (intro text + logo); placeWidget content starts below.
+_GRID_HEADER_ROWS = 1
+# Generous fixed span for full-width (centerX) rows and the header intro. Grid columns with no
+# content collapse to zero width, so over-spanning is harmless.
+_GRID_TOTAL_COLUMNS = 16
+
+# Per-build layout state: the set of columns already occupied on each grid row (so a collision can
+# bump right to the next free one). Reset at the start of each GUI build via _reset_grid_layout().
+_grid_row_used_cols = {}
+
+
+def _reset_grid_layout():
+    """Clear per-row column bookkeeping so a freshly built GUI starts from an empty grid."""
+    _grid_row_used_cols.clear()
+
+
+def _base_column(x_coordinate):
+    """Coarse, order-preserving band for a legacy absolute x-coordinate (0 = leftmost)."""
+    try:
+        x = float(x_coordinate)
+    except (TypeError, ValueError):
+        return 1
+    column = 0
+    for edge in _GRID_COLUMN_THRESHOLDS:
+        if x >= edge:
+            column += 1
+        else:
+            break
+    return column
+
+
+def _column_for(row, x_coordinate):
+    """Grid column for a widget on `row`: its x-derived band, bumped right to the next free column
+    if that band is already taken on this row. Preserves horizontal position without ever stacking
+    two widgets in one cell."""
+    used = _grid_row_used_cols.setdefault(row, set())
+    column = _base_column(x_coordinate)
+    while column in used:
+        column += 1
+    used.add(column)
+    return column
+
+
+def apply_row_spans(window):
+    """Let every placed widget span from its own column to the next occupied one on its row.
+
+    Grid columns are shared by ALL rows, so a wide widget sitting in a single column forces that
+    column wide for every other row too. A long checkbox label or a long path entry -- effectively
+    alone on its own row -- was therefore inflating the columns that the dense option rows also use,
+    and pushing those rows off the right edge of the window. Spanning restores the pre-grid
+    (absolute-x) semantics: a widget occupies the horizontal space up to wherever the NEXT widget on
+    its row begins, so its width is distributed over that span instead of charged to one shared
+    column. On wordclouds_main this takes the grid's requested width from 2183px to 1496px.
+
+    Call once per GUI, after every widget has been placed (GUI_util.GUI_bottom does this).
+    Widgets that already span deliberately (centerX rows, the header) are left alone.
+    """
+    by_row = {}
+    for child in window.grid_slaves():
+        info = child.grid_info()
+        if int(info.get('columnspan', 1)) > 1:
+            continue
+        by_row.setdefault(int(info['row']), []).append((int(info['column']), child))
+
+    if not by_row:
+        return
+
+    # Stop at the last column anything actually occupies rather than _GRID_TOTAL_COLUMNS: stretching
+    # the trailing widget across the unused tail just spreads padding into empty columns.
+    last_column = max(column for row_items in by_row.values() for column, _ in row_items) + 1
+
+    for row_items in by_row.values():
+        row_items.sort(key=lambda pair: pair[0])
+        for index, (column, child) in enumerate(row_items):
+            next_column = row_items[index + 1][0] if index + 1 < len(row_items) else last_column
+            span = max(1, next_column - column)
+            if span > 1:
+                child.grid_configure(columnspan=span)
+
+
 def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False, no_hover_over_widget=False, whole_widget_red=False, centerX=False, basic_y_coordinate=90, x_coordinate_hover_over = 90, text_info=''):
-    # print("widget_name",widget_name,"text_info",text_info)
-    #basic_y_coordinate = 90
-    y_step = 40 #the line-by-line increment on the GUI
+    # The legacy row counter (y_multiplier_integer) becomes the grid row; the x-coordinate picks the
+    # column band on that row (see the module note above). sameY keeps the same row so successive
+    # calls fill it left to right; centerX spans the full width, centered.
+    row = _GRID_HEADER_ROWS + int(round(float(y_multiplier_integer)))
     if centerX:
-        widget_name.place(relx=0.5, anchor=tk.CENTER, y=basic_y_coordinate + y_step*y_multiplier_integer)
+        widget_name.grid(row=row, column=0, columnspan=_GRID_TOTAL_COLUMNS,
+                         padx=6, pady=3, sticky='')
     else:
-        widget_name.place(x=x_coordinate, y=basic_y_coordinate + y_step*y_multiplier_integer)
-    # use the following command to change the color of any label to any value
-    # widget_name.config(foreground='red')
+        # padx=4 rather than 6: horizontal padding is charged twice per column, so on a ~9-column GUI
+        # the difference is ~36px -- enough to keep the widest row inside the window without having to
+        # make every GUI wider.
+        widget_name.grid(row=row, column=_column_for(row, x_coordinate), padx=4, pady=3, sticky='w')
 
-    # when a widget has hover-over effects, the parameter no_hover_over_widget is set to False
-    hover_over_widget(window,x_coordinate, basic_y_coordinate + y_step*y_multiplier_integer,widget_name, no_hover_over_widget, whole_widget_red, x_coordinate_hover_over, text_info)
+    # Tooltip: bind to the widget itself (GUI_theme_util.ToolTip) instead of the old
+    # coordinate-based hover_over_widget -- the absolute coordinates the latter positioned from are
+    # gone under grid. ToolTip works on both tk and CTk widgets. (Lazy import: avoids a module-level
+    # dependency of GUI_IO_util on GUI_theme_util.)
+    if not no_hover_over_widget and text_info != '':
+        import GUI_theme_util
+        GUI_theme_util.ToolTip(widget_name, text_info)
 
-    if sameY==False:
-        y_multiplier_integer = y_multiplier_integer+1
+    if not sameY:
+        y_multiplier_integer = y_multiplier_integer + 1
     return y_multiplier_integer
 
 basic_y_coordinate = 90
@@ -407,9 +550,6 @@ y_step = 40 #the line-by-line increment on the GUI
 
 if sys.platform == 'darwin':  # Mac OS
     about_button_x_coordinate = 330
-    release_history_button_x_coordinate = 510
-    team_button_x_coordinate = 690
-    cite_button_x_coordinate = 870
 
     help_button_x_coordinate = 70
     labels_x_coordinate = 150  # start point of all labels in the second column (first column after ? HELP)
@@ -423,15 +563,16 @@ if sys.platform == 'darwin':  # Mac OS
     widget_width_long = 60
     widget_width_extra_long = 90
 
-    add_button_width = 1
+    # add_button_width used to be 1 (-> 8px via char_width_to_px): too narrow to render the '+'
+    # glyph at all, the same ~8px-empty-sliver failure create_open_file_button's OPEN_FILE_GLYPH
+    # fix documents for other icon buttons. Match reset_button_width so '+' actually renders.
+    add_button_width = 3
     reset_button_width = 3
     show_button_width = 3
     OK_button_width = 2
 
 # top line of widgets MAC
     select_file_directory_button_width=23
-    IO_button_name_width=25
-    open_file_directory_button_width = 1
 
     IO_configuration_menu = 405 # position of menu of default and GUI specific IO options
     setup_pop_up_text_widget = 638 # widget to eventually open a text widget to enter text
@@ -440,8 +581,6 @@ if sys.platform == 'darwin':  # Mac OS
 
     # 4 small widgets to the right of top line MAC
     open_file_button_brief = 715 # the left-most button of the four buttons displayed on the far right of top line of every GUI
-    open_inputDir_button_brief = 760
-    open_outputDir_button_brief = 805
     open_config_file_button_brief = 850
 
 # bottom line of widgets MAC
@@ -467,7 +606,6 @@ if sys.platform == 'darwin':  # Mac OS
     show_column = 1125
 
     memory_pos = 220
-    document_length_lb = 510
     document_length_pos = 670
     sentence_length_lb = 680
     sentence_length_pos = 800
@@ -475,7 +613,6 @@ if sys.platform == 'darwin':  # Mac OS
 # MAC NLP_setup_IO_main Mac
     date_format_coordinate = 550
     date_char_sep_lb_coordinate = 690
-    date_char_sep_coordinate = 825
     date_position_lb_coordinate = 900
     date_position_coordinate = 970
 
@@ -484,29 +621,9 @@ if sys.platform == 'darwin':  # Mac OS
     download_install = 320
     website_url_placement = 600
 
-# MAC OK
-    countdownLabelOK1_X = 70
-    countdownLabelOK2_X= 280
-
-    # MAC Yes No reminder
-    countdownLabel1_X = 125
-    countdownLabel2_X = 335
-    no_reminder = 65
-
-# MAC DB_SQL_main
-    SQLite_DB_file_width = 80
-    simplex_complex_files_dropdown = 425 # Complex/Simplex objects do you want to see? dropdowns
-    select_DB_table_field = 500
-
 # MAC GIS_Google_Earth_main.py
     reset_button = 552
-    icon_type_button = 520
     group_label = 1125
-    select_icon_color = 820
-    display_icon = select_icon_color + 100
-
-# MAC GIS_distance_main.py
-    GIS_distance_labels_align = 150+370 #TODO changed from labels_x_coordinate+350 to GIS_distance_labels_align
 
 # MAC GIS_main.py
     label_columns  = 300
@@ -519,7 +636,6 @@ if sys.platform == 'darwin':  # Mac OS
     restrict_pos = 1200
 
 # MAC SVO_main Mac
-    SVO_1st_column = 120
 
     # 120 labels_x_coordinate
     filter_S = 230
@@ -528,20 +644,16 @@ if sys.platform == 'darwin':  # Mac OS
     # 550 open_reminders_x_coordinate
     filter_V = 660
     open_V_dictionary = 750
-    SVO_3rd_column = 940 # filter & dictionary options for Objects; now run_button_x_coordinate
     # 940 run_button_x_coordinate
     filter_O = 1050
     open_O_dictionary = 1140
 
-    SVO_2nd_column_top = 400
-    SVO_3rd_column_top = 800
 
     dictionary_S_width=30
     dictionary_V_width=30
     dictionary_O_width=30
 
 # MAC CoNLL_table_analyzer_main
-    combobox_position = 210
     combobox_width = 40
 
 # MAC narrative_analysis_ALL_main.py
@@ -579,9 +691,7 @@ if sys.platform == 'darwin':  # Mac OS
 
 #Mac: knowledge_graphs_main.py
     confidence_level_entry_pos = 870
-    DBpedia_YAGO_ontology_width = 70
     knowledge_sub_class_entry_width = 70
-    knowledge_bold_checkbox = open_reminders_x_coordinate
     knowledge_plus_button =  labels_x_indented_coordinate
     knowledge_reset_button = knowledge_plus_button + 45
     knowledge_show_button = knowledge_reset_button + 65
@@ -592,7 +702,6 @@ if sys.platform == 'darwin':  # Mac OS
     file_splitter_split_mergedFile_separator_entry_begin_pos = 560
 
     file_splitter_split_mergedFile_separator_entry_end_pos = 640
-    file_splitter_current_docLength_pos = 580
     file_splitter_split_docLength_lb_pos = 735
     file_splitter_lemmatize_pos = 1060
     file_splitter_first_occurrence_pos = 1170
@@ -604,7 +713,6 @@ if sys.platform == 'darwin':  # Mac OS
     html_annotator_gender_select_dictionary_file_annotator = 460
     html_annotator_gender_SS_folder_width = 65
     html_annotator_gender_by_type_dropdown = 575
-    html_annotator_gender_firstName_entry_lb_pos = 660
     html_annotator_gender_firstName_entry_pos = 760 # 790
     html_annotator_gender_select_SS_folder = 1070
 
@@ -625,8 +733,6 @@ if sys.platform == 'darwin':  # Mac OS
     html_annotator_value_lb = 865
     html_annotator_csv_field_value_menu = 1020
     html_annotator_color_palette_dict_lb = 1100
-    html_annotator_color_palette_dict_menu = 1190
-    html_annotator_bold_checkbox = 1270
 
 # Mac: semantic_aggregation_main
 #     WordNet_csv_file_width = 130
@@ -663,7 +769,6 @@ if sys.platform == 'darwin':  # Mac OS
 
 # Mac: style_analysis_main
     style_ngrams_menu_pos = 260
-    style_ngrams_options_menu_pos = 260
     style_add_ngrams_button_pos = 950
     style_reset_ngrams_button_pos = 990
     style_show_ngrams_button_pos = 1050
@@ -673,30 +778,22 @@ if sys.platform == 'darwin':  # Mac OS
     style_corpus_text_options_menu_lb_pos = 950
     style_corpus_options_menu_men_pos = 1050
 
-    style_complexity_readability_analysis_menu_pos = 750
 
     style_vocabulary_analysis_menu_pos = 750
 
 # Mac NGrams_Co_occurrences_Viewer
     NGrams_Co_occurrences_Viewer_search_words_entry_pos = 300
-    NGrams_Co_occurrences_Viewer_CoOcc_Viewer_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
     NGrams_Co_occurrences_Viewer_date_options_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
     NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos = open_reminders_x_coordinate #535#510
     NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos = NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos + 90 # 625 #600
     NGrams_Co_occurrences_Viewer_viewer_options_menu_pos = NGrams_Co_occurrences_Viewer_date_options_pos
     NGrams_Co_occurrences_Viewer_add_viewer_button_pos = NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos
     NGrams_Co_occurrences_Viewer_reset_viewer_button_pos = 594
-    NGrams_Co_occurrences_Viewer_show_viewer_button_pos = 680
 
 # Mac: data_visualization_1_main
 
     visualization_csv_field_menu_pos = 260
-    visualization_add_button_pos = 983
-    visualization_reset_button_pos = 1030
-    visualization_show_button_pos = 1092
 
-    visualization_csv_field_dynamic_network_lb_pos = setup_pop_up_text_widget
-    visualization_dynamic_network_field_pos = open_setup_x_coordinate  # 740
 
     visualization_filename_label_lb_pos = 320 # IO_configuration_menu
     visualization_filename_label_pos = 470 #open_reminders_x_coordinate
@@ -704,12 +801,6 @@ if sys.platform == 'darwin':  # Mac OS
     visualization_csv_field2_lb_pos = run_button_x_coordinate # 920
     visualization_csv_field2_menu_pos = visualization_csv_field2_lb_pos + 90 #120#1020
 
-    visualization_K_sent_begin_lb = visualization_csv_field_menu_pos
-    visualization_K_sent_begin_pos = visualization_csv_field_menu_pos
-    visualization_K_sent_end_lb_pos = visualization_filename_label_lb_pos
-    visualization_K_sent_end_pos = visualization_filename_label_pos
-    visualization_split_pos = open_setup_x_coordinate
-    visualization_do_not_split_pos = visualization_csv_field2_menu_pos # open_reminders_x_coordinate + 400
 
 # Mac: shape_of_stories
 
@@ -735,7 +826,6 @@ if sys.platform == 'darwin':  # Mac OS
     file_search_byWord_reset_search_button_pos = setup_IO_brief_coordinate + 40
     file_search_byWord_show_search_button_pos = setup_IO_brief_coordinate + 100
     file_search_byWord_openInputFile_button_pos = IO_configuration_menu
-    file_search_byWord_keyword_value_pos = 510
     file_search_byWord_extract_sentences_search_words_entry_pos = 510
 
     # Mac Word2Vec
@@ -754,9 +844,6 @@ if sys.platform == 'darwin':  # Mac OS
     statistics_csv_csv_field_menu_pos = 620
     statistics_csv_csv_groupBy_field_lb_pos = 180
     statistics_csv_csv_groupBy_field_menu_pos = 280
-    statistics_csv_add_field2_button_pos = statistics_csv_csv_field_menu_pos #620
-    statistics_csv_csv_hover_over_field_lb_pos = 660
-    statistics_csv_csv_hover_over_field_menu_pos = 760
 
 # Mac sentiment_analysis
     sentiment_analysis_median_checkbox_pos = IO_configuration_menu
@@ -798,9 +885,6 @@ if sys.platform == 'darwin':  # Mac OS
 
 else: #windows and anything else
     about_button_x_coordinate = 230
-    release_history_button_x_coordinate = 400
-    team_button_x_coordinate = 570
-    cite_button_x_coordinate = 740
 
     help_button_x_coordinate = 50
     labels_x_coordinate = 120  # start point of all labels in the second column (first column after ? HELP)
@@ -813,15 +897,14 @@ else: #windows and anything else
     widget_width_long = 100
     widget_width_extra_long = 120
 
-    add_button_width = 2
+    # see the Mac block above: was 2 (16px), too narrow to render the '+' glyph. Match reset_button_width.
+    add_button_width = 4
     reset_button_width = 4
     show_button_width = 4
     OK_button_width = 3
 
 # top line of widgets Windows
     select_file_directory_button_width=30
-    IO_button_name_width=30
-    open_file_directory_button_width = 3
     IO_configuration_menu = 350 # position of menu of default and GUI specific IO options
     setup_pop_up_text_widget = 560  # widget to eventually open a text widget to enter text
     setup_IO_brief_coordinate = 610 # Position of text entry for Input and Output display
@@ -830,8 +913,6 @@ else: #windows and anything else
     # 4 small widgets to the right of top line Windows
     # reference to IO_configuration_menu+
     open_file_button_brief = 760 # the left-most button of the four buttons displayed on the far right of top line of every GUI
-    open_inputDir_button_brief = 800
-    open_outputDir_button_brief = 840
     open_config_file_button_brief = 880
 
 # top line of widgets Windows
@@ -859,7 +940,6 @@ else: #windows and anything else
     show_column = 1020
 
     memory_pos = 180
-    document_length_lb = all_widget_pos
     document_length_pos = 590
     sentence_length_lb = 680
     sentence_length_pos = 800
@@ -867,7 +947,6 @@ else: #windows and anything else
 # Windows NLP_setup_IO_main
     date_format_coordinate = 530
     date_char_sep_lb_coordinate = 620
-    date_char_sep_coordinate = 745
     date_position_lb_coordinate = open_setup_x_coordinate # 810
     date_position_coordinate = open_setup_x_coordinate + 130 # 880
 
@@ -876,26 +955,8 @@ else: #windows and anything else
     download_install = 320
     website_url_placement = 600
 
-# Windows OK
-    countdownLabelOK1_X = 40
-    countdownLabelOK2_X = 230
-
-# Windows Yes No reminder
-    countdownLabel1_X = 90
-    countdownLabel2_X = 280
-    no_reminder = 45
-
-# Windows DB_SQL_main
-    SQLite_DB_file_width = 100
-    simplex_complex_files_dropdown = 390  # Complex/Simplex objects do you want to see? dropdowns
-    select_DB_table_field = 500
-
 # Windows SVO_main
-    SVO_1st_column = 120
 
-    date_character_separator_label = 920
-    date_character_separator_menu = 1050
-    date_position_label = 1100
     date_position_menu = 1160
 
     # 120 labels_x_coordinate
@@ -905,13 +966,10 @@ else: #windows and anything else
     # 550 open_reminders_x_coordinate
     filter_V = 660
     open_V_dictionary = 750
-    SVO_3rd_column = 940 # filter & dictionary options for Objects; now run_button_x_coordinate
     # 940 run_button_x_coordinate
     filter_O = 1050
     open_O_dictionary = 1140
 
-    SVO_2nd_column_top = 400
-    SVO_3rd_column_top = 800
 
     dictionary_S_width=45
     dictionary_V_width=45
@@ -926,7 +984,6 @@ else: #windows and anything else
     restrict_pos = 1150
 
 # Windows CoNLL_table_analyzer_main
-    combobox_position = 200
     combobox_width = 50
 
 # Windows narrative_analysis_ALL_main.py
@@ -964,9 +1021,7 @@ else: #windows and anything else
 
 # Windows: knowledge_graphs_main.py
     confidence_level_entry_pos = 770
-    DBpedia_YAGO_ontology_width = 70
     knowledge_sub_class_entry_width = 70
-    knowledge_bold_checkbox = open_TIPS_x_coordinate
     knowledge_plus_button =  labels_x_indented_coordinate
     knowledge_reset_button = knowledge_plus_button + 35
     knowledge_show_button = knowledge_reset_button + 50
@@ -977,7 +1032,6 @@ else: #windows and anything else
     file_splitter_split_mergedFile_separator_entry_begin_pos = 580
     file_splitter_split_mergedFile_separator_entry_end_pos = 690
     current_docLength_lb_pos = IO_configuration_menu
-    file_splitter_current_docLength_pos = 520
     file_splitter_split_docLength_lb_pos = 650
     file_splitter_split_docLength_pos = 830
     file_splitter_lemmatize_pos = file_splitter_split_docLength_pos
@@ -989,7 +1043,6 @@ else: #windows and anything else
     html_annotator_gender_select_dictionary_file_annotator = 370
     html_annotator_gender_SS_folder_width = 110
     html_annotator_gender_by_type_dropdown = 470
-    html_annotator_gender_firstName_entry_lb_pos = 660
     html_annotator_gender_firstName_entry_pos = 770 # 790
     html_annotator_gender_select_SS_folder = 1070
 
@@ -1010,8 +1063,6 @@ else: #windows and anything else
     html_annotator_value_lb = 740
     html_annotator_csv_field_value_menu = 870
     html_annotator_color_palette_dict_lb = 1000
-    html_annotator_color_palette_dict_menu = 1080
-    html_annotator_bold_checkbox = 1180
 
 # Windows: semantic_aggregation_main
     WordNet_csv_file_width = 130
@@ -1032,7 +1083,6 @@ else: #windows and anything else
 
 # Windows: style_analysis_main
     style_ngrams_menu_pos = 260
-    style_ngrams_options_menu_pos = 260
     style_add_ngrams_button_pos = 950
     style_reset_ngrams_button_pos = 990
     style_show_ngrams_button_pos = 1050
@@ -1042,30 +1092,22 @@ else: #windows and anything else
     style_corpus_text_options_menu_lb_pos = 950
     style_corpus_options_menu_men_pos = 1050
 
-    style_complexity_readability_analysis_menu_pos = 750
 
     style_vocabulary_analysis_menu_pos = 750
 
 # Windows NGrams_Co_occurrences_Viewer
     NGrams_Co_occurrences_Viewer_search_words_entry_pos = 260
-    NGrams_Co_occurrences_Viewer_CoOcc_Viewer_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
     NGrams_Co_occurrences_Viewer_date_options_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
     NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos =  open_reminders_x_coordinate # 500
     NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos = open_reminders_x_coordinate + 100
     NGrams_Co_occurrences_Viewer_viewer_options_menu_pos = NGrams_Co_occurrences_Viewer_date_options_pos
     NGrams_Co_occurrences_Viewer_add_viewer_button_pos = NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos  # 500
     NGrams_Co_occurrences_Viewer_reset_viewer_button_pos = NGrams_Co_occurrences_Viewer_add_viewer_button_pos + 40  # 540
-    NGrams_Co_occurrences_Viewer_show_viewer_button_pos = NGrams_Co_occurrences_Viewer_reset_viewer_button_pos + 60  # 560
 
 # Windows: data_visualization_1_main
 
     visualization_csv_field_menu_pos = 280
-    visualization_add_button_pos = 1105
-    visualization_reset_button_pos = 1140
-    visualization_show_button_pos = 1190
 
-    visualization_csv_field_dynamic_network_lb_pos = setup_pop_up_text_widget
-    visualization_dynamic_network_field_pos = open_setup_x_coordinate # 830
 
     visualization_filename_label_lb_pos = 320 # IO_configuration_menu
     visualization_filename_label_pos = 470 #open_reminders_x_coordinate
@@ -1073,12 +1115,6 @@ else: #windows and anything else
     visualization_csv_field2_lb_pos = run_button_x_coordinate # 920
     visualization_csv_field2_menu_pos = visualization_csv_field2_lb_pos + 90#1020
 
-    visualization_K_sent_begin_lb = visualization_csv_field_menu_pos
-    visualization_K_sent_begin_pos = visualization_csv_field_menu_pos
-    visualization_K_sent_end_lb_pos = visualization_filename_label_lb_pos
-    visualization_K_sent_end_pos = visualization_filename_label_pos
-    visualization_split_pos = open_setup_x_coordinate
-    visualization_do_not_split_pos = visualization_csv_field2_menu_pos # open_reminders_x_coordinate + 400
 
 # Windows: shape_of_stories
 
@@ -1104,7 +1140,6 @@ else: #windows and anything else
     file_search_byWord_reset_search_button_pos = setup_IO_brief_coordinate+35
     file_search_byWord_show_search_button_pos = setup_IO_brief_coordinate+85
     file_search_byWord_openInputFile_button_pos = IO_configuration_menu
-    file_search_byWord_keyword_value_pos = 430
     file_search_byWord_extract_sentences_search_words_entry_pos = 430
 
 # Windows Word2Vec
@@ -1123,9 +1158,6 @@ else: #windows and anything else
     statistics_csv_csv_field_menu_pos = 620
     statistics_csv_csv_groupBy_field_lb_pos = 180
     statistics_csv_csv_groupBy_field_menu_pos = 280
-    statistics_csv_add_field2_button_pos = statistics_csv_csv_field_menu_pos #620
-    statistics_csv_csv_hover_over_field_lb_pos = 660
-    statistics_csv_csv_hover_over_field_menu_pos = 760
 
 # Windows sentiment_analysis
     sentiment_analysis_median_checkbox_pos = IO_configuration_menu
@@ -1251,16 +1283,20 @@ def Dialog2Display(title: str):
 
 
 def message_box_widget(window, message_title, message_text, buttonType='OK', timeout=3000):
+    # CTk migration (Phase 4, last hard case): the OK/Yes/No buttons and countdown labels used to be
+    # .place()'d at pixel offsets computed from the packed tk.Message's height, with per-platform X
+    # constants. Rebuilt on a grid -- the button row lays itself out, no height measurement needed.
+    import customtkinter as ctk
+    import GUI_theme_util
+
     global yes_no_button
     yes_no_button = ""
-    # if not 'Started' in message_text and not 'Finished' in message_text:
-#    if 'Started' in message_text or 'Finished' in message_text:
-#        return yes_no_button
     if buttonType != 'OK':
         message_title = 'Reminder: ' + message_title
     global top_message
-    top_message = tk.Toplevel()
+    top_message = ctk.CTkToplevel()
     top_message.title(message_title)
+    top_message.attributes('-topmost', 'true')
 
     # define the countdown func.
     def countdown(countdown_timer):
@@ -1286,76 +1322,55 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
         elif button_type == 'Cancel':
             top_message.destroy()
 
-    if buttonType == 'OK':
-        mbox = tk.Message(top_message, width=600,
-                          text=message_text + '\n\n\n\n')
-        top_message.attributes('-topmost', 'true')
-        mbox.pack()  # put the widget on the window
-        top_message.update_idletasks()
+    mbox = GUI_theme_util.create_label(top_message, text=message_text, wraplength=560, justify='left')
+    mbox.grid(row=0, column=0, columnspan=6, padx=16, pady=(16, 8), sticky='w')
 
-        screen_height = top_message.winfo_height()
-        button = tk.Button(top_message, text="OK", command=top_message.destroy, fg='red')
-        button.place(x=5, y=screen_height - 35) # place OK button
+    if buttonType == 'OK':
         denominator1 = 1000
         denominator2 = 500
         if "Started running" in message_text or "Finished running" in message_text:
             denominator1=2000
             denominator2 = 1500
-        countdownLabel1 = tk.Label(top_message, text='Countdown to automatic closing:')
-        countdownLabel2 = tk.Label(top_message, text=f'{int(timeout / denominator1)}', fg='red')
-        countdownLabel1.place(x=countdownLabelOK1_X, y=screen_height - 35) # OK button 40
-        countdownLabel2.place(x=countdownLabelOK2_X, y=screen_height - 35) # 230
+        button = GUI_theme_util.create_button(top_message, text="OK", command=top_message.destroy, accent=True)
+        button.grid(row=1, column=0, padx=(16, 8), pady=(0, 16), sticky='w')
+        countdownLabel1 = GUI_theme_util.create_label(top_message, text='Countdown to automatic closing:')
+        countdownLabel1.grid(row=1, column=1, padx=8, pady=(0, 16), sticky='w')
+        countdownLabel2 = GUI_theme_util.create_label(top_message, text=f'{int(timeout / denominator1)}', text_color='red')
+        countdownLabel2.grid(row=1, column=2, padx=(0, 16), pady=(0, 16), sticky='w')
         countdown(int(timeout / denominator2))
 
     elif buttonType == 'Yes-No':
-        mbox = tk.Message(top_message, width=600,
-                          text=message_text + '\n\n\n\n')
-        top_message.attributes('-topmost', 'true')
-        mbox.pack()  # put the widget on the window
-        top_message.update_idletasks()
-        screen_height = top_message.winfo_height()
+        question = GUI_theme_util.create_label(top_message, text='Do you want to see this message again?', text_color='red')
+        question.grid(row=1, column=0, columnspan=6, padx=16, pady=(0, 8), sticky='w')
 
-        Yes = tk.Button(top_message, text="Yes", command=lambda: wait_for_answer('Yes'), fg='red')
-        No = tk.Button(top_message, text="No", command=lambda: wait_for_answer('No'), fg='red')
-        Yes.place(x=5, y=screen_height - 35) # place Yes button
-        No.place(x=no_reminder, y=screen_height - 35) # place No button
+        Yes = GUI_theme_util.create_button(top_message, text="Yes", command=lambda: wait_for_answer('Yes'), accent=True)
+        No = GUI_theme_util.create_button(top_message, text="No", command=lambda: wait_for_answer('No'), accent=True)
+        Yes.grid(row=2, column=0, padx=(16, 8), pady=(0, 16), sticky='w')
+        No.grid(row=2, column=1, padx=8, pady=(0, 16), sticky='w')
 
-        question = tk.Label(top_message, text='Do you want to see this message again?', fg='red')
-        countdownLabel1 = tk.Label(top_message, text='Countdown to automatic closing:')
-        countdownLabel2 = tk.Label(top_message, text=f'{int(timeout / 1000)}', fg='red')
-
-        question.place(x=5, y=screen_height - 60)
-        countdownLabel1.place(x=countdownLabel1_X, y=screen_height - 35) #125
-        countdownLabel2.place(x=countdownLabel2_X, y=screen_height - 35)
+        countdownLabel1 = GUI_theme_util.create_label(top_message, text='Countdown to automatic closing:')
+        countdownLabel1.grid(row=2, column=2, padx=8, pady=(0, 16), sticky='w')
+        countdownLabel2 = GUI_theme_util.create_label(top_message, text=f'{int(timeout / 1000)}', text_color='red')
+        countdownLabel2.grid(row=2, column=3, padx=(0, 16), pady=(0, 16), sticky='w')
         countdown(int(timeout / 1000))
 
     elif buttonType == 'Yes-No-Cancel':
-        mbox = tk.Message(top_message, width=600,
-                          text=message_text + '\n\n\n\n')
-        top_message.attributes('-topmost', 'true')
-        mbox.pack()  # put the widget on the window
-        top_message.update_idletasks()
-        screen_height = top_message.winfo_height()
+        question = GUI_theme_util.create_label(top_message, text="Do you want to see this message again?", text_color='red')
+        question.grid(row=1, column=0, columnspan=6, padx=16, pady=(0, 8), sticky='w')
 
-        Yes = tk.Button(top_message, text="Yes", command=lambda: wait_for_answer('Yes'))
-        No = tk.Button(top_message, text="No", command=lambda: wait_for_answer('No'))
-        Cancel = tk.Button(top_message, text="Cancel", command=lambda: wait_for_answer('Cancel'))
+        Yes = GUI_theme_util.create_button(top_message, text="Yes", command=lambda: wait_for_answer('Yes'))
+        No = GUI_theme_util.create_button(top_message, text="No", command=lambda: wait_for_answer('No'))
+        Cancel = GUI_theme_util.create_button(top_message, text="Cancel", command=lambda: wait_for_answer('Cancel'))
+        Yes.grid(row=2, column=0, padx=(16, 8), pady=(0, 16), sticky='w')
+        No.grid(row=2, column=1, padx=8, pady=(0, 16), sticky='w')
+        Cancel.grid(row=2, column=2, padx=8, pady=(0, 16), sticky='w')
 
-        Yes.place(x=0, y=screen_height - 35)
-        No.place(x=50, y=screen_height - 35)
-        Cancel.place(x=100, y=screen_height - 35)
-        question.place(x=0, y=screen_height - 60)
-
-        question = tk.Label(top_message, text="Do you want to see this message again?", fg='red')
-        countdownLabel1 = tk.Label(top_message, text='Countdown to automatic closing:')
-        countdownLabel2 = tk.Label(top_message, text=f'{int(timeout / 1000)}', fg='red')
-
-        countdownLabel1.place(x=200, y=screen_height - 35)
-        countdownLabel2.place(x=410, y=screen_height - 35)
-        question.place(x=10, y=screen_height - 60)
+        countdownLabel1 = GUI_theme_util.create_label(top_message, text='Countdown to automatic closing:')
+        countdownLabel1.grid(row=2, column=3, padx=8, pady=(0, 16), sticky='w')
+        countdownLabel2 = GUI_theme_util.create_label(top_message, text=f'{int(timeout / 1000)}', text_color='red')
+        countdownLabel2.grid(row=2, column=4, padx=(0, 16), pady=(0, 16), sticky='w')
         countdown(int(timeout / 1000))
 
-    # TODO MINO
     top_message.wait_window()
     if yes_no_button != "":
         mbox.after_cancel(mbox)
@@ -1364,67 +1379,27 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
     return yes_no_button
 
 
-# creating popup combobox with search
-# https://pythonguides.com/python-tkinter-search-box/
-# left unfinished
-def combobox_with_search_widget(item_names):
-    ws = tk.Tk()
-    ws.focus_force()
-    ws.title("NLP Suite")
-    ws.geometry("400x100")
-
-    def search_items(search_value):
-        # print (combo.get())
-        print('search_value', search_value)
-        # print('entry1', entry1.get())
-        # print('search_variable',search_variable.get())
-        # search_value =search_variable.get()
-        if search_value == "" or search_value == " ":
-            combo['values'] = item_names
-        else:
-            value_to_display = []
-            for value in item_names:
-                if search_value in value:
-                    value_to_display.append(value)
-            combo['values'] = value_to_display
-            combo.set(combo['values'][0])
-
-    # global combo
-    combo = ttk.Combobox(ws, width=300, state='readonly')
-    combo['values'] = item_names
-    combo.pack()
-
-    # global search_variable, entry1
-    search_variable = tk.StringVar()
-    entry1 = tk.Entry(ws, width=200, textvariable=search_variable)
-    entry1.pack()
-    # print('variable',search_variable.get())
-    # print('entry1',entry1.get())
-
-    button = tk.Button(ws, text="Search", command=lambda:search_items(entry1.get()))
-    button.pack()
-    # ws.destroy()
-
-    ws.mainloop()
-    return combo.get()
-
 # creating popup menu in tkinter
 def dropdown_menu_widget(window,textCaption, menu_values, default_value, callback):
+    # CTk migration slice 3: themed CTkToplevel parented to the caller's window + GUI_theme_util
+    # wrappers. The legacy code packed the combobox and then re-gridded it (the pack call was dead) and
+    # gridded the OK button into the SAME cell (0,1) as the combobox, so they overlapped -- harmless-
+    # looking with translucent tk widgets, visibly broken with opaque CTk ones. The rebuild drops the
+    # dead pack and gives OK its own column.
+    import customtkinter as ctk
+    import GUI_theme_util
 
     class App():
         def __init__(self,master):
-            top = self.top = Toplevel()
+            top = self.top = ctk.CTkToplevel(master)
             top.wm_title(textCaption)
             top.focus_force()
-            self.menuButton = ttk.Combobox(top, width=len(textCaption)+30)
-            self.menuButton['values'] = menu_values
-            self.menuButton.pack() # put the widget on the window
-
-            self.menuButton.grid(row=0, column=1) # , sticky=W)
+            self.menuButton = GUI_theme_util.create_combobox(top, values=menu_values, width=len(textCaption)+30)
+            self.menuButton.grid(row=0, column=1, padx=8, pady=8)
             self.callback = callback
 
-            ok_button = tk.Button(self.top, text='OK', command=self.get_value)
-            ok_button.grid(row=0, column=1)
+            ok_button = GUI_theme_util.create_button(self.top, text='OK', command=self.get_value)
+            ok_button.grid(row=0, column=2, padx=8, pady=8)
 
         def get_value(self):
             val = self.menuButton.get()
@@ -1435,6 +1410,11 @@ def dropdown_menu_widget(window,textCaption, menu_values, default_value, callbac
 
 # modified dropdown_menu_widget that will stay open without command=lambda:
 def dropdown_menu_widget2(window,textCaption, menu_values, default_value, callback):
+    # CTk migration slice 3: themed CTkToplevel + wrappers; same overlap fix as dropdown_menu_widget
+    # (drop the dead pack, OK button into its own column).
+    import customtkinter as ctk
+    import GUI_theme_util
+
     def get_value():
         global val
         val = menuButton.get()
@@ -1442,18 +1422,14 @@ def dropdown_menu_widget2(window,textCaption, menu_values, default_value, callba
         callback(val)
         # top.update()
 
-    top = Toplevel()
+    top = ctk.CTkToplevel(window)
     top.wm_title(textCaption)
     top.focus_force()
-    menuButton = ttk.Combobox(top, width=len(textCaption)+30)
-    menuButton['values'] = menu_values
-    menuButton.pack() # put the widget on the window
+    menuButton = GUI_theme_util.create_combobox(top, values=menu_values, width=len(textCaption)+30)
+    menuButton.grid(row=0, column=1, padx=8, pady=8)
 
-    menuButton.grid(row=0, column=1) # , sticky=W)
-    callback = callback
-
-    ok_button = tk.Button(top, text='OK', command=get_value)
-    ok_button.grid(row=0, column=1)
+    ok_button = GUI_theme_util.create_button(top, text='OK', command=get_value)
+    ok_button.grid(row=0, column=2, padx=8, pady=8)
 
     window.wait_window(top)
 
@@ -1463,25 +1439,37 @@ def slider_widget(window,textCaption, lower_bound, upper_bound, default_value):
     # unattended/silent mode (NLP_SILENT): skip the modal, return the recommended default
     if os.environ.get('NLP_SILENT','').strip().lower() not in ('','0','false','no','off'):
         return default_value
-    top = tk.Toplevel(window)
-    l = tk.Label(top, text= textCaption)
-    l.pack() # put the widget on the window
-    s = tk.Scale(top, from_= lower_bound, to=upper_bound, orient=tk.HORIZONTAL)
-    s.set(default_value)
-    s.pack() # put the widget on the window
+    # CTk migration slice 3: themed CTkToplevel + GUI_theme_util wrappers. Two behaviour-preserving
+    # notes: (1) CTkSlider has no built-in value readout (tk.Scale drew one), so a small label mirrors
+    # the current value; (2) tk.Scale's default resolution is 1 (integer steps) and every caller uses
+    # the result as an integer count, so pin the slider to integer steps and return an int -- CTkSlider
+    # is otherwise continuous and .get() returns a float.
+    import customtkinter as ctk
+    import GUI_theme_util
+    top = ctk.CTkToplevel(window)
+    GUI_theme_util.create_label(top, text=textCaption, wraplength=460).pack(padx=16, pady=(14, 6))
+    value_lb = GUI_theme_util.create_label(top, text=str(default_value))
+    s = GUI_theme_util.create_slider(top, from_=lower_bound, to=upper_bound,
+                                     orient='horizontal', resolution=1, length=300)
+    s.configure(command=lambda v: value_lb.configure(text=str(int(round(float(v))))))
+    try:
+        s.set(float(default_value))
+    except (TypeError, ValueError):
+        s.set(lower_bound)
+    s.pack(padx=16, pady=4)
+    value_lb.pack(pady=(0, 8))
 
     def get_value():
         global val
-        val = s.get()
+        val = int(round(float(s.get())))
         top.destroy()
-        top.update()
 
     def _delete_window():
         mb.showwarning(title = "Invalid Operation", message = "Please click OK to save your choice of parameter.")
 
     top.protocol("WM_DELETE_WINDOW", _delete_window)
 
-    tk.Button(top, text='OK', command=lambda: get_value()).pack()
+    GUI_theme_util.create_button(top, text='OK', command=get_value).pack(pady=(0, 14))
     window.wait_window(top)
     return val
 
@@ -1492,64 +1480,59 @@ def enter_value_widget(masterTitle,textCaption,numberOfWidgets=1,defaultValue=''
     # unattended/silent mode (NLP_SILENT): skip the modal, return the default value(s)
     if os.environ.get('NLP_SILENT','').strip().lower() not in ('','0','false','no','off'):
         return defaultValue, defaultValue2
-    value1=defaultValue
-    value2=defaultValue2
+    # CTk migration slice 3: was a second bare tk.Tk() root driven by its own mainloop(); now a themed
+    # CTkToplevel parented to the suite's root window (GUI_util.window) and driven by wait_window() --
+    # the RUN callback that calls this is already inside that root's mainloop. The entry values are read
+    # into `result` on OK/Return/Escape *before* the window is destroyed, matching the old "quit the
+    # mainloop, then read the entries" flow; closing via the window's X now returns the defaults instead
+    # of raising on a destroyed widget.
+    import customtkinter as ctk
+    import GUI_theme_util
+    import GUI_util
     masterTitle=masterTitle + " (Esc to quit)"
+    result = {'v1': defaultValue, 'v2': defaultValue2}
 
-    # TODO should not restrict to 2; should have a loop
-    if numberOfWidgets==2:
-        # TODO should have a list and break it up assigning values in a loop
-        value2=defaultValue2
-    master = tk.Tk()
+    master = ctk.CTkToplevel(GUI_util.window)
+    master.title(masterTitle)
     master.focus_force()
 
-    tk.Label(master,width=len(textCaption),text=textCaption).grid(row=0)
+    GUI_theme_util.create_label(master, text=textCaption).grid(row=0, column=0, padx=8, pady=6)
     # TODO should not restrict to 2; should have a loop
     if numberOfWidgets==2:
-        tk.Label(master, width=len(textCaption2),text=textCaption2).grid(row=1)
+        GUI_theme_util.create_label(master, text=textCaption2).grid(row=1, column=0, padx=8, pady=6)
 
-    master.title(masterTitle)
-    # the width in tk.Entry determines the overall width of the widget;
-    #   MUST be entered
-    #   + 30 to add room for - [] and X in a widget window
-    e1 = tk.Entry(master,width=len(masterTitle)+30)
+    # the old tk.Entry width was len(masterTitle)+30 characters; keep the character-based width (the
+    # wrapper converts characters -> pixels).
+    e1 = GUI_theme_util.create_entry(master, width=len(masterTitle)+30)
+    e1.grid(row=0, column=1, padx=8, pady=6)
+    # TODO 2 could be a larger number; should have a loop
+    if numberOfWidgets==2:
+        e2 = GUI_theme_util.create_entry(master, width=len(masterTitle)+30)
+        e2.grid(row=1, column=1, padx=8, pady=6)
+
+    e1.insert(0, defaultValue) # display a default value
+    # TODO 2 could be a larger number; should have a loop
+    if numberOfWidgets==2:
+        e2.insert(0, defaultValue2) # display a default value
     e1.focus_force()
 
-    # TODO 2 could be a larger number; should have a loop
-    if numberOfWidgets==2:
-        e2 = tk.Entry(master,width=len(masterTitle)+30)
+    def _accept(event=None):
+        result['v1'] = str(e1.get())
+        # TODO 2 could be a larger number; should have a loop
+        if numberOfWidgets==2:
+            result['v2'] = str(e2.get())
+        master.destroy()
 
-    e1.grid(row=0, column=1)
-    # TODO 2 could be a larger number; should have a loop
-    if numberOfWidgets==2:
-        e2.grid(row=1, column=1)
+    GUI_theme_util.create_button(master, text='OK', command=_accept).grid(row=3, column=0,
+                                                                          sticky='w', padx=8, pady=4)
+    master.bind('<Return>', _accept)
+    master.bind('<Escape>', _accept)
 
-    e1.insert(len(textCaption), defaultValue) # display a default value
-    # TODO 2 could be a larger number; should have a loop
-    if numberOfWidgets==2:
-        e2.insert(len(textCaption2), defaultValue2) # display a default value
-
-    tk.Button(master,
-              text='OK',
-              command=master.quit).grid(row=3,
-                                        column=0,
-                                        sticky=tk.W,
-                                        pady=4)
-    def func(event):
-        master.quit()
-    master.bind('<Return>', func)
-    master.bind('<Escape>', func)
-
-    master.mainloop()
-    value1=str(e1.get())
-    # TODO 2 could be a larger number; should have a loop
-    if numberOfWidgets==2:
-        value2=str(e2.get())
-    master.destroy()
+    master.wait_window()
     # convert to list; value1 is checked for length in calling function
     #   so do not convert if empty or its length will be the length of ['']
     # if value1!='':
     #     value1=list(value1.split(" "))
-    return value1, value2
+    return result['v1'], result['v2']
 
 

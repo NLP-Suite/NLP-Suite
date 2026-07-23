@@ -26,6 +26,7 @@ from subprocess import call
 
 import config_util
 import GUI_IO_util
+import GUI_theme_util
 import IO_files_util
 import GIS_pipeline_util
 # import wordclouds_util
@@ -996,7 +997,7 @@ language=''
 def open_GUI():
     run_script_util.run_script("file_checker_converter_cleaner_main.py")
 
-pre_processing_button = tk.Button(window, text='Pre-processing tools (Open file checking & cleaning GUI) ',command=lambda:open_GUI())
+pre_processing_button = GUI_theme_util.create_button(window, text='Pre-processing tools (Open file checking & cleaning GUI) ',command=lambda:open_GUI())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    pre_processing_button,
@@ -1006,7 +1007,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 # NLP packages & languages ------------------------------------------------------------------------------------------------------
 
 coref_var.set(0)
-CoRef_checkbox = tk.Checkbutton(window, text='Coreference Resolution, PRONOMINAL (via Stanford CoreNLP - Neural Network)',
+CoRef_checkbox = GUI_theme_util.create_checkbox(window, text='Coreference Resolution, PRONOMINAL (via Stanford CoreNLP - Neural Network)',
                                 variable=coref_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -1019,7 +1020,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer, CoRef_menu)
 
 manual_coref_var.set(0)
-manual_coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced document ', variable=manual_coref_var,
+manual_coref_checkbox = GUI_theme_util.create_checkbox(window, text='Manually edit coreferenced document ', variable=manual_coref_var,
                                        onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    manual_coref_checkbox,
@@ -1053,12 +1054,12 @@ GUI_util.input_main_dir_path.trace('w', lambda x, y, z: changed_filename(GUI_uti
 #   because inputFilename is set BEFORE input_main_dir_path in GUI_util and it is not up-to-date
 
 package_var.set('Stanford CoreNLP')
-package_lb = tk.Label(window, text='SVO package')
+package_lb = GUI_theme_util.create_label(window, text='SVO package')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                package_lb, True)
 
 # removed SENNA from the list; way too slow the NLP Suite implementation of SENNA SVO
-package_menu = tk.OptionMenu(window, package_var, '*', 'spaCy','Stanford CoreNLP', 'Stanza', 'OpenIE (via Stanford CoreNLP)')
+package_menu = GUI_theme_util.create_option_menu(window, variable=package_var, values=['*', 'spaCy','Stanford CoreNLP', 'Stanza', 'OpenIE (via Stanford CoreNLP)'])
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_S_dictionary, y_multiplier_integer,
                                    package_menu,
@@ -1131,7 +1132,7 @@ def getDictFile(lemma_checkbox_var, filter_checkbox_var, dict_path_var, checkbox
     dict_path_var.set(filePath)
 
 lemmatize_subjects_var.set(1)
-lemmatize_subjects_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=lemmatize_subjects_var, onvalue=1, offvalue=0, command=lambda:activate_filter_dictionaries(lemmatize_subjects_var, filter_subjects_var, subjects_dict_path_var, 'Subject'))
+lemmatize_subjects_checkbox = GUI_theme_util.create_checkbox(window, text='Lemmatize', variable=lemmatize_subjects_var, onvalue=1, offvalue=0, command=lambda:activate_filter_dictionaries(lemmatize_subjects_var, filter_subjects_var, subjects_dict_path_var, 'Subject'))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                lemmatize_subjects_checkbox,
@@ -1140,7 +1141,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                                "When lemmatizing subjects, WordNet will be used to aggregate subjects into top synsets noun categories")
 
 filter_subjects_var.set(1)
-subjects_checkbox = tk.Checkbutton(window, text='Filter', variable=filter_subjects_var, onvalue=1, offvalue=0,
+subjects_checkbox = GUI_theme_util.create_checkbox(window, text='Filter', variable=filter_subjects_var, onvalue=1, offvalue=0,
                                    command=lambda: getDictFile(lemmatize_subjects_var.get(), filter_subjects_var, subjects_dict_path_var, filter_subjects_var.get(),
                                                                'Subject'))
 # place widget with hover-over info
@@ -1150,14 +1151,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.filter_S, y_mu
                                    "Filter subjects list EXCLUDING subjects that are not social actors. When S and V and O filters are selected all conditions must be met.\nThe option for filtering subjects via WordNet for social actors is available only for the English language. Words in MWE, except entitymentions, are _ separated.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
 
 # setup a button to open Windows Explorer on the subjects file
-openInputFile_subjects_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+openInputFile_subjects_button = GUI_theme_util.create_open_file_button(window,
                                           command=lambda: IO_files_util.openFile(window, subject_filePath))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_S_dictionary, y_multiplier_integer,
                                                openInputFile_subjects_button, True, False, True, False, 90, GUI_IO_util.labels_x_coordinate + 140, "Open csv file containing SUBJECT filters")
 
 lemmatize_verbs_var.set(1)
-lemmatize_verbs_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=lemmatize_verbs_var, onvalue=1, offvalue=0, command=lambda:activate_filter_dictionaries(lemmatize_verbs_var, filter_verbs_var, verbs_dict_path_var, 'Verb'))
+lemmatize_verbs_checkbox = GUI_theme_util.create_checkbox(window, text='Lemmatize', variable=lemmatize_verbs_var, onvalue=1, offvalue=0, command=lambda:activate_filter_dictionaries(lemmatize_verbs_var, filter_verbs_var, verbs_dict_path_var, 'Verb'))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                                lemmatize_verbs_checkbox,
@@ -1166,7 +1167,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
                                                "When lemmatizing verbs, WordNet will be used to aggregate verbs into top synsets verb categories")
 
 filter_verbs_var.set(1)
-verbs_checkbox = tk.Checkbutton(window, text='Filter', variable=filter_verbs_var, onvalue=1, offvalue=0,
+verbs_checkbox = GUI_theme_util.create_checkbox(window, text='Filter', variable=filter_verbs_var, onvalue=1, offvalue=0,
                                 command=lambda: getDictFile(lemmatize_verbs_var.get(), filter_verbs_var, verbs_dict_path_var, filter_verbs_var.get(), 'Verb'))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.filter_V, y_multiplier_integer,
@@ -1175,13 +1176,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.filter_V, y_mu
                                    "Filter verbs list EXCLUDING verbs that are not social actions. When S and V and O filters are selected all conditions must be met.\nThe option for filtering verbs for social actions via WordNet is available only for the English language. Words in MWE are _ separated.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
 
 # setup a button to open Windows Explorer on the verbs file
-openInputFile_verbs_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+openInputFile_verbs_button = GUI_theme_util.create_open_file_button(window,
                                        command=lambda: IO_files_util.openFile(window, verb_filePath))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_V_dictionary, y_multiplier_integer,
                                                openInputFile_verbs_button, True, False, True, False, 90, GUI_IO_util.labels_x_coordinate + 520, "Open csv file containing VERB filters")
 
 lemmatize_objects_var.set(1)
-lemmatize_objects_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=lemmatize_objects_var, onvalue=1, offvalue=0, command=lambda:activate_filter_dictionaries(lemmatize_objects_var, filter_objects_var, objects_dict_path_var, 'Object'))
+lemmatize_objects_checkbox = GUI_theme_util.create_checkbox(window, text='Lemmatize', variable=lemmatize_objects_var, onvalue=1, offvalue=0, command=lambda:activate_filter_dictionaries(lemmatize_objects_var, filter_objects_var, objects_dict_path_var, 'Object'))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                                lemmatize_objects_checkbox,
@@ -1190,7 +1191,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_c
                                                "When lemmatizing objects, WordNet will be used to aggregate objects into top synsets noun categories")
 
 filter_objects_var.set(0)
-objects_checkbox = tk.Checkbutton(window, text='Filter', variable=filter_objects_var, onvalue=1, offvalue=0,
+objects_checkbox = GUI_theme_util.create_checkbox(window, text='Filter', variable=filter_objects_var, onvalue=1, offvalue=0,
                                   command=lambda: getDictFile(lemmatize_objects_var.get(), filter_objects_var, objects_dict_path_var, filter_objects_var.get(),
                                                               'Object'))
 # place widget with hover-over info
@@ -1200,7 +1201,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.filter_O, y_mu
                                    "Filter objects list EXCLUDING objects that are not social actors. When S and V and O filters are selected all conditions must be met.\nThe option for filtering objects for social actors via WordNet is available only for the English language. Words in MWE, except entitymentions, are _ separated.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
 
 # setup a button to open Windows Explorer on the objects file
-openInputFile_objects_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+openInputFile_objects_button = GUI_theme_util.create_open_file_button(window,
                                          command=lambda: IO_files_util.openFile(window, object_filePath))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_O_dictionary, y_multiplier_integer,
                                                openInputFile_objects_button,
@@ -1208,7 +1209,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_O_diction
 
 # subjects_dict_path_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-actor-list.csv'))
 subjects_dict_path_var.set('social-actor-list.csv')
-subjects_dict_entry = tk.Entry(window, width=GUI_IO_util.dictionary_S_width, state="disabled", textvariable=subjects_dict_path_var)
+subjects_dict_entry = GUI_theme_util.create_entry(window, width=GUI_IO_util.dictionary_S_width, state="disabled", textvariable=subjects_dict_path_var)
 
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -1218,7 +1219,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 
 # verbs_dict_path_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-action-list.csv'))
 verbs_dict_path_var.set('social-action-list.csv')
-verbs_dict_entry = tk.Entry(window, width=GUI_IO_util.dictionary_V_width, state="disabled", textvariable=verbs_dict_path_var)
+verbs_dict_entry = GUI_theme_util.create_entry(window, width=GUI_IO_util.dictionary_V_width, state="disabled", textvariable=verbs_dict_path_var)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    verbs_dict_entry,
@@ -1226,7 +1227,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
                                    "The complete path of the verb social action list is "+ verb_filePath+"\nTick twice the checkbox 'Filter Verb' to select a different file.")
 
 objects_dict_path_var.set('')
-objects_dict_entry = tk.Entry(window, width=GUI_IO_util.dictionary_O_width, state="disabled", textvariable=objects_dict_path_var)
+objects_dict_entry = GUI_theme_util.create_entry(window, width=GUI_IO_util.dictionary_O_width, state="disabled", textvariable=objects_dict_path_var)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                    objects_dict_entry,
@@ -1234,7 +1235,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_c
                                    "The complete path of the object social actor list is "+ object_filePath+"\nTick twice the checkbox 'Filter Object' to select a different file.")
 
 gender_var.set(0)
-gender_checkbox = tk.Checkbutton(window, text='S & O gender (via CoreNLP)',
+gender_checkbox = GUI_theme_util.create_checkbox(window, text='S & O gender (via CoreNLP)',
                                                 variable=gender_var, onvalue=1, offvalue=0, command=lambda: activate_annotator('gender'))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -1243,7 +1244,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "The neural network gender annotator is available only via Stanford CoreNLP and for the English language only")
 
 quote_var.set(0)
-quote_checkbox = tk.Checkbutton(window, text='S & O quote/speaker (via CoreNLP)',
+quote_checkbox = GUI_theme_util.create_checkbox(window, text='S & O quote/speaker (via CoreNLP)',
                                                 variable=quote_var, onvalue=1, offvalue=0, command=lambda: activate_annotator('quote'))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
@@ -1272,14 +1273,14 @@ def activate_annotator(annotator_type):
         package_var.set('Stanford CoreNLP')
 
 SRL_var.set(0)
-SRL_checkbox = tk.Checkbutton(window, text='Semantic Role Labeling (SRL) (Open GUI)',
+SRL_checkbox = GUI_theme_util.create_checkbox(window, text='Semantic Role Labeling (SRL) (Open GUI)',
                                                 variable=SRL_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                                SRL_checkbox)
 SRL_checkbox.configure(state='normal')
 
 gephi_var.set(1)
-gephi_checkbox = tk.Checkbutton(window, text='Visualize SVO relations ',
+gephi_checkbox = GUI_theme_util.create_checkbox(window, text='Visualize SVO relations ',
                                 variable=gephi_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -1314,7 +1315,7 @@ def check_NER(first_time=False):
             google_earth_var.set(1)
 
 google_earth_var.set(0)
-google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where (via Google Earth Pro & Google Maps)',
+google_earth_checkbox = GUI_theme_util.create_checkbox(window, text='Visualize Where (via Google Earth Pro & Google Maps)',
                                        variable=google_earth_var, onvalue=1, offvalue=0, command=lambda: check_NER())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
@@ -1323,7 +1324,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
                                    "Visualize GIS maps as pin and heat maps. Google Earth Pro and Google Maps will be used as mapping software if you have obtained a free Google API key. Otherwise, Python folium will be used.\n"
                                    "Read the TIPS file 'Google API Key' on how to get the API key.\nMaps are exported to the SVO subdirectory only, whether filtering or lemmatizing to avoid missing locations.")
 map_characters_var = tk.IntVar()
-map_characters_checkbox = tk.Checkbutton(window, text='MAP S(ubjects) moving in time and space',
+map_characters_checkbox = GUI_theme_util.create_checkbox(window, text='MAP S(ubjects) moving in time and space',
                                        variable=map_characters_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    map_characters_checkbox,
@@ -1332,7 +1333,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                    "Uses the Subject (S) column as the moving entity and the Location column from the SVO output to track movement.\n"
                                    "Unlike the GIS NER approach, this captures common-noun actors (e.g., 'the mob', 'soldiers') not just proper names.")
 compare_svo_var = tk.IntVar()
-compare_svo_checkbox = tk.Checkbutton(window, text='Compare SVO results across parsers',
+compare_svo_checkbox = GUI_theme_util.create_checkbox(window, text='Compare SVO results across parsers',
                                        variable=compare_svo_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    compare_svo_checkbox,

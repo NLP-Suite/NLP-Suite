@@ -14,6 +14,7 @@ import csv
 
 import IO_files_util
 import GUI_IO_util
+import GUI_theme_util
 import IO_csv_util
 import file_filename_util
 import IO_user_interface_util
@@ -487,20 +488,17 @@ def add_csvFile(window,title,fileType):
     filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
     if len(filePath)>0:
         select_csv_field_menu.configure(state='normal')
-        selectedCsvFile.config(state='normal')
+        selectedCsvFile.configure(state='normal')
         selectedCsvFile_var.set(filePath)
         if IO_csv_util.get_csvfile_headers(filePath,True)=='':
             noHeaders=True
             nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(filePath)
-            menu_values=range(1, nColumns+1)
+            menu_values=[str(n) for n in range(1, nColumns+1)]
         else:
             data, headers = IO_csv_util.get_csv_data(filePath,True)
             menu_values=headers
             noHeaders = False
-        m = select_csv_field_menu["menu"]
-        m.delete(0,"end")
-        for s in menu_values:
-            m.add_command(label=s,command=lambda value=s:select_csv_field_var.set(value))
+        GUI_theme_util.set_values(select_csv_field_menu, menu_values)
 
 # def activate_csvfile_column(*args):
 # 	if selectedCsvFile_var.get()!='':
@@ -511,68 +509,72 @@ def add_csvFile(window,title,fileType):
 # 			selectedCsvFile_colNum= select_csv_field_var.get()-1
 # select_csv_field_var.trace('w',activate_csvfile_column)
 
-# add_file_button = tk.Button(window, text='csv file', width=2,height=1,state='disabled',command=lambda: add_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
-add_file_button = tk.Button(window, text='csv file', command=lambda: add_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
+# add_file_button = GUI_theme_util.create_button(window, text='csv file', width=2,height=1,state='disabled',command=lambda: add_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
+add_file_button = GUI_theme_util.create_button(window, text='csv file', command=lambda: add_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,add_file_button,True)
 
 #setup a button to open Windows Explorer on the selected input directory
 current_y_multiplier_integer=y_multiplier_integer-1
-openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, selectedCsvFile_var.get()))
+openInputFile_button  = GUI_theme_util.create_open_file_button(window, command=lambda: IO_files_util.openFile(window, selectedCsvFile_var.get()))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.labels_x_coordinate+70, y_multiplier_integer,
     openInputFile_button, True)
 
-selectedCsvFile = tk.Entry(window,width=110,state='disabled',textvariable=selectedCsvFile_var)
+# width=110 chars (~880px under CTk) overran the window: unlike the sibling file tools, this row
+# carries a 'Select csv field' label and its dropdown after the path entry. A named medium width
+# leaves room for both; the full path is still reachable via the open-file button to the left.
+selectedCsvFile = GUI_theme_util.create_entry(window,width=GUI_IO_util.widget_width_medium,state='disabled',textvariable=selectedCsvFile_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+120,y_multiplier_integer,selectedCsvFile,True)
 
-select_csv_field_lb = tk.Label(window,text='Select csv field')
+select_csv_field_lb = GUI_theme_util.create_label(window,text='Select csv field')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+800,y_multiplier_integer,select_csv_field_lb,True)
 
 if menu_values!=' ':
-    select_csv_field_menu = tk.OptionMenu(window, select_csv_field_var, *menu_values)
+    select_csv_field_menu = GUI_theme_util.create_option_menu(window, variable=select_csv_field_var, values=list(menu_values))
 else:
-    select_csv_field_menu = tk.OptionMenu(window, select_csv_field_var, menu_values)
-select_csv_field_menu.configure(state='disabled',width=12)
+    select_csv_field_menu = GUI_theme_util.create_option_menu(window, variable=select_csv_field_var, values=[menu_values])
+select_csv_field_menu.configure(state='disabled')
+GUI_theme_util.set_char_width(select_csv_field_menu, 12)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+900,y_multiplier_integer,select_csv_field_menu)
 
 utf8_var.set(0)
-utf8_checkbox = tk.Checkbutton(window, text='Check input filename(s) for utf-8 encoding ', variable=utf8_var, onvalue=1, offvalue=0)
+utf8_checkbox = GUI_theme_util.create_checkbox(window, text='Check input filename(s) for utf-8 encoding ', variable=utf8_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,utf8_checkbox,True)
 
 ASCII_var.set(0)
-ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & quotes in filename(s)', variable=ASCII_var, onvalue=1, offvalue=0)
+ASCII_checkbox = GUI_theme_util.create_checkbox(window, text='Convert non-ASCII apostrophes & quotes in filename(s)', variable=ASCII_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+400,y_multiplier_integer,ASCII_checkbox)
 
 list_var.set(0)
-list_checkbox = tk.Checkbutton(window, text='List', variable=list_var, onvalue=1, offvalue=0)
+list_checkbox = GUI_theme_util.create_checkbox(window, text='List', variable=list_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,list_checkbox,True)
 
 rename_var.set(0)
-rename_checkbox = tk.Checkbutton(window, text='Rename', variable=rename_var, onvalue=1, offvalue=0)
+rename_checkbox = GUI_theme_util.create_checkbox(window, text='Rename', variable=rename_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+60,y_multiplier_integer,rename_checkbox,True)
 
 copy_var.set(0)
-copy_checkbox = tk.Checkbutton(window, text='Copy', variable=copy_var, onvalue=1, offvalue=0)
+copy_checkbox = GUI_theme_util.create_checkbox(window, text='Copy', variable=copy_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+160,y_multiplier_integer,copy_checkbox,True)
 
 move_var.set(0)
-move_checkbox = tk.Checkbutton(window, text='Move', variable=move_var, onvalue=1, offvalue=0)
+move_checkbox = GUI_theme_util.create_checkbox(window, text='Move', variable=move_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+260,y_multiplier_integer,move_checkbox,True)
 
 delete_var.set(0)
-delete_checkbox = tk.Checkbutton(window, text='Delete', variable=delete_var, onvalue=1, offvalue=0)
+delete_checkbox = GUI_theme_util.create_checkbox(window, text='Delete', variable=delete_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+360,y_multiplier_integer,delete_checkbox,True)
 
 count_file_manager_var.set(0)
-count_checkbox = tk.Checkbutton(window, text='Count', state="normal", variable=count_file_manager_var, onvalue=1, offvalue=0)
+count_checkbox = GUI_theme_util.create_checkbox(window, text='Count', state="normal", variable=count_file_manager_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+460,y_multiplier_integer,count_checkbox,True)
 
 split_file_manager_var.set(0)
-split_checkbox = tk.Checkbutton(window, text='Split', state="normal", variable=split_file_manager_var, onvalue=1, offvalue=0)
+split_checkbox = GUI_theme_util.create_checkbox(window, text='Split', state="normal", variable=split_file_manager_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+560,y_multiplier_integer,split_checkbox)
 
 # use_csv_var.set(0)
-# use_csv_checkbox = tk.Checkbutton(window, text='Use csv for Source & Target fields', state="normal", variable=use_csv_var, onvalue=1, offvalue=0)
+# use_csv_checkbox = GUI_theme_util.create_checkbox(window, text='Use csv for Source & Target fields', state="normal", variable=use_csv_var, onvalue=1, offvalue=0)
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+560,y_multiplier_integer,use_csv_checkbox)
 
 def activate_list_options(*args):
@@ -584,7 +586,7 @@ def activate_list_options(*args):
         count_checkbox.configure(state="disabled")
         split_checkbox.configure(state="disabled")
         character_count_checkbox.configure(state="normal")
-        fileName_embeds_date_checkbox.config(state='normal')
+        fileName_embeds_date_checkbox.configure(state='normal')
         by_creation_date_checkbox.configure(state="normal")
         by_author_checkbox.configure(state="normal")
     else:
@@ -596,10 +598,10 @@ def activate_list_options(*args):
         split_checkbox.configure(state="normal")
         character_count_checkbox.configure(state="disabled")
         fileName_embeds_date.set(0)
-        fileName_embeds_date_checkbox.config(state='disabled')
-        date_format_menu.config(state="disabled")
-        date_separator.config(state='disabled')
-        date_position_menu.config(state="disabled")
+        fileName_embeds_date_checkbox.configure(state='disabled')
+        date_format_menu.configure(state="disabled")
+        date_separator.configure(state='disabled')
+        date_position_menu.configure(state="disabled")
         by_creation_date_checkbox.configure(state="disabled")
         by_author_checkbox.configure(state="disabled")
     # rename_new_entry.configure(state="disabled")
@@ -615,7 +617,7 @@ def activate_rename_options(*args):
         split_checkbox.configure(state="disabled")
         rename_new_entry.configure(state="normal")
         position_in_string_value.configure(state="normal")
-        by_foldername_checkbox.config(state="normal")
+        by_foldername_checkbox.configure(state="normal")
     else:
         list_checkbox.configure(state="normal")
         copy_checkbox.configure(state="normal")
@@ -625,7 +627,7 @@ def activate_rename_options(*args):
         split_checkbox.configure(state="normal")
         rename_new_entry.configure(state="disabled")
         position_in_string_value.configure(state="disabled")
-        by_foldername_checkbox.config(state="disabled")
+        by_foldername_checkbox.configure(state="disabled")
     #activate_prefix_options()
     character_count_checkbox.configure(state="disabled")
     by_creation_date_checkbox.configure(state="disabled")
@@ -750,12 +752,14 @@ def activate_split_options(*args):
 split_file_manager_var.trace('w',activate_split_options)
 
 by_file_type_var.set(0)
-by_file_type_checkbox = tk.Checkbutton(window, text='By file type', variable=by_file_type_var, onvalue=1, offvalue=0)
+by_file_type_checkbox = GUI_theme_util.create_checkbox(window, text='By file type', variable=by_file_type_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,by_file_type_checkbox,True)
 
-file_type_menu_lb = tk.Label(window, text='Select file type ')
+file_type_menu_lb = GUI_theme_util.create_label(window, text='Select file type ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+280,y_multiplier_integer,file_type_menu_lb,True)
-file_type_menu = tk.OptionMenu(window,file_type_menu_var,'*','bmp','csv','doc','docx','gexf','html','jpg','kml','pdf','png','tif','txt','xls','xlsm','xlsx')
+file_type_menu = GUI_theme_util.create_option_menu(window, variable=file_type_menu_var,
+                    values=['*', 'bmp', 'csv', 'doc', 'docx', 'gexf', 'html', 'jpg', 'kml', 'pdf',
+                            'png', 'tif', 'txt', 'xls', 'xlsm', 'xlsx'])
 file_type_menu.configure(state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+370,y_multiplier_integer,file_type_menu)
 
@@ -768,36 +772,36 @@ def activate_file_type_options(*args):
         file_type_menu.configure(state="disabled")
 by_file_type_var.trace('w',activate_file_type_options)
 
-by_creation_date_checkbox = tk.Checkbutton(window, text='By creation & modification date', variable=by_creation_date_var, onvalue=1, offvalue=0)
+by_creation_date_checkbox = GUI_theme_util.create_checkbox(window, text='By creation & modification date', variable=by_creation_date_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,by_creation_date_checkbox,True)
 # before_date,
 # after_date,
 # on_date,
 
-by_author_checkbox = tk.Checkbutton(window, text='By author (Windows Office files)', variable=by_author_var, onvalue=1, offvalue=0)
+by_author_checkbox = GUI_theme_util.create_checkbox(window, text='By author (Windows Office files)', variable=by_author_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+370,y_multiplier_integer,by_author_checkbox)
 
 by_prefix_var.set(0)
-by_prefix_checkbox = tk.Checkbutton(window, text='By prefix value', variable=by_prefix_var, onvalue=1, offvalue=0)
+by_prefix_checkbox = GUI_theme_util.create_checkbox(window, text='By prefix value', variable=by_prefix_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,by_prefix_checkbox,True)
 
 by_substring_var.set(0)
-by_substring_checkbox = tk.Checkbutton(window, text='By sub-string value', variable=by_substring_var, onvalue=1, offvalue=0)
+by_substring_checkbox = GUI_theme_util.create_checkbox(window, text='By sub-string value', variable=by_substring_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+140,y_multiplier_integer,by_substring_checkbox,True)
 
-string_entry_lb = tk.Label(window, text='Old value')
+string_entry_lb = GUI_theme_util.create_label(window, text='Old value')
 # (case sensitive)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+280,y_multiplier_integer,string_entry_lb,True)
 
-string_entry = tk.Entry(window,width=20,textvariable=string_entry_var)
+string_entry = GUI_theme_util.create_entry(window,width=20,textvariable=string_entry_var)
 string_entry.configure(state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+370,y_multiplier_integer,string_entry,True)
 
-rename_new_entry_lb = tk.Label(window, text='New value')
+rename_new_entry_lb = GUI_theme_util.create_label(window, text='New value')
 # (case sensitive)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+580,y_multiplier_integer,rename_new_entry_lb,True)
 
-rename_new_entry = tk.Entry(window,width=20,textvariable=rename_new_entry_var)
+rename_new_entry = GUI_theme_util.create_entry(window,width=20,textvariable=rename_new_entry_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+ 680,y_multiplier_integer,rename_new_entry,True)
 
 y_multiplier_integer_save=y_multiplier_integer-1
@@ -807,9 +811,9 @@ y_multiplier_integer_save=y_multiplier_integer-1
 #
 rename_new_entry.configure(state="disabled")
 
-position_in_string_lb = tk.Label(window, text='Position in string')
+position_in_string_lb = GUI_theme_util.create_label(window, text='Position in string')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+850,y_multiplier_integer, position_in_string_lb,True)
-position_in_string_value = tk.Entry(window, width=2,textvariable=position_in_string_var)
+position_in_string_value = GUI_theme_util.create_entry(window, width=2,textvariable=position_in_string_var)
 position_in_string_value.configure(state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+970,y_multiplier_integer, position_in_string_value)
 
@@ -854,51 +858,52 @@ by_prefix_var.trace('w',activate_prefix_substring_options)
 by_substring_var.trace('w',activate_prefix_substring_options)
 
 by_foldername_var.set(0)
-by_foldername_checkbox = tk.Checkbutton(window, text='By subfolder name (renaming only)', variable=by_foldername_var, onvalue=1, offvalue=0)
-by_foldername_checkbox.config(state="disabled")
+by_foldername_checkbox = GUI_theme_util.create_checkbox(window, text='By subfolder name (renaming only)', variable=by_foldername_var, onvalue=1, offvalue=0)
+by_foldername_checkbox.configure(state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,by_foldername_checkbox,True)
 
-folder_character_separator_lb = tk.Label(window, text='Separator character(s)')
+folder_character_separator_lb = GUI_theme_util.create_label(window, text='Separator character(s)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+280,y_multiplier_integer, folder_character_separator_lb,True)
-folder_character_separator = tk.Entry(window, textvariable=folder_character_separator_var)
-folder_character_separator.configure(width=2,state="disabled")
+folder_character_separator = GUI_theme_util.create_entry(window, textvariable=folder_character_separator_var)
+folder_character_separator.configure(state="disabled")
+GUI_theme_util.set_char_width(folder_character_separator, 2)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+420,y_multiplier_integer, folder_character_separator)
 
 def activateFolderCharacterSeparator(*args):
     folder_character_separator_var.set('')
     if by_foldername_var.get()==1:
-        folder_character_separator.configure(width=2,state="normal")
+        folder_character_separator.configure(state="normal")
     else:
-        folder_character_separator.configure(width=2,state="disabled")
+        folder_character_separator.configure(state="disabled")
 by_foldername_var.trace('w',activateFolderCharacterSeparator)
 
 by_embedded_items_var.set(0)
-by_embedded_items_checkbox = tk.Checkbutton(window, text='By number of embedded items', variable=by_embedded_items_var, onvalue=1, offvalue=0)
+by_embedded_items_checkbox = GUI_theme_util.create_checkbox(window, text='By number of embedded items', variable=by_embedded_items_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,by_embedded_items_checkbox,True)
 # by_embedded_items_checkbox.configure(state="disabled")
 
 comparison_var.set('=')
-comparison_menu = tk.OptionMenu(window, comparison_var, '=', '<=','>=')
-comparison_menu.configure(width=4)
+comparison_menu = GUI_theme_util.create_option_menu(window, variable=comparison_var, values=['=', '<=', '>='])
+GUI_theme_util.set_char_width(comparison_menu, 4)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+280,y_multiplier_integer, comparison_menu,True)
 
-number_of_items_lb = tk.Label(window, text='Number of items')
+number_of_items_lb = GUI_theme_util.create_label(window, text='Number of items')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+400,y_multiplier_integer, number_of_items_lb,True)
-number_of_items_value = tk.Entry(window, width=2,textvariable=number_of_items_var)
+number_of_items_value = GUI_theme_util.create_entry(window, width=2,textvariable=number_of_items_var)
 number_of_items_value.configure(state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+530,y_multiplier_integer, number_of_items_value,True)
 
 embedded_item_character_value_var.set("_")
-embedded_item_character_value_lb = tk.Label(window, text='Separator character(s)')
+embedded_item_character_value_lb = GUI_theme_util.create_label(window, text='Separator character(s)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+580,y_multiplier_integer, embedded_item_character_value_lb,True)
-embedded_item_character_value = tk.Entry(window, width=2,textvariable=embedded_item_character_value_var)
+embedded_item_character_value = GUI_theme_util.create_entry(window, width=2,textvariable=embedded_item_character_value_var)
 embedded_item_character_value.configure(state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+750,y_multiplier_integer, embedded_item_character_value,True)
 
 include_exclude_var.set(1)
-include_exclude_checkbox = tk.Checkbutton(window, variable=include_exclude_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox_NoLabel(include_exclude_var, include_exclude_checkbox, "Include first # items only", "Exclude first # items"))
+include_exclude_checkbox = GUI_theme_util.create_checkbox(window, variable=include_exclude_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox_NoLabel(include_exclude_var, include_exclude_checkbox, "Include first # items only", "Exclude first # items"))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+850,y_multiplier_integer, include_exclude_checkbox)
-include_exclude_checkbox.config(text='Include first # items only',state="disabled")
+include_exclude_checkbox.configure(text='Include first # items only',state="disabled")
 
 def activate_numberEmbeddedItems_options(*args):
     number_of_items_var.set(0)
@@ -907,29 +912,29 @@ def activate_numberEmbeddedItems_options(*args):
         if split_file_manager_var.get()==False:
             comparison_menu.configure(state="normal")
             number_of_items_value.configure(state="normal")
-            include_exclude_checkbox.config(state="normal")
+            include_exclude_checkbox.configure(state="normal")
         else:
             comparison_menu.configure(state="disabled")
             number_of_items_value.configure(state="disabled")
-            include_exclude_checkbox.config(state="disabled")
+            include_exclude_checkbox.configure(state="disabled")
         embedded_item_character_value.configure(state="normal")
     else:
         comparison_menu.configure(state="disabled")
         embedded_item_character_value.configure(state="disabled")
         number_of_items_value.configure(state="disabled")
-        include_exclude_checkbox.config(state="disabled")
+        include_exclude_checkbox.configure(state="disabled")
 by_embedded_items_var.trace('w',activate_numberEmbeddedItems_options)
 
 # applies to list files only
 character_count_file_manager_var.set(0)
-character_count_checkbox = tk.Checkbutton(window, text='By number of embedded character(s)', variable=character_count_file_manager_var, onvalue=1, offvalue=0)
+character_count_checkbox = GUI_theme_util.create_checkbox(window, text='By number of embedded character(s)', variable=character_count_file_manager_var, onvalue=1, offvalue=0)
 character_count_checkbox.configure(state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer, character_count_checkbox,True)
 
-characters_entry_lb = tk.Label(window, text='Enter character(s) ')
+characters_entry_lb = GUI_theme_util.create_label(window, text='Enter character(s) ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate + 280,y_multiplier_integer,characters_entry_lb,True)
 
-characters_entry = tk.Entry(window,width=2,textvariable=character_entry_var)
+characters_entry = GUI_theme_util.create_entry(window,width=2,textvariable=character_entry_var)
 characters_entry.configure(state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+ 420,y_multiplier_integer,characters_entry)
 
@@ -945,41 +950,43 @@ date_format.set('mm-dd-yyyy')
 items_separator_var.set('_')
 date_position_var.set(2)
 
-fileName_embeds_date_checkbox = tk.Checkbutton(window, text='Filename embeds date', variable=fileName_embeds_date, onvalue=1, offvalue=0)
+fileName_embeds_date_checkbox = GUI_theme_util.create_checkbox(window, text='Filename embeds date', variable=fileName_embeds_date, onvalue=1, offvalue=0)
 fileName_embeds_date_checkbox.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer, fileName_embeds_date_checkbox,True)
 
-date_format_lb = tk.Label(window,text='Date format ')
+date_format_lb = GUI_theme_util.create_label(window,text='Date format ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+280,y_multiplier_integer, date_format_lb,True)
-date_format_menu = tk.OptionMenu(window, date_format, 'mm-dd-yyyy', 'dd-mm-yyyy','yyyy-mm-dd','yyyy-dd-mm','yyyy-mm','yyyy')
-date_format_menu.configure(width=10)
+date_format_menu = GUI_theme_util.create_option_menu(window, variable=date_format,
+                    values=['mm-dd-yyyy', 'dd-mm-yyyy', 'yyyy-mm-dd', 'yyyy-dd-mm', 'yyyy-mm', 'yyyy'])
+GUI_theme_util.set_char_width(date_format_menu, 10)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+80,y_multiplier_integer, date_format_menu,True)
 
-date_separator_lb = tk.Label(window, text='Date character separator ')
+date_separator_lb = GUI_theme_util.create_label(window, text='Date character separator ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+210,y_multiplier_integer, date_separator_lb,True)
-date_separator = tk.Entry(window, textvariable=items_separator_var)
-date_separator.configure(width=2)
+date_separator = GUI_theme_util.create_entry(window, textvariable=items_separator_var)
+GUI_theme_util.set_char_width(date_separator, 2)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+350,y_multiplier_integer, date_separator,True)
 
-date_position_menu_lb = tk.Label(window, text='Date position ')
+date_position_menu_lb = GUI_theme_util.create_label(window, text='Date position ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+400,y_multiplier_integer, date_position_menu_lb,True)
-date_position_menu = tk.OptionMenu(window,date_position_var,1,2,3,4,5)
-date_position_menu.configure(width=2)
+date_position_menu = GUI_theme_util.create_option_menu(window, variable=date_position_var,
+                    values=['1', '2', '3', '4', '5'])
+GUI_theme_util.set_char_width(date_position_menu, 2)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+490,y_multiplier_integer, date_position_menu)
 
 def check_CoreNLP_dateFields(*args):
     if fileName_embeds_date.get() == 1:
-        date_format_menu.config(state="normal")
-        date_separator.config(state='normal')
-        date_position_menu.config(state='normal')
+        date_format_menu.configure(state="normal")
+        date_separator.configure(state='normal')
+        date_position_menu.configure(state='normal')
     else:
-        date_format_menu.config(state="disabled")
-        date_separator.config(state='disabled')
-        date_position_menu.config(state="disabled")
+        date_format_menu.configure(state="disabled")
+        date_separator.configure(state='disabled')
+        date_position_menu.configure(state="disabled")
 fileName_embeds_date.trace('w',check_CoreNLP_dateFields)
 
 include_subdir_var.set(0)
-include_subdir_checkbox = tk.Checkbutton(window, text='Include subdirectories', variable=include_subdir_var, onvalue=1, offvalue=0)
+include_subdir_checkbox = GUI_theme_util.create_checkbox(window, text='Include subdirectories', variable=include_subdir_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,include_subdir_checkbox)
 
 videos_lookup = {'File manager':'https://youtu.be/nMtjoIE4-gA'}

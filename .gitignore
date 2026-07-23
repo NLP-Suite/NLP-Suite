@@ -69,3 +69,11 @@ buck-out/
 
 # Test data (junction to local PC-ACE databases)
 test_data/
+
+# gui_gallery.py output (regenerated per machine, not source)
+tests/gui_screenshots/
+tests/gui_gallery.html
+
+# Runtime state the app rewrites on launch -- upstream deliberately untracks
+# these (see 7c90545b "removed config directory from git push").
+config/

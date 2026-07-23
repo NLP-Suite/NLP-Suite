@@ -1,9 +1,9 @@
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
-from tkinter import ttk
 
 import GUI_IO_util
+import GUI_theme_util
 import GUI_util
 import Stanza_util
 import config_util
@@ -47,9 +47,10 @@ limit_sentence_length_var = tk.IntVar()
 
 encoding_var = tk.StringVar()
 export_json_var = tk.IntVar()
+appearance_mode_var = tk.StringVar()
 y_multiplier_integer=0
 
-current_package_lb = tk.Label(window,text='Currently available default NLP package and language')
+current_package_lb = GUI_theme_util.create_label(window,text='Currently available default NLP package and language')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, current_package_lb, True)
 
@@ -63,9 +64,12 @@ def clear(e):
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
+package_display_area = None
+
 def display_available_options():
-    global y_multiplier_integer, y_multiplier_integer_SV1, error, parsers, memory_var, document_length_var, limit_sentence_length_var, package_display_area_value
+    global y_multiplier_integer_SV1, error, parsers, memory_var, document_length_var, limit_sentence_length_var, package_display_area_value
     global package_display_area_value_upon_entry
+    global package_display_area
     error, package, parsers, package_basics, language, package_display_area_value, \
         encoding_var, export_json_var, memory, document_length, limit_sentence_length = config_util.read_NLP_package_language_config()
     package_display_area_value_upon_entry = package+ package_basics + language + encoding_var + str(export_json_var) + \
@@ -119,9 +123,18 @@ def display_available_options():
     document_length_var.set(int(document_length))
     limit_sentence_length_var.set(int(limit_sentence_length))
     # print("display",parsers_display_area)
-    package_display_area = tk.Label(width=GUI_IO_util.package_display_area_width, height=1, anchor='w', text=str(package_display_area_value), state='disabled')
+    # This function reruns whenever the config is saved (save_NLP_config -> display_available_options).
+    # Destroy the previous instance before creating its replacement -- same leaked/duplicate-widget class
+    # as parsers_lb/parsers_display_area above (docs/ctk_GUI_overflow_status.md): under grid a widget
+    # re-created at the same spot without destroying the old one bumps into a brand-new column, and this
+    # call's own placeWidget row (y_multiplier_integer_SV1, NOT the running module counter) must stay
+    # local -- reassigning the module-level y_multiplier_integer here used to clobber the accumulated row
+    # count GUI_bottom relies on for its own layout.
+    if package_display_area is not None:
+        package_display_area.destroy()
+    package_display_area = GUI_theme_util.create_label(window, width=GUI_IO_util.package_display_area_width, height=1, anchor='w', text=str(package_display_area_value), state='disabled')
     # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.all_widget_pos,
+    GUI_IO_util.placeWidget(window, GUI_IO_util.all_widget_pos,
                                                    y_multiplier_integer_SV1,
                                                    package_display_area, True, False, False, False, 90,
                                                    GUI_IO_util.open_TIPS_x_coordinate,
@@ -158,18 +171,17 @@ def openConfigFile():
     # display_IO_setup(window, IO_setup_display_brief, temp_config_filename,
     #                  config_input_output_numeric_options, scriptName, silent)
 
-openInputConfigFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
-                                 command=lambda: openConfigFile())
+openInputConfigFile_button = GUI_theme_util.create_open_file_button(window, command=lambda: openConfigFile())
 # place widget with hover-over info
 x_coordinate_hover_over=1100 # Mac 1150
 y_multiplier_integer = GUI_IO_util.placeWidget(window,x_coordinate_hover_over, y_multiplier_integer,
                                                openInputConfigFile_button, False, False, True,False, 90, x_coordinate_hover_over-50, "Open csv config file")
 
-package_lb = tk.Label(window,text='NLP package (parser & annotators)')
+package_lb = GUI_theme_util.create_label(window,text='NLP package (parser & annotators)')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, package_lb, True)
 package_var.set('') # Stanza
-package_menu = tk.OptionMenu(window, package_var, 'spaCy', 'spaCy (transformer)', 'Stanford CoreNLP', 'Stanza')
+package_menu = GUI_theme_util.create_option_menu(window, variable=package_var, values=['spaCy', 'spaCy (transformer)', 'Stanford CoreNLP', 'Stanza'])
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.all_widget_pos,
                                                y_multiplier_integer, package_menu)
 
@@ -179,10 +191,11 @@ y_multiplier_integer_SV2=y_multiplier_integer
 
 available_parsers=[]
 parsers_display_area =''
+parsers_lb = None
 
 def changed_NLP_package_set_parsers(*args):
     global y_multiplier_integer_SV2
-    global parsers_display_area, available_parsers
+    global parsers_display_area, available_parsers, parsers_lb
     if package_var.get() == 'spaCy':
         available_parsers = ['Dependency parser']
     elif package_var.get() == 'spaCy (transformer)':
@@ -194,19 +207,34 @@ def changed_NLP_package_set_parsers(*args):
     else:
         available_parsers = []
 
-    parsers_lb = tk.Label(window, text='Available parsers for ' + package_var.get()+'                      ')
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
-                                                   y_multiplier_integer_SV2, parsers_lb, True)
+    # this function reruns on every NLP-package change (and twice more during startup, via
+    # display_available_options()/changed_NLP_package()). Destroying and recreating the widgets each
+    # time (the previous fix here) stopped the visual double-draw, but GUI_IO_util's per-row column
+    # claims are never released once taken (there is no "un-claim" on destroy) -- so each rebuild on
+    # the SAME row still permanently burns its old column pair and gets bumped to a fresh one further
+    # right, and by the 2nd/3rd rebuild these labels had drifted 4-5 columns rightward, each dragging
+    # its ~500-640px width into a column nothing else in the GUI reuses (docs/ctk_GUI_overflow_status.md's
+    # row-splitting bug). Reconfigure the existing widgets' text in place instead -- placeWidget then
+    # runs at most ONCE per widget for the lifetime of the GUI, so the column claim is made exactly once.
+    if parsers_lb is None:
+        parsers_lb = GUI_theme_util.create_label(window, text='Available parsers for ' + package_var.get()+'                      ')
+        GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
+                                                       y_multiplier_integer_SV2, parsers_lb, True)
+    else:
+        parsers_lb.configure(text='Available parsers for ' + package_var.get()+'                      ')
 
-    # mac 70
-    parsers_display_area = tk.Label(width=80, height=1, anchor='w', text=', '.join(available_parsers), state='disabled')
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.all_widget_pos,
-                                                   y_multiplier_integer_SV2, parsers_display_area)
-    return y_multiplier_integer
+    if parsers_display_area in ('', None):
+        # mac 70
+        parsers_display_area = GUI_theme_util.create_label(window, width=80, height=1, anchor='w', text=', '.join(available_parsers), state='disabled')
+        GUI_IO_util.placeWidget(window, GUI_IO_util.all_widget_pos,
+                                                       y_multiplier_integer_SV2, parsers_display_area)
+    else:
+        parsers_display_area.configure(text=', '.join(available_parsers))
+    return y_multiplier_integer_SV2 + 1
 
 y_multiplier_integer = changed_NLP_package_set_parsers()
 
-package_basics_lb = tk.Label(window,text='NLP package for basic functions')
+package_basics_lb = GUI_theme_util.create_label(window,text='NLP package for basic functions')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer,
@@ -217,7 +245,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 #                                                y_multiplier_integer, package_basics_lb, True)
 package_basics_var.set('Stanza')
 # TODO 'spaCy' will be added as an option for basic tokenizer and lemmatizer
-package_basics_menu = tk.OptionMenu(window, package_basics_var, 'Stanza', 'spaCy')
+package_basics_menu = GUI_theme_util.create_option_menu(window, variable=package_basics_var, values=['Stanza', 'spaCy'])
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.all_widget_pos,
                                                y_multiplier_integer,
@@ -225,7 +253,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.all_widget_po
                                                GUI_IO_util.open_TIPS_x_coordinate,
                                                "Use the dropdown menu to select the package (spaCy, Stanza) to be used for basic NLP operations: sentence splitting, tokenizing, lemmatizing, POS tagging.\nOption saved in /config/NLP_default_package_language_config.csv")
 
-language_lb = tk.Label(window,text='Language')
+language_lb = GUI_theme_util.create_label(window,text='Language')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, language_lb, True)
 
@@ -243,44 +271,66 @@ def get_available_languages():
     return languages_available
 
 language_var.set('')
-language_menu = ttk.Combobox(window, width=GUI_IO_util.language_widget_width, textvariable=language_var)
-language_menu['values'] = get_available_languages()
+language_menu = GUI_theme_util.create_combobox(window, width=GUI_IO_util.language_widget_width, textvariable=language_var)
+GUI_theme_util.set_values(language_menu, get_available_languages())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.all_widget_pos, y_multiplier_integer,
                                                language_menu, True, False, False, False, 90,
                                                GUI_IO_util.open_TIPS_x_coordinate,
                                                "Use the dropdown menu to select the language your corpus is written in.\nDifferent packages (CoreNLP, spaCy, Stanza) can handle different sets of languages. Only Stanza allows multi-language selection.")
 
-add_language_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='normal',command=lambda: activate_language_var())
+add_language_button = GUI_theme_util.create_button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='normal',command=lambda: activate_language_var())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.plus_column, y_multiplier_integer,
                                                add_language_button, True, False, False, False, 90,
                                                GUI_IO_util.open_reminders_x_coordinate,
                                                "Click on the + button to activate the language dropdown menu where you can select another language to add to the list.\nOnly Stanza allows multi-language selection.")
 
-reset_language_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='normal',command=lambda: reset_language_list())
+reset_language_button = GUI_theme_util.create_button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='normal',command=lambda: reset_language_list())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.reset_column, y_multiplier_integer,
                                                reset_language_button, True, False, False, False, 90,
                                                GUI_IO_util.open_reminders_x_coordinate,
                                                "Click on the Reset button to clear the list of any previously selected language(s).")
 
-show_language_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='normal',command=lambda: show_language_list())
+show_language_button = GUI_theme_util.create_button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='normal',command=lambda: show_language_list())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.show_column, y_multiplier_integer,
                                                show_language_button, False, False, False, False, 90,
                                                GUI_IO_util.open_reminders_x_coordinate,
                                                "Click on the Show button to display the list of selected language(s).")
 
-encoding_lb = tk.Label(window, text='Select encoding type (utf-8 default)')
+encoding_lb = GUI_theme_util.create_label(window, text='Select encoding type (utf-8 default)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,encoding_lb, True)
 
 encoding_var.set('utf-8')
-encodingValue = tk.OptionMenu(window,encoding_var,'utf-8','utf-16-le','utf-32-le','latin-1','ISO-8859-1')
+encodingValue = GUI_theme_util.create_option_menu(window, variable=encoding_var, values=['utf-8', 'utf-16-le', 'utf-32-le', 'latin-1', 'ISO-8859-1'])
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.all_widget_pos, y_multiplier_integer,encodingValue)
 
+# Phase 5 (docs/CustomTkinter-Migration-Plan.md): the appearance-mode preference. Saved immediately
+# on change (there is no RUN/general SAVE button in this GUI covering it) rather than folded into
+# save_NLP_config, which writes NLP_default_package_language_config.csv -- a config file already
+# read positionally (dataset.iat[0, N]); mixing in an unrelated column there would put that file's
+# existing parser/language settings at risk. Takes effect on the next window opened (each GUI is its
+# own process, and CTk's appearance mode is set once at process start in GUI_util.py).
+def save_appearance_mode():
+    config_util.write_appearance_mode_config_file(window, appearance_mode_var.get())
+
+appearance_mode_lb = GUI_theme_util.create_label(window, text='Appearance mode (Setup ▸ System/Light/Dark)')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                               appearance_mode_lb, True)
+
+appearance_mode_var.set(config_util.read_appearance_mode_config())
+appearance_mode_menu = GUI_theme_util.create_option_menu(window, variable=appearance_mode_var,
+                                                         values=['system', 'light', 'dark'],
+                                                         command=lambda _e=None: save_appearance_mode())
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.all_widget_pos, y_multiplier_integer,
+                                               appearance_mode_menu, False, False, False, False, 90,
+                                               GUI_IO_util.all_widget_pos,
+                                               "Choose how NLP Suite windows are themed: System (follow the OS), Light, or Dark.\nSaved immediately; it takes effect the next time you open an NLP Suite window.")
+
 export_json_var.set(0)
-export_json_label = tk.Checkbutton(window,
+export_json_label = GUI_theme_util.create_checkbox(window,
                                 variable=export_json_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox(export_json_label, export_json_var, "Export Json file(s)", "Do NOT export Json file(s)"))
 export_json_label.configure(text="Do NOT export Json file(s)")
 # place widget with hover-over info
@@ -290,12 +340,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                                GUI_IO_util.labels_x_coordinate,
                                                "Tick the checkbox to export json files for every input file processed\nDepending upon the number of input files processed, the option may considerably affect disk space and processing speed")
 # memory options
-memory_var_lb = tk.Label(window, text='Memory ')
+memory_var_lb = GUI_theme_util.create_label(window, text='Memory ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                memory_var_lb, True)
 
-memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
-memory_var.pack()
+memory_var = GUI_theme_util.create_slider(window, from_=1, to=16, orient='horizontal', resolution=1, integer=True)
 memory_var.set(4)
 # place widget with hover-over info # memory_pos
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+70,
@@ -304,12 +353,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                                GUI_IO_util.labels_x_indented_coordinate,
                                                "Use the slider widget to adjust the memory (NOT DISK SPACE!) you make available to Stanford CoreNLP\n4 OK for most CoreNLP annotators; coreference may need more memory\nThe memory widget is only available for the Stanford CoreNLP package for parser & annotators")
 
-document_length_var_lb = tk.Label(window, text='Document length')
+document_length_var_lb = GUI_theme_util.create_label(window, text='Document length')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                                document_length_var_lb, True)
 
-document_length_var = tk.Scale(window, from_=40000, to=90000, orient=tk.HORIZONTAL)
-document_length_var.pack()
+document_length_var = GUI_theme_util.create_slider(window, from_=40000, to=90000, orient='horizontal', resolution=1, integer=True)
 document_length_var.set(90000)
 # place widget with hover-over info # document_length_pos
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate+130,
@@ -318,12 +366,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_c
                                                GUI_IO_util.labels_x_indented_coordinate,
                                                "Stanford CoreNLP has a limit of 99999 characters for processing input files; the NLP Suite CoreNLP algorithms automatically split and merge larger input files (see TIPS file)\nLowering the document size does not seem to significantly improve the performance of CoreNLP annotators\nThe document length widget is only available for the Stanford CoreNLP package for parser & annotators")
 
-limit_sentence_length_var_lb = tk.Label(window, text='Sentence length')
+limit_sentence_length_var_lb = GUI_theme_util.create_label(window, text='Sentence length')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.sentence_length_lb, y_multiplier_integer,
                                                limit_sentence_length_var_lb,True)
 
-limit_sentence_length_var = tk.Scale(window, from_=70, to=400, orient=tk.HORIZONTAL)
-limit_sentence_length_var.pack()
+limit_sentence_length_var = GUI_theme_util.create_slider(window, from_=70, to=400, orient='horizontal', resolution=1, integer=True)
 limit_sentence_length_var.set(100)
 # place widget with hover-over info # sentence_length_pos
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.sentence_length_pos,
@@ -348,7 +395,7 @@ def save_NLP_config(parsers):
     # currently_selected_package_language= {'MAIN NLP PACKAGE': package_var.get(), 'LEMMATIZER PACKAGE': package_basics_var.get(), "LANGUAGE(S)": language_var.get()}
     currently_selected_package_language= {'MAIN NLP PACKAGE': package_var.get(), 'LEMMATIZER PACKAGE': package_basics_var.get(), "LANGUAGE(S)": language_var.get()}
     config_util.save_NLP_package_language_config(window, currently_selected_package_language, package_var.get(), package_basics_var.get(),
-                            language_var.get(), parsers_display_area['text'],
+                            language_var.get(), parsers_display_area.cget('text'),
                             encoding, export_json, memory, document_length, limit_sentence_length)
     display_available_options()
 
@@ -448,7 +495,7 @@ def changed_NLP_package(*args):
         document_length_var.configure(state='disabled')
         limit_sentence_length_var.configure(state='disabled')
     language_list.clear()
-    language_menu['values'] = get_available_languages()
+    GUI_theme_util.set_values(language_menu, get_available_languages())
     language_var.set('')
     check_language()
     changed_NLP_package_set_parsers()
@@ -491,7 +538,7 @@ def close_GUI():
             save_NLP_config(parsers)
     NLP_setup_update_util.exit_window()
 
-close_button = tk.Button(window, text='CLOSE', width=10, height=2, command=lambda: close_GUI())
+close_button = GUI_theme_util.create_button(window, text='CLOSE', width=10, height=2, command=lambda: close_GUI())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate,
                                                y_multiplier_integer,
@@ -524,6 +571,8 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,
                                   "NLP Suite Help","Please, using the dropdown menu, select the type of encoding you wish to use.\n\nLocations in different languages may require encodings (e.g., latin-1 for French or Italian) different from the standard (and default) utf-8 encoding."+GUI_IO_util.msg_Esc + GUI_IO_util.msg_save_uponClose)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                                         "Choose how NLP Suite windows are themed: System (follow the OS), Light, or Dark.\n\nSaved immediately; it takes effect the next time you open an NLP Suite window.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                                          "Tick the checkbox to export or not export the Json file(s) in txt format produced by the selected NLP package." + GUI_IO_util.msg_Esc + GUI_IO_util.msg_save_uponClose)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                                          "The performance of different NLP tools (e.g., Stanford CoreNLP) is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default memory is 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the memory size when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf." + GUI_IO_util.msg_Esc + GUI_IO_util.msg_save_uponClose)
@@ -535,9 +584,16 @@ y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate
 readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for setting up the default NLP package (e.g., spaCy, spaCy (transformer), Stanford CoreNLP, Stanza), language (e.g., English, Chinese), and language encoding (e.g., utf-8) to be used for parsing and annotating your corpus in a specific language. Different packages support different sets of languages.\n\nspaCy (transformer) uses transformer-based models (e.g., en_core_web_trf with RoBERTa) for higher accuracy at the cost of slower speed and more memory.\n\n" + \
                 "When Stanford CoreNLP is selected as NLP package, various options become available that apply only to CoreNLP: Memory, Document length (CoreNLP has a maximum processing size of 100,000 characters), Limit sentence length (CoreNLP performance deteriorates rapidly with sentence lengths above 100 words)\n\nWhen clicking the CLOSE button, the script will give the option to save in /config/NLP_default_package_language_config.csv the currently selected configuration IF different from the previously saved configuration."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, True, scriptName, False)
-
+# Build package_display_area BEFORE GUI_bottom (docs/ctk_GUI_overflow_status.md): current_package_lb
+# above is placed with sameY=True expecting this widget to share its grid row, but GUI_bottom's
+# apply_row_spans pass only sees widgets that already exist when it runs -- called after this label
+# didn't exist yet, current_package_lb was spanned across its whole row as if it were alone, and
+# package_display_area then landed INSIDE that span when it was finally created, overlapping it.
+# Safe to move earlier now that display_available_options() no longer reassigns the module-level
+# y_multiplier_integer (see the fix inside that function).
 display_available_options()
+
+GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, True, scriptName, False)
 
 if error:
     mb.showwarning(title='Warning',
