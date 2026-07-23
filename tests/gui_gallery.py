@@ -94,13 +94,22 @@ try:
     w.geometry('+0+0')
     w.lift()
     w.attributes('-topmost', True)
+    w.update_idletasks()
     w.update()
-    time.sleep(0.5)
+    time.sleep(0.6)
+    w.update_idletasks()
     w.update()
     from PIL import ImageGrab
+    # DPI scaling: Tk's winfo_* returns LOGICAL pixels, but ImageGrab works in PHYSICAL pixels. On a
+    # scaled display (this machine is 150%) a logical bbox grabs a smaller region than the window and
+    # cuts the bottom (RUN/CLOSE). Grab the whole physical screen and crop with the logical->physical
+    # scale, so it is correct at any scaling.
+    full = ImageGrab.grab()
+    scale = full.width / w.winfo_screenwidth()
     x, y = w.winfo_rootx(), w.winfo_rooty()
     ww, hh = w.winfo_width(), w.winfo_height()
-    ImageGrab.grab(bbox=(x, y, x + ww, y + hh)).save(png)
+    box = (round(x * scale), round(y * scale), round((x + ww) * scale), round((y + hh) * scale))
+    full.crop(box).save(png)
     print("SHOT ok")
 except Exception as e:
     print("SHOT_FAIL", str(e)[:120])
