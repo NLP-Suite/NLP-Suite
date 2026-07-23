@@ -363,8 +363,6 @@ Gephi_download = "https://gephi.org/users/download/" # dmg Mac dmg file; Windows
 Google_Earth_download = "https://www.google.com/earth/download/gep/agree.html?hl=en-GB" # Mac dmg file; Windows exe file
 Java_download = "https://www.oracle.com/java/technologies/downloads/archive/"
 MALLET_download = "http://mallet.cs.umass.edu/download.php" # Mac tar-gz file; Windows zip file
-# SENNA removed from SVO way too slow
-# SENNA_download = "https://ronan.collobert.com/senna/download.html"
 WordNet_download = "https://wordnet.princeton.edu/download/current-version" # Mac tar-gz file; Windows exe file
 
 # the function checks that if Stanford CoreNLP version matches with the latest downloadable version
@@ -1171,9 +1169,6 @@ def display_download_installation_messages(download_install, software_name, soft
 #     software_website_url="https://www.oracle.com/java/technologies/downloads/archive/"
 # if 'MALLET' in software_download_var.get():
 #     software_website_url="http://mallet.cs.umass.edu/download.php"
-# # 'SENNA' was removed from SVO options; way too slow
-# # if 'SENNA' in software_download_var.get(): NO LONGER USED
-# #     software_website_url= "https://ronan.collobert.com/senna/download.html"
 # if 'WordNet' in software_download_var.get():
 #     software_website_url="https://wordnet.princeton.edu/download/current-version"
 def external_software_download(calling_script, software_name, existing_software_config, silent=False):

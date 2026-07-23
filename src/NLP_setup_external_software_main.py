@@ -86,7 +86,6 @@ software_download_lb = tk.Label(window,text='Software DOWNLOAD from web')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, software_download_lb, True)
 software_download_var.set('')
-# 'SENNA' was removed from SVO options; way too slow
 # temporarily excluded '*'
 software_download_menu = tk.OptionMenu(window, software_download_var, 'Stanford CoreNLP', 'Gephi','Google Earth Pro','Java (JDK)','MALLET','WordNet')
 # place widget with hover-over info

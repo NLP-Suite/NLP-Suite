@@ -635,7 +635,7 @@ def run():
                             # using Sentence ID as a proxy of a date variable to create a dynamic network graph
                             gexf_file = Gephi_util.create_gexf(window,os.path.basename(f)[:-4], tempOutputDir, f, "Subject (S)", "Verb (V)", "Object (O)",
                                                                "Sentence ID")
-                            if "CoreNLP" in f or "SENNA_SVO" in f or "spaCy" in f or "Stanza" in f:
+                            if "CoreNLP" in f or "spaCy" in f or "Stanza" in f:
                                 if gexf_file!=None and gexf_file!='':
                                     filesToOpen.append(gexf_file)
                             if not save_intermediate_file:
@@ -647,7 +647,7 @@ def run():
                                 gexf_files = [os.path.join(outputDir, f) for f in inputDocs if
                                                             f.endswith('.gexf')]
                                 for f in gexf_files:
-                                    if "CoreNLP" not in f and "SENNA_SVO" not in f and "spaCy" not in f and "Stanza" not in f: #CoreNLP accounts for both ++ and OpenIE
+                                    if "CoreNLP" not in f and "spaCy" not in f and "Stanza" not in f: #CoreNLP accounts for both ++ and OpenIE
                                         os.remove(f)
 
                             output_label = 'sankey'
@@ -701,7 +701,7 @@ def run():
 
                         outputFiles = wordclouds_util.SVOWordCloud(myfile, f, tempOutputDir, transformed_image_mask='', wordcloud_title=wordcloud_title, prefer_horizontal=.9)
                         myfile.close()
-                        if "CoreNLP" in f or "OpenIE" in f or "SENNA_SVO" in f or "spaCy" in f or "Stanza" in f:
+                        if "CoreNLP" in f or "OpenIE" in f or "spaCy" in f or "Stanza" in f:
                             filesToOpen.append(outputFiles)
                     # i +=1
 
@@ -716,41 +716,36 @@ def run():
                 geocoder = 'Google'
             else:
                 geocoder = 'Nominatim'
-            # SENNA locations are not really geocodable locations
-            if (package_var=='SENNA') and os.path.isfile(location_filename):
-                reminders_util.checkReminder(scriptName, reminders_util.title_options_GIS_OpenIE_SENNA,
-                                             reminders_util.message_GIS_OpenIE_SENNA, True)
-            else:
-                if (package_var != 'SENNA') and os.path.isfile(location_filename):
-                    reminders_util.checkReminder(scriptName, reminders_util.title_options_geocoder,
-                                                 reminders_util.message_geocoder, True)
-                    # locationColumnNumber where locations are stored in the csv file; any changes to the columns will result in error
-                    date_present = (extract_date_from_text_var == True) or (filename_embeds_date_var == True)
-                    country_bias = ''
-                    area_var = ''
-                    restrict = False
-                    for location_filename in outputLocations:
-                        outputFiles = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
-                                     config_filename, location_filename, inputDir,
-                                     outputGISDir,
-                                     # 'Nominatim', 'Google Earth Pro & Google Maps', chartPackage, dataTransformation,
-                                     geocoder, 'Google Earth Pro & Google Maps & Python folium pin map & heatmap', chartPackage, dataTransformation,
-                                     date_present,
-                                     country_bias,
-                                     area_var,
-                                     restrict,
-                                     'Location',
-                                     'utf-8',
-                                     0, 1, [''], [''], # group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
-                                     ['Pushpins'], ['red'], # icon_var_list, specific_icon_var_list,
-                                     [0], ['1'], [0], [''], # name_var_list, scale_var_list, color_var_list, color_style_var_list,
-                                     [1], [1]) # bold_var_list, italic_var_list
+            if os.path.isfile(location_filename):
+                reminders_util.checkReminder(scriptName, reminders_util.title_options_geocoder,
+                                             reminders_util.message_geocoder, True)
+                # locationColumnNumber where locations are stored in the csv file; any changes to the columns will result in error
+                date_present = (extract_date_from_text_var == True) or (filename_embeds_date_var == True)
+                country_bias = ''
+                area_var = ''
+                restrict = False
+                for location_filename in outputLocations:
+                    outputFiles = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
+                                 config_filename, location_filename, inputDir,
+                                 outputGISDir,
+                                 # 'Nominatim', 'Google Earth Pro & Google Maps', chartPackage, dataTransformation,
+                                 geocoder, 'Google Earth Pro & Google Maps & Python folium pin map & heatmap', chartPackage, dataTransformation,
+                                 date_present,
+                                 country_bias,
+                                 area_var,
+                                 restrict,
+                                 'Location',
+                                 'utf-8',
+                                 0, 1, [''], [''], # group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
+                                 ['Pushpins'], ['red'], # icon_var_list, specific_icon_var_list,
+                                 [0], ['1'], [0], [''], # name_var_list, scale_var_list, color_var_list, color_style_var_list,
+                                 [1], [1]) # bold_var_list, italic_var_list
 
-                        if outputFiles != None:
-                            if isinstance(outputFiles, str):
-                                filesToOpen.append(outputFiles)
-                            else:
-                                filesToOpen.extend(outputFiles)
+                    if outputFiles != None:
+                        if isinstance(outputFiles, str):
+                            filesToOpen.append(outputFiles)
+                        else:
+                            filesToOpen.extend(outputFiles)
 
     if map_characters_var and len(svo_result_list) > 0:
         import charts_util as charts_util_mc
@@ -1039,7 +1034,6 @@ package_lb = tk.Label(window, text='SVO package')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                package_lb, True)
 
-# removed SENNA from the list; way too slow the NLP Suite implementation of SENNA SVO
 package_menu = tk.OptionMenu(window, package_var, '*', 'spaCy','Stanford CoreNLP', 'Stanza', 'OpenIE (via Stanford CoreNLP)')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_S_dictionary, y_multiplier_integer,
@@ -1358,10 +1352,6 @@ def activateFilters(*args):
         google_earth_var.set(0)
         gephi_checkbox.configure(state='disabled')
         google_earth_checkbox.configure(state='disabled')
-    # SENNA does not produce geocodable locations; SENNA no longer used
-    # if package_var.get()=='SENNA':
-    #     google_earth_checkbox.configure(state='disabled')
-    #     google_earth_var.set(0)
 
 package_var.trace('w', activateFilters)
 
@@ -1384,7 +1374,6 @@ TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                'Improving SVO output: Multi-Word Expressions (MWE) & Linking Verbs and Light Verbs':'TIPS_NLP_Multi-Word Expressions (MWE) & Linking & Light Verbs.pdf',
                'Stanford CoreNLP enhanced dependencies parser (SVO)':'TIPS_NLP_Stanford CoreNLP enhanced dependencies parser (SVO).pdf',
                'CoNLL table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
-               # 'SENNA': 'TIPS_NLP_SVO SENNA.pdf',
                'WordNet': 'TIPS_NLP_WordNet.pdf',
                "Google Earth Pro": "TIPS_NLP_GIS_Google Earth Pro.pdf",
                "Google API Key":"TIPS_NLP_GIS_Google API Key.pdf",
@@ -1398,7 +1387,6 @@ TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                }
                # 'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
 
-# removed SENNA from the TIPS_options
 TIPS_options = 'Coreference resolution', 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures', 'English Language Benchmarks', 'Things to do with words: Overall view', 'SVO extraction and visualization', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'Improving SVO output: Multi-Word Expressions (MWE) & Linking Verbs and Light Verbs', 'CoNLL table',  'WordNet', 'Google Earth Pro', 'Google API Key', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs' #, 'Java download install run'
 
 # add all the lines to the end to every special GUI
@@ -1448,7 +1436,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "The first run loads the BERT-based model and may take 30-60 seconds; the GUI will appear frozen (Not Responding) while SRL runs. This is normal - please be patient."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in Gephi and Sankey network graphs, and Sunburst, Treemap charts (Sankey graphs display only top 10 Subject (S), 20 Verb (V), 20 Object (O)); Sunburst and Treemap charts display only top 15 values; to change these default values, open the Data visualization GUI and change the parameters;\n\n  2. to visualize SVO relations in a wordcloud (Subjects in red; Verbs in blue; Objects in green);\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Google or Nominatim to geocode locations. If the Google-geocode-API_config.csv file is present in the config subdirectory, Google will be used to geocode, as perhaps more accurate than Nominatim. Otherwise, Nominatim will be used. If you wish to chose between Google and Nominatim, for geocoding, please, use the GIS_main script.\n\nTo improve the geocoding of those locations that can take multiple names (e.g., 'United States', 'US', 'USA'), the NLP Suite Stanford CoreNLP algorithm uses the entries of the multi_name_locations.csv file stored in the lib\\wordLists subdirectory of the NLP Suite installation folder. Locations known under different names can be all geocoded under a single name (e.g., 'United States'). You can edit the multi_name_locations.csv file to suit your specific needs and improve geocoding."+GUI_IO_util.msg_Esc)
-                                   # "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi;\n\n  2. to visualize SVO relations in a wordcloud (Subjects in red; Verbs in blue; Objects in green);\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.\n\nThe GIS mapping option is not available for SENNA or CoreNLP OpenIE." + GUI_IO_util.msg_Esc)
+                                   # "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi;\n\n  2. to visualize SVO relations in a wordcloud (Subjects in red; Verbs in blue; Objects in green);\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.\n\nThe GIS mapping option is not available for CoreNLP OpenIE." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Produce an animated map showing how SVO subjects (social actors) move across locations over the course of the narrative.\n"
                                    "Uses the Subject (S) column as the moving entity and the Location column from the SVO output to track movement.\n"

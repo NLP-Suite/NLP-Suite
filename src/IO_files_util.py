@@ -964,8 +964,6 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
         if outFilename.count('NLP_CoreNLP_coref')>1:
             outFilename = outFilename.replace('NLP_CoreNLP_coref','coref')
             # outFilename = 'NLP_CoreNLP_coref'+outFilename
-    if 'CoreNLP_SENNA_SVO_coref' in outFilename:
-        outFilename = outFilename.replace('CoreNLP_SENNA_SVO_coref','_coref')
 
     if sys.platform == 'win32' and len(outFilename) > 255:
         # Windows caps a full path at 255 chars. The old behavior popped a MODAL warning -- which froze
