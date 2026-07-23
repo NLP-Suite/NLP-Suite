@@ -63,9 +63,12 @@ def clear(e):
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
+package_display_area = None
+
 def display_available_options():
-    global y_multiplier_integer, y_multiplier_integer_SV1, error, parsers, memory_var, document_length_var, limit_sentence_length_var, package_display_area_value
+    global y_multiplier_integer_SV1, error, parsers, memory_var, document_length_var, limit_sentence_length_var, package_display_area_value
     global package_display_area_value_upon_entry
+    global package_display_area
     error, package, parsers, package_basics, language, package_display_area_value, \
         encoding_var, export_json_var, memory, document_length, limit_sentence_length = config_util.read_NLP_package_language_config()
     package_display_area_value_upon_entry = package+ package_basics + language + encoding_var + str(export_json_var) + \
@@ -119,9 +122,18 @@ def display_available_options():
     document_length_var.set(int(document_length))
     limit_sentence_length_var.set(int(limit_sentence_length))
     # print("display",parsers_display_area)
+    # This function reruns whenever the config is saved (save_NLP_config -> display_available_options).
+    # Destroy the previous instance before creating its replacement -- same leaked/duplicate-widget class
+    # as parsers_lb/parsers_display_area above (docs/ctk_GUI_overflow_status.md): under grid a widget
+    # re-created at the same spot without destroying the old one bumps into a brand-new column, and this
+    # call's own placeWidget row (y_multiplier_integer_SV1, NOT the running module counter) must stay
+    # local -- reassigning the module-level y_multiplier_integer here used to clobber the accumulated row
+    # count GUI_bottom relies on for its own layout.
+    if package_display_area is not None:
+        package_display_area.destroy()
     package_display_area = GUI_theme_util.create_label(window, width=GUI_IO_util.package_display_area_width, height=1, anchor='w', text=str(package_display_area_value), state='disabled')
     # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.all_widget_pos,
+    GUI_IO_util.placeWidget(window, GUI_IO_util.all_widget_pos,
                                                    y_multiplier_integer_SV1,
                                                    package_display_area, True, False, False, False, 90,
                                                    GUI_IO_util.open_TIPS_x_coordinate,
@@ -195,24 +207,29 @@ def changed_NLP_package_set_parsers(*args):
         available_parsers = []
 
     # this function reruns on every NLP-package change (and twice more during startup, via
-    # display_available_options()/changed_NLP_package()); under grid a widget re-created at the same
-    # spot without destroying the old one bumps into a brand-new column instead of just being
-    # overdrawn as it was under absolute .place(), inflating the window by an extra 640px-wide column
-    # per leftover copy (docs/ctk_GUI_overflow_status.md's row-splitting bug, same root cause)
-    if parsers_lb is not None:
-        parsers_lb.destroy()
-    if parsers_display_area not in ('', None):
-        parsers_display_area.destroy()
+    # display_available_options()/changed_NLP_package()). Destroying and recreating the widgets each
+    # time (the previous fix here) stopped the visual double-draw, but GUI_IO_util's per-row column
+    # claims are never released once taken (there is no "un-claim" on destroy) -- so each rebuild on
+    # the SAME row still permanently burns its old column pair and gets bumped to a fresh one further
+    # right, and by the 2nd/3rd rebuild these labels had drifted 4-5 columns rightward, each dragging
+    # its ~500-640px width into a column nothing else in the GUI reuses (docs/ctk_GUI_overflow_status.md's
+    # row-splitting bug). Reconfigure the existing widgets' text in place instead -- placeWidget then
+    # runs at most ONCE per widget for the lifetime of the GUI, so the column claim is made exactly once.
+    if parsers_lb is None:
+        parsers_lb = GUI_theme_util.create_label(window, text='Available parsers for ' + package_var.get()+'                      ')
+        GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
+                                                       y_multiplier_integer_SV2, parsers_lb, True)
+    else:
+        parsers_lb.configure(text='Available parsers for ' + package_var.get()+'                      ')
 
-    parsers_lb = GUI_theme_util.create_label(window, text='Available parsers for ' + package_var.get()+'                      ')
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
-                                                   y_multiplier_integer_SV2, parsers_lb, True)
-
-    # mac 70
-    parsers_display_area = GUI_theme_util.create_label(window, width=80, height=1, anchor='w', text=', '.join(available_parsers), state='disabled')
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.all_widget_pos,
-                                                   y_multiplier_integer_SV2, parsers_display_area)
-    return y_multiplier_integer
+    if parsers_display_area in ('', None):
+        # mac 70
+        parsers_display_area = GUI_theme_util.create_label(window, width=80, height=1, anchor='w', text=', '.join(available_parsers), state='disabled')
+        GUI_IO_util.placeWidget(window, GUI_IO_util.all_widget_pos,
+                                                       y_multiplier_integer_SV2, parsers_display_area)
+    else:
+        parsers_display_area.configure(text=', '.join(available_parsers))
+    return y_multiplier_integer_SV2 + 1
 
 y_multiplier_integer = changed_NLP_package_set_parsers()
 
@@ -542,9 +559,16 @@ y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate
 readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for setting up the default NLP package (e.g., spaCy, spaCy (transformer), Stanford CoreNLP, Stanza), language (e.g., English, Chinese), and language encoding (e.g., utf-8) to be used for parsing and annotating your corpus in a specific language. Different packages support different sets of languages.\n\nspaCy (transformer) uses transformer-based models (e.g., en_core_web_trf with RoBERTa) for higher accuracy at the cost of slower speed and more memory.\n\n" + \
                 "When Stanford CoreNLP is selected as NLP package, various options become available that apply only to CoreNLP: Memory, Document length (CoreNLP has a maximum processing size of 100,000 characters), Limit sentence length (CoreNLP performance deteriorates rapidly with sentence lengths above 100 words)\n\nWhen clicking the CLOSE button, the script will give the option to save in /config/NLP_default_package_language_config.csv the currently selected configuration IF different from the previously saved configuration."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, True, scriptName, False)
-
+# Build package_display_area BEFORE GUI_bottom (docs/ctk_GUI_overflow_status.md): current_package_lb
+# above is placed with sameY=True expecting this widget to share its grid row, but GUI_bottom's
+# apply_row_spans pass only sees widgets that already exist when it runs -- called after this label
+# didn't exist yet, current_package_lb was spanned across its whole row as if it were alone, and
+# package_display_area then landed INSIDE that span when it was finally created, overlapping it.
+# Safe to move earlier now that display_available_options() no longer reassigns the module-level
+# y_multiplier_integer (see the fix inside that function).
 display_available_options()
+
+GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, True, scriptName, False)
 
 if error:
     mb.showwarning(title='Warning',

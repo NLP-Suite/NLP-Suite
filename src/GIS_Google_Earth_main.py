@@ -407,25 +407,30 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
                                                group_lb, True)
 group_number = GUI_theme_util.create_entry(window, width=3, state='disabled', textvariable=group_number_var)
 
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 50, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                                group_number, True)
 
+# row-splitting fix (docs/ctk_GUI_overflow_status.md): this used to be one 11-widget row via a chain
+# of far-right x_coordinate+N offsets that all collided into the same column band, each bumping into a
+# brand-new grid column. Split across 3 rows, reusing the same handful of bands (labels_x_coordinate /
+# IO_configuration_menu / open_reminders_x_coordinate / open_setup_x_coordinate / run_button_x_coordinate)
+# every other row in this GUI already pays for.
 add_group_button = GUI_theme_util.create_button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled', command=lambda: add_group_to_list())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 100, y_multiplier_integer,
-                                               add_group_button, True)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
+                                               add_group_button, False)
 
 reset_group_button = GUI_theme_util.create_button(window, text='Reset ', width=GUI_IO_util.reset_button_width, height=1, state='disabled',
                                command=lambda: reset_all_values())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 140, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                reset_group_button, True)
 
 csv_field_forGroups_lb = GUI_theme_util.create_label(window, text='Select csv field ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                csv_field_forGroups_lb, True)
 
 csv_field_forGroups_menu = GUI_theme_util.create_option_menu(window, variable=icon_csv_field_var, values=[menu_values])
 
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 400, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                                csv_field_forGroups_menu, True)
 
 group_values_entry_var.set('')
@@ -456,19 +461,19 @@ def groupSelection(*args):
 group_var.trace('w', groupSelection)
 
 group_values_lb = GUI_theme_util.create_label(window, text='Enter value(s) ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 540, y_multiplier_integer,
-                                               group_values_lb, True)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
+                                               group_values_lb, False)
 group_values_entry = GUI_theme_util.create_entry(window, width=10, textvariable=group_values_entry_var)
 group_values_entry.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 640, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                group_values_entry, True)
 
 group_lb = GUI_theme_util.create_label(window, text='Group label ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 750, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                group_lb, True)
 group_label_entry = GUI_theme_util.create_entry(window, width=10, textvariable=group_label_entry_var)
 group_label_entry.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 840, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                                group_label_entry)
 
 icon_var.set('Pushpins')
@@ -512,13 +517,20 @@ def display_icon_image(pic_url, y_multiplier_integer_save):
     # The (25, 25) is (height, width)
     pil_img = pil_img.resize((25, 25), Image.Resampling.LANCZOS)
     tk_img = ImageTk.PhotoImage(pil_img)
-    image_lb = GUI_theme_util.create_label(window, image=tk_img, text='')
+    # Reconfigure the EXISTING placeholder label rather than creating + re-gridding a new one: the old
+    # code built a fresh CTkLabel here and called placeWidget again at the same row/x, which (a) never
+    # destroyed the placeholder from its first placement, leaving two overlapping widgets in the same
+    # grid cell, and (b) even after destroying the old one, the row's column-claim tracking in
+    # GUI_IO_util is monotonic (never un-claims a column once taken), so the replacement would still
+    # get bumped into a brand-new grid column -- both a correctness bug and a width-overflow driver
+    # (docs/ctk_GUI_overflow_status.md's "recreated without destroying predecessor" class of bug).
     # display only if the Select type of icon has a value
     if specific_icon_var.get() != '':
+        image_lb.configure(image=tk_img, text='')
         image_lb.image = tk_img
     else:
+        image_lb.configure(image=tk_img, text='')
         image_lb.image = ''
-    GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 650, y_multiplier_integer_save, image_lb, False)
 
 
 def update_specific_icon_menu(icon_var, specific_icon_menu, y_multiplier_integer_save, *args):
@@ -1006,8 +1018,13 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "Please, using the dropdown menu, select the column containing the location names (e.g., New York) to be geocoded and mapped.\n\nIf the headers contain 'Latitude' and 'Longitude' fields, geocoding will be skipped and the selected Location column will only be used to display in the DESCRIPTION field of Google Earth Pro.\n\nTHE OPTION IS NOT AVAILABLE WHEN SELECTING A CONLL INPUT CSV FILE. NER IS THE COLUMN AUTOMATICALLY USED WHEN WORKING WITH A CONLL FILE IN INPUT.\n\nWhen GIS distance is to be computed, the column refers to the FIRST set of location names. In this case, you can use the second dropdown menu to select the column containing the second set of location names." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "\n\nUsing the dropdown menu, if a date is present, select the column containing the date and the date format. If a date is present, it will be used to construct dynamic GIS models." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to use different pins for different values in a field of the csv file.\n\nSeveral options become available after ticking the checkbox. In particular, you will be able to:\n\nselect the field in the csv file whose selected values will be used for the same icon;\nenter the comma-separated values that should all share the same icon (e.g., 'communists, socialists, maximalists, anarchists, protesters, demonstartors, trade unions' in a study of the rise of Italian fascism);\noptionally, enter a label for the group (e.g., 'the left'), otherwise leave blank.\n\nSeveral groups can be added by clicking on the + button. Again, in a study of the rise of Italian fascism, a second group may have values 'fascists, right-wingers, nationalists' and, optionally, a group label 'the right'.\n\nFor 'the left' group you may then select a red pin and a black pin for 'the right'.\n\ncsv field value NOT included in any of the two groups (in this specific example), should be added as a third group, leaving blank both fields for group values and group label and then selecting a different icon not associated to any previously defined groups (e.g., a white pin).\n\nWhen group labels are left blank, the labels will be set by default to Group 1, Group 2, Group 3, ...\n\nGroup labels and group values will be automatically displayed in the DESCRIPTION field, if the DESCRIPTION checkbox is ticked."+ GUI_IO_util.msg_Esc)
+    # row-splitting fix (docs/ctk_GUI_overflow_status.md): the "Icon for group of values" row now
+    # spans 3 grid rows (see the group-row split above), so this message needs 2 matching extra
+    # '?' HELP buttons to keep this counter aligned with the main body's row count.
+    group_row_msg = ("Please, tick the checkbox if you wish to use different pins for different values in a field of the csv file.\n\nSeveral options become available after ticking the checkbox. In particular, you will be able to:\n\nselect the field in the csv file whose selected values will be used for the same icon;\nenter the comma-separated values that should all share the same icon (e.g., 'communists, socialists, maximalists, anarchists, protesters, demonstartors, trade unions' in a study of the rise of Italian fascism);\noptionally, enter a label for the group (e.g., 'the left'), otherwise leave blank.\n\nSeveral groups can be added by clicking on the + button. Again, in a study of the rise of Italian fascism, a second group may have values 'fascists, right-wingers, nationalists' and, optionally, a group label 'the right'.\n\nFor 'the left' group you may then select a red pin and a black pin for 'the right'.\n\ncsv field value NOT included in any of the two groups (in this specific example), should be added as a third group, leaving blank both fields for group values and group label and then selecting a different icon not associated to any previously defined groups (e.g., a white pin).\n\nWhen group labels are left blank, the labels will be set by default to Group 1, Group 2, Group 3, ...\n\nGroup labels and group values will be automatically displayed in the DESCRIPTION field, if the DESCRIPTION checkbox is ticked."+ GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", group_row_msg)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", group_row_msg)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", group_row_msg)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, using the dropdown menu, select the type of pin you wish to use on the map.\n\nSeveral options become available after selecting the basic type of icon pin." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",

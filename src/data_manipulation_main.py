@@ -320,10 +320,14 @@ if __name__ == '__main__':
 
     # dropdown to ROLL THROUGH the added files -- created here, PLACED on its own row below (after the
     # button/open/'+' row) so it doesn't overlap the wide Select button. Given an explicit width because an
-    # empty OptionMenu otherwise renders as a tiny sliver even once it's populated.
+    # empty OptionMenu otherwise renders as a tiny sliver even once it's populated. width= is CHARACTERS
+    # (create_option_menu has no width_is_chars escape hatch, unlike create_label/create_slider), so the
+    # previous 125 became a 1000px-wide dropdown (125 * 8px/char) for what only ever shows a csv BASENAME
+    # (_refresh_csv_file_dropdown strips the directory) -- the single largest driver of this GUI's grid
+    # overflow. 30 chars (240px) comfortably fits real basenames without the 1000px waste.
     csv_file_dropdown_var = tk.StringVar()
     csv_file_dropdown = GUI_theme_util.create_option_menu(window, variable=csv_file_dropdown_var, values=[''],
-                                                          command=_on_csv_file_dropdown_select, width=125)
+                                                          command=_on_csv_file_dropdown_select, width=30)
 
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                                    csv_file_dropdown, True, False, True, False, 90,
@@ -698,17 +702,21 @@ if __name__ == '__main__':
     character_separator_entry_var = tk.StringVar()
     character_separator_entry = GUI_theme_util.create_entry(window, width=10, textvariable=character_separator_entry_var)
     character_separator_entry.configure(state='disabled')
-    # place widget with hover-over info
+    # place widget with hover-over info; end the row here (row-splitting fix, docs/ctk_GUI_overflow_status.md) --
+    # the trailing WHERE/+/+ /OK widgets used to share this row via far-right x-offsets (900px+) that all
+    # collide into the same grid column band and each get bumped into a brand-new column, ballooning the
+    # window width. Give them their own row below, reusing bands this GUI already pays for elsewhere.
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate+120,
                                                    y_multiplier_integer,
                                                    character_separator_entry,
-                                                   True, False, False, False, 90,
+                                                   False, False, False, False, 90,
                                                    GUI_IO_util.open_setup_x_coordinate,
                                                    "This box serves the operation you selected:\n\nFor CONCATENATE and SPLIT, enter the character(s) separator (CONCATENATE joins the selected fields with it; SPLIT cuts a field apart on it).\n\nFor RENAME, type the NEW field name here.")
-    # 'WHERE widget'
+    # 'WHERE widget' -- second row of the operations block (row-split); x-coordinates reused from other
+    # rows' column bands so no new grid column is created.
     WHERE_drop_extract_button = GUI_theme_util.create_button(window, text='WHERE clause', command=lambda: activate_where_clause())
     # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
                                                    y_multiplier_integer,
                                                    WHERE_drop_extract_button,
                                                    True, False, False, False, 90,
@@ -717,7 +725,7 @@ if __name__ == '__main__':
 
     add_drop_field = GUI_theme_util.create_button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled', command=lambda: operation_plus_field())
     # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 950,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu,
                                                    y_multiplier_integer,
                                                    add_drop_field,
                                                    True, False, False, False, 90,
@@ -729,7 +737,7 @@ if __name__ == '__main__':
                          command=lambda: add_csvFile(window, 'Select INPUT csv file',
                                                                 [("csv files", "*.csv")]))
     # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 1000,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate+120,
                                                    y_multiplier_integer,
                                                    add_drop_file, True, False, False, False, 90,
                                                    GUI_IO_util.labels_x_coordinate + 800,
@@ -738,7 +746,7 @@ if __name__ == '__main__':
     OK_operation_button = GUI_theme_util.create_button(window, text='OK', width=GUI_IO_util.OK_button_width, height=1, state='disabled',
                                 command=lambda: operation_OK())
     # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 1050,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate,
                                                    y_multiplier_integer,
                                                    OK_operation_button,
                                                    False, False, False, False, 90,
@@ -793,9 +801,12 @@ if __name__ == '__main__':
 
     and_or_menu = GUI_theme_util.create_option_menu(window, variable=and_or_var, values=['and', 'or'], width=3)
     and_or_menu.configure(state="disabled")
+    # end the row here (row-splitting fix, docs/ctk_GUI_overflow_status.md) -- the trailing +/OK widgets
+    # used to share this row via far-right x-offsets that collide into the same column band, each getting
+    # bumped into a brand-new grid column. Give them their own row below, reusing bands already paid for.
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate + 910, y_multiplier_integer,
                                                    and_or_menu,
-                                                   True, False, False, False, 90,
+                                                   False, False, False, False, 90,
                                                    GUI_IO_util.labels_x_indented_coordinate + 910,
                                                    "Select 'and' or 'or' to combine this WHERE condition with a further condition, then press the + button to add the next condition.")
 
@@ -803,8 +814,8 @@ if __name__ == '__main__':
     add_extract_options_var = tk.IntVar()
     add_extract_options = GUI_theme_util.create_button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled',
                                     command=lambda: activate_extract_options())
-    # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 1000,
+    # place widget with hover-over info -- second row of the WHERE-clause block (row-split)
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
                                                    y_multiplier_integer,
                                                    add_extract_options,
                                                    True, False, False, False, 90,
@@ -814,7 +825,7 @@ if __name__ == '__main__':
     OK_WHERE_button = GUI_theme_util.create_button(window, text='OK', width=GUI_IO_util.OK_button_width, height=1, state='disabled',
                                         command=lambda: build_extract_string(False, True))
     # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 1050,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu,
                                                    y_multiplier_integer,
                                                    OK_WHERE_button,
                                                    False, False, False, False, 90,
@@ -1150,8 +1161,11 @@ if __name__ == '__main__':
                                                              "NLP Suite Help",
                                                              'Tick the \'GUIs available for more analyses\' checkbox, then use the dropdown menu to open a related tool for further csv analysis:\n\n   CSV data manipulation with SQL: manipulate csv files using SQL queries;\n   CSV data visualization: visualize your data in a variety of ways;\n   Statistics on csv files: compute frequencies, cross-tabulations, and statistics on csv data.\n\nThe selected GUI will open as soon as you pick it from the menu, without having to press the RUN button.')
 
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                      "Use the operation dropdown menu to choose what to do with your csv file(s). The widgets on this row become active according to the operation you select:\n\n"
+        # message text shared by both halves of the operation row -- it was split into two grid rows
+        # (docs/ctk_GUI_overflow_status.md's row-splitting fix) to stop the '+'/'+'/OK buttons from
+        # bumping into brand-new grid columns; each half needs its own '?' HELP button so the help
+        # column stays aligned with the content rows it sits next to.
+        operation_row_msg = ("Use the operation dropdown menu to choose what to do with your csv file(s). The widgets on this row become active according to the operation you select:\n\n"
                                       "   APPEND rows: stack the rows of two or more csv files that share the same fields into a single file. Use the '+' file button to add files.\n\n"
                                       "   CONCATENATE fields: join two or more fields into a new field, separated by the character(s) you type in the Character separator box. Use the '+' field button to add fields.\n\n"
                                       "   SPLIT field: the inverse of CONCATENATE - split one field into several new fields at the Character separator.\n\n"
@@ -1162,14 +1176,17 @@ if __name__ == '__main__':
                                       "   DEDUPLICATE rows: remove duplicate rows - judged on the selected key field(s), or on the whole row if no field is selected.\n\n"
                                       "   RENAME field: rename the selected field; type the NEW name in the Character separator box.\n\n"
                                       "Select the field to operate on from the 'Select field' dropdown. Press the '+' buttons, when active, to add another field or another csv file. Press OK to register your selections (they appear in the display box), then press RUN.")
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                      "The WHERE clause filters rows by field value. It is available for the DROP and EXTRACT operations only.\n\n"
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", operation_row_msg)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", operation_row_msg)
+        where_row_msg = ("The WHERE clause filters rows by field value. It is available for the DROP and EXTRACT operations only.\n\n"
                                       "After selecting a field, click the 'WHERE clause' button to activate the widgets, then:\n\n"
                                       "   select a comparator (e.g., =, <>, >, >=, <, <=);\n"
                                       "   type the value to compare against in the WHERE box (CASE SENSITIVE!);\n"
                                       "   choose and/or to combine with a further condition, then press the '+' button to add it.\n\n"
                                       "Examples: EXTRACT only the rows where Year >= 1997; DROP the rows where Stopword = the.\n\n"
                                       "Leave the WHERE clause empty to operate on all rows.")
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", where_row_msg)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", where_row_msg)
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       resetAll + "\n\nThe read-only widget after the 'RESET all' button displays the arguments that will be processed when pressing the RUN button for the selected operation:\n\n   csv filename\n   csv column/field.\n   For the Concatenate option the character separator will also be displayed.\n   For the Drop and Extract options, the comparator value (e.g., =, >), the WHERE value, and the selected add/or option will be displayed.")
         # empty line to account for the height of the text widget

@@ -242,10 +242,16 @@ tranche.** Only *new* shared-layer gaps (each now a §6 item) and still-open ite
   no geometry-manager conflict, **overflow −10** (fits), `changed_filename` + tab dispatch exercised
   across all 7 tabs with a real csv. `pytest` + `gui_smoke` clean (126 widgets). **macOS launch + Windows
   QA outstanding.**
-- **Row-splitting** for the overflow backlog: `DB_SQL_main` (+167), `NLP_setup_package_language` (+731),
-  `DB_PCACE_data_analysis` (+297), `GIS_Google_Earth` (+388), `sample_corpus_main` (+419),
-  `data_manipulation_main` (+157) — see `docs/ctk_GUI_overflow_status.md`. **Deliberately deferred
-  (user's call, 2026-07-22): do this LAST**, after the rest of Phase 4 lands.
+- ✅ **Row-splitting** for the overflow backlog (`ctk/phase4-row-splitting`, 2026-07-22): `DB_SQL_main`
+  (+167→0), `NLP_setup_package_language` (+731→0), `DB_PCACE_data_analysis` (+297→0), `GIS_Google_Earth`
+  (+276→0), `sample_corpus_main` (+419→**-10**), `data_manipulation_main` (+157→**-178**) — full
+  before/after and the three new failure modes this surfaced (a `+.5` half-row nudge broken by Python's
+  round-half-to-even; widgets recreated on every callback without destroying/reconfiguring the previous
+  instance, leaking grid-column claims; a widget built after `GUI_bottom` already ran, missing
+  `apply_row_spans`) are in `docs/ctk_GUI_overflow_status.md`. This was the item **deliberately deferred
+  to run LAST** (user's call, 2026-07-22) — now done. Four GUIs outside this named backlog
+  (`file_search_byWord_main`, `wordclouds_main`, `file_manager_main`, `SVO_main`; +191/+169/+103/+48)
+  remain overflowing and unaddressed — same doc.
 - ✅ **`narrative_analysis_ALL_main.py`**, **`license_GUI.py`**, **`charts_Excel_main.py`**
   (`ctk/phase4-remaining-hard-cases`, 2026-07-22) — the last three unconverted GUIs in `src/`.
   `charts_Excel_main.py` normalized first (pure-CR classic-Mac line endings, no `\n` in the file at

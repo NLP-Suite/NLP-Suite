@@ -977,7 +977,7 @@ setup_complex.configure(state='disabled')
 GUI_theme_util.set_values(setup_complex, setup_complex_menu)
 # place widget with hover-over info
 _setup_complex_y_row = y_multiplier_integer  # save for dynamic hover-over
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+90, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    setup_complex,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Select a complex object type from the dropdown.\n"
@@ -989,7 +989,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 # FIRST checkbox ---------------------------------------------------
 identifiers_checkbox = GUI_theme_util.create_checkbox(window, text='IDs', variable=identifiers_var, onvalue=1, offvalue=0, state='disabled')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate-10, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    identifiers_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "IDENTIFIER mode: export a compact summary with human-readable Identifier strings for the selected complex object and its children (e.g., '(mob lynched Negro)').\nOutput file suffix: _IDENTIFIER.\nUse this for a quick overview of all instances.")
@@ -997,25 +997,31 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
 # SECOND checkbox ---------------------------------------------------
 extended_headers_checkbox = GUI_theme_util.create_checkbox(window, text='Ext hdrs', variable=extended_headers_var, onvalue=1, offvalue=0, state='disabled')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+10, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                    extended_headers_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "EXTENDED HEADERS mode: export a fully expanded table with every simplex value in its own column (e.g., 'Participant-S > Individual > Name of individual').\nOutput file suffix: _ALL.\nUse this for detailed analysis, charting, and frequency computation.")
 
 # THIRD checkbox ---------------------------------------------------
+# row-splitting fix (docs/ctk_GUI_overflow_status.md): this used to share ONE grid row with every
+# other Complex-object widget below via a chain of x_coordinate+N offsets (+10, +30, +50, +70, +95)
+# that all land in the SAME far-right column band and each get bumped into a brand-new grid column --
+# 11 columns for one row. End the row here; the rest move to their own row below, reusing the same
+# five bands (labels_x_coordinate / IO_configuration_menu / open_reminders_x_coordinate /
+# open_setup_x_coordinate / run_button_x_coordinate) every other row in this GUI already pays for.
 parents_children_checkbox = GUI_theme_util.create_checkbox(window, text='Par/child', variable=parents_children_var, onvalue=1, offvalue=0, state='disabled')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+30, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                    parents_children_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "PARENTS & CHILDREN mode: extract the parents and children of the selected complex object")
 
-# FOURTH checkbox ---------------------------------------------------
+# FOURTH checkbox --------------------------------------------------- (row-split: second row)
 document_sources_var = tk.IntVar()
 document_sources_checkbox = GUI_theme_util.create_checkbox(window, text='Docs', variable=document_sources_var, onvalue=1, offvalue=0, state='disabled')
 
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+50, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    document_sources_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "DOCUMENT mode: extract the document sources (newspaper name, newspaper date, page number, column number) for specific objects (e.g., Semantic triplets (SVO), Simple processes).")
@@ -1026,7 +1032,7 @@ comments_var.set(0)
 comments_checkbox = GUI_theme_util.create_checkbox(window, text='Comments', variable=comments_var, onvalue=1, offvalue=0, state='disabled')
 
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+70, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    comments_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "COMMENT mode: extract the comments left by users and/or verifiers for specific objects (e.g., Semantic triplets (SVO)).")
@@ -1037,7 +1043,7 @@ comments_menu = GUI_theme_util.create_option_menu(window, variable=comments_type
                                                    values=['*', 'Users comments', 'Verifiers comments'])
 comments_menu.configure(state='disabled')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+95, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    comments_menu,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "Use the dropdown menu to extract the comments left by users and/or verifiers for specific objects (e.g., Semantic triplets (SVO)).")
@@ -1136,7 +1142,7 @@ setup_simplex.configure(state='disabled')
 GUI_theme_util.set_values(setup_simplex, setup_simplex_menu)
 # place widget with hover-over info
 _setup_simplex_y_row = y_multiplier_integer  # save for dynamic hover-over
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+90, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    setup_simplex,
                                    True, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
                                    "Select a simplex object type from the dropdown.\n"
@@ -1149,7 +1155,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 # FIRST simplex checkbox: Export values to CSV
 simplex_export_values_var = tk.IntVar()
 simplex_export_values_checkbox = GUI_theme_util.create_checkbox(window, text='Values', variable=simplex_export_values_var, onvalue=1, offvalue=0, state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate-10, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    simplex_export_values_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "VALUES mode: export all data values for the selected simplex to a CSV file with frequencies.")
@@ -1157,24 +1163,25 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminder
 # SECOND simplex checkbox: Charts (bar/pie of frequencies)
 simplex_charts_var = tk.IntVar()
 simplex_charts_checkbox = GUI_theme_util.create_checkbox(window, text='Charts', variable=simplex_charts_var, onvalue=1, offvalue=0, state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+10, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                    simplex_charts_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "CHARTS mode: produce bar and pie charts of value frequencies for the selected simplex.")
 
-# THIRD simplex checkbox: Timechart (date simplexes)
+# THIRD simplex checkbox: Timechart (date simplexes) -- row-splitting fix (docs/ctk_GUI_overflow_status.md):
+# ends the row here (mirrors the Complex-row split above); GIS map moves to its own row below.
 simplex_timechart_var = tk.IntVar()
 simplex_timechart_checkbox = GUI_theme_util.create_checkbox(window, text='Timechart', variable=simplex_timechart_var, onvalue=1, offvalue=0, state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+30, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                    simplex_timechart_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "TIMECHART mode: generate a timeline chart for date-typed simplexes (ValueType = 3).")
 
-# FOURTH simplex checkbox: GIS map (geocode + map location simplexes)
+# FOURTH simplex checkbox: GIS map (geocode + map location simplexes) -- row-split: second row
 simplex_GIS_var = tk.IntVar()
 simplex_GIS_checkbox = GUI_theme_util.create_checkbox(window, text='GIS map', variable=simplex_GIS_var, onvalue=1, offvalue=0, state='disabled')
 _gis_checkbox_y_row = y_multiplier_integer  # save for dynamic hover-over
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+50, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    simplex_GIS_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "GIS MAPS mode: geocode location values and display on Google Earth Pro, Google Maps, and Folium.\n"
@@ -1183,7 +1190,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminder
 
 simplex_values_var = tk.StringVar()
 simplex_values_lb = GUI_theme_util.create_label(window, text='Simplex values')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    simplex_values_lb, True)
 
 simplex_values = GUI_theme_util.create_combobox(window, textvariable = simplex_values_var, width=GUI_IO_util.widget_width_short)
@@ -1823,10 +1830,10 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     # Row: From data ID to setup ID
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                 "Enter a data ID to look up the corresponding setup Complex or Simplex name." + GUI_IO_util.msg_Esc)
-    # Row: Complex
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
-                                                         "NLP Suite Help",
-                                                         "COMPLEX: select a complex object type from the dropdown.\n\n"
+    # Row: Complex -- split into 2 grid rows (docs/ctk_GUI_overflow_status.md row-splitting fix), so
+    # this message needs a matching second '?' HELP button to keep this counter aligned with the main
+    # body's row count (see the Complex-row split above).
+    complex_row_msg = ("COMPLEX: select a complex object type from the dropdown.\n\n"
                                                          "Checkboxes (left to right):\n"
                                                          "  1. IDENTIFIERS: compact summary with human-readable Identifier strings.\n"
                                                          "  2. EXTENDED HEADERS: fully expanded table with every simplex in its own column.\n"
@@ -1838,10 +1845,12 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                                          "Enter: export the story form for the selected object.\n"
                                                          "RUN: export the story form, or perform a checkbox operation."
                                                          + GUI_IO_util.msg_Esc)
-    # Row: Simplex
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
-                                                         "NLP Suite Help",
-                                                         "SIMPLEX: select a simplex object type from the dropdown.\n\n"
+                                                         "NLP Suite Help", complex_row_msg)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                                         "NLP Suite Help", complex_row_msg)
+    # Row: Simplex -- same row-splitting fix as Complex above.
+    simplex_row_msg = ("SIMPLEX: select a simplex object type from the dropdown.\n\n"
                                                          "Checkboxes (left to right):\n"
                                                          "  1. VALUES: export all data values with frequencies to CSV.\n"
                                                          "  2. CHARTS: produce bar and pie charts of value frequencies.\n"
@@ -1849,6 +1858,10 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                                          "  4. GIS MAP: geocode location values and display on Google Earth Pro, Google Maps, and Folium.\n\n"
                                                          "Spell-check and lemmatization have been moved to the Data Validation GUI."
                                                          + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                                         "NLP Suite Help", simplex_row_msg)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                                         "NLP Suite Help", simplex_row_msg)
     # Row: simplex data type
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                                          "NLP Suite Help",

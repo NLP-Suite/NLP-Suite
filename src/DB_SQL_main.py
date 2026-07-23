@@ -1185,7 +1185,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 select_DB_tables_menu = GUI_theme_util.create_option_menu(window, variable=select_DB_tables_var,
                                                            values=table_menu_values)
 select_DB_tables_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+70,y_multiplier_integer,select_DB_tables_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,select_DB_tables_menu,True)
 
 table_fields_menu_values = []
 
@@ -1299,9 +1299,14 @@ def get_table_fields_name(*args):
 select_DB_table_fields_var.trace('w',get_table_fields_name)
 
 
+# row-splitting fix (docs/ctk_GUI_overflow_status.md): this used to be one 9-widget row via a chain
+# of x_coordinate+N offsets that collided into the same few column bands, each bumping into a
+# brand-new grid column. Split across 2 rows, reusing the same handful of bands
+# (labels_x_coordinate / IO_configuration_menu / open_reminders_x_coordinate / open_setup_x_coordinate /
+# run_button_x_coordinate) every other row in this GUI already pays for.
 select_DB_table_fields_lb = GUI_theme_util.create_label(window, text='DB table fields')
 
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 280, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                                select_DB_table_fields_lb, True, False, True, False, 90,
                                                GUI_IO_util.labels_x_coordinate+28,
                                                "Use the dropdown menu to list the fields of the selected DB table.")
@@ -1309,10 +1314,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
 select_DB_table_fields_menu = GUI_theme_util.create_option_menu(window, variable=select_DB_table_fields_var,
                                                                  values=table_fields_menu_values)
 select_DB_table_fields_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+380,y_multiplier_integer,select_DB_table_fields_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,y_multiplier_integer,select_DB_table_fields_menu,True)
 
 auto_SQL_lb = GUI_theme_util.create_label(window, text='Templates')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+510,y_multiplier_integer,auto_SQL_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate,y_multiplier_integer,auto_SQL_lb,False)
 
 auto_SQL_var=tk.StringVar()
 auto_SQL_value = GUI_theme_util.create_option_menu(window, variable=auto_SQL_var,
@@ -1321,14 +1326,14 @@ auto_SQL_value = GUI_theme_util.create_option_menu(window, variable=auto_SQL_var
                                                             'SQL unmatched', 'SQL update', 'SQL subquery',
                                                             'SQL group concat', 'SQL case'])
 auto_SQL_value.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 600, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                auto_SQL_value, True, False, True, False, 90,
                                                GUI_IO_util.labels_x_coordinate+600,
                                                "Use the dropdown menu to import an SQL query template.")
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,auto_SQL_value,True)
 
 distinct_checkbox = GUI_theme_util.create_checkbox(window, text='Distinct', variable=distinct_var, onvalue=1, offvalue=0, state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 680, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                distinct_checkbox, True, False, True, False, 90,
                                                GUI_IO_util.labels_x_coordinate+680,
                                                "Tick the checkbox to display a query as DISTINCT.")
@@ -1392,10 +1397,10 @@ def save_query():
                            message='The SQL query has been saved to\n\n' + filePath)
 
 import_query_button=GUI_theme_util.create_button(window, width=15, text='Import SQL query', state='disabled', command=lambda: import_query(window,'Select INPUT SQL query file', [("SQL files", "*.txt")]))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+770, y_multiplier_integer,import_query_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,import_query_button,True)
 
 save_query_button=GUI_theme_util.create_button(window, width=15, text='Save SQL query', state='disabled', command=lambda: save_query())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+850, y_multiplier_integer,save_query_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,save_query_button)
 
 # ── INPUT CSV file row (restored) ──────────────────────────────────────────────────────────
 # Removed as a side effect of commit 94759275. Shows the CSV a query writes (auto-populated in
@@ -1479,7 +1484,14 @@ _update_sql_query_hover()  # Initial bind
 # the constructor, not place"), reported by Tk's callback handler every time the `after(100, ...)`
 # timer fired. Removed rather than ported -- there was no working layout left to preserve.
 
-y_multiplier_integer=y_multiplier_integer+4.5
+# Integer jump, not +4.5: placeWidget rounds the row (int(round(float(y_multiplier_integer)))), and a
+# fractional ".5" base means the landing row depends on the CURRENT row count's parity (Python's
+# round-half-to-even) rather than being a stable +N gap -- any upstream row-count change (e.g. a
+# row-splitting fix elsewhere in this file) can flip that parity and silently jump the gap by one row
+# extra, colliding the next content ("Open output files") with GUI_bottom's own row
+# (docs/ctk_GUI_overflow_status.md's row-splitting bug, same root cause as sample_corpus_main.py's
+# repeating ".5" nudge).
+y_multiplier_integer=y_multiplier_integer+4
 
 def display_SQL(*args):
     was_disabled = (SQL_query_entry.cget('state') == 'disabled')
@@ -1575,12 +1587,19 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                                          "NLP Suite Help",
                                                          "Cross-complex query generator: select a SOURCE and TARGET complex type, then click Generate to automatically build a SQL query that navigates the PC-ACE hierarchy.\n\nOptionally filter the source by selecting a simplex name and entering a LIKE pattern (e.g. %woman% or lynching).\n\nHover over the Generate SQL query button to see the current object selection." + GUI_IO_util.msg_Esc)
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, using the 'Select DB table' dropdown menu, select the table available in the SQLite database.\n\nOnce an SQLite table has been selected, use the 'Select DB table field' dropdown menu to select a specific field available in the selected table.\n\nUsing the Templates dropdown menu select the type of SQL query for which to display a standard template (e.g., UNION, JOIN). You will need to change table names and field names to the appropriate names in your database.\n\nTick the Distinct checkbox to display the SQL query as distinct\n\nClick Import SQL query to load a previously saved query.\nClick Save SQL query to save the current query to a file." + GUI_IO_util.msg_Esc)
+    # row-splitting fix (docs/ctk_GUI_overflow_status.md): the DB tables/fields/Templates/Distinct/
+    # Import/Save row now spans 2 grid rows (see the split above), so this message needs a matching
+    # second '?' HELP button to keep this counter aligned with the main body's row count.
+    db_tables_row_msg = "Please, using the 'Select DB table' dropdown menu, select the table available in the SQLite database.\n\nOnce an SQLite table has been selected, use the 'Select DB table field' dropdown menu to select a specific field available in the selected table.\n\nUsing the Templates dropdown menu select the type of SQL query for which to display a standard template (e.g., UNION, JOIN). You will need to change table names and field names to the appropriate names in your database.\n\nTick the Distinct checkbox to display the SQL query as distinct\n\nClick Import SQL query to load a previously saved query.\nClick Save SQL query to save the current query to a file." + GUI_IO_util.msg_Esc
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", db_tables_row_msg)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", db_tables_row_msg)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
         "The INPUT CSV file widget displays a csv filename. There are two ways to fill it:\n\n   1. Click 'Select INPUT CSV file' to choose a file of your choice.\n\n   2. It is filled AUTOMATICALLY with the query result after you click RUN.\n\nClick the small button between the 'Select...' button and the text widget to open the file and view its content.\n\nClick 'Clear' to empty the field." + GUI_IO_util.msg_openFile)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Enter an SQL query in the form SELECT ...\n\nYou can also generate a new SQL query, import a saved query or use a template from the dropdown menu.\n\nHover over the query area to see the name of the currently loaded query."+ GUI_IO_util.msg_Esc)
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer+4.5,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
+    # integer jump (matches the main body's +4 fix above) -- a fractional ".5" base here made the
+    # landing row depend on the running counter's parity instead of a stable +N gap.
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer+4,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
 
     return y_multiplier_integer -1
 "COUNT Display a template SQL COUNT query."
