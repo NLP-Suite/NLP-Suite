@@ -362,7 +362,6 @@ sub_class_entry_var.trace ('w',add_DBpedia_YAGO_sub_class)
 # for the code
 #   https://mail.python.org/pipermail/tkinter-discuss/2012-January/003041.html
 
-# ontology_class = GUI_IO_util.combobox_with_search_widget(constants_util.DBpedia_ontology_class_menu)
 ontology_class_lb = GUI_theme_util.create_label(window, text='Ontology class')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ontology_class_lb,True)
 

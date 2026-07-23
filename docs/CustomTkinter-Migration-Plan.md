@@ -274,7 +274,30 @@ tranche.** Only *new* shared-layer gaps (each now a §6 item) and still-open ite
   after (16/79/27 pre-existing legacy hits respectively, e.g. `==True`/`==False` comparisons, unused
   locals) — confirms the conversion added zero new lint debt; per the legacy-backlog rule these were
   left alone rather than swept.
-- `message_box_widget` countdown timers, `combobox_with_search_widget`, any Listbox sites.
+- ✅ **`message_box_widget` countdown timers, `combobox_with_search_widget`, Listbox sites**
+  (`ctk/phase1-grid`, 2026-07-22) — the last named Phase 4 backlog item, closing the plan.
+  `message_box_widget` (`GUI_IO_util.py`, fires on every RUN's Started/Finished notice via
+  `IO_user_interface_util.timed_alert` — 97 call sites across the suite): `tk.Toplevel` →
+  `CTkToplevel`, `tk.Message`/`Label`/`Button` → `create_label`/`create_button`; the pixel-offset
+  `.place()` layout (computed from the packed `tk.Message`'s measured height, plus 5 Mac/Windows
+  `countdownLabel*_X` constants) replaced by a plain grid — the button row now lays itself out, no
+  height measurement or per-platform constants needed, so the 5 dead constants were deleted from both
+  platform blocks in `GUI_IO_util.py` (confirmed single-use via grep first). All three button modes
+  (OK / Yes-No / Yes-No-Cancel) exercised under real Tk+CTk by invoking each button programmatically
+  (`gui_smoke`'s stub can't drive a modal `wait_window` loop) — correct return value each time.
+  `combobox_with_search_widget` (`GUI_IO_util.py`) was a second, unfinished prototype (own
+  `tk.Tk()`/`mainloop()`, `ttk.Combobox`) whose only reference anywhere in `src/` was already a
+  commented-out line in `knowledge_graphs_main.py`, immediately followed by a live
+  `create_combobox(...)` call doing the same job — deleted outright (function + the dead call-site
+  comment) rather than reskinned, since nothing calls it. The one genuine Listbox site,
+  `IO_files_util.select_path_from_list` (file-picker popup used by CoNLL/GIS/semantic_aggregation),
+  kept its `tk.Listbox`/`tk.Scrollbar` per §3 (no CTk equivalent) but the surrounding chrome
+  (`tk.Toplevel`/`Frame`/`Label`/`Button`) converted to `CTkToplevel`/`CTkFrame`/factories; the
+  CTkFrame parents the plain-tk Listbox/Scrollbar without issue (`CTkFrame` is a real `tkinter.Frame`
+  subclass). Verified end-to-end under real Tk+CTk (Select/Yes/Cancel button paths, `wait_window`
+  round-trip). `pytest` 184 passed, `gui_smoke` unchanged (38 ok/0 crashed/0 missing golden;
+  `knowledge_graphs_main.py` still builds, 19 widgets). `ruff check` on the three touched files:
+  identical violation count before/after (106) — zero new lint debt.
 
 ### Phase 5 — Cleanup and polish (1–2 PRs)
 

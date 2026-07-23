@@ -630,15 +630,6 @@ if sys.platform == 'darwin':  # Mac OS
     download_install = 320
     website_url_placement = 600
 
-# MAC OK
-    countdownLabelOK1_X = 70
-    countdownLabelOK2_X= 280
-
-    # MAC Yes No reminder
-    countdownLabel1_X = 125
-    countdownLabel2_X = 335
-    no_reminder = 65
-
 # MAC DB_SQL_main
     SQLite_DB_file_width = 80
     simplex_complex_files_dropdown = 425 # Complex/Simplex objects do you want to see? dropdowns
@@ -1023,15 +1014,6 @@ else: #windows and anything else
     download_install = 320
     website_url_placement = 600
 
-# Windows OK
-    countdownLabelOK1_X = 40
-    countdownLabelOK2_X = 230
-
-# Windows Yes No reminder
-    countdownLabel1_X = 90
-    countdownLabel2_X = 280
-    no_reminder = 45
-
 # Windows DB_SQL_main
     SQLite_DB_file_width = 100
     simplex_complex_files_dropdown = 390  # Complex/Simplex objects do you want to see? dropdowns
@@ -1398,20 +1380,20 @@ def Dialog2Display(title: str):
 
 
 def message_box_widget(window, message_title, message_text, buttonType='OK', timeout=3000):
-    # CTk migration: intentionally NOT converted in Phase 1 slice 3. This is a Phase 4 hard case -- the
-    # OK/Yes/No buttons and countdown labels are .place()'d at pixel offsets computed from the packed
-    # tk.Message's height, and this dialog fires on every RUN's Started/Finished notice, so a reskin
-    # needs on-screen QA of that geometry. Left on plain tk until then.
+    # CTk migration (Phase 4, last hard case): the OK/Yes/No buttons and countdown labels used to be
+    # .place()'d at pixel offsets computed from the packed tk.Message's height, with per-platform X
+    # constants. Rebuilt on a grid -- the button row lays itself out, no height measurement needed.
+    import customtkinter as ctk
+    import GUI_theme_util
+
     global yes_no_button
     yes_no_button = ""
-    # if not 'Started' in message_text and not 'Finished' in message_text:
-#    if 'Started' in message_text or 'Finished' in message_text:
-#        return yes_no_button
     if buttonType != 'OK':
         message_title = 'Reminder: ' + message_title
     global top_message
-    top_message = tk.Toplevel()
+    top_message = ctk.CTkToplevel()
     top_message.title(message_title)
+    top_message.attributes('-topmost', 'true')
 
     # define the countdown func.
     def countdown(countdown_timer):
@@ -1437,76 +1419,55 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
         elif button_type == 'Cancel':
             top_message.destroy()
 
-    if buttonType == 'OK':
-        mbox = tk.Message(top_message, width=600,
-                          text=message_text + '\n\n\n\n')
-        top_message.attributes('-topmost', 'true')
-        mbox.pack()  # put the widget on the window
-        top_message.update_idletasks()
+    mbox = GUI_theme_util.create_label(top_message, text=message_text, wraplength=560, justify='left')
+    mbox.grid(row=0, column=0, columnspan=6, padx=16, pady=(16, 8), sticky='w')
 
-        screen_height = top_message.winfo_height()
-        button = tk.Button(top_message, text="OK", command=top_message.destroy, fg='red')
-        button.place(x=5, y=screen_height - 35) # place OK button
+    if buttonType == 'OK':
         denominator1 = 1000
         denominator2 = 500
         if "Started running" in message_text or "Finished running" in message_text:
             denominator1=2000
             denominator2 = 1500
-        countdownLabel1 = tk.Label(top_message, text='Countdown to automatic closing:')
-        countdownLabel2 = tk.Label(top_message, text=f'{int(timeout / denominator1)}', fg='red')
-        countdownLabel1.place(x=countdownLabelOK1_X, y=screen_height - 35) # OK button 40
-        countdownLabel2.place(x=countdownLabelOK2_X, y=screen_height - 35) # 230
+        button = GUI_theme_util.create_button(top_message, text="OK", command=top_message.destroy, accent=True)
+        button.grid(row=1, column=0, padx=(16, 8), pady=(0, 16), sticky='w')
+        countdownLabel1 = GUI_theme_util.create_label(top_message, text='Countdown to automatic closing:')
+        countdownLabel1.grid(row=1, column=1, padx=8, pady=(0, 16), sticky='w')
+        countdownLabel2 = GUI_theme_util.create_label(top_message, text=f'{int(timeout / denominator1)}', text_color='red')
+        countdownLabel2.grid(row=1, column=2, padx=(0, 16), pady=(0, 16), sticky='w')
         countdown(int(timeout / denominator2))
 
     elif buttonType == 'Yes-No':
-        mbox = tk.Message(top_message, width=600,
-                          text=message_text + '\n\n\n\n')
-        top_message.attributes('-topmost', 'true')
-        mbox.pack()  # put the widget on the window
-        top_message.update_idletasks()
-        screen_height = top_message.winfo_height()
+        question = GUI_theme_util.create_label(top_message, text='Do you want to see this message again?', text_color='red')
+        question.grid(row=1, column=0, columnspan=6, padx=16, pady=(0, 8), sticky='w')
 
-        Yes = tk.Button(top_message, text="Yes", command=lambda: wait_for_answer('Yes'), fg='red')
-        No = tk.Button(top_message, text="No", command=lambda: wait_for_answer('No'), fg='red')
-        Yes.place(x=5, y=screen_height - 35) # place Yes button
-        No.place(x=no_reminder, y=screen_height - 35) # place No button
+        Yes = GUI_theme_util.create_button(top_message, text="Yes", command=lambda: wait_for_answer('Yes'), accent=True)
+        No = GUI_theme_util.create_button(top_message, text="No", command=lambda: wait_for_answer('No'), accent=True)
+        Yes.grid(row=2, column=0, padx=(16, 8), pady=(0, 16), sticky='w')
+        No.grid(row=2, column=1, padx=8, pady=(0, 16), sticky='w')
 
-        question = tk.Label(top_message, text='Do you want to see this message again?', fg='red')
-        countdownLabel1 = tk.Label(top_message, text='Countdown to automatic closing:')
-        countdownLabel2 = tk.Label(top_message, text=f'{int(timeout / 1000)}', fg='red')
-
-        question.place(x=5, y=screen_height - 60)
-        countdownLabel1.place(x=countdownLabel1_X, y=screen_height - 35) #125
-        countdownLabel2.place(x=countdownLabel2_X, y=screen_height - 35)
+        countdownLabel1 = GUI_theme_util.create_label(top_message, text='Countdown to automatic closing:')
+        countdownLabel1.grid(row=2, column=2, padx=8, pady=(0, 16), sticky='w')
+        countdownLabel2 = GUI_theme_util.create_label(top_message, text=f'{int(timeout / 1000)}', text_color='red')
+        countdownLabel2.grid(row=2, column=3, padx=(0, 16), pady=(0, 16), sticky='w')
         countdown(int(timeout / 1000))
 
     elif buttonType == 'Yes-No-Cancel':
-        mbox = tk.Message(top_message, width=600,
-                          text=message_text + '\n\n\n\n')
-        top_message.attributes('-topmost', 'true')
-        mbox.pack()  # put the widget on the window
-        top_message.update_idletasks()
-        screen_height = top_message.winfo_height()
+        question = GUI_theme_util.create_label(top_message, text="Do you want to see this message again?", text_color='red')
+        question.grid(row=1, column=0, columnspan=6, padx=16, pady=(0, 8), sticky='w')
 
-        Yes = tk.Button(top_message, text="Yes", command=lambda: wait_for_answer('Yes'))
-        No = tk.Button(top_message, text="No", command=lambda: wait_for_answer('No'))
-        Cancel = tk.Button(top_message, text="Cancel", command=lambda: wait_for_answer('Cancel'))
+        Yes = GUI_theme_util.create_button(top_message, text="Yes", command=lambda: wait_for_answer('Yes'))
+        No = GUI_theme_util.create_button(top_message, text="No", command=lambda: wait_for_answer('No'))
+        Cancel = GUI_theme_util.create_button(top_message, text="Cancel", command=lambda: wait_for_answer('Cancel'))
+        Yes.grid(row=2, column=0, padx=(16, 8), pady=(0, 16), sticky='w')
+        No.grid(row=2, column=1, padx=8, pady=(0, 16), sticky='w')
+        Cancel.grid(row=2, column=2, padx=8, pady=(0, 16), sticky='w')
 
-        Yes.place(x=0, y=screen_height - 35)
-        No.place(x=50, y=screen_height - 35)
-        Cancel.place(x=100, y=screen_height - 35)
-        question.place(x=0, y=screen_height - 60)
-
-        question = tk.Label(top_message, text="Do you want to see this message again?", fg='red')
-        countdownLabel1 = tk.Label(top_message, text='Countdown to automatic closing:')
-        countdownLabel2 = tk.Label(top_message, text=f'{int(timeout / 1000)}', fg='red')
-
-        countdownLabel1.place(x=200, y=screen_height - 35)
-        countdownLabel2.place(x=410, y=screen_height - 35)
-        question.place(x=10, y=screen_height - 60)
+        countdownLabel1 = GUI_theme_util.create_label(top_message, text='Countdown to automatic closing:')
+        countdownLabel1.grid(row=2, column=3, padx=8, pady=(0, 16), sticky='w')
+        countdownLabel2 = GUI_theme_util.create_label(top_message, text=f'{int(timeout / 1000)}', text_color='red')
+        countdownLabel2.grid(row=2, column=4, padx=(0, 16), pady=(0, 16), sticky='w')
         countdown(int(timeout / 1000))
 
-    # TODO MINO
     top_message.wait_window()
     if yes_no_button != "":
         mbox.after_cancel(mbox)
@@ -1514,53 +1475,6 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
 
     return yes_no_button
 
-
-# creating popup combobox with search
-# https://pythonguides.com/python-tkinter-search-box/
-# left unfinished
-def combobox_with_search_widget(item_names):
-    # CTk migration: intentionally NOT converted in Phase 1 slice 3. Phase 4 hard case -- the function
-    # is unfinished (its only call site is commented out) and spins its own tk.Tk()/mainloop(); it needs
-    # to be completed, not mechanically reskinned. Left on plain tk until then.
-    ws = tk.Tk()
-    ws.focus_force()
-    ws.title("NLP Suite")
-    ws.geometry("400x100")
-
-    def search_items(search_value):
-        # print (combo.get())
-        print('search_value', search_value)
-        # print('entry1', entry1.get())
-        # print('search_variable',search_variable.get())
-        # search_value =search_variable.get()
-        if search_value == "" or search_value == " ":
-            combo['values'] = item_names
-        else:
-            value_to_display = []
-            for value in item_names:
-                if search_value in value:
-                    value_to_display.append(value)
-            combo['values'] = value_to_display
-            combo.set(combo['values'][0])
-
-    # global combo
-    combo = ttk.Combobox(ws, width=300, state='readonly')
-    combo['values'] = item_names
-    combo.pack()
-
-    # global search_variable, entry1
-    search_variable = tk.StringVar()
-    entry1 = tk.Entry(ws, width=200, textvariable=search_variable)
-    entry1.pack()
-    # print('variable',search_variable.get())
-    # print('entry1',entry1.get())
-
-    button = tk.Button(ws, text="Search", command=lambda:search_items(entry1.get()))
-    button.pack()
-    # ws.destroy()
-
-    ws.mainloop()
-    return combo.get()
 
 # creating popup menu in tkinter
 def dropdown_menu_widget(window,textCaption, menu_values, default_value, callback):
