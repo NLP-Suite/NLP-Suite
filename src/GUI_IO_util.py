@@ -422,6 +422,11 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
 # to stay apart -- Python's round() sends BOTH 1.5 and 2.5 to 2, which piled three of sample_corpus's
 # rows on top of one another. Scaling by 10 first gives every distinct multiplier its own row. Rows
 # nothing lands in collapse to zero height, so the unused ones cost nothing.
+# A GUI may opt out of grid and keep absolute .place layout; GUI_util.GUI_top sets this per GUI from
+# its scriptName. Default True so every GUI is grid unless it asks otherwise.
+grid_layout_enabled = True
+# GUIs whose legacy layout overlaps widgets in ways grid cannot reproduce -- kept on absolute .place.
+GRID_OPT_OUT = {'DB_PCACE_data_analysis_main.py', 'DB_PCACE_data_validation_main.py'}
 _GRID_ROW_SCALE = 10
 _GRID_HEADER_ROWS = 10  # rows held above y_multiplier 0 for the intro/release header
 # Left margin (left edge -> ? HELP column) in pixels. Deliberately tighter than the legacy ~50px: the
@@ -538,6 +543,23 @@ def finalize_grid_layout(window):
 # when a widget has hover-over effects, the parameter no_hover_over_widget is set to False
 # widget_name is the name of the widget that needs to be placed in any of the GUI scripts as defined by tk.
 def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False, no_hover_over_widget=False, whole_widget_red=False, centerX=False, basic_y_coordinate=90, x_coordinate_hover_over = 90, text_info=''):
+    # A GUI can opt out of the grid layout (GUI_util sets grid_layout_enabled = False for it) and keep
+    # the original absolute .place layout. The dense PC-ACE tools do: their legacy layout deliberately
+    # OVERLAPS widgets (e.g. stacked data-type checkboxes), which grid cannot reproduce -- it has to
+    # spread them, and by how much depends on exact per-machine widget metrics, so the same code that
+    # fits here can run off the edge elsewhere. For those, absolute placement is the honest choice.
+    if not grid_layout_enabled:
+        y = basic_y_coordinate + 40 * y_multiplier_integer  # 40 = the legacy line-by-line increment
+        if centerX:
+            widget_name.place(relx=0.5, anchor=tk.CENTER, y=y)
+        else:
+            widget_name.place(x=x_coordinate, y=y)
+        hover_over_widget(window, x_coordinate, y, widget_name, no_hover_over_widget, whole_widget_red,
+                          x_coordinate_hover_over, text_info)
+        if sameY == False:
+            y_multiplier_integer = y_multiplier_integer + 1
+        return y_multiplier_integer
+
     # The signature is unchanged from the absolute-coordinate version, so every call site -- including
     # the hand-tuned '+ 270' style offsets -- keeps working: x_coordinate is recorded as-is and becomes
     # a column in finalize_grid_layout, and y_multiplier_integer becomes the grid row.

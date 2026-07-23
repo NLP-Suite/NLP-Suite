@@ -302,9 +302,13 @@ def display_logo():
             # the logo has some white spaces to its left; better cutting this so that it can be aligned with HELP? buttons
             # The logo stays .place'd -- it floats above the grid in the top-left corner, and giving it a
             # grid cell would push the intro down. (place coexists with grid; pack does not.) Align it with
-            # the reduced left margin the grid now uses (the ? HELP column renders there), minus the ~12px
-            # of built-in whitespace on the logo's left, so the mark sits flush above the ? HELP buttons.
-            logo.place(x=max(GUI_IO_util._GRID_LEFT_MARGIN - 12, 2), y=10)
+            # the ? HELP column's left edge, minus the ~12px of built-in whitespace on the logo's left, so
+            # the mark sits flush above the ? HELP buttons: the reduced grid margin, or the legacy x for a
+            # GUI that opted out of grid and still places ? HELP at help_button_x_coordinate.
+            if GUI_IO_util.grid_layout_enabled:
+                logo.place(x=max(GUI_IO_util._GRID_LEFT_MARGIN - 12, 2), y=10)
+            else:
+                logo.place(x=GUI_IO_util.help_button_x_coordinate - 12, y=10)
     except Exception:
         pass  # Logo is cosmetic; skip silently if PIL/ImageTk is unavailable or incompatible
 
@@ -1233,19 +1237,26 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
     # Fresh grid: clear the per-row column bookkeeping so this GUI's placeWidget calls start from an
     # empty layout and no state leaks in from an earlier build in the same process.
     GUI_IO_util._reset_grid_layout()
+    # A few dense GUIs keep the original absolute .place layout (see GUI_IO_util.GRID_OPT_OUT). This must
+    # be set BEFORE any placeWidget call, so every widget in this GUI is laid out the same way.
+    GUI_IO_util.grid_layout_enabled = scriptName not in GUI_IO_util.GRID_OPT_OUT
 
     # No top help lines displayed when opening the license agreement GUI
     if config_filename!='license_config.csv':
-        # wraplength keeps the multi-line intro from blowing out the grid width: without it the longest
-        # line alone would set the width of a column every content row also uses.
-        intro = tk.Label(window, text=GUI_IO_util.introduction_main, wraplength=760, justify='left')
-        # The body is grid-managed now and Tk refuses to mix grid with pack on the same container, so
-        # the intro goes into the reserved top grid row. The logo stays .place'd in the top-left corner
-        # (place coexists with grid; pack does not).
-        # The left padding clears the .place'd logo, which floats outside the grid and so contributes
-        # nothing to its sizing -- without it the intro text starts underneath the logo.
-        intro.grid(row=0, column=0, columnspan=GUI_IO_util._GRID_TOTAL_COLUMNS,
-                   padx=(130, 6), pady=(6, 4), sticky='w')
+        if GUI_IO_util.grid_layout_enabled:
+            # wraplength keeps the multi-line intro from blowing out the grid width: without it the
+            # longest line alone would set the width of a column every content row also uses.
+            intro = tk.Label(window, text=GUI_IO_util.introduction_main, wraplength=760, justify='left')
+            # The body is grid-managed and Tk refuses to mix grid with pack on the same container, so the
+            # intro goes into the reserved top grid row. The logo stays .place'd in the top-left corner
+            # (place coexists with grid; pack does not). The left padding clears the logo, which floats
+            # outside the grid and so contributes nothing to its sizing.
+            intro.grid(row=0, column=0, columnspan=GUI_IO_util._GRID_TOTAL_COLUMNS,
+                       padx=(130, 6), pady=(6, 4), sticky='w')
+        else:
+            # Opted-out GUI: the body is absolutely .place'd, so the intro packs at the top as it always did.
+            intro = tk.Label(window, text=GUI_IO_util.introduction_main)
+            intro.pack()
         display_logo()
         # although the release version appears in the top part of the GUI,
         #   it is run at the end otherwise a message will be displayed with an incomplete GUI
@@ -1734,26 +1745,29 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        "Pressing the CLOSE button will trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."
                                                        "\nYou must be connected to the internet for the auto update to work.")
 
-    # Every widget is placed by now, so every x-coordinate this GUI uses is known: turn them into
-    # columns and give each widget the span its x-coordinate implied.
-    GUI_IO_util.finalize_grid_layout(window)
+    # An opted-out GUI (GUI_IO_util.GRID_OPT_OUT) is absolutely .place'd -- nothing to finalize, and its
+    # window keeps its hand-tuned size. Everything below is grid-only.
+    if GUI_IO_util.grid_layout_enabled:
+        # Every widget is placed by now, so every x-coordinate this GUI uses is known: turn them into
+        # columns and give each widget the span its x-coordinate implied.
+        GUI_IO_util.finalize_grid_layout(window)
 
-    # Size the window to what the layout actually needs.
-    #
-    # This is the half of the fix that matters on a Mac. Every GUI's size was hand-measured on Windows,
-    # where Tk's default font is ~9pt; macOS gives it ~13pt, so the same labels come out roughly 40%
-    # wider and the right-hand end of each row falls outside a window that was never told to grow.
-    # Grid knows exactly how wide the content is, so ask it and widen the window to match instead of
-    # clipping. Never shrink below the hand-tuned size -- GUIs leave room for widgets that only appear
-    # once an option is ticked -- and never exceed the screen.
-    try:
-        window.update_idletasks()
-        tuned_width, tuned_height = (int(v) for v in GUI_size.split('+')[0].split('x'))
-        width = min(max(window.winfo_reqwidth(), tuned_width), window.winfo_screenwidth() - 20)
-        height = min(max(window.winfo_reqheight(), tuned_height), window.winfo_screenheight() - 80)
-        window.geometry('%dx%d' % (width, height))
-    except Exception:
-        pass  # keep the hand-tuned geometry if anything about the measurement fails
+        # Size the window to what the layout actually needs.
+        #
+        # This is the half of the fix that matters on a Mac. Every GUI's size was hand-measured on
+        # Windows, where Tk's default font is ~9pt; macOS gives it ~13pt, so the same labels come out
+        # roughly 40% wider and the right-hand end of each row falls outside a window that was never told
+        # to grow. Grid knows exactly how wide the content is, so ask it and widen the window to match
+        # instead of clipping. Never shrink below the hand-tuned size -- GUIs leave room for widgets that
+        # only appear once an option is ticked -- and never exceed the screen.
+        try:
+            window.update_idletasks()
+            tuned_width, tuned_height = (int(v) for v in GUI_size.split('+')[0].split('x'))
+            width = min(max(window.winfo_reqwidth(), tuned_width), window.winfo_screenwidth() - 20)
+            height = min(max(window.winfo_reqheight(), tuned_height), window.winfo_screenheight() - 80)
+            window.geometry('%dx%d' % (width, height))
+        except Exception:
+            pass  # keep the hand-tuned geometry if anything about the measurement fails
 
     # Any message should be displayed after the whole GUI has been displayed
 
