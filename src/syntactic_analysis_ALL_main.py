@@ -561,24 +561,24 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.labels_x_indented_coordinate + 250, y_multiplier_integer,
     openInputFile_button, True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate + 250, "Open csv dictionary file")
 
-parsers_annotators_button=tk.Button(window, width=90, text='Parsers & annotators (Open GUI)',command=lambda: run_script_util.run_script("parsers_annotators_main.py"))
+parsers_annotators_button=tk.Button(window, width=42, text='Parsers & annotators (Open GUI)',command=lambda: run_script_util.run_script("parsers_annotators_main.py"))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                parsers_annotators_button, False)
 
-CoNLL_table_button=tk.Button(window, width=90, text='CoNLL table analyzer (Open GUI)',command=lambda: run_script_util.run_script("CoNLL_table_analyzer_main.py"))
+CoNLL_table_button=tk.Button(window, width=42, text='CoNLL table analyzer (Open GUI)',command=lambda: run_script_util.run_script("CoNLL_table_analyzer_main.py"))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                CoNLL_table_button, False)
 
-SVO_button=tk.Button(window, width=90, text='Subject-Verb-Object (SVO) (Open GUI)',command=lambda: run_script_util.run_script("SVO_main.py"))
+SVO_button=tk.Button(window, width=42, text='Subject-Verb-Object (SVO) (Open GUI)',command=lambda: run_script_util.run_script("SVO_main.py"))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                SVO_button, False)
 
 
-sentence_structure_button=tk.Button(window, width=90, text='Sentence structure (Open GUI)',command=lambda: run_script_util.run_script("sentence_analysis_main.py"))
+sentence_structure_button=tk.Button(window, width=42, text='Sentence structure (Open GUI)',command=lambda: run_script_util.run_script("sentence_analysis_main.py"))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                sentence_structure_button, False)
 
-style_analysis_button=tk.Button(window, width=90, text='Style analysis (Open GUI)',command=lambda: run_script_util.run_script("style_analysis_main.py"))
+style_analysis_button=tk.Button(window, width=42, text='Style analysis (Open GUI)',command=lambda: run_script_util.run_script("style_analysis_main.py"))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                style_analysis_button, False)
 
