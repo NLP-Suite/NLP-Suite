@@ -35,7 +35,6 @@ import SVO_compare_util
 import Stanza_util
 import Stanford_CoreNLP_coreference_util
 import Stanford_CoreNLP_util
-# import SENNA_util
 import spaCy_util
 import reminders_util
 import semantic_aggregation_WordNet_util
@@ -186,7 +185,6 @@ def run():
     svo_result_list = []
     document_index = 1
     svo_CoreNLP_merged_file = ""
-    svo_SENNA_file = ''
     svo_CoreNLP_single_file = ''
     location_filename=''
     outputDirSV=outputDir
@@ -407,22 +405,6 @@ def run():
                 filesToOpen.extend(outputFiles)
                 SVO_filename = outputFiles[0]
                 svo_result_list.append(outputFiles[0])
-
-# removed from the options; way way too slow and with far better options now in spaCy and Stanza
-# SENNA _____________________________________________________
-#   SENNA no longer used
-#     if package_var=='SENNA':
-#         if language_var != 'English':
-#             mb.showwarning(title='Language',
-#                            message='SENNA is only available for English.')
-#             return
-#         svo_SENNA_files = []
-#         tempOutputFiles = SENNA_util.run_senna(inputFilename, inputDir, outputSVODir, openOutputFiles,
-#                                                                 chartPackage, dataTransformation)
-#         if len(tempOutputFiles)!=0:
-#             filesToOpen.extend(tempOutputFiles)
-#             SVO_filename=tempOutputFiles[0]
-#             svo_result_list.append(tempOutputFiles[0])
 
 # spaCY _____________________________________________________
 
