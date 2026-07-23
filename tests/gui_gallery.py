@@ -158,16 +158,15 @@ def main():
             title = f.replace('_main.py', '').replace('_', ' ')
         bad = overflow is None or overflow > 4 or (overlaps or 0) > 0
         status = 'BUILD?' if overflow is None else ('OFF' if bad else 'OK')
-        img_html = ('<img loading="lazy" src="%s" alt="%s">' % (thumb_data_uri(png), esc(f))
-                    if os.path.exists(png) else '<div class="noshot">no screenshot</div>')
         note = '' if overflow is None else 'overflow %d px &middot; overlaps %d' % (overflow, overlaps)
-        cards.append(dict(status=status, file=f, title=title, note=note, img=img_html,
-                          opted=(opted == 1)))
+        cards.append(dict(status=status, file=f, title=title, note=note, opted=(opted == 1),
+                          png=png if os.path.exists(png) else None))
         print('%-8s %-46s %s' % (status, f, title[:60]))
 
     order = {'OFF': 0, 'BUILD?': 1, 'OK': 2}
-    grid = sorted([c for c in cards if not c['opted']], key=lambda c: (order.get(c['status'], 3), c['file']))
-    special = sorted([c for c in cards if c['opted']], key=lambda c: (order.get(c['status'], 3), c['file']))
+    flagged = sorted([c for c in cards if c['status'] != 'OK'], key=lambda c: (order.get(c['status'], 3), c['file']))
+    grid_ok = sorted([c for c in cards if c['status'] == 'OK' and not c['opted']], key=lambda c: c['file'])
+    special_ok = sorted([c for c in cards if c['status'] == 'OK' and c['opted']], key=lambda c: c['file'])
 
     def anchor(f):
         return 'g_' + f.replace('.', '_')
@@ -175,21 +174,31 @@ def main():
     def toc(group):
         return '\n'.join(
             '<li><a href="#%s" class="%s">%s</a></li>' % (anchor(c['file']), c['status'].lower().rstrip('?'), esc(c['title']))
-            for c in group)
+            for c in group) or '<li class="none">none</li>'
 
-    def section(title, subtitle, group):
-        body = []
-        for c in group:
-            body.append(
-                '<figure id="%s" class="card %s"><figcaption>'
+    def card_html(c, big):
+        if c['png']:
+            # link the thumbnail to the full-resolution PNG (opens in a new tab) so a small preview is
+            # enough to scan and one click gives you the real thing to inspect
+            rel = 'gui_screenshots/' + os.path.basename(c['png'])
+            img = '<a href="%s" target="_blank"><img loading="lazy" src="%s" alt="%s"></a>' % (
+                rel, thumb_data_uri(c['png'], 1280 if big else 560), esc(c['file']))
+        else:
+            img = '<div class="noshot">no screenshot</div>'
+        return ('<figure id="%s" class="card %s"><figcaption>'
                 '<span class="badge">%s</span><span class="t">%s</span>'
                 '<span class="fn">%s</span><span class="note">%s</span></figcaption>%s</figure>'
                 % (anchor(c['file']), c['status'].lower().rstrip('?'), c['status'],
-                   esc(c['title']), esc(c['file']), c['note'], c['img']))
-        return ('<h2>%s <span class="cnt">%d</span></h2><p class="sub">%s</p><div class="grid">%s</div>'
-                % (title, len(group), subtitle, '\n'.join(body)))
+                   esc(c['title']), esc(c['file']), c['note'], img))
 
-    n_off = sum(1 for c in cards if c['status'] != 'OK')
+    def section(title, subtitle, group, big=False):
+        if not group:
+            return ''
+        klass = 'grid big' if big else 'grid'
+        return ('<h2>%s <span class="cnt">%d</span></h2><p class="sub">%s</p><div class="%s">%s</div>'
+                % (title, len(group), subtitle, klass, '\n'.join(card_html(c, big) for c in group)))
+
+    n_off = len(flagged)
     html = '''<!doctype html><meta charset="utf-8"><title>NLP Suite - GUI gallery</title>
 <style>
  body{font:14px system-ui,Segoe UI,sans-serif;margin:0;padding:22px;background:#f4f4f6;color:#222;max-width:1500px}
@@ -201,25 +210,28 @@ def main():
  .toc ul{margin:0;padding:0;list-style:none;columns:2;font-size:12.5px} .toc li{margin:1px 0;break-inside:avoid}
  .toc a{text-decoration:none;color:#345} .toc a:hover{text-decoration:underline}
  .toc a.off{color:#c22;font-weight:600} .toc a.build{color:#c80}
- .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(360px,1fr))}
+ .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(440px,1fr))}
+ .grid.big{grid-template-columns:1fr}                 /* flagged GUIs: one per row, full readable width */
  .card{margin:0;background:#fff;border:1px solid #ddd;border-radius:8px;overflow:hidden;scroll-margin-top:12px}
  .card.off{border-color:#d33;box-shadow:0 0 0 2px #d3333322} .card.build{border-color:#e90}
  figcaption{padding:8px 10px;font-size:12px;border-bottom:1px solid #eee;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
- .t{font-weight:600} .fn{color:#aaa;font-size:11px;font-family:ui-monospace,Consolas,monospace} .note{color:#999;margin-left:auto}
+ .t{font-weight:600;font-size:13px} .fn{color:#aaa;font-size:11px;font-family:ui-monospace,Consolas,monospace} .note{color:#999;margin-left:auto}
  .badge{font-weight:700;font-size:10px;padding:2px 7px;border-radius:10px;color:#fff;background:#3a3;align-self:center}
  .off .badge{background:#d33} .build .badge{background:#e90}
- img{display:block;width:100%;height:auto} .noshot{padding:40px;text-align:center;color:#bbb}
+ a{display:block} img{display:block;width:100%;height:auto;cursor:zoom-in} .noshot{padding:40px;text-align:center;color:#bbb}
+ .none{color:#999;list-style:none} .hint{color:#888;font-size:12px;margin:2px 0 0}
  @media(prefers-color-scheme:dark){body{background:#16171a;color:#ddd}.card,.toc{background:#212226;border-color:#333}
    figcaption,h2{border-color:#2c2d31}.sub,.cnt{color:#999}.toc a{color:#8ab}}
 </style>
 <h1>NLP Suite - GUI gallery</h1>
-<p class="sub">''' + '%d GUIs &middot; %d flagged &middot; this machine\'s Windows rendering only' % (len(cards), n_off) + '''</p>
+<p class="sub">''' + '%d GUIs &middot; %d flagged &middot; this machine\'s Windows rendering only &middot; click any shot for full resolution' % (len(cards), n_off) + '''</p>
 <div class="toc">
- <div><h3>Full-grid GUIs</h3><ul>''' + toc(grid) + '''</ul></div>
- <div><h3>Special GUIs (absolute layout)</h3><ul>''' + toc(special) + '''</ul></div>
+ <div><h3>Flagged</h3><ul>''' + toc(flagged) + '''</ul></div>
+ <div><h3>OK (grid ''' + str(len(grid_ok)) + ''' &middot; special ''' + str(len(special_ok)) + ''')</h3><ul>''' + toc(grid_ok + special_ok) + '''</ul></div>
 </div>
-''' + section('Full-grid GUIs', 'Standard layout via the grid (placeWidget &rarr; columns).', grid) + \
-        section('Special GUIs', 'Kept on absolute .place (GUI_IO_util.GRID_OPT_OUT) &mdash; too coupled to pixel positions for grid.', special)
+''' + section('Flagged &mdash; needs a look', 'Shown large. Overflow &gt; 4px = a widget past the right edge; overlaps = two widgets on one spot. (This machine is 150%-scaled, so wide GUIs clip here that would fit a normal display.)', flagged, big=True) + \
+        section('Full-grid GUIs &mdash; OK', 'Standard layout via the grid; these fit cleanly.', grid_ok) + \
+        section('Special GUIs &mdash; OK', 'Kept on absolute .place (GUI_IO_util.GRID_OPT_OUT).', special_ok)
 
     out_path = os.path.join(_HERE, 'gui_gallery.html')
     with open(out_path, 'w', encoding='utf-8') as fh:
