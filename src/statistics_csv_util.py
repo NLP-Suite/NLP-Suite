@@ -459,10 +459,22 @@ def csv_data_pivot(inputFilename, index, values, no_hyperlinks=True):
 # in INPUT the function can use either a csv file or a data frame
 # in OUTPUT the function returns a csv file with frequencies for the selected field
 
-# Distinct "chart switched to heatmap" notices already printed this process. SVO charts many fields
-# and calls compute_csv_column_frequencies more than once per field, so the notice used to repeat
-# endlessly on the console; we now print each distinct notice once.
-_chart_shape_warned = set()
+# Charts auto-switched from a grouped bar chart to a heatmap this run (keyed by output file, so a
+# field charted more than once counts once). Instead of a console line per chart -- SVO charts many
+# fields and used to spew the same notice over and over -- the caller prints ONE summary at the end
+# via report_chart_shape_switches().
+_chart_shape_switches = set()
+
+
+def report_chart_shape_switches(reset_only=False):
+    """Summarize (once) the charts auto-switched to heatmaps, then reset the tally. Call reset_only=True
+    at the start of a run to clear any leftovers, and again (default) at the end to print the summary."""
+    if not reset_only and _chart_shape_switches:
+        n = len(_chart_shape_switches)
+        print('Charts: %d field%s had too many documents/values for a legible grouped bar chart and %s '
+              'switched to heatmaps (the full per-document breakdown is in the data sheets).'
+              % (n, '' if n == 1 else 's', 'was' if n == 1 else 'were'))
+    _chart_shape_switches.clear()
 
 
 # plot_cols, hover_col, group_cols are single lists with the column headers (alphabetic, rather than column number)
@@ -843,12 +855,12 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
                             #     'Too many documents/values (' + str(_D) + ' x ' + str(_V) + ') for a legible '
                             #     'grouped bar chart.' + _switched + '\n\nField totals are also charted; the full '
                             #     'per-document breakdown is in the data sheet.')
-                            _shape_msg = ('Chart: too many documents/values (' + str(_D) + ' x ' + str(_V) +
-                                          ') for a legible grouped bar chart.' + _switched +
-                                          ' Field totals charted; full per-document breakdown is in the data sheet.')
-                            if _shape_msg not in _chart_shape_warned:
-                                _chart_shape_warned.add(_shape_msg)
-                                print(_shape_msg)
+                            # Record the switch (no per-chart print); the caller prints one summary at
+                            # the end of the run via report_chart_shape_switches(). Count only charts
+                            # whose heatmap actually rendered (_switched); a failed fallback already
+                            # logged its own error above.
+                            if _switched:
+                                _chart_shape_switches.add(os.path.splitext(os.path.basename(outputFilename))[0])
             except Exception as _auto_e:
                 print('Auto chart-shape selection failed; keeping default layout:', str(_auto_e))
                 chart_data = None

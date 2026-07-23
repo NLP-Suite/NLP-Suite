@@ -27,6 +27,7 @@ from subprocess import call
 import config_util
 import GUI_IO_util
 import IO_files_util
+import statistics_csv_util
 import GIS_pipeline_util
 # import wordclouds_util
 import IO_csv_util
@@ -113,6 +114,7 @@ def run():
     outputLocations = []
 
     filesToOpen = []
+    statistics_csv_util.report_chart_shape_switches(reset_only=True)  # clear any leftover chart-switch tally
 
     # # get the NLP package and language options
     # error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
@@ -856,6 +858,9 @@ def run():
                         trimmed.append(f)
             filesToOpenSubset = trimmed[:10]
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName, filesToOpenSubset)
+
+    # one line instead of a console message per chart: how many charts were auto-switched to heatmaps
+    statistics_csv_util.report_chart_shape_switches()
 
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
 GUI_util.run_button.configure(command=run)
