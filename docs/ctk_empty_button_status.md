@@ -79,6 +79,10 @@ first audit for files not yet touched at the time.
 > except the Phase 4 hard cases (`charts_Excel_main.py`, `narrative_analysis_ALL_main.py`,
 > `license_GUI.py`), which were never counted here since they were always tracked separately.
 
+> **Phase 4 hard cases (`ctk/phase4-remaining-hard-cases`)** converted: none of the three had an
+> open-file-button sliver to begin with (checked both the `tk.Button(.*text='')` grep and the
+> cross-line scan below) -- nothing to clear, just confirming the last unconverted GUIs are clean.
+
 All sites cleared.
 
 ## Secondary: placeholder `tk.Button()` forward declarations

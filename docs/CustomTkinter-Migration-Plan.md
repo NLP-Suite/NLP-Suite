@@ -244,9 +244,30 @@ tranche.** Only *new* shared-layer gaps (each now a §6 item) and still-open ite
   QA outstanding.**
 - **Row-splitting** for the overflow backlog: `DB_SQL_main` (+167), `NLP_setup_package_language` (+731),
   `DB_PCACE_data_analysis` (+297), `GIS_Google_Earth` (+388), `sample_corpus_main` (+419),
-  `data_manipulation_main` (+157) — see `docs/ctk_GUI_overflow_status.md`.
-- **`narrative_analysis_ALL_main.py`**, **`license_GUI.py`** — a few `.place()` each.
-- **`charts_Excel_main.py`** — normalize CR-only line endings, then convert.
+  `data_manipulation_main` (+157) — see `docs/ctk_GUI_overflow_status.md`. **Deliberately deferred
+  (user's call, 2026-07-22): do this LAST**, after the rest of Phase 4 lands.
+- ✅ **`narrative_analysis_ALL_main.py`**, **`license_GUI.py`**, **`charts_Excel_main.py`**
+  (`ctk/phase4-remaining-hard-cases`, 2026-07-22) — the last three unconverted GUIs in `src/`.
+  `charts_Excel_main.py` normalized first (pure-CR classic-Mac line endings, no `\n` in the file at
+  all; converting to `\n` is a full-file diff but changes no bytes' meaning). All three follow the
+  standard §6 recipe: `tk.Label/Entry/Button/Checkbutton` → factories; the 4 `tk.OptionMenu` sites
+  (3 in `charts_Excel_main.py` fed from a dynamic `range()`/csv-headers list, 1 static) →
+  `create_option_menu(values=[...])`; `charts_Excel_main.py`'s 3-site dynamic `widget["menu"]`
+  repopulation (`changed_Excel_filename`) → `set_values(...)`; ~66 `.config(` → `.configure(`
+  (`charts_Excel_main.py` alone); `.trace('w', …)` → `.trace_add('write', …)` throughout all three
+  (heavily touched anyway). One dead vestige removed: `charts_Excel_main.py` had a masterless
+  `column_yAxis_lb = tk.Label()` immediately shadowed 76 lines later by the real widget — deleted
+  rather than converted (a `create_label()` call needs a `master` argument this line never had any
+  use for). Verified: `pytest` 184 passed, `gui_smoke` 38 ok/0 crashed/0 missing golden (both
+  `charts_Excel_main.py` and `narrative_analysis_ALL_main.py` show up `OK`; `license_GUI.py` isn't
+  matched by `gui_smoke`'s `*_main.py` glob, so it was verified separately via
+  `runpy.run_path(run_name='__main__')` under real Tk+CTk, 9 widgets, no crash) plus the same
+  real-Tk+CTk harness exercised `narrative_analysis_ALL_main.py`'s "GUIs available" checkbox/dropdown
+  gating and `charts_Excel_main.py`'s X/Y-axis cascading enable-disable chain and non-string
+  `set_values` coercion, all correct. `ruff check` on all three: identical violation set before and
+  after (16/79/27 pre-existing legacy hits respectively, e.g. `==True`/`==False` comparisons, unused
+  locals) — confirms the conversion added zero new lint debt; per the legacy-backlog rule these were
+  left alone rather than swept.
 - `message_box_widget` countdown timers, `combobox_with_search_widget`, any Listbox sites.
 
 ### Phase 5 — Cleanup and polish (1–2 PRs)

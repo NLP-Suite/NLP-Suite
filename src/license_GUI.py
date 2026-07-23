@@ -4,6 +4,7 @@ import tkinter as tk
 import tkinter.messagebox as mb
 
 import GUI_IO_util
+import GUI_theme_util
 import GUI_util
 import config_util
 
@@ -27,9 +28,8 @@ current_config_input_output_alphabetic_options = ['', '', '', '', ]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
-text_area = tk.Text()
-# text_area.configure(height=440)
-text_area.pack()
+text_area = GUI_theme_util.create_textbox(GUI_util.window)
+text_area.pack(fill='both', expand=True)
 
 if (os.path.isfile(os.path.join(GUI_IO_util.libPath, 'LICENSE-NLP-Suite-1.0.txt'))):
 	f= open(os.path.join(GUI_IO_util.libPath, "LICENSE-NLP-Suite-1.0.txt"))
@@ -45,7 +45,7 @@ else:
 text_area.insert(tk.END, f.read())
 
 agreement_checkbox_var=tk.IntVar()
-agreement_checkbox = tk.Checkbutton(GUI_util.window, variable=agreement_checkbox_var, onvalue=1, offvalue=0, text="I have read and agree with the license terms")
+agreement_checkbox = GUI_theme_util.create_checkbox(GUI_util.window, variable=agreement_checkbox_var, onvalue=1, offvalue=0, text="I have read and agree with the license terms")
 agreement_checkbox.place(x=10, y=500)
 agreement_checkbox_var.set(0)
 
@@ -62,7 +62,7 @@ def save_agreement(*args):
 		config_util.write_IO_config_file(GUI_util.window, config_filename, config_input_output_numeric_options,
 									  current_config_input_output_alphabetic_options)
 		GUI_util.window.destroy()
-agreement_checkbox_var.trace('w',save_agreement)
+agreement_checkbox_var.trace_add('write', save_agreement)
 
 # sidebar
 # sidebar = tk.Frame(GUI_util.window, width=900, bg='white', height=640, relief='sunken', borderwidth=2)
