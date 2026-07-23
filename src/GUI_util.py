@@ -1203,19 +1203,19 @@ def display_about_release_team_cite_buttons(scriptName):
                                                        GUI_IO_util.release_history_button_x_coordinate,
                                                        "Click on the button to access the Team page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
 
-        # The How to cite button lives only on the NLP_menu now. It was removed from the welcome screen
-        # (better served in the menu, and there it floated alone at the bottom-left).
-        if 'NLP_menu_main' in scriptName:
-            cite_button = tk.Button(window, text='How to cite', width=15, height=1, foreground="red",
-                                    command=lambda: GUI_IO_util.cite_NLP())
-            # place widget with hover-over info
-            y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                                           GUI_IO_util.cite_button_x_coordinate,
-                                                           y_multiplier_integer,
-                                                           cite_button,
-                                                           False, False, False, False, 90,
-                                                           GUI_IO_util.team_button_x_coordinate,
-                                                           "Click on the button to access the How to Cite page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
+        # How to cite -- rightmost in the top button row, on both the welcome splash and the menu.
+        # (It was dropped from the welcome earlier only because the whole row was mis-gridded to the
+        #  bottom; now the row sits at the top under the logo, so it belongs here again.)
+        cite_button = tk.Button(window, text='How to cite', width=15, height=1, foreground="red",
+                                command=lambda: GUI_IO_util.cite_NLP())
+        # place widget with hover-over info
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,
+                                                       GUI_IO_util.cite_button_x_coordinate,
+                                                       y_multiplier_integer,
+                                                       cite_button,
+                                                       False, False, False, False, 90,
+                                                       GUI_IO_util.team_button_x_coordinate,
+                                                       "Click on the button to access the How to Cite page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
 
 global IO_setup_config_SV
 IO_setup_config_SV = ''
