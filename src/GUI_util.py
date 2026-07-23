@@ -301,10 +301,10 @@ def display_logo():
             logo.image = img
             # the logo has some white spaces to its left; better cutting this so that it can be aligned with HELP? buttons
             # The logo stays .place'd -- it floats above the grid in the top-left corner, and giving it a
-            # grid cell would push the intro down. (place coexists with grid; pack does not.) The legacy
-            # x still holds: finalize_grid_layout reproduces the left margin, so the ? HELP buttons are
-            # where they always were.
-            logo.place(x=GUI_IO_util.help_button_x_coordinate - 12, y=10)
+            # grid cell would push the intro down. (place coexists with grid; pack does not.) Align it with
+            # the reduced left margin the grid now uses (the ? HELP column renders there), minus the ~12px
+            # of built-in whitespace on the logo's left, so the mark sits flush above the ? HELP buttons.
+            logo.place(x=max(GUI_IO_util._GRID_LEFT_MARGIN - 12, 2), y=10)
     except Exception:
         pass  # Logo is cosmetic; skip silently if PIL/ImageTk is unavailable or incompatible
 

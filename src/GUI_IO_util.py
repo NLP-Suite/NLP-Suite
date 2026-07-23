@@ -424,6 +424,9 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
 # nothing lands in collapse to zero height, so the unused ones cost nothing.
 _GRID_ROW_SCALE = 10
 _GRID_HEADER_ROWS = 10  # rows held above y_multiplier 0 for the intro/release header
+# Left margin (left edge -> ? HELP column) in pixels. Deliberately tighter than the legacy ~50px: the
+# reclaimed space becomes right-side breathing room for the four top I/O buttons. See finalize_grid_layout.
+_GRID_LEFT_MARGIN = 18
 # Span used by full-width (centerX) rows and by the intro header. Grid creates columns on demand and
 # empty ones collapse to zero width, so a span past the last real column costs nothing.
 _GRID_TOTAL_COLUMNS = 64
@@ -497,8 +500,15 @@ def finalize_grid_layout(window):
         _grid_columns[x] = column + 1
     last_column = len(x_values) + 1
 
+    # The tuned left margin is ~50px (the ? HELP column's x). Because a row spans a fixed total width,
+    # that margin pushes the rightmost widgets -- the four small I/O buttons at the top -- hard against
+    # the window's right edge, and on a width-constrained (DPI-clamped) screen the last one or two get
+    # clipped. Shrinking the left margin slides every row left by the same amount and, since the window
+    # never shrinks below its tuned width, opens exactly that much room on the right. Clamp to the GUI's
+    # own first x so a GUI that already starts further left is never pushed right.
+    left_margin = min(_GRID_LEFT_MARGIN, int(x_values[0]))
     try:
-        window.grid_columnconfigure(0, minsize=int(x_values[0]))
+        window.grid_columnconfigure(0, minsize=left_margin)
         for i in range(len(x_values) - 1):
             window.grid_columnconfigure(i + 1, minsize=int(x_values[i + 1] - x_values[i]))
         # the last column has no following x to measure against: let its content decide
