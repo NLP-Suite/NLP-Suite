@@ -319,6 +319,71 @@ ignored tooltip-coordinate params from `placeWidget` + all call sites (mechanica
 them). Add an appearance-mode toggle in the Setup GUI persisted via `config_util`. Refresh `docs/` and
 wiki screenshots. Final packaging pass: rebuild installers on Mac + Windows, full bundle QA.
 
+- ✅ **Dead x-coordinate constants + appearance-mode toggle** (`ctk/phase5-cleanup`, 2026-07-23) — the
+  code-side half of Phase 5. **Dead constants:** audited every constant assigned in `GUI_IO_util.py`'s
+  two platform blocks (~260 names) by grepping the *entire* `src/` tree, not just the block itself —
+  several constants are only "used" as a filler value for `placeWidget`'s own dead
+  `x_coordinate_hover_over`/`basic_y_coordinate` params (§6 below), which reads as a real reference
+  under a naive count. 47 were genuinely dead code (`release_history_button_x_coordinate`,
+  `team_button_x_coordinate`, `cite_button_x_coordinate` — vestiges of the old top-chrome row now
+  rebuilt as a `place()`d nav frame in `display_about_release_team_cite_buttons`, plus 44 more
+  per-GUI position constants with zero readers anywhere). First pass over-deleted 3
+  (`GIS_distance_labels_align`, `select_icon_color`, `file_splitter_split_docLength_pos`) that were
+  each referenced exactly once more, as the right-hand side of a *sibling* constant's assignment in
+  the same platform block (e.g. `file_splitter_lemmatize_pos = file_splitter_split_docLength_pos`) —
+  a pattern a same-file occurrence count doesn't distinguish from "just the two platform-block
+  definitions." `ruff`'s `F821` (undefined name) caught the one case where the referencing constant
+  survived the cut (`file_splitter_lemmatize_pos`, used externally by `file_splitter_main.py`);
+  restored that one definition. **Appearance-mode toggle:** an "Appearance mode" (System/Light/Dark)
+  `CTkOptionMenu` in `NLP_setup_package_language_main.py`, saved immediately on change via two new
+  `config_util` functions (`read_appearance_mode_config` / `write_appearance_mode_config_file`)
+  backed by its own `NLP_appearance_config.csv` — deliberately NOT a new column on
+  `NLP_default_package_language_config.csv`, which is read positionally (`dataset.iat[0, N]`) with a
+  blanket except-and-reset-all-fields-to-defaults on any read failure; bolting an unrelated setting
+  onto that file would put every existing user's parser/language config at risk over a cosmetic
+  preference. `GUI_util.py`'s former hardcoded `init_appearance("light")` now reads the persisted
+  value — but NOT via `import config_util` at that bootstrap point: `config_util` is sometimes
+  mid-import when `GUI_util` loads (`NLP_setup_package_language_main.py` -> `GUI_IO_util` ->
+  `config_util` -> `IO_user_interface_util` -> `IO_csv_util` -> `GUI_util` is one such cycle, which
+  predates this change), so calling `config_util.read_appearance_mode_config()` there intermittently
+  raised `AttributeError: partially initialized module` depending on which script was launched first
+  (caught via a live run of `NLP_setup_package_language_main.py`, not by `pytest`/`gui_smoke`, which
+  don't exercise this import order) — fixed with a small stdlib-only inline reader
+  (`_bootstrap_appearance_mode`) that duplicates just enough of `GUI_IO_util`'s `NLPPath` lookup to
+  avoid re-entering the cycle. Verified: `pytest` 184 passed, `gui_smoke` unchanged (38 ok/0 crashed/0
+  missing golden), a real launch of `NLP_setup_package_language_main.py` under the project's Anaconda
+  env (screenshot) confirmed the GUI opens, the new dropdown saves, and the config file round-trips;
+  `ruff check` on all four touched files identical to baseline (75/17/26/28) — zero new lint debt.
+  **Deliberately deferred, not attempted in this PR:** removing `placeWidget`'s three genuinely-dead
+  parameters (`whole_widget_red`, `basic_y_coordinate`, `x_coordinate_hover_over`) and their ~1,000+
+  call sites — unlike the constant deletions this requires *editing* every call site, and the dead
+  params are interleaved with live ones (`centerX` sits between two dead slots), so a blind
+  positional edit risks silently shifting `text_info`/`centerX` at any of those sites; §8's acceptance
+  criteria only grade the constant-block deletion, not this. Also deferred: `docs/`/wiki screenshot
+  refresh and the Mac+Windows installer rebuild/bundle QA pass (§8 criteria 3 and 5) — both need
+  interactive, per-platform work outside what this PR verified.
+- ✅ **Dark-mode text readability** (`ctk/phase5-cleanup`, 2026-07-23) — the appearance-mode toggle
+  above made dark mode reachable for the first time, which surfaced three plain-tk labels in
+  `GUI_util.py`'s shared `GUI_top()` (built by every GUI) that render tk's platform-default BLACK
+  text with no theme awareness: the "Welcome to this Python 3 script..." intro paragraph, and the
+  secondary-input-directory / output-directory path labels (`inputSecondaryDir_lb`, `outputDir_lb`,
+  a `create_label`-via-`textvariable` starred §6 item that had slipped through in this one function
+  even though the sibling `inputFile_lb` a few lines above already used the correct pattern) — all
+  unreadable against a dark window. The two path labels were straightforward `create_label`
+  conversions matching that existing sibling. The intro paragraph was NOT: converting it to
+  `create_label` (a real `CTkLabel`) was tried first and reverted after visual testing showed
+  CTkLabel's chrome around the 5 wrapped lines rendering a few px taller than `tk.Label`'s, which
+  pushed grid row 1 (and the first "? HELP" button in it) down far enough to collide with
+  `release_lb` — a *different* widget positioned by a hardcoded `.place()` offset from the logo
+  (`display_release()`, entirely outside the grid). Fixed narrowly instead: kept `intro` as a plain
+  `tk.Label` and only added an explicit theme-aware `foreground` (`resolve_appearance_color(["gray10",
+  "#DCE4EE"])`, the same pair `nlp_suite_theme.json` gives `CTkLabel`) — its background was already
+  handled by `normalize_legacy_backgrounds()` (called later in `GUI_bottom`), mirroring the existing
+  `release_lb` pattern of an explicit foreground plus a themed background on a plain tk widget. Caught
+  via a real dark-mode launch + screenshot, not by `pytest`/`gui_smoke` (a pixel-level layout
+  collision, invisible to both). `pytest` 184 passed, `gui_smoke` unchanged (38/0/0), `ruff check`
+  identical to baseline.
+
 > **Build-pipeline note:** `.github/workflows/build-installers.yml` checks out `ref: roberto`, so Phase 0
 > and Phase 5 spec/requirements changes must also reach `roberto` to affect installer builds.
 

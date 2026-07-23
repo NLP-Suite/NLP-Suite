@@ -540,6 +540,48 @@ def get_date_options(config_filename, config_input_output_numeric_options):
             index=index+1
     return filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists
 
+appearance_config_filename = 'NLP_appearance_config.csv'
+
+# CTk migration Phase 5: the appearance mode ("system"/"light"/"dark") is its own small config file
+# rather than a new column on NLP_default_package_language_config.csv -- that file is read by
+# position (dataset.iat[0, N]) and any read failure resets ALL of its fields to defaults, so bolting
+# an unrelated setting onto it would put every existing user's parser/language config at risk.
+def read_appearance_mode_config():
+    config_filename_path = os.path.join(GUI_IO_util.configPath, appearance_config_filename)
+    appearance_mode = 'light'  # matches the pre-Phase-5 hardcoded default
+    if os.path.isfile(config_filename_path):
+        try:
+            with open(config_filename_path, newline='', encoding='utf-8') as f:
+                reader = csv.reader(f)
+                rows = list(reader)
+            value = rows[1][0].strip().lower()
+            if value in ('system', 'light', 'dark'):
+                appearance_mode = value
+        except Exception:
+            pass
+    return appearance_mode
+
+def write_appearance_mode_config_file(window, appearance_mode):
+    if os.path.isdir(GUI_IO_util.configPath) is False:
+        try:
+            os.mkdir(GUI_IO_util.configPath)
+        except Exception:
+            mb.showwarning(title='Permission error?',
+                           message="The command failed to create the Config directory.\n\nIf you look at your command line and you see a \'Permission error\', it means that the folder where you installed your NLP Suite is Read only.\n\nYou can check whether that's the case by right clicking on the folder name, clicking on \'Properties\'. Make sure that the \'Attributes\' setting, the last one on the display window, is NOT set to \'Read only\'. If so, click on the checkbox until the Read only is cleared, click on \'Apply\' and then \'OK\', exit the NLP Suite and try again.")
+            return
+    config_filename_path = os.path.join(GUI_IO_util.configPath, appearance_config_filename)
+    try:
+        with open(config_filename_path, 'w+', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            writer.writerow(['Appearance mode'])
+            writer.writerow([appearance_mode])
+        IO_user_interface_util.timed_alert(window, 2000, 'Warning',
+                                           'The appearance mode has been saved.\n\nIt will take effect the next time you open an NLP Suite window.',
+                                           False)
+    except Exception:
+        mb.showwarning(title='Permission error?',
+                       message="The command failed to save the config file\n\n" + config_filename_path + "\n\nIf you look at your command line and you see a \'Permission error\', it means that the folder where you installed your NLP Suite is Read only.\n\nYou can check whether that's the case by right clicking on the folder name, clicking on \'Properties\'. Make sure that the \'Attributes\' setting, the last one on the display window, is NOT set to \'Read only\'. If so, click on the checkbox until the Read only is cleared, click on \'Apply\' and then \'OK\', exit the NLP Suite and try again.")
+
 # used in GIS_GUI and GIS_geocode_GUI
 # Google_config: 'Google-geocode-API_config.csv' or 'Google-Maps-API_config.csv'
 def Google_API_Config_Save(window,Google_config,Google_API_key):

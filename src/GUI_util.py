@@ -18,22 +18,48 @@ import IO_libraries_util
 #     sys.exit(0)
 
 import tkinter as tk
+import os
 
 # CTk migration (docs/CustomTkinter-Migration-Plan.md, Phase 1): the shared root window becomes a
 # CustomTkinter root so the whole suite renders themed. init_appearance() MUST run first -- it
 # applies the Phase 0 bundle ImageTk patch and loads the NLP Suite color theme BEFORE any widget is
 # created (CTk snapshots theme colors at construction time). tk / ttk widgets still parent to this
 # root unchanged (CTk() is a tkinter.Tk subclass), so the rest of the migration proceeds
-# incrementally on top of this. Appearance is pinned to "light" for now: while the individual GUI
-# widgets are still plain tk/ttk, "system"/dark would render a jarring half-dark UI -- the
-# appearance-mode toggle lands once the widgets themselves are CTk (plan Phase 5).
+# incrementally on top of this.
 import customtkinter as ctk
 import GUI_theme_util
-GUI_theme_util.init_appearance("light")
+
+# Phase 5: the mode is now a persisted user preference (defaults to "light", the pre-Phase-5
+# hardcoded value) set via the "Appearance mode" option in NLP_setup_package_language_main.py and
+# read back here through config_util.read_appearance_mode_config -- EXCEPT at this exact bootstrap
+# point config_util cannot be imported: several call chains reach GUI_util while config_util is
+# still mid-import (e.g. NLP_setup_package_language_main.py -> GUI_IO_util -> config_util ->
+# IO_user_interface_util -> IO_csv_util -> GUI_util, a cycle that predates this change), so
+# `import config_util` here would sometimes hand back a module object with none of its functions
+# defined yet. Read the tiny config file directly with stdlib only instead; config_util owns the
+# real read/write helpers used everywhere else (the Setup GUI, this fallback duplicates just enough
+# of GUI_IO_util's NLPPath lookup to avoid re-entering that cycle).
+def _bootstrap_appearance_mode():
+    import csv
+    if getattr(sys, 'frozen', False):
+        nlp_path = os.path.dirname(sys.executable)
+    else:
+        nlp_path = os.path.normpath(os.path.dirname(os.path.abspath(__file__)) + os.sep + os.pardir)
+    config_path = os.path.join(nlp_path, 'config', 'NLP_appearance_config.csv')
+    try:
+        with open(config_path, newline='', encoding='utf-8') as f:
+            rows = list(csv.reader(f))
+        value = rows[1][0].strip().lower()
+        if value in ('system', 'light', 'dark'):
+            return value
+    except Exception:
+        pass
+    return 'light'
+
+GUI_theme_util.init_appearance(_bootstrap_appearance_mode())
 window = ctk.CTk()
 from sys import platform
 
-import os
 import tkinter.messagebox as mb
 
 # ----- Unattended / silent batch mode (set env var NLP_SILENT=1 before a tool sweep) -----------
@@ -1116,7 +1142,7 @@ def IO_config_setup_full (window, y_multiplier_integer):
             y_multiplier_integer,
             openDirectory_button,True, False, True, False, 90, GUI_IO_util.IO_configuration_menu, "Open INPUT files SECONDARY directory")
 
-        inputSecondaryDir_lb = tk.Label(window, textvariable=input_secondary_dir_path)
+        inputSecondaryDir_lb = GUI_theme_util.create_label(window, textvariable=input_secondary_dir_path)
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,
                                                        y_multiplier_integer, inputSecondaryDir_lb)
 
@@ -1134,7 +1160,7 @@ def IO_config_setup_full (window, y_multiplier_integer):
             y_multiplier_integer,
             openDirectory_button, True, False, True, False, 90, GUI_IO_util.IO_configuration_menu, "Open OUTPUT files directory")
 
-        outputDir_lb = tk.Label(window, textvariable=output_dir_path)
+        outputDir_lb = GUI_theme_util.create_label(window, textvariable=output_dir_path)
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,
                                                        y_multiplier_integer, outputDir_lb)
 
@@ -1326,7 +1352,20 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
         # long lines make column 0 span far past the window's right edge under grid). Left-anchored
         # (sticky='w') so it's stable regardless of the window width (which is still tuned to the old
         # absolute layout -- window sizing is a later 2b iteration item).
-        intro = tk.Label(window, text=GUI_IO_util.introduction_main, wraplength=760, justify='left')
+        #
+        # Stays a plain tk.Label rather than create_label (CTkLabel): swapping the widget class was
+        # tried and reverted -- CTkLabel's own vertical chrome around 5 wrapped lines rendered a few
+        # px taller than tk.Label's, which pushed grid row 1 (and the first "? HELP" button in it)
+        # down far enough to collide with release_lb, a SEPARATE widget positioned by a hardcoded
+        # .place() offset from the logo (display_release(), independent of the grid entirely). Fix
+        # only what was actually broken instead: tk.Label's default text color is platform BLACK,
+        # invisible against a dark window background now that dark mode is reachable (Phase 5) --
+        # normalize_legacy_backgrounds() (called later in GUI_bottom) already repaints this label's
+        # BACKGROUND to the themed fill, matching release_lb's own pattern (explicit foreground +
+        # themed background on a plain tk.Label), so only the foreground was ever missing.
+        _intro_text_color = GUI_theme_util.resolve_appearance_color(["gray10", "#DCE4EE"])
+        intro = tk.Label(window, text=GUI_IO_util.introduction_main, wraplength=760, justify='left',
+                         foreground=_intro_text_color)
         # CTk migration slice 2b: the body is grid-managed now, and Tk forbids mixing grid + pack on
         # the same container, so the intro header goes in the reserved top grid row (row 0), spanning
         # the full column band and centered. The logo stays .place'd in the top-left corner (place

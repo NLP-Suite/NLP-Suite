@@ -47,6 +47,7 @@ limit_sentence_length_var = tk.IntVar()
 
 encoding_var = tk.StringVar()
 export_json_var = tk.IntVar()
+appearance_mode_var = tk.StringVar()
 y_multiplier_integer=0
 
 current_package_lb = GUI_theme_util.create_label(window,text='Currently available default NLP package and language')
@@ -306,6 +307,28 @@ encoding_var.set('utf-8')
 encodingValue = GUI_theme_util.create_option_menu(window, variable=encoding_var, values=['utf-8', 'utf-16-le', 'utf-32-le', 'latin-1', 'ISO-8859-1'])
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.all_widget_pos, y_multiplier_integer,encodingValue)
 
+# Phase 5 (docs/CustomTkinter-Migration-Plan.md): the appearance-mode preference. Saved immediately
+# on change (there is no RUN/general SAVE button in this GUI covering it) rather than folded into
+# save_NLP_config, which writes NLP_default_package_language_config.csv -- a config file already
+# read positionally (dataset.iat[0, N]); mixing in an unrelated column there would put that file's
+# existing parser/language settings at risk. Takes effect on the next window opened (each GUI is its
+# own process, and CTk's appearance mode is set once at process start in GUI_util.py).
+def save_appearance_mode():
+    config_util.write_appearance_mode_config_file(window, appearance_mode_var.get())
+
+appearance_mode_lb = GUI_theme_util.create_label(window, text='Appearance mode (Setup ▸ System/Light/Dark)')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                               appearance_mode_lb, True)
+
+appearance_mode_var.set(config_util.read_appearance_mode_config())
+appearance_mode_menu = GUI_theme_util.create_option_menu(window, variable=appearance_mode_var,
+                                                         values=['system', 'light', 'dark'],
+                                                         command=lambda _e=None: save_appearance_mode())
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.all_widget_pos, y_multiplier_integer,
+                                               appearance_mode_menu, False, False, False, False, 90,
+                                               GUI_IO_util.all_widget_pos,
+                                               "Choose how NLP Suite windows are themed: System (follow the OS), Light, or Dark.\nSaved immediately; it takes effect the next time you open an NLP Suite window.")
+
 export_json_var.set(0)
 export_json_label = GUI_theme_util.create_checkbox(window,
                                 variable=export_json_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox(export_json_label, export_json_var, "Export Json file(s)", "Do NOT export Json file(s)"))
@@ -547,6 +570,8 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "Please, using the dropdown menu, select the language(s) your input txt file(s) are written in. Different NLP packages support a different range of languages.\n\nFor those NLP packages that support multiple languages (e.g., texts written in both English and Chinese), such as Stanza, hit the + button multiple times to add multiple languages.\n\nHit the Reset buttons to start fresh.\n\nHit the Show button to display the current language selection." + GUI_IO_util.msg_save_uponClose)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,
                                   "NLP Suite Help","Please, using the dropdown menu, select the type of encoding you wish to use.\n\nLocations in different languages may require encodings (e.g., latin-1 for French or Italian) different from the standard (and default) utf-8 encoding."+GUI_IO_util.msg_Esc + GUI_IO_util.msg_save_uponClose)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                                         "Choose how NLP Suite windows are themed: System (follow the OS), Light, or Dark.\n\nSaved immediately; it takes effect the next time you open an NLP Suite window.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                                          "Tick the checkbox to export or not export the Json file(s) in txt format produced by the selected NLP package." + GUI_IO_util.msg_Esc + GUI_IO_util.msg_save_uponClose)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
