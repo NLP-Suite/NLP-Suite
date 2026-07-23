@@ -227,7 +227,7 @@ tranche.** Only *new* shared-layer gaps (each now a §6 item) and still-open ite
 | **Remaining setup GUIs** (`ctk/phase3-setup-gui`) | `NLP_setup_external_software`, `NLP_setup_package_language`; 37 ctors, 3 sliders | none | Overflow: external_software **0**; **`NLP_setup_package_language` +731** → Phase 4. Both `UNCOV`. Fixed in package_language: vestigial `.pack()` next to each of 3 `tk.Scale`s (GUI couldn't open); `changed_NLP_package_set_parsers()` recreated labels without destroying predecessors (+640px column); `parsers_display_area['text']` read → `.cget('text')`; two `['values'] = …` → `set_values` |
 | **Final tranche — misc tools** (`ctk/phase3-remaining-tools`) | `SRL_main`, `sample_corpus_main`, `knowledge_graphs_DBpedia_YAGO_main`, `corpus_checker_PCACE_data_main`, `data_manipulation_main`, `statistics_csv_main` — 6 GUIs never in an earlier tranche; ~90 ctors, first `int`/`float` `OptionMenu` choices converted | ⭐ **`CTkOptionMenu`/`CTkComboBox` crash outright on non-string `values=`** (date positions `1..5`, thresholds `.1..0.9`): CTk's `DropdownMenu._add_menu_commands` calls `value.ljust(...)` unconditionally, so a straight `values=[1,2,3]` port raises `AttributeError` on build (found via real-Tk+real-CTk, not `gui_smoke`) → `create_option_menu`/`create_combobox`/`set_values` now `str()`-coerce every item; `gui_smoke`'s fake CTk stub extended to raise the same way | Overflow: `data_manipulation_main` **+157**, `sample_corpus_main` **+419** → Phase 4. Last 3 empty open-file sites cleared — `ctk_empty_button_status.md` now empty. `data_manipulation_main`'s body sits behind `if __name__ == '__main__':` so `gui_smoke` reports 0 widgets; verified via `runpy.run_path(run_name='__main__')` (54 widgets). Other 5 verified clean under real Tk+CTk. **No `src/` GUI remains unconverted outside the Phase 4 hard cases.** |
 
-### Phase 4 — Hard cases (1 PR each)
+### Phase 4 — Hard cases (1 PR each) ✅
 
 - ✅ **`data_visualization_main.py`** (`ctk/phase4-data-visualization`, 2026-07-21) — last GUI still
   hand-`.place()`ing (~140 calls across a 7-tab `ttk.Notebook`). Notebook → **`CTkTabview`** (its
@@ -250,8 +250,8 @@ tranche.** Only *new* shared-layer gaps (each now a §6 item) and still-open ite
   instance, leaking grid-column claims; a widget built after `GUI_bottom` already ran, missing
   `apply_row_spans`) are in `docs/ctk_GUI_overflow_status.md`. This was the item **deliberately deferred
   to run LAST** (user's call, 2026-07-22) — now done. Four GUIs outside this named backlog
-  (`file_search_byWord_main`, `wordclouds_main`, `file_manager_main`, `SVO_main`; +191/+169/+103/+48)
-  remain overflowing and unaddressed — same doc.
+  (`file_search_byWord_main`, `wordclouds_main`, `file_manager_main`, `SVO_main`; +191/+169/+103/+48 per
+  the 2026-07-18 measurement) were left as a follow-up — closed below.
 - ✅ **`narrative_analysis_ALL_main.py`**, **`license_GUI.py`**, **`charts_Excel_main.py`**
   (`ctk/phase4-remaining-hard-cases`, 2026-07-22) — the last three unconverted GUIs in `src/`.
   `charts_Excel_main.py` normalized first (pure-CR classic-Mac line endings, no `\n` in the file at
@@ -298,6 +298,19 @@ tranche.** Only *new* shared-layer gaps (each now a §6 item) and still-open ite
   round-trip). `pytest` 184 passed, `gui_smoke` unchanged (38 ok/0 crashed/0 missing golden;
   `knowledge_graphs_main.py` still builds, 19 widgets). `ruff check` on the three touched files:
   identical violation count before/after (106) — zero new lint debt.
+- ✅ **Last four overflowing GUIs** (`ctk/phase1-grid`, 2026-07-22) — closes
+  `docs/ctk_GUI_overflow_status.md`'s outstanding-overflow list (§8 acceptance criterion 4). Re-measured
+  first, since the doc's 2026-07-18 numbers came from a different machine (font-metric drift shifts
+  `reqwidth` by tens of px): `file_manager_main.py` and `SVO_main.py` already fit (0 overflow) with no
+  code change; `file_search_byWord_main.py` (measured +79) and `wordclouds_main.py` (measured +57) still
+  had the classic packed-row pattern (an `x+N`-offset chain / a set of per-GUI positioning constants each
+  landing in its own unshared column) and were row-split the same way as the Phase 4 row-splitting
+  backlog — down to **0** and **−32** respectively, 1 matching extra `?` HELP button each. Also measured
+  `GIS_main.py` (previously un-measurable without a full Anaconda env, §5.5/below): **0**, 50 widgets, no
+  collisions. **Every GUI in `src/` now fits at 0 or negative overflow.** Verified: `pytest` 184 passed,
+  `gui_smoke` unchanged (38 ok/0 crashed/0 missing golden), the two split rows' enable/disable
+  choreography and variable round-trips exercised under real Tk+CTk (correct), `ruff check` on both
+  touched files identical before/after (57) — zero new lint debt.
 
 ### Phase 5 — Cleanup and polish (1–2 PRs)
 
@@ -436,5 +449,6 @@ Total: roughly **6–8 calendar weeks** for one person, less wall-clock if Phase
 2. The platform-specific x-coordinate constant blocks in `GUI_IO_util.py` are deleted.
 3. Every GUI passes §6 on macOS and Windows, light and dark, from a dev venv **and** the PyInstaller
    bundle.
-4. `docs/ctk_GUI_overflow_status.md` and `docs/ctk_empty_button_status.md` are empty of open items.
+4. ✅ `docs/ctk_GUI_overflow_status.md` and `docs/ctk_empty_button_status.md` are empty of open items
+   (2026-07-22: last four overflowing GUIs closed; empty-button inventory cleared 2026-07-21).
 5. Installers built from `roberto` ship and launch the CTk UI on clean machines.

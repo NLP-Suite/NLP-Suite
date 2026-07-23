@@ -338,12 +338,17 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_font_
 max_words_var=tk.StringVar()
 max_words_var.set(100)
 
+# row-splitting fix (docs/ctk_GUI_overflow_status.md): this used to be one 8-widget row via the
+# wordclouds_* constants, each landing in its own column band with no other row reusing it -- 8
+# brand-new grid columns nothing else in the GUI needed. Split across 2 rows, cycling through the
+# handful of bands (labels_x_indented_coordinate / entry_box_x_coordinate / open_reminders_x_coordinate
+# / open_setup_x_coordinate) every other row in this GUI already pays for.
 max_words_lb = GUI_theme_util.create_label(window, text='Max no. of words')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,max_words_lb,True)
 max_words=GUI_theme_util.create_entry(window, width=4,textvariable=max_words_var)
 max_words.configure(state='normal')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_max_words_number, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                    max_words,
                                    True, False, True, False, 90, GUI_IO_util.wordclouds_max_words_number,
                                    "Enter the maximum number of words to be displayed on the wordclouds image.\nIncrease the number, if words are not displayed as expected.")
@@ -353,7 +358,7 @@ lemmatize_checkbox = GUI_theme_util.create_checkbox(window, variable=lemmatize_v
                                                        onvalue=1, offvalue=0)
 lemmatize_checkbox.configure(text="Lemmas")
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_lemmas_pos, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    lemmatize_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.wordclouds_lemmas_pos,
                                    "Untick the checkbox to NOT lemmatize words; tick the checkbox to lemmatize words in the corpus."
@@ -364,9 +369,9 @@ stopwords_checkbox = GUI_theme_util.create_checkbox(window, variable=exclude_sto
 
 stopwords_checkbox.configure(text="Stopwords")
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_stopwords_pos, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                    stopwords_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "Untick the checkbox to INCLUDE stopwords; tick the checkbox to EXCLUDE stopwords."
                                    "\nStopwords are provided by the Wordclouds package and printed in command line/terminal when stopwords are included.")
 
@@ -375,7 +380,7 @@ punctuation_checkbox = GUI_theme_util.create_checkbox(window, variable=exclude_p
 
 punctuation_checkbox.configure(text="Punctuation")
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_punctuation_pos, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    punctuation_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.wordclouds_punctuation_pos,
                                    "Untick the checkbox to EXCLUDE punctuation; tick the checkbox to INCLUDE punctuation.\nPunctuation is NOT applied when a csv file is used in input.")
@@ -385,7 +390,7 @@ lowercase_checkbox = GUI_theme_util.create_checkbox(window, variable=lowercase_v
 
 lowercase_checkbox.configure(text="Lowercase")
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_lowercase_pos, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                    lowercase_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "Untick the checkbox to NOT process corpus words in lowercase; tick the checkbox to process corpus words in lowercase")
@@ -395,14 +400,14 @@ collocation_checkbox = GUI_theme_util.create_checkbox(window, variable=collocati
 
 collocation_checkbox.configure(text="Collocation")
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_collocation_pos, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    collocation_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "Tick the checkbox to process multiple words together (e.g., standing up); untick the checkbox NOT to process multiple words together;\nTICKING THE COLLOCATION CHECKBOX MAY RESULT IN THE UNWANTED DUPLICATION OF SOME WORDS")
 
 differentPOS_differentColor_checkbox.configure(text="Different colors by POS tags")
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_color_by_POS_tags, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                    differentPOS_differentColor_checkbox,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "Untick the checkbox to NOT process words in different colors by their POS value; tick the checkbox to process in different colors words by their POS value: nouns, verbs, adjectives, and adverbs.\n"
@@ -706,7 +711,12 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                                          'Please, tick the \'GUIs available\' checkbox if you wish to see and select the range of other available tools suitable for searches and style analysis.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the word cloud service you want to use to generate a worldcloud.\n\nFor 'TagCrowd', 'Tagul', 'Tagxedo', 'Wordclouds', and 'Wordle' you must be connected to the internet. You will also need to copy/paste text or upload a text file, depending upon the word clouds service. If you wish to visualize the words in all the files in a directory, you would need to merge the files first via the file_merger_main, then use your merged file.\n\nThe Python algorithm uses Andreas Mueller's Python package wordclouds (https://amueller.github.io/word_cloud/) can be run without internet connection.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files or a csv CoNLL table file.\n\nIn OUTPUT the algorithm creates word cloud image file(s).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","\n\nThe filter options are only available when selecting Python as the wordclouds service to use. When available,\n\n   1. tick the 'Horizonal' checkbox if you wish to display words in the wordclouds horizonally only;\n   2. select the preferred font; default font is the Adobe Droid Sans Mono font.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","\n\nThe filter options are only available when selecting Python as the wordclouds service to use. When available,\n\n   1. enter the maximum number of words to be displayed;\n   2. tick the 'Stopwords' checkbox if you wish to exclude from processing stopwords present in the input file(s);\n   3. tick the 'Lemmas' checkbox if you wish to lemmatize the words in the input file(s);\n   4. tick the 'Punctuation' checkbox if you wish to exclude from processing punctuation symbols present in the input file(s);\n   5. tick the 'Lowercase' checkbox if you wish to convert all words to lowercase to avoid having some words capitalized simply because they are the first words in a sentence;\n   6. tick the 'Collocation' checkbox if you wish to keep together common combinations of words (e.g., South Carolina; White House); TICKING THE COLLOCATION CHECKBOX MAY RESULT IN THE UNWANTED DUPLICATION OF SOME WORDS;\n   7. tick the 'Different colors for different POS tags' checkbox if you wish to display different POSTAG values (namely, nouns, verbs, adjectives, and adverbs) in different colors (RED for NOUNS (including proper nouns), BLUE for VERBS, GREEN for ADJECTIVES, and GREY for ADVERBS). For greater control over the use of different colors for different items, you can use the csv file option below with a CoNLL table as input. You will then be able to use NER or DEPREL and not just POSTAG (or more POSTAG values).\n\nStanford CoreNLP STANZA will be used to tokenize sentences, lemmatize words, and compute POS tags. Depending upon the number of files processed and length of files, the process can be time consuming. Please, be patient.\n\nREGARDLESS OF OPTIONS SELECTED, THE S OF THE SAXON GENITIVE WILL NOT BE DISPLAYED.")
+    # row-splitting fix (docs/ctk_GUI_overflow_status.md): the max-words/lemmas/stopwords/punctuation/
+    # lowercase/collocation/different-colors-by-POS row now spans 2 grid rows (see the split above), so
+    # this needs a matching second '?' HELP button to keep this counter aligned with the main body's row count.
+    filter_options_row_msg = "\n\nThe filter options are only available when selecting Python as the wordclouds service to use. When available,\n\n   1. enter the maximum number of words to be displayed;\n   2. tick the 'Stopwords' checkbox if you wish to exclude from processing stopwords present in the input file(s);\n   3. tick the 'Lemmas' checkbox if you wish to lemmatize the words in the input file(s);\n   4. tick the 'Punctuation' checkbox if you wish to exclude from processing punctuation symbols present in the input file(s);\n   5. tick the 'Lowercase' checkbox if you wish to convert all words to lowercase to avoid having some words capitalized simply because they are the first words in a sentence;\n   6. tick the 'Collocation' checkbox if you wish to keep together common combinations of words (e.g., South Carolina; White House); TICKING THE COLLOCATION CHECKBOX MAY RESULT IN THE UNWANTED DUPLICATION OF SOME WORDS;\n   7. tick the 'Different colors for different POS tags' checkbox if you wish to display different POSTAG values (namely, nouns, verbs, adjectives, and adverbs) in different colors (RED for NOUNS (including proper nouns), BLUE for VERBS, GREEN for ADJECTIVES, and GREY for ADVERBS). For greater control over the use of different colors for different items, you can use the csv file option below with a CoNLL table as input. You will then be able to use NER or DEPREL and not just POSTAG (or more POSTAG values).\n\nStanford CoreNLP STANZA will be used to tokenize sentences, lemmatize words, and compute POS tags. Depending upon the number of files processed and length of files, the process can be time consuming. Please, be patient.\n\nREGARDLESS OF OPTIONS SELECTED, THE S OF THE SAXON GENITIVE WILL NOT BE DISPLAYED."
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", filter_options_row_msg)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", filter_options_row_msg)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to open the web service Removebg (https://www.remove.bg/) that will prepare an image for use in the Python wordclouds algorithm, removing all image background and turning it into white.\n\nYou can then use the output png image file to create the wordclouds (see the widget 'Select png image' file).\n\nYOU MUST BE CONNECTED TO THE INTERNET.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, select a png image file to be used to display the word cloud in the image.\n\nThe image must have a white background.\n\nYou can use the image file created via removebg (see the widget 'Prepare image').\n\nClick on the button to the right of the widget 'Select png image file' to open the file.\n\nTick the checkbox 'Use image contour only' if you want to use the contour of the image rather than the full image.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you are using a csv file in input and you wish to run the Python 3 Andreas Mueller's package WordCloud (https://amueller.github.io/word_cloud/) assigning different colors to the values of different columns of the csv file.\n\nThus, if, from a file, you have extracted SVOs (Subjects, Verbs, Objects) or POSTAG values (nouns, verbs, and adjectives), saving these values in different columns, this function will allow you to display the values in the different columns in different, user-selected colors (e.g., RED for the column of NOUNS, BLUE for the column of VERBS).\n\nThe wordclouds algorithm can color all the values of a column differently from all the values of another column. The algorithm is NOT setup to color differently the different values within a column (to accomplish this goal, you would need to manipulate first the csv file; for instance, if the input file is a CoNLL table, you could extract all the NER values COUNTRY, CITY, and STATE_OR_PROVINCE and the NER tag PERSON and ORGANIZATION, save them as two separate columns, and then use this new csv file in the current wordclouds algorithm).\n\nIn INPUT the algorithm expects a single csv file rather than a text file or a directory.\n\nIn OUTPUT the algorithm creates a word cloud image file.")

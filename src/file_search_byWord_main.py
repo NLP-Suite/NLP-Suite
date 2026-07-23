@@ -413,28 +413,33 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWo
                     90, GUI_IO_util.read_button_x_coordinate,
                     "Enter the comma-separated words/set of words that a document sentence or document (depending upon your selected option) must contain (e.g, coming out, standing in line, boyfriend).\nIn output, a separate record will be produced VERTICALLY for each comma-separated entry.\nUse the Co-ccurrence option (tick the checkbox at the end of the line) to produce records organized HORIZONTALLY, different headers in the output csv file for each search word.")
 
+# row-splitting fix (docs/ctk_GUI_overflow_status.md): this used to be one 9-widget row via a chain
+# of x_coordinate+N offsets (1050..1240) that all fell in the same column band, each bumping into a
+# brand-new grid column. Split across 2 rows, cycling through the handful of bands
+# (labels_x_coordinate / extract_sentences_search_words_entry_pos / open_reminders_x_coordinate /
+# open_setup_x_coordinate / run_button_x_coordinate) every other row in this GUI already pays for.
 minus_K_lb = GUI_theme_util.create_label(window, text='-K')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,1050,y_multiplier_integer,minus_K_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate,y_multiplier_integer,minus_K_lb,True)
 
 minus_K_words_sentences_var.set(0)
 minus_K_words_entry = GUI_theme_util.create_entry(window, textvariable=minus_K_words_sentences_var) #extract_sentences_search_words_var)
 minus_K_words_entry.configure(state='disabled')
 GUI_theme_util.set_char_width(minus_K_words_entry, 3)
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window, 1080, y_multiplier_integer,
-                    minus_K_words_entry, True, False, True, False,
+y_multiplier_integer=GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
+                    minus_K_words_entry, False, False, True, False,
                     90, GUI_IO_util.open_TIPS_x_coordinate,
                     "Enter the integer number of words (do not enter -) preceding the search word to be extracted, for context, together with the search sentences.\nA wordcloud of the -K +K words will be generated using default wordcloud values (e.g., max words = 100, exclude stopwords & punctuation).\nThe -K +K options apply only to searches within sentences.")
 
 plus_K_lb = GUI_theme_util.create_label(window, text='+K')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,1120,y_multiplier_integer,plus_K_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,plus_K_lb,True)
 
 plus_K_words_sentences_var.set(0)
 plus_K_words_entry = GUI_theme_util.create_entry(window, textvariable=plus_K_words_sentences_var) #extract_sentences_search_words_var)
 plus_K_words_entry.configure(state='disabled')
 GUI_theme_util.set_char_width(plus_K_words_entry, 3)
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window, 1150, y_multiplier_integer,
+y_multiplier_integer=GUI_IO_util.placeWidget(window, GUI_IO_util.file_search_byWord_extract_sentences_search_words_entry_pos, y_multiplier_integer,
                     plus_K_words_entry, True, False, True, False,
                     90, GUI_IO_util.open_TIPS_x_coordinate,
                     "Enter the integer number of words (do not enter +) following the search word to be extracted, for context, together with the search sentences.\nA wordcloud of the words for the -K +K sentences will be generated using default wordcloud values (e.g., max words = 100, exclude stopwords & punctuation).\nThe -K +K options apply only to searches within sentences.")
@@ -446,7 +451,7 @@ extract_sentences_checkbox = GUI_theme_util.create_checkbox(window, text='', var
 extract_sentences_checkbox.configure(state='disabled')
 
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,1180, y_multiplier_integer,
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                     extract_sentences_checkbox, True, False, True, False,
                     90, GUI_IO_util.open_TIPS_x_coordinate,
                     "Tick the checkbox if you want to extract all -K +K SENTENCES (not words) occurring BEFORE and AFTER each found search word.\nSentences containing (and not containing) the search words will be exported as text files for any further processing.\nWordcloud sub-directories will also be created with the appropriate txt and wordcloud files.\nThe option applies only to searches within sentences.")
@@ -458,7 +463,7 @@ coOccurring_keywords_checkbox = GUI_theme_util.create_checkbox(window, text='', 
 coOccurring_keywords_checkbox.configure(state='disabled')
 
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,1210, y_multiplier_integer,
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                     coOccurring_keywords_checkbox, True, False, True, False,
                     90, GUI_IO_util.labels_x_coordinate,
                     "Tick the checkbox if you want to search for the listed comma-separated keywords as CO-OCCURRING in the same sentence or document, depending on the selected search option (within sentence or document).")
@@ -470,7 +475,7 @@ create_subcorpus_checkbox = GUI_theme_util.create_checkbox(window, text='', vari
 create_subcorpus_checkbox.configure(state='disabled')
 
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,1240, y_multiplier_integer,
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                     create_subcorpus_checkbox, False, False, True, False,
                     90, GUI_IO_util.open_reminders_x_coordinate,
                     "Tick the checkbox to create a subdirectory for the subcorpus of files containing the search word(s).\nThe subdirectory will be created inside the input files directory with the name 'subcorpus_search'.")
@@ -572,7 +577,12 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, use the dropdown menu to set up the search criteria. Multiple criteria can be selected by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nWhen running the search as case sensitive, a sentence containing the word 'King' will not be selected in output if you search for 'king')\n\nWhen running the search with the wrd 'king' as Partial match, a sentence containing the word 'king' (e.g., kingdom) will be selected in output. Use the 'Exact match (default)' option to only select 'king'.\n\nWhen lemmatizing, the scripts would search 'coming out' in all its lemmatized forms: 'coming out', 'come out', 'comes out', 'came out'. Lemmatzing relies on Stanza. WHEN LEMMATIZING THE INPUT TEXT, SEARCH WORDS WILL ALSO BE LEMMATIZED.\n\nWhen searching 'Within sentence' combinations of words or collocations will be searched and displayed within SENTENCE otherwise within DOCUMENT.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to search input txt file(s) using the values contained in a csv dictionary file.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click to select a csv file containing a list of values to be used as a dictionary for searching the input file(s).\n\nEntries in the file, one per line, can be single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nThe little square button to the right will allow you to open the selected csv file.\n\nThe csv filename will be displayed in the entry widget to the right.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to search input txt file(s) by single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nThe widget where you can enter your comma-separated, case-sensitive words/collocations will become available once you select the option. Enter there the comma-separated, case-sensitive words/set of words that a sentence must contain in order to be extracted from input and saved in output (e.g, coming out, standing in line, boyfriend).\n\nTick the checkbox at the end of the line if you want to search for words CO-OCCURRING TOGETHER in the same sentence or document, depending upon the selected search option (within sentence or within document).\n\nIn INPUT the scripts expect a single txt file or a set of txt files in a directory.\n\nIn OUTPUT the scripts generate a csv file with information about the document, sentence, word/collocation searched, and, most importantly, about the relative position where the search word appears in a document.\nWhen -K +K words are entered, the algorith will generate a wordcloud of all the extracted -K +K words (& sentences) using wordcloud default values (e.g., max words = 100, exclude stopwords & punctuation).\nTick the checkbox at the end of the line to export SENTENCES, rather than words.\nWhen the checkbox 'Create subcorpus of files' is ticked, the algorithm will export all the txt files that contain the search words to a directory called 'subcorpus_search' inside the input directory. A set of csv files are also exported but to the selected output directory.")
+    # row-splitting fix (docs/ctk_GUI_overflow_status.md): the search-by-word(s)/-K/+K/extract-
+    # sentences/co-occurring/subcorpus row now spans 2 grid rows (see the split above), so this needs
+    # a matching second '?' HELP button to keep this counter aligned with the main body's row count.
+    search_by_word_row_msg = "Please, tick the checkbox to search input txt file(s) by single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nThe widget where you can enter your comma-separated, case-sensitive words/collocations will become available once you select the option. Enter there the comma-separated, case-sensitive words/set of words that a sentence must contain in order to be extracted from input and saved in output (e.g, coming out, standing in line, boyfriend).\n\nTick the checkbox at the end of the line if you want to search for words CO-OCCURRING TOGETHER in the same sentence or document, depending upon the selected search option (within sentence or within document).\n\nIn INPUT the scripts expect a single txt file or a set of txt files in a directory.\n\nIn OUTPUT the scripts generate a csv file with information about the document, sentence, word/collocation searched, and, most importantly, about the relative position where the search word appears in a document.\nWhen -K +K words are entered, the algorith will generate a wordcloud of all the extracted -K +K words (& sentences) using wordcloud default values (e.g., max words = 100, exclude stopwords & punctuation).\nTick the checkbox at the end of the line to export SENTENCES, rather than words.\nWhen the checkbox 'Create subcorpus of files' is ticked, the algorithm will export all the txt files that contain the search words to a directory called 'subcorpus_search' inside the input directory. A set of csv files are also exported but to the selected output directory."
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", search_by_word_row_msg)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", search_by_word_row_msg)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
 

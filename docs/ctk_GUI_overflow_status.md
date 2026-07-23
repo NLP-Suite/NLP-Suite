@@ -124,19 +124,33 @@ describes) plus `pytest` (184 passed) and `gui_smoke` (0 crashed, 0 missing gold
 `ruff check` before/after each file showed an identical violation set (line numbers only shifted) —
 confirms no new lint debt from either the layout edits or the bug fixes.
 
-## Still overflowing
+## Fixed: the last four overflowing GUIs (`ctk/phase1-grid`, 2026-07-22)
 
 These four were never part of the Phase 4 row-splitting backlog above (that list — see the migration
-plan's §4 — named exactly the six GUIs just fixed) and remain genuinely unaddressed. Each is wider than
-the screen even after every shrinkable entry hits the 150px floor; fixing them needs the same per-GUI
-row-splitting work as above, not a general-purpose knob.
+plan's §4 — named exactly the six GUIs fixed there) and were the last genuinely open items. Re-measured
+on a real Tk+CTk harness (not the doc's original 2026-07-18 numbers, which ran on a different machine —
+font-metric drift between machines shifts `reqwidth` by tens of px, so two of the four turned out to
+already fit with **zero code changes**):
 
-| GUI | overflow (px) |
-|---|---|
-| `file_search_byWord_main.py` | +191 |
-| `wordclouds_main.py` | +169 |
-| `file_manager_main.py` | +103 |
-| `SVO_main.py` | +48 |
+| GUI | doc'd overflow | measured overflow (this pass) | fix |
+|---|---|---|---|
+| `file_search_byWord_main.py` | +191 | +79 → **0** | row-split the 9-widget search-by-word(s)/-K/+K/extract-sentences/co-occurring/subcorpus row (same `x+N`-chain pattern as `DB_SQL_main.py`'s Phase 4 fix) into 2 rows, cycling through `labels_x_coordinate` / `file_search_byWord_extract_sentences_search_words_entry_pos` / `open_reminders_x_coordinate` / `open_setup_x_coordinate` / `run_button_x_coordinate`; 1 matching extra `?` HELP button |
+| `wordclouds_main.py` | +169 | +57 → **-32** | row-split the 8-widget max-words/lemmas/stopwords/punctuation/lowercase/collocation/different-colors-by-POS row (each `wordclouds_*` constant landed in its own column nothing else reused) into 2 rows, cycling through `labels_x_indented_coordinate` / `entry_box_x_coordinate` / `open_reminders_x_coordinate` / `open_setup_x_coordinate`; 1 matching extra `?` HELP button |
+| `file_manager_main.py` | +103 | **0** (already) | no code change needed |
+| `SVO_main.py` | +48 | **0** (already) | no code change needed |
+
+Verified via the same real Tk+CTk harness the rest of this doc uses (`mainloop` stubbed,
+`window.update()` flushes the fit-to-content + shrink pass, `winfo_reqwidth()` vs. geometry width, scan
+`grid_slaves()` for cell collisions — none found on either touched GUI) plus exercising each split row's
+enable/disable choreography and variable round-trips (`file_search_byWord_main.py`'s -K/+K entries and
+extract-sentences/co-occurring/subcorpus checkboxes toggle correctly with `search_by_keyword`;
+`wordclouds_main.py`'s six checkboxes plus the max-words entry all read/write their bound variables) —
+correct in both cases. `pytest` 184 passed, `gui_smoke` unchanged (38 ok/0 crashed/0 missing golden;
+`SVO_main.py` still `UNCOV`, same pre-existing Stanza-import gap as before, unrelated to this fix).
+`ruff check` on both touched files: identical violation count before/after (57) — zero new lint debt.
+
+**Every GUI in `src/` now fits at 0 or negative overflow on the 1470×956 reference screen**, closing this
+doc's outstanding-overflow list (acceptance criterion §8.4 of the migration plan).
 
 `NLP_welcome_main.py` reports +8656 but is a false positive: its content is `.place()`d, not gridded,
 so `reqwidth` is not meaningful there.
@@ -149,12 +163,13 @@ left-to-right) makes it measurable, and it fits on the 1470×956 reference scree
 no row-splitting needed. The tabview is a fixed 320px tall (a floor for its 7-row Numeric tab); if a
 future row is added the height may need bumping so the last row is not clipped by the tab body.
 
-`GIS_main.py` (Phase 3 GIS tranche, `ctk/phase3-gis-tools`) could not be measured in this sandbox —
+`GIS_main.py` (Phase 3 GIS tranche, `ctk/phase3-gis-tools`) needed a full Anaconda env to measure —
 its module-level `Stanza_util`/`spaCy_util`/`Stanford_CoreNLP_util`/`BERT_util` imports pull in
 multi-hundred-MB models and exit before the window builds when optional ML deps (`sentencepiece`,
-`tensorflow`, ...) are missing, same pre-existing gap as its `gui_smoke` `UNCOV` status. Needs
-measuring in a full Anaconda env. `GIS_distance_main.py` (+0) and `GIS_symbolic_main.py` (-88) measured
-clean on the 1470x956 reference screen.
+`tensorflow`, ...) are missing, same pre-existing gap as its `gui_smoke` `UNCOV` status. Measured clean
+(**0**, 50 widgets, no collisions) on `ctk/phase1-grid`, 2026-07-22, in an env with the full stack
+installed. `GIS_distance_main.py` (+0) and `GIS_symbolic_main.py` (-88) measured clean on the 1470x956
+reference screen.
 
 The final Phase 3 tranche's other 4 GUIs (`ctk/phase3-remaining-tools`, 2026-07-21) all measured
 clean on the 1470x956 reference screen: `SRL_main.py` (-88), `knowledge_graphs_DBpedia_YAGO_main.py`
