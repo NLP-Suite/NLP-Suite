@@ -425,8 +425,18 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
 # A GUI may opt out of grid and keep absolute .place layout; GUI_util.GUI_top sets this per GUI from
 # its scriptName. Default True so every GUI is grid unless it asks otherwise.
 grid_layout_enabled = True
-# GUIs whose legacy layout overlaps widgets in ways grid cannot reproduce -- kept on absolute .place.
-GRID_OPT_OUT = {'DB_PCACE_data_analysis_main.py', 'DB_PCACE_data_validation_main.py'}
+# GUIs kept on absolute .place because their layout is too coupled to pixel positions for grid to
+# reproduce: the dense PC-ACE tools overlap widgets on purpose; NLP_menu .place's a tabbed notebook at
+# a computed y; DB_SQL uses a 12-line-tall Text box with a hand-tuned row bump and right-edge-aligned
+# buttons; parsers has a full-width package label that overruns its slot. All four worked as-is on
+# .place, so opting out is a no-op for them, not a regression.
+GRID_OPT_OUT = {
+    'DB_PCACE_data_analysis_main.py',
+    'DB_PCACE_data_validation_main.py',
+    'NLP_menu_main.py',
+    'DB_SQL_main.py',
+    'parsers_annotators_main.py',
+}
 _GRID_ROW_SCALE = 10
 _GRID_HEADER_ROWS = 10  # rows held above y_multiplier 0 for the intro/release header
 # Left margin (left edge -> ? HELP column) in pixels. Deliberately tighter than the legacy ~50px: the
