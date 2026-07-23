@@ -429,25 +429,20 @@ def display_release():
 
     release_display = 'Release ' + str(release_version_var.get().replace('\n','')) + "/" + str(GitHub_newest_release)
     release_lb = tk.Label(window, text=release_display, foreground="red") #height=1,
-    # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.help_button_x_coordinate,
-                                                   y_multiplier_integer,
-                                                   release_lb, True, False, False, False, 90,
-                                                   GUI_IO_util.help_button_x_coordinate,
-                                                   "The two sets of numbers, separated by /, refer to the NLP Suite release on your machine (left) and the release available on GitHub (right)\nWithout internet the newest release available on GitHub cannnot be retrieved and is displayed as 0.0.0.")
-    # On a grid GUI the release label is placed here, at the end of GUI_bottom -- AFTER
-    # finalize_grid_layout has run (it must, because reading the GitHub version needs the network and
-    # the GUI has to be visible first). So it never got a span, and its ~107px sat in the narrow left
-    # column (a 70px gap), forcing that column wide and shoving every row 37px to the right -- enough to
-    # push the top row's rightmost button off a DPI-clamped screen. Span it across the header instead,
-    # exactly like the intro. Guard on grid_layout_enabled: for .place GUIs (the welcome splash, the
-    # opt-outs) placeWidget already .place'd the label at the top-left, and a bare grid_configure() would
-    # RE-grid it (grid wins over place) and drop it to the bottom of the window.
-    try:
-        if GUI_IO_util.grid_layout_enabled:
-            release_lb.grid_configure(columnspan=GUI_IO_util._GRID_TOTAL_COLUMNS)
-    except Exception:
-        pass
+    if GUI_IO_util.grid_layout_enabled:
+        # Keep the release label OUT of the grid flow -- like the .place'd logo -- so it floats under the
+        # logo at the top-left. display_release() runs at the END (GUI_bottom, after finalize_grid_layout),
+        # so gridding it dropped it into a row BELOW the tall intro (far-left, y~94), and its ~107px width
+        # also forced the narrow left column wide. .place touches no column and reproduces the classic
+        # .place header exactly: release tucked under the logo.
+        release_lb.place(x=GUI_IO_util._GRID_LEFT_MARGIN, y=62)
+    else:
+        # place widget with hover-over info
+        y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.help_button_x_coordinate,
+                                                       y_multiplier_integer,
+                                                       release_lb, True, False, False, False, 90,
+                                                       GUI_IO_util.help_button_x_coordinate,
+                                                       "The two sets of numbers, separated by /, refer to the NLP Suite release on your machine (left) and the release available on GitHub (right)\nWithout internet the newest release available on GitHub cannnot be retrieved and is displayed as 0.0.0.")
     # check and display a possible warning message
     if GitHub_newest_release != '0.0.0':
         check_GitHub_release(local_release_version)
@@ -1249,15 +1244,16 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
     # No top help lines displayed when opening the license agreement GUI
     if config_filename!='license_config.csv':
         if GUI_IO_util.grid_layout_enabled:
-            # wraplength keeps the multi-line intro from blowing out the grid width: without it the
-            # longest line alone would set the width of a column every content row also uses.
-            intro = tk.Label(window, text=GUI_IO_util.introduction_main, wraplength=760, justify='left')
+            # Center the intro across the full width, exactly like the classic .place/pack header, instead
+            # of left-aligning it at x=130. wraplength keeps the multi-line intro from blowing out the grid
+            # width (without it the longest line alone would set the width of a column every content row
+            # also uses); 1100 is wide enough that the authored lines don't re-wrap on a normal window.
             # The body is grid-managed and Tk refuses to mix grid with pack on the same container, so the
-            # intro goes into the reserved top grid row. The logo stays .place'd in the top-left corner
-            # (place coexists with grid; pack does not). The left padding clears the logo, which floats
-            # outside the grid and so contributes nothing to its sizing.
+            # intro goes into the reserved top grid row (spanning all columns, so its width is distributed
+            # and forces no single content column wide). The logo stays .place'd in the top-left corner.
+            intro = tk.Label(window, text=GUI_IO_util.introduction_main, wraplength=1100, justify='center')
             intro.grid(row=0, column=0, columnspan=GUI_IO_util._GRID_TOTAL_COLUMNS,
-                       padx=(130, 6), pady=(6, 4), sticky='w')
+                       padx=6, pady=(6, 4), sticky='')
         else:
             # Opted-out GUI: the body is absolutely .place'd, so the intro packs at the top as it always did.
             intro = tk.Label(window, text=GUI_IO_util.introduction_main)
