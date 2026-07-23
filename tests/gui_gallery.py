@@ -34,7 +34,9 @@ sys.path.insert(0, SRC)
 import importlib.util
 import IO_libraries_util
 IO_libraries_util.install_all_Python_packages = lambda *a, **k: True
-IO_libraries_util.check_java_installation = lambda *a, **k: True
+# check_java_installation returns a 4-tuple (errorFound, code, output, version); some GUIs (NLP_menu)
+# unpack it, so a bare True crashes the build. Return "Java present, no error".
+IO_libraries_util.check_java_installation = lambda *a, **k: (False, 0, '', '')
 import GUI_util
 GUI_util.window.mainloop = lambda *a, **k: None
 target, png = sys.argv[1], sys.argv[2]
@@ -81,13 +83,18 @@ for i in range(len(S)):
             overlaps += 1
 print("VERDICT overflow=%d overlaps=%d win=%d" % (overflow, overlaps, win_w))
 
-# map the window and grab it
+# Map the window at the TOP-LEFT corner and grab it. Moving to +0+0 first matters: at its default
+# position a tall window's bottom falls behind the taskbar / off a short screen, so the grab (a screen
+# capture) cut the RUN/CLOSE row. A window taller than the visible screen still can't be fully grabbed
+# this way -- that would need pywin32's PrintWindow, which isn't installed -- but at +0+0 every GUI that
+# fits the screen is captured whole.
 try:
     w.deiconify()
+    w.geometry('+0+0')
     w.lift()
     w.attributes('-topmost', True)
     w.update()
-    time.sleep(0.45)
+    time.sleep(0.5)
     w.update()
     from PIL import ImageGrab
     x, y = w.winfo_rootx(), w.winfo_rooty()
