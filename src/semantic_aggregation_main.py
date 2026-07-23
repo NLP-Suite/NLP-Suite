@@ -545,7 +545,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
 keyWord_entry = ttk.Combobox(window, width=GUI_IO_util.WordNet_keyWord_entry_width, textvariable=keyWord_entry_var, values=noun_verb_menu_options)
 keyWord_entry.configure(state="disabled")
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_keyWord_menu_pos+70, y_multiplier_integer,
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+180, y_multiplier_integer,
                                              keyWord_entry,
                                              True, False, True, False,
                                              90, GUI_IO_util.labels_x_coordinate,
