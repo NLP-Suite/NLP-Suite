@@ -723,11 +723,58 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func suiteMatchesThisMac(_ suite: URL) -> Bool {
         let executable = suite.appendingPathComponent("NLP_Suite")
-        let lipo = URL(fileURLWithPath: "/usr/bin/lipo")
-        guard let output = try? run(lipo, ["-archs", executable.path]), output.status == 0 else {
-            return true
+        // Read the binary's architecture(s) straight from its Mach-O header instead of shelling out to
+        // `lipo`. `/usr/bin/lipo` is an Xcode Command Line Tools stub: on a stock Mac WITHOUT the tools,
+        // merely invoking it pops the "install Command Line Developer Tools" dialog -- which confused a
+        // first-time user even though the Suite bundles its own Python and needs no developer tools.
+        // Parsing the header needs no external process, so the launcher stays a click-through install.
+        guard let archs = machOArchitectures(of: executable) else {
+            return true  // unreadable -> stay permissive, exactly as the old lipo-failed path did
         }
-        return output.text.split(whereSeparator: \.isWhitespace).contains { $0 == macArchitecture }
+        return archs.contains(macArchitecture)
+    }
+
+    /// Architectures of a Mach-O or universal ("fat") binary, parsed from its header bytes.
+    /// Returns nil if the file can't be read or isn't recognizably Mach-O.
+    private func machOArchitectures(of file: URL) -> [String]? {
+        guard let data = try? Data(contentsOf: file, options: .mappedIfSafe), data.count >= 8 else {
+            return nil
+        }
+        func be32(_ o: Int) -> UInt32 {
+            return (UInt32(data[o]) << 24) | (UInt32(data[o + 1]) << 16)
+                 | (UInt32(data[o + 2]) << 8) | UInt32(data[o + 3])
+        }
+        func le32(_ o: Int) -> UInt32 {
+            return (UInt32(data[o + 3]) << 24) | (UInt32(data[o + 2]) << 16)
+                 | (UInt32(data[o + 1]) << 8) | UInt32(data[o])
+        }
+        // Low 24 bits of a Mach-O cputype: 0x07 = x86_64, 0x0C = arm64 (0x01000000 64-bit flag stripped).
+        func archName(_ cpuType: UInt32) -> String? {
+            switch cpuType & 0x00ff_ffff {
+            case 0x07: return "x86_64"
+            case 0x0c: return "arm64"
+            default:   return nil
+            }
+        }
+        let magic = be32(0)
+        if magic == 0xcafe_babe {                            // universal (fat), big-endian header
+            let count = Int(be32(4))
+            var archs: [String] = []
+            var offset = 8                                   // first fat_arch; cputype is its first field
+            for _ in 0..<count {
+                guard offset + 4 <= data.count else { break }
+                if let name = archName(be32(offset)) { archs.append(name) }
+                offset += 20                                 // sizeof(fat_arch)
+            }
+            return archs.isEmpty ? nil : archs
+        }
+        if magic == 0xfeed_facf || magic == 0xfeed_face {    // thin Mach-O stored big-endian
+            return archName(be32(4)).map { [$0] }
+        }
+        if magic == 0xcffa_edfe || magic == 0xcefa_edfe {    // thin Mach-O stored little-endian (native)
+            return archName(le32(4)).map { [$0] }
+        }
+        return nil
     }
 
     private func allowMacToOpen(_ suite: URL) {
