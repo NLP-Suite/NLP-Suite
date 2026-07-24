@@ -13,8 +13,9 @@ Output:
   tests/gui_gallery.html            -- the page (self-contained; open in a browser)
 
 Run in the Anaconda **NLP** env (real libs + PIL). Windows flash open one at a time while it grabs
-them -- leave the machine be for the ~2 minutes it runs. Same honest scope as the gate: THIS machine's
-Windows rendering, not macOS.
+them -- leave the machine be for the ~2 minutes it runs. Honest scope: it captures THIS machine's
+rendering, whatever platform that is (the page header names it). When a GUI can't be built/measured
+it is marked BUILD? with the failure reason on the card, so a bad run is self-diagnosing.
 """
 import base64
 import glob
@@ -131,12 +132,15 @@ def esc(s):
 
 
 def main():
+    plat = {'darwin': 'macOS', 'win32': 'Windows', 'linux': 'Linux'}.get(sys.platform, sys.platform)
     os.makedirs(_SHOTS, exist_ok=True)
     guis = sorted(os.path.basename(f) for f in glob.glob(os.path.join(_SRC, '*_main.py'))
                   if not any(s in os.path.basename(f) for s in _NOT_GUI))
     print('Building + screenshotting %d GUIs (windows will flash open)...\n' % len(guis))
     cards = []
-    for f in guis:
+    total = len(guis)
+    for i, f in enumerate(guis, 1):
+        print('[%d/%d] %s ...' % (i, total, f), flush=True)
         png = os.path.join(_SHOTS, f.replace('.py', '.png'))
         try:
             p = subprocess.run([sys.executable, '-c', _WORKER, f, png],
@@ -144,6 +148,7 @@ def main():
         except subprocess.TimeoutExpired:
             p = None
         out = p.stdout if p else ''
+        err = (p.stderr if p else '') or ''
         meta = next((ln for ln in out.splitlines() if ln.startswith('META')), '')
         overflow = overlaps = opted = None
         title = ''
@@ -156,15 +161,37 @@ def main():
                 title = ''
         if not title:
             title = f.replace('_main.py', '').replace('_', ' ')
+        # When the worker never reported geometry (overflow is None) the GUI didn't build far enough to
+        # measure -- the useful signal is WHY. The worker prints BUILD_FAIL/SHOT_FAIL on stdout and any
+        # traceback on stderr; surface that here instead of discarding it, so a failed run (e.g. every
+        # GUI dying on a Mac) is self-diagnosing rather than a wall of blank "BUILD?" cards.
+        reason = ''
+        if overflow is None:
+            fail = next((ln for ln in out.splitlines()
+                         if ln.startswith(('BUILD_FAIL', 'SHOT_FAIL'))), '')
+            if p is None:
+                reason = 'timeout (>300s)'
+            elif fail:
+                reason = fail
+            elif err.strip():
+                reason = err.strip().splitlines()[-1]
+            else:
+                reason = 'no geometry reported (window never built)'
+            reason = reason[:200]
         # Opted-out GUIs use the legacy .place layout (hand-tuned, user-maintained). Their overlap
         # measurement isn't a grid problem and can false-positive (e.g. DB_SQL's side-by-side buttons
         # read as a 35px logical overlap that doesn't show on screen), so flag them on overflow only.
         bad = overflow is None or overflow > 4 or ((overlaps or 0) > 0 and opted != 1)
         status = 'BUILD?' if overflow is None else ('OFF' if bad else 'OK')
-        note = '' if overflow is None else 'overflow %d px &middot; overlaps %d' % (overflow, overlaps)
+        if overflow is None:
+            note = '&#9888; ' + esc(reason)
+        else:
+            note = 'overflow %d px &middot; overlaps %d' % (overflow, overlaps)
+            if not os.path.exists(png):
+                note += ' &middot; no shot'
         cards.append(dict(status=status, file=f, title=title, note=note, opted=(opted == 1),
                           png=png if os.path.exists(png) else None))
-        print('%-8s %-46s %s' % (status, f, title[:60]))
+        print('[%d/%d] %-8s %-46s %s' % (i, total, status, f, (reason or title)[:70]), flush=True)
 
     order = {'OFF': 0, 'BUILD?': 1, 'OK': 2}
     flagged = sorted([c for c in cards if c['status'] != 'OK'], key=lambda c: (order.get(c['status'], 3), c['file']))
@@ -227,12 +254,12 @@ def main():
    figcaption,h2{border-color:#2c2d31}.sub,.cnt{color:#999}.toc a{color:#8ab}}
 </style>
 <h1>NLP Suite - GUI gallery</h1>
-<p class="sub">''' + '%d GUIs &middot; %d flagged &middot; this machine\'s Windows rendering only &middot; click any shot for full resolution' % (len(cards), n_off) + '''</p>
+<p class="sub">''' + '%d GUIs &middot; %d flagged &middot; rendered on %s (this machine) &middot; click any shot for full resolution' % (len(cards), n_off, plat) + '''</p>
 <div class="toc">
  <div><h3>Flagged</h3><ul>''' + toc(flagged) + '''</ul></div>
  <div><h3>OK (grid ''' + str(len(grid_ok)) + ''' &middot; special ''' + str(len(special_ok)) + ''')</h3><ul>''' + toc(grid_ok + special_ok) + '''</ul></div>
 </div>
-''' + section('Flagged &mdash; needs a look', 'Shown large. Overflow &gt; 4px = a widget past the right edge; overlaps = two widgets on one spot. (This machine is 150%-scaled, so wide GUIs clip here that would fit a normal display.)', flagged, big=True) + \
+''' + section('Flagged &mdash; needs a look', 'Shown large. Overflow &gt; 4px = a widget past the right edge; overlaps = two widgets on one spot. BUILD? = the GUI never built far enough to measure &mdash; see the reason on the card. (On a HiDPI/scaled display, wide GUIs can clip here that would fit a normal display.)', flagged, big=True) + \
         section('Full-grid GUIs &mdash; OK', 'Standard layout via the grid; these fit cleanly.', grid_ok) + \
         section('Special GUIs &mdash; OK', 'Kept on absolute .place (GUI_IO_util.GRID_OPT_OUT).', special_ok)
 
