@@ -512,19 +512,28 @@ def display_icon_image(pic_url, y_multiplier_integer_save):
     import IO_internet_util
     if not IO_internet_util.check_internet_availability_warning("Google Earth Pro"):
         return
-    my_page = urlopen(pic_url)
-    my_picture = io.BytesIO(my_page.read())
-    pil_img = Image.open(my_picture)
-    # The (25, 25) is (height, width)
-    pil_img = pil_img.resize((25, 25), Image.Resampling.LANCZOS)
-    tk_img = ImageTk.PhotoImage(pil_img)
-    image_lb = tk.Label(window, image=tk_img)
-    # display only if the Select type of icon has a value
-    if specific_icon_var.get() != '':
-        image_lb.image = tk_img
-    else:
-        image_lb.image = ''
-    GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 650, y_multiplier_integer_save, image_lb, False)
+    # The little icon thumbnail is purely cosmetic. On some platforms -- notably macOS with the bundled
+    # Python's Pillow -- ImageTk.PhotoImage cannot register its Tk hook and raises TclError "invalid
+    # command name PyImagingPhoto" / "bad argument type for built-in operation". This runs at GUI build
+    # time (and on every icon selection), so an unguarded failure took the ENTIRE GUI down on the Mac.
+    # Degrade gracefully: warn on the command line and carry on without the preview.
+    try:
+        my_page = urlopen(pic_url)
+        my_picture = io.BytesIO(my_page.read())
+        pil_img = Image.open(my_picture)
+        # The (25, 25) is (height, width)
+        pil_img = pil_img.resize((25, 25), Image.Resampling.LANCZOS)
+        tk_img = ImageTk.PhotoImage(pil_img)
+        image_lb = tk.Label(window, image=tk_img)
+        # display only if the Select type of icon has a value
+        if specific_icon_var.get() != '':
+            image_lb.image = tk_img
+        else:
+            image_lb.image = ''
+        GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 650, y_multiplier_integer_save, image_lb, False)
+    except Exception as e:
+        print('GIS_Google_Earth: could not display the icon preview image ('
+              + type(e).__name__ + ': ' + str(e) + ').\nThe GUI works normally without it.')
 
 # image_lb.config(state='normal')
 
