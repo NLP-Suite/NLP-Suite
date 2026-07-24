@@ -52,7 +52,10 @@ def _pin_default_font_size(size=9):
         pass
 
 
-_pin_default_font_size()
+if sys.platform == "darwin":
+    _pin_default_font_size(11)
+
+
 
 import os
 import tkinter.messagebox as mb
@@ -767,6 +770,20 @@ def set_IO_brief_values(config_filename, y_multiplier_integer):
 
     # IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(os.path.basename(os.path.normpath(config_input_output_alphabetic_options[3][1])))
     IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(os.path.basename(config_input_output_alphabetic_options[3][1]))
+    if sys.platform == "darwin" and IO_setup_brief_display_area is not None:
+      try:
+          update_display_area(
+              IO_setup_display_string,
+              IO_setup_brief_display_area,
+          )
+          return (
+              date_hover_over_label,
+              IO_setup_display_string,
+              config_input_output_alphabetic_options,
+              missing_IO,
+          )
+      except tk.TclError:
+          pass
 
     # re-lay the widget to display the correct hover-over info
     IO_setup_brief_display_area = tk.Text(width=60, height=2)
@@ -872,8 +889,17 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
                                                    "The selected options will apply to the configuration (default or selected config) selected in the dropdown menu for configuration.\nYou will also be asked if you want to setup a new config file for a new corpus.")
 
     setup_IO_menu_var.set("Default I/O configuration")
+    io_configuration_menu_x = GUI_IO_util.IO_configuration_menu
+
+    if sys.platform == "darwin" and not GUI_IO_util.grid_layout_enabled:
+      io_configuration_menu_x = max(
+          io_configuration_menu_x,
+          GUI_IO_util.labels_x_coordinate
+          + IO_setup_button.winfo_reqwidth()
+          + 5,
+      )
     # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, io_configuration_menu_x,
                                                    y_multiplier_integer,
                                                    setup_IO_menu, True, False, False, False, 90,
                                                    GUI_IO_util.labels_x_coordinate,
@@ -1273,7 +1299,14 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
     GUI_IO_util._reset_grid_layout()
     # A few dense GUIs keep the original absolute .place layout (see GUI_IO_util.GRID_OPT_OUT). This must
     # be set BEFORE any placeWidget call, so every widget in this GUI is laid out the same way.
-    GUI_IO_util.grid_layout_enabled = scriptName not in GUI_IO_util.GRID_OPT_OUT
+    GUI_IO_util.grid_layout_enabled = (
+      scriptName not in GUI_IO_util.GRID_OPT_OUT
+      and not (
+          sys.platform == "darwin"
+          and scriptName in GUI_IO_util.MAC_GRID_OPT_OUT
+      )
+    ) 
+
 
     # No top help lines displayed when opening the license agreement GUI
     if config_filename!='license_config.csv':

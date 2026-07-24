@@ -441,6 +441,14 @@ GRID_OPT_OUT = {
     'DB_SQL_main.py',
     'parsers_annotators_main.py',
 }
+
+MAC_GRID_OPT_OUT = {
+      'charts_Excel_main.py',
+      'file_manager_main.py',
+      'NLP_setup_package_language_main.py',
+  }
+
+
 _GRID_ROW_SCALE = 10
 _GRID_HEADER_ROWS = 10  # rows held above y_multiplier 0 for the intro/release header
 # Left margin (left edge -> ? HELP column) in pixels. Deliberately tighter than the legacy ~50px: the
@@ -1111,17 +1119,58 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
         top_message.update_idletasks()
 
         screen_height = top_message.winfo_height()
-        button = tk.Button(top_message, text="OK", command=top_message.destroy, fg='red')
-        button.place(x=5, y=screen_height - 35) # place OK button
+
+        button = tk.Button(
+            top_message,
+            text="OK",
+            command=top_message.destroy,
+            fg="red",
+        )
+
+        if sys.platform == "darwin":
+            button.configure(padx=8, pady=2)
+
+        button.place(x=5, y=screen_height - 35)
+
         denominator1 = 1000
         denominator2 = 500
+
         if "Started running" in message_text or "Finished running" in message_text:
-            denominator1=2000
+            denominator1 = 2000
             denominator2 = 1500
-        countdownLabel1 = tk.Label(top_message, text='Countdown to automatic closing:')
-        countdownLabel2 = tk.Label(top_message, text=f'{int(timeout / denominator1)}', fg='red')
-        countdownLabel1.place(x=countdownLabelOK1_X, y=screen_height - 35) # OK button 40
-        countdownLabel2.place(x=countdownLabelOK2_X, y=screen_height - 35) # 230
+
+        countdownLabel1 = tk.Label(
+            top_message,
+            text="Countdown to automatic closing:",
+        )
+        countdownLabel2 = tk.Label(
+            top_message,
+            text=f"{int(timeout / denominator1)}",
+            fg="red",
+        )
+
+        countdown_label_x = countdownLabelOK1_X
+        countdown_value_x = countdownLabelOK2_X
+
+        if sys.platform == "darwin":
+            countdown_label_x = max(
+                countdown_label_x,
+                5 + button.winfo_reqwidth() + 10,
+            )
+            countdown_value_x = max(
+                countdown_value_x,
+                countdown_label_x + countdownLabel1.winfo_reqwidth() + 10,
+            )
+
+        countdownLabel1.place(
+            x=countdown_label_x,
+            y=screen_height - 35,
+        )
+        countdownLabel2.place(
+            x=countdown_value_x,
+            y=screen_height - 35,
+        )
+
         countdown(int(timeout / denominator2))
 
     elif buttonType == 'Yes-No':
@@ -1132,18 +1181,63 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
         top_message.update_idletasks()
         screen_height = top_message.winfo_height()
 
-        Yes = tk.Button(top_message, text="Yes", command=lambda: wait_for_answer('Yes'), fg='red')
-        No = tk.Button(top_message, text="No", command=lambda: wait_for_answer('No'), fg='red')
-        Yes.place(x=5, y=screen_height - 35) # place Yes button
-        No.place(x=no_reminder, y=screen_height - 35) # place No button
+        Yes = tk.Button(
+            top_message,
+            text="Yes",
+            command=lambda: wait_for_answer("Yes"),
+            fg="red",
+        )
+        No = tk.Button(
+            top_message,
+            text="No",
+            command=lambda: wait_for_answer("No"),
+            fg="red",
+        )
 
-        question = tk.Label(top_message, text='Do you want to see this message again?', fg='red')
-        countdownLabel1 = tk.Label(top_message, text='Countdown to automatic closing:')
-        countdownLabel2 = tk.Label(top_message, text=f'{int(timeout / 1000)}', fg='red')
+        question = tk.Label(
+            top_message,
+            text="Do you want to see this message again?",
+            fg="red",
+        )
+        countdownLabel1 = tk.Label(
+            top_message,
+            text="Countdown to automatic closing:",
+        )
+        countdownLabel2 = tk.Label(
+            top_message,
+            text=f"{int(timeout / 1000)}",
+            fg="red",
+        )
 
+        yes_x = 5
+        no_x = no_reminder
+        countdown_label_x = countdownLabel1_X
+        countdown_value_x = countdownLabel2_X
+
+        if sys.platform == "darwin":
+            Yes.configure(padx=8, pady=2)
+            No.configure(padx=8, pady=2)
+
+            no_x = yes_x + Yes.winfo_reqwidth() + 8
+            countdown_label_x = no_x + No.winfo_reqwidth() + 12
+            countdown_value_x = (
+                countdown_label_x
+                + countdownLabel1.winfo_reqwidth()
+                + 10
+            )
+
+        Yes.place(x=yes_x, y=screen_height - 35)
+        No.place(x=no_x, y=screen_height - 35)
         question.place(x=5, y=screen_height - 60)
-        countdownLabel1.place(x=countdownLabel1_X, y=screen_height - 35) #125
-        countdownLabel2.place(x=countdownLabel2_X, y=screen_height - 35)
+        countdownLabel1.place(
+            x=countdown_label_x,
+            y=screen_height - 35,
+        )
+        countdownLabel2.place(
+            x=countdown_value_x,
+            y=screen_height - 35,
+        )
+
         countdown(int(timeout / 1000))
 
     elif buttonType == 'Yes-No-Cancel':
