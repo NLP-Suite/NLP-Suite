@@ -552,15 +552,6 @@ def open_GUI(*args):
 extra_GUIs_menu_var.trace('w',open_GUI)
 
 
-#setup a button to open Windows Explorer on the selected input directory
-openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, WSI_keywords_var.get()))
-# openInputFile_button.configure(state='disabled')
-# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
-# the two x-coordinate and x-coordinate_hover_over must have the same values
-y_multiplier_integer = GUI_IO_util.placeWidget(window,
-    GUI_IO_util.labels_x_indented_coordinate + 250, y_multiplier_integer,
-    openInputFile_button, True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate + 250, "Open csv dictionary file")
-
 parsers_annotators_button=tk.Button(window, width=42, text='Parsers & annotators (Open GUI)',command=lambda: run_script_util.run_script("parsers_annotators_main.py"))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                parsers_annotators_button, False)

@@ -1765,7 +1765,15 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
             window.update_idletasks()
             tuned_width, tuned_height = (int(v) for v in GUI_size.split('+')[0].split('x'))
             width = min(max(window.winfo_reqwidth(), tuned_width), window.winfo_screenwidth() - 20)
-            height = min(max(window.winfo_reqheight(), tuned_height), window.winfo_screenheight() - 80)
+            # Height: drive it from what grid actually needs (+ a small uniform margin), NOT the stale
+            # hand-tuned height. Those hand-tuned values were measured for the old .place layout, where the
+            # Read Me..CLOSE bar was .place'd at the window's bottom edge. Under grid that bar is the LAST
+            # gridded row, so keeping the (usually taller) hand-tuned floor left a variable empty gap below
+            # it -- large on short GUIs, none on tall ones. reqheight already includes the bar, so
+            # reqheight + a fixed margin gives every GUI the same breathing room under its bottom row.
+            # (Width keeps its floor: that is the Mac clipping fix and doesn't cause this.)
+            _BOTTOM_MARGIN = 12
+            height = min(window.winfo_reqheight() + _BOTTOM_MARGIN, window.winfo_screenheight() - 80)
             window.geometry('%dx%d' % (width, height))
         except Exception:
             pass  # keep the hand-tuned geometry if anything about the measurement fails
