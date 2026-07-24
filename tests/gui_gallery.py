@@ -67,7 +67,18 @@ try:
 except SystemExit:
     pass
 except BaseException as e:
-    print("BUILD_FAIL", type(e).__name__, str(e)[:120]); raise SystemExit(0)
+    # Pinpoint WHERE it failed: the deepest traceback frame inside src/ (the GUI's own code), so a
+    # Mac-only build crash reports "TypeError ... @ GIS_Google_Earth_main.py:527" instead of just the
+    # type -- otherwise an error that doesn't reproduce on the dev's OS is impossible to locate.
+    import traceback as _tb
+    _frames = _tb.extract_tb(sys.exc_info()[2])
+    _loc = ''
+    for _fr in reversed(_frames):
+        if os.path.dirname(_fr.filename) == SRC:
+            _loc = ' @ %s:%d' % (os.path.basename(_fr.filename), _fr.lineno); break
+    if not _loc and _frames:
+        _loc = ' @ %s:%d' % (os.path.basename(_frames[-1].filename), _frames[-1].lineno)
+    print("BUILD_FAIL", type(e).__name__, str(e)[:120] + _loc); raise SystemExit(0)
 w = GUI_util.window
 w.update_idletasks()
 try:
