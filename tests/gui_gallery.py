@@ -242,7 +242,10 @@ def main():
                 note += ' &middot; no shot'
         cards.append(dict(status=status, file=f, title=title, note=note, opted=(opted == 1),
                           png=png if os.path.exists(png) else None))
-        print('[%d/%d] %-8s %-46s %s' % (i, total, status, f, (reason or title)[:70]), flush=True)
+        # Don't truncate a failure reason -- it carries the "@ file:line" crash location we need; only
+        # clip the (long, uninformative) window title on OK rows.
+        tail = reason if reason else title[:70]
+        print('[%d/%d] %-8s %-46s %s' % (i, total, status, f, tail), flush=True)
 
     order = {'OFF': 0, 'BUILD?': 1, 'OK': 2}
     flagged = sorted([c for c in cards if c['status'] != 'OK'], key=lambda c: (order.get(c['status'], 3), c['file']))
