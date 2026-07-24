@@ -13,7 +13,8 @@ Output:
   tests/gui_gallery.html            -- the page (self-contained; open in a browser)
 
 Run in the Anaconda **NLP** env (real libs + PIL). Windows flash open one at a time while it grabs
-them -- leave the machine be for the ~2 minutes it runs. Honest scope: it captures THIS machine's
+them -- leave the machine be for the several minutes it runs (often 10+ on a slow machine; it prints
+Started/Finished times and a per-GUI [i/total] counter). Honest scope: it captures THIS machine's
 rendering, whatever platform that is (the page header names it). When a GUI can't be built/measured
 it is marked BUILD? with the failure reason on the card, so a bad run is self-diagnosing.
 """
@@ -23,6 +24,8 @@ import io as _io
 import os
 import subprocess
 import sys
+import time
+import webbrowser
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _SRC = os.path.join(os.path.dirname(_HERE), 'src')
@@ -131,12 +134,33 @@ def esc(s):
     return (s or '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
 
+def _elapsed_message(seconds):
+    """Human 'H hours, M minutes, and S seconds' string, matching the suite's convert_time wording
+    (IO_user_interface_util.convert_time) -- replicated locally so this terminal tool doesn't import
+    the GUI stack just to format a duration."""
+    h = int(seconds / 3600)
+    m = int((seconds - h * 3600) / 60)
+    s = int(seconds - h * 3600 - m * 60)
+    parts = []
+    if h:
+        parts.append('%d hour%s' % (h, '' if h == 1 else 's'))
+    if m:
+        parts.append('%d minute%s' % (m, '' if m == 1 else 's'))
+    parts.append('%d second%s' % (s, '' if s == 1 else 's'))
+    if len(parts) == 1:
+        return parts[0]
+    return ', '.join(parts[:-1]) + ' and ' + parts[-1]
+
+
 def main():
     plat = {'darwin': 'macOS', 'win32': 'Windows', 'linux': 'Linux'}.get(sys.platform, sys.platform)
     os.makedirs(_SHOTS, exist_ok=True)
     guis = sorted(os.path.basename(f) for f in glob.glob(os.path.join(_SRC, '*_main.py'))
                   if not any(s in os.path.basename(f) for s in _NOT_GUI))
-    print('Building + screenshotting %d GUIs (windows will flash open)...\n' % len(guis))
+    start_time = time.time()
+    print('\nStarted running gui_gallery at %s.' % time.strftime('%H:%M:%S'), flush=True)
+    print('Building + screenshotting %d GUIs one at a time (windows flash open; this takes several '
+          'minutes -- often 10+ on a slow machine)...\n' % len(guis), flush=True)
     cards = []
     total = len(guis)
     for i, f in enumerate(guis, 1):
@@ -201,9 +225,9 @@ def main():
     def anchor(f):
         return 'g_' + f.replace('.', '_')
 
-    def toc(group):
+    def toc(group, cls=None):
         return '\n'.join(
-            '<li><a href="#%s" class="%s">%s</a></li>' % (anchor(c['file']), c['status'].lower().rstrip('?'), esc(c['title']))
+            '<li><a href="#%s" class="%s">%s</a></li>' % (anchor(c['file']), cls or c['status'].lower().rstrip('?'), esc(c['title']))
             for c in group) or '<li class="none">none</li>'
 
     def card_html(c, big):
@@ -215,10 +239,15 @@ def main():
                 rel, thumb_data_uri(c['png'], 1280 if big else 560), esc(c['file']))
         else:
             img = '<div class="noshot">no screenshot</div>'
+        # A "special" GUI is an OK card that opted out of grid (legacy .place). Mark it distinctly so it
+        # is obvious both in the TOC and while scrolling -- teal accent + a SPECIAL badge, not a green OK.
+        special = c['opted'] and c['status'] == 'OK'
+        klass = c['status'].lower().rstrip('?') + (' special' if special else '')
+        badge = 'SPECIAL' if special else c['status']
         return ('<figure id="%s" class="card %s"><figcaption>'
                 '<span class="badge">%s</span><span class="t">%s</span>'
                 '<span class="fn">%s</span><span class="note">%s</span></figcaption>%s</figure>'
-                % (anchor(c['file']), c['status'].lower().rstrip('?'), c['status'],
+                % (anchor(c['file']), klass, badge,
                    esc(c['title']), esc(c['file']), c['note'], img))
 
     def section(title, subtitle, group, big=False):
@@ -239,11 +268,13 @@ def main():
  .toc h3{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#888}
  .toc ul{margin:0;padding:0;list-style:none;columns:2;font-size:12.5px} .toc li{margin:1px 0;break-inside:avoid}
  .toc a{text-decoration:none;color:#345} .toc a:hover{text-decoration:underline}
- .toc a.off{color:#c22;font-weight:600} .toc a.build{color:#c80}
+ .toc a.off{color:#c22;font-weight:600} .toc a.build{color:#c80} .toc a.special{color:#0a7d55;font-weight:700}
+ .toc h3.special-h{color:#0a7d55;margin-top:14px}
  .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(440px,1fr))}
  .grid.big{grid-template-columns:1fr}                 /* flagged GUIs: one per row, full readable width */
  .card{margin:0;background:#fff;border:1px solid #ddd;border-radius:8px;overflow:hidden;scroll-margin-top:12px}
  .card.off{border-color:#d33;box-shadow:0 0 0 2px #d3333322} .card.build{border-color:#e90}
+ .card.special{border-color:#0a7d55;box-shadow:0 0 0 2px #0a7d5522} .special .badge{background:#0a7d55}
  figcaption{padding:8px 10px;font-size:12px;border-bottom:1px solid #eee;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
  .t{font-weight:600;font-size:13px} .fn{color:#aaa;font-size:11px;font-family:ui-monospace,Consolas,monospace} .note{color:#999;margin-left:auto}
  .badge{font-weight:700;font-size:10px;padding:2px 7px;border-radius:10px;color:#fff;background:#3a3;align-self:center}
@@ -256,8 +287,9 @@ def main():
 <h1>NLP Suite - GUI gallery</h1>
 <p class="sub">''' + '%d GUIs &middot; %d flagged &middot; rendered on %s (this machine) &middot; click any shot for full resolution' % (len(cards), n_off, plat) + '''</p>
 <div class="toc">
- <div><h3>Flagged</h3><ul>''' + toc(flagged) + '''</ul></div>
- <div><h3>OK (grid ''' + str(len(grid_ok)) + ''' &middot; special ''' + str(len(special_ok)) + ''')</h3><ul>''' + toc(grid_ok + special_ok) + '''</ul></div>
+ <div><h3>Flagged <span class="cnt">''' + str(len(flagged)) + '''</span></h3><ul>''' + toc(flagged) + '''</ul>
+  <h3 class="special-h">Special &mdash; .place opt-outs <span class="cnt">''' + str(len(special_ok)) + '''</span></h3><ul>''' + toc(special_ok, 'special') + '''</ul></div>
+ <div><h3>Full-grid &mdash; OK <span class="cnt">''' + str(len(grid_ok)) + '''</span></h3><ul>''' + toc(grid_ok) + '''</ul></div>
 </div>
 ''' + section('Flagged &mdash; needs a look', 'Shown large. Overflow &gt; 4px = a widget past the right edge; overlaps = two widgets on one spot. BUILD? = the GUI never built far enough to measure &mdash; see the reason on the card. (On a HiDPI/scaled display, wide GUIs can clip here that would fit a normal display.)', flagged, big=True) + \
         section('Full-grid GUIs &mdash; OK', 'Standard layout via the grid; these fit cleanly.', grid_ok) + \
@@ -268,6 +300,12 @@ def main():
         fh.write(html)
     print('\n%d GUIs (%d grid OK, %d special OK), %d flagged.  Open: %s'
           % (len(cards), len(grid_ok), len(special_ok), n_off, out_path))
+    print('Finished running gui_gallery at %s taking %s.'
+          % (time.strftime('%H:%M:%S'), _elapsed_message(time.time() - start_time)), flush=True)
+    try:
+        webbrowser.open('file://' + os.path.abspath(out_path))
+    except Exception:
+        pass  # headless/no browser -- the path is printed above
     return 0
 
 
