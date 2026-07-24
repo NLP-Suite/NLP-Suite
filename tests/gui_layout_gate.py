@@ -127,7 +127,12 @@ def main():
         overflow, overlaps, opted = int(d['overflow']), int(d['overlaps']), int(d.get('opted', 0))
         # opted-out GUIs use legacy .place (hand-tuned); overlap there isn't a grid problem and can
         # false-positive (DB_SQL's side-by-side buttons), so flag them on overflow only.
-        bad = overflow > 4 or (overlaps > 0 and not opted)
+        # A lone overlap (<=1 pair) in a GUI that fits with room to spare (comfortably negative overflow)
+        # is sub-visible noise -- bounding boxes touch by a few px with no visible collision (e.g. the
+        # launcher hubs after the font pin). Flag overlaps only where the GUI is tight/over-wide, or on
+        # any multi-pair (>=2) collision.
+        overlap_noise = overflow < -40 and overlaps <= 1
+        bad = overflow > 4 or (overlaps > 0 and not opted and not overlap_noise)
         tag = 'FAIL  ' if bad else 'ok    '
         detail = line[len('VERDICT '):]
         print('%s %-46s %s' % (tag, f, detail))

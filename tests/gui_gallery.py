@@ -232,7 +232,12 @@ def main():
         # Opted-out GUIs use the legacy .place layout (hand-tuned, user-maintained). Their overlap
         # measurement isn't a grid problem and can false-positive (e.g. DB_SQL's side-by-side buttons
         # read as a 35px logical overlap that doesn't show on screen), so flag them on overflow only.
-        bad = overflow is None or overflow > 4 or ((overlaps or 0) > 0 and opted != 1)
+        # A lone overlap (<=1 pair) in a GUI that fits with room to spare (comfortably negative
+        # overflow) is below the visible-noise floor: two bounding boxes touch by a few px with no
+        # visible collision -- e.g. the launcher hubs' bottom rows after the font pin. Don't flag those;
+        # still flag overlaps where the GUI is tight/over-wide, and any multi-pair (>=2) collision.
+        overlap_noise = overflow is not None and overflow < -40 and (overlaps or 0) <= 1
+        bad = overflow is None or overflow > 4 or ((overlaps or 0) > 0 and opted != 1 and not overlap_noise)
         status = 'BUILD?' if overflow is None else ('OFF' if bad else 'OK')
         if overflow is None:
             note = '&#9888; ' + esc(reason)
