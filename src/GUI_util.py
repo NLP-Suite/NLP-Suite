@@ -20,6 +20,40 @@ import IO_libraries_util
 import tkinter as tk
 window = tk.Tk()
 
+
+def _pin_default_font_size(size=9):
+    """Make text measure the same on every platform, so one set of coordinates fits all of them.
+
+    The GUIs are laid out with absolute pixel coordinates (.place(x=, y=)) whose constants in
+    GUI_IO_util were tuned on Windows. Tk takes its default UI font from the operating system, and the
+    two do not agree: Windows uses roughly 9pt, macOS roughly 13pt. The same label is therefore about
+    40% wider on a Mac, so a row that fits on Windows runs off the edge there -- which is why widget
+    placement was never finished for the Mac and why keeping two sets of coordinates in step is
+    endless: every new label would need measuring twice.
+
+    Pinning the SIZE fixes the dominant term. The FAMILY is left alone, so each platform keeps its
+    native typeface and the GUIs still look like they belong there; only the scale is made to agree.
+
+    This does not make the platforms identical -- Mac buttons and menus carry thicker chrome whatever
+    the font -- so some rows will still need attention. It removes the largest and most systematic
+    difference, and leaves a smaller, checkable remainder.
+
+    Silent on failure: a missing named font must not stop the Suite from starting.
+    """
+    try:
+        import tkinter.font as tkfont
+        for name in ('TkDefaultFont', 'TkTextFont', 'TkMenuFont', 'TkHeadingFont',
+                     'TkIconFont', 'TkSmallCaptionFont', 'TkTooltipFont'):
+            try:
+                tkfont.nametofont(name).configure(size=size)
+            except Exception:
+                pass          # not every named font exists on every Tk build
+    except Exception:
+        pass
+
+
+_pin_default_font_size()
+
 import os
 import tkinter.messagebox as mb
 
