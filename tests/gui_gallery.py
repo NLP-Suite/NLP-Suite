@@ -43,6 +43,22 @@ IO_libraries_util.install_all_Python_packages = lambda *a, **k: True
 IO_libraries_util.check_java_installation = lambda *a, **k: (False, 0, '', '')
 import GUI_util, GUI_IO_util
 GUI_util.window.mainloop = lambda *a, **k: None
+# Neutralize anything that blocks an unattended build waiting for a human click. Many *_main.py call
+# reminders_util.checkReminder at MODULE BUILD time; on a fresh machine (default reminders.csv, all
+# reminders ON) that pops a modal per GUI and stalls the screenshot until someone clicks it away -- the
+# exact Mac hang where closing the popup let the run continue. Already-seen reminders are suppressed, so
+# a machine that has dismissed them never showed this. Stub the reminder + any modal messagebox so the
+# gallery runs headless everywhere.
+try:
+    import reminders_util
+    reminders_util.checkReminder = lambda *a, **k: None
+except Exception:
+    pass
+import tkinter.messagebox as _mb
+for _n in ('showinfo', 'showwarning', 'showerror'):
+    setattr(_mb, _n, lambda *a, **k: None)
+for _n in ('askyesno', 'askokcancel', 'askretrycancel', 'askquestion'):
+    setattr(_mb, _n, lambda *a, **k: True)
 target, png = sys.argv[1], sys.argv[2]
 try:
     spec = importlib.util.spec_from_file_location("_gui", os.path.join(SRC, target))
