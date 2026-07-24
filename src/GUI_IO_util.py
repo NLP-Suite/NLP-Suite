@@ -431,6 +431,10 @@ grid_layout_enabled = True
 # buttons; parsers has a full-width package label that overruns its slot. All four worked as-is on
 # .place, so opting out is a no-op for them, not a regression.
 GRID_OPT_OUT = {
+    # The unified PC-ACE hub (analysis + Data validation as notebook tabs): its dense content lives in
+    # .place'd tabs, and its grid SHELL hit a reflow bug -- the I/O-setup refresh on the missing-I/O
+    # warning's OK re-lays the grid and shoves RUN/CLOSE off the right edge. It never needed grid (tabs
+    # bound the content), so it uses .place, which is immune to that reflow.
     'DB_PCACE_data_analysis_main.py',
     'DB_PCACE_data_validation_main.py',
     'NLP_menu_main.py',
