@@ -604,9 +604,9 @@ _shell_help_button = tk.Button(window, text='? HELP',
         "Time chart, GIS map); search simplex values; and list parents/children.\n\n"
         "Use the 'Open ... GUI' dropdown to launch related PC-ACE tools (SQL, data validation, data "
         "manipulation, statistics, corpus checker)." + GUI_IO_util.msg_Esc))
-GUI_IO_util.placeWidget(window, GUI_IO_util.help_button_x_coordinate, y_multiplier_integer,
+GUI_IO_util.placeWidget(window, GUI_IO_util._GRID_LEFT_MARGIN, y_multiplier_integer,
                         _shell_help_button, True, True, False, False, 90,
-                        GUI_IO_util.help_button_x_coordinate, '')
+                        GUI_IO_util._GRID_LEFT_MARGIN, '')  # match grid GUIs' tight left margin (was help_button_x_coordinate=50)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_gui_menu,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
