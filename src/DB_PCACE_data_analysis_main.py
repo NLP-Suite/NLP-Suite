@@ -2335,7 +2335,7 @@ valid_y = GUI_IO_util.placeWidget(validation_tab, GUI_IO_util.IO_configuration_m
 
 # CSV file path entry
 # GUI_IO_util.csv_file_width - 8
-csv_file_entry = tk.Entry(validation_tab, width=115, textvariable=csv_file_var)
+csv_file_entry = tk.Entry(validation_tab, width=65, textvariable=csv_file_var)
 csv_file_entry.config(state='disabled')
 valid_y = GUI_IO_util.placeWidget(validation_tab, GUI_IO_util.entry_box_x_coordinate, valid_y,
                                                csv_file_entry, True)
@@ -2346,7 +2346,7 @@ def _clear_csv_file():
 
 clear_csv_button = tk.Button(validation_tab, text='Clear', width=5, command=lambda: _clear_csv_file())
 clear_csv_button.config(state='disabled')
-valid_y = GUI_IO_util.placeWidget(validation_tab, GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_file_button_brief, valid_y,
+valid_y = GUI_IO_util.placeWidget(validation_tab, GUI_IO_util.entry_box_x_coordinate+620, valid_y,
                                                clear_csv_button, True, False, True, False, 90,
                                                GUI_IO_util.run_button_x_coordinate,
                                                "Click to clear the INPUT CSV file.")
@@ -2391,7 +2391,7 @@ def _apply_changes():
 
 apply_changes_button = tk.Button(validation_tab, text='Apply changes', width=12, command=_apply_changes)
 apply_changes_button.config(state='disabled')
-valid_y = GUI_IO_util.placeWidget(validation_tab, GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_file_button_brief+60, valid_y,
+valid_y = GUI_IO_util.placeWidget(validation_tab, GUI_IO_util.entry_box_x_coordinate+680, valid_y,
                                                apply_changes_button, False, False, True, False, 90,
                                                GUI_IO_util.open_reminders_x_coordinate,
                                                "Apply corrections from the loaded CSV back to the PC-ACE database.\n\n"
