@@ -592,8 +592,14 @@ open_gui_menu = tk.OptionMenu(window, _open_gui_var,
                               'Open corpus checker (PC-ACE data) GUI',
                               command=_on_open_gui_selected)
 open_gui_menu.configure(width=25)
-# Shell ? HELP for the top I/O rows (the classic left ? HELP column was dropped with the window-level
-# help_buttons()). sameY, so it sits left of the launcher dropdown rather than on its own row.
+# ? HELP for the I/O row (Setup INPUT/OUTPUT configuration), like every standard GUI. The I/O row is at
+# y_multiplier 0 (Setup-config button, measured), one above this shell row (y_multiplier_integer=1), so
+# place it at y_multiplier_integer-1, x=help_button_x_coordinate. Return ignored -> doesn't advance rows.
+GUI_IO_util.place_help_button(window, GUI_IO_util.help_button_x_coordinate, y_multiplier_integer - 1,
+                              "NLP Suite Help", GUI_IO_util.msg_IO_setup)
+
+# Shell ? HELP for the launcher/notebook row (the classic per-row ? HELP column was dropped with the
+# window-level help_buttons()). sameY, so it sits left of the launcher dropdown rather than on its own row.
 _shell_help_button = tk.Button(window, text='? HELP',
     command=lambda: GUI_IO_util.display_help_button_info("NLP Suite Help",
         "PC-ACE Tables Analyzer -- all PC-ACE analysis in one window, in two tabs.\n\n"
