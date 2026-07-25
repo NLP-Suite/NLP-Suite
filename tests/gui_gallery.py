@@ -208,6 +208,11 @@ def main():
             overflow, overlaps, opted = int(d['overflow']), int(d['overlaps']), int(d['opted'])
             try:
                 title = base64.b64decode(d['title']).decode('utf-8')
+                # The live window title appends the active corpus ('GUI_label  —  newspaperArticles',
+                # GUI_util.py:159). That corpus is the same on every card here, so it's pure noise in the
+                # gallery -- strip the trailing '  —  <corpus>' segment (rsplit keeps any em-dash that is
+                # part of the label itself, e.g. GIS_symbolic's "Space — from Text ...").
+                title = title.rsplit('  —  ', 1)[0].strip()
             except Exception:
                 title = ''
         if not title:
