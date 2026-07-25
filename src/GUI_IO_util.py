@@ -440,11 +440,11 @@ GRID_OPT_OUT = {
     'DB_PCACE_data_analysis_main.py': 'all',
     'DB_PCACE_data_validation_main.py': 'all',
     'NLP_menu_main.py': 'all',
+    'NLP_setup_package_language_main.py': 'all',
     'DB_SQL_main.py': 'all',
     'parsers_annotators_main.py': 'all',
     'charts_Excel_main.py': 'darwin',
     'file_manager_main.py': 'darwin',
-    'NLP_setup_package_language_main.py': 'darwin',
 }
 
 
