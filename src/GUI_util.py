@@ -770,7 +770,11 @@ def set_IO_brief_values(config_filename, y_multiplier_integer):
 
     # IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(os.path.basename(os.path.normpath(config_input_output_alphabetic_options[3][1])))
     IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(os.path.basename(config_input_output_alphabetic_options[3][1]))
-    if sys.platform == "darwin" and IO_setup_brief_display_area is not None:
+    # If the display area already exists (i.e. this is a re-entry after opening the Setup I/O GUI, not the
+    # first build), update its text IN PLACE and return early. The fall-through below re-creates and
+    # re-places the widget, which re-lays the window and snaps it back to its original size -- the reflow
+    # bug Evan found. This applies on every platform (originally gated to macOS; extended to Windows here).
+    if IO_setup_brief_display_area is not None:
       try:
           update_display_area(
               IO_setup_display_string,
