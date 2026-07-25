@@ -2346,7 +2346,7 @@ def _clear_csv_file():
 
 clear_csv_button = tk.Button(validation_tab, text='Clear', width=5, command=lambda: _clear_csv_file())
 clear_csv_button.config(state='disabled')
-valid_y = GUI_IO_util.placeWidget(validation_tab, GUI_IO_util.entry_box_x_coordinate+620, valid_y,
+valid_y = GUI_IO_util.placeWidget(validation_tab, GUI_IO_util.entry_box_x_coordinate+580, valid_y,
                                                clear_csv_button, True, False, True, False, 90,
                                                GUI_IO_util.run_button_x_coordinate,
                                                "Click to clear the INPUT CSV file.")
@@ -2391,7 +2391,7 @@ def _apply_changes():
 
 apply_changes_button = tk.Button(validation_tab, text='Apply changes', width=12, command=_apply_changes)
 apply_changes_button.config(state='disabled')
-valid_y = GUI_IO_util.placeWidget(validation_tab, GUI_IO_util.entry_box_x_coordinate+680, valid_y,
+valid_y = GUI_IO_util.placeWidget(validation_tab, GUI_IO_util.entry_box_x_coordinate+640, valid_y,
                                                apply_changes_button, False, False, True, False, 90,
                                                GUI_IO_util.open_reminders_x_coordinate,
                                                "Apply corrections from the loaded CSV back to the PC-ACE database.\n\n"
