@@ -1301,15 +1301,10 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
     # Fresh grid: clear the per-row column bookkeeping so this GUI's placeWidget calls start from an
     # empty layout and no state leaks in from an earlier build in the same process.
     GUI_IO_util._reset_grid_layout()
-    # A few dense GUIs keep the original absolute .place layout (see GUI_IO_util.GRID_OPT_OUT). This must
-    # be set BEFORE any placeWidget call, so every widget in this GUI is laid out the same way.
-    GUI_IO_util.grid_layout_enabled = (
-      scriptName not in GUI_IO_util.GRID_OPT_OUT
-      and not (
-          sys.platform == "darwin"
-          and scriptName in GUI_IO_util.MAC_GRID_OPT_OUT
-      )
-    )
+    # A few dense GUIs keep the original absolute .place layout (see GUI_IO_util.GRID_OPT_OUT, which names
+    # per GUI whether it opts out on all platforms or macOS only). This must be set BEFORE any placeWidget
+    # call, so every widget in this GUI is laid out the same way.
+    GUI_IO_util.grid_layout_enabled = not GUI_IO_util.grid_opt_out(scriptName)
 
 
     # No top help lines displayed when opening the license agreement GUI

@@ -425,28 +425,33 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
 # A GUI may opt out of grid and keep absolute .place layout; GUI_util.GUI_top sets this per GUI from
 # its scriptName. Default True so every GUI is grid unless it asks otherwise.
 grid_layout_enabled = True
-# GUIs kept on absolute .place because their layout is too coupled to pixel positions for grid to
-# reproduce: the dense PC-ACE tools overlap widgets on purpose; NLP_menu .place's a tabbed notebook at
-# a computed y; DB_SQL uses a 12-line-tall Text box with a hand-tuned row bump and right-edge-aligned
-# buttons; parsers has a full-width package label that overruns its slot. All four worked as-is on
-# .place, so opting out is a no-op for them, not a regression.
+# GUIs that fall back to the legacy absolute .place layout instead of grid, and on WHICH platforms.
+# One registry keyed by scriptName -> scope, so each GUI states where it opts out right next to its name
+# (no second set to keep in sync). Scope:
+#   'all'    -> every platform. Layout too coupled to pixel positions for grid to reproduce: the dense
+#               PC-ACE hub overlaps widgets on purpose and its content lives in .place'd notebook tabs;
+#               NLP_menu .place's a tabbed notebook at a computed y; DB_SQL uses a 12-line Text box with a
+#               hand-tuned row bump and right-edge-aligned buttons; parsers has a full-width package label
+#               that overruns its slot. All worked as-is on .place, so opting out is a no-op, not a regression.
+#   'darwin' -> macOS only. Grid fits Windows, but its width-expansion (Mac's wider default font) overflows
+#               the smaller Mac screen, so on Mac these keep the compact hand-tuned .place coordinates.
+# To add a Windows-/Linux-only opt-out later, just use scope 'win32' / 'linux'.
 GRID_OPT_OUT = {
-    # The unified PC-ACE hub (analysis + Data validation as notebook tabs): its dense content lives in
-    # .place'd tabs, and its grid SHELL hit a reflow bug -- the I/O-setup refresh on the missing-I/O
-    # warning's OK re-lays the grid and shoves RUN/CLOSE off the right edge. It never needed grid (tabs
-    # bound the content), so it uses .place, which is immune to that reflow.
-    'DB_PCACE_data_analysis_main.py',
-    'DB_PCACE_data_validation_main.py',
-    'NLP_menu_main.py',
-    'DB_SQL_main.py',
-    'parsers_annotators_main.py',
+    'DB_PCACE_data_analysis_main.py': 'all',
+    'DB_PCACE_data_validation_main.py': 'all',
+    'NLP_menu_main.py': 'all',
+    'DB_SQL_main.py': 'all',
+    'parsers_annotators_main.py': 'all',
+    'charts_Excel_main.py': 'darwin',
+    'file_manager_main.py': 'darwin',
+    'NLP_setup_package_language_main.py': 'darwin',
 }
 
-MAC_GRID_OPT_OUT = {
-      'charts_Excel_main.py',
-      'file_manager_main.py',
-      'NLP_setup_package_language_main.py',
-  }
+
+def grid_opt_out(scriptName):
+    """True if scriptName should use the legacy .place layout on THIS platform (see GRID_OPT_OUT)."""
+    scope = GRID_OPT_OUT.get(scriptName)
+    return scope == 'all' or scope == sys.platform
 
 
 _GRID_ROW_SCALE = 10
