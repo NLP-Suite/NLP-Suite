@@ -1305,7 +1305,7 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
           sys.platform == "darwin"
           and scriptName in GUI_IO_util.MAC_GRID_OPT_OUT
       )
-    ) 
+    )
 
 
     # No top help lines displayed when opening the license agreement GUI
