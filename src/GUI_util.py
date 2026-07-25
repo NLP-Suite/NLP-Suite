@@ -609,15 +609,21 @@ def activateRunButton(config_filename,IO_setup_display_brief,scriptName, missing
     run_button_state = 'normal'
     err_msg =''
 
-# both input filename and dir are valid options but both are missing
-    run_button_state, open_setup_IO_GUI = config_util.check_missing_IO(window, config_filename, scriptName,
-                                                IO_setup_display_brief, missing_IO, silent)
-    if open_setup_IO_GUI:
-        silent=True
-        missing_IO, config_filename = setup_IO_configuration_options(IO_setup_display_brief, scriptName, silent, open_setup_IO_GUI=False)
+# both input filename and dir are valid options but both are missing.
+# Compute the RUN state NOW (silent=True -> no modal) so RUN is disabled immediately, but DEFER the
+# "missing I/O" warning + Setup-I/O prompt to fire via window.after, AFTER the GUI is mapped. A modal
+# shown during GUI construction blocks macOS from finishing the window layout, so the user would see a
+# half-built GUI behind the popup (harmless-looking on Windows, broken-looking on Mac).
+    run_button_state, _open_ignored = config_util.check_missing_IO(window, config_filename, scriptName,
+                                                IO_setup_display_brief, missing_IO, silent=True)
+    if missing_IO != '' and not silent:
+        def _deferred_missing_IO(cf=config_filename, mio=missing_IO):
+            _state, open_setup_IO_GUI = config_util.check_missing_IO(window, cf, scriptName,
+                                                IO_setup_display_brief, mio, silent=False)
+            if open_setup_IO_GUI:
+                setup_IO_configuration_options(IO_setup_display_brief, scriptName, True, open_setup_IO_GUI=False)
+        window.after(400, _deferred_missing_IO)
     if missing_IO!='':
-        # the message is displayed in check_missing_IO
-        # mb.showwarning(title='Warning',message='The RUN button is disabled until expected I/O options are entered.')
         run_button_state='disabled'
     else:
 
@@ -648,7 +654,9 @@ def activateRunButton(config_filename,IO_setup_display_brief,scriptName, missing
                     RUN_msg = '\n\nThe RUN button in ALL GUIs will be disabled, and you will not be able to run any algorithm, until the expected I/O options are entered.'
                 else:
                     RUN_msg = '\n\nThe RUN button is disabled until the expected I/O options are entered.'
-            mb.showwarning(title='Warning',message=err_msg+RUN_msg)
+            # Deferred (window.after) for the same reason as the missing-I/O warning above: no modal
+            # during build, or macOS can't finish laying out the window behind it.
+            window.after(400, lambda m=err_msg + RUN_msg: mb.showwarning(title='Warning', message=m))
             run_button_state = 'disabled'
 
     # in menu__main the RUN button should be normal to allow users to see specific GUIs but warning should be given

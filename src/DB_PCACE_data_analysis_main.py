@@ -1094,7 +1094,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(query_tab,GUI_IO_util.open_setup_x_
 complex_identifiers_menu = DB_PCACE_data_analysis_util.build_macro_event_dropdown_menu(inputDir.get())
 
 complex_identifiers_var=tk.StringVar()
-complex_identifiers = ttk.Combobox(query_tab, textvariable = complex_identifiers_var, width=GUI_IO_util.widget_width_short)
+complex_identifiers = ttk.Combobox(query_tab, textvariable = complex_identifiers_var, width=35)
 complex_identifiers.configure(state='disabled')
 complex_identifiers['values'] = complex_identifiers_menu
 _complex_id_y_row = y_multiplier_integer  # save for dynamic hover-over
@@ -1224,7 +1224,7 @@ simplex_values_lb = tk.Label(query_tab, text='Simplex values')
 y_multiplier_integer = GUI_IO_util.placeWidget(query_tab, GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                    simplex_values_lb, True)
 
-simplex_values = ttk.Combobox(query_tab, textvariable = simplex_values_var, width=GUI_IO_util.widget_width_short)
+simplex_values = ttk.Combobox(query_tab, textvariable = simplex_values_var, width=35)
 simplex_values.configure(state='disabled')
 simplex_values['values'] = []
 _simplex_val_y_row = y_multiplier_integer  # save for dynamic hover-over
@@ -1428,7 +1428,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(query_tab,GUI_IO_util.labels_x_co
 select_children_lb = tk.Label(query_tab, text='Complex children ')
 y_multiplier_integer=GUI_IO_util.placeWidget(query_tab,GUI_IO_util.open_setup_x_coordinate,y_multiplier_integer,select_children_lb,True)
 
-select_children = ttk.Combobox(query_tab, width=GUI_IO_util.widget_width_short, textvariable=complex_children_var, state='disabled')
+select_children = ttk.Combobox(query_tab, width=35, textvariable=complex_children_var, state='disabled')
 # select_children.configure(state='disabled')
 # place widget with hover-over info
 _select_children_y_row = y_multiplier_integer  # save for dynamic hover-over
