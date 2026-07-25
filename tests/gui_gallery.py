@@ -181,6 +181,15 @@ def _elapsed_message(seconds):
 
 def main():
     plat = {'darwin': 'macOS', 'win32': 'Windows', 'linux': 'Linux'}.get(sys.platform, sys.platform)
+    # The release version the GUIs display (lib/release_version.txt, read by GUI_util.get_local_release
+    # _version); show it once, in bold, at the top of the gallery instead of on every card.
+    release = ''
+    try:
+        with open(os.path.join(os.path.dirname(_HERE), 'lib', 'release_version.txt'),
+                  encoding='utf-8', errors='ignore') as _rf:
+            release = _rf.read().strip()
+    except Exception:
+        pass
     os.makedirs(_SHOTS, exist_ok=True)
     guis = sorted(os.path.basename(f) for f in glob.glob(os.path.join(_SRC, '*_main.py'))
                   if not any(s in os.path.basename(f) for s in _NOT_GUI))
@@ -303,6 +312,7 @@ def main():
  body{font:14px system-ui,Segoe UI,sans-serif;margin:0;padding:22px;background:#f4f4f6;color:#222;max-width:1500px}
  h1{font-size:20px;margin:0 0 2px} h2{font-size:16px;margin:30px 0 2px;border-bottom:2px solid #ccc;padding-bottom:4px}
  .cnt{color:#999;font-weight:400;font-size:13px} .sub{color:#666;margin:2px 0 14px;font-size:12px}
+ .rel{font-weight:700;font-size:15px;color:#c0392b;margin:2px 0 8px}
  .toc{display:grid;grid-template-columns:1fr 1fr;gap:6px 30px;background:#fff;border:1px solid #ddd;
    border-radius:8px;padding:14px 18px;margin:10px 0 8px}
  .toc h3{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#888}
@@ -325,6 +335,7 @@ def main():
    figcaption,h2{border-color:#2c2d31}.sub,.cnt{color:#999}.toc a{color:#8ab}}
 </style>
 <h1>NLP Suite - GUI gallery</h1>
+''' + ('<p class="rel">Release ' + esc(release) + '</p>' if release else '') + '''
 <p class="sub">''' + '%d GUIs &middot; %d flagged &middot; rendered on %s (this machine) &middot; click any shot for full resolution' % (len(cards), n_off, plat) + '''</p>
 <div class="toc">
  <div><h3>Flagged <span class="cnt">''' + str(len(flagged)) + '''</span></h3><ul>''' + toc(flagged) + '''</ul>
