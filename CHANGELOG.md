@@ -4,6 +4,9 @@ The most recent release is at the top. Each release's bullets are shown as **"Wh
 on the corresponding GitHub Release page (the top section is added automatically by the
 release workflow). Keep the newest version's section at the very top and update it before tagging.
 
+## v1.6.33
+- **Mac launch fixed and simplified.** The Mac download now has a **single** launcher — double-click **"Launch NLP Suite (Mac).command"** to start the suite (it clears macOS's download quarantine for you the first time). The redundant **"NLP Suite Mac Setup"** app has been removed from the Mac zip. If you previously got an error like *"code signature … not valid"* or *"library load disallowed by system policy"* when opening the `NLP_Suite` file directly, use the `.command` launcher instead — that error is exactly what it fixes. The download page and getting-started guide have been updated to say so.
+
 ## v1.6.4
 - **SVO extraction — many fixes.** The **gender** and **quote/speaker** annotators now work (they were crashing while writing their output files), and gender values populate correctly. Running SVO **with coreference resolution** no longer errors. The social-actor **Filter** actually filters (it was a no-op in some paths). An internal processing tag no longer leaks into charts and wordclouds. The **character-movement map** now displays your locations (it was opening blank), can be restricted to social actors, and labels what the moving items are.
 - **Quote/dialogue annotator rewritten.** One row **per quote** — it no longer drops extra quotes in the same sentence or duplicates a quote that spans several sentences — and speakers are resolved to the actual name where possible instead of a bare pronoun.
