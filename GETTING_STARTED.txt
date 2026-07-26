@@ -19,22 +19,26 @@ WINDOWS
 macOS (Apple Silicon)
 ---------------------
 1. Extract the zip file (double-click it in Finder).
-2. Open the extracted folder and double-click NLP_Suite.
-3. macOS will block it with "NLP_Suite cannot be opened because
-   it is from an unidentified developer." This is normal.
-4. To allow it:
-   a. Open System Settings (Apple menu > System Settings)
-   b. Go to Privacy & Security
-   c. Scroll down — you will see a message about NLP_Suite
-      being blocked
-   d. Click "Open Anyway"
-   e. Enter your password if prompted
-   f. Click "Open" in the confirmation dialog
-   This only happens the first time. After that, NLP_Suite
-   will open normally.
+2. Open the extracted folder and double-click
+   "Launch NLP Suite (Mac).command".
+   Do NOT double-click the "NLP_Suite" file directly — the
+   .command launcher clears the macOS quarantine first, then
+   starts the suite. Running NLP_Suite directly fails with a
+   "code signature ... not valid" / "library load disallowed
+   by system policy" error.
+3. The first time, macOS may block the launcher with
+   "cannot be opened because it is from an unidentified
+   developer." This is normal.
+4. To allow it (first run only):
+   a. Right-click (or Control-click) "Launch NLP Suite (Mac).command"
+      in Finder
+   b. Choose "Open"
+   c. Click "Open" in the confirmation dialog
+   After that, a normal double-click works.
 
-   Alternative (quicker): right-click NLP_Suite in Finder,
-   choose "Open", then click "Open" in the dialog.
+   Alternative: Open System Settings > Privacy & Security,
+   scroll down to the message about the blocked launcher, and
+   click "Open Anyway".
 
 FIRST RUN
 ---------
