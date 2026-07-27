@@ -14,7 +14,11 @@ import GUI_util
 import IO_libraries_util
 import IO_user_interface_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"file_converter_util",['os','__main__','tkinter','docx','pdfminer','pypdf','striprtf','errno'])==False:
+# pypdf is deliberately NOT in this list. This gate is a FATAL ERROR that exits the Suite, and it
+# runs at module import, i.e. for EVERY converter (csv, docx, rtf, pdf --> txt). pypdf is only
+# needed by the pdf --> docx option, is a recent addition, and an installation that predates it
+# must not be locked out of the other converters; pdf_to_docx_converter checks for it on its own.
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"file_converter_util",['os','__main__','tkinter','docx','pdfminer','striprtf','errno'])==False:
     sys.exit(0)
 
 import os
@@ -195,8 +199,19 @@ def get_pdf_layout_items(doc):
         pages.append([(kind, payload) for kind, y, payload in items])
     return pages
 
-# pypdf decodes the embedded images (DCTDecode/FlateDecode/... via Pillow) that pdfminer only
-# reports the position of. Returns one list of images per page, or [] when pypdf cannot read them
+# pdfminer reports WHERE the images are but cannot reliably hand us the bytes: its own ImageWriter
+# fails with 'unrecognized image mode' on ordinary png images, and what it does write, python-docx
+# then refuses. pypdf decodes them properly (DCTDecode/FlateDecode/... through Pillow).
+# Returns True when pypdf can be imported, so the caller can say so instead of quietly dropping
+# every picture.
+def is_pypdf_available():
+    try:
+        import pypdf  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+# returns one list of decoded images per page, or [] when pypdf cannot read them
 def get_pdf_page_images(doc):
     import pypdf
     reader = pypdf.PdfReader(doc)
@@ -255,6 +270,12 @@ def build_docx_from_pdf(doc, outputFilename):
     return imagesPlaced, imagesLost
 
 def pdf_to_docx_converter(window,inputFilename, inputDir, outputDir,config_filename,openOutputFiles,chartPackage, dataTransformation):
+
+    # the images are the whole point of this option; without pypdf it would quietly degrade to a
+    # worse copy of the pdf --> txt converter, so say what is missing and how to fix it
+    if not is_pypdf_available():
+        mb.showwarning(title='Missing module pypdf', message='The "Document converter (pdf --> docx)" option needs the Python module pypdf to extract the images embedded in a pdf file.\n\npypdf is NOT installed in your NLP environment.\n\nIn command prompt/terminal, type\n\nconda activate NLP\n\nthen type\n\npip install pypdf\n\nclose the NLP Suite and try again.\n\nIn the meantime you can use the "Document converter (pdf --> txt) (via pdfminer)" option, which needs no extra module but does NOT keep the images.')
+        return
 
     inputDocs = get_pdf_file_list(window, inputFilename, inputDir)
     if len(inputDocs) == 0:

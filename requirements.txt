@@ -85,12 +85,18 @@ chardet
 tqdm
 psutil
 
-# PDF / document / OCR (OCR also needs system binaries: Tesseract + poppler)
+# PDF / document
+# pdfminer.six: pdf --> txt, and the layout (text + image positions) for pdf --> docx
+# pypdf: decodes the images embedded in a pdf for the pdf --> docx converter; pdfminer's own
+#   ImageWriter fails on ordinary png images ('unrecognized image mode') and what it writes,
+#   python-docx then refuses
+# pdf2image + pytesseract were dropped with the OCR converter: that menu option never ran
+#   (it was wired to pdfminer), and real OCR needs the Tesseract + poppler BINARIES, which the
+#   frozen installers do not ship
 pdfminer.six
+pypdf
 python-docx
 striprtf
-pdf2image
-pytesseract
 
 # Stanford CoreNLP client
 pycorenlp

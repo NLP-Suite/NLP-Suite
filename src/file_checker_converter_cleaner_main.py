@@ -147,7 +147,7 @@ pydict = {}
 pydict["Document converter (csv --> txt)"] = ["file_converter_util.csv_converter"]
 pydict["Document converter (docx --> txt)"] = ["file_converter_util.docx_converter"]
 pydict["Document converter (pdf --> txt) (via pdfminer)"] = ["file_converter_util.pdf_converter"]
-pydict["Document converter (pdf --> docx) (text & images)"] = ["file_converter_util.pdf_to_docx_converter"]
+pydict["Document converter (pdf --> docx) (text & images via pdfminer & pypdf)"] = ["file_converter_util.pdf_to_docx_converter"]
 pydict["Document converter (rtf --> txt)"] = ["file_converter_util.rtf_converter"]
 pydict["Check utf-8 encoding compliance"] = ["file_checker_util.check_utf8_compliance"]
 pydict["Check end-of-line typesetting hyphenation"] = ["file_cleaner_util.check_typesetting_hyphenation"]
@@ -223,7 +223,7 @@ convert_menu = tk.OptionMenu(window,convert_tools_var,
                     'Document converter (csv --> txt)',
                     'Document converter (docx --> txt)',
                     'Document converter (pdf --> txt) (via pdfminer)',
-                    'Document converter (pdf --> docx) (text & images)',
+                    'Document converter (pdf --> docx) (text & images via pdfminer & pypdf)',
                     'Document converter (rtf --> txt)')
 
 convert_menu.configure(width=GUI_IO_util.widget_width_long)

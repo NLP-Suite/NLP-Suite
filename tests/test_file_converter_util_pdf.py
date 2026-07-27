@@ -105,6 +105,23 @@ class TestGetDocxImageWidth:
         assert fc.get_docx_image_width('wide') == Inches(6)
 
 
+class TestPypdfIsOptional:
+    """pypdf must stay OPTIONAL: it is needed only by the pdf --> docx option.
+
+    It was briefly added to IO_libraries_util.install_all_Python_packages, which is a FATAL ERROR
+    that exits the Suite and runs at MODULE IMPORT -- so an installation predating pypdf was locked
+    out of the csv, docx, rtf and pdf --> txt converters too.
+    """
+
+    def test_pypdf_is_not_in_the_fatal_import_gate(self):
+        source = open(os.path.join(REPO, 'src', 'file_converter_util.py'), encoding='utf-8').read()
+        gate = source.split('install_all_Python_packages(', 1)[1].split(')', 1)[0]
+        assert 'pypdf' not in gate
+
+    def test_the_converter_checks_for_pypdf_itself(self):
+        assert fc.is_pypdf_available() in (True, False)
+
+
 @pytest.mark.skipif(not os.path.isfile(TIPS_PDF), reason='TIPS pdf fixture not available')
 class TestPdfToDocx:
     def test_the_text_is_extracted(self):
