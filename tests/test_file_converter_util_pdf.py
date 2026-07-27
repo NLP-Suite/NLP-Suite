@@ -151,6 +151,19 @@ class TestPdfToDocx:
         assert 'Annotation via Dictionary' in text
         assert 'IMAGE could not be' not in text
 
+    def test_the_output_is_single_spaced_like_the_pdf(self, tmp_path):
+        """A new python-docx document inherits Word's docDefaults -- 10 pt after every paragraph
+        and 1.15 line spacing -- which read as double spacing next to a single spaced pdf."""
+        out = str(tmp_path / 'spacing.docx')
+        fc.build_docx_from_pdf(TIPS_PDF, out)
+
+        from docx import Document
+        from docx.shared import Pt
+        paragraph_format = Document(out).styles['Normal'].paragraph_format
+        assert paragraph_format.space_before == Pt(0)
+        assert paragraph_format.space_after == Pt(0)
+        assert paragraph_format.line_spacing == 1.0
+
     def test_an_unreadable_pdf_raises_rather_than_writing_a_truncated_file(self, tmp_path):
         broken = tmp_path / 'broken.pdf'
         broken.write_bytes(b'%PDF-1.4 this is not a pdf')

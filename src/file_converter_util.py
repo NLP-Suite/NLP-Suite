@@ -35,7 +35,7 @@ from pdfminer.converter import XMLConverter, HTMLConverter, TextConverter
 from pdfminer.high_level import extract_pages
 from pdfminer.layout import LAParams, LTFigure, LTImage, LTTextContainer
 from docx import Document #pip install python-docx
-from docx.shared import Inches
+from docx.shared import Inches, Pt
 from os.path import splitext
 from striprtf.striprtf import rtf_to_text
 
@@ -235,13 +235,24 @@ def get_docx_image_width(width_in_points, max_inches=6.0):
         return Inches(max_inches)
     return Inches(inches)
 
+# A new python-docx document inherits Word's own docDefaults: 10 pt of space AFTER every paragraph
+# and 1.15 line spacing (w:after="200" w:line="276"). One paragraph per block of pdf text then comes
+# out looking double spaced next to a single spaced pdf. Setting the Normal style explicitly
+# overrides those defaults for every paragraph in the document.
+def set_single_spacing(document):
+    paragraph_format = document.styles['Normal'].paragraph_format
+    paragraph_format.space_before = Pt(0)
+    paragraph_format.space_after = Pt(0)
+    paragraph_format.line_spacing = 1.0
+    return document
+
 def build_docx_from_pdf(doc, outputFilename):
     layout_pages = get_pdf_layout_items(doc)
     try:
         page_images = get_pdf_page_images(doc)
     except Exception:
         page_images = []
-    document = Document()
+    document = set_single_spacing(Document())
     imagesPlaced = 0
     imagesLost = 0
     for pageNum, items in enumerate(layout_pages):
