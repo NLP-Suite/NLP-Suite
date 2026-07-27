@@ -105,6 +105,78 @@ class TestGetDocxImageWidth:
         assert fc.get_docx_image_width('wide') == Inches(6)
 
 
+class _FakeChar:
+    """Stands in for a pdfminer LTChar: font name, size and colour are all it is asked for."""
+
+    def __init__(self, fontname='TimesNewRomanPSMT', size=12.0, ncolor=None):
+        self.fontname = fontname
+        self.size = size
+        self.graphicstate = type('gs', (), {'ncolor': ncolor})()
+
+
+class TestGetCharStyle:
+    """A pdf has no bold/italic flag: the typeface lives in the font NAME."""
+
+    def test_bold_is_read_from_the_font_name(self):
+        bold, italic, size, colour = fc.get_char_style(_FakeChar('TimesNewRomanPS-BoldMT'))
+        assert (bold, italic) == (True, False)
+
+    def test_italic_is_read_from_the_font_name(self):
+        bold, italic, size, colour = fc.get_char_style(_FakeChar('TimesNewRomanPS-ItalicMT'))
+        assert (bold, italic) == (False, True)
+
+    def test_bold_italic_is_read_from_the_font_name(self):
+        bold, italic, size, colour = fc.get_char_style(_FakeChar('TimesNewRomanPS-BoldItalicMT'))
+        assert (bold, italic) == (True, True)
+
+    def test_a_plain_font_is_neither(self):
+        bold, italic, size, colour = fc.get_char_style(_FakeChar('TimesNewRomanPSMT'))
+        assert (bold, italic) == (False, False)
+
+    def test_the_size_comes_through(self):
+        assert fc.get_char_style(_FakeChar(size=14.04))[2] == 14.0
+
+
+class TestGetCharColour:
+    def test_rgb_red_is_converted_to_0_255(self):
+        assert fc.get_char_colour(_FakeChar(ncolor=[1, 0, 0])) == (255, 0, 0)
+
+    def test_plain_black_is_left_to_the_docx_default(self):
+        assert fc.get_char_colour(_FakeChar(ncolor=[0])) is None
+        assert fc.get_char_colour(_FakeChar(ncolor=0)) is None
+
+    def test_a_single_value_is_read_as_grayscale(self):
+        assert fc.get_char_colour(_FakeChar(ncolor=[0.5])) == (128, 128, 128)
+
+    def test_four_values_are_read_as_cmyk(self):
+        assert fc.get_char_colour(_FakeChar(ncolor=[0, 1, 1, 0])) == (255, 0, 0)
+
+    def test_a_missing_or_unusable_colour_is_ignored(self):
+        assert fc.get_char_colour(_FakeChar(ncolor=None)) is None
+        assert fc.get_char_colour(_FakeChar(ncolor=[1, 2])) is None
+        assert fc.get_char_colour(_FakeChar(ncolor=['red', 'green', 'blue'])) is None
+
+
+class TestGetLineSeparator:
+    """A pdf breaks lines wherever the page ran out of room; copied over verbatim those breaks land
+    in the middle of sentences."""
+
+    def test_lines_are_joined_with_a_blank(self):
+        assert fc.get_line_separator('has then been') == ' '
+
+    def test_a_line_already_ending_in_a_blank_gets_no_second_one(self):
+        assert fc.get_line_separator('has then been ') == ''
+
+    def test_an_end_of_line_hyphen_joins_tight(self):
+        assert fc.get_line_separator('dictionar-') == ''
+
+    def test_a_dash_standing_on_its_own_is_not_hyphenation(self):
+        assert fc.get_line_separator('a word -') == ' '
+
+    def test_an_empty_line_adds_nothing(self):
+        assert fc.get_line_separator('') == ''
+
+
 class TestPypdfIsOptional:
     """pypdf must stay OPTIONAL: it is needed only by the pdf --> docx option.
 
@@ -163,6 +235,47 @@ class TestPdfToDocx:
         assert paragraph_format.space_before == Pt(0)
         assert paragraph_format.space_after == Pt(0)
         assert paragraph_format.line_spacing == 1.0
+
+    def test_the_pdf_formatting_survives_into_the_docx(self, tmp_path):
+        out = str(tmp_path / 'styled.docx')
+        fc.build_docx_from_pdf(TIPS_PDF, out)
+
+        from docx import Document
+        document = Document(out)
+        runs = [r for p in document.paragraphs for r in p.runs]
+        assert any(r.bold for r in runs)
+        assert any(r.italic for r in runs)
+        # the red heading of the TIPS file
+        assert any(r.font.color is not None and r.font.color.rgb is not None
+                   and str(r.font.color.rgb) == 'FF0000' for r in runs)
+        # 'Dry September', a book title, is italic in the pdf
+        italics = ''.join(r.text for r in runs if r.italic)
+        assert 'Dry September' in italics
+
+    def test_the_line_breaks_of_the_pdf_do_not_land_mid_sentence(self, tmp_path):
+        out = str(tmp_path / 'joined.docx')
+        fc.build_docx_from_pdf(TIPS_PDF, out)
+
+        from docx import Document
+        document = Document(out)
+        paragraph = [p for p in document.paragraphs if 'third case' in p.text][0]
+        assert '\n' not in paragraph.text
+        assert 'has then been' in paragraph.text          # was split across two lines
+        assert '  ' not in paragraph.text                 # and not joined with a doubled blank
+
+    def test_joining_the_lines_loses_no_text(self, tmp_path):
+        import re
+        out = str(tmp_path / 'complete.docx')
+        fc.build_docx_from_pdf(TIPS_PDF, out)
+
+        from docx import Document
+
+        def norm(s):
+            return re.sub(r'\s+', ' ', s).strip()
+
+        pdf_words = norm(fc.extract_pdf_text(TIPS_PDF)).split(' ')
+        docx_text = norm('\n'.join(p.text for p in Document(out).paragraphs))
+        assert [w for w in pdf_words if w and w not in docx_text] == []
 
     def test_an_unreadable_pdf_raises_rather_than_writing_a_truncated_file(self, tmp_path):
         broken = tmp_path / 'broken.pdf'

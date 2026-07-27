@@ -33,9 +33,9 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.converter import XMLConverter, HTMLConverter, TextConverter
 from pdfminer.high_level import extract_pages
-from pdfminer.layout import LAParams, LTFigure, LTImage, LTTextContainer
+from pdfminer.layout import LAParams, LTAnno, LTChar, LTFigure, LTImage, LTTextContainer, LTTextLine
 from docx import Document #pip install python-docx
-from docx.shared import Inches, Pt
+from docx.shared import Inches, Pt, RGBColor
 from os.path import splitext
 from striprtf.striprtf import rtf_to_text
 
@@ -171,8 +171,101 @@ def pdf_converter(window,inputFilename, inputDir, outputDir,config_filename,open
 # NOTE this is a REFLOW, not a facsimile: a single-column document with the original text and
 # images in reading order, NOT the original fonts, columns and page geometry.
 
+# a pdf records no bold/italic flag: the typeface is in the font NAME, one font per style
+# (TimesNewRomanPS-BoldMT, -ItalicMT, -BoldItalicMT, ...)
+def get_char_style(ch):
+    fontname = (ch.fontname or '').lower()
+    bold = 'bold' in fontname or 'black' in fontname or 'heavy' in fontname or 'semibold' in fontname
+    italic = 'italic' in fontname or 'oblique' in fontname
+    return bold, italic, round(ch.size, 1), get_char_colour(ch)
+
+# pdfminer reports colour components as 0-1 values, in whatever space the pdf uses: one value for
+# grayscale, three for RGB, four for CMYK. Returns (r, g, b) 0-255, or None for ordinary black,
+# which is left to the docx default rather than written out on every single run.
+def get_char_colour(ch):
+    try:
+        colour = ch.graphicstate.ncolor
+    except AttributeError:
+        return None
+    if colour is None:
+        return None
+    if isinstance(colour, (int, float)):
+        values = [colour, colour, colour]
+    else:
+        values = list(colour)
+        if len(values) == 1:
+            values = values * 3
+        elif len(values) == 4:
+            cyan, magenta, yellow, black = values
+            values = [(1 - cyan) * (1 - black), (1 - magenta) * (1 - black), (1 - yellow) * (1 - black)]
+        elif len(values) != 3:
+            return None
+    try:
+        rgb = tuple(max(0, min(255, int(round(float(value) * 255)))) for value in values)
+    except (TypeError, ValueError):
+        return None
+    return None if rgb == (0, 0, 0) else rgb
+
+# a pdf breaks its lines wherever the page ran out of room, and pdfminer faithfully reports those
+# breaks; copied straight into a docx they turn up as line breaks in the middle of sentences.
+# Lines are joined back into flowing text with a blank, EXCEPT after an end-of-line hyphen, where
+# the two halves are joined tight and the hyphen is KEPT: whether it is typesetting hyphenation
+# ('dictionar-y') or a real compound ('pretty-smart') cannot be told apart here, and the Suite
+# already asks the user that question in file_cleaner_util.remove_typeseting_hyphenation.
+def get_line_separator(previous_text):
+    if previous_text == '' or previous_text[-1].isspace():
+        return ''  # the line already ends with a blank; a second one would show up in the docx
+    if previous_text.endswith('-') and len(previous_text) >= 2 and previous_text[-2] != ' ':
+        return ''
+    return ' '
+
+# returns [(text, bold, italic, size, colour), ...] for one pdfminer text container: consecutive
+# characters sharing a style are merged into a single run, so a docx paragraph can be rebuilt with
+# the bold, italic, size and colour the pdf actually used
+def get_text_runs(element):
+    runs = []
+
+    def append(text, style):
+        if text == '':
+            return
+        if runs and runs[-1][1] == style:
+            runs[-1][0].append(text)
+        else:
+            runs.append(([text], style))
+
+    for line in element:
+        if not isinstance(line, LTTextLine):
+            continue
+        if runs:
+            # close the previous line before opening this one
+            previous_text = ''.join(runs[-1][0])
+            append(get_line_separator(previous_text), runs[-1][1])
+        for ch in line:
+            if isinstance(ch, LTChar):
+                append(ch.get_text(), get_char_style(ch))
+            elif isinstance(ch, LTAnno):
+                # blanks and the end-of-line marker inserted by the layout analyser: they carry no
+                # style of their own, so they extend the run already open
+                text = ch.get_text()
+                if text != '\n' and runs:
+                    append(text, runs[-1][1])
+
+    merged = [(''.join(chunks), style) for chunks, style in runs]
+    # trim the leading/trailing whitespace of the paragraph as a whole
+    while merged and merged[0][0].strip() == '':
+        merged.pop(0)
+    while merged and merged[-1][0].strip() == '':
+        merged.pop()
+    if merged:
+        merged[0] = (merged[0][0].lstrip(), merged[0][1])
+        merged[-1] = (merged[-1][0].rstrip(), merged[-1][1])
+    return [(text, style[0], style[1], style[2], style[3]) for text, style in merged if text != '']
+
+def get_runs_text(runs):
+    return ''.join(run[0] for run in runs)
+
 # returns, for one pdf, a list of pages, each a list of (kind, payload) in top-to-bottom order,
-# with kind 'text' (payload is the string) or 'image' (payload is a (name, width in pdf points))
+# with kind 'text' (payload is a list of styled runs) or 'image' (payload is a (name, width))
 def get_pdf_layout_items(doc):
     def walk_images(obj):
         # an LTImage can sit directly on the page or nested inside an LTFigure
@@ -188,9 +281,9 @@ def get_pdf_layout_items(doc):
         items = []
         for element in page_layout:
             if isinstance(element, LTTextContainer):
-                text = element.get_text().strip()
-                if text:
-                    items.append(('text', element.y1, text))
+                runs = get_text_runs(element)
+                if get_runs_text(runs).strip():
+                    items.append(('text', element.y1, runs))
             else:
                 for image in walk_images(element):
                     items.append(('image', element.y1, (image.name, image.width)))
@@ -260,7 +353,15 @@ def build_docx_from_pdf(doc, outputFilename):
         used = 0
         for kind, payload in items:
             if kind == 'text':
-                document.add_paragraph(payload)
+                paragraph = document.add_paragraph()
+                for text, bold, italic, size, colour in payload:
+                    run = paragraph.add_run(text)
+                    run.bold = bold
+                    run.italic = italic
+                    if size:
+                        run.font.size = Pt(size)
+                    if colour:
+                        run.font.color.rgb = RGBColor(*colour)
             elif used < len(available):
                 image = available[used]
                 used = used + 1
