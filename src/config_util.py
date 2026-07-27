@@ -409,7 +409,23 @@ def get_missing_IO_values(config_input_output_numeric_options, config_input_outp
                 config_label = str(config_input_output_alphabetic_options[index][0])
                 missing_IO = missing_IO + config_label + '\n'
         index = index + 1
+
     return missing_IO
+
+# called from GUI_util when the user supplies a missing I/O value directly on a GUI, with one of the
+# "Select INPUT/OUTPUT ..." buttons, instead of in the config csv file.
+# missing_IO is the newline-separated list of I/O labels built by get_missing_IO_values above; this
+# returns that list with the line(s) naming item_label dropped, so the caller can tell whether ANYTHING
+# is still missing before re-enabling the RUN button. item_label is matched case-insensitively as a
+# substring, e.g. 'secondary' matches the 'Input files secondary directory' label.
+def remove_missing_IO_line(missing_IO, item_label):
+    if missing_IO == '' or item_label == '':
+        return missing_IO
+    remaining = [line for line in missing_IO.split('\n')
+                 if line.strip() != '' and not item_label.lower() in line.lower()]
+    if len(remaining) == 0:
+        return ''
+    return '\n'.join(remaining) + '\n'
 
 # check_missing_IO is called from GUI_util
 # the function checks for missing IO values, displays messages and sets the RUN button to normal or disabled

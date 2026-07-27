@@ -531,6 +531,10 @@ def selectDirectory_set_options(window, input_main_dir_path,output_dir_path,titl
             input_main_dir_path.set(directoryName)
         else:
             input_secondary_dir_path.set(directoryName)
+            # The RUN button state is computed ONCE, at GUI build time, from the config csv. Without this
+            # re-check the button stayed disabled for the whole session whenever the secondary directory
+            # was missing from the config file -- even right after the user selected one on this very GUI.
+            revalidate_run_button_secondary_dir()
     else: # OUTPUT
         if (GUI_IO_util.NLPPath + '\\') in directoryName.replace('/','\\'):
             mb.showwarning(title='Warning',
@@ -603,9 +607,33 @@ def check_fileName(scriptName, file_type, config_input_output_numeric_options):
     return err_msg
 
 
+# The I/O values still missing as of the last activateRunButton call. Kept so that a value the user
+# supplies with a GUI button (rather than in the config csv) can clear its own "missing" line and let the
+# RUN button come back to life -- see revalidate_run_button_secondary_dir.
+last_missing_IO = ''
+
+# Called when the user selects a secondary INPUT directory with the GUI button.
+# Only the secondary directory needs this: input filename, input dir and output dir all come from the
+# config csv, which is edited through the NLP_setup_IO_main GUI (that path already re-checks RUN).
+def revalidate_run_button_secondary_dir():
+    global last_missing_IO
+    if input_secondary_dir_path.get() == '':
+        return
+    if not 'secondary' in last_missing_IO.lower():
+        return
+    # drop the secondary-directory line; the RUN button can only be re-enabled if NOTHING else is missing
+    last_missing_IO = config_util.remove_missing_IO_line(last_missing_IO, 'secondary')
+    if last_missing_IO == '':
+        try:
+            run_button.configure(state='normal')
+        except tk.TclError:
+            pass
+
 # config_filename can be either the Default value or the GUI_specific value depending on setup_IO_menu_var.get()
 def activateRunButton(config_filename,IO_setup_display_brief,scriptName, missing_IO, silent = False):
     # global run_button_state, answer
+    global last_missing_IO
+    last_missing_IO = missing_IO
     run_button_state = 'normal'
     err_msg =''
 
@@ -746,6 +774,15 @@ def set_IO_brief_values(config_filename, y_multiplier_integer):
             # remove the date portion (e.g., (Date: mm-dd-yyyy, _, 4) from dir name
             config_input_output_alphabetic_options[1][1] = IO_files_util.open_directory_removing_date_from_directory(
                 window,config_input_output_alphabetic_options[1][1], False)
+
+# checking input secondary directory  -----------------------------------------------------
+    # The secondary dir carries no date options, it just needs to reach the GUI label and the tools that
+    # read GUI_util.input_secondary_dir_path. Without this, a config csv that DOES hold a secondary
+    # directory still displayed an empty row and the user had to re-select the same directory by hand.
+    try:
+        input_secondary_dir_path.set(config_input_output_alphabetic_options[2][1])
+    except (IndexError, TypeError):
+        pass
 
     # lay out the display brief widget
     IO_setup_display_string = ''
@@ -1201,12 +1238,18 @@ def setup_IO_configuration_options(IO_setup_display_brief, scriptName, silent, o
     #   so no IO info should be displayed (unless they explicitly set non-zero IO config)
     if (not '_ALL_' in scriptName or config_input_output_numeric_options != [0,0,0,0]) and not 'package_language' in scriptName:
         try:
-            config_input_output_numeric_options = [6, 1, 0, 1]
-            config_input_output_alphabetic_options = config_util.get_template_config_csv_file(config_input_output_numeric_options, '')
+            # Build the DISPLAY template with a permissive file type, but keep it in a LOCAL list: this
+            # used to assign [6,1,0,1] to the global config_input_output_numeric_options, clobbering the
+            # calling GUI's own options for the rest of the session. The 3rd item going to 0 is what hurt:
+            # it zeroed the "secondary INPUT directory" flag, so the NLP_setup_IO_main GUI opened below
+            # never showed the secondary-directory row, and a GUI that needs one (file_classifier,
+            # corpus_checker_PCACE_data) could only be unblocked by hand-editing the config csv.
+            template_numeric_options = [6, 1, 0, 1]
+            config_input_output_alphabetic_options = config_util.get_template_config_csv_file(template_numeric_options, '')
             missing_IO = display_IO_setup(window, IO_setup_display_brief, config_filename,
                                           config_input_output_alphabetic_options)
         except:
-            config_input_output_numeric_options = [6, 1, 0, 1]
+            pass
         if missing_IO!='':
             open_setup_IO_GUI=True
     if not 'NLP_setup_IO_main' in scriptName: # if the NLP_setup_IO_main is already opened, you do not want to open it again
