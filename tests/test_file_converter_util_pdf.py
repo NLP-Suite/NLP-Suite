@@ -177,6 +177,66 @@ class TestGetLineSeparator:
         assert fc.get_line_separator('') == ''
 
 
+def _box(kind='text', text='some text', x0=104.0, y1=300.0, height=12.0):
+    runs = [(text, False, False, 12.0, None)]
+    return {'kind': kind, 'payload': runs if kind == 'text' else ('Im0', 100),
+            'x0': x0, 'y0': y1 - height, 'y1': y1, 'line_height': height}
+
+
+class TestShouldJoinTextBoxes:
+    """pdfminer reports the wrapped lines of an indented list as SEPARATE boxes, so joining the
+    lines inside a box is not enough -- the pdf's line breaks came back as paragraph breaks.
+    The numbers below are the real geometry of TIPS_NLP_Annotator dictionary.pdf page 2.
+    """
+
+    def test_a_hanging_indent_continuation_is_joined(self):
+        first = _box(x0=104.0, y1=301.4, height=12.3)          # '3. You could use WordNet...'
+        second = _box(x0=122.0, y1=287.6, text='ethnic/racial groups...')   # gap 1.5 pt
+        assert fc.should_join_text_boxes(first, second) is True
+
+    def test_the_next_numbered_item_is_not_joined(self):
+        first = _box(x0=122.0, y1=315.2)                       # a continuation line
+        second = _box(x0=104.0, y1=301.4, text='3.  You could use WordNet GOING DOWN')
+        assert fc.should_join_text_boxes(first, second) is False
+
+    def test_table_of_contents_lines_are_not_joined(self):
+        """They sit 6.8 pt apart -- tight, but not as tight as a wrapped line."""
+        first = _box(x0=86.0, y1=658.7, height=12.0)
+        second = _box(x0=86.0, y1=639.9, text='Dictionary file: Where do I get one? ....')
+        assert fc.should_join_text_boxes(first, second) is False
+
+    def test_separate_paragraphs_are_not_joined(self):
+        first = _box(x0=86.0, y1=466.7)
+        second = _box(x0=86.0, y1=439.4)                       # gap 15.3 pt
+        assert fc.should_join_text_boxes(first, second) is False
+
+    def test_a_line_starting_further_left_is_not_joined(self):
+        first = _box(x0=122.0, y1=300.0)
+        second = _box(x0=86.0, y1=286.5)
+        assert fc.should_join_text_boxes(first, second) is False
+
+    def test_an_image_is_never_joined_to_text(self):
+        first = _box(x0=104.0, y1=300.0)
+        second = _box(kind='image', x0=104.0, y1=286.5)
+        assert fc.should_join_text_boxes(first, second) is False
+        assert fc.should_join_text_boxes(second, first) is False
+
+    def test_the_first_box_on_a_page_has_nothing_to_join_to(self):
+        assert fc.should_join_text_boxes(None, _box()) is False
+
+
+class TestIsListMarker:
+    def test_numbered_and_lettered_and_bulleted_items_are_recognised(self):
+        assert fc.is_list_marker('3.  You could use WordNet') is True
+        assert fc.is_list_marker('1) first') is True
+        assert fc.is_list_marker('b. second') is True
+        assert fc.is_list_marker('• a bullet') is True
+
+    def test_ordinary_text_is_not_a_list_marker(self):
+        assert fc.is_list_marker('ethnic/racial groups and then use the list') is False
+        assert fc.is_list_marker('index as a dictionary to be then used') is False
+
+
 class TestOCRRequirements:
     """OCR needs FOUR pieces: two Python modules and two binaries the installers cannot bundle.
 
@@ -324,6 +384,29 @@ class TestPdfToDocx:
         assert '\n' not in paragraph.text
         assert 'has then been' in paragraph.text          # was split across two lines
         assert '  ' not in paragraph.text                 # and not joined with a doubled blank
+
+    def test_a_wrapped_list_item_becomes_one_paragraph(self, tmp_path):
+        """Each wrapped line of the numbered list is its own pdfminer box; they must not turn into
+        separate paragraphs."""
+        out = str(tmp_path / 'list.docx')
+        fc.build_docx_from_pdf(TIPS_PDF, out)
+
+        from docx import Document
+        paragraphs = [p.text for p in Document(out).paragraphs]
+        item = [p for p in paragraphs if 'GOING DOWN' in p]
+        assert len(item) == 1
+        assert item[0].endswith('use the list as a dictionary.')
+        assert 'countries, or ethnic/racial groups' in item[0]
+        # and the next numbered item stayed a paragraph of its own
+        assert any(p.strip().startswith('4.') for p in paragraphs)
+
+    def test_the_table_of_contents_stays_line_per_line(self, tmp_path):
+        out = str(tmp_path / 'toc.docx')
+        fc.build_docx_from_pdf(TIPS_PDF, out)
+
+        from docx import Document
+        paragraphs = [p.text for p in Document(out).paragraphs]
+        assert sum(1 for p in paragraphs if '....' in p) >= 5
 
     def test_joining_the_lines_loses_no_text(self, tmp_path):
         import re

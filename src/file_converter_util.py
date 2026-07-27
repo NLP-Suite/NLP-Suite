@@ -23,6 +23,7 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window,"file_converter
 
 import os
 import io
+import re
 
 import csv
 import tkinter as tk
@@ -264,6 +265,34 @@ def get_text_runs(element):
 def get_runs_text(runs):
     return ''.join(run[0] for run in runs)
 
+# pdfminer often reports the wrapped lines of ONE paragraph as SEPARATE text boxes - it does so for
+# every line of an indented numbered list - so joining the lines inside a box is not enough: the
+# pdf's line breaks come back as paragraph breaks between boxes. The geometry tells them apart. In
+# TIPS_NLP_Annotator dictionary.pdf the continuation lines of a list item sit 1.5-1.8 pt below the
+# line they continue, against 6.8 pt between the lines of the table of contents and 15 pt or more
+# between real paragraphs. The threshold is therefore taken from the text's own line height rather
+# than hard-coded in points, so it holds for other type sizes.
+list_marker_pattern = re.compile(r'^\s*(\d+\s*[\.\)]|[a-zA-Z]\s*[\.\)]|[•·●∙*-])\s')
+
+def is_list_marker(text):
+    return bool(list_marker_pattern.match(text))
+
+# previous and current are the box dictionaries built in get_pdf_layout_items
+def should_join_text_boxes(previous, current):
+    if previous is None or previous['kind'] != 'text' or current['kind'] != 'text':
+        return False
+    gap = previous['y0'] - current['y1']
+    if gap < 0 or gap > 0.3 * max(previous['line_height'], 1):
+        return False
+    # a continuation line is never LESS indented than the line it continues: a hanging indent puts
+    # it further right, and a line starting further LEFT is a new item going back to the margin
+    if current['x0'] < previous['x0'] - 1:
+        return False
+    # '3.', 'b)', a bullet: the start of a new item, however tightly it is set
+    if is_list_marker(get_runs_text(current['payload'])):
+        return False
+    return True
+
 # returns, for one pdf, a list of pages, each a list of (kind, payload) in top-to-bottom order,
 # with kind 'text' (payload is a list of styled runs) or 'image' (payload is a (name, width))
 def get_pdf_layout_items(doc):
@@ -283,13 +312,32 @@ def get_pdf_layout_items(doc):
             if isinstance(element, LTTextContainer):
                 runs = get_text_runs(element)
                 if get_runs_text(runs).strip():
-                    items.append(('text', element.y1, runs))
+                    text_lines = [line for line in element if isinstance(line, LTTextLine)]
+                    items.append({'kind': 'text', 'payload': runs,
+                                  'x0': element.x0, 'y0': element.y0, 'y1': element.y1,
+                                  'line_height': element.height / max(len(text_lines), 1)})
             else:
                 for image in walk_images(element):
-                    items.append(('image', element.y1, (image.name, image.width)))
+                    items.append({'kind': 'image', 'payload': (image.name, image.width),
+                                  'x0': element.x0, 'y0': element.y0, 'y1': element.y1,
+                                  'line_height': element.height})
         # in a pdf the y coordinate grows UPWARD, so sorting descending gives reading order
-        items.sort(key=lambda item: -item[1])
-        pages.append([(kind, payload) for kind, y, payload in items])
+        items.sort(key=lambda item: -item['y1'])
+
+        # stitch the wrapped lines of one paragraph back together across boxes
+        merged = []
+        for item in items:
+            previous = merged[-1] if merged else None
+            if should_join_text_boxes(previous, item):
+                separator = get_line_separator(get_runs_text(previous['payload']))
+                if separator:
+                    last_text, bold, italic, size, colour = previous['payload'][-1]
+                    previous['payload'][-1] = (last_text + separator, bold, italic, size, colour)
+                previous['payload'] = previous['payload'] + item['payload']
+                previous['y0'] = item['y0']
+            else:
+                merged.append(item)
+        pages.append([(item['kind'], item['payload']) for item in merged])
     return pages
 
 # pdfminer reports WHERE the images are but cannot reliably hand us the bytes: its own ImageWriter
