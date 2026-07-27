@@ -733,21 +733,38 @@ tesseract_language_codes = {
     'spanish': 'spa', 'portuguese': 'por', 'dutch': 'nld', 'russian': 'rus',
     'chinese': 'chi_sim', 'japanese': 'jpn', 'arabic': 'ara', 'latin': 'lat'}
 
-# falls back to English when the configured language has no Tesseract pack INSTALLED, rather than
-# letting Tesseract abort the whole run with 'Failed loading language'
-def get_tesseract_language(language):
-    code = tesseract_language_codes.get(str(language).strip().lower(), 'eng')
+# Tesseract can read SEVERAL languages in one pass: the languages are joined with a + sign, as in
+# 'eng+ita', and the first one is the primary. The Suite's own 'Corpus language' setting is a
+# LANGUAGE(S) field and can likewise hold more than one.
+# Note that piling up languages is not free: each one slows the recognition down and, for languages
+# that do not share an alphabet, can make the result WORSE. Ask for the ones you actually have.
+#
+# Returns (the lang string to hand to Tesseract, the codes whose pack is NOT installed). Packs that
+# are missing are dropped instead of letting Tesseract abort with 'Failed loading language'.
+def get_tesseract_languages(language):
+    names = [name.strip() for name in re.split(r'[,;+/]|\band\b', str(language)) if name.strip()]
+    codes = []
+    for name in names:
+        code = tesseract_language_codes.get(name.lower())
+        if code and code not in codes:
+            codes.append(code)
+    if not codes:
+        codes = ['eng']
     try:
         import pytesseract
         tesseract_path = get_tesseract_path()
         if tesseract_path:
+            # get_languages shells out to tesseract, which is NOT necessarily on PATH
             pytesseract.pytesseract.tesseract_cmd = tesseract_path
         installed = pytesseract.get_languages(config='')
     except Exception:
-        return code, ''
-    if code in installed:
-        return code, ''
-    return 'eng' if 'eng' in installed else code, code
+        # cannot tell what is installed; hand Tesseract what was asked for and let it complain
+        return '+'.join(codes), []
+    available = [code for code in codes if code in installed]
+    missing = [code for code in codes if code not in installed]
+    if not available:
+        available = ['eng'] if 'eng' in installed else codes
+    return '+'.join(available), missing
 
 def pdf_OCR_converter(window,inputFilename, inputDir, outputDir,config_filename,openOutputFiles,chartPackage, dataTransformation):
 
@@ -769,12 +786,12 @@ def pdf_OCR_converter(window,inputFilename, inputDir, outputDir,config_filename,
         if config_values and len(config_values) > 4 and config_values[4]:
             language = config_values[4]
             if isinstance(language, (list, tuple)):  # the config can hold several languages
-                language = language[0] if language else 'English'
+                language = ', '.join(str(item) for item in language)
     except Exception:
         pass
-    language_code, missing_language = get_tesseract_language(language)
-    if missing_language:
-        mb.showwarning(title='OCR language pack missing', message='Your corpus language is set to ' + str(language) + ', but the Tesseract language pack "' + missing_language + '" is NOT installed on your machine.\n\nThe OCR will run in English (eng) instead, which will give poor results on a corpus in a different language.\n\nOn a Mac, in terminal, type\n\nbrew install tesseract-lang\n\nto install ALL language packs. On Windows, re-run the Tesseract installer and tick the additional language(s) you need.')
+    language_code, missing_languages = get_tesseract_languages(language)
+    if missing_languages:
+        mb.showwarning(title='OCR language pack missing', message='Your corpus language is set to ' + str(language) + ', but the following Tesseract language pack(s) are NOT installed on your machine:\n\n   ' + ', '.join(missing_languages) + '\n\nThe OCR will run in ' + language_code + ' instead. Reading a corpus with the wrong language gives poor results, particularly for accented characters.\n\nOn a Mac, in terminal, type\n\nbrew install tesseract-lang\n\nto install ALL language packs. On Windows, re-run the Tesseract installer from https://github.com/UB-Mannheim/tesseract/wiki and tick the additional language(s) you need under "Additional language data".')
 
     mb.showwarning(title='Warning', message='OCR is SLOW: every page of every pdf file is first rendered as a 300 dpi image and then read character by character. Expect roughly a few seconds per page; a few hundred pages will take a good while. The NLP Suite will look frozen while it works - please, be patient and watch the progress in the command prompt/terminal window.\n\nOCR is also never perfect: ALWAYS check the converted output file. The better the scan, the better the result.\n\nIf your pdf files are NOT scanned (i.e., you can select the text in a pdf reader), use the "Document converter (pdf --> txt) (via pdfminer)" option instead: it is exact and far faster.')
 

@@ -283,20 +283,42 @@ class TestTesseractLanguage:
         pytesseract = pytest.importorskip('pytesseract')
         monkeypatch.setattr(fc, 'get_tesseract_path', lambda: None)
         monkeypatch.setattr(pytesseract, 'get_languages', lambda config='': ['eng', 'ita'])
-        assert fc.get_tesseract_language('Italian') == ('ita', '')
+        assert fc.get_tesseract_languages('Italian') == ('ita', [])
 
-    def test_a_missing_pack_falls_back_to_english_and_says_so(self, monkeypatch):
+    def test_several_languages_are_read_in_one_pass(self, monkeypatch):
+        """Tesseract takes them joined with a +, the first one being the primary."""
+        pytesseract = pytest.importorskip('pytesseract')
+        monkeypatch.setattr(fc, 'get_tesseract_path', lambda: None)
+        monkeypatch.setattr(pytesseract, 'get_languages', lambda config='': ['eng', 'ita', 'fra'])
+        assert fc.get_tesseract_languages('English, Italian') == ('eng+ita', [])
+        assert fc.get_tesseract_languages('Italian and French') == ('ita+fra', [])
+
+    def test_a_language_is_not_asked_for_twice(self, monkeypatch):
+        pytesseract = pytest.importorskip('pytesseract')
+        monkeypatch.setattr(fc, 'get_tesseract_path', lambda: None)
+        monkeypatch.setattr(pytesseract, 'get_languages', lambda config='': ['eng', 'ita'])
+        assert fc.get_tesseract_languages('English, English, Italian') == ('eng+ita', [])
+
+    def test_a_missing_pack_is_dropped_and_named(self, monkeypatch):
         pytesseract = pytest.importorskip('pytesseract')
         monkeypatch.setattr(fc, 'get_tesseract_path', lambda: None)
         monkeypatch.setattr(pytesseract, 'get_languages', lambda config='': ['eng'])
-        code, missing = fc.get_tesseract_language('Italian')
+        code, missing = fc.get_tesseract_languages('English, Italian')
+        assert code == 'eng'        # the run goes ahead with what IS installed
+        assert missing == ['ita']   # and the user is told WHICH pack to install
+
+    def test_falling_back_to_english_when_nothing_asked_for_is_installed(self, monkeypatch):
+        pytesseract = pytest.importorskip('pytesseract')
+        monkeypatch.setattr(fc, 'get_tesseract_path', lambda: None)
+        monkeypatch.setattr(pytesseract, 'get_languages', lambda config='': ['eng'])
+        code, missing = fc.get_tesseract_languages('Italian')
         assert code == 'eng'
-        assert missing == 'ita'   # so the user can be told WHICH pack to install
+        assert missing == ['ita']
 
     def test_an_unknown_language_does_not_crash(self, monkeypatch):
         monkeypatch.setattr(fc, 'get_tesseract_path', lambda: None)
-        code, missing = fc.get_tesseract_language('Klingon')
-        assert code in ('eng', 'tlh')
+        code, missing = fc.get_tesseract_languages('Klingon')
+        assert code.startswith('eng')
 
 
 class TestPypdfIsOptional:
