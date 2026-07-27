@@ -262,16 +262,69 @@ class TestOCRRequirements:
     def test_the_binaries_are_looked_for_beyond_PATH(self, tmp_path, monkeypatch):
         """A Mac app launched from the Finder does not see /opt/homebrew/bin, which is why the old
         code carried a commented-out hard-coded homebrew path."""
-        import shutil
-        monkeypatch.setattr(shutil, 'which', lambda name: None)
-        binary = tmp_path / 'tesseract'
-        binary.write_text('')
-        assert fc.find_executable('tesseract', [str(binary)]) == str(binary)
+        monkeypatch.setattr(fc.shutil, 'which', lambda name: None)
+        (tmp_path / 'tesseract').write_text('')
+        assert fc.find_executable('tesseract', [str(tmp_path)]) == str(tmp_path / 'tesseract')
+
+    def test_a_windows_exe_is_found_too(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(fc.shutil, 'which', lambda name: None)
+        (tmp_path / 'tesseract.exe').write_text('')
+        assert fc.find_executable('tesseract', [str(tmp_path)]) == str(tmp_path / 'tesseract.exe')
 
     def test_an_absent_binary_is_reported_as_absent(self, tmp_path, monkeypatch):
-        import shutil
-        monkeypatch.setattr(shutil, 'which', lambda name: None)
+        monkeypatch.setattr(fc.shutil, 'which', lambda name: None)
         assert fc.find_executable('tesseract', [str(tmp_path / 'nowhere')]) is None
+
+    def test_PATH_wins_over_the_search_paths(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(fc.shutil, 'which', lambda name: '/on/the/path/' + name)
+        assert fc.find_executable('tesseract', [str(tmp_path)]) == '/on/the/path/tesseract'
+
+
+class TestOCRRendersOnePageAtATime:
+    """Handing the whole pdf to convert_from_path returns EVERY page as an uncompressed image at
+    once: 24 MB per page at 300 dpi, i.e. over 7 GB for a 300-page book, before a single character
+    is read. The pages must be rendered one at a time."""
+
+    def test_pages_are_rendered_one_at_a_time(self, monkeypatch):
+        pytest.importorskip('pytesseract')
+        pytest.importorskip('pdf2image')
+        import pdf2image
+
+        calls = []
+
+        class _FakePage:
+            def close(self):
+                calls.append('closed')
+
+        def fake_convert(path, dpi=200, poppler_path=None, first_page=None, last_page=None, **kw):
+            calls.append((first_page, last_page))
+            return [_FakePage()]
+
+        monkeypatch.setattr(pdf2image, 'convert_from_path', fake_convert)
+        monkeypatch.setattr(pdf2image, 'pdfinfo_from_path', lambda p, poppler_path=None: {'Pages': 4})
+        import pytesseract
+        monkeypatch.setattr(pytesseract, 'image_to_string', lambda page, lang='eng': 'page text')
+
+        text = fc.OCR_pdf_text('anything.pdf')
+        rendered = [c for c in calls if isinstance(c, tuple)]
+        assert rendered == [(1, 1), (2, 2), (3, 3), (4, 4)]   # never the whole document at once
+        assert calls.count('closed') == 4                      # and each page is released
+        assert text == 'page text\npage text\npage text\npage text'
+
+    def test_an_unreadable_page_count_still_converts(self, monkeypatch):
+        pytest.importorskip('pytesseract')
+        pytest.importorskip('pdf2image')
+        import pdf2image
+        import pytesseract
+
+        def fake_info(path, poppler_path=None):
+            raise RuntimeError('pdfinfo failed')
+
+        monkeypatch.setattr(pdf2image, 'pdfinfo_from_path', fake_info)
+        monkeypatch.setattr(pdf2image, 'convert_from_path',
+                            lambda path, dpi=200, poppler_path=None, **kw: ['p1', 'p2'])
+        monkeypatch.setattr(pytesseract, 'image_to_string', lambda page, lang='eng': str(page))
+        assert fc.OCR_pdf_text('anything.pdf') == 'p1\np2'
 
 
 class TestTesseractLanguage:

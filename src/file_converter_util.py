@@ -24,6 +24,7 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window,"file_converter
 import os
 import io
 import re
+import shutil
 
 import csv
 import tkinter as tk
@@ -655,12 +656,13 @@ def tsv_converter(window,inputFilename,outputDir, header):
 # Tesseract and poppler are frequently installed where a GUI app's PATH does not reach (a Mac app
 # launched from the Finder does not see /opt/homebrew/bin), which is why the old code carried a
 # commented-out hard-coded homebrew path. Look in PATH first, then in the usual install locations.
+# both lists hold DIRECTORIES to look in, never filenames
 tesseract_search_paths = [
-    r'C:\Program Files\Tesseract-OCR\tesseract.exe',
-    r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe',
-    '/opt/homebrew/bin/tesseract',
-    '/usr/local/bin/tesseract',
-    '/usr/bin/tesseract']
+    r'C:\Program Files\Tesseract-OCR',
+    r'C:\Program Files (x86)\Tesseract-OCR',
+    '/opt/homebrew/bin',
+    '/usr/local/bin',
+    '/usr/bin']
 
 poppler_search_paths = [
     r'C:\Program Files\poppler\Library\bin',
@@ -670,16 +672,14 @@ poppler_search_paths = [
     '/usr/bin']
 
 def find_executable(name, search_paths):
-    import shutil
     found = shutil.which(name)
     if found:
         return found
-    for candidate in search_paths:
-        # the tesseract list holds full filenames, the poppler list holds directories
-        path = candidate if os.path.isfile(candidate) else os.path.join(candidate, name)
+    for directory in search_paths:
+        path = os.path.join(directory, name)
         if os.path.isfile(path):
             return path
-        if sys.platform == 'win32' and os.path.isfile(path + '.exe'):
+        if os.path.isfile(path + '.exe'):
             return path + '.exe'
     return None
 
@@ -717,15 +717,37 @@ def get_OCR_missing_requirements():
 # OCR one pdf: every page is rendered to an image, then read back as text.
 # 300 dpi is the resolution Tesseract is documented to work best at; the pdf2image default of 200
 # noticeably costs accuracy on small print.
+# The pages are rendered ONE AT A TIME. Handing the whole pdf to convert_from_path returns a list
+# holding every page as an uncompressed image at once: at 300 dpi a Letter page is 2550 x 3300
+# pixels in 3 bands, i.e. 24 MB, so a 300-page book would ask for over 7 GB of memory before a
+# single character had been read. Rendering page by page keeps it at one page's worth, and lets the
+# user see progress on a job that runs for seconds per page.
 def OCR_pdf_text(doc, language='eng', dpi=300):
     import pytesseract
-    from pdf2image import convert_from_path
+    from pdf2image import convert_from_path, pdfinfo_from_path
 
     tesseract_path = get_tesseract_path()
     if tesseract_path:
         pytesseract.pytesseract.tesseract_cmd = tesseract_path
-    pages = convert_from_path(doc, dpi=dpi, poppler_path=get_poppler_path())
-    return '\n'.join(pytesseract.image_to_string(page, lang=language) for page in pages)
+    poppler_path = get_poppler_path()
+
+    try:
+        numberOfPages = int(pdfinfo_from_path(doc, poppler_path=poppler_path)['Pages'])
+    except Exception:
+        numberOfPages = 0
+    if numberOfPages < 1:
+        # the page count could not be read; fall back to converting in one go
+        pages = convert_from_path(doc, dpi=dpi, poppler_path=poppler_path)
+        return '\n'.join(pytesseract.image_to_string(page, lang=language) for page in pages)
+
+    text = []
+    for pageNumber in range(1, numberOfPages + 1):
+        print('   OCR page ' + str(pageNumber) + '/' + str(numberOfPages))
+        for page in convert_from_path(doc, dpi=dpi, poppler_path=poppler_path,
+                                      first_page=pageNumber, last_page=pageNumber):
+            text.append(pytesseract.image_to_string(page, lang=language))
+            page.close()  # release the 24 MB before rendering the next page
+    return '\n'.join(text)
 
 # the NLP Suite language names are not the 3-letter codes Tesseract uses for its language packs
 tesseract_language_codes = {
