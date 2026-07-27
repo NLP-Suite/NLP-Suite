@@ -177,6 +177,68 @@ class TestGetLineSeparator:
         assert fc.get_line_separator('') == ''
 
 
+class TestOCRRequirements:
+    """OCR needs FOUR pieces: two Python modules and two binaries the installers cannot bundle.
+
+    The previous OCR code was unreachable (the menu entry ran pdfminer, and image_to_string was
+    imported inside another function, so it would have raised NameError on the first call).
+    """
+
+    def test_every_missing_piece_is_named_with_the_way_to_install_it(self, monkeypatch):
+        monkeypatch.setattr(fc, 'get_tesseract_path', lambda: None)
+        monkeypatch.setattr(fc, 'get_poppler_path', lambda: None)
+        missing = fc.get_OCR_missing_requirements()
+        assert any('esseract' in m for m in missing)
+        assert any('poppler' in m for m in missing)
+        # each entry has to tell the user what to actually do
+        assert all(('pip install' in m or 'brew install' in m or 'http' in m) for m in missing)
+
+    def test_nothing_is_reported_missing_when_all_four_are_present(self, monkeypatch):
+        monkeypatch.setattr(fc, 'get_tesseract_path', lambda: '/usr/bin/tesseract')
+        monkeypatch.setattr(fc, 'get_poppler_path', lambda: '/usr/bin')
+        missing = [m for m in fc.get_OCR_missing_requirements() if 'Python module' not in m]
+        assert missing == []
+
+    def test_the_binaries_are_looked_for_beyond_PATH(self, tmp_path, monkeypatch):
+        """A Mac app launched from the Finder does not see /opt/homebrew/bin, which is why the old
+        code carried a commented-out hard-coded homebrew path."""
+        import shutil
+        monkeypatch.setattr(shutil, 'which', lambda name: None)
+        binary = tmp_path / 'tesseract'
+        binary.write_text('')
+        assert fc.find_executable('tesseract', [str(binary)]) == str(binary)
+
+    def test_an_absent_binary_is_reported_as_absent(self, tmp_path, monkeypatch):
+        import shutil
+        monkeypatch.setattr(shutil, 'which', lambda name: None)
+        assert fc.find_executable('tesseract', [str(tmp_path / 'nowhere')]) is None
+
+
+class TestTesseractLanguage:
+    def test_the_suite_language_names_map_to_tesseract_codes(self):
+        assert fc.tesseract_language_codes['italian'] == 'ita'
+        assert fc.tesseract_language_codes['english'] == 'eng'
+
+    def test_an_installed_pack_is_used(self, monkeypatch):
+        pytesseract = pytest.importorskip('pytesseract')
+        monkeypatch.setattr(fc, 'get_tesseract_path', lambda: None)
+        monkeypatch.setattr(pytesseract, 'get_languages', lambda config='': ['eng', 'ita'])
+        assert fc.get_tesseract_language('Italian') == ('ita', '')
+
+    def test_a_missing_pack_falls_back_to_english_and_says_so(self, monkeypatch):
+        pytesseract = pytest.importorskip('pytesseract')
+        monkeypatch.setattr(fc, 'get_tesseract_path', lambda: None)
+        monkeypatch.setattr(pytesseract, 'get_languages', lambda config='': ['eng'])
+        code, missing = fc.get_tesseract_language('Italian')
+        assert code == 'eng'
+        assert missing == 'ita'   # so the user can be told WHICH pack to install
+
+    def test_an_unknown_language_does_not_crash(self, monkeypatch):
+        monkeypatch.setattr(fc, 'get_tesseract_path', lambda: None)
+        code, missing = fc.get_tesseract_language('Klingon')
+        assert code in ('eng', 'tlh')
+
+
 class TestPypdfIsOptional:
     """pypdf must stay OPTIONAL: it is needed only by the pdf --> docx option.
 

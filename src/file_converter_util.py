@@ -592,11 +592,177 @@ def tsv_converter(window,inputFilename,outputDir, header):
     return inputFilename+'.csv'
 
 
-# An OCR (pytesseract) pdf converter used to be sketched out here and offered in the GUI as
-# 'Document converter (pdf --> txt) (via pytesseract)'. It was never reachable: the menu entry was
-# wired to pdf_converter (i.e., it ran pdfminer), the helpers imported image_to_string INSIDE
-# convert_pdf_to_img so convert_image_to_text raised NameError, and neither pytesseract nor
-# pdf2image was ever listed in requirements.txt/requirements_mac.txt. Removed rather than left to
-# look like a working option. Real OCR also needs the Tesseract and poppler BINARIES installed on
-# the user's machine, which does not fit the frozen NLP Suite installers; a pip-only OCR engine
-# would be the way back in.
+# OCR: pdf --> txt for SCANNED pdf files
+# ______________________________________________________________________________________________
+# A scanned pdf holds no text at all, only a picture of each page: pdfminer correctly returns
+# nothing for it. OCR reads the letters out of that picture. This needs FOUR separate pieces - the
+# pytesseract and pdf2image Python modules, plus the Tesseract and poppler BINARIES - and the
+# binaries cannot be bundled into the frozen NLP Suite installers, so every one of them is checked
+# and reported by name instead of failing with a stack trace.
+#
+# The earlier version of this code was never reachable: the menu entry ran pdfminer, and
+# convert_image_to_text called image_to_string, which was imported inside ANOTHER function, so it
+# would have raised NameError on the first call.
+
+# Tesseract and poppler are frequently installed where a GUI app's PATH does not reach (a Mac app
+# launched from the Finder does not see /opt/homebrew/bin), which is why the old code carried a
+# commented-out hard-coded homebrew path. Look in PATH first, then in the usual install locations.
+tesseract_search_paths = [
+    r'C:\Program Files\Tesseract-OCR\tesseract.exe',
+    r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe',
+    '/opt/homebrew/bin/tesseract',
+    '/usr/local/bin/tesseract',
+    '/usr/bin/tesseract']
+
+poppler_search_paths = [
+    r'C:\Program Files\poppler\Library\bin',
+    r'C:\Program Files\poppler\bin',
+    '/opt/homebrew/bin',
+    '/usr/local/bin',
+    '/usr/bin']
+
+def find_executable(name, search_paths):
+    import shutil
+    found = shutil.which(name)
+    if found:
+        return found
+    for candidate in search_paths:
+        # the tesseract list holds full filenames, the poppler list holds directories
+        path = candidate if os.path.isfile(candidate) else os.path.join(candidate, name)
+        if os.path.isfile(path):
+            return path
+        if sys.platform == 'win32' and os.path.isfile(path + '.exe'):
+            return path + '.exe'
+    return None
+
+def get_tesseract_path():
+    return find_executable('tesseract', tesseract_search_paths)
+
+# pdf2image needs the DIRECTORY holding pdftoppm, not the executable itself
+def get_poppler_path():
+    executable = find_executable('pdftoppm', poppler_search_paths)
+    return os.path.dirname(executable) if executable else None
+
+# returns a list of the missing pieces, empty when OCR can actually run
+def get_OCR_missing_requirements():
+    missing = []
+    try:
+        import pytesseract  # noqa: F401
+    except ImportError:
+        missing.append('the Python module pytesseract   (in the NLP environment, type: pip install pytesseract)')
+    try:
+        import pdf2image  # noqa: F401
+    except ImportError:
+        missing.append('the Python module pdf2image   (in the NLP environment, type: pip install pdf2image)')
+    if get_tesseract_path() is None:
+        if sys.platform == 'darwin':
+            missing.append('the Tesseract OCR software   (in terminal, type: brew install tesseract)')
+        else:
+            missing.append('the Tesseract OCR software   (download the installer from https://github.com/UB-Mannheim/tesseract/wiki and install it in C:\\Program Files\\Tesseract-OCR)')
+    if get_poppler_path() is None:
+        if sys.platform == 'darwin':
+            missing.append('the poppler software   (in terminal, type: brew install poppler)')
+        else:
+            missing.append('the poppler software   (download it from https://github.com/oschwartz10612/poppler-windows/releases and unzip it to C:\\Program Files\\poppler)')
+    return missing
+
+# OCR one pdf: every page is rendered to an image, then read back as text.
+# 300 dpi is the resolution Tesseract is documented to work best at; the pdf2image default of 200
+# noticeably costs accuracy on small print.
+def OCR_pdf_text(doc, language='eng', dpi=300):
+    import pytesseract
+    from pdf2image import convert_from_path
+
+    tesseract_path = get_tesseract_path()
+    if tesseract_path:
+        pytesseract.pytesseract.tesseract_cmd = tesseract_path
+    pages = convert_from_path(doc, dpi=dpi, poppler_path=get_poppler_path())
+    return '\n'.join(pytesseract.image_to_string(page, lang=language) for page in pages)
+
+# the NLP Suite language names are not the 3-letter codes Tesseract uses for its language packs
+tesseract_language_codes = {
+    'english': 'eng', 'italian': 'ita', 'french': 'fra', 'german': 'deu',
+    'spanish': 'spa', 'portuguese': 'por', 'dutch': 'nld', 'russian': 'rus',
+    'chinese': 'chi_sim', 'japanese': 'jpn', 'arabic': 'ara', 'latin': 'lat'}
+
+# falls back to English when the configured language has no Tesseract pack INSTALLED, rather than
+# letting Tesseract abort the whole run with 'Failed loading language'
+def get_tesseract_language(language):
+    code = tesseract_language_codes.get(str(language).strip().lower(), 'eng')
+    try:
+        import pytesseract
+        tesseract_path = get_tesseract_path()
+        if tesseract_path:
+            pytesseract.pytesseract.tesseract_cmd = tesseract_path
+        installed = pytesseract.get_languages(config='')
+    except Exception:
+        return code, ''
+    if code in installed:
+        return code, ''
+    return 'eng' if 'eng' in installed else code, code
+
+def pdf_OCR_converter(window,inputFilename, inputDir, outputDir,config_filename,openOutputFiles,chartPackage, dataTransformation):
+
+    missing = get_OCR_missing_requirements()
+    if missing:
+        mb.showwarning(title='OCR software missing', message='The "Document converter (pdf --> txt) (via pytesseract OCR)" option reads the text out of SCANNED pdf files, i.e., pdf files that contain no text but only a picture of each page.\n\nUnlike every other converter, OCR needs software installed on your machine that the NLP Suite installers cannot bundle.\n\nThe following is missing:\n\n   ' + '\n\n   '.join(missing) + '\n\nInstall what is listed above, close the NLP Suite and try again.\n\nFor the complete instructions, please open the TIPS file "TIPS_NLP_pdf converters.pdf" via the "Open TIPS files" dropdown menu.\n\nIf your pdf files are NOT scanned (i.e., you can select the text in a pdf reader), you do not need OCR at all: use the "Document converter (pdf --> txt) (via pdfminer)" option, which is also far faster.')
+        return
+
+    inputDocs = get_pdf_file_list(window, inputFilename, inputDir)
+    if len(inputDocs) == 0:
+        return
+
+    language = 'English'
+    try:
+        # honour the corpus language selected in NLP_setup_package_language_main; the language is
+        # item 4 of the tuple (error, package, parsers, basics_package, language, ...)
+        import config_util
+        config_values = config_util.read_NLP_package_language_config()
+        if config_values and len(config_values) > 4 and config_values[4]:
+            language = config_values[4]
+            if isinstance(language, (list, tuple)):  # the config can hold several languages
+                language = language[0] if language else 'English'
+    except Exception:
+        pass
+    language_code, missing_language = get_tesseract_language(language)
+    if missing_language:
+        mb.showwarning(title='OCR language pack missing', message='Your corpus language is set to ' + str(language) + ', but the Tesseract language pack "' + missing_language + '" is NOT installed on your machine.\n\nThe OCR will run in English (eng) instead, which will give poor results on a corpus in a different language.\n\nOn a Mac, in terminal, type\n\nbrew install tesseract-lang\n\nto install ALL language packs. On Windows, re-run the Tesseract installer and tick the additional language(s) you need.')
+
+    mb.showwarning(title='Warning', message='OCR is SLOW: every page of every pdf file is first rendered as a 300 dpi image and then read character by character. Expect roughly a few seconds per page; a few hundred pages will take a good while. The NLP Suite will look frozen while it works - please, be patient and watch the progress in the command prompt/terminal window.\n\nOCR is also never perfect: ALWAYS check the converted output file. The better the scan, the better the result.\n\nIf your pdf files are NOT scanned (i.e., you can select the text in a pdf reader), use the "Document converter (pdf --> txt) (via pdfminer)" option instead: it is exact and far faster.')
+
+    startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start',
+                                                   'Started running the pdf OCR converter at',
+                                                   True, '', True, '', False)
+    if inputDir == "":
+        inputDir = os.path.dirname(inputFilename)
+
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                                                       label='pdf_OCR_2_txt',
+                                                       silent=True)
+    numberOfDocs = len(inputDocs)
+    outputFilename = ''
+    convertedDocs = 0
+    emptyDocs = []
+    failedDocs = []
+    for docNum, doc in enumerate(inputDocs):
+        head, tail = os.path.split(doc)
+        print('OCR processing file ' + str(docNum+1) + "/" + str(numberOfDocs) + " " + tail)
+        try:
+            data = OCR_pdf_text(doc, language=language_code)
+            outputFilename = get_converted_output_path(doc, inputDir, outputDir, '.txt')
+            make_output_directory(outputFilename)
+            with open(outputFilename, "w", encoding="utf-8") as f:
+                f.write(data)
+            convertedDocs = convertedDocs + 1
+            if data.strip() == '':
+                emptyDocs.append(tail)
+        except Exception as e:
+            failedDocs.append(tail + ': ' + str(e))
+
+    IO_user_interface_util.timed_alert(window, 4000, 'Analysis end', 'Finished running the pdf OCR converter at', True, str(convertedDocs) + ' of ' + str(numberOfDocs) + ' files were successfully OCRed from pdf to txt format and saved in directory ' + outputDir, True, startTime, False)
+    if emptyDocs:
+        mb.showwarning(title='OCR converter', message='OCR found NO text in ' + str(len(emptyDocs)) + ' of your pdf files:\n\n' + '\n'.join(emptyDocs) + '\n\nThe output txt file(s) are empty. This usually means the scan is too poor to read, the page is upside down or sideways, or the language pack does not match the language of the document.')
+    if failedDocs:
+        mb.showwarning(title='OCR converter', message=str(len(failedDocs)) + ' of ' + str(numberOfDocs) + ' pdf files could NOT be OCRed:\n\n' + '\n'.join(failedDocs))
+    if openOutputFiles and len(inputFilename)>0 and outputFilename!='':
+        IO_files_util.openFile(window, outputFilename)
