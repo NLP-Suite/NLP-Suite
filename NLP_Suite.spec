@@ -155,6 +155,8 @@ _third_party_hiddenimports = [
     # Web / parsing
     'requests', 'bs4', 'lxml', 'lxml.etree',
     'pdfminer', 'pdfminer.high_level',
+    # pypdf decodes the images embedded in a pdf for the pdf --> docx converter
+    'pypdf', 'PIL',
     'docx', 'striprtf',
     # Stanford CoreNLP client
     'pycorenlp', 'stanfordcorenlp',

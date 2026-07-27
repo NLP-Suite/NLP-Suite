@@ -52,6 +52,9 @@ mlconjug~=3.4.0
 #used by pdf_converter
 pdfminer.six
 #
+#used by pdf_to_docx_converter to decode the images embedded in a pdf
+pypdf
+#
 #used by docx_converter
 python-docx
 #
