@@ -1161,7 +1161,59 @@ def run_profile(ctx, selected):
 # Corpus header stats -- cheap counts for the report header. Reads the raw txt corpus directly
 # so it works even if no analysis produced a statistics file.
 # ---------------------------------------------------------------------------------------------
-def corpus_header_stats(inputFilename, inputDir):
+def parsed_sentence_count(outputDir, n_docs=0, parser_tag=''):
+    """The corpus's sentence count as the PARSER counted it, or 0 if none is on disk.
+
+    The parser's per-token tables (CoNLL / NER / POS) carry Document ID + Sentence ID with sentence IDs
+    restarting in each document, so the corpus total is the sum of each document's highest ID. That is the
+    number every downstream analysis works with, and so the one the report should show: the parser-free
+    estimate below counts runs of . ! ? and reads every 'Mr.' and every abbreviation as a sentence end --
+    on the Harry Potter corpus it says ~87,560 where Stanza says 69,591, a quarter too many.
+
+    ONLY a per-token table is trusted, and only one whose Document ID really identifies documents. The
+    relations table also has both column names, but its 'Document ID' holds 71,093 distinct values for 199
+    documents -- summing maxima over that gave 16 million sentences, which is the kind of number that gets
+    into a paper.
+
+    *parser_tag* is the CONFIGURED parser ('stanza', 'corenlp', 'spacy'). A profile can hold tables from
+    more than one of them and they do not agree: on Harry Potter, CoreNLP finds 79,389 sentences where
+    Stanza finds 69,591, because they split sentences differently. There is no neutral answer -- the
+    corpus has as many sentences as your parser says it has -- so the report quotes the parser named in
+    its own header.
+    """
+    if not outputDir or not os.path.isdir(outputDir):
+        return 0
+    import glob
+    import pandas as pd
+    tag = (parser_tag or '').strip().lower()
+    best = 0
+    for p in sorted(glob.glob(os.path.join(outputDir, '**', '*.csv'), recursive=True)):
+        b = os.path.basename(p).lower()
+        if 'binned' in b or 'chart' in b or 'frequency' in b:
+            continue
+        if tag and tag not in b:
+            continue
+        try:
+            head = pd.read_csv(p, nrows=1, encoding='utf-8', on_bad_lines='skip')
+            columns = set(head.columns)
+            # a real parse: one token per row
+            if not {'Document ID', 'Sentence ID'}.issubset(columns):
+                continue
+            if not ({'Form', 'Word'} & columns):
+                continue
+            df = pd.read_csv(p, usecols=['Document ID', 'Sentence ID'],
+                             encoding='utf-8', on_bad_lines='skip')
+            if n_docs and df['Document ID'].nunique() != n_docs:
+                continue
+            total = int(pd.to_numeric(df['Sentence ID'], errors='coerce')
+                        .groupby(df['Document ID']).max().sum())
+        except Exception:
+            continue
+        best = max(best, total)
+    return best
+
+
+def corpus_header_stats(inputFilename, inputDir, outputDir='', parser_tag=''):
     import glob, re
     paths = []
     if inputDir:
@@ -1178,12 +1230,16 @@ def corpus_header_stats(inputFilename, inputDir):
                 text = fh.read()
             n_words += len(text.split())
             n_chars += len(text)
-            # rough sentence count: runs of end-of-sentence punctuation. Cheap and parser-free; the exact
-            # count comes from the Statistics analysis, this is just for the header/abstract averages.
+            # rough sentence count: runs of end-of-sentence punctuation. Cheap and parser-free, and used
+            # only when the run produced no parsed table to count from (see parsed_sentence_count).
             n_sents += len(re.findall(r'[.!?]+', text))
         except Exception:
             pass
-    return dict(documents=n_docs, words=n_words, characters=n_chars, sentences=n_sents)
+    # prefer the parser's own count when this run produced one, so the header, the abstract and every
+    # analysis downstream are all quoting the same number
+    parsed = parsed_sentence_count(outputDir, n_docs, parser_tag)
+    return dict(documents=n_docs, words=n_words, characters=n_chars,
+                sentences=parsed or n_sents, sentences_estimated=not parsed)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -1254,8 +1310,11 @@ def build_report(outputDir, corpus_name, results, header_stats, run_config):
                  'paper-style summary</a>.</div></header>'
                  % (_esc(corpus_name), _esc(run_config.get('subtitle', ''))))
 
-    # header stat tiles
-    tiles = [('documents', 'documents'), ('words', 'words'), ('characters', 'characters')]
+    # header stat tiles, largest unit to smallest. Sentences were missing: the unit half the analyses
+    # work in (sentiment, arcs, SVO, the CoNLL table) and the one a reader checks a chart's x axis against.
+    sent_label = 'sentences (estimated)' if header_stats.get('sentences_estimated') else 'sentences'
+    tiles = [('documents', 'documents'), ('sentences', sent_label),
+             ('words', 'words'), ('characters', 'characters')]
     parts.append('<div class="stats">')
     for key, lab in tiles:
         parts.append('<div class="stat"><b>%s</b><span>%s</span></div>'
@@ -1715,6 +1774,101 @@ def _interp_topics(files):
 _EIGHT_EMOTIONS = ('Anger', 'Anticipation', 'Disgust', 'Fear', 'Joy', 'Sadness', 'Surprise', 'Trust')
 
 
+def _arc_strength(df, characters, n_bins=20, min_per_bin=3):
+    """Is there a SHAPE in these emotion arcs, or only noise? A computed answer.
+
+    A summary that lists the prevailing emotions and stops implies the arcs mean
+    something. Often they do not: on the Harry Potter corpus every arc sits
+    between 0.05 and 0.10 with spikes on top, which is a finding -- and the one
+    a reader is least likely to reach unaided, because a busy chart looks
+    eventful.
+
+    The corpus is cut into *n_bins* equal stretches; each character's average
+    for each emotion is taken per bin, and the SWING (highest bin minus lowest)
+    says how much that emotion moves across the narrative. Bins holding fewer
+    than *min_per_bin* of that character's sentences are dropped: an average
+    over one sentence swings between 0 and 1 and would manufacture a shape.
+
+    The eight emotion shares sum to 1, so an emotion sitting at its share of the
+    whole would be 0.125 and a swing of 0.05 is a real movement. Returns
+    sentences, or [] when there is not enough to say anything.
+    """
+    import numpy as np
+    import pandas as pd
+    present = [c for c in df.columns if str(c).strip().capitalize() in _EIGHT_EMOTIONS]
+    if not present or 'Sentence ID' not in df.columns:
+        return []
+
+    ordered = df.copy()
+    if 'Document ID' in ordered.columns:
+        # sentence IDs restart in every document; ordering by them alone interleaves the corpus
+        lengths = ordered.groupby('Document ID')['Sentence ID'].max().sort_index()
+        offsets = lengths.cumsum().shift(1).fillna(0).astype(int)
+        ordered['_pos'] = ordered['Document ID'].map(offsets) + ordered['Sentence ID']
+    else:
+        ordered['_pos'] = ordered['Sentence ID']
+    ordered = ordered.dropna(subset=['_pos'])
+    if not len(ordered):
+        return []
+
+    edges = np.linspace(ordered['_pos'].min(), ordered['_pos'].max(), n_bins + 1)
+    swings, thin = [], 0
+    for character in characters:
+        rows = ordered[ordered['Character'].astype(str) == character]
+        if len(rows) < min_per_bin * 2:
+            continue
+        bins = pd.cut(rows['_pos'], bins=edges, include_lowest=True)
+        counts = rows.groupby(bins, observed=False)['_pos'].count()
+        for col in present:
+            means = rows.groupby(bins, observed=False)[col].mean().where(counts >= min_per_bin)
+            means = means.dropna()
+            if len(means) < 3:
+                thin += 1
+                continue
+            # recorded even when it is ZERO: a flat arc is the finding here, and a
+            # "> best so far" test would silently drop it and report that nothing
+            # could be assessed
+            swings.append((float(means.max() - means.min()),
+                           str(col).strip().capitalize(), character))
+
+    if not swings:
+        return ['The arcs could not be assessed for shape: no character appears often enough, '
+                'spread widely enough through the corpus, to average reliably.']
+
+    swings.sort(reverse=True)
+    biggest, emotion, who = swings[0]
+    median = float(np.median([s for s, _, _ in swings]))
+    scale = ' (all eight emotions equal would be 0.125)'
+
+    if biggest < 0.05:
+        verdict = ('These arcs are close to FLAT: no emotion moves by more than %.2f for any of the '
+                   'leading characters%s. Read as noise around a constant, not as a story shape.'
+                   % (biggest, scale))
+    elif biggest < 0.15:
+        verdict = ('These arcs show MODEST movement: the largest swing is %.2f — %s, %s%s.'
+                   % (biggest, emotion, who, scale))
+    else:
+        verdict = ('These arcs show PRONOUNCED movement: the largest swing is %.2f — %s, %s%s.'
+                   % (biggest, emotion, who, scale))
+
+    findings = [verdict]
+    # the largest swing is one series out of many; the median says whether the corpus MOVES or
+    # whether one character-emotion pair does while everything else sits still
+    if biggest >= 0.05:
+        if median < 0.05:
+            findings.append('That is the exception rather than the rule: the typical '
+                            'character-emotion series swings only %.2f across the corpus, so most '
+                            'of these arcs are flat and a few move.' % median)
+        else:
+            findings.append('And it is not an isolated case: the typical character-emotion series '
+                            'swings %.2f across the corpus.' % median)
+    if thin:
+        findings.append('Some series were too thinly populated to read: %d character-emotion '
+                        'combination%s had fewer than three usable stretches of text and were left '
+                        'out of that assessment.' % (thin, '' if thin == 1 else 's'))
+    return findings
+
+
 def _interp_arcs(files):
     import pandas as pd
     f = (_find(files, 'character_emotion_arcs', exclude=('chart', 'no_hyperlinks', 'bydoc'))
@@ -1739,6 +1893,9 @@ def _interp_arcs(files):
         lead = ', '.join('%s (%.0f%%)' % (k, 100 * v / total) for k, v in ordered[:3] if v > 0)
         if lead:
             findings.append('Across all characters the prevailing emotions are %s.' % lead)
+    # ...and whether any of that MOVES. Naming the prevailing emotions and stopping implies a shape
+    # the numbers may not support, which is the reading a busy chart will not give you.
+    findings.extend(_arc_strength(df, list(counts.head(5).index)))
     return findings
 
 
@@ -2092,15 +2249,20 @@ def build_paper_summary(outputDir, corpus_name, results, header_stats, run_confi
 
     # ---- abstract (templated from the real counts) ----
     dims = ', '.join(CATEGORY_TITLE[c].split('  ')[0].rstrip('?').strip().lower() for c in cats_present)
+    # the TOTAL number of sentences, not only the per-document average: it is the unit half the analyses
+    # work in, and a reader checking a chart's x axis against the corpus had no figure to check it against
+    sents_estimated = ' (estimated)' if header_stats.get('sentences_estimated') else ''
     abstract = (
         'This report profiles the corpus <b>%s</b>, comprising <b>%s</b> document%s totaling '
-        '<b>%s</b> words (%s characters), an average of <b>%s</b> words and <b>%s</b> sentences per document. '
+        '<b>%s</b> sentences%s and <b>%s</b> words (%s characters), an average of <b>%s</b> words and '
+        '<b>%s</b> sentences per document. '
         'The Corpus Profiler ran <b>%d</b> automated analys%s across <b>%d</b> dimension%s — %s — '
         'producing <b>%s</b> output file%s. '
         '<span style="color:#c1121f;font-weight:700">The findings are summarized below; every figure '
         'links to the source data, and the full navigable index of all outputs is available in the '
         '<a href="%s" style="color:var(--accent);font-weight:700">companion report</a>.</span>'
         % (_esc(corpus_name), _fmt(n_docs), '' if n_docs == 1 else 's',
+           _fmt(n_sents), sents_estimated,
            _fmt(n_words), _fmt(n_chars), _fmt(avg_words), _fmt(avg_sents),
            len(ran), 'is' if len(ran) == 1 else 'es',
            len(cats_present), '' if len(cats_present) == 1 else 's', _esc(dims),

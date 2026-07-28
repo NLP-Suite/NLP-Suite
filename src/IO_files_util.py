@@ -127,6 +127,8 @@ def getFileList_SubDir(inputFilename, inputDir, fileType='.*', silent=False):
         if not checkDirectory(inputDir):
             return files
         for path in Path(inputDir).rglob('*' + fileType):
+            if is_sidecar_file(path):
+                continue
             files.append(str(path))
     else:
         if not checkFile(inputFilename):
@@ -284,6 +286,18 @@ def getFileListOld(inputFile, inputDir, fileType='.*',silent=False):
             mb.showwarning(title='Input file error',
                            message='The input file type expected by the algorithm is ' + fileType + '.\n\nPlease, select the expected file type and try again.')
     return files
+# Files the Suite (or Windows) drops INTO a corpus folder, which are not documents and must never be
+# analysed as if they were. _pkl_version.txt is the worst of them because it ends in .txt: a corpus of
+# five newspaper articles was being read as six documents, the sixth being a version number.
+SIDECAR_FILES = {'_pkl_version.txt', '_pkl_version.dat', 'gis_settings.json',
+                 'desktop.ini', 'thumbs.db', '.ds_store'}
+
+
+def is_sidecar_file(path):
+    """True for a bookkeeping file that happens to live in a corpus folder."""
+    return os.path.basename(str(path)).lower() in SIDECAR_FILES
+
+
 def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=''): #New
     files = []
 
@@ -291,6 +305,8 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=
         if not checkDirectory(inputDir):
             return files
         for path in Path(inputDir).glob('*' + fileType):
+            if is_sidecar_file(path):
+                continue
             files.append(str(path))
         if len(files) == 0:
             if not silent:

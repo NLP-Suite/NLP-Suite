@@ -99,9 +99,17 @@ def run():
             area=area_var if 'e.g.,' not in area_var else '',
             restrict=bool(restrict_var))
 
+    # The GIS output subdirectory, made ONCE per run. make_output_subdirectory DELETES the directory if
+    # it already exists (shutil.rmtree) and makes it again empty, so the second call for the same label
+    # wiped whatever the first option had just written -- the character-movement CSVs were written,
+    # destroyed by the GIS options that ran after them, and then handed to Excel to open, which is the
+    # "Sorry, we couldn't find ..." box.
+    outputDir_GIS = ''
+
     if map_characters:
         outputDir_mc = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='GIS',
                                                               silent=True)
+        outputDir_GIS = outputDir_mc
         if outputDir_mc == '':
             return
         import NER_location_tracking_util
@@ -110,8 +118,12 @@ def run():
         if trackingFiles:
             csv_files = [f for f in trackingFiles if f.endswith('.csv')]
             if csv_files:
+                # ordered by Sentence ID and filterable by document: the checkbox promises movement in
+                # TIME and space, and with no sequence column the animation plays in CSV row order,
+                # which is a chronology of nothing. The Corpus Profiler always passed these two.
                 mapFiles = charts_util.animated_migration_map(
-                    csv_files[0], outputDir_mc, 'Entity', 'Location')
+                    csv_files[0], outputDir_mc, 'Entity', 'Location',
+                    sequence_col='Sentence ID', doc_col='Document')
                 if mapFiles:
                     filesToOpen.extend(mapFiles if isinstance(mapFiles, list) else [mapFiles])
             filesToOpen.extend(trackingFiles)
@@ -167,9 +179,13 @@ def run():
     # ----------------------------------------------------------------------------------------------------------------------------------------------
     # NER extraction via CoreNLP, Stanza, or spaCy
 
-    # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='GIS',
-                                                       silent=True)
+    # create a subdirectory of the output directory -- REUSING the one the character-movement option
+    # already made, because making it again deletes it and everything written into it
+    if outputDir_GIS:
+        outputDir = outputDir_GIS
+    else:
+        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='GIS',
+                                                           silent=True)
     if outputDir == '':
         return
 
@@ -833,6 +849,7 @@ TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
                'Statistical measures':'TIPS_NLP_Statistical measures.pdf',
                'GIS (Geographic Information System): Mapping Locations':'TIPS_NLP_GIS (Geographic Information System).pdf',
+               'Characters moving in time and space':'TIPS_NLP_Characters moving in time and space.pdf',
                'Symbolic (non-geocodable) space':'TIPS_NLP_GIS Narrative non-geocodable symbolic space.pdf',
                'Extracting locations: NER (Named Entity Recognition)':'TIPS_NLP_NER tags across packages.pdf',
                'Geocoding: How to Improve Nominatim':'TIPS_NLP_GIS_Geocoding Nominatim.pdf',
@@ -869,7 +886,7 @@ TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                'QGIS: Layer error':'TIPS_NLP_QGIS Layer error.pdf',
                'QGIS: Map not visible on the screen':'TIPS_NLP_QGIS Map not visible on the screen.pdf',
                'QGIS: Shapefile error':'TIPS_NLP_QGIS Shapefile error.pdf'}
-TIPS_options='utf-8 encoding','csv files - Problems & solutions','Statistical measures','GIS (Geographic Information System): Mapping Locations','Symbolic (non-geocodable) space','Extracting locations: NER (Named Entity Recognition)','Geocoding','Geocoding: How to Improve Nominatim', 'Google Earth Pro', 'Google API Key', 'HTML', 'Google Earth Pro Icon', 'Google Earth Pro Description','Google Earth Pro From KML to Excel','QGIS: Getting started KML (PC-ACE) files coordinate systems and QGIS project files','QGIS: Import a KML file in QGIS','QGIS: Import data from Excel in QGIS','QGIS: Import more attributes than NAME and DESCRIPTION','QGIS: Join data (mapping multiple variables)','QGIS: Dot map','QGIS: Feature map','QGIS: Heat map','QGIS: Frequency map (graduated color map choropleth)','QGIS: Frequency map (proportional symbol)','QGIS: Shape files','QGIS: Change dots style','QGIS: Change pin style','QGIS: Change pin or map colors','QGIS: Change style of displayed data','QGIS: Display attributes attached to a data point','QGIS: Display different attributes','QGIS: View data behind layers','QGIS: Finishing touches in producing a map','QGIS: Data points not visible on the map','QGIS: KML file error','QGIS: Layer error','QGIS: Map not visible on the screen','QGIS: Shapefile error'
+TIPS_options='utf-8 encoding','csv files - Problems & solutions','Statistical measures','GIS (Geographic Information System): Mapping Locations','Characters moving in time and space','Symbolic (non-geocodable) space','Extracting locations: NER (Named Entity Recognition)','Geocoding','Geocoding: How to Improve Nominatim', 'Google Earth Pro', 'Google API Key', 'HTML', 'Google Earth Pro Icon', 'Google Earth Pro Description','Google Earth Pro From KML to Excel','QGIS: Getting started KML (PC-ACE) files coordinate systems and QGIS project files','QGIS: Import a KML file in QGIS','QGIS: Import data from Excel in QGIS','QGIS: Import more attributes than NAME and DESCRIPTION','QGIS: Join data (mapping multiple variables)','QGIS: Dot map','QGIS: Feature map','QGIS: Heat map','QGIS: Frequency map (graduated color map choropleth)','QGIS: Frequency map (proportional symbol)','QGIS: Shape files','QGIS: Change dots style','QGIS: Change pin style','QGIS: Change pin or map colors','QGIS: Change style of displayed data','QGIS: Display attributes attached to a data point','QGIS: Display different attributes','QGIS: View data behind layers','QGIS: Finishing touches in producing a map','QGIS: Data points not visible on the map','QGIS: KML file error','QGIS: Layer error','QGIS: Map not visible on the screen','QGIS: Shapefile error'
 
 
 # add all the lines to the end to every special GUI

@@ -83,9 +83,31 @@ def run():
 
     # ---- BUILD: extract the actor-in-space table from a CoNLL corpus ---------
     if do_extract:
-        events_csv = ss.extract_actor_space_events(inputFilename, outputDir)
+        events_csv, dropped_pronouns = ss.extract_actor_space_events(inputFilename, outputDir)
         if events_csv:
             filesToOpen.append(events_csv)
+            # Pronoun subjects are not characters and are dropped - but never silently: a corpus that
+            # tells its story with "he" and "they" can lose most of its events here, and the result
+            # would read as a corpus in which very little happens.
+            if dropped_pronouns:
+                import pandas as _pd
+                try:
+                    _kept = len(_pd.read_csv(events_csv, encoding='utf-8-sig'))
+                except Exception:
+                    _kept = 0
+                _total = _kept + dropped_pronouns
+                mb.showinfo(title='Pronoun actors dropped',
+                            message='{:,} of {:,} actor-in-space events ({:.0f}%) had a PRONOUN as their '
+                                    'actor — "he", "they", "which" — and were left out. A pronoun is a '
+                                    'reference to a character, not a character: kept in, they become the '
+                                    'largest "actors" in every table while naming nobody.\n\n'
+                                    '{:,} events were kept.\n\n'
+                                    'To recover the dropped ones, run COREFERENCE RESOLUTION on your corpus '
+                                    'first (Parsers & annotators), then parse the coref-resolved text and '
+                                    'BUILD from that CoNLL table: the pronouns are replaced by the people '
+                                    'they stand for, and those events come back with a name on them.'
+                                    .format(dropped_pronouns, _total,
+                                            100.0 * dropped_pronouns / _total if _total else 0, _kept))
             # push the BUILD output into the input box (replacing the CoNLL) so the DYNAMIC / STATIC
             # analyses run on the Social-actors table and its columns (space_type, Sentence ID…) populate
             # the Location / Sequence / Attribute dropdowns
@@ -95,10 +117,21 @@ def run():
             # (non-CoNLL) Social-actors table
             extract_var.set(0)
         else:
-            mb.showwarning(title='No events extracted',
-                           message='No social-actor-in-non-geocodable-space events were found.\n\n'
-                                   'The BUILD step expects a CoNLL table (parse your corpus first via the '
-                                   'Parsers & annotators or SVO GUI).')
+            if dropped_pronouns:
+                # the events existed; every one of them was a pronoun
+                mb.showwarning(title='Only pronoun actors found',
+                               message='{:,} actor-in-space events were found, and EVERY one of them had a '
+                                       'pronoun as its actor ("he", "they", "which"), so nothing was '
+                                       'written.\n\n'
+                                       'Run COREFERENCE RESOLUTION on your corpus first (Parsers & '
+                                       'annotators), parse the resolved text, and BUILD from that CoNLL '
+                                       'table: the pronouns become the people they stand for.'
+                                       .format(dropped_pronouns))
+            else:
+                mb.showwarning(title='No events extracted',
+                               message='No social-actor-in-non-geocodable-space events were found.\n\n'
+                                       'The BUILD step expects a CoNLL table (parse your corpus first via the '
+                                       'Parsers & annotators or SVO GUI).')
             return
 
     # the movement / distribution analyses read the assembled actor-location csv;
@@ -109,8 +142,15 @@ def run():
         return
 
     if not location_col:
+        # name the column to pick: "needs a Location column" left the reader looking at a dropdown of
+        # eight header names with nothing to say which one was meant
         mb.showwarning(title='No location column',
-                       message='The movement / distribution analyses need a Location column from your CSV.')
+                       message='The movement / distribution analyses need a Location column — the column '
+                               'holding the PLACE WORDS.\n\n'
+                               'Pick it in the "Location column" dropdown.\n\n'
+                               'In a table produced by the BUILD step above, that column is called '
+                               'space_noun, and it is selected for you as soon as you choose the file. '
+                               'In a csv of your own, pick whichever column holds the place names.')
         return
 
     try:
@@ -130,9 +170,18 @@ def run():
     # ---- STATIC: distribution of the attribute across space-types ----------
     if do_distribution:
         if not attribute_col:
+            # the one column BUILD cannot supply, so say what to do about it rather than only
+            # naming what is missing
             mb.showwarning(title='No attribute column',
-                           message='The Distribution analysis needs an Attribute column '
-                                   '(gender, race, class…).')
+                           message='The Distribution analysis crosses a social ATTRIBUTE against the kind '
+                                   'of space, so it needs a column holding that attribute — gender, race, '
+                                   'class.\n\n'
+                                   'The BUILD step cannot give you this one: it records the actor, not what '
+                                   'the actor IS. Add a column to the Social-actors table with the attribute '
+                                   'for each actor, then pick it in the "Attribute column" dropdown.\n\n'
+                                   'For gender, the gender annotator can tag it for you. For race and class '
+                                   'there is no annotator — code the list of actors once and join it on the '
+                                   'actor column.')
             return
         obs = list(zip(df[attribute_col].astype(str), df[location_col].astype(str)))
         table = ss.attribute_space_crosstab(obs)
@@ -155,13 +204,32 @@ def run():
     # ---- DYNAMIC: movement through space-types (narrative transitions) ------
     if do_movement:
         d = df
-        if sequence_col and sequence_col in df.columns:
+        # Order by DOCUMENT first, then by the sequence column. Sentence IDs restart at 1 in every
+        # document, so sorting by the sequence alone interleaves a 199-document corpus: sentence 1 of
+        # book 1, sentence 1 of book 2, ... which is a chronology of nothing.
+        doc_col = next((c for c in ('Document ID', 'Document') if c in df.columns), '')
+        sort_by = [c for c in (doc_col, sequence_col) if c and c in df.columns]
+        if sort_by:
             try:
-                d = df.sort_values(sequence_col)
+                d = df.sort_values(sort_by)
             except Exception:
                 d = df
-        sequence = [str(x) for x in d[location_col].tolist()]
-        path, edges = ss.narrative_transitions(sequence)
+
+        if doc_col and d[doc_col].nunique() > 1:
+            # and count transitions WITHIN each document only: the last space of one document
+            # followed by the first space of the next is not a movement anybody made
+            from collections import Counter
+            totals = Counter()
+            path = []
+            for _, group in d.groupby(doc_col, sort=False):
+                p, e = ss.narrative_transitions([str(x) for x in group[location_col].tolist()])
+                path.extend(p)
+                for a, b, n in e:
+                    totals[(a, b)] += n
+            edges = [(a, b, n) for (a, b), n in totals.items()]
+        else:
+            sequence = [str(x) for x in d[location_col].tolist()]
+            path, edges = ss.narrative_transitions(sequence)
         if not edges:
             mb.showwarning(title='No movement',
                            message='No transitions between classifiable spaces were found.\n\n'
@@ -467,6 +535,18 @@ def refresh_columns(*args):
                 cols = list(pd.read_csv(path, nrows=0, encoding='ISO-8859-1', engine='python').columns)
         except Exception:
             cols = []
+    # Pre-select the columns the BUILD step writes. Its output is the ordinary input here, and its
+    # column names never vary, so making the user pick 'space_noun' out of a list of eight - and
+    # warning them when they do not - was a question with one answer.
+    lower = {str(c).strip().lower(): c for c in cols}
+    preselect = {
+        id(location_col_var): lower.get('space_noun') or lower.get('location'),
+        id(sequence_col_var): lower.get('sentence id') or lower.get('sentence_id'),
+        # BUILD now derives WHAT KIND of person each actor is (actor_type), so STATIC has an
+        # attribute to cross against space without anybody coding a corpus by hand. A gender /
+        # race / class column of your own, if you add one, is picked here instead.
+        id(attribute_col_var): lower.get('actor_type'),
+    }
     for col_var, menu in ((location_col_var, location_col_menu),
                           (attribute_col_var, attribute_col_menu),
                           (sequence_col_var, sequence_col_menu)):
@@ -474,7 +554,7 @@ def refresh_columns(*args):
         m.delete(0, 'end')
         for opt in [''] + cols:
             m.add_command(label=opt, command=lambda v=col_var, o=opt: v.set(o))
-        col_var.set('')
+        col_var.set(preselect.get(id(col_var)) or '')
         menu.configure(state='normal' if cols else 'disabled')
 
 csv_file_var.trace('w', refresh_columns)
@@ -535,11 +615,16 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
         "DYNAMIC view (movement). Traces how characters move between KINDS of space over the narrative "
         "(e.g. door → house → field → woods) and draws a directed movement graph.\n\n"
-        "In INPUT the algorithm expects a csv file with a LOCATION column (place names) and, to establish the "
-        "narrative ORDER, a SEQUENCE column (a step index or a date). This is a file you ASSEMBLE yourself — no "
-        "single tool outputs it: the SVO extractor gives the actor + LOCATION (+ order) rows, and you add any "
-        "attribute column by hand. Rows are read in that order; place words are classified into space types via "
-        "lib/symbolic_space_typology.csv (editable).\n\n"
+        "In INPUT it expects the table the BUILD step above produces — NLP_GIS_symbolic_actor_space_events_"
+        "<corpus>.csv. Run BUILD first (tick it, give it a CoNLL table of your corpus, RUN): its output is "
+        "pushed straight into the INPUT box, and the Select INPUT CSV picker lists only these tables. Then set\n"
+        "   Location column = space_noun     (the place word)\n"
+        "   Sequence column = Sentence ID    (the narrative order)\n\n"
+        "You do NOT assemble this file by hand. A corpus of 199 documents is ordered by document and then by "
+        "sentence, and movements are counted WITHIN each document, so the end of one text is never joined to the "
+        "start of the next. Place words are classified into space types via lib/symbolic_space_typology.csv "
+        "(editable — add your domain's place words).\n\n"
+        "A hand-made csv still works, as long as it has a location column and a sequence column.\n\n"
         "In OUTPUT the algorithm produces:\n"
         "   1. symbolic_space_transitions.csv — each from-space → to-space transition and its count;\n"
         "   2. symbolic_space_movement.png — the directed movement graph (arrow width scaled by transition count)."
@@ -547,11 +632,15 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
         "STATIC view (distribution). Cross-tabulates a social ATTRIBUTE (gender, race, class) against the KIND of "
         "space — which actors appear in which kind of space.\n\n"
-        "In INPUT the algorithm expects a csv file with a LOCATION column (place names) and an ATTRIBUTE column "
-        "(gender, race, class…). This is a file you ASSEMBLE yourself — no single tool outputs it: the SVO extractor "
-        "gives the actor + LOCATION rows, but the ATTRIBUTE is your own coding (race and class have no annotator; "
-        "gender the gender annotator can tag). Place words are classified into space types via "
-        "lib/symbolic_space_typology.csv (editable).\n\n"
+        "In INPUT it expects the table the BUILD step above produces — NLP_GIS_symbolic_actor_space_events_"
+        "<corpus>.csv. Run BUILD first; its output is pushed straight into the INPUT box. Then set\n"
+        "   Location column = space_noun\n"
+        "   Attribute column = your attribute\n\n"
+        "The ATTRIBUTE column is the ONE thing BUILD cannot give you: it writes the actor, not what the actor IS. "
+        "Add a column to the BUILD output holding the social attribute for each actor — gender, race, class. The "
+        "gender annotator can tag gender for you; race and class have no annotator and are your own coding. With "
+        "199 documents, code the actor list once and join it on the actor column rather than row by row.\n\n"
+        "Place words are classified into space types via lib/symbolic_space_typology.csv (editable).\n\n"
         "In OUTPUT the algorithm produces:\n"
         "   1. symbolic_space_<attribute>_x_space.csv — the contingency table (attribute × space type), plus "
         "symbolic_space_<attribute>_x_space_residuals.csv (standardized residuals);\n"

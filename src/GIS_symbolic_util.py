@@ -25,6 +25,11 @@ _SPATIAL_PREP = {'in', 'into', 'inside', 'on', 'onto', 'at', 'to', 'toward', 'to
                  'near', 'by', 'within', 'up', 'down', 'out', 'outside', 'around',
                  'past', 'along', 'over', 'from'}
 
+# Subject tags that are a REFERENCE to a character rather than a character: PRON covers
+# he/she/they/which in the Universal tagset, PRP/PRP$/WP/WDT the Penn one, so a CoNLL
+# table from any of the Suite's parsers is handled.
+_PRONOUN_POS = {'PRON', 'PRP', 'PRP$', 'WP', 'WP$', 'WDT', 'DET'}
+
 
 # ---- Phase 2: geocodable vs symbolic --------------------------------------
 
@@ -300,19 +305,30 @@ def extract_actor_space_events(conll_file, outputDir):
         Document ID, Sentence ID (order), actor, actor_pos, space_noun, space_type,
         preposition, Sentence.
     This is the table the DYNAMIC and STATIC analyses read (add the actor ATTRIBUTE by
-    hand or via the gender annotator). Returns the output csv path, or '' if nothing was
-    produced (e.g. the input is not a CoNLL table).
+    hand or via the gender annotator).
+
+    PRONOUN subjects are DROPPED. "he", "they", "which" are not characters: they are
+    references to characters, and left in they accumulate as the largest "actors" in
+    every crosstab while telling you nothing about anybody. Resolving them to the people
+    they stand for is what coreference resolution does, and running it BEFORE this step
+    is how those events are recovered rather than lost.
+
+    Returns (output csv path, dropped) where *dropped* counts the pronoun-subject events
+    left out; the caller reports it, since dropping them silently would look like a
+    corpus with very little movement in it. The path is '' if nothing was produced (e.g.
+    the input is not a CoNLL table).
     """
     import pandas as pd
     try:
         df = pd.read_csv(conll_file, encoding='utf-8', dtype=str, keep_default_na=False)
     except Exception:
-        return ''
+        return '', 0
     needed = {'ID', 'Form', 'Lemma', 'POS', 'Head', 'DepRel', 'Sentence ID', 'Document ID'}
     if not needed.issubset(set(df.columns)):
-        return ''
+        return '', 0
 
     rows = []
+    dropped_pronouns = 0
     for (doc, sent), g in df.groupby(['Document ID', 'Sentence ID'], sort=False):
         tok, kids = {}, {}
         for _, r in g.iterrows():
@@ -351,14 +367,31 @@ def extract_actor_space_events(conll_file, outputDir):
                     break
             if actor is None or not str(actor['form']).strip():
                 continue
+            # a pronoun is a reference to a character, not a character
+            if str(actor['pos']).strip().upper() in _PRONOUN_POS:
+                dropped_pronouns += 1
+                continue
             rows.append({'Document ID': doc, 'Sentence ID': sent, 'actor': actor['form'],
                          'actor_pos': actor['pos'], 'space_noun': t['lemma'],
                          'space_type': space_type, 'preposition': prep, 'Sentence': text})
     if not rows:
-        return ''
+        return '', dropped_pronouns
     base = os.path.splitext(os.path.basename(conll_file))[0] if conll_file else 'corpus'
     output_path = os.path.join(outputDir, 'NLP_GIS_symbolic_actor_space_events_' + base + '.csv')
-    pd.DataFrame(rows, columns=['Document ID', 'Sentence ID', 'actor', 'actor_pos',
-                                'space_noun', 'space_type', 'preposition', 'Sentence']).to_csv(
-        output_path, index=False, encoding='utf-8-sig')
-    return output_path
+    out = pd.DataFrame(rows, columns=['Document ID', 'Sentence ID', 'actor', 'actor_pos',
+                                      'space_noun', 'space_type', 'preposition', 'Sentence'])
+
+    # WHAT KIND of person each actor is - the attribute the STATIC analysis crosses against space.
+    # Telling the reader to code it by hand was telling them to hand-code a corpus; the same
+    # curated-lexicon-then-WordNet-hypernym method that classifies the SPACE classifies the ACTOR.
+    # Common nouns only ("the sheriff", "a farmer", "the mob"): a proper name is left unclassified,
+    # because WordNet does not know who Harry is.
+    try:
+        import GIS_symbolic_actor_typology_util as actor_typology
+        out.insert(4, 'actor_type',
+                   actor_typology.classify_series(out['actor'], out['actor_pos']))
+    except Exception as e:
+        print('GIS symbolic: actor types not added (%s)' % e)
+
+    out.to_csv(output_path, index=False, encoding='utf-8-sig')
+    return output_path, dropped_pronouns

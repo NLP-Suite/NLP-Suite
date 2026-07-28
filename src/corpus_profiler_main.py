@@ -173,7 +173,11 @@ def run():
 
         results = corpus_profiler_util.run_profile(ctx, selected)
         print('>>> Corpus Profiler: %d analyses done; building index report...' % len(results))
-        header = corpus_profiler_util.corpus_header_stats(inputFilename, inputDir)
+        # outputDir so the sentence count comes from the parse this run just produced rather than from
+        # counting full stops (which reads every 'Mr.' as a sentence end), and the package so it comes
+        # from the CONFIGURED parser: CoreNLP and Stanza split sentences differently and do not agree
+        header = corpus_profiler_util.corpus_header_stats(
+            inputFilename, inputDir, outputDir, str(package))
 
         if inputDir:
             corpus_name = os.path.basename(inputDir.rstrip('/\\')) or 'corpus'
@@ -453,9 +457,13 @@ videos_options = 'No videos available'
 TIPS_lookup = {'Text encoding (utf-8)': 'TIPS_NLP_Text encoding (utf-8).pdf',
                'Statistical measures': 'TIPS_NLP_Statistical measures.pdf',
                'Style analysis': 'TIPS_NLP_Style analysis.pdf',
-               'CoreNLP NER (Named Entity Recognition)': 'TIPS_NLP_NER tags across packages.pdf'}
+               'CoreNLP NER (Named Entity Recognition)': 'TIPS_NLP_NER tags across packages.pdf',
+               # the Profiler runs both of these itself, off the NER table it has already built
+               'Character emotion arcs': 'TIPS_NLP_Character emotion arcs.pdf',
+               'Characters moving in time and space': 'TIPS_NLP_Characters moving in time and space.pdf'}
 TIPS_options = ('Text encoding (utf-8)', 'Statistical measures', 'Style analysis',
-                'CoreNLP NER (Named Entity Recognition)')
+                'CoreNLP NER (Named Entity Recognition)', 'Character emotion arcs',
+                'Characters moving in time and space')
 
 
 def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):

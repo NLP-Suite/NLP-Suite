@@ -77,16 +77,32 @@ _PKL_VERSION = 5  # bumped: standardized all column IDs to lowercase underscores
 
 def _check_pkl_version(inputDir):
     """Check if pkl files in inputDir match the current _PKL_VERSION.
-    If not, delete all pkl files so they get regenerated with correct column names."""
-    version_file = os.path.join(inputDir, '_pkl_version.txt')
-    if os.path.exists(version_file):
+    If not, delete all pkl files so they get regenerated with correct column names.
+
+    The marker is written as .dat, NOT .txt. It lives in the user's INPUT folder, and a bookkeeping
+    file ending in .txt is read as a DOCUMENT by everything in the Suite that globs a corpus: the
+    five-article sample corpus was being analysed as six documents, the sixth being a version number.
+    A marker left by an earlier release is still honoured, then replaced by the .dat one.
+    """
+    version_file = os.path.join(inputDir, '_pkl_version.dat')
+    legacy_file = os.path.join(inputDir, '_pkl_version.txt')
+    for candidate in (version_file, legacy_file):
+        if not os.path.exists(candidate):
+            continue
         try:
-            with open(version_file, 'r') as f:
+            with open(candidate, 'r') as f:
                 stored_version = int(f.read().strip())
             if stored_version == _PKL_VERSION:
-                return  # version matches, nothing to do
+                if candidate == version_file:
+                    return       # right version, right filename: nothing to do
+                break            # right version under the OLD name: rewrite it properly below
         except (ValueError, IOError):
             pass  # corrupt or unreadable, treat as stale
+    if os.path.exists(legacy_file):
+        try:
+            os.remove(legacy_file)   # it is a .txt sitting in a corpus; it has to go
+        except OSError:
+            pass
     # Version mismatch or missing — delete all pkl files
     pkl_files = [f for f in os.listdir(inputDir) if f.endswith('.pkl')]
     if pkl_files:

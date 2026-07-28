@@ -8,6 +8,7 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window, "character_emo
 
 import os
 import csv
+import re
 import math
 import numpy as np
 import pandas as pd
@@ -57,26 +58,83 @@ def _extract_persons_from_sentence(sent):
     return persons
 
 
-def _normalize_character_name(name, canonical_map):
-    lower = name.lower()
-    if lower in canonical_map:
-        return canonical_map[lower]
-    for canon_lower, canon in canonical_map.items():
-        if lower in canon_lower or canon_lower in lower:
-            canonical_map[lower] = canon
-            return canon
-    canonical_map[lower] = name
+def _strip_possessive(name):
+    """"Harry's" and "Harrys" are Harry. NER hands back the possessive form of a
+    name often enough that leaving it alone produced a separate character with
+    1,890 sentences of its own in the Harry Potter corpus."""
+    name = name.strip()
+    for suffix in ("’s", "'s", "’", "'"):
+        if name.endswith(suffix) and len(name) > len(suffix) + 1:
+            return name[:-len(suffix)].strip()
+    if len(name) > 2 and name.endswith('s') and not name.endswith('ss'):
+        return name          # 'Harrys' -> left alone here; the map below folds it in
     return name
 
 
-def analyze_file(filepath, nlp_pipeline, doc_id):
+# Words that are not part of a name, and must not be what two names are matched on.
+_TITLES = {'mr', 'mrs', 'ms', 'miss', 'dr', 'doctor', 'professor', 'prof', 'sir',
+           'lady', 'lord', 'madam', 'madame', 'uncle', 'aunt', 'auntie', 'the',
+           'a', 'an', 'of', 'and'}
+
+
+def _name_tokens(name):
+    """The words of a name that identify a person: no titles, no punctuation."""
+    cleaned = re.sub(r"[^\w\s]", ' ', name.lower())
+    return {w for w in cleaned.split() if w and w not in _TITLES}
+
+
+def _normalize_character_name(name, canonical_map):
+    """Fold a name into the one already seen for that person.
+
+    Matching is on WORDS, and only when one name's words are all contained in
+    the other's: "Harry" and "Mr. Potter" both fold into "Harry Potter". It used
+    to be a raw substring test, which is a different thing entirely - "ron" is
+    inside "the leaky cauld-RON", and "gran" inside "hermione GRAN-ger", so Ron
+    and Hermione were absorbed into a pub and a grandmother.
+
+    A name that could belong to two different people already seen is left alone.
+    Uniqueness is the safeguard: guessing which character a mention belongs to
+    would be worse than reporting them separately, and the CSV shows the split.
+
+    *canonical_map* is shared by the WHOLE corpus. Rebuilt per document, each of
+    199 Harry Potter files chose its own canonical form, so one person came out
+    as Harry, Harry's, Harry Potter, Harrys and The Cave Harry.
+    """
+    name = _strip_possessive(name)
+    lower = name.lower().strip()
+    if not lower:
+        return name
+    # every entry is (the name to use, the tokens of THAT name) - an alias keeps
+    # its canonical form's tokens, so aliases never widen what will match next
+    if lower in canonical_map:
+        return canonical_map[lower][0]
+
+    tokens = _name_tokens(name)
+    if tokens:
+        candidates = {}
+        for canon, canon_tokens in canonical_map.values():
+            if canon_tokens and (tokens <= canon_tokens or canon_tokens <= tokens):
+                candidates[canon] = canon_tokens
+        if len(candidates) == 1:
+            canon, canon_tokens = next(iter(candidates.items()))
+            canonical_map[lower] = (canon, canon_tokens)
+            return canon
+
+    canonical_map[lower] = (name, tokens)
+    return name
+
+
+def analyze_file(filepath, nlp_pipeline, doc_id, canonical_map=None):
     with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
         text = f.read()
     if not text.strip():
         return []
 
     doc = nlp_pipeline(text)
-    canonical_map = {}
+    # one map for the whole corpus when the caller keeps it; see
+    # _normalize_character_name for why per-document maps split people up
+    if canonical_map is None:
+        canonical_map = {}
     rows = []
 
     for sent_idx, sent in enumerate(doc.sentences, 1):
@@ -111,8 +169,8 @@ def analyze_conll_table(conll_path):
     Sentence ID + Document ID, one token per row) instead of re-parsing the corpus with Stanza NER. The
     Corpus Profiler already produced that table, so this turns a full ~1.5h re-NER into a groupby + the
     same (fast, lexicon-based) NRC scoring. Per (document, sentence, PERSON character) a row with the 8 NRC
-    emotion scores; character-name normalization is per document, exactly as analyze_file does it. Returns
-    [] if the table lacks the needed columns (the caller then parses)."""
+    emotion scores; character names are normalized across the WHOLE corpus, exactly as analyze_file does
+    it. Returns [] if the table lacks the needed columns (the caller then parses)."""
     import pandas as pd
     df = pd.read_csv(conll_path, encoding='utf-8', on_bad_lines='skip')
     formcol = 'Form' if 'Form' in df.columns else ('Word' if 'Word' in df.columns else None)
@@ -121,8 +179,8 @@ def analyze_conll_table(conll_path):
     has_mwe = 'Multi-Word Expression' in df.columns
     has_doc = 'Document' in df.columns
     rows = []
+    canonical_map = {}   # ONE map for the corpus, like analyze_file
     for doc_id, doc_g in df.groupby('Document ID', sort=True):
-        canonical_map = {}   # per-document, like analyze_file
         doc_link = doc_g['Document'].iloc[0] if has_doc else ''
         for sent_id, g in doc_g.groupby('Sentence ID', sort=True):
             forms = [str(x) for x in g[formcol].tolist() if str(x) != 'nan']
@@ -152,9 +210,49 @@ def analyze_conll_table(conll_path):
     return rows
 
 
+def add_corpus_position(df):
+    """A single sentence axis for the whole corpus, in document order.
+
+    Sentence IDs restart at 1 in every document, so ordering by Sentence ID
+    alone interleaves them - in the Harry Potter corpus, 199 files shuffled
+    together, which is not a narrative order at all. Each document is offset by
+    the length of the ones before it, giving a position that runs from the first
+    sentence of the first document to the last of the last.
+    """
+    df = df.copy()
+    lengths = df.groupby('Document ID')['Sentence ID'].max().sort_index()
+    offsets = lengths.cumsum().shift(1).fillna(0).astype(int)
+    df['Corpus Position'] = df['Document ID'].map(offsets) + df['Sentence ID']
+    return df.sort_values(['Corpus Position', 'Character']).reset_index(drop=True)
+
+
+# How many of a character's sentences a bin must hold before its average is
+# drawn. Below this the average is one or two sentences and swings between 0
+# and 1 while everybody else sits at 0.05.
+_MIN_SENTENCES_PER_BIN = 3
+
+
+def _smoothing_window(n, window_size):
+    """A window that still smooths something on a long series.
+
+    A 5-sentence window over 14,522 points drawn 12 inches wide is about 1,200
+    points to the inch: solid ink, and every apparent spike is one sentence. The
+    window grows with the series so that a chart shows roughly 200 turns of the
+    line however long the text is.
+    """
+    return max(window_size, int(n / 200)) if n else window_size
+
+
+def _smooth(values, window):
+    if window > 1 and len(values) >= window:
+        return pd.Series(values).rolling(window=window, center=True, min_periods=1).mean().values
+    return values
+
+
 def plot_character_arcs(df, character, outputDir, base_name, window_size=5):
     char_df = df[df['Character'] == character].copy()
-    char_df = char_df.sort_values('Sentence ID').reset_index(drop=True)
+    sort_col = 'Corpus Position' if 'Corpus Position' in char_df.columns else 'Sentence ID'
+    char_df = char_df.sort_values(sort_col).reset_index(drop=True)
 
     if len(char_df) < 2:
         return []
@@ -162,17 +260,17 @@ def plot_character_arcs(df, character, outputDir, base_name, window_size=5):
     files = []
     fig, ax = plt.subplots(figsize=(12, 6))
 
+    window = _smoothing_window(len(char_df), window_size)
     for emotion in EIGHT_EMOTIONS:
         col = emotion.capitalize()
-        values = char_df[col].values
-        if window_size > 1 and len(values) >= window_size:
-            smoothed = pd.Series(values).rolling(window=window_size, center=True, min_periods=1).mean().values
-        else:
-            smoothed = values
+        smoothed = _smooth(char_df[col].values, window)
         ax.plot(range(len(smoothed)), smoothed, label=emotion.capitalize(),
                 color=NRC_COLORS[emotion], linewidth=1.8, alpha=0.85)
 
-    ax.set_xlabel('Narrative Position (sentence)', fontsize=11)
+    # NOT the sentence number in the text: this character's own appearances, in
+    # order. A character absent for fifty pages leaves no gap on their own chart.
+    ax.set_xlabel(f'{character}\'s appearances, in order '
+                  f'(smoothed over {window} sentences)', fontsize=11)
     ax.set_ylabel('Emotion Intensity', fontsize=11)
     safe_char = character.replace('/', '_').replace('\\', '_').replace(' ', '_')[:30]
     ax.set_title(f'Emotion Arc — {character}\n({base_name})', fontsize=13)
@@ -189,24 +287,71 @@ def plot_character_arcs(df, character, outputDir, base_name, window_size=5):
     return files
 
 
-def plot_character_comparison(df, characters, emotion, outputDir, base_name, window_size=5):
-    fig, ax = plt.subplots(figsize=(12, 5))
+def plot_character_comparison(df, characters, emotion, outputDir, base_name, window_size=5,
+                              by_corpus_position=True):
+    """One emotion, several characters, on ONE chart.
+
+    Two readings, and both are written out:
+
+      by_corpus_position=True   x is the sentence's place in the CORPUS, so the
+                                characters line up: where two arcs cross, they
+                                cross at the same moment in the text, and a
+                                character who is absent leaves a gap.
+      by_corpus_position=False  x is each character's own appearances in order,
+                                which compares the SHAPE of their arcs when they
+                                appear a very different number of times.
+
+    The first is what the old chart claimed to be and was not: everyone was
+    drawn from x=0 against their own count, so Harry ran to 14,522 and Ron
+    stopped at 5,177, and it looked as though Harry took over the story.
+    """
+    have_position = by_corpus_position and 'Corpus Position' in df.columns
+    fig, ax = plt.subplots(figsize=(14, 5))
     col = emotion.capitalize()
     colors = plt.cm.tab10.colors
 
+    if have_position:
+        # On a shared axis the unit that means anything is a STRETCH of text,
+        # not a sentence: five characters' sentence-by-sentence lines over
+        # 70,000 positions is ink, not a reading. The corpus is cut into equal
+        # bins and each character's average in each bin is plotted, so the
+        # lines are comparable at every x - and a bin a character is absent
+        # from is a gap in their line rather than a jump across it.
+        n_bins = 150
+        lo, hi = df['Corpus Position'].min(), df['Corpus Position'].max()
+        edges = np.linspace(lo, hi, n_bins + 1)
+        centres = (edges[:-1] + edges[1:]) / 2
+
     for i, character in enumerate(characters):
-        char_df = df[df['Character'] == character].sort_values('Sentence ID')
+        char_df = df[df['Character'] == character].sort_values(
+            'Corpus Position' if have_position else 'Sentence ID')
         if len(char_df) < 2:
             continue
-        values = char_df[col].values
-        if window_size > 1 and len(values) >= window_size:
-            smoothed = pd.Series(values).rolling(window=window_size, center=True, min_periods=1).mean().values
+        if have_position:
+            grouped = char_df.groupby(
+                pd.cut(char_df['Corpus Position'], bins=edges, include_lowest=True),
+                observed=False)[col]
+            means, counts = grouped.mean(), grouped.count()
+            # A bin holding one sentence is not a reading of that stretch of the
+            # text: one sentence that happens to be all anger draws a spike to
+            # 1.0 next to everybody else's 0.05. Too little to say -> say
+            # nothing, and the line breaks there.
+            y = means.where(counts >= _MIN_SENTENCES_PER_BIN).values
+            x = centres
         else:
-            smoothed = values
-        ax.plot(range(len(smoothed)), smoothed, label=character,
-                color=colors[i % len(colors)], linewidth=1.8)
+            window = _smoothing_window(len(char_df), window_size)
+            y = _smooth(char_df[col].values, window)
+            x = range(len(y))
+        # thin and semi-transparent: five opaque lines simply painted over one
+        # another, whichever was drawn last winning
+        ax.plot(x, y, label=f'{character} ({len(char_df)})',
+                color=colors[i % len(colors)], linewidth=1.5, alpha=0.8)
 
-    ax.set_xlabel('Narrative Position (sentence)', fontsize=11)
+    if have_position:
+        ax.set_xlabel(f'Sentence position in the corpus, documents in order '
+                      f'(averaged over {int((hi - lo) / n_bins)} sentences)', fontsize=11)
+    else:
+        ax.set_xlabel('Each character\'s own appearances, in order', fontsize=11)
     ax.set_ylabel(f'{col} Intensity', fontsize=11)
     ax.set_title(f'{col} Arc — Character Comparison\n({base_name})', fontsize=13)
     ax.legend(loc='upper right', fontsize=9)
@@ -215,14 +360,16 @@ def plot_character_comparison(df, characters, emotion, outputDir, base_name, win
     plt.tight_layout()
 
     safe_emo = emotion.replace(' ', '_')
-    out_file = os.path.join(outputDir, f'character_comparison_{safe_emo}.png')
+    suffix = '' if have_position else '_by_own_appearances'
+    out_file = os.path.join(outputDir, f'character_comparison_{safe_emo}{suffix}.png')
     plt.savefig(out_file, dpi=150, bbox_inches='tight')
     plt.close()
     return out_file
 
 
 def plot_dominant_emotion_timeline(df, character, outputDir, base_name):
-    char_df = df[df['Character'] == character].sort_values('Sentence ID').reset_index(drop=True)
+    sort_col = 'Corpus Position' if 'Corpus Position' in df.columns else 'Sentence ID'
+    char_df = df[df['Character'] == character].sort_values(sort_col).reset_index(drop=True)
     if len(char_df) < 2:
         return None
 
@@ -237,7 +384,7 @@ def plot_dominant_emotion_timeline(df, character, outputDir, base_name):
 
     ax.set_xlim(0, len(dominant))
     ax.set_yticks([])
-    ax.set_xlabel('Narrative Position (sentence)', fontsize=10)
+    ax.set_xlabel(f'{character}\'s appearances, in order', fontsize=10)
     safe_char = character.replace('/', '_').replace('\\', '_').replace(' ', '_')[:30]
     ax.set_title(f'Dominant Emotion Timeline — {character} ({base_name})', fontsize=12)
 
@@ -294,14 +441,18 @@ def main(inputFilename, inputDir, outputDir, chartPackage='Excel',
             mb.showerror(title='Stanza Error',
                          message=f'Could not initialize Stanza NER pipeline.\n\n{str(e)}')
             return filesToOpen
+        # ONE canonical name map for the whole corpus: a map per document made
+        # Harry, Harry's and Harry Potter three different characters
+        canonical_map = {}
         if inputFilename and os.path.exists(inputFilename):
             print("Processing file 1/1 " + os.path.basename(inputFilename))
-            all_rows = analyze_file(inputFilename, nlp, 1)
+            all_rows = analyze_file(inputFilename, nlp, 1, canonical_map)
         elif inputDir and os.path.isdir(inputDir):
             txt_files = sorted([f for f in os.listdir(inputDir) if f.endswith('.txt')])
             for doc_id, file in enumerate(txt_files, 1):
                 print("Processing file " + str(doc_id) + "/" + str(len(txt_files)) + ' ' + file)
-                all_rows.extend(analyze_file(os.path.join(inputDir, file), nlp, doc_id))
+                all_rows.extend(analyze_file(os.path.join(inputDir, file), nlp, doc_id,
+                                             canonical_map))
 
     if not all_rows:
         mb.showwarning(title='No data', message='No text data found to analyze.')
@@ -314,6 +465,9 @@ def main(inputFilename, inputDir, outputDir, chartPackage='Excel',
     filesToOpen.append(outputFilename)
 
     df = pd.read_csv(outputFilename)
+    # one sentence axis for the corpus, so the charts can put the characters on
+    # the same x and a gap means the character is absent
+    df = add_corpus_position(df)
 
     named_chars = df[df['Character'] != '_NARRATOR/UNATTRIBUTED_']
     char_counts = named_chars.groupby('Character')['Sentence ID'].count()
@@ -335,9 +489,16 @@ def main(inputFilename, inputDir, outputDir, chartPackage='Excel',
 
     if len(top_characters) >= 2:
         for emotion in ['joy', 'anger', 'fear', 'sadness']:
-            comp_file = plot_character_comparison(df, top_characters, emotion, outputDir,
-                                                   base_name, window_size)
-            filesToOpen.append(comp_file)
+            # both readings: on the corpus's own sentence axis, where the
+            # characters line up and absence shows as a gap, and against each
+            # character's own appearances, which compares the SHAPE of arcs
+            # belonging to characters who appear very different amounts
+            filesToOpen.append(plot_character_comparison(
+                df, top_characters, emotion, outputDir, base_name, window_size,
+                by_corpus_position=True))
+            filesToOpen.append(plot_character_comparison(
+                df, top_characters, emotion, outputDir, base_name, window_size,
+                by_corpus_position=False))
 
     summary_file = os.path.join(outputDir, f'character_emotion_summary_{base_name}.csv')
     summary_rows = []
