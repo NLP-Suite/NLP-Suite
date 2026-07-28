@@ -219,7 +219,117 @@ def _configured_parser_tag(c):
     return 'stanza'
 
 
-def _find_existing_parse_csv(c, must, required_columns, exclude=()):
+# ---------------------------------------------------------------------------------------------
+# Provenance: WHICH CODE wrote a reusable table.
+#
+# The reuse probes below gate on filename, columns and size -- what a file IS, never what MADE it. So
+# a table written by an older, buggier version of an analysis is reused without a murmur, and the run
+# prints "no re-parse" while quietly building on stale data. That is the same class of mistake as a
+# stale cache anywhere else: cheap when right, invisible when wrong.
+#
+# Each reusable table therefore gets a small sidecar recording a fingerprint of the SOURCE MODULES that
+# produce it. On reuse the fingerprint is recomputed and compared: same code, reuse; different code,
+# re-run just that analysis. Not the release number -- a release bump would invalidate everything and
+# make a one-line fix cost a full re-parse.
+#
+# What it cannot see: a change in a downloaded model or an external lexicon, and a change in a helper
+# not named here. Missing or unreadable sidecar means "cannot verify", which reuses and says so, rather
+# than forcing every existing profile to re-parse once.
+# ---------------------------------------------------------------------------------------------
+PROVENANCE_SUFFIX = '.provenance.json'
+
+# The modules whose code decides what goes INTO each kind of reusable table. Every name here was
+# checked to exist: a name that does not is skipped silently, which would quietly weaken the check.
+_PROVENANCE_MODULES = {
+    'ner':       ['Stanza_util', 'Stanford_CoreNLP_util', 'spaCy_util'],
+    'pos':       ['Stanza_util', 'Stanford_CoreNLP_util', 'spaCy_util'],
+    'svo':       ['SVO_util', 'Stanza_util', 'Stanford_CoreNLP_util', 'spaCy_util'],
+    'sentiment': ['Stanza_util', 'sentiment_analysis_VADER_util', 'sentiment_analysis_ANEW_util',
+                  'sentiment_analysis_NRC_util', 'sentiment_analysis_SentiWordNet_util',
+                  'sentiment_analysis_hedonometer_util'],
+    'srl':       ['SRL_util', 'SRL_worker'],
+}
+
+
+def _module_fingerprint(kind):
+    """A hash of the source of the modules that produce *kind* of table.
+
+    Only modules that exist are hashed, and their names go into the stamp, so a rename shows up as a
+    changed fingerprint rather than as a silent gap.
+    """
+    import hashlib
+    src_dir = os.path.dirname(os.path.abspath(__file__))
+    digest = hashlib.sha256()
+    seen = []
+    for name in sorted(_PROVENANCE_MODULES.get(kind, [])):
+        path = os.path.join(src_dir, name + '.py')
+        if not os.path.isfile(path):
+            continue
+        try:
+            with open(path, 'rb') as fh:
+                digest.update(name.encode('utf-8'))
+                digest.update(fh.read())
+            seen.append(name)
+        except OSError:
+            continue
+    return (digest.hexdigest()[:16] if seen else ''), seen
+
+
+def stamp_provenance(paths, kind):
+    """Record which code produced these tables.
+
+    A failure here is SAID, not swallowed: an unwritten stamp means the next run cannot tell whether
+    reusing the table is safe, and it would report that as "no provenance stamp" as though the file
+    were simply old. The stamp is written whole and then moved into place, so a failure never leaves
+    a truncated one behind (which is what an earlier version of this did).
+    """
+    import json
+    import time
+    fingerprint, modules = _module_fingerprint(kind)
+    if not fingerprint:
+        print('Corpus Profiler: no %s modules found to fingerprint; tables left unstamped' % kind)
+        return
+    for p in paths or []:
+        target = str(p) + PROVENANCE_SUFFIX
+        tmp = target + '.tmp'
+        try:
+            with open(tmp, 'w', encoding='utf-8') as fh:
+                json.dump({'kind': kind, 'fingerprint': fingerprint, 'modules': modules,
+                           'written': time.strftime('%Y-%m-%d %H:%M:%S')}, fh, indent=1)
+            os.replace(tmp, target)
+        except Exception as e:
+            print('Corpus Profiler: could not stamp %s (%s)' % (os.path.basename(str(p)), e))
+            try:
+                os.remove(tmp)
+            except OSError:
+                pass
+
+
+def provenance_is_current(path, kind):
+    """(ok, why) for reusing *path*: is it the code we are running now?
+
+    ok=True with why='' when it matches, ok=True with a why when there is no stamp to check (an older
+    profile), ok=False when the code that wrote it has since changed.
+    """
+    import json
+    stamp_path = str(path) + PROVENANCE_SUFFIX
+    if not os.path.isfile(stamp_path):
+        return True, 'no provenance stamp (written before stamping, or by another tool)'
+    try:
+        with open(stamp_path, encoding='utf-8') as fh:
+            stamped = json.load(fh)
+    except Exception:
+        return True, 'provenance stamp unreadable'
+    current, _ = _module_fingerprint(kind)
+    if not current:
+        return True, 'nothing to fingerprint'
+    if str(stamped.get('fingerprint', '')) == current:
+        return True, ''
+    return False, ('the code that produced it has changed since (%s -> %s)'
+                   % (str(stamped.get('fingerprint', '?'))[:8], current[:8]))
+
+
+def _find_existing_parse_csv(c, must, required_columns, exclude=(), kind=''):
     """Shared cross-run reuse probe: [path] to a table already in the output dir (from a prior or KILLED
     run on THIS corpus) so a restart skips the slow re-parse; [] when nothing is trustworthy, so anything
     unexpected falls through to a fresh parse rather than risking wrong data.
@@ -264,7 +374,17 @@ def _find_existing_parse_csv(c, must, required_columns, exclude=()):
             size = 0
         if size > best_size:
             best, best_size = p, size
-    return [best] if best else []
+    if not best:
+        return []
+    if kind:
+        ok, why = provenance_is_current(best, kind)
+        if not ok:
+            print('>>> Corpus Profiler: NOT reusing %s -- %s. Re-running that analysis.'
+                  % (os.path.basename(best), why))
+            return []
+        if why:
+            print('>>> Corpus Profiler: reusing %s (%s)' % (os.path.basename(best), why))
+    return [best]
 
 
 def _find_existing_svo_csv(c):
@@ -272,7 +392,7 @@ def _find_existing_svo_csv(c):
     profiler's most expensive pass -- dependency parsing, hours on a large corpus -- and it had no reuse at
     all, so every interrupted sweep re-paid it in full. Tagged to the configured parser."""
     return _find_existing_parse_csv(c, ('svo', _configured_parser_tag(c)),
-                                    ('Subject (S)', 'Verb (V)', 'Object (O)'))
+                                    ('Subject (S)', 'Verb (V)', 'Object (O)'), kind='svo')
 
 
 def _find_existing_sentiment_csv(c):
@@ -280,7 +400,7 @@ def _find_existing_sentiment_csv(c):
     every sentence -- hours on a large corpus). Tagged 'stanza' because _run_sentiment always uses Stanza
     with no dispatch: a CoreNLP sentiment table left by another tool must NOT be picked up."""
     return _find_existing_parse_csv(c, ('sentiment', 'stanza'),
-                                    ('Sentiment score', 'Sentiment label'))
+                                    ('Sentiment score', 'Sentiment label'), kind='sentiment')
 
 
 def _find_existing_srl_csv(c):
@@ -288,7 +408,7 @@ def _find_existing_srl_csv(c):
     isolated py3.8 env -- HOURS on a large corpus, and (unlike CoreNLP/POS/NER/SVO/sentiment) it was the ONE
     expensive pass with no reuse, so an interrupted sweep re-paid it in full. Signature: 'srl' in the name
     with the SRL output columns (Predicate + Frame + the ARG0 role), not a derived/frequency artifact."""
-    return _find_existing_parse_csv(c, ('srl',), ('Predicate', 'Frame', 'ARG0 (Agent)'))
+    return _find_existing_parse_csv(c, ('srl',), ('Predicate', 'Frame', 'ARG0 (Agent)'), kind='srl')
 
 
 def _find_existing_ner_csv(c):
@@ -681,7 +801,9 @@ def _run_svo(c):
         c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
         'No charts', c['dataTransformation'], ['SVO'], False,
         [c['language']], c['memory_var'], c['document_length_var'], c['limit_sentence_length_var'])
-    return _files(out)
+    files = _files(out)
+    stamp_provenance(files, 'svo')
+    return files
 
 
 def _run_srl(c):
@@ -698,8 +820,10 @@ def _run_srl(c):
               % os.path.basename(existing[0]))
         return list(dict.fromkeys(_files(existing)))
     import GUI_util
-    return _files(SRL_util.run_SRL(GUI_util.window, c['inputFilename'], c['inputDir'],
-                                   c['outputDir'], c['chartPackage'], c['dataTransformation']))
+    files = _files(SRL_util.run_SRL(GUI_util.window, c['inputFilename'], c['inputDir'],
+                                    c['outputDir'], c['chartPackage'], c['dataTransformation']))
+    stamp_provenance(files, 'srl')
+    return files
 
 
 # ---- sentiment: Stanza neural sentiment (a real model, not a dictionary; already installed) ---
@@ -717,7 +841,10 @@ def _run_sentiment(c):
         c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
         c['chartPackage'], c['dataTransformation'], ['sentiment'], False,
         [c['language']], c['memory_var'], c['document_length_var'], c['limit_sentence_length_var'])
-    return _files(out)
+    files = _files(out)
+    # record WHICH CODE wrote this, so a later run can tell whether reusing it is still safe
+    stamp_provenance(files, 'sentiment')
+    return files
 
 
 # ---- topics: Gensim LDA (pure Python). force=True bypasses the "needs 50+ files" advisory so the
@@ -1154,6 +1281,69 @@ def run_profile(ctx, selected):
                 print('Corpus Profiler: analysis "%s" FAILED: %s' % (aid, e))
         # kind == 'gui': nothing to run -- the report surfaces it as an "open the tool" pointer
         results.append(rec)
+
+    save_manifest(ctx.get('outputDir') or '', results)
+    return results
+
+
+# ---------------------------------------------------------------------------------------------
+# The manifest: what a run produced, written beside its outputs.
+#
+# The report and the summary are DERIVED from `results` -- which analysis produced which files. Until
+# now that list existed only inside the running process, so improving a chart, an interpretation or the
+# wording of the summary meant re-running the analyses to see it: hours, to redraw a page. The manifest
+# is that list on disk, so the reports can be rebuilt from outputs that are already there.
+# ---------------------------------------------------------------------------------------------
+MANIFEST_NAME = 'NLP_corpus_profile_manifest.json'
+
+
+def save_manifest(outputDir, results):
+    """Write what this run produced. Best-effort: a profile is not worth failing over a manifest."""
+    if not outputDir or not os.path.isdir(outputDir):
+        return ''
+    import json
+    import time
+    path = os.path.join(outputDir, MANIFEST_NAME)
+    try:
+        with open(path, 'w', encoding='utf-8') as fh:
+            json.dump({'version': 1, 'written': time.strftime('%Y-%m-%d %H:%M:%S'),
+                       'results': results}, fh, indent=1, default=str)
+        return path
+    except Exception as e:
+        print('Corpus Profiler: could not write the manifest (%s)' % e)
+        return ''
+
+
+def load_manifest(outputDir):
+    """The results list from a previous run, with vanished files dropped. [] if there is none.
+
+    Files are re-checked rather than trusted: an output folder is a folder, and things get moved,
+    renamed and deleted between a run and a rebuild.
+    """
+    if not outputDir:
+        return []
+    import json
+    path = os.path.join(outputDir, MANIFEST_NAME)
+    if not os.path.isfile(path):
+        return []
+    try:
+        with open(path, encoding='utf-8') as fh:
+            data = json.load(fh)
+    except Exception as e:
+        print('Corpus Profiler: could not read the manifest (%s)' % e)
+        return []
+
+    results, missing = [], 0
+    for rec in data.get('results', []):
+        if not isinstance(rec, dict):
+            continue
+        kept = [f for f in rec.get('files', []) if os.path.isfile(str(f))]
+        missing += len(rec.get('files', [])) - len(kept)
+        rec['files'] = kept
+        results.append(rec)
+    if missing:
+        print('>>> Corpus Profiler: %d file(s) named in the manifest are no longer on disk '
+              'and were left out of the rebuild' % missing)
     return results
 
 

@@ -171,8 +171,25 @@ def run():
         # and restart before trusting the dialog-suppression / speed fixes.
         print('>>> Corpus Profiler: SILENT MODE ACTIVE -- OK/Yes-No dialogs auto-handled for this run.')
 
-        results = corpus_profiler_util.run_profile(ctx, selected)
-        print('>>> Corpus Profiler: %d analyses done; building index report...' % len(results))
+        # REBUILD ONLY: redraw the report and the summary from a previous run's outputs, running no
+        # analysis at all. The reports are DERIVED - from which analysis produced which files - so
+        # improving a chart, an interpretation or a sentence of the summary used to mean re-running
+        # hours of parsing to see it. The manifest a run leaves behind makes that a few seconds.
+        if rebuild_only_var.get():
+            results = corpus_profiler_util.load_manifest(outputDir)
+            if not results:
+                mb.showwarning(title='Nothing to rebuild from',
+                               message='No profile manifest was found in\n\n' + str(outputDir) +
+                                       '\n\nThe rebuild uses the record a previous run leaves behind '
+                                       '(' + corpus_profiler_util.MANIFEST_NAME + '). Run the Profiler '
+                                       'normally once, and every run after that can be rebuilt from '
+                                       'its outputs without re-running a single analysis.')
+                return
+            print('>>> Corpus Profiler: REBUILD ONLY -- %d analyses read from the manifest, '
+                  'nothing re-run.' % len(results))
+        else:
+            results = corpus_profiler_util.run_profile(ctx, selected)
+            print('>>> Corpus Profiler: %d analyses done; building index report...' % len(results))
         # outputDir so the sentence count comes from the parse this run just produced rather than from
         # counting full stops (which reads every 'Mr.' as a sentence end), and the package so it comes
         # from the CONFIGURED parser: CoreNLP and Stanza split sentences differently and do not agree
@@ -306,6 +323,7 @@ narrative_menu_var = tk.StringVar()
 sentiment_var = tk.IntVar()
 sentiment_menu_var = tk.StringVar()
 characters_var = tk.IntVar()
+rebuild_only_var = tk.IntVar()
 characters_menu_var = tk.StringVar()
 
 _dropdown_x = GUI_IO_util.open_setup_x_coordinate  # rough; nudge to taste
@@ -450,6 +468,18 @@ characters_menu = tk.OptionMenu(window, characters_menu_var, '*',
                           'Emotion arcs (NRC 8 emotions, per character across the story)',
                           'Movement in time & space (each character’s places over the story, mapped)')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, _dropdown_x, y_multiplier_integer, characters_menu, False)
+
+# Rebuild only. The report and the summary are DERIVED from a run's outputs, so a change to a chart,
+# an interpretation or the wording of the summary needed hours of re-parsing to be seen. With the
+# manifest a run leaves behind, that is now seconds - and nothing is re-analysed, so the numbers
+# cannot change underneath you.
+rebuild_only_var.set(0)
+rebuild_only_checkbox = tk.Checkbutton(
+    window, variable=rebuild_only_var, onvalue=1, offvalue=0,
+    text='Rebuild the report & summary from an EXISTING profile in the output directory '
+         '(runs no analysis)')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
+                                               y_multiplier_integer, rebuild_only_checkbox, True)
 
 # --- help buttons (one per row, in order) ----------------------------------------------------
 videos_lookup = {'No videos available': ''}
