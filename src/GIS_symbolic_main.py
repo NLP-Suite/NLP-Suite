@@ -244,6 +244,19 @@ def run():
             ss.plot_transition_graph(edges, png)
             filesToOpen.append(png)
 
+            # ...and the INTERACTIVE view. The graph above says which kinds of space lead to which,
+            # summed over the whole corpus; it cannot say WHEN, or WHO, or that two characters were
+            # in the same kind of space at the same point in the story. The timeline can, and it is
+            # a timeline rather than a map because a kitchen has no coordinates.
+            try:
+                timeline = ss.symbolic_movement_timeline(
+                    inputFilename, outputDir, location_col=location_col,
+                    title=os.path.basename(inputFilename))
+                if timeline:
+                    filesToOpen.append(timeline)
+            except Exception as e:
+                print('GIS symbolic: interactive timeline skipped (%s)' % e)
+
     if not filesToOpen:
         return
     if openOutputFiles == 1:

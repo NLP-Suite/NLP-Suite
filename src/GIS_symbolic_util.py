@@ -295,6 +295,260 @@ def save_crosstab_csv(table, output_path, stats=None):
 
 # ---- BUILD pipeline: actor-in-space events from a CoNLL corpus -------------
 
+def symbolic_movement_timeline(events_csv, outputDir, top_n=8, actor_col='actor',
+                               location_col='', title=''):
+    """An INTERACTIVE view of movement through symbolic space, as one HTML file.
+
+    The geocodable map animates characters across a real map because its places
+    have coordinates. These do not: a kitchen has no latitude, and putting
+    'domestic_interior' somewhere in the Atlantic to reuse a map would be a
+    picture of nothing. The honest equivalent of a map here is a TIMELINE —
+    narrative position across, kind of space up the side, one track per
+    character — with a cursor you drag or play. Where two tracks meet, two
+    characters are in the same kind of space at the same point in the story,
+    which is the thing the static transition graph cannot show.
+
+    Self-contained: no basemap, no libraries, no internet. Returns the html path
+    or '' if there was nothing to draw.
+    """
+    import json
+    import pandas as pd
+
+    try:
+        df = pd.read_csv(events_csv, encoding='utf-8-sig')
+    except Exception:
+        try:
+            df = pd.read_csv(events_csv, encoding='ISO-8859-1')
+        except Exception:
+            return ''
+    if actor_col not in df.columns:
+        return ''
+
+    # the space TYPE: already there in a BUILD table, otherwise classified from whichever column
+    # holds the place words, so a hand-made csv works too
+    space_col = 'space_type'
+    if space_col not in df.columns:
+        if not location_col or location_col not in df.columns:
+            return ''
+        df = df.copy()
+        df[space_col] = [typology.classify(str(v)) for v in df[location_col]]
+
+    df = df[df[space_col].astype(str).str.strip().ne('')
+            & df[space_col].astype(str).ne(typology.UNCLASSIFIED)].copy()
+    if df.empty:
+        return ''
+
+    # one narrative axis for the whole corpus: sentence IDs restart in every document
+    if 'Sentence ID' in df.columns:
+        df['_sent'] = pd.to_numeric(df['Sentence ID'], errors='coerce').fillna(0)
+    else:
+        df['_sent'] = range(len(df))
+    if 'Document ID' in df.columns:
+        lengths = df.groupby('Document ID')['_sent'].max().sort_index()
+        offsets = lengths.cumsum().shift(1).fillna(0)
+        df['_pos'] = df['Document ID'].map(offsets).fillna(0) + df['_sent']
+    else:
+        df['_pos'] = df['_sent']
+    df = df.sort_values('_pos')
+
+    counts = df[actor_col].astype(str).value_counts()
+    actors = [a for a in counts.head(top_n).index if str(a).strip()]
+    if not actors:
+        return ''
+
+    spaces = [c for c in typology.CATEGORIES
+              if c in set(df[space_col].astype(str))]
+    doc_col = next((c for c in ('Document', 'Document ID') if c in df.columns), '')
+
+    tracks = []
+    for actor in actors:
+        rows = df[df[actor_col].astype(str) == actor]
+        tracks.append({
+            'actor': str(actor),
+            'points': [{
+                'x': float(r['_pos']),
+                'space': str(r[space_col]),
+                'doc': str(r[doc_col]) if doc_col else '',
+                'sentence': str(r.get('Sentence', ''))[:300],
+                'word': str(r.get('space_noun', '')),
+            } for _, r in rows.iterrows()],
+        })
+
+    payload = {
+        'title': title or os.path.basename(events_csv),
+        'spaces': spaces,
+        'tracks': tracks,
+        'docs': sorted({t['doc'] for tr in tracks for t in tr['points'] if t['doc']}),
+        'xmin': float(df['_pos'].min()),
+        'xmax': float(df['_pos'].max()),
+    }
+
+    html = _TIMELINE_HTML.replace('__DATA__', json.dumps(payload, ensure_ascii=False))
+    output_path = os.path.join(outputDir, 'symbolic_space_movement_timeline.html')
+    with open(output_path, 'w', encoding='utf-8') as fh:
+        fh.write(html)
+    return output_path
+
+
+# The timeline page. Vanilla SVG and JS on purpose: it has to open on any machine,
+# from a folder, with no network - the same promise the family-archive HTML makes.
+_TIMELINE_HTML = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Movement through symbolic space</title>
+<style>
+ body{font:14px/1.5 "Segoe UI",Inter,sans-serif;margin:0;padding:18px 24px;color:#222;background:#fff;}
+ h1{font-size:19px;margin:0 0 2px;} .sub{color:#666;font-size:12px;margin-bottom:14px;}
+ #wrap{overflow-x:auto;border:1px solid #e3e3e3;border-radius:6px;padding:8px 0 0;}
+ .ctl{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:12px 0;}
+ button{font:inherit;padding:5px 14px;border:1px solid #c9c9c9;background:#f7f7f7;border-radius:5px;cursor:pointer;}
+ button:hover{background:#eee;}
+ input[type=range]{flex:1;min-width:240px;}
+ select{font:inherit;padding:4px;}
+ .legend{display:flex;gap:12px;flex-wrap:wrap;margin:6px 0 2px;}
+ .legend span{display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;user-select:none;}
+ .legend i{width:11px;height:11px;border-radius:50%;display:inline-block;}
+ .legend .off{opacity:.3;}
+ #read{margin-top:10px;padding:10px 12px;background:#fafafa;border:1px solid #eee;border-radius:6px;
+       font-size:13px;min-height:44px;}
+ .muted{color:#888;}
+ text{font:11px "Segoe UI",sans-serif;fill:#555;}
+ .gl{stroke:#eee;} .cursor{stroke:#c1121f;stroke-width:1.5;}
+</style></head><body>
+<h1>Movement through symbolic space</h1>
+<div class="sub" id="sub"></div>
+
+<div class="legend" id="legend"></div>
+<div id="wrap"><svg id="plot"></svg></div>
+
+<div class="ctl">
+  <button id="play">▶ Play</button>
+  <input type="range" id="scrub" min="0" max="1000" value="1000">
+  <span id="posn" class="muted"></span>
+  <label>Document
+    <select id="doc"><option value="">all</option></select>
+  </label>
+</div>
+<div id="read" class="muted">Drag the slider, or press Play. Click a point to read its sentence.</div>
+
+<script>
+var DATA = __DATA__;
+var COLORS = ['#0b5394','#b35e3c','#38761d','#7f6000','#4c1130','#134f5c','#783f04','#20124d'];
+var PAD = {l:150, r:24, t:14, b:34}, ROW = 34;
+var svg = document.getElementById('plot'), hidden = {}, doc = '', playing = null;
+
+function tracks(){
+  return DATA.tracks.filter(function(t){ return !hidden[t.actor]; });
+}
+function pointsOf(t){
+  return t.points.filter(function(p){ return !doc || p.doc === doc; });
+}
+function xOf(p, w){
+  var span = (DATA.xmax - DATA.xmin) || 1;
+  return PAD.l + (p - DATA.xmin) / span * (w - PAD.l - PAD.r);
+}
+function yOf(space){
+  return PAD.t + DATA.spaces.indexOf(space) * ROW + ROW / 2;
+}
+
+function draw(cut){
+  var w = Math.max(900, DATA.spaces.length ? svg.parentNode.clientWidth - 16 : 900);
+  var h = PAD.t + DATA.spaces.length * ROW + PAD.b;
+  svg.setAttribute('width', w); svg.setAttribute('height', h);
+  var out = [];
+  DATA.spaces.forEach(function(s, i){
+    var y = PAD.t + i * ROW + ROW / 2;
+    out.push('<line class="gl" x1="'+PAD.l+'" y1="'+y+'" x2="'+(w-PAD.r)+'" y2="'+y+'"/>');
+    out.push('<text x="'+(PAD.l-10)+'" y="'+(y+4)+'" text-anchor="end">'+s+'</text>');
+  });
+  tracks().forEach(function(t, i){
+    var color = COLORS[DATA.tracks.indexOf(t) % COLORS.length];
+    var pts = pointsOf(t).filter(function(p){ return p.x <= cut; });
+    var d = '';
+    pts.forEach(function(p, k){
+      var x = xOf(p.x, w), y = yOf(p.space);
+      if (k === 0) { d += 'M' + x + ',' + y; }
+      else { d += 'L' + x + ',' + yOf(pts[k-1].space) + 'L' + x + ',' + y; }
+    });
+    if (d) out.push('<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="1.6" opacity=".75"/>');
+    pts.forEach(function(p, k){
+      out.push('<circle cx="'+xOf(p.x, w)+'" cy="'+yOf(p.space)+'" r="3.4" fill="'+color+
+               '" opacity=".9" data-t="'+DATA.tracks.indexOf(t)+'" data-k="'+k+'" style="cursor:pointer"/>');
+    });
+    var last = pts[pts.length-1];
+    if (last) {
+      out.push('<circle cx="'+xOf(last.x, w)+'" cy="'+yOf(last.space)+'" r="6.5" fill="none" stroke="'+
+               color+'" stroke-width="2"/>');
+    }
+  });
+  var cx = xOf(cut, w);
+  out.push('<line class="cursor" x1="'+cx+'" y1="'+PAD.t+'" x2="'+cx+'" y2="'+(h-PAD.b+6)+'"/>');
+  out.push('<text x="'+PAD.l+'" y="'+(h-10)+'">sentence '+Math.round(DATA.xmin)+'</text>');
+  out.push('<text x="'+(w-PAD.r)+'" y="'+(h-10)+'" text-anchor="end">'+Math.round(DATA.xmax)+'</text>');
+  svg.innerHTML = out.join('');
+  document.getElementById('posn').textContent = 'sentence ' + Math.round(cut);
+}
+
+function cutFromSlider(){
+  var f = document.getElementById('scrub').value / 1000;
+  return DATA.xmin + f * (DATA.xmax - DATA.xmin);
+}
+function redraw(){ draw(cutFromSlider()); }
+
+document.getElementById('scrub').addEventListener('input', redraw);
+document.getElementById('play').addEventListener('click', function(){
+  var b = this;
+  if (playing) { clearInterval(playing); playing = null; b.textContent = '▶ Play'; return; }
+  var s = document.getElementById('scrub');
+  if (+s.value >= 1000) s.value = 0;
+  b.textContent = '❚❚ Pause';
+  playing = setInterval(function(){
+    s.value = Math.min(1000, +s.value + 4);
+    redraw();
+    if (+s.value >= 1000) { clearInterval(playing); playing = null; b.textContent = '▶ Play'; }
+  }, 40);
+});
+document.getElementById('doc').addEventListener('change', function(){ doc = this.value; redraw(); });
+
+svg.addEventListener('click', function(e){
+  var c = e.target;
+  if (c.tagName !== 'circle' || !c.hasAttribute('data-t')) return;
+  var t = DATA.tracks[+c.getAttribute('data-t')];
+  var p = pointsOf(t)[+c.getAttribute('data-k')];
+  if (!p) return;
+  document.getElementById('read').className = '';
+  document.getElementById('read').innerHTML =
+    '<b>' + t.actor + '</b> — <b>' + p.space + '</b> ("' + p.word + '")' +
+    (p.doc ? ' · ' + p.doc : '') + '<br>' + (p.sentence || '<span class="muted">(no sentence)</span>');
+});
+
+(function init(){
+  document.getElementById('sub').textContent =
+    DATA.title + ' · ' + DATA.tracks.length + ' characters · ' + DATA.spaces.length +
+    ' kinds of space · narrative position runs left to right, documents in order';
+  var lg = document.getElementById('legend');
+  DATA.tracks.forEach(function(t, i){
+    var s = document.createElement('span');
+    s.innerHTML = '<i style="background:' + COLORS[i % COLORS.length] + '"></i>' + t.actor +
+                  ' <span class="muted">(' + t.points.length + ')</span>';
+    s.onclick = function(){
+      hidden[t.actor] = !hidden[t.actor];
+      s.className = hidden[t.actor] ? 'off' : '';
+      redraw();
+    };
+    lg.appendChild(s);
+  });
+  var sel = document.getElementById('doc');
+  DATA.docs.forEach(function(d){
+    var o = document.createElement('option'); o.value = d; o.textContent = d; sel.appendChild(o);
+  });
+  redraw();
+  window.addEventListener('resize', redraw);
+})();
+</script></body></html>
+"""
+
+
 def extract_actor_space_events(conll_file, outputDir):
     """Build the actor-in-(non-geocodable)-space table from a CoNLL dependency table.
 
