@@ -22,7 +22,15 @@ sys.path.insert(0, _SRC)
 _spec = importlib.util.spec_from_file_location('_real_IO_files_util',
                                                os.path.join(_SRC, 'IO_files_util.py'))
 io = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(io)
+
+# IO_files_util does os.chdir(src) at import, so merely loading it moves the WHOLE test process into
+# src/ and any later test using a relative path resolves it somewhere unexpected. Put the working
+# directory back.
+_cwd = os.getcwd()
+try:
+    _spec.loader.exec_module(io)
+finally:
+    os.chdir(_cwd)
 
 
 class TestLabelAlreadyInName:

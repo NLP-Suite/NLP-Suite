@@ -58,6 +58,10 @@ _HEAVY_STUBS = [
     "spacy",
     "textstat",
     "pandas",
+    # numpy is imported at the top of IO_files_util, which test_output_file_names loads for real.
+    # Locally numpy is installed and its absence was invisible; CI installs pytest and nothing else,
+    # so it aborted collection -- and a collection error fails the WHOLE run, not one file.
+    "numpy",
     "PIL",
     "PIL.Image",
     "spacytextblob",
