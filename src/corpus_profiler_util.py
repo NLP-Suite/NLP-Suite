@@ -232,6 +232,14 @@ def _configured_parser_tag(c):
 # re-run just that analysis. Not the release number -- a release bump would invalidate everything and
 # make a one-line fix cost a full re-parse.
 #
+# The sidecar records a second thing: WHICH CORPUS the table was built from. The probes search the
+# output directory by filename and columns, and nothing in that ties a table to the text it came from --
+# the "prior run on THIS corpus" in the probe's docstring is an assumption resting on one output
+# directory per corpus. Point the profiler at a second corpus while keeping the old output directory
+# (running a coreference-resolved copy alongside the original is the obvious way to do it) and the probe
+# finds the FIRST corpus's table, matches name and columns, passes the module check because the code did
+# not change, and reuses it. The two runs then agree perfectly, because they are the same numbers.
+#
 # What it cannot see: a change in a downloaded model or an external lexicon, and a change in a helper
 # not named here. Missing or unreadable sidecar means "cannot verify", which reuses and says so, rather
 # than forcing every existing profile to re-parse once.
@@ -275,8 +283,63 @@ def _module_fingerprint(kind):
     return (digest.hexdigest()[:16] if seen else ''), seen
 
 
-def stamp_provenance(paths, kind):
+# Bookkeeping files that live in a corpus folder without being corpus content. Kept in step with
+# IO_files_util.SIDECAR_FILES but spelled out here on purpose: this must hold when IO_files_util is a
+# test stub, and a mock's is_sidecar_file() returns a truthy mock, which would skip EVERY document and
+# silently fingerprint an empty corpus.
+_CORPUS_SIDECARS = {'_pkl_version.txt', '_pkl_version.dat', 'gis_settings.json',
+                    'desktop.ini', 'thumbs.db', '.ds_store'}
+
+
+def corpus_fingerprint(c):
+    """(digest, label) identifying the corpus in *c*, or ('', '') when it cannot be determined.
+
+    Names and sizes, never contents: a corpus is thousands of files and this runs before every reuse
+    decision, so reading them would cost more than the re-parse it is trying to avoid. Name+size is
+    enough for the job -- it separates two different corpora, and it separates a corpus from an edited
+    copy of itself, which is exactly when a stale table must not be reused.
+
+    Deliberately NOT part of the digest: the directory path. The same corpus moved or renamed is still
+    the same corpus, and invalidating on a path would re-parse for nothing. The path goes in as a
+    human-readable *label* instead, so a mismatch message can name the two corpora.
+    """
+    import hashlib
+    inputDir = (c or {}).get('inputDir') or ''
+    inputFilename = (c or {}).get('inputFilename') or ''
+    entries = []
+    if inputDir and os.path.isdir(inputDir):
+        label = os.path.basename(os.path.normpath(inputDir))
+        for root, _dirs, files in os.walk(inputDir):
+            for name in files:
+                if name.endswith(PROVENANCE_SUFFIX) or name.lower() in _CORPUS_SIDECARS:
+                    continue
+                full = os.path.join(root, name)
+                try:
+                    size = os.path.getsize(full)
+                except OSError:
+                    continue
+                entries.append((os.path.relpath(full, inputDir).replace(os.sep, '/').lower(), size))
+    elif inputFilename and os.path.isfile(inputFilename):
+        label = os.path.basename(inputFilename)
+        try:
+            entries.append((label.lower(), os.path.getsize(inputFilename)))
+        except OSError:
+            return '', ''
+    else:
+        return '', ''
+    if not entries:
+        return '', label
+    digest = hashlib.sha256()
+    for name, size in sorted(entries):
+        digest.update(('%s|%d\n' % (name, size)).encode('utf-8'))
+    return digest.hexdigest()[:16], label
+
+
+def stamp_provenance(paths, kind, c=None):
     """Record which code produced these tables.
+
+    Records which CODE produced the table and, when *c* is given, which CORPUS it was built from -- the
+    two questions a later run has to answer before reusing it.
 
     A failure here is SAID, not swallowed: an unwritten stamp means the next run cannot tell whether
     reusing the table is safe, and it would report that as "no provenance stamp" as though the file
@@ -289,13 +352,18 @@ def stamp_provenance(paths, kind):
     if not fingerprint:
         print('Corpus Profiler: no %s modules found to fingerprint; tables left unstamped' % kind)
         return
+    corpus_fp, corpus_label = corpus_fingerprint(c) if c is not None else ('', '')
     for p in paths or []:
         target = str(p) + PROVENANCE_SUFFIX
         tmp = target + '.tmp'
         try:
+            record = {'kind': kind, 'fingerprint': fingerprint, 'modules': modules,
+                      'written': time.strftime('%Y-%m-%d %H:%M:%S')}
+            if corpus_fp:
+                record['corpus'] = corpus_fp
+                record['corpus_label'] = corpus_label
             with open(tmp, 'w', encoding='utf-8') as fh:
-                json.dump({'kind': kind, 'fingerprint': fingerprint, 'modules': modules,
-                           'written': time.strftime('%Y-%m-%d %H:%M:%S')}, fh, indent=1)
+                json.dump(record, fh, indent=1)
             os.replace(tmp, target)
         except Exception as e:
             print('Corpus Profiler: could not stamp %s (%s)' % (os.path.basename(str(p)), e))
@@ -305,11 +373,18 @@ def stamp_provenance(paths, kind):
                 pass
 
 
-def provenance_is_current(path, kind):
-    """(ok, why) for reusing *path*: is it the code we are running now?
+def provenance_is_current(path, kind, c=None):
+    """(ok, why) for reusing *path*: same code, and same corpus?
 
-    ok=True with why='' when it matches, ok=True with a why when there is no stamp to check (an older
-    profile), ok=False when the code that wrote it has since changed.
+    ok=True with why='' when both match, ok=True with a why when something cannot be checked (an older
+    profile, an unreadable stamp), ok=False when the code that wrote it has since changed OR it was
+    built from a different corpus.
+
+    The corpus check is deliberately asymmetric. A MISMATCH is refused -- reusing another corpus's
+    table is silent, total corruption of the result, and no amount of saved time is worth it. An
+    UNVERIFIABLE stamp (one written before corpora were recorded) is reused with a spoken reason,
+    because refusing would re-parse every profile built before this change for a risk that is usually
+    theoretical. Separate output directories per corpus remain the real guarantee.
     """
     import json
     stamp_path = str(path) + PROVENANCE_SUFFIX
@@ -323,10 +398,21 @@ def provenance_is_current(path, kind):
     current, _ = _module_fingerprint(kind)
     if not current:
         return True, 'nothing to fingerprint'
-    if str(stamped.get('fingerprint', '')) == current:
-        return True, ''
-    return False, ('the code that produced it has changed since (%s -> %s)'
-                   % (str(stamped.get('fingerprint', '?'))[:8], current[:8]))
+    if str(stamped.get('fingerprint', '')) != current:
+        return False, ('the code that produced it has changed since (%s -> %s)'
+                       % (str(stamped.get('fingerprint', '?'))[:8], current[:8]))
+    stamped_corpus = str(stamped.get('corpus', ''))
+    if c is not None and stamped_corpus:
+        here_fp, here_label = corpus_fingerprint(c)
+        if here_fp and here_fp != stamped_corpus:
+            return False, ('it was built from a DIFFERENT corpus ("%s", not "%s") -- reusing it would '
+                           'report that corpus\'s results as this one\'s'
+                           % (str(stamped.get('corpus_label', '?')), here_label or '?'))
+        if not here_fp:
+            return True, 'this run\'s corpus could not be fingerprinted, so it was not checked'
+    elif c is not None and not stamped_corpus:
+        return True, 'no corpus recorded in the stamp, so which corpus produced it could not be checked'
+    return True, ''
 
 
 def _find_existing_parse_csv(c, must, required_columns, exclude=(), kind=''):
@@ -377,7 +463,7 @@ def _find_existing_parse_csv(c, must, required_columns, exclude=(), kind=''):
     if not best:
         return []
     if kind:
-        ok, why = provenance_is_current(best, kind)
+        ok, why = provenance_is_current(best, kind, c)
         if not ok:
             print('>>> Corpus Profiler: NOT reusing %s -- %s. Re-running that analysis.'
                   % (os.path.basename(best), why))
@@ -802,7 +888,7 @@ def _run_svo(c):
         'No charts', c['dataTransformation'], ['SVO'], False,
         [c['language']], c['memory_var'], c['document_length_var'], c['limit_sentence_length_var'])
     files = _files(out)
-    stamp_provenance(files, 'svo')
+    stamp_provenance(files, 'svo', c)
     return files
 
 
@@ -822,7 +908,7 @@ def _run_srl(c):
     import GUI_util
     files = _files(SRL_util.run_SRL(GUI_util.window, c['inputFilename'], c['inputDir'],
                                     c['outputDir'], c['chartPackage'], c['dataTransformation']))
-    stamp_provenance(files, 'srl')
+    stamp_provenance(files, 'srl', c)
     return files
 
 
@@ -843,7 +929,7 @@ def _run_sentiment(c):
         [c['language']], c['memory_var'], c['document_length_var'], c['limit_sentence_length_var'])
     files = _files(out)
     # record WHICH CODE wrote this, so a later run can tell whether reusing it is still safe
-    stamp_provenance(files, 'sentiment')
+    stamp_provenance(files, 'sentiment', c)
     return files
 
 
