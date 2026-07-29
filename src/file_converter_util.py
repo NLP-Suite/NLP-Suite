@@ -266,6 +266,21 @@ def get_text_runs(element):
 def get_runs_text(runs):
     return ''.join(run[0] for run in runs)
 
+# python-docx writes XML, and XML 1.0 cannot represent most control characters. A pdf carrying one
+# made add_run() raise ValueError, and because that happens mid-document the WHOLE file was lost --
+# TIPS_NLP_Universal dependencies.pdf holds 186 NUL bytes, so one invisible byte cost the entire
+# conversion of a 20-page document. Extraction puts them there: a NUL in the pdf's font or encoding
+# tables comes through as text. They are dropped rather than converted, because there is nothing to
+# convert them TO -- but the count is reported, since a silent edit to someone's document is exactly
+# the kind of thing this Suite must not do.
+_xml_incompatible_pattern = re.compile(
+    u'[^\u0009\u000A\u000D\u0020-\uD7FF\uE000-\uFFFD\U00010000-\U0010FFFF]')
+
+def strip_xml_incompatible(text):
+    """(clean text, how many characters were dropped) for one run of pdf text."""
+    cleaned = _xml_incompatible_pattern.sub('', text)
+    return cleaned, len(text) - len(cleaned)
+
 # pdfminer often reports the wrapped lines of ONE paragraph as SEPARATE text boxes - it does so for
 # every line of an indented numbered list - so joining the lines inside a box is not enough: the
 # pdf's line breaks come back as paragraph breaks between boxes. The geometry tells them apart. In
@@ -397,6 +412,7 @@ def build_docx_from_pdf(doc, outputFilename):
     document = set_single_spacing(Document())
     imagesPlaced = 0
     imagesLost = 0
+    charactersDropped = 0
     for pageNum, items in enumerate(layout_pages):
         available = list(page_images[pageNum]) if pageNum < len(page_images) else []
         used = 0
@@ -404,6 +420,10 @@ def build_docx_from_pdf(doc, outputFilename):
             if kind == 'text':
                 paragraph = document.add_paragraph()
                 for text, bold, italic, size, colour in payload:
+                    text, dropped = strip_xml_incompatible(text)
+                    charactersDropped = charactersDropped + dropped
+                    if text == '':
+                        continue
                     run = paragraph.add_run(text)
                     run.bold = bold
                     run.italic = italic
@@ -426,6 +446,9 @@ def build_docx_from_pdf(doc, outputFilename):
                 imagesLost = imagesLost + 1
         if pageNum < len(layout_pages) - 1:
             document.add_page_break()
+    if charactersDropped:
+        print('   ' + str(charactersDropped) + ' control character(s) in the pdf were dropped; '
+              'Word cannot store them. No visible text is affected.')
     make_output_directory(outputFilename)
     document.save(outputFilename)
     return imagesPlaced, imagesLost

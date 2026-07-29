@@ -457,8 +457,19 @@ class TestPdfToDocx:
         document = Document(out)
         paragraph = [p for p in document.paragraphs if 'third case' in p.text][0]
         assert '\n' not in paragraph.text
-        assert 'has then been' in paragraph.text          # was split across two lines
-        assert '  ' not in paragraph.text                 # and not joined with a doubled blank
+        # 'has then been' / 're-annotated' sit on two different lines of the pdf; the join must put
+        # exactly ONE blank between them.
+        assert 'has then been re-annotated' in paragraph.text
+
+        # NOT "the paragraph contains no doubled space anywhere". This document is full of them --
+        # pdfminer's own extraction reports 105 runs of two or more spaces, 23 of them after a
+        # sentence period ('dictionary.    In the second case'), because that is how the pdf is
+        # typeset. Asserting them away demanded that the converter destroy the source's own spacing,
+        # and it failed on a paragraph the converter had in fact joined correctly. Pin the join
+        # instead: every stitch this paragraph contains is single-spaced.
+        for tail, head in (('has then been', 're-annotated'),
+                           ('originally annotated', 'via a dictionary')):
+            assert tail + ' ' + head in paragraph.text
 
     def test_a_wrapped_list_item_becomes_one_paragraph(self, tmp_path):
         """Each wrapped line of the numbered list is its own pdfminer box; they must not turn into
@@ -502,3 +513,53 @@ class TestPdfToDocx:
         broken.write_bytes(b'%PDF-1.4 this is not a pdf')
         with pytest.raises(Exception):
             fc.build_docx_from_pdf(str(broken), str(tmp_path / 'broken.docx'))
+
+
+class TestControlCharactersDoNotKillTheDocument:
+    """python-docx writes XML, and XML 1.0 cannot hold most control characters. add_run() raises on
+    one, and since that happens part-way through, the ENTIRE document was lost -- a 20-page file
+    reduced to nothing by an invisible byte. Found by converting all 176 TIPS pdfs: one of them,
+    TIPS_NLP_Universal dependencies.pdf, carries 186 NULs and was the only failure in the corpus.
+    """
+
+    def test_a_nul_is_dropped_and_counted(self):
+        clean, dropped = fc.strip_xml_incompatible('before\x00after')
+        assert clean == 'beforeafter'
+        assert dropped == 1
+
+    def test_ordinary_text_is_untouched(self):
+        clean, dropped = fc.strip_xml_incompatible('Universal dependencies')
+        assert clean == 'Universal dependencies'
+        assert dropped == 0
+
+    def test_tab_newline_and_carriage_return_survive(self):
+        """The three control characters XML does allow. Stripping them would eat real layout."""
+        clean, dropped = fc.strip_xml_incompatible('a\tb\nc\rd')
+        assert clean == 'a\tb\nc\rd'
+        assert dropped == 0
+
+    def test_accents_and_astral_characters_survive(self):
+        """Faulkner's curly apostrophe and anything above the BMP are valid XML and must stay."""
+        clean, dropped = fc.strip_xml_incompatible(u'Faulkner’s café \U0001F600')
+        assert clean == u'Faulkner’s café \U0001F600'
+        assert dropped == 0
+
+    def test_the_other_c0_controls_are_dropped(self):
+        clean, dropped = fc.strip_xml_incompatible('a\x01b\x0cc\x1fd')
+        assert clean == 'abcd'
+        assert dropped == 3
+
+    @pytest.mark.skipif(
+        not os.path.isfile(os.path.join(REPO, 'TIPS', 'TIPS_NLP_Universal dependencies.pdf')),
+        reason='the TIPS pdf carrying NUL bytes is not available')
+    def test_the_pdf_full_of_nuls_now_converts(self, tmp_path):
+        """The regression itself: this file raised ValueError and produced nothing."""
+        src = os.path.join(REPO, 'TIPS', 'TIPS_NLP_Universal dependencies.pdf')
+        out = str(tmp_path / 'universal.docx')
+        fc.build_docx_from_pdf(src, out)
+
+        from docx import Document
+        text = '\n'.join(p.text for p in Document(out).paragraphs)
+        assert '\x00' not in text
+        assert len(text) > 10000                      # the document really is there, not an empty shell
+        assert 'dependencies' in text.lower()
