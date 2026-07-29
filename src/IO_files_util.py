@@ -916,8 +916,41 @@ def getFilename(passed_string):
 #  in label1 the following labels are passed by the calling script: SCNLP (Stanford CoreNLP), QC (query conll), NVA (noun verb analysis), FW (function words), TC (tpic modeling), SA (sentiment analysis), CA (concretenss analysis)
 # label2 (sub-field, e.g., pigs_Lemma, or hedonometer)
 # label3,label4,label5 are available options
+def _name_tokens(name):
+    """The underscore-separated words of a filename stem, lowercased, for comparison."""
+    return [t for t in str(name).split('_') if t]
+
+
+def label_already_in_name(label, name):
+    """Is *label* already one of the words of *name*?
+
+    Compared WORD BY WORD, never as a substring: 'NER' is inside 'GENERAL' and inside
+    'CoreNLP_NER_ALL', and a substring test would drop labels that belong. A multi-word label
+    ('NER_ALL') counts as present only when its whole sequence is already there.
+    """
+    have = [t.lower() for t in _name_tokens(name)]
+    want = [t.lower() for t in _name_tokens(label)]
+    if not want:
+        return True
+    n = len(want)
+    return any(have[i:i + n] == want for i in range(len(have) - n + 1))
+
+
 def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtension, label1='', label2='', label3='', label4='',
                               label5='', useTime=True, disable_suffix=False):
+    # ------------------------------------------------------------------------------------------
+    # Labels are added ONCE. When one tool's output becomes the next tool's input - the ordinary
+    # way a pipeline works here - the input filename already carries the labels of every step that
+    # made it, and this function used to add them again regardless. Three passes through the GIS
+    # pipeline produced NLP_GIS_GIS_GIS_CoreNLP_NER_ALL_NER_Dir_<corpus>_geo-Goo_Location_..., 162
+    # characters before the folders above it, which on Windows means a copy that fails at 260 with
+    # "Path too long" - and a Skip that loses files silently.
+    #
+    # The rule is the one already applied to the NLP_ prefix, generalised: a label that is already
+    # a word of the name is not added a second time. The name still contains every label, so
+    # everything that finds files by name (the reuse probes, the report, OpenOutputFiles) is
+    # unaffected - the names are simply no longer padded with repeats.
+    # ------------------------------------------------------------------------------------------
     useTime = False  # files become too long with the addition of datetime
     if inputDir!='':
         Dir = os.path.basename(os.path.normpath(inputDir))
@@ -927,9 +960,18 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
         inputfile, inputfile_noExtension, filename_no_hyperlink = getFilename(inputFilename)
         # use inputfile_noExtension for json
         inputfile = inputfile_noExtension
+        # getFilename only splits the path and drops the extension when the file EXISTS; given a path
+        # to a file not yet written it hands back the whole path. That path then goes into the name,
+        # and os.path.join(outputDir, 'NLP_x_C:\\...') resolves to the drive letter - so the output
+        # lands somewhere entirely different from the output directory, silently. Reduce to a bare
+        # stem either way.
+        inputfile = os.path.splitext(os.path.basename(str(inputfile).replace('\\', os.sep)))[0]
     else:
         inputfile = ''
     default_outputFilename_str =''
+    # a label already carried by the input filename is not repeated
+    if label1 != '' and label_already_in_name(label1, inputfile):
+        label1 = ''
     # do not add the NLP_ prefix if processing a file previously processed and with the prefix already added
     if inputfile[0:4]!='NLP_': #"NLP_" not in inputfile:
         if label1=='':
@@ -945,14 +987,9 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
         else:
             if inputfile[0:4]=='NLP_': #only replace first 4 characters since NLP may occur elsewhere in the filename
                 default_outputFilename_str = inputfile[0:4].replace('NLP_','NLP_' + label1 + '_') + inputfile[4:]
-    if len(str(label2)) > 0:
-        default_outputFilename_str = default_outputFilename_str + "_" + str(label2)
-    if len(str(label3)) > 0:
-        default_outputFilename_str = default_outputFilename_str + "_" + str(label3)
-    if len(str(label4)) > 0:
-        default_outputFilename_str = default_outputFilename_str + "_" + str(label4)
-    if len(str(label5)) > 0:
-        default_outputFilename_str = default_outputFilename_str + "_" + str(label5)
+    for _label in (label2, label3, label4, label5):
+        if len(str(_label)) > 0 and not label_already_in_name(_label, default_outputFilename_str):
+            default_outputFilename_str = default_outputFilename_str + "_" + str(_label)
     if useTime == True:
         default_outputFilename_str = default_outputFilename_str + '_' + re.sub(" ", "_", re.sub(':', '',
                                                                                                 re.sub('-', '_', str(
