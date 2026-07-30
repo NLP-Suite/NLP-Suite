@@ -44,8 +44,12 @@ CATEGORY_TITLE = {
 # They lazily import the underlying util module so this file imports cleanly for report testing.
 # Signatures are taken verbatim from the working calls in each analysis GUI's run().
 # ---------------------------------------------------------------------------------------------
-def _analysis_dir(c, label):
+def _analysis_dir(c, label, sub=''):
     """A subfolder of the profile for ONE analysis's files. The profile folder if it cannot be made.
+
+    *sub* nests a plain child inside it, WITHOUT repeating the corpus name: two kinds of space belong
+    together under GIS_<corpus>/geocodable and GIS_<corpus>/symbolic, and naming the corpus at every
+    level is what put paths over Windows' 260-character limit twice in one day.
 
     The report promises that "every individual output file is written to a category subfolder and
     LINKED from the report", and most analyses honour it because the utils they call make their own
@@ -67,14 +71,16 @@ def _analysis_dir(c, label):
         stem = os.path.basename(os.path.normpath(str(c['inputDir'])))
     else:
         stem = ''
-    sub = os.path.join(outputDir, (label + '_' + stem) if stem else label)
+    path = os.path.join(outputDir, (label + '_' + stem) if stem else label)
+    if sub:
+        path = os.path.join(path, sub)
     try:
-        os.makedirs(sub, exist_ok=True)
+        os.makedirs(path, exist_ok=True)
     except OSError as e:
         print('Corpus Profiler: could not make the %s subfolder (%s); writing beside the report'
               % (label, e))
         return outputDir
-    return sub
+    return path
 
 
 def _files(result):
@@ -1000,6 +1006,38 @@ def _run_character_arcs(c):
 # ---- character movement in space: Stanza tracks each character's locations -> animated migration map.
 #      The map geocodes only DISTINCT locations (bounded); we further CAP to the 40 most frequent so an
 #      unattended run on a big corpus can't stall on hundreds of Nominatim calls. ----
+def _run_spatial_symbolic(c):
+    """Actor-in-NON-geocodable-space events, from the CoNLL table the profile already has.
+
+    The row is labelled "Where does it all happen? (geocodable AND symbolic space)", and symbolic
+    space was a pointer at another GUI - so ticking it produced geocodable space and nothing else,
+    while the label promised both. It runs here now, off the same parse everything else uses.
+
+    Only the BUILD step. The distribution and the movement map need an actor ATTRIBUTE column that
+    is a research decision (which typology, whose categories), and guessing it in an unattended
+    sweep would put numbers in a report that nobody chose. The events table is what those steps
+    read: the Symbolic Space GUI opens it with Location and Sequence already selected.
+    """
+    conll = _find_existing_parse_csv(c, ('conll',),
+                                     ('Form', 'Lemma', 'POS', 'Head'), kind='')
+    if not conll:
+        print('>>> Symbolic space: no CoNLL table in this profile, so nothing to build from. '
+              'Tick a syntax/parse analysis, or run it from the Symbolic Space GUI.')
+        return []
+    import GIS_symbolic_util as ss
+    outdir = _analysis_dir(c, 'GIS', 'symbolic')
+    events_csv, dropped = ss.extract_actor_space_events(conll[0], outdir)
+    if not events_csv:
+        print('>>> Symbolic space: the CoNLL table produced no actor-in-space events.')
+        return []
+    # Never silently: a corpus that tells its story with "he" and "they" can lose most of its
+    # events here, and a thin table would otherwise read as a corpus with little movement in it.
+    if dropped:
+        print('>>> Symbolic space: %d event(s) dropped because the actor was a PRONOUN. Run '
+              'coreference resolution first to recover them.' % dropped)
+    return _files(events_csv)
+
+
 def _run_character_movement(c):
     import charts_util
     files = list(c.get('_ner_track_files') or [])   # shared NER location pass, if the parse phase primed it
@@ -1008,7 +1046,7 @@ def _run_character_movement(c):
     else:
         import NER_location_tracking_util
         files = _files(NER_location_tracking_util.main(
-            c['inputFilename'], c['inputDir'], _analysis_dir(c, 'entity_locations'),
+            c['inputFilename'], c['inputDir'], _analysis_dir(c, 'GIS', 'geocodable'),
             c['chartPackage'], c['dataTransformation']))
     csvs = [f for f in files if str(f).lower().endswith('.csv')]
     if not csvs:
@@ -1051,7 +1089,7 @@ def _run_spatial_map(c):
     else:
         import NER_location_tracking_util
         files = _files(NER_location_tracking_util.main(
-            c['inputFilename'], c['inputDir'], _analysis_dir(c, 'entity_locations'),
+            c['inputFilename'], c['inputDir'], _analysis_dir(c, 'GIS', 'geocodable'),
             c['chartPackage'], c['dataTransformation']))
     csvs = [f for f in files if str(f).lower().endswith('.csv')]
     if not csvs:
@@ -1133,8 +1171,10 @@ REGISTRY = {
                              label='Geocodable space — proportional-symbol map of corpus locations (Nominatim/Google)'),
     'spatial_gis':      dict(category='spatial', kind='gui', gui_script='GIS_main.py',
                              label='Full geocoding & mapping — geocoder choice, API key, Google Earth / folium / distances  (opens GIS GUI)'),
-    'spatial_symbolic': dict(category='spatial', kind='gui', gui_script='GIS_symbolic_main.py',
-                             label='Symbolic space — narrative / gendered space typology  (opens Symbolic Space GUI)'),
+    'spatial_symbolic': dict(category='spatial', kind='batch', run=_run_spatial_symbolic,
+                             label='Symbolic space — actors in NON-geocodable space (house, field, forest, threshold)'),
+    'spatial_symbolic_more': dict(category='spatial', kind='gui', gui_script='GIS_symbolic_main.py',
+                             label='Symbolic space: distribution & movement — needs an actor attribute you choose  (opens Symbolic Space GUI)'),
     # --- semantics (snapshot: WordNet noun/verb classes; deeper tools via the Semantic GUI) ---
     'semantic_classes': dict(category='semantics', kind='batch', run=_run_semantic_classes,
                              label='Noun & verb classes (WordNet top synsets)'),
@@ -1373,7 +1413,7 @@ def _prime_parse_cache(ctx, selected):
             # and the maps were four loose files in the profile folder. Both runners derive their
             # map directory from this table's path, so they follow it here.
             ctx['_ner_track_files'] = _files(NER_location_tracking_util.main(
-                ctx['inputFilename'], ctx['inputDir'], _analysis_dir(ctx, 'entity_locations'),
+                ctx['inputFilename'], ctx['inputDir'], _analysis_dir(ctx, 'GIS', 'geocodable'),
                 ctx['chartPackage'], ctx['dataTransformation']))
         except Exception as e:
             print('Corpus Profiler: shared NER location pass failed (%s); dimensions will parse individually' % e)
