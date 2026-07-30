@@ -921,6 +921,28 @@ def _name_tokens(name):
     return [t for t in str(name).split('_') if t]
 
 
+# Characters a Windows filename cannot hold. The COLON is the one that bites without a sound:
+# Windows reads "name:rest" as an NTFS alternate data stream, so a label taken from a column
+# header - 'Sentence iconicity (Mean score: 1 Not iconic-7 Very iconic)' - wrote a ZERO-BYTE file
+# named 'NLP_Sentence iconicity (Mean score', with no extension, and put the data in a stream
+# nothing ever reads. The iconicity chart had been failing that way unnoticed for as long as the
+# column has been named that: the file exists, so nothing looks wrong until you open it.
+# A slash is the mirror image - it writes into a subdirectory, or above one.
+_ILLEGAL_IN_FILENAME = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
+
+
+def safe_filename_part(name):
+    """*name* with everything a filename cannot hold replaced, and no trailing dot or space.
+
+    Only ever apply this to the NAME, never to a full path: a directory legitimately contains ':'
+    and os.sep. Colons become '-' so a range stays readable ('1 Not iconic-7 Very iconic' keeps its
+    sense); the rest become '_'. Windows also refuses a name ending in a dot or a space, and
+    silently strips them, which turns two different names into one.
+    """
+    cleaned = _ILLEGAL_IN_FILENAME.sub(lambda m: '-' if m.group() == ':' else '_', str(name))
+    return cleaned.rstrip(' .')
+
+
 def label_already_in_name(label, name):
     """Is *label* already one of the words of *name*?
 
@@ -954,7 +976,27 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
     useTime = False  # files become too long with the addition of datetime
     if inputDir!='':
         Dir = os.path.basename(os.path.normpath(inputDir))
-        inputfile='Dir_' + Dir
+        # ------------------------------------------------------------------------------------
+        # "Dir_<corpus>" is a THIRD copy of the corpus name when the output folders already
+        # carry it. A real Corpus Profiler path:
+        #   ...\corpus_profile_harrypotter_r_corpus_10_17_2024\abstr-concret_harrypotter_r_corpus_10_17_2024\
+        #      NLP_Concreteness (Mean score)_byDoc_freq_abstr-concret-vocab_Dir_harrypotter_r_corpus_10_17_2024_...
+        # 250 characters, of which the corpus name is 31 and appears three times, and Windows
+        # then mangles the middle into "_D_14337fb5_s_" to fit 255 - a name no longer readable
+        # and no longer reliably matchable. Dropping the repetition here takes that path to 226.
+        #
+        # Only when the output directory ALREADY names the corpus: a file written somewhere that
+        # does not say which corpus it came from still says so itself, which is what this was
+        # for. Nothing matches on the token - checked across src/ - so lookups are unaffected.
+        # ------------------------------------------------------------------------------------
+        # Compared against the folder being WRITTEN INTO, not the whole path: any long path
+        # eventually contains a short corpus name somewhere ("NLP_output" contains "output"), and
+        # dropping the token on that would strip it from files whose folder never named the corpus.
+        _out_folder = os.path.basename(os.path.normpath(str(outputDir))) if outputDir else ''
+        if Dir and _out_folder and Dir.lower() in _out_folder.lower():
+            inputfile = ''
+        else:
+            inputfile='Dir_' + Dir
         inputfile_noExtension=''
     elif inputFilename!='':
         inputfile, inputfile_noExtension, filename_no_hyperlink = getFilename(inputFilename)
@@ -995,6 +1037,11 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
                                                                                                 re.sub('-', '_', str(
                                                                                                     datetime.datetime.now())))[
                                                                                          :-7])
+    # Labels come from column headers, chart titles and user text, and some hold characters a
+    # filename cannot. See safe_filename_part: this is where a colon in a column name was quietly
+    # producing a zero-byte file with no extension. Applied to the NAME only - the output directory
+    # legitimately contains ':' and os.sep.
+    default_outputFilename_str = safe_filename_part(default_outputFilename_str)
     default_outputFilename_str = default_outputFilename_str + outputExtension
     # checking if file with that name exists, if so adding _ and integer to end
     if disable_suffix == False:
