@@ -367,33 +367,129 @@ def plot_character_comparison(df, characters, emotion, outputDir, base_name, win
     return out_file
 
 
+# A 14-inch figure at 150 dpi is about 2100 pixels wide. Below this many stripes each one is a
+# couple of pixels and a per-appearance timeline reads; above it the stripes are thinner than a
+# pixel, overdraw one another, and what you see is whichever drew LAST rather than what dominates.
+_MAX_STRIPES = 400
+_TIMELINE_BINS = 100
+
+
+def emotion_mix_by_bin(char_df, n_bins):
+    """(labels, mix, dominant, counts) for one character's appearances, in narrative order.
+
+    mix[emotion] is that emotion's SHARE of each bin, so every bin sums to 1 and the picture is the
+    changing MIXTURE rather than a count that mostly tracks how often the character appears.
+
+    Shares rather than winners on purpose: taking only the per-appearance winner threw away
+    everything else felt in that sentence, and with eight emotions a winner can win on a small
+    plurality. Keeping the other seven visible is what makes a shift legible.
+
+    Equal-COUNT bins, not equal-width: equal widths would be empty wherever the character is absent
+    for a stretch, and a gap in a mixture chart reads as an emotion rather than as absence.
+
+    Empty structures for an empty frame rather than an exception: a character with no rows is a
+    reason to skip a chart, not to end a profile.
+    """
+    emotion_cols = [e.capitalize() for e in EIGHT_EMOTIONS]
+    present = [c for c in emotion_cols if c in char_df.columns]
+    n = len(char_df)
+    if n == 0 or not present:
+        return [], {}, [], []
+
+    n_bins = max(1, min(int(n_bins), n))
+    edges = [round(i * n / n_bins) for i in range(n_bins + 1)]
+
+    labels, dominant, counts = [], [], []
+    mix = {c: [] for c in present}
+    for b in range(n_bins):
+        lo, hi = edges[b], edges[b + 1]
+        if hi <= lo:
+            hi = lo + 1
+        chunk = char_df.iloc[lo:hi]
+        totals = {c: float(chunk[c].sum()) for c in present}
+        grand = sum(totals.values())
+        for c in present:
+            mix[c].append((totals[c] / grand) if grand else 0.0)
+        dominant.append(max(totals, key=totals.get) if grand else '')
+        counts.append(len(chunk))
+        labels.append(lo)
+    return labels, mix, dominant, counts
+
+
 def plot_dominant_emotion_timeline(df, character, outputDir, base_name):
+    """How the mixture of a character's emotions shifts across the narrative.
+
+    This drew one bar per appearance. For Harry that is 16,641 bars across about 2100 pixels -
+    eight to a pixel, each thinner than the pixel holding it - so the chart showed whichever bar
+    drew last and read as a solid band of noise. It now BINS the appearances and shows the share of
+    each emotion per bin, with the per-bin winner as a strip above. Under _MAX_STRIPES appearances
+    the per-appearance strip is still drawn: at that size it is readable and more precise.
+    """
     sort_col = 'Corpus Position' if 'Corpus Position' in df.columns else 'Sentence ID'
     char_df = df[df['Character'] == character].sort_values(sort_col).reset_index(drop=True)
     if len(char_df) < 2:
         return None
 
     emotion_cols = [e.capitalize() for e in EIGHT_EMOTIONS]
-    dominant = char_df[emotion_cols].idxmax(axis=1)
-
-    fig, ax = plt.subplots(figsize=(14, 3))
-    color_map = {e.capitalize(): NRC_COLORS[e] for e in EIGHT_EMOTIONS}
-
-    for i, emo in enumerate(dominant):
-        ax.barh(0, 1, left=i, color=color_map.get(emo, '#999999'), edgecolor='none')
-
-    ax.set_xlim(0, len(dominant))
-    ax.set_yticks([])
-    ax.set_xlabel(f'{character}\'s appearances, in order', fontsize=10)
     safe_char = character.replace('/', '_').replace('\\', '_').replace(' ', '_')[:30]
-    ax.set_title(f'Dominant Emotion Timeline — {character} ({base_name})', fontsize=12)
+    out_file = os.path.join(outputDir, f'dominant_emotion_timeline_{safe_char}.png')
+    color_map = {e.capitalize(): NRC_COLORS[e] for e in EIGHT_EMOTIONS}
+    n = len(char_df)
+
+    if n <= _MAX_STRIPES:
+        dominant = char_df[emotion_cols].idxmax(axis=1)
+        fig, ax = plt.subplots(figsize=(14, 3))
+        ax.bar(range(len(dominant)), [1] * len(dominant), width=1.0,
+               color=[color_map.get(e, '#999999') for e in dominant], edgecolor='none')
+        ax.set_xlim(-0.5, len(dominant) - 0.5)
+        ax.set_ylim(0, 1)
+        ax.set_yticks([])
+        ax.set_xlabel(f"{character}'s appearances, in order  ({n} in all)", fontsize=10)
+        ax.set_title(f'Dominant Emotion Timeline — {character} ({base_name})', fontsize=12)
+    else:
+        labels, mix, dominant, counts = emotion_mix_by_bin(char_df, _TIMELINE_BINS)
+        if not labels:
+            return None
+        n_bins = len(labels)
+        per_bin = max(1, n // n_bins)
+        fig, (ax_top, ax) = plt.subplots(
+            2, 1, figsize=(14, 4.6), sharex=True,
+            gridspec_kw={'height_ratios': [1, 6], 'hspace': 0.10})
+
+        # the winner per stretch: the question the old chart asked, at a width you can see
+        ax_top.bar(range(n_bins), [1] * n_bins, width=1.0,
+                   color=[color_map.get(e, '#999999') for e in dominant], edgecolor='none')
+        ax_top.set_xlim(-0.5, n_bins - 0.5)
+        ax_top.set_ylim(0, 1)
+        ax_top.set_yticks([])
+        ax_top.set_ylabel('strongest', fontsize=8, rotation=0, ha='right', va='center')
+        ax_top.set_title(f'Emotional Mixture Across the Narrative — {character} ({base_name})',
+                         fontsize=12)
+
+        # and the whole mixture underneath, stacked to 1
+        bottom = [0.0] * n_bins
+        for e in EIGHT_EMOTIONS:
+            col = e.capitalize()
+            if col not in mix:
+                continue
+            ax.bar(range(n_bins), mix[col], width=1.0, bottom=bottom,
+                   color=NRC_COLORS[e], edgecolor='none')
+            bottom = [b + v for b, v in zip(bottom, mix[col])]
+        ax.set_xlim(-0.5, n_bins - 0.5)
+        ax.set_ylim(0, 1)
+        ax.set_ylabel('share of emotion words', fontsize=9)
+        ax.set_xlabel(f"{character} across the narrative — {n_bins} stretches of about "
+                      f"{per_bin} appearances each ({n} in all)", fontsize=10)
 
     patches = [mpatches.Patch(color=NRC_COLORS[e], label=e.capitalize()) for e in EIGHT_EMOTIONS]
-    ax.legend(handles=patches, loc='upper center', bbox_to_anchor=(0.5, -0.25),
+    ax.legend(handles=patches, loc='upper center', bbox_to_anchor=(0.5, -0.30),
               ncol=4, fontsize=8)
 
-    plt.tight_layout()
-    out_file = os.path.join(outputDir, f'dominant_emotion_timeline_{safe_char}.png')
+    # tight_layout cannot handle the two-panel gridspec (it warns "Axes that are not compatible")
+    # and would re-space the panels it was given fixed ratios for. bbox_inches='tight' at save time
+    # already trims the margins, which is all that was wanted.
+    if n <= _MAX_STRIPES:
+        plt.tight_layout()
     plt.savefig(out_file, dpi=150, bbox_inches='tight')
     plt.close()
     return out_file

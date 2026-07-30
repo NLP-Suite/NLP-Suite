@@ -44,6 +44,39 @@ CATEGORY_TITLE = {
 # They lazily import the underlying util module so this file imports cleanly for report testing.
 # Signatures are taken verbatim from the working calls in each analysis GUI's run().
 # ---------------------------------------------------------------------------------------------
+def _analysis_dir(c, label):
+    """A subfolder of the profile for ONE analysis's files. The profile folder if it cannot be made.
+
+    The report promises that "every individual output file is written to a category subfolder and
+    LINKED from the report", and most analyses honour it because the utils they call make their own
+    subfolder. Seven did not, and wrote straight into the profile folder: 40 loose files - fifteen
+    from the semantic classes alone, and a 2.1 GB vector dump - in the one folder a reader opens.
+
+    NOT IO_files_util.make_output_subdirectory: that DELETES an existing folder (shutil.rmtree, and
+    with silent=True it does it without asking). Reuse depends on those files still being there, so
+    the folder is created only when absent and otherwise used as it stands. The naming follows the
+    same rule, so folders sit alongside the ones the utils make.
+    """
+    outputDir = c.get('outputDir') or ''
+    if not outputDir or not label:
+        return outputDir
+    if c.get('inputFilename'):
+        stem = os.path.basename(str(c['inputFilename']))
+        stem = stem[:-4] if stem.lower().endswith('.txt') else os.path.splitext(stem)[0]
+    elif c.get('inputDir'):
+        stem = os.path.basename(os.path.normpath(str(c['inputDir'])))
+    else:
+        stem = ''
+    sub = os.path.join(outputDir, (label + '_' + stem) if stem else label)
+    try:
+        os.makedirs(sub, exist_ok=True)
+    except OSError as e:
+        print('Corpus Profiler: could not make the %s subfolder (%s); writing beside the report'
+              % (label, e))
+        return outputDir
+    return sub
+
+
 def _files(result):
     """Normalize a util return (str | list | (list, x) | None) into a flat list of paths."""
     if result is None:
@@ -156,7 +189,8 @@ def _run_line_length(c):
 def _run_yule(c):
     import statistics_txt_util
     return _files(statistics_txt_util.yule(
-        c['window'], c['inputFilename'], c['inputDir'], c['outputDir'], c['config_filename']))
+        c['window'], c['inputFilename'], c['inputDir'], _analysis_dir(c, 'vocabulary_richness'),
+        c['config_filename']))
 
 def _run_word_shape(keyword):
     # process_words(window, configFileName, inputFilename, inputDir, outputDir, openOutputFiles,
@@ -164,8 +198,11 @@ def _run_word_shape(keyword):
     #   the menu keyword it switches on ('Hapax legomena', 'capital', 'Vowel', 'Word length', ...)
     def runner(c):
         import statistics_txt_util
+        # one folder per shape, named after the keyword: 'capital' alone wrote nine loose files
+        label = 'words_' + str(keyword).replace(' ', '_').lower()
         return _files(statistics_txt_util.process_words(
-            c['window'], c['config_filename'], c['inputFilename'], c['inputDir'], c['outputDir'],
+            c['window'], c['config_filename'], c['inputFilename'], c['inputDir'],
+            _analysis_dir(c, label),
             False, c['chartPackage'], c['dataTransformation'], keyword, c['language']))
     return runner
 
@@ -646,7 +683,8 @@ def _run_semantic_classes(c):
             continue
         try:
             out += _files(semantic_aggregation_WordNet_util.aggregate_GoingUP(
-                '', f, c['outputDir'], c['config_filename'], tag, False, cp, dt, c['language']))
+                '', f, _analysis_dir(c, 'semantic_classes'), c['config_filename'], tag,
+                False, cp, dt, c['language']))
         except Exception as e:
             print('Corpus Profiler: WordNet %s aggregation skipped: %s' % (tag, e))
 
@@ -655,13 +693,14 @@ def _run_semantic_classes(c):
         for agg, name in ((semantic_aggregation_util.aggregate_VerbNet, 'VerbNet'),
                           (semantic_aggregation_util.aggregate_FrameNet, 'FrameNet')):
             try:
-                out += _files(agg(verb_file, c['outputDir'], 'VERB', cp, dt))
+                out += _files(agg(verb_file, _analysis_dir(c, 'semantic_classes'),
+                                  'VERB', cp, dt))
             except Exception as e:
                 print('Corpus Profiler: %s VERB aggregation skipped: %s' % (name, e))
     if noun_file:
         try:
             out += _files(semantic_aggregation_util.aggregate_FrameNet(
-                noun_file, c['outputDir'], 'NOUN', cp, dt))
+                noun_file, _analysis_dir(c, 'semantic_classes'), 'NOUN', cp, dt))
         except Exception as e:
             print('Corpus Profiler: FrameNet NOUN aggregation skipped: %s' % e)
     return out
@@ -675,7 +714,7 @@ def _run_embeddings(c):
     #   keywords_var, lemmatize_var, remove_stopwords_var, configFileName). Defaults mirror the
     #   Word2Vec GUI: plot vectors, 2-D t-SNE, top-200 words (bounded), lemmatize, drop stopwords.
     out = BERT_util.word_embeddings_BERT(
-        c['window'], c['inputFilename'], c['inputDir'], c['outputDir'], False,
+        c['window'], c['inputFilename'], c['inputDir'], _analysis_dir(c, 'embeddings'), False,
         c['chartPackage'], c['dataTransformation'],
         'Plot word vectors', '2D', False, 200, '', True, True, c['config_filename'])
     return _files(out)
@@ -794,8 +833,11 @@ def _stanza_pos_noun_verb_files(c):
 
     verbs = _lemmas(upos == 'VERB', 'v')
     nouns = _lemmas(upos.isin(['NOUN', 'PROPN']), 'n')
-    vpath = os.path.join(c['outputDir'], 'NLP_Stanza_POS_lemma_Verbs.csv')
-    npath = os.path.join(c['outputDir'], 'NLP_Stanza_POS_lemma_Nouns.csv')
+    # beside the aggregations they feed, not in the profile folder: these are working files of the
+    # semantic analysis, not results a reader opens
+    _sem = _analysis_dir(c, 'semantic_classes')
+    vpath = os.path.join(_sem, 'NLP_Stanza_POS_lemma_Verbs.csv')
+    npath = os.path.join(_sem, 'NLP_Stanza_POS_lemma_Nouns.csv')
     if verbs:
         pd.DataFrame({'Word': verbs}).to_csv(vpath, index=False, encoding='utf-8')
     if nouns:
@@ -938,7 +980,7 @@ def _run_sentiment(c):
 def _run_topics(c):
     import topic_modeling_gensim_util
     return _files(topic_modeling_gensim_util.run_Gensim(
-        c['window'], c['inputDir'], c['outputDir'], c['config_filename'],
+        c['window'], c['inputDir'], _analysis_dir(c, 'topics_Gensim'), c['config_filename'],
         10, True, True, False, False, False,
         c['chartPackage'], c['dataTransformation'], force=True))
 
@@ -966,7 +1008,8 @@ def _run_character_movement(c):
     else:
         import NER_location_tracking_util
         files = _files(NER_location_tracking_util.main(
-            c['inputFilename'], c['inputDir'], c['outputDir'], c['chartPackage'], c['dataTransformation']))
+            c['inputFilename'], c['inputDir'], _analysis_dir(c, 'entity_locations'),
+            c['chartPackage'], c['dataTransformation']))
     csvs = [f for f in files if str(f).lower().endswith('.csv')]
     if not csvs:
         return files
@@ -1008,7 +1051,8 @@ def _run_spatial_map(c):
     else:
         import NER_location_tracking_util
         files = _files(NER_location_tracking_util.main(
-            c['inputFilename'], c['inputDir'], c['outputDir'], c['chartPackage'], c['dataTransformation']))
+            c['inputFilename'], c['inputDir'], _analysis_dir(c, 'entity_locations'),
+            c['chartPackage'], c['dataTransformation']))
     csvs = [f for f in files if str(f).lower().endswith('.csv')]
     if not csvs:
         return files
@@ -1325,8 +1369,11 @@ def _prime_parse_cache(ctx, selected):
         try:
             import NER_location_tracking_util
             print('>>> Corpus Profiler: ONE NER location pass shared by Spatial + Characters-movement')
+            # its own folder, shared by both dimensions: the tracking table, the location summary
+            # and the maps were four loose files in the profile folder. Both runners derive their
+            # map directory from this table's path, so they follow it here.
             ctx['_ner_track_files'] = _files(NER_location_tracking_util.main(
-                ctx['inputFilename'], ctx['inputDir'], ctx['outputDir'],
+                ctx['inputFilename'], ctx['inputDir'], _analysis_dir(ctx, 'entity_locations'),
                 ctx['chartPackage'], ctx['dataTransformation']))
         except Exception as e:
             print('Corpus Profiler: shared NER location pass failed (%s); dimensions will parse individually' % e)
