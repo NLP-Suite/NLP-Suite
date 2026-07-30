@@ -179,6 +179,16 @@ def _elapsed_message(seconds):
     return ', '.join(parts[:-1]) + ' and ' + parts[-1]
 
 
+def _run_stamp():
+    """When this gallery was rendered, e.g. '30 July 2026, 06:14'.
+
+    The release number says which code was photographed; it cannot say WHEN. A gallery kept on disk
+    from an older run looks exactly as current as one taken a minute ago, and these are read as
+    evidence that the GUIs are fine.
+    """
+    return time.strftime('%d %B %Y, %H:%M')
+
+
 def main():
     plat = {'darwin': 'macOS', 'win32': 'Windows', 'linux': 'Linux'}.get(sys.platform, sys.platform)
     # The release version the GUIs display (lib/release_version.txt, read by GUI_util.get_local_release
@@ -313,6 +323,9 @@ def main():
  h1{font-size:20px;margin:0 0 2px} h2{font-size:16px;margin:30px 0 2px;border-bottom:2px solid #ccc;padding-bottom:4px}
  .cnt{color:#999;font-weight:400;font-size:13px} .sub{color:#666;margin:2px 0 14px;font-size:12px}
  .rel{font-weight:700;font-size:15px;color:#c0392b;margin:2px 0 8px}
+ /* the run date sits beside the release, in the ordinary text colour: it says WHEN this gallery was
+    taken, which the release number alone cannot - a gallery kept from an older run looks current */
+ .rel .ran{font-weight:400;color:#666}
  .toc{display:grid;grid-template-columns:1fr 1fr;gap:6px 30px;background:#fff;border:1px solid #ddd;
    border-radius:8px;padding:14px 18px;margin:10px 0 8px}
  .toc h3{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#888}
@@ -335,7 +348,9 @@ def main():
    figcaption,h2{border-color:#2c2d31}.sub,.cnt{color:#999}.toc a{color:#8ab}}
 </style>
 <h1>NLP Suite - GUI gallery</h1>
-''' + ('<p class="rel">Release ' + esc(release) + '</p>' if release else '') + '''
+''' + ('<p class="rel">Release ' + esc(release) +
+       '<span class="ran"> &middot; rendered ' + esc(_run_stamp()) + '</span></p>'
+       if release else '<p class="rel"><span class="ran">rendered ' + esc(_run_stamp()) + '</span></p>') + '''
 <p class="sub">''' + '%d GUIs &middot; %d flagged &middot; rendered on %s (this machine) &middot; click any shot for full resolution' % (len(cards), n_off, plat) + '''</p>
 <div class="toc">
  <div><h3>Flagged <span class="cnt">''' + str(len(flagged)) + '''</span></h3><ul>''' + toc(flagged) + '''</ul>

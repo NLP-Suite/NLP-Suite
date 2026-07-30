@@ -92,8 +92,15 @@ for i in range(len(S)):
         a, b = S[i], S[j]
         if b[0] - a[0] > 60 and b[0] >= a[2]:
             break  # b starts clear to the right of a; no later b overlaps a either
-        if abs(a[0] - b[0]) <= 6:
-            continue  # same-x stack, intentional
+        # A same-x stack IS intentional for the INPUT/OUTPUT display areas: two Text widgets of the
+        # same size layered at one spot. It is NOT intentional for two different widgets dropped into
+        # one grid cell, and the old test excluded both - it dismissed ANY pair sharing a left edge,
+        # which is exactly the shape of a row collision. The Corpus Profiler had two Checkbuttons at
+        # x=88 on one row, "Open output files" painted over "Rebuild the report & summary...", and
+        # this gate reported overlaps=0. The exemption now requires the same class AND near the same
+        # width, which a real layered stack has and a collision does not.
+        if abs(a[0] - b[0]) <= 6 and a[4] == b[4] and abs((a[2] - a[0]) - (b[2] - b[0])) <= 6:
+            continue
         if v_overlap(a, b) and min(a[2], b[2]) - max(a[0], b[0]) > 8:
             overlaps += 1
             if not worst:

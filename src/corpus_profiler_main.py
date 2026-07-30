@@ -585,6 +585,22 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         "index), with a per-document filter. Only the DISTINCT locations are geocoded (bounded), and we cap to the "
         "40 most frequent, so a big-corpus run can't stall on the network.\n\n"
         "Whole-narrative 'shape of stories' (heavy BERT + clustering) stays in the Sentiment Analysis GUI.")
+    # The Rebuild row needs its OWN help button, and not only for the help: every row here advances the
+    # counter, and GUI_bottom starts laying out the shared bottom section at the row this function
+    # returns. Adding the Rebuild checkbox to the body without adding a row here left the two counts
+    # equal, so GUI_util's "Open output files" checkbox was placed ON TOP of the Rebuild checkbox -
+    # you saw one label painted over the other, reading as "Open output files & summary from an
+    # EXISTING profile".
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+        "REBUILD THE REPORT & SUMMARY runs NO analysis. It reads the tables a previous profile of this "
+        "corpus left in the output directory and writes the HTML report and the paper-style summary "
+        "again from them.\n\n"
+        "Use it when you want a change to a chart, an interpretation or the wording of the summary "
+        "without paying for the parsing again - a full profile of a large corpus is hours, this is "
+        "seconds. Nothing is re-analysed, so the numbers cannot change underneath you.\n\n"
+        "It needs a profile already in the output directory. With nothing there to read, tick the "
+        "analyses you want instead and run them.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                                          "NLP Suite Help", GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer - 1

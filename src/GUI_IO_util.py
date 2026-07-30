@@ -443,6 +443,13 @@ GRID_OPT_OUT = {
     'NLP_setup_package_language_main.py': 'all',
     'DB_SQL_main.py': 'all',
     'parsers_annotators_main.py': 'all',
+    # Under grid this GUI came out 1539px wide in a 1260px window, putting RUN and CLOSE off the
+    # right-hand edge - a GUI you cannot run. The shared I/O row is the cause: its display box ends at
+    # x=1372 on its own, and the four unlabelled open-file/folder buttons carry on to 1539. That row
+    # belongs to all 50 GUIs, so widening the window or moving those buttons changes every one of
+    # them; this GUI keeps the .place layout it had before the grid port until that is done properly.
+    # Measured with tests/gui_layout_gate.py.
+    'corpus_profiler_main.py': 'all',
     'charts_Excel_main.py': 'darwin',
     'file_manager_main.py': 'darwin',
 }
