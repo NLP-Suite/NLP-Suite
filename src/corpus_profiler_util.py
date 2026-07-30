@@ -1013,10 +1013,18 @@ def _run_spatial_symbolic(c):
     space was a pointer at another GUI - so ticking it produced geocodable space and nothing else,
     while the label promised both. It runs here now, off the same parse everything else uses.
 
-    Only the BUILD step. The distribution and the movement map need an actor ATTRIBUTE column that
-    is a research decision (which typology, whose categories), and guessing it in an unattended
-    sweep would put numbers in a report that nobody chose. The events table is what those steps
-    read: the Symbolic Space GUI opens it with Location and Sequence already selected.
+    BUILD, then everything BUILD is enough for.
+
+    I first shipped only BUILD, on the grounds that the later steps need an actor ATTRIBUTE that is
+    a research decision. That was wrong twice over. BUILD fills in actor_type itself, from the
+    social-actor typology - the column is there when it finishes. And MOVEMENT needs no attribute at
+    all: it needs a place and an order, which are space_type and Sentence ID, both in the table it
+    just wrote. So a sweep that stopped at BUILD left the user with a csv and no way to see it.
+
+    Movement (transitions, graph, interactive timeline) runs. The attribute x space cross-tab runs
+    too, since actor_type exists - with the share of unclassified actors REPORTED, because proper
+    names are deliberately never guessed at, so a corpus of named characters leaves most events
+    unclassified and a cross-tab that does not say so would read as a finding about nobody.
     """
     conll = _find_existing_parse_csv(c, ('conll',),
                                      ('Form', 'Lemma', 'POS', 'Head'), kind='')
@@ -1035,7 +1043,67 @@ def _run_spatial_symbolic(c):
     if dropped:
         print('>>> Symbolic space: %d event(s) dropped because the actor was a PRONOUN. Run '
               'coreference resolution first to recover them.' % dropped)
-    return _files(events_csv)
+    out = _files(events_csv)
+
+    try:
+        import pandas as pd
+        df = pd.read_csv(events_csv, encoding='utf-8-sig', on_bad_lines='skip')
+    except Exception as e:
+        print('Corpus Profiler: symbolic events written but not readable back (%s)' % e)
+        return out
+    if 'space_type' not in df.columns or df.empty:
+        return out
+
+    # ---- movement: needs a place and an order, nothing chosen by anybody --------------------
+    try:
+        import GIS_symbolic_util as ss
+        seq_col = 'Sentence ID' if 'Sentence ID' in df.columns else None
+        d = df.sort_values([c for c in ('Document ID', seq_col) if c]) if seq_col else df
+        sequence = [str(x) for x in d['space_type'].tolist() if str(x).strip()]
+        if len(sequence) > 1:
+            # classify=False: these are already space CATEGORIES (BUILD classified them). Left at
+            # the default they are re-classified as raw place nouns, 'domestic_interior' matches
+            # nothing, and the result is zero transitions from 5,228 events.
+            _path, edges = ss.narrative_transitions(sequence, classify=False)
+            trans_csv = os.path.join(outdir, 'symbolic_space_transitions.csv')
+            pd.DataFrame(edges, columns=['from', 'to', 'count']).to_csv(
+                trans_csv, index=False, encoding='utf-8-sig')
+            out += [trans_csv]
+            png = os.path.join(outdir, 'symbolic_space_movement.png')
+            ss.plot_transition_graph(edges, png)
+            if os.path.isfile(png):
+                out += [png]
+        timeline = ss.symbolic_movement_timeline(events_csv, outdir, location_col='space_type')
+        if timeline:
+            out += _files(timeline)
+    except Exception as e:
+        print('Corpus Profiler: symbolic movement skipped (%s)' % e)
+
+    # ---- actor type x space, with the unclassified share said out loud ----------------------
+    try:
+        if 'actor_type' in df.columns:
+            types = df['actor_type'].astype(str).str.strip().str.lower()
+            unclassified = int((types.isin(('', 'nan', 'unclassified'))).sum())
+            share = 100.0 * unclassified / max(len(df), 1)
+            print('>>> Symbolic space: %d of %d events (%.0f%%) have an UNCLASSIFIED actor - the '
+                  'typology never guesses at proper names, so named characters land here. The '
+                  'cross-tab describes the remaining %.0f%%.'
+                  % (unclassified, len(df), share, 100.0 - share))
+            # (attribute, category) PAIRS, already classified - not a DataFrame, and not raw nouns
+            pairs = list(zip(df['actor_type'].astype(str), df['space_type'].astype(str)))
+            table = ss.attribute_space_crosstab(pairs, classify=False)
+            csv_out = os.path.join(outdir, 'symbolic_space_actor_type_x_space.csv')
+            stats = ss.crosstab_stats(table)
+            ss.save_crosstab_csv(table, csv_out, stats=stats)
+            out += [csv_out]
+            heat = os.path.join(outdir, 'symbolic_space_actor_type_x_space_heatmap.png')
+            ss.plot_attribute_space_heatmap(table, heat, stats=stats)
+            if os.path.isfile(heat):
+                out += [heat]
+    except Exception as e:
+        print('Corpus Profiler: symbolic distribution skipped (%s)' % e)
+
+    return [f for f in out if f]
 
 
 def _run_character_movement(c):
