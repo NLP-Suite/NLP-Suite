@@ -158,3 +158,53 @@ class TestTheCorpusGuardOnAWholeRun:
         prof.save_manifest(out, [a_result(out)], ctx)
         (tmp_path / 'HPbooks' / 'c.txt').write_text('Ron said nothing.', encoding='utf-8')
         assert prof.manifest_corpus(out)[0] != prof.corpus_fingerprint(ctx)[0]
+
+
+class TestAProfileFolderIsPortable:
+    """Copying the output folder is the obvious way to keep a baseline before re-running.
+
+    With absolute paths in the manifest, the copy still named files in the ORIGINAL: reuse read the
+    original's outputs, the copy gained nothing, and deleting the original broke the copy entirely.
+    """
+
+    def test_paths_are_stored_relative_to_the_output_folder(self, tmp_path):
+        ctx = a_corpus(tmp_path)
+        out = an_output(ctx)
+        prof.save_manifest(out, [a_result(out, 'ngrams')], ctx)
+        with open(os.path.join(out, prof.MANIFEST_NAME), encoding='utf-8') as fh:
+            stored = json.load(fh)['results'][0]['files'][0]
+        assert not os.path.isabs(stored)
+        assert stored == 'table.csv'
+
+    def test_a_COPIED_profile_refers_to_its_own_files(self, tmp_path):
+        import shutil
+        ctx = a_corpus(tmp_path)
+        out = an_output(ctx)
+        prof.save_manifest(out, [a_result(out, 'ngrams')], ctx)
+
+        copy = str(tmp_path / 'baseline')
+        shutil.copytree(out, copy)
+        shutil.rmtree(out)                     # the original is gone; the copy must stand alone
+
+        loaded = prof.load_manifest(copy)
+        assert loaded and loaded[0]['files']
+        assert os.path.dirname(loaded[0]['files'][0]) == copy
+        assert prof.reusable_from_manifest(ctx, 'ngrams', loaded, True)
+
+    def test_an_older_manifest_with_absolute_paths_still_works(self, tmp_path):
+        """Backwards compatible: manifests already on disk hold absolute paths."""
+        import json
+        ctx = a_corpus(tmp_path)
+        out = an_output(ctx)
+        rec = a_result(out, 'ngrams')
+        with open(os.path.join(out, prof.MANIFEST_NAME), 'w', encoding='utf-8') as fh:
+            json.dump({'version': 1, 'results': [rec]}, fh)     # absolute, as written before
+        loaded = prof.load_manifest(out)
+        assert loaded and loaded[0]['files']
+        assert prof.reusable_from_manifest(ctx, 'ngrams', loaded, True)
+
+    def test_a_file_outside_the_output_folder_stays_absolute(self, tmp_path):
+        elsewhere = tmp_path / 'elsewhere'
+        elsewhere.mkdir()
+        stray = str(elsewhere / 'x.csv')
+        assert prof._manifest_store_path(stray, str(tmp_path / 'out')) == stray

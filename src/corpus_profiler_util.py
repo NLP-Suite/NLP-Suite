@@ -1423,6 +1423,32 @@ def run_profile(ctx, selected):
 MANIFEST_NAME = 'NLP_corpus_profile_manifest.json'
 
 
+def _manifest_store_path(path, outputDir):
+    """A file's path as the manifest should record it: RELATIVE to the output folder when it lives
+    inside it, absolute when it does not.
+
+    Absolute paths made a profile folder unportable. Copy the folder - the obvious way to keep a
+    baseline before re-running - and the copy's manifest still names files in the original: reuse
+    reads the original's outputs, the copy gains nothing, and deleting the original breaks the copy
+    entirely. Relative paths make a copied or moved profile work as itself.
+    """
+    try:
+        rel = os.path.relpath(str(path), str(outputDir))
+    except (ValueError, TypeError):          # different drive on Windows, or not a path at all
+        return str(path)
+    if rel.startswith('..'):                 # genuinely outside the folder: keep it absolute
+        return str(path)
+    return rel.replace(os.sep, '/')          # '/' so a manifest written on Windows reads on a Mac
+
+
+def _manifest_resolve_path(path, outputDir):
+    """The stored form back to a usable path: relative entries resolve against THIS output folder."""
+    p = str(path).replace('/', os.sep)
+    if os.path.isabs(p):
+        return p
+    return os.path.normpath(os.path.join(str(outputDir), p))
+
+
 def save_manifest(outputDir, results, c=None):
     """Write what this run has produced SO FAR. Best-effort: a profile is not worth failing over it.
 
@@ -1445,7 +1471,10 @@ def save_manifest(outputDir, results, c=None):
     tmp = path + '.tmp'
     try:
         record = {'version': 2, 'written': time.strftime('%Y-%m-%d %H:%M:%S'),
-                  'results': results}
+                  'results': [dict(r, files=[_manifest_store_path(f, outputDir)
+                                             for f in (r.get('files') or [])])
+                              if isinstance(r, dict) else r
+                              for r in results]}
         if corpus_fp:
             record['corpus'] = corpus_fp
             record['corpus_label'] = corpus_label
@@ -1544,8 +1573,11 @@ def load_manifest(outputDir):
     for rec in data.get('results', []):
         if not isinstance(rec, dict):
             continue
-        kept = [f for f in rec.get('files', []) if os.path.isfile(str(f))]
-        missing += len(rec.get('files', [])) - len(kept)
+        # entries are stored relative to the output folder (older manifests hold absolute paths);
+        # resolve against THIS folder so a copied or moved profile refers to its own files
+        named = [_manifest_resolve_path(f, outputDir) for f in rec.get('files', [])]
+        kept = [f for f in named if os.path.isfile(f)]
+        missing += len(named) - len(kept)
         rec['files'] = kept
         results.append(rec)
     if missing:
