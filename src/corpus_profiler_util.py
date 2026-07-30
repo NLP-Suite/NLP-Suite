@@ -1345,6 +1345,31 @@ def run_profile(ctx, selected):
     # long unattended run.
     _batch = [a for a in selected if REGISTRY.get(a, {}).get('kind') == 'batch']
     _n, _done = len(_batch), 0
+
+    # EVERY analysis reuses what a previous run of THIS corpus already produced, from one rule -
+    # see reusable_from_manifest. Decided once here rather than per analysis: whether the manifest
+    # describes the corpus in front of us is a property of the run, and fingerprinting the corpus
+    # 23 times would read the whole input directory 23 times.
+    _outputDir = ctx.get('outputDir') or ''
+    _previous = load_manifest(_outputDir)
+    _corpus_ok = False
+    if _previous:
+        _man_fp, _man_label = manifest_corpus(_outputDir)
+        _here_fp, _here_label = corpus_fingerprint(ctx)
+        if _man_fp and _here_fp:
+            _corpus_ok = (_man_fp == _here_fp)
+            if not _corpus_ok:
+                print('>>> Corpus Profiler: the profile already in this folder was built from a '
+                      'DIFFERENT corpus ("%s", not "%s"). Nothing from it is reused.'
+                      % (_man_label or '?', _here_label or '?'))
+        elif not _man_fp:
+            # a manifest from before corpora were recorded: the folder is per-corpus by convention,
+            # so trust it and SAY that the check could not be made
+            _corpus_ok = True
+            print('>>> Corpus Profiler: the existing profile records no corpus (written by an '
+                  'earlier version); reusing it on the strength of the output folder.')
+    _reused = 0
+
     for aid in selected:
         entry = REGISTRY.get(aid)
         if entry is None:
@@ -1353,6 +1378,16 @@ def run_profile(ctx, selected):
                    kind=entry['kind'], files=[], error='', gui_script=entry.get('gui_script', ''))
         if entry['kind'] == 'batch':
             _done += 1
+            _have = reusable_from_manifest(ctx, aid, _previous, _corpus_ok)
+            if _have:
+                rec['files'] = _have
+                rec['reused'] = True
+                _reused += 1
+                print('\nReusing %s (%d of %d) -- %d file(s) from a previous run, not re-run.'
+                      % (entry['label'], _done, _n, len(_have)))
+                results.append(rec)
+                save_manifest(_outputDir, results, ctx)
+                continue
             _t0 = _time.time()
             print('\nStarted running %s (%d of %d) at %s'
                   % (entry['label'], _done, _n, _time.strftime('%H:%M:%S')))
@@ -1367,8 +1402,13 @@ def run_profile(ctx, selected):
                 print('Corpus Profiler: analysis "%s" FAILED: %s' % (aid, e))
         # kind == 'gui': nothing to run -- the report surfaces it as an "open the tool" pointer
         results.append(rec)
+        # after EVERY analysis: whatever kills the next one, this one is not lost
+        save_manifest(_outputDir, results, ctx)
 
-    save_manifest(ctx.get('outputDir') or '', results)
+    if _reused:
+        print('\n>>> Corpus Profiler: %d of %d analyses were reused from a previous run of this '
+              'corpus; %d were run.' % (_reused, _n, _n - _reused))
+    save_manifest(_outputDir, results, ctx)
     return results
 
 
@@ -1383,21 +1423,102 @@ def run_profile(ctx, selected):
 MANIFEST_NAME = 'NLP_corpus_profile_manifest.json'
 
 
-def save_manifest(outputDir, results):
-    """Write what this run produced. Best-effort: a profile is not worth failing over a manifest."""
+def save_manifest(outputDir, results, c=None):
+    """Write what this run has produced SO FAR. Best-effort: a profile is not worth failing over it.
+
+    Called after EVERY analysis, not once at the end. Written once at the end, a run that dies in
+    its last minutes leaves no record of the thirty hours before it - which is exactly what happened
+    on 30 July: the disk filled during the final charts, the manifest was never written, and a
+    profile with every expensive table complete on disk could neither be rebuilt nor reused. A
+    manifest is a few kilobytes; writing it 23 times costs nothing and makes every completed
+    analysis survive whatever happens to the next one.
+
+    Records the corpus, so a later run can tell whether these results describe the corpus in front
+    of it - see reusable_from_manifest.
+    """
     if not outputDir or not os.path.isdir(outputDir):
         return ''
     import json
     import time
     path = os.path.join(outputDir, MANIFEST_NAME)
+    corpus_fp, corpus_label = corpus_fingerprint(c) if c is not None else ('', '')
+    tmp = path + '.tmp'
     try:
-        with open(path, 'w', encoding='utf-8') as fh:
-            json.dump({'version': 1, 'written': time.strftime('%Y-%m-%d %H:%M:%S'),
-                       'results': results}, fh, indent=1, default=str)
+        record = {'version': 2, 'written': time.strftime('%Y-%m-%d %H:%M:%S'),
+                  'results': results}
+        if corpus_fp:
+            record['corpus'] = corpus_fp
+            record['corpus_label'] = corpus_label
+        # written whole and moved into place: a manifest truncated by a full disk would be worse
+        # than none, because the next run would read a half-list as the complete story
+        with open(tmp, 'w', encoding='utf-8') as fh:
+            json.dump(record, fh, indent=1, default=str)
+        os.replace(tmp, path)
         return path
     except Exception as e:
         print('Corpus Profiler: could not write the manifest (%s)' % e)
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
         return ''
+
+
+def manifest_corpus(outputDir):
+    """The corpus fingerprint recorded in the manifest, or '' (an older manifest has none)."""
+    if not outputDir:
+        return '', ''
+    import json
+    path = os.path.join(outputDir, MANIFEST_NAME)
+    if not os.path.isfile(path):
+        return '', ''
+    try:
+        with open(path, encoding='utf-8') as fh:
+            data = json.load(fh)
+    except Exception:
+        return '', ''
+    return str(data.get('corpus', '')), str(data.get('corpus_label', ''))
+
+
+def reusable_from_manifest(c, aid, previous, corpus_ok):
+    """The files a previous run produced for analysis *aid*, if they can be trusted. [] if not.
+
+    THE POINT: reuse for EVERY analysis, from one rule, rather than a hand-written probe per
+    analysis. Eight analyses had probes - the parses, where the hours were - and the other fifteen
+    re-ran from scratch every time. That was defended as "the rest are cheap", which is true of any
+    one of them and false of all of them together: a re-run after a crash spent an afternoon
+    recomputing work that was already sitting on disk, and each new probe was another chance to
+    match the wrong table.
+
+    A probe guesses which file on disk belongs to an analysis, by name and columns. The manifest
+    does not have to guess: the run that produced the file wrote down which analysis produced it.
+    So this needs no per-analysis knowledge and cannot mismatch, and it covers an analysis added
+    tomorrow with no extra code.
+
+    Trusted means all of:
+      - the previous run recorded this analysis with no error
+      - every file it named is still on disk and NOT EMPTY (a full disk leaves 0-byte files, and
+        one of those reused as real output is worse than re-running)
+      - the manifest says it was built from THIS corpus (corpus_ok, computed once by the caller)
+    """
+    if not previous or not corpus_ok:
+        return []
+    for rec in previous:
+        if not isinstance(rec, dict) or rec.get('id') != aid:
+            continue
+        if rec.get('error'):
+            return []                       # it failed last time; running it is the whole point
+        files = [str(f) for f in rec.get('files') or []]
+        if not files:
+            return []
+        for f in files:
+            try:
+                if not os.path.isfile(f) or os.path.getsize(f) == 0:
+                    return []
+            except OSError:
+                return []
+        return files
+    return []
 
 
 def load_manifest(outputDir):
