@@ -1397,15 +1397,30 @@ def _prime_parse_cache(ctx, selected):
     # reuse -- a big win on a large corpus (Harry Potter POS is ~1h) versus parsing it twice.
     ctx['_stanza_pos_files'] = None
     if ('syntax_pos' in sel) or ('semantic_classes' in sel):
-        try:
-            print('>>> Corpus Profiler: ONE shared Stanza POS pass for Syntax + Semantics')
-            ctx['_stanza_pos_files'] = _run_pos_stats(ctx)
-        except Exception as e:
-            print('Corpus Profiler: shared Stanza POS pass failed (%s); dimensions will parse individually' % e)
-            ctx['_stanza_pos_files'] = None
+        have = reusable_from_manifest(ctx, 'syntax_pos', ctx.get('_previous'), ctx.get('_corpus_ok'))
+        if have:
+            print('>>> Corpus Profiler: reusing the shared Stanza POS pass from a previous run '
+                  '(%d files) -- skipping the ~hour re-parse' % len(have))
+            ctx['_stanza_pos_files'] = have
+        else:
+            try:
+                print('>>> Corpus Profiler: ONE shared Stanza POS pass for Syntax + Semantics')
+                ctx['_stanza_pos_files'] = _run_pos_stats(ctx)
+            except Exception as e:
+                print('Corpus Profiler: shared Stanza POS pass failed (%s); dimensions will parse individually' % e)
+                ctx['_stanza_pos_files'] = None
 
     # one NER location-tracking pass shared by Spatial + Characters-movement (was run twice)
     if ('spatial_map' in sel) or ('character_movement' in sel):
+        # the same table serves both, so either analysis's record can supply it
+        have = (reusable_from_manifest(ctx, 'spatial_map', ctx.get('_previous'), ctx.get('_corpus_ok'))
+                or reusable_from_manifest(ctx, 'character_movement', ctx.get('_previous'),
+                                          ctx.get('_corpus_ok')))
+        if have:
+            print('>>> Corpus Profiler: reusing the shared NER location pass from a previous run '
+                  '(%d files) -- no re-parse' % len(have))
+            ctx['_ner_track_files'] = have
+            return
         try:
             import NER_location_tracking_util
             print('>>> Corpus Profiler: ONE NER location pass shared by Spatial + Characters-movement')
@@ -1423,6 +1438,30 @@ def _prime_parse_cache(ctx, selected):
 def run_profile(ctx, selected):
     import time as _time
     import IO_user_interface_util
+
+    # Work out what can be reused BEFORE priming the parse cache. The shared passes in
+    # _prime_parse_cache run ahead of the analysis loop and used to re-parse regardless: a re-run
+    # skipped all 23 analyses and then spent an hour on a Stanza POS pass and an NER location pass
+    # feeding analyses it had just decided not to run. Reuse in the loop alone does not reach them.
+    _outputDir = ctx.get('outputDir') or ''
+    _previous = load_manifest(_outputDir)
+    _corpus_ok = False
+    if _previous:
+        _man_fp, _man_label = manifest_corpus(_outputDir)
+        _here_fp, _here_label = corpus_fingerprint(ctx)
+        if _man_fp and _here_fp:
+            _corpus_ok = (_man_fp == _here_fp)
+            if not _corpus_ok:
+                print('>>> Corpus Profiler: the profile already in this folder was built from a '
+                      'DIFFERENT corpus ("%s", not "%s"). Nothing from it is reused.'
+                      % (_man_label or '?', _here_label or '?'))
+        elif not _man_fp:
+            _corpus_ok = True
+            print('>>> Corpus Profiler: the existing profile records no corpus (written by an '
+                  'earlier version); reusing it on the strength of the output folder.')
+    ctx['_previous'] = _previous
+    ctx['_corpus_ok'] = _corpus_ok
+
     _prime_parse_cache(ctx, selected)   # parse once, cache; runners read the cache (or fall back)
     results = []
     # UNIFORM per-analysis progress: some runners print their own "Started/Finished ... taking X" (the
