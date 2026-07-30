@@ -2692,7 +2692,12 @@ def _make_wordcloud(inputDir, inputFilename, outputDir):
             return ''
         wc = WordCloud(width=1000, height=460, background_color='white', collocations=False,
                        stopwords=set(STOPWORDS), max_words=150, prefer_horizontal=0.9).generate(text)
-        out = os.path.join(outputDir, 'NLP_corpus_wordcloud.png')
+        # its own folder, like every other output. The summary EMBEDS the wordcloud as base64, so
+        # this file on disk is a spare copy and nothing links to it - which is exactly why it should
+        # not sit in the folder a reader opens.
+        out = os.path.join(_analysis_dir({'outputDir': outputDir, 'inputDir': inputDir,
+                                          'inputFilename': inputFilename}, 'wordcloud'),
+                           'NLP_corpus_wordcloud.png')
         wc.to_file(out)
         return out
     except Exception as e:
