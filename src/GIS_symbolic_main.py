@@ -19,6 +19,38 @@ import GUI_IO_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
+def _symbolic_output_dir(outputDir, inputFilename, inputDir):
+    """A folder of this tool's own inside *outputDir*, named for the corpus. outputDir if it fails.
+
+    NOT IO_files_util.make_output_subdirectory: that DELETES an existing folder (shutil.rmtree, and
+    without asking when silent=True). The three steps here - BUILD, the distribution, the movement
+    map - are meant to be run separately, one after another, into the same place, so a step that
+    wiped the folder would throw away what the previous one just produced. Created when absent and
+    used as it stands otherwise.
+    """
+    import os as _os
+    stem = ''
+    if inputDir:
+        stem = _os.path.basename(_os.path.normpath(str(inputDir)))
+    elif inputFilename:
+        stem = _os.path.splitext(_os.path.basename(str(inputFilename)))[0]
+        # a CoNLL table is usually named after the corpus it came from; keep that, not the whole
+        # NLP_CoNLL_Stanza_Dir_ prefix chain
+        for marker in ('_Dir_', 'Dir_'):
+            if marker in stem:
+                stem = stem.split(marker, 1)[1]
+                break
+    name = ('symbolic_space_' + stem) if stem else 'symbolic_space'
+    sub = _os.path.join(outputDir, name)
+    try:
+        _os.makedirs(sub, exist_ok=True)
+    except OSError as e:
+        print('Symbolic space: could not create %s (%s); writing to the output directory instead'
+              % (sub, e))
+        return outputDir
+    return sub
+
+
 def run():
     # widget values read here at RUN time (was: run_script_command lambda + run() params)
     inputFilename = GUI_util.inputFilename.get()
@@ -77,6 +109,12 @@ def run():
         mb.showwarning(title='No output directory',
                        message='Please select an OUTPUT files directory (the top I/O row, or Setup).')
         return
+
+    # Everything this tool writes goes in ONE folder of its own. Its seven outputs - the
+    # actor-space events table, the cross-tab with its residuals and heatmap, the transitions,
+    # the movement chart and the interactive timeline - were written straight into the output
+    # directory, where they dissolved among whatever else lives there and could not be found.
+    outputDir = _symbolic_output_dir(outputDir, inputFilename, inputDir)
 
     import pandas as pd
     import GIS_symbolic_util as ss
