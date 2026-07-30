@@ -131,3 +131,43 @@ class TestTheTwoKindsOfSpaceLiveTogether:
         entry = prof.REGISTRY['spatial_symbolic_more']
         assert entry['kind'] == 'gui'
         assert entry['gui_script'] == 'GIS_symbolic_main.py'
+
+
+class TestSymbolicRunsAfterTheThingThatFeedsIt:
+    """Symbolic space reads a CoNLL dependency table; SVO writes one. CATEGORY_ORDER puts 'spatial'
+    BEFORE 'narrative', so on a fresh corpus symbolic space ran first, found no CoNLL, and returned
+    nothing - 0 files, no error, no folder. It only looked correct on a corpus profiled before,
+    where a CoNLL table was already on disk.
+    """
+
+    def _order(self, selected):
+        got = list(selected)
+        if 'spatial_symbolic' in got and 'narrative_svo' in got:
+            if got.index('spatial_symbolic') < got.index('narrative_svo'):
+                got.remove('spatial_symbolic')
+                got.insert(got.index('narrative_svo') + 1, 'spatial_symbolic')
+        return got
+
+    def test_symbolic_is_moved_after_svo(self):
+        got = self._order(['statistics', 'spatial_map', 'spatial_symbolic', 'narrative_svo',
+                           'sentiment_stanza'])
+        assert got.index('spatial_symbolic') > got.index('narrative_svo')
+
+    def test_everything_else_keeps_its_place(self):
+        got = self._order(['statistics', 'spatial_map', 'spatial_symbolic', 'narrative_svo',
+                           'sentiment_stanza'])
+        assert [a for a in got if a != 'spatial_symbolic'] == \
+            ['statistics', 'spatial_map', 'narrative_svo', 'sentiment_stanza']
+
+    def test_already_after_svo_is_left_alone(self):
+        selected = ['narrative_svo', 'spatial_symbolic']
+        assert self._order(selected) == selected
+
+    def test_symbolic_without_svo_is_untouched(self):
+        """Nothing to wait for - it will report that it has no CoNLL table to read."""
+        selected = ['statistics', 'spatial_symbolic']
+        assert self._order(selected) == selected
+
+    def test_svo_without_symbolic_is_untouched(self):
+        selected = ['statistics', 'narrative_svo']
+        assert self._order(selected) == selected

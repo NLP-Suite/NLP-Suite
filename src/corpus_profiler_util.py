@@ -1029,8 +1029,11 @@ def _run_spatial_symbolic(c):
     conll = _find_existing_parse_csv(c, ('conll',),
                                      ('Form', 'Lemma', 'POS', 'Head'), kind='')
     if not conll:
-        print('>>> Symbolic space: no CoNLL table in this profile, so nothing to build from. '
-              'Tick a syntax/parse analysis, or run it from the Symbolic Space GUI.')
+        # Said loudly, because a silent [] here is what made this look like it had run: 0 files, no
+        # error, and a summary reporting only geocodable space.
+        print('>>> Symbolic space: NOT RUN -- it reads a CoNLL dependency table and there is none '
+              'in this profile. Tick "Who did what to whom? (Narrative)", which writes one, and '
+              'run again; or build it from the Symbolic Space GUI against an existing CoNLL table.')
         return []
     import GIS_symbolic_util as ss
     outdir = _analysis_dir(c, 'GIS', 'symbolic')
@@ -1537,6 +1540,18 @@ def run_profile(ctx, selected):
     # analysis was invisible (an analysis that never prints "Finished" is exactly where a hang is). Bracket
     # EVERY analysis here with the same wording the rest of the suite uses, plus an (i of N) counter for the
     # long unattended run.
+    # ORDER: symbolic space reads a CoNLL dependency table, and the analysis that WRITES one is SVO,
+    # under 'narrative' - which CATEGORY_ORDER puts after 'spatial'. So on a fresh corpus symbolic
+    # space ran first, found no CoNLL table, and returned nothing: 0 files, no error, no folder, and
+    # a summary section that said symbolic space "was considered". It only appeared to work on a
+    # corpus profiled before, where a CoNLL table was already on disk from the earlier run.
+    # Moved after its input rather than reordered wholesale, so every other category keeps its place.
+    selected = list(selected)
+    if 'spatial_symbolic' in selected and 'narrative_svo' in selected:
+        if selected.index('spatial_symbolic') < selected.index('narrative_svo'):
+            selected.remove('spatial_symbolic')
+            selected.insert(selected.index('narrative_svo') + 1, 'spatial_symbolic')
+
     _batch = [a for a in selected if REGISTRY.get(a, {}).get('kind') == 'batch']
     _n, _done = len(_batch), 0
 
