@@ -1591,6 +1591,13 @@ def run_profile(ctx, selected):
             if _have:
                 rec['files'] = _have
                 rec['reused'] = True
+                # carry the previous run's code stamp across, so the round trip preserves WHICH
+                # code produced these files rather than re-dating them to now
+                for _p in (_previous or []):
+                    if isinstance(_p, dict) and _p.get('id') == aid:
+                        if _p.get('code'):
+                            rec['code'] = _p['code']
+                        break
                 _reused += 1
                 print('\nReusing %s (%d of %d) -- %d file(s) from a previous run, not re-run.'
                       % (entry['label'], _done, _n, len(_have)))
@@ -1679,11 +1686,27 @@ def save_manifest(outputDir, results, c=None):
     corpus_fp, corpus_label = corpus_fingerprint(c) if c is not None else ('', '')
     tmp = path + '.tmp'
     try:
-        record = {'version': 2, 'written': time.strftime('%Y-%m-%d %H:%M:%S'),
-                  'results': [dict(r, files=[_manifest_store_path(f, outputDir)
-                                             for f in (r.get('files') or [])])
-                              if isinstance(r, dict) else r
-                              for r in results]}
+        def _stamped(r):
+            """Store the files relative, and stamp WHICH CODE produced them.
+
+            A reused record keeps the stamp it already had - re-fingerprinting it here would write
+            today's code against yesterday's files and defeat the check on the next run. Only an
+            analysis that actually ran gets a fresh stamp.
+            """
+            out = dict(r, files=[_manifest_store_path(f, outputDir)
+                                 for f in (r.get('files') or [])])
+            if r.get('reused'):
+                # keep whatever stamp came with it - INCLUDING none. Stamping reused files with
+                # today's code would declare that today's code produced them, and the next run
+                # would find them in order however much the analysis had changed since.
+                return out
+            code = analysis_code_fingerprint(r.get('id'))
+            if code:
+                out['code'] = code
+            return out
+
+        record = {'version': 3, 'written': time.strftime('%Y-%m-%d %H:%M:%S'),
+                  'results': [_stamped(r) if isinstance(r, dict) else r for r in results]}
         if corpus_fp:
             record['corpus'] = corpus_fp
             record['corpus_label'] = corpus_label
@@ -1718,6 +1741,70 @@ def manifest_corpus(outputDir):
     return str(data.get('corpus', '')), str(data.get('corpus_label', ''))
 
 
+def analysis_code_fingerprint(aid, entry=None):
+    """A hash of the code that produces analysis *aid*'s output. '' if it cannot be worked out.
+
+    Reuse checked that the recorded files still existed, matched the corpus and carried no error. It
+    never asked whether the code that WROTE them had changed since - so improving an analysis left
+    every existing profile reusing the old output for ever. Symbolic space is what exposed it: the
+    runner grew transitions, a heat map and an interactive timeline, and a profile that already had
+    a manifest entry kept replaying the one-file record from the BUILD-only version. The new charts
+    sat on disk, unlisted, and the summary looked as though the analysis had produced a lone csv.
+
+    Worked out automatically rather than from a hand-kept table, so an analysis added tomorrow is
+    covered with no extra code: the runner's own source, plus the source of every module in src/
+    that the runner names, plus the modules THOSE name. Two levels reaches the real workers -
+    _run_spatial_symbolic names GIS_symbolic_util, which names GIS_symbolic_typology_util, which is
+    where the classification a reader would actually notice a change in lives.
+
+    What it cannot see, deliberately: downloaded models, external lexicons, and a helper reached
+    more than two levels down. Those are the same blind spots the parse-table sidecars have.
+    """
+    import hashlib
+    import inspect
+    import re
+
+    entry = entry if entry is not None else REGISTRY.get(aid) or {}
+    fn = entry.get('run')
+    if not callable(fn):
+        return ''                     # a GUI pointer produces no files; nothing to invalidate
+
+    src_dir = os.path.dirname(os.path.abspath(__file__))
+
+    def _source_of(path):
+        try:
+            with open(path, 'rb') as fh:
+                return fh.read()
+        except OSError:
+            return b''
+
+    def _modules_named_in(text):
+        found = set()
+        for name in set(re.findall(r'\b([A-Za-z_][A-Za-z0-9_]{2,})\b', text)):
+            if os.path.isfile(os.path.join(src_dir, name + '.py')):
+                found.add(name)
+        return found
+
+    try:
+        body = inspect.getsource(fn)
+    except Exception:
+        return ''
+
+    first = _modules_named_in(body)
+    second = set()
+    for name in sorted(first):
+        second |= _modules_named_in(
+            _source_of(os.path.join(src_dir, name + '.py')).decode('utf-8', 'replace'))
+    modules = sorted(first | second)
+
+    digest = hashlib.sha256()
+    digest.update(body.encode('utf-8', 'replace'))
+    for name in modules:
+        digest.update(name.encode('utf-8'))
+        digest.update(_source_of(os.path.join(src_dir, name + '.py')))
+    return digest.hexdigest()[:16]
+
+
 def reusable_from_manifest(c, aid, previous, corpus_ok):
     """The files a previous run produced for analysis *aid*, if they can be trusted. [] if not.
 
@@ -1738,6 +1825,13 @@ def reusable_from_manifest(c, aid, previous, corpus_ok):
       - every file it named is still on disk and NOT EMPTY (a full disk leaves 0-byte files, and
         one of those reused as real output is worse than re-running)
       - the manifest says it was built from THIS corpus (corpus_ok, computed once by the caller)
+      - the code that produced them has not changed since (see analysis_code_fingerprint). An
+        analysis that has been improved must RE-RUN, or the improvement never reaches a profile
+        that already exists - which is every profile a returning user has.
+
+    A manifest written before fingerprints were recorded has none. Those reuse, with a line saying
+    the check could not be made, rather than forcing everyone's existing profile to recompute
+    everything once; from this run on, each entry carries one.
     """
     if not previous or not corpus_ok:
         return []
@@ -1746,6 +1840,15 @@ def reusable_from_manifest(c, aid, previous, corpus_ok):
             continue
         if rec.get('error'):
             return []                       # it failed last time; running it is the whole point
+        stamped = str(rec.get('code') or '')
+        current = analysis_code_fingerprint(aid)
+        if stamped and current and stamped != current:
+            print('>>> %s: the code that produces this changed since the last run (%s -> %s); '
+                  're-running rather than reusing.' % (aid, stamped[:8], current[:8]))
+            return []
+        if current and not stamped:
+            print('>>> %s: reusing, but this profile predates the code stamp, so "has the analysis '
+                  'changed?" could not be checked.' % aid)
         files = [str(f) for f in rec.get('files') or []]
         if not files:
             return []
