@@ -208,6 +208,38 @@ class TestEmotionArcHtml:
         assert arcs.emotion_arc_html(_frame(arcs), [], str(tmp_path), 'HPbooks') == ''
         assert not list(tmp_path.iterdir())
 
+    def test_every_character_carries_its_position_in_the_corpus(self, arcs, tmp_path):
+        """Two characters' bin 60 are NOT the same moment - bins are cut over each character's own
+        appearances, and Harry has three times as many as Hermione. Comparing them in narrative
+        time needs a real position per bin, not a bin number."""
+        df = _frame(arcs, n=300, characters=('Harry', 'Hermione'))
+        out = arcs.emotion_arc_html(df, ['Harry', 'Hermione'], str(tmp_path), 'HPbooks')
+        data, _ = self._data(out)
+        for c in data['chars']:
+            assert len(c['pos']) == len(c['counts'])
+            assert c['pos'] == sorted(c['pos']), 'positions must run forwards through the corpus'
+        assert data['xmin'] <= min(c['pos'][0] for c in data['chars'])
+        assert data['xmax'] >= max(c['pos'][-1] for c in data['chars'])
+
+    def test_both_ways_of_lining_characters_up_are_offered(self, arcs, tmp_path):
+        """Own-appearances compares SHAPE; corpus position compares the same moment. The static
+        PNG writes both readings, and dropping one here would quietly pick a side."""
+        df = _frame(arcs, n=200, characters=('Harry', 'Ron'))
+        out = arcs.emotion_arc_html(df, ['Harry', 'Ron'], str(tmp_path), 'HPbooks')
+        _, html = self._data(out)
+        assert "each character's own arc" in html
+        assert 'position in the corpus' in html
+        assert 'needs ONE emotion' in html, 'comparing must refuse all eight, and say why'
+
+    def test_the_two_cautions_are_on_the_chart_not_only_in_the_TIPS(self, arcs, tmp_path):
+        """Both change what the arcs may be used to claim, and the person reading the chart is the
+        person who needs them."""
+        df = _frame(arcs, n=200)
+        out = arcs.emotion_arc_html(df, ['Hermione'], str(tmp_path), 'HPbooks')
+        _, html = self._data(out)
+        assert 'sentence the character appears in' in html
+        assert 'tend to come out looking alike' in html
+
     def test_the_busiest_character_is_reduced_to_something_drawable(self, arcs, tmp_path):
         """The whole point: 5,000 appearances x 8 emotions is 40,000 points in one chart."""
         df = _frame(arcs, n=5000)

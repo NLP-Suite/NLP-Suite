@@ -287,6 +287,34 @@ def plot_character_arcs(df, character, outputDir, base_name, window_size=5):
     return files
 
 
+def _bin_edges(n, n_bins):
+    """Equal-COUNT bin edges. One definition, used by everything that bins an arc, so a second
+    reading of the same chart can never drift half a bin away from the first."""
+    n_bins = max(1, min(int(n_bins), n))
+    return [round(i * n / n_bins) for i in range(n_bins + 1)]
+
+
+def bin_positions(char_df, n_bins, col='Corpus Position'):
+    """Where each bin sits on the CORPUS's own sentence axis - the median of its rows.
+
+    Two characters' bin 60 are not the same moment in the book: bins are cut over each character's
+    own appearances, and Harry has three times as many as Hermione. To draw two characters against
+    each other in narrative time rather than in their own time, each bin needs a real position.
+    """
+    if col not in char_df.columns:
+        col = 'Sentence ID' if 'Sentence ID' in char_df.columns else ''
+    if not col:
+        return []
+    values = list(char_df[col])
+    out = []
+    for lo, hi in zip(_bin_edges(len(values), n_bins), _bin_edges(len(values), n_bins)[1:]):
+        if hi <= lo:
+            hi = lo + 1
+        chunk = sorted(float(v) for v in values[lo:hi])
+        out.append(chunk[len(chunk) // 2] if chunk else 0.0)
+    return out
+
+
 def arc_by_bin(char_df, n_bins):
     """(labels, means, counts) - one character's MEAN intensity per emotion, in narrative order.
 
@@ -304,11 +332,10 @@ def arc_by_bin(char_df, n_bins):
     if n == 0 or not present:
         return [], {}, []
 
-    n_bins = max(1, min(int(n_bins), n))
-    edges = [round(i * n / n_bins) for i in range(n_bins + 1)]
+    edges = _bin_edges(n, n_bins)
     labels, counts = [], []
     means = {c: [] for c in present}
-    for b in range(n_bins):
+    for b in range(len(edges) - 1):
         lo, hi = edges[b], edges[b + 1]
         if hi <= lo:
             hi = lo + 1
@@ -365,6 +392,7 @@ def emotion_arc_html(df, characters, outputDir, base_name, bins=_ARC_HTML_BINS):
             'name': str(character),
             'n': int(len(char_df)),
             'counts': counts,
+            'pos': [round(p, 1) for p in bin_positions(char_df, bins)],
             'series': {c: [round(v, 4) for v in means[c]] for c in means},
             'peaks': peaks,
             'avg': {c: round(float(char_df[c].mean()), 4) for c in cols if c in char_df.columns},
@@ -372,8 +400,11 @@ def emotion_arc_html(df, characters, outputDir, base_name, bins=_ARC_HTML_BINS):
     if not chars:
         return ''
 
+    positions = [p for c in chars for p in c['pos']]
     data = {
         'base': str(base_name),
+        'xmin': min(positions) if positions else 0,
+        'xmax': max(positions) if positions else 1,
         'emotions': [c for c in cols],
         'colors': {e.capitalize(): NRC_COLORS[e] for e in EIGHT_EMOTIONS},
         'bins': int(bins),
@@ -393,6 +424,13 @@ _ARC_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8">
  #wrap{overflow-x:auto;border:1px solid #e3e3e3;border-radius:6px;padding:8px 0 0;}
  .ctl{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:12px 0;}
  select{font:inherit;padding:4px;}
+ button{font:inherit;padding:4px 12px;border:1px solid #c9c9c9;background:#f7f7f7;
+        border-radius:5px;cursor:pointer;} button:hover{background:#eee;}
+ #picked{display:flex;gap:6px;flex-wrap:wrap;}
+ .chip{display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;user-select:none;
+       padding:3px 9px;border:1px solid #d6d6d6;border-radius:12px;background:#f7f7f7;}
+ .chip:hover{background:#eee;} .chip i{width:10px;height:10px;border-radius:50%;
+       display:inline-block;} .chip.clear{color:#666;font-style:italic;}
  .legend{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0 2px;}
  .legend span{display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;user-select:none;}
  .legend i{width:11px;height:11px;border-radius:2px;display:inline-block;}
@@ -406,27 +444,63 @@ _ARC_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8">
  table.vals{border-collapse:collapse;font-size:12px;} table.vals td{padding:1px 8px 1px 0;}
  table.vals i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:5px;}
  .big{font-weight:600;}
+ /* on the chart, not only in the TIPS: both of these change what the arcs may be used to claim,
+    and the person reading the chart is the person who needs them */
+ #care{margin:16px 0 4px;padding:12px 14px;border:1px solid #e6d9b8;background:#fdfaf1;
+       border-radius:6px;font-size:12.5px;max-width:78ch;}
+ #care p{margin:6px 0 0;}
 </style></head><body>
 <h1>Emotion arcs</h1>
 <div class="sub" id="sub"></div>
 
 <div class="ctl">
   <label>Character <select id="who"></select></label>
+  <button id="compare" type="button">compare with another</button>
+  <span id="picked"></span>
   <label>Emotion <select id="emo"></select></label>
   <label><input type="checkbox" id="scale"> scale to the chosen emotion</label>
+  <label id="alignbox" style="display:none">Line up by
+    <select id="align">
+      <option value="own">each character's own arc</option>
+      <option value="corpus">position in the corpus</option>
+    </select>
+  </label>
 </div>
 
 <div class="legend" id="legend"></div>
 <div id="wrap"><svg id="plot"></svg></div>
 <div id="read" class="muted">Move across the chart to read the values at any point.</div>
 
+<div id="care">
+  <b>Reading these numbers</b>
+  <p>An emotion score belongs to the <b>sentence the character appears in</b>, not to the character.
+     The NRC lexicon scores the whole sentence, so a calm character standing in a frightening room
+     scores fear. This measures the emotional colour of the prose <i>around</i> a character — a real
+     thing, but not the character's own feeling, and it should not be reported as one.</p>
+  <p>Characters in the same book <b>tend to come out looking alike</b>, because the ranking largely
+     reflects the book's vocabulary rather than a difference between them. Compare the SHAPE of an
+     arc across the narrative, and compare characters at the same moment; treat a small gap in
+     overall averages as saying little.</p>
+  <p class="muted">Full discussion in the TIPS: <i>Character emotion arcs</i>.</p>
+</div>
+
 <script>
 var DATA = __DATA__;
 var PAD = {l:56, r:18, t:12, b:40}, H = 380;
 var svg = document.getElementById('plot');
-var who = 0, emo = '', hidden = {}, hoverBin = -1;
+var who = 0, emo = '', hidden = {}, hoverBin = -1, picked = [];
+var CHAR_COLORS = ['#0b5394','#b35e3c','#38761d','#7f6000','#4c1130','#134f5c'];
 
 function chart(){ return DATA.chars[who]; }
+function comparing(){ return picked.length > 1; }
+function picks(){
+  // in the order they were chosen, so the pair sits on the rows the reader put it on
+  var out = [];
+  picked.forEach(function(name){
+    DATA.chars.forEach(function(c){ if (c.name === name) out.push(c); });
+  });
+  return out;
+}
 function drawn(){
   // the chosen emotion alone is never the whole story: the other seven stay, faint, so a peak can
   // be read against what else is being felt at that moment
@@ -441,7 +515,64 @@ function maxY(){
   return m || 1;
 }
 
+function drawCompare(){
+  // ONE emotion, several characters. Two characters times eight emotions is sixteen lines, which
+  // is the unreadable chart this file exists to replace - so comparing forces a single emotion.
+  var cs = picks(), align = document.getElementById('align').value;
+  var w = Math.max(880, svg.parentNode.clientWidth - 16);
+  var top = 0;
+  cs.forEach(function(c){ (c.series[emo] || []).forEach(function(v){ if (v > top) top = v; }); });
+  top = top || 1;
+  var y = function(v){ return PAD.t + (1 - v / top) * (H - PAD.t - PAD.b); };
+  var xOf = function(c, i){
+    var span = (H && 1) && (w - PAD.l - PAD.r);
+    if (align === 'corpus') {
+      var range = (DATA.xmax - DATA.xmin) || 1;
+      return PAD.l + ((c.pos[i] - DATA.xmin) / range) * span;
+    }
+    var n = c.counts.length;
+    return PAD.l + (n < 2 ? 0 : i / (n - 1) * span);
+  };
+  svg.setAttribute('width', w); svg.setAttribute('height', H);
+  var out = [];
+  for (var g = 0; g <= 4; g++) {
+    var v = top * g / 4, yy = y(v);
+    out.push('<line class="gl" x1="'+PAD.l+'" y1="'+yy+'" x2="'+(w-PAD.r)+'" y2="'+yy+'"/>');
+    out.push('<text x="'+(PAD.l-8)+'" y="'+(yy+4)+'" text-anchor="end">'+v.toFixed(2)+'</text>');
+  }
+  out.push('<line class="ax" x1="'+PAD.l+'" y1="'+(H-PAD.b)+'" x2="'+(w-PAD.r)+'" y2="'+
+           (H-PAD.b)+'"/>');
+  cs.forEach(function(c, k){
+    var s = c.series[emo] || [], d = '';
+    for (var i = 0; i < s.length; i++) { d += (i ? 'L' : 'M') + xOf(c, i) + ',' + y(s[i]); }
+    var col = CHAR_COLORS[k % CHAR_COLORS.length];
+    out.push('<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="2" opacity=".9"/>');
+  });
+  out.push('<text x="'+PAD.l+'" y="'+(H-14)+'">' +
+           (align === 'corpus' ? 'start of the corpus' : 'first appearance') + '</text>');
+  out.push('<text x="'+(w-PAD.r)+'" y="'+(H-14)+'" text-anchor="end">' +
+           (align === 'corpus' ? 'end of the corpus' : 'last appearance') + '</text>');
+  out.push('<text x="'+PAD.l+'" y="'+(H-2)+'" class="muted">' + emo + ' · ' +
+           (align === 'corpus'
+              ? 'lined up in the book, so a flat gap means the character is absent'
+              : 'each arc stretched over its own appearances: SHAPES, not the same moment') +
+           '</text>');
+  svg.innerHTML = out.join('');
+  document.getElementById('read').className = '';
+  var html = '<b>' + emo + '</b> compared across ' + cs.length +
+             ' characters<table class="vals">';
+  cs.forEach(function(c, k){
+    var s = c.series[emo] || [];
+    var mean = s.reduce(function(a, b){ return a + b; }, 0) / (s.length || 1);
+    html += '<tr><td><i style="background:' + CHAR_COLORS[k % CHAR_COLORS.length] + '"></i>' +
+            c.name + '</td><td>mean ' + mean.toFixed(3) + '</td><td class="muted">' +
+            c.n.toLocaleString() + ' appearances</td></tr>';
+  });
+  document.getElementById('read').innerHTML = html + '</table>';
+}
+
 function draw(){
+  if (comparing()) { drawCompare(); return; }
   var c = chart(), n = c.counts.length, top = maxY();
   var w = Math.max(880, svg.parentNode.clientWidth - 16);
   svg.setAttribute('width', w); svg.setAttribute('height', H);
@@ -518,13 +649,59 @@ function readout(i){
 }
 
 function subtitle(){
+  var el = document.getElementById('sub');
+  if (comparing()) {
+    var byCorpus = document.getElementById('align').value === 'corpus';
+    el.textContent = DATA.base + ' · ' + picked.join(' vs ') + ' · ' + emo + ' · ' +
+      (byCorpus
+         ? 'lined up in the book, so the same x is the same moment'
+         : 'each arc over its OWN appearances — the same x is NOT the same moment');
+    return;
+  }
   var c = chart();
   var best = DATA.emotions.slice().sort(function(a, b){ return c.avg[b] - c.avg[a]; })[0];
-  document.getElementById('sub').textContent =
+  el.textContent =
     DATA.base + ' · ' + c.name + ' · ' + c.n.toLocaleString() + ' appearances grouped into ' +
     c.counts.length + ' equal stretches · strongest on average: ' + best +
     ' (' + c.avg[best].toFixed(3) + ')' +
     (emo ? ' · showing ' + emo + ', the rest in grey' : '');
+}
+
+function drawChips(){
+  var box = document.getElementById('picked');
+  box.innerHTML = '';
+  picked.forEach(function(name, i){
+    var s = document.createElement('span');
+    s.className = 'chip';
+    s.innerHTML = '<i style="background:' + CHAR_COLORS[i % CHAR_COLORS.length] + '"></i>' +
+                  name + ' ×';
+    s.title = 'remove ' + name;
+    s.onclick = function(){ picked.splice(i, 1); afterPick(); };
+    box.appendChild(s);
+  });
+  if (picked.length) {
+    var one = document.createElement('span');
+    one.className = 'chip clear';
+    one.textContent = 'back to one character';
+    one.onclick = function(){ picked = []; afterPick(); };
+    box.appendChild(one);
+  }
+  document.getElementById('alignbox').style.display = comparing() ? '' : 'none';
+  document.getElementById('legend').style.display = comparing() ? 'none' : '';
+}
+
+function afterPick(){
+  // comparing needs ONE emotion: several characters times eight emotions is the unreadable chart
+  // again. Never switch silently - say so in the subtitle and leave the choice showing.
+  if (comparing() && !emo) {
+    var c = picks()[0];
+    emo = DATA.emotions.slice().sort(function(a, b){ return c.avg[b] - c.avg[a]; })[0];
+    document.getElementById('emo').value = emo;
+  }
+  if (comparing()) { hidden[emo] = false; }
+  drawChips();
+  hoverBin = -1;
+  redraw();
 }
 
 function buildLegend(){
@@ -556,8 +733,37 @@ function redraw(){ subtitle(); draw(); }
     o.value = name; o.textContent = name;
     e.appendChild(o);
   });
-  w.addEventListener('change', function(){ who = +this.value; hoverBin = -1; readout(-1); redraw(); });
+  // the dropdown selects the character AND, chosen a second time, adds one to compare
+  w.addEventListener('change', function(){
+    who = +this.value;
+    var name = DATA.chars[who].name;
+    if (picked.length) {
+      if (picked.indexOf(name) < 0) { picked.push(name); }
+      afterPick();
+      return;
+    }
+    hoverBin = -1; readout(-1); redraw();
+  });
+  document.getElementById('compare').addEventListener('click', function(){
+    var name = DATA.chars[who].name;
+    if (picked.indexOf(name) < 0) { picked.push(name); }
+    if (picked.length === 1) {
+      // one chip alone is not a comparison: seed it with the character shown next to it
+      var other = DATA.chars.filter(function(c){ return c.name !== name; })[0];
+      if (other) { picked.push(other.name); }
+    }
+    afterPick();
+  });
+  // the subtitle names which reading is on screen, so it has to be rewritten too
+  document.getElementById('align').addEventListener('change', redraw);
   e.addEventListener('change', function(){
+    if (comparing() && !this.value) {
+      // "all eight" across several characters is sixteen-plus lines; refuse and say why
+      this.value = emo;
+      document.getElementById('sub').textContent =
+        'Comparing characters needs ONE emotion — remove a character to see all eight.';
+      return;
+    }
     emo = this.value;
     // choosing an emotion that was switched off in the legend drew an empty chart and explained
     // nothing - it read as "this character never feels this". Choosing it turns it back on.
@@ -566,6 +772,7 @@ function redraw(){ subtitle(); draw(); }
   });
   document.getElementById('scale').addEventListener('change', draw);
   svg.addEventListener('mousemove', function(ev){
+    if (comparing()) return;      // the comparison readout is the per-character means, not a point
     var c = chart(), n = c.counts.length;
     var w2 = +svg.getAttribute('width');
     var f = (ev.offsetX - PAD.l) / (w2 - PAD.l - PAD.r);
