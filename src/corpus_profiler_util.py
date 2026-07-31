@@ -2722,26 +2722,136 @@ def _interp_characters(files):
     return findings
 
 
+def _places_plotted_on_the_map(files):
+    """The place names the geocoder actually put on the map. Empty set if it cannot be read.
+
+    The geocoder's answers are not written to any csv - they exist only inside the map html - so
+    "how many places were mapped?" can only be answered by reading it back. Worth the trouble: the
+    old text claimed the top 40 were geocoded when 15 had been.
+    """
+    import re
+    names = set()
+    for f in files:
+        if not str(f).lower().endswith(('.html', '.htm')) or 'map' not in os.path.basename(f).lower():
+            continue
+        try:
+            with open(f, encoding='utf-8', errors='replace') as fh:
+                html = fh.read()
+        except OSError:
+            continue
+        # markers are labelled "<place>: <count>" in the popup
+        for label, _n in re.findall(r'>([^<>]{2,60}?): (\d+)<', html):
+            names.add(label.strip())
+    return names
+
+
 def _interp_spatial(files):
-    # read the NER location-tracking CSV (a 'Location' column) -> most-mentioned places + how many mapped
+    """Where it happens - told as TWO kinds of place, because the corpus names two kinds.
+
+    The old text ran them together: "328 distinct places; the most frequent are the Great Hall
+    (229), Gryffindor Tower (98) ... The top 40 were geocoded". Both halves misled. The most
+    frequent places in this corpus have no coordinates and never will - the Great Hall is a KIND of
+    space, which is what the symbolic analysis is for - and the top 40 were not geocoded: 15 were.
+    """
+    # The RICHEST location table, not the first one found: the dimension also carries a top-40
+    # subset written for the movement map, and picking that reported "40 distinct places" for a
+    # corpus that names 328.
+    track, best = None, -1
     for cand in files:
         if not str(cand).lower().endswith('.csv'):
             continue
         df = _read_csv(cand)
         if df is None or 'Location' not in df.columns:
             continue
-        locs = df['Location'].astype(str).str.strip()
-        locs = locs[(locs.str.len() > 0) & (locs.str.lower() != 'nan')]
-        if not len(locs):
-            continue
-        vc = locs.value_counts()
-        top = ', '.join('%s (%d)' % (p, int(cnt)) for p, cnt in vc.head(6).items())
-        mapped = min(len(vc), 40)
-        return ['The corpus names %s distinct places; the most frequent are %s. The top %s were geocoded '
-                'and drawn as a proportional-symbol map (bubble size = number of mentions). This is a quick '
-                'snapshot — the GIS GUI offers geocoder choice, an API key for speed, Google Earth / folium '
-                'output and manual review.' % (_thousands(len(vc)), top, _thousands(mapped))]
-    return []
+        n = df['Location'].astype(str).nunique()
+        if n > best:
+            track, best = df, n
+    if track is None:
+        return []
+    # Two shapes carry locations: the tracking table, one ROW per mention, and the summary table,
+    # one row per entity-place pair with the mentions in a Count column. Counting rows in the
+    # second reports pairs as if they were mentions - the Great Hall came out at 69 instead of 229.
+    keep = track['Location'].astype(str).str.strip()
+    valid = (keep.str.len() > 0) & (keep.str.lower() != 'nan')
+    if not valid.any():
+        return []
+    if 'Count' in track.columns:
+        import pandas as pd
+        counts = pd.to_numeric(track['Count'], errors='coerce').fillna(0)
+        vc = counts[valid].groupby(keep[valid]).sum().sort_values(ascending=False).astype(int)
+    else:
+        vc = keep[valid].value_counts()
+
+    try:
+        import GIS_symbolic_typology_util as typ
+        unclassified = typ.UNCLASSIFIED
+    except Exception:
+        typ, unclassified = None, 'unclassified'
+
+    plotted = _places_plotted_on_the_map(files)
+
+    def _is_plotted(place):
+        return place in plotted or place.split(' ', 1)[-1] in plotted
+
+    symbolic, mapped, unresolved = [], [], []
+    for place, n in vc.items():
+        kind = typ.classify(place) if typ is not None else unclassified
+        if kind != unclassified:
+            symbolic.append((place, int(n)))
+        elif _is_plotted(place):
+            mapped.append((place, int(n)))
+        else:
+            unresolved.append((place, int(n)))
+
+    def _listing(rows, k=3):
+        return ', '.join('%s (%d)' % (p, n) for p, n in rows[:k])
+
+    def _mentions(rows):
+        return sum(n for _p, n in rows)
+
+    out = ['The corpus names %s distinct places, and they are not one kind of thing.'
+           % _thousands(len(vc))]
+
+    if symbolic:
+        out.append('%s of them (%s mentions) are a KIND of space rather than a point on earth — %s. '
+                   'These have no coordinates and never will; they are what the symbolic-space '
+                   'analysis reads, and they include the most-named places in the corpus.'
+                   % (_thousands(len(symbolic)), _thousands(_mentions(symbolic)),
+                      _listing(symbolic)))
+    # names that are ALSO characters here: a geocoder answers the name it is given, so the pin may
+    # be a real town that merely shares it. Worked out before the listing so the headline examples
+    # are ones a reader can trust, rather than being led by a false pin that happens to rank high.
+    entities = (set(track['Entity'].astype(str).str.strip())
+                if 'Entity' in track.columns else set())
+    ambiguous = [p for p, _n in mapped if p in entities]
+    trustworthy = [(p, n) for p, n in mapped if p not in entities]
+
+    if mapped:
+        out.append('%s place%s (%s mentions) resolved to coordinates and were drawn as a '
+                   'proportional-symbol map (bubble size = number of mentions)%s%s.'
+                   % (_thousands(len(mapped)), '' if len(mapped) == 1 else 's',
+                      _thousands(_mentions(mapped)),
+                      '; the most mentioned are ' if trustworthy else '',
+                      _listing(trustworthy, 4) if trustworthy else ''))
+    if unresolved:
+        out.append('The remaining %s (%s mentions) — %s — were named but not placed: an invented '
+                   'place has no coordinates to find.'
+                   % (_thousands(len(unresolved)), _thousands(_mentions(unresolved)),
+                      _listing(unresolved)))
+
+    # Said plainly, because a map looks authoritative and these pins are the ones a reader would
+    # quote first if they ranked high.
+    if ambiguous:
+        out.append('Check %s of the mapped pins before quoting them — %s %s also used as '
+                   'character name%s in this corpus, so the geocoder may have found a real place '
+                   'that merely shares the name.'
+                   % (_thousands(len(ambiguous)), ', '.join(ambiguous[:4]),
+                      'is' if len(ambiguous) == 1 else 'are',
+                      '' if len(ambiguous) == 1 else 's'))
+
+    out.append('This is a quick snapshot — the GIS GUI offers geocoder choice, an API key for '
+               'speed, Google Earth / folium output and manual review.')
+    return out
 
 
 def _interp_counts_vocabulary(files):
