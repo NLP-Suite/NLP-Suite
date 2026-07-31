@@ -287,6 +287,300 @@ def plot_character_arcs(df, character, outputDir, base_name, window_size=5):
     return files
 
 
+def arc_by_bin(char_df, n_bins):
+    """(labels, means, counts) - one character's MEAN intensity per emotion, in narrative order.
+
+    The counterpart of emotion_mix_by_bin, which gives each emotion's SHARE of a bin. Shares answer
+    "what is the mixture here"; means answer "how strongly is this felt here", which is what the arc
+    chart plots and what a reader comparing two characters wants.
+
+    Equal-COUNT bins over the character's own appearances, for the same reason as the mixture chart:
+    equal widths would be empty wherever the character is absent, and an empty stretch in a line
+    chart reads as calm rather than as absence.
+    """
+    cols = [e.capitalize() for e in EIGHT_EMOTIONS]
+    present = [c for c in cols if c in char_df.columns]
+    n = len(char_df)
+    if n == 0 or not present:
+        return [], {}, []
+
+    n_bins = max(1, min(int(n_bins), n))
+    edges = [round(i * n / n_bins) for i in range(n_bins + 1)]
+    labels, counts = [], []
+    means = {c: [] for c in present}
+    for b in range(n_bins):
+        lo, hi = edges[b], edges[b + 1]
+        if hi <= lo:
+            hi = lo + 1
+        chunk = char_df.iloc[lo:hi]
+        for c in present:
+            means[c].append(float(chunk[c].mean()))
+        counts.append(len(chunk))
+        labels.append(lo)
+    return labels, means, counts
+
+
+_ARC_HTML_BINS = 120
+
+
+def emotion_arc_html(df, characters, outputDir, base_name, bins=_ARC_HTML_BINS):
+    """The emotion arcs as ONE interactive HTML file, with a character and an emotion to choose.
+
+    The PNG plots eight emotions over every appearance a character has. For Hermione that is about
+    5,000 points per emotion, 40,000 in a chart 12 inches wide: the lines cross so often that the
+    picture is a solid band of colour and no arc can be followed. Nothing is wrong with the numbers;
+    the chart simply asks the reader to separate eight overlapping series by eye.
+
+    Two changes make it readable, and neither discards data:
+      - the appearances are grouped into ~120 equal-count bins and each bin draws its MEAN, so a
+        line has 120 turns rather than 5,000 and its shape survives being drawn;
+      - one emotion can be brought to the front, the other seven dropping to faint grey so they
+        stay as context instead of competing.
+
+    The PNG is still written. This is the copy you explore; that is the copy you paste into a paper.
+    Self-contained - no libraries, no internet - so it travels with the rest of the output.
+    """
+    import json
+
+    if df is None or not len(characters):
+        return ''
+
+    cols = [e.capitalize() for e in EIGHT_EMOTIONS]
+    sort_col = 'Corpus Position' if 'Corpus Position' in df.columns else 'Sentence ID'
+
+    chars = []
+    for character in characters:
+        char_df = df[df['Character'] == character]
+        if len(char_df) < 2:
+            continue
+        char_df = char_df.sort_values(sort_col).reset_index(drop=True)
+        labels, means, counts = arc_by_bin(char_df, bins)
+        if not labels:
+            continue
+        peaks = {}
+        for c in means:
+            top = max(range(len(means[c])), key=lambda i: means[c][i])
+            peaks[c] = {'i': top, 'v': round(means[c][top], 4)}
+        chars.append({
+            'name': str(character),
+            'n': int(len(char_df)),
+            'counts': counts,
+            'series': {c: [round(v, 4) for v in means[c]] for c in means},
+            'peaks': peaks,
+            'avg': {c: round(float(char_df[c].mean()), 4) for c in cols if c in char_df.columns},
+        })
+    if not chars:
+        return ''
+
+    data = {
+        'base': str(base_name),
+        'emotions': [c for c in cols],
+        'colors': {e.capitalize(): NRC_COLORS[e] for e in EIGHT_EMOTIONS},
+        'bins': int(bins),
+        'chars': chars,
+    }
+    out_file = os.path.join(outputDir, f'emotion_arcs_{base_name}.html')
+    with open(out_file, 'w', encoding='utf-8') as fh:
+        fh.write(_ARC_HTML.replace('__DATA__', json.dumps(data)))
+    return out_file
+
+
+_ARC_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8">
+<title>Emotion arcs</title>
+<style>
+ body{font:14px/1.5 "Segoe UI",Inter,sans-serif;margin:0;padding:18px 24px;color:#222;background:#fff;}
+ h1{font-size:19px;margin:0 0 2px;} .sub{color:#666;font-size:12px;margin-bottom:14px;}
+ #wrap{overflow-x:auto;border:1px solid #e3e3e3;border-radius:6px;padding:8px 0 0;}
+ .ctl{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:12px 0;}
+ select{font:inherit;padding:4px;}
+ .legend{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0 2px;}
+ .legend span{display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;user-select:none;}
+ .legend i{width:11px;height:11px;border-radius:2px;display:inline-block;}
+ .legend .off{opacity:.28;}
+ #read{margin-top:10px;padding:10px 12px;background:#fafafa;border:1px solid #eee;border-radius:6px;
+       font-size:13px;min-height:44px;}
+ .muted{color:#888;}
+ text{font:11px "Segoe UI",sans-serif;fill:#555;}
+ .gl{stroke:#eee;} .ax{stroke:#ccc;}
+ .cursor{stroke:#c1121f;stroke-width:1;}
+ table.vals{border-collapse:collapse;font-size:12px;} table.vals td{padding:1px 8px 1px 0;}
+ table.vals i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:5px;}
+ .big{font-weight:600;}
+</style></head><body>
+<h1>Emotion arcs</h1>
+<div class="sub" id="sub"></div>
+
+<div class="ctl">
+  <label>Character <select id="who"></select></label>
+  <label>Emotion <select id="emo"></select></label>
+  <label><input type="checkbox" id="scale"> scale to the chosen emotion</label>
+</div>
+
+<div class="legend" id="legend"></div>
+<div id="wrap"><svg id="plot"></svg></div>
+<div id="read" class="muted">Move across the chart to read the values at any point.</div>
+
+<script>
+var DATA = __DATA__;
+var PAD = {l:56, r:18, t:12, b:40}, H = 380;
+var svg = document.getElementById('plot');
+var who = 0, emo = '', hidden = {}, hoverBin = -1;
+
+function chart(){ return DATA.chars[who]; }
+function drawn(){
+  // the chosen emotion alone is never the whole story: the other seven stay, faint, so a peak can
+  // be read against what else is being felt at that moment
+  return DATA.emotions.filter(function(e){ return !hidden[e]; });
+}
+function maxY(){
+  var c = chart(), m = 0;
+  var pool = (emo && document.getElementById('scale').checked) ? [emo] : drawn();
+  pool.forEach(function(e){
+    (c.series[e] || []).forEach(function(v){ if (v > m) m = v; });
+  });
+  return m || 1;
+}
+
+function draw(){
+  var c = chart(), n = c.counts.length, top = maxY();
+  var w = Math.max(880, svg.parentNode.clientWidth - 16);
+  svg.setAttribute('width', w); svg.setAttribute('height', H);
+  var x = function(i){ return PAD.l + (n < 2 ? 0 : i / (n - 1) * (w - PAD.l - PAD.r)); };
+  var y = function(v){ return PAD.t + (1 - v / top) * (H - PAD.t - PAD.b); };
+  var out = [];
+
+  for (var g = 0; g <= 4; g++) {
+    var v = top * g / 4, yy = y(v);
+    out.push('<line class="gl" x1="'+PAD.l+'" y1="'+yy+'" x2="'+(w-PAD.r)+'" y2="'+yy+'"/>');
+    out.push('<text x="'+(PAD.l-8)+'" y="'+(yy+4)+'" text-anchor="end">'+v.toFixed(2)+'</text>');
+  }
+  out.push('<line class="ax" x1="'+PAD.l+'" y1="'+(H-PAD.b)+'" x2="'+(w-PAD.r)+'" y2="'+(H-PAD.b)+'"/>');
+  out.push('<text x="'+PAD.l+'" y="'+(H-14)+'">first appearance</text>');
+  out.push('<text x="'+(w-PAD.r)+'" y="'+(H-14)+'" text-anchor="end">last appearance</text>');
+  out.push('<text x="'+PAD.l+'" y="'+(H-2)+'" class="muted">'+c.n.toLocaleString()+
+           ' appearances in '+n+' stretches · mean intensity per stretch</text>');
+
+  function path(e){
+    var s = c.series[e] || [], d = '';
+    for (var i = 0; i < s.length; i++) { d += (i ? 'L' : 'M') + x(i) + ',' + y(s[i]); }
+    return d;
+  }
+  // faint first, chosen last, so the chosen line is never drawn under another
+  drawn().forEach(function(e){
+    if (emo && e !== emo) {
+      out.push('<path d="'+path(e)+'" fill="none" stroke="#bbb" stroke-width="1" opacity=".55"/>');
+    }
+  });
+  drawn().forEach(function(e){
+    if (emo && e !== emo) return;
+    var col = DATA.colors[e];
+    if (emo === e) {
+      var s = c.series[e] || [], area = path(e);
+      area += 'L' + x(s.length - 1) + ',' + y(0) + 'L' + x(0) + ',' + y(0) + 'Z';
+      out.push('<path d="'+area+'" fill="'+col+'" opacity=".13"/>');
+    }
+    out.push('<path d="'+path(e)+'" fill="none" stroke="'+col+'" stroke-width="'+
+             (emo === e ? 2.4 : 1.5)+'" opacity="'+(emo === e ? 1 : .85)+'"/>');
+  });
+  if (emo && !hidden[emo] && c.peaks[emo]) {
+    var p = c.peaks[emo];
+    out.push('<circle cx="'+x(p.i)+'" cy="'+y(p.v)+'" r="4.5" fill="none" stroke="'+
+             DATA.colors[emo]+'" stroke-width="2"><title>strongest '+emo+'</title></circle>');
+  }
+  if (hoverBin >= 0 && hoverBin < n) {
+    out.push('<line class="cursor" x1="'+x(hoverBin)+'" y1="'+PAD.t+'" x2="'+x(hoverBin)+
+             '" y2="'+(H-PAD.b)+'"/>');
+  }
+  svg.innerHTML = out.join('');
+}
+
+function readout(i){
+  var c = chart();
+  if (i < 0 || i >= c.counts.length) {
+    document.getElementById('read').className = 'muted';
+    document.getElementById('read').textContent =
+      'Move across the chart to read the values at any point.';
+    return;
+  }
+  var rows = DATA.emotions.slice().sort(function(a, b){
+    return (c.series[b] || [])[i] - (c.series[a] || [])[i];
+  });
+  var html = '<b>' + c.name + '</b> · stretch ' + (i + 1) + ' of ' + c.counts.length +
+             ' <span class="muted">(' + c.counts[i] + ' sentences)</span><table class="vals">';
+  rows.forEach(function(e){
+    var v = (c.series[e] || [])[i] || 0;
+    html += '<tr><td><i style="background:' + DATA.colors[e] + '"></i>' +
+            (emo === e ? '<span class="big">' + e + '</span>' : e) + '</td><td>' +
+            v.toFixed(3) + '</td></tr>';
+  });
+  document.getElementById('read').className = '';
+  document.getElementById('read').innerHTML = html + '</table>';
+}
+
+function subtitle(){
+  var c = chart();
+  var best = DATA.emotions.slice().sort(function(a, b){ return c.avg[b] - c.avg[a]; })[0];
+  document.getElementById('sub').textContent =
+    DATA.base + ' · ' + c.name + ' · ' + c.n.toLocaleString() + ' appearances grouped into ' +
+    c.counts.length + ' equal stretches · strongest on average: ' + best +
+    ' (' + c.avg[best].toFixed(3) + ')' +
+    (emo ? ' · showing ' + emo + ', the rest in grey' : '');
+}
+
+function buildLegend(){
+  var lg = document.getElementById('legend');
+  lg.innerHTML = '';
+  DATA.emotions.forEach(function(e){
+    var s = document.createElement('span');
+    s.innerHTML = '<i style="background:' + DATA.colors[e] + '"></i>' + e;
+    s.className = hidden[e] ? 'off' : '';
+    s.onclick = function(){ hidden[e] = !hidden[e]; s.className = hidden[e] ? 'off' : ''; draw(); };
+    lg.appendChild(s);
+  });
+}
+function redraw(){ subtitle(); draw(); }
+
+(function init(){
+  var w = document.getElementById('who');
+  DATA.chars.forEach(function(c, i){
+    var o = document.createElement('option');
+    o.value = i; o.textContent = c.name + ' (' + c.n.toLocaleString() + ')';
+    w.appendChild(o);
+  });
+  var e = document.getElementById('emo');
+  var all = document.createElement('option');
+  all.value = ''; all.textContent = 'all eight';
+  e.appendChild(all);
+  DATA.emotions.forEach(function(name){
+    var o = document.createElement('option');
+    o.value = name; o.textContent = name;
+    e.appendChild(o);
+  });
+  w.addEventListener('change', function(){ who = +this.value; hoverBin = -1; readout(-1); redraw(); });
+  e.addEventListener('change', function(){
+    emo = this.value;
+    // choosing an emotion that was switched off in the legend drew an empty chart and explained
+    // nothing - it read as "this character never feels this". Choosing it turns it back on.
+    if (emo && hidden[emo]) { hidden[emo] = false; buildLegend(); }
+    redraw();
+  });
+  document.getElementById('scale').addEventListener('change', draw);
+  svg.addEventListener('mousemove', function(ev){
+    var c = chart(), n = c.counts.length;
+    var w2 = +svg.getAttribute('width');
+    var f = (ev.offsetX - PAD.l) / (w2 - PAD.l - PAD.r);
+    hoverBin = Math.max(0, Math.min(n - 1, Math.round(f * (n - 1))));
+    draw(); readout(hoverBin);
+  });
+  svg.addEventListener('mouseleave', function(){ hoverBin = -1; draw(); readout(-1); });
+  buildLegend();
+  redraw();
+  window.addEventListener('resize', draw);
+})();
+</script></body></html>
+"""
+
+
 def plot_character_comparison(df, characters, emotion, outputDir, base_name, window_size=5,
                               by_corpus_position=True):
     """One emotion, several characters, on ONE chart.
@@ -582,6 +876,12 @@ def main(inputFilename, inputDir, outputDir, chartPackage='Excel',
         timeline_file = plot_dominant_emotion_timeline(df, character, outputDir, base_name)
         if timeline_file:
             filesToOpen.append(timeline_file)
+
+    # ONE interactive file for every character, beside the per-character PNGs: eight arcs over
+    # thousands of appearances cannot be read off a static image, whatever it is plotted at
+    arc_html = emotion_arc_html(df, top_characters, outputDir, base_name)
+    if arc_html:
+        filesToOpen.append(arc_html)
 
     if len(top_characters) >= 2:
         for emotion in ['joy', 'anger', 'fear', 'sadness']:

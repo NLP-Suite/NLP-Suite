@@ -296,7 +296,7 @@ def save_crosstab_csv(table, output_path, stats=None):
 # ---- BUILD pipeline: actor-in-space events from a CoNLL corpus -------------
 
 def symbolic_movement_timeline(events_csv, outputDir, top_n=8, actor_col='actor',
-                               location_col='', title=''):
+                               location_col='', title='', bins=100, select_n=40):
     """An INTERACTIVE view of movement through symbolic space, as one HTML file.
 
     The geocodable map animates characters across a real map because its places
@@ -351,8 +351,13 @@ def symbolic_movement_timeline(events_csv, outputDir, top_n=8, actor_col='actor'
         df['_pos'] = df['_sent']
     df = df.sort_values('_pos')
 
+    # DRAWN by default: the top few, or the chart is a scribble. CARRIED in the file: many more, so
+    # the character dropdown can reach somebody who is not in the top few. A reader looking for a
+    # minor character had no way to see them at all - they were not in the file, so no amount of
+    # clicking would produce them.
     counts = df[actor_col].astype(str).value_counts()
-    actors = [a for a in counts.head(top_n).index if str(a).strip()]
+    actors = [a for a in counts.head(max(top_n, select_n)).index if str(a).strip()]
+    drawn = set(a for a in counts.head(top_n).index if str(a).strip())
     if not actors:
         return ''
 
@@ -360,19 +365,55 @@ def symbolic_movement_timeline(events_csv, outputDir, top_n=8, actor_col='actor'
               if c in set(df[space_col].astype(str))]
     doc_col = next((c for c in ('Document', 'Document ID') if c in df.columns), '')
 
+    # ------------------------------------------------------------------------------------------
+    # One mark per EVENT is unreadable at corpus scale. Harry Potter gives Harry 1,185 events over
+    # a narrative 66,000 sentences long: in a chart about 1,200 pixels wide his marks land roughly
+    # ONE PIXEL apart, eight characters do it at once across ten rows, and the result is a scribble
+    # that hides the thing it exists to show - where a character is, and where two of them coincide.
+    #
+    # So the narrative is divided into stretches and each character gets one mark per stretch: the
+    # kind of space they are in for MOST of it. About a hundred stretches keeps marks a dozen pixels
+    # apart, and co-presence becomes two marks in the same column - readable at a glance instead of
+    # buried under overplotting.
+    #
+    # Each stretch keeps a representative sentence and its event count, so clicking still opens real
+    # text and the reader can see how much one mark stands for. A character with fewer events than
+    # there are stretches is left alone: there is nothing to gain and detail to lose.
+    # ------------------------------------------------------------------------------------------
+    xmin_v, xmax_v = float(df['_pos'].min()), float(df['_pos'].max())
+    span = max(xmax_v - xmin_v, 1.0)
+    n_bins = max(1, int(bins))
+    bin_width = span / n_bins
+
     tracks = []
     for actor in actors:
         rows = df[df[actor_col].astype(str) == actor]
-        tracks.append({
-            'actor': str(actor),
-            'points': [{
+        if len(rows) <= n_bins:
+            points = [{
                 'x': float(r['_pos']),
                 'space': str(r[space_col]),
                 'doc': str(r[doc_col]) if doc_col else '',
                 'sentence': str(r.get('Sentence', ''))[:300],
                 'word': str(r.get('space_noun', '')),
-            } for _, r in rows.iterrows()],
-        })
+                'n': 1,
+            } for _, r in rows.iterrows()]
+        else:
+            points = []
+            which = ((rows['_pos'] - xmin_v) / bin_width).astype(int).clip(0, n_bins - 1)
+            for b, chunk in rows.groupby(which):
+                kinds = chunk[space_col].astype(str)
+                space = kinds.value_counts().idxmax()
+                rep = chunk[kinds == space].iloc[0]
+                points.append({
+                    'x': float(xmin_v + (b + 0.5) * bin_width),
+                    'space': str(space),
+                    'doc': str(rep[doc_col]) if doc_col else '',
+                    'sentence': str(rep.get('Sentence', ''))[:300],
+                    'word': str(rep.get('space_noun', '')),
+                    'n': int(len(chunk)),
+                })
+        tracks.append({'actor': str(actor), 'points': points,
+                       'top': bool(actor in drawn), 'total': int(len(rows))})
 
     payload = {
         'title': title or os.path.basename(events_csv),
@@ -409,6 +450,12 @@ _TIMELINE_HTML = """<!doctype html>
  .legend span{display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;user-select:none;}
  .legend i{width:11px;height:11px;border-radius:50%;display:inline-block;}
  .legend .off{opacity:.3;}
+ #picked{display:flex;gap:6px;flex-wrap:wrap;}
+ .chip{display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;user-select:none;
+       padding:3px 9px;border:1px solid #d6d6d6;border-radius:12px;background:#f7f7f7;}
+ .chip:hover{background:#eee;} .chip i{width:10px;height:10px;border-radius:50%;display:inline-block;}
+ .chip.clear{color:#666;font-style:italic;}
+ #together{font-size:12px;color:#b3261e;margin:2px 0 0;min-height:18px;}
  #read{margin-top:10px;padding:10px 12px;background:#fafafa;border:1px solid #eee;border-radius:6px;
        font-size:13px;min-height:44px;}
  .muted{color:#888;}
@@ -419,12 +466,17 @@ _TIMELINE_HTML = """<!doctype html>
 <div class="sub" id="sub"></div>
 
 <div class="legend" id="legend"></div>
+<div id="together"></div>
 <div id="wrap"><svg id="plot"></svg></div>
 
 <div class="ctl">
   <button id="play">▶ Play</button>
   <input type="range" id="scrub" min="0" max="1000" value="1000">
   <span id="posn" class="muted"></span>
+  <label>Add character
+    <select id="who"><option value="">choose…</option></select>
+  </label>
+  <span id="picked"></span>
   <label>Document
     <select id="doc"><option value="">all</option></select>
   </label>
@@ -435,10 +487,20 @@ _TIMELINE_HTML = """<!doctype html>
 var DATA = __DATA__;
 var COLORS = ['#0b5394','#b35e3c','#38761d','#7f6000','#4c1130','#134f5c','#783f04','#20124d'];
 var PAD = {l:150, r:24, t:14, b:34}, ROW = 34;
-var svg = document.getElementById('plot'), hidden = {}, doc = '', playing = null;
+var svg = document.getElementById('plot'), hidden = {}, doc = '', playing = null, picked = [];
 
 function tracks(){
-  return DATA.tracks.filter(function(t){ return !hidden[t.actor]; });
+  // chosen characters override the legend: picking somebody is a clearer statement of intent than
+  // whatever was toggled off before it. Kept in the order they were picked, so the pair being
+  // compared sits on the rows the reader put it on.
+  if (picked.length) {
+    var out = [];
+    picked.forEach(function(name){
+      DATA.tracks.forEach(function(t){ if (t.actor === name) out.push(t); });
+    });
+    return out;
+  }
+  return DATA.tracks.filter(function(t){ return !hidden[t.actor] && t.top; });
 }
 function pointsOf(t){
   return t.points.filter(function(p){ return !doc || p.doc === doc; });
@@ -449,6 +511,34 @@ function xOf(p, w){
 }
 function yOf(space){
   return PAD.t + DATA.spaces.indexOf(space) * ROW + ROW / 2;
+}
+// where a character is at a given point in the story: the last stretch that has begun. Before their
+// first mark they are simply absent, which is not the same as being somewhere.
+function spaceAt(t, x){
+  var pts = pointsOf(t), at = null;
+  for (var i = 0; i < pts.length; i++) {
+    if (pts[i].x > x) break;
+    at = pts[i].space;
+  }
+  return at;
+}
+// stretches where every chosen character is in the SAME kind of space. Two characters on adjacent
+// rows in the same column is the question this chart exists to answer - do they move together? -
+// and reading it off two wiggling lines by eye is exactly what people get wrong.
+function together(ts, cut){
+  if (ts.length < 2) return {bands: [], shared: 0, span: 0};
+  var STEP = 240, bands = [], shared = 0, span = 0, run = null;
+  var lo = DATA.xmin, hi = Math.max(cut, DATA.xmin), w = (hi - lo) / STEP || 1;
+  for (var i = 0; i < STEP; i++) {
+    var x = lo + i * w, first = spaceAt(ts[0], x), same = first !== null;
+    for (var j = 1; same && j < ts.length; j++) { if (spaceAt(ts[j], x) !== first) same = false; }
+    if (first !== null) span++;
+    if (same) {
+      shared++;
+      if (run) { run.x2 = x + w; } else { run = {x1: x, x2: x + w, space: first}; bands.push(run); }
+    } else { run = null; }
+  }
+  return {bands: bands, shared: shared, span: span};
 }
 
 function draw(cut){
@@ -461,8 +551,16 @@ function draw(cut){
     out.push('<line class="gl" x1="'+PAD.l+'" y1="'+y+'" x2="'+(w-PAD.r)+'" y2="'+y+'"/>');
     out.push('<text x="'+(PAD.l-10)+'" y="'+(y+4)+'" text-anchor="end">'+s+'</text>');
   });
-  tracks().forEach(function(t, i){
-    var color = COLORS[DATA.tracks.indexOf(t) % COLORS.length];
+  var chosen = tracks();
+  var co = together(chosen, cut);
+  co.bands.forEach(function(b){
+    var x1 = xOf(b.x1, w), x2 = xOf(b.x2, w);
+    out.push('<rect x="'+x1+'" y="'+(yOf(b.space)-ROW/2)+'" width="'+Math.max(1, x2-x1)+'" height="'+
+             ROW+'" fill="#b3261e" opacity=".13"><title>both in '+b.space+'</title></rect>');
+  });
+  chosen.forEach(function(t, i){
+    // when a pair is chosen, colour by the order they were picked so the two never collide
+    var color = COLORS[(picked.length ? i : DATA.tracks.indexOf(t)) % COLORS.length];
     var pts = pointsOf(t).filter(function(p){ return p.x <= cut; });
     var d = '';
     pts.forEach(function(p, k){
@@ -487,6 +585,11 @@ function draw(cut){
   out.push('<text x="'+(w-PAD.r)+'" y="'+(h-10)+'" text-anchor="end">'+Math.round(DATA.xmax)+'</text>');
   svg.innerHTML = out.join('');
   document.getElementById('posn').textContent = 'sentence ' + Math.round(cut);
+  var note = document.getElementById('together');
+  if (chosen.length > 1 && picked.length && co.span) {
+    note.textContent = picked.join(' + ') + ': in the same kind of space for ' +
+      Math.round(100 * co.shared / co.span) + '% of the story so far';
+  } else { note.textContent = ''; }
 }
 
 function cutFromSlider(){
@@ -509,6 +612,33 @@ document.getElementById('play').addEventListener('click', function(){
   }, 40);
 });
 document.getElementById('doc').addEventListener('change', function(){ doc = this.value; redraw(); });
+// a dropdown that ADDS, plus removable chips: picking a second character must not undo the first,
+// and ctrl-click on a multi-select is knowledge this page should not assume its reader has
+function drawChips(){
+  var box = document.getElementById('picked');
+  box.innerHTML = '';
+  picked.forEach(function(name, i){
+    var s = document.createElement('span');
+    s.className = 'chip';
+    s.innerHTML = '<i style="background:' + COLORS[i % COLORS.length] + '"></i>' + name + ' ×';
+    s.title = 'remove ' + name;
+    s.onclick = function(){ picked.splice(i, 1); drawChips(); redraw(); };
+    box.appendChild(s);
+  });
+  if (picked.length) {
+    var all = document.createElement('span');
+    all.className = 'chip clear';
+    all.textContent = 'show the usual ' + DATA.tracks.filter(function(t){ return t.top; }).length;
+    all.onclick = function(){ picked = []; drawChips(); redraw(); };
+    box.appendChild(all);
+  }
+}
+document.getElementById('who').addEventListener('change', function(){
+  if (this.value && picked.indexOf(this.value) < 0) picked.push(this.value);
+  this.value = '';
+  drawChips();
+  redraw();
+});
 
 svg.addEventListener('click', function(e){
   var c = e.target;
@@ -523,14 +653,19 @@ svg.addEventListener('click', function(e){
 });
 
 (function init(){
+  var shown = DATA.tracks.filter(function(t){ return t.top; });
   document.getElementById('sub').textContent =
-    DATA.title + ' · ' + DATA.tracks.length + ' characters · ' + DATA.spaces.length +
-    ' kinds of space · narrative position runs left to right, documents in order';
+    DATA.title + ' · ' + shown.length + ' characters shown, ' + DATA.tracks.length +
+    ' in the Character list · ' + DATA.spaces.length + ' kinds of space · each mark is the kind of '
+    + 'space that character is in for most of that stretch of the narrative · add two characters to '
+    + 'shade the stretches where they are in the same kind of space';
   var lg = document.getElementById('legend');
-  DATA.tracks.forEach(function(t, i){
+  // only the drawn ones: the legend is for toggling what is on screen, and listing forty names
+  // there would bury the handful that are. The rest are reachable from the Character dropdown.
+  shown.forEach(function(t, i){
     var s = document.createElement('span');
     s.innerHTML = '<i style="background:' + COLORS[i % COLORS.length] + '"></i>' + t.actor +
-                  ' <span class="muted">(' + t.points.length + ')</span>';
+                  ' <span class="muted">(' + t.total + ')</span>';
     s.onclick = function(){
       hidden[t.actor] = !hidden[t.actor];
       s.className = hidden[t.actor] ? 'off' : '';
@@ -541,6 +676,15 @@ svg.addEventListener('click', function(e){
   var sel = document.getElementById('doc');
   DATA.docs.forEach(function(d){
     var o = document.createElement('option'); o.value = d; o.textContent = d; sel.appendChild(o);
+  });
+  // every character in the file, not only the ones drawn by default: the legend can turn the top
+  // few on and off, but somebody further down the list was unreachable without one of these
+  var who = document.getElementById('who');
+  DATA.tracks.forEach(function(t){
+    var o = document.createElement('option');
+    o.value = t.actor;
+    o.textContent = t.actor + ' (' + t.total + ')' + (t.top ? '' : ' · not shown by default');
+    who.appendChild(o);
   });
   redraw();
   window.addEventListener('resize', redraw);

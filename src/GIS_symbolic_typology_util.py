@@ -97,6 +97,15 @@ def _wordnet_category(word):
     except Exception:
         return None
     for syn in synsets:
+        # A NAMED ENTITY is not a kind of space. WordNet files real people and places as INSTANCES
+        # of a class, and the hypernym path of an instance runs straight through that class: London
+        # is an instance of city, so climbing it reached market_public and put a real, geocodable
+        # city in the symbolic table - where the whole point is that the space has no coordinates.
+        # Skipping instance synsets drops London, Ogden and the river James while leaving every
+        # common noun that a name is built from - Great HALL, Astronomy TOWER, Forbidden FOREST -
+        # classified exactly as before. Geocodable places are GIS_main's business, not this tool's.
+        if syn.instance_hypernyms():
+            continue
         for path in syn.hypernym_paths():
             for hyp in reversed(path):  # most specific first
                 cat = anchor_to_cat.get(hyp.name())
