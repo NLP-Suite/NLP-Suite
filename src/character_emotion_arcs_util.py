@@ -249,6 +249,11 @@ def _smooth(values, window):
     return values
 
 
+# Above this many appearances a per-appearance line stops being a line and becomes a band. Matches
+# _MAX_STRIPES, which draws the same conclusion for the dominant-emotion timeline.
+_ARC_MAX_POINTS = 400
+
+
 def plot_character_arcs(df, character, outputDir, base_name, window_size=5):
     char_df = df[df['Character'] == character].copy()
     sort_col = 'Corpus Position' if 'Corpus Position' in char_df.columns else 'Sentence ID'
@@ -258,26 +263,54 @@ def plot_character_arcs(df, character, outputDir, base_name, window_size=5):
         return []
 
     files = []
-    fig, ax = plt.subplots(figsize=(12, 6))
+    n = len(char_df)
 
-    window = _smoothing_window(len(char_df), window_size)
-    for emotion in EIGHT_EMOTIONS:
+    # Eight emotions on ONE pair of axes cannot be read, and binning does not save it: the lines
+    # still cross constantly and the chart is a band of colour. The interactive file solves this by
+    # letting a reader bring one emotion forward - the static equivalent is SMALL MULTIPLES, one
+    # panel per emotion, each with the other seven behind it in grey for context. Every panel is
+    # then a single line against a common scale, which is what makes the arcs comparable at a
+    # glance and publishable as a figure.
+    if n > _ARC_MAX_POINTS:
+        # the same 120 equal-count stretches the interactive file uses, so the two agree exactly
+        _labels, series, _counts = arc_by_bin(char_df, _ARC_HTML_BINS)
+        xnote = (f'{n:,} appearances grouped into {len(_labels)} equal stretches '
+                 f'(mean per stretch)')
+    else:
+        window = _smoothing_window(n, window_size)
+        series = {e.capitalize(): list(_smooth(char_df[e.capitalize()].values, window))
+                  for e in EIGHT_EMOTIONS if e.capitalize() in char_df.columns}
+        xnote = f'{n:,} appearances, smoothed over {window} sentences'
+
+    present = [e for e in EIGHT_EMOTIONS if e.capitalize() in series]
+    if not present:
+        return []
+    top = max((max(series[e.capitalize()]) for e in present), default=0) or 1
+
+    fig, axes = plt.subplots(4, 2, figsize=(13, 9), sharex=True, sharey=True)
+    flat = axes.flatten()
+    for i, emotion in enumerate(present):
+        ax = flat[i]
         col = emotion.capitalize()
-        smoothed = _smooth(char_df[col].values, window)
-        ax.plot(range(len(smoothed)), smoothed, label=emotion.capitalize(),
-                color=NRC_COLORS[emotion], linewidth=1.8, alpha=0.85)
+        for other in present:                      # the other seven, faint, for context
+            if other != emotion:
+                ax.plot(series[other.capitalize()], color='#cccccc', linewidth=0.7, alpha=0.8)
+        ax.plot(series[col], color=NRC_COLORS[emotion], linewidth=1.6)
+        mean = sum(series[col]) / len(series[col])
+        ax.set_title(f'{col}   (mean {mean:.3f})', fontsize=10, loc='left')
+        ax.set_ylim(0, top * 1.05)
+        ax.grid(True, alpha=0.3)
+    for j in range(len(present), len(flat)):
+        flat[j].axis('off')
 
-    # NOT the sentence number in the text: this character's own appearances, in
-    # order. A character absent for fifty pages leaves no gap on their own chart.
-    ax.set_xlabel(f'{character}\'s appearances, in order '
-                  f'(smoothed over {window} sentences)', fontsize=11)
-    ax.set_ylabel('Emotion Intensity', fontsize=11)
     safe_char = character.replace('/', '_').replace('\\', '_').replace(' ', '_')[:30]
-    ax.set_title(f'Emotion Arc — {character}\n({base_name})', fontsize=13)
-    ax.legend(loc='upper right', fontsize=8, ncol=2)
-    ax.set_ylim(bottom=0)
-    ax.grid(True, alpha=0.3)
-    plt.tight_layout()
+    fig.suptitle(f'Emotion Arc — {character}   ({base_name})', fontsize=13)
+    # fig.text, not fig.supxlabel: the latter needs matplotlib 3.4 and this suite pins older
+    # versions in places, where it would be an AttributeError at chart time
+    fig.text(0.5, 0.012, f'{character}\'s appearances, in order — {xnote}',
+             ha='center', fontsize=10)
+    fig.text(0.008, 0.5, 'Emotion Intensity', va='center', rotation='vertical', fontsize=10)
+    fig.tight_layout(rect=(0.02, 0.03, 1, 0.96))
 
     arc_file = os.path.join(outputDir, f'emotion_arc_{safe_char}.png')
     plt.savefig(arc_file, dpi=150, bbox_inches='tight')
