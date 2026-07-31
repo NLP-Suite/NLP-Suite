@@ -223,35 +223,22 @@ def run():
         summary = corpus_profiler_util.build_paper_summary(outputDir, corpus_name, results, header, run_config)
         print('>>> Corpus Profiler: summary built: %s' % summary)
 
-        # Open the paper-style SUMMARY (the headline read; it links to the full navigable report and the
-        # report links back). os.startfile (a direct Win32 ShellExecute) is the most robust path: unlike
-        # os.system('start ...') -- which IO_files_util.openFile uses -- it works even when the app is
-        # launched WITHOUT a console (pythonw / the frozen build). Try startfile -> webbrowser ->
-        # openFile in turn. NOTE: webbrowser.open RETURNS False when it cannot launch a browser (it
-        # does NOT raise), so we must check its boolean result -- otherwise a failed webbrowser.open
-        # looks like success and the summary silently never opens.
+        # Open the paper-style SUMMARY (the headline read; it links to the full navigable report and
+        # the report links back). IO_files_util.open_in_desktop launches it from a CHILD process and
+        # works without a console (pythonw / the frozen build).
+        #
+        # This used to call os.startfile directly, which runs ShellExecute inside THIS process and
+        # loads the .html handler's shell extensions into the interpreter. On this machine that
+        # killed the suite outright -- "Fatal Python error: PyEval_RestoreThread: NULL tstate" --
+        # after a seven-hour profile had finished writing every file. Nothing was lost but the
+        # window, and there was no way to tell that from a crash dump. The path is ALWAYS printed
+        # first, so a crash here still leaves the location on screen.
         summary_abs = os.path.abspath(summary)
-        print('>>> Corpus Profiler: opening summary: %s' % summary_abs)
-        opened = False
-        try:
-            os.startfile(summary_abs)                                                       # Windows
-            opened = True
-        except Exception as _e:
-            print('   os.startfile failed: %s' % _e)
-        if not opened:
-            try:
-                if __import__('webbrowser').open('file:///' + summary_abs.replace('\\', '/')):
-                    opened = True
-            except Exception as _e:
-                print('   webbrowser.open failed: %s' % _e)
-        if not opened:
-            try:
-                IO_files_util.openFile(GUI_util.window, summary_abs)
-                opened = True
-            except Exception as _e:
-                print('   openFile failed: %s' % _e)
-        if not opened:
-            print('Corpus Profiler: could not auto-open the summary. Open it manually:\n  ' + summary_abs)
+        print('>>> Corpus Profiler: summary is at: %s' % summary_abs)
+        print('>>> Corpus Profiler: opening it...')
+        if not IO_files_util.open_in_desktop(summary_abs):
+            print('Corpus Profiler: could not auto-open the summary. Open it manually:\n  '
+                  + summary_abs)
 
         IO_user_interface_util.timed_alert(
             GUI_util.window, 4000, 'Corpus Profiler',

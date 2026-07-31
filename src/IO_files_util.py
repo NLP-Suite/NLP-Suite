@@ -437,18 +437,72 @@ def selectDirectory(title, initialFolder=''):
     return path
 
 
+def open_in_desktop(path):
+    """Hand a file or folder to the desktop to open, FROM A CHILD PROCESS. True if something ran.
+
+    os.startfile calls ShellExecute inside THIS process, which loads the shell extensions registered
+    for that file type -- cloud-sync overlay handlers, antivirus hooks, PDF and browser handlers --
+    into the Python interpreter. A misbehaving one then takes the whole suite down with it, and it
+    does so at the worst possible moment: the Corpus Profiler died on exactly this call with
+
+        Fatal Python error: PyEval_RestoreThread: NULL tstate
+
+    AFTER a seven-hour profile had finished writing every one of its files. The run was complete and
+    the user still lost the window, with a crash dump instead of a summary.
+
+    Launching through a child process keeps all of that out of our address space. If the handler
+    misbehaves, the child dies and the suite carries on. os.startfile stays as the last resort,
+    because on a machine where nothing else works it is still better than not opening the file.
+    """
+    path = str(path)
+    try:
+        path = os.path.abspath(path)
+    except Exception:
+        pass
+
+    attempts = []
+    if sys.platform == 'win32':
+        # explorer.exe hands the path to the registered handler and returns immediately; it reports
+        # a non-zero exit code even on success, which is why nothing here waits on it
+        attempts.append(['explorer.exe', path])
+        attempts.append(['cmd', '/c', 'start', '', path])
+    elif sys.platform == 'darwin':
+        attempts.append(['open', path])
+    else:
+        attempts.append(['xdg-open', path])
+
+    kwargs = {'close_fds': True}
+    if sys.platform == 'win32':
+        # no console window when the suite is launched by pythonw or from the frozen build
+        kwargs['creationflags'] = getattr(subprocess, 'CREATE_NO_WINDOW', 0x08000000)
+
+    for cmd in attempts:
+        try:
+            subprocess.Popen(cmd, **kwargs)
+            return True
+        except Exception as e:
+            print('   open_in_desktop: %s failed (%s)' % (cmd[0], e))
+
+    try:
+        import webbrowser
+        if webbrowser.open('file:///' + path.replace('\\', '/')):
+            return True
+    except Exception as e:
+        print('   open_in_desktop: webbrowser failed (%s)' % e)
+
+    try:
+        os.startfile(path)          # last resort; see the warning above  # noqa: S606
+        return True
+    except Exception as e:
+        print('   open_in_desktop: os.startfile failed (%s)' % e)
+    return False
+
+
 def openExplorer(window, directory):
     if not os.path.isdir(directory):
         mb.showwarning(title='Input dir error',message='The directory ' + directory + ' does not exist. It must have been removed.\n\nPlease, select a different directory and try again.')
-    if sys.platform == 'win32':  # Windows
-        os.startfile(directory)
-    elif sys.platform == 'darwin':  # Mac
-        subprocess.Popen(['open', directory])
-    else:
-        try:
-            subprocess.Popen(['xdg-open', directory])  # Linux
-        except OSError:
-            print("OS error in accessing directory")
+    if not open_in_desktop(directory):
+        print("OS error in accessing directory")
 
 # when called from GUI_util command=lambda we open the file
 # when called from NLP_setup_IO_main we just want to remove the date portion from the filename without opening the file
@@ -654,9 +708,7 @@ def open_kmlFile(window,inputFilename):
                 except Exception:
                     pass
         # fall back to the file association
-        try:
-            os.startfile(inputFilename)
-        except Exception:
+        if not open_in_desktop(inputFilename):
             mb.showwarning('Cannot open KML map',
                 "Could not open the KML map automatically.\n\nGoogle Earth Pro was not found at its "
                 "standard install location, and the .kml file type is not associated with it on this PC.\n\n"
