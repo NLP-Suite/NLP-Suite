@@ -51,7 +51,14 @@ class TestItLaunchesOutOfProcess:
         io_files.open_in_desktop(str(f))
         assert called == [], 'os.startfile ran even though a child process started'
 
-    def test_it_falls_through_to_the_next_launcher(self, io_files, monkeypatch, tmp_path):
+    def test_it_falls_through_when_the_first_launcher_fails(self, io_files, monkeypatch, tmp_path):
+        """One launcher missing must not sink it.
+
+        How far it falls depends on the platform, and the test must not assume: Windows has two
+        launchers to try before webbrowser, Linux and macOS have one. Asserting "the second Popen
+        succeeds" passed on Windows and failed on Linux, where there is no second Popen and the
+        real webbrowser.open was reached instead - which is how this file first broke CI.
+        """
         f = tmp_path / 'summary.html'
         f.write_text('x', encoding='utf-8')
         seen = []
@@ -63,8 +70,45 @@ class TestItLaunchesOutOfProcess:
             return MagicMock()
 
         monkeypatch.setattr(io_files.subprocess, 'Popen', flaky)
+        import webbrowser
+        monkeypatch.setattr(webbrowser, 'open', lambda *a, **k: True)
         assert io_files.open_in_desktop(str(f)) is True
-        assert len(seen) >= 1
+        assert seen, 'it never tried to launch anything'
+
+
+class TestEveryPlatform:
+    """The launchers differ per platform, so exercise each branch HERE rather than discovering it
+    from a red CI run on an operating system nobody develops on."""
+
+    @pytest.mark.parametrize('platform,expected', [
+        ('win32', 'explorer.exe'),
+        ('darwin', 'open'),
+        ('linux', 'xdg-open'),
+    ])
+    def test_the_right_launcher_is_used(self, io_files, monkeypatch, tmp_path,
+                                        platform, expected):
+        f = tmp_path / 'summary.html'
+        f.write_text('x', encoding='utf-8')
+        monkeypatch.setattr(io_files.sys, 'platform', platform)
+        got = []
+        monkeypatch.setattr(io_files.subprocess, 'Popen',
+                            lambda cmd, **kw: got.append(cmd) or MagicMock())
+        assert io_files.open_in_desktop(str(f)) is True
+        assert got and got[0][0] == expected
+
+    @pytest.mark.parametrize('platform', ['win32', 'darwin', 'linux'])
+    def test_a_failing_launcher_never_raises_on_any_platform(self, io_files, monkeypatch,
+                                                             tmp_path, platform):
+        f = tmp_path / 'summary.html'
+        f.write_text('x', encoding='utf-8')
+        monkeypatch.setattr(io_files.sys, 'platform', platform)
+        monkeypatch.setattr(io_files.subprocess, 'Popen',
+                            lambda *a, **k: (_ for _ in ()).throw(OSError('nope')))
+        import webbrowser
+        monkeypatch.setattr(webbrowser, 'open', lambda *a, **k: False)
+        monkeypatch.setattr(io_files.os, 'startfile',
+                            lambda p: (_ for _ in ()).throw(OSError('nope')), raising=False)
+        assert io_files.open_in_desktop(str(f)) is False
 
     def test_nothing_waits_on_the_child(self, io_files, monkeypatch, tmp_path):
         """A launcher that blocks would hang the GUI at the end of a run. Popen must be fired and
