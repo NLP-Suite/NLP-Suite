@@ -1,5 +1,11 @@
 # pip install -r requirements.txt
 #
+# NOT THE FILE THAT SHIPS. The installers and the setup instructions use the requirements.txt at
+# the REPOSITORY ROOT (see .github/workflows/build-installers.yml); nothing references this one.
+# It is kept because it carries notes the root file does not, but it had drifted into contradicting
+# it -- Pillow==10.2.0 here against ==10.4.0 there, and an lxml~=4.6.2 cap that would have held the
+# library on a line with a known XXE advisory. Both corrected below. If you change a dependency,
+# change the ROOT file; anything here is documentation until that stops being true.
 #
 # lines preceded by # are comments
 #
@@ -33,7 +39,7 @@ argparse~=1.4.0
 #used by wordclouds.py (also uses stanza; see below)
 #wordcloud~=1.8.1 is incompatible with the latest Pillow and would need Pillow==9.5.0
 wordcloud==1.9.3
-Pillow==10.2.0
+Pillow==10.4.0   # matched to the ROOT requirements.txt (last version that works with Tcl/Tk 8.6)
 #
 striprtf
 #
@@ -143,7 +149,7 @@ seaborn
 kaleido
 #
 future~=0.18.2
-lxml~=4.6.2
+lxml             # unpinned: the ~=4.6.2 cap held it on a line with a known XXE advisory
 python-dateutil~=2.8.1
 matplotlib~=3.3.3
 scipy~=1.6.0

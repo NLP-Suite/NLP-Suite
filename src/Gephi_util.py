@@ -76,8 +76,11 @@ class Gexf:
     @staticmethod
     def importXML(gexf_file):
         """ import gexf xml meta tags to create a Gexf Object and delegate Graph extraction to Graph class"""
-        # parse the gexf file
-        parser = etree.XMLParser(ns_clean=True)
+        # parse the gexf file. A .gexf handed to this may have come from anywhere, so entity
+        # resolution and network access are off -- the same hardening as
+        # IO_files_util.safe_xml_parser, spelled out here to keep this module standalone.
+        parser = etree.XMLParser(ns_clean=True, resolve_entities=False, no_network=True,
+                                 load_dtd=False, huge_tree=False)
         tree = etree.parse((gexf_file), parser)
         # start create Gexf Object
         gexf_xml = tree.getroot()
@@ -767,7 +770,9 @@ class GexfImport:
 # deprecated : import XML codes are now included to the Gexf, Graph, Attribute, Node, Edge classes
 
     def __init__(self, file_like):
-        parser = etree.XMLParser(ns_clean=True)
+        # same hardening as importXML above: entity resolution and network access off
+        parser = etree.XMLParser(ns_clean=True, resolve_entities=False, no_network=True,
+                                 load_dtd=False, huge_tree=False)
         tree = etree.parse(file_like, parser)
         gexf_xml = tree.getroot()
         tag = self.ns_clean(gexf_xml.tag).lower()

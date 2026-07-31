@@ -437,6 +437,29 @@ def selectDirectory(title, initialFolder=''):
     return path
 
 
+def safe_xml_parser():
+    """An lxml parser that will not fetch anything while reading somebody else's document.
+
+    XML that arrives with a user's file is not trusted input. lxml's DEFAULTS resolve entities, so a
+    document can declare one that points at a local file or a URL and have its contents pulled into
+    the parse - the reader sees an author field, the file quietly read something else. A .docx is a
+    zip of XML written by whoever sent it, and the Suite opens documents from archives and the web.
+
+    resolve_entities=False   an entity stays an entity instead of becoming the file it names
+    no_network=True          nothing is fetched over the network mid-parse
+    load_dtd=False           no external DTD is fetched or applied
+    huge_tree=False          keeps lxml's own limits on absurdly deep or large documents
+
+    Returns None if lxml is unavailable, so a caller can fall back rather than crash.
+    """
+    try:
+        from lxml import etree
+    except Exception:
+        return None
+    return etree.XMLParser(resolve_entities=False, no_network=True,
+                           load_dtd=False, huge_tree=False)
+
+
 def open_in_desktop(path):
     """Hand a file or folder to the desktop to open, FROM A CHILD PROCESS. True if something ran.
 

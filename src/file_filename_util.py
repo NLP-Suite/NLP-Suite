@@ -486,15 +486,21 @@ def get_count(path, outputPath, outputFilename):
 # get_author works for docx files only
 def get_author(path_to_file):
     import zipfile, lxml.etree
-    # open zipfile
+    # The XML inside a .docx was written by whoever sent the file, so it is parsed with entity
+    # resolution and network access OFF -- otherwise reading the author of a document can be made
+    # to read something else entirely. See IO_files_util.safe_xml_parser.
+    parser = IO_files_util.safe_xml_parser()
     try:
         with zipfile.ZipFile(path_to_file) as zf:
-            doc = lxml.etree.fromstring(zf.read('docProps/core.xml'))
+            doc = lxml.etree.fromstring(zf.read('docProps/core.xml'), parser=parser)
             ns = {'dc': 'http://purl.org/dc/elements/1.1/'}
             creator = doc.xpath('//dc:creator', namespaces=ns)[0].text
     except:
         creator = ""
-    return creator
+    # ALWAYS a string. An element whose only child is an unresolved entity has .text of None, so
+    # hardening the parser turned "no author" into None for exactly the hostile files this is meant
+    # to survive - and callers put this straight into a listing.
+    return creator if isinstance(creator, str) else ""
 
 
 # https://stackoverflow.com/questions/7021141/how-to-retrieve-author-of-a-office-file-in-python

@@ -78,8 +78,22 @@ geojson
 gmaps
 
 # Web / parsing
-requests
+# FLOORS, not pins: these are unpinned so a fresh install gets the current release, but a floor
+# stops a cached wheel or an old resolver from quietly satisfying the requirement with a version
+# carrying a known advisory. Raise a floor when an advisory lands; do not turn these into ==.
+#   requests  < 2.31.0  leaks the Proxy-Authorization header across redirects (GHSA-j8r2-6x86-q33q)
+#             < 2.32.0  a Session keeps not verifying after one verify=False request
+#             < 2.32.4  .netrc credentials can leak via a malicious URL (GHSA-9hjg-9r4m-mvj7)
+#   urllib3   < 1.26.19 same Proxy-Authorization leak on cross-origin redirects; it arrives as a
+#             dependency of requests, so it is named here to keep the floor explicit
+# Both matter on a campus proxy, which is where a good share of these users are.
+requests>=2.32.4
+urllib3>=1.26.19
 beautifulsoup4
+# lxml deliberately unpinned. The XXE advisory against it is about lxml's DEFAULT parser settings,
+# and the Suite no longer relies on those: every place that parses a file somebody else wrote
+# passes an explicit hardened parser (IO_files_util.safe_xml_parser). Pinning up to lxml 6 for the
+# default alone would risk Gephi_util, which parses .gexf in several places.
 lxml
 chardet
 tqdm
