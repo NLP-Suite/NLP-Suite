@@ -36,6 +36,13 @@ from pdfminer.pdfpage import PDFPage
 from pdfminer.converter import XMLConverter, HTMLConverter, TextConverter
 from pdfminer.high_level import extract_pages
 from pdfminer.layout import LAParams, LTAnno, LTChar, LTFigure, LTImage, LTTextContainer, LTTextLine
+
+# Installed as soon as pdfminer is, and BEFORE any pdf is opened: a crafted pdf can otherwise make
+# pdfminer unpickle a file of the attacker's choosing, which runs its code. See
+# IO_files_util.harden_pdfminer_cmap for what the pdf does and why the upstream fix is not
+# installable on Python 3.8.
+IO_files_util.harden_pdfminer_cmap()
+
 from docx import Document #pip install python-docx
 from docx.shared import Inches, Pt, RGBColor
 from os.path import splitext

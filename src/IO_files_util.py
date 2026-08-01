@@ -460,6 +460,72 @@ def safe_xml_parser():
                            load_dtd=False, huge_tree=False)
 
 
+# A CMap name comes out of the pdf being converted. pdfminer turns it into "<name>.pickle.gz" and
+# os.path.join()s it onto its own cmap directory - and os.path.join DISCARDS the directory when what
+# follows is absolute, so a name of "\\\\attacker\\share\\evil" or "C:/tmp/evil" or "../../evil"
+# lands anywhere the attacker likes, and pdfminer then pickle.loads() it. Loading a pickle is
+# running whatever code it contains (GHSA-wf5f-4jwr-ppcp, CVSS 8.6, arbitrary code execution from
+# opening a crafted pdf). On Windows the path may be a NETWORK location, so nothing has to be
+# planted on the machine first.
+#
+# Fixed upstream in pdfminer.six 20251107, which needs Python >= 3.9; this suite runs 3.8, so the
+# fix cannot be installed. Every real CMap name is a plain file-name component from pdfminer's own
+# directory - "UniJIS-UCS2-H", "90ms-RKSJ-V", "to-unicode-Adobe-Japan1" - so a whitelist of what a
+# name may contain is both sufficient and easy to be sure of.
+_CMAP_NAME_OK = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._+-]*$')
+
+
+def is_safe_cmap_name(name):
+    """True if *name* can only ever resolve INSIDE pdfminer's own cmap directory."""
+    if not isinstance(name, str):
+        return False
+    # pdfminer strips NULs and carries on, so a NUL cannot itself escape the directory - but no real
+    # CMap name contains one, and a name that has been tampered with is not one to reason about
+    # twice. Rejected outright.
+    if '\x00' in name:
+        return False
+    if not name or len(name) > 128:
+        return False
+    if not _CMAP_NAME_OK.match(name):        # excludes / \ : ~ spaces, and anything exotic
+        return False
+    if '..' in name:                         # traversal, even though the charset already blocks /
+        return False
+    return True
+
+
+def harden_pdfminer_cmap():
+    """Refuse CMap names that could escape pdfminer's cmap directory. Idempotent; True if in force.
+
+    A rejected name raises pdfminer's own CMapDB.CMapNotFound, which pdfminer already catches in
+    pdffont and pdfinterp and handles by falling back - so a hostile pdf degrades to a slightly
+    worse text extraction rather than crashing the conversion, and an honest pdf naming a CMap that
+    genuinely is not bundled behaves exactly as before.
+    """
+    try:
+        from pdfminer.cmapdb import CMapDB
+    except Exception:
+        return False
+    if getattr(CMapDB._load_data, '_nlp_suite_guarded', False):
+        return True
+
+    original = CMapDB._load_data.__func__ if hasattr(CMapDB._load_data, '__func__') \
+        else CMapDB._load_data
+
+    def guarded(cls, name):
+        if not is_safe_cmap_name(name):
+            # NOT silent: a pdf naming a CMap outside pdfminer's own directory is either broken or
+            # hostile, and either way the user should be able to find out why the text is thinner.
+            print('>>> pdf conversion: refused a CMap name that points outside pdfminer\'s cmap '
+                  'directory (%r). The pdf is malformed or malicious; continuing without it.'
+                  % (name if isinstance(name, str) else type(name).__name__))
+            raise CMapDB.CMapNotFound(name)
+        return original(cls, name)
+
+    guarded._nlp_suite_guarded = True
+    CMapDB._load_data = classmethod(guarded)
+    return True
+
+
 def open_in_desktop(path):
     """Hand a file or folder to the desktop to open, FROM A CHILD PROCESS. True if something ran.
 
