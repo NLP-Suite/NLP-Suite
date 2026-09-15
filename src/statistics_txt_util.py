@@ -1836,6 +1836,21 @@ def sentence_structure_tree(inputFilename, outputDir):
             cf.print_to_file(outputDir + '/' + os.path.basename(inputFilename) + '_' + str(sentenceID) + '_tree.ps')
 
 # written by Mino Cha March/April 2022
+def sentence_complexity_scores(parse):
+    """Yngve and Frazier scores of one constituency parse string, as (Yngve score, Yngve sum, Frazier score,
+    Frazier sum). Each sum totals the depth over the parse's leaves; each score is that sum divided by the
+    number of leaves - the mean depth per word, which (unlike the sum) is not simply a function of length."""
+    yRoot = Node.Node(tree.make_tree(parse))
+    yRoot.calY()
+    fRoot = Node.Node(tree.make_tree(parse))
+    fRoot.calF()
+    # a flat count: len(tree.getLeavesAsList(root)) is 1 for every ROOT-rooted parse, which made score == sum
+    leaf = tree.countLeaves(tree.make_tree(parse))
+    ySum = yRoot.sumY()
+    fSum = fRoot.sumF()
+    return round(ySum / leaf, 2), ySum, round(fSum / leaf, 2), fSum
+
+
 def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, configFileName,
                                 openOutputFiles, chartPackage, dataTransformation):
     ## list for csv file
@@ -1912,31 +1927,8 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, conf
         tail = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(document[idx]))[1]
         print("Processing file " + str(idx+1) + '/' + str(numFiles) + ' ' + tail)
         for i, sentence in enumerate(doc.sentences):
-            sent = str(sentence.constituency)
-            root1 = tree.make_tree(sent)
-            root2 = tree.make_tree(sent)
-            leaves_list = tree.getLeavesAsList(root1)
-            # print(i)
-            # print(sentence.text)
             sentence_length = len(sentence.words)
-            # print(sentence_length)
-
-            newRoot1 = Node.Node(root1)
-            newRoot2 = Node.Node(root2)
-            newRoot1.calY()
-            newRoot2.calF()
-            leaf = len(leaves_list)
-
-            words = str(sentence).split(" ")
-            size = len(words) - 1
-
-            ySum = newRoot1.sumY()
-            yAvg = round(ySum / leaf, 2)
-            # print(f"Yngve: {yAvg}, {ySum}")
-
-            fSum = newRoot2.sumF()
-            fAvg = round(fSum / leaf, 2)
-            # print(f"Frazier: {fAvg}, {fSum}\n")
+            yAvg, ySum, fAvg, fSum = sentence_complexity_scores(str(sentence.constituency))
 
             # new ordering
             # op = op.append({
