@@ -32,6 +32,13 @@ import IO_csv_util
 import charts_util
 import constants_util
 
+# the two txt files of extracted sentences, INSIDE the output directory
+#   (os.path.join(outputDir) + "NLP_extract..." dropped the separator, so the files landed beside the output
+#   directory, named e.g. search_word_sent_corpusNLP_extract_with_searchwords.txt)
+def sentence_extract_filenames(outputDir):
+    return (os.path.join(outputDir, "NLP_extract_with_searchwords.txt"),
+            os.path.join(outputDir, "NLP_extract_wo_searchwords.txt"))
+
 # sentences is a list of all sentences
 # search_sentence is a string containing the sentence around which we want to get -K +K sentences
 def find_k_adjacent_sentences(sentences, search_sentence, kminus, kplus):
@@ -576,7 +583,8 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
     else:
         header = ['Searched keyword NOT found', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
         all_search_keywords_NOT_found.insert(0, header)
-        IO_error = IO_csv_util.list_to_csv(GUI_util.window, all_search_keywords_NOT_found[2],
+        # the whole list (header + one record per keyword/sentence not found), not just its third item
+        IO_error = IO_csv_util.list_to_csv(GUI_util.window, all_search_keywords_NOT_found,
                                            outputFilename_csv_word_NOT_found)
         if not IO_error:
             filesToOpen.append(outputFilename_csv_word_NOT_found)
@@ -595,10 +603,8 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
         if extract_sentences:
             # setup output text files
 
-            outputFilename_extract_w_searchword = os.path.join(outputDir) + \
-                                                               "NLP_extract_with_searchwords.txt"
-            outputFilename_extract_wo_searchword = os.path.join(outputDir) + \
-                                                                "NLP_extract_wo_searchwords.txt"
+            outputFilename_extract_w_searchword, outputFilename_extract_wo_searchword = \
+                sentence_extract_filenames(outputDir)
 
 # write csv output files -----------------------------------------------------------------
         with open(outputFilename_csv_word, 'w', newline='') as f_csv:
