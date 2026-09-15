@@ -41,7 +41,6 @@ import tree
 import sentence_complexity_node_util as Node
 
 # from gensim.utils import lemmatize
-from itertools import groupby
 import pandas as pd
 # import ast
 # import textstat
@@ -68,7 +67,6 @@ IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt
 from nltk.corpus import stopwords
 from nltk.corpus import wordnet
 # from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
-from itertools import groupby
 import textstat
 
 import IO_user_interface_util
@@ -856,10 +854,23 @@ def get_yules_k_i(s):
     k = 1/i * 10000
     return (k, i)
 
+def yule_k_from_counts(counts):
+    """Yule's K from the frequency of each word type (Oakes 1998: 204, as in the Yule TIPS file):
+    K = 10,000 * (M2 - M1) / (M1 * M1), where M1 is the number of word tokens and M2 is the sum of each
+    type's frequency squared. The LOWER K, the richer (less repetitive) the vocabulary. 0 for an empty text."""
+    counts = list(counts)
+    m1 = sum(counts)
+    if m1 == 0:
+        return 0
+    m2 = sum(freq * freq for freq in counts)
+    return round(10000 * (m2 - m1) / (m1 * m1), 2)
+
+
 # https://swizec.com/blog/measuring-vocabulary-richness-with-python/swizec/2528
 def yule(window, inputFilename, inputDir, outputDir, configFileName, hideMessage=False):
-    # yule's I measure (the inverse of yule's K measure)
-    # higher number is higher diversity - richer vocabulary
+    # Yule's K, as the output column and the TIPS file say: LOWER K = richer vocabulary.
+    #   This used to compute (types^2) / (M2 - types), a variant of Yule's I (the reciprocal of K, higher =
+    #   richer) with the number of TYPES where Oakes has the number of TOKENS, under the "Yule's K" header.
     filesToOpen = []
     Yule_value_list=[]
     headers = ["Yule's K Value", "Document ID", "Document"]
@@ -876,7 +887,7 @@ def yule(window, inputFilename, inputDir, outputDir, configFileName, hideMessage
         print("Processing file " + str(index) + "/" + str(Ndocs) + " " + tail)
         fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
         words = filter(lambda w: len(w) > 0,
-                  [w.strip("0123456789!:,.?(){}[]") for w in fullText.translate(string.punctuation).lower().split()])
+                  [w.strip("0123456789!:,.?(){}[]") for w in fullText.lower().split()])
         stemmer = PorterStemmer()
         for w in words:
             w = stemmer.stem(w).lower()
@@ -884,20 +895,12 @@ def yule(window, inputFilename, inputDir, outputDir, configFileName, hideMessage
                 d[w] += 1
             except KeyError:
                 d[w] = 1
-        # TODO
-        # get freq of unique words and print it in the end
-        M1 = float(len(d))
-        M2 = sum([len(list(g))*(freq**2) for freq,g in groupby(sorted(d.values()))])
-
-        try:
-            result=round((M1*M1)/(M2-M1),2)
-        except ZeroDivisionError:
-            result= 0
+        result = yule_k_from_counts(d.values())
 
         # print results
         if inputFilename!='' and hideMessage==False:
-            IO_user_interface_util.timed_alert(GUI_util.window, 4000, message_title='Yule’s K Vocabulary richness', message_text='The value for the vocabulary richness statistics (word type/token ratio or Yule’s K) is: '+str(result) + '\n\nValue range: 0-100. The higher the value, the richer the vocabulary.')
-            print('The value for the vocabulary richness statistics (word type/token ratio or Yule’s K) is: '+str(result) + '\n\nThe higher the value (0-100) and the richer is the vocabulary.\n\nValue range: 0-100. The higher the value, the richer the vocabulary.')
+            IO_user_interface_util.timed_alert(GUI_util.window, 4000, message_title='Yule’s K Vocabulary richness', message_text='The value for the vocabulary richness statistics (Yule’s K) is: '+str(result) + '\n\nThe lower the value, the richer (less repetitive) the vocabulary.')
+            print('The value for the vocabulary richness statistics (Yule’s K) is: '+str(result) + '\n\nThe lower the value, the richer (less repetitive) the vocabulary.')
         temp = [result,index,IO_csv_util.dressFilenameForCSVHyperlink(doc)]
         Yule_value_list.append(temp)
     IO_error=IO_csv_util.list_to_csv(window, Yule_value_list, outputFilename)
