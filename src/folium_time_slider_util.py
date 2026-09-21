@@ -29,6 +29,28 @@ EPOCH = datetime.datetime(1970, 1, 1)
 DAY_MS = 86400000
 
 
+def date_text(value):
+    """A date as the page wrote it -> 'yyyy-mm-dd' that pandas reads as a DATE.
+
+    A BARE YEAR IS A YEAR. pandas reads the number 1870 as 1,870 nanoseconds
+    after 1 January 1970, so every census row (dated by year) landed on
+    1970-01-01 and the time map had one stop (Roberto, 21 Sept 2026: "the
+    arrow to run the census records does not move anything"). 1870 -> 1870-01-01;
+    1870.0 (a year read into a float column) the same; 1870-06 -> 1870-06-01;
+    00 for a part not given -> 01. Anything else is passed through as text."""
+    if value is None:
+        return ''
+    text = str(value).strip()
+    if re.match(r'^\d{4}\.0+$', text):
+        text = text.split('.')[0]
+    m = re.match(r'^(\d{4})(?:-(\d{1,2}))?(?:-(\d{1,2}))?$', text)
+    if not m:
+        return text
+    month = int(m.group(2) or 0) or 1
+    day = int(m.group(3) or 0) or 1
+    return '%s-%02d-%02d' % (m.group(1), month, day)
+
+
 def period_for(first, last):
     """'P1Y', 'P1M' or 'P1D' for data spanning first..last (datetimes)."""
     span = (last - first).days

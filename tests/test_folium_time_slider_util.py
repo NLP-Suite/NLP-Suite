@@ -41,3 +41,11 @@ def test_patch_sets_stops_window_and_stops_the_rewrite():
 def test_an_unrecognised_page_is_reported_not_changed():
     html, ok = ts.patch('<html></html>', [1])
     assert not ok and html == '<html></html>'
+
+
+def test_a_bare_year_is_a_year_not_nanoseconds_after_1970():
+    assert ts.date_text(1870) == '1870-01-01'
+    assert ts.date_text(1870.0) == '1870-01-01'
+    assert ts.date_text('1870-06') == '1870-06-01'
+    assert ts.date_text('1870-00-00') == '1870-01-01'
+    assert ts.date_text('June 1870') == 'June 1870'

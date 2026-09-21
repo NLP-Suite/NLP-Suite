@@ -202,7 +202,9 @@ def create_folium_timestamped_map(window, inputFilename, outputDir,
                        '\n\ncontains no valid rows with dates for the Folium timestamped map.')
         return ''
 
-    df[dateColumnName] = pd.to_datetime(df[dateColumnName], errors='coerce')
+    # a bare year (1870) is a year, not 1,870 nanoseconds after 1970 - see date_text
+    df[dateColumnName] = pd.to_datetime(df[dateColumnName].map(folium_time_slider_util.date_text),
+                                        errors='coerce')
     df = df.dropna(subset=[dateColumnName])
     if len(df) == 0:
         mb.showwarning('Warning',
