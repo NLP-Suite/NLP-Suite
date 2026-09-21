@@ -16,6 +16,7 @@ import IO_files_util
 import IO_user_interface_util
 # Esri tiles: OpenStreetMap refuses a map page opened from disk (map_tiles_util)
 import map_tiles_util
+import folium_time_slider_util
 
 
 def _load_geocoded_data(inputFilename):
@@ -258,15 +259,21 @@ def create_folium_timestamped_map(window, inputFilename, outputDir,
         ".leaflet-bottom.leaflet-left .leaflet-control-timecontrol{margin-bottom:0;}"
         "</style>"))
 
+    # THE STEP IS CHOSEN FROM THE DATA (a year, a month or a day) and the slider is
+    # given its stops after saving - see folium_time_slider_util for why the play
+    # button otherwise does nothing and records before 1970 are never drawn.
+    first = df[dateColumnName].min().to_pydatetime()
+    last = df[dateColumnName].max().to_pydatetime()
+    period = folium_time_slider_util.period_for(first, last)
     TimestampedGeoJson(
         {'type': 'FeatureCollection', 'features': features},
-        period='P1D',
+        period=period,
         add_last_point=True,
         auto_play=False,
         loop=False,
         max_speed=10,
         loop_button=True,
-        date_options='YYYY-MM-DD',
+        date_options=folium_time_slider_util.date_format(period),
         time_slider_drag_update=True,
     ).add_to(m)
 
@@ -275,6 +282,13 @@ def create_folium_timestamped_map(window, inputFilename, outputDir,
                                                               'Folium-time', locationColumnName, '', '',
                                                               False, True)
     m.save(outputFilename)
+    if not folium_time_slider_util.patch_file(
+            outputFilename, folium_time_slider_util.stops(first, last, period)):
+        mb.showwarning('Warning',
+                       'The Folium timestamped map was written, but its time slider could not be '
+                       'set up (folium wrote the page in a form this version does not recognise). '
+                       'The play button may not move and records dated before 1970 may not show.'
+                       '\n\n' + outputFilename)
 
     IO_user_interface_util.timed_alert(window, 2000, 'Folium timestamped map',
                                         'Finished running Folium timestamped map at',
