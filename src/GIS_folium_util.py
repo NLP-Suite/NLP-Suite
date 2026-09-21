@@ -14,6 +14,8 @@ import tkinter.messagebox as mb
 
 import IO_files_util
 import IO_user_interface_util
+# Esri tiles: OpenStreetMap refuses a map page opened from disk (map_tiles_util)
+import map_tiles_util
 
 
 def _load_geocoded_data(inputFilename):
@@ -108,7 +110,7 @@ def create_folium_pin_map(window, inputFilename, outputDir, locationColumnName='
         return ''
 
     center = _compute_center(df)
-    m = folium.Map(location=center, zoom_start=4, tiles='OpenStreetMap')
+    m = folium.Map(location=center, zoom_start=4, **map_tiles_util.folium_tiles())
 
     location_col = locationColumnName if locationColumnName in df.columns else None
     popup_columns = [c for c in df.columns]
@@ -154,7 +156,7 @@ def create_folium_heatmap(window, inputFilename, outputDir, locationColumnName='
         return ''
 
     center = _compute_center(df)
-    m = folium.Map(location=center, zoom_start=4, tiles='OpenStreetMap')
+    m = folium.Map(location=center, zoom_start=4, **map_tiles_util.folium_tiles())
 
     heat_data = df[['Latitude', 'Longitude']].values.tolist()
 
@@ -245,7 +247,7 @@ def create_folium_timestamped_map(window, inputFilename, outputDir,
         features.append(feature)
 
     center = _compute_center(df)
-    m = folium.Map(location=center, zoom_start=4, tiles='OpenStreetMap')
+    m = folium.Map(location=center, zoom_start=4, **map_tiles_util.folium_tiles())
 
     # place the time-slider control in the TOP-LEFT corner (like Google Earth Pro's time slider).
     # folium's TimestampedGeoJson does not expose a position option; the control defaults to the

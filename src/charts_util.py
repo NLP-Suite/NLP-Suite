@@ -33,6 +33,8 @@ import os
 import IO_csv_util
 import IO_user_interface_util
 import charts_Plotly_util
+# Esri tiles: OpenStreetMap refuses a map page opened from disk (map_tiles_util)
+import map_tiles_util
 import charts_Excel_util
 import statistics_csv_util
 
@@ -3608,10 +3610,7 @@ function getFilteredData() {{
 }}
 
 var map = L.map('map').setView([{center_lat}, {center_lon}], 5);
-L.tileLayer('https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}@2x.png', {{
-  attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-  maxZoom: 18
-}}).addTo(map);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{{z}}/{{y}}/{{x}}', {{attribution: 'Tiles &copy; Esri', maxZoom: 18}}).addTo(map);
 // Fit the view to ALL geocoded points so the markers are never off-screen.
 // A fixed zoom centered on the mean coordinate often lands on empty ocean when the
 // locations are spread across continents, leaving a blank gray map even though markers exist.
@@ -3904,7 +3903,7 @@ def proportional_circle_map(inputFilename, outputDir, location_col, Google_API='
     avg_lat = sum(r[1] for r in geo_rows) / len(geo_rows)
     avg_lon = sum(r[2] for r in geo_rows) / len(geo_rows)
     m = folium.Map(location=[avg_lat, avg_lon], zoom_start=4,
-                   tiles='CartoDB positron')
+                   **map_tiles_util.folium_tiles())
     max_count = max(r[3] for r in geo_rows)
     for loc_name, lat, lon, count in geo_rows:
         radius = max(5, (count / max_count) * 40)
@@ -4989,7 +4988,7 @@ network.on("click", function(params) {{
                 avg_lat = sum(r[1] for r in geo_rows) / len(geo_rows)
                 avg_lon = sum(r[2] for r in geo_rows) / len(geo_rows)
                 m = folium.Map(location=[avg_lat, avg_lon], zoom_start=4,
-                               tiles='CartoDB positron')
+                               **map_tiles_util.folium_tiles())
                 max_count = max(r[3] for r in geo_rows)
                 for loc_name, lat, lon, count in geo_rows:
                     radius = max(5, (count / max_count) * 40)
