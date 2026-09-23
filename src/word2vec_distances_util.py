@@ -48,6 +48,26 @@ def _compute_similarity(word_a, word_b, word_vectors, result_df, BERT):
         return _cosine_sim_vectors(vec_a, vec_b)
 
 
+def vocabulary_column(result_df):
+    """The result_df column holding the form the model was trained on: 'Lemma' when lemmatized.
+
+    With Lemmatize on, the Gensim vocabulary is lemmas while 'Word' holds surface forms, so looking up
+    'Word' values ("models", "said") raised KeyError on every inflected form, and those pairs were
+    silently skipped.
+    """
+    return 'Lemma' if 'Lemma' in result_df.columns else 'Word'
+
+
+def split_keywords(keywords_var, vocabulary):
+    """(keywords in the model vocabulary, keywords not in it), from the comma-separated widget value."""
+    keywords = []
+    for k in keywords_var.split(','):
+        k = k.strip()
+        if k and k not in keywords:
+            keywords.append(k)
+    return [k for k in keywords if k in vocabulary], [k for k in keywords if k not in vocabulary]
+
+
 def _visualize_and_collect(chartPackage, dataTransformation, outputFilename, outputDir,
                            x_col, y_col, chart_title, outputFileNameType, x_label, filesToOpen):
     """Run visualization and append output files."""
@@ -115,10 +135,11 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage,
             mb.showerror(title='csv file error',
                        message='The selected csv file does NOT contain Vector column.\n\nPlease, select a different csv file and try again.')
 
-    # find top most-frequent words
-    tmp_result = result_df['Word'].value_counts().index.tolist()[:top_words_var]
-    tmp_result_df = result_df.loc[result_df['Word'].isin(tmp_result)]
-    tmp_result_df = tmp_result_df.drop_duplicates(subset=['Word'], keep='first').reset_index(drop=True)
+    # find top most-frequent words, in the form the model was trained on (lemmas when lemmatized)
+    key_col = vocabulary_column(result_df)
+    tmp_result = result_df[key_col].value_counts().index.tolist()[:top_words_var]
+    tmp_result_df = result_df.loc[result_df[key_col].isin(tmp_result)]
+    tmp_result_df = tmp_result_df.drop_duplicates(subset=[key_col], keep='first').reset_index(drop=True)
 
     # n-dimensional Euclidean distances
     if n_dim_Euclidean:
@@ -128,8 +149,8 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage,
         print(f'\nStarted computing n-dimensional Euclidean distance between top {top_words_var} words at {time.asctime(time.localtime(time.time()))}')
         for i in range(len(tmp_result_df)):
             for j in range(i + 1, len(tmp_result_df)):
-                w1 = tmp_result_df.iloc[i]['Word']
-                w2 = tmp_result_df.iloc[j]['Word']
+                w1 = tmp_result_df.iloc[i][key_col]
+                w2 = tmp_result_df.iloc[j][key_col]
                 v1 = tmp_result_df.iloc[i]['Vector']
                 v2 = tmp_result_df.iloc[j]['Vector']
                 dist_rows.append({
@@ -158,8 +179,8 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage,
 
         for i in range(len(tmp_result_df)):
             for j in range(i + 1, len(tmp_result_df)):
-                w1 = tmp_result_df.iloc[i]['Word']
-                w2 = tmp_result_df.iloc[j]['Word']
+                w1 = tmp_result_df.iloc[i][key_col]
+                w2 = tmp_result_df.iloc[j][key_col]
                 try:
                     sim_score = _compute_similarity(w1, w2, word_vectors, result_df, BERT)
                     cos_rows.append({
@@ -185,7 +206,12 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage,
 
         # cosine similarity for selected keywords
         if keywords_var:
-            keywords_list = [x.strip() for x in keywords_var.split(',')]
+            vocabulary = set(result_df[key_col]) if BERT else word_vectors.key_to_index
+            keywords_list, missing = split_keywords(keywords_var, vocabulary)
+            if missing:
+                mb.showwarning(title='Keywords not in the vocabulary',
+                               message='These keywords are not in the word embeddings vocabulary, so no similarity is computed for them:\n\n  ' + ', '.join(missing) +
+                                       '\n\nA word is left out when it is a stopword, occurs fewer times than "min_count", or (with Lemmatize on) is not in its dictionary form: enter "say", not "said".')
             print(f'\nStarted computing cosine similarity between words for {len(keywords_list)} selected keywords at {time.asctime(time.localtime(time.time()))}')
             kw_rows = []
             for a, b in itertools.combinations(keywords_list, 2):

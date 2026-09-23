@@ -39,6 +39,18 @@ def _load_stopwords():
         _stopwords_cache = set()
     return _stopwords_cache
 
+def is_noise_token(text):
+    """True for tokens "Remove stopwords & punctuation" should drop beyond the stopword list.
+
+    That is single characters, tokens with no letter or digit ("...", "--", "''") and clitics split off
+    by the tokenizer ("'s", "n't", "'ll"). Only single characters and single punctuation marks used to
+    be dropped, so "...", "'s" and "--" ranked among the corpus's most frequent "words".
+    """
+    if len(text) <= 1 or not any(ch.isalnum() for ch in text):
+        return True
+    return text[0] in "'’" or text.lower() in ("n't", "n’t")
+
+
 def run_Gensim_word2vec(inputFilename, inputDir, outputDir, configFileName, openOutputFiles, chartPackage, dataTransformation,
                         remove_stopwords_var, lemmatize_var,
                         keywords_var,
@@ -127,7 +139,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, configFileName, open
             temp_sent_words = []
             for word in sent.words:
                 if remove_stopwords_var:
-                    if word.text.lower() in stop_words or word.text in punctuations or len(word.text) == 1:
+                    if word.text.lower() in stop_words or is_noise_token(word.text):
                         continue
 
                 token_word = word.lemma if (lemmatize_var and hasattr(word, 'lemma') and word.lemma) else word.text
