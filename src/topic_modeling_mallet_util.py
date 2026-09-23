@@ -40,6 +40,30 @@ import IO_files_util
 import charts_util
 import file_converter_util
 import IO_user_interface_util
+from topic_modeling_corpus_size_util import corpus_size_advice
+
+# iterations between hyperparameter optimizations: MALLET's documentation and the Programming Historian
+# lesson cited below both use a fixed small number. The GUI used to pass the NUMBER OF TOPICS here.
+OPTIMIZE_INTERVAL = 20
+
+
+def mallet_commands(mallet_bin, inputDir, formatted_file, num_topics, optimize, state_file, keys_file,
+                    composition_file):
+    """The two MALLET command lines, import-dir and train-topics, as argument lists."""
+    import_cmd = [mallet_bin, 'import-dir', '--input', inputDir, '--output', formatted_file,
+                  '--keep-sequence', '--remove-stopwords']
+    train_cmd = [mallet_bin, 'train-topics', '--input', formatted_file, '--num-topics', str(num_topics)]
+    if optimize:
+        train_cmd += ['--optimize-interval', str(OPTIMIZE_INTERVAL)]
+    train_cmd += ['--output-state', state_file, '--output-topic-keys', keys_file,
+                  '--output-doc-topics', composition_file]
+    return import_cmd, train_cmd
+
+
+def mallet_outputs_missing(keys_file, composition_file):
+    """The expected MALLET outputs that do not exist. EITHER missing means MALLET failed (the check used
+    to fire only when BOTH were missing)."""
+    return [f for f in (keys_file, composition_file) if not os.path.isfile(f)]
 
 
 # RUN section __________________________________________________________________________________________________________
@@ -129,24 +153,14 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransform
         return
 
     numFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
-
-    if numFiles == 0:
-        mb.showerror(title='Number of files error',
-                     message='The selected input directory does NOT contain any file of txt type.\n\nPlease, select a '
-                             'different directory and try again.')
+    # the same judgement as Gensim's (see topic_modeling_corpus_size_util): an error only with 0 or 1
+    # documents, advice (not a default-No dialog) under 50
+    level, advice = corpus_size_advice(numFiles)
+    if level == 'error':
+        mb.showerror(title='Topic modeling: not enough documents', message=advice)
         return
-    elif numFiles == 1:
-        mb.showerror(title='Number of files error', message='The selected input directory contains only ' + str(
-            numFiles) + ' file(s) of txt type.\n\nTopic modeling requires a large number of files to produce valid '
-                        'results. That is true even if the available file contains several different documents morged'
-                        ' together.')
-        return
-    elif numFiles < 50:
-        result = mb.askyesno(title='Number of files', message='The selected input directory contains only ' + str(
-            numFiles) + ' files of txt type.\n\nTopic modeling requires a large number of files (in the hundreds at least; read TIPS file) to produce valid results.\n\nAre you sure you want to continue?',
-                             default='no')
-        if result == False:
-            return
+    if level == 'advice':
+        mb.showinfo(title='Topic modeling: a note on corpus size', message=advice)
 
     """
     All OUTPUT file names can be changed and MALLET will still run successfully
@@ -194,16 +208,14 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransform
                                                    "Depending upon corpus size, computations may take a while... "
                                                    "Please, be patient...")
 
-    # FIRST STEP
+    import_cmd, train_cmd = mallet_commands(MALLETDir + os.sep + 'mallet', inputDir,
+                                            TXTFiles_MALLETFormatted_FileName, numTopics, OptimizeInterval,
+                                            Compressed_FileName, Keys_FileName, Composition_FileName)
+    use_shell = platform == "win32"
 
+    # FIRST STEP
     # The output file MALLETFormatted_TXTFiles.mallet contains all corpus TXT files properly formatted for MALLET
-    if platform == "win32":
-        subprocess.call([MALLETDir + os.sep + 'mallet', 'import-dir', '--input', inputDir, '--output',
-                         TXTFiles_MALLETFormatted_FileName, '--keep-sequence', '--remove-stopwords'], shell=True)
-    # linux # OS X
-    elif platform == "linux" or platform == "linux2" or platform == "darwin":
-        subprocess.call([MALLETDir + os.sep + 'mallet', 'import-dir', '--input', inputDir, '--output',
-                         TXTFiles_MALLETFormatted_FileName, '--keep-sequence', '--remove-stopwords'])
+    import_rc = subprocess.call(import_cmd, shell=use_shell)
 
     # SECOND STEP
     # The output file Composition_FileName is a tsv file indicating the breakdown, by percentage,
@@ -213,33 +225,7 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransform
     # see www.gzip.org on how to unzip this
     # Interval Optimization leads to better results according to
     # http://programminghistorian.org/lessons/topic-modeling-and-mallet
-
-    # the real format of the file created by mallet is .tsv or .txt
-
-    if platform == "win32":
-        if OptimizeInterval:
-            subprocess.call(
-                [MALLETDir + os.sep + 'mallet', 'train-topics', '--input', TXTFiles_MALLETFormatted_FileName,
-                 '--num-topics', str(numTopics), '--optimize-interval', str(numTopics), '--output-state',
-                 Compressed_FileName, '--output-topic-keys', Keys_FileName, '--output-doc-topics',
-                 Composition_FileName], shell=True)
-        else:
-            subprocess.call(
-                [MALLETDir + os.sep + 'mallet', 'train-topics', '--input', TXTFiles_MALLETFormatted_FileName,
-                 '--num-topics', str(numTopics), '--output-state', Compressed_FileName, '--output-topic-keys',
-                 Keys_FileName, '--output-doc-topics', Composition_FileName], shell=True)
-    elif platform == "linux" or platform == "linux2" or platform == "darwin":
-        if OptimizeInterval:
-            subprocess.call(
-                [MALLETDir + os.sep + 'mallet', 'train-topics', '--input', TXTFiles_MALLETFormatted_FileName,
-                 '--num-topics', str(numTopics), '--optimize-interval', str(numTopics), '--output-state',
-                 Compressed_FileName, '--output-topic-keys', Keys_FileName, '--output-doc-topics',
-                 Composition_FileName])
-        else:
-            subprocess.call(
-                [MALLETDir + os.sep + 'mallet', 'train-topics', '--input', TXTFiles_MALLETFormatted_FileName,
-                 '--num-topics', str(numTopics), '--output-state', Compressed_FileName, '--output-topic-keys',
-                 Keys_FileName, '--output-doc-topics', Composition_FileName])
+    train_rc = subprocess.call(train_cmd, shell=use_shell)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running MALLET Topic modeling at ', True, '', True, startTime)
@@ -249,9 +235,12 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransform
     # convert to csv MALLET tsv output files
     # read MALLET tab-delimited files; both Keys_FileName and Composition_FileName must be converted
 
-    if (not os.path.isfile(Keys_FileName)) and (not os.path.isfile(Composition_FileName)):
+    # the files decide (a .bat exit code is not something to trust); the exit codes only name the step
+    if mallet_outputs_missing(Keys_FileName, Composition_FileName):
+        failed_step = 'import-dir' if import_rc != 0 else 'train-topics'
         mb.showwarning(title='MALLET FATAL error',
-                       message='MALLET has not produced the expected Keys and Composition files. It looks like MALLET '
+                       message='MALLET has not produced the expected Keys and Composition files (the ' + failed_step +
+                               ' step failed; see the command line for MALLET\'s own message). It looks like MALLET '
                                'did NOT run.\n\nPlease, make sure that you have edited properly the environment '
                                'variables by reading the TIPS file for MALLET installation and setting MALLET '
                                'environment variables.')
