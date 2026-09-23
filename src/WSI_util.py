@@ -18,10 +18,7 @@ import pickle
 from collections import Counter
 from tqdm import tqdm
 import os
-tcache_path = f'{os.getcwd()}/cache'
-if not os.path.exists(tcache_path):
-    os.makedirs(tcache_path)
-os.environ['TRANSFORMERS_CACHE'] = tcache_path
+import csv
 
 from transformers import BertModel, BertTokenizer, BertTokenizerFast, EncoderDecoderModel
 from collections import Counter
@@ -44,6 +41,27 @@ websites = "[.](com|net|org|io|gov)"
 digits = "([0-9])"
 
 
+def parse_keywords(u_vocab):
+    """The WSI keywords, lowercased, from a comma-separated string or a csv dictionary file.
+
+    The GUI's "Select dictionary file" button puts the csv PATH into the keywords widget, so a value
+    that names an existing file is read (first column, one word per row) instead of being split on
+    commas. Keywords are lowercased because get_sent lowercases the corpus: "Bank" would otherwise
+    never match anything.
+    """
+    if os.path.isfile(u_vocab):
+        with open(u_vocab, 'r', encoding='utf-8', errors='ignore', newline='') as f:
+            words = [row[0] for row in csv.reader(f) if row]
+    else:
+        words = u_vocab.split(',')
+    keywords = []
+    for w in words:
+        w = w.strip().lower()
+        if w and w not in keywords:
+            keywords.append(w)
+    return keywords
+
+
 def get_vocab(sentences, u_vocab='', top_n=0.01, min_count=50, add_stopwords=['said']):
     
     if u_vocab == '':
@@ -55,7 +73,7 @@ def get_vocab(sentences, u_vocab='', top_n=0.01, min_count=50, add_stopwords=['s
         u_vocab = [w for w, i in u_vocab.most_common(round(top_n * len(u_vocab))) \
                 if u_vocab[w] >= min_count]
     else:
-        u_vocab = [w.strip() for w in u_vocab.split(',')]
+        u_vocab = parse_keywords(u_vocab)
 
     return u_vocab
 
@@ -100,8 +118,7 @@ def get_sent(doc, o_path):
 
     with open(doc, 'r', encoding='utf-8', errors='ignore') as f:
         fullText = f.read().lower()
-    fullText.replace('\n', ' ')
-    docID = doc.split('/')[-1]
+    docID = os.path.basename(doc)
     sentences = split_into_sentences(fullText, docID)
     with open(f'{o_path}/sentences.pickle', 'wb') as f_name:
         pickle.dump(sentences, f_name)
@@ -144,7 +161,23 @@ def _bert_first_download_alert_wsi():
             False)
 
 
+def split_found_missing(all_sent, vocab):
+    """(keywords that occur in some sentence, keywords that occur in none), each in input order."""
+    present = set()
+    for tpl in all_sent:
+        present.update(tpl[1].split())
+    return [w for w in vocab if w in present], [w for w in vocab if w not in present]
+
+
 def get_centroids(all_sent, all_vocab, Word2Vec_Dir, k_range, sample=None):
+
+    # one missing keyword used to abort the whole run; skip it instead, and stop only if none is left (before the model download)
+    found, missing = split_found_missing(all_sent, all_vocab)
+    if missing:
+        mb.showwarning(title='Keywords not found', message='There are no occurrences of ' + ', '.join(f'"{w}"' for w in missing) + ' in the dataset, so ' + ('it is' if len(missing) == 1 else 'they are') + ' skipped. Check for misspellings and/or input other forms of the word, e.g. plural/singular forms, different tenses etc.')
+    if not found:
+        return []
+    all_vocab = found
 
     #load model
     print('\nStarted word sense induction...\n')
@@ -161,14 +194,13 @@ def get_centroids(all_sent, all_vocab, Word2Vec_Dir, k_range, sample=None):
             seq = [tpl for tpl in all_sent if w in tpl[1].split()]
         else:
             seq = random.sample([tpl for tpl in all_sent if w in tpl[1].split()], sample)
-        if len(seq) == 0:
-            mb.showerror(title=':-(', message=f'There are no occurrences of "{w}" in the dataset. Check for misspellings and/or input other forms of the word, e.g. plural/singular forms, different tenses etc.')
-            raise
         batched_data, batched_words, batched_masks, batched_users = model.get_batches(seq, batch_size)
         embeddings, do_wordpiece = model.get_embeddings(batched_data, batched_words, batched_masks, batched_users, w)
         data = model.group_wordpiece(embeddings, w, do_wordpiece)
         centroids = model.cluster_embeddings(data, k_range, w, lamb=10000)
         np.save(f'{c_path}/{w}.npy', centroids)
+
+    return all_vocab
 
 
 def match_embeddings(all_sent, all_vocab, Word2Vec_Dir):
