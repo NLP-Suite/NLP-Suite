@@ -275,6 +275,18 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(
 
 GUI_label = 'Corpus Profiler — what\'s in your corpus? (run a battery of analyses; get an HTML report and a paper-style summary)'
 config_filename = 'NLP_default_IO_config.csv'
+# ...but honour an I/O config handed over by a launching GUI (--config). The config -- NOT the live vars --
+# is what the INPUT/OUTPUT box is rendered from, so without this we would DISPLAY the default config while
+# working on the handed-over corpus. The seed is required: GUI_bottom() forces the default whenever
+# config_filename_selected_config is still empty, which it ALWAYS is in a fresh process.
+if '--config' in sys.argv:
+    try:
+        _handover_config = sys.argv[sys.argv.index('--config') + 1]
+        if _handover_config:
+            config_filename = _handover_config
+            GUI_util.config_filename_selected_config.set(config_filename)
+    except (IndexError, ValueError):
+        pass
 head, scriptName = os.path.split(os.path.basename(__file__))
 
 # input file = 2 (txt), input dir, no secondary dir, output dir
