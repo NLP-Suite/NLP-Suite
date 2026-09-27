@@ -6,6 +6,7 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window, "GIS_folium_ut
                                                   ['os', 'pandas', 'folium']) == False:
     sys.exit(0)
 
+import html
 import os
 import pandas as pd
 import folium
@@ -91,6 +92,13 @@ def _build_popup_html(row, df_columns, location_col=None, max_text_len=200):
         # Dates: show the date only, drop the 00:00:00 midnight time component
         if col == 'Date':
             val_str = val.strftime('%Y-%m-%d') if hasattr(val, 'strftime') else val_str.split(' ')[0]
+
+        # A web address (e.g. the archive's record link) is a clickable link, never cut:
+        # a truncated address does not open
+        if val_str.startswith(('http://', 'https://')):
+            href = html.escape(val_str, quote=True)
+            parts.append(f'<b>{col}</b>: <a href="{href}" target="_blank">open</a>')
+            continue
 
         # Truncate long text fields (e.g. Sentence)
         if len(val_str) > max_text_len:
