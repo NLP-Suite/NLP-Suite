@@ -116,7 +116,7 @@ _local_modules = [
     'style_analysis_iconicity_analysis_util', 'style_analysis_main',
     'SVO_main', 'SVO_util',
     'TIPS_util',
-    'topic_modeling_bert_util', 'topic_modeling_gensim_util',
+    'topic_modeling_bert_util', 'topic_modeling_corpus_size_util', 'topic_modeling_gensim_util',
     'topic_modeling_main', 'topic_modeling_mallet_util',
     'tree', 'videos_util',
     'whats_in_your_corpus_main',
