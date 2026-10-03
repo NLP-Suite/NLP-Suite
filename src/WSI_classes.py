@@ -1,10 +1,6 @@
 from sklearn.metrics import silhouette_score
 from tkinter import messagebox as mb
 import os
-tcache_path = f'{os.getcwd()}/cache'
-if not os.path.exists(tcache_path):
-    os.makedirs(tcache_path)
-os.environ['TRANSFORMERS_CACHE'] = tcache_path
 import sklearn
 from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import cosine_similarity
@@ -24,6 +20,31 @@ SEED = 0
 batch_size = 32
 dropout_rate = 0.25
 bert_dim = 768
+
+
+def last_four_layers(encoded_layers, sent_i, token_i):
+    """Hidden states of the last four layers for wordpiece token_i of sentence sent_i.
+
+    get_batches feeds the model build_inputs_with_special_tokens(...), which puts [CLS] at position 0,
+    but keeps the wordpiece list WITHOUT it. So wordpiece token_i sits at model position token_i + 1.
+    Reading position token_i took the vector of the PREVIOUS wordpiece (or [CLS] for the first), and
+    senses were induced from the word before the keyword rather than from the keyword.
+    """
+    pos = token_i + 1
+    return [encoded_layers[-layer_i][sent_i][pos] for layer_i in range(1, 5)]
+
+
+def candidate_ks(k_range, n_samples):
+    """The numbers of senses to try: k_range is (min, max), both INCLUSIVE, as the GUI sliders read.
+
+    The silhouette score needs 2 <= k <= n_samples - 1, so values outside that are dropped.
+    """
+    return [k for k in range(max(2, k_range[0]), k_range[1] + 1) if k <= n_samples - 1]
+
+
+def best_k(scores):
+    """The k with the highest silhouette score, from a {k: score} dict; the smaller k on ties."""
+    return max(sorted(scores), key=lambda k: scores[k])
 
 
 class Clusterer():
@@ -116,7 +137,6 @@ class Clusterer():
                 encoded_layers = o['hidden_states']
             for sent_i in range(len(words)):
                 for token_i in range(len(words[sent_i])):
-                    if batched_masks[b][sent_i][token_i] == 0: continue
                     w = words[sent_i][token_i]
                     next_w = ''
                     if (token_i + 1) < len(words[sent_i]):
@@ -124,10 +144,7 @@ class Clusterer():
                     if w != word and '##' not in w and '##' not in next_w: continue
                     if w == word:
                         do_wordpiece = False
-                    hidden_layers = []
-                    for layer_i in range(1, 5):
-                        vec = encoded_layers[-layer_i][sent_i][token_i]
-                        hidden_layers.append(vec)
+                    hidden_layers = last_four_layers(encoded_layers, sent_i, token_i)
                     # concatenate last four layers
                     rep = torch.cat((hidden_layers[0], hidden_layers[1],
                                 hidden_layers[2], hidden_layers[3]), 0)
@@ -175,27 +192,18 @@ class Clusterer():
     
     def cluster_embeddings(self, data, k_range, w, ID=None, dim_reduct=None, rs=SEED, lamb=10000, finetuned=False, a_s=None):
             
-        if a_s is None:
-            ks = range(k_range[0], k_range[1])
-        else:
-            ks = range(a_s[0], a_s[1])
+        ks = candidate_ks(k_range if a_s is None else a_s, len(data))
+        if not ks:
+            mb.showerror(title=':-(', message=f'The frequency of "{w}" ({len(data)}) in your dataset is too low for the number of sense clusters to be produced (at least {max(2, (k_range if a_s is None else a_s)[0])}).\n\nPlease try to either lower the range of sense clusters to be produced or choose more frequent words to analyse and try again.\n\nAlso consider the possibility that your dataset is too small to use word sense induction on.')
+            raise ValueError(f'Too few occurrences of "{w}" for word sense induction.')
         centroids = {}
-        scores = np.zeros(len(ks))
-        for i, k in enumerate(ks):
-            try:
-                km = KMeans(k, random_state=rs)
-                scores[i] = silhouette_score(data, km.fit_predict(data))
-                km.fit(data)
-                centroids[k] = km.cluster_centers_
-            except ValueError as e:
-                s=str(e)[10:]
-                freq = s.split(" ", 1)[0]
-                if 'should be >=' in str(e):
-                    mb.showerror(title=':-(', message=f'The frequency of "{w}" ({str(freq)}) in in your dataset is less than the number of sense clusters ({k}) to be produced.\n\nPlease try to either lower the range of sense clusters to be produced or choose more frequent words to analyse and try again.\n\nAlso consider the possibility that your dataset is too small to use word sense induction on.')
-                    raise
-        best_k = np.argmax(scores)
-    
-        return centroids[ks[best_k]]
+        scores = {}
+        for k in ks:
+            km = KMeans(k, random_state=rs)
+            scores[k] = silhouette_score(data, km.fit_predict(data))
+            centroids[k] = km.cluster_centers_
+
+        return centroids[best_k(scores)]
     
 ####
 
@@ -330,17 +338,13 @@ class Matcher():
                 encoded_layers = o['hidden_states']
             for sent_i in range(len(words)):
                 for token_i in range(len(words[sent_i])):
-                    if batched_masks[b][sent_i][token_i] == 0: continue
                     w = words[sent_i][token_i]
                     next_w = ''
                     if (token_i + 1) < len(words[sent_i]):
                         next_w = words[sent_i][token_i+1]
                     if w not in vocab and '##' not in w and '##' not in next_w: continue
                     # get vector
-                    hidden_layers = []
-                    for layer_i in range(1, 5):
-                        vec = encoded_layers[-layer_i][sent_i][token_i]
-                        hidden_layers.append(vec)
+                    hidden_layers = last_four_layers(encoded_layers, sent_i, token_i)
                     # concatenate last four layers
                     vector = torch.cat((hidden_layers[0], hidden_layers[1],
                                 hidden_layers[2], hidden_layers[3]), 0)
