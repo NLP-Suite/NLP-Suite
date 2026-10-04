@@ -2794,15 +2794,17 @@ edges.forEach(function(e) {{
   origEdgeColors[e.id] = e.color && e.color.color ? e.color.color : '#aaaaaa';
 }});
 function resetAll() {{
+  var nu = [], eu = [];
   nodes.forEach(function(n) {{
     var orig = origNodeProps[n.id] || {{ size: 12, fontSize: 14 }};
-    nodes.update({{ id: n.id, opacity: 1.0, size: orig.size,
+    nu.push({{ id: n.id, opacity: 1.0, size: orig.size,
                     font: {{ size: orig.fontSize, color: '#333' }} }});
   }});
   edges.forEach(function(e) {{
     var oc = origEdgeColors[e.id] || '#aaaaaa';
-    edges.update({{ id: e.id, color: {{ color: oc, opacity: 1.0 }} }});
+    eu.push({{ id: e.id, color: {{ color: oc, opacity: 1.0 }} }});
   }});
+  nodes.update(nu); edges.update(eu);
 }}
 var slider = document.getElementById('time-slider');
 var timeLabel = document.getElementById('time-label');
@@ -2838,15 +2840,16 @@ function applyTimeFilter(idx) {{
   }}
   var cutoff = allDates[idx - 1];
   timeLabel.textContent = cutoff;
+  var nu = [], eu = [];
   nodes.forEach(function(n) {{
     var orig = origNodeProps[n.id] || {{ size: 12, fontSize: 14 }};
     var dates = n.dates || [];
     var visible = dates.length === 0 || dates.some(function(d) {{ return d <= cutoff; }});
     if (visible) {{
-      nodes.update({{ id: n.id, opacity: 1.0, size: orig.size,
+      nu.push({{ id: n.id, opacity: 1.0, size: orig.size,
                       font: {{ size: orig.fontSize, color: '#333' }} }});
     }} else {{
-      nodes.update({{ id: n.id, opacity: 0.05, size: Math.max(4, orig.size * 0.3),
+      nu.push({{ id: n.id, opacity: 0.05, size: Math.max(4, orig.size * 0.3),
                       font: {{ size: 6, color: '#ddd' }} }});
     }}
   }});
@@ -2855,11 +2858,12 @@ function applyTimeFilter(idx) {{
     var visible = dates.length === 0 || dates.some(function(d) {{ return d <= cutoff; }});
     var oc = origEdgeColors[e.id] || '#aaaaaa';
     if (visible) {{
-      edges.update({{ id: e.id, color: {{ color: oc, opacity: 1.0 }} }});
+      eu.push({{ id: e.id, color: {{ color: oc, opacity: 1.0 }} }});
     }} else {{
-      edges.update({{ id: e.id, color: {{ color: '#eee', opacity: 0.03 }} }});
+      eu.push({{ id: e.id, color: {{ color: '#eee', opacity: 0.03 }} }});
     }}
   }});
+  nodes.update(nu); edges.update(eu);
 }}
 var labelToId = {{}};
 nodes.forEach(function(n) {{ labelToId[n.label] = n.id; }});
@@ -2887,24 +2891,26 @@ network.on("click", function(params) {{
       involvedEdgeIds.add(e.id);
     }}
   }});
+  var nu = [], eu = [];
   nodes.forEach(function(n) {{
     var orig = origNodeProps[n.id] || {{ size: 12, fontSize: 14 }};
     if (involvedIds.has(n.id)) {{
-      nodes.update({{ id: n.id, opacity: 1.0, size: orig.size,
+      nu.push({{ id: n.id, opacity: 1.0, size: orig.size,
                       font: {{ size: Math.max(orig.fontSize, 14), color: '#000' }} }});
     }} else {{
-      nodes.update({{ id: n.id, opacity: 0.10, size: Math.max(6, orig.size * 0.5),
+      nu.push({{ id: n.id, opacity: 0.10, size: Math.max(6, orig.size * 0.5),
                       font: {{ size: 8, color: '#ccc' }} }});
     }}
   }});
   edges.forEach(function(e) {{
     var oc = origEdgeColors[e.id] || '#aaaaaa';
     if (involvedEdgeIds.has(e.id)) {{
-      edges.update({{ id: e.id, color: {{ color: oc, opacity: 1.0 }} }});
+      eu.push({{ id: e.id, color: {{ color: oc, opacity: 1.0 }} }});
     }} else {{
-      edges.update({{ id: e.id, color: {{ color: '#eee', opacity: 0.08 }} }});
+      eu.push({{ id: e.id, color: {{ color: '#eee', opacity: 0.08 }} }});
     }}
   }});
+  nodes.update(nu); edges.update(eu);
   if (trips.length === 0) {{
     infoDiv.innerHTML = '<b>' + clickedNode.label + '</b>: no full {no_triplets_msg} tuples.';
     return;
@@ -4502,16 +4508,22 @@ var origNodeProps = {{}};
 nodes.forEach(function(n) {{
   origNodeProps[n.id] = {{ size: n.size, fontSize: n.font ? n.font.size : 14 }};
 }});
+var origEdgeColors = {{}};
+edges.forEach(function(e) {{
+  origEdgeColors[e.id] = e.color && e.color.color ? e.color.color : '#aaaaaa';
+}});
 
 function resetAll() {{
+  var nu = [], eu = [];
   nodes.forEach(function(n) {{
     var orig = origNodeProps[n.id] || {{ size: 12, fontSize: 14 }};
-    nodes.update({{ id: n.id, opacity: 1.0, size: orig.size,
+    nu.push({{ id: n.id, opacity: 1.0, size: orig.size,
                     font: {{ size: orig.fontSize, color: '#333' }} }});
   }});
   edges.forEach(function(e) {{
-    edges.update({{ id: e.id, color: {{ color: '#aaaaaa', opacity: 1.0 }} }});
+    eu.push({{ id: e.id, color: {{ color: '#aaaaaa', opacity: 1.0 }} }});
   }});
+  nodes.update(nu); edges.update(eu);
 }}
 
 // ── Time slider logic ──
@@ -4550,15 +4562,16 @@ function applyTimeFilter(idx) {{
   }}
   var cutoff = allDates[idx - 1];
   timeLabel.textContent = cutoff;
+  var nu = [], eu = [];
   nodes.forEach(function(n) {{
     var orig = origNodeProps[n.id] || {{ size: 12, fontSize: 14 }};
     var dates = n.dates || [];
     var visible = dates.length === 0 || dates.some(function(d) {{ return d <= cutoff; }});
     if (visible) {{
-      nodes.update({{ id: n.id, opacity: 1.0, size: orig.size,
+      nu.push({{ id: n.id, opacity: 1.0, size: orig.size,
                       font: {{ size: orig.fontSize, color: '#333' }} }});
     }} else {{
-      nodes.update({{ id: n.id, opacity: 0.05, size: Math.max(4, orig.size * 0.3),
+      nu.push({{ id: n.id, opacity: 0.05, size: Math.max(4, orig.size * 0.3),
                       font: {{ size: 6, color: '#ddd' }} }});
     }}
   }});
@@ -4567,11 +4580,12 @@ function applyTimeFilter(idx) {{
     var visible = dates.length === 0 || dates.some(function(d) {{ return d <= cutoff; }});
     var oc = origEdgeColors[e.id] || '#aaaaaa';
     if (visible) {{
-      edges.update({{ id: e.id, color: {{ color: oc, opacity: 1.0 }} }});
+      eu.push({{ id: e.id, color: {{ color: oc, opacity: 1.0 }} }});
     }} else {{
-      edges.update({{ id: e.id, color: {{ color: '#eee', opacity: 0.03 }} }});
+      eu.push({{ id: e.id, color: {{ color: '#eee', opacity: 0.03 }} }});
     }}
   }});
+  nodes.update(nu); edges.update(eu);
 }}
 
 // Build a lookup: label → id
@@ -4608,24 +4622,26 @@ network.on("click", function(params) {{
   }});
 
   // Dim / highlight — preserve original sizes for highlighted nodes
+  var nu = [], eu = [];
   nodes.forEach(function(n) {{
     var orig = origNodeProps[n.id] || {{ size: 12, fontSize: 14 }};
     if (involvedIds.has(n.id)) {{
-      nodes.update({{ id: n.id, opacity: 1.0, size: orig.size,
+      nu.push({{ id: n.id, opacity: 1.0, size: orig.size,
                       font: {{ size: Math.max(orig.fontSize, 14), color: '#000' }} }});
     }} else {{
-      nodes.update({{ id: n.id, opacity: 0.10, size: Math.max(6, orig.size * 0.5),
+      nu.push({{ id: n.id, opacity: 0.10, size: Math.max(6, orig.size * 0.5),
                       font: {{ size: 8, color: '#ccc' }} }});
     }}
   }});
   edges.forEach(function(e) {{
     var oc = origEdgeColors[e.id] || '#aaaaaa';
     if (involvedEdgeIds.has(e.id)) {{
-      edges.update({{ id: e.id, color: {{ color: oc, opacity: 1.0 }} }});
+      eu.push({{ id: e.id, color: {{ color: oc, opacity: 1.0 }} }});
     }} else {{
-      edges.update({{ id: e.id, color: {{ color: '#eee', opacity: 0.08 }} }});
+      eu.push({{ id: e.id, color: {{ color: '#eee', opacity: 0.08 }} }});
     }}
   }});
+  nodes.update(nu); edges.update(eu);
 
   // Build info table showing full role tuples
   if (trips.length === 0) {{
