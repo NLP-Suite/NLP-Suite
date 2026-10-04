@@ -459,7 +459,7 @@ def run_Gensim(window, inputDir, outputDir, config_filename, num_topics, remove_
     def make_trigrams(texts):
         return [trigram_mod[bigram_mod[doc]] for doc in texts]
 
-    def lemmatization(texts, lemmatize=True, allowed_postags=['NOUN', 'ADJ', 'VERB', 'ADV']):
+    def lemmatization(texts, lemmatize=True, allowed_postags=['NOUN', 'PROPN', 'ADJ', 'VERB', 'ADV']):
         """https://spacy.io/api/annotation"""
         texts_out = []
         for sent in texts:
@@ -485,12 +485,15 @@ def run_Gensim(window, inputDir, outputDir, config_filename, num_topics, remove_
 
     if lemmatize:
         if nounsOnly == True:
-            # Do lemmatization keeping only noun
-            data_lemmatized = lemmatization(data_words_bigrams, lemmatize, allowed_postags=['NOUN'])
+            # Do lemmatization keeping only nouns - common AND proper (see below)
+            data_lemmatized = lemmatization(data_words_bigrams, lemmatize, allowed_postags=['NOUN', 'PROPN'])
         else:
-            # Do lemmatization keeping only noun, adj, vb, adv
+            # Do lemmatization keeping only noun, adj, vb, adv - and PROPER NOUNS. The texts are lowercased above
+            # (simple_preprocess) before spaCy tags them, and on lowercased text spaCy still tags many names as proper
+            # nouns - first names, places, kin written as names ("father", "mother") - so without PROPN the people and
+            # places a corpus is about went missing from its topics.
             data_lemmatized = lemmatization(data_words_bigrams, lemmatize,
-                                        allowed_postags=['NOUN', 'ADJ', 'VERB', 'ADV'])
+                                        allowed_postags=['NOUN', 'PROPN', 'ADJ', 'VERB', 'ADV'])
     else:
         data_lemmatized = data_words_bigrams
 
