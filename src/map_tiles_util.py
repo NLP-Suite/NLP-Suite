@@ -8,9 +8,8 @@ drawn on 'OpenStreetMap' shows a wall of those notices instead of a map.
 CARTO (basemaps.cartocdn.com, folium's 'CartoDB positron') is no better: it
 serves a real-looking tile STAMPED "API KEY REQUIRED".
 
-Esri's World Street Map serves a page on disk with a plain map. It is the
-first of the Family Archive viewer's own tile sources, chosen for the same
-reason (family_archive_viewer_util.TILE_SOURCES).
+Esri's World Street Map serves a page on disk with a plain map, so it is the
+tile source of every map the Suite writes.
 
 Stdlib only: imported by GIS_folium_util and charts_util, and testable alone.
 """

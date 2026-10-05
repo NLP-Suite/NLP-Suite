@@ -1,6 +1,6 @@
 """The vis.js network pages' timeline must update the graph ONCE per step.
 
-Roberto, 4 Oct 2026, on a deeds network of ~1,900 nodes and edges: "The time bar does not move". Every step called
+Roberto, 4 Oct 2026, on a network of ~1,900 nodes and edges: "The time bar does not move". Every step called
 nodes.update / edges.update once per item, and each call makes vis-network redraw and re-run its physics, so the page
 froze after a step or two. The templates are checked as text: charts_util imports the heavy libraries the tests
 stub, so the page cannot be generated here."""

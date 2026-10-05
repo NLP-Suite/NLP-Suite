@@ -1,5 +1,5 @@
-"""The folium pin-map popup: a web address (the Family Archive's record link, often
-over 200 characters) is a whole, clickable link, not text cut at 200. Roberto, 26 Sept 2026."""
+"""The folium pin-map popup: a web address (a record link, often over 200
+characters) is a whole, clickable link, not text cut at 200. Roberto, 26 Sept 2026."""
 import math
 import sys
 import types
