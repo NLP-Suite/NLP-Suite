@@ -45,3 +45,14 @@ def test_the_mallet_tool_writes_the_view():
     with open(src, encoding='utf-8-sig') as f:
         s = f.read()
     assert 'topic_modeling_mallet_ldavis_util.mallet_to_ldavis(' in s and 'NLP-MALLET_topics_pyLDAvis.html' in s
+
+
+def test_a_source_path_with_spaces_is_read(tmp_path):
+    # MALLET writes each document's file path into the state line, and a path can hold spaces
+    p = tmp_path / 'state.gz'
+    with gzip.open(str(p), 'wt', encoding='utf-8') as fh:
+        fh.write('#doc source pos typeindex type topic\n#alpha : 0.5 0.5\n#beta : 0.01\n'
+                 '0 C:/my docs/Thread_Anne Smith letter.txt 0 0 army 1\n'
+                 '1 C:/my docs/second file.txt 0 1 rain 0\n')
+    _alpha, _beta, rows = ml.read_state(str(p))
+    assert rows == [(0, 'army', 1), (1, 'rain', 0)]

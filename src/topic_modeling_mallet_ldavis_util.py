@@ -28,9 +28,11 @@ def read_state(path):
             elif line.startswith('#beta'):
                 beta = float(line.split(':', 1)[1])
             elif not line.startswith('#'):
+                # "doc source pos typeindex type topic" - THE SOURCE IS A FILE PATH AND CAN HOLD SPACES ("Thread_Anne
+                # ... .txt"): the document is read from the left, the word and its topic from the right
                 parts = line.split()
                 if len(parts) >= 6:
-                    rows.append((int(parts[0]), parts[4], int(parts[5])))
+                    rows.append((int(parts[0]), parts[-2], int(parts[-1])))
     return alpha, beta, rows
 
 
