@@ -341,6 +341,18 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransform
         else:
             filesToOpen.extend(outputFiles)
 
+    # THE TOPICS IN THE pyLDAvis VIEW - the page the Gensim topic modeling tool writes - from MALLET's own
+    # --output-state file (topic_modeling_mallet_ldavis_util; Gensim 4 dropped its LdaMallet wrapper)
+    try:
+        import topic_modeling_mallet_ldavis_util
+        ldavis_page = topic_modeling_mallet_ldavis_util.mallet_to_ldavis(
+            Compressed_FileName, os.path.join(outputDir, 'NLP-MALLET_topics_pyLDAvis.html'))
+        if ldavis_page:
+            filesToOpen.append(ldavis_page)
+    except Exception as e:
+        mb.showwarning(title='MALLET topics view',
+                       message='The MALLET topics were not drawn in the pyLDAvis view:\n\n' + str(e))
+
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
         filesToOpen=[] # to avoid opening files twice, here and in calling function

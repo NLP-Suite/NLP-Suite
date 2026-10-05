@@ -35,3 +35,13 @@ def test_an_empty_state_draws_nothing(tmp_path):
 
 def test_a_documents_number_is_read_off_its_file_name():
     assert ml.document_number('C:/x/doc00042.txt') == 42 and ml.document_number('C:/x/notes.txt') is None
+
+
+def test_the_mallet_tool_writes_the_view():
+    # the Suite's MALLET tool calls this module after training (checked as text: it imports the GUI modules)
+    import os
+    src = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'src',
+                       'topic_modeling_mallet_util.py')
+    with open(src, encoding='utf-8-sig') as f:
+        s = f.read()
+    assert 'topic_modeling_mallet_ldavis_util.mallet_to_ldavis(' in s and 'NLP-MALLET_topics_pyLDAvis.html' in s
