@@ -615,35 +615,31 @@ def compute_sentence_table(CoNLL_table, output_path):
         IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start', 'Started computing the Sentence table at', True)
     # tk.messagebox.showinfo("Stanford CoreNLP has finished", "Started computing the Sentence table at " + str(startTime[3]) + ':' + str(startTime[4]))
     # df = pd.read_csv(io.open(os.path.join(output_path,CoNLL_table), 'rb'), sep='\t', header=None, index_col=False) # Open ConLL
-    df = pd.read_csv(io.open(os.path.join(output_path, CoNLL_table), 'rb'), sep=',', index_col=False, encoding='utf-8',on_bad_lines='skip')  # Open ConLL
+    # keep_default_na=False: a token such as 'None' or 'NA' is a word, not a missing value (a sentence starting
+    #   with 'None' crashed the loop below)
+    df = pd.read_csv(io.open(os.path.join(output_path, CoNLL_table), 'rb'), sep=',', index_col=False, encoding='utf-8',on_bad_lines='skip', keep_default_na=False)  # Open ConLL
     rows = []  # Store data
-    sent_str = ""  # Build string
-    # Keep track of variables — use column names for package-independence
-    sent_index = df.iloc[0]['Sentence ID']
-    doc_id = df.iloc[0]['Document ID']
-    current_file = df.iloc[0]['Document']
-
-    for index, row in df.iterrows():  # For every row in the ConLL
-        if sent_index == row['Sentence ID'] and doc_id == row['Document ID']:
-            if row['DepRel'] == "punct":
-                sent_str = sent_str + str(row['Form'])
+    # one group per sentence, in table order; the old row loop only wrote a sentence when the next one began,
+    #   so the last sentence was dropped, and the first one started with a blank that added a word to its count
+    for (doc_id, sent_index), sentence in df.groupby(['Document ID', 'Sentence ID'], sort=False):
+        sent_str = ""  # Build string
+        for form, deprel in zip(sentence['Form'].astype(str), sentence['DepRel']):
+            if sent_str == "":
+                sent_str = form
+            elif deprel == "punct":
+                sent_str = sent_str + form
             else:
-                sent_str = sent_str + " " + str(row['Form'])
-        else:  # End the sentence, add it to the array and move onto the next one
-            arr = [len(sent_str.split(" ")),
-                   len(list(sent_str)), sent_index, sent_str, doc_id, current_file]
-            rows.append(arr)
-            sent_index = row['Sentence ID']
-            sent_str = row['Form']
-            current_file = row['Document']
-            doc_id = row['Document ID']
+                sent_str = sent_str + " " + form
+        rows.append([len(sent_str.split(" ")),
+                     len(list(sent_str)), sent_index, sent_str, doc_id, sentence['Document'].iloc[0]])
 
     # Construct and save the table
     col_names = ['Sentence length (Number of words/tokens)',
                  'Sentence length (Number of characters)', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
     df2 = pd.DataFrame(columns=col_names, data=rows)
 
-    outputFilename = os.path.join(output_path, CoNLL_table[:-4] + "_sentence" + ".csv")
+    # basename: CoNLL_table arrives as a full path, which made the join ignore output_path and write beside the input
+    outputFilename = os.path.join(output_path, os.path.basename(CoNLL_table)[:-4] + "_sentence" + ".csv")
     df2.to_csv(outputFilename, encoding='utf-8',
                index=False)  # os.path.join(output_path,outputFilename), sep='\t', encoding='utf-8')
     if RunningCoreNLPFromCommandLine != True:
@@ -664,15 +660,15 @@ def get_nouns_verbs_CoNLL(inputFilename,output_dir):
     noun_form_set = set()
     noun_lemma_set = set()
 
-    for index, row in conll_table.iterrows():
-        # Check if cell value has length greq. than 2 since we're looking for VB* and NN*
-        pos = conll_table['POS'][index]  # Penn (NN*/VB*) or Universal (NOUN/VERB) - is_*_POS handle both + NaN
+    # zip over the columns: iterrows plus two label lookups per token took 7 s on a 436,000-token table
+    for pos, form, lemma in zip(conll_table['POS'], conll_table['Form'], conll_table['Lemma']):
+        # Penn (NN*/VB*) or Universal (NOUN/VERB) - is_*_POS handle both + NaN
         if is_verb_POS(pos):
-            verb_form_set.add(conll_table['Form'][index])
-            verb_lemma_set.add(conll_table['Lemma'][index])
+            verb_form_set.add(form)
+            verb_lemma_set.add(lemma)
         elif is_noun_POS(pos):
-            noun_form_set.add(conll_table['Form'][index])
-            noun_lemma_set.add(conll_table['Lemma'][index])
+            noun_form_set.add(form)
+            noun_lemma_set.add(lemma)
 
     verbs_form_df = pd.DataFrame(verb_form_set, columns = ['Verbs'])
     verbs_lemma_df = pd.DataFrame(verb_lemma_set, columns = ['Verbs'])
