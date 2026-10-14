@@ -422,10 +422,8 @@ def run():
         startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running CoNLL search at',
                                                      True, '', True, '', True)
 
-        withHeader = True
-        data, header = IO_csv_util.get_csv_data(inputFilename, withHeader)
-        header, data = CoNLL_util.normalize_to_canonical(header, data)
-
+        # data is the table read and normalized at the top of run(); reading it again here added ~2.5 s on a
+        # 436,000-token table, and its sorted copy is only a well-formedness check (the search reads all_CoNLL_records)
         if len(data) <= 1000000:
             try:
                 data = sorted(data, key=lambda x: int(x[recordID_position]))
@@ -434,14 +432,17 @@ def run():
                                message="The CoNLL table is ill formed. You may have tinkered with it. Please, rerun the parser (Stanford CoreNLP, Stanza, or spaCy) since many scripts rely on the CoNLL table.")
                 return
 
-        temp_outputDir, filesToOpen = CoNLL_table_search_util.search_CoNLL_table(inputFilename, outputDir, config_filename,
+        # outputDirSV: when Basic analyses ran too, outputDir is now their last subfolder (CoNLL_stop), which
+        # the search folder ended up inside; and extend filesToOpen rather than replace the analyses' files
+        temp_outputDir, searchFiles = CoNLL_table_search_util.search_CoNLL_table(inputFilename, outputDirSV, config_filename,
                                           chartPackage, dataTransformation,
                                           all_CoNLL_records, searchField_kw, searchedCoNLLField,
                                           related_token_POSTAG=co_postag,
                                           related_token_DEPREL=co_deprel, _tok_postag_=postag,
                                           _tok_deprel_=deprel)
 
-        if len(filesToOpen)>0:
+        if len(searchFiles)>0:
+            filesToOpen.extend(searchFiles)
             outputDir = temp_outputDir
 
 # WordNet ------------------------------------------------------------------------------
