@@ -41,9 +41,14 @@ def process_Json(inputFilename, outputDir):
             sent_list_clause = []
             subtree_string = []
             # JsonDir = head+os.sep+"Json_"+ tail[:-4]
+            JsonDir = ''
             for file in os.listdir(head):
                 if 'Json_' in file:
                     JsonDir=file
+            # no Json output beside the table (it was moved, or came from Stanza): the clause tags are in the table
+            # itself and only this extra csv is missing; JsonDir was unbound here and the whole analysis crashed
+            if JsonDir == '':
+                return None
             JsonDir = head+os.sep+JsonDir
             if not os.path.exists(JsonDir):
                 return None

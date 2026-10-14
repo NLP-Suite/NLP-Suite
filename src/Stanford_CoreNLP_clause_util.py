@@ -18,22 +18,25 @@ if not IO_libraries_util.install_all_Python_packages(GUI_util.window, "Stanford_
 from nltk.tree import Tree
 import tkinter.messagebox as mb
 
-"""
-param:
-    @flist: full token list
-    @sublist: a subset of the full list, returned by NLTK parsetree.leaves() function
+def constituent_spans(parsetree):
+    """Return (spans, leaves) for one sentence's parse tree. spans holds (subtree, first leaf index, last leaf
+    index) for every subtree, in the preorder of Tree.subtrees(); leaves is the sentence's tokens in order."""
+    leaves = []
+    spans = []
 
-output:
-    @ind_f: position of the sublist in the full_token_list
-"""
+    def walk(node):
+        entry = len(spans)
+        spans.append(None)
+        start = len(leaves)
+        for child in node:
+            if isinstance(child, str):
+                leaves.append(child)
+            else:
+                walk(child)
+        spans[entry] = (node, start, len(leaves) - 1)
 
-
-def sublist_match(flist, sublist):
-    comp_len = len(sublist)
-    for ind, tok in enumerate(sublist):
-        for ind_f, tok_f in enumerate(flist):
-            if sublist == flist[ind_f:ind_f + comp_len]:
-                return ind_f
+    walk(parsetree)
+    return spans, leaves
 
 
 """
@@ -46,27 +49,22 @@ output:
 
 # processing the parsetree of one sentence at a time
 def clausal_info_extract(parsetree):
-    full_list = parsetree.leaves()
     # print("IN clausal_info_extract full_list 1",full_list)
     dict_ind = dict()
     clausal_tags = []
-    for subtree in parsetree.subtrees():
+    # each constituent's span comes from its position in the tree; matching its words against the sentence put a
+    # repeated phrase ('a dog ... a dog') at its first occurrence, and rescanned the sentence for every constituent
+    spans, full_list = constituent_spans(parsetree)
+    for subtree, start_idx, end_idx in spans:
         # should use dict_CLAUSALTAG from Stanford_CoreNLP_tags_util
         # Stanford_CoreNLP_tags_util.dict_CLAUSALTAG
         #     clause_list = ['S','SBAR', 'SBARQ', 'SQ', 'SINV', 'NP', 'VP', 'ADJP', 'ADVP', 'PP']
         if subtree.label() in ['ADJP', 'ADVP', 'CC', 'PP', 'PRP', 'RB', 'SBAR', 'SQ', 'SBARQ', 'SINV', 'S', 'VP', 'NP', 'NNP']:
-            ind = sublist_match(full_list, subtree.leaves())
-            dict_ind[ind] = subtree.label()
-            comp_len = len(subtree.leaves())
-            # Starting index is 'ind' and ending index is 'ind + comp_len - 1'
-            start_idx = ind
-            end_idx = ind + comp_len - 1
-
             # Save the label at the starting index for later use
-            dict_ind[ind] = subtree.label()
+            dict_ind[start_idx] = subtree.label()
 
             # Convert the subtree to a string and perform clean-up
-            example = ' '.join(subtree.flatten())
+            example = ' '.join(full_list[start_idx:end_idx + 1])
             example = example.replace(' ,', ',')
             example = example.replace(' ;', ';')
             example = example.replace(' .', '.')
