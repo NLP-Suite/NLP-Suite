@@ -8,6 +8,8 @@ Kept free of Tk and of the suite's import-time side effects so it can be unit-te
 (tests/test_NLP_menu_tools_util.py).
 """
 
+import re
+
 # Labels whose GUI holds tools the label does not name. Matched by search, never displayed.
 SEARCH_KEYWORDS = {
     "Semantic analysis": "word sense induction WSI word sense disambiguation WSD "
@@ -90,6 +92,123 @@ TOOL_NAMES = {
     "Symbolic space: characters in NON-geocodable space (house, field, forest, threshold)": "Symbolic space: places that cannot be mapped (house, field, forest, threshold)",
 }
 
+# One line under the selected tool saying what it does, written from each tool's Read Me. Search matches it
+# too, so a user can find a tool by its purpose ("duplicate", "readability"). A label missing here shows none.
+TOOL_DESCRIPTIONS = {
+    # Corpus
+    "Co-Occurrences VIEWER": "Chart how often words appear together, document by document or over time.",
+    "N-grams VIEWER": "Chart how often word sequences appear, document by document or over time.",
+    "Shape of stories": "Trace the emotional arc of each story and group stories with similar arcs.",
+    "Similarities between documents (via TF-IDF)": "Score how alike documents are, to spot near-duplicates and outliers.",
+    "Topic modeling (via MALLET & Gensim)": "Find the topics running through a corpus, with an interactive HTML display.",
+    # Corpus / document
+    "CORPUS PROFILER. WHAT'S IN YOUR CORPUS? A SWEEPING VIEW.": "Run a battery of analyses with sensible defaults; get an HTML report.",
+    "Corpus/document(s) statistics (Sentences, words, lines)": "Count documents, sentences, words, lines and syllables.",
+    "Corpus/document(s) statistics (Nouns, verbs, adjectives, pronouns, ...)": "Count nouns, verbs, adjectives, pronouns and other parts of speech.",
+    "N-grams & Co-Occurrences": "Find frequent word sequences and words that appear together.",
+    "N-grams & Co-occurrences": "Find frequent word sequences and words that appear together.",
+    "Parsers & annotators (CoreNLP, spaCy, Stanza)": "Parse texts into a CoNLL table, the input of most linguistic tools.",
+    "CoNLL table analyzer - Search the CoNLL table": "Search a parsed CoNLL table for words, tags and grammatical relations.",
+    "CoNLL table analyzer - Clause, noun, verb, function words frequencies": "Count clauses, nouns, verbs and function words in a CoNLL table.",
+    "CoreNLP annotator - date (normalized NER date)": "Find dates in texts and turn them into a standard date format.",
+    "CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)": "Tag first names as male or female and highlight them in HTML.",
+    "CoreNLP annotator - quote": "Find the quotations in texts.",
+    "CoreNLP annotator - coreference (pronominal)": "Link pronouns (he, she, it, they) to the people and things they refer to.",
+    "HTML annotator - dictionary, gender, DBpedia, YAGO, WordNet - (All options GUI)": "Highlight in HTML the words that match a dictionary or knowledge graph.",
+    "Geographic maps: From texts to maps via Google Earth Pro and Google Maps": "Extract places from texts, geocode them and draw them on maps.",
+    "Knowledge graphs: DBpedia, YAGO & Wikipedia": "Tag words that match DBpedia or YAGO classes (people, places, events).",
+    "NER (Named Entity Recognition) annotator": "Extract people, places, organizations, dates and other named entities.",
+    "Narrative analysis (ALL options GUI)": "Extract who did what to whom, when and where, and visualize the stories.",
+    "Semantic analysis": "Word senses, semantic roles, document similarity and clustering.",
+    "Syntactic analysis (ALL)": "Parse sentences and analyze grammatical form and structure.",
+    "Sentiments/emotions (ALL options GUI)": "Every sentiment and emotion tool in the Suite, in one place.",
+    "Sentiment analysis (dictionary options: ANEW, hedonometer, SentiWordNet, VADER)": "Score sentiment, arousal and dominance with word lists.",
+    "Sentiment analysis (neural network/tensor options: BERT, spaCy, Stanford CoreNLP, Stanza)": "Score sentence sentiment with trained neural models.",
+    "SVO (Subject-Verb-Object) extractor & visualization": "Extract who did what to whom; draw the results as networks and maps.",
+    "Wordclouds (ALL options GUI)": "Draw word clouds, where bigger words are more frequent.",
+    "Word embeddings (Word2Vec) (via BERT & Gensim)": "Find words used in similar contexts and plot them.",
+    "Style analysis (ALL options GUI)": "Vocabulary, sentence complexity, readability and other features of style.",
+    "Co-Occurrences": "Find words that appear together in the same document or sentence.",
+    "Language detection": "Detect the language each document is written in.",
+    "N-grams": "Find the most frequent sequences of 1 to 4 words.",
+    "N-grams search": "Search texts for specific word sequences.",
+    "N-grams/Co-Occurrences VIEWER": "Chart how often word sequences and co-occurrences appear over time.",
+    "Nominalization": "Find nouns made from verbs ('the lynching' instead of 'they lynched').",
+    "Sentence complexity": "Measure how complex each sentence is and chart it across the text.",
+    "Sentence/text readability (via textstat)": "Score how easy each sentence and text is to read.",
+    "Similarities between words (Levenshtein distance)": "Find words spelled almost alike, by edit distance.",
+    "Spelling checkers": "Find misspelled and unusual words.",
+    "Spelling checker cleaner (Find & Replace string)": "Fix misspellings across files with find & replace.",
+    "Who wrote the text? Man or woman? (via Gender guesser)": "Opens a website that guesses the author's gender from a text sample.",
+    "Search (ALL options GUI)": "Every search tool in the Suite, in one place.",
+    "Search CoNLL table": "Search a parsed CoNLL table for words, tags and grammatical relations.",
+    "Search text file(s) for n-grams & co-occurrences": "Search texts for word sequences and words that appear together.",
+    "Search text file(s) for words/collocations": "Search texts for words and phrases, with the sentences they appear in.",
+    # Sentence
+    "Sentence analysis (ALL options GUI)": "Sentence length, complexity, readability and trees, sentence by sentence.",
+    # Data & files
+    "Data manipulation (ALL options GUI)": "Merge, append, filter, sort and reshape csv files.",
+    "File handler (ALL options GUI)": "Every file-handling tool in the Suite, in one place.",
+    "Sample corpus (ALL options GUI)": "Draw a sample of documents from a corpus.",
+    "File checker (file name)": "Check that file names follow a pattern (e.g., a date in each name).",
+    "File classifier (file name) (dumb classifier via embedded date)": "Sort files into subfolders by the date in their names.",
+    "File-type converter (csv, docx, pdf, rtf --> txt)": "Convert csv, docx, pdf and rtf files to plain text.",
+    "File matcher (file name)": "Find files with the same name but a different type (e.g., pdf vs. txt).",
+    "File manager (file name) (List, Rename, Copy, Move, Delete, Count, Split)": "List, rename, copy, move, delete, count or split files by name.",
+    "PC-ACE database (via Pandas)": "Convert and chart data from a PC-ACE event-coding database.",
+    "SQL database (via SQLite)": "Build an SQLite database from csv files and query it with SQL.",
+    # Pre-processing
+    "File checker (A pre-processing pipeline of data quality control)": "Run a series of quality checks on a corpus before analyzing it.",
+    "File checker (file content)": "Check texts for utf-8 problems and misspellings.",
+    "File checker (file content utf-8 encoding)": "Find characters that are not valid utf-8.",
+    "File cleaner (file content) (Change to ASCII non-ASCII apostrophes & quotes and % to percent)": "Replace curly quotes and apostrophes, and % with 'percent'.",
+    "File cleaner (file content) (Find & Replace string)": "Find and replace text across many files.",
+    "File cleaner (file content) (Remove blank lines from txt file(s))": "Delete empty lines from text files.",
+    "File cleaner (file content) (Add full stop . at the end of paragraphs without end-of-paragraph punctuation)": "Add a full stop to paragraphs that lack one, so parsers split sentences.",
+    "File cleaner (file content) (Pronominal resolution via CoreNLP)": "Rewrite texts with each pronoun replaced by what it refers to.",
+    "File finder (file name)": "Find files whose names match a pattern.",
+    # Statistics
+    "Statistics (csv files)": "Descriptive statistics for the columns of a csv file.",
+    # Visualization
+    "Excel charts": "Draw bar, line, pie, scatter and radar charts from a csv file.",
+    "Geographic maps: From csv file to maps via Google Earth Pro and Google Maps": "Geocode places listed in a csv file and draw them on maps.",
+    "Geographic distances between locations": "Compute distances in km and miles between geocoded places.",
+    "Animated time-dependent bar plot (Plotly)": "An animated bar chart that steps through time.",
+    "Boxplot": "Compare the spread of values across groups.",
+    "Colormap chart": "A heatmap: color shows the size of each value in a table.",
+    "Multiple bar charts": "Bar charts side by side, to compare groups.",
+    "Network graphs (Gephi)": "Draw networks of who is connected to whom.",
+    "Sankey flowchart (Plotly)": "Show flows between categories as bands of varying width.",
+    "Sunburst pie chart (Plotly)": "A layered pie chart for nested categories.",
+    "Treemap (Plotly)": "Nested rectangles sized by value.",
+    "Sentence visualization: Dependency tree viewer (png graphs)": "Draw the grammatical tree of a sentence as an image.",
+    # Other tools (search only)
+    "HTML annotator extractor": "Extract the annotated words from HTML-annotated files.",
+    "Statistics (txt files): Number of documents, words, syllables": "Count documents, sentences, words, lines and syllables.",
+    "Statistics (txt files): Number of nouns, verbs, adjectives, pronouns, ...": "Count nouns, verbs, adjectives, pronouns and other parts of speech.",
+    "Co-Reference PRONOMINAL resolution (via Stanford CoreNLP)": "Link pronouns to the people and things they refer to.",
+    "Corpus checker (PC-ACE data)": "Automated checks on whether a corpus is complete and reliable.",
+    "Duplicate documents (find near-duplicates via TF-IDF)": "Find documents that are copies or near-copies of one another.",
+    "Duplicates (documents that copy one another)": "Find documents that are copies or near-copies of one another.",
+    "File classifier (dumb classifier via embedded date) (file name)": "Sort files into subfolders by the date in their names.",
+    "File search (file content for words/collocations)": "Search texts for words and phrases, with the sentences they appear in.",
+    "File search (file content for n-grams & co-occurrences)": "Search texts for word sequences and words that appear together.",
+    "File merger (file content)": "Merge many text files into one.",
+    "File splitter (file content)": "Split text files into smaller files.",
+    "File splitter (file name)": "Split text files into smaller files.",
+    "Find non-related documents": "Find documents that do not belong with the rest of the corpus.",
+    "Symbolic space: characters in NON-geocodable space (house, field, forest, threshold)": "Find the symbolic places of a story: house, field, forest, threshold.",
+    "Newspaper article/Document titles": "Separate the titles of newspaper articles from their text.",
+    "Sentiment analysis": "Score the sentiment of texts, sentence by sentence.",
+    "Stanford CoreNLP": "Parse and annotate texts with Stanford CoreNLP.",
+    "Dictionary items by sentence index": "List the dictionary words found in each sentence.",
+    "utf-8 compliance": "Find characters that are not valid utf-8.",
+    "Semantic aggregation (WordNet, VerbNet, FrameNet)": "Group words into broader categories with WordNet, VerbNet or FrameNet.",
+}
+
+# words a search ignores, so 'tools for the corpus' is read as 'tools corpus'
+_STOP_WORDS = {"a", "an", "and", "for", "in", "my", "of", "on", "the", "to", "with"}
+
 
 def _is_separator(item):
     return "-----" in item
@@ -113,7 +232,8 @@ def build_catalog(categories, pydict):
     '' spacers and the '--- header ---' lines the dropdowns use to group tools into sections.
     pydict entries that no category lists are appended under OTHER_CATEGORY, so search still finds them.
 
-    Each entry is a dict: label (the pydict key), name (what the list shows), category, section, available.
+    Each entry is a dict: label (the pydict key), name (what the list shows), description, category, section,
+    available.
     """
     catalog = []
     listed = set()
@@ -132,6 +252,7 @@ def build_catalog(categories, pydict):
                     "category": category,
                     "section": section,
                     "available": is_available(item, pydict),
+                    "description": TOOL_DESCRIPTIONS.get(item, ""),
                 }
             )
             listed.add(item)
@@ -145,6 +266,7 @@ def build_catalog(categories, pydict):
                 "category": OTHER_CATEGORY,
                 "section": "",
                 "available": is_available(label, pydict),
+                "description": TOOL_DESCRIPTIONS.get(label, ""),
             }
         )
     return catalog
@@ -154,15 +276,21 @@ def entries_in_category(catalog, category):
     return [entry for entry in catalog if entry["category"] == category]
 
 
+def _words(text):
+    """Lower-case words, split at anything that is not a letter or digit: 'file_search_ALL' -> file, search, all."""
+    return re.findall(r"[a-z0-9]+", text.lower())
+
+
 def search(catalog, query, pydict=None):
     """Return the entries matching every word of query, best matches first, each label once.
 
-    A word matches the name or the label, its category and section, its script's filename, or its
-    SEARCH_KEYWORDS. Ranking: name starts with the query, then a name word starts with a query word,
-    then the rest;
-    ties keep menu order. Available tools rank ahead of unavailable ones.
+    A query word matches when it starts a word of the tool's name or label, description, category, section,
+    script filename or SEARCH_KEYWORDS: 'sent' finds Sentiment and Sentence, but 'ram' does not find N-grams.
+    Common words ('the', 'for') are ignored. Ranking: the name starts with the query, then every query word
+    starts a word of the name, then some do, then the rest; ties keep menu order. Available tools rank ahead
+    of unavailable ones.
     """
-    words = query.lower().split()
+    words = [word for word in _words(query) if word not in _STOP_WORDS] or _words(query)
     if not words:
         return []
     query_text = " ".join(words)
@@ -175,20 +303,32 @@ def search(catalog, query, pydict=None):
         script = ""
         if pydict and label in pydict and pydict[label]:
             script = str(pydict[label][0])
-        haystack = " ".join(
-            [entry["name"], label, entry["category"], entry["section"], script, SEARCH_KEYWORDS.get(label, "")]
-        ).lower()
-        if not all(word in haystack for word in words):
+        haystack = _words(
+            " ".join(
+                [
+                    entry["name"],
+                    label,
+                    entry.get("description", ""),
+                    entry["category"],
+                    entry["section"],
+                    script,
+                    SEARCH_KEYWORDS.get(label, ""),
+                ]
+            )
+        )
+        if not all(any(text_word.startswith(word) for text_word in haystack) for word in words):
             continue
         seen.add(label)
-        name_lower = entry["name"].lower()
-        name_words = name_lower.replace("(", " ").replace("/", " ").replace(":", " ").split()
-        if name_lower.startswith(query_text):
+        name_words = _words(entry["name"])
+        in_name = sum(any(name_word.startswith(word) for name_word in name_words) for word in words)
+        if " ".join(name_words).startswith(query_text):
             rank = 0
-        elif any(name_word.startswith(word) for word in words for name_word in name_words):
+        elif in_name == len(words):
             rank = 1
-        else:
+        elif in_name:
             rank = 2
+        else:
+            rank = 3
         results.append((not entry["available"], rank, position, entry))
     results.sort(key=lambda result: result[:3])
     return [result[3] for result in results]

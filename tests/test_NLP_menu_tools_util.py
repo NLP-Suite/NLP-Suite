@@ -116,10 +116,31 @@ class TestSearch:
     def test_a_label_starting_with_the_query_ranks_first(self):
         assert self.find("se")[:3] == ["Search (ALL options GUI)", "Semantic analysis", "Sentiment analysis"]
 
-    def test_a_word_start_outranks_a_match_inside_a_word(self):
-        # 'gram' sits inside 'N-grams' but starts a word of 'Dependency graph'
-        catalog = tools.build_catalog([("Tools", ("N-grams", "Dependency graph"))], {})
-        assert labels(tools.search(catalog, "gra")) == ["Dependency graph", "N-grams"]
+    def test_a_query_word_must_start_a_word(self):
+        # 'ram' sits inside 'N-grams' and 'Paragraphs'; matching it there filled the list with noise
+        catalog = tools.build_catalog([("Tools", ("N-grams", "Paragraphs", "RAM usage"))], {})
+        assert labels(tools.search(catalog, "ram")) == ["RAM usage"]
+        # 'N-grams' is split at the hyphen, so 'grams' starts a word
+        assert labels(tools.search(catalog, "grams")) == ["N-grams"]
+
+    def test_punctuation_in_the_query_splits_words(self):
+        catalog = tools.build_catalog([("Tools", ("N-grams & Co-Occurrences", "Topic modeling"))], {})
+        assert labels(tools.search(catalog, "co-occ")) == ["N-grams & Co-Occurrences"]
+
+    def test_common_words_are_ignored(self):
+        assert self.find("the topic of a corpus") == ["Topic modeling (via MALLET & Gensim)"]
+
+    def test_the_description_matches(self):
+        catalog = tools.build_catalog([("Tools", ("Shape of stories", "Topic modeling (via MALLET & Gensim)"))], PYDICT)
+        assert labels(tools.search(catalog, "emotional arc")) == ["Shape of stories"]
+
+    def test_all_words_in_the_name_outrank_some(self):
+        catalog = tools.build_catalog([("Tools", ("Search CoNLL table", "Search (ALL options GUI)"))], PYDICT)
+        # 'all' starts no word of 'Search CoNLL table', so only the second tool matches
+        assert labels(tools.search(catalog, "search all")) == ["Search (ALL options GUI)"]
+        catalog = tools.build_catalog([("Search tools", ("Search CoNLL table", "Search (ALL options GUI)"))], PYDICT)
+        # 'tools' matches both through the category; 'conll' is in the name of the first only
+        assert labels(tools.search(catalog, "search tools conll")) == ["Search CoNLL table"]
 
     def test_unavailable_tools_rank_last(self):
         assert self.find("semantic") == ["Semantic analysis", "SRL Semantic Role Labeling"]
@@ -147,9 +168,12 @@ class TestToolNames:
         ]
 
     def test_ranking_uses_the_name(self):
-        # 'Search (ALL options GUI)' is shown as 'Search (all options)': 'all' starts one of its words
-        catalog = tools.build_catalog([("Tools", ("Search (ALL options GUI)", "Install"))], {})
-        assert labels(tools.search(catalog, "all")) == ["Search (ALL options GUI)", "Install"]
+        # the label 'CoreNLP annotator - quote' is shown as 'CoreNLP annotator: quotations'; a name starting with
+        # the query outranks one that only contains it
+        catalog = tools.build_catalog([("Tools", ("Search CoNLL table", "CoreNLP annotator - quote"))], {})
+        assert labels(tools.search(catalog, "quot")) == ["CoreNLP annotator - quote"]
+        catalog = tools.build_catalog([("Tools", ("Find quotes", "Quotations"))], {})
+        assert labels(tools.search(catalog, "quot")) == ["Quotations", "Find quotes"]
 
     def test_every_renamed_label_is_a_real_menu_label(self):
         # a typo in a TOOL_NAMES key would silently leave the old label on screen
@@ -168,3 +192,30 @@ class TestToolNames:
         for double, single in re.findall(r"""^pydict\[(?:"([^"]*)"|'([^']*)')\]""", source, re.M):
             listed.add(double or single)
         assert set(tools.TOOL_NAMES) - listed == set()
+
+
+class TestToolDescriptions:
+    def test_every_described_label_is_a_real_menu_label(self):
+        # same check as for TOOL_NAMES: a typo would leave a tool without its description
+        import re
+
+        import constants_util
+
+        listed = set()
+        for name in dir(constants_util):
+            if name.startswith("NLP_Suite_") and name.endswith("_menu"):
+                listed.update(getattr(constants_util, name))
+        menu = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src", "NLP_menu_main.py")
+        with open(menu, encoding="utf-8") as f:
+            source = f.read()
+        for double, single in re.findall(r"""^pydict\[(?:"([^"]*)"|'([^']*)')\]""", source, re.M):
+            listed.add(double or single)
+        assert set(tools.TOOL_DESCRIPTIONS) - listed == set()
+
+    def test_a_catalog_entry_carries_its_description(self):
+        catalog = tools.build_catalog([("Corpus", ("Shape of stories", "Unknown tool"))], PYDICT)
+        assert catalog[0]["description"] == tools.TOOL_DESCRIPTIONS["Shape of stories"]
+        assert catalog[1]["description"] == ""
+
+    def test_descriptions_fit_on_one_line(self):
+        assert [label for label, text in tools.TOOL_DESCRIPTIONS.items() if len(text) > 80] == []

@@ -453,16 +453,15 @@ external_software_setup_help = ("The NLP-Suite relies for some of its operations
                                 "Stanford CoreNLP   C:/Program Files (x86)/stanford-corenlp-4.3.1   https://stanfordnlp.github.io/CoreNLP/download.html. "
                                 "Needless to say C:/Program Files (x86)/stanford-corenlp-4.3.1 will change, depending upon where you install CoreNLP locally.")
 
-setup_card = ctk.CTkFrame(panel, width=380, fg_color=CARD_COLOR, border_color=CARD_BORDER, border_width=1, corner_radius=12)
-setup_card.grid(row=0, column=0, sticky='ns', padx=(0, 14))
-setup_card.grid_propagate(False)
+# the card is as tall as its content, so the start buttons sit right under the setup rows, not at the
+# bottom of a half-empty card
+panel.grid_columnconfigure(0, minsize=380)
+setup_card = ctk.CTkFrame(panel, fg_color=CARD_COLOR, border_color=CARD_BORDER, border_width=1, corner_radius=12)
+setup_card.grid(row=0, column=0, sticky='new', padx=(0, 14))
 setup_card.grid_columnconfigure(1, weight=1)
-setup_card.grid_rowconfigure(5, weight=1)
 
 ctk.CTkLabel(setup_card, text='Setup', font=_font(17, 'bold'), text_color=TEXT_COLOR).grid(
-    row=0, column=0, columnspan=5, sticky='w', padx=18, pady=(14, 0))
-ctk.CTkLabel(setup_card, text='Defaults that every tool starts from', font=_font(12), text_color=MUTED_TEXT).grid(
-    row=1, column=0, columnspan=5, sticky='w', padx=18, pady=(0, 8))
+    row=0, column=0, columnspan=5, sticky='w', padx=18, pady=(14, 4))
 
 def _show_setup_status(var, dot, status):
     if var.get() == 1:
@@ -502,15 +501,17 @@ _setup_row(4, 'External software', status_var=setup_external_software_OK_checkbo
            help_message=external_software_setup_help)
 
 # CORPUS PROFILER -- the flagship one-click tool keeps a button of its own, apart from the tool list
+ctk.CTkFrame(setup_card, height=1, fg_color=CARD_BORDER).grid(row=5, column=0, columnspan=5, sticky='ew',
+                                                                padx=18, pady=(10, 0))
+ctk.CTkLabel(setup_card, text='Start here', font=_font(13, 'bold'), text_color=TEXT_COLOR).grid(
+    row=6, column=0, columnspan=5, sticky='w', padx=18, pady=(8, 4))
 start_frame = ctk.CTkFrame(setup_card, fg_color='transparent')
-start_frame.grid(row=6, column=0, columnspan=5, sticky='ew', padx=18, pady=(0, 16))
-ctk.CTkButton(start_frame, text="Corpus profiler  —  what's in your corpus?", height=40, font=_font(13, 'bold'),
+start_frame.grid(row=7, column=0, columnspan=5, sticky='ew', padx=18, pady=(0, 16))
+ctk.CTkButton(start_frame, text="Corpus profiler: what's in your corpus?", height=38, font=_font(13, 'bold'),
               fg_color=BRAND_RED, hover_color=BRAND_RED_HOVER, corner_radius=10,
-              command=lambda: run_script_util.run_script("corpus_profiler_main.py")).pack(fill='x')
-ctk.CTkLabel(start_frame, text='One click: an HTML report and a paper-style summary', font=_font(12),
-             text_color=MUTED_TEXT, height=20).pack(anchor='w', pady=(2, 8))
+              command=lambda: run_script_util.run_script("corpus_profiler_main.py")).pack(fill='x', pady=(0, 8))
 # CORPUS LANGUAGE & NLP options available in the Suite
-_outline_button(start_frame, 'Which tools can I use with my corpus language?',
+_outline_button(start_frame, 'Which tools work with my corpus language?',
                 lambda: language_tools_advisor_util.run(outputDir=GUI_util.output_dir_path.get())).pack(fill='x')
 
 # --- Tool browser (right) -----------------------------------------------------------------------------------
@@ -563,8 +564,8 @@ for group, names in category_groups:
                                                command=lambda n=name: show_category(n))
         category_buttons[name].pack(anchor='w')
 
+# shown only while searching: how many tools match
 list_title = ctk.CTkLabel(tools_card, text='', font=_font(12), text_color=MUTED_TEXT, anchor='w', height=20)
-list_title.grid(row=1, column=1, sticky='ew', padx=(6, 14))
 tool_list = ctk.CTkScrollableFrame(tools_card, fg_color='transparent', corner_radius=0)
 tool_list.grid(row=2, column=1, sticky='nsew', padx=(0, 6))
 tool_list.grid_columnconfigure(0, weight=1)
@@ -610,34 +611,59 @@ def _entry_of(label):
             return entry
     raise KeyError(label)
 
+def _enable_open(enabled):
+    # a disabled CTkButton keeps its red; grey it so it does not look clickable
+    open_button.configure(state='normal' if enabled else 'disabled', fg_color=BRAND_RED if enabled else CARD_BORDER)
+
 def select_tool(label):
     global selected_tool, script_to_run, IO_values
     if selected_tool in tool_buttons:
         tool_buttons[selected_tool].configure(fg_color='transparent', text_color=TEXT_COLOR)
     selected_tool = label
     if label is None:
+        # nothing picked yet: when browsing, say what the category holds
         script_to_run, IO_values = '', ''
-        detail_name.configure(text='No tool selected')
-        detail_info.configure(text='Click a tool, then Open (or double-click it). RUN at the bottom does the same.')
-        open_button.configure(state='disabled')
+        if search_entry.get().strip() == '':
+            detail_name.configure(text=current_category)
+            detail_info.configure(text=category_descriptions.get(current_category, ''))
+        else:
+            detail_name.configure(text='No tool selected')
+            detail_info.configure(text='')
+        _enable_open(False)
         return
     tool_buttons[label].configure(fg_color=ROW_SELECTED, text_color=BRAND_RED)
     getScript(label)
     entry = _entry_of(label)
-    where = entry['category'] + ('  ·  ' + entry['section'] if entry['section'] else '')
     detail_name.configure(text=entry['name'])
-    detail_info.configure(text=where + '  ·  opens ' + str(pydict[label][0]))
-    open_button.configure(state='normal' if script_to_run != '' else 'disabled',
-                          text='Open' if str(script_to_run).endswith('.py') else 'Run')
+    detail_info.configure(text=entry['description'] or entry['category'])
+    _enable_open(script_to_run != '')
+    open_button.configure(text='Open' if str(script_to_run).endswith('.py') else 'Run')
 
 def open_tool(label):
     select_tool(label)
     if script_to_run != '':
         run()
 
+def _scroll_into_view(widget):
+    # the arrow keys move the selection; keep it on screen
+    canvas = tool_list._parent_canvas
+    tool_list.update_idletasks()
+    total = tool_list.winfo_height()
+    if total <= 0:
+        return
+    top, visible = widget.winfo_y(), canvas.winfo_height()
+    first = canvas.yview()[0] * total
+    if top < first:
+        canvas.yview_moveto(top / total)
+    elif top + widget.winfo_height() > first + visible:
+        canvas.yview_moveto((top + widget.winfo_height() - visible) / total)
+
 def _show_entries(entries, with_sections, empty_message=''):
     global shown_entries
     for widget in shown_widgets:
+        if isinstance(widget, ctk.CTkButton):
+            # a row that moves away from under the pointer never gets its <Leave>, and kept its hover color
+            widget._on_leave()
         widget.grid_forget()
     shown_widgets.clear()
     shown_entries = entries
@@ -672,8 +698,10 @@ def show_category(name):
             button.configure(fg_color=ROW_SELECTED, text_color=BRAND_RED, font=_font(13, 'bold'))
         else:
             button.configure(fg_color='transparent', text_color=TEXT_COLOR, font=_font(13))
-    list_title.configure(text=category_descriptions[name])
+    list_title.grid_remove()
     _show_entries(NLP_menu_tools_util.entries_in_category(tool_catalog, name), True)
+    if selected_tool is None or selected_tool not in [entry['label'] for entry in shown_entries]:
+        select_tool(None)
 
 def show_search_results():
     query = search_entry.get().strip()
@@ -685,7 +713,14 @@ def show_search_results():
     results = NLP_menu_tools_util.search(tool_catalog, query, pydict)
     count = str(len(results)) + (' tool matches' if len(results) == 1 else ' tools match')
     list_title.configure(text=count + ' "' + query + '"   (Esc to clear)')
+    if results:
+        list_title.grid(row=1, column=1, sticky='ew', padx=(6, 14))
+    else:
+        list_title.grid_remove()
     _show_entries(results, False, 'No tool matches "' + query + '". Try another word, or browse the categories.')
+    # the best match is picked, so Return (or Open, or RUN) opens it straight away
+    available = [entry['label'] for entry in results if entry['available']]
+    select_tool(available[0] if available else None)
 
 _search_after_id = None
 _last_query = ''
@@ -698,31 +733,55 @@ def _search_soon(*args):
     _last_query = search_entry.get()
     if _search_after_id is not None:
         window.after_cancel(_search_after_id)
-    _search_after_id = window.after(150, show_search_results)
+    _search_after_id = window.after(150, _run_pending_search)
 search_entry.bind('<KeyRelease>', _search_soon)
+# a paste or cut with the mouse changes the text without a key
+search_entry.bind('<<Paste>>', lambda e: window.after_idle(_search_soon))
+search_entry.bind('<<Cut>>', lambda e: window.after_idle(_search_soon))
+
+def _run_pending_search():
+    global _search_after_id
+    _search_after_id = None
+    show_search_results()
+
+def _flush_search():
+    # the arrow keys and Return act on the list for what is typed now, not on the list from before
+    # the last keystroke still waiting out its pause
+    _search_soon()
+    if _search_after_id is not None:
+        window.after_cancel(_search_after_id)
+        _run_pending_search()
 
 def clear_search():
-    global _last_query
+    global _last_query, _search_after_id
+    if _search_after_id is not None:
+        window.after_cancel(_search_after_id)
+        _search_after_id = None
     search_entry.delete(0, 'end')
     _last_query = ''
     show_category(current_category)
 
 def _move_selection(step):
+    _flush_search()
     available = [entry['label'] for entry in shown_entries if entry['available']]
     if not available:
-        return
+        return 'break'
     if selected_tool in available:
         position = min(max(available.index(selected_tool) + step, 0), len(available) - 1)
     else:
         position = 0
     select_tool(available[position])
+    _scroll_into_view(tool_buttons[available[position]])
+    return 'break'
 
 def _search_return(event):
+    _flush_search()
     available = [entry['label'] for entry in shown_entries if entry['available']]
     if selected_tool in available:
         open_tool(selected_tool)
     elif available:
-        select_tool(available[0])
+        open_tool(available[0])
+    return 'break'
 
 search_entry.bind('<Down>', lambda e: _move_selection(1))
 search_entry.bind('<Up>', lambda e: _move_selection(-1))
