@@ -85,7 +85,7 @@ _local_modules = [
     'narrative_analysis_ALL_main',
     'NER_main',
     'NGrams_CoOccurrences_main', 'NGrams_CoOccurrences_util', 'NGrams_util',
-    'NLP_menu_main', 'NLP_setup_download_jars',
+    'NLP_menu_main', 'NLP_menu_tools_util', 'NLP_setup_download_jars',
     'NLP_setup_external_software_main', 'NLP_setup_IO_main',
     'NLP_setup_package_language_main', 'NLP_setup_shortcut_add',
     'NLP_setup_shortcut_remove', 'NLP_setup_update_util', 'run_script_util',
@@ -170,6 +170,9 @@ _third_party_hiddenimports = [
     'chardet', 'tqdm', 'psutil', 'json', 'csv', 'pickle',
     'collections', 'functools', 'itertools', 'statistics',
     'SPARQLWrapper',
+    # NLP_menu_main's setup panel and tool browser; darkdetect is CustomTkinter's appearance-mode
+    # dependency, imported conditionally inside it
+    'customtkinter', 'darkdetect',
 ]
 
 # Collect stanza and spacy data files (language models etc.)
@@ -183,6 +186,11 @@ try:
 except Exception:
     _spacy_datas = []
 _nltk_datas = []  # nltk downloads data at runtime
+# CustomTkinter loads its color themes and fonts from its package directory at runtime
+try:
+    _ctk_datas = collect_data_files('customtkinter')
+except Exception:
+    _ctk_datas = []
 
 # ── Data files to bundle ────────────────────────────────────────────────────
 # These are copied alongside the executable so the app can find them at runtime.
@@ -246,7 +254,7 @@ a = Analysis(
     [os.path.join(SRC_DIR, 'NLP_menu_main.py')],
     pathex=[SRC_DIR],
     binaries=[],
-    datas=_project_datas + _stanza_datas + _spacy_datas + _nltk_datas,
+    datas=_project_datas + _stanza_datas + _spacy_datas + _nltk_datas + _ctk_datas,
     hiddenimports=_local_modules + _third_party_hiddenimports,
     hookspath=[],
     hooksconfig={},

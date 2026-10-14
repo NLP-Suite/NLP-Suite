@@ -12,14 +12,14 @@ multiprocessing.freeze_support()
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"NLP",['os','tkinter'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"NLP",['os','tkinter','customtkinter'])==False:
     sys.exit(0)
 
 import os
 from sys import platform
 import tkinter as tk
-from tkinter import ttk
 import tkinter.messagebox as mb
+import customtkinter as ctk
 from subprocess import call
 import webbrowser
 
@@ -30,6 +30,7 @@ import constants_util
 import config_util
 import run_script_util
 import language_tools_advisor_util
+import NLP_menu_tools_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -45,7 +46,7 @@ def run():
     IO_values = globals()['IO_values']
 
     if script_to_run=='':
-        mb.showwarning('No option selection','No option has been selected.\n\nPlease, using the dropdown menus, select one of the many General tools and/or Linguistic analysis tools, then click on RUN again.')
+        mb.showwarning('No option selection','No option has been selected.\n\nPlease, select one of the tools in the list (browse a category or type in the search box), then click on RUN again.')
         return
     IO_files_util.runScript_fromMenu_option(script_to_run,IO_values,inputFilename,input_main_dir_path, output_dir_path, openOutputFiles,chartPackage, dataTransformation)
 
@@ -132,13 +133,8 @@ missing_external_software = ''
 def clear(e):
 
     software_setup_var.set('')
-    data_file_handling_tools_var.set('')
-    pre_processing_tools_var.set('')
-    statistical_tools_var.set('')
-    visualization_tools_var.set('')
-    corpus_tools_var.set('')
-    corpus_document_tools_var.set('')
-    sentence_tools_var.set('')
+    clear_search()
+    select_tool(None)
     GUI_util.clear("Escape")
 
 window.bind("<Escape>", clear)
@@ -250,6 +246,8 @@ pydict["File cleaner (file content) (Remove blank lines from txt file(s))"] = ["
 pydict["File cleaner (file content) (Add full stop . at the end of paragraphs without end-of-paragraph punctuation)"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File cleaner (file content) (Pronominal resolution via CoreNLP)"] = ["coreference_main.py", 1]
 pydict["File classifier (dumb classifier via embedded date) (file name)"] = ["file_classifier_main.py", 1]
+# the wording constants_util.NLP_Suite_data_file_handling_tools_menu lists it under
+pydict["File classifier (file name) (dumb classifier via embedded date)"] = ["file_classifier_main.py", 1]
 pydict["File finder (file name)"] = ["file_manager_main.py", 1]
 pydict["File search (file content for words/collocations)"] = ["file_search_byWord_main.py", 1]
 pydict["File search (file content for n-grams & co-occurrences)"] = ["NGrams_CoOccurrences_main.py", 1]
@@ -332,24 +330,7 @@ pydict["------------------"] = ["", 2]
 
 # NLP Suite team & How to cite are in GUI_util
 
-IO_setup_var = tk.IntVar()
 software_setup_var = tk.StringVar()
-data_file_handling_tools_var = tk.StringVar()
-pre_processing_tools_var = tk.StringVar()
-statistical_tools_var = tk.StringVar()
-visualization_tools_var = tk.StringVar()
-corpus_tools_var = tk.StringVar()
-corpus_document_tools_var = tk.StringVar()
-sentence_tools_var = tk.StringVar()
-
-setup_IO_OK_checkbox = tk.Checkbutton(window, state='disabled',
-                                      variable=setup_IO_OK_checkbox_var, onvalue=1, offvalue=0)
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                             setup_IO_OK_checkbox,
-                                             True, False, True, False,
-                                             90, GUI_IO_util.labels_x_coordinate,
-                                             "The checkbox, always disabled, is ticked ON when the I/O options have been setup.\nIf the checkbox is OFF, click on the 'SETUP default I/O options...' button to set up.")
 
 def setup_IO():
     GUI_util.setup_IO_configuration_options(False,scriptName, silent=True, open_setup_IO_GUI=True)
@@ -367,27 +348,6 @@ def setup_IO_checkbox():
     else:
         setup_IO_OK_checkbox_var.set(0)
 
-IO_setup_button = tk.Button(window, text='SETUP default I/O options: INPUT file/directory (corpus) and OUTPUT files directory', width=95, font=("Courier", 10, "bold"), command=lambda: setup_IO())
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+30,
-                                               y_multiplier_integer,
-                                               IO_setup_button, True, False, False, False, 90,
-                                               GUI_IO_util.labels_x_coordinate+30,
-                                               "You will probably use the same document(s) (i.e., corpus), written in the same language, for different analyses using different NLP tools, and exporting results to the same directory.\n Click on the SETUP button to setup Input/Output (I/O) options.\nYour selected options will be used as default in all GUIs; but you can change your preferences at any time; and every GUI also allows you to setup GUI-specific I/O options.")
-
-open_default_IO_config_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'NLP_default_IO_config.csv'))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_IO_config_button, y_multiplier_integer,
-                                               open_default_IO_config_button, False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate, "Open the NLP_default_IO_config.csv file containing the default Input/Output options")
-
-setup_parsers_annotators_OK_checkbox = tk.Checkbutton(window, state='disabled',
-                                      variable=setup_parsers_annotators_OK_checkbox_var, onvalue=1, offvalue=0)
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                             setup_parsers_annotators_OK_checkbox,
-                                             True, False, True, False,
-                                             90, GUI_IO_util.labels_x_coordinate,
-                                             "The checkbox, always disabled, is ticked ON when the parser/annotator and corpus language options have been setup.\nIf the checkbox is OFF, click on the 'SETUP default NLP parser...' button to set up.")
-
 NLP_package_language_config = GUI_IO_util.configPath+os.sep+'NLP_default_package_language_config.csv'
 def setup_parsers_annotators_checkbox(NLP_package_language_config):
     if os.path.isfile(NLP_package_language_config):
@@ -401,27 +361,6 @@ setup_parsers_annotators_checkbox(NLP_package_language_config)
 def _setup_parsers_and_recheck():
     run_script_util.run_script("NLP_setup_package_language_main.py")
     setup_parsers_annotators_checkbox(NLP_package_language_config)
-
-NLP_package_language_setup_button = tk.Button(window, text='SETUP default NLP parsers & annotators package and default corpus language', width=95, font=("Courier", 10, "bold"), command=_setup_parsers_and_recheck)
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+30,
-                                               y_multiplier_integer,
-                                               NLP_package_language_setup_button, True, False, False, False, 90,
-                                               GUI_IO_util.labels_x_coordinate+30,
-                                               "The NLP Suite relies on a handful of external software to carry out specialized tasks (e.g., Stanford CoreNLP, Gephi).\nClick on the Setup button to select your preferred parser software (e.g., Stanford CoreNLP) and the laguage of your corpus (e.g., English)\nYour selected options will be used as default in all GUIs; but you can change your preferences at any time.")
-
-open_default_NLP_package_language_config_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, NLP_package_language_config))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_NLP_package_language_config_button, y_multiplier_integer,
-                                               open_default_NLP_package_language_config_button, False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate, "Open the NLP_default_package_language_config.csv file containing the default NLP parser and annotators and corpus language options")
-
-setup_external_software_checkbox = tk.Checkbutton(window, state='disabled',
-                                         variable=setup_external_software_OK_checkbox_var, onvalue=1, offvalue=0, command=lambda: setup_external_programs_checkbox())
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                             setup_external_software_checkbox,
-                                             True, False, True, False,
-                                             90, GUI_IO_util.labels_x_coordinate,
-                                             "The checkbox, always disabled, is ticked ON when all external software have been installed.\nIf the checkbox is OFF, click on the 'SETUP external software' button to set up.")
 
 software_dir = ''
 
@@ -457,192 +396,340 @@ def setup_external_software():
     run_script_util.run_script("NLP_setup_external_software_main.py")
     setup_external_programs_checkbox()
 
-# software_setup_button = tk.Button(window, text='Setup external software', width=95, font=("Courier", 10, "bold"), command=lambda: setup_external_software_warning())
-software_setup_button = tk.Button(window, text='SETUP external software', width=95, font=("Courier", 10, "bold"), command=lambda: setup_external_software())
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+30,
-                                               y_multiplier_integer,
-                                               software_setup_button, True, False, False, False, 90,
-                                               GUI_IO_util.labels_x_coordinate+30,
-                                               "The NLP Suite relies on a handful of external software to carry out specialized tasks (e.g., Stanford CoreNLP, Gephi)\nClick on the Setup button to download and install these freeware software packages\nYou only have to do this once")
-
-open_setup_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'NLP_setup_external_software_config.csv'))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_setup_external_software_button, y_multiplier_integer,
-                                               open_setup_button, False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate, "Open the NLP_setup_external_software_config.csv file containing all external software installation paths")
-
-# CORPUS LANGUAGE & NLP options available in the Suite
-corpus_language_button = tk.Button(window,
-                                   text="Which NLP tools in the Suite can I use with my corpus language?",
-                                   width=95, font=("Courier", 11, "bold"), fg='red',
-                                   command=lambda: language_tools_advisor_util.run(
-                                       outputDir=GUI_util.output_dir_path.get()))
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 30,
-                                               y_multiplier_integer,
-                                               corpus_language_button, False, False, False, False, 90,
-                                               GUI_IO_util.labels_x_coordinate + 30,
-                                               "Create an HTML file with a list of NLP tools available in the Suite for analysis of a corpus in a specific language.")
-
-# CORPUS PROFILER -- flagship one-click tool: a prominent bold red button, given a role of its own at the
-# top of the tool list. Placement/wording easy to tweak.
-corpus_profiler_button = tk.Button(window,
-                                   text="CORPUS PROFILER  —  what's in your corpus? one click → an HTML report and a paper-style summary",
-                                   width=95, font=("Courier", 11, "bold"), fg='red',
-                                   command=lambda: run_script_util.run_script("corpus_profiler_main.py"))
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 30,
-                                               y_multiplier_integer,
-                                               corpus_profiler_button, False, False, False, False, 90,
-                                               GUI_IO_util.labels_x_coordinate + 30,
-                                               "CORPUS PROFILER — run a battery of NLP analyses on your corpus with sensible DEFAULTS and get a paper-style summary plus a single navigable HTML report (NLP_corpus_profile.html) that links every result.")
-
-# ── Notebook: the seven tool dropdowns grouped into TWO tabs (General Utility / Linguistic) ──
-# Replaces the seven stacked dropdown rows (the layout designed in NLP_menu_notebook_skeleton).
-# Each Combobox keeps the SAME textvariable as before, so the existing traces (getScript),
-# the RUN dispatch, and the Esc-clear all keep working UNCHANGED. Mirrors the placed-notebook
-# pattern already used in data_visualization_main.py.
-nb_style = ttk.Style()
-try:
-    nb_style.theme_use('clam')
-except Exception:
-    pass
-nb_style.configure('NLP.TNotebook.Tab', font=("Courier", 11, "bold"), foreground='red', padding=[16, 5])
-nb_style.map('NLP.TNotebook.Tab',
-             background=[('selected', '#d0e0f0'), ('!selected', '#e8e8e8')],
-             foreground=[('selected', 'red'), ('!selected', '#999999')])
-
-notebook_y = GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step * y_multiplier_integer
-nb_width = GUI_width - GUI_IO_util.labels_x_coordinate - 20
-nb_height = 210
-tools_notebook = ttk.Notebook(window, style='NLP.TNotebook')
-tools_notebook.place(x=GUI_IO_util.labels_x_coordinate, y=notebook_y, width=nb_width, height=nb_height)
-
-tab_linguistic = ttk.Frame(tools_notebook)
-tab_utility = ttk.Frame(tools_notebook)
-# Linguistic tools are the suite's raison d'être -> make them the FIRST tab, so they are the
-# default selected tab on every launch; General Utility tools follow as the supporting cast.
-tools_notebook.add(tab_linguistic, text='   Linguistic Analysis Tools   ')
-tools_notebook.add(tab_utility, text='   General Utility Tools   ')
-tools_notebook.select(tab_linguistic)
-
-# advance past the notebook so the RUN bar (GUI_bottom) lands below it
-y_multiplier_integer = y_multiplier_integer + 6
-
-_tab_help_x = nb_width - 95
-_ROW_STEP = 42
-
-def _tab_row(parent, row_y, label_text, combobox, help_message):
-    tk.Label(parent, text=label_text).place(x=10, y=row_y + 3)
-    combobox.place(x=250, y=row_y)
-    tk.Button(parent, text='? HELP',
-              command=lambda m=help_message: mb.showinfo("NLP Suite Help", m)).place(x=_tab_help_x, y=row_y)
-
-# --- General Utility tab -------------------------------------------------------
-data_file_handling_tools_var.set('')
-data_file_handling_tools_menu = ttk.Combobox(tab_utility, width=80, textvariable=data_file_handling_tools_var)
-data_file_handling_tools_menu['values'] = constants_util.NLP_Suite_data_file_handling_tools_menu
-_tab_row(tab_utility, 12, 'Data & Files Handling Tools', data_file_handling_tools_menu,
-         "Please, using the dropdown menu, select one of the many options available for data and file handling." + GUI_IO_util.msg_Esc)
-
-pre_processing_tools_var.set('')
-pre_processing_tools_menu = ttk.Combobox(tab_utility, width=80, textvariable=pre_processing_tools_var)
-pre_processing_tools_menu['values'] = constants_util.NLP_Suite_pre_processing_tools_menu
-_tab_row(tab_utility, 12 + _ROW_STEP, 'Pre-Processing Tools', pre_processing_tools_menu,
-         "Please, using the dropdown menu, select one of the many options available for pre-processing text." + GUI_IO_util.msg_Esc)
-
-statistical_tools_var.set('')
-statistical_tools_menu = ttk.Combobox(tab_utility, width=80, textvariable=statistical_tools_var)
-statistical_tools_menu['values'] = ['Statistics (csv files)','Corpus/document(s) statistics (Sentences, words, lines)','Corpus/document(s) statistics (Nouns, verbs, adjectives, pronouns, ...)','N-grams & Co-occurrences']
-_tab_row(tab_utility, 12 + 2 * _ROW_STEP, 'Statistical Tools', statistical_tools_menu,
-         "Please, using the dropdown menu, select the option available for statistical analyses." + GUI_IO_util.msg_Esc)
-
-visualization_tools_var.set('')
-visualization_menu = ttk.Combobox(tab_utility, width=80, textvariable=visualization_tools_var)
-visualization_menu['values'] = constants_util.NLP_Suite_visualization_tools_menu
-_tab_row(tab_utility, 12 + 3 * _ROW_STEP, 'Visualization Tools', visualization_menu,
-         "Please, using the dropdown menu, select one of the many options available for visualizing data.\n\nNearly all linguistic tools, however, automatically visualize results, typically in Excel charts, but also in more specialized graphical tools, such as network graphs in Gephi or GIS maps in Google Earth Pro or in Google Maps." + GUI_IO_util.msg_Esc)
-
-# --- Linguistic Analysis tab ---------------------------------------------------
-corpus_tools_var.set('')
-corpus_menu = ttk.Combobox(tab_linguistic, width=80, textvariable=corpus_tools_var)
-corpus_menu['values'] = constants_util.NLP_Suite_corpus_tools_menu
-_tab_row(tab_linguistic, 12, 'CORPUS Analysis Tools', corpus_menu,
-         "Please, using the dropdown menu, select one of the many options available for analyzing your corpus.\n\nCORPUS TOOLS APPLY TO MULTIPLE DOCUMENTS ONLY, RATHER THAN TO A SINGLE DOCUMENT.\n\nIn INPUT the tools expect multiple documents stored in a directory (the 'corpus')." + GUI_IO_util.msg_Esc)
-
-corpus_document_tools_var.set('')
-corpus_documents_menu = ttk.Combobox(tab_linguistic, width=80, textvariable=corpus_document_tools_var)
-corpus_documents_menu['values'] = constants_util.NLP_Suite_corpus_document_tools_menu
-_tab_row(tab_linguistic, 12 + _ROW_STEP, 'CORPUS/DOCUMENT Analysis Tools', corpus_documents_menu,
-         "Please, using the dropdown menu, select one of the many options available for analyzing your corpus and/or a single document.\n\nTHE TOOLS IN THIS CATEGORY APPLY TO EITHER MULTIPLE DOCUMENTS (THE 'CORPUS') OR TO A SINGLE DOCUMENT." + GUI_IO_util.msg_Esc)
-
-sentence_tools_var.set('')
-sentence_tools_menu = ttk.Combobox(tab_linguistic, width=80, textvariable=sentence_tools_var)
-sentence_tools_menu['values'] = ['Sentence analysis (ALL options GUI)']
-_tab_row(tab_linguistic, 12 + 2 * _ROW_STEP, 'SENTENCE Analysis Tools', sentence_tools_menu,
-         "Please, using the dropdown menu, select one of the many options available for analyzing your corpus/document by sentence index." + GUI_IO_util.msg_Esc)
-
-def clear_selected_options(tool_selected):
-    if tool_selected=='data_file_handling_tools' and data_file_handling_tools_var.get()!='':
-        pre_processing_tools_var.set('')
-        statistical_tools_var.set('')
-        visualization_tools_var.set('')
-        corpus_tools_var.set('')
-        corpus_document_tools_var.set('')
-        sentence_tools_var.set('')
-    if tool_selected=='pre_processing_tools' and pre_processing_tools_var.get()!='':
-        data_file_handling_tools_var.set('')
-        statistical_tools_var.set('')
-        visualization_tools_var.set('')
-        corpus_tools_var.set('')
-        corpus_document_tools_var.set('')
-        sentence_tools_var.set('')
-    if tool_selected=='statistical_tools' and statistical_tools_var.get()!='':
-        data_file_handling_tools_var.set('')
-        pre_processing_tools_var.set('')
-        visualization_tools_var.set('')
-        corpus_tools_var.set('')
-        corpus_document_tools_var.set('')
-        sentence_tools_var.set('')
-    if tool_selected=='visualization_tools' and visualization_tools_var.get()!='':
-        data_file_handling_tools_var.set('')
-        pre_processing_tools_var.set('')
-        statistical_tools_var.set('')
-        corpus_tools_var.set('')
-        corpus_document_tools_var.set('')
-        sentence_tools_var.set('')
-    if tool_selected=='corpus_tools' and corpus_tools_var.get()!='':
-        data_file_handling_tools_var.set('')
-        pre_processing_tools_var.set('')
-        statistical_tools_var.set('')
-        visualization_tools_var.set('')
-        corpus_document_tools_var.set('')
-        sentence_tools_var.set('')
-    if tool_selected=='corpus_document_tools' and corpus_document_tools_var.get()!='':
-        data_file_handling_tools_var.set('')
-        pre_processing_tools_var.set('')
-        statistical_tools_var.set('')
-        visualization_tools_var.set('')
-        corpus_tools_var.set('')
-        sentence_tools_var.set('')
-    if tool_selected=='sentence_tools' and sentence_tools_var.get()!='':
-        data_file_handling_tools_var.set('')
-        pre_processing_tools_var.set('')
-        statistical_tools_var.set('')
-        visualization_tools_var.set('')
-        corpus_tools_var.set('')
-        corpus_document_tools_var.set('')
-
-def getScript(tool_selected, script):
+def getScript(script):
     global script_to_run, IO_values
-    if script != '':
-        script_to_run, IO_values = IO_files_util.getScript(pydict, script)
-    clear_selected_options(tool_selected)
+    script_to_run, IO_values = IO_files_util.getScript(pydict, script)
 
-data_file_handling_tools_var.trace('w', lambda x, y, z: getScript('data_file_handling_tools',data_file_handling_tools_var.get()))
-pre_processing_tools_var.trace('w', lambda x, y, z: getScript('pre_processing_tools', pre_processing_tools_var.get()))
-statistical_tools_var.trace('w', lambda x, y, z: getScript('statistical_tools',statistical_tools_var.get()))
-visualization_tools_var.trace('w', lambda x, y, z: getScript('visualization_tools',visualization_tools_var.get()))
-corpus_tools_var.trace('w', lambda x, y, z: getScript('corpus_tools',corpus_tools_var.get()))
-corpus_document_tools_var.trace('w', lambda x, y, z: getScript('corpus_document_tools',corpus_document_tools_var.get()))
-sentence_tools_var.trace('w', lambda x, y, z: getScript('sentence_tools',sentence_tools_var.get()))
+# ── Setup panel and tool browser ───────────────────────────────────────────────────────────────────────────
+# The middle of the menu, between the shared header (GUI_top) and the RUN/CLOSE bar (GUI_bottom), is drawn
+# with CustomTkinter: the setup steps on the left and, on the right, every tool in one list that can be
+# browsed by category or searched by typing. It replaces the five SETUP rows and the two-tab notebook of
+# seven dropdowns, where finding a tool meant guessing which dropdown held it.
+# Every other GUI runs in its own process (run_script_util.run_script) and stays plain tkinter.
+
+# CTk makes the whole process DPI-aware on Windows when it builds its first widget, which would rescale the
+# plain-tk header and RUN bar around it. With that off, CTk draws at the same pixel scale as the tk widgets.
+ctk.deactivate_automatic_dpi_awareness()
+ctk.set_appearance_mode('light')
+
+BRAND_RED = '#b10a0a'
+BRAND_RED_HOVER = '#8f0808'
+CARD_COLOR = '#ffffff'
+CARD_BORDER = '#dcdcdc'
+TEXT_COLOR = '#1f1f1f'
+MUTED_TEXT = '#6e6e6e'
+DISABLED_TEXT = '#a8a8a8'
+ROW_HOVER = '#f4ecec'
+ROW_SELECTED = '#f3d6d6'
+READY_GREEN = '#2e7d32'
+
+def _font(size=13, weight='normal'):
+    return ctk.CTkFont(size=size, weight=weight)
+
+def _outline_button(parent, text, command, width=72):
+    return ctk.CTkButton(parent, text=text, command=command, width=width, height=28, font=_font(12),
+                         fg_color='transparent', border_width=1, border_color=BRAND_RED, text_color=BRAND_RED,
+                         hover_color=ROW_HOVER, corner_radius=8)
+
+# the rows the SETUP buttons and the notebook used to take; GUI_bottom places the RUN bar below them
+panel_rows = 11
+panel_y = GUI_IO_util.basic_y_coordinate + GUI_IO_util.y_step * y_multiplier_integer
+y_multiplier_integer = y_multiplier_integer + panel_rows
+panel_x = GUI_IO_util.help_button_x_coordinate
+panel = ctk.CTkFrame(window, fg_color='transparent', corner_radius=0,
+                     width=GUI_width - 2 * panel_x, height=panel_rows * GUI_IO_util.y_step - 20)
+panel.place(x=panel_x, y=panel_y)
+panel.grid_propagate(False)
+panel.grid_columnconfigure(1, weight=1)
+panel.grid_rowconfigure(0, weight=1)
+
+# --- Setup (left) ----------------------------------------------------------------------------------------------
+IO_setup_help = "Please, click on the Set up button to open the GUI that will allow you to setup default I/O options:\n   INPUT file and or directory of files (your corpus) and\n   OUTPUT directory where all files (csv, txt, html, kml, jpg) produced by the NLP-Suite tools will be saved.\n\nThese default I/O options will be used for all GUIs.\n\nThe status reads Ready if all INPUT/OUTPUT options have been successfully selected and saved in the NLP_default_IO_config.csv file under the subdirecory config.\n\nYou can open the NLP_default_IO_config.csv file by clicking on the csv button." + GUI_IO_util.msg_IO_config
+package_language_setup_help = "Please, click on the Set up button to open the GUI that will allow you to setup default NLP package to be used for parsers and annotators (spaCy, Stanford CoreNLP, Stanza) and the language of your corpus.\n\nThe status reads Ready if the NLP package and corpus language options have been saved in the NLP_default_package_language_config.csv file under the subdirecory config.\n\nYou can open the NLP_default_package_language_config.csv file by clicking on the csv button."
+external_software_setup_help = ("The NLP-Suite relies for some of its operations on external software that needs to be downloaded and installed (Stanford CoreNLP, WordNet, MALLET, Java (JDK), Gephi, Google Earth Pro). When using any of these software, the NLP-Suite needs to know where they have been installed on your computer (e.g., C:\\Program Files (x86)\\WordNet).\n\nPlease, click on the Set up button to select the software option that you want to link to its installation directory. YOUR SELECTION WILL BE SAVED IN THE NLP_setup_external_software_config.csv FILE UNDER THE SUBDIRECTORY config.\n\nThe status reads Ready if all external software packages have been successfully installed.\n\nYou can open the NLP_setup_external_software_config.csv file by clicking on the csv button.\n\n"
+                                "The NLP_setup_external_software_config.csv file has three columns (with headers Software, Path, Download_link) and 6 rows, one for each of the external software and with the followining expected labels: Stanford CoreNLP, MALLET, Java (JDK), WordNet, Gephi, Google Earth Pro and where "
+                                "Path refers to the installation path of the software on your machine. "
+                                "As an example, the three fields for the Stanford CoreNLP software would look like this: "
+                                "Stanford CoreNLP   C:/Program Files (x86)/stanford-corenlp-4.3.1   https://stanfordnlp.github.io/CoreNLP/download.html. "
+                                "Needless to say C:/Program Files (x86)/stanford-corenlp-4.3.1 will change, depending upon where you install CoreNLP locally.")
+
+setup_card = ctk.CTkFrame(panel, width=380, fg_color=CARD_COLOR, border_color=CARD_BORDER, border_width=1, corner_radius=12)
+setup_card.grid(row=0, column=0, sticky='ns', padx=(0, 14))
+setup_card.grid_propagate(False)
+setup_card.grid_columnconfigure(1, weight=1)
+setup_card.grid_rowconfigure(5, weight=1)
+
+ctk.CTkLabel(setup_card, text='Setup', font=_font(17, 'bold'), text_color=TEXT_COLOR).grid(
+    row=0, column=0, columnspan=5, sticky='w', padx=18, pady=(14, 0))
+ctk.CTkLabel(setup_card, text='Defaults that every tool starts from', font=_font(12), text_color=MUTED_TEXT).grid(
+    row=1, column=0, columnspan=5, sticky='w', padx=18, pady=(0, 8))
+
+def _show_setup_status(var, dot, status):
+    if var.get() == 1:
+        dot.configure(text_color=READY_GREEN)
+        status.configure(text='Ready', text_color=MUTED_TEXT)
+    else:
+        dot.configure(text_color=BRAND_RED)
+        status.configure(text='Needs setup', text_color=BRAND_RED)
+
+def _setup_row(row, title, *, status_var, setup_command, config_file, help_message):
+    dot = ctk.CTkLabel(setup_card, text='●', font=_font(14), width=14)
+    dot.grid(row=row, column=0, sticky='n', padx=(18, 8), pady=(8, 0))
+    text = ctk.CTkFrame(setup_card, fg_color='transparent')
+    text.grid(row=row, column=1, sticky='w', pady=6)
+    ctk.CTkLabel(text, text=title, font=_font(13, 'bold'), text_color=TEXT_COLOR, height=18).pack(anchor='w')
+    status = ctk.CTkLabel(text, text='', font=_font(12), height=16)
+    status.pack(anchor='w')
+    _outline_button(setup_card, 'Set up', setup_command, width=64).grid(row=row, column=2, padx=(4, 4))
+    ctk.CTkButton(setup_card, text='csv', width=38, height=28, font=_font(11), corner_radius=8,
+                  fg_color='transparent', hover_color=ROW_HOVER, text_color=MUTED_TEXT,
+                  command=lambda: IO_files_util.openFile(window, config_file)).grid(row=row, column=3)
+    ctk.CTkButton(setup_card, text='?', width=28, height=28, font=_font(12, 'bold'), corner_radius=14,
+                  fg_color='transparent', hover_color=ROW_HOVER, text_color=MUTED_TEXT,
+                  command=lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", help_message)).grid(
+        row=row, column=4, padx=(0, 12))
+    status_var.trace_add('write', lambda *args: _show_setup_status(status_var, dot, status))
+    _show_setup_status(status_var, dot, status)
+
+_setup_row(2, 'Input & output', status_var=setup_IO_OK_checkbox_var, setup_command=setup_IO,
+           config_file=GUI_IO_util.configPath + os.sep + 'NLP_default_IO_config.csv', help_message=IO_setup_help)
+_setup_row(3, 'Parser & language', status_var=setup_parsers_annotators_OK_checkbox_var,
+           setup_command=_setup_parsers_and_recheck, config_file=NLP_package_language_config,
+           help_message=package_language_setup_help)
+_setup_row(4, 'External software', status_var=setup_external_software_OK_checkbox_var,
+           setup_command=setup_external_software,
+           config_file=GUI_IO_util.configPath + os.sep + 'NLP_setup_external_software_config.csv',
+           help_message=external_software_setup_help)
+
+# CORPUS PROFILER -- the flagship one-click tool keeps a button of its own, apart from the tool list
+start_frame = ctk.CTkFrame(setup_card, fg_color='transparent')
+start_frame.grid(row=6, column=0, columnspan=5, sticky='ew', padx=18, pady=(0, 16))
+ctk.CTkButton(start_frame, text="Corpus profiler  —  what's in your corpus?", height=40, font=_font(13, 'bold'),
+              fg_color=BRAND_RED, hover_color=BRAND_RED_HOVER, corner_radius=10,
+              command=lambda: run_script_util.run_script("corpus_profiler_main.py")).pack(fill='x')
+ctk.CTkLabel(start_frame, text='One click: an HTML report and a paper-style summary', font=_font(12),
+             text_color=MUTED_TEXT, height=20).pack(anchor='w', pady=(2, 8))
+# CORPUS LANGUAGE & NLP options available in the Suite
+_outline_button(start_frame, 'Which tools can I use with my corpus language?',
+                lambda: language_tools_advisor_util.run(outputDir=GUI_util.output_dir_path.get())).pack(fill='x')
+
+# --- Tool browser (right) -----------------------------------------------------------------------------------
+# (category, description, the dropdown list it was built from); the lists keep their '' spacers and
+# '--- header ---' lines, which NLP_menu_tools_util turns into sections
+tool_categories = [
+    ('Corpus', 'Tools that apply to multiple documents only: a directory of files (the corpus).',
+     constants_util.NLP_Suite_corpus_tools_menu),
+    ('Corpus / document', 'Tools that apply to either a corpus or a single document.',
+     constants_util.NLP_Suite_corpus_document_tools_menu),
+    ('Sentence', 'Tools that work on a corpus or a document and report results by sentence index.',
+     ['Sentence analysis (ALL options GUI)']),
+    ('Data & files', 'Handle data and files: check, convert, find, match, rename; query databases.',
+     constants_util.NLP_Suite_data_file_handling_tools_menu),
+    ('Pre-processing', 'Check and clean your documents before analyzing them.',
+     constants_util.NLP_Suite_pre_processing_tools_menu),
+    ('Statistics', 'Summary statistics for csv and txt files.',
+     ['Statistics (csv files)', 'Corpus/document(s) statistics (Sentences, words, lines)',
+      'Corpus/document(s) statistics (Nouns, verbs, adjectives, pronouns, ...)', 'N-grams & Co-occurrences']),
+    ('Visualization', 'Charts, maps and networks. Most linguistic tools also chart their own results.',
+     constants_util.NLP_Suite_visualization_tools_menu),
+]
+category_groups = [('LINGUISTIC ANALYSIS', ['Corpus', 'Corpus / document', 'Sentence']),
+                   ('GENERAL UTILITY', ['Data & files', 'Pre-processing', 'Statistics', 'Visualization'])]
+category_descriptions = {name: description for name, description, items in tool_categories}
+tool_catalog = NLP_menu_tools_util.build_catalog([(name, items) for name, description, items in tool_categories], pydict)
+
+tools_card = ctk.CTkFrame(panel, fg_color=CARD_COLOR, border_color=CARD_BORDER, border_width=1, corner_radius=12)
+tools_card.grid(row=0, column=1, sticky='nsew')
+tools_card.grid_columnconfigure(1, weight=1)
+tools_card.grid_rowconfigure(2, weight=1)
+
+# no textvariable: CTkEntry shows no placeholder text when it has one
+search_entry = ctk.CTkEntry(tools_card, height=36, font=_font(14), corner_radius=10,
+                            border_color=CARD_BORDER, border_width=1, fg_color='#f7f7f7', text_color=TEXT_COLOR,
+                            placeholder_text='Search all tools  (e.g., topic, sentiment, word sense)')
+search_entry.grid(row=0, column=0, columnspan=2, sticky='ew', padx=14, pady=(14, 8))
+
+# category list
+category_frame = ctk.CTkFrame(tools_card, fg_color='transparent', width=190)
+category_frame.grid(row=1, column=0, rowspan=3, sticky='nsw', padx=(10, 6), pady=(0, 12))
+category_buttons = {}
+for group, names in category_groups:
+    ctk.CTkLabel(category_frame, text=group, font=_font(11, 'bold'), text_color=MUTED_TEXT, height=22).pack(
+        anchor='w', padx=8, pady=(6, 0))
+    for name in names:
+        category_buttons[name] = ctk.CTkButton(category_frame, text=name, anchor='w', width=180, height=30,
+                                               font=_font(13), corner_radius=8, fg_color='transparent',
+                                               hover_color=ROW_HOVER, text_color=TEXT_COLOR,
+                                               command=lambda n=name: show_category(n))
+        category_buttons[name].pack(anchor='w')
+
+list_title = ctk.CTkLabel(tools_card, text='', font=_font(12), text_color=MUTED_TEXT, anchor='w', height=20)
+list_title.grid(row=1, column=1, sticky='ew', padx=(6, 14))
+tool_list = ctk.CTkScrollableFrame(tools_card, fg_color='transparent', corner_radius=0)
+tool_list.grid(row=2, column=1, sticky='nsew', padx=(0, 6))
+tool_list.grid_columnconfigure(0, weight=1)
+
+# one button per tool, built once and re-gridded as the category or the search changes
+tool_buttons = {}
+for entry in tool_catalog:
+    label = entry['label']
+    if label in tool_buttons:
+        continue
+    button = ctk.CTkButton(tool_list, text=label, anchor='w', height=28, font=_font(13), corner_radius=6,
+                           fg_color='transparent', hover_color=ROW_HOVER, text_color=TEXT_COLOR,
+                           command=lambda tool=label: select_tool(tool))
+    if not entry['available']:
+        button.configure(text=label + '   (not available yet)', state='disabled', text_color_disabled=DISABLED_TEXT)
+    else:
+        button.bind('<Double-Button-1>', lambda e, tool=label: open_tool(tool))
+    tool_buttons[label] = button
+section_labels = {}
+no_match_label = ctk.CTkLabel(tool_list, text='', font=_font(13), text_color=MUTED_TEXT)
+
+# selected tool and Open button
+detail_frame = ctk.CTkFrame(tools_card, fg_color='#f7f7f7', corner_radius=10)
+detail_frame.grid(row=3, column=1, sticky='ew', padx=(6, 14), pady=(6, 12))
+detail_frame.grid_columnconfigure(0, weight=1)
+detail_name = ctk.CTkLabel(detail_frame, text='', font=_font(13, 'bold'), text_color=TEXT_COLOR, anchor='w', height=20)
+detail_name.grid(row=0, column=0, sticky='ew', padx=12, pady=(8, 0))
+detail_info = ctk.CTkLabel(detail_frame, text='', font=_font(12), text_color=MUTED_TEXT, anchor='w', height=18)
+detail_info.grid(row=1, column=0, sticky='ew', padx=12, pady=(0, 8))
+open_button = ctk.CTkButton(detail_frame, text='Open', width=96, height=34, font=_font(13, 'bold'), corner_radius=10,
+                            fg_color=BRAND_RED, hover_color=BRAND_RED_HOVER, command=lambda: run())
+open_button.grid(row=0, column=1, rowspan=2, padx=10)
+
+current_category = 'Corpus / document'
+selected_tool = None
+shown_entries = []
+shown_widgets = []
+
+def _entry_of(label):
+    # the entry as listed now (a tool can sit in several categories), else its first listing
+    for entry in shown_entries + tool_catalog:
+        if entry['label'] == label:
+            return entry
+    raise KeyError(label)
+
+def select_tool(label):
+    global selected_tool, script_to_run, IO_values
+    if selected_tool in tool_buttons:
+        tool_buttons[selected_tool].configure(fg_color='transparent', text_color=TEXT_COLOR)
+    selected_tool = label
+    if label is None:
+        script_to_run, IO_values = '', ''
+        detail_name.configure(text='No tool selected')
+        detail_info.configure(text='Click a tool, then Open (or double-click it). RUN at the bottom does the same.')
+        open_button.configure(state='disabled')
+        return
+    tool_buttons[label].configure(fg_color=ROW_SELECTED, text_color=BRAND_RED)
+    getScript(label)
+    entry = _entry_of(label)
+    where = entry['category'] + ('  ·  ' + entry['section'] if entry['section'] else '')
+    detail_name.configure(text=label)
+    detail_info.configure(text=where + '  ·  ' + str(pydict[label][0]))
+    open_button.configure(state='normal' if script_to_run != '' else 'disabled',
+                          text='Open' if str(script_to_run).endswith('.py') else 'Run')
+
+def open_tool(label):
+    select_tool(label)
+    if script_to_run != '':
+        run()
+
+def _show_entries(entries, with_sections, empty_message=''):
+    global shown_entries
+    for widget in shown_widgets:
+        widget.grid_forget()
+    shown_widgets.clear()
+    shown_entries = entries
+    row = 0
+    section = ''
+    for entry in entries:
+        if with_sections and entry['section'] and entry['section'] != section:
+            section = entry['section']
+            if section not in section_labels:
+                section_labels[section] = ctk.CTkLabel(tool_list, text=section.upper(), font=_font(11, 'bold'),
+                                                       text_color=MUTED_TEXT, anchor='w', height=22)
+            section_labels[section].grid(row=row, column=0, sticky='ew', padx=10, pady=(8 if row else 0, 0))
+            shown_widgets.append(section_labels[section])
+            row += 1
+        tool_buttons[entry['label']].grid(row=row, column=0, sticky='ew', padx=(0, 4))
+        shown_widgets.append(tool_buttons[entry['label']])
+        row += 1
+    if not entries:
+        no_match_label.configure(text=empty_message)
+        no_match_label.grid(row=0, column=0, sticky='w', padx=10, pady=10)
+        shown_widgets.append(no_match_label)
+    tool_list._parent_canvas.yview_moveto(0)
+
+def show_category(name):
+    global current_category
+    current_category = name
+    if search_entry.get() != '':
+        clear_search()
+        return
+    for category, button in category_buttons.items():
+        if category == name:
+            button.configure(fg_color=ROW_SELECTED, text_color=BRAND_RED, font=_font(13, 'bold'))
+        else:
+            button.configure(fg_color='transparent', text_color=TEXT_COLOR, font=_font(13))
+    list_title.configure(text=category_descriptions[name])
+    _show_entries(NLP_menu_tools_util.entries_in_category(tool_catalog, name), True)
+
+def show_search_results():
+    query = search_entry.get().strip()
+    if query == '':
+        show_category(current_category)
+        return
+    for button in category_buttons.values():
+        button.configure(fg_color='transparent', text_color=TEXT_COLOR, font=_font(13))
+    results = NLP_menu_tools_util.search(tool_catalog, query, pydict)
+    count = str(len(results)) + (' tool matches' if len(results) == 1 else ' tools match')
+    list_title.configure(text=count + ' "' + query + '"   (Esc to clear)')
+    _show_entries(results, False, 'No tool matches "' + query + '". Try another word, or browse the categories.')
+
+_search_after_id = None
+_last_query = ''
+def _search_soon(*args):
+    # wait for a pause in typing, so the list is not rebuilt on every keystroke; arrow keys and Return
+    # also end in a KeyRelease, and leave the query (and the list) as it is
+    global _search_after_id, _last_query
+    if search_entry.get() == _last_query:
+        return
+    _last_query = search_entry.get()
+    if _search_after_id is not None:
+        window.after_cancel(_search_after_id)
+    _search_after_id = window.after(150, show_search_results)
+search_entry.bind('<KeyRelease>', _search_soon)
+
+def clear_search():
+    global _last_query
+    search_entry.delete(0, 'end')
+    _last_query = ''
+    show_category(current_category)
+
+def _move_selection(step):
+    available = [entry['label'] for entry in shown_entries if entry['available']]
+    if not available:
+        return
+    if selected_tool in available:
+        position = min(max(available.index(selected_tool) + step, 0), len(available) - 1)
+    else:
+        position = 0
+    select_tool(available[position])
+
+def _search_return(event):
+    available = [entry['label'] for entry in shown_entries if entry['available']]
+    if selected_tool in available:
+        open_tool(selected_tool)
+    elif available:
+        select_tool(available[0])
+
+search_entry.bind('<Down>', lambda e: _move_selection(1))
+search_entry.bind('<Up>', lambda e: _move_selection(-1))
+search_entry.bind('<Return>', _search_return)
+
+show_category(current_category)
+select_tool(None)
 
 def openYouTube(video_url):
     if video_url!='':
@@ -686,31 +773,6 @@ TIPS_options = 'NLP Suite: Package description', 'pip install & Anaconda environ
 # 'KWIC',
 # 'KWIC':'TIPS_NLP_KWIC (Key Words In Context).pdf'
 
-# add all the lines to the end to every special GUI
-# change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
-# any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
-def help_buttons(window, help_button_x_coordinate,y_multiplier_integer):
-    # y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,GUI_IO_util.msg_anyFile)
-    # y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,GUI_IO_util.msg_anyData)
-    # y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_outputDirectory)
-    # leave a blank line to separate general tools
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer+1,"NLP Suite Help",
-                                  "Please, click on the button to the right to open the GUI that will allow you to setup default I/O options:\n   INPUT file and or directory of files (your corpus) and\n   OUTPUT directory where all files (csv, txt, html, kml, jpg) produced by the NLP-Suite tools will be saved.\n\nThese default I/O options will be used for all GUIs.\n\nThe checkbox at the beginning of the line is set to OK if all INPUT/OUTPUT options have been successfully selected and saved in the NLP_default_IO_config.csv file under the subdirecory config.\n\nYou can open the NLP_default_IO_config.csv file by clicking on the button at the end of the line." + GUI_IO_util.msg_IO_config)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                  "Please, click on the button to the right to open the GUI that will allow you to setup default NLP package to be used for parsers and annotators (spaCy, Stanford CoreNLP, Stanza) and the language of your corpus.\n\nThe checkbox at the beginning of the line is set to OK if all INPUT/OUTPUT options have been successfully selected and saved in the NLP_default_IO_config.csv file under the subdirecory config.\n\nYou can open the NLP_default_IO_config.csv file by clicking on the button at the end of the line." + GUI_IO_util.msg_IO_config)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                  "The NLP-Suite relies for some of its operations on external software that needs to be downloaded and installed (Stanford CoreNLP, WordNet, MALLET, Java (JDK), Gephi, Google Earth Pro). When using any of these software, the NLP-Suite needs to know where they have been installed on your computer (e.g., C:\\Program Files (x86)\\WordNet).\n\nPlease, click on the 'Select external software' button to select the software option that you want to link to its installation directory. YOUR SELECTION WILL BE SAVED IN THE NLP_setup_external_software_config.csv FILE UNDER THE SUBDIRECTORY config.\n\nThe checkbox at the beginning of the line is set to OK if all external software packages have been successfully installed.\n\nYou can open the NLP_setup_external_software_config.csv file by clicking on the button at the end of the line.\n\n"
-                                  "The NLP_setup_external_software_config.csv file has three columns (with headers Software, Path, Download_link) and 6 rows, one for each of the external software and with the followining expected labels: Stanford CoreNLP, MALLET, Java (JDK), WordNet, Gephi, Google Earth Pro and where "
-                                  "Path refers to the installation path of the software on your machine. "\
-                                  "As an example, the three fields for the Stanford CoreNLP software would look like this: "
-                                  "Stanford CoreNLP   C:/Program Files (x86)/stanford-corenlp-4.3.1   https://stanfordnlp.github.io/CoreNLP/download.html. "
-                                  "Needless to say C:/Program Files (x86)/stanford-corenlp-4.3.1 will change, depending upon where you install CoreNLP locally.")
-    # The seven tool-dropdown ?HELP buttons now live INSIDE the two notebook tabs (see _tab_row),
-    # so only the three SETUP-row help buttons are placed down the left margin here.
-    return y_multiplier_integer
-# Place the three SETUP help buttons (side effect). Do NOT overwrite y_multiplier_integer: keep the
-# post-notebook value computed above so the RUN bar (GUI_bottom) lands BELOW the notebook.
-help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script is the front end for a wide collection of Java and Python Natural Language Processing (NLP) tools.\n\nThe set of tools are divided into GENERAL UTILITY TOOLS (data and file handling, pre-processing, statistical, visualization) and LINGUISTIC ANALYSIS TOOLS.\n\nLINGUISTIC ANALYSIS TOOLS are divided into tools that expect in input CORPUS DATA (i.e., multiple documents stored in a directory), CORPUS and/or SINGLE DOCUMENT, and SENTENCE.\n\nWhile some linguistic tools are specific for one of these three categories (e.g., topic modeling cannot be performed on a single document), MANY TOOLS OVERLAP. Tools that can work on a single file or a corpus are all classified under CORPUS/DOCUMENT tools. SENTENCE TOOLS still require either a corpus or a single document in input; but they also provide in output sentence-level information for more ingrained linguistic analyses.\n\nAll tools are open source freeware software released under the GNU LGPLv2.1 license (http://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html).\n\nYou can cite the NLP Suite as:\n\nFranzosi, Roberto. 2020. NLP Suite: A collection of natural language processing and visualization tools GitHub: https://github.com/NLP-Suite/NLP-Suite/wiki."
