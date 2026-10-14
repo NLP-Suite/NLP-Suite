@@ -123,3 +123,48 @@ class TestSearch:
 
     def test_unavailable_tools_rank_last(self):
         assert self.find("semantic") == ["Semantic analysis", "SRL Semantic Role Labeling"]
+
+
+class TestToolNames:
+    catalog = tools.build_catalog(CATEGORIES, PYDICT)
+
+    def name_of(self, label):
+        return next(entry["name"] for entry in self.catalog if entry["label"] == label)
+
+    def test_a_renamed_label_shows_its_readable_name(self):
+        assert self.name_of("SRL Semantic Role Labeling") == "Semantic role labeling (SRL)"
+
+    def test_a_label_without_a_new_name_shows_as_it_is(self):
+        assert self.name_of("Shape of stories") == "Shape of stories"
+
+    def test_search_matches_the_new_name_and_the_old_label(self):
+        # 'role' only in the new name's word order; 'SRL' leads the old label
+        assert labels(tools.search(self.catalog, "role labeling", PYDICT)) == ["SRL Semantic Role Labeling"]
+        # Semantic analysis matches too, through its SRL keyword
+        assert labels(tools.search(self.catalog, "srl semantic", PYDICT)) == [
+            "Semantic analysis",
+            "SRL Semantic Role Labeling",
+        ]
+
+    def test_ranking_uses_the_name(self):
+        # 'Search (ALL options GUI)' is shown as 'Search (all options)': 'all' starts one of its words
+        catalog = tools.build_catalog([("Tools", ("Search (ALL options GUI)", "Install"))], {})
+        assert labels(tools.search(catalog, "all")) == ["Search (ALL options GUI)", "Install"]
+
+    def test_every_renamed_label_is_a_real_menu_label(self):
+        # a typo in a TOOL_NAMES key would silently leave the old label on screen
+        import re
+
+        import constants_util
+
+        listed = set()
+        for name in dir(constants_util):
+            if name.startswith("NLP_Suite_") and name.endswith("_menu"):
+                listed.update(getattr(constants_util, name))
+        menu = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src", "NLP_menu_main.py")
+        with open(menu, encoding="utf-8") as f:
+            source = f.read()
+        # pydict keys are written pydict["..."] or pydict['...'] at the start of a line
+        for double, single in re.findall(r"""^pydict\[(?:"([^"]*)"|'([^']*)')\]""", source, re.M):
+            listed.add(double or single)
+        assert set(tools.TOOL_NAMES) - listed == set()

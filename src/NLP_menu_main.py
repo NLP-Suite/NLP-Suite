@@ -444,10 +444,10 @@ panel.grid_columnconfigure(1, weight=1)
 panel.grid_rowconfigure(0, weight=1)
 
 # --- Setup (left) ----------------------------------------------------------------------------------------------
-IO_setup_help = "Please, click on the Set up button to open the GUI that will allow you to setup default I/O options:\n   INPUT file and or directory of files (your corpus) and\n   OUTPUT directory where all files (csv, txt, html, kml, jpg) produced by the NLP-Suite tools will be saved.\n\nThese default I/O options will be used for all GUIs.\n\nThe status reads Ready if all INPUT/OUTPUT options have been successfully selected and saved in the NLP_default_IO_config.csv file under the subdirecory config.\n\nYou can open the NLP_default_IO_config.csv file by clicking on the csv button." + GUI_IO_util.msg_IO_config
-package_language_setup_help = "Please, click on the Set up button to open the GUI that will allow you to setup default NLP package to be used for parsers and annotators (spaCy, Stanford CoreNLP, Stanza) and the language of your corpus.\n\nThe status reads Ready if the NLP package and corpus language options have been saved in the NLP_default_package_language_config.csv file under the subdirecory config.\n\nYou can open the NLP_default_package_language_config.csv file by clicking on the csv button."
+IO_setup_help = "Please, click on the Set up button to open the GUI that will allow you to setup default I/O options:\n   INPUT file and/or directory of files (your corpus) and\n   OUTPUT directory where all files (csv, txt, html, kml, jpg) produced by the NLP-Suite tools will be saved.\n\nThese default I/O options will be used for all GUIs.\n\nThe status reads Ready if all INPUT/OUTPUT options have been successfully selected and saved in the NLP_default_IO_config.csv file under the subdirectory config.\n\nYou can open the NLP_default_IO_config.csv file by clicking on the csv button." + GUI_IO_util.msg_IO_config
+package_language_setup_help = "Please, click on the Set up button to open the GUI that will allow you to setup default NLP package to be used for parsers and annotators (spaCy, Stanford CoreNLP, Stanza) and the language of your corpus.\n\nThe status reads Ready if the NLP package and corpus language options have been saved in the NLP_default_package_language_config.csv file under the subdirectory config.\n\nYou can open the NLP_default_package_language_config.csv file by clicking on the csv button."
 external_software_setup_help = ("The NLP-Suite relies for some of its operations on external software that needs to be downloaded and installed (Stanford CoreNLP, WordNet, MALLET, Java (JDK), Gephi, Google Earth Pro). When using any of these software, the NLP-Suite needs to know where they have been installed on your computer (e.g., C:\\Program Files (x86)\\WordNet).\n\nPlease, click on the Set up button to select the software option that you want to link to its installation directory. YOUR SELECTION WILL BE SAVED IN THE NLP_setup_external_software_config.csv FILE UNDER THE SUBDIRECTORY config.\n\nThe status reads Ready if all external software packages have been successfully installed.\n\nYou can open the NLP_setup_external_software_config.csv file by clicking on the csv button.\n\n"
-                                "The NLP_setup_external_software_config.csv file has three columns (with headers Software, Path, Download_link) and 6 rows, one for each of the external software and with the followining expected labels: Stanford CoreNLP, MALLET, Java (JDK), WordNet, Gephi, Google Earth Pro and where "
+                                "The NLP_setup_external_software_config.csv file has three columns (with headers Software, Path, Download_link) and 6 rows, one for each of the external software and with the following expected labels: Stanford CoreNLP, MALLET, Java (JDK), WordNet, Gephi, Google Earth Pro and where "
                                 "Path refers to the installation path of the software on your machine. "
                                 "As an example, the three fields for the Stanford CoreNLP software would look like this: "
                                 "Stanford CoreNLP   C:/Program Files (x86)/stanford-corenlp-4.3.1   https://stanfordnlp.github.io/CoreNLP/download.html. "
@@ -575,11 +575,11 @@ for entry in tool_catalog:
     label = entry['label']
     if label in tool_buttons:
         continue
-    button = ctk.CTkButton(tool_list, text=label, anchor='w', height=28, font=_font(13), corner_radius=6,
+    button = ctk.CTkButton(tool_list, text=entry['name'], anchor='w', height=28, font=_font(13), corner_radius=6,
                            fg_color='transparent', hover_color=ROW_HOVER, text_color=TEXT_COLOR,
                            command=lambda tool=label: select_tool(tool))
     if not entry['available']:
-        button.configure(text=label + '   (not available yet)', state='disabled', text_color_disabled=DISABLED_TEXT)
+        button.configure(text=entry['name'] + '   (not available yet)', state='disabled', text_color_disabled=DISABLED_TEXT)
     else:
         button.bind('<Double-Button-1>', lambda e, tool=label: open_tool(tool))
     tool_buttons[label] = button
@@ -625,8 +625,8 @@ def select_tool(label):
     getScript(label)
     entry = _entry_of(label)
     where = entry['category'] + ('  ·  ' + entry['section'] if entry['section'] else '')
-    detail_name.configure(text=label)
-    detail_info.configure(text=where + '  ·  ' + str(pydict[label][0]))
+    detail_name.configure(text=entry['name'])
+    detail_info.configure(text=where + '  ·  opens ' + str(pydict[label][0]))
     open_button.configure(state='normal' if script_to_run != '' else 'disabled',
                           text='Open' if str(script_to_run).endswith('.py') else 'Run')
 
