@@ -97,7 +97,16 @@ def run():
             csvValue_color_list = ['Gender', '|', 'Female', 'red', '|', 'Male', 'blue', '|']
         tagAnnotations = ['<span style="color: blue; font-weight: bold">', '</span>']
         fileSubsc='gender'
-        output= html_annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, outputDir, config_filename, annotator_dictionary_file_var,
+        # look up only the words that CoreNLP NER tags as PERSON, not every word of the text
+        person_dictionary_file = html_annotator_gender_dictionary_util.dictionary_of_NER_persons(config_filename,
+                                    inputFilename, input_main_dir_path, outputDir,
+                                    chartPackage=chartPackage, dataTransformation=dataTransformation,
+                                    language=language, memory_var=memory_var,
+                                    dictionary_file=annotator_dictionary_file_var, name_column=csv_field1_var[0])
+        if person_dictionary_file == '':
+            return
+        filesToOpen.append(person_dictionary_file)
+        output= html_annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, outputDir, config_filename, person_dictionary_file,
                                                                    csv_field1_var, csvValue_color_list, True, tagAnnotations, '.txt', fileSubsc)
         if len(output)>0:
             # output=output[0]

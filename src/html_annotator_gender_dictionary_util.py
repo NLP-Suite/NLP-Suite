@@ -116,6 +116,63 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
     annotated.to_csv(output_dir, encoding='utf-8')
     return tempOutputFiles
 
+# CoreNLP NER also tags personal pronouns as PERSON; they are not first names ('She' is in the US Social Security list)
+personal_pronouns = {'he', 'him', 'his', 'himself', 'she', 'her', 'hers', 'herself'}
+
+
+# The words that CoreNLP NER tags as PERSON, lowercased and split into single words
+#   ('Iain Frame' gives 'iain' and 'frame'), since the name lists hold single first names
+def NER_person_words(NER_rows):
+    words = set()
+    for word, tag in NER_rows:
+        if tag == 'PERSON':
+            words.update(part.lower() for part in str(word).split())
+    return words - personal_pronouns
+
+
+# Write the rows of a gender name list whose name is one of person_words; returns how many were kept
+def write_person_dictionary(dictionary_file, name_column, person_words, outputFilename):
+    kept = 0
+    with open(dictionary_file, encoding='utf-8', errors='ignore', newline='') as infile, \
+            open(outputFilename, 'w', encoding='utf-8', newline='') as outfile:
+        reader = csv.DictReader(infile)
+        writer = csv.DictWriter(outfile, fieldnames=reader.fieldnames)
+        writer.writeheader()
+        for row in reader:
+            if str(row[name_column]).strip().lower() in person_words:
+                writer.writerow(row)
+                kept += 1
+    return kept
+
+
+# As the TIPS describe, the gender of a first name is looked up only for the words CoreNLP NER tags as PERSON.
+# Matched against every word of the text, the name lists tag 'in', 'my', 'so', 'will', 'may' and even 'the',
+#   all of which are first names in one list or another.
+# Runs CoreNLP NER (PERSON) and returns a copy of dictionary_file restricted to the names it found ('' if none).
+def dictionary_of_NER_persons(config_filename, inputFilename, inputDir, outputDir, *, chartPackage, dataTransformation,
+                              language, memory_var, dictionary_file, name_column):
+    NER_files = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
+                                                       False, chartPackage, dataTransformation,
+                                                       'NER', False, language,
+                                                       memory_var=memory_var,
+                                                       NERs='PERSON')
+    NER_files = [f for f in NER_files if isinstance(f, str) and f.endswith('.csv') and 'NER' in os.path.basename(f)]
+    if len(NER_files) == 0:
+        return ''
+    with open(NER_files[0], encoding='utf-8', errors='ignore', newline='') as infile:
+        reader = csv.DictReader(x.replace('\0', '') for x in infile)
+        person_words = NER_person_words((row['Word'], row['NER']) for row in reader)
+    if len(person_words) == 0:
+        mb.showwarning(title='No PERSON found',
+                       message='Stanford CoreNLP NER found no PERSON in your input, so there are no first names to look up in the gender dictionary.')
+        return ''
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                             'gender_dictionary_PERSON',
+                                                             os.path.splitext(os.path.basename(dictionary_file))[0])
+    write_person_dictionary(dictionary_file, name_column, person_words, outputFilename)
+    return outputFilename
+
+
 def SSA_annotate(year_state_var,firstName_entry_var,outputDir):
     filesToOpen = []
     for i in firstName_entry_var.split(','):
