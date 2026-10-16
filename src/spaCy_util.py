@@ -390,11 +390,11 @@ def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotat
             sent_text = sent.text
             for j, token in enumerate(sent):
                 rows.append({
-                    'ID': int(j),
+                    'ID': int(j) + 1,
                     'Form': token.text,
                     'Lemma': token.lemma_,
                     'POS': token.pos_,
-                    'Head': token.head.i,
+                    'Head': conll_head(token, sent),
                     'DepRel': token.dep_,
                     'is_sent_start': token.is_sent_start,
                     'NER': token.ent_type_,
@@ -413,6 +413,15 @@ def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotat
         return out_df
 
     return pd.DataFrame()
+
+# CoNLL HEAD for a spaCy token: the 1-based ID of its head within the sentence, 0 for the root.
+# spaCy's token.head.i counts tokens from the start of the DOCUMENT, and spaCy points the root at itself,
+#   so the raw value cannot be matched against the sentence-level IDs that the CoNLL search and the other
+#   parsers (CoreNLP, Stanza) use.
+def conll_head(token, sent):
+    if token.head.i == token.i:
+        return 0
+    return token.head.i - sent.start + 1
 
 # extract and returns SVO from spaCy doc
 # input: spaCy Document
