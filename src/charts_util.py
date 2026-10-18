@@ -2486,6 +2486,41 @@ def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categori
 # Extracted from auto_chart_cross_complex for use in data_visualization GUIs
 # ═══════════════════════════════════════════════════════════════════════
 
+def parse_archive_date(value):
+    """A date as the family archive writes it, or pd.NaT.
+
+    pd.to_datetime read a bare year stored as a number (1920) as NANOSECONDS after 1 Jan 1970, so every such date
+    became 1970 and the network timeline jumped there and showed no change (Roberto, 18 Oct 2026). It also refused
+    "1850-00-00" (unknown month and day), "1889-10" and spans like "1822-1908". Here: yyyy-mm-dd; yyyy-mm-00 and
+    yyyy-00-00 (unknown parts -> the 1st); yyyy-mm; yyyy; a span yyyy-yyyy (its first year); "ca 1860" / "@1860"
+    (the year); 0000 and anything else -> NaT.
+    """
+    if value is None:
+        return pd.NaT
+    if isinstance(value, (pd.Timestamp,)):
+        return value
+    if hasattr(value, 'year') and hasattr(value, 'month'):
+        return pd.Timestamp(value)
+    if isinstance(value, (int, float)) and not pd.isna(value):
+        value = str(int(value))
+    text = str(value).strip().lstrip('@').strip()
+    text = re.sub(r'^(ca|c\.|about|abt|b|d|fl)\.?\s+', '', text, flags=re.I)
+    m = re.match(r'^(\d{4})(?:[-/](\d{1,2}))?(?:[-/](\d{1,2}))?(?!\d)', text)
+    if not m or m.group(1) == '0000':
+        return pd.to_datetime(text, errors='coerce') if text and not text[:4].isdigit() else pd.NaT
+    year = int(m.group(1))
+    if not 1678 <= year <= 2261:                      # outside what a pandas Timestamp can hold
+        return pd.NaT
+    month = int(m.group(2)) if m.group(2) and not re.match(r'^\d{4}-\d{4}', text) else 1
+    day = int(m.group(3)) if m.group(3) else 1
+    month = month if 1 <= month <= 12 else 1
+    day = day if 1 <= day <= 31 else 1
+    try:
+        return pd.Timestamp(year=year, month=month, day=day)
+    except (ValueError, OverflowError):
+        return pd.Timestamp(year=year, month=1, day=1)
+
+
 def network_graph_visjs(inputFilename, outputDir, col1, col2, col3,
                         date_col=None, top_n_per_role=15):
     """Build an interactive vis.js network graph from three relational CSV columns.
@@ -2555,7 +2590,7 @@ def network_graph_visjs(inputFilename, outputDir, col1, col2, col3,
         vals = [row[c] for c in svo_cols if row[c]]
         row_date = None
         if _has_dates and pd.notna(row.get(date_col)):
-            row_date = pd.to_datetime(row[date_col], errors='coerce')
+            row_date = parse_archive_date(row[date_col])
             if pd.isna(row_date):
                 row_date = None
         for i in range(len(vals) - 1):
@@ -3448,7 +3483,7 @@ def animated_migration_map(inputFilename, outputDir, entity_col, location_col,
         df = df.sort_values(sequence_col)
         df['_order_label'] = df[sequence_col].astype(str)
     elif date_col and date_col in df.columns:
-        df['_parsed_date'] = pd.to_datetime(df[date_col], errors='coerce')
+        df['_parsed_date'] = df[date_col].map(parse_archive_date)
         df = df.sort_values('_parsed_date')
         df['_order_label'] = df[date_col].astype(str)
     else:
