@@ -323,6 +323,10 @@ pydict["Who wrote the text? Man or woman? (via Gender guesser)"] = ["Gender gues
 pydict["Wordclouds (ALL options GUI)"] = ["wordclouds_main.py", 1]
 pydict["Semantic aggregation (WordNet, VerbNet, FrameNet)"] = ["semantic_aggregation_main.py", 1]
 pydict["Word embeddings (Word2Vec) (via BERT & Gensim)"] = ["word2vec_main.py", 1]
+# Word Sense Disambiguation, Word Sense Induction and Document embeddings are checkboxes of the Semantic analysis GUI
+pydict["Document embeddings (Semantic similarity & clustering)"] = ["semantic_analysis_main.py", 1]
+pydict["Word Sense Disambiguation (WSD) via CoNLL"] = ["semantic_analysis_main.py", 1]
+pydict["Word Sense Induction (WSI) via BERT"] = ["semantic_analysis_main.py", 1]
 # pydict["Word embeddings (Word2Vec) (via spaCy)"] = ["", 0]
 pydict["------------------"] = ["", 2]
 # the following labels are found in constants_util

@@ -646,6 +646,9 @@ NLP_Suite_corpus_document_tools_menu = \
 'Wordclouds (ALL options GUI)', \
 'WordNet', \
 'Word embeddings (Word2Vec) (via BERT & Gensim)', \
+'Document embeddings (Semantic similarity & clustering)', \
+'Word Sense Disambiguation (WSD) via CoNLL', \
+'Word Sense Induction (WSI) via BERT', \
 '', \
 'Style analysis tools -----------------------------------------------------------------------------------', \
 '', \
