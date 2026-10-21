@@ -102,6 +102,16 @@ def _visualize_and_collect(chartPackage, dataTransformation, outputFilename, out
             filesToOpen.extend(outputFiles)
 
 
+def _four_charts(rows, value_col, larger_is_closer, inputFilename, inputDir, outputDir, label, filesToOpen):
+    """The four views of word2vec_charts_util (histogram, closest pairs, clustered heatmap, nearest neighbours) in place of
+    the old one-bar-per-pair charts (Roberto, 21 Oct 2026: "unreadable and pretty useless")."""
+    import word2vec_charts_util
+    triples = [(r['Word_1'], r['Word_2'], r[value_col]) for r in rows]
+    name = lambda part, ext: IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, ext,
+                                                                     label + '_' + part)
+    filesToOpen.extend(word2vec_charts_util.charts(triples, value_col, larger_is_closer, name))
+
+
 def compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage, dataTransformation,
                         word_vectors,
                         result_df,
@@ -180,10 +190,8 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage,
         dist_df.to_csv(dist_outputFilename, encoding='utf-8', index=False)
         filesToOpen.append(dist_outputFilename)
 
-        _visualize_and_collect(chartPackage, dataTransformation, dist_outputFilename, outputDir,
-                               'Word_1_2', 'n-dimensional Euclidean distance',
-                               'Frequency Distribution of n-dimensional Euclidean distances',
-                               'nDim_dist', 'Euclidean distance', filesToOpen)
+        _four_charts(dist_rows, 'n-dimensional Euclidean distance', False, inputFilename, inputDir, outputDir,
+                     'Word2Vec_top_' + str(top_words_var) + '_Euclidean_dist', filesToOpen)
 
     # cosine similarity for top words
     if compute_cosine_similarity:
@@ -212,10 +220,8 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage,
         cos_sim_df.to_csv(cos_sim_outputFilename, encoding='utf-8', index=False)
         filesToOpen.append(cos_sim_outputFilename)
 
-        _visualize_and_collect(chartPackage, dataTransformation, cos_sim_outputFilename, outputDir,
-                               'Word_1_2', 'Cosine similarity',
-                               'Frequency Distribution of cosine similarities',
-                               'cos_simil', 'Cosine similarity', filesToOpen)
+        _four_charts(cos_rows, 'Cosine similarity', True, inputFilename, inputDir, outputDir,
+                     'Word2Vec_top_' + str(top_words_var) + '_Cos_Similarity', filesToOpen)
 
         # cosine similarity for selected keywords
         if keywords_var:
@@ -246,10 +252,8 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage,
             keyword_df.to_csv(keyword_sim_outputFilename, encoding='utf-8', index=False)
             filesToOpen.append(keyword_sim_outputFilename)
 
-            _visualize_and_collect(chartPackage, dataTransformation, keyword_sim_outputFilename, outputDir,
-                                   'Word_1_2', 'Cosine similarity',
-                                   'Frequency Distribution of cosine similarities',
-                                   'cos_simil', 'Cosine similarity', filesToOpen)
+            _four_charts(kw_rows, 'Cosine similarity', True, inputFilename, inputDir, outputDir,
+                         f'Word2Vec_{len(keywords_list)}_Keywords_Cos_Similarity', filesToOpen)
 
     return filesToOpen
 
