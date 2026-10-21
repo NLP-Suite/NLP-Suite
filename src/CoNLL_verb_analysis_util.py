@@ -132,12 +132,16 @@ def verb_voice_compute_frequencies(list_all_tok):
     auxp_VBN_organize = []
     aux_VBN_organize = []
     for pair in _auxp_VBN:
+        # copy the row before writing 'was eaten' into its Form: it is the CoNLL table's own row, which the
+        # tense analysis and every later analysis read after this one
+        pair[1] = list(pair[1])
         auxp_form = pair[0][1]
         vbn_form = pair[1][1]
         pair[1][1] = auxp_form + " " + vbn_form
         pair[1] = pair[1] + ['Passive']
         auxp_VBN_organize.append(pair[1])
     for pair in _aux_VBN:
+        pair[1] = list(pair[1])
         pair[1][1] = pair[0][1] + " " + pair[1][1]
         pair[1] = pair[1] + ['Active']
         aux_VBN_organize.append(pair[1])
@@ -407,8 +411,8 @@ def verb_tense_data_preparation(data):
     vbz_counter = 0 # present (3rd person singular)
     vb_counter_future = 0 # future
     vb_counter_infinitive = 0 # infintive
-    # verb_tense_list = ['VBG', 'VBD', 'VB', 'VBN', 'VBP', 'VBZ', 'MD'] # MD modal verb
-    verb_tense_list = ['VBG', 'VBD', 'VB', 'VBN', 'VBP', 'VBZ'] #, 'MD'] # MD modal verb
+    # MD must be read, although modals get no tense row: 'will'/'shall' mark the next VB as Future
+    verb_tense_list = ['VBG', 'VBD', 'VB', 'VBN', 'VBP', 'VBZ', 'MD'] # MD modal verb
 
 
     aux = False
@@ -422,8 +426,10 @@ def verb_tense_data_preparation(data):
             elif(tense == 'VBD'):
                 tense_col = 'Past'
                 vbd_counter+=1
-            elif (tense == 'MD' and (i[1]=='will' or i[1]=='shall')):
-                aux = True #'aux' in i[6]
+            elif tense == 'MD':
+                # 'wo' is the 'wo' of "won't"; any other modal (can, should...) cancels a pending will
+                aux = i[1].lower() in ('will', 'shall', "'ll", 'wo')
+                continue
             elif (tense == 'VB'):
                 if aux:
                     vb_counter_future += 1
@@ -440,9 +446,10 @@ def verb_tense_data_preparation(data):
                 vbp_counter+=1
             elif(tense == 'VBZ'):
                 tense_col = 'Present (3rd person singular)'
-                vbp_counter+=1
-            if not aux and tense != 'MD':
-                dat.append(i+[tense_col])
+                vbz_counter+=1
+            # a will/shall that no VB followed ("I will.") must not make a later verb Future
+            aux = False
+            dat.append(i+[tense_col])
     verb_tense_stats = [['Verb Tense', 'Frequencies'],
                     ['Gerund', vbg_counter],
                     ['Infinitive', vb_counter_infinitive],

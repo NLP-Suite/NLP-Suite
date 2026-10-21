@@ -181,6 +181,28 @@ def doc_summary_BERT(window, inputFilename, inputDir, outputDir, mode, chartPack
         return tempOutputFiles
     return tempOutputFiles
 
+def stanza_words(stanza_doc, lemmatize):
+    """Every word of a Stanza doc, across ALL its sentences, as lemmas when lemmatize is on.
+
+    (Stanza_functions_util.tokenize_stanza_text returns only the LAST sentence's words, and a regex
+    "sentence" can hold several Stanza ones.)
+    """
+    return [(word.lemma or word.text) if lemmatize else word.text
+            for sentence in stanza_doc.sentences for word in sentence.words]
+
+
+def csv_word_rows(doc_sentences, kept_words):
+    """(Document ID, document, Sentence ID, sentence, word) for each kept word, document by document.
+
+    doc_sentences is [(document, [(sentence, words), ...]), ...]; IDs are 1-based.
+    """
+    for documentID, (doc, sentence_words) in enumerate(doc_sentences, start=1):
+        for sentenceID, (s, words) in enumerate(sentence_words, start=1):
+            for w in words:
+                if w in kept_words:
+                    yield documentID, doc, sentenceID, s, w
+
+
 # Creates a list of vectors/word embeddings for input files and subsequently plots them on a 2d graph
 def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, vis_menu_var,
             dim_menu_var, compute_distances_var, top_words_var, keywords_var, lemmatize_var, remove_stopwords_var, configFileName):
@@ -233,6 +255,10 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
         stanzaPipeLine = stanza.Pipeline(lang='en', processors= 'tokenize')
         print('Tokenizing...')
 
+    # per document: (document path, [(sentence, words), ...]). Kept so the csv below is built from EACH
+    # document's own sentences; it used to re-read every document but loop over the leftover `sentences`
+    # variable, i.e. the LAST document's sentences, once per document.
+    doc_sentences = []
     for doc in inputDocs:
         head, tail = os.path.split(doc)
         documentID = documentID + 1
@@ -247,10 +273,15 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
         #Splitting into sentences here so we can print out the sentence that the word is used in, in order to see the context
 
         sentences = split_into_sentences(fullText)
+        sentence_words = []
         for s in sentences:
              #add all the words from the docs into a list
-            from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
-            all_words.extend(tokenize_stanza_text(stanzaPipeLine(s)))
+            # the local pipeline above (NOT Stanza_functions_util's, whose import here used to shadow it and
+            # made the Lemmatize option a no-op)
+            words = stanza_words(stanzaPipeLine(s), lemmatize_var)
+            sentence_words.append((s, words))
+            all_words.extend(words)
+        doc_sentences.append((doc, sentence_words))
 
     #remove stop words from all_words list if that option has been selected in the GUI
     if remove_stopwords_var:
@@ -295,7 +326,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
         print(f'\nStarted preparing charts via t-SNE for the top {len(_plot_words)} of '
               f'{len(word_embeddings)} distinct words at {time.asctime( time.localtime(time.time()))}')
         if dim_menu_var == '2D':
-            tsne = TSNE(n_components=2, perplexity=_perplexity)
+            tsne = TSNE(n_components=2, perplexity=_perplexity, random_state=0)
             xys = tsne.fit_transform(_plot_vectors)
             xs = xys[:, 0]
             ys = xys[:, 1]
@@ -306,7 +337,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
 
         else:
-            tsne = TSNE(n_components=3, perplexity=_perplexity)
+            tsne = TSNE(n_components=3, perplexity=_perplexity, random_state=0)
             xyzs = tsne.fit_transform(_plot_vectors)
             xs = xyzs[:, 0]
             ys = xyzs[:, 1]
@@ -332,37 +363,12 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
     print(f'\nStarted preparing the csv vector file at {time.asctime( time.localtime(time.time()))}')
 
-    documentID = 0
-    for doc in inputDocs:
-        head, tail = os.path.split(doc)
-        documentID = documentID + 1
+    #Will add every relevant sentence s to our csv output file, so we have to loop through them here
+    for documentID, doc, sentenceID, s, w in csv_word_rows(doc_sentences, set(words_to_embed)):
+        #Adding rows to our output for the csv file with words, their vectors, and the sentences they are found in
+        csv_result.append([w, word_embeddings[w], sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 
-        with open(doc, "r", encoding="utf-8", errors="ignore") as f:
-            fullText = f.read()
-            fullText = fullText.replace('\n', ' ')
-
-        sentenceID = 0
-
-        #Will add every relevant sentence s to our csv output file, so we have to loop through them here
-        for s in sentences:
-            sentenceID = sentenceID + 1
-
-            #need to tokenize each sentence again here so that the words we add and check for a sentence are actually words from
-            # that sentence only, and not one that comes later
-            words = tokenize_stanza_text(stanzaPipeLine(s))
-
-            if remove_stopwords_var:
-                words = statistics_txt_util.excludeStopWords_list(words)
-
-            if dim_menu_var == '2D':
-                #Adding rows to our output for the csv file with words, their vectors, and the sentences they are found in
-                for w in words:
-                    csv_result.append([w, word_embeddings[w], sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
-            else:
-                for w in words:
-                    csv_result.append([w, word_embeddings[w], sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
-
-    print(f'\nSaving csv vector file for top {top_words_var} of {len(words)} non-distinct words at {time.asctime( time.localtime(time.time()))}')
+    print(f'\nSaving csv vector file for {len(csv_result)} non-distinct words at {time.asctime( time.localtime(time.time()))}')
 
     result_df = pd.DataFrame(csv_result, columns=header)
 

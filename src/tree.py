@@ -31,7 +31,14 @@ def make_tree(s):
 
     return root
 
-# list of leaves
+# number of leaves (a flat count)
+#   len(getLeavesAsList(root)) is NOT this: that list is nested like the tree, so under a single ROOT it has 1 item
+def countLeaves(node):
+    if not node.children:
+        return 1
+    return sum(countLeaves(child) for child in node.children)
+
+# list of leaves (nested like the tree)
 def getLeavesAsList(node):
     result = []
     for child in node.children:

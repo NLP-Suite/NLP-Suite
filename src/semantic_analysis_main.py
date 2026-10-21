@@ -81,14 +81,23 @@ def run():
 
     if WSI_var == 1:
         if WSI_keywords_var=='':
-            mb.showwarning(title='Missing keywords',message='The "Word Sense Induction" algorithm requires a comma-separated list of case-sensitive keywords taken from the corpus in order to run.\n\nPlease, enter the keywords and try again.')
+            mb.showwarning(title='Missing keywords',message='The "Word Sense Induction" algorithm requires a comma-separated list of keywords taken from the corpus (or a csv dictionary file) in order to run.\n\nPlease, enter the keywords and try again.')
+            return
+        k_range = (k_means_min_var.get(), k_means_max_var.get())
+        if k_range[0] > k_range[1]:
+            mb.showwarning(title='K-means range',message='The K-means MINIMUM (' + str(k_range[0]) + ') is larger than the MAXIMUM (' + str(k_range[1]) + ').\n\nPlease, adjust the two sliders and try again.')
             return
 
         import WSI_util, WSI_viz, WSI_keyterms
 
-        all_sent, all_vocab, Word2Vec_Dir, docs, paths = WSI_util.get_data(inputFilename, inputDir, Word2Vec_Dir, u_vocab=WSI_keywords_var.get(), fileType='.txt', configFileName=config_filename)
-        k_range = (k_means_min_var.get(), k_means_max_var.get())
-        WSI_util.get_centroids(all_sent, all_vocab, Word2Vec_Dir, k_range)
+        Word2Vec_Dir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='WSI', silent=True)
+        if Word2Vec_Dir == '':
+            return
+        all_sent, all_vocab, Word2Vec_Dir, docs, paths = WSI_util.get_data(inputFilename, inputDir, Word2Vec_Dir, u_vocab=WSI_keywords_var, fileType='.txt', configFileName=config_filename)
+        # the keywords that actually occur in the corpus (the rest are reported and skipped)
+        all_vocab = WSI_util.get_centroids(all_sent, all_vocab, Word2Vec_Dir, k_range)
+        if not all_vocab:
+            return
         WSI_util.match_embeddings(all_sent, all_vocab, Word2Vec_Dir)
         s_paths = WSI_util.get_cluster_sentences(Word2Vec_Dir)
         v_paths = WSI_viz.sense_bar_chart(Word2Vec_Dir)
@@ -651,7 +660,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration
     y_multiplier_integer,
     WSI_keywords_entry,
     False, False, False, False, 90, GUI_IO_util.IO_configuration_menu,
-    "Enter the comma-separated, case-sensitive words to be used to compute word sense induction")
+    "Enter the comma-separated words to be used to compute word sense induction (case does not matter: the corpus is lowercased)")
 
 WSD_var.set(0)
 WSD_checkbox = tk.Checkbutton(window, text='Word Sense Disambiguation (WSD) (via CoNLL)', variable=WSD_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
