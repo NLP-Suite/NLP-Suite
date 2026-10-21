@@ -637,6 +637,7 @@ NLP_Suite_corpus_document_tools_menu = \
 'Narrative analysis (ALL options GUI)', \
 'Semantic analysis', \
 'Syntactic analysis (ALL)', \
+'Semantic analysis (ALL)', \
 'Semantic analysis (via TensorFlow)', \
 'Sentiments/emotions (ALL options GUI)', \
 'Sentiment analysis (dictionary options: ANEW, hedonometer, SentiWordNet, VADER)', \
