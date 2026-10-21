@@ -324,7 +324,7 @@ pydict["Wordclouds (ALL options GUI)"] = ["wordclouds_main.py", 1]
 pydict["Semantic aggregation (WordNet, VerbNet, FrameNet)"] = ["semantic_aggregation_main.py", 1]
 pydict["Word embeddings (Word2Vec) (via BERT & Gensim)"] = ["word2vec_main.py", 1]
 # Word Sense Disambiguation, Word Sense Induction and Document embeddings are checkboxes of the Semantic analysis GUI
-pydict["Document embeddings (Semantic similarity & clustering)"] = ["semantic_analysis_main.py", 1]
+pydict["Document embeddings (Semantic similarity & clustering) (via SBERT)"] = ["semantic_analysis_main.py", 1]
 pydict["Word Sense Disambiguation (WSD) via CoNLL"] = ["semantic_analysis_main.py", 1]
 pydict["Word Sense Induction (WSI) via BERT"] = ["semantic_analysis_main.py", 1]
 # pydict["Word embeddings (Word2Vec) (via spaCy)"] = ["", 0]
