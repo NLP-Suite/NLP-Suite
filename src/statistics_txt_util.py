@@ -855,7 +855,9 @@ def get_yules_k_i(s):
     return (k, i)
 
 def yule_k_from_counts(counts):
-    """Yule's K from the frequency of each word type (Oakes 1998: 204, as in the Yule TIPS file):
+    """Yule's K from the frequency of each word type (Yule, G. U. 1944. The Statistical Study of Literary
+    Vocabulary. Cambridge University Press; formula as given in Oakes, M. P. 1998. Statistics for Corpus
+    Linguistics. Edinburgh University Press, p. 204, and in the Yule TIPS file):
     K = 10,000 * (M2 - M1) / (M1 * M1), where M1 is the number of word tokens and M2 is the sum of each
     type's frequency squared. The LOWER K, the richer (less repetitive) the vocabulary. 0 for an empty text."""
     counts = list(counts)
@@ -1838,11 +1840,19 @@ def sentence_structure_tree(inputFilename, outputDir):
         else:
             cf.print_to_file(outputDir + '/' + os.path.basename(inputFilename) + '_' + str(sentenceID) + '_tree.ps')
 
-# written by Mino Cha March/April 2022
 def sentence_complexity_scores(parse):
     """Yngve and Frazier scores of one constituency parse string, as (Yngve score, Yngve sum, Frazier score,
     Frazier sum). Each sum totals the depth over the parse's leaves; each score is that sum divided by the
-    number of leaves - the mean depth per word, which (unlike the sum) is not simply a function of length."""
+    number of leaves - the mean depth per word, which (unlike the sum) is not simply a function of length.
+
+    Definitions (depths per word computed in sentence_complexity_node_util.Node.calY / calF):
+    - Yngve depth: Yngve, V. H. 1960. "A model and an hypothesis for language structure." Proceedings of the
+      American Philosophical Society 104(5): 444-466.
+    - Frazier depth: Frazier, L. 1985. "Syntactic complexity." In D. Dowty, L. Karttunen and A. Zwicky (eds.),
+      Natural Language Parsing, 129-189. Cambridge University Press.
+    - Mean depth per word (score) vs. total depth (sum): Cheung, H. and S. Kemper. 1992. "Competing complexity
+      metrics and adults' production of complex sentences." Applied Psycholinguistics 13(1): 53-76; as in
+      the Sentence Complexity TIPS file."""
     yRoot = Node.Node(tree.make_tree(parse))
     yRoot.calY()
     fRoot = Node.Node(tree.make_tree(parse))
@@ -1854,6 +1864,7 @@ def sentence_complexity_scores(parse):
     return round(ySum / leaf, 2), ySum, round(fSum / leaf, 2), fSum
 
 
+# written by Mino Cha March/April 2022
 def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, configFileName,
                                 openOutputFiles, chartPackage, dataTransformation):
     ## list for csv file
