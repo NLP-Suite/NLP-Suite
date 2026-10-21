@@ -1,13 +1,13 @@
 """Unit tests for the CoNLL table analyzer's 'Compute sentence table' (CoNLL_util.compute_sentence_table) and
 the noun/verb lists of its Advanced analyses (CoNLL_util.get_nouns_verbs_CoNLL).
 
-Both read the table with pandas, which conftest stubs, so the real pandas is swapped in for these tests and
-conftest's stub put back afterwards. Without pandas installed (as in CI) they are skipped.
+Both read the table with pandas, which conftest stubs, so the real pandas is swapped in for these tests (through
+_real_pandas) and conftest's stub put back afterwards. Without pandas installed (as in CI) they are skipped.
 """
 
 import csv
-import sys
 
+import _real_pandas
 import pytest
 
 import CoNLL_util
@@ -45,25 +45,14 @@ TOKENS = [
 
 @pytest.fixture
 def real_pandas(monkeypatch):
-    roots = ("pandas", "numpy")
-    saved = {k: v for k, v in sys.modules.items() if k.split(".")[0] in roots}
-    for k in saved:
-        del sys.modules[k]
+    # _real_pandas imports numpy/pandas once per run; importing them afresh here broke the next file to do so
     try:
-        import pandas
-
-        if list(pandas.DataFrame({"a": [1]}).columns) != ["a"]:
-            raise ImportError("pandas is the stub")
-    except Exception as exc:
-        for k in [k for k in sys.modules if k.split(".")[0] in roots]:
-            del sys.modules[k]
-        sys.modules.update(saved)
+        pandas, saved = _real_pandas.swap_in()
+    except ImportError as exc:
         pytest.skip(f"real pandas not available: {exc}")
     monkeypatch.setattr(CoNLL_util, "pd", pandas)
     yield pandas
-    for k in [k for k in sys.modules if k.split(".")[0] in roots]:
-        del sys.modules[k]
-    sys.modules.update(saved)
+    _real_pandas.swap_out(saved)
 
 
 @pytest.fixture
