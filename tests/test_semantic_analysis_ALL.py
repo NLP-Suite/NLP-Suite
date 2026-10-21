@@ -37,6 +37,17 @@ def test_word_sense_induction_and_word_embeddings_are_reachable():
     assert "word2vec_main.py" in scripts
 
 
+def test_document_embeddings_button_follows_word_embeddings():
+    # Roberto, 21 Oct 2026: a separate DOCUMENT embeddings button, AFTER Word embeddings, opening the Semantic analysis
+    # GUI, whose checkbox reads "DOCUMENT embeddings: Semantic similarity & clustering (via SBERT)"
+    labels = list(semantic_guis())
+    doc = "DOCUMENT embeddings (via SBERT) (Open GUI)"
+    assert labels.index(doc) == labels.index("Word embeddings: Gensim Word2Vec, BERT (Open GUI)") + 1
+    assert semantic_guis()[doc] == "semantic_analysis_main.py"
+    assert "'DOCUMENT embeddings: Semantic similarity & clustering (via SBERT)'" in (
+        SRC / "semantic_analysis_main.py").read_text(encoding="utf-8")
+
+
 def test_each_button_has_its_help_text():
     source = (SRC / GUI).read_text(encoding="utf-8")
     for label in semantic_guis():

@@ -24,6 +24,8 @@ import run_script_util
 SEMANTIC_GUIS = {
     "Semantic analysis: WSI, WSD, SRL (Open GUI)": "semantic_analysis_main.py",
     "Word embeddings: Gensim Word2Vec, BERT (Open GUI)": "word2vec_main.py",
+    # a checkbox of the Semantic analysis GUI, given its own button so students find it (Roberto, 21 Oct 2026)
+    "DOCUMENT embeddings (via SBERT) (Open GUI)": "semantic_analysis_main.py",
     "WordNet, VerbNet, FrameNet (Open GUI)": "semantic_aggregation_main.py",
     "Semantic Role Labeling (SRL) (Open GUI)": "SRL_main.py",
     "Topic modeling: MALLET & Gensim (Open GUI)": "topic_modeling_main.py",
@@ -160,6 +162,14 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         help_button_x_coordinate,
         y_multiplier_integer,
         "NLP Suite Help",
+        "Click on the 'DOCUMENT embeddings (via SBERT) (Open GUI)' button to open the Semantic analysis GUI, then tick 'DOCUMENT embeddings: Semantic similarity & clustering (via SBERT)'.\n\nEach document is embedded with SBERT (sentence-transformers); the GUI computes a document-by-document semantic similarity matrix (csv and an interactive heatmap) and clusters the documents by MEANING. It is the document-level counterpart of the word-level Word2Vec/BERT embeddings. It needs at least 2 txt documents.",
+    )
+
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window,
+        help_button_x_coordinate,
+        y_multiplier_integer,
+        "NLP Suite Help",
         "Click on the 'WordNet, VerbNet, FrameNet (Open GUI)' button to work with the lexical databases WordNet, VerbNet and FrameNet.\n\nYou can zoom OUT/UP from words to their higher-level categories (e.g., 'walk', 'run', 'flee' under the verb category 'motion') and zoom IN/DOWN from a category to the words under it (e.g., 'person' to 'police', 'woman', ...).",
     )
 
@@ -196,7 +206,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
 y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
-readMe_message = "These Python 3 scripts bring together the NLP Suite's SEMANTIC analyses - the analysis of MEANING (as opposed to grammatical FORM and STRUCTURE, handled by the Syntactic analysis (ALL) GUI).\n\nYou can: induce and disambiguate word senses, label semantic roles and compute the semantic similarity of documents (Semantic analysis, where Word Sense Induction now lives); compute word embeddings with Gensim Word2Vec or BERT (Word embeddings); aggregate words into the semantic categories of WordNet, VerbNet and FrameNet; label who did what to whom (Semantic Role Labeling); find the topics of a corpus (Topic modeling); and annotate documents with the knowledge graphs DBpedia and YAGO (Knowledge graphs).\n\nEach button opens a dedicated GUI, where you then click RUN. This GUI runs no analysis of its own."
+readMe_message = "These Python 3 scripts bring together the NLP Suite's SEMANTIC analyses - the analysis of MEANING (as opposed to grammatical FORM and STRUCTURE, handled by the Syntactic analysis (ALL) GUI).\n\nYou can: induce and disambiguate word senses, label semantic roles and compute the semantic similarity of documents (Semantic analysis, where Word Sense Induction now lives); compute word embeddings with Gensim Word2Vec or BERT (Word embeddings); embed whole documents with SBERT and cluster them by meaning (DOCUMENT embeddings);aggregate words into the semantic categories of WordNet, VerbNet and FrameNet; label who did what to whom (Semantic Role Labeling); find the topics of a corpus (Topic modeling); and annotate documents with the knowledge graphs DBpedia and YAGO (Knowledge graphs).\n\nEach button opens a dedicated GUI, where you then click RUN. This GUI runs no analysis of its own."
 
 
 def readMe_command():
