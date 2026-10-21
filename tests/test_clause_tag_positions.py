@@ -104,3 +104,48 @@ def test_existing_clausal_tags_csv_is_still_returned(tmp_path):
     table.write_text("ID,Form\n")
     (tmp_path / "clausal_tags.csv").write_text("Clause tag\n")
     assert CoNLL_clause_analysis_util.process_Json(str(table), str(tmp_path)) == str(tmp_path / "clausal_tags.csv")
+
+
+def _json_folder(tmp_path, monkeypatch, *objects):
+    """A CoNLL table with a CoreNLP Json_ folder beside it but no clausal_tags.csv. IO_files_util and IO_csv_util
+    are conftest stubs, so the folder listing and the csv writer are replaced with real stand-ins."""
+    import json
+
+    import CoNLL_clause_analysis_util
+
+    table = tmp_path / "NLP_CoreNLP_PCFG_CoNLL.csv"
+    table.write_text("ID,Form\n")
+    json_dir = tmp_path / "Json_corpus"
+    json_dir.mkdir()
+    json_file = json_dir / "Json_doc1_PCFG.txt"
+    # exportJson appends, so one file can hold several objects back to back
+    json_file.write_text("".join(json.dumps(o, indent=4) for o in objects), encoding="utf-8")
+    written = {}
+
+    def list_to_csv(window, rows, filename, colnum=0, encoding="utf-8"):
+        written["rows"], written["filename"], written["encoding"] = rows, filename, encoding
+
+    monkeypatch.setattr(CoNLL_clause_analysis_util.IO_files_util, "getFileList", lambda *a, **k: [str(json_file)])
+    monkeypatch.setattr(CoNLL_clause_analysis_util.IO_csv_util, "list_to_csv", list_to_csv)
+    monkeypatch.setattr(clause_util, "clausal_info_extract_from_string", lambda s: (["full " + s], ("S", s, (0, 1))))
+    return CoNLL_clause_analysis_util, table, written
+
+
+def test_clausal_tags_csv_is_rebuilt_from_the_Json_folder(tmp_path, monkeypatch):
+    # a Json_ folder beside the table: the file text was indexed as JSON (TypeError) and the csv was written
+    # with an undefined language_encoding (NameError), so this branch never ran
+    first = {"sentences": [{"parse": "(ROOT (S a))"}]}
+    second = {"sentences": [{"parse": "(ROOT (S b))"}, {"basicDependencies": []}]}  # 2nd sentence: no tree
+    module, table, written = _json_folder(tmp_path, monkeypatch, first, second)
+    result = module.process_Json(str(table), str(tmp_path))
+    assert result == str(tmp_path / "clausal_tags.csv")
+    assert written["filename"] == result
+    assert written["encoding"] == "utf-8"
+    assert [row[1] for row in written["rows"]] == ["(ROOT (S a))", "(ROOT (S b))"]
+
+
+def test_Json_folder_without_parse_trees_writes_nothing(tmp_path, monkeypatch):
+    # nn parser output has no constituency tree: no csv, and no path to a file that does not exist
+    module, table, written = _json_folder(tmp_path, monkeypatch, {"sentences": [{"basicDependencies": []}]})
+    assert module.process_Json(str(table), str(tmp_path)) is None
+    assert written == {}
