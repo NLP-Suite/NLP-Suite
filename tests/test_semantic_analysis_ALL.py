@@ -54,9 +54,12 @@ def test_each_button_has_its_help_text():
         assert f"Click on the '{label}' button" in source, label
 
 
-def test_listed_in_the_menu_after_Syntactic_ALL_and_mapped_to_the_GUI():
+def test_listed_in_the_menu_before_Syntactic_ALL_and_mapped_to_the_GUI():
     constants = (SRC / "constants_util.py").read_text(encoding="utf-8")
-    assert f"'Syntactic analysis (ALL)', \\\n'{LABEL}'" in constants
+    # alphabetical (Roberto, 21 Oct 2026): Semantic before Syntactic; the plain "Semantic analysis" item, which the
+    # hub reaches by its first button, is no longer in the dropdown (its pydict entry stays)
+    assert f"'{LABEL}', \\\n'Syntactic analysis (ALL)'" in constants
+    assert "'Semantic analysis', \\" not in constants
     # "Semantic analysis (via TensorFlow)" had no tool behind it (its menu entry was dropped 1 Jul 2026)
     assert 'Semantic analysis (via TensorFlow)' not in constants
     menu = (SRC / "NLP_menu_main.py").read_text(encoding="utf-8")
