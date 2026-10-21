@@ -43,9 +43,11 @@ def test_each_button_has_its_help_text():
         assert f"Click on the '{label}' button" in source, label
 
 
-def test_listed_in_the_menu_next_to_TensorFlow_and_mapped_to_the_GUI():
+def test_listed_in_the_menu_after_Syntactic_ALL_and_mapped_to_the_GUI():
     constants = (SRC / "constants_util.py").read_text(encoding="utf-8")
-    assert f"'{LABEL}', \\\n'Semantic analysis (via TensorFlow)'" in constants
+    assert f"'Syntactic analysis (ALL)', \\\n'{LABEL}'" in constants
+    # "Semantic analysis (via TensorFlow)" had no tool behind it (its menu entry was dropped 1 Jul 2026)
+    assert 'Semantic analysis (via TensorFlow)' not in constants
     menu = (SRC / "NLP_menu_main.py").read_text(encoding="utf-8")
     assert re.search(r'pydict\["Semantic analysis \(ALL\)"\] = \["semantic_analysis_ALL_main\.py", 1\]', menu)
     # nothing moved: the existing entries are still there

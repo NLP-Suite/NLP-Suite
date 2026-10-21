@@ -638,7 +638,6 @@ NLP_Suite_corpus_document_tools_menu = \
 'Semantic analysis', \
 'Syntactic analysis (ALL)', \
 'Semantic analysis (ALL)', \
-'Semantic analysis (via TensorFlow)', \
 'Sentiments/emotions (ALL options GUI)', \
 'Sentiment analysis (dictionary options: ANEW, hedonometer, SentiWordNet, VADER)', \
 'Sentiment analysis (neural network/tensor options: BERT, spaCy, Stanford CoreNLP, Stanza)', \
