@@ -48,6 +48,19 @@ def _compute_similarity(word_a, word_b, word_vectors, result_df, BERT):
         return _cosine_sim_vectors(vec_a, vec_b)
 
 
+def run_requirements_message(BERT_var, Gensim_var, WSI_var, compute_distances_var):
+    """The warning to show on RUN when the selected options cannot run, or '' when they can.
+    'Compute word distances' alone does nothing: the distances are computed from the word embeddings of BERT or
+    Gensim, so one of them must be ticked (Roberto, 21 Oct 2026)."""
+    if BERT_var or Gensim_var or WSI_var:
+        return ''
+    if compute_distances_var:
+        return ("'Compute word distances' computes the distances between the word embeddings of BERT or Gensim, but "
+                "neither is selected.\n\nPlease select BERT and/or Gensim (Word2Vec) and try again.")
+    return ('No option has been selected.\n\nPlease select the Word2Vec package you wish to use (BERT and/or Gensim) '
+            'and try again.')
+
+
 def vocabulary_column(result_df):
     """The result_df column holding the form the model was trained on: 'Lemma' when lemmatized.
 
