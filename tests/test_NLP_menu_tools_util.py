@@ -146,6 +146,38 @@ class TestSearch:
         assert self.find("semantic") == ["Semantic analysis", "SRL Semantic Role Labeling"]
 
 
+def _real_pydict():
+    """pydict as NLP_menu_main.py writes it: each pydict["label"] = ["script.py", ...] line, read without importing the menu."""
+    import ast
+    import re
+
+    menu = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src", "NLP_menu_main.py")
+    with open(menu, encoding="utf-8") as f:
+        source = f.read()
+    pydict = {}
+    for key, value in re.findall(r"""^pydict\[(".*?"|'.*?')\]\s*=\s*(\[.*?\])""", source, re.M):
+        try:
+            pydict[ast.literal_eval(key)] = ast.literal_eval(value)
+        except (ValueError, SyntaxError):
+            pydict[ast.literal_eval(key)] = ["?", 1]  # a value built from a variable: count it as available
+    return pydict
+
+
+class TestRealMenu:
+    def test_wsi_finds_its_own_menu_item_first(self):
+        import constants_util
+
+        categories = [
+            (name, getattr(constants_util, name))
+            for name in dir(constants_util)
+            if name.startswith("NLP_Suite_") and name.endswith("_menu")
+        ]
+        pydict = _real_pydict()
+        found = labels(tools.search(tools.build_catalog(categories, pydict), "WSI", pydict))
+        assert found[0] == "Word Sense Induction (WSI) via BERT"
+        assert "Semantic analysis (ALL)" in found
+
+
 class TestToolNames:
     catalog = tools.build_catalog(CATEGORIES, PYDICT)
 
@@ -216,6 +248,20 @@ class TestToolDescriptions:
         catalog = tools.build_catalog([("Corpus", ("Shape of stories", "Unknown tool"))], PYDICT)
         assert catalog[0]["description"] == tools.TOOL_DESCRIPTIONS["Shape of stories"]
         assert catalog[1]["description"] == ""
+
+    def test_every_available_menu_tool_has_a_description(self):
+        # a tool added to a dropdown upstream would otherwise show no description line
+        import constants_util
+
+        pydict = _real_pydict()
+        missing = []
+        for name in dir(constants_util):
+            if name.startswith("NLP_Suite_") and name.endswith("_menu"):
+                for label in getattr(constants_util, name):
+                    if label and "-----" not in label and tools.is_available(label, pydict):
+                        if label not in tools.TOOL_DESCRIPTIONS:
+                            missing.append(label)
+        assert missing == []
 
     def test_descriptions_fit_on_one_line(self):
         assert [label for label, text in tools.TOOL_DESCRIPTIONS.items() if len(text) > 80] == []

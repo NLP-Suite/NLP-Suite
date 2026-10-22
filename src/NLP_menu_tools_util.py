@@ -12,6 +12,8 @@ import re
 
 # Labels whose GUI holds tools the label does not name. Matched by search, never displayed.
 SEARCH_KEYWORDS = {
+    "Semantic analysis (ALL)": "word sense induction WSI word sense disambiguation WSD "
+    "semantic role labelling SRL document embeddings similarity clustering",
     "Semantic analysis": "word sense induction WSI word sense disambiguation WSD "
     "semantic role labelling SRL document embeddings similarity clustering",
 }
@@ -40,6 +42,7 @@ TOOL_NAMES = {
     "Geographic maps: From texts to maps via Google Earth Pro and Google Maps": "Geographic maps from texts (Google Earth Pro, Google Maps)",
     "NER (Named Entity Recognition) annotator": "Named entity recognition (NER)",
     "Narrative analysis (ALL options GUI)": "Narrative analysis (all options)",
+    "Semantic analysis (ALL)": "Semantic analysis (all options)",
     "Syntactic analysis (ALL)": "Syntactic analysis (all options)",
     "Sentiments/emotions (ALL options GUI)": "Sentiments & emotions (all options)",
     "Sentiment analysis (dictionary options: ANEW, hedonometer, SentiWordNet, VADER)": "Sentiment analysis with dictionaries (ANEW, hedonometer, SentiWordNet, VADER)",
@@ -48,6 +51,9 @@ TOOL_NAMES = {
     "SVO (Subject-Verb-Object) extractor & visualization": "Subject-verb-object (SVO) extraction & visualization",
     "Wordclouds (ALL options GUI)": "Word clouds (all options)",
     "Word embeddings (Word2Vec) (via BERT & Gensim)": "Word embeddings: Word2Vec (BERT, Gensim)",
+    "Document embeddings (Semantic similarity & clustering) (via SBERT)": "Document embeddings: similarity & clustering (SBERT)",
+    "Word Sense Disambiguation (WSD) via CoNLL": "Word sense disambiguation (WSD), from a CoNLL table",
+    "Word Sense Induction (WSI) via BERT": "Word sense induction (WSI) with BERT",
     "Style analysis (ALL options GUI)": "Style analysis (all options)",
     "Co-Occurrences": "Co-occurrences",
     "N-grams/Co-Occurrences VIEWER": "N-grams & co-occurrences viewer",
@@ -119,7 +125,7 @@ TOOL_DESCRIPTIONS = {
     "Knowledge graphs: DBpedia, YAGO & Wikipedia": "Tag words that match DBpedia or YAGO classes (people, places, events).",
     "NER (Named Entity Recognition) annotator": "Extract people, places, organizations, dates and other named entities.",
     "Narrative analysis (ALL options GUI)": "Extract who did what to whom, when and where, and visualize the stories.",
-    "Semantic analysis": "Word senses, semantic roles, document similarity and clustering.",
+    "Semantic analysis (ALL)": "Every semantic tool in the Suite, in one place.",
     "Syntactic analysis (ALL)": "Parse sentences and analyze grammatical form and structure.",
     "Sentiments/emotions (ALL options GUI)": "Every sentiment and emotion tool in the Suite, in one place.",
     "Sentiment analysis (dictionary options: ANEW, hedonometer, SentiWordNet, VADER)": "Score sentiment, arousal and dominance with word lists.",
@@ -127,6 +133,9 @@ TOOL_DESCRIPTIONS = {
     "SVO (Subject-Verb-Object) extractor & visualization": "Extract who did what to whom; draw the results as networks and maps.",
     "Wordclouds (ALL options GUI)": "Draw word clouds, where bigger words are more frequent.",
     "Word embeddings (Word2Vec) (via BERT & Gensim)": "Find words used in similar contexts and plot them.",
+    "Document embeddings (Semantic similarity & clustering) (via SBERT)": "Embed whole documents with SBERT and cluster them by meaning.",
+    "Word Sense Disambiguation (WSD) via CoNLL": "Give each word its sense in context, from WordNet; needs a CoNLL table.",
+    "Word Sense Induction (WSI) via BERT": "Discover a word's senses from how your corpus uses it.",
     "Style analysis (ALL options GUI)": "Vocabulary, sentence complexity, readability and other features of style.",
     "Co-Occurrences": "Find words that appear together in the same document or sentence.",
     "Language detection": "Detect the language each document is written in.",
@@ -183,6 +192,7 @@ TOOL_DESCRIPTIONS = {
     "Treemap (Plotly)": "Nested rectangles sized by value.",
     "Sentence visualization: Dependency tree viewer (png graphs)": "Draw the grammatical tree of a sentence as an image.",
     # Other tools (search only)
+    "Semantic analysis": "Word senses, semantic roles, document similarity and clustering.",
     "HTML annotator extractor": "Extract the annotated words from HTML-annotated files.",
     "Statistics (txt files): Number of documents, words, syllables": "Count documents, sentences, words, lines and syllables.",
     "Statistics (txt files): Number of nouns, verbs, adjectives, pronouns, ...": "Count nouns, verbs, adjectives, pronouns and other parts of speech.",
