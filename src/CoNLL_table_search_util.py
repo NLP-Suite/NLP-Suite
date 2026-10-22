@@ -292,6 +292,8 @@ def search_in_sentence(searched_token, sentence_CoNLL_records, __field__='FORM',
         return list_indices_related_word
 
     keyword_list = filter_list_by_POStag(keyword_list, kw_desired_postag)
+    # the GUI's 'DEPREL of searched token' arrives here; it was never applied, so every DepRel was returned
+    keyword_list = filter_list_by_deprel(keyword_list, kw_desired_deprel)
     keyword_index_list = [int(word[0]) for word in keyword_list]
     targets_governors = search_governors(sentence_CoNLL_records, __field__, searched_token, keyword_index_list)
 
