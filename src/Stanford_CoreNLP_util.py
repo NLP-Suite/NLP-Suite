@@ -2200,7 +2200,9 @@ def process_json_deprel(config_filename,documentID, document, sentenceID, record
         #result = []
         clauseID = 0
         tokens = json["sentences"][i]["tokens"]
-        dependencies = json["sentences"][i]["enhancedDependencies"]
+        # Head and DepRel come from the basic tree, one edge per token; the enhanced graph gives some tokens
+        # several edges, and keeping the last one made e.g. 'She wanted to leave' read She <-nsubj:xsubj- leave
+        dependencies = json["sentences"][i]["basicDependencies"]
         depLib = {}
         keys = []
         for item in dependencies:
@@ -2333,9 +2335,12 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
         depLib = {}
         enhancedDepLib = {}
         keys = []
-        for item in dependencies:
+        # Head and DepRel come from the basic tree, one edge per token, as in the Stanza and spaCy tables; the
+        # enhanced graph (all edges, in Deps) gives some tokens several, and keeping the last one turned
+        # 'John and Mary left' into Mary <-nsubj- left instead of Mary <-conj- John
+        for item in json["sentences"][i]["basicDependencies"]:
             depLib[item['dependent']] = (item['dep'], item['governor'])
-
+        for item in dependencies:
             #create an enhanced dependency list
             if item['dependent'] in enhancedDepLib:
                 enhancedDepLib[item['dependent']].append((item['dep'], item['governor']))
@@ -2365,7 +2370,7 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
                 #Add enhanced dep here
                 depString = ""
                 dep: Tuple[int, str]
-                for dep in enhancedDepLib[depID]:
+                for dep in enhancedDepLib.get(depID, []):
                     if len(depString) != 0:
                         depString = depString + "|"
                     depString = depString + str(dep[1]) + ":" + str(dep[0])

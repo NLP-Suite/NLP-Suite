@@ -27,10 +27,13 @@ def run_word2vec_plot(inputFilename, inputDir, outputDir,
 
     print(f'\nStarted preparing charts via t-SNE for {len(filtered_words)} distinct words at {time.asctime(time.localtime(time.time()))}')
 
+    # fixed seed: the same corpus gives the same map; perplexity must stay below the number of words
+    perplexity = float(max(1, min(30, len(filtered_words) - 1)))
+
     if vis_menu_var == 'Plot word vectors':
 
         if dim_menu_var == '2D':
-            tsne = TSNE(n_components=2)
+            tsne = TSNE(n_components=2, perplexity=perplexity, random_state=0)
             xys = tsne.fit_transform(word_vector_list)
             tsne_df = pd.DataFrame({
                 'Word': list(filtered_words.keys()),
@@ -40,7 +43,7 @@ def run_word2vec_plot(inputFilename, inputDir, outputDir,
             fig = px.scatter(tsne_df, x="x", y="y", text="Word", hover_name="Word")
 
         else: # 3D
-            tsne = TSNE(n_components=3)
+            tsne = TSNE(n_components=3, perplexity=perplexity, random_state=0)
             xyzs = tsne.fit_transform(word_vector_list)
             tsne_df = pd.DataFrame({
                 'Word': list(filtered_words.keys()),

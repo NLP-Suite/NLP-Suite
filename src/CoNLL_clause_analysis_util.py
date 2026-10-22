@@ -11,6 +11,7 @@ import IO_libraries_util
 if IO_libraries_util.install_all_Python_packages(GUI_util.window,"CoNLL_clause_analysis.py",['os','csv','tkinter','ntpath','collections','subprocess'])==False:
     sys.exit(0)
 
+import json
 import os
 from collections import Counter
 import tkinter.messagebox as mb
@@ -41,9 +42,14 @@ def process_Json(inputFilename, outputDir):
             sent_list_clause = []
             subtree_string = []
             # JsonDir = head+os.sep+"Json_"+ tail[:-4]
+            JsonDir = ''
             for file in os.listdir(head):
                 if 'Json_' in file:
                     JsonDir=file
+            # no Json output beside the table (it was moved, or came from Stanza): the clause tags are in the table
+            # itself and only this extra csv is missing; JsonDir was unbound here and the whole analysis crashed
+            if JsonDir == '':
+                return None
             JsonDir = head+os.sep+JsonDir
             if not os.path.exists(JsonDir):
                 return None
@@ -53,17 +59,42 @@ def process_Json(inputFilename, outputDir):
             if Ndocs==0:
                 return None
             for JsonFile in inputDocs:
-                json = open(JsonFile, 'r', encoding='utf-8', errors='ignore').read()
-                for parsed_sent in json['sentences']:
-                    sent_list, sent_examples = Stanford_CoreNLP_clause_util.clausal_info_extract_from_string(parsed_sent['parse'])
-                    sent_list_clause.append(sent_list)
-                    subtree_string.append(sent_examples)
+                with open(JsonFile, encoding='utf-8', errors='ignore') as f:
+                    Json_text = f.read()
+                # the file text was indexed as if it were parsed JSON (TypeError), so this branch always crashed
+                for CoreNLP_output in json_objects(Json_text):
+                    for parsed_sent in CoreNLP_output.get('sentences', []):
+                        if 'parse' not in parsed_sent:  # nn parser: no constituency tree, no clause tags
+                            continue
+                        result = Stanford_CoreNLP_clause_util.clausal_info_extract_from_string(parsed_sent['parse'])
+                        if result is None:  # bad tree; clausal_info_extract_from_string has already warned
+                            continue
+                        sent_list, sent_examples = result
+                        sent_list_clause.append(sent_list)
+                        subtree_string.append(sent_examples)
 
-            if len(subtree_string) > 0:
-                IO_csv_util.list_to_csv(GUI_util.window, subtree_string, subtree_string_fileName, encoding=language_encoding)
-                # filesToOpen.append(subtree_string_fileName)
+            if len(subtree_string) == 0:
+                return None
+            # language_encoding was never defined here (NameError); the Json files are read as utf-8
+            IO_csv_util.list_to_csv(GUI_util.window, subtree_string, subtree_string_fileName, encoding='utf-8')
+            # filesToOpen.append(subtree_string_fileName)
 
     return subtree_string_fileName
+
+
+def json_objects(text):
+    """Every JSON object in a CoreNLP Json_ file. Stanford_CoreNLP_util.exportJson appends ('a+'), so a file
+    written in more than one pass holds several objects one after another, which json.loads alone rejects."""
+    decoder = json.JSONDecoder()
+    objects = []
+    pos = 0
+    while True:
+        while pos < len(text) and text[pos].isspace():
+            pos += 1
+        if pos >= len(text):
+            return objects
+        obj, pos = decoder.raw_decode(text, pos)
+        objects.append(obj)
 
 def clause_data_preparation(data):
     dat = []

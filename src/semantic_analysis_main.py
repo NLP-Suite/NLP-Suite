@@ -81,14 +81,23 @@ def run():
 
     if WSI_var == 1:
         if WSI_keywords_var=='':
-            mb.showwarning(title='Missing keywords',message='The "Word Sense Induction" algorithm requires a comma-separated list of case-sensitive keywords taken from the corpus in order to run.\n\nPlease, enter the keywords and try again.')
+            mb.showwarning(title='Missing keywords',message='The "Word Sense Induction" algorithm requires a comma-separated list of keywords taken from the corpus (or a csv dictionary file) in order to run.\n\nPlease, enter the keywords and try again.')
+            return
+        k_range = (k_means_min_var.get(), k_means_max_var.get())
+        if k_range[0] > k_range[1]:
+            mb.showwarning(title='K-means range',message='The K-means MINIMUM (' + str(k_range[0]) + ') is larger than the MAXIMUM (' + str(k_range[1]) + ').\n\nPlease, adjust the two sliders and try again.')
             return
 
         import WSI_util, WSI_viz, WSI_keyterms
 
-        all_sent, all_vocab, Word2Vec_Dir, docs, paths = WSI_util.get_data(inputFilename, inputDir, Word2Vec_Dir, u_vocab=WSI_keywords_var.get(), fileType='.txt', configFileName=config_filename)
-        k_range = (k_means_min_var.get(), k_means_max_var.get())
-        WSI_util.get_centroids(all_sent, all_vocab, Word2Vec_Dir, k_range)
+        Word2Vec_Dir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='WSI', silent=True)
+        if Word2Vec_Dir == '':
+            return
+        all_sent, all_vocab, Word2Vec_Dir, docs, paths = WSI_util.get_data(inputFilename, inputDir, Word2Vec_Dir, u_vocab=WSI_keywords_var, fileType='.txt', configFileName=config_filename)
+        # the keywords that actually occur in the corpus (the rest are reported and skipped)
+        all_vocab = WSI_util.get_centroids(all_sent, all_vocab, Word2Vec_Dir, k_range)
+        if not all_vocab:
+            return
         WSI_util.match_embeddings(all_sent, all_vocab, Word2Vec_Dir)
         s_paths = WSI_util.get_cluster_sentences(Word2Vec_Dir)
         v_paths = WSI_viz.sense_bar_chart(Word2Vec_Dir)
@@ -651,7 +660,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration
     y_multiplier_integer,
     WSI_keywords_entry,
     False, False, False, False, 90, GUI_IO_util.IO_configuration_menu,
-    "Enter the comma-separated, case-sensitive words to be used to compute word sense induction")
+    "Enter the comma-separated words to be used to compute word sense induction (case does not matter: the corpus is lowercased)")
 
 WSD_var.set(0)
 WSD_checkbox = tk.Checkbutton(window, text='Word Sense Disambiguation (WSD) (via CoNLL)', variable=WSD_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
@@ -662,7 +671,7 @@ SRL_checkbox = tk.Checkbutton(window, text='Semantic Role Labelling (SRL) (Open 
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,SRL_checkbox,False)
 
 SSC_var.set(0)
-SSC_checkbox = tk.Checkbutton(window, text='DOCUMENT embeddings: Semantic similarity & clustering', variable=SSC_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+SSC_checkbox = tk.Checkbutton(window, text='DOCUMENT embeddings: Semantic similarity & clustering (via SBERT)', variable=SSC_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,SSC_checkbox,False)
 
 classify_words_by_semantic_closeness_button=tk.Button(window, width=90, text='WORD embeddings: Classify words by semantic proximity: Word2Vec & word embeddings (Open GUI)',command=lambda: run_script_util.run_script("Word2Vec_main.py"))
@@ -776,7 +785,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          "Tick 'Semantic Role Labelling (SRL)' to label, for each predicate in a sentence, its semantic arguments - WHO did WHAT to WHOM, and when/where/why (agent, patient, instrument, etc.). Where a parser gives grammatical relations (subject, object), SRL gives the MEANING roles the phrases play around a predicate.\n\nIn NLP Suite, SRL is also the sense-disambiguated route to VerbNet classes and FrameNet frames (via PropBank predicate senses and the SemLink mappings), complementing the WordNet-based WSD option above.\n\nNote: standard SRL is VERBAL - predicates are verbs; noun-evoked frames would require nominal SRL, which is not yet integrated.\n\nBE PATIENT - NO PROGRESS IS SHOWN: SRL runs a transformer model inside a separate, isolated Python 3.8 environment, and that process's output is not streamed back to this window. So while SRL is running you will see NO per-sentence or per-file progress - the terminal simply appears idle. On a large corpus SRL can take a long time (hours). This is expected, NOT a freeze; let it run to completion.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                                         "Tick 'DOCUMENT embeddings: Semantic similarity & clustering to embed each document with SBERT (sentence-transformers) and compute a document-by-document semantic similarity matrix (csv + an interactive heatmap) and cluster the documents by MEANING (number of clusters chosen automatically). This is the document-level counterpart to the word-level Word2Vec/BERT embeddings. Needs at least 2 txt documents; the SBERT model downloads once (~80 MB) on first use.")
+                                                         "Tick 'DOCUMENT embeddings: Semantic similarity & clustering (via SBERT)' to embed each document with SBERT (sentence-transformers) and compute a document-by-document semantic similarity matrix (csv + an interactive heatmap) and cluster the documents by MEANING (number of clusters chosen automatically). This is the document-level counterpart to the word-level Word2Vec/BERT embeddings. Needs at least 2 txt documents; the SBERT model downloads once (~80 MB) on first use.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          "Click 'Classify words by semantic proximity: Word2Vec & word embeddings (Open GUI)' to open the Word2Vec GUI. Instead of mapping words to predefined categories (as WordNet/VerbNet/FrameNet do), this learns each word's meaning from HOW IT IS USED in your corpus - producing word embeddings (Word2Vec/Gensim, or BERT) so you can find words that are semantically close, i.e. used in similar contexts. A data-driven notion of meaning, complementary to the inventory-based aggregation and WSD options.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",

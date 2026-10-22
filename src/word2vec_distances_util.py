@@ -48,6 +48,39 @@ def _compute_similarity(word_a, word_b, word_vectors, result_df, BERT):
         return _cosine_sim_vectors(vec_a, vec_b)
 
 
+def run_requirements_message(BERT_var, Gensim_var, WSI_var, compute_distances_var):
+    """The warning to show on RUN when the selected options cannot run, or '' when they can.
+    'Compute word distances' alone does nothing: the distances are computed from the word embeddings of BERT or
+    Gensim, so one of them must be ticked (Roberto, 21 Oct 2026)."""
+    if BERT_var or Gensim_var or WSI_var:
+        return ''
+    if compute_distances_var:
+        return ("'Compute word distances' computes the distances between the word embeddings of BERT or Gensim, but "
+                "neither is selected.\n\nPlease select BERT and/or Gensim (Word2Vec) and try again.")
+    return ('No option has been selected.\n\nPlease select the Word2Vec package you wish to use (BERT and/or Gensim) '
+            'and try again.')
+
+
+def vocabulary_column(result_df):
+    """The result_df column holding the form the model was trained on: 'Lemma' when lemmatized.
+
+    With Lemmatize on, the Gensim vocabulary is lemmas while 'Word' holds surface forms, so looking up
+    'Word' values ("models", "said") raised KeyError on every inflected form, and those pairs were
+    silently skipped.
+    """
+    return 'Lemma' if 'Lemma' in result_df.columns else 'Word'
+
+
+def split_keywords(keywords_var, vocabulary):
+    """(keywords in the model vocabulary, keywords not in it), from the comma-separated widget value."""
+    keywords = []
+    for k in keywords_var.split(','):
+        k = k.strip()
+        if k and k not in keywords:
+            keywords.append(k)
+    return [k for k in keywords if k in vocabulary], [k for k in keywords if k not in vocabulary]
+
+
 def _visualize_and_collect(chartPackage, dataTransformation, outputFilename, outputDir,
                            x_col, y_col, chart_title, outputFileNameType, x_label, filesToOpen):
     """Run visualization and append output files."""
@@ -67,6 +100,16 @@ def _visualize_and_collect(chartPackage, dataTransformation, outputFilename, out
             filesToOpen.append(outputFiles)
         else:
             filesToOpen.extend(outputFiles)
+
+
+def _four_charts(rows, value_col, larger_is_closer, inputFilename, inputDir, outputDir, label, filesToOpen):
+    """The four views of word2vec_charts_util (histogram, closest pairs, clustered heatmap, nearest neighbours) in place of
+    the old one-bar-per-pair charts (Roberto, 21 Oct 2026: "unreadable and pretty useless")."""
+    import word2vec_charts_util
+    triples = [(r['Word_1'], r['Word_2'], r[value_col]) for r in rows]
+    name = lambda part, ext: IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, ext,
+                                                                     label + '_' + part)
+    filesToOpen.extend(word2vec_charts_util.charts(triples, value_col, larger_is_closer, name))
 
 
 def compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage, dataTransformation,
@@ -115,10 +158,11 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage,
             mb.showerror(title='csv file error',
                        message='The selected csv file does NOT contain Vector column.\n\nPlease, select a different csv file and try again.')
 
-    # find top most-frequent words
-    tmp_result = result_df['Word'].value_counts().index.tolist()[:top_words_var]
-    tmp_result_df = result_df.loc[result_df['Word'].isin(tmp_result)]
-    tmp_result_df = tmp_result_df.drop_duplicates(subset=['Word'], keep='first').reset_index(drop=True)
+    # find top most-frequent words, in the form the model was trained on (lemmas when lemmatized)
+    key_col = vocabulary_column(result_df)
+    tmp_result = result_df[key_col].value_counts().index.tolist()[:top_words_var]
+    tmp_result_df = result_df.loc[result_df[key_col].isin(tmp_result)]
+    tmp_result_df = tmp_result_df.drop_duplicates(subset=[key_col], keep='first').reset_index(drop=True)
 
     # n-dimensional Euclidean distances
     if n_dim_Euclidean:
@@ -128,8 +172,8 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage,
         print(f'\nStarted computing n-dimensional Euclidean distance between top {top_words_var} words at {time.asctime(time.localtime(time.time()))}')
         for i in range(len(tmp_result_df)):
             for j in range(i + 1, len(tmp_result_df)):
-                w1 = tmp_result_df.iloc[i]['Word']
-                w2 = tmp_result_df.iloc[j]['Word']
+                w1 = tmp_result_df.iloc[i][key_col]
+                w2 = tmp_result_df.iloc[j][key_col]
                 v1 = tmp_result_df.iloc[i]['Vector']
                 v2 = tmp_result_df.iloc[j]['Vector']
                 dist_rows.append({
@@ -146,10 +190,8 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage,
         dist_df.to_csv(dist_outputFilename, encoding='utf-8', index=False)
         filesToOpen.append(dist_outputFilename)
 
-        _visualize_and_collect(chartPackage, dataTransformation, dist_outputFilename, outputDir,
-                               'Word_1_2', 'n-dimensional Euclidean distance',
-                               'Frequency Distribution of n-dimensional Euclidean distances',
-                               'nDim_dist', 'Euclidean distance', filesToOpen)
+        _four_charts(dist_rows, 'n-dimensional Euclidean distance', False, inputFilename, inputDir, outputDir,
+                     'Word2Vec_top_' + str(top_words_var) + '_Euclidean_dist', filesToOpen)
 
     # cosine similarity for top words
     if compute_cosine_similarity:
@@ -158,8 +200,8 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage,
 
         for i in range(len(tmp_result_df)):
             for j in range(i + 1, len(tmp_result_df)):
-                w1 = tmp_result_df.iloc[i]['Word']
-                w2 = tmp_result_df.iloc[j]['Word']
+                w1 = tmp_result_df.iloc[i][key_col]
+                w2 = tmp_result_df.iloc[j][key_col]
                 try:
                     sim_score = _compute_similarity(w1, w2, word_vectors, result_df, BERT)
                     cos_rows.append({
@@ -178,14 +220,17 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage,
         cos_sim_df.to_csv(cos_sim_outputFilename, encoding='utf-8', index=False)
         filesToOpen.append(cos_sim_outputFilename)
 
-        _visualize_and_collect(chartPackage, dataTransformation, cos_sim_outputFilename, outputDir,
-                               'Word_1_2', 'Cosine similarity',
-                               'Frequency Distribution of cosine similarities',
-                               'cos_simil', 'Cosine similarity', filesToOpen)
+        _four_charts(cos_rows, 'Cosine similarity', True, inputFilename, inputDir, outputDir,
+                     'Word2Vec_top_' + str(top_words_var) + '_Cos_Similarity', filesToOpen)
 
         # cosine similarity for selected keywords
         if keywords_var:
-            keywords_list = [x.strip() for x in keywords_var.split(',')]
+            vocabulary = set(result_df[key_col]) if BERT else word_vectors.key_to_index
+            keywords_list, missing = split_keywords(keywords_var, vocabulary)
+            if missing:
+                mb.showwarning(title='Keywords not in the vocabulary',
+                               message='These keywords are not in the word embeddings vocabulary, so no similarity is computed for them:\n\n  ' + ', '.join(missing) +
+                                       '\n\nA word is left out when it is a stopword, occurs fewer times than "min_count", or (with Lemmatize on) is not in its dictionary form: enter "say", not "said".')
             print(f'\nStarted computing cosine similarity between words for {len(keywords_list)} selected keywords at {time.asctime(time.localtime(time.time()))}')
             kw_rows = []
             for a, b in itertools.combinations(keywords_list, 2):
@@ -207,10 +252,8 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage,
             keyword_df.to_csv(keyword_sim_outputFilename, encoding='utf-8', index=False)
             filesToOpen.append(keyword_sim_outputFilename)
 
-            _visualize_and_collect(chartPackage, dataTransformation, keyword_sim_outputFilename, outputDir,
-                                   'Word_1_2', 'Cosine similarity',
-                                   'Frequency Distribution of cosine similarities',
-                                   'cos_simil', 'Cosine similarity', filesToOpen)
+            _four_charts(kw_rows, 'Cosine similarity', True, inputFilename, inputDir, outputDir,
+                         f'Word2Vec_{len(keywords_list)}_Keywords_Cos_Similarity', filesToOpen)
 
     return filesToOpen
 

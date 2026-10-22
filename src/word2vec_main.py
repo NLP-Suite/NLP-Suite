@@ -40,8 +40,10 @@ def run():
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
-    if not BERT_var and not Gensim_var and not WSI_var and not compute_distances_var:
-        mb.showwarning(title='Warning',message='No option has been selected.\n\nPlease select the Word2Vec package you wish to use (BERT and/or Gensim) and try again.')
+    import word2vec_distances_util
+    message = word2vec_distances_util.run_requirements_message(BERT_var, Gensim_var, WSI_var, compute_distances_var)
+    if message:
+        mb.showwarning(title='Warning', message=message)
         return
 
     filesToOpen = []

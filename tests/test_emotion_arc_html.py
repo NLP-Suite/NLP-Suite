@@ -15,6 +15,7 @@ import os
 import sys
 from unittest.mock import MagicMock
 
+import _real_pandas
 import pytest
 
 _SRC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'src')
@@ -33,7 +34,9 @@ def arcs():
     # MagicMock numpy fails in a way that is easy to read as "no pandas here".
     # PIL comes out too: matplotlib is NOT stubbed, and the real matplotlib imports
     # PIL.PngImagePlugin, which a MagicMock 'PIL' cannot provide.
-    roots = ('pandas', 'numpy', 'PIL')
+    # pandas and numpy go through _real_pandas, which imports them once per run: a second fresh numpy
+    # import (by another test file) breaks the first copy.
+    roots = ('PIL',)
     saved = {k: v for k, v in sys.modules.items()
              if k in roots or k.startswith(tuple(r + '.' for r in roots))}
     # matplotlib is STUBBED for the load, not imported. Neither function under test draws anything,
@@ -56,13 +59,10 @@ def arcs():
     for name in ('matplotlib', 'matplotlib.pyplot', 'matplotlib.patches', 'nrclex'):
         sys.modules[name] = MagicMock()
     try:
-        import pandas
-        if not hasattr(pandas, 'DataFrame'):
-            raise ImportError('pandas resolved to the stub, not the real library')
-    except Exception as exc:
-        for k in [k for k in sys.modules
-                  if k in roots or k.startswith(tuple(r + '.' for r in roots))]:
-            del sys.modules[k]
+        _pandas, saved_pd = _real_pandas.swap_in()
+    except ImportError as exc:
+        _drop(roots)
+        _drop(purge)
         sys.modules.update(saved)
         pytest.skip('real pandas not available: %s' % exc)
     try:
@@ -71,6 +71,7 @@ def arcs():
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
     except Exception as exc:
+        _real_pandas.swap_out(saved_pd)
         _drop(roots)
         _drop(purge)
         sys.modules.update(saved)
@@ -81,6 +82,7 @@ def arcs():
     # now would break those imports mid-test. The stub goes back when this file is done, so the
     # rest of the suite sees exactly what conftest set up.
     yield mod
+    _real_pandas.swap_out(saved_pd)
     _drop(roots)
     _drop(purge)
     sys.modules.update(saved)

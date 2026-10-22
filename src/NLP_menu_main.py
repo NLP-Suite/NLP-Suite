@@ -306,6 +306,7 @@ pydict["SQL database (via SQLite)"] = ["DB_SQL_main.py", 1]
 pydict["Stanford CoreNLP"] = ["parsers_annotators_main.py", 1]
 pydict["Semantic analysis"] = ["semantic_analysis_main.py", 1]
 pydict["Syntactic analysis (ALL)"] = ["syntactic_analysis_ALL_main.py", 1]
+pydict["Semantic analysis (ALL)"] = ["semantic_analysis_ALL_main.py", 1]
 pydict["SRL Semantic Role Labeling"] = ["", 0]
 pydict["Dictionary items by sentence index"] = ["sentence_analysis_util.dictionary_items_bySentenceID", 0, 3, 'txt']
 pydict["Topic modeling (via MALLET & Gensim)"] = ["topic_modeling_main.py", 1]
@@ -320,6 +321,10 @@ pydict["Who wrote the text? Man or woman? (via Gender guesser)"] = ["Gender gues
 pydict["Wordclouds (ALL options GUI)"] = ["wordclouds_main.py", 1]
 pydict["Semantic aggregation (WordNet, VerbNet, FrameNet)"] = ["semantic_aggregation_main.py", 1]
 pydict["Word embeddings (Word2Vec) (via BERT & Gensim)"] = ["word2vec_main.py", 1]
+# Word Sense Disambiguation, Word Sense Induction and Document embeddings are checkboxes of the Semantic analysis GUI
+pydict["Document embeddings (Semantic similarity & clustering) (via SBERT)"] = ["semantic_analysis_main.py", 1]
+pydict["Word Sense Disambiguation (WSD) via CoNLL"] = ["semantic_analysis_main.py", 1]
+pydict["Word Sense Induction (WSI) via BERT"] = ["semantic_analysis_main.py", 1]
 # pydict["Word embeddings (Word2Vec) (via spaCy)"] = ["", 0]
 pydict["------------------"] = ["", 2]
 # the following labels are found in constants_util

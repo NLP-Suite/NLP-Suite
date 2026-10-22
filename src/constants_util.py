@@ -635,9 +635,8 @@ NLP_Suite_corpus_document_tools_menu = \
 'Knowledge graphs: DBpedia, YAGO & Wikipedia', \
 'NER (Named Entity Recognition) annotator', \
 'Narrative analysis (ALL options GUI)', \
-'Semantic analysis', \
+'Semantic analysis (ALL)', \
 'Syntactic analysis (ALL)', \
-'Semantic analysis (via TensorFlow)', \
 'Sentiments/emotions (ALL options GUI)', \
 'Sentiment analysis (dictionary options: ANEW, hedonometer, SentiWordNet, VADER)', \
 'Sentiment analysis (neural network/tensor options: BERT, spaCy, Stanford CoreNLP, Stanza)', \
@@ -646,6 +645,9 @@ NLP_Suite_corpus_document_tools_menu = \
 'Wordclouds (ALL options GUI)', \
 'WordNet', \
 'Word embeddings (Word2Vec) (via BERT & Gensim)', \
+'Document embeddings (Semantic similarity & clustering) (via SBERT)', \
+'Word Sense Disambiguation (WSD) via CoNLL', \
+'Word Sense Induction (WSI) via BERT', \
 '', \
 'Style analysis tools -----------------------------------------------------------------------------------', \
 '', \

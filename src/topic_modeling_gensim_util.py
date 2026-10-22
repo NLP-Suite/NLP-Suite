@@ -10,7 +10,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"topic_modeling_gensim_util.py",['nltk','os','tkinter','pandas','gensim','spacy','pyLDAvis','matplotlib','logging','IPython'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"topic_modeling_gensim_util.py",['nltk','os','tkinter','pandas','gensim','spacy','pyLDAvis','matplotlib','logging'])==False:
     sys.exit(0)
 
 import os
@@ -325,57 +325,25 @@ def malletModelling(MalletDir, outputDir, corpus,num_topics, id2word,data_lemmat
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Mallet LDA topic modeling at',True, '', True, startTime)
 
-# How few documents is too few, and what to say about it.
-#
-# The old wording was "Topic modeling requires a large number of files (in the hundreds at least) to
-# produce valid results", with a default-No dialog under 50 files. Two things wrong with it. The
-# number is not a property of the method: a file is not a fixed quantity of text, and twenty long
-# documents carry more evidence than two thousand tweets - MALLET's own tutorial corpus is under
-# twenty documents. And it BLOCKED, on the strength of that number, work the user had asked for.
-#
-# What is genuinely true is narrower. LDA estimates topic-word distributions, which depend on the
-# total amount of text, and per-document topic proportions, which are estimated per document - so
-# with very few documents those proportions are noisy and the fitted topics become unstable: run it
-# twice with different random seeds and the topics move. That instability is the real risk, and the
-# remedy is the one the TIPS already gives - split long documents into sections, so each becomes a
-# document - not a file count.
-#
-# So: an ERROR only where the method has nothing to work with, and ADVICE otherwise. See
-# TIPS_NLP_Topic modeling and corpus size.pdf.
-_FEW_DOCUMENTS = 50
+# corpus_size_advice moved to topic_modeling_corpus_size_util so MALLET can share it without importing
+# gensim/spaCy; re-exported here for existing callers.
+from topic_modeling_corpus_size_util import _FEW_DOCUMENTS, corpus_size_advice  # noqa: E402,F401
 
 
-def corpus_size_advice(numFiles):
-    """(level, message) for a corpus of *numFiles* documents. level is 'error', 'advice' or ''.
+def document_topic_rows(documents, doc_topics, topic_keywords):
+    """One row per document: [Document ID, document, dominant topic, its proportion, its keywords].
 
-    Separated from the dialogs so the judgement can be read and tested on its own.
+    doc_topics[i] is document i's [(topic id, probability), ...] as gensim returns it (0-based ids);
+    topics are reported 1-based, as in NLP_Gensim_topic_keywords.csv and the pyLDAvis map.
     """
-    if numFiles == 0:
-        return 'error', ('The selected input directory contains no .txt files.\n\n'
-                         'Please select a different directory and try again.')
-    if numFiles == 1:
-        return 'error', (
-            'The selected input directory contains a single .txt file.\n\n'
-            'Topic modeling works by comparing how words co-occur ACROSS documents, so it needs '
-            'more than one. With a single file there is nothing to compare and the result would '
-            'simply describe that file.\n\n'
-            'If your text is one long document, split it into sections - chapters, articles, '
-            'speeches - and use those as your documents. That is standard practice, not a '
-            'workaround: it is how book-length texts are normally prepared for topic modeling. '
-            'The NLP Suite\'s File Splitter will do it.')
-    if numFiles < _FEW_DOCUMENTS:
-        return 'advice', (
-            'The selected input directory contains %d .txt files.\n\n'
-            'This will run. What to watch for: topics are estimated per document as well as from '
-            'the text overall, so with few documents the topics can shift from one run to the next. '
-            'Check that yours hold before relying on them - run it twice and see whether the same '
-            'topics come back.\n\n'
-            'What matters is the amount of text and how it is divided, not the number of files. A '
-            'few long documents carry more than many very short ones. If your documents are long, '
-            'splitting them into sections gives the model more to compare and usually steadies the '
-            'topics.\n\n'
-            'See the TIPS file "Topic modeling and corpus size".' % numFiles)
-    return '', ''
+    rows = []
+    for i, (document, topics) in enumerate(zip(documents, doc_topics), start=1):
+        if not topics:
+            rows.append([i, document, '', '', ''])
+            continue
+        tid, prob = max(topics, key=lambda t: t[1])
+        rows.append([i, document, int(tid) + 1, round(float(prob), 4), topic_keywords.get(tid, '')])
+    return rows
 
 
 def run_Gensim(window, inputDir, outputDir, config_filename, num_topics, remove_stopwords_var,
@@ -383,10 +351,8 @@ def run_Gensim(window, inputDir, outputDir, config_filename, num_topics, remove_
                                       force=False):
     global filesToOpen
     filesToOpen=[]
-    if pd.__version__[0]=='2':
-        mb.showwarning(title='Warning',
-                       message='Gensim is incompatible with a version of pandas higher than 2.0\n\nIn command line, please, pip unistall pandas and pip install pandas==1.5.2 (or even pip install pandas==1.4.4).\n\nMake sure you are in the right NLP environment by typing conda activate NLP')
-        return
+    # (a pandas>=2 check used to stop here and ask for pandas 1.5.2: the stack the Suite now installs --
+    # gensim 4.4, pyLDAvis 3.4, pandas 2.3 -- runs this whole function, so the check only blocked it)
 
     numFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
     level, advice = corpus_size_advice(numFiles)
@@ -427,7 +393,8 @@ def run_Gensim(window, inputDir, outputDir, config_filename, num_topics, remove_
     # TODO: (optional) add more stop words that are common but unncesseary for topic modeling
     # stop_words.append(['','']
     # 	stop_words = stopwords.words('english')
-    stop_words.append(['from', 'subject', 're', 'edu', 'use'])
+    # extend, not append: append added the whole list as ONE element, so none of these was ever removed
+    stop_words.extend(['from', 'subject', 're', 'edu', 'use'])
 
     # TODO: import data
 
@@ -459,7 +426,7 @@ def run_Gensim(window, inputDir, outputDir, config_filename, num_topics, remove_
     def make_trigrams(texts):
         return [trigram_mod[bigram_mod[doc]] for doc in texts]
 
-    def lemmatization(texts, lemmatize=True, allowed_postags=['NOUN', 'ADJ', 'VERB', 'ADV']):
+    def lemmatization(texts, lemmatize=True, allowed_postags=['NOUN', 'PROPN', 'ADJ', 'VERB', 'ADV']):
         """https://spacy.io/api/annotation"""
         texts_out = []
         for sent in texts:
@@ -485,12 +452,15 @@ def run_Gensim(window, inputDir, outputDir, config_filename, num_topics, remove_
 
     if lemmatize:
         if nounsOnly == True:
-            # Do lemmatization keeping only noun
-            data_lemmatized = lemmatization(data_words_bigrams, lemmatize, allowed_postags=['NOUN'])
+            # Do lemmatization keeping only nouns - common AND proper (see below)
+            data_lemmatized = lemmatization(data_words_bigrams, lemmatize, allowed_postags=['NOUN', 'PROPN'])
         else:
-            # Do lemmatization keeping only noun, adj, vb, adv
+            # Do lemmatization keeping only noun, adj, vb, adv - and PROPER NOUNS. The texts are lowercased above
+            # (simple_preprocess) before spaCy tags them, and on lowercased text spaCy still tags many names as proper
+            # nouns - first names, places, kin written as names ("father", "mother") - so without PROPN the people and
+            # places a corpus is about went missing from its topics.
             data_lemmatized = lemmatization(data_words_bigrams, lemmatize,
-                                        allowed_postags=['NOUN', 'ADJ', 'VERB', 'ADV'])
+                                        allowed_postags=['NOUN', 'PROPN', 'ADJ', 'VERB', 'ADV'])
     else:
         data_lemmatized = data_words_bigrams
 
@@ -527,11 +497,18 @@ def run_Gensim(window, inputDir, outputDir, config_filename, num_topics, remove_
     # Compute Perplexity; a measure of how good the model is. lower the better.
     print('\nPerplexity Score: ', lda_model.log_perplexity(corpus))
 
-    # TODO the coherence lines produce an error
-    # Compute Coherence Score
-    # coherence_model_lda = CoherenceModel(model=lda_model, texts=data_lemmatized, dictionary=id2word, coherence='c_v')
-    # coherence_lda = coherence_model_lda.get_coherence()
-    # print('\nCoherence Score: ', coherence_lda)
+    # Compute Coherence Score (c_v; higher = the top words of a topic co-occur more, i.e. read as one theme).
+    # processes=1: gensim's default multiprocessing re-imports the calling script in each worker on
+    # macOS/Windows (spawn), which is the error these lines used to produce; on 872 documents one process
+    # takes about a second.
+    coherence_per_topic = []
+    try:
+        coherence_model_lda = CoherenceModel(model=lda_model, texts=data_lemmatized, dictionary=id2word,
+                                             coherence='c_v', processes=1)
+        coherence_per_topic = coherence_model_lda.get_coherence_per_topic()
+        print('\nCoherence Score (c_v): ', coherence_model_lda.aggregate_measures(coherence_per_topic))
+    except Exception as e:
+        print('\nCoherence Score could not be computed: ', e)
 
     # Print the Keywords in the topics
     # TODO visualize most relevant topics in Excel bar charts, with hover over of the words in each topic
@@ -549,7 +526,9 @@ def run_Gensim(window, inputDir, outputDir, config_filename, num_topics, remove_
     # step 15 in website
     # https://stackoverflow.com/questions/46379763/typeerror-object-of-type-complex-is-not-json-serializable-while-using-pyldavi
     # Roberto added , mds='mmds' to avoid the error described above
-    vis = pyLDAvis.gensim.prepare(lda_model, corpus, id2word, mds='mmds')
+    # sort_topics=False: pyLDAvis otherwise renumbers topics by size, so its "Topic 1" was not topic 1 in
+    # NLP_Gensim_topic_keywords.csv (or in the document-topics csv)
+    vis = pyLDAvis.gensim.prepare(lda_model, corpus, id2word, mds='mmds', sort_topics=False)
     pyLDAvis.prepared_data_to_html(vis)
     try:
         pyLDAvis.save_html(vis, outputFilename)
@@ -565,12 +544,25 @@ def run_Gensim(window, inputDir, outputDir, config_filename, num_topics, remove_
         topics_csv = os.path.join(outputDir, 'NLP_Gensim_topic_keywords.csv')
         with open(topics_csv, 'w', encoding='utf-8', newline='') as _fh:
             _w = _csv.writer(_fh)
-            _w.writerow(['Topic', 'Top keywords'])
+            _w.writerow(['Topic', 'Top keywords', 'Coherence (c_v)'])
             for _tid, _words in lda_model.show_topics(num_topics=-1, num_words=10, formatted=False):
-                _w.writerow([_tid + 1, ', '.join(_wd for _wd, _ in _words)])
+                _coh = round(coherence_per_topic[_tid], 4) if _tid < len(coherence_per_topic) else ''
+                _w.writerow([_tid + 1, ', '.join(_wd for _wd, _ in _words), _coh])
         filesToOpen.append(topics_csv)
     except Exception:
         pass
+
+    # Document-topics CSV: which topic each DOCUMENT is mostly about. A Gensim-only run used to write none,
+    # so there was no way to check how the model categorized the corpus.
+    doc_topics_csv = os.path.join(outputDir, 'NLP_Gensim_document_topics.csv')
+    topic_keywords = {tid: ', '.join(wd for wd, _ in words)
+                      for tid, words in lda_model.show_topics(num_topics=-1, num_words=10, formatted=False)}
+    doc_topics = [lda_model.get_document_topics(bow, minimum_probability=0) for bow in corpus]
+    documents = [os.path.basename(f) for f in inputDocs if f.endswith(".txt")]
+    pd.DataFrame(document_topic_rows(documents, doc_topics, topic_keywords),
+                 columns=['Document ID', 'Document', 'Dominant topic', 'Topic % contribution', 'Topic keywords']
+                 ).to_csv(doc_topics_csv, encoding='utf-8', index=False)
+    filesToOpen.append(doc_topics_csv)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Gensim topic modeling at',True,'\n\nThe file ' + outputFilename + ' was created. The results will display shortly on the web browser.')
     # \n\nYou now need to exit the server.\n\nAt command prompt, enter Ctrl+C, perhaps repeatedly, to exit the server.'
