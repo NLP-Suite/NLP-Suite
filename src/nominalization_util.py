@@ -57,17 +57,22 @@ import config_util
 #count #includes word='NO NOMINALIZATION'
 #count1 #excludes word='NO NOMINALIZATION'
 
-def check_word_for_nominalization(word,nominalized_verbs_list):
+def check_word_for_nominalization(word,nominalized_verbs_set):
     skip_record = False
     if not 'ent' in word[-3:] and not 'ing' in word[-3:] and not 'ion' in word[-3:] and \
             not 'ance' in word[-4:] and not 'ence' in word[-4:]:
         skip_record = True
     # check against a dictionary of nominalized verbs non ending in the standard nominalized verbs
-    for index, row in nominalized_verbs_list.iterrows():
-        if row[0] == word:
-            skip_record = False
-            break
+    #   a set lookup, instead of scanning the word-list DataFrame row by row for every noun
+    if word in nominalized_verbs_set:
+        skip_record = False
     return skip_record
+
+
+def load_nominalized_verbs_set(csv_path):
+    """The words of lib/wordLists/nominalized-verbs-list.csv as a set. The first line is the header
+    ('Nominalized verbs'), exactly as pd.read_csv treated it when the list was scanned row by row."""
+    return set(pd.read_csv(csv_path).iloc[:, 0])
 # --- deverbal-nominalization detection (WordNet derivational morphology; reproducible, NLTK-only) ---
 # A noun is a deverbal nominalization iff it is derived from a verb (destruction<-destroy, killing<-kill,
 # decision<-decide). Method: WordNet derivationally-related forms (Fellbaum 1998), with a VALIDATED suffix
@@ -99,7 +104,7 @@ def _nominalization_base_verb(noun_lemma):
     return _deverbal_base_wordnet(noun_lemma)
 
 
-def nominalized_verb_detection(docID,doc,dateStr, sent,check_ending,nominalized_verbs_list):
+def nominalized_verb_detection(docID,doc,dateStr, sent,check_ending,nominalized_verbs_set):
 
     first_section = re.compile(r"^(.+?)\.")
     noun_cnt = Counter()
@@ -108,13 +113,15 @@ def nominalized_verb_detection(docID,doc,dateStr, sent,check_ending,nominalized_
     # sentences = tokenize.sent_tokenize(sent)
     from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
     import basic_NLP_util
+    import CoNLL_util
     sentences = sentence_split_stanza_text(stanzaPipeLine(sent))
 
     result_true_false_each_noun = []
     result_specific_document = []
     verbs = []
-    true_word = []
-    false_word = []
+    # sets: these are only ever used for membership tests, which on a list rescan every word seen so far
+    true_word = set()
+    false_word = set()
     # word count for the sentence
     word_count = []
     # number of nominalization in the sentence
@@ -128,17 +135,19 @@ def nominalized_verb_detection(docID,doc,dateStr, sent,check_ending,nominalized_
     def is_pos(s, pos):
         # print(s)
         return s.split('.')[1] == pos
-    for each_sen in sentences:
+    # tag ALL sentences in one batched call rather than a separate basic_nlp() pass per sentence. Each sentence
+    #   is still its own document to the tagger, so tokens, lemmas and POS tags match the per-sentence calls.
+    tagged_sentences = basic_NLP_util.basic_nlp_many([str(each_sen) for each_sen in sentences])
+    for each_sen, tagged in zip(sentences, tagged_sentences):
         sen_id += 1
         nomi_count.append(0)
         word_count.append(0)
         sentence.append(each_sen)
-        for surface, lemma, pos in basic_NLP_util.basic_nlp(str(each_sen)):
+        for surface, lemma, pos in tagged:
             if (not surface) or (surface in string.punctuation) or surface[0] in ('"', "'", '`'):
                 continue
             word_count[sen_id] += 1
             # nominalization detection applies to NOUNS only (Penn NN* or Universal NOUN/PROPN)
-            import CoNLL_util
             if not CoNLL_util.is_noun_POS(pos):
                 continue
             word = surface.lower()
@@ -154,21 +163,20 @@ def nominalized_verb_detection(docID,doc,dateStr, sent,check_ending,nominalized_
                 continue
             base_verb = _nominalization_base_verb(noun_lemma)
             if base_verb:
-                if check_ending and check_word_for_nominalization(word, nominalized_verbs_list):
+                if check_ending and check_word_for_nominalization(word, nominalized_verbs_set):
                     continue
-                print('   NOUN/NOMINALIZED VERB:', word, ' VERB:', base_verb)
                 if dateStr != '':
                     result_true_false_each_noun.append([word, base_verb, docID, IO_csv_util.dressFilenameForCSVHyperlink(doc), dateStr])
                 else:
                     result_true_false_each_noun.append([word, base_verb, docID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
                 verbs.append(base_verb)
-                true_word.append(word)
+                true_word.add(word)
                 noun_cnt[word] += 1
                 nomi_sen_ = word if nomi_sen_ == "" else nomi_sen_ + "; " + word
                 nominalized_cnt[word] += 1
                 nomi_count[sen_id] += 1
             else:
-                false_word.append(word)
+                false_word.add(word)
         nomi_sen.append(nomi_sen_)
         nomi_sen_ = ""
     for i in range(sen_id+1):
@@ -249,7 +257,7 @@ def nominalization(inputFilename,inputDir, outputDir, config_filename, config_in
     # refresh the headers
 
     counter_nominalized_list = []
-    nominalized_verbs_list = []
+    nominalized_verbs_set = set()
     result_all_documents = []
     result_true_false_each_noun_all_documents=[]
     # accumulate nominalization counts across ALL documents so the frequency csv/chart is a single
@@ -279,7 +287,7 @@ def nominalization(inputFilename,inputDir, outputDir, config_filename, config_in
 
     # build dictionary of nominalized verbs not ending with the standard ending (e.g., attack, assault)
     if check_ending:
-        nominalized_verbs_list = pd.read_csv(os.path.join(GUI_IO_util.wordLists_libPath, "nominalized-verbs-list.csv"))
+        nominalized_verbs_set = load_nominalized_verbs_set(os.path.join(GUI_IO_util.wordLists_libPath, "nominalized-verbs-list.csv"))
 
     for doc in inputDocs:
 
@@ -293,7 +301,7 @@ def nominalization(inputFilename,inputDir, outputDir, config_filename, config_in
         print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
         with open(doc, 'r', encoding='utf-8', errors='ignore') as fin:
             doc_text = fin.read()
-        result_true_false_each_noun, result_specific_document, noun_cnt, nominalized_cnt = nominalized_verb_detection(docID,doc,dateStr, doc_text,check_ending, nominalized_verbs_list)
+        result_true_false_each_noun, result_specific_document, noun_cnt, nominalized_cnt = nominalized_verb_detection(docID,doc,dateStr, doc_text,check_ending, nominalized_verbs_set)
         result_all_documents.extend(result_specific_document)
         result_true_false_each_noun_all_documents.extend(result_true_false_each_noun)
 
