@@ -1,18 +1,23 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window, "statistics_corpus_lexical_diversity_util",
-        ['os', 'tkinter', 'pandas', 'numpy']) == False:
+if (
+    IO_libraries_util.install_all_Python_packages(
+        GUI_util.window, "statistics_corpus_lexical_diversity_util", ["os", "tkinter", "pandas", "numpy"]
+    )
+    == False
+):
     sys.exit(0)
 
-import os
 import math
-import numpy as np
-import pandas as pd
+import os
 import tkinter.messagebox as mb
 
-import IO_csv_util
+import numpy as np
+import pandas as pd
+
 import IO_files_util
 import IO_user_interface_util
 import statistics_statistical_tests_util
@@ -52,11 +57,11 @@ def _mtld_forward(tokens, threshold=0.72):
     for tok in tokens:
         token_count += 1
         types.add(tok)
-        if (len(types) / token_count) <= threshold:   # factor complete
+        if (len(types) / token_count) <= threshold:  # factor complete
             factor_count += 1
             types = set()
             token_count = 0
-    if token_count > 0:   # trailing partial factor
+    if token_count > 0:  # trailing partial factor
         remaining_ttr = len(types) / token_count
         if remaining_ttr < 1.0:
             factor_count += (1.0 - remaining_ttr) / (1.0 - threshold)
@@ -95,7 +100,7 @@ def _vocd(tokens, n_trials=100, min_sample=35, max_sample=50):
         observed_ttrs[ss] = np.mean(ttrs)
 
     best_d = 50.0
-    best_err = float('inf')
+    best_err = float("inf")
     for d_candidate in np.arange(10, 200, 0.5):
         err = 0
         for ss in sample_sizes:
@@ -111,32 +116,34 @@ def _vocd(tokens, n_trials=100, min_sample=35, max_sample=50):
     return best_d
 
 
-def compute_lexical_diversity(inputFilename, inputDir, outputDir,
-                               chartPackage='Excel', dataTransformation='No transformation'):
+def compute_lexical_diversity(
+    inputFilename, inputDir, outputDir, chartPackage="Excel", dataTransformation="No transformation"
+):
     filesToOpen = []
 
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
-                                                        label='lexical_diversity', silent=True)
-    if outputDir == '':
+    outputDir = IO_files_util.make_output_subdirectory(
+        inputFilename, inputDir, outputDir, label="lexical_diversity", silent=True
+    )
+    if outputDir == "":
         return filesToOpen
 
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                                    'Started running Lexical Diversity analysis at', True)
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis start", "Started running Lexical Diversity analysis at", True
+    )
 
     files_to_process = []
     if inputFilename and os.path.exists(inputFilename):
         files_to_process.append(inputFilename)
     elif inputDir and os.path.isdir(inputDir):
-        files_to_process = [os.path.join(inputDir, f) for f in sorted(os.listdir(inputDir))
-                            if f.endswith('.txt')]
+        files_to_process = [os.path.join(inputDir, f) for f in sorted(os.listdir(inputDir)) if f.endswith(".txt")]
 
     if not files_to_process:
-        mb.showwarning(title='No data', message='No text files found to analyze.')
+        mb.showwarning(title="No data", message="No text files found to analyze.")
         return filesToOpen
 
     rows = []
     for filepath in files_to_process:
-        with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+        with open(filepath, encoding="utf-8", errors="ignore") as f:
             text = f.read()
         if not text.strip():
             continue
@@ -148,63 +155,73 @@ def compute_lexical_diversity(inputFilename, inputDir, outputDir,
         doc_name = os.path.basename(filepath)
 
         row = {
-            'Document': doc_name,
-            'Total Tokens': len(tokens),
-            'Unique Types': len(set(tokens)),
-            'TTR': round(_ttr(tokens), 4),
-            'Root TTR (Guiraud)': round(_root_ttr(tokens), 4),
-            'Log TTR (Herdan)': round(_log_ttr(tokens), 4),
-            'MTLD': round(_mtld(tokens), 2),
-            'vocd-D': round(_vocd(tokens), 2),
+            "Document": doc_name,
+            "Total Tokens": len(tokens),
+            "Unique Types": len(set(tokens)),
+            "TTR": round(_ttr(tokens), 4),
+            "Root TTR (Guiraud)": round(_root_ttr(tokens), 4),
+            "Log TTR (Herdan)": round(_log_ttr(tokens), 4),
+            "MTLD": round(_mtld(tokens), 2),
+            "vocd-D": round(_vocd(tokens), 2),
         }
         rows.append(row)
 
     if not rows:
-        mb.showwarning(title='No data',
-                       message='No documents with sufficient text to analyze (minimum 10 words).')
+        mb.showwarning(title="No data", message="No documents with sufficient text to analyze (minimum 10 words).")
         return filesToOpen
 
     df = pd.DataFrame(rows)
 
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
-                                                              '.csv', 'lexical_diversity',
-                                                              '', '', '', '', False, True)
-    df.to_csv(outputFilename, index=False, encoding='utf-8')
+    outputFilename = IO_files_util.generate_output_file_name(
+        inputFilename, inputDir, outputDir, ".csv", "lexical_diversity", "", "", "", "", False, True
+    )
+    df.to_csv(outputFilename, index=False, encoding="utf-8")
     filesToOpen.append(outputFilename)
 
-    if len(df) > 1 and chartPackage != 'No charts':
+    if len(df) > 1 and chartPackage != "No charts":
         import matplotlib.pyplot as plt
 
         fig, axes = plt.subplots(2, 2, figsize=(14, 10))
 
-        measures = [('TTR', 'Type-Token Ratio'),
-                    ('Root TTR (Guiraud)', 'Root TTR (Guiraud Index)'),
-                    ('MTLD', 'Measure of Textual Lexical Diversity'),
-                    ('vocd-D', 'vocd-D (vocabulary diversity)')]
+        measures = [
+            ("TTR", "Type-Token Ratio"),
+            ("Root TTR (Guiraud)", "Root TTR (Guiraud Index)"),
+            ("MTLD", "Measure of Textual Lexical Diversity"),
+            ("vocd-D", "vocd-D (vocabulary diversity)"),
+        ]
 
         for ax, (col, title) in zip(axes.flatten(), measures):
             values = df[col].values
-            short_names = [n[:15] for n in df['Document'].values]
-            ax.barh(range(len(values)), values, color='#378ADD', alpha=0.8)
+            short_names = [n[:15] for n in df["Document"].values]
+            ax.barh(range(len(values)), values, color="#378ADD", alpha=0.8)
             ax.set_yticks(range(len(values)))
             ax.set_yticklabels(short_names, fontsize=7)
             ax.invert_yaxis()
             ax.set_title(title, fontsize=11)
-            ax.grid(True, alpha=0.3, axis='x')
+            ax.grid(True, alpha=0.3, axis="x")
 
-        plt.suptitle('Lexical Diversity Measures', fontsize=14, y=1.01)
+        plt.suptitle("Lexical Diversity Measures", fontsize=14, y=1.01)
         plt.tight_layout()
 
-        chart_file = os.path.join(outputDir, 'lexical_diversity_chart.png')
-        plt.savefig(chart_file, dpi=150, bbox_inches='tight')
+        chart_file = os.path.join(outputDir, "lexical_diversity_chart.png")
+        plt.savefig(chart_file, dpi=150, bbox_inches="tight")
         plt.close()
         filesToOpen.append(chart_file)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                        'Finished running Lexical Diversity analysis at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis end",
+        "Finished running Lexical Diversity analysis at",
+        True,
+        "",
+        True,
+        startTime,
+    )
 
     stat_files = statistics_statistical_tests_util.run_automatic_tests(
-        outputFilename, outputDir, chartPackage, dataTransformation)
+        outputFilename, outputDir, chartPackage, dataTransformation
+    )
     filesToOpen.extend(stat_files)
 
     return filesToOpen

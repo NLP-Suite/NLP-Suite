@@ -14,7 +14,7 @@ import math
 TOP_PAIRS = 25
 NEIGHBOURS = 5
 HISTOGRAM_BINS = 25
-HEATMAP_MAX_WORDS = 300     # beyond this a heatmap is too dense to read (and heavy to draw)
+HEATMAP_MAX_WORDS = 300  # beyond this a heatmap is too dense to read (and heavy to draw)
 
 
 def _closer(a, b, larger_is_closer):
@@ -94,8 +94,8 @@ def matrix(order, rows):
 
 def write_neighbours_csv(path, neighbours, measure, k=NEIGHBOURS):
     """One row per word: the word, then its k closest words and their values."""
-    head = ['Word'] + [x for i in range(1, k + 1) for x in ('Neighbour %d' % i, '%s %d' % (measure, i))]
-    with open(path, 'w', newline='', encoding='utf-8') as fh:
+    head = ["Word"] + [x for i in range(1, k + 1) for x in ("Neighbour %d" % i, "%s %d" % (measure, i))]
+    with open(path, "w", newline="", encoding="utf-8") as fh:
         w = csv.writer(fh)
         w.writerow(head)
         for word in sorted(neighbours, key=str.lower):
@@ -115,42 +115,73 @@ def charts(rows, measure, larger_is_closer, output_name):
     files = []
     if not rows:
         return files
-    closer = 'higher = closer' if larger_is_closer else 'lower = closer'
+    closer = "higher = closer" if larger_is_closer else "lower = closer"
     n_words = len({w for r in rows for w in r[:2]})
 
     # 1. histogram
     bins = histogram_bins([r[2] for r in rows])
-    fig = go.Figure(go.Bar(x=['%.3f-%.3f' % (a, b) for a, b, _n in bins], y=[n for _a, _b, n in bins],
-                           hovertemplate='%{x}: %{y} word pairs<extra></extra>'))
-    fig.update_layout(title='How the %d word pairs are spread: %s (%s)' % (len(rows), measure, closer),
-                      xaxis_title=measure, yaxis_title='Number of word pairs', template='plotly_white')
-    files.append(output_name('hist', '.html'))
+    fig = go.Figure(
+        go.Bar(
+            x=["%.3f-%.3f" % (a, b) for a, b, _n in bins],
+            y=[n for _a, _b, n in bins],
+            hovertemplate="%{x}: %{y} word pairs<extra></extra>",
+        )
+    )
+    fig.update_layout(
+        title="How the %d word pairs are spread: %s (%s)" % (len(rows), measure, closer),
+        xaxis_title=measure,
+        yaxis_title="Number of word pairs",
+        template="plotly_white",
+    )
+    files.append(output_name("hist", ".html"))
     fig.write_html(files[-1])
 
     # 2. the closest pairs
     top = closest_pairs(rows, larger_is_closer)
-    fig = go.Figure(go.Bar(x=[r[2] for r in top][::-1], y=['%s - %s' % (r[0], r[1]) for r in top][::-1],
-                           orientation='h', hovertemplate='%{y}: %{x:.4f}<extra></extra>'))
-    fig.update_layout(title='The %d closest word pairs: %s (%s)' % (len(top), measure, closer),
-                      xaxis_title=measure, height=max(400, 22 * len(top) + 120), template='plotly_white')
-    files.append(output_name('closest', '.html'))
+    fig = go.Figure(
+        go.Bar(
+            x=[r[2] for r in top][::-1],
+            y=["%s - %s" % (r[0], r[1]) for r in top][::-1],
+            orientation="h",
+            hovertemplate="%{y}: %{x:.4f}<extra></extra>",
+        )
+    )
+    fig.update_layout(
+        title="The %d closest word pairs: %s (%s)" % (len(top), measure, closer),
+        xaxis_title=measure,
+        height=max(400, 22 * len(top) + 120),
+        template="plotly_white",
+    )
+    files.append(output_name("closest", ".html"))
     fig.write_html(files[-1])
 
     # 3. the clustered heatmap
     if n_words <= HEATMAP_MAX_WORDS:
         order = cluster_order(rows, larger_is_closer)
-        fig = go.Figure(go.Heatmap(z=matrix(order, rows), x=order, y=order,
-                                   colorscale='Viridis', reversescale=not larger_is_closer,
-                                   hovertemplate='%{y} - %{x}: %{z:.4f}<extra></extra>', colorbar_title=measure))
+        fig = go.Figure(
+            go.Heatmap(
+                z=matrix(order, rows),
+                x=order,
+                y=order,
+                colorscale="Viridis",
+                reversescale=not larger_is_closer,
+                hovertemplate="%{y} - %{x}: %{z:.4f}<extra></extra>",
+                colorbar_title=measure,
+            )
+        )
         side = max(600, 12 * len(order) + 200)
-        fig.update_layout(title='%s between the top %d words, similar words grouped together (%s)'
-                                % (measure, len(order), closer),
-                          width=side, height=side, template='plotly_white',
-                          yaxis=dict(autorange='reversed'))
-        files.append(output_name('heatmap', '.html'))
+        fig.update_layout(
+            title="%s between the top %d words, similar words grouped together (%s)" % (measure, len(order), closer),
+            width=side,
+            height=side,
+            template="plotly_white",
+            yaxis=dict(autorange="reversed"),
+        )
+        files.append(output_name("heatmap", ".html"))
         fig.write_html(files[-1])
 
     # 4. nearest neighbours
-    files.append(write_neighbours_csv(output_name('neighbours', '.csv'),
-                                      nearest_neighbours(rows, larger_is_closer), measure))
+    files.append(
+        write_neighbours_csv(output_name("neighbours", ".csv"), nearest_neighbours(rows, larger_is_closer), measure)
+    )
     return files

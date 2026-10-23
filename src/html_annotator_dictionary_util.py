@@ -1,48 +1,54 @@
 """
-    Generates html files from input text files annotated with the use of dictionary terms
-    by Jack Hester
-    rewritten by Roberto Franzosi, Zhangyi Pan April 2020, Brett Landau October 2020
+Generates html files from input text files annotated with the use of dictionary terms
+by Jack Hester
+rewritten by Roberto Franzosi, Zhangyi Pan April 2020, Brett Landau October 2020
 """
 
 import sys
-import IO_libraries_util
-import GUI_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"html_annotator_dictionary_util",['os','re','csv','tkinter'])==False:
+import GUI_util
+import IO_libraries_util
+
+if (
+    IO_libraries_util.install_all_Python_packages(
+        GUI_util.window, "html_annotator_dictionary_util", ["os", "re", "csv", "tkinter"]
+    )
+    == False
+):
     sys.exit(0)
 
+from csv import reader
 import os
 import re
 import tkinter.messagebox as mb
 
+import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
-from csv import reader
-import IO_csv_util
 
 
 def _term_regex(term):
     """Build a whole-word regex for a dictionary term, to be used with re.IGNORECASE:
-       - flexible whitespace inside multi-word terms (extra spaces / line breaks);
-       - FrameNet '(particle)' notation treated as OPTIONAL (e.g. 'fall (upon)' matches 'fall' or 'fall upon');
-       - all other characters escaped (hyphens, dots, ...).
-       Replace matches via a function using m.group(0) so the text's original case/spacing is preserved."""
+    - flexible whitespace inside multi-word terms (extra spaces / line breaks);
+    - FrameNet '(particle)' notation treated as OPTIONAL (e.g. 'fall (upon)' matches 'fall' or 'fall upon');
+    - all other characters escaped (hyphens, dots, ...).
+    Replace matches via a function using m.group(0) so the text's original case/spacing is preserved."""
     pieces = []
-    for piece in re.split(r'(\([^)]*\))', term.strip()):
+    for piece in re.split(r"(\([^)]*\))", term.strip()):
         if not piece:
             continue
-        if piece.startswith('(') and piece.endswith(')'):
+        if piece.startswith("(") and piece.endswith(")"):
             inner = piece[1:-1].split()
             if inner:
-                pieces.append(r'(?:\s+' + r'\s+'.join(re.escape(w) for w in inner) + r')?')
+                pieces.append(r"(?:\s+" + r"\s+".join(re.escape(w) for w in inner) + r")?")
         else:
             words = piece.split()
             if words:
-                pieces.append(r'\s+'.join(re.escape(w) for w in words))
-    core = ''.join(pieces)
+                pieces.append(r"\s+".join(re.escape(w) for w in words))
+    core = "".join(pieces)
     if not core:
         return None
-    return r'\b(?=\w)' + core + r'\b(?!\w)'
+    return r"\b(?=\w)" + core + r"\b(?!\w)"
 
 
 def _expand_terms_by_lemma(terms, files):
@@ -55,16 +61,18 @@ def _expand_terms_by_lemma(terms, files):
     try:
         import basic_NLP_util
     except Exception as e:
-        mb.showwarning(title='Lemma annotation',
-                       message="Could not load the basic NLP layer for lemma annotation:\n\n%s\n\n"
-                               "Falling back to exact-form matching." % e)
+        mb.showwarning(
+            title="Lemma annotation",
+            message="Could not load the basic NLP layer for lemma annotation:\n\n%s\n\n"
+            "Falling back to exact-form matching." % e,
+        )
         return []
 
     # lemmatize the SINGLE-WORD dictionary terms (multi-word terms stay with the phrase matcher)
     dict_lemmas = set()
     for t in terms:
         t = str(t).strip()
-        if not t or ' ' in t:
+        if not t or " " in t:
             continue
         pairs = basic_NLP_util.basic_nlp_lemmas(t)
         dict_lemmas.add((pairs[0][1] if pairs else t).lower())
@@ -74,7 +82,7 @@ def _expand_terms_by_lemma(terms, files):
     surfaces = set()
     for f in files:
         try:
-            with open(f, 'r', encoding='utf-8', errors='ignore') as _fh:
+            with open(f, encoding="utf-8", errors="ignore") as _fh:
                 text = _fh.read()
         except Exception:
             continue
@@ -91,8 +99,8 @@ def _expand_terms_by_lemma(terms, files):
 def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
     dictionary = []
     number_of_items = len(csvValue_color_list)
-    num_cats = range(2,number_of_items,3)
-    num_colors = range(3,number_of_items,3)
+    num_cats = range(2, number_of_items, 3)
+    num_colors = range(3, number_of_items, 3)
     # Add lists to dictionary for # of categories
     # Append a list to dictionary for however many categories exist
     # Need to parse categories and colors from csvValue_color_list
@@ -104,10 +112,10 @@ def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
         dictionary.append([])
     for i in num_colors:
         color_list.append(csvValue_color_list[i])
-    with open(dictFile, 'r', encoding='utf-8', errors='ignore') as read_obj:
+    with open(dictFile, encoding="utf-8", errors="ignore") as read_obj:
         csv_reader = reader(read_obj)
         for row in csv_reader:
-            if len(categories)>0:
+            if len(categories) > 0:
                 # We check every line of the csv input to see if it matches one of the target categories
                 for c in range(len(categories)):
                     # Check if the current row has category value equivalent to one of our categories
@@ -123,6 +131,7 @@ def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
 
     return dictionary, color_list
 
+
 # annotate words based on a list of terms from a csv file (dictionary)
 # takes in file to annotate and list of terms to check against
 # returns list of a list of terms with appropriate annotations for each file
@@ -131,31 +140,50 @@ def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
 #   csv_field1_var ['Name']
 #   csvValue_color_list should be a list, for gender is csvValue_color_list = [genderCol, '|', 'FEMALE', 'red', '|', 'MALE', 'blue', '|']
 #   tagAnnotations is also a list, for gender  ['<span style="color: blue; font-weight: bold">', '</span>']
-def dictionary_annotate(inputFile, inputDir, outputDir, configFileName, dict_file,
-                        csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, fileType='.txt', fileSubc='', lemmatize=False):
+def dictionary_annotate(
+    inputFile,
+    inputDir,
+    outputDir,
+    configFileName,
+    dict_file,
+    csv_field1_var,
+    csvValue_color_list,
+    bold_var,
+    tagAnnotations,
+    fileType=".txt",
+    fileSubc="",
+    lemmatize=False,
+):
     writeout = []
     filesToOpen = []
     # TODO needs to check how csv_field1_var is passed when multiple fields are selected
     #   would need to use split()
-    if isinstance(csv_field1_var,str):
-        csv_field1_var=[csv_field1_var]
-    files=IO_files_util.getFileList(inputFile, inputDir, fileType, silent=False, configFileName=configFileName)
-    nFile=len(files)
-    if nFile==0:
+    if isinstance(csv_field1_var, str):
+        csv_field1_var = [csv_field1_var]
+    files = IO_files_util.getFileList(inputFile, inputDir, fileType, silent=False, configFileName=configFileName)
+    nFile = len(files)
+    if nFile == 0:
         return
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Dictionary annotator at',
-                                                 True, '', True, '', True)
-    i=0
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis start", "Started running Dictionary annotator at", True, "", True, "", True
+    )
+    i = 0
     wordColNum = [0]
     catColNum = [1]
     if len(csv_field1_var) > 0:
-        headers=IO_csv_util.get_csvfile_headers(dict_file)
+        headers = IO_csv_util.get_csvfile_headers(dict_file)
         wordColNum = []
         for field in csv_field1_var:
-            col = IO_csv_util.get_columnNumber_from_headerValue(headers,field, dict_file)
+            col = IO_csv_util.get_columnNumber_from_headerValue(headers, field, dict_file)
             if col == None:
-                mb.showerror(title='Input file error',
-                             message="The selected dictionary file\n\n" + dict_file + "\n\ndoes not contain the expected header \'" + str(csv_field1_var) + "\'\n\nPlease, select a different dictionary file and try again.")
+                mb.showerror(
+                    title="Input file error",
+                    message="The selected dictionary file\n\n"
+                    + dict_file
+                    + "\n\ndoes not contain the expected header '"
+                    + str(csv_field1_var)
+                    + "'\n\nPlease, select a different dictionary file and try again.",
+                )
                 return
             wordColNum.append(col)
         catColNum = []
@@ -163,7 +191,7 @@ def dictionary_annotate(inputFile, inputDir, outputDir, configFileName, dict_fil
         if len(csvValue_color_list) > 0:
             # for field in str(csvValue_color_list[0]):
             #     catColNum.append(IO_csv_util.get_columnNumber_from_headerValue(headers, field, dict_file))
-            field=csvValue_color_list[0]
+            field = csvValue_color_list[0]
             catColNum.append(IO_csv_util.get_columnNumber_from_headerValue(headers, field, dict_file))
 
     dictionary, color_list = readCsv(wordColNum, catColNum, dict_file, csvValue_color_list)
@@ -173,7 +201,20 @@ def dictionary_annotate(inputFile, inputDir, outputDir, configFileName, dict_fil
         for surface in _expand_terms_by_lemma(dictionary, files):
             if surface not in dictionary:
                 dictionary.append(surface)
-    reserved_dictionary = ['bold', 'color', 'font', 'span', 'style', 'weight', 'black', 'blue', 'green', 'pink', 'yellow', 'red']
+    reserved_dictionary = [
+        "bold",
+        "color",
+        "font",
+        "span",
+        "style",
+        "weight",
+        "black",
+        "blue",
+        "green",
+        "pink",
+        "yellow",
+        "red",
+    ]
     # check the dictionary list if any of the reserved annotator terms (bold, color, font, span, style, weight) appear in the list
     #   reserved terms must be processed first to avoid replacing terms twice
 
@@ -195,16 +236,16 @@ def dictionary_annotate(inputFile, inputDir, outputDir, configFileName, dict_fil
             seen.add(tl)
             p = _term_regex(t)
             if p:
-                alts.append('(?:%s)' % p)
+                alts.append("(?:%s)" % p)
         if not alts:
             return None
         try:
-            return re.compile('|'.join(alts), re.IGNORECASE)
+            return re.compile("|".join(alts), re.IGNORECASE)
         except re.error as _e:
             print("Dictionary annotator: could not build the combined regex (%s)" % _e)
             return None
 
-    _compiled_groups = []   # list of (compiled_regex, tagAnnotations)
+    _compiled_groups = []  # list of (compiled_regex, tagAnnotations)
     if len(csvValue_color_list) == 0:
         _rx = _build_combined_regex(dictionary)
         if _rx is not None:
@@ -213,9 +254,9 @@ def dictionary_annotate(inputFile, inputDir, outputDir, configFileName, dict_fil
         for _gi in range(len(dictionary)):
             _color = color_list[_gi]
             if bold_var == True:
-                _tags = ['<span style=\"color: ' + _color + '; font-weight: bold\">', '</span>']
+                _tags = ['<span style="color: ' + _color + '; font-weight: bold">', "</span>"]
             else:
-                _tags = ['<span style=\"color: ' + _color + '\">', '</span>']
+                _tags = ['<span style="color: ' + _color + '">', "</span>"]
             _rx = _build_combined_regex(dictionary[_gi])
             if _rx is not None:
                 _compiled_groups.append((_rx, _tags))
@@ -225,11 +266,13 @@ def dictionary_annotate(inputFile, inputDir, outputDir, configFileName, dict_fil
         head, tail = os.path.split(file)
         i += 1
         print("Processing file " + str(i) + "/" + str(nFile) + " " + tail)
-        with open(file, 'r', encoding='utf-8',errors='ignore') as _f:
+        with open(file, encoding="utf-8", errors="ignore") as _f:
             text = _f.read()
         # put filename in bold
-        tail='<b>' + tail + '</b>'
-        writeout.append('<@#' + tail +'#@>' +'<br />\n')  # add the embedded filename (embedded  in <@# so that the merged file can be split) and a hard return
+        tail = "<b>" + tail + "</b>"
+        writeout.append(
+            "<@#" + tail + "#@>" + "<br />\n"
+        )  # add the embedded filename (embedded  in <@# so that the merged file can be split) and a hard return
         # Fast single-pass tagging: apply the pre-compiled combined regex(es) built once above -- ONE
         # pass per colour group per file, instead of a full-text re.sub PER TERM. Groups are applied in
         # order (as before), so an earlier group tags before a later one.
@@ -239,37 +282,43 @@ def dictionary_annotate(inputFile, inputDir, outputDir, configFileName, dict_fil
             except Exception as _e:
                 print("   Dictionary annotator: a tagging pass failed on this file (%s)" % _e)
         writeout.append(text)
-        writeout.append("<br />\n<br />\n") # add 2 hard returns
+        writeout.append("<br />\n<br />\n")  # add 2 hard returns
 
-    if fileType=='.html':
+    if fileType == ".html":
         if "_multiDict_annotated_" in file:
-            outputFilename=file
+            outputFilename = file
         elif "NLP_DBpedia_annotated_dict_annotated_" in file:
-            baseFilename=os.path.basename(os.path.normpath(file))[len("NLP_DBpedia_annotated_dict_annotated_"):]
-            outputFilename="NLP_DBpedia_annotated_multiDict_annotated_"+baseFilename
-            outputFilename=os.path.join(outputDir,outputFilename)
+            baseFilename = os.path.basename(os.path.normpath(file))[len("NLP_DBpedia_annotated_dict_annotated_") :]
+            outputFilename = "NLP_DBpedia_annotated_multiDict_annotated_" + baseFilename
+            outputFilename = os.path.join(outputDir, outputFilename)
         elif "NLP_DBpedia_annotated_" in file:
-            baseFilename=os.path.basename(os.path.normpath(file))[len("NLP_DBpedia_annotated_"):]
-            outputFilename="NLP_DBpedia_annotated_dict_annotated_"+baseFilename
-            outputFilename=os.path.join(outputDir,outputFilename)
+            baseFilename = os.path.basename(os.path.normpath(file))[len("NLP_DBpedia_annotated_") :]
+            outputFilename = "NLP_DBpedia_annotated_dict_annotated_" + baseFilename
+            outputFilename = os.path.join(outputDir, outputFilename)
         elif "NLP_dict_annotated_" in file:
-            baseFilename=os.path.basename(os.path.normpath(file))[len("NLP_dict_annotated_"):]
-            outputFilename="NLP_multiDict_annotated_"+baseFilename
-            outputFilename=os.path.join(outputDir,outputFilename)
+            baseFilename = os.path.basename(os.path.normpath(file))[len("NLP_dict_annotated_") :]
+            outputFilename = "NLP_multiDict_annotated_" + baseFilename
+            outputFilename = os.path.join(outputDir, outputFilename)
         else:
-            outputFilename=file
+            outputFilename = file
+    elif inputDir != "":
+        outputFilename = os.path.join(
+            outputDir,
+            "NLP_dict_annotated_" + fileSubc + "_" + os.path.basename(os.path.normpath(inputDir)) + ".html",
+        )
     else:
-        if inputDir!='':
-            outputFilename=os.path.join(outputDir,"NLP_dict_annotated_" + fileSubc + "_" + os.path.basename(os.path.normpath(inputDir)) + '.html')
-        else:
-            outputFilename=os.path.join(outputDir,"NLP_dict_annotated_" + fileSubc + "_" + os.path.basename(os.path.normpath(file))[:-4] + '.html')
+        outputFilename = os.path.join(
+            outputDir,
+            "NLP_dict_annotated_" + fileSubc + "_" + os.path.basename(os.path.normpath(file))[:-4] + ".html",
+        )
     filesToOpen.append(outputFilename)
-    with open(outputFilename, 'w+',encoding='utf-8',errors='ignore') as f:
-        f.write('<html>\n<body>\n<div>\n')
+    with open(outputFilename, "w+", encoding="utf-8", errors="ignore") as f:
+        f.write("<html>\n<body>\n<div>\n")
         for s in writeout:
             f.write(s)
-        f.write('\n</div>\n</body>\n</html>')
+        f.write("\n</div>\n</body>\n</html>")
 
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Dictionary annotator at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis end", "Finished running Dictionary annotator at", True, "", True, startTime
+    )
     return filesToOpen
-

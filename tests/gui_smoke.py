@@ -20,36 +20,40 @@ It's a standalone script (no `test_` prefix), matching tests/ctk_bundle_smoke.py
 has no pytest CI. Run it before shipping a GUI change. Exit 0 = all good; non-zero = a crash or a
 missing golden widget. Prints a per-GUI report.
 """
-import os
-import sys
+
 import glob
+import os
 import subprocess
+import sys
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
-_SRC = os.path.join(os.path.dirname(_HERE), 'src')
+_SRC = os.path.join(os.path.dirname(_HERE), "src")
 
 # GUIs whose specific widget LABELS must exist (catches a dropped/renamed load-bearing row).
 # Keep these to rows that matter -- not every button.
 GOLDEN = {
-    'DB_SQL_main.py': ['Select INPUT CSV file', 'Generate SQL query', 'WHERE filter'],
-    'corpus_profiler_main.py': ['Who did what to whom?  (Narrative)', 'What do the words mean?  (Semantics)'],
+    "DB_SQL_main.py": ["Select INPUT CSV file", "Generate SQL query", "WHERE filter"],
+    "corpus_profiler_main.py": ["Who did what to whom?  (Narrative)", "What do the words mean?  (Semantics)"],
 }
 
 # Filenames matching these are NOT GUIs to smoke-test (helpers/launchers/skeletons).
-_NOT_GUI = ('NLP_menu_notebook_skeleton',)
+_NOT_GUI = ("NLP_menu_notebook_skeleton",)
 
 # GUIs that can't be reached by these stubs: at CONSTRUCTION they consume real GUI_util/tk-Var state
 # or read real files (numeric attrs used before our defaults apply, conditional assignments gated on
 # real config, a CSV read at build time, ...). They are NOT known-broken -- just not smoke-testable
 # this way; verify them by launching. Listed so a real regression ELSEWHERE still turns the run red.
 KNOWN_SKIP = {
-    'GIS_Google_Earth_main.py', 'NLP_menu_main.py', 'NLP_setup_IO_main.py',
-    'NLP_setup_external_software_main.py', 'NLP_welcome_main.py',
-    'file_checker_pre_processing_pipeline_main.py',
+    "GIS_Google_Earth_main.py",
+    "NLP_menu_main.py",
+    "NLP_setup_IO_main.py",
+    "NLP_setup_external_software_main.py",
+    "NLP_welcome_main.py",
+    "file_checker_pre_processing_pipeline_main.py",
 }
 
 # The per-GUI subprocess harness: stub the world, import the target, print OK + recorded widget texts.
-_HARNESS = r'''
+_HARNESS = r"""
 import sys, os, types, traceback
 from unittest.mock import MagicMock
 try:
@@ -190,69 +194,80 @@ except BaseException:
     traceback.print_exc()
 for _t in _texts:
     print('WTEXT\t' + _t.replace(chr(9), ' ').replace(chr(10), ' '))
-'''
+"""
 
 
 def _smoke_one(target):
     try:
-        p = subprocess.run([sys.executable, '-c', _HARNESS, _SRC, target],
-                           capture_output=True, text=True, timeout=180)
+        p = subprocess.run([sys.executable, "-c", _HARNESS, _SRC, target], capture_output=True, text=True, timeout=180)
     except subprocess.TimeoutExpired:
-        return False, [], '(timed out)'
-    ok = 'SMOKE_OK' in p.stdout
-    texts = [ln[6:] for ln in p.stdout.splitlines() if ln.startswith('WTEXT\t')]
-    err_tail = ''
+        return False, [], "(timed out)"
+    ok = "SMOKE_OK" in p.stdout
+    texts = [ln[6:] for ln in p.stdout.splitlines() if ln.startswith("WTEXT\t")]
+    err_tail = ""
     if not ok:
-        err = (p.stdout + '\n' + p.stderr).strip().splitlines()
-        err_tail = '\n      '.join(err[-6:])
+        err = (p.stdout + "\n" + p.stderr).strip().splitlines()
+        err_tail = "\n      ".join(err[-6:])
     return ok, texts, err_tail
 
 
 def main():
-    gui_files = sorted(os.path.basename(f) for f in glob.glob(os.path.join(_SRC, '*_main.py'))
-                       if not any(s in os.path.basename(f) for s in _NOT_GUI))
-    print('GUI construction smoke test: %d *_main.py GUIs under %s\n' % (len(gui_files), _SRC))
+    gui_files = sorted(
+        os.path.basename(f)
+        for f in glob.glob(os.path.join(_SRC, "*_main.py"))
+        if not any(s in os.path.basename(f) for s in _NOT_GUI)
+    )
+    print("GUI construction smoke test: %d *_main.py GUIs under %s\n" % (len(gui_files), _SRC))
     crashed, missing, skipped = [], [], []
     for f in gui_files:
         ok, texts, err_tail = _smoke_one(f)
         if not ok:
             if f in KNOWN_SKIP:
                 skipped.append(f)
-                print('SKIP   %-52s (not smoke-testable under stubs -- verify by launching)' % f)
+                print("SKIP   %-52s (not smoke-testable under stubs -- verify by launching)" % f)
                 continue
             crashed.append(f)
-            print('CRASH  %-52s' % f)
+            print("CRASH  %-52s" % f)
             if err_tail:
-                print('      ' + err_tail)
+                print("      " + err_tail)
             continue
         if f in KNOWN_SKIP:
-            print('OK*    %-52s (built now -- consider removing from KNOWN_SKIP)' % f)
+            print("OK*    %-52s (built now -- consider removing from KNOWN_SKIP)" % f)
         # golden widget-label check (only for curated GUIs that imported OK)
         want = GOLDEN.get(f)
         if want:
-            blob = ' \n '.join(texts)
+            blob = " \n ".join(texts)
             absent = [w for w in want if w not in blob]
             if absent:
                 missing.append((f, absent))
-                print('MISSING %-51s golden labels not found: %s' % (f, ', '.join(absent)))
+                print("MISSING %-51s golden labels not found: %s" % (f, ", ".join(absent)))
                 continue
-            print('OK     %-52s (built; %d widgets; golden ok)' % (f, len(texts)))
+            print("OK     %-52s (built; %d widgets; golden ok)" % (f, len(texts)))
         else:
-            print('OK     %-52s (built; %d widgets)' % (f, len(texts)))
+            print("OK     %-52s (built; %d widgets)" % (f, len(texts)))
 
-    print('\n%d GUIs: %d ok, %d crashed, %d missing golden, %d skipped (stub-limited).'
-          % (len(gui_files), len(gui_files) - len(crashed) - len(missing) - len(skipped),
-             len(crashed), len(missing), len(skipped)))
+    print(
+        "\n%d GUIs: %d ok, %d crashed, %d missing golden, %d skipped (stub-limited)."
+        % (
+            len(gui_files),
+            len(gui_files) - len(crashed) - len(missing) - len(skipped),
+            len(crashed),
+            len(missing),
+            len(skipped),
+        )
+    )
     if crashed:
-        print('  CRASHED (real -- fix these): ' + ', '.join(crashed))
+        print("  CRASHED (real -- fix these): " + ", ".join(crashed))
     if missing:
-        print('  MISSING GOLDEN (a required widget label is gone!): '
-              + ', '.join('%s -> %s' % (f, ','.join(a)) for f, a in missing))
+        print(
+            "  MISSING GOLDEN (a required widget label is gone!): "
+            + ", ".join("%s -> %s" % (f, ",".join(a)) for f, a in missing)
+        )
     if skipped:
-        print('  skipped: ' + ', '.join(skipped))
+        print("  skipped: " + ", ".join(skipped))
     # Green ONLY if no real crash and no golden regression. Skips don't fail the run.
     return 1 if (crashed or missing) else 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

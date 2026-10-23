@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #
 #     Gexf library in python
 #     see gephi.org and gexf.net
@@ -13,29 +11,31 @@
 
 # from lib.gexf._gexf import Gexf, Spells, Node, Edge
 
-import datetime
 import csv
-import random
-import os
-from lxml import etree
+import datetime
 from datetime import date
-import tkinter.messagebox as mb
 import itertools
+import os
+import random
+import tkinter.messagebox as mb
 import traceback
+
+from lxml import etree
+
 import IO_libraries_util
 import IO_user_interface_util
 
+
 def msg_unexpected_tag(expected, got):
-    print("Error : incorrect xml. Expected tag {expected}, not {got}.".format(expected=expected, got=got))
+    print(f"Error : incorrect xml. Expected tag {expected}, not {got}.")
 
 
 def ns_clean(token):
-    i = token.find('}')
-    return token[i + 1:]
+    i = token.find("}")
+    return token[i + 1 :]
 
 
 class Gexf:
-
     def __init__(self, creator, description):
         self.creator = creator
         self.description = description
@@ -52,7 +52,9 @@ class Gexf:
         return g
 
     def getXML(self):
-        gexfXML = etree.Element("{" + self.xmlns + "}gexf", version=self.version, nsmap={None: self.xmlns, 'viz': self.viz, 'xsi': self.xsi})
+        gexfXML = etree.Element(
+            "{" + self.xmlns + "}gexf", version=self.version, nsmap={None: self.xmlns, "viz": self.viz, "xsi": self.xsi}
+        )
         #         gexfXML.set("xmlnsxsi",)
         gexfXML.set("{xsi}schemaLocation", self.schemaLocation)
         meta = etree.SubElement(gexfXML, "meta")
@@ -65,7 +67,7 @@ class Gexf:
         return gexfXML
 
     def write(self, file, print_stat=True):
-        file.write(etree.tostring(self.getXML(), pretty_print=True, encoding='utf-8', xml_declaration=True))
+        file.write(etree.tostring(self.getXML(), pretty_print=True, encoding="utf-8", xml_declaration=True))
         if print_stat is True:
             self.print_stat()
 
@@ -75,12 +77,13 @@ class Gexf:
 
     @staticmethod
     def importXML(gexf_file):
-        """ import gexf xml meta tags to create a Gexf Object and delegate Graph extraction to Graph class"""
+        """import gexf xml meta tags to create a Gexf Object and delegate Graph extraction to Graph class"""
         # parse the gexf file. A .gexf handed to this may have come from anywhere, so entity
         # resolution and network access are off -- the same hardening as
         # IO_files_util.safe_xml_parser, spelled out here to keep this module standalone.
-        parser = etree.XMLParser(ns_clean=True, resolve_entities=False, no_network=True,
-                                 load_dtd=False, huge_tree=False)
+        parser = etree.XMLParser(
+            ns_clean=True, resolve_entities=False, no_network=True, load_dtd=False, huge_tree=False
+        )
         tree = etree.parse((gexf_file), parser)
         # start create Gexf Object
         gexf_xml = tree.getroot()
@@ -112,7 +115,6 @@ class Gexf:
 
 
 class Graph:
-
     def __init__(self, type, mode, label, time_format="double", start="", end=""):
 
         # control variable
@@ -154,7 +156,9 @@ class Graph:
         self._edges = {}
         self.edges = self._edges
 
-    def addNode(self, id, label, start="", end="", startopen=False, endopen=False, pid="", r="", g="", b="",size="", spells=[]):
+    def addNode(
+        self, id, label, start="", end="", startopen=False, endopen=False, pid="", r="", g="", b="", size="", spells=[]
+    ):
         self._nodes[str(id)] = Node(self, id, label, start, end, pid, r, g, b, size, spells, startopen, endopen)
         return self._nodes[str(id)]
 
@@ -164,8 +168,25 @@ class Graph:
         else:
             return 0
 
-    def addEdge(self, id, source, target, weight="", start="", end="", label="", r="", g="", b="", spells=[], startopen=False, endopen=False):
-        self._edges[str(id)] = Edge(self, id, source, target, weight, start, end, label, r, g, b, spells, startopen, endopen)
+    def addEdge(
+        self,
+        id,
+        source,
+        target,
+        weight="",
+        start="",
+        end="",
+        label="",
+        r="",
+        g="",
+        b="",
+        spells=[],
+        startopen=False,
+        endopen=False,
+    ):
+        self._edges[str(id)] = Edge(
+            self, id, source, target, weight, start, end, label, r, g, b, spells, startopen, endopen
+        )
         return self._edges[str(id)]
 
     def addNodeAttribute(self, title, defaultValue=None, type="integer", mode="static", force_id=""):
@@ -173,7 +194,7 @@ class Graph:
         return self._attributes.declareAttribute("node", type, defaultValue, title, mode, force_id)
 
     def addDefaultAttributesToNode(self, node):
-        """ deprecated """
+        """deprecated"""
         pass
 
     def checkNodeAttribute(self, id, value, start, end):
@@ -191,23 +212,26 @@ class Graph:
         return self._attributes.declareAttribute("edge", type, defaultValue, title, mode, force_id)
 
     def addDefaultAttributesToEdge(self, edge):
-        """ deprecated """
+        """deprecated"""
         pass
 
     def checkEdgeAttribute(self, id, value, start, end):
-        """deprecated """
+        """deprecated"""
         pass
-#         # check conformity with type is missing
-#         if id in self._edgesAttributes.keys() :
-#             if self._edgesAttributes[id]["mode"]=="static" and ( not start=="" or not end=="") :
-#                 raise Exception("attribute "+str(id)+" is static you can't specify start or end dates. Declare Attribute as dynamic")
-#             return 1
-#         else :
-#             raise Exception("attribute id unknown. Add Attribute to graph first")
+
+    #         # check conformity with type is missing
+    #         if id in self._edgesAttributes.keys() :
+    #             if self._edgesAttributes[id]["mode"]=="static" and ( not start=="" or not end=="") :
+    #                 raise Exception("attribute "+str(id)+" is static you can't specify start or end dates. Declare Attribute as dynamic")
+    #             return 1
+    #         else :
+    #             raise Exception("attribute id unknown. Add Attribute to graph first")
 
     def getXML(self):
         # return lxml etree element
-        graphXML = etree.Element("graph", defaultedgetype=self.type, mode=self.mode, label=self.label, timeformat=self.time_format)
+        graphXML = etree.Element(
+            "graph", defaultedgetype=self.type, mode=self.mode, label=self.label, timeformat=self.time_format
+        )
 
         for attributesElement in self.attributes.getAttributesDeclarationXML():
             graphXML.append(attributesElement)
@@ -228,7 +252,7 @@ class Graph:
 
     @staticmethod
     def importXML(graph_xml, gexf_obj):
-        """ import graph xml tag to create a Graph Object and delegate Node/Edges extraction to Edge/Node class"""
+        """import graph xml tag to create a Graph Object and delegate Node/Edges extraction to Edge/Node class"""
         # get Graph attributes
         type = ""
         mode = ""
@@ -272,13 +296,13 @@ class Graph:
 
 class Attributes(dict):
     """
-        attributes=
-        {
-         "node" :
-            { "id1" : {"id":"id1","title":"age","type":"integer","defaultValue":50,"mode":"static"}, },
-         "edge" :
-            { "id2" : {"id":"id2","title":"relationship","type":"string","defaultValue":"friend",mode:"dynamic"}, },
-        }
+    attributes=
+    {
+     "node" :
+        { "id1" : {"id":"id1","title":"age","type":"integer","defaultValue":50,"mode":"static"}, },
+     "edge" :
+        { "id2" : {"id":"id2","title":"relationship","type":"string","defaultValue":"friend",mode:"dynamic"}, },
+    }
 
 
     """
@@ -292,7 +316,7 @@ class Attributes(dict):
 
     def declareAttribute(self, attClass, type, defaultValue, title="", mode="static", id=None):
         """
-            add a new attribute declaration to the graph
+        add a new attribute declaration to the graph
         """
         if attClass in self.attClass_choices:
             # should add quality control here on type and defaultValue
@@ -304,17 +328,19 @@ class Attributes(dict):
         else:
             raise Exception("wrong attClass : " + str(attClass) + " Should be in " + str(type_choices))
 
-    def makeAttributeInstance(self, attClass, id=None, value=None, start=None, end=None, startopen=False, endopen=False):
+    def makeAttributeInstance(
+        self, attClass, id=None, value=None, start=None, end=None, startopen=False, endopen=False
+    ):
         """
-           generate an attribute to be include to a node or edge.
-           copied from the declared attributes, thus any attribute has to be declared first
+        generate an attribute to be include to a node or edge.
+        copied from the declared attributes, thus any attribute has to be declared first
         """
         if attClass in self.attClass_choices:
             if id in self[attClass].keys():
                 att = {"id": id}
                 att["value"] = value if value else self[attClass][id]["defaultValue"]
                 if self[attClass][id]["mode"] == "dynamic" and start or end:
-                # start & end will be discarded if the mode is set to static
+                    # start & end will be discarded if the mode is set to static
                     if start:
                         att["start"] = start
                     if startopen:
@@ -325,12 +351,12 @@ class Attributes(dict):
                         att["endopen"] = endopen
                 return att
             else:
-                raise Exception("wrong attribute id (%s), declare the attribute first with declareAttribute" % (id, ))
+                raise Exception("wrong attribute id (%s), declare the attribute first with declareAttribute" % (id,))
         else:
             raise Exception("wrong attClass : " + str(attClass) + " Should be in " + str(self.type_choices))
 
     def getAttributesDeclarationXML(self):
-        """ generate attributes declaration XML """
+        """generate attributes declaration XML"""
         # return lxml etree element
         allAttributesXML = []
         if len(self) > 0:
@@ -357,7 +383,7 @@ class Attributes(dict):
 
     @staticmethod
     def getAttributesXML(atts):
-        """ get XML attValues for an element (Node or Edge) by passing an attribute values list (stored in Nodes and Edges)"""
+        """get XML attValues for an element (Node or Edge) by passing an attribute values list (stored in Nodes and Edges)"""
         if len(atts) > 0:
             attValuesXML = etree.Element("attvalues")
             for att in atts:
@@ -365,15 +391,19 @@ class Attributes(dict):
                 attValueXML.set("for", str(att["id"]))
                 attValueXML.set("value", att["value"])
                 if "start" in att.keys() and not att["start"] == "":
-                    attValueXML.set("start" if not "startopen" in att.keys() or not att["startopen"] else "startopen", att["start"])
+                    attValueXML.set(
+                        "start" if "startopen" not in att.keys() or not att["startopen"] else "startopen", att["start"]
+                    )
                 if "end" in att.keys() and not att["end"] == "":
-                    attValueXML.set("end" if not "endopen" in att.keys() or not att["endopen"] else "endopen", att["end"])
+                    attValueXML.set(
+                        "end" if "endopen" not in att.keys() or not att["endopen"] else "endopen", att["end"]
+                    )
             return attValuesXML
         else:
             return None
 
     def importAttributesXML(self, attributes_xml):
-        """ get XML attributes declaration of a graph gexf"""
+        """get XML attributes declaration of a graph gexf"""
         attr_class = None
         mode = ""
         for attr in attributes_xml.attrib:
@@ -410,7 +440,7 @@ class Attributes(dict):
                 self.declareAttribute(attr_class, type, default, title, mode, id)
 
     def importAttributesValuesXML(self, attClass, attvalues_xml):
-        """ import attributes values from attvalues gexf xml tag attached to nodes or edges"""
+        """import attributes values from attvalues gexf xml tag attached to nodes or edges"""
         atts = []
         for attvalues in attvalues_xml:
             for child in attvalues:
@@ -444,15 +474,16 @@ class Attributes(dict):
 
 
 class Spells:
-    '''
+    """
     spells are time periods
     spells is a list of dictionaries
     a spell is a dict : {"start":"YYYY-MM-DD","end":"YYYY-MM-DD"}
-    '''
-    def __init__(self,_list):
+    """
+
+    def __init__(self, _list):
         self._list = _list
 
-    def append(self,_dict):
+    def append(self, _dict):
         self._list = self._list.append(_dict)
 
     def getXML(self):
@@ -472,8 +503,22 @@ class Spells:
 
 
 class Node:
-
-    def __init__(self, graph, id, label, start="", end="", pid="", r="", g="", b="", size="", spells=[], startopen=False, endopen=False):
+    def __init__(
+        self,
+        graph,
+        id,
+        label,
+        start="",
+        end="",
+        pid="",
+        r="",
+        g="",
+        b="",
+        size="",
+        spells=[],
+        startopen=False,
+        endopen=False,
+    ):
         self.id = id
         self.label = label
         self.start = start
@@ -485,7 +530,7 @@ class Node:
         self.setColor(r, g, b)
         self.size = size
 
-        #spells expecting format = [{start:"",end:""},...]
+        # spells expecting format = [{start:"",end:""},...]
         self.spells = spells
 
         if not self.pid == "":
@@ -495,10 +540,12 @@ class Node:
         self._attributes = []
         self.attributes = self._attributes
         # add existing nodesattributes default values : bad idea and unecessary
-        #self._graph.addDefaultAttributesToNode(self)
+        # self._graph.addDefaultAttributesToNode(self)
 
     def addAttribute(self, id, value, start="", end="", startopen=False, endopen=False):
-        self._attributes.append(self._graph.attributes.makeAttributeInstance("node", id, value, start, end, startopen, endopen))
+        self._attributes.append(
+            self._graph.attributes.makeAttributeInstance("node", id, value, start, end, startopen, endopen)
+        )
 
     def getXML(self):
         # return lxml etree element
@@ -522,9 +569,8 @@ class Node:
                 # print(dir(Spells(self.spells)))
                 nodeXML.append(Spells(self.spells).getXML())
 
-
             if not self.r == "" and not self.g == "" and not self.b == "":
-                #color : <viz:color r="239" g="173" b="66"/>
+                # color : <viz:color r="239" g="173" b="66"/>
                 colorXML = etree.SubElement(nodeXML, "{http://www.gexf.net/1.1draft/viz}color")
                 colorXML.set("r", str(self.r))
                 colorXML.set("g", str(self.g))
@@ -532,7 +578,7 @@ class Node:
 
             if not self.size == "":
                 sizeXML = etree.SubElement(nodeXML, "{http://www.gexf.net/1.1draft/viz}size")
-                sizeXML.set("value",self.size)
+                sizeXML.set("value", self.size)
 
             return nodeXML
         except Exception as e:
@@ -601,7 +647,19 @@ class Node:
                     if tag == "spells":
                         spells = Spells.importXML(child)
 
-                node_obj = graph_obj.addNode(id=id, label=label, start=start, end=end, startopen=startopen, endopen=endopen, pid=pid, r=r, g=g, b=b, spells=spells)
+                node_obj = graph_obj.addNode(
+                    id=id,
+                    label=label,
+                    start=start,
+                    end=end,
+                    startopen=startopen,
+                    endopen=endopen,
+                    pid=pid,
+                    r=r,
+                    g=g,
+                    b=b,
+                    spells=spells,
+                )
                 node_obj._attributes = graph_obj.attributes.importAttributesValuesXML("node", attvalues_xml)
 
     def setColor(self, r, g, b):
@@ -609,14 +667,28 @@ class Node:
         self.g = g
         self.b = b
 
-
     def __str__(self):
         return self.label
 
 
 class Edge:
-
-    def __init__(self, graph, id, source, target, weight="", start="", end="", label="", r="", g="", b="", spells=[], startopen=False, endopen=False):
+    def __init__(
+        self,
+        graph,
+        id,
+        source,
+        target,
+        weight="",
+        start="",
+        end="",
+        label="",
+        r="",
+        g="",
+        b="",
+        spells=[],
+        startopen=False,
+        endopen=False,
+    ):
 
         self.id = id
         self._graph = graph
@@ -645,13 +717,15 @@ class Edge:
         # COLOR on edges now supported in GEXF 1.2
         self.setColor(r, g, b)
 
-        #spells expecting format = [{start:"",end:""},...]
+        # spells expecting format = [{start:"",end:""},...]
         self.spells = spells
         # add existing nodesattributes default values : bad idea and unecessary
-        #self._graph.addDefaultAttributesToEdge(self)
+        # self._graph.addDefaultAttributesToEdge(self)
 
     def addAttribute(self, id, value, start="", end="", startopen=False, endopen=False):
-        self._attributes.append(self._graph.attributes.makeAttributeInstance("edge", id, value, start, end, startopen, endopen))
+        self._attributes.append(
+            self._graph.attributes.makeAttributeInstance("edge", id, value, start, end, startopen, endopen)
+        )
 
     def getXML(self):
         # return lxml etree element
@@ -672,13 +746,13 @@ class Edge:
 
             # spells
             if self.spells:
-                #spellsXML = etree.SubElement(edgeXML, "spells")
-                #spellsXML.append(self.spells.getXML())
+                # spellsXML = etree.SubElement(edgeXML, "spells")
+                # spellsXML.append(self.spells.getXML())
                 edgeXML.append(Spells(self.spells).getXML())
 
             # COLOR on edges is supported in GEXF since 1.2
             if not self.r == "" and not self.g == "" and not self.b == "":
-                #color : <viz:color r="239" g="173" b="66"/>
+                # color : <viz:color r="239" g="173" b="66"/>
                 colorXML = etree.SubElement(edgeXML, "{http://www.gexf.net/1.2draft/viz}color")
                 colorXML.set("r", str(self.r))
                 colorXML.set("g", str(self.g))
@@ -702,7 +776,6 @@ class Edge:
     def importXML(edges_xml, graph_obj):
 
         for child in edges_xml:
-
             tag = ns_clean(child.tag).lower()
             if tag == "edge":
                 edge_xml = child
@@ -755,10 +828,24 @@ class Edge:
                         g = child.attrib["g"]
                         b = child.attrib["b"]
 
-                edge_obj = graph_obj.addEdge(id=id, source=source, target=target, weight=weight, start=start, end=end, startopen=startopen, endopen=endopen, label=label, r=r, g=g, b=b, spells=spells)
+                edge_obj = graph_obj.addEdge(
+                    id=id,
+                    source=source,
+                    target=target,
+                    weight=weight,
+                    start=start,
+                    end=end,
+                    startopen=startopen,
+                    endopen=endopen,
+                    label=label,
+                    r=r,
+                    g=g,
+                    b=b,
+                    spells=spells,
+                )
                 edge_obj._attributes = graph_obj.attributes.importAttributesValuesXML("edge", attvalues_xml)
 
-# COLOR on edges is supported in GEXF since 1.2
+    # COLOR on edges is supported in GEXF since 1.2
     def setColor(self, r, g, b):
         self.r = r
         self.g = g
@@ -766,13 +853,14 @@ class Edge:
 
 
 class GexfImport:
-# class coded by elie Rotenberg, médialab 20/07/2010
-# deprecated : import XML codes are now included to the Gexf, Graph, Attribute, Node, Edge classes
+    # class coded by elie Rotenberg, médialab 20/07/2010
+    # deprecated : import XML codes are now included to the Gexf, Graph, Attribute, Node, Edge classes
 
     def __init__(self, file_like):
         # same hardening as importXML above: entity resolution and network access off
-        parser = etree.XMLParser(ns_clean=True, resolve_entities=False, no_network=True,
-                                 load_dtd=False, huge_tree=False)
+        parser = etree.XMLParser(
+            ns_clean=True, resolve_entities=False, no_network=True, load_dtd=False, huge_tree=False
+        )
         tree = etree.parse(file_like, parser)
         gexf_xml = tree.getroot()
         tag = self.ns_clean(gexf_xml.tag).lower()
@@ -793,11 +881,11 @@ class GexfImport:
                 self.graph_obj = self.extract_graph_obj(graph_xml)
 
     def ns_clean(self, token):
-        i = token.find('}')
-        return token[i + 1:]
+        i = token.find("}")
+        return token[i + 1 :]
 
     def msg_unexpected_tag(self, expected, got):
-        print("Error : incorrect xml. Expected tag {expected}, not {got}.".format(expected=expected, got=got))
+        print(f"Error : incorrect xml. Expected tag {expected}, not {got}.")
 
     def extract_gexf_obj(self, meta_xml):
         for child in meta_xml:
@@ -933,7 +1021,19 @@ class GexfImport:
             if tag == "spells":
                 spells = [spell.attrib for spell in child]
 
-        self.node_obj = self.graph_obj.addNode(id=id, label=label, start=start, end=end, startopen=startopen, endopen=endopen, pid=pid, r=r, g=g, b=b, spells=spells)
+        self.node_obj = self.graph_obj.addNode(
+            id=id,
+            label=label,
+            start=start,
+            end=end,
+            startopen=startopen,
+            endopen=endopen,
+            pid=pid,
+            r=r,
+            g=g,
+            b=b,
+            spells=spells,
+        )
 
         for attvalues_xml in attvalues_xmls:
             self.extract_node_attvalues(attvalues_xml)
@@ -1027,7 +1127,21 @@ class GexfImport:
                 g = child.attrib["g"]
                 b = child.attrib["b"]
 
-        self.edge_obj = self.graph_obj.addEdge(id=id, source=source, target=target, weight=weight, start=start, end=end, startopen=startopen, endopen=endopen, label=label, r=r, g=g, b=b, spells=spells)
+        self.edge_obj = self.graph_obj.addEdge(
+            id=id,
+            source=source,
+            target=target,
+            weight=weight,
+            start=start,
+            end=end,
+            startopen=startopen,
+            endopen=endopen,
+            label=label,
+            r=r,
+            g=g,
+            b=b,
+            spells=spells,
+        )
         self.extract_edge_attvalues(attvalues_xml)
 
     def extract_edge_attvalues(self, attvalues_xml):
@@ -1036,7 +1150,8 @@ class GexfImport:
             if tag == "attvalue":
                 attvalue_xml = child
                 self.extract_edge_attvalue(attvalue_xml)
-#    def addAttribute(self,id,value,start="",end="") :
+
+    #    def addAttribute(self,id,value,start="",end="") :
 
     def extract_edge_attvalue(self, attvalue_xml):
         id = ""
@@ -1065,44 +1180,46 @@ class GexfImport:
         return self.gexf_obj
 
 
-
-
 #   use Sentence ID to display a dynamic model by sentence
 #   passing the three headers that need to be displayed
 #   processing Sentence ID optional with a Dynamic boolean
 
 # returns a gexf file
 
-def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spellCol='',logic='default'):
+
+def create_gexf(window, fileBase, OutputDir, inputFilename, col1, col2, col3, spellCol="", logic="default"):
     """
     Create gexf format file that can be used in Gephi to visualize result dynamically.
     :param corpus: A Corpus Object
     :return: gexf file path.
     """
     # check that the CoreNLPdir has been setup
-    GephiDir, existing_software_config, errorFound = IO_libraries_util.external_software_install('Gephi_util',
-                                                                                         'Gephi',
-                                                                                         '',
-                                                                                         silent=False, errorFound=False)
-    if GephiDir == None or GephiDir=='':
+    GephiDir, existing_software_config, errorFound = IO_libraries_util.external_software_install(
+        "Gephi_util", "Gephi", "", silent=False, errorFound=False
+    )
+    if GephiDir == None or GephiDir == "":
         return
 
-    startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start',
-                                                   'Started running Gephi network graphs at', True)
+    startTime = IO_user_interface_util.timed_alert(
+        window, 2000, "Analysis start", "Started running Gephi network graphs at", True
+    )
 
     EPOCH = datetime.datetime.today()
-    graph_name = fileBase +".gexf"
-    gexf = Gexf(fileBase,"Author")
-    graph = gexf.addGraph("directed","dynamic","network graph",timeformat="date")
-    with open(inputFilename, encoding='utf-8', errors='ignore',) as result:
-
+    graph_name = fileBase + ".gexf"
+    gexf = Gexf(fileBase, "Author")
+    graph = gexf.addGraph("directed", "dynamic", "network graph", timeformat="date")
+    with open(
+        inputFilename,
+        encoding="utf-8",
+        errors="ignore",
+    ) as result:
         print("GEPHI inputFilename ", inputFilename)
 
         reader = csv.DictReader(result)
 
         for row in reader:
             # skip processing rows that any of the column is empty
-            if row[col1] == '' or row[col2] == '' or row[col3] == '':
+            if row[col1] == "" or row[col2] == "" or row[col3] == "":
                 continue
             if row[col1] not in graph.nodes:
                 # https://www.datacamp.com/tutorial/converting-strings-datetime-objects
@@ -1114,178 +1231,285 @@ def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spe
                 # % H: 2-digit hour(00 - 23)
                 # % M: 2-digit minute(00 - 59)
                 # % S: 2-digit second(00 - 59)
-                #print("i am here")
-                if logic=='default':
+                # print("i am here")
+                if logic == "default":
                     date_str = row[spellCol]
                     date_format = "%m-%d-%Y"
                     # date_format = "%Y-%m-%d" # Old code
                     try:
                         import dateutil.parser
+
                         date_obj = dateutil.parser.parse(date_str)
                     except:
-                        if '/' in row[spellCol] and spellCol == 'Date':
-                            mb.showwarning(title='Warning',
-                                           message='Error in date value ' + row[
-                                               spellCol] + '.\n\nDate values should not be separated by / but by - (e.g., ' +
-                                                   row[spellCol] + ' should be ' + row[spellCol].replace('/', '-') + ').')
+                        if "/" in row[spellCol] and spellCol == "Date":
+                            mb.showwarning(
+                                title="Warning",
+                                message="Error in date value "
+                                + row[spellCol]
+                                + ".\n\nDate values should not be separated by / but by - (e.g., "
+                                + row[spellCol]
+                                + " should be "
+                                + row[spellCol].replace("/", "-")
+                                + ").",
+                            )
                             return
-                else:
-                    if spellCol != "":
-                        date_str = row[spellCol]
-                        date_format = "%m-%d-%Y"
-                        # date_format = "%Y-%m-%d"  # Old code
-                        try:
-                            date_obj = datetime.datetime.strptime(date_str, date_format)
-                        except:
-                            if '/' in row[spellCol] and spellCol == 'Date':
-                                mb.showwarning(title='Warning',
-                                               message='Error in date value ' + row[
-                                                   spellCol] + '.\n\nDate values should not be separated by / but by - (e.g., ' +
-                                                       row[spellCol] + ' should be ' + row[spellCol].replace('/',
-                                                                                                             '-') + ').')
-                                return
+                elif spellCol != "":
+                    date_str = row[spellCol]
+                    date_format = "%m-%d-%Y"
+                    # date_format = "%Y-%m-%d"  # Old code
+                    try:
+                        date_obj = datetime.datetime.strptime(date_str, date_format)
+                    except:
+                        if "/" in row[spellCol] and spellCol == "Date":
+                            mb.showwarning(
+                                title="Warning",
+                                message="Error in date value "
+                                + row[spellCol]
+                                + ".\n\nDate values should not be separated by / but by - (e.g., "
+                                + row[spellCol]
+                                + " should be "
+                                + row[spellCol].replace("/", "-")
+                                + ").",
+                            )
+                            return
                 # days = int(float(date_obj))
                 # date(row[spellCol]).strftime(date_format)
-                if spellCol != "": #this could be a Date field
+                if spellCol != "":  # this could be a Date field
                     try:
-                        if spellCol =='Date':
+                        if spellCol == "Date":
                             import dateutil.parser
-                            node = Node(graph, row[col1], row[col1],
-                                        r=random.randint(0, 255), g=random.randint(0, 255), b=random.randint(0, 255),
-                                        size="50",
-                                        spells=[
-                                            {"start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
-                                             "end": dateutil.parser.parse(row[spellCol]).strftime(date_format)}
-                                        ])
+
+                            node = Node(
+                                graph,
+                                row[col1],
+                                row[col1],
+                                r=random.randint(0, 255),
+                                g=random.randint(0, 255),
+                                b=random.randint(0, 255),
+                                size="50",
+                                spells=[
+                                    {
+                                        "start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                                        "end": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                                    }
+                                ],
+                            )
                         else:
-                            #pass
-                            node = Node(graph,row[col1],row[col1],
-                                        r = random.randint(0,255),g = random.randint(0,255),b = random.randint(0,255),
-                                        size = "50",
-                                        spells = [
-                                            {"start":(EPOCH+datetime.timedelta(days = int(row[spellCol])))
-                                                .strftime(date_format),
-                                             "end":(EPOCH+datetime.timedelta(days = int(row[spellCol])))
-                                                .strftime(date_format)}
-                                            # {"start":(EPOCH+datetime.timedelta(days = int(float(row[spellCol]))))
-                                            #     .strftime(date_format),
-                                            #  "end":(EPOCH+datetime.timedelta(days = int(float(row[spellCol]))+1))
-                                            #     .strftime(date_format)}
-                                        ])
+                            # pass
+                            node = Node(
+                                graph,
+                                row[col1],
+                                row[col1],
+                                r=random.randint(0, 255),
+                                g=random.randint(0, 255),
+                                b=random.randint(0, 255),
+                                size="50",
+                                spells=[
+                                    {
+                                        "start": (EPOCH + datetime.timedelta(days=int(row[spellCol]))).strftime(
+                                            date_format
+                                        ),
+                                        "end": (EPOCH + datetime.timedelta(days=int(row[spellCol]))).strftime(
+                                            date_format
+                                        ),
+                                    }
+                                    # {"start":(EPOCH+datetime.timedelta(days = int(float(row[spellCol]))))
+                                    #     .strftime(date_format),
+                                    #  "end":(EPOCH+datetime.timedelta(days = int(float(row[spellCol]))+1))
+                                    #     .strftime(date_format)}
+                                ],
+                            )
                     except:
-                        if '/' in row[spellCol] and spellCol == 'Date':
-                            mb.showwarning(title='Warning',
-                                message='Date error in date value' + row[spellCol] + '. Date values should not be separated by / but by - (e.g., ' + row[spellCol] + row[spellCol].replace('/','-') + ')')
+                        if "/" in row[spellCol] and spellCol == "Date":
+                            mb.showwarning(
+                                title="Warning",
+                                message="Date error in date value"
+                                + row[spellCol]
+                                + ". Date values should not be separated by / but by - (e.g., "
+                                + row[spellCol]
+                                + row[spellCol].replace("/", "-")
+                                + ")",
+                            )
                             return
-                        print('Error in row value (cannot convert string to float)',row[spellCol])
+                        print("Error in row value (cannot convert string to float)", row[spellCol])
                         continue
                 else:
-                    node = Node(graph, row[col1], row[col1],
-                                r=random.randint(0, 255), g=random.randint(0, 255), b=random.randint(0, 255),
-                                size="50")
+                    node = Node(
+                        graph,
+                        row[col1],
+                        row[col1],
+                        r=random.randint(0, 255),
+                        g=random.randint(0, 255),
+                        b=random.randint(0, 255),
+                        size="50",
+                    )
                 graph.nodes[row[col1]] = node
 
-
             else:
-                graph.nodes[row[col1]].size = str(int(graph.nodes[row[col1]].size)+50)
+                graph.nodes[row[col1]].size = str(int(graph.nodes[row[col1]].size) + 50)
                 if spellCol != "":
-                    if spellCol == 'Date':
+                    if spellCol == "Date":
                         import dateutil.parser
-                        graph.nodes[row[col1]].spells.append({"start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
-                                         "end": dateutil.parser.parse(row[spellCol]).strftime(date_format)})
+
+                        graph.nodes[row[col1]].spells.append(
+                            {
+                                "start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                                "end": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                            }
+                        )
 
                     else:
-                        graph.nodes[row[col1]].spells.append({
-                            "start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol]))))
-                                .strftime(date_format),
-                            "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1))
-                                .strftime(date_format)
-                        })
+                        graph.nodes[row[col1]].spells.append(
+                            {
+                                "start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])))).strftime(
+                                    date_format
+                                ),
+                                "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1)).strftime(
+                                    date_format
+                                ),
+                            }
+                        )
 
             if row[col3] not in graph.nodes:
                 if spellCol != "":
-                    if spellCol == 'Date':
+                    if spellCol == "Date":
                         import dateutil.parser
-                        node = Node(graph, row[col1], row[col1],
-                                    r=random.randint(0, 255), g=random.randint(0, 255), b=random.randint(0, 255),
-                                    size="50",
-                                    spells=[
-                                        {"start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
-                                         "end": dateutil.parser.parse(row[spellCol]).strftime(date_format)}
-                                    ])
+
+                        node = Node(
+                            graph,
+                            row[col1],
+                            row[col1],
+                            r=random.randint(0, 255),
+                            g=random.randint(0, 255),
+                            b=random.randint(0, 255),
+                            size="50",
+                            spells=[
+                                {
+                                    "start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                                    "end": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                                }
+                            ],
+                        )
                     else:
-                        node = Node(graph, row[col3], row[col3],
-                                    r=random.randint(0,255), g=random.randint(0,255), b=random.randint(0,255),
-                                    size="50",
-                                    spells=[
-                                        {"start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol]))))
-                                            .strftime(date_format),
-                                         "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1))
-                                            .strftime(date_format)}
-                                    ])
+                        node = Node(
+                            graph,
+                            row[col3],
+                            row[col3],
+                            r=random.randint(0, 255),
+                            g=random.randint(0, 255),
+                            b=random.randint(0, 255),
+                            size="50",
+                            spells=[
+                                {
+                                    "start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])))).strftime(
+                                        date_format
+                                    ),
+                                    "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1)).strftime(
+                                        date_format
+                                    ),
+                                }
+                            ],
+                        )
                 else:
-                    node = Node(graph, row[col3], row[col3],
-                                r=random.randint(0, 255), g=random.randint(0, 255), b=random.randint(0, 255),
-                                size="50")
+                    node = Node(
+                        graph,
+                        row[col3],
+                        row[col3],
+                        r=random.randint(0, 255),
+                        g=random.randint(0, 255),
+                        b=random.randint(0, 255),
+                        size="50",
+                    )
                 graph.nodes[row[col3]] = node
 
             else:
-                graph.nodes[row[col3]].size = str(int(graph.nodes[row[col3]].size)+50)
+                graph.nodes[row[col3]].size = str(int(graph.nodes[row[col3]].size) + 50)
                 if spellCol != "":
-                    if spellCol == 'Date':
+                    if spellCol == "Date":
                         import dateutil.parser
-                        graph.nodes[row[col3]].spells.append({
-                            "start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
-                            "end": dateutil.parser.parse(row[spellCol]).strftime(date_format)
-                        })
+
+                        graph.nodes[row[col3]].spells.append(
+                            {
+                                "start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                                "end": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                            }
+                        )
 
                     else:
-                        graph.nodes[row[col3]].spells.append({
-                            "start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol]))))
-                                .strftime(date_format),
-                            "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1))
-                                .strftime(date_format)
-                        })
-            edge_id = row[col1]+" "+row[col3]
+                        graph.nodes[row[col3]].spells.append(
+                            {
+                                "start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])))).strftime(
+                                    date_format
+                                ),
+                                "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1)).strftime(
+                                    date_format
+                                ),
+                            }
+                        )
+            edge_id = row[col1] + " " + row[col3]
             if edge_id not in graph.edges:
                 if spellCol != "":
-                    if spellCol == 'Date':
+                    if spellCol == "Date":
                         import dateutil.parser
-                        edge = Edge(graph,edge_id,row[col1],row[col3],
-                                    spells=[
-                                        {"start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
-                                         "end": dateutil.parser.parse(row[spellCol]).strftime(date_format)}],
-                                        label = row[col2]
-                                    )
+
+                        edge = Edge(
+                            graph,
+                            edge_id,
+                            row[col1],
+                            row[col3],
+                            spells=[
+                                {
+                                    "start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                                    "end": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                                }
+                            ],
+                            label=row[col2],
+                        )
                     else:
-                        edge = Edge(graph,edge_id,row[col1],row[col3],
-                                    spells = [{"start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol]))))
-                                            .strftime(date_format),
-                                               "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1))
-                                            .strftime(date_format)}],
-                                    label = row[col2])
+                        edge = Edge(
+                            graph,
+                            edge_id,
+                            row[col1],
+                            row[col3],
+                            spells=[
+                                {
+                                    "start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])))).strftime(
+                                        date_format
+                                    ),
+                                    "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1)).strftime(
+                                        date_format
+                                    ),
+                                }
+                            ],
+                            label=row[col2],
+                        )
                 else:
-                    edge = Edge(graph, edge_id, row[col1], row[col3],
-                                label=row[col2])
+                    edge = Edge(graph, edge_id, row[col1], row[col3], label=row[col2])
                 graph.edges[edge_id] = edge
-            else:
-                if spellCol != "":
-                    if spellCol == 'Date':
-                        import dateutil.parser
-                        graph.edges[edge_id].spells.append(
-                            {"start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
-                             "end": dateutil.parser.parse(row[spellCol]).strftime(date_format)})
+            elif spellCol != "":
+                if spellCol == "Date":
+                    import dateutil.parser
 
+                    graph.edges[edge_id].spells.append(
+                        {
+                            "start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                            "end": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                        }
+                    )
 
-                    else:
-                        graph.edges[edge_id].spells.append(
-                            {"start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol]))))
-                                            .strftime(date_format),
-                             "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1))
-                                            .strftime(date_format)})
-    gexf.write(open(os.path.join(OutputDir,graph_name),'wb'))
+                else:
+                    graph.edges[edge_id].spells.append(
+                        {
+                            "start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])))).strftime(date_format),
+                            "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1)).strftime(
+                                date_format
+                            ),
+                        }
+                    )
+    gexf.write(open(os.path.join(OutputDir, graph_name), "wb"))
 
-    IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running Gephi network graphs at', True,
-                                       '', True, startTime, True)
+    IO_user_interface_util.timed_alert(
+        window, 2000, "Analysis end", "Finished running Gephi network graphs at", True, "", True, startTime, True
+    )
 
-    return os.path.join(OutputDir,graph_name)
+    return os.path.join(OutputDir, graph_name)

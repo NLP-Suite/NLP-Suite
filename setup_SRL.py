@@ -16,9 +16,9 @@ After it finishes, tick the SRL checkbox in the SVO GUI.
 """
 
 import os
+from shutil import which
 import subprocess
 import urllib.request
-from shutil import which
 
 ENV_NAME = "nlp_srl"
 PY_VERSION = "3.8"
@@ -90,10 +90,12 @@ def main():
             print("Downloaded.")
         except Exception as e:
             # Non-fatal: SRL still runs (heuristic refined roles, no VerbNet/FrameNet columns) without it.
-            print("WARNING: could not download the SemLink map %s (%s).\n"
-                  "SRL still works with heuristic refined roles. You can place %s in\n"
-                  "  %s\nlater to enable the principled VerbNet roles + VerbNet/FrameNet aggregation."
-                  % (name, e, name, LIB_SRL))
+            print(
+                "WARNING: could not download the SemLink map %s (%s).\n"
+                "SRL still works with heuristic refined roles. You can place %s in\n"
+                "  %s\nlater to enable the principled VerbNet roles + VerbNet/FrameNet aggregation."
+                % (name, e, name, LIB_SRL)
+            )
 
     print("\n[OK] SRL setup complete. Tick the SRL checkbox in the SVO GUI to use it.")
 

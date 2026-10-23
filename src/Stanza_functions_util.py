@@ -1,4 +1,4 @@
-'''
+"""
 Written by Mino Cha February 2022
 
 Examples of Usage:
@@ -14,16 +14,18 @@ Examples of Usage:
 
 4. lemmatize_stanza_word
     lemma = lemmatize_stanza_word(stanzaPipeLine(word))
-'''
+"""
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
-if not IO_libraries_util.install_all_Python_packages(GUI_util.window,"Stanza_functions_util",['tkinter','stanza']):
+if not IO_libraries_util.install_all_Python_packages(GUI_util.window, "Stanza_functions_util", ["tkinter", "stanza"]):
     sys.exit(0)
 
 import stanza
+
 import IO_internet_util
 
 # should make the Stanza pipeline parametrized by lang selected by user
@@ -33,30 +35,31 @@ import IO_internet_util
 # pipeline below was built with no try at all: answering Yes therefore led straight to an unhandled
 # ConnectionError, printed to a terminal the user never sees, and the process exited silently.
 stanzaPipeLine = None
-if IO_internet_util.download_with_warning("Stanza_functions_util.py (stanza.download(en))",
-                                          lambda: stanza.download('en'),
-                                          "the Stanza English language model"):
+if IO_internet_util.download_with_warning(
+    "Stanza_functions_util.py (stanza.download(en))", lambda: stanza.download("en"), "the Stanza English language model"
+):
     try:
-        stanzaPipeLine = stanza.Pipeline(lang='en', processors= 'tokenize, lemma')
+        stanzaPipeLine = stanza.Pipeline(lang="en", processors="tokenize, lemma")
     except Exception as e:
         # the model can be missing or corrupt even when the download call itself returned
-        IO_internet_util.report_download_failure("Stanza_functions_util.py", e,
-                                                 "the Stanza English language model")
+        IO_internet_util.report_download_failure("Stanza_functions_util.py", e, "the Stanza English language model")
 
 # in INPUT the function takes a document or sentence or even word as string
 #   e.g., "Robert went to Italy on vacation"
 # in OUTPUT the function returns a list [] of word tokens
 #   e.g., ['Robert', 'went', 'to', 'Italy', 'on', 'vacation']
 
+
 # similar to lemmatized_stanza_doc except that in this one the list items are lemmatized words
 # same as nltk.tokenize.sent_tokenize()
 def tokenize_stanza_text(text_to_process):
-    tokenized_text_to_process=[]
+    tokenized_text_to_process = []
     for sentence in text_to_process.sentences:
         tokenized_text_to_process = [word.text for word in sentence.words]
         # you get the same result by using tokens instead or words
         # tokenized_text_to_process = [token.text for token in sentence.tokens]
     return tokenized_text_to_process
+
 
 def sentence_split_stanza_text(text_to_process, return_text=True):
     if return_text is False:
@@ -64,6 +67,7 @@ def sentence_split_stanza_text(text_to_process, return_text=True):
     else:
         return [sentence.text for sentence in text_to_process.sentences]
     return sentences
+
 
 # returns a single lemmatized word. input should be a single word.
 # https://stanfordnlp.github.io/stanza/lemma.html
@@ -76,6 +80,7 @@ def sentence_split_stanza_text(text_to_process, return_text=True):
 #   (regardless of input, always the first word of the first sentence of a document)
 #   e.g., ['Robert']
 
+
 # must be called as lemmatize_stanza_word(stanzaPipeLine(token))
 # https://stanfordnlp.github.io/stanza/lemma.html
 def lemmatize_stanza_word(text_to_process, return_empty_string=True):
@@ -83,9 +88,10 @@ def lemmatize_stanza_word(text_to_process, return_empty_string=True):
         return text_to_process.sentences[0].words[0].lemma
     except:
         if return_empty_string:
-            return ''
+            return ""
         else:
             return text_to_process.sentences[0].words[0].text
+
 
 # in INPUT the function takes a document text or sentence or even word as strings
 #   e.g., 'Robert went to Italy for vacation'
@@ -96,12 +102,12 @@ def lemmatize_stanza_word(text_to_process, return_empty_string=True):
 # for text_to_process.sentences to work, the calling function must first have
 #   from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza_doc
 # must be called as lemmatize_stanza_doc(stanzaPipeLine(text))
-def lemmatize_stanza_doc(text_to_process, return_string=False, exact_word_match = True):
+def lemmatize_stanza_doc(text_to_process, return_string=False, exact_word_match=True):
     if return_string:
-        lemmatized_text_to_process=''
+        lemmatized_text_to_process = ""
     else:
-        lemmatized_text_to_process=[]
-    punctuation_set = ',;.?!'
+        lemmatized_text_to_process = []
+    punctuation_set = ",;.?!"
     # for text_to_process.sentences to work, the calling function must first have
     #   from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza_doc
     # must be called as lemmatize_stanza_doc(stanzaPipeLine(text))
@@ -113,7 +119,7 @@ def lemmatize_stanza_doc(text_to_process, return_string=False, exact_word_match 
                     lemmatized_text_to_process = lemmatized_text_to_process.rstrip()
                     lemmatized_text_to_process = lemmatized_text_to_process + word.lemma
                 else:
-                    lemmatized_text_to_process = lemmatized_text_to_process + ' ' + word.lemma
+                    lemmatized_text_to_process = lemmatized_text_to_process + " " + word.lemma
             else:
                 lemmatized_text_to_process.append(word.lemma)
                 # if not exact_word_match:

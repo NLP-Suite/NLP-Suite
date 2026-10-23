@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Make a folium TimestampedGeoJson map's play button actually play.
 
 WHY. The Leaflet.TimeDimension that folium loads has two faults that together
@@ -21,6 +20,7 @@ presses of play.
 
 Stdlib only, so it is unit-testable without folium or pandas.
 """
+
 import datetime
 import json
 import re
@@ -39,27 +39,27 @@ def date_text(value):
     1870.0 (a year read into a float column) the same; 1870-06 -> 1870-06-01;
     00 for a part not given -> 01. Anything else is passed through as text."""
     if value is None:
-        return ''
+        return ""
     text = str(value).strip()
-    if re.match(r'^\d{4}\.0+$', text):
-        text = text.split('.')[0]
-    m = re.match(r'^(\d{4})(?:-(\d{1,2}))?(?:-(\d{1,2}))?$', text)
+    if re.match(r"^\d{4}\.0+$", text):
+        text = text.split(".")[0]
+    m = re.match(r"^(\d{4})(?:-(\d{1,2}))?(?:-(\d{1,2}))?$", text)
     if not m:
         return text
     month = int(m.group(2) or 0) or 1
     day = int(m.group(3) or 0) or 1
-    return '%s-%02d-%02d' % (m.group(1), month, day)
+    return "%s-%02d-%02d" % (m.group(1), month, day)
 
 
 def period_for(first, last):
     """'P1Y', 'P1M' or 'P1D' for data spanning first..last (datetimes)."""
     span = (last - first).days
-    return 'P1Y' if span > 3650 else 'P1M' if span > 365 else 'P1D'
+    return "P1Y" if span > 3650 else "P1M" if span > 365 else "P1D"
 
 
 def date_format(period):
     """The slider's date label for that step: a year shows as 1859, not 1859-12-31."""
-    return {'P1Y': 'YYYY', 'P1M': 'YYYY-MM'}.get(period, 'YYYY-MM-DD')
+    return {"P1Y": "YYYY", "P1M": "YYYY-MM"}.get(period, "YYYY-MM-DD")
 
 
 def _end_of(day):
@@ -72,10 +72,10 @@ def stops(first, last, period):
     """The slider's stops: the END of every year (month, day) from first's to
     last's, so the stop labelled 1859 shows everything dated up to its close."""
     out = []
-    if period == 'P1Y':
+    if period == "P1Y":
         for year in range(first.year, last.year + 1):
             out.append(_end_of(datetime.date(year, 12, 31)))
-    elif period == 'P1M':
+    elif period == "P1M":
         year, month = first.year, first.month
         while (year, month) <= (last.year, last.month):
             nxt = datetime.date(year + (month == 12), month % 12 + 1, 1)
@@ -94,20 +94,20 @@ def patch(html, stop_list):
     """(html, True) with the slider fixed, or (html unchanged, False) when the
     page is not in the form folium writes - which the caller must say."""
     period = re.search(r'period: "P[^"]*",', html)
-    if not period or 'updateTimeDimension: true,' not in html or 'duration: undefined,' not in html:
+    if not period or "updateTimeDimension: true," not in html or "duration: undefined," not in html:
         return html, False
-    html = html.replace(period.group(0), 'times: %s,' % json.dumps(list(stop_list)), 1)
-    html = html.replace('updateTimeDimension: true,', 'updateTimeDimension: false,', 1)
-    html = html.replace('duration: undefined,', 'duration: "P500Y",', 1)
+    html = html.replace(period.group(0), "times: %s," % json.dumps(list(stop_list)), 1)
+    html = html.replace("updateTimeDimension: true,", "updateTimeDimension: false,", 1)
+    html = html.replace("duration: undefined,", 'duration: "P500Y",', 1)
     return html, True
 
 
 def patch_file(path, stop_list):
     """True when the saved page was fixed."""
-    with open(path, encoding='utf-8') as fh:
+    with open(path, encoding="utf-8") as fh:
         html = fh.read()
     html, ok = patch(html, stop_list)
     if ok:
-        with open(path, 'w', encoding='utf-8') as fh:
+        with open(path, "w", encoding="utf-8") as fh:
             fh.write(html)
     return ok

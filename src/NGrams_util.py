@@ -1,8 +1,10 @@
 ##not needed
 
 import os
-import IO_csv_util
 import string
+
+import IO_csv_util
+
 punctuation = string.punctuation
 import stanza
 
@@ -19,6 +21,7 @@ called = 0
 #         hapax_label=""
 #         hapax_header=""
 
+
 def process_hapax(ngramsList, frequency, excludePunctuation):
     if excludePunctuation:
         freq_col = 1
@@ -26,21 +29,22 @@ def process_hapax(ngramsList, frequency, excludePunctuation):
         freq_col = 2
     if frequency == 1:  # hapax
         # for hapax legomena keep rows with frequency=1 only; exclude items with frequency>1, i.e. i[1] > 1
-        ngramsList_new=list(filter(lambda a: a[freq_col] == 1, ngramsList))
-        ngramsList=ngramsList_new
+        ngramsList_new = list(filter(lambda a: a[freq_col] == 1, ngramsList))
+        ngramsList = ngramsList_new
     return ngramsList
+
 
 import re
 
 
 def removeart(original_sentence):
-    articles_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'lib', 'wordLists', 'articles.txt')
-    with open(articles_path, 'r') as fin:
+    articles_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib", "wordLists", "articles.txt")
+    with open(articles_path) as fin:
         articles = list(set(fin.read().splitlines()))
     # from Stanford CoreNLP calculation
     # Create a regex pattern for the determiners, case-insensitive
     # The \b ensures the match is for whole words only, avoiding partial matches within words
-    dets_pattern = r'\b(?:' + '|'.join(map(re.escape, articles)) + r')\b\s*'
+    dets_pattern = r"\b(?:" + "|".join(map(re.escape, articles)) + r")\b\s*"
     # Remove determiners along with the following spaces
     # We are using the \s* in the regex pattern to match zero or more whitespace characters following the determiner
     filtered_sentence = re.sub(dets_pattern, "", original_sentence, flags=re.IGNORECASE)
@@ -60,16 +64,19 @@ def removeart(original_sentence):
 # Pre - determiners: such, what, rather, quite
 # Numbers: one, ten, thirty.
 
+
 # determiners typically include numbers such as one, two, three,... but we cannot list them all and should use a function
 def removedt(original_sentence):
-    determiners_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'lib', 'wordLists', 'determiners.txt')
-    with open(determiners_path, 'r') as fin:
+    determiners_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "..", "lib", "wordLists", "determiners.txt"
+    )
+    with open(determiners_path) as fin:
         determiners = list(set(fin.read().splitlines()))
 
     # from Stanford CoreNLP calculation
     # Create a regex pattern for the determiners, case-insensitive
     # The \b ensures the match is for whole words only, avoiding partial matches within words
-    dets_pattern = r'(\b(?:' + '|'.join(map(re.escape, determiners)) + r')\b)\s*'
+    dets_pattern = r"(\b(?:" + "|".join(map(re.escape, determiners)) + r")\b)\s*"
     # Remove determiners along with the following spaces
     # We are using the \s* in the regex pattern to match zero or more whitespace characters following the determiner
     filtered_sentence = re.sub(dets_pattern, " ", original_sentence, flags=re.IGNORECASE)
@@ -77,26 +84,39 @@ def removedt(original_sentence):
     final_sentence = filtered_sentence.strip()
     return final_sentence
 
+
 def removestop(original_sentence):
-    stopwords_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'lib', 'wordLists', 'stopwords.txt')
-    with open(stopwords_path, 'r') as fin:
+    stopwords_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib", "wordLists", "stopwords.txt")
+    with open(stopwords_path) as fin:
         stops = list(set(fin.read().splitlines()))
-    dets_pattern = r'\b(?:' + '|'.join(map(re.escape, stops)) + r')\b\s*'
+    dets_pattern = r"\b(?:" + "|".join(map(re.escape, stops)) + r")\b\s*"
     filtered_sentence = re.sub(dets_pattern, "", original_sentence, flags=re.IGNORECASE)
     final_sentence = filtered_sentence.strip()
     return final_sentence
-def readandsplit(filename, excludePunctuation, excludeArticles, excludeDeterminers, excludeStopWords, nFiles,lemmatize, case_sensitive, index):
+
+
+def readandsplit(
+    filename,
+    excludePunctuation,
+    excludeArticles,
+    excludeDeterminers,
+    excludeStopWords,
+    nFiles,
+    lemmatize,
+    case_sensitive,
+    index,
+):
 
     global called
     global nlp
     head, tail = os.path.split(filename)
     Sentence_ID = 0
     doc_ngramsList = []
-    print("   Processing file " + str(index+1) + "/" + str(nFiles) + ' ' + tail)
-    with open(filename,'r', encoding='utf_8', errors='ignore') as f:
+    print("   Processing file " + str(index + 1) + "/" + str(nFiles) + " " + tail)
+    with open(filename, encoding="utf_8", errors="ignore") as f:
         out = f.read()
     if excludePunctuation:
-        out = out.translate(str.maketrans('', '', punctuation))
+        out = out.translate(str.maketrans("", "", punctuation))
     if excludeArticles:
         out = removeart(out)
     if excludeDeterminers:
@@ -114,33 +134,35 @@ def readandsplit(filename, excludePunctuation, excludeArticles, excludeDetermine
         # preprocessing above (punctuation / article / determiner / stopword removal, case) has already
         # been applied to `out`, so this just extracts the remaining word tokens.
         import re
+
         return re.findall(r"[A-Za-z']+", out)
     else:
         if not called:
-            nlp = stanza.Pipeline(lang='en', processors='tokenize,lemma')
+            nlp = stanza.Pipeline(lang="en", processors="tokenize,lemma")
             called = 1
-        doc = nlp(''.join(out))
+        doc = nlp("".join(out))
         if index + 1 == nFiles:
             called = 0
         return [token.lemma for sentence in doc.sentences for token in sentence.words]
 
 
-
 # Stanza typically runs VERY fast as long as we don't repeatedly invoke a call on its pipeline.
 # It seems to be allocating some cache that speeds it up.
-import os
 
 from collections import Counter
+
 
 def find_ngrams(words, n, case_sensitive=False):
     # if not case_sensitive:
     #     return [tuple(words[i:i+n].lower()) for i in range(len(words)-n+1)]
     # else:
-        return [tuple(words[i:i + n]) for i in range(len(words) - n + 1)]
+    return [tuple(words[i : i + n]) for i in range(len(words) - n + 1)]
+
 
 import pandas as pd
 
-def find_frequencies(sentences_ngrams, major_ngrams,files):
+
+def find_frequencies(sentences_ngrams, major_ngrams, files):
     major_freq = Counter(major_ngrams)
     all_records = []
     for idx, sentence_ngrams in enumerate(sentences_ngrams):
@@ -148,11 +170,11 @@ def find_frequencies(sentences_ngrams, major_ngrams,files):
         for ngram, count in sent_freq.items():
             if ngram in major_freq:
                 record = {
-                    'ngram': ' '.join(ngram),
-                    'Frequency in Document': count,
-                    'Frequency in Corpus': major_freq[ngram],
-                    'Document ID': idx+1,
-                    'Document': IO_csv_util.dressFilenameForCSVHyperlink(files[idx])
+                    "ngram": " ".join(ngram),
+                    "Frequency in Document": count,
+                    "Frequency in Corpus": major_freq[ngram],
+                    "Document ID": idx + 1,
+                    "Document": IO_csv_util.dressFilenameForCSVHyperlink(files[idx]),
                 }
                 all_records.append(record)
 
@@ -161,29 +183,31 @@ def find_frequencies(sentences_ngrams, major_ngrams,files):
     df = pd.DataFrame(all_records)
     return df
 
-def operateongram(documents,files,ngramsNumber, case_sensitive=False):
+
+def operateongram(documents, files, ngramsNumber, case_sensitive=False):
     ngrams = []
     for document in documents:
-        ngrams.extend(find_ngrams(document,ngramsNumber, case_sensitive))
+        ngrams.extend(find_ngrams(document, ngramsNumber, case_sensitive))
     documents_ngram = [find_ngrams(document, ngramsNumber, case_sensitive) for document in documents]
     ngram_freq = find_frequencies(documents_ngram, ngrams, files)
     print(ngramsNumber, "gram of your corpus is complete.")
     return ngram_freq
 
-def hapax(data,hapax_words):
-    if not hapax_words:
-        return data[data['Frequency in Corpus']==1]
-    else:
-        data = data[data['ngram'].str.contains(r'[a-zA-Z]', regex=True, na=False)]
-        return data[data['Frequency in Corpus']==1]
 
-def operate(documents, files, max_ngramsNumber,hapax_words, case_sensitive=False):
+def hapax(data, hapax_words):
+    if not hapax_words:
+        return data[data["Frequency in Corpus"] == 1]
+    else:
+        data = data[data["ngram"].str.contains(r"[a-zA-Z]", regex=True, na=False)]
+        return data[data["Frequency in Corpus"] == 1]
+
+
+def operate(documents, files, max_ngramsNumber, hapax_words, case_sensitive=False):
     ngram_freq_results = []
     hapax_result = None
     for n in range(1, max_ngramsNumber + 1):
         ngram_freq = operateongram(documents, files, n, case_sensitive)
         ngram_freq_results.append(ngram_freq)
-        if n==1:
-            hapax_result = hapax(ngram_freq,hapax_words)
+        if n == 1:
+            hapax_result = hapax(ngram_freq, hapax_words)
     return ngram_freq_results, hapax_result
-

@@ -1,5 +1,6 @@
 import sqlite3
-db = 'C:/Users/rfranzo/Desktop/PCACE-lynching_xlsx/PCACE-lynching_xlsx.sqlite'
+
+db = "C:/Users/rfranzo/Desktop/PCACE-lynching_xlsx/PCACE-lynching_xlsx.sqlite"
 conn = sqlite3.connect(db)
 cur = conn.cursor()
 
@@ -10,9 +11,15 @@ print("Sample Actor IDs:", actor_ids)
 
 # Check: are Actors stored as HIGHER or LOWER in xref?
 for aid in actor_ids[:2]:
-    cur.execute("SELECT ID_data_complex_higher, ID_data_complex_lower FROM data_xref_Complex_Complex WHERE ID_data_complex_higher=?", (aid,))
+    cur.execute(
+        "SELECT ID_data_complex_higher, ID_data_complex_lower FROM data_xref_Complex_Complex WHERE ID_data_complex_higher=?",
+        (aid,),
+    )
     as_higher = cur.fetchall()
-    cur.execute("SELECT ID_data_complex_higher, ID_data_complex_lower FROM data_xref_Complex_Complex WHERE ID_data_complex_lower=?", (aid,))
+    cur.execute(
+        "SELECT ID_data_complex_higher, ID_data_complex_lower FROM data_xref_Complex_Complex WHERE ID_data_complex_lower=?",
+        (aid,),
+    )
     as_lower = cur.fetchall()
     print(f"\nActor {aid}:")
     print(f"  As HIGHER: {len(as_higher)} rows", as_higher[:3] if as_higher else "")

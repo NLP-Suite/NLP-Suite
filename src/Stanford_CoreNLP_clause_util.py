@@ -1,22 +1,25 @@
 #!/usr/bin/env Python
-# -*- coding: utf-8 -*-
 """
 Created on Fri Apr 26 15:16:10 2019
 
 @author: chenjian
 """
-#Edited by Julian Lucio Paredes 2025
+# Edited by Julian Lucio Paredes 2025
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
-if not IO_libraries_util.install_all_Python_packages(GUI_util.window, "Stanford_CoreNLP_clause_util",
-                                                     ['tkinter', 'nltk']):
+if not IO_libraries_util.install_all_Python_packages(
+    GUI_util.window, "Stanford_CoreNLP_clause_util", ["tkinter", "nltk"]
+):
     sys.exit(0)
 
-from nltk.tree import Tree
 import tkinter.messagebox as mb
+
+from nltk.tree import Tree
+
 
 def constituent_spans(parsetree):
     """Return (spans, leaves) for one sentence's parse tree. spans holds (subtree, first leaf index, last leaf
@@ -59,23 +62,38 @@ def clausal_info_extract(parsetree):
         # should use dict_CLAUSALTAG from Stanford_CoreNLP_tags_util
         # Stanford_CoreNLP_tags_util.dict_CLAUSALTAG
         #     clause_list = ['S','SBAR', 'SBARQ', 'SQ', 'SINV', 'NP', 'VP', 'ADJP', 'ADVP', 'PP']
-        if subtree.label() in ['ADJP', 'ADVP', 'CC', 'PP', 'PRP', 'RB', 'SBAR', 'SQ', 'SBARQ', 'SINV', 'S', 'VP', 'NP', 'NNP']:
+        if subtree.label() in [
+            "ADJP",
+            "ADVP",
+            "CC",
+            "PP",
+            "PRP",
+            "RB",
+            "SBAR",
+            "SQ",
+            "SBARQ",
+            "SINV",
+            "S",
+            "VP",
+            "NP",
+            "NNP",
+        ]:
             # Save the label at the starting index for later use
             dict_ind[start_idx] = subtree.label()
 
             # Convert the subtree to a string and perform clean-up
-            example = ' '.join(full_list[start_idx:end_idx + 1])
-            example = example.replace(' ,', ',')
-            example = example.replace(' ;', ';')
-            example = example.replace(' .', '.')
-            example = example.replace(' ?', '?')
-            example = example.replace(' !', '!')
-            example = example.replace(' -RRB- ', ' ')
-            example = example.replace(' -LRB- ', ' ')
-            example = example.replace('  ', ' ')
+            example = " ".join(full_list[start_idx : end_idx + 1])
+            example = example.replace(" ,", ",")
+            example = example.replace(" ;", ";")
+            example = example.replace(" .", ".")
+            example = example.replace(" ?", "?")
+            example = example.replace(" !", "!")
+            example = example.replace(" -RRB- ", " ")
+            example = example.replace(" -LRB- ", " ")
+            example = example.replace("  ", " ")
 
             # Append a tuple containing (the label, the string itself, (start infex, end index))
-            clausal_tags.append((subtree.label(), example,(start_idx,end_idx)))
+            clausal_tags.append((subtree.label(), example, (start_idx, end_idx)))
 
     # full_list is a double list
     for i, tok in enumerate(full_list):
@@ -84,7 +102,7 @@ def clausal_info_extract(parsetree):
             full_list[i] = [dict_ind[i]]
         else:
             # full_list[i] = [0]
-            full_list[i] = ['']
+            full_list[i] = [""]
         # clausal_tags.append(tok)
     try:
         # print("IN clausal_info_extract full_list 2",full_list)
@@ -93,8 +111,10 @@ def clausal_info_extract(parsetree):
         # return full_list
     except:
         print("\nERROR IN PARSE-TREE\n", parsetree)
-        mb.showwarning(title='ERROR IN PARSE-TREE',
-                       message="There was an error in parsing the tree of a sentence for the full_list displayed in command line.")
+        mb.showwarning(
+            title="ERROR IN PARSE-TREE",
+            message="There was an error in parsing the tree of a sentence for the full_list displayed in command line.",
+        )
 
 
 """
@@ -103,6 +123,7 @@ def clausal_info_extract(parsetree):
 
 
 # parse_tree_str: NLTK parsetree of a single sentence
+
 
 def clausal_info_extract_from_string(parse_tree_str):
     try:
@@ -113,8 +134,10 @@ def clausal_info_extract_from_string(parse_tree_str):
         # return full_list
     except:
         print("\nERROR IN NLTK PARSE-TREE\n", parse_tree_str, parse_tree.flatten())
-        mb.showwarning(title='ERROR IN PARSE-TREE',
-                       message="There was an error in NLTK parsing of the sentence tree displayed in command line.\n\nSearch in your document for the words displayed in command line, edit your document for characters that may lead to this error, and try again.")
+        mb.showwarning(
+            title="ERROR IN PARSE-TREE",
+            message="There was an error in NLTK parsing of the sentence tree displayed in command line.\n\nSearch in your document for the words displayed in command line, edit your document for characters that may lead to this error, and try again.",
+        )
         return
 
 
@@ -142,7 +165,7 @@ def extract_sent_info(sent_info):
 def extract_tok_info(sent_info):
     list_tokens = []
     for token in sent_info:
-        token_info = [token[key] for key in ['index', 'word', 'lemma', 'pos', 'ner']]
+        token_info = [token[key] for key in ["index", "word", "lemma", "pos", "ner"]]
         list_tokens.append(token_info)
     return list_tokens
 
@@ -150,7 +173,7 @@ def extract_tok_info(sent_info):
 def extract_dep_info(sent_info):
     list_tokens = []
     for token in sent_info:
-        token_info = [token[key] for key in ['governor', 'dep']]
+        token_info = [token[key] for key in ["governor", "dep"]]
         list_tokens.append(token_info)
     return list_tokens
 
@@ -169,6 +192,6 @@ def merge_token_infos(first, second, third, forth):
 #                15        16
 # key_clausetree = ['word','ClausalTag']
 
-key_toks = ['index', 'word', 'lemma', 'pos', 'ner']
-key_deps = ['governor', 'dep']
-key_clausetree = ['ClausalTag']
+key_toks = ["index", "word", "lemma", "pos", "ner"]
+key_deps = ["governor", "dep"]
+key_clausetree = ["ClausalTag"]

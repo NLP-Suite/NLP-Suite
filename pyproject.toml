@@ -53,14 +53,6 @@ ignore = [
     "PLW0128", # redeclared-assigned-name
     "PLW0406", # import-self
     "PLW1510", # subprocess-run-without-check
-    # Auto-fixable simplifications firing on legacy code; clear in a dedicated
-    # `ruff check --fix` pass, then drop these so the rules gate new code.
-    "PLR5501", # collapsible-else-if
-    "PLR1736", # unnecessary-list-index-lookup
-    "PLR2044", # empty-comment
-    "PLR1711", # useless-return
-    "PLR0402", # manual-from-import
-    "PLR1733", # unnecessary-dict-index-lookup
 ]
 
 

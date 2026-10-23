@@ -1,100 +1,129 @@
-import time
-import tkinter as tk
-import tkinter.messagebox as mb
-import os
 import json
 import logging
+import os
+import time
+import tkinter.messagebox as mb
 
-import IO_csv_util
 import GUI_IO_util
+import IO_csv_util
 
 logger = logging.getLogger()
 
-#The argument GUI is the title of the GUI displayed (e.g., Narrative Analysis)
+
+# The argument GUI is the title of the GUI displayed (e.g., Narrative Analysis)
 def GUI_under_construction(GUI):
-    mb.showwarning(title='GUI under construction', message='The "' + GUI + '" GUI is under construction. Sorry!\n\nPlease, revisit this option soon.')
+    mb.showwarning(
+        title="GUI under construction",
+        message='The "' + GUI + '" GUI is under construction. Sorry!\n\nPlease, revisit this option soon.',
+    )
+
 
 def script_under_construction(script):
-    mb.showwarning(title='Script under construction', message='The "' + script + '" script is still under development. Please, revisit this option soon.')
+    mb.showwarning(
+        title="Script under construction",
+        message='The "' + script + '" script is still under development. Please, revisit this option soon.',
+    )
+
 
 def script_under_development(script):
-    mb.showwarning(title='Script under development', message='The "' + script + '" script is still under development. Take the results with a grain of salt and revisit this option soon.')
+    mb.showwarning(
+        title="Script under development",
+        message='The "'
+        + script
+        + '" script is still under development. Take the results with a grain of salt and revisit this option soon.',
+    )
+
 
 def convert_time(time):
     hours = int(time / 3600)
     minutes = int((time - hours * 3600) / 60)
     seconds = int(time - hours * 3600 - minutes * 60)
-    message=''
+    message = ""
     if seconds == 1:
-        second_label = ' second'
+        second_label = " second"
     else:
-        second_label = ' seconds'
+        second_label = " seconds"
     if minutes == 1:
-        minute_label = ' minute'
+        minute_label = " minute"
     else:
-        minute_label = ' minutes'
+        minute_label = " minutes"
     if hours == 1:
-        hour_label = ' hour'
+        hour_label = " hour"
     else:
-        hour_label = ' hours'
+        hour_label = " hours"
 
     # compose message
     if hours > 0:
         message = str(hours) + hour_label
     if minutes >= 0:
         if hours > 0:
-            message = message + ', '
-            message=message+str(minutes) + minute_label
+            message = message + ", "
+            message = message + str(minutes) + minute_label
+        elif minutes > 0:
+            message = message + str(minutes) + minute_label
+    if seconds >= 0:
+        if hours > 0:
+            message = message + ", and " + str(seconds) + second_label
+        elif minutes > 0:
+            message = message + " and " + str(seconds) + second_label
         else:
-            if minutes>0:
-                message=message+str(minutes) + minute_label
-    if seconds>=0:
-        if hours>0:
-            message=message+ ', and ' + str(seconds) + second_label
-        else:
-            if minutes>0:
-                message = message + ' and ' + str(seconds) + second_label
-            else:
-                message = message + str(seconds) + second_label
+            message = message + str(seconds) + second_label
     return hours, minutes, seconds, message
 
+
 # silent will not display the message as a box
-def timed_alert(window, timeout, message_title, message_text, time_needed=False, extraLine='', printInCommandLine=True, startTime='', silent=False):
+def timed_alert(
+    window,
+    timeout,
+    message_title,
+    message_text,
+    time_needed=False,
+    extraLine="",
+    printInCommandLine=True,
+    startTime="",
+    silent=False,
+):
     if time_needed == True:
         # time has year [0], month [1], dat [2], hour [3], minute [4], second [5] & more
         time_report = time.localtime()
-        message_text = message_text + ' ' + str(time_report[3]) + ':' + str(time_report[4])
-        if startTime != '':
+        message_text = message_text + " " + str(time_report[3]) + ":" + str(time_report[4])
+        if startTime != "":
             endTime = time.time()
-            totalTime = endTime - startTime # in number of seconds
+            totalTime = endTime - startTime  # in number of seconds
             hours, minutes, seconds, time_message = convert_time(totalTime)
-            if time_message!='':
-                message_text = message_text + ' taking ' + time_message # + str(hours) + ' hours, ' + str(minutes) + ' minutes, and ' + str(seconds) + ' seconds'
-        message_text = message_text + '.'
+            if time_message != "":
+                message_text = (
+                    message_text + " taking " + time_message
+                )  # + str(hours) + ' hours, ' + str(minutes) + ' minutes, and ' + str(seconds) + ' seconds'
+        message_text = message_text + "."
     if len(extraLine) > 0:
-        message_text = message_text + '\n\n' + extraLine
+        message_text = message_text + "\n\n" + extraLine
     if printInCommandLine:
         print_message_text = message_text
-        if 'Started' in print_message_text:
-            print_message_text=print_message_text.replace('Started','\nStarted')
-            print_message_text = print_message_text + '\n'
-        if 'Finished' in print_message_text:
-            print_message_text=print_message_text.replace('Finished','\nFinished')
-        print_message_text = '\n' + print_message_text
-        if 'Opening' in print_message_text:
-            print_message_text=print_message_text.replace('Opening','\nOpening')
+        if "Started" in print_message_text:
+            print_message_text = print_message_text.replace("Started", "\nStarted")
+            print_message_text = print_message_text + "\n"
+        if "Finished" in print_message_text:
+            print_message_text = print_message_text.replace("Finished", "\nFinished")
+        print_message_text = "\n" + print_message_text
+        if "Opening" in print_message_text:
+            print_message_text = print_message_text.replace("Opening", "\nOpening")
         print(print_message_text)
     if not silent:
-        if not 'Finished' in message_text and not 'Opening' in message_text:
-            message_text = message_text + '\n\nYou can follow the algorithm in command line.'
+        if "Finished" not in message_text and "Opening" not in message_text:
+            message_text = message_text + "\n\nYou can follow the algorithm in command line."
 
-        GUI_IO_util.message_box_widget(window, message_title, message_text, 'OK', timeout)
+        GUI_IO_util.message_box_widget(window, message_title, message_text, "OK", timeout)
 
     return time.time()
 
+
 def input_output_save(script):
-    result = mb.askyesno(script,
-                         script + " will save changes directly in the input file. Make sure you have backup of the input.\n\nAre you sure you want to continue?")
+    result = mb.askyesno(
+        script,
+        script
+        + " will save changes directly in the input file. Make sure you have backup of the input.\n\nAre you sure you want to continue?",
+    )
     if result == False:  # yes no False
         return False
     else:
@@ -103,13 +132,27 @@ def input_output_save(script):
 
 def single_file_output_save(inputDir, script):
     if len(inputDir) != 0:
-        mb.showwarning(title='Warning',
-                       message='The output filename generated by ' + script + ' is the name of the directory processed in input, rather than any individual file in the directory.\n\nThe output csv file includes all the files in the input directory processed by the script.')
+        mb.showwarning(
+            title="Warning",
+            message="The output filename generated by "
+            + script
+            + " is the name of the directory processed in input, rather than any individual file in the directory.\n\nThe output csv file includes all the files in the input directory processed by the script.",
+        )
+
 
 def subdirectory_file_output_save(inputDir, inputSubdir, IO, script):
     if len(inputDir) != 0:
-        mb.showwarning(title='Warning',
-                       message='The ' + script + ' script has saved output in \n\n  ' + inputSubdir + '\n\na subdirectory of the ' + IO + ' directory\n\n  ' + inputDir)
+        mb.showwarning(
+            title="Warning",
+            message="The "
+            + script
+            + " script has saved output in \n\n  "
+            + inputSubdir
+            + "\n\na subdirectory of the "
+            + IO
+            + " directory\n\n  "
+            + inputDir,
+        )
 
 
 # inputFilename has complete path
@@ -123,10 +166,12 @@ def process_CoreNLP_error(window, CoreNLP_output, inputFilename, nDocs, filesErr
         logger.warning("[Warning] Stanford CoreNLP output is not JSON. Trying to convert output to JSON... ")
 
         if text and not CoreNLP_output:
-            error = 'Bad Response from Stanford CoreNLP Server. This might be due to various reasons. The server might' \
-                    'be busy, and please try later. If you are running it with a proxy, please try turning it off ' \
-                    'before running it again.'
-            logger.error('[Error] ' + error)
+            error = (
+                "Bad Response from Stanford CoreNLP Server. This might be due to various reasons. The server might"
+                "be busy, and please try later. If you are running it with a proxy, please try turning it off "
+                "before running it again."
+            )
+            logger.error("[Error] " + error)
             errorFound = True
         else:
             try:
@@ -134,7 +179,10 @@ def process_CoreNLP_error(window, CoreNLP_output, inputFilename, nDocs, filesErr
                 logger.warning("[Info] Successfully converted CoreNLP output to JSON. Proceeding as normal.")
                 # logger.warning(CoreNLP_output)
             except Exception as e:
-                logger.error("[Error] Could not convert CoreNLP output to JSON! Please, check your input file for any corruption. Error: " + str(e))
+                logger.error(
+                    "[Error] Could not convert CoreNLP output to JSON! Please, check your input file for any corruption. Error: "
+                    + str(e)
+                )
                 errorFound = True
                 error = str(e)
     # OutOfMemoryError Java heap space
@@ -159,26 +207,50 @@ def process_CoreNLP_error(window, CoreNLP_output, inputFilename, nDocs, filesErr
         elif len(filesError) == 1:
             duration = 2000
         elif len(filesError) == 0:
-            filesError.append(['Document ID', 'Document', 'Error'])
+            filesError.append(["Document ID", "Document", "Error"])
             duration = 3000
-        msg = 'Stanford CoreNLP failed to process the document\n\n' + tail + '\n\nexiting with the following error:\n\n   ' + (
-            str(
-                CoreNLP_output) if CoreNLP_output else error)
-        msgPrint = 'Stanford CoreNLP failed to process the document ' + tail + ' exiting with the following error:\n   ' + (
-            str(
-                CoreNLP_output) if CoreNLP_output else error)
-        if CoreNLP_output and 'Java heap space' in CoreNLP_output:
-            msg = msg + '\n\nThe file or a sentence in the file may simply be too big for Stanford CoreNLP. Please, CHECK CAREFULLY YOUR INPUT FILE and, if necessary, edit it and try again.'
-            msg = msg + '\n\nFor more information on memory java heap size, read the stackoverflow posting: https://stackoverflow.com/questions/40968038/exception-java-lang-outofmemoryerror-java-heap-space'
-            msgPrint = msgPrint + '\n   The file or a sentence in the file may simply be too big for Stanford CoreNLP. Please, CHECK CAREFULLY YOUR INPUT FILE and, if necessary, edit it and try again.'
-            msgPrint = msgPrint + '\n   For more information on memory java heap size, read the stackoverflow posting: https://stackoverflow.com/questions/40968038/exception-java-lang-outofmemoryerror-java-heap-space'
+        msg = (
+            "Stanford CoreNLP failed to process the document\n\n"
+            + tail
+            + "\n\nexiting with the following error:\n\n   "
+            + (str(CoreNLP_output) if CoreNLP_output else error)
+        )
+        msgPrint = (
+            "Stanford CoreNLP failed to process the document "
+            + tail
+            + " exiting with the following error:\n   "
+            + (str(CoreNLP_output) if CoreNLP_output else error)
+        )
+        if CoreNLP_output and "Java heap space" in CoreNLP_output:
+            msg = (
+                msg
+                + "\n\nThe file or a sentence in the file may simply be too big for Stanford CoreNLP. Please, CHECK CAREFULLY YOUR INPUT FILE and, if necessary, edit it and try again."
+            )
+            msg = (
+                msg
+                + "\n\nFor more information on memory java heap size, read the stackoverflow posting: https://stackoverflow.com/questions/40968038/exception-java-lang-outofmemoryerror-java-heap-space"
+            )
+            msgPrint = (
+                msgPrint
+                + "\n   The file or a sentence in the file may simply be too big for Stanford CoreNLP. Please, CHECK CAREFULLY YOUR INPUT FILE and, if necessary, edit it and try again."
+            )
+            msgPrint = (
+                msgPrint
+                + "\n   For more information on memory java heap size, read the stackoverflow posting: https://stackoverflow.com/questions/40968038/exception-java-lang-outofmemoryerror-java-heap-space"
+            )
         # + '\nexiting with the following error:\n\n' + CoreNLP_output + '\n\nTHE ERROR MAY HAPPEN WHEN CoreNLP HANGS. REBOOT YOUR MACHINE AND TRY AGAIN.\n\nTHE ERROR IS ALSO LIKELY TO HAPPEN WHEN THE STANFORD CORENLP HAS BEEN STORED TO A CLOUD SERVICE (e.g., OneDrive) OR INSIDE THE /NLP/src DIRECTORY. TRY TO MOVE THE STANFORD CORENLP FOLDER TO A DIFFERENT LOCATION.
         if nDocs > 1:
             msg = msg + " Processing will continue with the next file."
             msgPrint += "\n   Processing will continue with the next file."
         # mb.showwarning("Stanford CoreNLP Error", msg)
         if not silent:
-            timed_alert(window, duration, 'Stanford CoreNLP error', msg,False,'',False)
+            timed_alert(window, duration, "Stanford CoreNLP error", msg, False, "", False)
         print("\n\n" + msgPrint)
-        filesError.append([len(filesError), IO_csv_util.dressFilenameForCSVHyperlink(inputFilename), str(CoreNLP_output) + " " + str(error)])
+        filesError.append(
+            [
+                len(filesError),
+                IO_csv_util.dressFilenameForCSVHyperlink(inputFilename),
+                str(CoreNLP_output) + " " + str(error),
+            ]
+        )
     return errorFound, filesError, CoreNLP_output

@@ -2,97 +2,112 @@
 # edited by Tony Chen Gu Spring 2022
 
 import sys
+
 import GUI_util
 import IO_libraries_util
-import CoNLL_util  # is_noun_POS / is_verb_POS / is_adjective_POS / is_adverb_POS - handle Penn + Universal tags
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"wordclouds_util",['wordcloud','numpy','matplotlib','ntpath','PIL','stanza','csv'])==False:
+if (
+    IO_libraries_util.install_all_Python_packages(
+        GUI_util.window, "wordclouds_util", ["wordcloud", "numpy", "matplotlib", "ntpath", "PIL", "stanza", "csv"]
+    )
+    == False
+):
     sys.exit(0)
 
 # The script uses Andreas Christian Mueller WordCloud package
 # https://amueller.github.io/word_cloud/
 
+from collections import Counter, defaultdict
 import os
-from collections import Counter
-import numpy as np
-from PIL import Image
-
-import pandas as pd
-from collections import defaultdict
 import tkinter.messagebox as mb
+
+import numpy as np
+import pandas as pd
+from PIL import Image
 import stanza
+
 import IO_internet_util
+
 # report a failed model download in a dialog: the bare except used to swallow the real error and
 # only ask the internet-check question, never retrying, so the reason reached the terminal alone
-IO_internet_util.download_with_warning("wordclouds_util.py (stanza.download(en))",
-                                      lambda: stanza.download('en'),
-                                      "the Stanza English language model")
-from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator, get_single_color_func
-import matplotlib.pyplot as plt #pip install matplotlib
+IO_internet_util.download_with_warning(
+    "wordclouds_util.py (stanza.download(en))", lambda: stanza.download("en"), "the Stanza English language model"
+)
 import csv
-import ntpath #to split the path from filename
+
+import matplotlib.pyplot as plt  # pip install matplotlib
+from wordcloud import STOPWORDS, WordCloud
 
 import IO_files_util
 import IO_user_interface_util
 
-#written by Tony Chen Gu Feb 22, 2022
-#this function is to tell whether the machine is Mac or Windows
-def get_os_type():
-    if os.name == 'posix':
-        return 'Mac'
-    else:
-        return 'Windows'
 
-#get the font installation location on the machine base on the OS
+# written by Tony Chen Gu Feb 22, 2022
+# this function is to tell whether the machine is Mac or Windows
+def get_os_type():
+    if os.name == "posix":
+        return "Mac"
+    else:
+        return "Windows"
+
+
+# get the font installation location on the machine base on the OS
 def get_font_installed():
     os_type = get_os_type()
-    if os_type == 'Mac':
-        #location where Mac OS X stores the fonts
-        font_path = '/Library/Fonts/'
+    if os_type == "Mac":
+        # location where Mac OS X stores the fonts
+        font_path = "/Library/Fonts/"
     else:
-        #location where Windows stores the fonts
-        font_path = 'C:/Windows/Fonts/'
+        # location where Windows stores the fonts
+        font_path = "C:/Windows/Fonts/"
     return font_path
 
-#get list of font installed on the machine
+
+# get list of font installed on the machine
 def get_font_list():
     font_list = os.listdir(get_font_installed())
-    #the Default should be the first font in the list
-    #it means not specifying any font for the python wordcloud, the font_path will be set to None
-    font_list = [font[:-4] for font in font_list if font.endswith('.ttf') or font.endswith('.otf') or font.endswith('.TTF') or font.endswith('.OTF')]
-    font_list.insert(0, 'Default')
+    # the Default should be the first font in the list
+    # it means not specifying any font for the python wordcloud, the font_path will be set to None
+    font_list = [
+        font[:-4]
+        for font in font_list
+        if font.endswith(".ttf") or font.endswith(".otf") or font.endswith(".TTF") or font.endswith(".OTF")
+    ]
+    font_list.insert(0, "Default")
     return font_list
 
-#when users select the font, try both ttf and otf
-#if none of them works, use the default font
-#TODO: should give a error message (pop up window) telling them the font file is lost, using default now
+
+# when users select the font, try both ttf and otf
+# if none of them works, use the default font
+# TODO: should give a error message (pop up window) telling them the font file is lost, using default now
 def get_font_path(font):
-    if font == 'Default':
+    if font == "Default":
         return None
     font_list = os.listdir(get_font_installed())
     word_len = len(font)
     for item in font_list:
         if item[:word_len] == font:
             return item
-    #return none if none of the file matches the font
-    #should give a error here
+    # return none if none of the file matches the font
+    # should give a error here
     return None
 
-#Added by Tony
-#change the transparent pixel to white
-#user could use the website such as https://www.remove.bg/ to remove the background
-#They could Google for remove background
+
+# Added by Tony
+# change the transparent pixel to white
+# user could use the website such as https://www.remove.bg/ to remove the background
+# They could Google for remove background
 def changeTransparentToWhite(img):
-    '''
+    """
     :param img: the Image to be changed
     :return: the Image with transparent pixel changed to white
-    '''
+    """
     img = img.convert("RGBA")
     datas = img.getdata()
 
     newData = []
     for item in datas:
-        if item[3] == 0: #if alpha value is zero, it is transparent
+        if item[3] == 0:  # if alpha value is zero, it is transparent
             newData.append((255, 255, 255, 255))
         else:
             newData.append(item)
@@ -100,16 +115,17 @@ def changeTransparentToWhite(img):
     img.putdata(newData)
     return img
 
+
 def changeWhiteToTransparent(img):
-    '''
+    """
     :param img: the Image to be changed
-    :return: the Image with white pixel changed to transparent'''
+    :return: the Image with white pixel changed to transparent"""
     img = img.convert("RGBA")
     datas = img.getdata()
 
     newData = []
     for item in datas:
-        if item[0] == 255 and item[1] == 255 and item[2] == 255: #if it is white
+        if item[0] == 255 and item[1] == 255 and item[2] == 255:  # if it is white
             newData.append((255, 255, 255, 0))
         else:
             newData.append(item)
@@ -117,48 +133,47 @@ def changeWhiteToTransparent(img):
     img.putdata(newData)
     return img
 
-#Do Not Needed
-'''
+
+# Do Not Needed
+"""
 def transform_format(val):
     val = np.where(val == 0, 255 , val)
     return val
-'''
+"""
 
-class GroupedColorFunc(object):
+
+class GroupedColorFunc:
     """Create a color function object which assigns DIFFERENT SHADES of
-       specified colors to certain words based on the color to words mapping.
+    specified colors to certain words based on the color to words mapping.
 
-       Uses wordcloud.get_single_color_func
+    Uses wordcloud.get_single_color_func
 
-       Parameters
-       ----------
-       color_to_words : dict(str -> list(str))
-         A dictionary that maps a color to the list of words.
+    Parameters
+    ----------
+    color_to_words : dict(str -> list(str))
+      A dictionary that maps a color to the list of words.
 
-       default_color : str
-         Color that will be assigned to a word that's not a member
-         of any value from color_to_words.
+    default_color : str
+      Color that will be assigned to a word that's not a member
+      of any value from color_to_words.
     """
 
     def __init__(self, color_to_words, default_color):
         self.color_func_to_words = [
-            (self.get_single_color(color), set(words))
-            for (color, words) in color_to_words.items()]
-
+            (self.get_single_color(color), set(words)) for (color, words) in color_to_words.items()
+        ]
 
         self.default_color_func = self.get_single_color(default_color)
 
     def get_single_color(self, color):
         color = color[1:-1]
         color_list = color.split(", ")
-        return 'rgb({:.0f}, {:.0f}, {:.0f})'.format(int(color_list[0]), int(color_list[1]), int(color_list[2]))
+        return f"rgb({int(color_list[0]):.0f}, {int(color_list[1]):.0f}, {int(color_list[2]):.0f})"
 
     def get_color_func(self, word):
         """Returns a single_color_func associated with the word"""
         try:
-            color_func = next(
-                color_func for (color_func, words) in self.color_func_to_words
-                if word in words)
+            color_func = next(color_func for (color_func, words) in self.color_func_to_words if word in words)
         except StopIteration:
             color_func = self.default_color_func
 
@@ -167,13 +182,14 @@ class GroupedColorFunc(object):
     def __call__(self, word, **kwargs):
         return self.get_color_func(word)
 
+
 def get_wordcloud_title(inputFilename, inputDir, wordcloud_title):
-    if wordcloud_title=='':
-        if inputFilename!='':
+    if wordcloud_title == "":
+        if inputFilename != "":
             head, tail = os.path.split(inputFilename)
         else:
             head, tail = os.path.split(inputDir)
-        wordcloud_title='Wordcloud for ' + str(tail)
+        wordcloud_title = "Wordcloud for " + str(tail)
     return wordcloud_title
 
 
@@ -182,30 +198,26 @@ def get_wordcloud_title(inputFilename, inputDir, wordcloud_title):
 # wordcloud_title = 'Wordcloud of Subject (red), Verb (blue), Object (green)'
 def SVOWordCloud(svoFile, inputFilename, outputDir, transformed_image_mask, wordcloud_title, prefer_horizontal):
 
-    wordcloud_title = get_wordcloud_title(inputFilename,'', wordcloud_title)
-
+    wordcloud_title = get_wordcloud_title(inputFilename, "", wordcloud_title)
 
     # read SVO result in
-    svo_df = pd.read_csv(svoFile, encoding='utf-8',on_bad_lines='skip')
+    svo_df = pd.read_csv(svoFile, encoding="utf-8", on_bad_lines="skip")
     svo_df = svo_df.fillna("")
     words_list = []
     # RGB color codes: red for S, blue for V, green for O
     red_code = "(250, 0, 0)"
     blue_code = "(0, 0, 250)"
     green_code = "(0, 250, 0)"
-    default_code = "(169, 169, 169)" # grey
-    color_list = {
-        red_code: [],
-        blue_code: [],
-        green_code: []
-    }
+    default_code = "(169, 169, 169)"  # grey
+    color_list = {red_code: [], blue_code: [], green_code: []}
+
     # Keep '_' as the multi-word-expression joiner so an MWE renders as ONE visually distinct unit
     # (inferred_subject_passive, christopher_columbus) rather than collapsing into a run-on
     # (inferredsubjectpassive) or splitting into words indistinguishable from separate tokens
     # (inferred subject passive). Any internal spaces are joined with '_' too, so every multi-token
     # entity is uniformly underscore-joined; all other punctuation is still stripped.
     def _clean(value):
-        parts = ["".join(ch for ch in seg if ch.isalnum() or ch == '_') for seg in str(value).lower().split(" ")]
+        parts = ["".join(ch for ch in seg if ch.isalnum() or ch == "_") for seg in str(value).lower().split(" ")]
         return "_".join(p for p in parts if p)
 
     for _, row in svo_df.iterrows():
@@ -221,23 +233,38 @@ def SVOWordCloud(svoFile, inputFilename, outputDir, transformed_image_mask, word
             color_list[green_code].append(_clean(row["Object (O)"]) + " ")
     words_count_dict = Counter(words_list)
     # print (words_count_dict)
-    max_words = 1000 # TODO MINO: make max_words bigger to include generally lower frequency "Object (O)" words
+    max_words = 1000  # TODO MINO: make max_words bigger to include generally lower frequency "Object (O)" words
     if len(transformed_image_mask) != 0:
-        wc = WordCloud(width = 800, height = 800, max_words=max_words, prefer_horizontal=prefer_horizontal, collocations=False, mask=transformed_image_mask,
-                       contour_width=3, contour_color='firebrick', background_color ='white').generate_from_frequencies(words_count_dict)
+        wc = WordCloud(
+            width=800,
+            height=800,
+            max_words=max_words,
+            prefer_horizontal=prefer_horizontal,
+            collocations=False,
+            mask=transformed_image_mask,
+            contour_width=3,
+            contour_color="firebrick",
+            background_color="white",
+        ).generate_from_frequencies(words_count_dict)
     else:
-        wc = WordCloud(width=800, height=800, max_words=max_words, prefer_horizontal=prefer_horizontal, collocations=False, contour_width=3,
-                        background_color='white').generate_from_frequencies(words_count_dict)
+        wc = WordCloud(
+            width=800,
+            height=800,
+            max_words=max_words,
+            prefer_horizontal=prefer_horizontal,
+            collocations=False,
+            contour_width=3,
+            background_color="white",
+        ).generate_from_frequencies(words_count_dict)
     grouped_color_func = GroupedColorFunc(color_list, default_code)
     wc.recolor(color_func=grouped_color_func)
-    plt.figure(figsize = (8, 8), facecolor = None)
+    plt.figure(figsize=(8, 8), facecolor=None)
     plt.imshow(wc, interpolation="bilinear")
-    plt.title(wordcloud_title, fontsize=14, fontweight='bold', pad=20)
+    plt.title(wordcloud_title, fontsize=14, fontweight="bold", pad=20)
     plt.axis("off")
-    output_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.png', 'WC', 'img')
+    output_file_name = IO_files_util.generate_output_file_name(inputFilename, "", outputDir, ".png", "WC", "img")
     wc.to_file(output_file_name)
     return output_file_name
-
 
 
 # for label separate column with separate color only
@@ -246,7 +273,7 @@ def processColorList(currenttext, lowercase, color_to_words, csvField_color_list
     column_color = {}
 
     for item in csvField_color_list:
-        if item != '|':
+        if item != "|":
             cur_list.append(item)
         else:
             for key in cur_list[:-1]:
@@ -255,10 +282,10 @@ def processColorList(currenttext, lowercase, color_to_words, csvField_color_list
 
     reader = csv.DictReader(myfile)  # read rows into a dictionary format
     for row in reader:  # read a row as {column name1: color value1, column name2: color value2,...}
-        for (k, v) in row.items():  # go over each column name and color value
+        for k, v in row.items():  # go over each column name and color value
             # in Excel, the first column header contains non utf encoding \ufeff and must be removed
             #   or the first column would never be processed
-            k=k.replace('\ufeff','')
+            k = k.replace("\ufeff", "")
             if lowercase:
                 v = v.lower()
             if k in column_color:
@@ -269,7 +296,7 @@ def processColorList(currenttext, lowercase, color_to_words, csvField_color_list
 
                 color = column_color[k]
                 color_index = list(column_color.values()).index(color)  # Find the index of the color
-                suffix = '_' * (color_index + 1)  # Create the suffix based on the color's position
+                suffix = "_" * (color_index + 1)  # Create the suffix based on the color's position
                 color_to_words[color] += [word + suffix for word in words]
 
                 # Update currenttext with the suffixed word(s)
@@ -279,267 +306,422 @@ def processColorList(currenttext, lowercase, color_to_words, csvField_color_list
 
     return currenttext, color_to_words
 
+
 # add bg_image_flag parameter to indicate whether to add background image
 # display_wordCloud_sep_color(inputFilename, outputDir, currenttext, color_to_words, transformed_image_mask, collocation, prefer_horizontal, bg_image = bg_image, bg_image_flag= bg_image_flag)
-def display_wordCloud_sep_color(inputFilename, inputDir, outputDir, text, color_to_words, transformed_image_mask, max_words, collocation, wordcloud_title, prefer_horizontal, bg_image = None,bg_image_flag = False, font = None):
+def display_wordCloud_sep_color(
+    inputFilename,
+    inputDir,
+    outputDir,
+    text,
+    color_to_words,
+    transformed_image_mask,
+    max_words,
+    collocation,
+    wordcloud_title,
+    prefer_horizontal,
+    bg_image=None,
+    bg_image_flag=False,
+    font=None,
+):
 
-    wordcloud_title = get_wordcloud_title(inputFilename,inputDir,wordcloud_title)
+    wordcloud_title = get_wordcloud_title(inputFilename, inputDir, wordcloud_title)
 
     # stopwords dealt with in main function
-    stopwords=''
+    stopwords = ""
     c_wid = 0 if bg_image_flag else 3
 
     if len(transformed_image_mask) != 0:
-        wc = WordCloud(collocations=collocation,width = 800, height = 800, max_words=max_words, prefer_horizontal=prefer_horizontal, stopwords = stopwords, mask=transformed_image_mask,
-                       contour_width=c_wid, contour_color='firebrick', background_color ='white', font_path = font).generate(text)
+        wc = WordCloud(
+            collocations=collocation,
+            width=800,
+            height=800,
+            max_words=max_words,
+            prefer_horizontal=prefer_horizontal,
+            stopwords=stopwords,
+            mask=transformed_image_mask,
+            contour_width=c_wid,
+            contour_color="firebrick",
+            background_color="white",
+            font_path=font,
+        ).generate(text)
     else:
-        wc = WordCloud(collocations=collocation, width=800, height=800, max_words=max_words,prefer_horizontal=prefer_horizontal,stopwords = stopwords, contour_width=c_wid,
-                        background_color='white', font_path = font).generate(text)
-    default_color = "(169, 169, 169)" # dark grey; black is 0,0,0
+        wc = WordCloud(
+            collocations=collocation,
+            width=800,
+            height=800,
+            max_words=max_words,
+            prefer_horizontal=prefer_horizontal,
+            stopwords=stopwords,
+            contour_width=c_wid,
+            background_color="white",
+            font_path=font,
+        ).generate(text)
+    default_color = "(169, 169, 169)"  # dark grey; black is 0,0,0
     grouped_color_func = GroupedColorFunc(color_to_words, default_color)
     # wc.recolor(color_func=grouped_color_func)
     wc = wc.recolor(color_func=grouped_color_func)
     w = []
     for l in wc.layout_:
         x = l[0]
-        x = (x[0].replace('_', ''), x[1])
+        x = (x[0].replace("_", ""), x[1])
         w.append((x, l[1], l[2], l[3], l[4]))
     wc.layout_ = w
 
-    plt.figure(figsize = (8, 8), facecolor = None)
-    output_file_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.png', 'WC', 'img')
+    plt.figure(figsize=(8, 8), facecolor=None)
+    output_file_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, ".png", "WC", "img")
     if bg_image_flag and bg_image is not None:
         img = changeWhiteToTransparent(wc.to_image())
         img = img.resize(bg_image.size)
         img = Image.alpha_composite(bg_image, img)
-        plt.imshow(img,interpolation='bilinear')
-        plt.title(wordcloud_title, fontsize=14, fontweight='bold', pad=20)
+        plt.imshow(img, interpolation="bilinear")
+        plt.title(wordcloud_title, fontsize=14, fontweight="bold", pad=20)
         plt.axis("off")
-        #title must be set before layout
-        plt.tight_layout(pad = 0)
+        # title must be set before layout
+        plt.tight_layout(pad=0)
         # Save the image in the output folder
         plt.figure()
-        plt.axis('off')
-        fig = plt.imshow(img, interpolation='nearest')
-        plt.savefig(output_file_name,
-                    bbox_inches='tight',
-                    pad_inches=0,
-                    format='png',
-                    dpi=300)
+        plt.axis("off")
+        fig = plt.imshow(img, interpolation="nearest")
+        plt.savefig(output_file_name, bbox_inches="tight", pad_inches=0, format="png", dpi=300)
     else:
         # plt.imshow(wc, interpolation="bilinear")
         plt.imshow(wc.to_image(), interpolation="bilinear")
-        plt.title(wordcloud_title, fontsize=14, fontweight='bold', pad=20)
+        plt.title(wordcloud_title, fontsize=14, fontweight="bold", pad=20)
         plt.axis("off")
         # wc.to_file(output_file_name)
         plt.savefig(output_file_name)
     return output_file_name
 
+
 # called by python_wordCloud
 # inputFilename is only used to create an appropriate name for the image file;
 # the texts to be processed is contained in textToProcess
 
-def display_wordCloud(inputFilename,inputDir,outputDir,textToProcess,doNotListIndividualFiles,
-                transformed_image_mask, stopwords, collocation, wordcloud_title, prefer_horizontal,bg_image = None, bg_image_flag = True, font = None, max_words=100):
-    if textToProcess=='':
+
+def display_wordCloud(
+    inputFilename,
+    inputDir,
+    outputDir,
+    textToProcess,
+    doNotListIndividualFiles,
+    transformed_image_mask,
+    stopwords,
+    collocation,
+    wordcloud_title,
+    prefer_horizontal,
+    bg_image=None,
+    bg_image_flag=True,
+    font=None,
+    max_words=100,
+):
+    if textToProcess == "":
         return
-    comment_words = ' '
+    comment_words = " "
     c_wid = 0 if bg_image_flag else 3
-    if len(transformed_image_mask)!=0:
-        wordcloud = WordCloud(width = 800, height = 800,
-                        background_color ='white',
-                        max_words=100,
-                        mask=transformed_image_mask,
-                        prefer_horizontal=prefer_horizontal,
-                        stopwords = stopwords,
-                        contour_width=c_wid,
-                        contour_color='firebrick',
-                        #min_font_size = 10, collocations=collocation).generate(comment_words)
-                        #min_font_size = 10, collocations=collocation).generate(textToProcess)
-                        collocations = collocation,
-                        font_path = font).generate(textToProcess)
+    if len(transformed_image_mask) != 0:
+        wordcloud = WordCloud(
+            width=800,
+            height=800,
+            background_color="white",
+            max_words=100,
+            mask=transformed_image_mask,
+            prefer_horizontal=prefer_horizontal,
+            stopwords=stopwords,
+            contour_width=c_wid,
+            contour_color="firebrick",
+            # min_font_size = 10, collocations=collocation).generate(comment_words)
+            # min_font_size = 10, collocations=collocation).generate(textToProcess)
+            collocations=collocation,
+            font_path=font,
+        ).generate(textToProcess)
     else:
-        wordcloud = WordCloud(width = 800, height = 800,
-                        background_color ='white',
-                        max_words=max_words,
-                        prefer_horizontal=prefer_horizontal,
-                        stopwords = stopwords,
-                        contour_width=c_wid,
-                        #min_font_size = 10, collocations=collocation).generate(comment_words)
-                        #min_font_size = 10, collocations = collocation).generate(textToProcess)
-                        collocations = collocation,
-                        font_path = font).generate(textToProcess)
+        wordcloud = WordCloud(
+            width=800,
+            height=800,
+            background_color="white",
+            max_words=max_words,
+            prefer_horizontal=prefer_horizontal,
+            stopwords=stopwords,
+            contour_width=c_wid,
+            # min_font_size = 10, collocations=collocation).generate(comment_words)
+            # min_font_size = 10, collocations = collocation).generate(textToProcess)
+            collocations=collocation,
+            font_path=font,
+        ).generate(textToProcess)
     wordcloud_title = get_wordcloud_title(inputFilename, inputDir, wordcloud_title)
-    if doNotListIndividualFiles==True:
-        output_file_name=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.png', 'WC', 'img')
+    if doNotListIndividualFiles == True:
+        output_file_name = IO_files_util.generate_output_file_name(
+            inputFilename, inputDir, outputDir, ".png", "WC", "img"
+        )
     else:
-        output_file_name=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.png', 'WC', 'img')
+        output_file_name = IO_files_util.generate_output_file_name(
+            inputFilename, inputDir, outputDir, ".png", "WC", "img"
+        )
     # plot the WordCloud image
-    plt.figure(figsize = (8, 8), facecolor = None) #plt.figure visualizes the figure
+    plt.figure(figsize=(8, 8), facecolor=None)  # plt.figure visualizes the figure
     if bg_image_flag and bg_image is not None:
         img = changeWhiteToTransparent(wordcloud.to_image())
         img = img.resize(bg_image.size)
         img = Image.alpha_composite(bg_image, img)
-        plt.imshow(img,interpolation='bilinear')
-        plt.title(wordcloud_title, fontsize=14, fontweight='bold', pad=20)
+        plt.imshow(img, interpolation="bilinear")
+        plt.title(wordcloud_title, fontsize=14, fontweight="bold", pad=20)
         plt.axis("off")
-        #title must be set before layout
-        plt.tight_layout(pad = 0)
+        # title must be set before layout
+        plt.tight_layout(pad=0)
         # Save the image in the output folder
         plt.figure()
-        fig = plt.imshow(img, interpolation='nearest')
-        plt.title(wordcloud_title, fontsize=14, fontweight='bold', pad=20)
-        plt.axis('off')
-        plt.savefig(output_file_name,
-                    bbox_inches='tight',
-                    pad_inches=0,
-                    format='png',
-                    dpi=300)
+        fig = plt.imshow(img, interpolation="nearest")
+        plt.title(wordcloud_title, fontsize=14, fontweight="bold", pad=20)
+        plt.axis("off")
+        plt.savefig(output_file_name, bbox_inches="tight", pad_inches=0, format="png", dpi=300)
     else:
-        plt.title(wordcloud_title, fontsize=14, fontweight='bold', pad=20)
+        plt.title(wordcloud_title, fontsize=14, fontweight="bold", pad=20)
         plt.imshow(wordcloud, interpolation="bilinear")
         plt.axis("off")
-        if len(output_file_name)>255:
+        if len(output_file_name) > 255:
             return
-        plt.savefig(output_file_name,
-                    bbox_inches='tight',
-                    pad_inches=0,
-                    format='png',
-                    dpi=300)
+        plt.savefig(output_file_name, bbox_inches="tight", pad_inches=0, format="png", dpi=300)
         # /2/2/2025 will not have the title in the chart, only plt.savefig
         # wordcloud.to_file(output_file_name)
     return output_file_name
+
 
 # check if file is empty
 # 2 returned boolean
 #   the first one tells user that the program MUST exit;
 #   the second that a file is empty and processing moves to the next file
-def check_file_empty(currenttext,inputFilename,nDocs,NumEmptyDocs):
+def check_file_empty(currenttext, inputFilename, nDocs, NumEmptyDocs):
     if len(currenttext) == 0:
-        NumEmptyDocs=NumEmptyDocs+1
+        NumEmptyDocs = NumEmptyDocs + 1
         if nDocs == 1:
-            mb.showerror(title='File empty', message='The file ' + inputFilename + ' is empty.\n\nPlease, use another file and try again.')
-            return True, True, NumEmptyDocs # must exit script
+            mb.showerror(
+                title="File empty",
+                message="The file " + inputFilename + " is empty.\n\nPlease, use another file and try again.",
+            )
+            return True, True, NumEmptyDocs  # must exit script
         else:
-            IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Empty file',
-                                               'The file ' + inputFilename + ' is empty.')
+            IO_user_interface_util.timed_alert(
+                GUI_util.window, 3000, "Empty file", "The file " + inputFilename + " is empty."
+            )
         return False, True, NumEmptyDocs
     else:
         return False, False, NumEmptyDocs
 
-#Modified by Tony 01/23/2022  add bg_image and bg_image_flag
-def processCsvColumns(inputFilename, inputDir, outputDir, openOutputFiles,csvField_color_list, doNotListIndividualFiles, max_words, lowercase, collocation, wordcloud_title, prefer_horizontal, bg_image=None, bg_image_flag=False):
-    transformed_image_mask=[]
+
+# Modified by Tony 01/23/2022  add bg_image and bg_image_flag
+def processCsvColumns(
+    inputFilename,
+    inputDir,
+    outputDir,
+    openOutputFiles,
+    csvField_color_list,
+    doNotListIndividualFiles,
+    max_words,
+    lowercase,
+    collocation,
+    wordcloud_title,
+    prefer_horizontal,
+    bg_image=None,
+    bg_image_flag=False,
+):
+    transformed_image_mask = []
     # collocation=False
     # prefer_horizontal=.9
-    currenttext = ''
+    currenttext = ""
     color_to_words = defaultdict(list)
-    with open(inputFilename, 'r', encoding='utf-8', errors='ignore') as myfile:
+    with open(inputFilename, encoding="utf-8", errors="ignore") as myfile:
         if len(csvField_color_list) != 0:
             # process csvField_color_list
-            currenttext, color_to_words = processColorList(currenttext, lowercase, color_to_words, csvField_color_list, myfile)
-            tempOutputfile=''
-            if currenttext!='':
-                tempOutputfile = display_wordCloud_sep_color(inputFilename, inputDir, outputDir, currenttext, color_to_words, transformed_image_mask, max_words, collocation, wordcloud_title, prefer_horizontal, bg_image = bg_image, bg_image_flag= bg_image_flag)
+            currenttext, color_to_words = processColorList(
+                currenttext, lowercase, color_to_words, csvField_color_list, myfile
+            )
+            tempOutputfile = ""
+            if currenttext != "":
+                tempOutputfile = display_wordCloud_sep_color(
+                    inputFilename,
+                    inputDir,
+                    outputDir,
+                    currenttext,
+                    color_to_words,
+                    transformed_image_mask,
+                    max_words,
+                    collocation,
+                    wordcloud_title,
+                    prefer_horizontal,
+                    bg_image=bg_image,
+                    bg_image_flag=bg_image_flag,
+                )
     myfile.close()
     return tempOutputfile
 
-def save_wordcloud(differentPOS_differentColors, inputFilename, inputDir, outputDir, doNotListIndividualFiles, textToProcess,
-                   color_to_words,transformed_image_mask, stopwords, collocation, wordcloud_title,prefer_horizontal,
-                   img, use_contour_only, font, max_words):
+
+def save_wordcloud(
+    differentPOS_differentColors,
+    inputFilename,
+    inputDir,
+    outputDir,
+    doNotListIndividualFiles,
+    textToProcess,
+    color_to_words,
+    transformed_image_mask,
+    stopwords,
+    collocation,
+    wordcloud_title,
+    prefer_horizontal,
+    img,
+    use_contour_only,
+    font,
+    max_words,
+):
     if differentPOS_differentColors:
-        tempOutputfile = display_wordCloud_sep_color(inputFilename, inputDir, outputDir, textToProcess,
-                                 color_to_words,
-                                 transformed_image_mask, collocation, wordcloud_title, prefer_horizontal,
-                                 img, use_contour_only, font, max_words)
+        tempOutputfile = display_wordCloud_sep_color(
+            inputFilename,
+            inputDir,
+            outputDir,
+            textToProcess,
+            color_to_words,
+            transformed_image_mask,
+            collocation,
+            wordcloud_title,
+            prefer_horizontal,
+            img,
+            use_contour_only,
+            font,
+            max_words,
+        )
     else:
         # when stopwords = '' stopwords will be INCLUDED in the output visual
-        tempOutputfile = display_wordCloud(inputFilename, inputDir, outputDir, textToProcess,
-                               doNotListIndividualFiles, transformed_image_mask, stopwords, collocation, wordcloud_title,
-                               prefer_horizontal, img, use_contour_only, font, max_words)
+        tempOutputfile = display_wordCloud(
+            inputFilename,
+            inputDir,
+            outputDir,
+            textToProcess,
+            doNotListIndividualFiles,
+            transformed_image_mask,
+            stopwords,
+            collocation,
+            wordcloud_title,
+            prefer_horizontal,
+            img,
+            use_contour_only,
+            font,
+            max_words,
+        )
     if tempOutputfile != None:
         filesToOpen.append(tempOutputfile)
     return filesToOpen
 
+
 # TOP-level function for wordclouds
 # called by wordclouds_main
-def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selectedImage, use_contour_only, wordcloud_title, prefer_horizontal, font, max_words, lemmatize, exclude_stopwords, exclude_punctuation, lowercase, differentPOS_differentColors, differentColumns_differentColors, csvField_color_list, doNotListIndividualFiles,openOutputFiles, collocation):
+def python_wordCloud(
+    inputFilename,
+    inputDir,
+    outputDir,
+    configFileName,
+    selectedImage,
+    use_contour_only,
+    wordcloud_title,
+    prefer_horizontal,
+    font,
+    max_words,
+    lemmatize,
+    exclude_stopwords,
+    exclude_punctuation,
+    lowercase,
+    differentPOS_differentColors,
+    differentColumns_differentColors,
+    csvField_color_list,
+    doNotListIndividualFiles,
+    openOutputFiles,
+    collocation,
+):
     # https://www.geeksforgeeks.org/generating-word-cloud-python/
     # Python program to generate WordCloud
     # for a more sophisticated Python script see
     #   https://www.datacamp.com/community/tutorials/wordcloud-python
     #   they provide code to display wc in a selected image
     global filesToOpen
-    filesToOpen=[]
+    filesToOpen = []
 
-    if differentColumns_differentColors==True or inputFilename[-3:]=='csv':
-        fileType='.csv'
+    if differentColumns_differentColors == True or inputFilename[-3:] == "csv":
+        fileType = ".csv"
     else:
-        fileType='.txt'
+        fileType = ".txt"
 
-    inputDocs=IO_files_util.getFileList(inputFilename, inputDir,fileType, silent=False, configFileName=configFileName)
-    nDocs=len(inputDocs)
-    if nDocs==0:
+    inputDocs = IO_files_util.getFileList(
+        inputFilename, inputDir, fileType, silent=False, configFileName=configFileName
+    )
+    nDocs = len(inputDocs)
+    if nDocs == 0:
         return filesToOpen
 
     # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='wordcloud',
-                                                       silent=True)
-    if outputDir == '':
+    outputDir = IO_files_util.make_output_subdirectory(
+        inputFilename, inputDir, outputDir, label="wordcloud", silent=True
+    )
+    if outputDir == "":
         return filesToOpen
 
-    #font = 'IMPRISHA.TTF'
+    # font = 'IMPRISHA.TTF'
     font = get_font_path(font)
 
-    transformed_image_mask=[]
+    transformed_image_mask = []
 
     use_contour_only = not use_contour_only
 
-    if prefer_horizontal==0:
-        prefer_horizontal=.9
+    if prefer_horizontal == 0:
+        prefer_horizontal = 0.9
     else:
-        prefer_horizontal=1
+        prefer_horizontal = 1
 
     img = None
 
-    if len(selectedImage)!=0:
+    if len(selectedImage) != 0:
         # In order to create a shape for your wordcloud, first, you need to find a PNG file to become the mask.
         # Not all mask images have the same format resulting in different outcomes, hence making the WordCloud function not working properly.
         # The way the masking functions works is that it requires all white part of the mask should be 255 not 0 (integer type). This value represents the "intensity" of the pixel. Values of 255 are pure white, whereas values of 1 are black. Here, you can use the provided function below to transform your mask if your mask has the same format as above. Notice if you have a mask that the background is not 0, but 1 or 2, adjust the function to match your mask.
         try:
             img = Image.open(selectedImage)
         except:
-            mb.showwarning(title='Image file error',
-                           message="An error was encountered opening the input image file\n\n" + selectedImage + "\n\nPlease, use another image file and try again.")
+            mb.showwarning(
+                title="Image file error",
+                message="An error was encountered opening the input image file\n\n"
+                + selectedImage
+                + "\n\nPlease, use another image file and try again.",
+            )
             return
         img = changeTransparentToWhite(img)
         image_mask = np.array(img)
-        print("Image_mask (SHOULD ALL BE 0 VALUES)",image_mask)
-        numberImages=len(image_mask.shape)
+        print("Image_mask (SHOULD ALL BE 0 VALUES)", image_mask)
+        numberImages = len(image_mask.shape)
         # if i==1: #only print once
-        print("\n\n\nnumberImages",numberImages)
+        print("\n\n\nnumberImages", numberImages)
 
         # Transform your mask into a new one that will work with the function:
-        if numberImages==1:
+        if numberImages == 1:
             transformed_image_mask = np.ndarray((image_mask.shape[0]), np.int32)
-        elif numberImages==2:
-            transformed_image_mask = np.ndarray((image_mask.shape[0],image_mask.shape[1]), np.int32)
-        elif numberImages==3:
-            transformed_image_mask = np.ndarray((image_mask.shape[0],image_mask.shape[1],image_mask.shape[2]), np.int32)
+        elif numberImages == 2:
+            transformed_image_mask = np.ndarray((image_mask.shape[0], image_mask.shape[1]), np.int32)
+        elif numberImages == 3:
+            transformed_image_mask = np.ndarray(
+                (image_mask.shape[0], image_mask.shape[1], image_mask.shape[2]), np.int32
+            )
         else:
             return
         transformed_image_mask = image_mask
-        '''
+        """
         for j in range(len(image_mask)):
             transformed_image_mask[j] = list(map(transform_format, image_mask[j]))
-            '''
+            """
         # Check the expected result of your mask
         # if i==1: #only print once
-        print("transformed_image_mask (SHOULD ALL BE 255 VALUES)",transformed_image_mask)
+        print("transformed_image_mask (SHOULD ALL BE 255 VALUES)", transformed_image_mask)
 
     # can only process a single conll table or a csv file (e.g., SVO reasults where the user selects the columns to be used for color display
-    if len(inputDir)>0:
-        fileType='.txt'
+    if len(inputDir) > 0:
+        fileType = ".txt"
 
     # if differentColumns_differentColors:
     #     processCsvColumns(inputFilename, inputDir, outputDir, openOutputFiles, csvField_color_list, doNotListIndividualFiles, bg_image=img, bg_image_flag=use_contour_only)
@@ -554,65 +736,94 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
     grey_code = "(80, 80, 80)"
     yellow_code = "(255, 255, 0)"
     color_to_words = {
-        red_code:[], #red/nouns
-        blue_code:[], #blue/verbs
-        green_code:[], #green/adjs
+        red_code: [],  # red/nouns
+        blue_code: [],  # blue/verbs
+        green_code: [],  # green/adjs
         grey_code: [],  # grey/advs
-        yellow_code: []  # all other word POS types; no longer used
+        yellow_code: [],  # all other word POS types; no longer used
     }
-    combinedtext = ''
-    currenttext = ''
-    textToProcess = ''
-    stopwords = ''
+    combinedtext = ""
+    currenttext = ""
+    textToProcess = ""
+    stopwords = ""
     NumEmptyDocs = 0
     i = 0
 
     runStanza = False
-    if fileType=='.txt':
+    if fileType == ".txt":
         # always tokenize to convert each token to lowercase
         #   to avoid the same improper word to appear with lower and upper case at the beginning of a sentence
-        stannlp = stanza.Pipeline(lang='en', processors='tokenize, mwt')
+        stannlp = stanza.Pipeline(lang="en", processors="tokenize, mwt")
         runStanza = True
-        processors = 'tokenize, mwt'
+        processors = "tokenize, mwt"
         if lemmatize:
-            processors = processors + ', lemma'
+            processors = processors + ", lemma"
         if exclude_punctuation or differentPOS_differentColors:
-            processors = processors + ', pos' #, ner'
-        stannlp = stanza.Pipeline(lang='en', processors=processors)
+            processors = processors + ", pos"  # , ner'
+        stannlp = stanza.Pipeline(lang="en", processors=processors)
 
     if runStanza:
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Running STANZA & wordcloud',
-                                           'Started running STANZA and wordcloud at', True,
-                                           'Please, be patient. Depending upon the number of documents processed this may take a few minutes.',True,'',False)
+        startTime = IO_user_interface_util.timed_alert(
+            GUI_util.window,
+            3000,
+            "Running STANZA & wordcloud",
+            "Started running STANZA and wordcloud at",
+            True,
+            "Please, be patient. Depending upon the number of documents processed this may take a few minutes.",
+            True,
+            "",
+            False,
+        )
 
     # stopwords = set(STOPWORDS)  # STOPWORDS are all lowercase, so any exclusion will have to be converted
     # with stopwords = '' stopwords will be included in the output visual
     # do not process stopwords when processing by POS tag value
     if not exclude_stopwords and not differentPOS_differentColors:
-        print("\nLIST OF WORDCLOUDS STOPWORDS\n",STOPWORDS,"\n")
+        print("\nLIST OF WORDCLOUDS STOPWORDS\n", STOPWORDS, "\n")
     else:
-        stopwords = set(STOPWORDS) # STOPWORDS are all lowercase, so any exclusion will have to be converted
+        stopwords = set(STOPWORDS)  # STOPWORDS are all lowercase, so any exclusion will have to be converted
         # stanza.download('en')#set the annotator that gives postag
 
     tempOutputfile = []
 
     for doc in inputDocs:
-        i = i+1
+        i = i + 1
         head, tail = os.path.split(doc)
-        print("Processing file " + str(i) + "/" + str(nDocs) + ' ' + tail)
-        if doc[-4:]=='.csv':
-            startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Running wordcloud on csv file',
-                                                           'Started running wordcloud at', True,
-                                                           'Please, be patient. Depending upon the number of documents processed this may take a few minutes.',
-                                                           True, '', False)
+        print("Processing file " + str(i) + "/" + str(nDocs) + " " + tail)
+        if doc[-4:] == ".csv":
+            startTime = IO_user_interface_util.timed_alert(
+                GUI_util.window,
+                3000,
+                "Running wordcloud on csv file",
+                "Started running wordcloud at",
+                True,
+                "Please, be patient. Depending upon the number of documents processed this may take a few minutes.",
+                True,
+                "",
+                False,
+            )
             import CoNLL_util
+
             # check that input file is a CoNLL table
-            if not CoNLL_util.check_CoNLL(doc,True):
+            if not CoNLL_util.check_CoNLL(doc, True):
                 # processing CoNLL table that contains POS values
                 if differentColumns_differentColors:
-                    tempOutputfile = processCsvColumns(inputFilename, inputDir, outputDir, openOutputFiles, csvField_color_list,
-                                      doNotListIndividualFiles, max_words, lowercase, collocation, wordcloud_title, prefer_horizontal, bg_image=img, bg_image_flag=use_contour_only)
-                    if tempOutputfile!='':
+                    tempOutputfile = processCsvColumns(
+                        inputFilename,
+                        inputDir,
+                        outputDir,
+                        openOutputFiles,
+                        csvField_color_list,
+                        doNotListIndividualFiles,
+                        max_words,
+                        lowercase,
+                        collocation,
+                        wordcloud_title,
+                        prefer_horizontal,
+                        bg_image=img,
+                        bg_image_flag=use_contour_only,
+                    )
+                    if tempOutputfile != "":
                         filesToOpen.append(tempOutputfile)
             else:
                 # processing any csv file for its values,
@@ -620,13 +831,13 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                 #   with the option of selecting specific colors and display them in selected colors
                 try:
                     # this assumes that the input csv file is a CoNLL table
-                    df = pd.read_csv(doc, encoding='utf-8',on_bad_lines='skip')
-                    forms_ = df['Form']
-                    lemmas_ = df['Lemma']
-                    postags_ = df['POS']
+                    df = pd.read_csv(doc, encoding="utf-8", on_bad_lines="skip")
+                    forms_ = df["Form"]
+                    lemmas_ = df["Lemma"]
+                    postags_ = df["POS"]
                     # ners_ = df['NER']
 
-                    #text: summing tokens in each line together
+                    # text: summing tokens in each line together
                     words_ = []
                     if lemmatize:
                         currenttext = (" ").join(lemmas_)
@@ -635,8 +846,8 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                         currenttext = (" ").join(forms_)
                         words_ = forms_
 
-                    df = pd.read_csv(doc, encoding='utf-8', on_bad_lines='skip')
-                    df = df.dropna(subset=['Form', 'Lemma', 'POS'])
+                    df = pd.read_csv(doc, encoding="utf-8", on_bad_lines="skip")
+                    df = df.dropna(subset=["Form", "Lemma", "POS"])
                     text_words = []
                     for row in df.itertuples():
                         word = row.Lemma if lemmatize else row.Form
@@ -653,7 +864,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                         if color:
                             color_to_words[color].append(word)
                             text_words.append(str(word))
-                    textToProcess = ' '.join(text_words)
+                    textToProcess = " ".join(text_words)
 
                     # for j in range(len(words_)):
                     #     print ('Processing CoNLL table record ' + str(j) + '/' + str(len(words_)))
@@ -681,13 +892,16 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                     #             postags_[j][0:2] == "JJ" or postags_[j][0:2] == "RB":
                     #         textToProcess = textToProcess + ' ' + words_[j]
                 except:
-                    mb.showwarning(title='Not a CoNLL table',
-                                   message=doc + " is not a CoNLL table.\n\nPlease, select in input a proper csv CoNLL file with Form, Lemma, and POS columns and try again.")
+                    mb.showwarning(
+                        title="Not a CoNLL table",
+                        message=doc
+                        + " is not a CoNLL table.\n\nPlease, select in input a proper csv CoNLL file with Form, Lemma, and POS columns and try again.",
+                    )
                     return
 
-        elif doc[-4:]=='.txt':
-            with open(doc, 'r', encoding='utf-8', errors='ignore') as myfile:
-                textToProcess = ''
+        elif doc[-4:] == ".txt":
+            with open(doc, encoding="utf-8", errors="ignore") as myfile:
+                textToProcess = ""
                 currenttext = myfile.read()
                 # check for empty file
                 error, error2, NumEmptyDocs = check_file_empty(currenttext, doc, nDocs, NumEmptyDocs)
@@ -696,7 +910,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                 if error2:
                     continue
                 if runStanza:
-                    textToProcess = ''
+                    textToProcess = ""
                     annotated = stannlp(currenttext)
                     for sent_id in range(len(annotated.sentences)):
                         # words do not contain ner; tokens do
@@ -712,20 +926,22 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                             if lemmatize:
                                 word_str = word.lemma
                                 # if no lemma, use form value
-                                if word_str==None:
+                                if word_str == None:
                                     word_str = word.text
                             else:
                                 word_str = word.text
                                 pass
                             if exclude_stopwords:
-                                if word_str.lower() in stopwords: # STOPWORDS are all lowercase, so any exclusion will have to be converted
+                                if (
+                                    word_str.lower() in stopwords
+                                ):  # STOPWORDS are all lowercase, so any exclusion will have to be converted
                                     continue  # do not process stopwords & punctuation marks
                             # print("   word_str",word_str,"word.pos",word.pos)
                             # convert to lower case for same improper words that may appear after a full stop
                             if lowercase:
                                 # if word_str=='':
                                 #     word_str = word.text
-                                if word_str!=None:
+                                if word_str != None:
                                     word_str = word_str.lower()
                             if exclude_punctuation:
                                 if word.pos == "PUNCT":
@@ -741,73 +957,126 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                             elif word.pos == "ADV":
                                 color_to_words[grey_code].append(word_str)
                             if differentPOS_differentColors:
-                                if word.pos != "NOUN" and word.pos != "PROPN" and word.pos != "VERB" and \
-                                        word.pos != "ADJ" and word.pos != "ADV":
+                                if (
+                                    word.pos != "NOUN"
+                                    and word.pos != "PROPN"
+                                    and word.pos != "VERB"
+                                    and word.pos != "ADJ"
+                                    and word.pos != "ADV"
+                                ):
                                     continue
 
                             if word_str != None:
-                                textToProcess = textToProcess + ' ' + word_str
+                                textToProcess = textToProcess + " " + word_str
 
                     if len(textToProcess) == 0:
                         textToProcess = currenttext
 
-            if doNotListIndividualFiles==False:
-                filesToOpen = save_wordcloud(differentPOS_differentColors, doc, inputDir, outputDir,
-                                            doNotListIndividualFiles, textToProcess,
-                                            color_to_words, transformed_image_mask, stopwords, collocation,prefer_horizontal,
-                                            img, use_contour_only, font, max_words)
+            if doNotListIndividualFiles == False:
+                filesToOpen = save_wordcloud(
+                    differentPOS_differentColors,
+                    doc,
+                    inputDir,
+                    outputDir,
+                    doNotListIndividualFiles,
+                    textToProcess,
+                    color_to_words,
+                    transformed_image_mask,
+                    stopwords,
+                    collocation,
+                    prefer_horizontal,
+                    img,
+                    use_contour_only,
+                    font,
+                    max_words,
+                )
                 # write an output txt file that can be used for internet wordclouds services
                 if lemmatize or exclude_stopwords:
-                    with open(tempOutputfile[:-8]+'.txt', 'w', encoding='utf-8', errors='ignore') as f:
+                    with open(tempOutputfile[:-8] + ".txt", "w", encoding="utf-8", errors="ignore") as f:
                         f.write(textToProcess)
             combinedtext = combinedtext + textToProcess
 
     # when processing multiple files in a directory individual files in a directory combinedtext will bbe empty
-    if combinedtext !='': #len(inputDir)>0:
-        if len(inputDir)>0:
-            doc = '' # doc would otherwise have the value of the last document read in the inputDir
-        filesToOpen = save_wordcloud(differentPOS_differentColors, doc, inputDir, outputDir,
-                                     doNotListIndividualFiles, combinedtext,
-                                     color_to_words,
-                                     transformed_image_mask, stopwords, collocation, wordcloud_title, prefer_horizontal, img,
-                                     use_contour_only, font, max_words)
+    if combinedtext != "":  # len(inputDir)>0:
+        if len(inputDir) > 0:
+            doc = ""  # doc would otherwise have the value of the last document read in the inputDir
+        filesToOpen = save_wordcloud(
+            differentPOS_differentColors,
+            doc,
+            inputDir,
+            outputDir,
+            doNotListIndividualFiles,
+            combinedtext,
+            color_to_words,
+            transformed_image_mask,
+            stopwords,
+            collocation,
+            wordcloud_title,
+            prefer_horizontal,
+            img,
+            use_contour_only,
+            font,
+            max_words,
+        )
 
         # write an output txt file that can be used for internet wordclouds services
         if lemmatize or exclude_stopwords:
-            with open(filesToOpen[0][:-8] + '.txt', 'w', encoding='utf-8', errors='ignore') as f:
+            with open(filesToOpen[0][:-8] + ".txt", "w", encoding="utf-8", errors="ignore") as f:
                 f.write(combinedtext)
             nDocsRewritten = 1
-            if doNotListIndividualFiles==False:
-                nDocsRewritten = nDocs+1
-            IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Python wordclouds txt files output',
-                                               'The Python 3 wordclouds algorithm has produced '+ str(nDocsRewritten)+' txt file(s) without stopwords, punctuation, and with lemmatized words, depending upon your selected filter options.\n\nYou will find the file(s) in your output directory.\n\nYou can use the file(s) to produce wordclouds using any of the internet wordcloud services.')
+            if doNotListIndividualFiles == False:
+                nDocsRewritten = nDocs + 1
+            IO_user_interface_util.timed_alert(
+                GUI_util.window,
+                4000,
+                "Python wordclouds txt files output",
+                "The Python 3 wordclouds algorithm has produced "
+                + str(nDocsRewritten)
+                + " txt file(s) without stopwords, punctuation, and with lemmatized words, depending upon your selected filter options.\n\nYou will find the file(s) in your output directory.\n\nYou can use the file(s) to produce wordclouds using any of the internet wordcloud services.",
+            )
 
         if len(combinedtext) < 1:
-            print('All ' + str(NumEmptyDocs) + ' txt files in your input directory\n' + str(
-                inputDir) + ' are empty.\n\nPlease, check your directory and try again.')
-            mb.showerror(title='Files empty',
-                         message='All ' + str(NumEmptyDocs) + ' txt files are empty in your input directory\n' + str(
-                             inputDir) + '\n\nPlease, check your directory and try again.')
+            print(
+                "All "
+                + str(NumEmptyDocs)
+                + " txt files in your input directory\n"
+                + str(inputDir)
+                + " are empty.\n\nPlease, check your directory and try again."
+            )
+            mb.showerror(
+                title="Files empty",
+                message="All "
+                + str(NumEmptyDocs)
+                + " txt files are empty in your input directory\n"
+                + str(inputDir)
+                + "\n\nPlease, check your directory and try again.",
+            )
         if NumEmptyDocs > 0:
-            mb.showerror(title='Empty file(s)',
-                         message=str(NumEmptyDocs) + ' file(s) empty in the input directory\n' + str(
-                             inputDir) + '\n\nFile(s) listed in command line. Please, make sure to check the file(s) content.')
+            mb.showerror(
+                title="Empty file(s)",
+                message=str(NumEmptyDocs)
+                + " file(s) empty in the input directory\n"
+                + str(inputDir)
+                + "\n\nFile(s) listed in command line. Please, make sure to check the file(s) content.",
+            )
 
-    #@@@ 11/20/2023
+    # @@@ 11/20/2023
     # if openOutputFiles:
     #     head, scriptName = os.path.split(os.path.basename(__file__))
     #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
     #     filesToOpen = None
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
-                                       'Finished running wordcloud at',
-                                       True, '', True, startTime, False)
+    IO_user_interface_util.timed_alert(
+        GUI_util.window, 3000, "Analysis end", "Finished running wordcloud at", True, "", True, startTime, False
+    )
     return filesToOpen
 
     # plt.show()
 
-    #=======================================================================================================================
-    #Debug use
-    #=======================================================================================================================
+    # =======================================================================================================================
+    # Debug use
+    # =======================================================================================================================
+
+
 # def main():
 #     a = get_font_list()
 #     print("123")

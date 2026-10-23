@@ -45,7 +45,8 @@ def test_document_embeddings_button_follows_word_embeddings():
     assert labels.index(doc) == labels.index("Word embeddings: Gensim Word2Vec, BERT (Open GUI)") + 1
     assert semantic_guis()[doc] == "semantic_analysis_main.py"
     assert "'DOCUMENT embeddings: Semantic similarity & clustering (via SBERT)'" in (
-        SRC / "semantic_analysis_main.py").read_text(encoding="utf-8")
+        SRC / "semantic_analysis_main.py"
+    ).read_text(encoding="utf-8")
 
 
 def test_each_button_has_its_help_text():
@@ -58,10 +59,11 @@ def test_listed_in_the_menu_before_Syntactic_ALL_and_mapped_to_the_GUI():
     constants = (SRC / "constants_util.py").read_text(encoding="utf-8")
     # alphabetical (Roberto, 21 Oct 2026): Semantic before Syntactic; the plain "Semantic analysis" item, which the
     # hub reaches by its first button, is no longer in the dropdown (its pydict entry stays)
-    assert f"'{LABEL}', \\\n'Syntactic analysis (ALL)'" in constants
-    assert "'Semantic analysis', \\" not in constants
+    # either quote style, with or without a line-continuation backslash (the file is ruff-formatted)
+    assert re.search(rf"[\"']{re.escape(LABEL)}[\"'],\s*(\\\s*)?[\"']Syntactic analysis \(ALL\)[\"']", constants)
+    assert not re.search(r"[\"']Semantic analysis[\"'],", constants)
     # "Semantic analysis (via TensorFlow)" had no tool behind it (its menu entry was dropped 1 Jul 2026)
-    assert 'Semantic analysis (via TensorFlow)' not in constants
+    assert "Semantic analysis (via TensorFlow)" not in constants
     menu = (SRC / "NLP_menu_main.py").read_text(encoding="utf-8")
     assert re.search(r'pydict\["Semantic analysis \(ALL\)"\] = \["semantic_analysis_ALL_main\.py", 1\]', menu)
     # nothing moved: the existing entries are still there

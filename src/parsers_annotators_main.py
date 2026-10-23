@@ -1,27 +1,30 @@
 # Written by Roberto Franzosi
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window, "parsers_annotators_main", ['tkinter', 'subprocess']) == False:
+if (
+    IO_libraries_util.install_all_Python_packages(GUI_util.window, "parsers_annotators_main", ["tkinter", "subprocess"])
+    == False
+):
     sys.exit(0)
 
 import os
-import IO_user_interface_util
 import tkinter as tk
 import tkinter.messagebox as mb
-from subprocess import call
 
+import config_util
 import GUI_IO_util
 import IO_files_util
-import config_util
+import IO_user_interface_util
 import reminders_util
-import Stanford_CoreNLP_util
-import Stanford_CoreNLP_coreference_util
-import Stanza_util
-import spaCy_util
 import run_script_util
+import spaCy_util
+import Stanford_CoreNLP_coreference_util
+import Stanford_CoreNLP_util
+import Stanza_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -32,6 +35,7 @@ import run_script_util
 # dateInclude indicates whether there is date embedded in the file name.
 # 1: included 0: not included
 
+
 def run():
     # widget values read here at RUN time (was: run_script_command lambda + run() params)
     inputFilename = GUI_util.inputFilename.get()
@@ -40,30 +44,44 @@ def run():
     openOutputFiles = GUI_util.open_csv_output_checkbox.get()
     chartPackage = GUI_util.charts_package_options_widget.get()
     dataTransformation = GUI_util.data_transformation_options_widget.get()
-    extra_GUIs_var = globals()['extra_GUIs_var'].get()
-    extra_GUIs_menu_var = globals()['extra_GUIs_menu_var'].get()
+    extra_GUIs_var = globals()["extra_GUIs_var"].get()
+    extra_GUIs_menu_var = globals()["extra_GUIs_menu_var"].get()
     manual_Coref = manual_Coref_var.get()
     open_GUI = open_GUI_var.get()
-    parser_var = globals()['parser_var'].get()
-    parser_menu_var = globals()['parser_menu_var'].get()
-    Json_var = globals()['Json_var'].get()
+    parser_var = globals()["parser_var"].get()
+    parser_menu_var = globals()["parser_menu_var"].get()
+    Json_var = globals()["Json_var"].get()
     single_quote = quote_var.get()
-    CoNLL_table_analyzer_var = globals()['CoNLL_table_analyzer_var'].get()
-    annotators_var = globals()['annotators_var'].get()
-    annotators_menu_var = globals()['annotators_menu_var'].get()
+    CoNLL_table_analyzer_var = globals()["CoNLL_table_analyzer_var"].get()
+    annotators_var = globals()["annotators_var"].get()
+    annotators_menu_var = globals()["annotators_menu_var"].get()
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
     filesToOpen = []
-    outputCoNLLfilePath = ''
+    outputCoNLLfilePath = ""
 
-    if '--------------' in annotators_menu_var:
-        mb.showwarning(title='Only a label',message='Your annotator selection is invalid. It is only a label to make readability of menu options easier.\n\nPlease, select a different option and try again.')
+    if "--------------" in annotators_menu_var:
+        mb.showwarning(
+            title="Only a label",
+            message="Your annotator selection is invalid. It is only a label to make readability of menu options easier.\n\nPlease, select a different option and try again.",
+        )
         return
 
     # get the NLP package and language options
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = \
-        config_util.read_NLP_package_language_config()
+    (
+        error,
+        package,
+        parsers,
+        package_basics,
+        language,
+        package_display_area_value,
+        encoding_var,
+        export_json_var,
+        memory_var,
+        document_length_var,
+        limit_sentence_length_var,
+    ) = config_util.read_NLP_package_language_config()
 
     # the new GUI allows user to select the option of exporting Json directly from the parsers_annotators_main
     #   ignoring the choice in setup
@@ -71,14 +89,17 @@ def run():
 
     language_var = language
     language_list = [language]
-    if package_display_area_value == '':
-        mb.showwarning(title='No setup for NLP package and language',
-                       message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
+    if package_display_area_value == "":
+        mb.showwarning(
+            title="No setup for NLP package and language",
+            message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.",
+        )
         return
 
     # get the date options from filename
-    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = \
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = (
         config_util.get_date_options(config_filename, config_input_output_numeric_options)
+    )
     extract_date_from_text_var = 0
 
     # if extra_GUIs_var and extra_GUIs_menu_var!='':
@@ -88,15 +109,24 @@ def run():
     #         run_script_util.run_script("coreference_main.py")
 
     if parser_var == 0 and CoNLL_table_analyzer_var == 1:
-        mb.showinfo("Warning", "You have selected to open the CoNLL table analyser GUI. This option expects to run the parser first.\n\nPlease, tick the parser checkbox and try again.")
+        mb.showinfo(
+            "Warning",
+            "You have selected to open the CoNLL table analyser GUI. This option expects to run the parser first.\n\nPlease, tick the parser checkbox and try again.",
+        )
         return
 
-    if annotators_var and annotators_menu_var == '':
-        mb.showinfo("Warning", "You have selected to run a CoreNLP annotator but no annotator has been selected.\n\nPlease, select an annotator and try try again.")
+    if annotators_var and annotators_menu_var == "":
+        mb.showinfo(
+            "Warning",
+            "You have selected to run a CoreNLP annotator but no annotator has been selected.\n\nPlease, select an annotator and try try again.",
+        )
         return
 
-    if annotators_menu_var == 'Word embeddings (Word2Vec)':
-        mb.showinfo("Warning", "The 'Word embeddings (Word2Vec)' annotator is not available yet for either BERT or spaCy. Sorry!\n\nPlease, select an annotator and try try again.")
+    if annotators_menu_var == "Word embeddings (Word2Vec)":
+        mb.showinfo(
+            "Warning",
+            "The 'Word embeddings (Word2Vec)' annotator is not available yet for either BERT or spaCy. Sorry!\n\nPlease, select an annotator and try try again.",
+        )
         return
 
     # CoreNLP-only annotators (gender, quote, normalized-date, OpenIE) require the Stanford CoreNLP parser.
@@ -104,108 +134,141 @@ def run():
     # with a brief timed notice, leaving the user's default package unchanged -- instead of the old
     # "go to Setup, switch package, try again" wall. If CoreNLP is not installed, the CoreNLP branch below
     # warns via its own check_CoreNLPVersion.
-    if annotators_var and package != 'Stanford CoreNLP' and annotators_menu_var and \
-            any(k in annotators_menu_var for k in ('Gender', 'Quote', 'Normalized NER', 'OpenIE')):
-        IO_user_interface_util.timed_alert(GUI_util.window, 5000, 'Using Stanford CoreNLP',
-                                           'The ' + annotators_menu_var + ' runs only via Stanford CoreNLP.\n\nRunning it with Stanford CoreNLP for this analysis; your default package (' + package + ') is unchanged.')
-        package = 'Stanford CoreNLP'
+    if (
+        annotators_var
+        and package != "Stanford CoreNLP"
+        and annotators_menu_var
+        and any(k in annotators_menu_var for k in ("Gender", "Quote", "Normalized NER", "OpenIE"))
+    ):
+        IO_user_interface_util.timed_alert(
+            GUI_util.window,
+            5000,
+            "Using Stanford CoreNLP",
+            "The "
+            + annotators_menu_var
+            + " runs only via Stanford CoreNLP.\n\nRunning it with Stanford CoreNLP for this analysis; your default package ("
+            + package
+            + ") is unchanged.",
+        )
+        package = "Stanford CoreNLP"
 
-# Stanford CoreNLP ---------------------------------------------------------------------------
-    if package=='Stanford CoreNLP':
-        if parser_var or (annotators_var and annotators_menu_var != ''):
+    # Stanford CoreNLP ---------------------------------------------------------------------------
+    if package == "Stanford CoreNLP":
+        if parser_var or (annotators_var and annotators_menu_var != ""):
             annotator = []
-            if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_util.py') == False:
+            if IO_libraries_util.check_inputPythonJavaProgramFile("Stanford_CoreNLP_util.py") == False:
                 return
 
             if parser_var:
-                if 'PCFG' in parser_menu_var:
-                    annotator='parser (pcfg)'
-                elif parser_menu_var == 'Neural Network':
-                    annotator='parser (nn)'
-            else:
-                if annotators_var and annotators_menu_var != '':
-                    if 'NER annotator' in annotators_menu_var:
-                        annotator = 'NER'
-                    # if 'NER annotator' in annotators_menu_var:
-                    #     annotator = 'NER'
-                    #     if IO_libraries_util.check_inputPythonJavaProgramFile('NER_main.py') == False:
-                    #         return
-                    #     run_script_util.run_script("NER_main.py")
-                    elif 'Sentence splitter (with sentence length)' in annotators_menu_var:
-                        annotator = 'Sentence'
-                    elif 'Lemma annotator' in annotators_menu_var:
-                        annotator = 'Lemma'
-                    elif 'POS annotator' in annotators_menu_var:
-                        annotator = 'All POS'
-                    elif 'Gender' in annotators_menu_var:
-                        annotator = 'gender'
-                    elif 'Quote' in annotators_menu_var:
-                        annotator = 'quote'
-                    elif 'Normalized' in annotators_menu_var:
-                        annotator = 'normalized-date'
-                    elif '*' in annotators_menu_var:
-                        annotator = ['gender','normalized-date','quote']
-                    elif 'Sentiment analysis' in annotators_menu_var:
-                        annotator = ['sentiment']
-                    elif 'SVO' in annotators_menu_var:
-                        annotator = ['SVO']
-                    elif 'OpenIE' in annotators_menu_var:
-                        annotator = ['OpenIE']
-                    elif 'Coreference PRONOMINAL resolution' in annotators_menu_var:
-                        annotator = []
-                        if IO_libraries_util.check_inputPythonJavaProgramFile(
-                                "Stanford_CoreNLP_coReference_util.py") == False:
-                            return
-                        outputFiles, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename,
-                                                                                           inputDir,
-                                                                                           outputDir, openOutputFiles,
-                                                                                           chartPackage, dataTransformation,
-                                                                                           language, memory_var,
-                                                                                           export_json_var,
-                                                                                           manual_Coref)
-
-                        if error_indicator != 0:
-                            mb.showinfo("Coreference Resolution Error",
-                                        "Since Stanford CoreNLP Co-Reference Resolution throws error, " +
-                                        "and you either didn't choose manual Co-Reference Resolution or manual Co-Referenece Resolution fails as well, the process ends now.")
-                        if outputFiles:
-                            if isinstance(outputFiles, str):
-                                filesToOpen.append(outputFiles)
-                            else:
-                                filesToOpen.extend(outputFiles)
-                    else:
+                if "PCFG" in parser_menu_var:
+                    annotator = "parser (pcfg)"
+                elif parser_menu_var == "Neural Network":
+                    annotator = "parser (nn)"
+            elif annotators_var and annotators_menu_var != "":
+                if "NER annotator" in annotators_menu_var:
+                    annotator = "NER"
+                # if 'NER annotator' in annotators_menu_var:
+                #     annotator = 'NER'
+                #     if IO_libraries_util.check_inputPythonJavaProgramFile('NER_main.py') == False:
+                #         return
+                #     run_script_util.run_script("NER_main.py")
+                elif "Sentence splitter (with sentence length)" in annotators_menu_var:
+                    annotator = "Sentence"
+                elif "Lemma annotator" in annotators_menu_var:
+                    annotator = "Lemma"
+                elif "POS annotator" in annotators_menu_var:
+                    annotator = "All POS"
+                elif "Gender" in annotators_menu_var:
+                    annotator = "gender"
+                elif "Quote" in annotators_menu_var:
+                    annotator = "quote"
+                elif "Normalized" in annotators_menu_var:
+                    annotator = "normalized-date"
+                elif "*" in annotators_menu_var:
+                    annotator = ["gender", "normalized-date", "quote"]
+                elif "Sentiment analysis" in annotators_menu_var:
+                    annotator = ["sentiment"]
+                elif "SVO" in annotators_menu_var:
+                    annotator = ["SVO"]
+                elif "OpenIE" in annotators_menu_var:
+                    annotator = ["OpenIE"]
+                elif "Coreference PRONOMINAL resolution" in annotators_menu_var:
+                    annotator = []
+                    if (
+                        IO_libraries_util.check_inputPythonJavaProgramFile("Stanford_CoreNLP_coReference_util.py")
+                        == False
+                    ):
                         return
+                    outputFiles, error_indicator = Stanford_CoreNLP_coreference_util.run(
+                        config_filename,
+                        inputFilename,
+                        inputDir,
+                        outputDir,
+                        openOutputFiles,
+                        chartPackage,
+                        dataTransformation,
+                        language,
+                        memory_var,
+                        export_json_var,
+                        manual_Coref,
+                    )
 
-            if len(annotator)>0:
+                    if error_indicator != 0:
+                        mb.showinfo(
+                            "Coreference Resolution Error",
+                            "Since Stanford CoreNLP Co-Reference Resolution throws error, "
+                            + "and you either didn't choose manual Co-Reference Resolution or manual Co-Referenece Resolution fails as well, the process ends now.",
+                        )
+                    if outputFiles:
+                        if isinstance(outputFiles, str):
+                            filesToOpen.append(outputFiles)
+                        else:
+                            filesToOpen.extend(outputFiles)
+                else:
+                    return
+
+            if len(annotator) > 0:
                 # all items in red (e.g., filename_embeds_date_var, date_format) are the **kwargs in the function CoreNLP_annotate
-                outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                   outputDir,
-                                   openOutputFiles, chartPackage, dataTransformation,
-                                   annotator, False, #'All POS',
-                                   language, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
-                                   filename_embeds_date_var=filename_embeds_date_var,
-                                   date_format=date_format_var,
-                                   items_separator_var=items_separator_var,
-                                   date_position_var=date_position_var,
-                                   single_quote_var = single_quote)
+                outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(
+                    config_filename,
+                    inputFilename,
+                    inputDir,
+                    outputDir,
+                    openOutputFiles,
+                    chartPackage,
+                    dataTransformation,
+                    annotator,
+                    False,  #'All POS',
+                    language,
+                    export_json_var,
+                    memory_var,
+                    document_length_var,
+                    limit_sentence_length_var,
+                    filename_embeds_date_var=filename_embeds_date_var,
+                    date_format=date_format_var,
+                    items_separator_var=items_separator_var,
+                    date_position_var=date_position_var,
+                    single_quote_var=single_quote,
+                )
 
                 if outputFiles == None:
                     return
-                if 'parser' in annotator:
-                    reminders_util.checkReminder(scriptName,
-                                                 reminders_util.title_options_CoreNLP_NER_tags,
-                                                 reminders_util.message_CoreNLP_NER_tags,
-                                                 True)
+                if "parser" in annotator:
+                    reminders_util.checkReminder(
+                        scriptName,
+                        reminders_util.title_options_CoreNLP_NER_tags,
+                        reminders_util.message_CoreNLP_NER_tags,
+                        True,
+                    )
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
                 else:
                     filesToOpen.extend(outputFiles)
 
-# spaCy ---------------------------------------------------------------------------
-    if package == 'spaCy':
-        if parser_var or (annotators_var and annotators_menu_var != ''):
-            if IO_libraries_util.check_inputPythonJavaProgramFile(
-                    'spaCy_util.py') == False:
+    # spaCy ---------------------------------------------------------------------------
+    if package == "spaCy":
+        if parser_var or (annotators_var and annotators_menu_var != ""):
+            if IO_libraries_util.check_inputPythonJavaProgramFile("spaCy_util.py") == False:
                 return
 
         if parser_var:
@@ -213,113 +276,166 @@ def run():
             #     mb.showwarning('Warning',
             #                    'The selected option is not available yet. Sorry!\n\nPlease, select a different option and try again.')
             #     return
-            annotator = 'depparse'
+            annotator = "depparse"
 
         if annotators_var:
-            if annotators_menu_var == '':
-                mb.showwarning('Warning',
-                               'The option of running a spaCy annotator has been selected but no annotaor has been selected.\n\nPlease, select an annotator option and try again.')
+            if annotators_menu_var == "":
+                mb.showwarning(
+                    "Warning",
+                    "The option of running a spaCy annotator has been selected but no annotaor has been selected.\n\nPlease, select an annotator option and try again.",
+                )
                 return
-            if 'Sentence splitter (with sentence length)' in annotators_menu_var:
-                annotator = 'Sentence'
-            elif 'Lemma annotator' in annotators_menu_var:
-                annotator = 'Lemma'
-            elif 'POS annotator' in annotators_menu_var:
-                annotator = 'All POS'
-            elif 'NER annotator' in annotators_menu_var:  # NER annotator
-                annotator = 'NER'
-            elif 'Sentiment analysis' in annotators_menu_var:
-                annotator = 'sentiment'
-            elif 'SVO extraction' in annotators_menu_var:
-                annotator = 'SVO'
-            elif 'Gender' in annotators_menu_var or 'Quote' in annotators_menu_var or 'Normalized NER' in annotators_menu_var or 'Gender' in annotators_menu_var or 'OpenIE' in annotators_menu_var:
-                mb.showwarning(title='Option not available in spaCy',
-                               message='The ' + annotators_menu_var + ' is not available in spaCy.\n\nThe annotator is available in Stanford CoreNLP. If you wish to run the annotator, please, using the Setup dropdown menu at the bottom of this GUI, select the Setup NLP package and corpus language option and select Stanford CoreNLP as your default package and try again.')
+            if "Sentence splitter (with sentence length)" in annotators_menu_var:
+                annotator = "Sentence"
+            elif "Lemma annotator" in annotators_menu_var:
+                annotator = "Lemma"
+            elif "POS annotator" in annotators_menu_var:
+                annotator = "All POS"
+            elif "NER annotator" in annotators_menu_var:  # NER annotator
+                annotator = "NER"
+            elif "Sentiment analysis" in annotators_menu_var:
+                annotator = "sentiment"
+            elif "SVO extraction" in annotators_menu_var:
+                annotator = "SVO"
+            elif (
+                "Gender" in annotators_menu_var
+                or "Quote" in annotators_menu_var
+                or "Normalized NER" in annotators_menu_var
+                or "Gender" in annotators_menu_var
+                or "OpenIE" in annotators_menu_var
+            ):
+                mb.showwarning(
+                    title="Option not available in spaCy",
+                    message="The "
+                    + annotators_menu_var
+                    + " is not available in spaCy.\n\nThe annotator is available in Stanford CoreNLP. If you wish to run the annotator, please, using the Setup dropdown menu at the bottom of this GUI, select the Setup NLP package and corpus language option and select Stanford CoreNLP as your default package and try again.",
+                )
                 return
             else:
-                mb.showwarning('Warning',
-                               'The selected option ' + annotators_menu_var + ' is not available in spaCy (yet).\n\nPlease, select another annotator and try again.')
+                mb.showwarning(
+                    "Warning",
+                    "The selected option "
+                    + annotators_menu_var
+                    + " is not available in spaCy (yet).\n\nPlease, select another annotator and try again.",
+                )
                 return
 
         document_length_var = 1
         limit_sentence_length_var = 1000
 
-        outputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir, outputDir,
-                                                    openOutputFiles, chartPackage, dataTransformation,
-                                                    [annotator], False,
-                                                    language,
-                                                    memory_var, document_length_var, limit_sentence_length_var,
-                                                    filename_embeds_date_var=filename_embeds_date_var,
-                                                    date_format=date_format_var,
-                                                    items_separator_var=items_separator_var,
-                                                    date_position_var=date_position_var)
+        outputFiles = spaCy_util.spaCy_annotate(
+            config_filename,
+            inputFilename,
+            inputDir,
+            outputDir,
+            openOutputFiles,
+            chartPackage,
+            dataTransformation,
+            [annotator],
+            False,
+            language,
+            memory_var,
+            document_length_var,
+            limit_sentence_length_var,
+            filename_embeds_date_var=filename_embeds_date_var,
+            date_format=date_format_var,
+            items_separator_var=items_separator_var,
+            date_position_var=date_position_var,
+        )
 
         if outputFiles == None:
             return
-        if 'parser' in annotator:
-            reminders_util.checkReminder(scriptName,
-                                         reminders_util.title_options_CoreNLP_NER_tags,
-                                         reminders_util.message_CoreNLP_NER_tags,
-                                         True)
+        if "parser" in annotator:
+            reminders_util.checkReminder(
+                scriptName, reminders_util.title_options_CoreNLP_NER_tags, reminders_util.message_CoreNLP_NER_tags, True
+            )
         if isinstance(outputFiles, str):
             filesToOpen.append(outputFiles)
         else:
             filesToOpen.extend(outputFiles)
 
-# Stanza ---------------------------------------------------------------------------
+    # Stanza ---------------------------------------------------------------------------
 
-    if package == 'Stanza':
-        if parser_var or (annotators_var and annotators_menu_var != ''):
-
-            if IO_libraries_util.check_inputPythonJavaProgramFile(
-                    'Stanza_util.py') == False:
+    if package == "Stanza":
+        if parser_var or (annotators_var and annotators_menu_var != ""):
+            if IO_libraries_util.check_inputPythonJavaProgramFile("Stanza_util.py") == False:
                 return
         if parser_var:
-            if parser_menu_var == 'Constituency parser':
-                mb.showwarning('Warning',
-                               'The selected option "' + parser_menu_var + '" is not available yet in the NLP Suite implementation of ' + package +'. Sorry!\n\nPlease, select a different option and try again.')
+            if parser_menu_var == "Constituency parser":
+                mb.showwarning(
+                    "Warning",
+                    'The selected option "'
+                    + parser_menu_var
+                    + '" is not available yet in the NLP Suite implementation of '
+                    + package
+                    + ". Sorry!\n\nPlease, select a different option and try again.",
+                )
                 return
-            annotator = 'depparse'
+            annotator = "depparse"
 
         if annotators_var:
-            if annotators_menu_var == '':
-                mb.showwarning('Warning',
-                               'The option of running a Stanza annotator has been selected but no annotaor has been selected.\n\nPlease, select an annotator option and try again.')
+            if annotators_menu_var == "":
+                mb.showwarning(
+                    "Warning",
+                    "The option of running a Stanza annotator has been selected but no annotaor has been selected.\n\nPlease, select an annotator option and try again.",
+                )
                 return
-            if 'Sentence splitter (with sentence length)' in annotators_menu_var:
-                annotator = 'Sentence'
-            elif 'Lemma annotator' in annotators_menu_var:
-                annotator = 'Lemma'
-            elif 'POS annotator' in annotators_menu_var:
-                annotator = 'All POS'
-            elif 'NER annotator' in annotators_menu_var:  # NER annotator
-                annotator = 'NER'
-            elif 'Sentiment analysis' in annotators_menu_var:
-                annotator = 'sentiment'
-            elif 'SVO extraction' in annotators_menu_var:
-                annotator = 'SVO'
-            elif 'Gender' in annotators_menu_var or 'Quote' in annotators_menu_var or 'Normalized NER' in annotators_menu_var or 'Gender' in annotators_menu_var or 'OpenIE' in annotators_menu_var:
-                mb.showwarning(title='Option not available in Stanza',
-                               message='The ' + annotators_menu_var + ' is not available in Stanza.\n\nThe annotator is available in Stanford CoreNLP. If you wish to run the annotator, please, using the Setup dropdown menu at the bottom of this GUI, select the Setup NLP package and corpus language option and select Stanford CoreNLP as your default package and try again.')
+            if "Sentence splitter (with sentence length)" in annotators_menu_var:
+                annotator = "Sentence"
+            elif "Lemma annotator" in annotators_menu_var:
+                annotator = "Lemma"
+            elif "POS annotator" in annotators_menu_var:
+                annotator = "All POS"
+            elif "NER annotator" in annotators_menu_var:  # NER annotator
+                annotator = "NER"
+            elif "Sentiment analysis" in annotators_menu_var:
+                annotator = "sentiment"
+            elif "SVO extraction" in annotators_menu_var:
+                annotator = "SVO"
+            elif (
+                "Gender" in annotators_menu_var
+                or "Quote" in annotators_menu_var
+                or "Normalized NER" in annotators_menu_var
+                or "Gender" in annotators_menu_var
+                or "OpenIE" in annotators_menu_var
+            ):
+                mb.showwarning(
+                    title="Option not available in Stanza",
+                    message="The "
+                    + annotators_menu_var
+                    + " is not available in Stanza.\n\nThe annotator is available in Stanford CoreNLP. If you wish to run the annotator, please, using the Setup dropdown menu at the bottom of this GUI, select the Setup NLP package and corpus language option and select Stanford CoreNLP as your default package and try again.",
+                )
                 return
             else:
-                mb.showwarning('Warning',
-                               'The selected option ' + annotators_menu_var + ' is not available in Stanza (yet).\n\nPlease, select another annotator and try again.')
+                mb.showwarning(
+                    "Warning",
+                    "The selected option "
+                    + annotators_menu_var
+                    + " is not available in Stanza (yet).\n\nPlease, select another annotator and try again.",
+                )
                 return
 
         document_length_var = 1
         limit_sentence_length_var = 1000
-        outputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
-                                                      outputDir,
-                                                      openOutputFiles,
-                                                      chartPackage, dataTransformation,
-                                                      [annotator], False,
-                                                      language_list,
-                                                      memory_var, document_length_var, limit_sentence_length_var,
-                                                      filename_embeds_date_var=filename_embeds_date_var,
-                                                      date_format=date_format_var,
-                                                      items_separator_var=items_separator_var,
-                                                      date_position_var=date_position_var)
+        outputFiles = Stanza_util.Stanza_annotate(
+            config_filename,
+            inputFilename,
+            inputDir,
+            outputDir,
+            openOutputFiles,
+            chartPackage,
+            dataTransformation,
+            [annotator],
+            False,
+            language_list,
+            memory_var,
+            document_length_var,
+            limit_sentence_length_var,
+            filename_embeds_date_var=filename_embeds_date_var,
+            date_format=date_format_var,
+            items_separator_var=items_separator_var,
+            date_position_var=date_position_var,
+        )
 
         if outputFiles == None:
             return
@@ -327,38 +443,42 @@ def run():
             filesToOpen.append(outputFiles)
         else:
             filesToOpen.extend(outputFiles)
-            if 'parser' in annotator:
-                reminders_util.checkReminder(scriptName,
-                                             reminders_util.title_options_CoreNLP_NER_tags,
-                                             reminders_util.message_CoreNLP_NER_tags,
-                                             True)
+            if "parser" in annotator:
+                reminders_util.checkReminder(
+                    scriptName,
+                    reminders_util.title_options_CoreNLP_NER_tags,
+                    reminders_util.message_CoreNLP_NER_tags,
+                    True,
+                )
 
     if openOutputFiles:
         filesToOpenSubset = []
         if len(filesToOpen) > 0:
             # add the CoNLL main file
-            if 'parse' in annotator:
+            if "parse" in annotator:
                 filesToOpenSubset.append(filesToOpen[0])
 
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName, filesToOpenSubset)
+        IO_files_util.OpenOutputFiles(
+            GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName, filesToOpenSubset
+        )
 
     # CoNLL table analyzer
     if CoNLL_table_analyzer_var:
-        if IO_libraries_util.check_inputPythonJavaProgramFile('CoNLL_table_analyzer_main.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile("CoNLL_table_analyzer_main.py") == False:
             return
 
-        reminders_util.checkReminder(scriptName,
-                                     reminders_util.title_options_CoNLL_analyzer,
-                                     reminders_util.message_CoNLL_analyzer,
-                                     True)
+        reminders_util.checkReminder(
+            scriptName, reminders_util.title_options_CoNLL_analyzer, reminders_util.message_CoNLL_analyzer, True
+        )
 
-        if 'open_analyzer' in sys.argv:
+        if "open_analyzer" in sys.argv:
             # launched from the Semantic Aggregation hub's 'Run the default parser': open the analyzer detached
             # and close this transient parser GUI so the user isn't left with it lingering behind the analyzer.
             run_script_util.run_script_detached("CoNLL_table_analyzer_main.py", filesToOpen[0])
             GUI_util.window.destroy()
             return
         run_script_util.run_script("CoNLL_table_analyzer_main.py", filesToOpen[0])
+
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 
@@ -369,30 +489,32 @@ GUI_util.run_button.configure(command=run)
 # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
 #   just change the next statement to True or False IO_setup_display_brief=True
 
-GUI_label = 'Graphical User Interface (GUI) for NLP parsers & annotators'
+GUI_label = "Graphical User Interface (GUI) for NLP parsers & annotators"
 # The 4 values of config_option refer to:
 #   input file
-        # 1 for CoNLL file
-        # 2 for TXT file
-        # 3 for csv file
-        # 4 for any type of file
-        # 5 for txt or html
-        # 6 for txt or csv
+# 1 for CoNLL file
+# 2 for TXT file
+# 3 for csv file
+# 4 for any type of file
+# 5 for txt or html
+# 6 for txt or csv
 #   input dir
 #   input secondary dir
 #   output dir
-config_input_output_numeric_options=[2,1,0,1]
-config_filename = 'NLP_default_IO_config.csv'
+config_input_output_numeric_options = [2, 1, 0, 1]
+config_filename = "NLP_default_IO_config.csv"
 head, scriptName = os.path.split(os.path.basename(__file__))
 
-IO_setup_display_brief=True
-GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
-                             GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=400, # height at brief display
-                             GUI_height_full=480, # height at full display
-                             y_multiplier_integer=GUI_util.y_multiplier_integer,
-                             y_multiplier_integer_add=2, # to be added for full display
-                             increment=2)  # to be added for full display
+IO_setup_display_brief = True
+GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(
+    IO_setup_display_brief,
+    GUI_width=GUI_IO_util.get_GUI_width(3),
+    GUI_height_brief=400,  # height at brief display
+    GUI_height_full=480,  # height at full display
+    y_multiplier_integer=GUI_util.y_multiplier_integer,
+    y_multiplier_integer_add=2,  # to be added for full display
+    increment=2,
+)  # to be added for full display
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
@@ -403,18 +525,21 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_
 inputFilename = GUI_util.inputFilename
 input_main_dir_path = GUI_util.input_main_dir_path
 
+
 def clear(e):
     # package.set('Stanford CoreNLP')
     # language.set("English")
     parser_var.set(1)
     parser_menu_var.set("Probabilistic Context Free Grammar (PCFG)")
     annotators_var.set(0)
-    annotators_menu_var.set('')
+    annotators_menu_var.set("")
     manual_Coref_checkbox.place_forget()  # invisible
     open_GUI_checkbox.place_forget()  # invisible
     Json_checkbox.place_forget()  # invisible
     quote_checkbox.place_forget()  # invisible
     GUI_util.clear("Escape")
+
+
 window.bind("<Escape>", clear)
 
 package = tk.StringVar()
@@ -437,48 +562,82 @@ annotators_var = tk.IntVar()
 annotators_menu_var = tk.StringVar()
 
 quote_var = tk.IntVar()
-y_multiplier_integer_SV=0 # used to set the parser widget on the proper GUI line
-y_multiplier_integer_SV1=0 # used to set the quote_var widget and coref widget on the proper GUI line
+y_multiplier_integer_SV = 0  # used to set the parser widget on the proper GUI line
+y_multiplier_integer_SV1 = 0  # used to set the quote_var widget and coref widget on the proper GUI line
+
 
 def open_GUI(*args):
     if extra_GUIs_var.get():
-        extra_GUIs_menu.configure(state='normal')
-    if extra_GUIs_menu_var.get()!='':
-        if 'checking' in extra_GUIs_menu_var.get():
+        extra_GUIs_menu.configure(state="normal")
+    if extra_GUIs_menu_var.get() != "":
+        if "checking" in extra_GUIs_menu_var.get():
             run_script_util.run_script("file_checker_converter_cleaner_main.py")
-        elif 'Coref' in extra_GUIs_menu_var.get():
+        elif "Coref" in extra_GUIs_menu_var.get():
             run_script_util.run_script("coreference_main.py")
-extra_GUIs_menu_var.trace('w',open_GUI)
+
+
+extra_GUIs_menu_var.trace("w", open_GUI)
 
 extra_GUIs_var.set(0)
-extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for pre-processing ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: open_GUI(extra_GUIs_menu_var.get()))
+extra_GUIs_checkbox = tk.Checkbutton(
+    window,
+    text="GUIs available for pre-processing ",
+    variable=extra_GUIs_var,
+    onvalue=1,
+    offvalue=0,
+    command=lambda: open_GUI(extra_GUIs_menu_var.get()),
+)
 # extra_GUIs_checkbox.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer, extra_GUIs_checkbox, True
+)
 
-extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'File checking & cleaning (Open GUI)','Coreference resolution (Open GUI)')
-extra_GUIs_menu.configure(state='disabled')
+extra_GUIs_menu_var.set("")
+extra_GUIs_menu = tk.OptionMenu(
+    window, extra_GUIs_menu_var, "File checking & cleaning (Open GUI)", "Coreference resolution (Open GUI)"
+)
+extra_GUIs_menu.configure(state="disabled")
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
-                                   extra_GUIs_menu,
-                                   False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
-                                   "Select other related types of analysis you wish to perform" \
-                                   "\nThe selected GUI will open without having to press RUN")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.IO_configuration_menu,
+    y_multiplier_integer,
+    extra_GUIs_menu,
+    False,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.IO_configuration_menu,
+    "Select other related types of analysis you wish to perform"
+    "\nThe selected GUI will open without having to press RUN",
+)
 
-y_multiplier_integer_SV=y_multiplier_integer
+y_multiplier_integer_SV = y_multiplier_integer
 
-parser_checkbox = tk.Checkbutton(window, variable=parser_var, onvalue=1, offvalue=0, command=lambda: activate_NLP_options())
+parser_checkbox = tk.Checkbutton(
+    window, variable=parser_var, onvalue=1, offvalue=0, command=lambda: activate_NLP_options()
+)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer_SV,
-                                               parser_checkbox, True, False, False, False, 90,
-                                               GUI_IO_util.labels_x_coordinate,
-                                               "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.labels_x_coordinate,
+    y_multiplier_integer_SV,
+    parser_checkbox,
+    True,
+    False,
+    False,
+    False,
+    90,
+    GUI_IO_util.labels_x_coordinate,
+    "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI",
+)
 
-available_parsers=''
+available_parsers = ""
 
 parser_var.set(1)
 
-parsers=[]
+parsers = []
 
 if len(parsers) == 0:
     parser_menu = tk.OptionMenu(window, parser_menu_var, parsers)
@@ -487,38 +646,66 @@ else:
     parser_menu = tk.OptionMenu(window, parser_menu_var, *parsers)
     # parser_menu.configure(width=50)
 #     # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.parsers_annotators_parser_menu_pos,
-                                               y_multiplier_integer,
-                                               parser_menu, False, False, False, False, 90,
-                                               GUI_IO_util.labels_x_coordinate,
-                                               "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.parsers_annotators_parser_menu_pos,
+    y_multiplier_integer,
+    parser_menu,
+    False,
+    False,
+    False,
+    False,
+    90,
+    GUI_IO_util.labels_x_coordinate,
+    "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI",
+)
 
-Json_checkbox = tk.Checkbutton(window, text='Export Json file',
-                               variable=Json_var,
-                               onvalue=1, offvalue=0)
+Json_checkbox = tk.Checkbutton(window, text="Export Json file", variable=Json_var, onvalue=1, offvalue=0)
 
 CoNLL_table_analyzer_var.set(0)
 # CoNLL_table_analyzer_checkbox = tk.Checkbutton(window, text='CoNLL table analyzer', variable=CoNLL_table_analyzer_var,
 #                                                onvalue=1, offvalue=0, command=lambda: check_CoNLL_table())
-CoNLL_table_analyzer_checkbox = tk.Checkbutton(window, text='CoNLL table analyzer', variable=CoNLL_table_analyzer_var,
-                                               onvalue=1, offvalue=0, command=lambda: check_CoNLL_table())
+CoNLL_table_analyzer_checkbox = tk.Checkbutton(
+    window,
+    text="CoNLL table analyzer",
+    variable=CoNLL_table_analyzer_var,
+    onvalue=1,
+    offvalue=0,
+    command=lambda: check_CoNLL_table(),
+)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                               CoNLL_table_analyzer_checkbox, True, False, False, False, 90,
-                                               GUI_IO_util.labels_x_coordinate,
-                                               "The CoNLL table analyzer can be used with CoNLL tables generated by any parser (spaCy, Stanford CoreNLP, Stanza)")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.labels_x_indented_coordinate,
+    y_multiplier_integer,
+    CoNLL_table_analyzer_checkbox,
+    True,
+    False,
+    False,
+    False,
+    90,
+    GUI_IO_util.labels_x_coordinate,
+    "The CoNLL table analyzer can be used with CoNLL tables generated by any parser (spaCy, Stanford CoreNLP, Stanza)",
+)
 
 CoNLL_table_analyzer_checkbox_msg = tk.Label()
 CoNLL_table_analyzer_checkbox_msg.config(text="Open the CoNLL table analyzer GUI")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.parsers_annotators_parser_open_CoNLL_pos, y_multiplier_integer,
-                                               CoNLL_table_analyzer_checkbox_msg)
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.parsers_annotators_parser_open_CoNLL_pos,
+    y_multiplier_integer,
+    CoNLL_table_analyzer_checkbox_msg,
+)
+
 
 def check_CoNLL_table(*args):
     if CoNLL_table_analyzer_var.get() == 1:
         CoNLL_table_analyzer_checkbox_msg.config(text="Open CoNLL table analyzer GUI")
     else:
         CoNLL_table_analyzer_checkbox_msg.config(text="Do NOT open CoNLL table analyzer GUI")
-CoNLL_table_analyzer_var.trace('w', check_CoNLL_table)
+
+
+CoNLL_table_analyzer_var.trace("w", check_CoNLL_table)
 
 check_CoNLL_table()
 
@@ -538,213 +725,324 @@ check_CoNLL_table()
 #         # compute_sentence_var.set(1)
 #         CoNLL_table_analyzer_var.set(1)
 
-Annotators_checkbox = tk.Checkbutton(window, text='Annotators', variable=annotators_var,
-                                             onvalue=1, offvalue=0)
+Annotators_checkbox = tk.Checkbutton(window, text="Annotators", variable=annotators_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   Annotators_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   'Click on the "Annotators" checkbox and then use the dropdown menu to select the type of annotator to run (e.g., POS, gender, sentiment)')
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.labels_x_coordinate,
+    y_multiplier_integer,
+    Annotators_checkbox,
+    True,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.labels_x_coordinate,
+    'Click on the "Annotators" checkbox and then use the dropdown menu to select the type of annotator to run (e.g., POS, gender, sentiment)',
+)
 
 annotators_menu_var.set("")
 annotators_menu_var.set("")
-annotators_menu = tk.OptionMenu(window, annotators_menu_var,
-        'Fundamental NLP tools (via CoreNLP, spaCy, Stanza) -----------------------------------------------',
-        '   Sentence splitter (with sentence length)',
-        '   Lemma annotator',
-        '   POS annotator',
-        '   NER annotator',
-        'Special annotators (via BERT, CoreNLP, spaCy, Stanza) -----------------------------------------',
-        '   Coreference PRONOMINAL resolution (via BERT, CoreNLP, spaCy)',
-        '   Sentiment analysis',
-        '   OpenIE - Relation triples extractor (via CoreNLP)',
-        '   SVO extraction (via CoreNLP, spaCy, Stanza)',
-        '   Word embeddings (Word2Vec) (via BERT, Gensim, spaCy)',
-        'More special annotators (CoreNLP only) --------------------------------------------------------',
-        '   Gender annotator (via CoreNLP)',
-        '   Normalized NER date annotator (via CoreNLP)',
-        '   Quote/dialogue annotator (via CoreNLP)')
+annotators_menu = tk.OptionMenu(
+    window,
+    annotators_menu_var,
+    "Fundamental NLP tools (via CoreNLP, spaCy, Stanza) -----------------------------------------------",
+    "   Sentence splitter (with sentence length)",
+    "   Lemma annotator",
+    "   POS annotator",
+    "   NER annotator",
+    "Special annotators (via BERT, CoreNLP, spaCy, Stanza) -----------------------------------------",
+    "   Coreference PRONOMINAL resolution (via BERT, CoreNLP, spaCy)",
+    "   Sentiment analysis",
+    "   OpenIE - Relation triples extractor (via CoreNLP)",
+    "   SVO extraction (via CoreNLP, spaCy, Stanza)",
+    "   Word embeddings (Word2Vec) (via BERT, Gensim, spaCy)",
+    "More special annotators (CoreNLP only) --------------------------------------------------------",
+    "   Gender annotator (via CoreNLP)",
+    "   Normalized NER date annotator (via CoreNLP)",
+    "   Quote/dialogue annotator (via CoreNLP)",
+)
 
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.parsers_annotators_parser_annotator_pos, y_multiplier_integer,
-                                   annotators_menu,
-                                   False, False, True, False, 90, GUI_IO_util.watch_videos_x_coordinate,
-                                   'Click on the "Annotators" checkbox to select the type of annotator to run (e.g., POS, gender, sentiment)')
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.parsers_annotators_parser_annotator_pos,
+    y_multiplier_integer,
+    annotators_menu,
+    False,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.watch_videos_x_coordinate,
+    'Click on the "Annotators" checkbox to select the type of annotator to run (e.g., POS, gender, sentiment)',
+)
 
-y_multiplier_integer_SV1=y_multiplier_integer
+y_multiplier_integer_SV1 = y_multiplier_integer
 
-manual_Coref_checkbox = tk.Checkbutton(window, text='Manual edit',
-                                       variable=manual_Coref_var,
-                                       onvalue=1, offvalue=0)
+manual_Coref_checkbox = tk.Checkbutton(window, text="Manual edit", variable=manual_Coref_var, onvalue=1, offvalue=0)
 
-open_GUI_checkbox = tk.Checkbutton(window, text='Open coreference GUI',
-                                       variable=open_GUI_var,
-                                       onvalue=1, offvalue=0)
+open_GUI_checkbox = tk.Checkbutton(window, text="Open coreference GUI", variable=open_GUI_var, onvalue=1, offvalue=0)
 
-quote_checkbox = tk.Checkbutton(window, text='Include single quotes',
-                                       variable=quote_var,
-                                       onvalue=1, offvalue=0)
+quote_checkbox = tk.Checkbutton(window, text="Include single quotes", variable=quote_var, onvalue=1, offvalue=0)
+
 
 def activate_annotators_menu(*args):
     global y_multiplier_integer, y_multiplier_integer_SV1
-    if parser_var.get()==True and (annotators_var.get()==True and annotators_menu_var.get()!=''):
-        mb.showinfo("Warning", "You have selected to run BOTH the CoreNLP parser AND the annotator '" + annotators_menu_var.get().lstrip() + "'.\n\nPlease, select one or the other and try again.")
+    if parser_var.get() == True and (annotators_var.get() == True and annotators_menu_var.get() != ""):
+        mb.showinfo(
+            "Warning",
+            "You have selected to run BOTH the CoreNLP parser AND the annotator '"
+            + annotators_menu_var.get().lstrip()
+            + "'.\n\nPlease, select one or the other and try again.",
+        )
         return
     if annotators_var.get() == True:
-            # if 'POS' in annotators_menu_var.get():
-            #     mb.showinfo("Warning", "You have selected to run the CoreNLP parser AND the lemma/POS annotator. The parser already computes lemmas and POS tags.\n\nPlease, tick either the parser or the annotator checkbox.")
-            #     annotators_var.set(0)
-            #     annotators_menu_var.set('')
-            #     return
-        annotators_menu.configure(state='normal')
+        # if 'POS' in annotators_menu_var.get():
+        #     mb.showinfo("Warning", "You have selected to run the CoreNLP parser AND the lemma/POS annotator. The parser already computes lemmas and POS tags.\n\nPlease, tick either the parser or the annotator checkbox.")
+        #     annotators_var.set(0)
+        #     annotators_menu_var.set('')
+        #     return
+        annotators_menu.configure(state="normal")
         if y_multiplier_integer_SV1 == 0:
             y_multiplier_integer_SV1 = y_multiplier_integer
 
-        if 'CoreNLP' in annotators_menu_var.get():
-            y_multiplier_integer=y_multiplier_integer_SV1-1
+        if "CoreNLP" in annotators_menu_var.get():
+            y_multiplier_integer = y_multiplier_integer_SV1 - 1
             Json_var.set(0)
-            y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                                           GUI_IO_util.open_setup_x_coordinate,
-                                                           y_multiplier_integer,
-                                                           Json_checkbox, True)
+            y_multiplier_integer = GUI_IO_util.placeWidget(
+                window, GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer, Json_checkbox, True
+            )
 
-        if '*' in annotators_menu_var.get() or 'dialogue' in annotators_menu_var.get():
-            y_multiplier_integer=y_multiplier_integer_SV1-1
+        if "*" in annotators_menu_var.get() or "dialogue" in annotators_menu_var.get():
+            y_multiplier_integer = y_multiplier_integer_SV1 - 1
             quote_var.set(0)
-            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate,
-                                                           y_multiplier_integer,
-                                                           quote_checkbox,True)
-            quote_checkbox.configure(state='normal')
+            y_multiplier_integer = GUI_IO_util.placeWidget(
+                window, GUI_IO_util.run_button_x_coordinate, y_multiplier_integer, quote_checkbox, True
+            )
+            quote_checkbox.configure(state="normal")
         else:
             quote_checkbox.place_forget()  # invisible
 
-        if 'Coreference' in annotators_menu_var.get():
-            y_multiplier_integer=y_multiplier_integer_SV1-1
+        if "Coreference" in annotators_menu_var.get():
+            y_multiplier_integer = y_multiplier_integer_SV1 - 1
             manual_Coref_var.set(0)
-            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.parsers_annotators_parser_manual_coref_edit_pos,
-                                                           y_multiplier_integer,
-                                                           manual_Coref_checkbox,True)
+            y_multiplier_integer = GUI_IO_util.placeWidget(
+                window,
+                GUI_IO_util.parsers_annotators_parser_manual_coref_edit_pos,
+                y_multiplier_integer,
+                manual_Coref_checkbox,
+                True,
+            )
 
             open_GUI_var.set(0)
-            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.parsers_annotators_parser_openGUI_pos,
-                                                           y_multiplier_integer,
-                                                           open_GUI_checkbox)
-            open_GUI_checkbox.configure(state='normal')
-            if input_main_dir_path.get()!='':
-                manual_Coref_checkbox.configure(state='disabled')
+            y_multiplier_integer = GUI_IO_util.placeWidget(
+                window, GUI_IO_util.parsers_annotators_parser_openGUI_pos, y_multiplier_integer, open_GUI_checkbox
+            )
+            open_GUI_checkbox.configure(state="normal")
+            if input_main_dir_path.get() != "":
+                manual_Coref_checkbox.configure(state="disabled")
             else:
-                manual_Coref_checkbox.configure(state='normal')
+                manual_Coref_checkbox.configure(state="normal")
         else:
             manual_Coref_checkbox.place_forget()  # invisible
             open_GUI_checkbox.place_forget()  # invisible
     else:
         manual_Coref_checkbox.place_forget()  # invisible
         open_GUI_checkbox.place_forget()  # invisible
-        annotators_menu_var.set('')
-        annotators_menu.configure(state='disabled')
-    if not 'CoreNLP' in annotators_menu_var.get():
+        annotators_menu_var.set("")
+        annotators_menu.configure(state="disabled")
+    if "CoreNLP" not in annotators_menu_var.get():
         Json_checkbox.place_forget()  # invisible
 
-parser_var.trace('w', activate_annotators_menu)
-annotators_var.trace('w', activate_annotators_menu)
-annotators_menu_var.trace('w', activate_annotators_menu)
+
+parser_var.trace("w", activate_annotators_menu)
+annotators_var.trace("w", activate_annotators_menu)
+annotators_menu_var.trace("w", activate_annotators_menu)
 
 activate_annotators_menu()
 
-videos_lookup = {'Parsers & annotators':'https://youtu.be/ItEVxCXm2rc'}
-videos_options='Parsers & annotators'
+videos_lookup = {"Parsers & annotators": "https://youtu.be/ItEVxCXm2rc"}
+videos_options = "Parsers & annotators"
 
-TIPS_lookup = {'Stanford CoreNLP download': 'TIPS_NLP_Stanford CoreNLP download install run.pdf',
-               'Stanford CoreNLP performance & accuracy':'TIPS_NLP_Stanford CoreNLP performance and accuracy.pdf',
-               'Stanford CoreNLP parser': 'TIPS_NLP_Stanford CoreNLP parser.pdf',
-               'Stanford CoreNLP memory issues': 'TIPS_NLP_Stanford CoreNLP memory issues.pdf',
-               'Stanford CoreNLP OpenIE': 'TIPS_NLP_Stanford CoreNLP OpenIE.pdf',
-               'Stanford CoreNLP coreference resolution': 'TIPS_NLP_Coreference resolution.pdf',
-               'Excel - Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
-               'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
-               'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
-               'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
-               'Statistical measures': 'TIPS_NLP_Statistical measures.pdf',
-               'English Language Benchmarks': 'TIPS_NLP_English Language Benchmarks.pdf',
-               'Things to do with words: Overall view': 'TIPS_NLP_Things to do with words Overall view.pdf',
-               'Stanford CoreNLP supported languages':'TIPS_NLP_Stanford CoreNLP supported languages.pdf',
-               'CoNLL Table': 'TIPS_NLP_Stanford CoreNLP CoNLL table.pdf',
-               'CoreNLP NER (Named Entity Recognition)': 'TIPS_NLP_NER tags across packages.pdf',
-               'NER tags across packages':'TIPS_NLP_NER tags across packages.pdf',
-               'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf",
-               'DEPREL (Stanford Dependency Relations)': "TIPS_NLP_DEPREL (Dependency Relations) Stanford CoreNLP.pdf",
-               'Stanford CoreNLP gender annotator':'TIPS_NLP_Stanford CoreNLP gender annotator.pdf',
-               'Stanford CoreNLP date extractor (NER normalized date)': 'TIPS_NLP_Stanford CoreNLP date extractor.pdf',
-               'Sentiment analysis':'TIPS_NLP_Sentiment analysis.pdf',
-               'Noun Analysis': "TIPS_NLP_Noun analysis.pdf",
-               'Verb Analysis': "TIPS_NLP_Verb analysis.pdf",
-               'Function Words Analysis': 'TIPS_NLP_Function Words Analysis.pdf',
-               'Clause Analysis': 'TIPS_NLP_Clause analysis.pdf',
-               'Universal dependencies':'TIPS_NLP_Universal dependencies.pdf',
-               'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
+TIPS_lookup = {
+    "Stanford CoreNLP download": "TIPS_NLP_Stanford CoreNLP download install run.pdf",
+    "Stanford CoreNLP performance & accuracy": "TIPS_NLP_Stanford CoreNLP performance and accuracy.pdf",
+    "Stanford CoreNLP parser": "TIPS_NLP_Stanford CoreNLP parser.pdf",
+    "Stanford CoreNLP memory issues": "TIPS_NLP_Stanford CoreNLP memory issues.pdf",
+    "Stanford CoreNLP OpenIE": "TIPS_NLP_Stanford CoreNLP OpenIE.pdf",
+    "Stanford CoreNLP coreference resolution": "TIPS_NLP_Coreference resolution.pdf",
+    "Excel - Enabling Macros": "TIPS_NLP_Excel Enabling macros.pdf",
+    "Excel smoothing data series": "TIPS_NLP_Excel smoothing data series.pdf",
+    "utf-8 encoding": "TIPS_NLP_Text encoding.pdf",
+    "csv files - Problems & solutions": "TIPS_NLP_csv files - Problems & solutions.pdf",
+    "Statistical measures": "TIPS_NLP_Statistical measures.pdf",
+    "English Language Benchmarks": "TIPS_NLP_English Language Benchmarks.pdf",
+    "Things to do with words: Overall view": "TIPS_NLP_Things to do with words Overall view.pdf",
+    "Stanford CoreNLP supported languages": "TIPS_NLP_Stanford CoreNLP supported languages.pdf",
+    "CoNLL Table": "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
+    "CoreNLP NER (Named Entity Recognition)": "TIPS_NLP_NER tags across packages.pdf",
+    "NER tags across packages": "TIPS_NLP_NER tags across packages.pdf",
+    "POSTAG (Part of Speech Tags)": "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf",
+    "DEPREL (Stanford Dependency Relations)": "TIPS_NLP_DEPREL (Dependency Relations) Stanford CoreNLP.pdf",
+    "Stanford CoreNLP gender annotator": "TIPS_NLP_Stanford CoreNLP gender annotator.pdf",
+    "Stanford CoreNLP date extractor (NER normalized date)": "TIPS_NLP_Stanford CoreNLP date extractor.pdf",
+    "Sentiment analysis": "TIPS_NLP_Sentiment analysis.pdf",
+    "Noun Analysis": "TIPS_NLP_Noun analysis.pdf",
+    "Verb Analysis": "TIPS_NLP_Verb analysis.pdf",
+    "Function Words Analysis": "TIPS_NLP_Function Words Analysis.pdf",
+    "Clause Analysis": "TIPS_NLP_Clause analysis.pdf",
+    "Universal dependencies": "TIPS_NLP_Universal dependencies.pdf",
+    "Java download install run": "TIPS_NLP_Java download install run.pdf",
+}
 # 'Stanford CoreNLP quote annotator' NOT available
-TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures', 'English Language Benchmarks', 'Things to do with words: Overall view', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy', 'Stanford CoreNLP download', 'Stanford CoreNLP parser', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor (NER normalized date)', 'Stanford CoreNLP coreference resolution', 'Stanford CoreNLP OpenIE', 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'CoreNLP NER (Named Entity Recognition)','NER tags across packages', 'Stanford CoreNLP gender annotator','Sentiment analysis','Things to do with words: Overall view' #, 'Java download install run','Universal dependencies'
+TIPS_options = (
+    "utf-8 encoding",
+    "Excel - Enabling Macros",
+    "Excel smoothing data series",
+    "csv files - Problems & solutions",
+    "Statistical measures",
+    "English Language Benchmarks",
+    "Things to do with words: Overall view",
+    "Stanford CoreNLP supported languages",
+    "Stanford CoreNLP performance & accuracy",
+    "Stanford CoreNLP download",
+    "Stanford CoreNLP parser",
+    "Stanford CoreNLP memory issues",
+    "Stanford CoreNLP date extractor (NER normalized date)",
+    "Stanford CoreNLP coreference resolution",
+    "Stanford CoreNLP OpenIE",
+    "CoNLL Table",
+    "POSTAG (Part of Speech Tags)",
+    "DEPREL (Stanford Dependency Relations)",
+    "CoreNLP NER (Named Entity Recognition)",
+    "NER tags across packages",
+    "Stanford CoreNLP gender annotator",
+    "Sentiment analysis",
+    "Things to do with words: Overall view",
+)  # , 'Java download install run','Universal dependencies'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 
+
 def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     if not IO_setup_display_brief:
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                      GUI_IO_util.msg_txtFile)
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                      GUI_IO_util.msg_corpusData)
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                      GUI_IO_util.msg_outputDirectory)
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_txtFile
+        )
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_corpusData
+        )
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_outputDirectory
+        )
     else:
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                  GUI_IO_util.msg_IO_setup)
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_IO_setup
+        )
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                                         'Please, tick the \'GUIs available\' checkbox if you wish to see and select the range of available tools suitable for pre processing.')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to use the selected parser: spaCy, Stanford CoreNLP, Stanza. The parser will produce a CoNLL table (CoNLL U format).\n\nThe CoNLL table is the basis of many of the NLP analyses: noun & verb analysis, function words, clause analysis, query CoNLL.\n\nTwo types of parsers are available:\n   1. Dependency parser: produces a tree where each word is connected to its head word via a grammatical relation (e.g., nsubj, dobj, amod). It answers 'which word modifies/depends on which?' Useful for SVO extraction, relation analysis, and the CoNLL table.\n   2. Constituency parser: produces a phrase-structure tree that groups words into nested constituents (e.g., NP, VP, S). It answers 'what are the phrases?' Useful for clause analysis and understanding sentence structure hierarchically.\n\nStanza (the default NLP package) provides both dependency and constituency parsing. Stanza will export the 'feats' column with information about verb Mood (e.g., infinitive, imperative) and Verb Tense (e.g., Present, Past).\n\nspaCy provides dependency parsing only.\n\nFor Stanford CoreNLP you have a choice between two types of parsers:\n   1. the recommended default Probabilistic Context Free Grammar (PCFG) parser;\n   2. a Neural-network dependency parser.\nThe neural network approach is more accurate but much slower. The neural-network parser does not produce clausal tags.\n\nThe following fields will be automatically added to the standard fields of a CoNLL table (CoNLL U format): RECORD NUMBER, DOCUMENT ID, SENTENCE ID, DOCUMENT (INPUT filename), DATE (if the filename embeds a date).\n\nPERFORMANCE TIP: On machines without an NVIDIA GPU, spaCy is 3-5x faster than Stanza for dependency parsing and produces the same CoNLL table output. Stanza\'s unique advantage is constituency parsing (for clause analysis), which spaCy does not provide. If you only need dependency parsing (CoNLL table, SVO extraction), spaCy or spaCy (transformer) will be significantly faster. Stanza and spaCy (transformer) benefit greatly from NVIDIA GPU acceleration (CUDA).")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick/untick the checkbox if you want to open (or not) the CoNLL table analyzer GUI to analyze the parser results contained in the CoNLL table.\n\nThe CoNLL table analyzer can be used with CoNLL tables produced by any parser (spaCy, Stanford CoreNLP, Stanza).")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, using the dropdown menu, select one of the many other annotators available through Stanford CoreNLP: Coreference pronominal resolution, DepRel, POS, NER (Named Entity Recognition), NER normalized date. gender, quote, and sentiment analysis.\n\nANNOTATORS MARKED AS NEURAL NETWORK ARE MORE ACCURATE, BUT SLOW AND REQUIRE A GREAT DEAL OF MEMORY.\n\n1.  PRONOMINAL co-reference resolution refers to such cases as 'John said that he would...'; 'he' would be substituted by 'John'. CoreNLP can resolve other cases but the algorithm here is restricted to pronominal resolution.\n\nThe co-reference resolution checkbox is disabled when selected an entire directory in input. The co-reference resolution algorithm is a memory hog. You may not have enough memory on your machine.\n\nTick the checkbox Manually edit coreferenced document if you wish to resolve manually cases of unresolved or wrongly resolved coreferences. MANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP.\n\nTick the Open GUI checkbox to open the specialized GUI for pronominal coreference resolution.\n\n2.  The CoreNLP NER annotator recognizes the following NER values:\n  named (PERSON, LOCATION, ORGANIZATION, MISC);\n  numerical (MONEY, NUMBER, ORDINAL, PERCENT);\n  temporal (DATE, TIME, DURATION, SET).\n  In addition, via regexner, the following entity classes are tagged: EMAIL, URL, CITY, STATE_OR_PROVINCE, COUNTRY, NATIONALITY, RELIGION, (job) TITLE, IDEOLOGY, CRIMINAL_CHARGE, CAUSE_OF_DEATH.\n\n3.  The NER NORMALIZED DATE annotator extracts standard dates from text in the yyyy-mm-dd format (e.g., 'the day before Christmas' extracted as 'xxxx-12-24').\n\n4.  The CoreNLP coref GENDER annotator extracts the gender of both first names and personal pronouns (he, him, his, she, her, hers) using a neural network approach. This annotator requires a great deal of memory. So, please, adjust the memory allowing as much memory as you can afford.\n\n5.  The CoreNLP QUOTE annotator extracts quotes from text and attributes the quote to the speaker. The default CoreNLP parameter is DOUBLE quotes. If you want to process both DOUBLE and SINGLE quotes, plase tick the checkbox 'Include single quotes.'\n\n6.  The SENTIMENT ANALYSIS annotator computes the sentiment values (negative, neutral, positive) of each sentence in a text.\n\n6.  The OpenIE (Open Information Extraction) annotator extracts  open-domain relation triples, representing a subject, a relation, and the object of the relation.\n\n\n\nIn INPUT the algorithms expect a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithms will produce a number of csv files  and Excel charts. The Gender annotator will also produce an html file with male tags displayed in blue and female tags displayed in red. The Coreference annotator will produce txt-format copies of the same input txt files but co-referenced.\n\nSelect * to run Gender annotator (Neural Network), Normalized NER date, and Quote/dialogue annotator (Neural Network).")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  GUI_IO_util.msg_openOutputFiles)
-    return y_multiplier_integer -1
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window,
+        help_button_x_coordinate,
+        y_multiplier_integer,
+        "NLP Suite Help",
+        "Please, tick the 'GUIs available' checkbox if you wish to see and select the range of available tools suitable for pre processing.",
+    )
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window,
+        help_button_x_coordinate,
+        y_multiplier_integer,
+        "NLP Suite Help",
+        "Please, tick the checkbox if you wish to use the selected parser: spaCy, Stanford CoreNLP, Stanza. The parser will produce a CoNLL table (CoNLL U format).\n\nThe CoNLL table is the basis of many of the NLP analyses: noun & verb analysis, function words, clause analysis, query CoNLL.\n\nTwo types of parsers are available:\n   1. Dependency parser: produces a tree where each word is connected to its head word via a grammatical relation (e.g., nsubj, dobj, amod). It answers 'which word modifies/depends on which?' Useful for SVO extraction, relation analysis, and the CoNLL table.\n   2. Constituency parser: produces a phrase-structure tree that groups words into nested constituents (e.g., NP, VP, S). It answers 'what are the phrases?' Useful for clause analysis and understanding sentence structure hierarchically.\n\nStanza (the default NLP package) provides both dependency and constituency parsing. Stanza will export the 'feats' column with information about verb Mood (e.g., infinitive, imperative) and Verb Tense (e.g., Present, Past).\n\nspaCy provides dependency parsing only.\n\nFor Stanford CoreNLP you have a choice between two types of parsers:\n   1. the recommended default Probabilistic Context Free Grammar (PCFG) parser;\n   2. a Neural-network dependency parser.\nThe neural network approach is more accurate but much slower. The neural-network parser does not produce clausal tags.\n\nThe following fields will be automatically added to the standard fields of a CoNLL table (CoNLL U format): RECORD NUMBER, DOCUMENT ID, SENTENCE ID, DOCUMENT (INPUT filename), DATE (if the filename embeds a date).\n\nPERFORMANCE TIP: On machines without an NVIDIA GPU, spaCy is 3-5x faster than Stanza for dependency parsing and produces the same CoNLL table output. Stanza's unique advantage is constituency parsing (for clause analysis), which spaCy does not provide. If you only need dependency parsing (CoNLL table, SVO extraction), spaCy or spaCy (transformer) will be significantly faster. Stanza and spaCy (transformer) benefit greatly from NVIDIA GPU acceleration (CUDA).",
+    )
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window,
+        help_button_x_coordinate,
+        y_multiplier_integer,
+        "NLP Suite Help",
+        "Please, tick/untick the checkbox if you want to open (or not) the CoNLL table analyzer GUI to analyze the parser results contained in the CoNLL table.\n\nThe CoNLL table analyzer can be used with CoNLL tables produced by any parser (spaCy, Stanford CoreNLP, Stanza).",
+    )
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window,
+        help_button_x_coordinate,
+        y_multiplier_integer,
+        "NLP Suite Help",
+        "Please, using the dropdown menu, select one of the many other annotators available through Stanford CoreNLP: Coreference pronominal resolution, DepRel, POS, NER (Named Entity Recognition), NER normalized date. gender, quote, and sentiment analysis.\n\nANNOTATORS MARKED AS NEURAL NETWORK ARE MORE ACCURATE, BUT SLOW AND REQUIRE A GREAT DEAL OF MEMORY.\n\n1.  PRONOMINAL co-reference resolution refers to such cases as 'John said that he would...'; 'he' would be substituted by 'John'. CoreNLP can resolve other cases but the algorithm here is restricted to pronominal resolution.\n\nThe co-reference resolution checkbox is disabled when selected an entire directory in input. The co-reference resolution algorithm is a memory hog. You may not have enough memory on your machine.\n\nTick the checkbox Manually edit coreferenced document if you wish to resolve manually cases of unresolved or wrongly resolved coreferences. MANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP.\n\nTick the Open GUI checkbox to open the specialized GUI for pronominal coreference resolution.\n\n2.  The CoreNLP NER annotator recognizes the following NER values:\n  named (PERSON, LOCATION, ORGANIZATION, MISC);\n  numerical (MONEY, NUMBER, ORDINAL, PERCENT);\n  temporal (DATE, TIME, DURATION, SET).\n  In addition, via regexner, the following entity classes are tagged: EMAIL, URL, CITY, STATE_OR_PROVINCE, COUNTRY, NATIONALITY, RELIGION, (job) TITLE, IDEOLOGY, CRIMINAL_CHARGE, CAUSE_OF_DEATH.\n\n3.  The NER NORMALIZED DATE annotator extracts standard dates from text in the yyyy-mm-dd format (e.g., 'the day before Christmas' extracted as 'xxxx-12-24').\n\n4.  The CoreNLP coref GENDER annotator extracts the gender of both first names and personal pronouns (he, him, his, she, her, hers) using a neural network approach. This annotator requires a great deal of memory. So, please, adjust the memory allowing as much memory as you can afford.\n\n5.  The CoreNLP QUOTE annotator extracts quotes from text and attributes the quote to the speaker. The default CoreNLP parameter is DOUBLE quotes. If you want to process both DOUBLE and SINGLE quotes, plase tick the checkbox 'Include single quotes.'\n\n6.  The SENTIMENT ANALYSIS annotator computes the sentiment values (negative, neutral, positive) of each sentence in a text.\n\n6.  The OpenIE (Open Information Extraction) annotator extracts  open-domain relation triples, representing a subject, a relation, and the object of the relation.\n\n\n\nIn INPUT the algorithms expect a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithms will produce a number of csv files  and Excel charts. The Gender annotator will also produce an html file with male tags displayed in blue and female tags displayed in red. The Coreference annotator will produce txt-format copies of the same input txt files but co-referenced.\n\nSelect * to run Gender annotator (Neural Network), Normalized NER date, and Quote/dialogue annotator (Neural Network).",
+    )
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_openOutputFiles
+    )
+    return y_multiplier_integer - 1
+
+
 y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script will perform different types of textual operations using a selected NLP package (e.g., spaCy, Stanford CoreNLP, Stanza). The main operation is text parsing to produce the CoNLL table (CoNLL U format).\n\nYOU MUST BE CONNETED TO THE INTERNET TO RUN THE SCRIPTS.\n\nIn INPUT the algorithms expect a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithms will produce different file types: txt-format copies of the same input txt files for co-reference, csv files (HTML for gender annotator), and different types of visuals, from Bar charts to utey flowcharts."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 
-GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName, False)
+GUI_util.GUI_bottom(
+    config_filename,
+    config_input_output_numeric_options,
+    y_multiplier_integer,
+    readMe_command,
+    videos_lookup,
+    videos_options,
+    TIPS_lookup,
+    TIPS_options,
+    IO_setup_display_brief,
+    scriptName,
+    False,
+)
+
 
 def activate_NLP_options(*args):
-    global error, parsers, available_parsers, parser_lb, package, package_display_area_value, language, language_list, y_multiplier_integer
-    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = GUI_util.setup_parsers_annotators(y_multiplier_integer, scriptName)
-    if package != '':
-        available_parsers = 'Parsers for ' + str(package) # + '                          '
+    global \
+        error, \
+        parsers, \
+        available_parsers, \
+        parser_lb, \
+        package, \
+        package_display_area_value, \
+        language, \
+        language_list, \
+        y_multiplier_integer
+    (
+        error,
+        package,
+        parsers,
+        package_basics,
+        language,
+        package_display_area_value,
+        package_display_area_value_new,
+        encoding_var,
+        export_json_var,
+        memory_var,
+        document_length_var,
+        limit_sentence_length_var,
+    ) = GUI_util.setup_parsers_annotators(y_multiplier_integer, scriptName)
+    if package != "":
+        available_parsers = "Parsers for " + str(package)  # + '                          '
     else:
-        available_parsers = 'Parsers'
-    if not 'CoreNLP' in package:
+        available_parsers = "Parsers"
+    if "CoreNLP" not in package:
         Json_checkbox.place_forget()  # invisible
-    else:
-        if parser_var.get():
-            Json_var.set(0)
-            y_multiplier_integer = y_multiplier_integer_SV
-            y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                                           GUI_IO_util.open_setup_x_coordinate,
-                                                           y_multiplier_integer,
-                                                           Json_checkbox, True)
-            Json_checkbox.configure(state='normal')
+    elif parser_var.get():
+        Json_var.set(0)
+        y_multiplier_integer = y_multiplier_integer_SV
+        y_multiplier_integer = GUI_IO_util.placeWidget(
+            window, GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer, Json_checkbox, True
+        )
+        Json_checkbox.configure(state="normal")
     if CoNLL_table_analyzer_var.get() == 1:
         CoNLL_table_analyzer_checkbox_msg.config(text="Open CoNLL table analyzer GUI")
     else:
         CoNLL_table_analyzer_checkbox_msg.config(text="Do NOT open CoNLL table analyzer GUI")
-    CoNLL_table_analyzer_checkbox.configure(state='normal')
+    CoNLL_table_analyzer_checkbox.configure(state="normal")
 
-    if parser_var.get()==0 and annotators_var.get()==0:
+    if parser_var.get() == 0 and annotators_var.get() == 0:
         Json_checkbox.place_forget()  # invisible
 
     if package_display_area_value_new != package_display_area_value:
@@ -753,33 +1051,56 @@ def activate_NLP_options(*args):
         m = parser_menu["menu"]
         m.delete(0, "end")
         for s in parsers:
-            s=s.lstrip() # remove leading blanks since parsers are separated by ,blank
+            s = s.lstrip()  # remove leading blanks since parsers are separated by ,blank
             m.add_command(label=s, command=lambda value=s: parser_menu_var.set(value))
 
     try:
         parser_lb.config(text=available_parsers)
     except NameError:
         parser_lb = tk.Label(window, text=available_parsers)
-        y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.parsers_annotators_parser_lb_pos,
-                                                       y_multiplier_integer_SV,
-                                                       parser_lb, True, False, False, False, 90,
-                                                       GUI_IO_util.labels_x_coordinate,
-                                                       "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
+        y_multiplier_integer = GUI_IO_util.placeWidget(
+            window,
+            GUI_IO_util.parsers_annotators_parser_lb_pos,
+            y_multiplier_integer_SV,
+            parser_lb,
+            True,
+            False,
+            False,
+            False,
+            90,
+            GUI_IO_util.labels_x_coordinate,
+            "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI",
+        )
 
-GUI_util.setup_menu.trace('w', activate_NLP_options)
+
+GUI_util.setup_menu.trace("w", activate_NLP_options)
 activate_NLP_options()
 
 if error:
-    mb.showwarning(title='Warning',
-               message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.")
+    mb.showwarning(
+        title="Warning",
+        message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.",
+    )
     run_script_util.run_script("NLP_setup_package_language_main.py")
     # this will display the correct hover-over info after the python call, in case options were changed
-    error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    (
+        error,
+        package,
+        parsers,
+        package_basics,
+        language,
+        package_display_area_value_new,
+        encoding_var,
+        export_json_var,
+        memory_var,
+        document_length_var,
+        limit_sentence_length_var,
+    ) = config_util.read_NLP_package_language_config()
 
 
 # CoNLL handoff: when launched from the Semantic Aggregation hub's 'Run the default parser' option, pre-tick
 # 'Open the CoNLL table analyzer' so that, after parsing, this GUI opens the analyzer with the fresh CoNLL.
-if 'open_analyzer' in sys.argv:
+if "open_analyzer" in sys.argv:
     parser_var.set(1)
     CoNLL_table_analyzer_var.set(1)
     CoNLL_table_analyzer_checkbox_msg.config(text="Open CoNLL table analyzer GUI")

@@ -11,24 +11,28 @@
 # differ from older output -- the 80% duplicate threshold may need re-tuning on a real corpus.
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window, "plagiarist_util",
-        ['os', 'tkinter', 'numpy', 'sklearn']) == False:
+if (
+    IO_libraries_util.install_all_Python_packages(
+        GUI_util.window, "plagiarist_util", ["os", "tkinter", "numpy", "sklearn"]
+    )
+    == False
+):
     sys.exit(0)
 
+import csv
 import os
 import re
-import csv
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 # ---- Similarity classes (must match the Java output columns) ---------------
 
-CLASS_LABELS = ['0-10%', '10-20%', '20-30%', '30-40%', '40-50%', '50-60%',
-                '60-70%', '70-80%', '80-90%', '90-100%']
+CLASS_LABELS = ["0-10%", "10-20%", "20-30%", "30-40%", "40-50%", "50-60%", "60-70%", "70-80%", "80-90%", "90-100%"]
 
 
 def _band_index(pct):
@@ -45,8 +49,8 @@ def _band_index(pct):
 def _read_documents(input_dir):
     """Return (texts, names) for the .txt files in *input_dir* (sorted, non-empty)."""
     texts, names = [], []
-    for fn in sorted(f for f in os.listdir(input_dir) if f.lower().endswith('.txt')):
-        with open(os.path.join(input_dir, fn), encoding='utf-8', errors='ignore') as f:
+    for fn in sorted(f for f in os.listdir(input_dir) if f.lower().endswith(".txt")):
+        with open(os.path.join(input_dir, fn), encoding="utf-8", errors="ignore") as f:
             t = f.read()
         if t.strip():
             texts.append(t)
@@ -57,7 +61,7 @@ def _read_documents(input_dir):
 def _read_stopwords(stopwords_path):
     if not stopwords_path or not os.path.isfile(stopwords_path):
         return None
-    with open(stopwords_path, encoding='utf-8', errors='ignore') as f:
+    with open(stopwords_path, encoding="utf-8", errors="ignore") as f:
         words = [w.strip() for w in f.read().split() if w.strip()]
     return words or None
 
@@ -79,14 +83,15 @@ def _extract_year(filename, date_pos, date_format, delimiter):
         pass
     candidates.extend(parts)
     for token in candidates:
-        m = re.search(r'(1[0-9]{3}|20[0-9]{2})', token)
+        m = re.search(r"(1[0-9]{3}|20[0-9]{2})", token)
         if m:
             return m.group(1)
-    return ''
+    return ""
 
 
-def compute_and_write(input_dir, output_dir, stopwords_path, threshold,
-                      embeds_date=False, date_format='', date_pos=1, delimiter='_'):
+def compute_and_write(
+    input_dir, output_dir, stopwords_path, threshold, embeds_date=False, date_format="", date_pos=1, delimiter="_"
+):
     """Compute pairwise similarity and write the document-similarity output files.
 
     *threshold* is a fraction in [0,1]; pairs at or above it are "duplicates".
@@ -129,24 +134,23 @@ def compute_and_write(input_dir, output_dir, stopwords_path, threshold,
     out = {}
 
     # ---- document_similarity_document_instance_classes_freq.csv -------------------------
-    p3 = os.path.join(output_dir, 'document_similarity_document_instance_classes_freq.csv')
-    with open(p3, 'w', newline='', encoding='utf-8-sig') as f:
+    p3 = os.path.join(output_dir, "document_similarity_document_instance_classes_freq.csv")
+    with open(p3, "w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f)
-        w.writerow(['File Name'] + CLASS_LABELS)
+        w.writerow(["File Name"] + CLASS_LABELS)
         for i in range(n):
             w.writerow([names[i]] + doc_bands[i])
-    out['document_instance'] = p3
+    out["document_instance"] = p3
 
     # ---- document_similarity_classes_freq.csv -------------------------------------------
-    p1 = os.path.join(output_dir, 'document_similarity_classes_freq.csv')
-    with open(p1, 'w', newline='', encoding='utf-8-sig') as f:
+    p1 = os.path.join(output_dir, "document_similarity_classes_freq.csv")
+    with open(p1, "w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f)
-        w.writerow(['Classes of Percentage Duplication', 'Frequency',
-                    'List of Documents in Category'])
+        w.writerow(["Classes of Percentage Duplication", "Frequency", "List of Documents in Category"])
         for b in range(10):
             docs = sorted(docs_in_band[b])
-            w.writerow([CLASS_LABELS[b], len(docs), '; '.join(docs)])
-    out['classes_freq'] = p1
+            w.writerow([CLASS_LABELS[b], len(docs), "; ".join(docs)])
+    out["classes_freq"] = p1
 
     # ---- document_similarity_classes_time_freq.csv (only if filenames embed dates) ------
     if embeds_date:
@@ -159,59 +163,72 @@ def compute_and_write(input_dir, output_dir, stopwords_path, threshold,
             for b in range(10):
                 acc[b] += doc_bands[i][b]
         if year_bands:
-            p2 = os.path.join(output_dir, 'document_similarity_classes_time_freq.csv')
-            with open(p2, 'w', newline='', encoding='utf-8-sig') as f:
+            p2 = os.path.join(output_dir, "document_similarity_classes_time_freq.csv")
+            with open(p2, "w", newline="", encoding="utf-8-sig") as f:
                 w = csv.writer(f)
-                w.writerow(['Year'] + CLASS_LABELS)
+                w.writerow(["Year"] + CLASS_LABELS)
                 for year in sorted(year_bands):
                     w.writerow([year] + year_bands[year])
-            out['classes_time_freq'] = p2
+            out["classes_time_freq"] = p2
 
     # ---- document_duplicates.txt -------------------------------------------
-    pdup = os.path.join(output_dir, 'document_duplicates.txt')
+    pdup = os.path.join(output_dir, "document_duplicates.txt")
     docs_with_copies = [i for i in range(n) if duplicates[i]]
     most_copied = max(range(n), key=lambda i: len(duplicates[i])) if n else None
-    with open(pdup, 'w', encoding='utf-8') as f:
-        f.write('Document similarity report (TF-IDF cosine similarity)\n')
-        f.write('Duplicate threshold: {:.0f}% similarity\n\n'.format(thr_pct))
-        f.write('{} of {} documents have copies at or above the threshold.\n'
-                .format(len(docs_with_copies), n))
+    with open(pdup, "w", encoding="utf-8") as f:
+        f.write("Document similarity report (TF-IDF cosine similarity)\n")
+        f.write(f"Duplicate threshold: {thr_pct:.0f}% similarity\n\n")
+        f.write(f"{len(docs_with_copies)} of {n} documents have copies at or above the threshold.\n")
         if most_copied is not None and duplicates[most_copied]:
-            f.write('The document with the most copies is: {} ({} copies).\n'
-                    .format(names[most_copied], len(duplicates[most_copied])))
-        f.write('\n')
+            f.write(
+                f"The document with the most copies is: {names[most_copied]} ({len(duplicates[most_copied])} copies).\n"
+            )
+        f.write("\n")
         for i in range(n):
             if not duplicates[i]:
                 continue
-            f.write('{} has {} copy(s):\n'.format(names[i], len(duplicates[i])))
+            f.write(f"{names[i]} has {len(duplicates[i])} copy(s):\n")
             for name_j, pct in sorted(duplicates[i], key=lambda x: -x[1]):
-                f.write('   - {}  (score: {:.1f}% match)\n'.format(name_j, pct))
-            f.write('\n')
-    out['duplicates_txt'] = pdup
+                f.write(f"   - {name_j}  (score: {pct:.1f}% match)\n")
+            f.write("\n")
+    out["duplicates_txt"] = pdup
 
     return out
 
 
-def run(inputDir, outputDir, stopwords_path, similarity_threshold,
-        embeds_date=False, date_format='', date_pos=1, delimiter='_'):
+def run(
+    inputDir,
+    outputDir,
+    stopwords_path,
+    similarity_threshold,
+    embeds_date=False,
+    date_format="",
+    date_pos=1,
+    delimiter="_",
+):
     """GUI-facing entry point. Returns a dict of output paths, or None."""
     import tkinter.messagebox as mb
+
     import IO_user_interface_util
 
     if not inputDir or not os.path.isdir(inputDir):
-        mb.showwarning(title='No input', message='Please select an input directory of .txt files.')
+        mb.showwarning(title="No input", message="Please select an input directory of .txt files.")
         return None
 
     startTime = IO_user_interface_util.timed_alert(
-        GUI_util.window, 2000, 'Analysis start', 'Started running PLAGIARIST at', True)
-    result = compute_and_write(inputDir, outputDir, stopwords_path, similarity_threshold,
-                               embeds_date, date_format, date_pos, delimiter)
+        GUI_util.window, 2000, "Analysis start", "Started running PLAGIARIST at", True
+    )
+    result = compute_and_write(
+        inputDir, outputDir, stopwords_path, similarity_threshold, embeds_date, date_format, date_pos, delimiter
+    )
     IO_user_interface_util.timed_alert(
-        GUI_util.window, 2000, 'Analysis end', 'Finished running PLAGIARIST at',
-        True, '', True, startTime)
+        GUI_util.window, 2000, "Analysis end", "Finished running PLAGIARIST at", True, "", True, startTime
+    )
 
     if result is None:
-        mb.showwarning(title='Not enough documents',
-                       message='The plagiarist tool needs at least two .txt documents to compare.\n\n'
-                               'Please select a directory containing several .txt files and try again.')
+        mb.showwarning(
+            title="Not enough documents",
+            message="The plagiarist tool needs at least two .txt documents to compare.\n\n"
+            "Please select a directory containing several .txt files and try again.",
+        )
     return result

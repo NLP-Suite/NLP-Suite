@@ -1,25 +1,25 @@
 # written by Rafael Piloto Fall 2021
 # edited by Roberto Franzosi Fall 2023
 
+import os
+import shutil
 import sys
-import GUI_util
-import IO_libraries_util
 
 # if IO_libraries_util.install_all_Python_packages(GUI_util.window,"POTUS_webscraper.py",['beautifulsoup4'])==False:
 #     sys.exit(0)
-
 import tkinter as tk
-import requests
+
 # conda install -c anaconda beautifulsoup4
 from bs4 import BeautifulSoup
-import os
-import shutil
+import requests
 
-base_url = "https://www.presidency.ucsb.edu/" # base website url for link redirects
-out_path = tk.filedialog.askdirectory(title='Select a directory where to save the scraped POTUS files. The fiiles will be saved in a subdirectory "\\data" of the selected directory.\n Press Esc or Cancel to exit.')
+base_url = "https://www.presidency.ucsb.edu/"  # base website url for link redirects
+out_path = tk.filedialog.askdirectory(
+    title='Select a directory where to save the scraped POTUS files. The fiiles will be saved in a subdirectory "\\data" of the selected directory.\n Press Esc or Cancel to exit.'
+)
 
-out_path = out_path # folder for output saving
-if out_path=='':
+out_path = out_path  # folder for output saving
+if out_path == "":
     sys.exit(0)
 else:
     out_path = out_path + os.sep + "POTUS_data/"
@@ -30,8 +30,8 @@ else:
     shutil.rmtree(out_path)
     os.mkdir(out_path)
 
-os.mkdir(out_path+os.sep + "ina")
-os.mkdir(out_path+os.sep + "sotu")
+os.mkdir(out_path + os.sep + "ina")
+os.mkdir(out_path + os.sep + "sotu")
 
 # Base link for inaugural address speeches
 ina_base = "https://www.presidency.ucsb.edu/advanced-search?field-keywords=&field-keywords2=&field-keywords3=&from%5Bdate%5D=&to%5Bdate%5D=&person2=&category2%5B%5D=46&items_per_page=100"
@@ -46,28 +46,28 @@ sotu_base = "https://www.presidency.ucsb.edu/advanced-search?field-keywords=&fie
 
 def month_to_number(x):
     months = {
-        'jan': 1,
-        'feb': 2,
-        'mar': 3,
-        'apr': 4,
-        'may': 5,
-        'jun': 6,
-        'jul': 7,
-        'aug': 8,
-        'sep': 9,
-        'oct': 10,
-        'nov': 11,
-        'dec': 12
+        "jan": 1,
+        "feb": 2,
+        "mar": 3,
+        "apr": 4,
+        "may": 5,
+        "jun": 6,
+        "jul": 7,
+        "aug": 8,
+        "sep": 9,
+        "oct": 10,
+        "nov": 11,
+        "dec": 12,
     }
     month = x.strip()[:3].lower()
     try:
         month_number = months[month]
     except:
-        raise ValueError(x + ' is not a month')
+        raise ValueError(x + " is not a month")
     return month_number
 
 
-class Speech():
+class Speech:
     """
     Store data about each individual speech with functionality to write to a file
 
@@ -80,12 +80,12 @@ class Speech():
     text: str
         The raw speech contents parsed from the html page
     """
+
     def __init__(self, link: str, date: str, president: str, text: str):
         self.link = link
         self.date = date
         self.president = president
         self.text = text
-
 
     """
     Writes the speech text to a file with the format:
@@ -104,7 +104,7 @@ class Speech():
         name = " ".join(name)
 
         try:
-            with open(f'{out_path + os.sep + prefix}_{name}_{date}.txt', "x") as f:
+            with open(f"{out_path + os.sep + prefix}_{name}_{date}.txt", "x") as f:
                 f.write(self.text)
         except Exception:
             print(f"got duplicate speech {self.link}")
@@ -119,6 +119,8 @@ class Speech():
     returns: list
         A list of Speech objects
 """
+
+
 def getSpeeches(base: str) -> list:
     resp = requests.get(base)
     soup = BeautifulSoup(resp.content, "html.parser")
@@ -131,7 +133,7 @@ def getSpeeches(base: str) -> list:
 
     for item in data:
         metadata = item.find_all("td", class_="views-field")
-        link = base_url + metadata[2].find("a")['href']
+        link = base_url + metadata[2].find("a")["href"]
         date = metadata[0].text.strip().lower()
         president = metadata[1].text.strip().lower()
         speeches.append(getSpeech(link, date, president))
@@ -140,7 +142,7 @@ def getSpeeches(base: str) -> list:
     if nextLink is not None:
         speeches += getSpeeches(base_url + nextLink.find("a")["href"])
 
-    print(f'{base} got {len(speeches)} speeches')
+    print(f"{base} got {len(speeches)} speeches")
     return speeches
 
 
@@ -157,6 +159,8 @@ def getSpeeches(base: str) -> list:
     returns: Speech
         The Speech object created from the parsed data
 """
+
+
 def getSpeech(link: str, date: str, president: str) -> Speech:
     resp = requests.get(link)
     soup = BeautifulSoup(resp.content, "html.parser")
@@ -173,13 +177,13 @@ def getSpeech(link: str, date: str, president: str) -> Speech:
 if __name__ == "__main__":
     # Get the inaugural speeches
     for speech in getSpeeches(ina_base):
-        out_path_ina = out_path +os.sep + "ina"
-        speech.writeToFile(out_path_ina,"ina")
+        out_path_ina = out_path + os.sep + "ina"
+        speech.writeToFile(out_path_ina, "ina")
         print("Processing POTUS Inaugural speech: ", speech.president, speech.date)
-    print ("All inaugural speeches processed")
+    print("All inaugural speeches processed")
     # Get the State of the Union Speeches
     for speech in getSpeeches(sotu_base):
         print("Processing POTUS State of the Union speech: ", speech.president, speech.date)
-        out_path_sotu = out_path +os.sep + "sotu"
-        speech.writeToFile(out_path_sotu,"sotu")
-    print ("All State of the Union speeches processed")
+        out_path_sotu = out_path + os.sep + "sotu"
+        speech.writeToFile(out_path_sotu, "sotu")
+    print("All State of the Union speeches processed")

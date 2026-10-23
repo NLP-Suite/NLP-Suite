@@ -18,6 +18,7 @@ Started/Finished times and a per-GUI [i/total] counter). Honest scope: it captur
 rendering, whatever platform that is (the page header names it). When a GUI can't be built/measured
 it is marked BUILD? with the failure reason on the card, so a bad run is self-diagnosing.
 """
+
 import base64
 import glob
 import io as _io
@@ -28,11 +29,11 @@ import time
 import webbrowser
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
-_SRC = os.path.join(os.path.dirname(_HERE), 'src')
-_SHOTS = os.path.join(_HERE, 'gui_screenshots')
-_NOT_GUI = ('NLP_setup_',)
+_SRC = os.path.join(os.path.dirname(_HERE), "src")
+_SHOTS = os.path.join(_HERE, "gui_screenshots")
+_NOT_GUI = ("NLP_setup_",)
 
-_WORKER = r'''
+_WORKER = r"""
 import sys, os, time, base64
 os.environ['NLP_SILENT'] = '1'
 SRC = r"{src}"
@@ -144,21 +145,22 @@ try:
     print("SHOT ok")
 except Exception as e:
     print("SHOT_FAIL", str(e)[:120])
-'''.replace("{src}", _SRC)
+""".replace("{src}", _SRC)
 
 
 def thumb_data_uri(png_path, max_w=680):
     from PIL import Image
-    img = Image.open(png_path).convert('RGB')
+
+    img = Image.open(png_path).convert("RGB")
     if img.width > max_w:
         img = img.resize((max_w, round(img.height * max_w / img.width)), Image.LANCZOS)
     buf = _io.BytesIO()
-    img.save(buf, format='JPEG', quality=82)
-    return 'data:image/jpeg;base64,' + base64.b64encode(buf.getvalue()).decode()
+    img.save(buf, format="JPEG", quality=82)
+    return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
 
 
 def esc(s):
-    return (s or '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+    return (s or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
 def _elapsed_message(seconds):
@@ -170,13 +172,13 @@ def _elapsed_message(seconds):
     s = int(seconds - h * 3600 - m * 60)
     parts = []
     if h:
-        parts.append('%d hour%s' % (h, '' if h == 1 else 's'))
+        parts.append("%d hour%s" % (h, "" if h == 1 else "s"))
     if m:
-        parts.append('%d minute%s' % (m, '' if m == 1 else 's'))
-    parts.append('%d second%s' % (s, '' if s == 1 else 's'))
+        parts.append("%d minute%s" % (m, "" if m == 1 else "s"))
+    parts.append("%d second%s" % (s, "" if s == 1 else "s"))
     if len(parts) == 1:
         return parts[0]
-    return ', '.join(parts[:-1]) + ' and ' + parts[-1]
+    return ", ".join(parts[:-1]) + " and " + parts[-1]
 
 
 def _run_stamp():
@@ -186,72 +188,79 @@ def _run_stamp():
     from an older run looks exactly as current as one taken a minute ago, and these are read as
     evidence that the GUIs are fine.
     """
-    return time.strftime('%d %B %Y, %H:%M')
+    return time.strftime("%d %B %Y, %H:%M")
 
 
 def main():
-    plat = {'darwin': 'macOS', 'win32': 'Windows', 'linux': 'Linux'}.get(sys.platform, sys.platform)
+    plat = {"darwin": "macOS", "win32": "Windows", "linux": "Linux"}.get(sys.platform, sys.platform)
     # The release version the GUIs display (lib/release_version.txt, read by GUI_util.get_local_release
     # _version); show it once, in bold, at the top of the gallery instead of on every card.
-    release = ''
+    release = ""
     try:
-        with open(os.path.join(os.path.dirname(_HERE), 'lib', 'release_version.txt'),
-                  encoding='utf-8', errors='ignore') as _rf:
+        with open(
+            os.path.join(os.path.dirname(_HERE), "lib", "release_version.txt"), encoding="utf-8", errors="ignore"
+        ) as _rf:
             release = _rf.read().strip()
     except Exception:
         pass
     os.makedirs(_SHOTS, exist_ok=True)
-    guis = sorted(os.path.basename(f) for f in glob.glob(os.path.join(_SRC, '*_main.py'))
-                  if not any(s in os.path.basename(f) for s in _NOT_GUI))
+    guis = sorted(
+        os.path.basename(f)
+        for f in glob.glob(os.path.join(_SRC, "*_main.py"))
+        if not any(s in os.path.basename(f) for s in _NOT_GUI)
+    )
     start_time = time.time()
-    print('\nStarted running gui_gallery at %s.' % time.strftime('%H:%M:%S'), flush=True)
-    print('Building + screenshotting %d GUIs one at a time (windows flash open; this takes several '
-          'minutes -- often 10+ on a slow machine)...\n' % len(guis), flush=True)
+    print("\nStarted running gui_gallery at %s." % time.strftime("%H:%M:%S"), flush=True)
+    print(
+        "Building + screenshotting %d GUIs one at a time (windows flash open; this takes several "
+        "minutes -- often 10+ on a slow machine)...\n" % len(guis),
+        flush=True,
+    )
     cards = []
     total = len(guis)
     for i, f in enumerate(guis, 1):
-        print('[%d/%d] %s ...' % (i, total, f), flush=True)
-        png = os.path.join(_SHOTS, f.replace('.py', '.png'))
+        print("[%d/%d] %s ..." % (i, total, f), flush=True)
+        png = os.path.join(_SHOTS, f.replace(".py", ".png"))
         try:
-            p = subprocess.run([sys.executable, '-c', _WORKER, f, png],
-                               capture_output=True, text=True, timeout=300, cwd=_SRC)
+            p = subprocess.run(
+                [sys.executable, "-c", _WORKER, f, png], capture_output=True, text=True, timeout=300, cwd=_SRC
+            )
         except subprocess.TimeoutExpired:
             p = None
-        out = p.stdout if p else ''
-        err = (p.stderr if p else '') or ''
-        meta = next((ln for ln in out.splitlines() if ln.startswith('META')), '')
+        out = p.stdout if p else ""
+        err = (p.stderr if p else "") or ""
+        meta = next((ln for ln in out.splitlines() if ln.startswith("META")), "")
         overflow = overlaps = opted = None
-        title = ''
+        title = ""
         if meta:
-            d = dict(kv.split('=', 1) for kv in meta.split() if '=' in kv)
-            overflow, overlaps, opted = int(d['overflow']), int(d['overlaps']), int(d['opted'])
+            d = dict(kv.split("=", 1) for kv in meta.split() if "=" in kv)
+            overflow, overlaps, opted = int(d["overflow"]), int(d["overlaps"]), int(d["opted"])
             try:
-                title = base64.b64decode(d['title']).decode('utf-8')
+                title = base64.b64decode(d["title"]).decode("utf-8")
                 # The live window title appends the active corpus ('GUI_label  —  newspaperArticles',
                 # GUI_util.py:159). That corpus is the same on every card here, so it's pure noise in the
                 # gallery -- strip the trailing '  —  <corpus>' segment (rsplit keeps any em-dash that is
                 # part of the label itself, e.g. GIS_symbolic's "Space — from Text ...").
-                title = title.rsplit('  —  ', 1)[0].strip()
+                title = title.rsplit("  —  ", 1)[0].strip()
             except Exception:
-                title = ''
+                title = ""
         if not title:
-            title = f.replace('_main.py', '').replace('_', ' ')
+            title = f.replace("_main.py", "").replace("_", " ")
         # When the worker never reported geometry (overflow is None) the GUI didn't build far enough to
         # measure -- the useful signal is WHY. The worker prints BUILD_FAIL/SHOT_FAIL on stdout and any
         # traceback on stderr; surface that here instead of discarding it, so a failed run (e.g. every
         # GUI dying on a Mac) is self-diagnosing rather than a wall of blank "BUILD?" cards.
-        reason = ''
+        reason = ""
         if overflow is None:
-            fail = next((ln for ln in out.splitlines()
-                         if ln.startswith(('BUILD_FAIL', 'SHOT_FAIL'))), '')
+            fail = next((ln for ln in out.splitlines() if ln.startswith(("BUILD_FAIL", "SHOT_FAIL"))), "")
             if p is None:
-                reason = 'timeout (>300s)'
+                reason = "timeout (>300s)"
             elif fail:
                 reason = fail
             elif err.strip():
                 reason = err.strip().splitlines()[-1]
             else:
-                reason = 'no geometry reported (window never built)'
+                reason = "no geometry reported (window never built)"
             reason = reason[:200]
         # Opted-out GUIs use the legacy .place layout (hand-tuned, user-maintained). Their overlap
         # measurement isn't a grid problem and can false-positive (e.g. DB_SQL's side-by-side buttons
@@ -262,62 +271,85 @@ def main():
         # still flag overlaps where the GUI is tight/over-wide, and any multi-pair (>=2) collision.
         overlap_noise = overflow is not None and overflow < -40 and (overlaps or 0) <= 1
         bad = overflow is None or overflow > 4 or ((overlaps or 0) > 0 and opted != 1 and not overlap_noise)
-        status = 'BUILD?' if overflow is None else ('OFF' if bad else 'OK')
+        status = "BUILD?" if overflow is None else ("OFF" if bad else "OK")
         if overflow is None:
-            note = '&#9888; ' + esc(reason)
+            note = "&#9888; " + esc(reason)
         else:
-            note = 'overflow %d px &middot; overlaps %d' % (overflow, overlaps)
+            note = "overflow %d px &middot; overlaps %d" % (overflow, overlaps)
             if not os.path.exists(png):
-                note += ' &middot; no shot'
-        cards.append(dict(status=status, file=f, title=title, note=note, opted=(opted == 1),
-                          png=png if os.path.exists(png) else None))
+                note += " &middot; no shot"
+        cards.append(
+            dict(
+                status=status,
+                file=f,
+                title=title,
+                note=note,
+                opted=(opted == 1),
+                png=png if os.path.exists(png) else None,
+            )
+        )
         # Don't truncate a failure reason -- it carries the "@ file:line" crash location we need; only
         # clip the (long, uninformative) window title on OK rows.
         tail = reason if reason else title[:70]
-        print('[%d/%d] %-8s %-46s %s' % (i, total, status, f, tail), flush=True)
+        print("[%d/%d] %-8s %-46s %s" % (i, total, status, f, tail), flush=True)
 
-    order = {'OFF': 0, 'BUILD?': 1, 'OK': 2}
-    flagged = sorted([c for c in cards if c['status'] != 'OK'], key=lambda c: (order.get(c['status'], 3), c['file']))
-    grid_ok = sorted([c for c in cards if c['status'] == 'OK' and not c['opted']], key=lambda c: c['file'])
-    special_ok = sorted([c for c in cards if c['status'] == 'OK' and c['opted']], key=lambda c: c['file'])
+    order = {"OFF": 0, "BUILD?": 1, "OK": 2}
+    flagged = sorted([c for c in cards if c["status"] != "OK"], key=lambda c: (order.get(c["status"], 3), c["file"]))
+    grid_ok = sorted([c for c in cards if c["status"] == "OK" and not c["opted"]], key=lambda c: c["file"])
+    special_ok = sorted([c for c in cards if c["status"] == "OK" and c["opted"]], key=lambda c: c["file"])
 
     def anchor(f):
-        return 'g_' + f.replace('.', '_')
+        return "g_" + f.replace(".", "_")
 
     def toc(group, cls=None):
-        return '\n'.join(
-            '<li><a href="#%s" class="%s">%s</a></li>' % (anchor(c['file']), cls or c['status'].lower().rstrip('?'), esc(c['title']))
-            for c in group) or '<li class="none">none</li>'
+        return (
+            "\n".join(
+                '<li><a href="#%s" class="%s">%s</a></li>'
+                % (anchor(c["file"]), cls or c["status"].lower().rstrip("?"), esc(c["title"]))
+                for c in group
+            )
+            or '<li class="none">none</li>'
+        )
 
     def card_html(c, big):
-        if c['png']:
+        if c["png"]:
             # link the thumbnail to the full-resolution PNG (opens in a new tab) so a small preview is
             # enough to scan and one click gives you the real thing to inspect
-            rel = 'gui_screenshots/' + os.path.basename(c['png'])
+            rel = "gui_screenshots/" + os.path.basename(c["png"])
             img = '<a href="%s" target="_blank"><img loading="lazy" src="%s" alt="%s"></a>' % (
-                rel, thumb_data_uri(c['png'], 1280 if big else 560), esc(c['file']))
+                rel,
+                thumb_data_uri(c["png"], 1280 if big else 560),
+                esc(c["file"]),
+            )
         else:
             img = '<div class="noshot">no screenshot</div>'
         # A "special" GUI is an OK card that opted out of grid (legacy .place). Mark it distinctly so it
         # is obvious both in the TOC and while scrolling -- teal accent + a SPECIAL badge, not a green OK.
-        special = c['opted'] and c['status'] == 'OK'
-        klass = c['status'].lower().rstrip('?') + (' special' if special else '')
-        badge = 'SPECIAL' if special else c['status']
-        return ('<figure id="%s" class="card %s"><figcaption>'
-                '<span class="badge">%s</span><span class="t">%s</span>'
-                '<span class="fn">%s</span><span class="note">%s</span></figcaption>%s</figure>'
-                % (anchor(c['file']), klass, badge,
-                   esc(c['title']), esc(c['file']), c['note'], img))
+        special = c["opted"] and c["status"] == "OK"
+        klass = c["status"].lower().rstrip("?") + (" special" if special else "")
+        badge = "SPECIAL" if special else c["status"]
+        return (
+            '<figure id="%s" class="card %s"><figcaption>'
+            '<span class="badge">%s</span><span class="t">%s</span>'
+            '<span class="fn">%s</span><span class="note">%s</span></figcaption>%s</figure>'
+            % (anchor(c["file"]), klass, badge, esc(c["title"]), esc(c["file"]), c["note"], img)
+        )
 
     def section(title, subtitle, group, big=False):
         if not group:
-            return ''
-        klass = 'grid big' if big else 'grid'
-        return ('<h2>%s <span class="cnt">%d</span></h2><p class="sub">%s</p><div class="%s">%s</div>'
-                % (title, len(group), subtitle, klass, '\n'.join(card_html(c, big) for c in group)))
+            return ""
+        klass = "grid big" if big else "grid"
+        return '<h2>%s <span class="cnt">%d</span></h2><p class="sub">%s</p><div class="%s">%s</div>' % (
+            title,
+            len(group),
+            subtitle,
+            klass,
+            "\n".join(card_html(c, big) for c in group),
+        )
 
     n_off = len(flagged)
-    html = '''<!doctype html><meta charset="utf-8"><title>NLP Suite - GUI gallery</title>
+    html = (
+        """<!doctype html><meta charset="utf-8"><title>NLP Suite - GUI gallery</title>
 <style>
  body{font:14px system-ui,Segoe UI,sans-serif;margin:0;padding:22px;background:#f4f4f6;color:#222;max-width:1500px}
  h1{font-size:20px;margin:0 0 2px} h2{font-size:16px;margin:30px 0 2px;border-bottom:2px solid #ccc;padding-bottom:4px}
@@ -348,32 +380,67 @@ def main():
    figcaption,h2{border-color:#2c2d31}.sub,.cnt{color:#999}.toc a{color:#8ab}}
 </style>
 <h1>NLP Suite - GUI gallery</h1>
-''' + ('<p class="rel">Release ' + esc(release) +
-       '<span class="ran"> &middot; rendered ' + esc(_run_stamp()) + '</span></p>'
-       if release else '<p class="rel"><span class="ran">rendered ' + esc(_run_stamp()) + '</span></p>') + '''
-<p class="sub">''' + '%d GUIs &middot; %d flagged &middot; rendered on %s (this machine) &middot; click any shot for full resolution' % (len(cards), n_off, plat) + '''</p>
+"""
+        + (
+            '<p class="rel">Release '
+            + esc(release)
+            + '<span class="ran"> &middot; rendered '
+            + esc(_run_stamp())
+            + "</span></p>"
+            if release
+            else '<p class="rel"><span class="ran">rendered ' + esc(_run_stamp()) + "</span></p>"
+        )
+        + """
+<p class="sub">"""
+        + "%d GUIs &middot; %d flagged &middot; rendered on %s (this machine) &middot; click any shot for full resolution"
+        % (len(cards), n_off, plat)
+        + """</p>
 <div class="toc">
- <div><h3>Flagged <span class="cnt">''' + str(len(flagged)) + '''</span></h3><ul>''' + toc(flagged) + '''</ul>
-  <h3 class="special-h">Special &mdash; .place opt-outs <span class="cnt">''' + str(len(special_ok)) + '''</span></h3><ul>''' + toc(special_ok, 'special') + '''</ul></div>
- <div><h3>Full-grid &mdash; OK <span class="cnt">''' + str(len(grid_ok)) + '''</span></h3><ul>''' + toc(grid_ok) + '''</ul></div>
+ <div><h3>Flagged <span class="cnt">"""
+        + str(len(flagged))
+        + """</span></h3><ul>"""
+        + toc(flagged)
+        + """</ul>
+  <h3 class="special-h">Special &mdash; .place opt-outs <span class="cnt">"""
+        + str(len(special_ok))
+        + """</span></h3><ul>"""
+        + toc(special_ok, "special")
+        + """</ul></div>
+ <div><h3>Full-grid &mdash; OK <span class="cnt">"""
+        + str(len(grid_ok))
+        + """</span></h3><ul>"""
+        + toc(grid_ok)
+        + """</ul></div>
 </div>
-''' + section('Flagged &mdash; needs a look', 'Shown large. Overflow &gt; 4px = a widget past the right edge; overlaps = two widgets on one spot. BUILD? = the GUI never built far enough to measure &mdash; see the reason on the card. (On a HiDPI/scaled display, wide GUIs can clip here that would fit a normal display.)', flagged, big=True) + \
-        section('Full-grid GUIs &mdash; OK', 'Standard layout via the grid; these fit cleanly.', grid_ok) + \
-        section('Special GUIs &mdash; OK', 'Kept on absolute .place (GUI_IO_util.GRID_OPT_OUT).', special_ok)
+"""
+        + section(
+            "Flagged &mdash; needs a look",
+            "Shown large. Overflow &gt; 4px = a widget past the right edge; overlaps = two widgets on one spot. BUILD? = the GUI never built far enough to measure &mdash; see the reason on the card. (On a HiDPI/scaled display, wide GUIs can clip here that would fit a normal display.)",
+            flagged,
+            big=True,
+        )
+        + section("Full-grid GUIs &mdash; OK", "Standard layout via the grid; these fit cleanly.", grid_ok)
+        + section("Special GUIs &mdash; OK", "Kept on absolute .place (GUI_IO_util.GRID_OPT_OUT).", special_ok)
+    )
 
-    out_path = os.path.join(_HERE, 'gui_gallery.html')
-    with open(out_path, 'w', encoding='utf-8') as fh:
+    out_path = os.path.join(_HERE, "gui_gallery.html")
+    with open(out_path, "w", encoding="utf-8") as fh:
         fh.write(html)
-    print('\n%d GUIs (%d grid OK, %d special OK), %d flagged.  Open: %s'
-          % (len(cards), len(grid_ok), len(special_ok), n_off, out_path))
-    print('Finished running gui_gallery at %s taking %s.'
-          % (time.strftime('%H:%M:%S'), _elapsed_message(time.time() - start_time)), flush=True)
+    print(
+        "\n%d GUIs (%d grid OK, %d special OK), %d flagged.  Open: %s"
+        % (len(cards), len(grid_ok), len(special_ok), n_off, out_path)
+    )
+    print(
+        "Finished running gui_gallery at %s taking %s."
+        % (time.strftime("%H:%M:%S"), _elapsed_message(time.time() - start_time)),
+        flush=True,
+    )
     try:
-        webbrowser.open('file://' + os.path.abspath(out_path))
+        webbrowser.open("file://" + os.path.abspath(out_path))
     except Exception:
         pass  # headless/no browser -- the path is printed above
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

@@ -1,28 +1,38 @@
 # Written by Roberto Franzosi November 2019
 # Edited by Josh Karol
 import sys
+
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"statistics_txt_util",['nltk','csv','tkinter','os','string','collections','re','textstat','itertools','stanza','spacy'])==False:
+if (
+    IO_libraries_util.install_all_Python_packages(
+        GUI_util.window,
+        "statistics_txt_util",
+        ["nltk", "csv", "tkinter", "os", "string", "collections", "re", "textstat", "itertools", "stanza", "spacy"],
+    )
+    == False
+):
     sys.exit(0)
 
+import collections
+from collections import Counter
 import os
-import os
+import re
+import string
 import tkinter as tk
 import tkinter.messagebox as mb
-import collections
-import re
-from collections import Counter
-import string
+
 from nltk.stem.porter import PorterStemmer
 import stanza
+
 import IO_internet_util
+
 # report a failed model download in a dialog: the bare except used to swallow the real error and
 # only ask the internet-check question, never retrying, so the reason reached the terminal alone
-IO_internet_util.download_with_warning("statistics_txt_util.py (stanza.download(en))",
-                                      lambda: stanza.download('en'),
-                                      "the Stanza English language model")
+IO_internet_util.download_with_warning(
+    "statistics_txt_util.py (stanza.download(en))", lambda: stanza.download("en"), "the Stanza English language model"
+)
 
 # from nltk import tokenize
 # from nltk import word_tokenize
@@ -37,57 +47,57 @@ IO_internet_util.download_with_warning("statistics_txt_util.py (stanza.download(
 # from PIL import Image
 
 # Sentence Complexity
-import tree
-import sentence_complexity_node_util as Node
+import csv
+
+import nltk
+from nltk.draw import TreeView
+from nltk.tree import Tree
 
 # from gensim.utils import lemmatize
 import pandas as pd
+
 # import ast
 # import textstat
 # import subprocess
 import spacy
-import csv
-import nltk
-from nltk.tree import Tree
-from nltk.draw import TreeView
-from PIL import Image
 
-#For objectivity/subjectivity
-from spacytextblob.spacytextblob import SpacyTextBlob
+# For objectivity/subjectivity
+import sentence_complexity_node_util as Node
+import tree
 
-#whether stopwordst were already downloaded can be tested, see stackoverflow
+# whether stopwordst were already downloaded can be tested, see stackoverflow
 #   https://stackoverflow.com/questions/23704510/how-do-i-test-whether-an-nltk-resource-is-already-installed-on-the-machine-runni
 #   see also caveats
 
 # check stopwords
 # IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/stopwords','stopwords')
 # check punkt
-IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
+IO_libraries_util.import_nltk_resource(GUI_util.window, "tokenizers/punkt", "punkt")
 
-from nltk.corpus import stopwords
 from nltk.corpus import wordnet
+
 # from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
 import textstat
 
-import IO_user_interface_util
-import GUI_IO_util
 import charts_util
-import IO_files_util
+import GUI_IO_util
 import IO_csv_util
-import statistics_statistical_tests_util
+import IO_files_util
+import IO_user_interface_util
 import reminders_util
-import TIPS_util
 import statistics_csv_util
+import statistics_statistical_tests_util
+import TIPS_util
 
-#https://github.com/nltk/nltk/wiki/Frequently-Asked-Questions-(Stackoverflow-Edition)
-#to compute bigrams, 3-grams, ...
+# https://github.com/nltk/nltk/wiki/Frequently-Asked-Questions-(Stackoverflow-Edition)
+# to compute bigrams, 3-grams, ...
 #   from nltk import bigrams, trigrams
 #   from nltk import ngrams
 
 
 #   from nltk import everygrams
 
-#https://stackoverflow.com/questions/24347029/python-nltk-bigrams-trigrams-fourgrams
+# https://stackoverflow.com/questions/24347029/python-nltk-bigrams-trigrams-fourgrams
 # def compute_word_ngrams(window,inputFilename,outputFilename):
 #     import nltk
 #     #from nltk import word_tokenize
@@ -108,16 +118,14 @@ import statistics_csv_util
 # returns a frequency distribution of words in text,
 #    in the format {"chapman's": 1, 'carried': 1, 'hinesville': 1, 'broke': 1, 'an': 3,...
 
-def get_wordnet_pos(word):#from https://www.machinelearningplus.com/nlp/lemmatization-examples-python/
-    #https://stackoverflow.com/questions/15586721/wordnet-lemmatization-and-pos-tagging-in-python
-    #assign pos value to one word
-    #sometimes the accuracy will be affected: for example, lemmatization of leaves can be both verb(leave) and noun(leaf)
-    #this function put noun ahead of verb when assigning pos tags
+
+def get_wordnet_pos(word):  # from https://www.machinelearningplus.com/nlp/lemmatization-examples-python/
+    # https://stackoverflow.com/questions/15586721/wordnet-lemmatization-and-pos-tagging-in-python
+    # assign pos value to one word
+    # sometimes the accuracy will be affected: for example, lemmatization of leaves can be both verb(leave) and noun(leaf)
+    # this function put noun ahead of verb when assigning pos tags
     tag = nltk.pos_tag([word])[0][1][0].upper()
-    tag_dict = {"J": wordnet.ADJ,
-                "N": wordnet.NOUN,
-                "V": wordnet.VERB,
-                "R": wordnet.ADV}
+    tag_dict = {"J": wordnet.ADJ, "N": wordnet.NOUN, "V": wordnet.VERB, "R": wordnet.ADV}
 
     return tag_dict.get(tag, wordnet.NOUN)
 
@@ -126,16 +134,18 @@ def get_wordnet_pos(word):#from https://www.machinelearningplus.com/nlp/lemmatiz
 #     lemmatizer = WordNetLemmatizer()
 #     return lemmatizer.lemmatize(word, get_wordnet_pos(word))
 
-def lemmatizing(word):#edited by Claude Hu 08/2020
-    #https://stackoverflow.com/questions/15586721/wordnet-lemmatization-and-pos-tagging-in-python
-    pos = ['n', 'v','a', 's', 'r']#list of postags
+
+def lemmatizing(word):  # edited by Claude Hu 08/2020
+    # https://stackoverflow.com/questions/15586721/wordnet-lemmatization-and-pos-tagging-in-python
+    pos = ["n", "v", "a", "s", "r"]  # list of postags
     result = word
     for p in pos:
         # if lemmatization with any postag gives different result from the word itself
         # that lemmatization is returned as result
         # lemmatizer = WordNetLemmatizer()
         # lemma = lemmatizer.lemmatize(word, p)
-        from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza_word
+        from Stanza_functions_util import lemmatize_stanza_word, stanzaPipeLine
+
         lemma = lemmatize_stanza_word(stanzaPipeLine(word))
         if lemma != word:
             result = lemma
@@ -156,13 +166,13 @@ def word_count(text):
 
 def excludeStopWords_list(words):
     # stop_words = stopwords.words('english')
-    fin = open('../lib/wordLists/stopwords.txt', 'r')
+    fin = open("../lib/wordLists/stopwords.txt")
     stop_words = set(fin.read().splitlines())
     # since stop_words are lowercase exclude initial-capital words (He, I)
-    words_excludeStopWords = [word for word in words if not word.lower() in stop_words]
+    words_excludeStopWords = [word for word in words if word.lower() not in stop_words]
     words = words_excludeStopWords
     # exclude punctuation
-    words_excludePunctuation = [word for word in words if not word in string.punctuation]
+    words_excludePunctuation = [word for word in words if word not in string.punctuation]
     words = words_excludePunctuation
     return words
 
@@ -170,58 +180,95 @@ def excludeStopWords_list(words):
 # https://www.nltk.org/book/ch02.html
 # For the Gutenberg Corpus they provide the programming code to do it. section 1.9   Loading your own Corpus.
 # see also https://people.duke.edu/~ccc14/sta-663/TextProcessingSolutions.html
-def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles, chartPackage, dataTransformation,
-                              excludeStopWords=True, lemmatizeWords=True):
+def compute_corpus_statistics(
+    window,
+    inputFilename,
+    inputDir,
+    outputDir,
+    configFileName,
+    openOutputFiles,
+    chartPackage,
+    dataTransformation,
+    excludeStopWords=True,
+    lemmatizeWords=True,
+):
     filesToOpen = []
 
     # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='statistics_txt',
-                                                       silent=False)
-    if outputDir == '':
+    outputDir = IO_files_util.make_output_subdirectory(
+        inputFilename, inputDir, outputDir, label="statistics_txt", silent=False
+    )
+    if outputDir == "":
         return
 
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'corpus_stats', '')
+    outputFilename = IO_files_util.generate_output_file_name(
+        inputFilename, inputDir, outputDir, ".csv", "corpus_stats", ""
+    )
     filesToOpen.append(outputFilename)
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
+    inputDocs = IO_files_util.getFileList(
+        inputFilename, inputDir, fileType=".txt", silent=False, configFileName=configFileName
+    )
 
     # read_line(inputFilename, inputDir, outputDir)
     # return
 
     Ndocs = str(len(inputDocs))
-    fieldnames = ['Number of documents in corpus',
-                  'Document ID',
-                  'Document',
-                  'Number of Sentences in Document',
-                  'Number of Words in Document',
-                  'Number of Syllables in Document',
-                  'Word1', 'Frequency1',
-                  'Word2', 'Frequency2',
-                  'Word3', 'Frequency3',
-                  'Word4', 'Frequency4',
-                  'Word5', 'Frequency5',
-                  'Word6', 'Frequency6',
-                  'Word7', 'Frequency7',
-                  'Word8', 'Frequency8',
-                  'Word9', 'Frequency9',
-                  'Word10', 'Frequency10',
-                  'Word11', 'Frequency11',
-                  'Word12', 'Frequency12',
-                  'Word13', 'Frequency13',
-                  'Word14', 'Frequency14',
-                  'Word15', 'Frequency15',
-                  'Word16', 'Frequency16',
-                  'Word17', 'Frequency17',
-                  'Word18', 'Frequency18',
-                  'Word19', 'Frequency19',
-                  'Word20', 'Frequency20']
+    fieldnames = [
+        "Number of documents in corpus",
+        "Document ID",
+        "Document",
+        "Number of Sentences in Document",
+        "Number of Words in Document",
+        "Number of Syllables in Document",
+        "Word1",
+        "Frequency1",
+        "Word2",
+        "Frequency2",
+        "Word3",
+        "Frequency3",
+        "Word4",
+        "Frequency4",
+        "Word5",
+        "Frequency5",
+        "Word6",
+        "Frequency6",
+        "Word7",
+        "Frequency7",
+        "Word8",
+        "Frequency8",
+        "Word9",
+        "Frequency9",
+        "Word10",
+        "Frequency10",
+        "Word11",
+        "Frequency11",
+        "Word12",
+        "Frequency12",
+        "Word13",
+        "Frequency13",
+        "Word14",
+        "Frequency14",
+        "Word15",
+        "Frequency15",
+        "Word16",
+        "Frequency16",
+        "Word17",
+        "Frequency17",
+        "Word18",
+        "Frequency18",
+        "Word19",
+        "Frequency19",
+        "Word20",
+        "Frequency20",
+    ]
     if IO_csv_util.openCSVOutputFile(outputFilename):
         return
 
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
-                                                   'Started running document(s) statistics at',
-                                                   True, '', True, '', False)
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis start", "Started running document(s) statistics at", True, "", True, "", False
+    )
 
-    with open(outputFilename, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
+    with open(outputFilename, "w", encoding="utf-8", errors="ignore", newline="") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         # print("Number of corpus text documents: ",Ndocs)
@@ -234,7 +281,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
             print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
             # currentLine.append([doc])
             # fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
-            f = open(doc, "r", encoding="utf-8", errors="ignore")
+            f = open(doc, encoding="utf-8", errors="ignore")
             docText = f.read()
             f.close()
             Nsentences = textstat.sentence_count(docText)
@@ -243,7 +290,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
             Nwords = textstat.lexicon_count(docText, removepunct=True)
             # print('TOTAL number of words: ',Nwords)
 
-            Nsyllables = textstat.syllable_count(docText)   # 'en_US' is textstat's default; the lang= arg is deprecated
+            Nsyllables = textstat.syllable_count(docText)  # 'en_US' is textstat's default; the lang= arg is deprecated
             # print('TOTAL number of Syllables: ',Nsyllables)
 
             # words = fullText.split()
@@ -253,6 +300,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
             # which made document statistics take ~28 min on a 199-file corpus. Iterating the doc directly
             # also fixes the tokenize_stanza_text bug that returned only the LAST sentence's tokens.
             from Stanza_functions_util import stanzaPipeLine
+
             _doc = stanzaPipeLine(docText)
             words = [str(word.text) for sentence in _doc.sentences for word in sentence.words]
 
@@ -264,8 +312,9 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
                 _lemma_map = {}
                 for sentence in _doc.sentences:
                     for word in sentence.words:
-                        _lemma_map.setdefault(str(word.text).lower(),
-                                              str(word.lemma).lower() if word.lemma else str(word.text).lower())
+                        _lemma_map.setdefault(
+                            str(word.text).lower(), str(word.lemma).lower() if word.lemma else str(word.text).lower()
+                        )
                 words = [_lemma_map.get(str(w).lower(), str(w).lower()) for w in words if str(w).isalpha()]
 
             word_counts = Counter(words)
@@ -275,7 +324,8 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
             # for item in word_counts.most_common(20):
             #     print(item)
             currentLine = [
-                [Ndocs, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc), Nsentences, Nwords, Nsyllables]]
+                [Ndocs, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc), Nsentences, Nwords, Nsyllables]
+            ]
             for item in word_counts.most_common(20):
                 currentLine[0].append(item[0])  # word
                 currentLine[0].append(item[1])  # frequency
@@ -284,26 +334,42 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
 
         csvfile.close()
 
-        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                           'Finished running document(s) statistics at', True, '', True, startTime,
-                                           False)
+        IO_user_interface_util.timed_alert(
+            GUI_util.window,
+            2000,
+            "Analysis end",
+            "Finished running document(s) statistics at",
+            True,
+            "",
+            True,
+            startTime,
+            False,
+        )
 
     # number of sentences in input ---------------------------------------------------------------------
     # number of words in input ---------------------------------------------------------------------
     # number of syllables in input ---------------------------------------------------------------------
-    columns_list = [['Document', 'Number of Sentences in Document'], ['Document', 'Number of Words in Document'], ['Document', 'Number of Syllables in Document']]
+    columns_list = [
+        ["Document", "Number of Sentences in Document"],
+        ["Document", "Number of Words in Document"],
+        ["Document", "Number of Syllables in Document"],
+    ]
 
     columns_to_be_plotted_numeric = statistics_csv_util.get_columns_to_be_plotted(outputFilename, columns_list)
-    outputFiles = charts_util.run_all(columns_to_be_plotted_numeric, outputFilename, outputDir,
-                          outputFileLabel='sent-word-syll',
-                          chartPackage=chartPackage,
-                          dataTransformation=dataTransformation,
-                          chart_type_list=['bar'],
-                          chart_title='Number of Sentences, Words, Syllables by Document',
-                          column_xAxis_label_var='Document',
-                          column_yAxis_label_var='Frequencies',
-                          hover_info_column_list=[],
-                          count_var=0)  # always 1 to get frequencies of values, except for n-grams where we already pass stats
+    outputFiles = charts_util.run_all(
+        columns_to_be_plotted_numeric,
+        outputFilename,
+        outputDir,
+        outputFileLabel="sent-word-syll",
+        chartPackage=chartPackage,
+        dataTransformation=dataTransformation,
+        chart_type_list=["bar"],
+        chart_title="Number of Sentences, Words, Syllables by Document",
+        column_xAxis_label_var="Document",
+        column_yAxis_label_var="Frequencies",
+        hover_info_column_list=[],
+        count_var=0,
+    )  # always 1 to get frequencies of values, except for n-grams where we already pass stats
 
     if outputFiles != None:
         if isinstance(outputFiles, str):
@@ -315,18 +381,22 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
     #   need at least 3 values, i.e., 3 documents, to compute skewness and kurtosis
     # do not use the compute_csv_column_statistics_groupBy function since only one value is available for
     #   each document
-    columns_list = [['Document', 'Number of Sentences in Document'], ['Document', 'Number of Words in Document'], ['Document', 'Number of Syllables in Document']]
+    columns_list = [
+        ["Document", "Number of Sentences in Document"],
+        ["Document", "Number of Words in Document"],
+        ["Document", "Number of Syllables in Document"],
+    ]
     columns_to_be_plotted_numeric = statistics_csv_util.get_columns_to_be_plotted(outputFilename, columns_list)
 
     # convert columns_to_be_plotted_numeric double list to list
     flat_list = []
     for row in columns_to_be_plotted_numeric:
         flat_list.extend(row)
-    columns_to_be_plotted_numeric=flat_list
+    columns_to_be_plotted_numeric = flat_list
 
-    outputFiles = statistics_csv_util.compute_csv_column_statistics_NoGroupBy(window, outputFilename, outputDir, False,
-                                            chartPackage, dataTransformation,
-                                            columns_to_be_plotted_numeric)
+    outputFiles = statistics_csv_util.compute_csv_column_statistics_NoGroupBy(
+        window, outputFilename, outputDir, False, chartPackage, dataTransformation, columns_to_be_plotted_numeric
+    )
 
     if outputFiles != None:
         if isinstance(outputFiles, str):
@@ -335,14 +405,15 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
             filesToOpen.extend(outputFiles)
 
     # TODO
-        #   we should create 10 classes of values by distance to the median of
-        #       each value in the Number of Words in Document Col. E
-        #   -0-10 11-20 21-30,… 91-100
-        #   and plot them as column charts.
+    #   we should create 10 classes of values by distance to the median of
+    #       each value in the Number of Words in Document Col. E
+    #   -0-10 11-20 21-30,… 91-100
+    #   and plot them as column charts.
 
-        # if openOutputFiles==True:
-        #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+    # if openOutputFiles==True:
+    #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
     return filesToOpen, outputDir
+
 
 def Extract(lst):
     return [item[0] for item in lst]
@@ -368,43 +439,64 @@ def _find_matching_conll_table(inputDocs, search_dirs):
     the sentence-length output itself and derived artifacts (frequency / binned / chart / by-doc)."""
     import glob
     import re as _re
+
     import pandas as pd
+
     want = {os.path.splitext(os.path.basename(str(d)))[0].lower() for d in inputDocs if str(d)}
     if not want:
-        return ''
-    best, best_size, seen = '', 0, set()
+        return ""
+    best, best_size, seen = "", 0, set()
     for base in search_dirs:
         if not base or not os.path.isdir(base):
             continue
-        for p in glob.glob(os.path.join(base, '**', '*.csv'), recursive=True):
+        for p in glob.glob(os.path.join(base, "**", "*.csv"), recursive=True):
             rp = os.path.normcase(os.path.abspath(p))
             if rp in seen:
                 continue
             seen.add(rp)
             b = os.path.basename(p).lower()
-            if any(x in b for x in ('sentence_length', 'binned', 'frequency', 'freq', 'chart',
-                                    'no_hyperlinks', 'group', 'bydoc', 'bysent', 'stats')):
+            if any(
+                x in b
+                for x in (
+                    "sentence_length",
+                    "binned",
+                    "frequency",
+                    "freq",
+                    "chart",
+                    "no_hyperlinks",
+                    "group",
+                    "bydoc",
+                    "bysent",
+                    "stats",
+                )
+            ):
                 continue
             try:
-                cols = set(pd.read_csv(p, nrows=5, encoding='utf-8', on_bad_lines='skip').columns)
+                cols = set(pd.read_csv(p, nrows=5, encoding="utf-8", on_bad_lines="skip").columns)
             except Exception:
                 continue
             # a genuine PER-TOKEN parse table (the profiler's own signature): 'Form' + a parse annotation
             # column. Column NAMES alone are not enough -- a Word2Vec vector table also has Word/Sentence
             # ID/Document ID but ONE row per word TYPE, which would derive nonsense sentence lengths.
-            if not ('Form' in cols and (cols & {'POS', 'NER', 'xpos', 'upos', 'deprel', 'head', 'feats'})
-                    and {'Sentence ID', 'Document ID', 'Document'} <= cols):
+            if not (
+                "Form" in cols
+                and (cols & {"POS", "NER", "xpos", "upos", "deprel", "head", "feats"})
+                and {"Sentence ID", "Document ID", "Document"} <= cols
+            ):
                 continue
             try:
-                docvals = pd.read_csv(p, usecols=['Document'], encoding='utf-8',
-                                      on_bad_lines='skip')['Document'].astype(str).unique()
+                docvals = (
+                    pd.read_csv(p, usecols=["Document"], encoding="utf-8", on_bad_lines="skip")["Document"]
+                    .astype(str)
+                    .unique()
+                )
             except Exception:
                 continue
             have = set()
             for v in docvals:
                 m = _re.search(r'([^\\/"]+?)\.txt', v, _re.I)
                 have.add((m.group(1) if m else os.path.splitext(os.path.basename(v.strip('"')))[0]).lower())
-            if want <= have:   # the table covers every input document
+            if want <= have:  # the table covers every input document
                 try:
                     size = os.path.getsize(p)
                 except Exception:
@@ -419,26 +511,31 @@ def _sentence_length_from_conll(conll_path, outputFilename, csv_headers):
     Sentence ID + Document ID) -- the canonical 'parse once -> analyze' flow, no re-parse. Writes the same
     columns compute_sentence_length writes. Returns the sentence count, or -1 if the table is unusable."""
     import pandas as pd
+
     try:
-        df = pd.read_csv(conll_path, encoding='utf-8', on_bad_lines='skip')
+        df = pd.read_csv(conll_path, encoding="utf-8", on_bad_lines="skip")
     except Exception:
         return -1
-    formcol = 'Form' if 'Form' in df.columns else ('Word' if 'Word' in df.columns else None)
-    if not formcol or not {'Sentence ID', 'Document ID'}.issubset(df.columns):
+    formcol = "Form" if "Form" in df.columns else ("Word" if "Word" in df.columns else None)
+    if not formcol or not {"Sentence ID", "Document ID"}.issubset(df.columns):
         return -1
-    has_doc = 'Document' in df.columns
+    has_doc = "Document" in df.columns
     try:
-        with open(outputFilename, 'w', newline="", encoding='utf-8', errors='ignore') as csvOut:
+        with open(outputFilename, "w", newline="", encoding="utf-8", errors="ignore") as csvOut:
             writer = csv.writer(csvOut)
             writer.writerow(csv_headers)
             n = 0
-            for (docid, sentid), g in df.groupby(['Document ID', 'Sentence ID'], sort=True):
-                forms = [str(x) for x in g[formcol].tolist() if str(x) != 'nan']
-                writer.writerow([len(forms),
-                                 int(sentid) if str(sentid).isdigit() else sentid,
-                                 ' '.join(forms),
-                                 int(docid) if str(docid).isdigit() else docid,
-                                 g['Document'].iloc[0] if has_doc else ''])
+            for (docid, sentid), g in df.groupby(["Document ID", "Sentence ID"], sort=True):
+                forms = [str(x) for x in g[formcol].tolist() if str(x) != "nan"]
+                writer.writerow(
+                    [
+                        len(forms),
+                        int(sentid) if str(sentid).isdigit() else sentid,
+                        " ".join(forms),
+                        int(docid) if str(docid).isdigit() else docid,
+                        g["Document"].iloc[0] if has_doc else "",
+                    ]
+                )
                 n += 1
         return n
     except Exception:
@@ -447,7 +544,9 @@ def _sentence_length_from_conll(conll_path, outputFilename, csv_headers):
 
 def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, chartPackage, dataTransformation):
     filesToOpen = []
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
+    inputDocs = IO_files_util.getFileList(
+        inputFilename, inputDir, fileType=".txt", silent=False, configFileName=configFileName
+    )
     Ndocs = len(inputDocs)
     if Ndocs == 0:
         return
@@ -456,20 +555,30 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
     # this analysis's own output)
     conll_search_dir = outputDir
     # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='Statistics_txt_sent_length',
-                                                       silent=True)
-    if outputDir == '':
+    outputDir = IO_files_util.make_output_subdirectory(
+        inputFilename, inputDir, outputDir, label="Statistics_txt_sent_length", silent=True
+    )
+    if outputDir == "":
         return
 
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
-                                                   'Started running sentence length algorithm at',
-                                                   True, '', True, '', False)
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis start",
+        "Started running sentence length algorithm at",
+        True,
+        "",
+        True,
+        "",
+        False,
+    )
 
     fileID = 0
     long_sentences = 0
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                             'sentence_length')
-    csv_headers = ['Sentence length (in words)', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
+    outputFilename = IO_files_util.generate_output_file_name(
+        inputFilename, inputDir, outputDir, ".csv", "sentence_length"
+    )
+    csv_headers = ["Sentence length (in words)", "Sentence ID", "Sentence", "Document ID", "Document"]
 
     # Canonical flow: reuse the CONFIGURED parser's CoNLL table if one covering THIS corpus already exists
     # (derive sentence length by grouping on Sentence ID -> seconds) instead of re-parsing. Only a table
@@ -479,8 +588,10 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
     _conll = _find_matching_conll_table(inputDocs, [conll_search_dir, inputDir])
     if _conll:
         if _sentence_length_from_conll(_conll, outputFilename, csv_headers) > 0:
-            print('>>> Sentence length: derived from an existing parse table (%s) -- no re-parse'
-                  % os.path.basename(_conll))
+            print(
+                ">>> Sentence length: derived from an existing parse table (%s) -- no re-parse"
+                % os.path.basename(_conll)
+            )
             derived_from_conll = True
 
     if not derived_from_conll:
@@ -492,55 +603,88 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
         # this is minutes, not the derive-from-CoNLL ~seconds -- inherent to a fresh neural parse.
         try:
             import stanza
-            _sent_pipe = stanza.Pipeline(lang='en', processors='tokenize', verbose=False)
-            _count_units = lambda sent: sent.tokens          # tokenize-only: count tokens
+
+            _sent_pipe = stanza.Pipeline(lang="en", processors="tokenize", verbose=False)
+            _count_units = lambda sent: sent.tokens  # tokenize-only: count tokens
         except Exception:
             from Stanza_functions_util import stanzaPipeLine as _sent_pipe
+
             _count_units = lambda sent: sent.words
 
-        with open(outputFilename, 'w', newline="", encoding='utf-8', errors='ignore') as csvOut:
+        with open(outputFilename, "w", newline="", encoding="utf-8", errors="ignore") as csvOut:
             writer = csv.writer(csvOut)
             writer.writerow(csv_headers)
             for doc in inputDocs:
                 sentenceID = 0
                 fileID = fileID + 1
                 head, tail = os.path.split(doc)
-                print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
-                with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
+                print("Processing file " + str(fileID) + "/" + str(Ndocs) + " " + tail)
+                with open(doc, encoding="utf-8", errors="ignore") as inputFile:
                     text = inputFile.read().replace("\n", " ")
                     # ONE parse per document with the configured parser; sentence objects carry their tokens,
                     # so counts come straight off this parse (no per-sentence re-parse, no wasted lemma pass).
                     sent_len_pairs = [(sent.text, len(_count_units(sent))) for sent in _sent_pipe(text).sentences]
-                    if len(sent_len_pairs)==0:
-                        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
-                                                                       'The input file\n\n' + doc + '\n\nappears to be empty. Please, check the file and try again.',
-                                                                       False, '', True, '', False)
+                    if len(sent_len_pairs) == 0:
+                        IO_user_interface_util.timed_alert(
+                            GUI_util.window,
+                            2000,
+                            "Warning",
+                            "The input file\n\n"
+                            + doc
+                            + "\n\nappears to be empty. Please, check the file and try again.",
+                            False,
+                            "",
+                            True,
+                            "",
+                            False,
+                        )
                         continue
                     for sentence_text, n_tokens in sent_len_pairs:
                         if n_tokens > 100:
                             long_sentences = long_sentences + 1
                         sentenceID = sentenceID + 1
                         writer.writerow(
-                            [int(n_tokens), sentenceID, sentence_text, fileID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                            [
+                                int(n_tokens),
+                                sentenceID,
+                                sentence_text,
+                                fileID,
+                                IO_csv_util.dressFilenameForCSVHyperlink(doc),
+                            ]
+                        )
             csvOut.close()
             head, scriptName = os.path.split(os.path.basename(__file__))
-            reminder_status = reminders_util.checkReminder(scriptName,
-                                                           reminders_util.title_options_TIPS_file,
-                                                           reminders_util.message_TIPS_file,
-                                                           True)
-            if reminder_status == 'Yes' or reminder_status == 'ON':  # 'Yes' the old way of saving reminders
-                answer = tk.messagebox.askyesno("TIPS file on memory issues", str(Ndocs) + " file(s) processed in input.\n\n" +
-                                                "Output csv file written to the output directory " + outputDir + "\n\n" +
-                                                str(
-                                                    long_sentences) + " SENTENCES WERE LONGER THAN 100 WORDS (the average sentence length in modern English is 20 words).\n\nVery long sentences can tax memory resources and slow down NLP processing.\n\nYou should consider editing these sentences if parsing takes too long or runs out of memory.\n\nPlease, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.\n\nDo you want to open the TIPS file now?")
+            reminder_status = reminders_util.checkReminder(
+                scriptName, reminders_util.title_options_TIPS_file, reminders_util.message_TIPS_file, True
+            )
+            if reminder_status == "Yes" or reminder_status == "ON":  # 'Yes' the old way of saving reminders
+                answer = tk.messagebox.askyesno(
+                    "TIPS file on memory issues",
+                    str(Ndocs)
+                    + " file(s) processed in input.\n\n"
+                    + "Output csv file written to the output directory "
+                    + outputDir
+                    + "\n\n"
+                    + str(long_sentences)
+                    + " SENTENCES WERE LONGER THAN 100 WORDS (the average sentence length in modern English is 20 words).\n\nVery long sentences can tax memory resources and slow down NLP processing.\n\nYou should consider editing these sentences if parsing takes too long or runs out of memory.\n\nPlease, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.\n\nDo you want to open the TIPS file now?",
+                )
                 if answer:
-                    TIPS_util.open_TIPS('TIPS_NLP_Stanford CoreNLP memory issues.pdf')
+                    TIPS_util.open_TIPS("TIPS_NLP_Stanford CoreNLP memory issues.pdf")
 
     filesToOpen.append(outputFilename)
 
-    outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Sentence length (in words)'], title='Sentence Length (In Words)', x_label='Sentence length (in words)', file_label='Sent', plot_list=['Sentence length (in words)'], title_label='Sentence Lenghts')
+    outputFiles = charts_util.plot(
+        outputFilename,
+        outputDir,
+        columns=["Sentence length (in words)"],
+        title="Sentence Length (In Words)",
+        x_label="Sentence length (in words)",
+        file_label="Sent",
+        plot_list=["Sentence length (in words)"],
+        title_label="Sentence Lenghts",
+    )
 
-    if outputFiles!=None:
+    if outputFiles != None:
         if isinstance(outputFiles, str):
             filesToOpen.append(outputFiles)
         else:
@@ -548,39 +692,40 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
 
     return filesToOpen
 
-def compute_line_length(window, configFileName, inputFilename, inputDir, outputDir,openOutputFiles,chartPackage, dataTransformation):
-    filesToOpen=[]
-    outputFilename=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'line_length')
+
+def compute_line_length(
+    window, configFileName, inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation
+):
+    filesToOpen = []
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, ".csv", "line_length")
     filesToOpen.append(outputFilename)
-    inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
+    inputDocs = IO_files_util.getFileList(
+        inputFilename, inputDir, fileType=".txt", silent=False, configFileName=configFileName
+    )
     Ndocs = str(len(inputDocs))
-    if Ndocs==0:
+    if Ndocs == 0:
         return
     head, scriptName = os.path.split(os.path.basename(__file__))
-    reminders_util.checkReminder(scriptName, reminders_util.title_options_line_length,
-                                 reminders_util.message_line_length, True)
-    fieldnames=[
-        'Line length (in characters)',
-        'Line length (in words)',
-        'Line ID',
-        'Line',
-        'Document ID',
-        'Document'
-    ]
+    reminders_util.checkReminder(
+        scriptName, reminders_util.title_options_line_length, reminders_util.message_line_length, True
+    )
+    fieldnames = ["Line length (in characters)", "Line length (in words)", "Line ID", "Line", "Document ID", "Document"]
     if IO_csv_util.openCSVOutputFile(outputFilename):
         return
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running line length analysis at',
-                                                 True, '', True, '', True)
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis start", "Started running line length analysis at", True, "", True, "", True
+    )
 
     # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='Statistics_txt_line_length',
-                                                       silent=True)
-    if outputDir == '':
+    outputDir = IO_files_util.make_output_subdirectory(
+        inputFilename, inputDir, outputDir, label="Statistics_txt_line_length", silent=True
+    )
+    if outputDir == "":
         return
 
     from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
 
-    with open(outputFilename, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
+    with open(outputFilename, "w", encoding="utf-8", errors="ignore", newline="") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         writer = csv.writer(csvfile)
@@ -589,17 +734,21 @@ def compute_line_length(window, configFileName, inputFilename, inputDir, outputD
             head, tail = os.path.split(doc)
             documentID += 1
             print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
-            with open(doc, encoding='utf-8', errors='ignore') as file:
+            with open(doc, encoding="utf-8", errors="ignore") as file:
                 lineID = 0
                 try:
                     line = file.readline()
                 except OSError as e:
                     print(str(e))
-                    if 'UnicodeDecodeError' in str(e):
-                        mb.showwarning(title='Input file error',
-                                       message="The file\n\n" + doc + "\n\ncontains an invalid character. Please, check the file and try again. You may need to run the script to clean apostrophes and quotes.")
-                    line='THE LINE CONTAINS ILLEGAL, NON UTF-8 CHARACTERS. PLEASE, CHECK.'
-                    print('   ',line)
+                    if "UnicodeDecodeError" in str(e):
+                        mb.showwarning(
+                            title="Input file error",
+                            message="The file\n\n"
+                            + doc
+                            + "\n\ncontains an invalid character. Please, check the file and try again. You may need to run the script to clean apostrophes and quotes.",
+                        )
+                    line = "THE LINE CONTAINS ILLEGAL, NON UTF-8 CHARACTERS. PLEASE, CHECK."
+                    print("   ", line)
                     # continue
                 while line:
                     lineID += 1
@@ -607,17 +756,43 @@ def compute_line_length(window, configFileName, inputFilename, inputDir, outputD
                     words = tokenize_stanza_text(stanzaPipeLine(line))
                     # print("Line {}: Length (in characters) {} Length (in words) {}".format(lineID, len(line), len(words)))
                     currentLine = [
-                        [len(line), len(words),lineID,line.strip(), documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)]]
+                        [
+                            len(line),
+                            len(words),
+                            lineID,
+                            line.strip(),
+                            documentID,
+                            IO_csv_util.dressFilenameForCSVHyperlink(doc),
+                        ]
+                    ]
                     writer.writerows(currentLine)
                     line = file.readline()
     csvfile.close()
 
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running line length analysis at', True, '', True, startTime, True)
+    IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis end",
+        "Finished running line length analysis at",
+        True,
+        "",
+        True,
+        startTime,
+        True,
+    )
 
     # produce all charts
-    outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Line length (in words)'], title='Frequency Distribution of Line Length', x_label='Line length', plot_list=['Line length (in words)'], title_label='Line Length')
+    outputFiles = charts_util.plot(
+        outputFilename,
+        outputDir,
+        columns=["Line length (in words)"],
+        title="Frequency Distribution of Line Length",
+        x_label="Line length",
+        plot_list=["Line length (in words)"],
+        title_label="Line Length",
+    )
 
-    if outputFiles!=None:
+    if outputFiles != None:
         if isinstance(outputFiles, str):
             filesToOpen.append(outputFiles)
         else:
@@ -626,71 +801,117 @@ def compute_line_length(window, configFileName, inputFilename, inputDir, outputD
     return filesToOpen
 
 
-#compute_character_word_ngrams works for BOTH character and word ngrams
-#https://stackoverflow.com/questions/18658106/quick-implementation-of-character-n-grams-for-word
-#ngrams is the type of ngrams wanted 2grams,3grams,4grams,5grams MAX
+# compute_character_word_ngrams works for BOTH character and word ngrams
+# https://stackoverflow.com/questions/18658106/quick-implementation-of-character-n-grams-for-word
+# ngrams is the type of ngrams wanted 2grams,3grams,4grams,5grams MAX
 
 # frequency = 0 n-grams
 # frequency = 1 hapax
 
-def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, configFileName,
-                                  ngramsNumber,frequency,hapax_words,
-                                  normalize,
-                                  lemmatize=False, case_sensitive=False, excludePunctuation=True, excludeArticles=True,
-                                  excludeDeterminers=False, excludeStopWords=False,
-                                  wordgram=True, #word as opposed to character n-grams
-                                  openOutputFiles=False,
-                                  chartPackage='Excel', dataTransformation='No transformation', bySentenceID=False):
+
+def compute_character_word_ngrams(
+    window,
+    inputFilename,
+    inputDir,
+    outputDir,
+    configFileName,
+    ngramsNumber,
+    frequency,
+    hapax_words,
+    normalize,
+    lemmatize=False,
+    case_sensitive=False,
+    excludePunctuation=True,
+    excludeArticles=True,
+    excludeDeterminers=False,
+    excludeStopWords=False,
+    wordgram=True,  # word as opposed to character n-grams
+    openOutputFiles=False,
+    chartPackage="Excel",
+    dataTransformation="No transformation",
+    bySentenceID=False,
+):
     # hapax have ngramsNumber = 1 and frequency = 1
 
     filesToOpen = []
     container = []
-    if inputFilename=='' and inputDir=='':
-        mb.showwarning(title='Input error', message='No input file or input directory have been specified.\n\nThe function will exit.\n\nPlease, enter the required input options and try again.')
+    if inputFilename == "" and inputDir == "":
+        mb.showwarning(
+            title="Input error",
+            message="No input file or input directory have been specified.\n\nThe function will exit.\n\nPlease, enter the required input options and try again.",
+        )
         return
 
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
-                                       'Started running Word/Characters N-Grams at',
-                                       True, '', True, '', False)
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window, 3000, "N-Grams start", "Started running Word/Characters N-Grams at", True, "", True, "", False
+    )
 
-    files = IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
-    nFile=len(files)
-    if nFile==0:
+    files = IO_files_util.getFileList(inputFilename, inputDir, ".txt", silent=False, configFileName=configFileName)
+    nFile = len(files)
+    if nFile == 0:
         return
 
-    if ngramsNumber == 1 and frequency == 1: # hapax
+    if ngramsNumber == 1 and frequency == 1:  # hapax
         hapax_label = "_hapax"
     else:
-        hapax_label = ''
+        hapax_label = ""
 
     # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='N-grams'+hapax_label,
-                                                       silent=True)
-    if outputDir == '':
+    outputDir = IO_files_util.make_output_subdirectory(
+        inputFilename, inputDir, outputDir, label="N-grams" + hapax_label, silent=True
+    )
+    if outputDir == "":
         return
 
-    if wordgram==None:
-        result = mb.askyesno("Word/character N-grams","Would you like to compute\n  WORD n-grams (Yes) or\n  CHARACTER n-grams (No)?")
-        if result==True:
-            wordgram=1
+    if wordgram == None:
+        result = mb.askyesno(
+            "Word/character N-grams", "Would you like to compute\n  WORD n-grams (Yes) or\n  CHARACTER n-grams (No)?"
+        )
+        if result == True:
+            wordgram = 1
         else:
-            wordgram=0
+            wordgram = 0
 
-    if bySentenceID==None:
+    if bySentenceID == None:
         result = 0
-        #result = mb.askyesno("By sentence index","Would you like to compute n-grams by sentence index?")
-        if result==True:
-            bySentenceID=1
+        # result = mb.askyesno("By sentence index","Would you like to compute n-grams by sentence index?")
+        if result == True:
+            bySentenceID = 1
         else:
-            bySentenceID=0
+            bySentenceID = 0
 
-    outputFiles = get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber, frequency, hapax_words,
-                                normalize, lemmatize, case_sensitive, excludePunctuation, excludeArticles, excludeDeterminers, excludeStopWords,
-                                wordgram,
-                                bySentenceID,  chartPackage, dataTransformation)
+    outputFiles = get_ngramlist(
+        inputFilename,
+        inputDir,
+        outputDir,
+        configFileName,
+        ngramsNumber,
+        frequency,
+        hapax_words,
+        normalize,
+        lemmatize,
+        case_sensitive,
+        excludePunctuation,
+        excludeArticles,
+        excludeDeterminers,
+        excludeStopWords,
+        wordgram,
+        bySentenceID,
+        chartPackage,
+        dataTransformation,
+    )
 
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
-                                       'Finished running Word/Characters N-Grams at', True, '', True, startTime, False )
+    IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis end",
+        "Finished running Word/Characters N-Grams at",
+        True,
+        "",
+        True,
+        startTime,
+        False,
+    )
 
     return outputFiles, outputDir
 
@@ -698,28 +919,48 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, confi
 def process_punctuation(inputFilename, inputDir, excludePunctuation, ngrams_list, ctr_document, documentID):
     ngrams_list = []
 
-    for item in ctr_document: # item is every token in the document
+    for item in ctr_document:  # item is every token in the document
         if item in string.punctuation and excludePunctuation:
             continue
-        if inputDir == '':
-            ngrams_list.append([item, ctr_document[item], documentID, IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)])
+        if inputDir == "":
+            ngrams_list.append(
+                [item, ctr_document[item], documentID, IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)]
+            )
         else:
             # insert 0 for corpus frequency to be updated at a later point
-            ngrams_list.append([item, ctr_document[item], 0, documentID, IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)])
+            ngrams_list.append(
+                [item, ctr_document[item], 0, documentID, IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)]
+            )
     return ngrams_list
 
 
 import NGrams_util
+
 # hapax_words is True when the user selevcts too export ONLY words, False when hapax will also include numebrs, symbiols, etc.
 
-def get_ngramlist(inputFilename, inputDir, outputDir, configFileName,
-    ngramsNumber, frequency=None, hapax_words=False,
-    normalize=True, lemmatize=False, case_sensitive=False, excludePunctuation=True, excludeArticles=True,
-    excludeDeterminers=True,excludeStopWords=True,
-    wordgram=1,
-    bySentenceID=False, chartPackage='Excel', dataTransformation='No transformation'):
 
-    files = IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
+def get_ngramlist(
+    inputFilename,
+    inputDir,
+    outputDir,
+    configFileName,
+    ngramsNumber,
+    frequency=None,
+    hapax_words=False,
+    normalize=True,
+    lemmatize=False,
+    case_sensitive=False,
+    excludePunctuation=True,
+    excludeArticles=True,
+    excludeDeterminers=True,
+    excludeStopWords=True,
+    wordgram=1,
+    bySentenceID=False,
+    chartPackage="Excel",
+    dataTransformation="No transformation",
+):
+
+    files = IO_files_util.getFileList(inputFilename, inputDir, ".txt", silent=False, configFileName=configFileName)
 
     # @ SIMON
     # import hashfile
@@ -738,91 +979,146 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName,
         #     head, tail = os.path.split(file)
         #     print(" Using cache :  Processing file " + str(index+1) + "/" + str(len(files)) + ' ' + tail )
         # else:
-        tokens_ = NGrams_util.readandsplit(file,excludePunctuation,
-                                              excludeArticles, excludeDeterminers, excludeStopWords,len(files),
-                                              lemmatize, case_sensitive, index)
-            # hashfile.storehash(hashmap, hashfile.calculate_checksum(file), tokens_)
-            # hashfile.writehash(hashmap, hashOutputDir)
+        tokens_ = NGrams_util.readandsplit(
+            file,
+            excludePunctuation,
+            excludeArticles,
+            excludeDeterminers,
+            excludeStopWords,
+            len(files),
+            lemmatize,
+            case_sensitive,
+            index,
+        )
+        # hashfile.storehash(hashmap, hashfile.calculate_checksum(file), tokens_)
+        # hashfile.writehash(hashmap, hashOutputDir)
         documents.append(tokens_)
     # we allow as many n-grams as the user selects
     filesToOpen = []
-    results, hapax_result = NGrams_util.operate(documents, files, int(ngramsNumber),hapax_words,case_sensitive)
+    results, hapax_result = NGrams_util.operate(documents, files, int(ngramsNumber), hapax_words, case_sensitive)
     if hapax_result is not None:
-        outputDirSV=outputDir
-        outputDir = IO_files_util.make_output_subdirectory('', '', outputDir, label='Hapax',
-                                                           silent=True)
-        if outputDir == '':
+        outputDirSV = outputDir
+        outputDir = IO_files_util.make_output_subdirectory("", "", outputDir, label="Hapax", silent=True)
+        if outputDir == "":
             return
         hapax_result = hapax_result.values.tolist()
-        hapax_result.insert(0, ['1-grams Hapax', 'Frequency in Document', 'Frequency in Corpus', 'Document ID',
-                    'Document'])
-        csv_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                     'n-grams' + str(1) + '_Word_Hapax',
-                                                                     'stats', '', '',
-                                                                     '', False, True)
+        hapax_result.insert(
+            0, ["1-grams Hapax", "Frequency in Document", "Frequency in Corpus", "Document ID", "Document"]
+        )
+        csv_outputFilename = IO_files_util.generate_output_file_name(
+            inputFilename,
+            inputDir,
+            outputDir,
+            ".csv",
+            "n-grams" + str(1) + "_Word_Hapax",
+            "stats",
+            "",
+            "",
+            "",
+            False,
+            True,
+        )
         errorFound = IO_csv_util.list_to_csv(GUI_util.window, hapax_result, csv_outputFilename)
         if not errorFound:
             filesToOpen.append(csv_outputFilename)
 
-        outputDir=outputDirSV
+        outputDir = outputDirSV
 
     outputDirSV = outputDir
     for index, result in enumerate(results):
         # create a subdirectory of the output directory by N-grams, 1, 2, 3, ...
-        outputDir = IO_files_util.make_output_subdirectory('', '', outputDirSV, label='Ngrams_'+str(index+1),
-                                                           silent=True)
-        if outputDir == '':
+        outputDir = IO_files_util.make_output_subdirectory(
+            "", "", outputDirSV, label="Ngrams_" + str(index + 1), silent=True
+        )
+        if outputDir == "":
             return
 
         corpus_ngramsList = result.values.tolist()
-        if index+1==1:
+        if index + 1 == 1:
             corpus_ngramsList_vocab = []
             for row in corpus_ngramsList:
                 # Extract the first and third element (index 0 and 2) of each row and append to the new list
                 corpus_ngramsList_vocab.append([row[0], row[2]])
             # corpus_ngramsList_vocab = [corpus_ngramsList[:][i] for i in (0, 2)] #[[corpus_ngramsList[index][0], corpus_ngramsList[index][2]]]
-            csv_vocab_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                         'n-grams' + str(index+1) + '_vocab_Word',
-                                                                         'stats', '', '',
-                                                                         '', False, True)
-            corpus_ngramsList_vocab.insert(0,[str(index+1)+'-grams', 'Frequency in Corpus'])
+            csv_vocab_outputFilename = IO_files_util.generate_output_file_name(
+                inputFilename,
+                inputDir,
+                outputDir,
+                ".csv",
+                "n-grams" + str(index + 1) + "_vocab_Word",
+                "stats",
+                "",
+                "",
+                "",
+                False,
+                True,
+            )
+            corpus_ngramsList_vocab.insert(0, [str(index + 1) + "-grams", "Frequency in Corpus"])
 
             errorFound = IO_csv_util.list_to_csv(GUI_util.window, corpus_ngramsList_vocab, csv_vocab_outputFilename)
 
-            if not errorFound and chartPackage != 'No charts':
+            if not errorFound and chartPackage != "No charts":
                 filesToOpen.append(csv_vocab_outputFilename)
-                columns_to_be_plotted_xAxis = [str(index+1) + '-grams']
-                columns_to_be_plotted_yAxis = ['Frequency in Corpus']
-               # chartPackage = "Excel" ## I am too tired ... I don't know why -- Simon
-               # createCharts = 1
+                columns_to_be_plotted_xAxis = [str(index + 1) + "-grams"]
+                columns_to_be_plotted_yAxis = ["Frequency in Corpus"]
+                # chartPackage = "Excel" ## I am too tired ... I don't know why -- Simon
+                # createCharts = 1
                 # this variable is not right....
-                outputFiles = charts_util.plot(csv_vocab_outputFilename, outputDir, columns=columns_to_be_plotted_yAxis, title='Frequency of ' + str(index+1) + '-gram', x_label=str(index+1) + '-gram', count=0, group_by=None, title_label=str(index+1) + '-gram')
+                outputFiles = charts_util.plot(
+                    csv_vocab_outputFilename,
+                    outputDir,
+                    columns=columns_to_be_plotted_yAxis,
+                    title="Frequency of " + str(index + 1) + "-gram",
+                    x_label=str(index + 1) + "-gram",
+                    count=0,
+                    group_by=None,
+                    title_label=str(index + 1) + "-gram",
+                )
                 if outputFiles != None:
                     if isinstance(outputFiles, str):
                         filesToOpen.append(outputFiles)
                     else:
                         filesToOpen.extend(outputFiles)
 
-
-        corpus_ngramsList.insert(0,[str(index+1)+'-grams', 'Frequency in Document', 'Frequency in Corpus', 'Document ID', 'Document'])
-        csv_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                     'n-grams' + str(index+1) + '_Word',
-                                                                     'stats', '', '',
-                                                                     '', False, True)
+        corpus_ngramsList.insert(
+            0, [str(index + 1) + "-grams", "Frequency in Document", "Frequency in Corpus", "Document ID", "Document"]
+        )
+        csv_outputFilename = IO_files_util.generate_output_file_name(
+            inputFilename,
+            inputDir,
+            outputDir,
+            ".csv",
+            "n-grams" + str(index + 1) + "_Word",
+            "stats",
+            "",
+            "",
+            "",
+            False,
+            True,
+        )
         errorFound = IO_csv_util.list_to_csv(GUI_util.window, corpus_ngramsList, csv_outputFilename)
 
-        if not errorFound and chartPackage!='No charts':
+        if not errorFound and chartPackage != "No charts":
             filesToOpen.append(csv_outputFilename)
 
-            columns_to_be_plotted_xAxis = [str(index+1) + '-grams']
-            if inputDir == '':
-                columns_to_be_plotted_yAxis = ['Frequency in Document']
+            columns_to_be_plotted_xAxis = [str(index + 1) + "-grams"]
+            if inputDir == "":
+                columns_to_be_plotted_yAxis = ["Frequency in Document"]
             else:
-                columns_to_be_plotted_yAxis = ['Frequency in Document', 'Frequency in Corpus']
-           # chartPackage = "Excel" ## I am too tired ... I don't know why -- Simon
-           # createCharts = 1
+                columns_to_be_plotted_yAxis = ["Frequency in Document", "Frequency in Corpus"]
+            # chartPackage = "Excel" ## I am too tired ... I don't know why -- Simon
+            # createCharts = 1
             # this variable is not right....
-            outputFiles = charts_util.plot(csv_outputFilename, outputDir, columns=columns_to_be_plotted_yAxis, title='Frequency of ' + str(index+1) + '-gram', x_label=str(index+1) + '-gram', count=0, plot_list=['Frequency in Document'], title_label=str(index+1) + '-gram')
+            outputFiles = charts_util.plot(
+                csv_outputFilename,
+                outputDir,
+                columns=columns_to_be_plotted_yAxis,
+                title="Frequency of " + str(index + 1) + "-gram",
+                x_label=str(index + 1) + "-gram",
+                count=0,
+                plot_list=["Frequency in Document"],
+                title_label=str(index + 1) + "-gram",
+            )
             if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -830,9 +1126,11 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName,
                     filesToOpen.extend(outputFiles)
     return filesToOpen
 
+
 def tokenize(s):
     tokens = re.split(r"[^0-9A-Za-z\-'_]+", s)
     return tokens
+
 
 # measures lexical diversity
 # see code in cophi https://github.com/cophi-wue/cophi-toolbox
@@ -848,11 +1146,12 @@ def get_yules_k_i(s):
     tokens = tokenize(s)
     token_counter = collections.Counter(tok.upper() for tok in tokens)
     m1 = sum(token_counter.values())
-    m2 = sum([freq ** 2 for freq in token_counter.values()])
-    i = (m1*m1) / (m2-m1)
+    m2 = sum([freq**2 for freq in token_counter.values()])
+    i = (m1 * m1) / (m2 - m1)
     # k = 10000/i
-    k = 1/i * 10000
+    k = 1 / i * 10000
     return (k, i)
+
 
 def yule_k_from_counts(counts):
     """Yule's K from the frequency of each word type (Yule, G. U. 1944. The Statistical Study of Literary
@@ -874,22 +1173,23 @@ def yule(window, inputFilename, inputDir, outputDir, configFileName, hideMessage
     #   This used to compute (types^2) / (M2 - types), a variant of Yule's I (the reciprocal of K, higher =
     #   richer) with the number of TYPES where Oakes has the number of TOKENS, under the "Yule's K" header.
     filesToOpen = []
-    Yule_value_list=[]
+    Yule_value_list = []
     headers = ["Yule's K Value", "Document ID", "Document"]
     index = 0
-    inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
+    inputDocs = IO_files_util.getFileList(
+        inputFilename, inputDir, fileType=".txt", silent=False, configFileName=configFileName
+    )
 
-    Ndocs=str(len(inputDocs))
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Yule K')
+    Ndocs = str(len(inputDocs))
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, ".csv", "Yule K")
     Yule_value_list.insert(0, headers)
     for doc in inputDocs:
         head, tail = os.path.split(doc)
         d = {}
         index = index + 1
         print("Processing file " + str(index) + "/" + str(Ndocs) + " " + tail)
-        fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
-        words = filter(lambda w: len(w) > 0,
-                  [w.strip("0123456789!:,.?(){}[]") for w in fullText.lower().split()])
+        fullText = open(doc, encoding="utf-8", errors="ignore").read()
+        words = filter(lambda w: len(w) > 0, [w.strip("0123456789!:,.?(){}[]") for w in fullText.lower().split()])
         stemmer = PorterStemmer()
         for w in words:
             w = stemmer.stem(w).lower()
@@ -900,23 +1200,45 @@ def yule(window, inputFilename, inputDir, outputDir, configFileName, hideMessage
         result = yule_k_from_counts(d.values())
 
         # print results
-        if inputFilename!='' and hideMessage==False:
-            IO_user_interface_util.timed_alert(GUI_util.window, 4000, message_title='Yule’s K Vocabulary richness', message_text='The value for the vocabulary richness statistics (Yule’s K) is: '+str(result) + '\n\nThe lower the value, the richer (less repetitive) the vocabulary.')
-            print('The value for the vocabulary richness statistics (Yule’s K) is: '+str(result) + '\n\nThe lower the value, the richer (less repetitive) the vocabulary.')
-        temp = [result,index,IO_csv_util.dressFilenameForCSVHyperlink(doc)]
+        if inputFilename != "" and hideMessage == False:
+            IO_user_interface_util.timed_alert(
+                GUI_util.window,
+                4000,
+                message_title="Yule’s K Vocabulary richness",
+                message_text="The value for the vocabulary richness statistics (Yule’s K) is: "
+                + str(result)
+                + "\n\nThe lower the value, the richer (less repetitive) the vocabulary.",
+            )
+            print(
+                "The value for the vocabulary richness statistics (Yule’s K) is: "
+                + str(result)
+                + "\n\nThe lower the value, the richer (less repetitive) the vocabulary."
+            )
+        temp = [result, index, IO_csv_util.dressFilenameForCSVHyperlink(doc)]
         Yule_value_list.append(temp)
-    IO_error=IO_csv_util.list_to_csv(window, Yule_value_list, outputFilename)
+    IO_error = IO_csv_util.list_to_csv(window, Yule_value_list, outputFilename)
     if not IO_error:
         filesToOpen.append(outputFilename)
 
     return filesToOpen
 
 
-def print_results(window, words, class_word_list, header, inputFilename, outputDir, excludestowords, fileLabel, hideMessage, filesToOpen):
+def print_results(
+    window,
+    words,
+    class_word_list,
+    header,
+    inputFilename,
+    outputDir,
+    excludestowords,
+    fileLabel,
+    hideMessage,
+    filesToOpen,
+):
     if excludestowords:
-        stopMsg="(excluding stopwords)"
+        stopMsg = "(excluding stopwords)"
     else:
-        stopMsg="(including stopwords)"
+        stopMsg = "(including stopwords)"
     # outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', fileLabel)
     # # class_word_list.insert(0, header,IO_csv_util.dressFilenameForCSVHyperlink(inputFilename))
     # class_word_list.insert(0, header)
@@ -924,53 +1246,80 @@ def print_results(window, words, class_word_list, header, inputFilename, outputD
     # if IO_error:
     #     outputFilename=''
 
-    if hideMessage==False:
+    if hideMessage == False:
         # do not count header
-        mb.showinfo(title='Results', message='Total word count ' + stopMsg + ': ' + str(len(words)) +
-                                             '\n\nTotal word count for ' + header + ' ' + stopMsg + ': ' + str(len(class_word_list)-1))
+        mb.showinfo(
+            title="Results",
+            message="Total word count "
+            + stopMsg
+            + ": "
+            + str(len(words))
+            + "\n\nTotal word count for "
+            + header
+            + " "
+            + stopMsg
+            + ": "
+            + str(len(class_word_list) - 1),
+        )
     # print results
-    print('\nTotal word count ' + stopMsg + ': ' + str(len(words)))
+    print("\nTotal word count " + stopMsg + ": " + str(len(words)))
     # do not count header
-    print('Total word count for ' + header + ' ' + stopMsg + ': ' + str(len(class_word_list)-1))
-    print('\n\nList of ' + header + ' ' + stopMsg + '\n\n', class_word_list)
+    print("Total word count for " + header + " " + stopMsg + ": " + str(len(class_word_list) - 1))
+    print("\n\nList of " + header + " " + stopMsg + "\n\n", class_word_list)
     # if outputFilename != '':
     #     filesToOpen.append(outputFilename)
     # return filesToOpen
 
 
 # called by sentence_analysis_main and style_analysis_main
-def process_words(window, configFileName, inputFilename,inputDir,outputDir, openOutputFiles, chartPackage,dataTransformation,
-    processType='', language='English', excludeStopWords=True,word_length=3,excludePunctuation=True, excludeArticles=True,
-                                          wordgram=1,lemmatize=False, case_sensitive=False
-                                          ):
-    filesToOpen=[]
+def process_words(
+    window,
+    configFileName,
+    inputFilename,
+    inputDir,
+    outputDir,
+    openOutputFiles,
+    chartPackage,
+    dataTransformation,
+    processType="",
+    language="English",
+    excludeStopWords=True,
+    word_length=3,
+    excludePunctuation=True,
+    excludeArticles=True,
+    wordgram=1,
+    lemmatize=False,
+    case_sensitive=False,
+):
+    filesToOpen = []
     documentID = 0
-    multiple_punctuation=0
-    exclamation_punctuation=0
-    question_punctuation=0
-    punctuation_docs=[]
-    header=[]
-    fileLabel = ''
-    columns_to_be_plotted_xAxis=[]
-    columns_to_be_plotted_yAxis=[]
-    chart_title_label=''
-    column_xAxis_label=''
-    hover_label=''
-    word_list=[]
+    multiple_punctuation = 0
+    exclamation_punctuation = 0
+    question_punctuation = 0
+    punctuation_docs = []
+    header = []
+    fileLabel = ""
+    columns_to_be_plotted_xAxis = []
+    columns_to_be_plotted_yAxis = []
+    chart_title_label = ""
+    column_xAxis_label = ""
+    hover_label = ""
+    word_list = []
 
     word_list_temp = []
     word_list_temp3 = []
 
-
-    fin = open('../lib/wordLists/stopwords.txt', 'r')
+    fin = open("../lib/wordLists/stopwords.txt")
     stops = set(fin.read().splitlines())
-    inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
+    inputDocs = IO_files_util.getFileList(
+        inputFilename, inputDir, fileType=".txt", silent=False, configFileName=configFileName
+    )
 
-    Ndocs=str(len(inputDocs))
-    if Ndocs==0:
+    Ndocs = str(len(inputDocs))
+    if Ndocs == 0:
         return
 
-    if processType != '':
+    if processType != "":
         hideMessage = False
     else:
         hideMessage = True
@@ -982,21 +1331,26 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
     # friendly display label for the Started/Finished alerts (processType itself still drives the logic
     # below, so leave it untouched -- this only changes what the user sees, e.g. 'capital' -> the clearer
     # 'capital-initial words').
-    _proc_label = 'capital-initial words' if 'capital' in processType.lower() else processType
+    _proc_label = "capital-initial words" if "capital" in processType.lower() else processType
 
     # ngrams already display the started running... No need to duplicate
-    if not 'unigrams' in processType:
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
-                                               'Started running ' + _proc_label + ' at', True)
+    if "unigrams" not in processType:
+        startTime = IO_user_interface_util.timed_alert(
+            GUI_util.window, 2000, "Analysis start", "Started running " + _proc_label + " at", True
+        )
 
     # process separately outside the loop through documents which is carried out inside compute_character_word_ngrams
-    if processType == '' or "N-grams" in processType or \
-            "hapax" in processType.lower() or "unigrams" in processType.lower():
+    if (
+        processType == ""
+        or "N-grams" in processType
+        or "hapax" in processType.lower()
+        or "unigrams" in processType.lower()
+    ):
         hapax_words = False
         if "hapax" in processType.lower():
             ngramsNumber = 1
             frequency = 1  # hapax
-            if 'hapax legomena (once-occurring words)' in processType.lower():
+            if "hapax legomena (once-occurring words)" in processType.lower():
                 hapax_words = True
         elif "unigrams" in processType.lower():
             ngramsNumber = 1
@@ -1008,48 +1362,71 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
         excludePunctuation = True
         wordgram = True
         bySentenceID = False
-        outputFiles, tempoutputDir = compute_character_word_ngrams(window, inputFilename, inputDir, outputDir, configFileName,
-                                                        ngramsNumber, frequency, hapax_words,
-                                                        normalize,
-                                                        lemmatize, case_sensitive, excludePunctuation, excludeArticles,
-                                                        excludeDeterminers, excludeStopWords,
-                                                        wordgram,
-                                                        openOutputFiles,
-                                                        chartPackage, dataTransformation,bySentenceID)
+        outputFiles, tempoutputDir = compute_character_word_ngrams(
+            window,
+            inputFilename,
+            inputDir,
+            outputDir,
+            configFileName,
+            ngramsNumber,
+            frequency,
+            hapax_words,
+            normalize,
+            lemmatize,
+            case_sensitive,
+            excludePunctuation,
+            excludeArticles,
+            excludeDeterminers,
+            excludeStopWords,
+            wordgram,
+            openOutputFiles,
+            chartPackage,
+            dataTransformation,
+            bySentenceID,
+        )
         # Excel charts are generated in compute_character_word_ngrams; return to exit here
-        
+
         return outputFiles
 
-    #For the user input of K sentences or words to be analyzed
-    if 'Repetition: Words' in processType or 'Repetition: Last' in processType:
-        if '*' in processType:
-            k_str = '4' # when processing all style algorithms, set the k_str not to stop the process
+    # For the user input of K sentences or words to be analyzed
+    if "Repetition: Words" in processType or "Repetition: Last" in processType:
+        if "*" in processType:
+            k_str = "4"  # when processing all style algorithms, set the k_str not to stop the process
         else:
-            k_str = ''
+            k_str = ""
             # do not activate the reminder when processing ALL style options
             head, scriptName = os.path.split(os.path.basename(__file__))
-            reminder_status = reminders_util.checkReminder(scriptName,
-                                                           reminders_util.title_options_only_CoreNLP_CoNLL_repetition_finder,
-                                                           reminders_util.message_only_CoreNLP_CoNLL_repetition_finder)
-        if 'Repetition: Last' in processType and k_str == '':
-            k_str, useless = GUI_IO_util.enter_value_widget("Enter the number of words, K, to be analyzed (Repetition finder)", 'K',
-                                                           1, '', '', '')
-        elif 'Repetition: Words' in processType and k_str == '':
-            k_str, useless = GUI_IO_util.enter_value_widget("Enter the number of sentences, K, to be analyzed (Repetition finder)", 'K',
-                                                           1, '', '', '')
-        if k_str=='':
+            reminder_status = reminders_util.checkReminder(
+                scriptName,
+                reminders_util.title_options_only_CoreNLP_CoNLL_repetition_finder,
+                reminders_util.message_only_CoreNLP_CoNLL_repetition_finder,
+            )
+        if "Repetition: Last" in processType and k_str == "":
+            k_str, useless = GUI_IO_util.enter_value_widget(
+                "Enter the number of words, K, to be analyzed (Repetition finder)", "K", 1, "", "", ""
+            )
+        elif "Repetition: Words" in processType and k_str == "":
+            k_str, useless = GUI_IO_util.enter_value_widget(
+                "Enter the number of sentences, K, to be analyzed (Repetition finder)", "K", 1, "", "", ""
+            )
+        if k_str == "":
             return
         k = int(k_str)
 
-    if 'Repetition across' in processType:
-        if '*' in processType:
-            k_str = '3'
+    if "Repetition across" in processType:
+        if "*" in processType:
+            k_str = "3"
         else:
             k_str, useless = GUI_IO_util.enter_value_widget(
                 "Enter the ngram size K (e.g., 2 for bigrams, 3 for trigrams). "
                 "Word sequences of this length that repeat across different sentences will be found.",
-                'K', 1, '', '', '')
-        if k_str == '':
+                "K",
+                1,
+                "",
+                "",
+                "",
+            )
+        if k_str == "":
             return
         k = int(k_str)
         if k < 2:
@@ -1058,10 +1435,10 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
     # create the appropriate subdir
     if "Objectivity/subjectivity" in processType:
         # create a subdirectory of the output directory
-        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
-                                                           label='obj_subj_spaCy',
-                                                           silent=True)
-        if outputDir == '':
+        outputDir = IO_files_util.make_output_subdirectory(
+            inputFilename, inputDir, outputDir, label="obj_subj_spaCy", silent=True
+        )
+        if outputDir == "":
             return
 
     for doc in inputDocs:
@@ -1069,10 +1446,10 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
         documentID = documentID + 1
         print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
 
-        fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
-        fullText = fullText.replace('\n', ' ')
+        fullText = open(doc, encoding="utf-8", errors="ignore").read()
+        fullText = fullText.replace("\n", " ")
 
-        from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text
+        from Stanza_functions_util import sentence_split_stanza_text, stanzaPipeLine, tokenize_stanza_text
 
         rep_words_first = []
         rep_words_last = []
@@ -1088,8 +1465,9 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
         # sentence tokenize_stanza_text produced.
         _doc = stanzaPipeLine(fullText)
         sentences = sentence_split_stanza_text(_doc)
-        _pre_words = ([[w.text for w in sent.words] for sent in _doc.sentences]
-                      if len(_doc.sentences) == len(sentences) else None)
+        _pre_words = (
+            [[w.text for w in sent.words] for sent in _doc.sentences] if len(_doc.sentences) == len(sentences) else None
+        )
 
         # analyze each sentence
         sentence_list = []
@@ -1108,18 +1486,18 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
             else:
                 words = tokenize_stanza_text(stanzaPipeLine(s))
             words_with_stop = [word for word in words if word.isalpha()]
-            #print(words_with_stop)
+            # print(words_with_stop)
             # don't process stopwords
             filtered_words = words
-            if processType != '' and not "pathos" in processType.lower():
+            if processType != "" and "pathos" not in processType.lower():
                 if excludeStopWords:
                     words = excludeStopWords_list(words)
                     filtered_words = [word for word in words if word.isalpha()]  # strip out words with punctuation
             # words = fullText.translate(string.punctuation).split()
-            #for wordID, word in enumerate(filtered_words):
-            #print(filtered_words)
+            # for wordID, word in enumerate(filtered_words):
+            # print(filtered_words)
 
-# SUBJECTIVITY/OBJECTIVITY PER SENTENCE---------------------------------------------------------------------------------------------
+            # SUBJECTIVITY/OBJECTIVITY PER SENTENCE---------------------------------------------------------------------------------------------
 
             if "Objectivity/subjectivity" in processType:
                 # https://spacy.io/universe/project/spacy-textblob
@@ -1128,196 +1506,382 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                 # annotator_available = spaCy_util.check_spaCy_annotator_availability(['Objectivity/subjectivity'], language, silent=False)
                 # if not annotator_available:
                 #     return
-                nlp = spacy.load('en_core_web_sm')
-                nlp.add_pipe('spacytextblob')
+                nlp = spacy.load("en_core_web_sm")
+                nlp.add_pipe("spacytextblob")
 
                 header = ["Subjectivity Score", "Sentence ID", "Sentence", "Document ID", "Document"]
-                select_col = ['Subjectivity Scores']
-                fileLabel = 'Objectivity_subjectivity per sentence'
-                fileLabel_byDocID = 'Objecitivity_subjectivity_per_sentence_byDoc'
-                columns_to_be_plotted_yAxis = ['Subjectivity Score']
-                chart_title_label = 'Frequency of subjectivity scores'
-                chart_title_byDocID = 'Frequency of subjectivity scores by Document'
-                chart_title_bySentID = 'Frequency of subjectivity scores by Sentence ID'
-                column_xAxis_label = 'Subjectivity scores'
+                select_col = ["Subjectivity Scores"]
+                fileLabel = "Objectivity_subjectivity per sentence"
+                fileLabel_byDocID = "Objecitivity_subjectivity_per_sentence_byDoc"
+                columns_to_be_plotted_yAxis = ["Subjectivity Score"]
+                chart_title_label = "Frequency of subjectivity scores"
+                chart_title_byDocID = "Frequency of subjectivity scores by Document"
+                chart_title_bySentID = "Frequency of subjectivity scores by Sentence ID"
+                column_xAxis_label = "Subjectivity scores"
 
                 # process sentence
                 d = nlp(s)
                 subjectivity_score = d._.blob.subjectivity
 
-                word_list.append([subjectivity_score, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                word_list.append(
+                    [subjectivity_score, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)]
+                )
 
-
-# Lower case words after end-of-sentence punctuation --------------------------------------------------------------------------
+            # Lower case words after end-of-sentence punctuation --------------------------------------------------------------------------
 
             for wordID, word in enumerate(filtered_words):
-                if processType == 'Lower case words after end-of-sentence punctuation':
-                    header = ['Word', 'Sentence ID 1','Sentence 1','Sentence ID 2','Sentence 2', 'Document ID','Document']
-                    if word and (word=='.' or word=='!' or word=='?'):
+                if processType == "Lower case words after end-of-sentence punctuation":
+                    header = [
+                        "Word",
+                        "Sentence ID 1",
+                        "Sentence 1",
+                        "Sentence ID 2",
+                        "Sentence 2",
+                        "Document ID",
+                        "Document",
+                    ]
+                    if word and (word == "." or word == "!" or word == "?"):
                         # check beginning of next word in next sentence since the end-of-sentence character will have split the sentence
                         # exclude numbers from list
-                        if sentenceID<len(sentences) and sentences[sentenceID][0].isalpha() and sentences[sentenceID][0].islower():
-                            word_list.append([str(sentences[sentenceID].split()[0]), sentenceID, s, sentenceID+1, sentences[sentenceID],documentID,
-                                              IO_csv_util.dressFilenameForCSVHyperlink(doc)])
-                        select_col = ['Word']
-                        fileLabel = 'sent_split'
-                        fileLabel_byDocID = ''
-                        columns_to_be_plotted_yAxis = ['Word']
-                        chart_title_label = ''
-                        column_xAxis_label = 'Words'
+                        if (
+                            sentenceID < len(sentences)
+                            and sentences[sentenceID][0].isalpha()
+                            and sentences[sentenceID][0].islower()
+                        ):
+                            word_list.append(
+                                [
+                                    str(sentences[sentenceID].split()[0]),
+                                    sentenceID,
+                                    s,
+                                    sentenceID + 1,
+                                    sentences[sentenceID],
+                                    documentID,
+                                    IO_csv_util.dressFilenameForCSVHyperlink(doc),
+                                ]
+                            )
+                        select_col = ["Word"]
+                        fileLabel = "sent_split"
+                        fileLabel_byDocID = ""
+                        columns_to_be_plotted_yAxis = ["Word"]
+                        chart_title_label = ""
+                        column_xAxis_label = "Words"
 
-# WORD LENGTH --------------------------------------------------------------------------
+                # WORD LENGTH --------------------------------------------------------------------------
 
-                if processType=='' or "word length" in processType.lower():
-                    header = ['Word', 'Word length (in characters)', 'Word ID (in sentence)', 'Number of words in sentence', 'Sentence ID','Sentence','Document ID','Document']
-                    select_col = ['Word length']
-                    fileLabel='word_length'
-                    fileLabel_byDocID = 'word_length_byDoc'
-                    columns_to_be_plotted_yAxis=['Word length'] # bar chart
-                    chart_title_label = 'Frequency of Word Lengths (in Characters)'
-                    chart_title_byDocID='Frequency of Word Lengths (in Characters) by Document'
-                    chart_title_bySentID ='Frequency of Word Lengths (in Characters) by Sentence Index'
-                    column_xAxis_label = 'Word length (in characters)'
+                if processType == "" or "word length" in processType.lower():
+                    header = [
+                        "Word",
+                        "Word length (in characters)",
+                        "Word ID (in sentence)",
+                        "Number of words in sentence",
+                        "Sentence ID",
+                        "Sentence",
+                        "Document ID",
+                        "Document",
+                    ]
+                    select_col = ["Word length"]
+                    fileLabel = "word_length"
+                    fileLabel_byDocID = "word_length_byDoc"
+                    columns_to_be_plotted_yAxis = ["Word length"]  # bar chart
+                    chart_title_label = "Frequency of Word Lengths (in Characters)"
+                    chart_title_byDocID = "Frequency of Word Lengths (in Characters) by Document"
+                    chart_title_bySentID = "Frequency of Word Lengths (in Characters) by Sentence Index"
+                    column_xAxis_label = "Word length (in characters)"
 
                     # exclude numbers from list
                     if word and word.isalpha():
-                        word_list.append([word, len(word), wordID + 1, len(words), sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                        word_list.append(
+                            [
+                                word,
+                                len(word),
+                                wordID + 1,
+                                len(words),
+                                sentenceID,
+                                s,
+                                documentID,
+                                IO_csv_util.dressFilenameForCSVHyperlink(doc),
+                            ]
+                        )
 
-    # INITIAL-CAPITAL WORDS --------------------------------------------------------------------------
+                # INITIAL-CAPITAL WORDS --------------------------------------------------------------------------
 
-                if processType=='' or "capital" in processType.lower():
-                    header = ['Initial-capital words', 'Word ID (in sentence)', 'Number of words in sentence', 'Sentence ID', 'Sentence', 'Document ID','Document']
-                    select_col = ['Initial-capital words']
-                    fileLabel='init_cap_words'
-                    fileLabel_byDocID = '' # 'capital_words_byDoc'
-                    columns_to_be_plotted_yAxis=['Initial-capital words'] # bar chart
-                    chart_title_label = 'Frequency of Initial-Capital Words'
-                    chart_title_byDocID ='Frequency of Initial-Capital Words by Document'
-                    chart_title_bySentID ='Frequency of Initial-Capital Words by Sentence Index'
-                    column_xAxis_label = 'Initial-capital words'
+                if processType == "" or "capital" in processType.lower():
+                    header = [
+                        "Initial-capital words",
+                        "Word ID (in sentence)",
+                        "Number of words in sentence",
+                        "Sentence ID",
+                        "Sentence",
+                        "Document ID",
+                        "Document",
+                    ]
+                    select_col = ["Initial-capital words"]
+                    fileLabel = "init_cap_words"
+                    fileLabel_byDocID = ""  # 'capital_words_byDoc'
+                    columns_to_be_plotted_yAxis = ["Initial-capital words"]  # bar chart
+                    chart_title_label = "Frequency of Initial-Capital Words"
+                    chart_title_byDocID = "Frequency of Initial-Capital Words by Document"
+                    chart_title_bySentID = "Frequency of Initial-Capital Words by Sentence Index"
+                    column_xAxis_label = "Initial-capital words"
 
                     if word and word and word[0].isupper():
-                        word_list.append([word, wordID + 1, len(words), sentenceID, s, documentID,
-                                  IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                        word_list.append(
+                            [
+                                word,
+                                wordID + 1,
+                                len(words),
+                                sentenceID,
+                                s,
+                                documentID,
+                                IO_csv_util.dressFilenameForCSVHyperlink(doc),
+                            ]
+                        )
                         # word_list.append([word, wordID + 1, len(words), sentenceID, s, documentID,
                         #           IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 
-    # INITIAL-VOWEL WORDS --------------------------------------------------------------------------
+                # INITIAL-VOWEL WORDS --------------------------------------------------------------------------
 
-                if processType=='' or "vowel" in processType.lower():
-                    header = ['Initial vowel', 'Word ID (in sentence)', 'Number of words in sentence', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
-                    select_col = ['Initial-vowel words']
-                    fileLabel='vowel_words'
-                    fileLabel_byDocID = 'vowel_words_byDoc'
-                    columns_to_be_plotted_yAxis=['Initial vowel'] # bar chart
-                    chart_title_label = 'Frequency of Initial-Vowel Words'
-                    chart_title_byDocID='Frequency of Initial-Vowel Words by Document'
-                    chart_title_bySentID = 'Frequency of Initial-Vowel Words by Sentence Index'
-                    column_xAxis_label = 'Initial-vowel words'
+                if processType == "" or "vowel" in processType.lower():
+                    header = [
+                        "Initial vowel",
+                        "Word ID (in sentence)",
+                        "Number of words in sentence",
+                        "Sentence ID",
+                        "Sentence",
+                        "Document ID",
+                        "Document",
+                    ]
+                    select_col = ["Initial-vowel words"]
+                    fileLabel = "vowel_words"
+                    fileLabel_byDocID = "vowel_words_byDoc"
+                    columns_to_be_plotted_yAxis = ["Initial vowel"]  # bar chart
+                    chart_title_label = "Frequency of Initial-Vowel Words"
+                    chart_title_byDocID = "Frequency of Initial-Vowel Words by Document"
+                    chart_title_bySentID = "Frequency of Initial-Vowel Words by Sentence Index"
+                    column_xAxis_label = "Initial-vowel words"
                     if word and word and word[0].lower() in "aeiou" and word.isalpha():
-                        word_list.append([word, wordID + 1, len(words), sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                        word_list.append(
+                            [
+                                word,
+                                wordID + 1,
+                                len(words),
+                                sentenceID,
+                                s,
+                                documentID,
+                                IO_csv_util.dressFilenameForCSVHyperlink(doc),
+                            ]
+                        )
 
-    # PUNCTUATION SYMBOLS --------------------------------------------------------------------------
+                # PUNCTUATION SYMBOLS --------------------------------------------------------------------------
 
-                if processType == '' or "pathos" in processType.lower():
-                    header = ['Punctuation symbols of pathos (?!)', 'Word ID (in sentence)', 'Number of words in sentence', 'Sentence ID', 'Sentence', 'Document ID','Document']
-                    select_col = ['Punctuation symbols of pathos (?!)'] # line chart by sentence index
-                    fileLabel = 'punctuation'
-                    fileLabel_byDocID = 'punctuation_byDoc'
-                    columns_to_be_plotted_yAxis=['Punctuation symbols of pathos (?!)'] # bar chart
-                    chart_title_label = 'Frequency of Punctuation Symbols of Pathos (?!)'
-                    chart_title_byDocID='Frequency of Punctuation Symbols of Pathos (?!) by Document'
-                    chart_title_bySentID='Frequency of Punctuation Symbols of Pathos (?!) by Sentence Index'
-                    column_xAxis_label = 'Punctuation symbols of pathos (?!)'
-                    if word != '!' and word != '?':
+                if processType == "" or "pathos" in processType.lower():
+                    header = [
+                        "Punctuation symbols of pathos (?!)",
+                        "Word ID (in sentence)",
+                        "Number of words in sentence",
+                        "Sentence ID",
+                        "Sentence",
+                        "Document ID",
+                        "Document",
+                    ]
+                    select_col = ["Punctuation symbols of pathos (?!)"]  # line chart by sentence index
+                    fileLabel = "punctuation"
+                    fileLabel_byDocID = "punctuation_byDoc"
+                    columns_to_be_plotted_yAxis = ["Punctuation symbols of pathos (?!)"]  # bar chart
+                    chart_title_label = "Frequency of Punctuation Symbols of Pathos (?!)"
+                    chart_title_byDocID = "Frequency of Punctuation Symbols of Pathos (?!) by Document"
+                    chart_title_bySentID = "Frequency of Punctuation Symbols of Pathos (?!) by Sentence Index"
+                    column_xAxis_label = "Punctuation symbols of pathos (?!)"
+                    if word != "!" and word != "?":
                         continue
-                    word_list.append([word, wordID + 1, len(words), sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                    word_list.append(
+                        [
+                            word,
+                            wordID + 1,
+                            len(words),
+                            sentenceID,
+                            s,
+                            documentID,
+                            IO_csv_util.dressFilenameForCSVHyperlink(doc),
+                        ]
+                    )
                     if doc not in punctuation_docs:
                         punctuation_docs.append(doc)
-                    if '!' in word and '?' in word:
-                        multiple_punctuation=multiple_punctuation+1
-                    elif '!' in word:
-                        exclamation_punctuation=exclamation_punctuation+1
-                    elif '?' in word:
-                        question_punctuation=question_punctuation+1
+                    if "!" in word and "?" in word:
+                        multiple_punctuation = multiple_punctuation + 1
+                    elif "!" in word:
+                        exclamation_punctuation = exclamation_punctuation + 1
+                    elif "?" in word:
+                        question_punctuation = question_punctuation + 1
 
-                from collections import Counter
                 # REPEATED WORDS FIRST K SENTENCES/LAST K SENTENCES  -------------------------------------------------------------------------------
-                if 'Repetition: Words' in processType:
+                if "Repetition: Words" in processType:
                     for wrdID, wrd in enumerate(filtered_words):
-
-                        header = ["First/Last Sentence", "K Value", "Word", "Word ID", "Sentence ID", "Sentence",
-                                  "Document ID", "Document"]
-                        select_col = ['Word']
-                        fileLabel = str(k) + '_K_Sentences'
-                        fileLabel_byDocID = 'Rep_Words_First_Last_' +str(k) + '_K_Sentences_byDoc'
-                        columns_to_be_plotted_yAxis = ['Word']
-                        chart_title_label = f'Frequency of Repeated Words in First and Last K ({k}) Sentences'
-                        chart_title_byDocID = f'Frequency of Repeated Words in First and Last K ({k}) Sentences by Document'
-                        chart_title_bySentID = f'Frequency of Repeated Words in First and Last K ({k}) Sentences by Sentence ID'
-                        column_xAxis_label = 'Words'
+                        header = [
+                            "First/Last Sentence",
+                            "K Value",
+                            "Word",
+                            "Word ID",
+                            "Sentence ID",
+                            "Sentence",
+                            "Document ID",
+                            "Document",
+                        ]
+                        select_col = ["Word"]
+                        fileLabel = str(k) + "_K_Sentences"
+                        fileLabel_byDocID = "Rep_Words_First_Last_" + str(k) + "_K_Sentences_byDoc"
+                        columns_to_be_plotted_yAxis = ["Word"]
+                        chart_title_label = f"Frequency of Repeated Words in First and Last K ({k}) Sentences"
+                        chart_title_byDocID = (
+                            f"Frequency of Repeated Words in First and Last K ({k}) Sentences by Document"
+                        )
+                        chart_title_bySentID = (
+                            f"Frequency of Repeated Words in First and Last K ({k}) Sentences by Sentence ID"
+                        )
+                        column_xAxis_label = "Words"
 
                         if sentenceID <= k:
-                            word_list_temp.append(["First", k, wrd, wrdID + 1, sentenceID, s, documentID,
-                                                   IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                            word_list_temp.append(
+                                [
+                                    "First",
+                                    k,
+                                    wrd,
+                                    wrdID + 1,
+                                    sentenceID,
+                                    s,
+                                    documentID,
+                                    IO_csv_util.dressFilenameForCSVHyperlink(doc),
+                                ]
+                            )
                             rep_words_first.append(wrd)
 
                         elif sentenceID > len(sentences) - k:
-                            word_list_temp.append(["Last", k, wrd, wrdID + 1, sentenceID, s, documentID,
-                                                   IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                            word_list_temp.append(
+                                [
+                                    "Last",
+                                    k,
+                                    wrd,
+                                    wrdID + 1,
+                                    sentenceID,
+                                    s,
+                                    documentID,
+                                    IO_csv_util.dressFilenameForCSVHyperlink(doc),
+                                ]
+                            )
                             rep_words_last.append(wrd)
                     # print(rep_words_first)
                     # print(rep_words_last)
 
                 if "Repetition: Words" in processType:
-                    word_list.extend([sublist for sublist in word_list_temp if
-                                      sublist[2] in rep_words_first and sublist[2] in rep_words_last])
+                    word_list.extend(
+                        [
+                            sublist
+                            for sublist in word_list_temp
+                            if sublist[2] in rep_words_first and sublist[2] in rep_words_last
+                        ]
+                    )
 
                 # REPEATED WORDS END OF SENTENCE/BEGINNING NEXT SENTENCE  --------------------------------------------------------------------------
-                if 'Repetition: Last' in processType:
+                if "Repetition: Last" in processType:
                     for wrdID, wrd in enumerate(words_with_stop):
                         # print(wordID)
                         # print(word)
                         # mb.showwarning("Naman","Naman, this for you!")
 
-                        header = ["First/Last Sentence", "K Value", "Word", "Word ID", "Sentence ID", "Sentence",
-                                  "Document ID", "Document"]
-                        select_col = ['Word']
+                        header = [
+                            "First/Last Sentence",
+                            "K Value",
+                            "Word",
+                            "Word ID",
+                            "Sentence ID",
+                            "Sentence",
+                            "Document ID",
+                            "Document",
+                        ]
+                        select_col = ["Word"]
                         # fileLabel = 'Last K words of a sentence and first K words of next sentence'
-                        fileLabel = str(k) + '_K words'
-                        fileLabel_byDocID = 'Last/First_'+str(k) + '_k_words_byDoc'
-                        columns_to_be_plotted_yAxis = ['Word']
-                        chart_title_label = 'Frequency of Last K ('+str(k) +') words of a sentence and first K words of next sentence'
-                        chart_title_byDocID = 'Frequency of Last K ('+str(k) +') words of a sentence and first K words of next sentence by Document'
-                        chart_title_bySentID = 'Frequency of Last K ('+str(k) +') words of a sentence and first K words of next sentence by Sentence Index'
-                        column_xAxis_label = 'Words'
+                        fileLabel = str(k) + "_K words"
+                        fileLabel_byDocID = "Last/First_" + str(k) + "_k_words_byDoc"
+                        columns_to_be_plotted_yAxis = ["Word"]
+                        chart_title_label = (
+                            "Frequency of Last K ("
+                            + str(k)
+                            + ") words of a sentence and first K words of next sentence"
+                        )
+                        chart_title_byDocID = (
+                            "Frequency of Last K ("
+                            + str(k)
+                            + ") words of a sentence and first K words of next sentence by Document"
+                        )
+                        chart_title_bySentID = (
+                            "Frequency of Last K ("
+                            + str(k)
+                            + ") words of a sentence and first K words of next sentence by Sentence Index"
+                        )
+                        column_xAxis_label = "Words"
                         if sentenceID == 1:
                             if wrdID + 1 > len(words_with_stop) - k:
-                                word_list.append(["Last", k, wrd, wrdID + 1, sentenceID, s, documentID,
-                                                  IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                                word_list.append(
+                                    [
+                                        "Last",
+                                        k,
+                                        wrd,
+                                        wrdID + 1,
+                                        sentenceID,
+                                        s,
+                                        documentID,
+                                        IO_csv_util.dressFilenameForCSVHyperlink(doc),
+                                    ]
+                                )
 
-                        else:
-                            if wrdID + 1 <= k:
-                                word_list.append(["First", k, wrd, wrdID + 1, sentenceID, s, documentID,
-                                                  IO_csv_util.dressFilenameForCSVHyperlink(doc)])
-                            elif wrdID + 1 > len(words_with_stop) - k:
-                                word_list.append(["Last", k, wrd, wrdID + 1, sentenceID, s, documentID,
-                                                  IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                        elif wrdID + 1 <= k:
+                            word_list.append(
+                                [
+                                    "First",
+                                    k,
+                                    wrd,
+                                    wrdID + 1,
+                                    sentenceID,
+                                    s,
+                                    documentID,
+                                    IO_csv_util.dressFilenameForCSVHyperlink(doc),
+                                ]
+                            )
+                        elif wrdID + 1 > len(words_with_stop) - k:
+                            word_list.append(
+                                [
+                                    "Last",
+                                    k,
+                                    wrd,
+                                    wrdID + 1,
+                                    sentenceID,
+                                    s,
+                                    documentID,
+                                    IO_csv_util.dressFilenameForCSVHyperlink(doc),
+                                ]
+                            )
 
-    # REPETITION ACROSS SENTENCES (SPECIAL NGRAMS) -----------------------------------------------
-        if 'Repetition across' in processType:
-            header = ["Repeated Ngram", "Ngram Size", "Frequency (sentences)", "Sentence IDs",
-                      "Document ID", "Document"]
-            select_col = ['Repeated Ngram']
-            fileLabel = 'repeated_ngrams_' + str(k) + '-grams'
-            fileLabel_byDocID = 'repeated_ngrams_' + str(k) + '-grams_byDoc'
-            columns_to_be_plotted_yAxis = ['Repeated Ngram']
-            chart_title_label = f'Repeated {k}-grams Across Sentences'
-            chart_title_byDocID = f'Repeated {k}-grams Across Sentences by Document'
-            chart_title_bySentID = f'Repeated {k}-grams Across Sentences'
-            column_xAxis_label = 'Repeated ngrams'
+        # REPETITION ACROSS SENTENCES (SPECIAL NGRAMS) -----------------------------------------------
+        if "Repetition across" in processType:
+            header = [
+                "Repeated Ngram",
+                "Ngram Size",
+                "Frequency (sentences)",
+                "Sentence IDs",
+                "Document ID",
+                "Document",
+            ]
+            select_col = ["Repeated Ngram"]
+            fileLabel = "repeated_ngrams_" + str(k) + "-grams"
+            fileLabel_byDocID = "repeated_ngrams_" + str(k) + "-grams_byDoc"
+            columns_to_be_plotted_yAxis = ["Repeated Ngram"]
+            chart_title_label = f"Repeated {k}-grams Across Sentences"
+            chart_title_byDocID = f"Repeated {k}-grams Across Sentences by Document"
+            chart_title_bySentID = f"Repeated {k}-grams Across Sentences"
+            column_xAxis_label = "Repeated ngrams"
 
             from collections import defaultdict
+
             ngram_sentences = defaultdict(set)
             sentence_texts = {}
             for sid, s in enumerate(sentences, 1):
@@ -1326,7 +1890,7 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                     words = excludeStopWords_list(words)
                 words = [w.lower() for w in words if w.isalpha()]
                 for i in range(len(words) - k + 1):
-                    ngram = ' '.join(words[i:i + k])
+                    ngram = " ".join(words[i : i + k])
                     ngram_sentences[ngram].add(sid)
                 sentence_texts[sid] = s
 
@@ -1334,140 +1898,175 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
             for ngram, sent_ids in sorted(ngram_sentences.items(), key=lambda x: -len(x[1])):
                 if len(sent_ids) >= 2:
                     sorted_ids = sorted(sent_ids)
-                    word_list.append([ngram, k, len(sent_ids),
-                                      '; '.join(str(sid) for sid in sorted_ids),
-                                      documentID, doc_hyperlink])
+                    word_list.append(
+                        [ngram, k, len(sent_ids), "; ".join(str(sid) for sid in sorted_ids), documentID, doc_hyperlink]
+                    )
 
     # N-GRAMS & HAPAX --------------------------------------------------------------------------
-        # hapax and ngrams are processed above outside the for doc loop
-        #    a for doc loop is already carried out in the function compute_character_word_ngrams
+    # hapax and ngrams are processed above outside the for doc loop
+    #    a for doc loop is already carried out in the function compute_character_word_ngrams
 
-    if len(word_list)==0:
-        IO_user_interface_util.timed_alert(GUI_util.window,2000,"Empty file",
-                                               "The " + processType + " algorithm has not generated any output.")
+    if len(word_list) == 0:
+        IO_user_interface_util.timed_alert(
+            GUI_util.window, 2000, "Empty file", "The " + processType + " algorithm has not generated any output."
+        )
         return filesToOpen
 
     word_list.insert(0, header)
 
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', fileLabel)
-    IO_error=IO_csv_util.list_to_csv(window, word_list, outputFilename)
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, ".csv", fileLabel)
+    IO_error = IO_csv_util.list_to_csv(window, word_list, outputFilename)
 
-
-
-    
     if not IO_error:
         filesToOpen.append(outputFilename)
 
-    if chartPackage!='No charts':
-        outputFiles = charts_util.plot(outputFilename, outputDir, columns=columns_to_be_plotted_yAxis, title=chart_title_label, x_label=column_xAxis_label, plot_list=['Frequency'], title_label=column_xAxis_label)
+    if chartPackage != "No charts":
+        outputFiles = charts_util.plot(
+            outputFilename,
+            outputDir,
+            columns=columns_to_be_plotted_yAxis,
+            title=chart_title_label,
+            x_label=column_xAxis_label,
+            plot_list=["Frequency"],
+            title_label=column_xAxis_label,
+        )
 
-        if outputFiles!=None:
+        if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
 
-    if 'Repetition' in processType and chartPackage != 'No charts':
+    if "Repetition" in processType and chartPackage != "No charts":
         import pandas as _pd
+
         try:
-            _df = _pd.read_csv(outputFilename, encoding='utf-8', on_bad_lines='skip')
-            if 'First/Last Sentence' in _df.columns and 'Word' in _df.columns:
+            _df = _pd.read_csv(outputFilename, encoding="utf-8", on_bad_lines="skip")
+            if "First/Last Sentence" in _df.columns and "Word" in _df.columns:
                 grouped_png = charts_util.stacked_bar_from_csv(
-                    outputFilename, outputDir, 'Word', 'First/Last Sentence',
-                    top_n=25, grouped=True)
+                    outputFilename, outputDir, "Word", "First/Last Sentence", top_n=25, grouped=True
+                )
                 if grouped_png:
                     filesToOpen.append(grouped_png)
 
                 stacked_png = charts_util.stacked_bar_from_csv(
-                    outputFilename, outputDir, 'Word', 'First/Last Sentence',
-                    top_n=25, grouped=False)
+                    outputFilename, outputDir, "Word", "First/Last Sentence", top_n=25, grouped=False
+                )
                 if stacked_png:
                     filesToOpen.append(stacked_png)
 
-            if 'Repeated Ngram' in _df.columns and 'Frequency (sentences)' in _df.columns:
+            if "Repeated Ngram" in _df.columns and "Frequency (sentences)" in _df.columns:
                 import plotly.express as _px
-                top_df = _df.nlargest(30, 'Frequency (sentences)')
-                fig = _px.bar(top_df, x='Frequency (sentences)', y='Repeated Ngram',
-                              orientation='h',
-                              title=f'Top 30 Repeated Ngrams Across Sentences',
-                              hover_data={'Sentence IDs': True},
-                              color='Frequency (sentences)',
-                              color_continuous_scale='Viridis')
-                fig.update_layout(yaxis={'categoryorder': 'total ascending'},
-                                  xaxis_title='Number of sentences containing ngram',
-                                  yaxis_title='')
-                chart_file = os.path.join(outputDir,
-                    IO_files_util.generate_output_file_name('', '', outputDir, '.html',
-                        'repeated_ngrams_bar'))
+
+                top_df = _df.nlargest(30, "Frequency (sentences)")
+                fig = _px.bar(
+                    top_df,
+                    x="Frequency (sentences)",
+                    y="Repeated Ngram",
+                    orientation="h",
+                    title="Top 30 Repeated Ngrams Across Sentences",
+                    hover_data={"Sentence IDs": True},
+                    color="Frequency (sentences)",
+                    color_continuous_scale="Viridis",
+                )
+                fig.update_layout(
+                    yaxis={"categoryorder": "total ascending"},
+                    xaxis_title="Number of sentences containing ngram",
+                    yaxis_title="",
+                )
+                chart_file = os.path.join(
+                    outputDir,
+                    IO_files_util.generate_output_file_name("", "", outputDir, ".html", "repeated_ngrams_bar"),
+                )
                 fig.write_html(chart_file)
                 filesToOpen.append(chart_file)
         except Exception:
             pass
 
     stat_files = statistics_statistical_tests_util.run_automatic_tests(
-        outputFilename, outputDir, chartPackage, dataTransformation)
+        outputFilename, outputDir, chartPackage, dataTransformation
+    )
     filesToOpen.extend(stat_files)
 
     # ngrams already display the started running... No need to duplicate
-    if not 'unigrams' in processType:
-        IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
-                                               'Finished running ' + _proc_label + ' at', True, '', True, startTime)
+    if "unigrams" not in processType:
+        IO_user_interface_util.timed_alert(
+            GUI_util.window, 2000, "Analysis end", "Finished running " + _proc_label + " at", True, "", True, startTime
+        )
 
     return filesToOpen
 
+
 # n is n most common words
 # text is the plain text read in from a file
-def n_most_common_words(n,text):
+def n_most_common_words(n, text):
     cleaned_words, common_words = [], []
     for word in text.split():
-        fin = open('../lib/wordLists/stopwords.txt', 'r')
+        fin = open("../lib/wordLists/stopwords.txt")
         stop_words = set(fin.read().splitlines())
-        if word not in stop_words and '\'' not in word and '\"' not in word:
+        if word not in stop_words and "'" not in word and '"' not in word:
             cleaned_words.append(word)
     # print(cleaned_words)
     counts = Counter(cleaned_words)
-    #print(cleaned_words)
-    #print(str(n), ' most common words in the repeated phrases:')
+    # print(cleaned_words)
+    # print(str(n), ' most common words in the repeated phrases:')
     for key, value in counts.most_common(n):
         common_words.append([key, value])
-        #print(key, value)
-    return(common_words)
+        # print(key, value)
+    return common_words
 
-def convert_txt_file(window,inputFilename,inputDir,outputDir,openOutputFiles,excludeStopWords=True,lemmatizeWords=True):
-    filesToOpen=[]
-    outputFilename=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt', 'corpus', 'lemma_stw')
+
+def convert_txt_file(
+    window, inputFilename, inputDir, outputDir, openOutputFiles, excludeStopWords=True, lemmatizeWords=True
+):
+    filesToOpen = []
+    outputFilename = IO_files_util.generate_output_file_name(
+        inputFilename, inputDir, outputDir, ".txt", "corpus", "lemma_stw"
+    )
     filesToOpen.append(outputFilename)
 
-    inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
+    inputDocs = IO_files_util.getFileList(
+        inputFilename, inputDir, fileType=".txt", silent=False, configFileName=configFileName
+    )
 
-    Ndocs=str(len(inputDocs))
+    Ndocs = str(len(inputDocs))
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running txt conversion (lemmatization & stopwords) at',
-                                                 True, '', True, '', True)
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis start",
+        "Started running txt conversion (lemmatization & stopwords) at",
+        True,
+        "",
+        True,
+        "",
+        True,
+    )
 
-    with open(outputFilename, 'w', encoding='utf-8', errors='ignore', newline='') as outfile:
-        #print("Number of corpus text documents: ",Ndocs)
-        #currentLine.append([Ndocs])
-        documentID=0
+    with open(outputFilename, "w", encoding="utf-8", errors="ignore", newline="") as outfile:
+        # print("Number of corpus text documents: ",Ndocs)
+        # currentLine.append([Ndocs])
+        documentID = 0
         for doc in inputDocs:
             head, tail = os.path.split(doc)
-            documentID=documentID+1
+            documentID = documentID + 1
             # currentLine.append([documentID])
             print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
-            fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
+            fullText = open(doc, encoding="utf-8", errors="ignore").read()
 
-            Nsentences=str(textstat.sentence_count(fullText))
-            #print('TOTAL number of sentences: ',Nsentences)
+            Nsentences = str(textstat.sentence_count(fullText))
+            # print('TOTAL number of sentences: ',Nsentences)
 
-            Nwords=str(textstat.lexicon_count(fullText, removepunct=True))
-            #print('TOTAL number of words: ',Nwords)
+            Nwords = str(textstat.lexicon_count(fullText, removepunct=True))
+            # print('TOTAL number of words: ',Nwords)
 
-            Nsyllables =textstat.syllable_count(fullText)   # 'en_US' is textstat's default; the lang= arg is deprecated
-            #print('TOTAL number of Syllables: ',Nsyllables)
+            Nsyllables = textstat.syllable_count(fullText)  # 'en_US' is textstat's default; the lang= arg is deprecated
+            # print('TOTAL number of Syllables: ',Nsyllables)
 
             # words = fullText.split()
             # words = nltk.word_tokenize(fullText)
             from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
+
             words = tokenize_stanza_text(stanzaPipeLine(fullText))
 
             if excludeStopWords:
@@ -1477,60 +2076,82 @@ def convert_txt_file(window,inputFilename,inputDir,outputDir,openOutputFiles,exc
                 # lemmatizer = WordNetLemmatizer()
                 # text_vocab = set(lemmatizer.lemmatize(w.lower()) for w in fullText.split(" ") if w.isalpha())
                 # words = set(lemmatizing(w.lower()) for w in words if w.isalpha()) # fullText.split(" ") if w.isalpha())
-                from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, \
-                    lemmatize_stanza_word
-                text_vocab = set(lemmatize_stanza_word(stanzaPipeLine(w.lower())) for w in fullText.split(" ") if w.isalpha())
-                words = set(lemmatizing(w.lower()) for w in words if w.isalpha()) # fullText.split(" ") if w.isalpha())
+                from Stanza_functions_util import (
+                    lemmatize_stanza_word,
+                    stanzaPipeLine,
+                    tokenize_stanza_text,
+                )
+
+                text_vocab = set(
+                    lemmatize_stanza_word(stanzaPipeLine(w.lower())) for w in fullText.split(" ") if w.isalpha()
+                )
+                words = set(lemmatizing(w.lower()) for w in words if w.isalpha())  # fullText.split(" ") if w.isalpha())
 
 
 # https://pypi.org/project/textstat/
-def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles, chartPackage, dataTransformation):
+def compute_sentence_text_readability(
+    window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles, chartPackage, dataTransformation
+):
     filesToOpen = []
     documentID = 0
 
     # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='readability',
-                                                              silent=True)
-    if outputDir == '':
+    outputDir = IO_files_util.make_output_subdirectory(
+        inputFilename, inputDir, outputDir, label="readability", silent=True
+    )
+    if outputDir == "":
         return
 
-    files = IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
+    files = IO_files_util.getFileList(inputFilename, inputDir, ".txt", silent=False, configFileName=configFileName)
 
     nFile = len(files)
     if nFile == 0:
         return
 
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
-                                                   'Started running Text Readability at',
-                                                   True, '\nYou can follow Text Readability in command line.')
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis start",
+        "Started running Text Readability at",
+        True,
+        "\nYou can follow Text Readability in command line.",
+    )
 
     if nFile > 1:
-        outputFilenameTxt = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt', 'READ',
-                                                                    'stats')
-        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'READ',
-                                                                    'stats')
+        outputFilenameTxt = IO_files_util.generate_output_file_name(
+            inputFilename, inputDir, outputDir, ".txt", "READ", "stats"
+        )
+        outputFilename = IO_files_util.generate_output_file_name(
+            inputFilename, inputDir, outputDir, ".csv", "READ", "stats"
+        )
     else:
-        outputFilenameTxt = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt', 'READ',
-                                                                    'stats')
-        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'READ',
-                                                                    'stats')
+        outputFilenameTxt = IO_files_util.generate_output_file_name(
+            inputFilename, inputDir, outputDir, ".txt", "READ", "stats"
+        )
+        outputFilename = IO_files_util.generate_output_file_name(
+            inputFilename, inputDir, outputDir, ".csv", "READ", "stats"
+        )
     filesToOpen.append(outputFilenameTxt)
     filesToOpen.append(outputFilename)
 
-    fieldnames = ['Flesch Reading Ease formula',
-                  'Flesch-Kincaid Grade Level',
-                  'Fog Scale (Gunning FOG Formula)',
-                  'SMOG (Simple Measure of Gobbledygook) Index',
-                  'Automated Readability Index',
-                  'Coleman-Liau Index',
-                  'Linsear Write Formula',
-                  'Dale-Chall Readability Score',
-                  'Overall readability consensus',
-                  'Grade level',
-                  'Sentence ID', 'Sentence',
-                  'Document ID', 'Document']
+    fieldnames = [
+        "Flesch Reading Ease formula",
+        "Flesch-Kincaid Grade Level",
+        "Fog Scale (Gunning FOG Formula)",
+        "SMOG (Simple Measure of Gobbledygook) Index",
+        "Automated Readability Index",
+        "Coleman-Liau Index",
+        "Linsear Write Formula",
+        "Dale-Chall Readability Score",
+        "Overall readability consensus",
+        "Grade level",
+        "Sentence ID",
+        "Sentence",
+        "Document ID",
+        "Document",
+    ]
 
-    with open(outputFilename, 'w', encoding='utf-8', errors='ignore', newline='') as outputCsvFile:
+    with open(outputFilename, "w", encoding="utf-8", errors="ignore", newline="") as outputCsvFile:
         writer = csv.DictWriter(outputCsvFile, fieldnames=fieldnames)
         writer.writeheader()
 
@@ -1542,11 +2163,11 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
         documentID = 0
         for file in files:
             # read txt file
-            text = (open(file, "r", encoding="utf-8", errors="ignore").read())
+            text = open(file, encoding="utf-8", errors="ignore").read()
 
             documentID = documentID + 1
             head, tail = os.path.split(file)
-            print("Processing file " + str(documentID) + "/" + str(nFile) + ' ' + tail)
+            print("Processing file " + str(documentID) + "/" + str(nFile) + " " + tail)
 
             # write text files ____________________________________________
 
@@ -1575,9 +2196,10 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
             # outputTxtFile.write ("  9.0–9.9 easily understood by an average 13th to 15th-grade (college) student\n\n")
 
             outputTxtFile.write(
-                "RESULTS -----------------------------------------------------------------------------------------------------------------------------------------------\n\n")
+                "RESULTS -----------------------------------------------------------------------------------------------------------------------------------------------\n\n"
+            )
             # Syllable count
-            str_value = "Syllable count " + str(textstat.syllable_count(text))   # lang= deprecated; en_US is default
+            str_value = "Syllable count " + str(textstat.syllable_count(text))  # lang= deprecated; en_US is default
             outputTxtFile.write(str_value + "\n")
             # print("\n\nSyllable count ",textstat.syllable_count(text, lang='en_US'))
             # Lexicon count
@@ -1623,7 +2245,8 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
             # print("Dale-Chall Readability Score",textstat.dale_chall_readability_score(text))
             # Readability Consensus based upon all the above tests
             str_value = "\n\nReadability Consensus Level based upon all the above tests: " + str(
-                textstat.text_standard(text, float_output=False) + '\n\n')
+                textstat.text_standard(text, float_output=False) + "\n\n"
+            )
             outputTxtFile.write(str_value + "\n")
             # print("\n\nReadability Consensus based upon all the above tests: ",textstat.text_standard(text, float_output=False))
 
@@ -1631,8 +2254,11 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
 
             # split into sentences
             # sentences = nltk.sent_tokenize(text)
-            from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, \
-                lemmatize_stanza_word
+            from Stanza_functions_util import (
+                sentence_split_stanza_text,
+                stanzaPipeLine,
+            )
+
             sentences = sentence_split_stanza_text(stanzaPipeLine(text))
             # analyze each sentence in text for readability
             sentenceID = 0  # to store sentence index
@@ -1707,11 +2333,27 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
                 elif str9 == "23rd and 24th grade":
                     sortOrder = 24
                 else:
-                    str9 = 'Unclassified'
+                    str9 = "Unclassified"
                     sortOrder = 25
                 # rowValue=[[documentID,file,sentenceID,sent,str1,str2,str3,str4,str5,str6,str7,str8,str9,sortOrder]]
                 rowValue = [
-                    [str1, str2, str3, str4, str5, str6, str7, str8, str9, sortOrder, sentenceID, sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(file)]]
+                    [
+                        str1,
+                        str2,
+                        str3,
+                        str4,
+                        str5,
+                        str6,
+                        str7,
+                        str8,
+                        str9,
+                        sortOrder,
+                        sentenceID,
+                        sent,
+                        documentID,
+                        IO_csv_util.dressFilenameForCSVHyperlink(file),
+                    ]
+                ]
                 writer = csv.writer(outputCsvFile)
                 writer.writerows(rowValue)
         # at least 12th grade level HIGH-SCHOOL EDUCATION
@@ -1727,35 +2369,56 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
         outputTxtFile.close()
         outputCsvFile.close()
 
-
         result = True
 
         # readability
-        if chartPackage!='No charts':
+        if chartPackage != "No charts":
             result = True
             # if nFile>10:
             #     result = mb.askyesno("Excel charts","You have " + str(nFile) + " files for which to compute Excel charts for each file.\n\nTHIS WILL TAKE A LONG TIME TO PRODUCE.\n\nAre you sure you want to do that?")
             if result == True:
-
                 # overall qualitative grade level (e.g., 4th)
                 hover_label = []
-                outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Overall readability consensus'], title='Text Readability\nFrequencies of Overall Readability Consensus', x_label='Consensus readability level', file_label='cons', group_by=None)
-                if outputFiles!=None:
+                outputFiles = charts_util.plot(
+                    outputFilename,
+                    outputDir,
+                    columns=["Overall readability consensus"],
+                    title="Text Readability\nFrequencies of Overall Readability Consensus",
+                    x_label="Consensus readability level",
+                    file_label="cons",
+                    group_by=None,
+                )
+                if outputFiles != None:
                     if isinstance(outputFiles, str):
                         filesToOpen.append(outputFiles)
                     else:
                         filesToOpen.extend(outputFiles)
 
                 # 0 (Flesch Reading Ease) has a different scale and 3 (SMOG) is often 0
-                #	do NOT plot on the same chart these two measures
-                #	plot all other 6 measures
-                columns_to_be_plotted_yAxis=['Flesch-Kincaid Grade Level','Fog Scale (Gunning FOG Formula)','Automated Readability Index','Coleman-Liau Index','Linsear Write Formula','Dale-Chall Readability Score']
+                # do NOT plot on the same chart these two measures
+                # plot all other 6 measures
+                columns_to_be_plotted_yAxis = [
+                    "Flesch-Kincaid Grade Level",
+                    "Fog Scale (Gunning FOG Formula)",
+                    "Automated Readability Index",
+                    "Coleman-Liau Index",
+                    "Linsear Write Formula",
+                    "Dale-Chall Readability Score",
+                ]
                 # multiple lines with hover-over effects the sample line chart produces wrong results
                 # hover_label = ['Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence']
                 hover_label = []
 
-                outputFiles = charts_util.plot(outputFilename, outputDir, columns=columns_to_be_plotted_yAxis, title='Text Readability\nFrequencies of 6 Readability Measures', x_label='Readability scores', count=0, group_by=None)
-                if outputFiles!=None:
+                outputFiles = charts_util.plot(
+                    outputFilename,
+                    outputDir,
+                    columns=columns_to_be_plotted_yAxis,
+                    title="Text Readability\nFrequencies of 6 Readability Measures",
+                    x_label="Readability scores",
+                    count=0,
+                    group_by=None,
+                )
+                if outputFiles != None:
                     if isinstance(outputFiles, str):
                         filesToOpen.append(outputFiles)
                     else:
@@ -1763,20 +2426,34 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
 
                 # overall numeric grade level
                 hover_label = []
-                outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Grade level'], title='Text Readability\nFrequencies of Overall Grade Level', x_label='Grade level', count=0, file_label='grade', plot_list=['Grade level'], title_label='Readability Grade Level')
-                if outputFiles!=None:
+                outputFiles = charts_util.plot(
+                    outputFilename,
+                    outputDir,
+                    columns=["Grade level"],
+                    title="Text Readability\nFrequencies of Overall Grade Level",
+                    x_label="Grade level",
+                    count=0,
+                    file_label="grade",
+                    plot_list=["Grade level"],
+                    title_label="Readability Grade Level",
+                )
+                if outputFiles != None:
                     if isinstance(outputFiles, str):
                         filesToOpen.append(outputFiles)
                     else:
                         filesToOpen.extend(outputFiles)
 
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Text Readability at',
-                                       True, '', True, startTime)
+    IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis end", "Finished running Text Readability at", True, "", True, startTime
+    )
 
     if len(inputDir) != 0:
-        mb.showwarning(title='Warning',
-                       message='The output filenames generated by Textstat readability contain the name of the directory processed in input, rather than the name of any individual file in the directory.\n\nBoth txt & csv files include all ' + str(
-                           nFile) + ' files in the input directory processed by Textstat.')
+        mb.showwarning(
+            title="Warning",
+            message="The output filenames generated by Textstat readability contain the name of the directory processed in input, rather than the name of any individual file in the directory.\n\nBoth txt & csv files include all "
+            + str(nFile)
+            + " files in the input directory processed by Textstat.",
+        )
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir)
 
@@ -1784,9 +2461,10 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
 # written by Siyan Pu October 2021
 # edited by Roberto Franzosi October 2021
 def sentence_structure_tree(inputFilename, outputDir):
-    if inputFilename == '':
+    if inputFilename == "":
         sentences = GUI_IO_util.enter_value_widget(
-            'Enter sentence                                                                               ', 'Enter', 1)
+            "Enter sentence                                                                               ", "Enter", 1
+        )
         sent = [sentences[0]]
         if len(sent) == 0:
             return
@@ -1795,16 +2473,18 @@ def sentence_structure_tree(inputFilename, outputDir):
         maxNum = 1
     else:
         # split into sentences
-        text = (open(inputFilename, "r", encoding="utf-8", errors='ignore').read())
+        text = open(inputFilename, encoding="utf-8", errors="ignore").read()
         sentences = nltk.sent_tokenize(text)
-        maxNum = GUI_IO_util.enter_value_widget('Enter number of sentences to be visualized', 'Enter', 1)
+        maxNum = GUI_IO_util.enter_value_widget("Enter number of sentences to be visualized", "Enter", 1)
         maxNum = str(maxNum[0])
-        if maxNum == '':
+        if maxNum == "":
             return
         maxNum = int(maxNum)
         if maxNum >= 10:
-            result = mb.askyesno('Warning',
-                                 "The number of sentences entered is quite large. The tree graph algorithm will produce a png file for every sentence.\n\nAre you sure you want to continue?")
+            result = mb.askyesno(
+                "Warning",
+                "The number of sentences entered is quite large. The tree graph algorithm will produce a png file for every sentence.\n\nAre you sure you want to continue?",
+            )
             if result == False:  # yes no False
                 return
 
@@ -1824,10 +2504,7 @@ def sentence_structure_tree(inputFilename, outputDir):
 
         def to_nltk_tree(node):
             if node.n_lefts + node.n_rights > 0:
-                return Tree(token_format(node),
-                            [to_nltk_tree(child)
-                             for child in node.children]
-                            )
+                return Tree(token_format(node), [to_nltk_tree(child) for child in node.children])
             else:
                 return token_format(node)
 
@@ -1835,10 +2512,11 @@ def sentence_structure_tree(inputFilename, outputDir):
 
         cf = TreeView(tree[0])._cframe
 
-        if inputFilename == '':
-            cf.print_to_file(outputDir + 'NLP_sentence_tree.ps')
+        if inputFilename == "":
+            cf.print_to_file(outputDir + "NLP_sentence_tree.ps")
         else:
-            cf.print_to_file(outputDir + '/' + os.path.basename(inputFilename) + '_' + str(sentenceID) + '_tree.ps')
+            cf.print_to_file(outputDir + "/" + os.path.basename(inputFilename) + "_" + str(sentenceID) + "_tree.ps")
+
 
 def sentence_complexity_scores(parse):
     """Yngve and Frazier scores of one constituency parse string, as (Yngve score, Yngve sum, Frazier score,
@@ -1865,18 +2543,20 @@ def sentence_complexity_scores(parse):
 
 
 # written by Mino Cha March/April 2022
-def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, configFileName,
-                                openOutputFiles, chartPackage, dataTransformation):
+def compute_sentence_complexity(
+    window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles, chartPackage, dataTransformation
+):
     ## list for csv file
-    columns=[]
+    columns = []
     documentID = []
     document = []
     documentName = []
 
     # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='complexity',
-                                                              silent=True)
-    if outputDir == '':
+    outputDir = IO_files_util.make_output_subdirectory(
+        inputFilename, inputDir, outputDir, label="complexity", silent=True
+    )
+    if outputDir == "":
         return
 
     all_input_docs = {}
@@ -1884,16 +2564,17 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, conf
 
     filesToOpen = []
 
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
-                                                   'Started running Sentence Complexity at', True)
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis start", "Started running Sentence Complexity at", True
+    )
     if len(inputFilename) > 0:
         numFiles = 1
         doc = inputFilename
-        if doc.endswith('.txt'):
-            with open(doc, 'r', encoding='utf-8', errors='ignore') as file:
+        if doc.endswith(".txt"):
+            with open(doc, encoding="utf-8", errors="ignore") as file:
                 dId += 1
                 head, tail = os.path.split(doc)
-                print("Processing file " + str(dId) + '/' + str(numFiles) + tail)
+                print("Processing file " + str(dId) + "/" + str(numFiles) + tail)
                 text = file.read()
                 documentID.append(dId)
                 document.append(IO_csv_util.dressFilenameForCSVHyperlink(os.path.join(inputDir, doc)))
@@ -1905,41 +2586,51 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, conf
         #                  message='The selected input directory does NOT contain any file of txt type.\n\nPlease, select a different directory and try again.')
         #     return
 
-        inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False,
-                                                  configFileName=configFileName)
+        inputDocs = IO_files_util.getFileList(
+            inputFilename, inputDir, fileType=".txt", silent=False, configFileName=configFileName
+        )
         numFiles = len(inputDocs)
         if numFiles == 0:
             return
 
         for doc in inputDocs:
-            if doc.endswith('.txt'):
+            if doc.endswith(".txt"):
                 head, tail = os.path.split(doc)
-                with open(os.path.join(inputDir, doc), 'r', encoding='utf-8', errors='ignore') as file:
+                with open(os.path.join(inputDir, doc), encoding="utf-8", errors="ignore") as file:
                     dId += 1
-                    print("Importing filename " + str(dId) + '/' + str(numFiles) + ' ' + tail)
+                    print("Importing filename " + str(dId) + "/" + str(numFiles) + " " + tail)
                     text = file.read()
                     documentID.append(dId)
                     document.append(IO_csv_util.dressFilenameForCSVHyperlink(os.path.join(inputDir, doc)))
                     all_input_docs[dId] = text
-    document_df = pd.DataFrame({'Document ID': documentID, 'Document': document})
-    document_df = document_df.astype('str')
+    document_df = pd.DataFrame({"Document ID": documentID, "Document": document})
+    document_df = document_df.astype("str")
 
-    columns = ['Sentence length (No. of words)', 'Yngve score', 'Yngve sum', 'Frazier score', 'Frazier sum',
-               'Sentence ID', 'Sentence', 'Document ID', 'Document']
+    columns = [
+        "Sentence length (No. of words)",
+        "Yngve score",
+        "Yngve sum",
+        "Frazier score",
+        "Frazier sum",
+        "Sentence ID",
+        "Sentence",
+        "Document ID",
+        "Document",
+    ]
     try:
-        nlp = stanza.Pipeline(lang='en', processors='tokenize,pos,constituency',use_gpu=False)
+        nlp = stanza.Pipeline(lang="en", processors="tokenize,pos,constituency", use_gpu=False)
     except Exception:
         # The first load can fail when stanza's resources.json or the English models are missing/stale.
         # Download them (the real remedy) and retry. Do NOT pip-install an old pinned stanza at runtime:
         # you cannot downgrade the running interpreter (it fails with CalledProcessError), the current
         # stanza is 1.10+, and pip is not available in the frozen build.
-        stanza.download('en', verbose=False)
-        nlp = stanza.Pipeline(lang='en', processors='tokenize,pos,constituency',use_gpu=False)
+        stanza.download("en", verbose=False)
+        nlp = stanza.Pipeline(lang="en", processors="tokenize,pos,constituency", use_gpu=False)
     op = pd.DataFrame(columns=columns)
     for idx, txt in enumerate(all_input_docs.items()):
         doc = nlp(txt[1])
         tail = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(document[idx]))[1]
-        print("Processing file " + str(idx+1) + '/' + str(numFiles) + ' ' + tail)
+        print("Processing file " + str(idx + 1) + "/" + str(numFiles) + " " + tail)
         for i, sentence in enumerate(doc.sentences):
             sentence_length = len(sentence.words)
             yAvg, ySum, fAvg, fSum = sentence_complexity_scores(str(sentence.constituency))
@@ -1959,110 +2650,136 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, conf
             # op = op.append({ deprecated
             # https://stackoverflow.com/questions/75956209/dataframe-object-has-no-attribute-append
             # df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-            op = pd.concat([op, pd.DataFrame([{
-                'Sentence length (No. of words)': sentence_length,
-                'Yngve score': yAvg,
-                'Yngve sum': ySum,
-                'Frazier score': fAvg,
-                'Frazier sum': fSum,
-                'Sentence ID': i + 1,
-                'Sentence': sentence.text,
-                'Document ID': idx + 1,
-                'Document': document[idx]}])],
-            ignore_index=True)
+            op = pd.concat(
+                [
+                    op,
+                    pd.DataFrame(
+                        [
+                            {
+                                "Sentence length (No. of words)": sentence_length,
+                                "Yngve score": yAvg,
+                                "Yngve sum": ySum,
+                                "Frazier score": fAvg,
+                                "Frazier sum": fSum,
+                                "Sentence ID": i + 1,
+                                "Sentence": sentence.text,
+                                "Document ID": idx + 1,
+                                "Document": document[idx],
+                            }
+                        ]
+                    ),
+                ],
+                ignore_index=True,
+            )
     # not necessary sorted already
     # op.sort_values(by=['Document ID', 'Sentence ID'], ascending=True, inplace=True)
 
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                             'SentenceComplexity')
-    IO_csv_util.df_to_csv(window, op, outputFilename, columns, False, 'utf-8')
+    outputFilename = IO_files_util.generate_output_file_name(
+        inputFilename, inputDir, outputDir, ".csv", "SentenceComplexity"
+    )
+    IO_csv_util.df_to_csv(window, op, outputFilename, columns, False, "utf-8")
     filesToOpen.append(outputFilename)
 
     # TODO we need an X-axis to plot these scores against
     # , 'Frazier score'
-    outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Yngve score'], title='Frequency Distribution of Complexity Scores\n(Yngve & Frazier)', x_label='Complexity scores', count=0, plot_list=['Yngve score','Frazier score'], title_label='Complexity Scores', y_label='Scores')
-    if outputFiles!=None:
+    outputFiles = charts_util.plot(
+        outputFilename,
+        outputDir,
+        columns=["Yngve score"],
+        title="Frequency Distribution of Complexity Scores\n(Yngve & Frazier)",
+        x_label="Complexity scores",
+        count=0,
+        plot_list=["Yngve score", "Frazier score"],
+        title_label="Complexity Scores",
+        y_label="Scores",
+    )
+    if outputFiles != None:
         if isinstance(outputFiles, str):
             filesToOpen.append(outputFiles)
         else:
             filesToOpen.extend(outputFiles)
 
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
-                                       'Finished running Sentence Complexity at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis end", "Finished running Sentence Complexity at", True, "", True, startTime
+    )
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir)
 
 
-def compute_subordination_ratio(window, inputFilename, inputDir, outputDir, configFileName,
-                                openOutputFiles, chartPackage, dataTransformation):
+def compute_subordination_ratio(
+    window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles, chartPackage, dataTransformation
+):
     """Calculate subordination ratio (subordinate clauses / total clauses) for each sentence."""
     columns = []
     documentID = []
     document = []
 
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='subordination',
-                                                              silent=True)
-    if outputDir == '':
+    outputDir = IO_files_util.make_output_subdirectory(
+        inputFilename, inputDir, outputDir, label="subordination", silent=True
+    )
+    if outputDir == "":
         return
 
     all_input_docs = {}
     dId = 0
     filesToOpen = []
 
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                                   'Started running Subordination Ratio at', True)
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis start", "Started running Subordination Ratio at", True
+    )
 
     if len(inputFilename) > 0:
         numFiles = 1
         doc = inputFilename
-        if doc.endswith('.txt'):
-            with open(doc, 'r', encoding='utf-8', errors='ignore') as file:
+        if doc.endswith(".txt"):
+            with open(doc, encoding="utf-8", errors="ignore") as file:
                 dId += 1
                 head, tail = os.path.split(doc)
-                print("Processing file " + str(dId) + '/' + str(numFiles) + tail)
+                print("Processing file " + str(dId) + "/" + str(numFiles) + tail)
                 text = file.read()
                 documentID.append(dId)
                 document.append(IO_csv_util.dressFilenameForCSVHyperlink(os.path.join(inputDir, doc)))
                 all_input_docs[dId] = text
     else:
-        inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False,
-                                                  configFileName=configFileName)
+        inputDocs = IO_files_util.getFileList(
+            inputFilename, inputDir, fileType=".txt", silent=False, configFileName=configFileName
+        )
         numFiles = len(inputDocs)
         if numFiles == 0:
             return
 
         for doc in inputDocs:
-            if doc.endswith('.txt'):
+            if doc.endswith(".txt"):
                 head, tail = os.path.split(doc)
-                with open(os.path.join(inputDir, doc), 'r', encoding='utf-8', errors='ignore') as file:
+                with open(os.path.join(inputDir, doc), encoding="utf-8", errors="ignore") as file:
                     dId += 1
-                    print("Importing filename " + str(dId) + '/' + str(numFiles) + ' ' + tail)
+                    print("Importing filename " + str(dId) + "/" + str(numFiles) + " " + tail)
                     text = file.read()
                     documentID.append(dId)
                     document.append(IO_csv_util.dressFilenameForCSVHyperlink(os.path.join(inputDir, doc)))
                     all_input_docs[dId] = text
 
-    document_df = pd.DataFrame({'Document ID': documentID, 'Document': document})
-    document_df = document_df.astype('str')
+    document_df = pd.DataFrame({"Document ID": documentID, "Document": document})
+    document_df = document_df.astype("str")
 
-    columns = ['Subordination Ratio', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
+    columns = ["Subordination Ratio", "Sentence ID", "Sentence", "Document ID", "Document"]
 
     try:
-        nlp = stanza.Pipeline(lang='en', processors='tokenize,pos,depparse', use_gpu=False)
+        nlp = stanza.Pipeline(lang="en", processors="tokenize,pos,depparse", use_gpu=False)
     except Exception:
         # download the stanza models and retry -- never pip-downgrade stanza at runtime (see note above)
-        stanza.download('en', verbose=False)
-        nlp = stanza.Pipeline(lang='en', processors='tokenize,pos,depparse', use_gpu=False)
+        stanza.download("en", verbose=False)
+        nlp = stanza.Pipeline(lang="en", processors="tokenize,pos,depparse", use_gpu=False)
 
     op = pd.DataFrame(columns=columns)
 
     # Subordination markers in dependency relations
-    subordination_deps = {'acl', 'advcl', 'mark', 'csubj', 'ccomp', 'xcomp'}
+    subordination_deps = {"acl", "advcl", "mark", "csubj", "ccomp", "xcomp"}
 
     for idx, txt in enumerate(all_input_docs.items()):
         doc = nlp(txt[1])
         tail = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(document[idx]))[1]
-        print("Processing file " + str(idx+1) + '/' + str(numFiles) + ' ' + tail)
+        print("Processing file " + str(idx + 1) + "/" + str(numFiles) + " " + tail)
 
         for i, sentence in enumerate(doc.sentences):
             total_deps = len(sentence.dependencies)
@@ -2075,20 +2792,41 @@ def compute_subordination_ratio(window, inputFilename, inputDir, outputDir, conf
                         subordinate_count += 1
                 subordination_ratio = round(subordinate_count / total_deps, 4)
 
-            op = pd.concat([op, pd.DataFrame([{
-                'Subordination Ratio': subordination_ratio,
-                'Sentence ID': i + 1,
-                'Sentence': sentence.text,
-                'Document ID': idx + 1,
-                'Document': document[idx]}])],
-            ignore_index=True)
+            op = pd.concat(
+                [
+                    op,
+                    pd.DataFrame(
+                        [
+                            {
+                                "Subordination Ratio": subordination_ratio,
+                                "Sentence ID": i + 1,
+                                "Sentence": sentence.text,
+                                "Document ID": idx + 1,
+                                "Document": document[idx],
+                            }
+                        ]
+                    ),
+                ],
+                ignore_index=True,
+            )
 
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                             'SubordinationRatio')
-    IO_csv_util.df_to_csv(window, op, outputFilename, columns, False, 'utf-8')
+    outputFilename = IO_files_util.generate_output_file_name(
+        inputFilename, inputDir, outputDir, ".csv", "SubordinationRatio"
+    )
+    IO_csv_util.df_to_csv(window, op, outputFilename, columns, False, "utf-8")
     filesToOpen.append(outputFilename)
 
-    outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Subordination Ratio'], title='Distribution of Subordination Ratios', x_label='Subordination Ratio', count=0, plot_list=['Subordination Ratio'], title_label='Subordination Ratio', y_label='Frequency')
+    outputFiles = charts_util.plot(
+        outputFilename,
+        outputDir,
+        columns=["Subordination Ratio"],
+        title="Distribution of Subordination Ratios",
+        x_label="Subordination Ratio",
+        count=0,
+        plot_list=["Subordination Ratio"],
+        title_label="Subordination Ratio",
+        y_label="Frequency",
+    )
 
     if outputFiles != None:
         if isinstance(outputFiles, str):
@@ -2096,79 +2834,84 @@ def compute_subordination_ratio(window, inputFilename, inputDir, outputDir, conf
         else:
             filesToOpen.extend(outputFiles)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                       'Finished running Subordination Ratio at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis end", "Finished running Subordination Ratio at", True, "", True, startTime
+    )
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir)
 
 
-def compute_dependency_distance(window, inputFilename, inputDir, outputDir, configFileName,
-                                openOutputFiles, chartPackage, dataTransformation):
+def compute_dependency_distance(
+    window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles, chartPackage, dataTransformation
+):
     """Calculate average dependency distance (word distance in parse tree) for each sentence."""
     columns = []
     documentID = []
     document = []
 
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='dep_distance',
-                                                              silent=True)
-    if outputDir == '':
+    outputDir = IO_files_util.make_output_subdirectory(
+        inputFilename, inputDir, outputDir, label="dep_distance", silent=True
+    )
+    if outputDir == "":
         return
 
     all_input_docs = {}
     dId = 0
     filesToOpen = []
 
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                                   'Started running Dependency Distance at', True)
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis start", "Started running Dependency Distance at", True
+    )
 
     if len(inputFilename) > 0:
         numFiles = 1
         doc = inputFilename
-        if doc.endswith('.txt'):
-            with open(doc, 'r', encoding='utf-8', errors='ignore') as file:
+        if doc.endswith(".txt"):
+            with open(doc, encoding="utf-8", errors="ignore") as file:
                 dId += 1
                 head, tail = os.path.split(doc)
-                print("Processing file " + str(dId) + '/' + str(numFiles) + tail)
+                print("Processing file " + str(dId) + "/" + str(numFiles) + tail)
                 text = file.read()
                 documentID.append(dId)
                 document.append(IO_csv_util.dressFilenameForCSVHyperlink(os.path.join(inputDir, doc)))
                 all_input_docs[dId] = text
     else:
-        inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False,
-                                                  configFileName=configFileName)
+        inputDocs = IO_files_util.getFileList(
+            inputFilename, inputDir, fileType=".txt", silent=False, configFileName=configFileName
+        )
         numFiles = len(inputDocs)
         if numFiles == 0:
             return
 
         for doc in inputDocs:
-            if doc.endswith('.txt'):
+            if doc.endswith(".txt"):
                 head, tail = os.path.split(doc)
-                with open(os.path.join(inputDir, doc), 'r', encoding='utf-8', errors='ignore') as file:
+                with open(os.path.join(inputDir, doc), encoding="utf-8", errors="ignore") as file:
                     dId += 1
-                    print("Importing filename " + str(dId) + '/' + str(numFiles) + ' ' + tail)
+                    print("Importing filename " + str(dId) + "/" + str(numFiles) + " " + tail)
                     text = file.read()
                     documentID.append(dId)
                     document.append(IO_csv_util.dressFilenameForCSVHyperlink(os.path.join(inputDir, doc)))
                     all_input_docs[dId] = text
 
-    document_df = pd.DataFrame({'Document ID': documentID, 'Document': document})
-    document_df = document_df.astype('str')
+    document_df = pd.DataFrame({"Document ID": documentID, "Document": document})
+    document_df = document_df.astype("str")
 
-    columns = ['Avg Dependency Distance', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
+    columns = ["Avg Dependency Distance", "Sentence ID", "Sentence", "Document ID", "Document"]
 
     try:
-        nlp = stanza.Pipeline(lang='en', processors='tokenize,pos,depparse', use_gpu=False)
+        nlp = stanza.Pipeline(lang="en", processors="tokenize,pos,depparse", use_gpu=False)
     except Exception:
         # download the stanza models and retry -- never pip-downgrade stanza at runtime (see note above)
-        stanza.download('en', verbose=False)
-        nlp = stanza.Pipeline(lang='en', processors='tokenize,pos,depparse', use_gpu=False)
+        stanza.download("en", verbose=False)
+        nlp = stanza.Pipeline(lang="en", processors="tokenize,pos,depparse", use_gpu=False)
 
     op = pd.DataFrame(columns=columns)
 
     for idx, txt in enumerate(all_input_docs.items()):
         doc = nlp(txt[1])
         tail = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(document[idx]))[1]
-        print("Processing file " + str(idx+1) + '/' + str(numFiles) + ' ' + tail)
+        print("Processing file " + str(idx + 1) + "/" + str(numFiles) + " " + tail)
 
         for i, sentence in enumerate(doc.sentences):
             if len(sentence.words) <= 1:
@@ -2185,20 +2928,41 @@ def compute_dependency_distance(window, inputFilename, inputDir, outputDir, conf
                 else:
                     avg_distance = 0
 
-            op = pd.concat([op, pd.DataFrame([{
-                'Avg Dependency Distance': avg_distance,
-                'Sentence ID': i + 1,
-                'Sentence': sentence.text,
-                'Document ID': idx + 1,
-                'Document': document[idx]}])],
-            ignore_index=True)
+            op = pd.concat(
+                [
+                    op,
+                    pd.DataFrame(
+                        [
+                            {
+                                "Avg Dependency Distance": avg_distance,
+                                "Sentence ID": i + 1,
+                                "Sentence": sentence.text,
+                                "Document ID": idx + 1,
+                                "Document": document[idx],
+                            }
+                        ]
+                    ),
+                ],
+                ignore_index=True,
+            )
 
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                             'DependencyDistance')
-    IO_csv_util.df_to_csv(window, op, outputFilename, columns, False, 'utf-8')
+    outputFilename = IO_files_util.generate_output_file_name(
+        inputFilename, inputDir, outputDir, ".csv", "DependencyDistance"
+    )
+    IO_csv_util.df_to_csv(window, op, outputFilename, columns, False, "utf-8")
     filesToOpen.append(outputFilename)
 
-    outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Avg Dependency Distance'], title='Distribution of Dependency Distances', x_label='Avg Dependency Distance', count=0, plot_list=['Avg Dependency Distance'], title_label='Avg Dependency Distance', y_label='Frequency')
+    outputFiles = charts_util.plot(
+        outputFilename,
+        outputDir,
+        columns=["Avg Dependency Distance"],
+        title="Distribution of Dependency Distances",
+        x_label="Avg Dependency Distance",
+        count=0,
+        plot_list=["Avg Dependency Distance"],
+        title_label="Avg Dependency Distance",
+        y_label="Frequency",
+    )
 
     if outputFiles != None:
         if isinstance(outputFiles, str):
@@ -2206,10 +2970,12 @@ def compute_dependency_distance(window, inputFilename, inputDir, outputDir, conf
         else:
             filesToOpen.extend(outputFiles)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                       'Finished running Dependency Distance at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis end", "Finished running Dependency Distance at", True, "", True, startTime
+    )
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir)
+
 
 # def compute_corpus_statistics_byPOS(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles,
 #                                     chartPackage, dataTransformation):

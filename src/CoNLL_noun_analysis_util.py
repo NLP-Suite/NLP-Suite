@@ -6,38 +6,42 @@ modified by Tony Apr 2022
 """
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window, "CoNLL Table Analyzer",
-                                          ['csv', 'os', 'collections']) == False:
+if (
+    IO_libraries_util.install_all_Python_packages(GUI_util.window, "CoNLL Table Analyzer", ["csv", "os", "collections"])
+    == False
+):
     sys.exit(0)
 
 from collections import Counter
+
 import pandas as pd
 
-import IO_files_util
-import IO_csv_util
-import IO_user_interface_util
-import CoNLL_util
 import charts_util
-import statistics_csv_util
+import CoNLL_util
+import IO_csv_util
+import IO_files_util
+import IO_user_interface_util
 import Stanford_CoreNLP_tags_util
 
 dict_POSTAG, dict_DEPREL = Stanford_CoreNLP_tags_util.dict_POSTAG, Stanford_CoreNLP_tags_util.dict_DEPREL
 
-recordID_position = 9 # NEW CoNLL_U
-sentenceID_position = 10 # NEW CoNLL_U
-documentID_position = 11 # NEW CoNLL_U
+recordID_position = 9  # NEW CoNLL_U
+sentenceID_position = 10  # NEW CoNLL_U
+documentID_position = 11  # NEW CoNLL_U
 
 # Following are used if running all analyses to prevent redundancy
-inputFilename = ''
-outputDir = ''
+inputFilename = ""
+outputDir = ""
 cla_open_csv = False  # if run from command line, will check if they want to open the CSV
 
 """
     SUPPORTING COMMANDS FOR MAIN FUNCTIONS
 """
+
 
 # Written by Tony Apr 2022
 # prepare data in a given way
@@ -48,16 +52,18 @@ def data_preparation(data, tag_list, name_list, tag_pos):
     for tok in data:
         if tok[tag_pos] in tag_list:
             try:
-                dat.append(tok+[name_list[tag_list.index(tok[tag_pos])]])
+                dat.append(tok + [name_list[tag_list.index(tok[tag_pos])]])
             except:
                 print("???")
     dat = sorted(dat, key=lambda x: int(x[recordID_position]))
     return dat
 
+
 # to avoid key value error
 
 # Take in file name, output is a list of rows each with columns 1->11 in the conll table
 # Used to divide sentences etc.
+
 
 def compute_stats(data):
     global postag_list, postag_counter, deprel_list, deprel_counter, ner_list, ner_counter
@@ -69,7 +75,9 @@ def compute_stats(data):
     ner_counter = Counter(ner_list)
     return postag_list, postag_counter, deprel_list, deprel_counter, ner_list, ner_counter
 
+
 # noun analysis; compute frequencies
+
 
 def noun_POSTAG_NER_DEPREL_compute_lists_frequencies(data, data_divided_sents):
     # print("\n\n################# NOUN ANALYSIS ################")
@@ -78,25 +86,43 @@ def noun_POSTAG_NER_DEPREL_compute_lists_frequencies(data, data_divided_sents):
     list_nouns_ner = []
 
     # must all be sorted in descending order
-    list_nouns_postag = data_preparation(data, ['NN', 'NNS', 'NNP', 'NNPS'],
-     ['Noun singular/mass (NN)', 'Noun plural (NNS)', 'Proper noun singular (NNP)', 'Proper noun plural (NNPS)'], 3)
-    noun_postag_stats = [['Noun POS Tags', 'Frequencies'],
-                         ['Proper noun singular (NNP)', postag_counter['NNP']],
-                         ['Proper noun plural (NNPS)', postag_counter['NNPS']],
-                         ['Noun singular/mass (NN)', postag_counter['NN']],
-                         ['Noun plural (NNS)', postag_counter['NNS']]]
+    list_nouns_postag = data_preparation(
+        data,
+        ["NN", "NNS", "NNP", "NNPS"],
+        ["Noun singular/mass (NN)", "Noun plural (NNS)", "Proper noun singular (NNP)", "Proper noun plural (NNPS)"],
+        3,
+    )
+    noun_postag_stats = [
+        ["Noun POS Tags", "Frequencies"],
+        ["Proper noun singular (NNP)", postag_counter["NNP"]],
+        ["Proper noun plural (NNPS)", postag_counter["NNPS"]],
+        ["Noun singular/mass (NN)", postag_counter["NN"]],
+        ["Noun plural (NNS)", postag_counter["NNS"]],
+    ]
 
-    list_nouns_deprel = data_preparation(data, ['obj','iobj','nsubj','nsubj:pass','csubj','csubj:pass'],
-    ['Object (obj)','Indirect object (iobj)','Nominal subject (nsubj)','Nominal passive subject (nsubj:pass)',
-    'Clausal subject (csubj)','Clausal passive subject (csubj:pass)'],6)
+    list_nouns_deprel = data_preparation(
+        data,
+        ["obj", "iobj", "nsubj", "nsubj:pass", "csubj", "csubj:pass"],
+        [
+            "Object (obj)",
+            "Indirect object (iobj)",
+            "Nominal subject (nsubj)",
+            "Nominal passive subject (nsubj:pass)",
+            "Clausal subject (csubj)",
+            "Clausal passive subject (csubj:pass)",
+        ],
+        6,
+    )
 
-    noun_deprel_stats = [['Noun DEPREL Tags', 'Frequencies'],
-                         ['Object (obj)', deprel_counter['obj']],
-                         ['Indirect object (iobj)', deprel_counter['iobj']],
-                         ['Nominal subject (nsubj)', deprel_counter['nsubj']],
-                         ['Nominal passive subject (nsubj:pass)', deprel_counter['nsubj:pass']],
-                         ['Clausal subject (csubj)', deprel_counter['csubj']],
-                         ['Clausal passive subject (csubj:pass)', deprel_counter['csubj:pass']]]
+    noun_deprel_stats = [
+        ["Noun DEPREL Tags", "Frequencies"],
+        ["Object (obj)", deprel_counter["obj"]],
+        ["Indirect object (iobj)", deprel_counter["iobj"]],
+        ["Nominal subject (nsubj)", deprel_counter["nsubj"]],
+        ["Nominal passive subject (nsubj:pass)", deprel_counter["nsubj:pass"]],
+        ["Clausal subject (csubj)", deprel_counter["csubj"]],
+        ["Clausal passive subject (csubj:pass)", deprel_counter["csubj:pass"]],
+    ]
 
     # list_nouns_ner = data_preparation(data, ['COUNTRY','CITY','LOCATION','PERSON','ORGANIZATION','STATE_OR_PROVINCE'],
     # ['COUNTRY','CITY','LOCATION','PERSON','ORGANIZATION','STATE_OR_PROVINCE'],4)
@@ -110,23 +136,22 @@ def noun_POSTAG_NER_DEPREL_compute_lists_frequencies(data, data_divided_sents):
 
     # Use canonical column names; data is normalized to canonical order
     if len(data[0]) == 14:
-        tl = CoNLL_util.CANONICAL_COLUMNS + ['Date']
+        tl = CoNLL_util.CANONICAL_COLUMNS + ["Date"]
     else:
         tl = list(CoNLL_util.CANONICAL_COLUMNS)
-    included_tags = ['NN', 'NNPS', 'NNP', 'NNS']
+    included_tags = ["NN", "NNPS", "NNP", "NNS"]
     df = pd.DataFrame(data, columns=tl)
-    filtered_df = df[df['POS'].isin(included_tags)]
-    possible_items = list(filtered_df['NER'].value_counts().keys())
-    list_nouns_ner = data_preparation(data,possible_items, possible_items, 4)
+    filtered_df = df[df["POS"].isin(included_tags)]
+    possible_items = list(filtered_df["NER"].value_counts().keys())
+    list_nouns_ner = data_preparation(data, possible_items, possible_items, 4)
     # Build the NER frequency stats DIRECTLY from value_counts. The old code eval'd a string that referenced
     # 'ner_counter', a variable removed by the canonical-columns refactor (hence the crash); a list comprehension
     # is also safe against NER values containing quotes, which would have broken the eval.
-    ner_counts = filtered_df['NER'].value_counts()
-    noun_ner_stats = [['Noun NERs', 'Frequencies']] + [[item, int(ner_counts[item])] for item in possible_items]
+    ner_counts = filtered_df["NER"].value_counts()
+    noun_ner_stats = [["Noun NERs", "Frequencies"]] + [[item, int(ner_counts[item])] for item in possible_items]
     return list_nouns_postag, list_nouns_deprel, list_nouns_ner, noun_postag_stats, noun_deprel_stats, noun_ner_stats
 
     # return list_nouns_postag, list_nouns_deprel, list_nouns_ner, noun_postag_stats, noun_deprel_stats, noun_ner_stats
-
 
 
 def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, chartPackage, dataTransformation):
@@ -134,51 +159,73 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running NOUN ANALYSES at',
-                                                 True, '', True, '', True)
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis start", "Started running NOUN ANALYSES at", True, "", True, "", True
+    )
 
     # the following line is needed by the next line as it computes variables defined as general
-    noun_postag_list, noun_postag_stats, noun_deprel_list, noun_deprel_stats, noun_ner_list, noun_ner_stats = compute_stats(data)
+    noun_postag_list, noun_postag_stats, noun_deprel_list, noun_deprel_stats, noun_ner_list, noun_ner_stats = (
+        compute_stats(data)
+    )
 
-    noun_postag_list, noun_deprel_list, noun_ner_list, noun_postag_stats, noun_deprel_stats, noun_ner_stats = noun_POSTAG_NER_DEPREL_compute_lists_frequencies(data,
-                                                                                                  data_divided_sents)
+    noun_postag_list, noun_deprel_list, noun_ner_list, noun_postag_stats, noun_deprel_stats, noun_ner_stats = (
+        noun_POSTAG_NER_DEPREL_compute_lists_frequencies(data, data_divided_sents)
+    )
 
     # With no nouns the DataFrame built from noun_postag_list has 0 columns and pandas raises an
     # opaque "Length mismatch" error on column assignment (df1.columns = [...]). Warn and skip
     # instead of crashing. (POS is tagset-normalized upstream, so this only fires when the table
     # genuinely has no nouns.)
     if len(noun_postag_list) == 0:
-        IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Noun analysis',
-            'No nouns were found in the CoNLL table.\n\nNoun analyses were skipped.')
+        IO_user_interface_util.timed_alert(
+            GUI_util.window,
+            4000,
+            "Noun analysis",
+            "No nouns were found in the CoNLL table.\n\nNoun analyses were skipped.",
+        )
         return filesToOpen
 
     # output file names
-    noun_list_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun-ALL',
-                                                                    'list')
-    noun_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun',
-                                                                 'stats')
+    noun_list_file_name = IO_files_util.generate_output_file_name(
+        inputFilename, "", outputDir, ".csv", "NVA", "Noun-ALL", "list"
+    )
+    noun_stats_file_name = IO_files_util.generate_output_file_name(
+        inputFilename, "", outputDir, ".csv", "NVA", "Noun", "stats"
+    )
 
-    noun_postag_list_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun',
-                                                                    'POSTAG_list')
-    noun_ner_list_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun',
-                                                                 'NER_list')
-    noun_deprel_list_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun',
-                                                                    'DEPREL_list')
-    noun_postag_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun',
-                                                                     'POSTAG_stats')
-    noun_ner_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA','Noun',
-                                                                  'NER_stats')
-    noun_deprel_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA','Noun',
-                                                                     'DEPREL_stats')
+    noun_postag_list_file_name = IO_files_util.generate_output_file_name(
+        inputFilename, "", outputDir, ".csv", "NVA", "Noun", "POSTAG_list"
+    )
+    noun_ner_list_file_name = IO_files_util.generate_output_file_name(
+        inputFilename, "", outputDir, ".csv", "NVA", "Noun", "NER_list"
+    )
+    noun_deprel_list_file_name = IO_files_util.generate_output_file_name(
+        inputFilename, "", outputDir, ".csv", "NVA", "Noun", "DEPREL_list"
+    )
+    noun_postag_stats_file_name = IO_files_util.generate_output_file_name(
+        inputFilename, "", outputDir, ".csv", "NVA", "Noun", "POSTAG_stats"
+    )
+    noun_ner_stats_file_name = IO_files_util.generate_output_file_name(
+        inputFilename, "", outputDir, ".csv", "NVA", "Noun", "NER_stats"
+    )
+    noun_deprel_stats_file_name = IO_files_util.generate_output_file_name(
+        inputFilename, "", outputDir, ".csv", "NVA", "Noun", "DEPREL_stats"
+    )
 
     # save csv files -------------------------------------------------------------------------------------------------
     # ALL nouns
 
     df = pd.DataFrame(noun_postag_list)
     df1 = df.iloc[:, 1:4]
-    df1.columns = ['Form', 'Lemma', 'POS']
-    IO_csv_util.df_to_csv(GUI_util.window, df1, noun_list_file_name, headers=['Form', 'Lemma', 'POS'], index=False,
-                          language_encoding='utf-8')
+    df1.columns = ["Form", "Lemma", "POS"]
+    IO_csv_util.df_to_csv(
+        GUI_util.window,
+        df1,
+        noun_list_file_name,
+        headers=["Form", "Lemma", "POS"],
+        index=False,
+        language_encoding="utf-8",
+    )
 
     # POS tags
 
@@ -186,8 +233,9 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
     df = pd.DataFrame(noun_postag_list)
     df, headers = CoNLL_util.process_df_headers(df, "Noun POS Tags")
 
-    IO_csv_util.df_to_csv(GUI_util.window, df, noun_postag_list_file_name, headers=headers, index=False,
-                          language_encoding='utf-8')
+    IO_csv_util.df_to_csv(
+        GUI_util.window, df, noun_postag_list_file_name, headers=headers, index=False, language_encoding="utf-8"
+    )
 
     # NER
 
@@ -195,8 +243,9 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
     df = pd.DataFrame(noun_ner_list)
     df, headers = CoNLL_util.process_df_headers(df, "Noun NER Tags")
 
-    IO_csv_util.df_to_csv(GUI_util.window, df, noun_ner_list_file_name, headers=headers, index=False,
-                          language_encoding='utf-8')
+    IO_csv_util.df_to_csv(
+        GUI_util.window, df, noun_ner_list_file_name, headers=headers, index=False, language_encoding="utf-8"
+    )
 
     # DepRel
 
@@ -204,93 +253,124 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
     df = pd.DataFrame(noun_deprel_list)
     df, headers = CoNLL_util.process_df_headers(df, "Noun DEPREL Tags")
 
-    IO_csv_util.df_to_csv(GUI_util.window, df, noun_deprel_list_file_name, headers=headers, index=False,
-                          language_encoding='utf-8')
+    IO_csv_util.df_to_csv(
+        GUI_util.window, df, noun_deprel_list_file_name, headers=headers, index=False, language_encoding="utf-8"
+    )
 
-
-    if chartPackage!='No charts':
-
+    if chartPackage != "No charts":
         # bar charts -----------------------------------------------------------------------------------------------
 
-        columns_to_be_plotted_xAxis=[]
-        columns_to_be_plotted_yAxis=[[0,0]]
-        count_var=1
-        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, noun_list_file_name, outputDir,
-                                     outputFileLabel='Nouns_Form',
-                                     chartPackage=chartPackage,
-                                     dataTransformation=dataTransformation,
-                                     chart_type_list=['bar'],
-                                     chart_title="Frequency Distribution of Nouns (Form)",
-                                     column_xAxis_label_var='Noun',
-                                     hover_info_column_list=[],
-                                     count_var=count_var,
-                                     complete_sid=False)  # TODO to be changed
+        columns_to_be_plotted_xAxis = []
+        columns_to_be_plotted_yAxis = [[0, 0]]
+        count_var = 1
+        outputFiles = charts_util.run_all(
+            columns_to_be_plotted_yAxis,
+            noun_list_file_name,
+            outputDir,
+            outputFileLabel="Nouns_Form",
+            chartPackage=chartPackage,
+            dataTransformation=dataTransformation,
+            chart_type_list=["bar"],
+            chart_title="Frequency Distribution of Nouns (Form)",
+            column_xAxis_label_var="Noun",
+            hover_info_column_list=[],
+            count_var=count_var,
+            complete_sid=False,
+        )  # TODO to be changed
 
         # run_all returns a string; must use append
-        if outputFiles!=None:
-            if isinstance(outputFiles, str):
-                filesToOpen.append(outputFiles)
-            else:
-                filesToOpen.extend(outputFiles)
-
-        columns_to_be_plotted_xAxis=[]
-        columns_to_be_plotted_yAxis=[[0,1]]
-        count_var=1
-        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, noun_list_file_name, outputDir,
-                                     outputFileLabel='Nouns_Lemma',
-                                     chartPackage=chartPackage,
-                                     dataTransformation=dataTransformation,
-                                     chart_type_list=['bar'],
-                                     chart_title="Frequency Distribution of Nouns (Lemma)",
-                                     column_xAxis_label_var='Noun',
-                                     hover_info_column_list=[],
-                                     count_var=count_var,
-                                     complete_sid=False)  # TODO to be changed
-
-        if outputFiles!=None:
-            if isinstance(outputFiles, str):
-                filesToOpen.append(outputFiles)
-            else:
-                filesToOpen.extend(outputFiles)
-
-
-        columns_to_be_plotted_xAxis = []
-        columns_to_be_plotted_yAxis = ['Noun POS Tags']
-        count_var = 1
-
-        outputFiles = charts_util.plot(noun_postag_list_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Noun POS Tags", x_label='Noun POS tag', count=count_var, file_label='noun_POS')
-
-        if outputFiles!=None:
+        if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
 
         columns_to_be_plotted_xAxis = []
-        columns_to_be_plotted_yAxis = ['Noun NER Tags']
+        columns_to_be_plotted_yAxis = [[0, 1]]
         count_var = 1
+        outputFiles = charts_util.run_all(
+            columns_to_be_plotted_yAxis,
+            noun_list_file_name,
+            outputDir,
+            outputFileLabel="Nouns_Lemma",
+            chartPackage=chartPackage,
+            dataTransformation=dataTransformation,
+            chart_type_list=["bar"],
+            chart_title="Frequency Distribution of Nouns (Lemma)",
+            column_xAxis_label_var="Noun",
+            hover_info_column_list=[],
+            count_var=count_var,
+            complete_sid=False,
+        )  # TODO to be changed
 
-        outputFiles = charts_util.plot(noun_postag_list_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Noun NER Tags", x_label='Noun NER tag', count=count_var, file_label='noun_NER')
-
-        if outputFiles!=None:
+        if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
 
         columns_to_be_plotted_xAxis = []
-        columns_to_be_plotted_yAxis = ['Noun DEPREL Tags']
+        columns_to_be_plotted_yAxis = ["Noun POS Tags"]
         count_var = 1
 
-        outputFiles = charts_util.plot(noun_deprel_list_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Noun DEPREL Tags", x_label='Noun DEPREL tag', count=count_var, file_label='noun_DEPREL')
+        outputFiles = charts_util.plot(
+            noun_postag_list_file_name,
+            outputDir,
+            columns=columns_to_be_plotted_yAxis,
+            title="Frequency Distribution of Noun POS Tags",
+            x_label="Noun POS tag",
+            count=count_var,
+            file_label="noun_POS",
+        )
 
-        if outputFiles!=None:
+        if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
 
+        columns_to_be_plotted_xAxis = []
+        columns_to_be_plotted_yAxis = ["Noun NER Tags"]
+        count_var = 1
 
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running NOUN ANALYSES at', True, '', True, startTime, True)
+        outputFiles = charts_util.plot(
+            noun_postag_list_file_name,
+            outputDir,
+            columns=columns_to_be_plotted_yAxis,
+            title="Frequency Distribution of Noun NER Tags",
+            x_label="Noun NER tag",
+            count=count_var,
+            file_label="noun_NER",
+        )
+
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+
+        columns_to_be_plotted_xAxis = []
+        columns_to_be_plotted_yAxis = ["Noun DEPREL Tags"]
+        count_var = 1
+
+        outputFiles = charts_util.plot(
+            noun_deprel_list_file_name,
+            outputDir,
+            columns=columns_to_be_plotted_yAxis,
+            title="Frequency Distribution of Noun DEPREL Tags",
+            x_label="Noun DEPREL tag",
+            count=count_var,
+            file_label="noun_DEPREL",
+        )
+
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+
+    IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis end", "Finished running NOUN ANALYSES at", True, "", True, startTime, True
+    )
 
     return filesToOpen

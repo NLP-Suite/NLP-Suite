@@ -10,16 +10,16 @@ chance to guess wrong. The manifest does not guess: the run that produced a file
 analysis produced it. So the rule needs no per-analysis knowledge, cannot mismatch, and covers an
 analysis added tomorrow with no extra code.
 """
+
 import importlib.util
 import json
 import os
 import sys
 
-_SRC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'src')
+_SRC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src")
 sys.path.insert(0, _SRC)
 
-_spec = importlib.util.spec_from_file_location('_real_profiler_reuse',
-                                              os.path.join(_SRC, 'corpus_profiler_util.py'))
+_spec = importlib.util.spec_from_file_location("_real_profiler_reuse", os.path.join(_SRC, "corpus_profiler_util.py"))
 prof = importlib.util.module_from_spec(_spec)
 _cwd = os.getcwd()
 try:
@@ -28,28 +28,27 @@ finally:
     os.chdir(_cwd)
 
 
-def a_corpus(tmp_path, name='HPbooks', docs=('a.txt', 'b.txt')):
+def a_corpus(tmp_path, name="HPbooks", docs=("a.txt", "b.txt")):
     d = tmp_path / name
     d.mkdir()
     for doc in docs:
-        (d / doc).write_text('Harry waved his wand.', encoding='utf-8')
-    return {'inputDir': str(d), 'inputFilename': '', 'outputDir': str(tmp_path / 'out')}
+        (d / doc).write_text("Harry waved his wand.", encoding="utf-8")
+    return {"inputDir": str(d), "inputFilename": "", "outputDir": str(tmp_path / "out")}
 
 
 def an_output(ctx):
-    os.makedirs(ctx['outputDir'], exist_ok=True)
-    return ctx['outputDir']
+    os.makedirs(ctx["outputDir"], exist_ok=True)
+    return ctx["outputDir"]
 
 
-def a_result(out, aid='ngrams', files=('table.csv',), error='', size=10):
+def a_result(out, aid="ngrams", files=("table.csv",), error="", size=10):
     made = []
     for f in files:
         p = os.path.join(out, f)
-        with open(p, 'w', encoding='utf-8') as fh:
-            fh.write('x' * size)
+        with open(p, "w", encoding="utf-8") as fh:
+            fh.write("x" * size)
         made.append(p)
-    return {'id': aid, 'category': 'counts', 'label': aid, 'kind': 'batch',
-            'files': made, 'error': error}
+    return {"id": aid, "category": "counts", "label": aid, "kind": "batch", "files": made, "error": error}
 
 
 class TestTheManifestRecordsTheCorpus:
@@ -59,10 +58,10 @@ class TestTheManifestRecordsTheCorpus:
         prof.save_manifest(out, [a_result(out)], ctx)
         fp, label = prof.manifest_corpus(out)
         assert fp == prof.corpus_fingerprint(ctx)[0]
-        assert label == 'HPbooks'
+        assert label == "HPbooks"
 
     def test_no_manifest_is_not_an_error(self, tmp_path):
-        assert prof.manifest_corpus(str(tmp_path)) == ('', '')
+        assert prof.manifest_corpus(str(tmp_path)) == ("", "")
 
     def test_it_is_written_whole_or_not_at_all(self, tmp_path):
         """A manifest truncated by a full disk is worse than none: the next run would read a
@@ -71,76 +70,76 @@ class TestTheManifestRecordsTheCorpus:
         out = an_output(ctx)
         prof.save_manifest(out, [a_result(out)], ctx)
         path = os.path.join(out, prof.MANIFEST_NAME)
-        with open(path, encoding='utf-8') as fh:
-            json.load(fh)                       # parses, so it is complete
-        assert not os.path.isfile(path + '.tmp')
+        with open(path, encoding="utf-8") as fh:
+            json.load(fh)  # parses, so it is complete
+        assert not os.path.isfile(path + ".tmp")
 
 
 class TestReusableFromManifest:
     def test_a_recorded_analysis_is_reused(self, tmp_path):
         ctx = a_corpus(tmp_path)
         out = an_output(ctx)
-        previous = [a_result(out, 'ngrams')]
-        assert prof.reusable_from_manifest(ctx, 'ngrams', previous, True)
+        previous = [a_result(out, "ngrams")]
+        assert prof.reusable_from_manifest(ctx, "ngrams", previous, True)
 
     def test_ANY_analysis_id_works_including_one_that_never_had_a_probe(self, tmp_path):
         """The whole point: embeddings, topics, iconicity, an analysis added next year."""
         ctx = a_corpus(tmp_path)
         out = an_output(ctx)
-        for aid in ('embeddings', 'topics', 'iconic', 'yule', 'tfidf', 'something_new'):
-            previous = [a_result(out, aid, files=('%s.csv' % aid,))]
+        for aid in ("embeddings", "topics", "iconic", "yule", "tfidf", "something_new"):
+            previous = [a_result(out, aid, files=("%s.csv" % aid,))]
             assert prof.reusable_from_manifest(ctx, aid, previous, True), aid
 
     def test_an_analysis_that_FAILED_is_re_run(self, tmp_path):
         ctx = a_corpus(tmp_path)
         out = an_output(ctx)
-        previous = [a_result(out, 'ngrams', error='No space left on device')]
-        assert prof.reusable_from_manifest(ctx, 'ngrams', previous, True) == []
+        previous = [a_result(out, "ngrams", error="No space left on device")]
+        assert prof.reusable_from_manifest(ctx, "ngrams", previous, True) == []
 
     def test_a_ZERO_BYTE_file_is_refused(self, tmp_path):
         """A full disk leaves 0-byte files. Reusing one as real output is worse than re-running -
         exactly what the 30 July crash left behind."""
         ctx = a_corpus(tmp_path)
         out = an_output(ctx)
-        previous = [a_result(out, 'ngrams', size=0)]
-        assert prof.reusable_from_manifest(ctx, 'ngrams', previous, True) == []
+        previous = [a_result(out, "ngrams", size=0)]
+        assert prof.reusable_from_manifest(ctx, "ngrams", previous, True) == []
 
     def test_a_deleted_file_is_refused(self, tmp_path):
         ctx = a_corpus(tmp_path)
         out = an_output(ctx)
-        previous = [a_result(out, 'ngrams')]
-        os.remove(previous[0]['files'][0])
-        assert prof.reusable_from_manifest(ctx, 'ngrams', previous, True) == []
+        previous = [a_result(out, "ngrams")]
+        os.remove(previous[0]["files"][0])
+        assert prof.reusable_from_manifest(ctx, "ngrams", previous, True) == []
 
     def test_one_missing_file_out_of_several_refuses_the_whole_analysis(self, tmp_path):
         ctx = a_corpus(tmp_path)
         out = an_output(ctx)
-        previous = [a_result(out, 'ngrams', files=('one.csv', 'two.csv'))]
-        os.remove(previous[0]['files'][1])
-        assert prof.reusable_from_manifest(ctx, 'ngrams', previous, True) == []
+        previous = [a_result(out, "ngrams", files=("one.csv", "two.csv"))]
+        os.remove(previous[0]["files"][1])
+        assert prof.reusable_from_manifest(ctx, "ngrams", previous, True) == []
 
     def test_a_different_corpus_reuses_nothing(self, tmp_path):
         """corpus_ok is decided once per run by the caller; False must stop everything."""
         ctx = a_corpus(tmp_path)
         out = an_output(ctx)
-        previous = [a_result(out, 'ngrams')]
-        assert prof.reusable_from_manifest(ctx, 'ngrams', previous, False) == []
+        previous = [a_result(out, "ngrams")]
+        assert prof.reusable_from_manifest(ctx, "ngrams", previous, False) == []
 
     def test_an_analysis_not_in_the_manifest_is_run(self, tmp_path):
         ctx = a_corpus(tmp_path)
         out = an_output(ctx)
-        previous = [a_result(out, 'ngrams')]
-        assert prof.reusable_from_manifest(ctx, 'embeddings', previous, True) == []
+        previous = [a_result(out, "ngrams")]
+        assert prof.reusable_from_manifest(ctx, "embeddings", previous, True) == []
 
     def test_an_analysis_recorded_with_no_files_is_run(self, tmp_path):
         ctx = a_corpus(tmp_path)
         an_output(ctx)
-        previous = [{'id': 'ngrams', 'files': [], 'error': ''}]
-        assert prof.reusable_from_manifest(ctx, 'ngrams', previous, True) == []
+        previous = [{"id": "ngrams", "files": [], "error": ""}]
+        assert prof.reusable_from_manifest(ctx, "ngrams", previous, True) == []
 
     def test_nothing_previous_reuses_nothing(self, tmp_path):
         ctx = a_corpus(tmp_path)
-        assert prof.reusable_from_manifest(ctx, 'ngrams', [], True) == []
+        assert prof.reusable_from_manifest(ctx, "ngrams", [], True) == []
 
 
 class TestTheCorpusGuardOnAWholeRun:
@@ -156,7 +155,7 @@ class TestTheCorpusGuardOnAWholeRun:
         ctx = a_corpus(tmp_path)
         out = an_output(ctx)
         prof.save_manifest(out, [a_result(out)], ctx)
-        (tmp_path / 'HPbooks' / 'c.txt').write_text('Ron said nothing.', encoding='utf-8')
+        (tmp_path / "HPbooks" / "c.txt").write_text("Ron said nothing.", encoding="utf-8")
         assert prof.manifest_corpus(out)[0] != prof.corpus_fingerprint(ctx)[0]
 
 
@@ -170,41 +169,43 @@ class TestAProfileFolderIsPortable:
     def test_paths_are_stored_relative_to_the_output_folder(self, tmp_path):
         ctx = a_corpus(tmp_path)
         out = an_output(ctx)
-        prof.save_manifest(out, [a_result(out, 'ngrams')], ctx)
-        with open(os.path.join(out, prof.MANIFEST_NAME), encoding='utf-8') as fh:
-            stored = json.load(fh)['results'][0]['files'][0]
+        prof.save_manifest(out, [a_result(out, "ngrams")], ctx)
+        with open(os.path.join(out, prof.MANIFEST_NAME), encoding="utf-8") as fh:
+            stored = json.load(fh)["results"][0]["files"][0]
         assert not os.path.isabs(stored)
-        assert stored == 'table.csv'
+        assert stored == "table.csv"
 
     def test_a_COPIED_profile_refers_to_its_own_files(self, tmp_path):
         import shutil
+
         ctx = a_corpus(tmp_path)
         out = an_output(ctx)
-        prof.save_manifest(out, [a_result(out, 'ngrams')], ctx)
+        prof.save_manifest(out, [a_result(out, "ngrams")], ctx)
 
-        copy = str(tmp_path / 'baseline')
+        copy = str(tmp_path / "baseline")
         shutil.copytree(out, copy)
-        shutil.rmtree(out)                     # the original is gone; the copy must stand alone
+        shutil.rmtree(out)  # the original is gone; the copy must stand alone
 
         loaded = prof.load_manifest(copy)
-        assert loaded and loaded[0]['files']
-        assert os.path.dirname(loaded[0]['files'][0]) == copy
-        assert prof.reusable_from_manifest(ctx, 'ngrams', loaded, True)
+        assert loaded and loaded[0]["files"]
+        assert os.path.dirname(loaded[0]["files"][0]) == copy
+        assert prof.reusable_from_manifest(ctx, "ngrams", loaded, True)
 
     def test_an_older_manifest_with_absolute_paths_still_works(self, tmp_path):
         """Backwards compatible: manifests already on disk hold absolute paths."""
         import json
+
         ctx = a_corpus(tmp_path)
         out = an_output(ctx)
-        rec = a_result(out, 'ngrams')
-        with open(os.path.join(out, prof.MANIFEST_NAME), 'w', encoding='utf-8') as fh:
-            json.dump({'version': 1, 'results': [rec]}, fh)     # absolute, as written before
+        rec = a_result(out, "ngrams")
+        with open(os.path.join(out, prof.MANIFEST_NAME), "w", encoding="utf-8") as fh:
+            json.dump({"version": 1, "results": [rec]}, fh)  # absolute, as written before
         loaded = prof.load_manifest(out)
-        assert loaded and loaded[0]['files']
-        assert prof.reusable_from_manifest(ctx, 'ngrams', loaded, True)
+        assert loaded and loaded[0]["files"]
+        assert prof.reusable_from_manifest(ctx, "ngrams", loaded, True)
 
     def test_a_file_outside_the_output_folder_stays_absolute(self, tmp_path):
-        elsewhere = tmp_path / 'elsewhere'
+        elsewhere = tmp_path / "elsewhere"
         elsewhere.mkdir()
-        stray = str(elsewhere / 'x.csv')
-        assert prof._manifest_store_path(stray, str(tmp_path / 'out')) == stray
+        stray = str(elsewhere / "x.csv")
+        assert prof._manifest_store_path(stray, str(tmp_path / "out")) == stray
