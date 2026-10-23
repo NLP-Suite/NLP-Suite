@@ -26,7 +26,14 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Sentiment Analysis HEDONOMETER",['stanza','json','os','csv','argparse','tkinter','time'])==False:
+if (
+    IO_libraries_util.install_all_Python_packages(
+        GUI_util.window,
+        "Sentiment Analysis HEDONOMETER",
+        ["stanza", "json", "os", "csv", "argparse", "tkinter", "time"],
+    )
+    == False
+):
     sys.exit(0)
 
 import os
@@ -43,14 +50,17 @@ import charts_util
 import IO_files_util
 import statistics_statistical_tests_util
 
-fin = open('../lib/wordLists/stopwords.txt', 'r')
+fin = open("../lib/wordLists/stopwords.txt", "r")
 stops = set(fin.read().splitlines())
 database = GUI_IO_util.sentiment_libPath + os.sep + "hedonometer.json"
 if not os.path.isfile(database):
-    print("The file './lib/hedonometer.json' could not be found. The hedonemeter sentiment analysis routine expects a JSON dictionary file 'hedonometer.json' in a directory 'lib' expected to be a subdirectory of the directory where the sentiment_analysis_hedonometer.py script is stored.\n\nPlease, check your lib directory and try again.")
+    print(
+        "The file './lib/hedonometer.json' could not be found. The hedonemeter sentiment analysis routine expects a JSON dictionary file 'hedonometer.json' in a directory 'lib' expected to be a subdirectory of the directory where the sentiment_analysis_hedonometer.py script is stored.\n\nPlease, check your lib directory and try again."
+    )
     sys.exit()
 
 parsed_data = json.load(open(database))
+
 
 # performs sentiment analysis on inputFile using the hedonometer database, outputting results to a new CSV file in outputDir
 def analyzefile(inputFilename, outputDir, outputFilename, mode, Document_ID, Document):
@@ -62,25 +72,33 @@ def analyzefile(inputFilename, outputDir, outputFilename, mode, Document_ID, Doc
     :param mode: determines how sentiment values for a sentence are computed (median or mean)
     :return:
     """
-    #TODO
-    #the output filename is reset in the specific script; must be passed as a parameter
-    #cannot use time in the filename or when re-generated n the main sentimen_concreteness_analysis.py it will have a different time stamp and the file will not be found
+    # TODO
+    # the output filename is reset in the specific script; must be passed as a parameter
+    # cannot use time in the filename or when re-generated n the main sentimen_concreteness_analysis.py it will have a different time stamp and the file will not be found
     # read file into string
-    with open(inputFilename, 'r',encoding='utf-8',errors='ignore') as myfile:
+    with open(inputFilename, "r", encoding="utf-8", errors="ignore") as myfile:
         fulltext = myfile.read()
     # end method if file is empty
     if len(fulltext) < 1:
-        mb.showerror(title='File empty', message='The file ' + inputFilename + ' is empty.\n\nPlease, use another file and try again.')
-        print('Empty file ', inputFilename)
+        mb.showerror(
+            title="File empty",
+            message="The file " + inputFilename + " is empty.\n\nPlease, use another file and try again.",
+        )
+        print("Empty file ", inputFilename)
         return
 
-    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
+    from Stanza_functions_util import (
+        stanzaPipeLine,
+        sentence_split_stanza_text,
+        tokenize_stanza_text,
+        lemmatize_stanza_word,
+    )
 
     # otherwise, split into sentences
     # sentences = tokenize.sent_tokenize(fulltext)
     sentences = sentence_split_stanza_text(stanzaPipeLine(fulltext))
 
-    i = 1 # to store sentence index
+    i = 1  # to store sentence index
     # check each word in sentence for sentiment and write to outputFilename
     # analyze each sentence for sentiment
     for s in sentences:
@@ -100,9 +118,9 @@ def analyzefile(inputFilename, outputDir, outputFilename, mode, Document_ID, Doc
 
             # check for negation in 3 words before current word
             neg = False
-            j = index-1
-            while j >= 0 and j >= index-3:
-                if filtered_words[j] == 'not' or filtered_words[j] == 'no':
+            j = index - 1
+            while j >= 0 and j >= index - 3:
+                if filtered_words[j] == "not" or filtered_words[j] == "no":
                     neg = True
                 j -= 1
 
@@ -121,90 +139,99 @@ def analyzefile(inputFilename, outputDir, outputFilename, mode, Document_ID, Doc
                     v_list.append(record["happs"])
                     found_words.append(lemma)
 
-
         if len(found_words) == 0:  # no words found for this sentence
-            writer.writerow({
-                            # Sentiment_measure: 0,
-                            # Sentiment_label: "",
-                            'Sentiment score (Mean)': 0,
-                            'Sentiment label (Mean)': "",
-                            'Sentence ID': i,
-                            'Sentence': s,
-                            'Document ID': Document_ID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document)
-                            })
+            writer.writerow(
+                {
+                    # Sentiment_measure: 0,
+                    # Sentiment_label: "",
+                    "Sentiment score (Mean)": 0,
+                    "Sentiment label (Mean)": "",
+                    "Sentence ID": i,
+                    "Sentence": s,
+                    "Document ID": Document_ID,
+                    "Document": IO_csv_util.dressFilenameForCSVHyperlink(Document),
+                }
+            )
             i += 1
             continue
         else:  # output sentiment info for this sentence
-
             # set sentiment label
-            label_mean = 'neutral'
-            label_median = 'neutral'
-            if mode == 'mean' or mode == 'both':
+            label_mean = "neutral"
+            label_median = "neutral"
+            if mode == "mean" or mode == "both":
                 sentiment_mean = statistics.mean(v_list)
-                sentiment=sentiment_mean
-                if sentiment > 7.5 :
-                    label_mean = 'very positive'
+                sentiment = sentiment_mean
+                if sentiment > 7.5:
+                    label_mean = "very positive"
                 elif sentiment > 6:
-                    label_mean = 'positive'
+                    label_mean = "positive"
                 elif sentiment < 4.5:
-                    label_mean = 'negative'
+                    label_mean = "negative"
                 elif sentiment < 2.5:
-                    label_mean = 'very negative'
+                    label_mean = "very negative"
                 else:
                     label_mean = "neutral"
-            if mode == 'median' or mode == 'both':
+            if mode == "median" or mode == "both":
                 sentiment_median = statistics.median(v_list)
-                sentiment=sentiment_median
-                if sentiment > 7.5 :
-                    label_median = 'very positive'
+                sentiment = sentiment_median
+                if sentiment > 7.5:
+                    label_median = "very positive"
                 elif sentiment > 6:
-                    label_median = 'positive'
+                    label_median = "positive"
                 elif sentiment < 4.5:
-                    label_median = 'negative'
+                    label_median = "negative"
                 elif sentiment < 2.5:
-                    label_median = 'very negative'
+                    label_median = "very negative"
                 else:
                     label_median = "neutral"
 
-            if mode == 'mean':
-                writer.writerow({
-                                 'Sentiment score (Mean)': sentiment_mean,
-                                 'Sentiment label (Mean)': label_mean,
-                                 'Found Words': ("%d out of %d" % (len(found_words), total_words)),
-                                 'Word List': ', '.join(found_words),
-                                 'Sentence ID': i,
-                                 'Sentence': s,
-                                 'Document ID': Document_ID,
-                                 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document)
-                })
-            elif mode == 'median':
-                writer.writerow({'Sentiment score (Median)':sentiment_median,
-                                 'Sentiment label (Median)': label_median,
-                                 'Found Words': ("%d out of %d" % (len(found_words), total_words)),
-                                 'Word List': ', '.join(found_words),
-                                 'Sentence ID': i,
-                                 'Sentence': s,
-                                 'Document ID': Document_ID,
-                                 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document)
-                                 })
-            elif mode == 'both':
-                writer.writerow({
-                                 'Sentiment score (Mean)': sentiment_mean,
-                                 'Sentiment label (Mean)': label_mean,
-                                 'Sentiment score (Median)': sentiment_median,
-                                 'Sentiment label (Median)': label_median,
-                                 'Found Words': ("%d out of %d" % (len(found_words), total_words)),
-                                 'Word List': ', '.join(found_words),
-                                'Sentence ID': i,
-                                'Sentence': s,
-                                'Document ID': Document_ID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document)
-                })
+            if mode == "mean":
+                writer.writerow(
+                    {
+                        "Sentiment score (Mean)": sentiment_mean,
+                        "Sentiment label (Mean)": label_mean,
+                        "Found Words": ("%d out of %d" % (len(found_words), total_words)),
+                        "Word List": ", ".join(found_words),
+                        "Sentence ID": i,
+                        "Sentence": s,
+                        "Document ID": Document_ID,
+                        "Document": IO_csv_util.dressFilenameForCSVHyperlink(Document),
+                    }
+                )
+            elif mode == "median":
+                writer.writerow(
+                    {
+                        "Sentiment score (Median)": sentiment_median,
+                        "Sentiment label (Median)": label_median,
+                        "Found Words": ("%d out of %d" % (len(found_words), total_words)),
+                        "Word List": ", ".join(found_words),
+                        "Sentence ID": i,
+                        "Sentence": s,
+                        "Document ID": Document_ID,
+                        "Document": IO_csv_util.dressFilenameForCSVHyperlink(Document),
+                    }
+                )
+            elif mode == "both":
+                writer.writerow(
+                    {
+                        "Sentiment score (Mean)": sentiment_mean,
+                        "Sentiment label (Mean)": label_mean,
+                        "Sentiment score (Median)": sentiment_median,
+                        "Sentiment label (Median)": label_median,
+                        "Found Words": ("%d out of %d" % (len(found_words), total_words)),
+                        "Word List": ", ".join(found_words),
+                        "Sentence ID": i,
+                        "Sentence": s,
+                        "Document ID": Document_ID,
+                        "Document": IO_csv_util.dressFilenameForCSVHyperlink(Document),
+                    }
+                )
 
         i += 1
     return outputFilename
 
 
-def main(inputFilename, inputDir, outputDir, mode,  chartPackage='Excel', dataTransformation='No transformation'):
+def main(inputFilename, inputDir, outputDir, mode, chartPackage="Excel", dataTransformation="No transformation"):
     """
     Runs analyzefile on the appropriate files, provided that the input paths are valid.
     :param inputFilename:
@@ -216,33 +243,63 @@ def main(inputFilename, inputDir, outputDir, mode,  chartPackage='Excel', dataTr
     filesToOpen = []
 
     # create output subdirectory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='sentiment_hedo',
-                                                       silent=True)
-    if outputDir == '':
+    outputDir = IO_files_util.make_output_subdirectory(
+        inputFilename, inputDir, outputDir, label="sentiment_hedo", silent=True
+    )
+    if outputDir == "":
         return
 
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Hedo',
-                                                                 '', '', '', '', False, True)
+    outputFilename = IO_files_util.generate_output_file_name(
+        inputFilename, inputDir, outputDir, ".csv", "Hedo", "", "", "", "", False, True
+    )
 
     if len(outputDir) < 0 or not os.path.exists(outputDir):  # empty output
-        print('No output directory specified, or path does not exist')
+        print("No output directory specified, or path does not exist")
         sys.exit(0)
-    elif len(inputFilename) == 0 and len(inputDir)  == 0:  # empty input
-        print('No input specified. Please give either a single file or a directory of files to analyze.')
+    elif len(inputFilename) == 0 and len(inputDir) == 0:  # empty input
+        print("No input specified. Please give either a single file or a directory of files to analyze.")
         sys.exit(1)
 
-    with open(outputFilename, 'w', encoding='utf-8',errors='ignore', newline='') as csvfile:
-        if (mode == 'both'):
-            fieldnames = ['Sentiment score (Mean)', 'Sentiment label (Mean)','Sentiment score (Median)', 'Sentiment label (Median)', 'Found Words', 'Word List', 'Sentence ID', 'Sentence','Document ID', 'Document']
+    with open(outputFilename, "w", encoding="utf-8", errors="ignore", newline="") as csvfile:
+        if mode == "both":
+            fieldnames = [
+                "Sentiment score (Mean)",
+                "Sentiment label (Mean)",
+                "Sentiment score (Median)",
+                "Sentiment label (Median)",
+                "Found Words",
+                "Word List",
+                "Sentence ID",
+                "Sentence",
+                "Document ID",
+                "Document",
+            ]
         else:
-            if mode == 'mean':
-                fieldnames = ['Sentiment score (Mean)', 'Sentiment label (Mean)', 'Found Words', 'Word List', 'Sentence ID', 'Sentence','Document ID', 'Document']
-            elif mode == 'median':
-                fieldnames = ['Sentiment score (Median)', 'Sentiment label (Median)', 'Found Words', 'Word List', 'Sentence ID', 'Sentence','Document ID', 'Document']
+            if mode == "mean":
+                fieldnames = [
+                    "Sentiment score (Mean)",
+                    "Sentiment label (Mean)",
+                    "Found Words",
+                    "Word List",
+                    "Sentence ID",
+                    "Sentence",
+                    "Document ID",
+                    "Document",
+                ]
+            elif mode == "median":
+                fieldnames = [
+                    "Sentiment score (Median)",
+                    "Sentiment label (Median)",
+                    "Found Words",
+                    "Word List",
+                    "Sentence ID",
+                    "Sentence",
+                    "Document ID",
+                    "Document",
+                ]
         global writer
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-
 
         if len(inputFilename) > 0:  # handle single file
             if os.path.exists(inputFilename):
@@ -261,54 +318,80 @@ def main(inputFilename, inputDir, outputDir, mode,  chartPackage='Excel', dataTr
                         start_time = time.time()
                         # print("Started HEDONOMETER sentiment analysis of " + filename + "...")
                         Document_ID += 1
-                        filesToOpen.append(analyzefile(filename, outputDir, outputFilename,mode, Document_ID, filename)) #LINE ADDED (edited)
+                        filesToOpen.append(
+                            analyzefile(filename, outputDir, outputFilename, mode, Document_ID, filename)
+                        )  # LINE ADDED (edited)
                         # print("Finished HEDONOMETER sentiment analysis of " + filename + " in " + str((time.time() - start_time)) + " seconds")
             else:
                 print('Input directory "' + inputDir + '" is invalid.')
                 sys.exit(1)
     csvfile.close()
 
-    if chartPackage!='No charts':
+    if chartPackage != "No charts":
         if mode == "both":
-            columns_to_be_plotted_xAxis=[]
-            columns_to_be_plotted_yAxis=['Sentiment score (Mean)', 'Sentiment score (Median)']
+            columns_to_be_plotted_xAxis = []
+            columns_to_be_plotted_yAxis = ["Sentiment score (Mean)", "Sentiment score (Median)"]
             # hover_label = ['Sentence', 'Sentence']
         elif mode == "mean":
-            columns_to_be_plotted_xAxis=[]
-            columns_to_be_plotted_yAxis=['Sentiment score (Mean)']
+            columns_to_be_plotted_xAxis = []
+            columns_to_be_plotted_yAxis = ["Sentiment score (Mean)"]
             # hover_label = ['Sentence']
         elif mode == "median":
-            columns_to_be_plotted_xAxis=[]
-            columns_to_be_plotted_yAxis=['Sentiment score (Median)']
+            columns_to_be_plotted_xAxis = []
+            columns_to_be_plotted_yAxis = ["Sentiment score (Median)"]
         # inputFilename = outputFilename
 
-        outputFiles = charts_util.plot(outputFilename, outputDir, columns=columns_to_be_plotted_yAxis, title='Frequency of Hedonometer Sentiment Scores', x_label='Sentiment score', count=0, file_label='Hedo', plot_list=['Sentiment Score'], title_label='Hedonometer Sentiment Scores', y_label='Scores')
+        outputFiles = charts_util.plot(
+            outputFilename,
+            outputDir,
+            columns=columns_to_be_plotted_yAxis,
+            title="Frequency of Hedonometer Sentiment Scores",
+            x_label="Sentiment score",
+            count=0,
+            file_label="Hedo",
+            plot_list=["Sentiment Score"],
+            title_label="Hedonometer Sentiment Scores",
+            y_label="Scores",
+        )
 
-        if outputFiles!=None:
+        if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
 
     stat_files = statistics_statistical_tests_util.run_automatic_tests(
-        outputFilename, outputDir, chartPackage, dataTransformation)
+        outputFilename, outputDir, chartPackage, dataTransformation
+    )
     filesToOpen.extend(stat_files)
 
     return filesToOpen
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # get arguments from command line
-    parser = argparse.ArgumentParser(description='Sentiment analysis with Hedonometer.')
-    parser.add_argument('--file', type=str, dest='inputFilename', default='',
-                        help='a string to hold the path of one file to process')
-    parser.add_argument('--dir', type=str, dest='inputDir', default='',
-                        help='a string to hold the path of a directory of files to process')
-    parser.add_argument('--out', type=str, dest='outputDir', default='',
-                        help='a string to hold the path of the output directory')
-    parser.add_argument('--outfile', type=str, dest='outputFilename', default='',
-                        help='output file')
-    parser.add_argument('--mode', type=str, dest='mode', default='mean',
-                        help='mode with which to calculate sentiment in the sentence: mean or median')
+    parser = argparse.ArgumentParser(description="Sentiment analysis with Hedonometer.")
+    parser.add_argument(
+        "--file", type=str, dest="inputFilename", default="", help="a string to hold the path of one file to process"
+    )
+    parser.add_argument(
+        "--dir",
+        type=str,
+        dest="inputDir",
+        default="",
+        help="a string to hold the path of a directory of files to process",
+    )
+    parser.add_argument(
+        "--out", type=str, dest="outputDir", default="", help="a string to hold the path of the output directory"
+    )
+    parser.add_argument("--outfile", type=str, dest="outputFilename", default="", help="output file")
+    parser.add_argument(
+        "--mode",
+        type=str,
+        dest="mode",
+        default="mean",
+        help="mode with which to calculate sentiment in the sentence: mean or median",
+    )
     args = parser.parse_args()
 
     # run main

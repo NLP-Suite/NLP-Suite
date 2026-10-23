@@ -15,22 +15,23 @@ Caveat, stated in the code so nobody forgets: this measures THIS machine's Windo
 traps Windows overflow/overlap; it does NOT predict macOS (different default font) or another Windows
 box at a different DPI. Mac is confirmed only by a person opening the GUIs there.
 """
+
 import glob
 import os
 import subprocess
 import sys
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
-_SRC = os.path.join(os.path.dirname(_HERE), 'src')
-_NOT_GUI = ('NLP_menu_main', 'NLP_welcome_main', 'NLP_setup_')  # not standard placeWidget GUIs
+_SRC = os.path.join(os.path.dirname(_HERE), "src")
+_NOT_GUI = ("NLP_menu_main", "NLP_welcome_main", "NLP_setup_")  # not standard placeWidget GUIs
 # GUIs that don't build headless even under real libs (Java/CoreNLP resource probes at import) -- same
 # spirit as gui_smoke's KNOWN_SKIP. Verify these by launching.
-_KNOWN_SKIP = {'file_checker_pre_processing_pipeline_main.py'}
+_KNOWN_SKIP = {"file_checker_pre_processing_pipeline_main.py"}
 
 # The worker builds ONE GUI under real Tk and prints a single VERDICT line. Heavy libs are left REAL
 # (run under the NLP env); only the pip-install / Java probes are neutered so the GUI reaches its
 # widgets instead of sys.exit()-ing first.
-_WORKER = r'''
+_WORKER = r"""
 import sys, os
 os.environ['NLP_SILENT'] = '1'
 SRC = r"{src}"
@@ -108,30 +109,41 @@ for i in range(len(S)):
 opted = 0 if GUI_IO_util.grid_layout_enabled else 1
 print("VERDICT overflow=%d max_right=%d win=%d overlaps=%d opted=%d %s"
       % (overflow, max_right, win_w, overlaps, opted, ("| " + worst) if worst else ""))
-'''.replace("{src}", _SRC)
+""".replace("{src}", _SRC)
 
 
 def main():
-    guis = sorted(os.path.basename(f) for f in glob.glob(os.path.join(_SRC, '*_main.py'))
-                  if not any(s in os.path.basename(f) for s in _NOT_GUI))
-    print('GUI layout gate: %d GUIs, real Tk, this machine\'s Windows fonts\n' % len(guis))
+    guis = sorted(
+        os.path.basename(f)
+        for f in glob.glob(os.path.join(_SRC, "*_main.py"))
+        if not any(s in os.path.basename(f) for s in _NOT_GUI)
+    )
+    print("GUI layout gate: %d GUIs, real Tk, this machine's Windows fonts\n" % len(guis))
     fails, skipped, log = [], [], []
     for f in guis:
         try:
-            p = subprocess.run([sys.executable, '-c', _WORKER, f],
-                               capture_output=True, text=True, timeout=300, cwd=_SRC)
+            p = subprocess.run(
+                [sys.executable, "-c", _WORKER, f], capture_output=True, text=True, timeout=300, cwd=_SRC
+            )
         except subprocess.TimeoutExpired:
             if f in _KNOWN_SKIP:
-                skipped.append(f); continue
-            fails.append(f); print('FAIL   %-46s (timeout)' % f); continue
-        line = next((ln for ln in p.stdout.splitlines() if ln.startswith('VERDICT')), '')
+                skipped.append(f)
+                continue
+            fails.append(f)
+            print("FAIL   %-46s (timeout)" % f)
+            continue
+        line = next((ln for ln in p.stdout.splitlines() if ln.startswith("VERDICT")), "")
         if not line:
             if f in _KNOWN_SKIP:
-                skipped.append(f); print('SKIP   %-46s (does not build headless)' % f); continue
-            fails.append(f); print('FAIL   %-46s (no build)' % f)
-            log.append('%s: no build\n%s' % (f, p.stdout[-400:] + p.stderr[-400:])); continue
-        d = dict(kv.split('=') for kv in line.split() if '=' in kv)
-        overflow, overlaps, opted = int(d['overflow']), int(d['overlaps']), int(d.get('opted', 0))
+                skipped.append(f)
+                print("SKIP   %-46s (does not build headless)" % f)
+                continue
+            fails.append(f)
+            print("FAIL   %-46s (no build)" % f)
+            log.append("%s: no build\n%s" % (f, p.stdout[-400:] + p.stderr[-400:]))
+            continue
+        d = dict(kv.split("=") for kv in line.split() if "=" in kv)
+        overflow, overlaps, opted = int(d["overflow"]), int(d["overlaps"]), int(d.get("opted", 0))
         # opted-out GUIs use legacy .place (hand-tuned); overlap there isn't a grid problem and can
         # false-positive (DB_SQL's side-by-side buttons), so flag them on overflow only.
         # A lone overlap (<=1 pair) in a GUI that fits with room to spare (comfortably negative overflow)
@@ -140,21 +152,23 @@ def main():
         # any multi-pair (>=2) collision.
         overlap_noise = overflow < -40 and overlaps <= 1
         bad = overflow > 4 or (overlaps > 0 and not opted and not overlap_noise)
-        tag = 'FAIL  ' if bad else 'ok    '
-        detail = line[len('VERDICT '):]
-        print('%s %-46s %s' % (tag, f, detail))
-        log.append('%s %s :: %s' % (tag.strip(), f, detail))
+        tag = "FAIL  " if bad else "ok    "
+        detail = line[len("VERDICT ") :]
+        print("%s %-46s %s" % (tag, f, detail))
+        log.append("%s %s :: %s" % (tag.strip(), f, detail))
         if bad:
             fails.append(f)
 
-    with open(os.path.join(_HERE, 'gui_layout_gate.log'), 'w', encoding='utf-8') as fh:
-        fh.write('\n'.join(log) + '\n')
-    print('\n%d GUIs: %d pass, %d FAIL, %d skipped   (log: tests/gui_layout_gate.log)'
-          % (len(guis), len(guis) - len(fails) - len(skipped), len(fails), len(skipped)))
+    with open(os.path.join(_HERE, "gui_layout_gate.log"), "w", encoding="utf-8") as fh:
+        fh.write("\n".join(log) + "\n")
+    print(
+        "\n%d GUIs: %d pass, %d FAIL, %d skipped   (log: tests/gui_layout_gate.log)"
+        % (len(guis), len(guis) - len(fails) - len(skipped), len(fails), len(skipped))
+    )
     if fails:
-        print('  FAIL:', ', '.join(fails))
+        print("  FAIL:", ", ".join(fails))
     return 1 if fails else 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

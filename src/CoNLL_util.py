@@ -19,19 +19,30 @@ import IO_csv_util
 
 global sentenceID_position, documentID_position, document_position
 
-clause_position = 8 # NEW CoNLL_U
+clause_position = 8  # NEW CoNLL_U
 sentenceID_position = 10  # NEW CoNLL_U
 documentID_position = 11  # NEW CoNLL_U
-document_position = 12 # NEW CoNLL_U
+document_position = 12  # NEW CoNLL_U
 
 # Canonical column order — all CoNLL tables are normalized to this layout
 # so that positional indexing works regardless of source package
-CANONICAL_COLUMNS = ["ID", "Form", "Lemma", "POS", "NER", "Head", "DepRel",
-                     "Deps", "Clause Tag", "Record ID", "Sentence ID",
-                     "Document ID", "Document"]
+CANONICAL_COLUMNS = [
+    "ID",
+    "Form",
+    "Lemma",
+    "POS",
+    "NER",
+    "Head",
+    "DepRel",
+    "Deps",
+    "Clause Tag",
+    "Record ID",
+    "Sentence ID",
+    "Document ID",
+    "Document",
+]
 # Minimum columns every valid CoNLL table must have
-REQUIRED_COLUMNS = {'ID', 'Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel',
-                    'Sentence ID', 'Document ID', 'Document'}
+REQUIRED_COLUMNS = {"ID", "Form", "Lemma", "POS", "NER", "Head", "DepRel", "Sentence ID", "Document ID", "Document"}
 
 
 # The Suite's CoNLL 'POS' column holds Penn Treebank tags (NN*, VB*, JJ*) from Stanford CoreNLP, but Universal
@@ -40,44 +51,44 @@ REQUIRED_COLUMNS = {'ID', 'Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel',
 def is_noun_POS(pos):
     """True for a noun in either Penn (NN*) or Universal (NOUN/PROPN) tag sets."""
     pos = str(pos)
-    return pos.startswith('NN') or pos in ('NOUN', 'PROPN')
+    return pos.startswith("NN") or pos in ("NOUN", "PROPN")
 
 
 def is_proper_noun_POS(pos):
     """True for a proper noun in either Penn (NNP*) or Universal (PROPN) tag sets."""
     pos = str(pos)
-    return pos.startswith('NNP') or pos == 'PROPN'
+    return pos.startswith("NNP") or pos == "PROPN"
 
 
 def is_verb_POS(pos):
     """True for a verb (auxiliaries included, matching CoreNLP VB*) in Penn (VB*) or Universal (VERB/AUX)."""
     pos = str(pos)
-    return pos.startswith('VB') or pos in ('VERB', 'AUX')
+    return pos.startswith("VB") or pos in ("VERB", "AUX")
 
 
 def is_adjective_POS(pos):
     """True for an adjective in either Penn (JJ*) or Universal (ADJ) tag sets."""
     pos = str(pos)
-    return pos.startswith('JJ') or pos == 'ADJ'
+    return pos.startswith("JJ") or pos == "ADJ"
 
 
 def is_adverb_POS(pos):
     """True for an adverb in either Penn (RB*) or Universal (ADV) tag sets."""
     pos = str(pos)
-    return pos.startswith('RB') or pos == 'ADV'
+    return pos.startswith("RB") or pos == "ADV"
 
 
 def detect_CoNLL_package(headers):
     """Detect which NLP package generated the CoNLL table."""
-    if 'feats' in headers:
-        return 'Stanza'
-    elif 'Deps' in headers:
-        return 'CoreNLP'
-    elif 'Clause Tag' in headers:
-        return 'CoreNLP'
-    elif 'Sentence' in headers and 'Multi-Word Expression' in headers:
-        return 'spaCy'
-    return 'unknown'
+    if "feats" in headers:
+        return "Stanza"
+    elif "Deps" in headers:
+        return "CoreNLP"
+    elif "Clause Tag" in headers:
+        return "CoreNLP"
+    elif "Sentence" in headers and "Multi-Word Expression" in headers:
+        return "spaCy"
+    return "unknown"
 
 
 # ----------------------------------------------------------------------------------------------
@@ -86,76 +97,94 @@ def detect_CoNLL_package(headers):
 # tables (already Penn). English-oriented; when feats are absent it falls back to the base Penn
 # tag (NN/VB/JJ/RB) so analyses stay coarse but never crash. Penn tags pass through unchanged.
 # ----------------------------------------------------------------------------------------------
-_UNIVERSAL_POS = {'NOUN', 'PROPN', 'VERB', 'AUX', 'ADJ', 'ADV', 'ADP', 'DET', 'PRON',
-                  'CCONJ', 'SCONJ', 'CONJ', 'NUM', 'PART', 'INTJ', 'SYM', 'X', 'PUNCT'}
+_UNIVERSAL_POS = {
+    "NOUN",
+    "PROPN",
+    "VERB",
+    "AUX",
+    "ADJ",
+    "ADV",
+    "ADP",
+    "DET",
+    "PRON",
+    "CCONJ",
+    "SCONJ",
+    "CONJ",
+    "NUM",
+    "PART",
+    "INTJ",
+    "SYM",
+    "X",
+    "PUNCT",
+}
 
 
 def _parse_feats(feats):
     """Parse a CoNLL-U feats string ('Number=Plur|Tense=Past') into a dict; '' / '_' -> {}."""
     parsed = {}
-    if feats and str(feats) not in ('_', ''):
-        for kv in str(feats).split('|'):
-            if '=' in kv:
-                key, value = kv.split('=', 1)
+    if feats and str(feats) not in ("_", ""):
+        for kv in str(feats).split("|"):
+            if "=" in kv:
+                key, value = kv.split("=", 1)
                 parsed[key] = value
     return parsed
 
 
-def universal_to_penn(pos, feats=''):
+def universal_to_penn(pos, feats=""):
     """Map one Universal POS tag (+ optional feats string) to the closest Penn Treebank tag.
     Tags that are not Universal (i.e. already Penn, or unknown) are returned unchanged."""
     pos = str(pos)
     if pos not in _UNIVERSAL_POS:
         return pos  # already Penn (NN, VBD, JJ, ...) or unknown -> leave as-is
     f = _parse_feats(feats)
-    number = f.get('Number', '')
+    number = f.get("Number", "")
 
-    if pos == 'NOUN':
-        return 'NNS' if number == 'Plur' else 'NN'
-    if pos == 'PROPN':
-        return 'NNPS' if number == 'Plur' else 'NNP'
-    if pos in ('VERB', 'AUX'):
-        verbform = f.get('VerbForm', '')
-        tense = f.get('Tense', '')
-        if verbform == 'Ger' or (verbform == 'Part' and tense == 'Pres'):
-            return 'VBG'
-        if verbform == 'Part' and tense == 'Past':
-            return 'VBN'
-        if verbform == 'Inf':
-            return 'VB'
-        if verbform == 'Fin':
-            if tense == 'Past':
-                return 'VBD'
-            if f.get('Person', '') == '3' and number == 'Sing':
-                return 'VBZ'
-            return 'VBP'
-        return 'VB'  # no VerbForm -> base verb (modals ideally MD; recoverable from gold xpos)
-    if pos == 'ADJ':
-        return {'Cmp': 'JJR', 'Sup': 'JJS'}.get(f.get('Degree', ''), 'JJ')
-    if pos == 'ADV':
-        return {'Cmp': 'RBR', 'Sup': 'RBS'}.get(f.get('Degree', ''), 'RB')
-    if pos == 'ADP':
-        return 'IN'
-    if pos == 'DET':
-        return 'DT'
-    if pos == 'PRON':
-        prontype = f.get('PronType', '')
-        poss = f.get('Poss', '')
-        if prontype in ('Int', 'Rel'):
-            return 'WP$' if poss == 'Yes' else 'WP'
-        return 'PRP$' if poss == 'Yes' else 'PRP'
-    if pos in ('CCONJ', 'CONJ'):
-        return 'CC'
-    if pos == 'SCONJ':
-        return 'IN'
-    if pos == 'NUM':
-        return 'CD'
-    if pos == 'PART':
-        return 'RP'
-    if pos == 'INTJ':
-        return 'UH'
-    if pos == 'PUNCT':
-        return '.'
+    if pos == "NOUN":
+        return "NNS" if number == "Plur" else "NN"
+    if pos == "PROPN":
+        return "NNPS" if number == "Plur" else "NNP"
+    if pos in ("VERB", "AUX"):
+        verbform = f.get("VerbForm", "")
+        tense = f.get("Tense", "")
+        if verbform == "Ger" or (verbform == "Part" and tense == "Pres"):
+            return "VBG"
+        if verbform == "Part" and tense == "Past":
+            return "VBN"
+        if verbform == "Inf":
+            return "VB"
+        if verbform == "Fin":
+            if tense == "Past":
+                return "VBD"
+            if f.get("Person", "") == "3" and number == "Sing":
+                return "VBZ"
+            return "VBP"
+        return "VB"  # no VerbForm -> base verb (modals ideally MD; recoverable from gold xpos)
+    if pos == "ADJ":
+        return {"Cmp": "JJR", "Sup": "JJS"}.get(f.get("Degree", ""), "JJ")
+    if pos == "ADV":
+        return {"Cmp": "RBR", "Sup": "RBS"}.get(f.get("Degree", ""), "RB")
+    if pos == "ADP":
+        return "IN"
+    if pos == "DET":
+        return "DT"
+    if pos == "PRON":
+        prontype = f.get("PronType", "")
+        poss = f.get("Poss", "")
+        if prontype in ("Int", "Rel"):
+            return "WP$" if poss == "Yes" else "WP"
+        return "PRP$" if poss == "Yes" else "PRP"
+    if pos in ("CCONJ", "CONJ"):
+        return "CC"
+    if pos == "SCONJ":
+        return "IN"
+    if pos == "NUM":
+        return "CD"
+    if pos == "PART":
+        return "RP"
+    if pos == "INTJ":
+        return "UH"
+    if pos == "PUNCT":
+        return "."
     return pos  # SYM, X -> leave as-is
 
 
@@ -176,13 +205,13 @@ def normalize_to_canonical(headers, data):
     # source 'feats' column is still available to recover fine detail (number/tense/degree). This
     # makes the canonical 'POS' column Penn for every parser, so the entire Penn-based analyzer
     # stack works unchanged. No-op for CoreNLP tables (POS already Penn).
-    pos_idx = source_positions.get('POS')
-    feats_idx = source_positions.get('feats')
+    pos_idx = source_positions.get("POS")
+    feats_idx = source_positions.get("feats")
     if pos_idx is not None:
         remapped = []
         for row in data:
             if pos_idx < len(row):
-                feats_val = row[feats_idx] if (feats_idx is not None and feats_idx < len(row)) else ''
+                feats_val = row[feats_idx] if (feats_idx is not None and feats_idx < len(row)) else ""
                 mapped = universal_to_penn(row[pos_idx], feats_val)
                 if mapped != row[pos_idx]:
                     row = list(row)
@@ -194,7 +223,7 @@ def normalize_to_canonical(headers, data):
     target_cols = list(CANONICAL_COLUMNS)
     # Check for optional Year/Date column (some CoreNLP tables have it)
     extra_col = None
-    for candidate in ('Year', 'Date'):
+    for candidate in ("Year", "Date"):
         if candidate in source_positions:
             extra_col = candidate
             target_cols.append(candidate)
@@ -205,7 +234,7 @@ def normalize_to_canonical(headers, data):
     for col in target_cols:
         mapping.append(source_positions.get(col))
 
-    record_id_canon_idx = CANONICAL_COLUMNS.index('Record ID')  # 9
+    record_id_canon_idx = CANONICAL_COLUMNS.index("Record ID")  # 9
     need_record_id = mapping[record_id_canon_idx] is None
 
     normalized = []
@@ -215,7 +244,7 @@ def normalize_to_canonical(headers, data):
             if src_pos is not None and src_pos < len(row):
                 new_row.append(row[src_pos])
             else:
-                new_row.append('')
+                new_row.append("")
         # Auto-generate Record ID when missing (e.g. spaCy tables)
         if need_record_id:
             new_row[record_id_canon_idx] = str(row_num + 1)
@@ -223,18 +252,20 @@ def normalize_to_canonical(headers, data):
 
     return target_cols, normalized
 
+
 def find_full_postag(__form__, __postag__):
     if __postag__ in Stanford_CoreNLP_tags_util.dict_POSTAG:
         return Stanford_CoreNLP_tags_util.dict_POSTAG[__postag__]
     else:
-        #return __form__
+        # return __form__
         return "Not found in CoNLL POSTAG list"
+
 
 def find_full_deprel(__form__, __deprel__):
     if __deprel__ in Stanford_CoreNLP_tags_util.dict_DEPREL:
         return Stanford_CoreNLP_tags_util.dict_DEPREL[__deprel__]
     else:
-        #return __form__
+        # return __form__
         return "Not found in CoNLL DEPREL list"
 
 
@@ -242,8 +273,9 @@ def find_full_clausalTag(__form__, __clausalTag__):
     if __clausalTag__ in Stanford_CoreNLP_tags_util.dict_CLAUSALTAG:
         return Stanford_CoreNLP_tags_util.dict_CLAUSALTAG[__clausalTag__]
     else:
-        #return __form__
+        # return __form__
         return "Not found in CoNLL CLausal_Tag list"
+
 
 # Check that a csv file is a valid CoNLL table.
 # Accepts tables produced by CoreNLP, Stanza, or spaCy.
@@ -254,12 +286,14 @@ def check_CoNLL(filename, skipWarning=False):
     missing = REQUIRED_COLUMNS - header_set
     if missing:
         if not skipWarning:
-            mb.showwarning(title='Input file error',
-                           message='The CoNLL table is missing required columns: '
-                                   + ', '.join(sorted(missing))
-                                   + '.\n\nRequired columns are: '
-                                   + ', '.join(sorted(REQUIRED_COLUMNS))
-                                   + '.\n\nPlease, select a valid CoNLL file and try again.')
+            mb.showwarning(
+                title="Input file error",
+                message="The CoNLL table is missing required columns: "
+                + ", ".join(sorted(missing))
+                + ".\n\nRequired columns are: "
+                + ", ".join(sorted(REQUIRED_COLUMNS))
+                + ".\n\nPlease, select a valid CoNLL file and try again.",
+            )
         return False
     return True
 
@@ -272,18 +306,30 @@ def process_df_headers(df, word_type):
     charting doesn't crash. Any other column count raises (previously a cryptic pandas Length
     mismatch)."""
     num_columns = len(df.columns)
-    base = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag",
-            "Record ID", "Sentence ID", "Document ID", "Document"]
+    base = [
+        "ID",
+        "FORM",
+        "Lemma",
+        "POS",
+        "NER",
+        "Head",
+        "DepRel",
+        "Deps",
+        "Clause Tag",
+        "Record ID",
+        "Sentence ID",
+        "Document ID",
+        "Document",
+    ]
     if num_columns == 0:
         headers = base + [word_type]
         return pd.DataFrame(columns=headers), headers
-    if num_columns == 15:      # includes a Date column
-        headers = base + ['Date', word_type]
-    elif num_columns == 14:    # standard CoNLL table
+    if num_columns == 15:  # includes a Date column
+        headers = base + ["Date", word_type]
+    elif num_columns == 14:  # standard CoNLL table
         headers = base + [word_type]
     else:
-        raise ValueError('process_df_headers: unexpected number of columns (%d); expected 14 or 15'
-                         % num_columns)
+        raise ValueError("process_df_headers: unexpected number of columns (%d); expected 14 or 15" % num_columns)
     df.columns = headers
     return df, headers
 
@@ -294,30 +340,30 @@ def _default_output_dir():
     try:
         import GUI_IO_util
         import csv as _csv
-        path = os.path.join(GUI_IO_util.configPath, 'NLP_default_IO_config.csv')
+
+        path = os.path.join(GUI_IO_util.configPath, "NLP_default_IO_config.csv")
         if os.path.isfile(path):
-            with open(path, 'r', newline='', encoding='utf-8', errors='ignore') as fh:
+            with open(path, "r", newline="", encoding="utf-8", errors="ignore") as fh:
                 for row in _csv.reader(fh):
-                    if row and row[0].strip() == 'Output files directory':
-                        return row[1].strip() if len(row) > 1 else ''
+                    if row and row[0].strip() == "Output files directory":
+                        return row[1].strip() if len(row) > 1 else ""
     except Exception:
         pass
-    return ''
+    return ""
 
 
-def _corpus_search_roots(outputDir, inputFilename='', inputDir=''):
+def _corpus_search_roots(outputDir, inputFilename="", inputDir=""):
     """Directories to search for a corpus's CoNLL table: the output dir, the input dir, the input file's folder,
     and the Suite's default output dir from config/NLP_default_IO_config.csv (where the parser auto-creates its
     output subdirectories) - deduped, existing only. The parser may write the CoNLL to any of these per setup."""
     roots = []
-    for d in (outputDir, inputDir, os.path.dirname(inputFilename) if inputFilename else '', _default_output_dir()):
+    for d in (outputDir, inputDir, os.path.dirname(inputFilename) if inputFilename else "", _default_output_dir()):
         if d and os.path.isdir(d) and d not in roots:
             roots.append(d)
     return roots
 
 
-def find_corpus_csv(outputDir, inputFilename='', inputDir='',
-                    path_filter=None, validator=None, narrow_by_stem=True):
+def find_corpus_csv(outputDir, inputFilename="", inputDir="", path_filter=None, validator=None, narrow_by_stem=True):
     """Generic corpus-csv discovery (was copy-pasted per csv type: CoNLL, geocoded GIS, semantic-aggregation).
     Returns a newest-first list of .csv files found under the corpus dirs (see _corpus_search_roots), kept when:
       - path_filter passes: a case-insensitive substring, OR a callable(path)->bool, OR None (accept any path);
@@ -333,8 +379,8 @@ def find_corpus_csv(outputDir, inputFilename='', inputDir='',
         _pf = lambda p: True
 
     # corpus stem: a single txt file's base name, else the input directory name
-    stem = ''
-    if inputFilename and inputFilename.lower().endswith('.txt'):
+    stem = ""
+    if inputFilename and inputFilename.lower().endswith(".txt"):
         stem = os.path.basename(inputFilename)[:-4]
     elif inputDir:
         stem = os.path.basename(os.path.normpath(inputDir))
@@ -344,7 +390,7 @@ def find_corpus_csv(outputDir, inputFilename='', inputDir='',
     for base in _corpus_search_roots(outputDir, inputFilename, inputDir):
         for root, dirs, files in os.walk(base):
             for f in files:
-                if not f.lower().endswith('.csv'):
+                if not f.lower().endswith(".csv"):
                     continue
                 path = os.path.join(root, f)
                 if path in seen or not _pf(path):
@@ -363,23 +409,28 @@ def find_corpus_csv(outputDir, inputFilename='', inputDir='',
     return matches
 
 
-def find_corpus_CoNLL(outputDir, inputFilename='', inputDir=''):
+def find_corpus_CoNLL(outputDir, inputFilename="", inputDir=""):
     """Newest-first list of valid CoNLL csv tables for the current corpus: .csv whose path contains 'CoNLL'
     and that validates as a CoNLL table (look-alikes such as saved I/O configs are rejected by check_CoNLL)."""
-    return find_corpus_csv(outputDir, inputFilename, inputDir,
-                           path_filter='conll', validator=lambda p: check_CoNLL(p, True))
+    return find_corpus_csv(
+        outputDir, inputFilename, inputDir, path_filter="conll", validator=lambda p: check_CoNLL(p, True)
+    )
 
 
-def choose_corpus_CoNLL(window, outputDir, inputFilename='', inputDir=''):
+def choose_corpus_CoNLL(window, outputDir, inputFilename="", inputDir=""):
     """Pop a picker listing the CoNLL tables found for the current corpus (find_corpus_CoNLL), newest first,
     labelled by their parser/corpus subfolder. Returns the chosen path, the sentinel '__BROWSE__' (no CoNLL
     found, or the user chose to browse for another file), or None (the user cancelled). Uses the shared picker
     IO_files_util.select_path_from_list (deferred import avoids the IO_files_util<->CoNLL_util cycle)."""
     import IO_files_util
+
     matches = find_corpus_CoNLL(outputDir, inputFilename, inputDir)
-    return IO_files_util.select_path_from_list(window, matches,
-        'Select a CoNLL table found for your corpus, or browse for another file:',
-        title='Available CoNLL tables')
+    return IO_files_util.select_path_from_list(
+        window,
+        matches,
+        "Select a CoNLL table found for your corpus, or browse for another file:",
+        title="Available CoNLL tables",
+    )
 
 
 def open_analyzer_for_current_corpus(run_parser=False):
@@ -394,6 +445,7 @@ def open_analyzer_for_current_corpus(run_parser=False):
     CoNLL_table_analyzer_main.py lines ~1012-1031). If none is found, offer to open the analyzer so the user
     can select one. Returns the CoNLL path opened (or None). The launcher widget is placed/wired in the hub."""
     import run_script_util
+
     if run_parser:
         run_script_util.run_script("parsers_annotators_main.py", "open_analyzer")
         return None
@@ -406,13 +458,15 @@ def open_analyzer_for_current_corpus(run_parser=False):
         run_script_util.run_script("CoNLL_table_analyzer_main.py", conll)
         return conll
     roots = _corpus_search_roots(outputDir, inputFilename, inputDir)
-    where = '\n   '.join(roots) if roots else '(no input/output directory is set)'
-    ans = mb.askyesno(title='No CoNLL table found',
-                      message="No CoNLL table was found for the current corpus. I searched:\n\n   " + where + "\n\n"
-                              "(A CoNLL table is one produced by parsing your corpus with Stanford CoreNLP, Stanza, or spaCy; "
-                              "look-alike files such as saved I/O configurations are ignored.)\n\n"
-                              "If your CoNLL table is elsewhere, click YES to open the CoNLL Table Analyzer and select it manually.\n"
-                              "Click NO to cancel (or tick 'Run the default parser' to parse your corpus first).")
+    where = "\n   ".join(roots) if roots else "(no input/output directory is set)"
+    ans = mb.askyesno(
+        title="No CoNLL table found",
+        message="No CoNLL table was found for the current corpus. I searched:\n\n   " + where + "\n\n"
+        "(A CoNLL table is one produced by parsing your corpus with Stanford CoreNLP, Stanza, or spaCy; "
+        "look-alike files such as saved I/O configurations are ignored.)\n\n"
+        "If your CoNLL table is elsewhere, click YES to open the CoNLL Table Analyzer and select it manually.\n"
+        "Click NO to cancel (or tick 'Run the default parser' to parse your corpus first).",
+    )
     if ans:
         run_script_util.run_script("CoNLL_table_analyzer_main.py")
     return None
@@ -424,7 +478,7 @@ def CoNLL_record_division(list_csv_rows):
     try:
         list_sentences = []
         Sentence_ID_prev = 1  # Sentence_ID of previous row
-        Document_ID_prev = '1.0'  # Document_ID of previous row
+        Document_ID_prev = "1.0"  # Document_ID of previous row
         current_sentence = []
 
         for _index_, item in enumerate(list_csv_rows):
@@ -446,27 +500,35 @@ def CoNLL_record_division(list_csv_rows):
                 current_sentence.append(item)
         if len(list_sentences) == 0:
             currentScript = os.path.basename(__file__)
-            mb.showinfo("Fatal error",
-                        "The sentence_division function in " + currentScript + " failed.\n\nPlease, check your data and/or the python scripts.\n\nIf the problem persists, please inform the script developers of the problem.\n\nProgram will exit.")
+            mb.showinfo(
+                "Fatal error",
+                "The sentence_division function in "
+                + currentScript
+                + " failed.\n\nPlease, check your data and/or the python scripts.\n\nIf the problem persists, please inform the script developers of the problem.\n\nProgram will exit.",
+            )
         return list_sentences
     except:
         print(
-            "FATAL ERROR: INPUT MUST BE A CoNLL TABLE generated by Stanford CoreNLP, Stanza, or spaCy. Please, select a CoNLL table and try again.")
-        mb.showinfo("Fatal error",
-                    "INPUT MUST BE A CoNLL TABLE generated by Stanford CoreNLP, Stanza, or spaCy.\n\nPlease, select a CoNLL table and try again.")
+            "FATAL ERROR: INPUT MUST BE A CoNLL TABLE generated by Stanford CoreNLP, Stanza, or spaCy. Please, select a CoNLL table and try again."
+        )
+        mb.showinfo(
+            "Fatal error",
+            "INPUT MUST BE A CoNLL TABLE generated by Stanford CoreNLP, Stanza, or spaCy.\n\nPlease, select a CoNLL table and try again.",
+        )
+
 
 # The function builds a double list of each sentence in the CoNLL table
 # [['The','President',...]['Ladies','and','Gentlemen']...]]
 # searchedCoNLLField FORM or LEMMA
-def sentence_division(list_csv_rows,searchedCoNLLField):
+def sentence_division(list_csv_rows, searchedCoNLLField):
 
     try:
         list_sentences = []
         Sentence_ID_prev = 1  # Sentence_ID of previous row
-        Document_ID_prev = '1.0'  # Document_ID of previous row
+        Document_ID_prev = "1.0"  # Document_ID of previous row
         current_sentence = []
-        index=1
-        if searchedCoNLLField == 'LEMMA':
+        index = 1
+        if searchedCoNLLField == "LEMMA":
             index = 2
         for _index_, item in enumerate(list_csv_rows):
             Sentence_ID = int(item[sentenceID_position])
@@ -484,21 +546,29 @@ def sentence_division(list_csv_rows,searchedCoNLLField):
                 Document_ID_prev = Document_ID
                 # skip empty sentence at the very beginning
                 # TODO Document_ID should be an integer!
-                if Sentence_ID == 1 and Document_ID == '1' and len(current_sentence)==0:
+                if Sentence_ID == 1 and Document_ID == "1" and len(current_sentence) == 0:
                     continue
                 list_sentences.append(current_sentence)
                 current_sentence = []
                 current_sentence.append(item[index])
         if len(list_sentences) == 0:
             currentScript = os.path.basename(__file__)
-            mb.showinfo("Fatal error",
-                        "The sentence_division function in " + currentScript + " failed.\n\nPlease, check your data and/or the python scripts.\n\nIf the problem persists, please inform the script developers of the problem.\n\nProgram will exit.")
+            mb.showinfo(
+                "Fatal error",
+                "The sentence_division function in "
+                + currentScript
+                + " failed.\n\nPlease, check your data and/or the python scripts.\n\nIf the problem persists, please inform the script developers of the problem.\n\nProgram will exit.",
+            )
         return list_sentences
     except:
         print(
-            "FATAL ERROR: INPUT MUST BE A CoNLL TABLE generated by Stanford CoreNLP, Stanza, or spaCy. Please, select a CoNLL table and try again.")
-        mb.showinfo("Fatal error",
-                    "INPUT MUST BE A CoNLL TABLE generated by Stanford CoreNLP, Stanza, or spaCy.\n\nPlease, select a CoNLL table and try again.")
+            "FATAL ERROR: INPUT MUST BE A CoNLL TABLE generated by Stanford CoreNLP, Stanza, or spaCy. Please, select a CoNLL table and try again."
+        )
+        mb.showinfo(
+            "Fatal error",
+            "INPUT MUST BE A CoNLL TABLE generated by Stanford CoreNLP, Stanza, or spaCy.\n\nPlease, select a CoNLL table and try again.",
+        )
+
 
 # searching for a specific sentence sent_id in a specific document Document_ID
 def Sentence_searcher(list_all_sents, Document_ID, sent_id):
@@ -509,7 +579,9 @@ def Sentence_searcher(list_all_sents, Document_ID, sent_id):
                 break
     return sent_str
 
+
 # used by all CoNLL_*_analysis_util scripts
+
 
 # label is the header displayed (e.g., verb voice, modality)
 # in input the function takes _voice_sorted_ created by the various CoNLL analyses functions
@@ -517,9 +589,24 @@ def Sentence_searcher(list_all_sents, Document_ID, sent_id):
 # in output, the label is placed FIRST
 def sort_output_list(label, _voice_sorted_):
     output_list = [
-        [label, 'TOKEN_INDEX', 'FORM', 'LEMMA', 'POSTAG', 'POSTAG-DESCRIPTION', 'DEPREL', 'DEPREL-DESCRIPTION',
-         'CLAUSAL TAG', 'CLAUSAL TAG-DESCRIPTION', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
-    #the earlier new CoNLL routine always had the extra header date, whether there or not;
+        [
+            label,
+            "TOKEN_INDEX",
+            "FORM",
+            "LEMMA",
+            "POSTAG",
+            "POSTAG-DESCRIPTION",
+            "DEPREL",
+            "DEPREL-DESCRIPTION",
+            "CLAUSAL TAG",
+            "CLAUSAL TAG-DESCRIPTION",
+            "Sentence ID",
+            "Sentence",
+            "Document ID",
+            "Document",
+        ]
+    ]
+    # the earlier new CoNLL routine always had the extra header date, whether there or not;
     #   so need to test not to break the code
 
     # recordID_position = 8
@@ -561,20 +648,54 @@ def sort_output_list(label, _voice_sorted_):
 
     try:
         _list_sorted_ = [
-            [i[14], i[0], i[1], i[2], i[3], find_full_postag(i[1],i[3]), i[6], find_full_deprel(i[1],i[6]), i[clause_position],
-                find_full_clausalTag(i[1],i[clause_position]), i[sentenceID_position], i[documentID_position], i[documentID_position], i[15]]
-        for i in _voice_sorted_]
+            [
+                i[14],
+                i[0],
+                i[1],
+                i[2],
+                i[3],
+                find_full_postag(i[1], i[3]),
+                i[6],
+                find_full_deprel(i[1], i[6]),
+                i[clause_position],
+                find_full_clausalTag(i[1], i[clause_position]),
+                i[sentenceID_position],
+                i[documentID_position],
+                i[documentID_position],
+                i[15],
+            ]
+            for i in _voice_sorted_
+        ]
     except:
         try:
             _list_sorted_ = [
-                [i[13], i[0], i[1], i[2], i[3], find_full_postag(i[1],i[3]), i[6], find_full_deprel(i[1],i[6]), i[clause_position],
-                 find_full_clausalTag(i[1],i[clause_position]), i[sentenceID_position], i[documentID_position], i[documentID_position], i[14]] for i in _voice_sorted_]
+                [
+                    i[13],
+                    i[0],
+                    i[1],
+                    i[2],
+                    i[3],
+                    find_full_postag(i[1], i[3]),
+                    i[6],
+                    find_full_deprel(i[1], i[6]),
+                    i[clause_position],
+                    find_full_clausalTag(i[1], i[clause_position]),
+                    i[sentenceID_position],
+                    i[documentID_position],
+                    i[documentID_position],
+                    i[14],
+                ]
+                for i in _voice_sorted_
+            ]
         except:
-            mb.showwarning(title="CoNLLL table ill formed",
-                           message="The CoNLL table is ill formed. You may have tinkered with it. Please, rerun the parser since many scripts rely on the CoNLL table.")
+            mb.showwarning(
+                title="CoNLLL table ill formed",
+                message="The CoNLL table is ill formed. You may have tinkered with it. Please, rerun the parser since many scripts rely on the CoNLL table.",
+            )
             return
     output_list += _list_sorted_
     return output_list
+
 
 # Cynthia Dong & Roberto Franzosi 11/28/2019
 # compute a whole sentence from an input CoNLL table for a specific sentenceID and documentID
@@ -584,7 +705,7 @@ def compute_sentence(CoNLL_table, recordID, sentenceID, documentID):
     :type documentID: object
     """
     # Open ConLL
-    df = pd.read_csv(io.open(CoNLL_table, 'rb'), sep=',', index_col=False, encoding='utf-8',on_bad_lines='skip')
+    df = pd.read_csv(io.open(CoNLL_table, "rb"), sep=",", index_col=False, encoding="utf-8", on_bad_lines="skip")
     df = df[df["Sentence ID"] == sentenceID]
     df = df[df["Document ID"] == documentID]
     rows = []  # Store data
@@ -592,16 +713,17 @@ def compute_sentence(CoNLL_table, recordID, sentenceID, documentID):
     index = recordID
     for recordID in range(df.shape[0]):  # For every row in the ConLL table starting from RecordID
         row = df.iloc[recordID, :]
-        if sentenceID == row['Sentence ID'] and documentID == row['Document ID']:
-            if row['DepRel'] == "punct":
-                sent_str = sent_str + str(row['Form'])
+        if sentenceID == row["Sentence ID"] and documentID == row["Document ID"]:
+            if row["DepRel"] == "punct":
+                sent_str = sent_str + str(row["Form"])
             else:
-                sent_str = sent_str + " " + str(row['Form'])
+                sent_str = sent_str + " " + str(row["Form"])
         else:
-            if row['Sentence ID'] > sentenceID or row['Document ID'] > documentID:
+            if row["Sentence ID"] > sentenceID or row["Document ID"] > documentID:
                 break
         index = index + 1
     return index, sent_str
+
 
 # the function computes a sentence table from a conll table
 # TODO must check for old and new CoNLL
@@ -612,48 +734,70 @@ def compute_sentence_table(CoNLL_table, output_path):
     # print("Started computing the Sentence table at " + str(startTime[3]) + ':' + str(startTime[4]))  #Time when merge started, for future reference
     # print ("")
     if RunningCoreNLPFromCommandLine != True:
-        IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start', 'Started computing the Sentence table at', True)
+        IO_user_interface_util.timed_alert(
+            GUI_util.window, 4000, "Analysis start", "Started computing the Sentence table at", True
+        )
     # tk.messagebox.showinfo("Stanford CoreNLP has finished", "Started computing the Sentence table at " + str(startTime[3]) + ':' + str(startTime[4]))
     # df = pd.read_csv(io.open(os.path.join(output_path,CoNLL_table), 'rb'), sep='\t', header=None, index_col=False) # Open ConLL
     # keep_default_na=False: a token such as 'None' or 'NA' is a word, not a missing value (a sentence starting
     #   with 'None' crashed the loop below)
-    df = pd.read_csv(io.open(os.path.join(output_path, CoNLL_table), 'rb'), sep=',', index_col=False, encoding='utf-8',on_bad_lines='skip', keep_default_na=False)  # Open ConLL
+    df = pd.read_csv(
+        io.open(os.path.join(output_path, CoNLL_table), "rb"),
+        sep=",",
+        index_col=False,
+        encoding="utf-8",
+        on_bad_lines="skip",
+        keep_default_na=False,
+    )  # Open ConLL
     rows = []  # Store data
     # one group per sentence, in table order; the old row loop only wrote a sentence when the next one began,
     #   so the last sentence was dropped, and the first one started with a blank that added a word to its count
-    for (doc_id, sent_index), sentence in df.groupby(['Document ID', 'Sentence ID'], sort=False):
+    for (doc_id, sent_index), sentence in df.groupby(["Document ID", "Sentence ID"], sort=False):
         sent_str = ""  # Build string
-        for form, deprel in zip(sentence['Form'].astype(str), sentence['DepRel']):
+        for form, deprel in zip(sentence["Form"].astype(str), sentence["DepRel"]):
             if sent_str == "":
                 sent_str = form
             elif deprel == "punct":
                 sent_str = sent_str + form
             else:
                 sent_str = sent_str + " " + form
-        rows.append([len(sent_str.split(" ")),
-                     len(list(sent_str)), sent_index, sent_str, doc_id, sentence['Document'].iloc[0]])
+        rows.append(
+            [len(sent_str.split(" ")), len(list(sent_str)), sent_index, sent_str, doc_id, sentence["Document"].iloc[0]]
+        )
 
     # Construct and save the table
-    col_names = ['Sentence length (Number of words/tokens)',
-                 'Sentence length (Number of characters)', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
+    col_names = [
+        "Sentence length (Number of words/tokens)",
+        "Sentence length (Number of characters)",
+        "Sentence ID",
+        "Sentence",
+        "Document ID",
+        "Document",
+    ]
     df2 = pd.DataFrame(columns=col_names, data=rows)
 
     # basename: CoNLL_table arrives as a full path, which made the join ignore output_path and write beside the input
     outputFilename = os.path.join(output_path, os.path.basename(CoNLL_table)[:-4] + "_sentence" + ".csv")
-    df2.to_csv(outputFilename, encoding='utf-8',
-               index=False)  # os.path.join(output_path,outputFilename), sep='\t', encoding='utf-8')
+    df2.to_csv(
+        outputFilename, encoding="utf-8", index=False
+    )  # os.path.join(output_path,outputFilename), sep='\t', encoding='utf-8')
     if RunningCoreNLPFromCommandLine != True:
-        IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis end', 'Finished computing the Sentence table at', True)
+        IO_user_interface_util.timed_alert(
+            GUI_util.window, 4000, "Analysis end", "Finished computing the Sentence table at", True
+        )
     # tk.messagebox.showinfo("Stanford CoreNLP has finished", "Finished computing the Sentence table at " + str(endTime[3]) + ':' + str(endTime[4])  + ". \n\nSentence table exported as: " + outputFilename) #os.path.join(output_path,outputFilename))
     endTime = time.localtime()
-    print ("\nSentence table output written to: " + outputFilename)  # os.path.join(output_path,outputFilename))     #Time when compute sentence table finished, for future reference
+    print(
+        "\nSentence table output written to: " + outputFilename
+    )  # os.path.join(output_path,outputFilename))     #Time when compute sentence table finished, for future reference
     return outputFilename
+
 
 # the function extracts DISTINCT nouns and verbs from the CoNLL table in both form and lemma
 # inputFilename contains path
-def get_nouns_verbs_CoNLL(inputFilename,output_dir):
+def get_nouns_verbs_CoNLL(inputFilename, output_dir):
 
-    conll_table = pd.read_csv(inputFilename, encoding='utf-8',on_bad_lines='skip')
+    conll_table = pd.read_csv(inputFilename, encoding="utf-8", on_bad_lines="skip")
 
     verb_form_set = set()
     verb_lemma_set = set()
@@ -661,7 +805,7 @@ def get_nouns_verbs_CoNLL(inputFilename,output_dir):
     noun_lemma_set = set()
 
     # zip over the columns: iterrows plus two label lookups per token took 7 s on a 436,000-token table
-    for pos, form, lemma in zip(conll_table['POS'], conll_table['Form'], conll_table['Lemma']):
+    for pos, form, lemma in zip(conll_table["POS"], conll_table["Form"], conll_table["Lemma"]):
         # Penn (NN*/VB*) or Universal (NOUN/VERB) - is_*_POS handle both + NaN
         if is_verb_POS(pos):
             verb_form_set.add(form)
@@ -670,19 +814,19 @@ def get_nouns_verbs_CoNLL(inputFilename,output_dir):
             noun_form_set.add(form)
             noun_lemma_set.add(lemma)
 
-    verbs_form_df = pd.DataFrame(verb_form_set, columns = ['Verbs'])
-    verbs_lemma_df = pd.DataFrame(verb_lemma_set, columns = ['Verbs'])
-    nouns_form_df = pd.DataFrame(noun_form_set, columns = ['Nouns'])
-    nouns_lemma_df = pd.DataFrame(noun_lemma_set, columns = ['Nouns'])
+    verbs_form_df = pd.DataFrame(verb_form_set, columns=["Verbs"])
+    verbs_lemma_df = pd.DataFrame(verb_lemma_set, columns=["Verbs"])
+    nouns_form_df = pd.DataFrame(noun_form_set, columns=["Nouns"])
+    nouns_lemma_df = pd.DataFrame(noun_lemma_set, columns=["Nouns"])
 
-    nouns_form_csv=os.path.join(output_dir,os.path.basename(inputFilename[:-4])+"_nouns_form.csv")
-    nouns_lemma_csv=os.path.join(output_dir,os.path.basename(inputFilename[:-4])+"_nouns_lemma.csv")
-    verbs_form_csv=os.path.join(output_dir,os.path.basename(inputFilename[:-4])+"_verbs_form.csv")
-    verbs_lemma_csv=os.path.join(output_dir,os.path.basename(inputFilename[:-4])+"_verbs_lemma.csv")
+    nouns_form_csv = os.path.join(output_dir, os.path.basename(inputFilename[:-4]) + "_nouns_form.csv")
+    nouns_lemma_csv = os.path.join(output_dir, os.path.basename(inputFilename[:-4]) + "_nouns_lemma.csv")
+    verbs_form_csv = os.path.join(output_dir, os.path.basename(inputFilename[:-4]) + "_verbs_form.csv")
+    verbs_lemma_csv = os.path.join(output_dir, os.path.basename(inputFilename[:-4]) + "_verbs_lemma.csv")
 
-    nouns_form_df.to_csv(nouns_form_csv, encoding='utf-8', index=False)
-    nouns_lemma_df.to_csv(nouns_lemma_csv, encoding='utf-8', index=False)
-    verbs_form_df.to_csv(verbs_form_csv, encoding='utf-8', index=False)
-    verbs_lemma_df.to_csv(verbs_lemma_csv, encoding='utf-8', index=False)
+    nouns_form_df.to_csv(nouns_form_csv, encoding="utf-8", index=False)
+    nouns_lemma_df.to_csv(nouns_lemma_csv, encoding="utf-8", index=False)
+    verbs_form_df.to_csv(verbs_form_csv, encoding="utf-8", index=False)
+    verbs_lemma_df.to_csv(verbs_lemma_csv, encoding="utf-8", index=False)
 
     return nouns_form_csv, nouns_lemma_csv, verbs_form_csv, verbs_lemma_csv

@@ -1,5 +1,6 @@
 import sqlite3
-db = 'C:/Users/rfranzo/Desktop/PCACE-lynching_xlsx/PCACE-lynching_xlsx.sqlite'
+
+db = "C:/Users/rfranzo/Desktop/PCACE-lynching_xlsx/PCACE-lynching_xlsx.sqlite"
 conn = sqlite3.connect(db)
 cur = conn.cursor()
 

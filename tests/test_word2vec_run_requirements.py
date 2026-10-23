@@ -12,13 +12,13 @@ with patch.dict(sys.modules, {m: MagicMock() for m in _STUBS if m not in sys.mod
 
 def test_compute_distances_alone_asks_for_BERT_or_Gensim():
     msg = wd.run_requirements_message(0, 0, 0, 1)
-    assert 'BERT' in msg and 'Gensim' in msg and 'Compute word distances' in msg
+    assert "BERT" in msg and "Gensim" in msg and "Compute word distances" in msg
 
 
 def test_nothing_selected_still_warns():
-    assert 'No option has been selected' in wd.run_requirements_message(0, 0, 0, 0)
+    assert "No option has been selected" in wd.run_requirements_message(0, 0, 0, 0)
 
 
 def test_any_package_lets_it_run():
     for args in ((1, 0, 0, 1), (0, 1, 0, 1), (1, 1, 0, 0), (0, 0, 1, 0)):
-        assert wd.run_requirements_message(*args) == '', args
+        assert wd.run_requirements_message(*args) == "", args

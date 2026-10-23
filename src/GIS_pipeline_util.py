@@ -28,46 +28,58 @@ import charts_util
 # The script is used by SVO_main and by Google_Earth_main to run a csv file that 1. needs geocoding; 2. mapping geocoded location onto Google Earth Pro.
 import IO_user_interface_util
 
+
 # Google_config: 'Google-geocode-API_config.csv' or 'Google-Maps-API_config.csv'
-def getGoogleAPIkey(window,Google_config, display_key=False):
+def getGoogleAPIkey(window, Google_config, display_key=False):
     configFilePath = os.path.join(GUI_IO_util.configPath, Google_config)
     configAPIKey = []
     if os.path.isfile(configFilePath):
-        with open(configFilePath, 'r', encoding='utf-8', errors='ignore') as f_config:
+        with open(configFilePath, "r", encoding="utf-8", errors="ignore") as f_config:
             configAPIKey = f_config.readlines()
     if len(configAPIKey) == 0 or display_key:
-        if 'Maps' in Google_config:
-            msg='Maps'
-            config_file = 'Google-Maps-API_config.csv'
+        if "Maps" in Google_config:
+            msg = "Maps"
+            config_file = "Google-Maps-API_config.csv"
         else:
-            msg='geocoder'
-            config_file = 'Google-geocode-API_config.csv'
+            msg = "geocoder"
+            config_file = "Google-geocode-API_config.csv"
         if len(configAPIKey) == 0:
-            message = 'No config file ' + config_file + ' was found in the config subfolder of the NLP-SUIte.\n\nGoogle ' + msg + ' requires an API key (in fact, Google requires two separate free API keys, one for Google geocoder, the other for Google Maps).'
-            if 'geocode' in Google_config:
-                message = message + '\n\nWithout a Google geocoder API key you can only geocode locations with Nominatim.'
-            if 'Maps' in Google_config:
-                message = message + '\n\nWithout a Google Maps API key you can only map locations in Google Earth Pro.'
-            message = message + '\n\nPlease, read the TIPS file TIPS_NLP_GIS_Google API Key.pdf on how to obtain free Google API keys.\n\nWould you like to open the TIPS file now?'
-            answer = tk.messagebox.askyesno("Warning",message)
+            message = (
+                "No config file "
+                + config_file
+                + " was found in the config subfolder of the NLP-SUIte.\n\nGoogle "
+                + msg
+                + " requires an API key (in fact, Google requires two separate free API keys, one for Google geocoder, the other for Google Maps)."
+            )
+            if "geocode" in Google_config:
+                message = (
+                    message + "\n\nWithout a Google geocoder API key you can only geocode locations with Nominatim."
+                )
+            if "Maps" in Google_config:
+                message = message + "\n\nWithout a Google Maps API key you can only map locations in Google Earth Pro."
+            message = (
+                message
+                + "\n\nPlease, read the TIPS file TIPS_NLP_GIS_Google API Key.pdf on how to obtain free Google API keys.\n\nWould you like to open the TIPS file now?"
+            )
+            answer = tk.messagebox.askyesno("Warning", message)
             if answer:
-                TIPS_util.open_TIPS('TIPS_NLP_GIS_Google API Key.pdf')
-        if 'Maps' in Google_config:
-            config_type='Maps'
+                TIPS_util.open_TIPS("TIPS_NLP_GIS_Google API Key.pdf")
+        if "Maps" in Google_config:
+            config_type = "Maps"
         else:
-            config_type = 'geocoder'
+            config_type = "geocoder"
         if display_key and len(configAPIKey) > 0:
-            key=configAPIKey[0]
+            key = configAPIKey[0]
         else:
-            key=''
-        if key=='':
+            key = ""
+        if key == "":
             message = "Enter the Google " + config_type + " API key"
         else:
             message = "Enter a new Google " + config_type + " API key if you want to change the key"
-        key, string_out = GUI_IO_util.enter_value_widget(message, 'Enter', 1, key, 'API key', key)
+        key, string_out = GUI_IO_util.enter_value_widget(message, "Enter", 1, key, "API key", key)
         # save the API key
-        if key!='':
-            config_util.Google_API_Config_Save(window,Google_config, key)
+        if key != "":
+            config_util.Google_API_Config_Save(window, Google_config, key)
     else:
         key = configAPIKey[0]
     # strip whitespace/newline that readlines() may include
@@ -82,7 +94,7 @@ def has_google_api_key(Google_config):
         path = os.path.join(GUI_IO_util.configPath, Google_config)
         if not os.path.isfile(path):
             return False
-        with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
             return any(line.strip() for line in f)
     except Exception:
         return False
@@ -97,182 +109,209 @@ def has_google_api_key(Google_config):
 
 import json as _json
 
-_GIS_SETTINGS_FILENAME = 'GIS_settings.json'
+_GIS_SETTINGS_FILENAME = "GIS_settings.json"
 
-def save_GIS_settings(input_dir, country_bias='', area='', restrict=False):
+
+def save_GIS_settings(input_dir, country_bias="", area="", restrict=False):
     """Save geocoding settings to GIS_settings.json in the input directory."""
     if not input_dir or not os.path.isdir(input_dir):
         return
-    settings = {
-        'country_bias': country_bias,
-        'area': area,
-        'restrict': bool(restrict)
-    }
+    settings = {"country_bias": country_bias, "area": area, "restrict": bool(restrict)}
     path = os.path.join(input_dir, _GIS_SETTINGS_FILENAME)
     try:
-        with open(path, 'w', encoding='utf-8') as f:
+        with open(path, "w", encoding="utf-8") as f:
             _json.dump(settings, f, indent=2)
     except Exception as e:
         print(f"  WARNING: Could not save GIS settings to {path}: {e}")
+
 
 def load_GIS_settings(input_dir):
     """Load geocoding settings from GIS_settings.json in the input directory.
     Returns (country_bias, area, restrict) — defaults to ('', '', False) if not found."""
     if not input_dir or not os.path.isdir(input_dir):
-        return '', '', False
+        return "", "", False
     path = os.path.join(input_dir, _GIS_SETTINGS_FILENAME)
     if not os.path.isfile(path):
-        return '', '', False
+        return "", "", False
     try:
-        with open(path, 'r', encoding='utf-8') as f:
+        with open(path, "r", encoding="utf-8") as f:
             settings = _json.load(f)
-        return (settings.get('country_bias', ''),
-                settings.get('area', ''),
-                settings.get('restrict', False))
+        return (settings.get("country_bias", ""), settings.get("area", ""), settings.get("restrict", False))
     except Exception as e:
         print(f"  WARNING: Could not read GIS settings from {path}: {e}")
-        return '', '', False
+        return "", "", False
+
 
 # Turn a raw NER output csv (token column 'Form' for spaCy/Stanza or 'Word' for CoreNLP,
 # with BIOES-prefixed tags) into a csv that has a 'Location' column and normalized location
 # NER tags, ready for GIS_pipeline (which requires a 'Location' column). Multi-word entities
 # are merged via the 'Multi-Word Expression' column. Mirrors the preprocessing GIS_main does.
 # Returns out_csv if it contains location rows, else '' (no mappable locations).
-def normalize_NER_csv_for_GIS(ner_csv, out_csv, encodingValue='utf-8',
-                              filename_embeds_date_var=False, date_format='mm/dd/yyyy',
-                              items_separator='_', date_position=2):
+def normalize_NER_csv_for_GIS(
+    ner_csv,
+    out_csv,
+    encodingValue="utf-8",
+    filename_embeds_date_var=False,
+    date_format="mm/dd/yyyy",
+    items_separator="_",
+    date_position=2,
+):
     try:
-        df = pd.read_csv(ner_csv, encoding=encodingValue, on_bad_lines='skip')
+        df = pd.read_csv(ner_csv, encoding=encodingValue, on_bad_lines="skip")
     except Exception:
-        return ''
+        return ""
     # token column: 'Form' (spaCy/Stanza) or 'Word' (CoreNLP) -> 'Location'
-    if 'Form' in df.columns and 'Word' not in df.columns:
-        df = df.rename(columns={'Form': 'Word'})
-    if 'Word' in df.columns:
-        df = df.rename(columns={'Word': 'Location'})
-    if 'NER' not in df.columns or 'Location' not in df.columns:
-        return ''
+    if "Form" in df.columns and "Word" not in df.columns:
+        df = df.rename(columns={"Form": "Word"})
+    if "Word" in df.columns:
+        df = df.rename(columns={"Word": "Location"})
+    if "NER" not in df.columns or "Location" not in df.columns:
+        return ""
     # scheme-aware tag normalization: strip BIOES prefix (S-GPE -> GPE); map GPE/LOC -> LOCATION.
     # LOC maps only when the scheme has no GPE (CoNLL/BERT/non-English Stanza), matching the GIS filters.
-    scheme_has_gpe = df['NER'].astype(str).str.contains('GPE').any()
-    df['NER'] = df['NER'].astype(str).str.split('-').str[-1]
-    mapping = {'GPE': 'LOCATION'}
+    scheme_has_gpe = df["NER"].astype(str).str.contains("GPE").any()
+    df["NER"] = df["NER"].astype(str).str.split("-").str[-1]
+    mapping = {"GPE": "LOCATION"}
     if not scheme_has_gpe:
-        mapping['LOC'] = 'LOCATION'
-    df['NER'] = df['NER'].replace(mapping)
-    df = df[df['NER'].isin({'COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION'})]
+        mapping["LOC"] = "LOCATION"
+    df["NER"] = df["NER"].replace(mapping)
+    df = df[df["NER"].isin({"COUNTRY", "STATE_OR_PROVINCE", "CITY", "LOCATION"})]
     # merge multi-word entities: keep entity-head rows and use the pre-joined value
-    if 'Multi-Word Expression' in df.columns and len(df) > 0:
-        mwe = df['Multi-Word Expression'].astype(str)
-        mwe_mask = df['Multi-Word Expression'].notna() & (mwe.str.strip() != '') & (mwe != 'O')
+    if "Multi-Word Expression" in df.columns and len(df) > 0:
+        mwe = df["Multi-Word Expression"].astype(str)
+        mwe_mask = df["Multi-Word Expression"].notna() & (mwe.str.strip() != "") & (mwe != "O")
         if mwe_mask.any():
             df = df[mwe_mask].copy()
-            df['Location'] = df['Multi-Word Expression']
+            df["Location"] = df["Multi-Word Expression"]
     if df.empty:
-        return ''
+        return ""
     # extract the date from each Document's filename (when the corpus embeds dates in filenames)
     # so the geocoder/KML/folium popups can show it
-    if filename_embeds_date_var and 'Document' in df.columns:
+    if filename_embeds_date_var and "Document" in df.columns:
         import IO_files_util, IO_csv_util
+
         def _date_of(doc):
             try:
                 raw = IO_csv_util.undressFilenameForCSVHyperlink(str(doc))
                 date, date_str, month, day, year = IO_files_util.getDateFromFileName(
-                    raw, date_format, items_separator, date_position, errMsg=False)
-                return date_str or date or ''
+                    raw, date_format, items_separator, date_position, errMsg=False
+                )
+                return date_str or date or ""
             except Exception:
-                return ''
-        df['Date'] = df['Document'].apply(_date_of)
+                return ""
+
+        df["Date"] = df["Document"].apply(_date_of)
     try:
         df.to_csv(out_csv, index=False, encoding=encodingValue)
     except Exception:
-        return ''
+        return ""
     return out_csv
+
 
 # the list of arguments reflect the order of widgets in the Google_Earth_main GUI
 # processes one file at a time
-def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
-                        geocoder, mapping_package, chartPackage, dataTransformation,
-                        datePresent,
-                        country_bias,
-                        area_var,
-                        restrict,
-                        locationColumnName,
-                        encodingValue,
-                        group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
-                        icon_var_list, specific_icon_var_list, # pushpin, red
-                        name_var_list, scale_var_list, color_var_list, color_style_var_list,
-                        bold_var_list, italic_var_list,
-                        description_var_list=[], description_csv_field_var_list=[]):
+def GIS_pipeline(
+    window,
+    config_filename,
+    inputFilename,
+    inputDir,
+    outputDir,
+    geocoder,
+    mapping_package,
+    chartPackage,
+    dataTransformation,
+    datePresent,
+    country_bias,
+    area_var,
+    restrict,
+    locationColumnName,
+    encodingValue,
+    group_var,
+    group_number_var,
+    group_values_entry_var_list,
+    group_label_entry_var_list,
+    icon_var_list,
+    specific_icon_var_list,  # pushpin, red
+    name_var_list,
+    scale_var_list,
+    color_var_list,
+    color_style_var_list,
+    bold_var_list,
+    italic_var_list,
+    description_var_list=[],
+    description_csv_field_var_list=[],
+):
 
-    filesToOpen=[]
+    filesToOpen = []
 
     # if datePresent:
     #     date, dateStr = IO_files_util.getDateFromFileName(inputFilename, dateFormat, dateDelimiter, int(datePosition))
-        # if date == '':
-        #     continue  # TODO: Warn user this file has a bad date; done in getDate
-        # else:
+    # if date == '':
+    #     continue  # TODO: Warn user this file has a bad date; done in getDate
+    # else:
 
-    inputIsCoNLL, inputIsGeocoded, withHeader, headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(inputFilename)
+    inputIsCoNLL, inputIsGeocoded, withHeader, headers, datePresent, filenamePositionInCoNLLTable = (
+        GIS_file_check_util.CoNLL_checker(inputFilename)
+    )
 
-    locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumnName, inputFilename)
+    locationColumnNumber = IO_csv_util.get_columnNumber_from_headerValue(headers, locationColumnName, inputFilename)
 
     if locationColumnNumber == None:
         return
 
     dateColumnNumber = -1
     if datePresent == True:
-        dateColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,"Date", inputFilename)
+        dateColumnNumber = IO_csv_util.get_columnNumber_from_headerValue(headers, "Date", inputFilename)
 
-    outputCsvLocationsOnly = ''
+    outputCsvLocationsOnly = ""
 
-    software=config_filename.replace('_config.csv','')
+    software = config_filename.replace("_config.csv", "")
     # check that the GEP has been setup
-    if 'Google' in mapping_package:
-        GoogleEarthProDir, existing_software_config, errorFound = IO_libraries_util.external_software_install('GIS_pipeline_util',
-                                                                                             'Google Earth Pro',
-                                                                                             '',
-                                                                                             silent=True, errorFound=False)
+    if "Google" in mapping_package:
+        GoogleEarthProDir, existing_software_config, errorFound = IO_libraries_util.external_software_install(
+            "GIS_pipeline_util", "Google Earth Pro", "", silent=True, errorFound=False
+        )
 
-        if GoogleEarthProDir == None or GoogleEarthProDir == '':
-            mb.showwarning('Google Earth Pro not found',
-                           'Google Earth Pro is not installed on this machine.\n\n'
-                           'The NLP Suite will use Python Folium instead to produce pin maps and heatmaps.\n\n'
-                           'You can install Google Earth Pro at any time from the Setup menu.')
-            mapping_package = 'Python folium pin map & heatmap'
+        if GoogleEarthProDir == None or GoogleEarthProDir == "":
+            mb.showwarning(
+                "Google Earth Pro not found",
+                "Google Earth Pro is not installed on this machine.\n\n"
+                "The NLP Suite will use Python Folium instead to produce pin maps and heatmaps.\n\n"
+                "You can install Google Earth Pro at any time from the Setup menu.",
+            )
+            mapping_package = "Python folium pin map & heatmap"
 
-    startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start', 'Started running GIS pipeline at',
-                                                   True, '', True, '', False)
+    startTime = IO_user_interface_util.timed_alert(
+        window, 2000, "Analysis start", "Started running GIS pipeline at", True, "", True, "", False
+    )
 
     head, scriptName = os.path.split(os.path.basename(__file__))
-    reminders_util.checkReminder(scriptName,
-                                 reminders_util.title_options_GIS_timing,
-                                 reminders_util.message_GIS_timing,
-                                 True)
+    reminders_util.checkReminder(
+        scriptName, reminders_util.title_options_GIS_timing, reminders_util.message_GIS_timing, True
+    )
 
     #
     # ------------------------------------------------------------------------------------
     # get locations
     # ------------------------------------------------------------------------------------
 
-    reminders_util.checkReminder(scriptName,
-                                 reminders_util.title_options_GIS_MWL,
-                                 reminders_util.message_GIS_MWL,
-                                 True)
+    reminders_util.checkReminder(scriptName, reminders_util.title_options_GIS_MWL, reminders_util.message_GIS_MWL, True)
 
     if inputIsCoNLL == True:
-        outputCsvLocationsOnly = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
-                                                                   'NER_locations', '', '', '', False, True)
-        locations = GIS_location_util.extract_NER_locations(window, inputFilename, encodingValue,
-                                                            datePresent)
+        outputCsvLocationsOnly = IO_files_util.generate_output_file_name(
+            inputFilename, "", outputDir, ".csv", "GIS", "NER_locations", "", "", "", False, True
+        )
+        locations = GIS_location_util.extract_NER_locations(window, inputFilename, encodingValue, datePresent)
     else:
         # locations is a double list of names of locations in the form [['United States','COUNTRY']]
-        if locationColumnName=='':
-            locations = GIS_location_util.extract_csvFile_locations(window, inputFilename, withHeader, locationColumnNumber, encodingValue, datePresent, dateColumnNumber)
+        if locationColumnName == "":
+            locations = GIS_location_util.extract_csvFile_locations(
+                window, inputFilename, withHeader, locationColumnNumber, encodingValue, datePresent, dateColumnNumber
+            )
             if locations == None or len(locations) == 0:
                 return
         else:
-            locations=[[locationColumnName]]
+            locations = [[locationColumnName]]
         # rebuild the real locations from the file for ANY geocoder (this was previously gated
         # to Nominatim only, leaving Google with the placeholder [[locationColumnName]] -> 0 geocoded)
         if not inputIsGeocoded:
@@ -281,20 +320,20 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
             # the NER csv holds the location strings in the engine's token column
             # ('Form' for spaCy/Stanza, 'Word' for CoreNLP) = locationColumnName, not a
             # literal 'Location' column; expose it under the name this block expects.
-            if 'Location' not in nom_df.columns and locationColumnName and locationColumnName in nom_df.columns:
-                nom_df = nom_df.rename(columns={locationColumnName: 'Location'})
+            if "Location" not in nom_df.columns and locationColumnName and locationColumnName in nom_df.columns:
+                nom_df = nom_df.rename(columns={locationColumnName: "Location"})
             # select columns; spaCy/Stanza NER output may lack 'Sentence' (it has only
             # 'Sentence ID') and sometimes 'Date'/'Document' -- add them as empty so the
             # selection below and downstream code do not raise a KeyError
-            for col in ('Sentence', 'Document'):
+            for col in ("Sentence", "Document"):
                 if col not in nom_df.columns:
-                    nom_df[col] = ''
+                    nom_df[col] = ""
             if datePresent:
-                if 'Date' not in nom_df.columns:
-                    nom_df['Date'] = ''
-                nom_df = nom_df[['Location', 'Date', 'NER', 'Sentence', 'Document']]
+                if "Date" not in nom_df.columns:
+                    nom_df["Date"] = ""
+                nom_df = nom_df[["Location", "Date", "NER", "Sentence", "Document"]]
             else:
-                nom_df = nom_df[['Location', 'NER', 'Sentence', 'Document']]
+                nom_df = nom_df[["Location", "NER", "Sentence", "Document"]]
             # if datePresent:
             #     # nom_df = pd.DataFrame(locations, columns=['Location', 'Date', 'NER']) if len(locations[0])==3 else pd.DataFrame(locations, columns=['Location', 'Index', '0', 'NER'])
             #     nom_df = pd.DataFrame(locations, columns=['Location', 'Date', 'NER', 'Sentence', 'Document']) if len(locations[0])==5 else pd.DataFrame(locations, columns=['Location', 'Index', '0', 'NER', 'Sentence', 'Document'])
@@ -311,28 +350,31 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                 return
             drop_idx = []
             changed_idx = {}
-            for i,row in nom_df.iterrows():
+            for i, row in nom_df.iterrows():
                 # if i!=0 and row[0] in constants_util.continents and nom_df.at[i-1, 'Location'] in constants_util.directions:
-                if i!=0 and \
-                    (row[0] == 'Africa' or \
-                    row[0] == 'Antarctica' or \
-                    row[0] == 'Asia' or \
-                    row[0] == 'Australia' or \
-                    row[0] == 'Europe' or \
-                    row[0] == 'Oceania' or \
-                    row[0] == 'America'):
-                    nom_df.at[i, 'Location'] = nom_df.at[i-1, 'Location'] + ' ' + row[0]
-                    drop_idx.append(i-1)
-                    changed_idx[i] = nom_df.at[i, 'Location']
+                if i != 0 and (
+                    row[0] == "Africa"
+                    or row[0] == "Antarctica"
+                    or row[0] == "Asia"
+                    or row[0] == "Australia"
+                    or row[0] == "Europe"
+                    or row[0] == "Oceania"
+                    or row[0] == "America"
+                ):
+                    nom_df.at[i, "Location"] = nom_df.at[i - 1, "Location"] + " " + row[0]
+                    drop_idx.append(i - 1)
+                    changed_idx[i] = nom_df.at[i, "Location"]
                     changed = True
             if changed:
-                tmp_df = pd.read_csv(inputFilename,encoding='utf-8',on_bad_lines='skip')
-                for k,v in changed_idx.items():
-                    tmp_df.at[k, 'Location'] = v
+                tmp_df = pd.read_csv(inputFilename, encoding="utf-8", on_bad_lines="skip")
+                for k, v in changed_idx.items():
+                    tmp_df.at[k, "Location"] = v
                 tmp_df = tmp_df.drop(drop_idx)
-                tmp_df.to_csv(inputFilename, index=False) # TODO: drop a index column, which will produce error with producing KML (if selected).
+                tmp_df.to_csv(
+                    inputFilename, index=False
+                )  # TODO: drop a index column, which will produce error with producing KML (if selected).
             nom_df = nom_df.drop(drop_idx)
-            locations = [row.values.tolist() for _,row in nom_df.iterrows()]
+            locations = [row.values.tolist() for _, row in nom_df.iterrows()]
 
     if locations == None or len(locations) == 0:
         return
@@ -341,135 +383,188 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
     # geocode (the new geocoding function also creates the kml Google Earth Pro map file)
     # ------------------------------------------------------------------------------------
 
-    if geocoder!='':
-        geoName = 'geo-' + str(geocoder[:3])
+    if geocoder != "":
+        geoName = "geo-" + str(geocoder[:3])
     else:
-        geoName = 'geo-'
-    geocodedLocationsOutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
-                                                                              'GIS',
-                                                                              geoName, locationColumnName, '', '',
-                                                                              False,
-                                                                              True)
-    #@@@
+        geoName = "geo-"
+    geocodedLocationsOutputFilename = IO_files_util.generate_output_file_name(
+        inputFilename, "", outputDir, ".csv", "GIS", geoName, locationColumnName, "", "", False, True
+    )
+    # @@@
     # must be the same name as set in GIS_geocode_util
     # locationsNotFoundoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
     #                                                                           'GIS',
     #                                                                           geoName, 'not_found',
     #                                                                           locationColumnName, '',
     #                                                                           False, True)
-    locationsNotFoundoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
-                                                                              'GIS',
-                                                                              geoName, '',
-                                                                              locationColumnName, '',
-                                                                              False, True)
-    locationsNotFoundoutputFilename=locationsNotFoundoutputFilename.replace('LOCATIONS','LOCATIONS_not-found')
+    locationsNotFoundoutputFilename = IO_files_util.generate_output_file_name(
+        inputFilename, "", outputDir, ".csv", "GIS", geoName, "", locationColumnName, "", False, True
+    )
+    locationsNotFoundoutputFilename = locationsNotFoundoutputFilename.replace("LOCATIONS", "LOCATIONS_not-found")
 
-    geocodedLocationsOutputFilename=inputFilename
+    geocodedLocationsOutputFilename = inputFilename
 
     # this is required for docker version for now
     # if 'Google' in mapping_package:
-    kmloutputFilename = geocodedLocationsOutputFilename.replace('.csv', '.kml')
+    kmloutputFilename = geocodedLocationsOutputFilename.replace(".csv", ".kml")
 
     if not inputIsGeocoded:
-        geocodedLocationsOutputFilename, \
-        locationsNotFoundoutputFilename, \
-        locationsNotFoundNonDistinctoutputFilename, \
-        kmloutputFilename = \
-            GIS_geocode_util.geocode(window, locations, inputFilename, outputDir,
-                locationColumnName,geocoder,country_bias, area_var,restrict,
-                encodingValue)
+        (
+            geocodedLocationsOutputFilename,
+            locationsNotFoundoutputFilename,
+            locationsNotFoundNonDistinctoutputFilename,
+            kmloutputFilename,
+        ) = GIS_geocode_util.geocode(
+            window,
+            locations,
+            inputFilename,
+            outputDir,
+            locationColumnName,
+            geocoder,
+            country_bias,
+            area_var,
+            restrict,
+            encodingValue,
+        )
 
-        if kmloutputFilename!='':
+        if kmloutputFilename != "":
             filesToOpen.append(kmloutputFilename)
-        if geocodedLocationsOutputFilename=='' and locationsNotFoundoutputFilename=='': #when geocoding cannot run because of internet connection
+        if (
+            geocodedLocationsOutputFilename == "" and locationsNotFoundoutputFilename == ""
+        ):  # when geocoding cannot run because of internet connection
             return
 
     else:
-        kmloutputFilename = GIS_geocode_util.process_geocoded_data_for_kml(window, locations, inputFilename, outputDir,
-                                      locationColumnName, description_csv_field_var_list, encodingValue, geocoder)
-        if kmloutputFilename!='':
+        kmloutputFilename = GIS_geocode_util.process_geocoded_data_for_kml(
+            window,
+            locations,
+            inputFilename,
+            outputDir,
+            locationColumnName,
+            description_csv_field_var_list,
+            encodingValue,
+            geocoder,
+        )
+        if kmloutputFilename != "":
             filesToOpen.append(kmloutputFilename)
 
     if len(locations) > 0 and inputIsCoNLL == True:
         # locations contains the following values:
-        #	location, sentence, filename, date (if present)
+        # location, sentence, filename, date (if present)
         filesToOpen.append(outputCsvLocationsOnly)
         if datePresent == True:
             # always use the location_var variable passed by algorithms to make sure locations are then matched
-            locations.insert(0, ['Location', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document',  'Date'])
+            locations.insert(0, ["Location", "NER", "Sentence ID", "Sentence", "Document ID", "Document", "Date"])
         else:
             # always use the location_var variable passed by algorithms to make sure locations are then matched
-            locations.insert(0, ['Location', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
+            locations.insert(0, ["Location", "NER", "Sentence ID", "Sentence", "Document ID", "Document"])
         IO_csv_util.list_to_csv(window, locations, outputCsvLocationsOnly)
 
     # the plot of locations frequencies is done in the CoreNLP_annotator_util
     # the plot of location NERs frequencies is done in the function CoreNLP_annotator_util
     # need to plot locations geocoded and not geocoded
 
-    nRecordsFound, nColumns  = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(geocodedLocationsOutputFilename)
-    if geocodedLocationsOutputFilename != '' and nRecordsFound >0:
+    nRecordsFound, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(geocodedLocationsOutputFilename)
+    if geocodedLocationsOutputFilename != "" and nRecordsFound > 0:
         # set inputIsGeocoded
-        inputIsGeocoded=True
+        inputIsGeocoded = True
         filesToOpen.append(geocodedLocationsOutputFilename)
-        if chartPackage!='No charts':
-            if geocoder=='' or inputIsGeocoded:
-                chart_title = 'Frequency of Locations'
+        if chartPackage != "No charts":
+            if geocoder == "" or inputIsGeocoded:
+                chart_title = "Frequency of Locations"
             else:
-                chart_title = 'Frequency of Locations Found by ' + geocoder
+                chart_title = "Frequency of Locations Found by " + geocoder
 
-            outputFiles = charts_util.plot(geocodedLocationsOutputFilename, outputDir, columns=['Location'], title=chart_title, x_label='Locations', group_by=None)
+            outputFiles = charts_util.plot(
+                geocodedLocationsOutputFilename,
+                outputDir,
+                columns=["Location"],
+                title=chart_title,
+                x_label="Locations",
+                group_by=None,
+            )
 
-            if outputFiles!=None:
+            if outputFiles != None:
                 if len(outputFiles) > 0:
                     # must split the file in case both path and filename contain the word LOCATION
                     head, tail = os.path.split(outputFiles[0])
-                    tail = tail.replace('LOCATIONS', 'LOCATIONS_found')
+                    tail = tail.replace("LOCATIONS", "LOCATIONS_found")
 
                     # change the filename on the computer drive
-                    os.rename(outputFiles[0], head+os.sep+tail)
-                    outputFiles[0] = head+os.sep+tail
+                    os.rename(outputFiles[0], head + os.sep + tail)
+                    outputFiles[0] = head + os.sep + tail
                     filesToOpen.extend(outputFiles)
 
-            outputFiles = charts_util.plot(geocodedLocationsOutputFilename, outputDir, columns=['Country from Geocoder'], title='Frequency of Countries Found by ' + geocoder, x_label='Country found by ' + geocoder, group_by=None)
+            outputFiles = charts_util.plot(
+                geocodedLocationsOutputFilename,
+                outputDir,
+                columns=["Country from Geocoder"],
+                title="Frequency of Countries Found by " + geocoder,
+                x_label="Country found by " + geocoder,
+                group_by=None,
+            )
 
-            if outputFiles!=None:
+            if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
                 else:
                     filesToOpen.extend(outputFiles)
 
     if not inputIsGeocoded:
-        if locationsNotFoundNonDistinctoutputFilename!='':
-            nRecordsNotFound, nColumns  = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(locationsNotFoundNonDistinctoutputFilename)
-            if nRecordsNotFound>0:
+        if locationsNotFoundNonDistinctoutputFilename != "":
+            nRecordsNotFound, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(
+                locationsNotFoundNonDistinctoutputFilename
+            )
+            if nRecordsNotFound > 0:
                 filesToOpen.append(locationsNotFoundNonDistinctoutputFilename)
-                if chartPackage!='No charts':
-
-                    outputFiles = charts_util.plot(locationsNotFoundNonDistinctoutputFilename, outputDir, columns=['Location'], title='Frequency of Locations not Found by ' + geocoder, x_label='Locations', group_by=None)
-                    if outputFiles!=None:
+                if chartPackage != "No charts":
+                    outputFiles = charts_util.plot(
+                        locationsNotFoundNonDistinctoutputFilename,
+                        outputDir,
+                        columns=["Location"],
+                        title="Frequency of Locations not Found by " + geocoder,
+                        x_label="Locations",
+                        group_by=None,
+                    )
+                    if outputFiles != None:
                         if len(outputFiles) > 0:
                             # must split the file in case both path and filename contain the word LOCATION
                             head, tail = os.path.split(outputFiles[0])
-                            tail = tail.replace('LOCATIONS', 'LOCATIONS_not_found')
+                            tail = tail.replace("LOCATIONS", "LOCATIONS_not_found")
                             # change the filename on the computer drive
                             outputFiles[0] = os.rename(outputFiles[0], head + os.sep + tail)
                             filesToOpen.extend(outputFiles)
 
                 # save to csv file and run visualization
                 # outputFilename= IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv','found-notFound')
-                outputFilename= IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv')
-                outputFilename = outputFilename.replace('LOCATIONS','LOCATIONS_found-notFound')
-                with open(outputFilename, "w", newline="", encoding='utf-8', errors='ignore') as csvFile:
+                outputFilename = IO_files_util.generate_output_file_name(inputFilename, "", outputDir, ".csv")
+                outputFilename = outputFilename.replace("LOCATIONS", "LOCATIONS_found-notFound")
+                with open(outputFilename, "w", newline="", encoding="utf-8", errors="ignore") as csvFile:
                     writer = csv.writer(csvFile)
                     writer.writerow(
-                        ["Number of Distinct Locations Found by Geocoder ", "Number of Distinct Locations NOT Found by Geocoder"])
+                        [
+                            "Number of Distinct Locations Found by Geocoder ",
+                            "Number of Distinct Locations NOT Found by Geocoder",
+                        ]
+                    )
                     writer.writerow([nRecordsFound, nRecordsNotFound])
                     csvFile.close()
                 # no need to display since the chart will contain the values
                 # return_files.append(outputFilename)
-                columns_to_be_plotted_yAxis=["Number of Distinct Locations Found by Geocoder ", "Number of Distinct Locations NOT Found by Geocoder"]
-                outputFiles = charts_util.plot(outputFilename, outputDir, columns=columns_to_be_plotted_yAxis, title='Number of DISTINCT Locations Found and not Found by Geocoder', x_label='Geocoder results', count=0, group_by=None)
-                if outputFiles!=None:
+                columns_to_be_plotted_yAxis = [
+                    "Number of Distinct Locations Found by Geocoder ",
+                    "Number of Distinct Locations NOT Found by Geocoder",
+                ]
+                outputFiles = charts_util.plot(
+                    outputFilename,
+                    outputDir,
+                    columns=columns_to_be_plotted_yAxis,
+                    title="Number of DISTINCT Locations Found and not Found by Geocoder",
+                    x_label="Geocoder results",
+                    count=0,
+                    group_by=None,
+                )
+                if outputFiles != None:
                     if isinstance(outputFiles, str):
                         filesToOpen.append(outputFiles)
                     else:
@@ -481,7 +576,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
     # map
     # ------------------------------------------------------------------------------------
 
-    Google_Maps_API = getGoogleAPIkey(window, 'Google-Maps-API_config.csv')
+    Google_Maps_API = getGoogleAPIkey(window, "Google-Maps-API_config.csv")
 
     # ------------------------------------------------------------------------------------
     # Google Earth Pro (geocoding above produces the GEP map)
@@ -491,24 +586,22 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
     # Google Maps heat map
     # ------------------------------------------------------------------------------------
 
-    if nRecordsFound > 0 and 'Google' in mapping_package and Google_Maps_API != '':
-
-        heatMapoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
-                                                                        '.html', 'GIS',
-                                                                        geocoder, locationColumnName, '', '',
-                                                                        False, True)
+    if nRecordsFound > 0 and "Google" in mapping_package and Google_Maps_API != "":
+        heatMapoutputFilename = IO_files_util.generate_output_file_name(
+            inputFilename, "", outputDir, ".html", "GIS", geocoder, locationColumnName, "", "", False, True
+        )
         coordList = []
 
         print(f"  Google Maps heatmap: reading geocoded CSV: {geocodedLocationsOutputFilename}")
-        df = pd.read_csv(geocodedLocationsOutputFilename, encoding='utf-8', on_bad_lines='skip')
+        df = pd.read_csv(geocodedLocationsOutputFilename, encoding="utf-8", on_bad_lines="skip")
         print(f"  Google Maps heatmap: CSV columns: {list(df.columns)}")
         print(f"  Google Maps heatmap: CSV rows: {len(df)}")
 
-        if 'Latitude' in df and 'Longitude' in df:
+        if "Latitude" in df and "Longitude" in df:
             # reset_index(drop=True) is REQUIRED: dropna leaves gaps in the row index, but the loop
             # below indexes lat[i]/lon[i] by position via range(len(lat)); without a contiguous
             # 0..n-1 index those become label lookups and raise KeyError on the first dropped row
-            df = df.dropna(subset=['Latitude', 'Longitude']).reset_index(drop=True)
+            df = df.dropna(subset=["Latitude", "Longitude"]).reset_index(drop=True)
             lat = df.Latitude
             lon = df.Longitude
             print(f"  Google Maps heatmap: {len(lat)} valid lat/lon rows after dropna")
@@ -522,8 +615,12 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                 print(f"  WARNING: Google Maps heatmap: coordList is EMPTY after reading CSV!")
         else:
             print(f"  WARNING: Google Maps heatmap: 'Latitude' or 'Longitude' column NOT found in CSV!")
-            mb.showwarning('Warning',
-                           'The input csv file\n\n' + geocodedLocationsOutputFilename + '\n\ndoes not contain geocoded data with Latitude or Longitude columns required for Google Maps to produce heat maps.\n\nPlease, select a geocoded csv file in input and try again.')
+            mb.showwarning(
+                "Warning",
+                "The input csv file\n\n"
+                + geocodedLocationsOutputFilename
+                + "\n\ndoes not contain geocoded data with Latitude or Longitude columns required for Google Maps to produce heat maps.\n\nPlease, select a geocoded csv file in input and try again.",
+            )
             return
 
         GIS_Google_Maps_util.create_js(window, heatMapoutputFilename, coordList, geocoder, True)
@@ -531,45 +628,46 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
     else:
         if nRecordsFound <= 0:
             print(f"  Google Maps heatmap: SKIPPED - nRecordsFound={nRecordsFound}")
-        elif 'Google' not in mapping_package:
+        elif "Google" not in mapping_package:
             print(f"  Google Maps heatmap: SKIPPED - mapping_package='{mapping_package}' does not contain 'Google'")
-        elif Google_Maps_API == '':
+        elif Google_Maps_API == "":
             print(f"  Google Maps heatmap: SKIPPED - Google_Maps_API is empty")
-            mb.showwarning('Google Maps API key missing',
-                           'No Google Maps API key was found.\n\n'
-                           'The NLP Suite will use Python Folium instead to produce pin maps and heatmaps.\n\n'
-                           'You can set up a Google Maps API key at any time from the GIS GUI.\n'
-                           'Read the TIPS file TIPS_NLP_GIS_Google API Key.pdf for instructions.')
-            mapping_package = 'Python folium pin map & heatmap'
+            mb.showwarning(
+                "Google Maps API key missing",
+                "No Google Maps API key was found.\n\n"
+                "The NLP Suite will use Python Folium instead to produce pin maps and heatmaps.\n\n"
+                "You can set up a Google Maps API key at any time from the GIS GUI.\n"
+                "Read the TIPS file TIPS_NLP_GIS_Google API Key.pdf for instructions.",
+            )
+            mapping_package = "Python folium pin map & heatmap"
 
     # ------------------------------------------------------------------------------------
     # Folium pin map and heat map (no API key required)
     # ------------------------------------------------------------------------------------
 
-    if 'folium' in mapping_package.lower():
-        folium_pin_file = GIS_folium_util.create_folium_pin_map(window,
-                                                                 geocodedLocationsOutputFilename,
-                                                                 outputDir,
-                                                                 locationColumnName)
-        if folium_pin_file != '':
+    if "folium" in mapping_package.lower():
+        folium_pin_file = GIS_folium_util.create_folium_pin_map(
+            window, geocodedLocationsOutputFilename, outputDir, locationColumnName
+        )
+        if folium_pin_file != "":
             filesToOpen.append(folium_pin_file)
 
-        folium_heat_file = GIS_folium_util.create_folium_heatmap(window,
-                                                                  geocodedLocationsOutputFilename,
-                                                                  outputDir,
-                                                                  locationColumnName)
-        if folium_heat_file != '':
+        folium_heat_file = GIS_folium_util.create_folium_heatmap(
+            window, geocodedLocationsOutputFilename, outputDir, locationColumnName
+        )
+        if folium_heat_file != "":
             filesToOpen.append(folium_heat_file)
 
         # dynamic/time-animated folium map (the folium equivalent of Google Earth Pro's time
         # slider). Only meaningful when the geocoded csv carries a Date column.
         if datePresent:
-            folium_time_file = GIS_folium_util.create_folium_timestamped_map(window,
-                                                                  geocodedLocationsOutputFilename,
-                                                                  outputDir,
-                                                                  locationColumnName)
-            if folium_time_file != '':
+            folium_time_file = GIS_folium_util.create_folium_timestamped_map(
+                window, geocodedLocationsOutputFilename, outputDir, locationColumnName
+            )
+            if folium_time_file != "":
                 filesToOpen.append(folium_time_file)
 
-    IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running GIS pipeline at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(
+        window, 2000, "Analysis end", "Finished running GIS pipeline at", True, "", True, startTime
+    )
     return filesToOpen

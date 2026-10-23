@@ -8,6 +8,7 @@ beta and alpha), the document lengths, the vocabulary and the term frequencies. 
 
     html = mallet_to_ldavis(state_file, html_file)        # '' when pyLDAvis cannot draw it
 """
+
 import collections
 import gzip
 import os
@@ -20,14 +21,14 @@ def read_state(path):
     THE DOCUMENT IS THE ONE ITS SOURCE NAMES when the source ends in a number ("...\\doc00042.txt" is 42) - MALLET's own
     document count follows the order the folder was listed in - and MALLET's count otherwise."""
     alpha, beta, rows = [], 0.01, []
-    opener = gzip.open if path.lower().endswith('.gz') else open
-    with opener(path, 'rt', encoding='utf-8', errors='replace') as fh:
+    opener = gzip.open if path.lower().endswith(".gz") else open
+    with opener(path, "rt", encoding="utf-8", errors="replace") as fh:
         for line in fh:
-            if line.startswith('#alpha'):
-                alpha = [float(x) for x in line.split(':', 1)[1].split()]
-            elif line.startswith('#beta'):
-                beta = float(line.split(':', 1)[1])
-            elif not line.startswith('#'):
+            if line.startswith("#alpha"):
+                alpha = [float(x) for x in line.split(":", 1)[1].split()]
+            elif line.startswith("#beta"):
+                beta = float(line.split(":", 1)[1])
+            elif not line.startswith("#"):
                 # "doc source pos typeindex type topic" - THE SOURCE IS A FILE PATH AND CAN HOLD SPACES ("Thread_Anne
                 # ... .txt"): the document is read from the left, the word and its topic from the right
                 parts = line.split()
@@ -62,14 +63,15 @@ def mallet_to_ldavis(state_file, html_file):
     try:
         import pyLDAvis
     except ImportError:
-        return ''
+        return ""
     alpha, beta, rows = read_state(state_file)
     if not rows:
-        return ''
+        return ""
     tt, dt, lengths, vocab, tf = ldavis_inputs(alpha, beta, rows)
-    keep = [i for i, n in enumerate(lengths) if n > 0]          # a document every word of which was a stopword
-    vis = pyLDAvis.prepare(tt, [dt[i] for i in keep], [lengths[i] for i in keep], vocab, tf, mds='mmds',
-                           sort_topics=False)
+    keep = [i for i, n in enumerate(lengths) if n > 0]  # a document every word of which was a stopword
+    vis = pyLDAvis.prepare(
+        tt, [dt[i] for i in keep], [lengths[i] for i in keep], vocab, tf, mds="mmds", sort_topics=False
+    )
     os.makedirs(os.path.dirname(os.path.abspath(html_file)), exist_ok=True)
     pyLDAvis.save_html(vis, html_file)
     return html_file
@@ -77,5 +79,5 @@ def mallet_to_ldavis(state_file, html_file):
 
 def document_number(source):
     """The number at the end of a document's file name ("C:/x/doc00042.txt" -> 42), or None."""
-    m = re.search(r'(\d+)\.\w+$', str(source))
+    m = re.search(r"(\d+)\.\w+$", str(source))
     return int(m.group(1)) if m else None

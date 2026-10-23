@@ -1,13 +1,18 @@
-#coding=utf-8
+# coding=utf-8
 
-#Edited by Elaine Dong, Jan 30, 2021.
+# Edited by Elaine Dong, Jan 30, 2021.
 
 # this version uses cosine similarity.
 import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Find Non-related Documents",['stanza','tkinter','stanfordcorenlp','os','tkinter','glob'])==False:
+if (
+    IO_libraries_util.install_all_Python_packages(
+        GUI_util.window, "Find Non-related Documents", ["stanza", "tkinter", "stanfordcorenlp", "os", "tkinter", "glob"]
+    )
+    == False
+):
     sys.exit(0)
 
 import config_aware_parser_util  # picks the parser (CoreNLP / Stanza / spaCy) selected in the NLP Suite setup
@@ -23,30 +28,40 @@ import charts_util
 
 # from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza_word
 
-#This fuction reads the social actor list from the same directory
-#and save that into a set called "my_soc_actors"
+
+# This fuction reads the social actor list from the same directory
+# and save that into a set called "my_soc_actors"
 def load_soc_actors():
-    fName= GUI_IO_util.wordLists_libPath + os.sep + 'social-actor-list.csv'
+    fName = GUI_IO_util.wordLists_libPath + os.sep + "social-actor-list.csv"
     my_soc_actors = set()
     if not os.path.isfile(fName):
-        print("The file "+fName+" could not be found. The routine expects a csv dictionary file 'social-actor-list.csv' in a directory 'lib' expected to be a subdirectory of the directory where the concreteness_analysis.py script is stored.\n\nPlease, check your lib directory and try again.")
-        mb.showerror(title='File not found', message='The routine expects a csv dictionary file "social-actor-list.csv" in a directory "lib" expected to be a subdirectory of the directory where the concreteness_analysis.py script is stored.\n\nPlease, check your lib directory and try again')
+        print(
+            "The file "
+            + fName
+            + " could not be found. The routine expects a csv dictionary file 'social-actor-list.csv' in a directory 'lib' expected to be a subdirectory of the directory where the concreteness_analysis.py script is stored.\n\nPlease, check your lib directory and try again."
+        )
+        mb.showerror(
+            title="File not found",
+            message='The routine expects a csv dictionary file "social-actor-list.csv" in a directory "lib" expected to be a subdirectory of the directory where the concreteness_analysis.py script is stored.\n\nPlease, check your lib directory and try again',
+        )
         sys.exit()
-    with open(fName, encoding='utf-8', errors='ignore') as fin:
+    with open(fName, encoding="utf-8", errors="ignore") as fin:
         for line in fin:
-                # save the list of "social actors"
-                my_soc_actors.add(line.strip().split(',')[0])
+            # save the list of "social actors"
+            my_soc_actors.add(line.strip().split(",")[0])
     return my_soc_actors
 
-#CM soc_acts is the input. I filtered out all social actors in dir_path
+
+# CM soc_acts is the input. I filtered out all social actors in dir_path
 # Version 2: when we need to filter out NERs.
 def get_article_soc_actors_NER(dir_path, soc_acts, nlp, keywords, printing):
     from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza_word
-    my_files = glob(dir_path+'*.txt')
+
+    my_files = glob(dir_path + "*.txt")
     num_doc = 0
     for file in my_files:
         num_doc += 1
-        with open(file, encoding='utf-8', errors='ignore') as fh:
+        with open(file, encoding="utf-8", errors="ignore") as fh:
             fcontent = fh.read()
         # store the file name
         fileName = file.split(os.path.sep)[-1]
@@ -54,15 +69,15 @@ def get_article_soc_actors_NER(dir_path, soc_acts, nlp, keywords, printing):
             print("    Processing document: ", fileName)
         keywords[fileName] = {}
         postag_seen = set()
-        #tokenize the article into words, and also filter out all the nouns and store them into "nouns"
+        # tokenize the article into words, and also filter out all the nouns and store them into "nouns"
         for word, pos in nlp.pos_tag(fcontent):
             # find out all the nouns
-            if (pos == 'NN' or pos == 'NNS' ):
+            if pos == "NN" or pos == "NNS":
                 # lemma_word to check if is social actor
                 # lemma_word = lemmatizer.lemmatize(word.lower())
                 lemma_word = lemmatize_stanza_word(stanzaPipeLine(word.lower()))
                 if lemma_word in soc_acts:
-                    #add into the list.
+                    # add into the list.
                     if lemma_word in keywords[fileName]:
                         keywords[fileName][lemma_word] = keywords[fileName][lemma_word] + 1
                         # reduce the size that is needed to detect NER. save time
@@ -70,7 +85,7 @@ def get_article_soc_actors_NER(dir_path, soc_acts, nlp, keywords, printing):
                         postag_seen.add(lemma_word)
                         keywords[fileName][lemma_word] = 1
         for wordNER, pos in nlp.ner(fcontent):
-            if (pos == 'LOCATION' or pos == 'DATE' or pos == 'ORGANIZATION' or pos == 'PERSON'):
+            if pos == "LOCATION" or pos == "DATE" or pos == "ORGANIZATION" or pos == "PERSON":
                 # lemma_NER = lemmatizer.lemmatize(wordNER.lower())
                 lemma_NER = lemmatize_stanza_word(stanzaPipeLine(wordNER.lower()))
                 if lemma_NER not in postag_seen:
@@ -81,7 +96,8 @@ def get_article_soc_actors_NER(dir_path, soc_acts, nlp, keywords, printing):
                         keywords[fileName][lemma_NER] = 1
     return keywords, num_doc
 
-#Used cosine similarity to find relativity
+
+# Used cosine similarity to find relativity
 def percent_belongs(one_doc, all_doc):
     numerator = 0
     list1_sum_squre = 0
@@ -99,6 +115,7 @@ def percent_belongs(one_doc, all_doc):
     cos_sim = round(numerator / (l1_sqrt * l2_sqrt), 2)
     return cos_sim
 
+
 def get_NER_POSTAG(dir, soc_acts, nlp, compare):
     compare[dir] = {}
     keywords, num_doc = get_article_soc_actors_NER(dir, soc_acts, nlp, {}, True)
@@ -106,6 +123,7 @@ def get_NER_POSTAG(dir, soc_acts, nlp, compare):
         for word, freq in dict_of_words.items():
             compare[dir][word] = freq
     return compare
+
 
 def find(doc_dir, soc_acts, nlp, compare, sim_base, f, terminal_output):
     keywords, num_doc = get_article_soc_actors_NER(doc_dir, soc_acts, nlp, {}, False)
@@ -116,7 +134,7 @@ def find(doc_dir, soc_acts, nlp, compare, sim_base, f, terminal_output):
         print("There is no text file in document path.")
     for doc in keywords:
         sys.stdout = terminal_output
-        print("Processing document: ",doc)
+        print("Processing document: ", doc)
         sys.stdout = f
         a = keywords[doc]
         num_target_dir = 0
@@ -124,82 +142,118 @@ def find(doc_dir, soc_acts, nlp, compare, sim_base, f, terminal_output):
         max_index = 0
         for each_folder in compare.keys():
             b = compare[each_folder]
-            similarity = percent_belongs(a,b)
+            similarity = percent_belongs(a, b)
             if similarity > max_index:
                 max_index = similarity
         for each_folder in compare.keys():
             b = compare[each_folder]
-            similarity = percent_belongs(a,b)
+            similarity = percent_belongs(a, b)
             if similarity >= sim_base:
                 if num_target_dir == 0:
-                    print_content += (IO_csv_util.dressFilenameForCSVHyperlink(doc_dir + doc)+","+IO_csv_util.dressFilenameForCSVHyperlink(each_folder)+",")
+                    print_content += (
+                        IO_csv_util.dressFilenameForCSVHyperlink(doc_dir + doc)
+                        + ","
+                        + IO_csv_util.dressFilenameForCSVHyperlink(each_folder)
+                        + ","
+                    )
                     if similarity == max_index:
                         print_content += "*"
-                    print_content += (","+str(similarity))
+                    print_content += "," + str(similarity)
                 if num_target_dir == 1:
-                    print_content += (",Repeated,**************************************\n"+IO_csv_util.dressFilenameForCSVHyperlink(doc_dir + doc)+","+IO_csv_util.dressFilenameForCSVHyperlink(each_folder)+",")
+                    print_content += (
+                        ",Repeated,**************************************\n"
+                        + IO_csv_util.dressFilenameForCSVHyperlink(doc_dir + doc)
+                        + ","
+                        + IO_csv_util.dressFilenameForCSVHyperlink(each_folder)
+                        + ","
+                    )
                     if similarity == max_index:
                         print_content += "*"
-                    print_content += (","+str(similarity)+",Repeated")
+                    print_content += "," + str(similarity) + ",Repeated"
                 if num_target_dir == 2:
                     print(print_content)
                 if num_target_dir > 1:
-                    print_line = (IO_csv_util.dressFilenameForCSVHyperlink(doc_dir + doc)+","+IO_csv_util.dressFilenameForCSVHyperlink(each_folder)+",")
+                    print_line = (
+                        IO_csv_util.dressFilenameForCSVHyperlink(doc_dir + doc)
+                        + ","
+                        + IO_csv_util.dressFilenameForCSVHyperlink(each_folder)
+                        + ","
+                    )
                     if similarity == max_index:
                         print_line += "*"
-                    print_line += (","+str(similarity)+",Repeated")
+                    print_line += "," + str(similarity) + ",Repeated"
                     print(print_line)
                 num_target_dir += 1
         if num_target_dir == 0:
-            print(IO_csv_util.dressFilenameForCSVHyperlink(doc_dir + doc)+",No target directory is found,,,Unclassified,**************************************")
+            print(
+                IO_csv_util.dressFilenameForCSVHyperlink(doc_dir + doc)
+                + ",No target directory is found,,,Unclassified,**************************************"
+            )
             num_unclass += 1
         if num_target_dir == 1:
             print(print_content + ",Classified,**************************************")
             num_class += 1
         if num_target_dir == 2:
             print(print_content)
-        if num_target_dir >1:
+        if num_target_dir > 1:
             num_multiclass += 1
 
     return num_doc, num_unclass, num_class, num_multiclass
 
+
 # CoreNLPDir: the path to stanfordCoreNLP folder. example name is "stanford-corenlp-4.2.0"
 # inputDir: the path to a folder that stores ungrouped documents in txt format.
 # inputTargetDir: the path to a folder that stores several folders which contains several documents of the same target
-def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, chartPackage, dataTransformation, relativity_threshold):
+def main(
+    window, inputDir, inputTargetDir, outputDir, openOutputFiles, chartPackage, dataTransformation, relativity_threshold
+):
 
     filesToOpen = []
     # The tool runs on whichever NLP package was selected in the NLP Suite setup, so the Stanford CoreNLP
     # directory is demanded ONLY when CoreNLP is that package. The four NER tags this classifier reads
     # (LOCATION, DATE, ORGANIZATION, PERSON) all exist in the OntoNotes model behind Stanza and spaCy, so
     # nothing here depends on CoreNLP's finer-grained entity types.
-    CoreNLPDir = ''
+    CoreNLPDir = ""
     if config_aware_parser_util.requires_CoreNLP():
         # check that the CoreNLPdir has been setup
-        CoreNLPDir, existing_software_config, errorFound = IO_libraries_util.external_software_install('file_classifier_NER_util',
-                                                                                             'Stanford CoreNLP',
-                                                                                             '',
-                                                                                             silent=False, errorFound=False)
-        if CoreNLPDir==None:
+        CoreNLPDir, existing_software_config, errorFound = IO_libraries_util.external_software_install(
+            "file_classifier_NER_util", "Stanford CoreNLP", "", silent=False, errorFound=False
+        )
+        if CoreNLPDir == None:
             return filesToOpen
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
-                                       'Started running the File Classifier by NER values at', True,
-                                       '\n\nThe script will first build a dictionary of NER values for the documents in each subfolder, then process each unclassified document.  Please, be patient.',True)
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis start",
+        "Started running the File Classifier by NER values at",
+        True,
+        "\n\nThe script will first build a dictionary of NER values for the documents in each subfolder, then process each unclassified document.  Please, be patient.",
+        True,
+    )
 
-    if inputDir[-1] != '/':
-        inputDir = inputDir + '/'
-    outputFilename = IO_files_util.generate_output_file_name('', inputTargetDir, outputDir, '.csv', 'SSR', 'NER_class', '', '', '', False, True)
+    if inputDir[-1] != "/":
+        inputDir = inputDir + "/"
+    outputFilename = IO_files_util.generate_output_file_name(
+        "", inputTargetDir, outputDir, ".csv", "SSR", "NER_class", "", "", "", False, True
+    )
     filesToOpen.append(outputFilename)
-    f = open(outputFilename, 'w',encoding='utf-8',errors='ignore')
+    f = open(outputFilename, "w", encoding="utf-8", errors="ignore")
     terminal_output = sys.stdout
     sys.stdout = f
-    print("Source document,Target directory,Highest index,Relativity index (>" + str(relativity_threshold) + "),Outcome")
+    print(
+        "Source document,Target directory,Highest index,Relativity index (>" + str(relativity_threshold) + "),Outcome"
+    )
     actors = load_soc_actors()
-    dirs = glob(inputTargetDir+'/*/')
-    if dirs==[]:
-        mb.showwarning("Warning", "No target subdirectories.\n\nNo target subdirectories found in\n\n" + inputTargetDir + "\n\nPlease, check your target directory in the INPUT secondary directory in the IO widgets.")
-        filesToOpen=[]
+    dirs = glob(inputTargetDir + "/*/")
+    if dirs == []:
+        mb.showwarning(
+            "Warning",
+            "No target subdirectories.\n\nNo target subdirectories found in\n\n"
+            + inputTargetDir
+            + "\n\nPlease, check your target directory in the INPUT secondary directory in the IO widgets.",
+        )
+        filesToOpen = []
         sys.stdout = terminal_output
         return filesToOpen
 
@@ -208,43 +262,62 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, chartPack
     num_folder = 0
     sys.stdout = terminal_output
     for dir in dirs:
-        print("Processing folder " + str(num_folder + 1) + "/" + str(len(dirs)) + "; Folder name: " + dir.split(os.path.sep)[-2])
+        print(
+            "Processing folder "
+            + str(num_folder + 1)
+            + "/"
+            + str(len(dirs))
+            + "; Folder name: "
+            + dir.split(os.path.sep)[-2]
+        )
         compare = get_NER_POSTAG(dir, actors, nlp, compare)
-        num_folder +=1
+        num_folder += 1
     print("Finished all " + str(num_folder) + " folders. Start to process documents now.")
     sys.stdout = f
-    #compare stores: key- folder id; value: a set of words
-    num_doc, num_unclass, num_class, num_multiclass  = find(inputDir, actors, nlp, compare, relativity_threshold, f, terminal_output)
+    # compare stores: key- folder id; value: a set of words
+    num_doc, num_unclass, num_class, num_multiclass = find(
+        inputDir, actors, nlp, compare, relativity_threshold, f, terminal_output
+    )
     sys.stdout = terminal_output
-    mb.showinfo(title="Final results",
-                message=str(num_doc) + " SOURCE document processed\n" + \
-                        str(num_class) + " SOURCE documents classified in TARGET subdirectories\n" + \
-                        str(num_multiclass) + " SOURCE documents classified in MULTIPLE TARGET subdirectories\n" + \
-                        str(num_unclass) + " SOURCE documents unclassified")
+    mb.showinfo(
+        title="Final results",
+        message=str(num_doc)
+        + " SOURCE document processed\n"
+        + str(num_class)
+        + " SOURCE documents classified in TARGET subdirectories\n"
+        + str(num_multiclass)
+        + " SOURCE documents classified in MULTIPLE TARGET subdirectories\n"
+        + str(num_unclass)
+        + " SOURCE documents unclassified",
+    )
 
     print("Number of unclassified documents processed in input: " + str(num_doc))
-    print("Number of classified documents in output: "+ str(num_class))
-    print("Number of classified documents (with multiple targets) in output: "+ str(num_multiclass))
-    print("Number of unclassified documents in output: "+ str(num_unclass))
+    print("Number of classified documents in output: " + str(num_class))
+    print("Number of classified documents (with multiple targets) in output: " + str(num_multiclass))
+    print("Number of unclassified documents in output: " + str(num_unclass))
 
     nlp.close()
     f.close()
 
-    if chartPackage!='No charts':
-        columns_to_be_plotted_xAxis=[]
-        columns_to_be_plotted_yAxis=[[3, 3]]
-        hover_label=''
+    if chartPackage != "No charts":
+        columns_to_be_plotted_xAxis = []
+        columns_to_be_plotted_yAxis = [[3, 3]]
+        hover_label = ""
         inputFilename = outputFilename
-        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
-                                                  outputFileLabel='SSR_NER_home',
-                                                  chartPackage=chartPackage,
-                                                  dataTransformation=dataTransformation,
-                                                  chart_type_list=["pie"],
-                                                  chart_title='Frequency Distribution of Find a Home Outcome',
-                                                  column_xAxis_label_var='',
-                                                  hover_info_column_list=hover_label,
-                                                  count_var=1)
-    if outputFiles!=None:
+        outputFiles = charts_util.run_all(
+            columns_to_be_plotted_yAxis,
+            inputFilename,
+            outputDir,
+            outputFileLabel="SSR_NER_home",
+            chartPackage=chartPackage,
+            dataTransformation=dataTransformation,
+            chart_type_list=["pie"],
+            chart_title="Frequency Distribution of Find a Home Outcome",
+            column_xAxis_label_var="",
+            hover_info_column_list=hover_label,
+            count_var=1,
+        )
+    if outputFiles != None:
         if isinstance(outputFiles, str):
             filesToOpen.append(outputFiles)
         else:
@@ -256,5 +329,6 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, chartPack
 
     return filesToOpen
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

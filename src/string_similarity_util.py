@@ -68,11 +68,11 @@ def levenshtein_ratio(s1, s2):
 
 
 def _normalize(s):
-    return ' '.join(str(s).lower().replace(',', ' ').split())
+    return " ".join(str(s).lower().replace(",", " ").split())
 
 
 def _sort_tokens(s):
-    return ' '.join(sorted(_normalize(s).split()))
+    return " ".join(sorted(_normalize(s).split()))
 
 
 def similarity(s1, s2):
@@ -85,7 +85,7 @@ def similarity(s1, s2):
     """
     n1, n2 = _normalize(s1), _normalize(s2)
     score = levenshtein_ratio(n1, n2)
-    if ' ' in n1 or ' ' in n2:
+    if " " in n1 or " " in n2:
         score = max(score, levenshtein_ratio(_sort_tokens(s1), _sort_tokens(s2)))
     return score
 
@@ -111,9 +111,9 @@ def best_match(word, candidates, threshold):
     for candidate in candidates:
         if isinstance(candidate, (tuple, list)):
             cand_word = candidate[0]
-            cand_freq = candidate[1] if len(candidate) > 1 else ''
+            cand_freq = candidate[1] if len(candidate) > 1 else ""
         else:
-            cand_word, cand_freq = candidate, ''
+            cand_word, cand_freq = candidate, ""
         if cand_word == word:
             continue
         score = similarity(word, cand_word)

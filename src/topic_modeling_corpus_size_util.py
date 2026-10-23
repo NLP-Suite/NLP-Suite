@@ -26,28 +26,31 @@ def corpus_size_advice(numFiles):
     Separated from the dialogs so the judgement can be read and tested on its own.
     """
     if numFiles == 0:
-        return 'error', ('The selected input directory contains no .txt files.\n\n'
-                         'Please select a different directory and try again.')
+        return "error", (
+            "The selected input directory contains no .txt files.\n\nPlease select a different directory and try again."
+        )
     if numFiles == 1:
-        return 'error', (
-            'The selected input directory contains a single .txt file.\n\n'
-            'Topic modeling works by comparing how words co-occur ACROSS documents, so it needs '
-            'more than one. With a single file there is nothing to compare and the result would '
-            'simply describe that file.\n\n'
-            'If your text is one long document, split it into sections - chapters, articles, '
-            'speeches - and use those as your documents. That is standard practice, not a '
-            'workaround: it is how book-length texts are normally prepared for topic modeling. '
-            'The NLP Suite\'s File Splitter will do it.')
+        return "error", (
+            "The selected input directory contains a single .txt file.\n\n"
+            "Topic modeling works by comparing how words co-occur ACROSS documents, so it needs "
+            "more than one. With a single file there is nothing to compare and the result would "
+            "simply describe that file.\n\n"
+            "If your text is one long document, split it into sections - chapters, articles, "
+            "speeches - and use those as your documents. That is standard practice, not a "
+            "workaround: it is how book-length texts are normally prepared for topic modeling. "
+            "The NLP Suite's File Splitter will do it."
+        )
     if numFiles < _FEW_DOCUMENTS:
-        return 'advice', (
-            'The selected input directory contains %d .txt files.\n\n'
-            'This will run. What to watch for: topics are estimated per document as well as from '
-            'the text overall, so with few documents the topics can shift from one run to the next. '
-            'Check that yours hold before relying on them - run it twice and see whether the same '
-            'topics come back.\n\n'
-            'What matters is the amount of text and how it is divided, not the number of files. A '
-            'few long documents carry more than many very short ones. If your documents are long, '
-            'splitting them into sections gives the model more to compare and usually steadies the '
-            'topics.\n\n'
-            'See the TIPS file "Topic modeling and corpus size".' % numFiles)
-    return '', ''
+        return "advice", (
+            "The selected input directory contains %d .txt files.\n\n"
+            "This will run. What to watch for: topics are estimated per document as well as from "
+            "the text overall, so with few documents the topics can shift from one run to the next. "
+            "Check that yours hold before relying on them - run it twice and see whether the same "
+            "topics come back.\n\n"
+            "What matters is the amount of text and how it is divided, not the number of files. A "
+            "few long documents carry more than many very short ones. If your documents are long, "
+            "splitting them into sections gives the model more to compare and usually steadies the "
+            "topics.\n\n"
+            'See the TIPS file "Topic modeling and corpus size".' % numFiles
+        )
+    return "", ""

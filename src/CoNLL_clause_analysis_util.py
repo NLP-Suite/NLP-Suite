@@ -1,4 +1,4 @@
-#The Python 3 routine was written by Jian Chen, 12.12.2018
+# The Python 3 routine was written by Jian Chen, 12.12.2018
 # modified by Jian Chen (January 2019)
 # modified by Jack Hester (February 2019)
 # modified by Roberto Franzosi (February 2019-August 2020), November 2021
@@ -8,7 +8,12 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"CoNLL_clause_analysis.py",['os','csv','tkinter','ntpath','collections','subprocess'])==False:
+if (
+    IO_libraries_util.install_all_Python_packages(
+        GUI_util.window, "CoNLL_clause_analysis.py", ["os", "csv", "tkinter", "ntpath", "collections", "subprocess"]
+    )
+    == False
+):
     sys.exit(0)
 
 import json
@@ -21,52 +26,55 @@ import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
 import charts_util
+
 #
-clause_position = 8 # NEW CoNLL_U
-recordID_position = 9 # NEW CoNLL_U
-sentenceID_position = 10 # NEW CoNLL_U
-documentID_position = 11 # NEW CoNLL_U
+clause_position = 8  # NEW CoNLL_U
+recordID_position = 9  # NEW CoNLL_U
+sentenceID_position = 10  # NEW CoNLL_U
+documentID_position = 11  # NEW CoNLL_U
 
 # Following are used if running all analyses to prevent redundancy
 # filesToOpen = []  # Store all files that are to be opened once finished
-inputFilename_name = ''
-output_dir = ''
+inputFilename_name = ""
+output_dir = ""
+
 
 # if a Json file is present for pcfg output, the function extract each clause tag with the set of words that make it up
 def process_Json(inputFilename, outputDir):
     head, tail = os.path.split(inputFilename)
-    subtree_string_fileName = head + os.sep + 'clausal_tags.csv'
+    subtree_string_fileName = head + os.sep + "clausal_tags.csv"
     if not os.path.exists(subtree_string_fileName):
         if os.path.exists(head):
             import Stanford_CoreNLP_clause_util
+
             sent_list_clause = []
             subtree_string = []
             # JsonDir = head+os.sep+"Json_"+ tail[:-4]
-            JsonDir = ''
+            JsonDir = ""
             for file in os.listdir(head):
-                if 'Json_' in file:
-                    JsonDir=file
+                if "Json_" in file:
+                    JsonDir = file
             # no Json output beside the table (it was moved, or came from Stanza): the clause tags are in the table
             # itself and only this extra csv is missing; JsonDir was unbound here and the whole analysis crashed
-            if JsonDir == '':
+            if JsonDir == "":
                 return None
-            JsonDir = head+os.sep+JsonDir
+            JsonDir = head + os.sep + JsonDir
             if not os.path.exists(JsonDir):
                 return None
-            inputDocs = IO_files_util.getFileList('', JsonDir, fileType='.txt',silent=True,configFileName='')
+            inputDocs = IO_files_util.getFileList("", JsonDir, fileType=".txt", silent=True, configFileName="")
 
             Ndocs = len(inputDocs)
-            if Ndocs==0:
+            if Ndocs == 0:
                 return None
             for JsonFile in inputDocs:
-                with open(JsonFile, encoding='utf-8', errors='ignore') as f:
+                with open(JsonFile, encoding="utf-8", errors="ignore") as f:
                     Json_text = f.read()
                 # the file text was indexed as if it were parsed JSON (TypeError), so this branch always crashed
                 for CoreNLP_output in json_objects(Json_text):
-                    for parsed_sent in CoreNLP_output.get('sentences', []):
-                        if 'parse' not in parsed_sent:  # nn parser: no constituency tree, no clause tags
+                    for parsed_sent in CoreNLP_output.get("sentences", []):
+                        if "parse" not in parsed_sent:  # nn parser: no constituency tree, no clause tags
                             continue
-                        result = Stanford_CoreNLP_clause_util.clausal_info_extract_from_string(parsed_sent['parse'])
+                        result = Stanford_CoreNLP_clause_util.clausal_info_extract_from_string(parsed_sent["parse"])
                         if result is None:  # bad tree; clausal_info_extract_from_string has already warned
                             continue
                         sent_list, sent_examples = result
@@ -76,7 +84,7 @@ def process_Json(inputFilename, outputDir):
             if len(subtree_string) == 0:
                 return None
             # language_encoding was never defined here (NameError); the Json files are read as utf-8
-            IO_csv_util.list_to_csv(GUI_util.window, subtree_string, subtree_string_fileName, encoding='utf-8')
+            IO_csv_util.list_to_csv(GUI_util.window, subtree_string, subtree_string_fileName, encoding="utf-8")
             # filesToOpen.append(subtree_string_fileName)
 
     return subtree_string_fileName
@@ -96,6 +104,7 @@ def json_objects(text):
         obj, pos = decoder.raw_decode(text, pos)
         objects.append(obj)
 
+
 def clause_data_preparation(data):
     dat = []
     sbar_counter = 0
@@ -109,77 +118,91 @@ def clause_data_preparation(data):
     advp_counter = 0
     pp_counter = 0
     # should use dict_CLAUSALTAG from Stanford_CoreNLP_tags_util
-    clause_list = ['S','SBAR', 'SBARQ', 'SQ', 'SINV', 'NP', 'VP', 'ADJP', 'ADVP', 'PP']
+    clause_list = ["S", "SBAR", "SBARQ", "SQ", "SINV", "NP", "VP", "ADJP", "ADVP", "PP"]
 
     for i in data:
-        if(i[8] in clause_list):
+        if i[8] in clause_list:
             clause = i[8]
-            if(clause == 'S'):
-                clause_col = 'Sentence'
-                s_counter+=1
-            elif(clause == 'SBAR'):
-                clause_col = 'Clause introduced by a (possibly empty) subordinating conjunction'
-                sbar_counter+=1
-            elif(clause == 'SBARQ'):
-                clause_col = 'Direct question introduced by a wh-word or a wh-phrase'
-                sbarq_counter+=1
-            elif (clause == 'SQ'):
-                clause_col = 'Inverted yes/no question, or main clause of a wh-question, following the wh-phrase in SBARQ'
+            if clause == "S":
+                clause_col = "Sentence"
+                s_counter += 1
+            elif clause == "SBAR":
+                clause_col = "Clause introduced by a (possibly empty) subordinating conjunction"
+                sbar_counter += 1
+            elif clause == "SBARQ":
+                clause_col = "Direct question introduced by a wh-word or a wh-phrase"
+                sbarq_counter += 1
+            elif clause == "SQ":
+                clause_col = (
+                    "Inverted yes/no question, or main clause of a wh-question, following the wh-phrase in SBARQ"
+                )
                 sq_counter += 1
-            elif(clause == 'SINV'):
-                clause_col = 'Inverted declarative sentence'
-                sinv_counter+=1
-            elif(clause == 'NP'):
-                clause_col = 'Noun Phrase'
-                np_counter+=1
-            elif(clause == 'VP'):
-                clause_col = 'Verb Phrase'
-                vp_counter+=1
-            elif(clause == 'ADJP'):
-                clause_col = 'Adjective Phrase'
-                adjp_counter+=1
-            elif(clause == 'ADVP'):
-                clause_col = 'Adverb Phrase'
-                advp_counter+=1
-            elif(clause == 'PP'):
-                clause_col = 'Prepositional Phrase'
-                pp_counter+=1
-            dat.append(i+[clause_col])
+            elif clause == "SINV":
+                clause_col = "Inverted declarative sentence"
+                sinv_counter += 1
+            elif clause == "NP":
+                clause_col = "Noun Phrase"
+                np_counter += 1
+            elif clause == "VP":
+                clause_col = "Verb Phrase"
+                vp_counter += 1
+            elif clause == "ADJP":
+                clause_col = "Adjective Phrase"
+                adjp_counter += 1
+            elif clause == "ADVP":
+                clause_col = "Adverb Phrase"
+                advp_counter += 1
+            elif clause == "PP":
+                clause_col = "Prepositional Phrase"
+                pp_counter += 1
+            dat.append(i + [clause_col])
 
-    clause_stats = [['Clause Tags', 'Frequencies'],
-                         ['Clause-level (S - Sentence)', s_counter],
-                         ['Clause-level (SBAR - Clause introduced by a (possibly empty) subordinating conjunction)', sbar_counter],
-                         ['Clause-level (SBARQ - Direct question introduced by a wh-word or a wh-phrase)', sbarq_counter],
-                         ['Clause-level (SQ - Inverted yes/no question, or main clause of a wh-question, following the wh-phrase in SBARQ)', sq_counter],
-                         ['Clause-level (SINV - Inverted declarative sentence, i.e. one in which the subject follows the tensed verb or modal)', sinv_counter],
-                         ['Phrase-level (NP - Noun Phrase)', np_counter],
-                         ['Phrase-level (VP - Verb Phrase)', vp_counter],
-                         ['Phrase-level (ADJP - Adjective Phrase)', adjp_counter],
-                         ['Phrase-level (ADVP - Adverb Phrase)', advp_counter],
-                         ['Phrase-level (PP - Prepositional Phrase)', pp_counter]]
+    clause_stats = [
+        ["Clause Tags", "Frequencies"],
+        ["Clause-level (S - Sentence)", s_counter],
+        ["Clause-level (SBAR - Clause introduced by a (possibly empty) subordinating conjunction)", sbar_counter],
+        ["Clause-level (SBARQ - Direct question introduced by a wh-word or a wh-phrase)", sbarq_counter],
+        [
+            "Clause-level (SQ - Inverted yes/no question, or main clause of a wh-question, following the wh-phrase in SBARQ)",
+            sq_counter,
+        ],
+        [
+            "Clause-level (SINV - Inverted declarative sentence, i.e. one in which the subject follows the tensed verb or modal)",
+            sinv_counter,
+        ],
+        ["Phrase-level (NP - Noun Phrase)", np_counter],
+        ["Phrase-level (VP - Verb Phrase)", vp_counter],
+        ["Phrase-level (ADJP - Adjective Phrase)", adjp_counter],
+        ["Phrase-level (ADVP - Adverb Phrase)", advp_counter],
+        ["Phrase-level (PP - Prepositional Phrase)", pp_counter],
+    ]
     dat = sorted(dat, key=lambda x: int(x[recordID_position]))
     return clause_stats, dat
 
 
-def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,openOutputFiles,chartPackage, dataTransformation):
+def clause_stats(
+    inputFilename, inputDir, outputDir, data, data_divided_sents, openOutputFiles, chartPackage, dataTransformation
+):
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running CLAUSE ANALYSES at',
-                                                 True, '', True, '', True)
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis start", "Started running CLAUSE ANALYSES at", True, "", True, "", True
+    )
 
-    #output file names
-    #clausal_analysis_file_name contains all the CoNLL table records that have a clausal tag
-    clausal_analysis_file_name=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'CA', 'Clause tags', 'list')
+    # output file names
+    # clausal_analysis_file_name contains all the CoNLL table records that have a clausal tag
+    clausal_analysis_file_name = IO_files_util.generate_output_file_name(
+        inputFilename, inputDir, outputDir, ".csv", "CA", "Clause tags", "list"
+    )
     # filesToOpen.append(clausal_analysis_file_name)
-    #clausal_analysis_stats_file_name will contain a data sheet with the frequency distribution of all available clausal tags and a chart sheet with the pie chart visualization of the data
-
+    # clausal_analysis_stats_file_name will contain a data sheet with the frequency distribution of all available clausal tags and a chart sheet with the pie chart visualization of the data
 
     # if 0:
     #    stats_clauses(data)
-    #else:
+    # else:
     if not os.path.isdir(outputDir):
-        mb.showwarning(title='Output file path error', message='Please check OUTPUT DIRECTORY PATH and try again')
+        mb.showwarning(title="Output file path error", message="Please check OUTPUT DIRECTORY PATH and try again")
         return
 
     # process the Json file for clause tags
@@ -190,38 +213,57 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
         else:
             filesToOpen.extend(outputFiles)
 
-    #clausal_list, clausal_counter = compute_stats(data)
-    #clausal_stats = clause_compute_frequencies(data,data_divided_sents)
+    # clausal_list, clausal_counter = compute_stats(data)
+    # clausal_stats = clause_compute_frequencies(data,data_divided_sents)
 
     clausal_stats, clausal_list = clause_data_preparation(data)
-    if len(clausal_list)==0:
-        mb.showwarning(title='Input file error',
-                           message='The CLAUSE analysis algorithm expects in input a CoNLL table generated by the Stanford CoreNLP PCFG parser, rather than the nn, neural network parser.\n\nOnly the PCFG parser exports clause tags.\n\nPlease check your input file and try again.')
-        print('The CLAUSE analysis algorithm expects in input a CoNLL table generated by the Stanford CoreNLP PCFG parser, rather than the nn, neural network parser. Only the PCFG parser exports clause tags. Please check your input file and try again.')
+    if len(clausal_list) == 0:
+        mb.showwarning(
+            title="Input file error",
+            message="The CLAUSE analysis algorithm expects in input a CoNLL table generated by the Stanford CoreNLP PCFG parser, rather than the nn, neural network parser.\n\nOnly the PCFG parser exports clause tags.\n\nPlease check your input file and try again.",
+        )
+        print(
+            "The CLAUSE analysis algorithm expects in input a CoNLL table generated by the Stanford CoreNLP PCFG parser, rather than the nn, neural network parser. Only the PCFG parser exports clause tags. Please check your input file and try again."
+        )
         return filesToOpen
 
-    clausal_analysis_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'CA', 'Clause tags', 'stats')
-    clause_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'CA', 'Clause tags', 'list')
+    clausal_analysis_stats_file_name = IO_files_util.generate_output_file_name(
+        inputFilename, inputDir, outputDir, ".csv", "CA", "Clause tags", "stats"
+    )
+    clause_file_name = IO_files_util.generate_output_file_name(
+        inputFilename, "", outputDir, ".csv", "CA", "Clause tags", "list"
+    )
     # convert list to dataframe and save
     # headers=['Clause Tags','Frequencies']
     df = pd.DataFrame(clausal_list)
     df, headers = CoNLL_util.process_df_headers(df, "Clause Tag")
 
-    IO_csv_util.df_to_csv(GUI_util.window, df, clausal_analysis_stats_file_name, headers=headers, index=False, language_encoding='utf-8')
+    IO_csv_util.df_to_csv(
+        GUI_util.window, df, clausal_analysis_stats_file_name, headers=headers, index=False, language_encoding="utf-8"
+    )
 
-    if chartPackage!='No charts':
-        columns_to_be_plotted_xAxis=[]
-        columns_to_be_plotted_yAxis=['Clause Tag']
-        count_var=1
+    if chartPackage != "No charts":
+        columns_to_be_plotted_xAxis = []
+        columns_to_be_plotted_yAxis = ["Clause Tag"]
+        count_var = 1
 
-        outputFiles = charts_util.plot(clausal_analysis_stats_file_name, outputDir, columns=columns_to_be_plotted_yAxis, title="Frequency Distribution of Clause Types", x_label='Clause Type', count=count_var, file_label='clausal_stats')
+        outputFiles = charts_util.plot(
+            clausal_analysis_stats_file_name,
+            outputDir,
+            columns=columns_to_be_plotted_yAxis,
+            title="Frequency Distribution of Clause Types",
+            x_label="Clause Type",
+            count=count_var,
+            file_label="clausal_stats",
+        )
 
-        if outputFiles!=None:
+        if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
 
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running CLAUSE ANALYSES at', True, '', True, startTime, True)
+    IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis end", "Finished running CLAUSE ANALYSES at", True, "", True, startTime, True
+    )
     return filesToOpen
-

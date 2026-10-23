@@ -28,23 +28,32 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-#@@@
+# @@@
 # if IO_libraries_util.install_all_Python_packages(GUI_util.window,"topic_modeling_main.py",['nltk','os','tkinter','multiprocessing','pandas','gensim','spacy','pyLDAvis','matplotlib','logging','IPython','bertopic'])==False:
 #     sys.exit(0)
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"topic_modeling_main.py",['nltk','os','tkinter','multiprocessing','pandas','gensim','spacy','pyLDAvis','matplotlib','logging'])==False:
+if (
+    IO_libraries_util.install_all_Python_packages(
+        GUI_util.window,
+        "topic_modeling_main.py",
+        ["nltk", "os", "tkinter", "multiprocessing", "pandas", "gensim", "spacy", "pyLDAvis", "matplotlib", "logging"],
+    )
+    == False
+):
     sys.exit(0)
 
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
+
 # necessary to avoid opening the GUI repeatedly
 from multiprocessing import current_process
 import spacy
 # python -m spacy download en_core_web_sm)
 
 import GUI_IO_util
-#@@@
+
+# @@@
 # import topic_modeling_bert_util
 import topic_modeling_mallet_util
 import topic_modeling_gensim_util
@@ -71,55 +80,76 @@ def run():
     chartPackage = GUI_util.charts_package_options_widget.get()
     dataTransformation = GUI_util.data_transformation_options_widget.get()
     num_topics = num_topics_var.get()
-    BERT_var = globals()['BERT_var'].get()
-    split_docs_var = globals()['split_docs_var'].get()
-    MALLET_var = globals()['MALLET_var'].get()
-    optimize_intervals_var = globals()['optimize_intervals_var'].get()
-    Gensim_var = globals()['Gensim_var'].get()
-    remove_stopwords_var = globals()['remove_stopwords_var'].get()
-    lemmatize_var = globals()['lemmatize_var'].get()
-    nounsOnly_var = globals()['nounsOnly_var'].get()
-    Gensim_MALLET_var = globals()['Gensim_MALLET_var'].get()
+    BERT_var = globals()["BERT_var"].get()
+    split_docs_var = globals()["split_docs_var"].get()
+    MALLET_var = globals()["MALLET_var"].get()
+    optimize_intervals_var = globals()["optimize_intervals_var"].get()
+    Gensim_var = globals()["Gensim_var"].get()
+    remove_stopwords_var = globals()["remove_stopwords_var"].get()
+    lemmatize_var = globals()["lemmatize_var"].get()
+    nounsOnly_var = globals()["nounsOnly_var"].get()
+    Gensim_MALLET_var = globals()["Gensim_MALLET_var"].get()
 
     if not BERT_var and not MALLET_var and not Gensim_var:
-        mb.showwarning(title='Warning', message='There are no options selected.\n\nPlease, select one of the available options (MALLET or Gensim) and try again.')
+        mb.showwarning(
+            title="Warning",
+            message="There are no options selected.\n\nPlease, select one of the available options (MALLET or Gensim) and try again.",
+        )
         return
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
     filesToOpen = []
-    
-    if BERT_var:
-        label = 'BERTopic'
-    if MALLET_var:
-        label = 'MALLET'
-    if Gensim_var:
-        label = 'Gensim'
 
-    if not IO_internet_util.check_internet_availability_warning(label + ' Topic Modeling'):
+    if BERT_var:
+        label = "BERTopic"
+    if MALLET_var:
+        label = "MALLET"
+    if Gensim_var:
+        label = "Gensim"
+
+    if not IO_internet_util.check_internet_availability_warning(label + " Topic Modeling"):
         return
 
-    if num_topics==20:
-        reminders_util.checkReminder(scriptName, reminders_util.title_options_topic_modelling_number_of_topics,
-                                     reminders_util.message_topic_modelling_number_of_topics, True)
+    if num_topics == 20:
+        reminders_util.checkReminder(
+            scriptName,
+            reminders_util.title_options_topic_modelling_number_of_topics,
+            reminders_util.message_topic_modelling_number_of_topics,
+            True,
+        )
 
     # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory('', inputDir, outputDir, label='TM-'+label,
-                                                       silent=True)
-    if outputDir == '':
+    outputDir = IO_files_util.make_output_subdirectory("", inputDir, outputDir, label="TM-" + label, silent=True)
+    if outputDir == "":
         return
     if BERT_var:
         import topic_modeling_bert_util
+
         filesToOpen = topic_modeling_bert_util.run_BERTopic(inputDir, outputDir, openOutputFiles, split_docs_var)
     if MALLET_var:
-        filesToOpen = topic_modeling_mallet_util.run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation,
-                                                     optimize_intervals_var, num_topics)
+        filesToOpen = topic_modeling_mallet_util.run_MALLET(
+            inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, optimize_intervals_var, num_topics
+        )
     if Gensim_var:
-        filesToOpen = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir, config_filename, num_topics,
-                                          remove_stopwords_var, lemmatize_var, nounsOnly_var, Gensim_MALLET_var, openOutputFiles, chartPackage, dataTransformation)
+        filesToOpen = topic_modeling_gensim_util.run_Gensim(
+            GUI_util.window,
+            inputDir,
+            outputDir,
+            config_filename,
+            num_topics,
+            remove_stopwords_var,
+            lemmatize_var,
+            nounsOnly_var,
+            Gensim_MALLET_var,
+            openOutputFiles,
+            chartPackage,
+            dataTransformation,
+        )
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
+
 
 GUI_util.run_button.configure(command=run)
 
@@ -127,35 +157,37 @@ GUI_util.run_button.configure(command=run)
 
 # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
 #   just change the next statement to True or False IO_setup_display_brief=True
-IO_setup_display_brief=True
-GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
-                             GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=640, # height at brief display
-                             GUI_height_full=680, # height at full display
-                             y_multiplier_integer=GUI_util.y_multiplier_integer,
-                             y_multiplier_integer_add=1, # to be added for full display
-                             increment=1)  # to be added for full display
+IO_setup_display_brief = True
+GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(
+    IO_setup_display_brief,
+    GUI_width=GUI_IO_util.get_GUI_width(3),
+    GUI_height_brief=640,  # height at brief display
+    GUI_height_full=680,  # height at full display
+    y_multiplier_integer=GUI_util.y_multiplier_integer,
+    y_multiplier_integer_add=1,  # to be added for full display
+    increment=1,
+)  # to be added for full display
 
-GUI_label = 'Graphical User Interface (GUI) for Topic Modeling with MALLET and Gensim'
+GUI_label = "Graphical User Interface (GUI) for Topic Modeling with MALLET and Gensim"
 
 head, scriptName = os.path.split(os.path.basename(__file__))
 
 # The 4 values of config_option refer to:
 #   input file
-        # 1 for CoNLL file
-        # 2 for TXT file
-        # 3 for csv file
-        # 4 for any type of file
-        # 5 for txt or html
-        # 6 for txt or csv
+# 1 for CoNLL file
+# 2 for TXT file
+# 3 for csv file
+# 4 for any type of file
+# 5 for txt or html
+# 6 for txt or csv
 #   input dir
 #   input secondary dir
 #   output dir
-config_filename = 'NLP_default_IO_config.csv'
-config_input_output_numeric_options=[0,1,0,1]
+config_filename = "NLP_default_IO_config.csv"
+config_input_output_numeric_options = [0, 1, 0, 1]
 
 # necessary to avoid opening the GUI repeatedly
-if current_process().name == 'MainProcess':
+if current_process().name == "MainProcess":
     GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
     window = GUI_util.window
     # config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
@@ -175,193 +207,351 @@ if current_process().name == 'MainProcess':
     Gensim_MALLET_var = tk.IntVar()
     optimize_intervals_var = tk.IntVar()
 
-    num_topics_lb = tk.Label(window, text='Number of topics ')
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                                   num_topics_lb, True)
+    num_topics_lb = tk.Label(window, text="Number of topics ")
+    y_multiplier_integer = GUI_IO_util.placeWidget(
+        window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer, num_topics_lb, True
+    )
 
     num_topics_var.set(20)
     num_topics_entry = tk.Entry(window, width=5, textvariable=num_topics_var)
     # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate + 100, y_multiplier_integer,
-                                                   num_topics_entry,
-                                                   False, False, True, False, 90,
-                                                   GUI_IO_util.labels_x_coordinate,
-                                                   "Enter the number of topics to be used. Try different number of topics for better results (e.g., 70, 5).")
+    y_multiplier_integer = GUI_IO_util.placeWidget(
+        window,
+        GUI_IO_util.labels_x_indented_coordinate + 100,
+        y_multiplier_integer,
+        num_topics_entry,
+        False,
+        False,
+        True,
+        False,
+        90,
+        GUI_IO_util.labels_x_coordinate,
+        "Enter the number of topics to be used. Try different number of topics for better results (e.g., 70, 5).",
+    )
     BERT_var.set(0)
-    BERT_checkbox = tk.Checkbutton(window, text='Topic modeling (via BERTopic)', variable=BERT_var,
-                                               onvalue=1, offvalue=0, command=lambda: activate_options())
+    BERT_checkbox = tk.Checkbutton(
+        window,
+        text="Topic modeling (via BERTopic)",
+        variable=BERT_var,
+        onvalue=1,
+        offvalue=0,
+        command=lambda: activate_options(),
+    )
     # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               BERT_checkbox,
-                                               False, False, True, False, 90,
-                                               GUI_IO_util.labels_x_coordinate,
-                                               "Tick/untick the checkbox to run the BERtopic LLM (Large Language Model) topic modeling.\nBERTopic was developed by Maarten Grootendorst in 2022.\nBERTopic is based on BERT, released by Google in October 2018.")
+    y_multiplier_integer = GUI_IO_util.placeWidget(
+        window,
+        GUI_IO_util.labels_x_coordinate,
+        y_multiplier_integer,
+        BERT_checkbox,
+        False,
+        False,
+        True,
+        False,
+        90,
+        GUI_IO_util.labels_x_coordinate,
+        "Tick/untick the checkbox to run the BERtopic LLM (Large Language Model) topic modeling.\nBERTopic was developed by Maarten Grootendorst in 2022.\nBERTopic is based on BERT, released by Google in October 2018.",
+    )
     split_docs_var.set(0)
-    split_docs_checkbox = tk.Checkbutton(window, text='Split documents into sentences (recommended for datasets consisting of a small number of long documents)', variable=split_docs_var, onvalue=1, offvalue=0, command=lambda: activate_options())
+    split_docs_checkbox = tk.Checkbutton(
+        window,
+        text="Split documents into sentences (recommended for datasets consisting of a small number of long documents)",
+        variable=split_docs_var,
+        onvalue=1,
+        offvalue=0,
+        command=lambda: activate_options(),
+    )
     # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                                   split_docs_checkbox)
+    y_multiplier_integer = GUI_IO_util.placeWidget(
+        window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer, split_docs_checkbox
+    )
 
     MALLET_var.set(0)
-    MALLET_checkbox = tk.Checkbutton(window, text='Topic modeling (via MALLET)', variable=MALLET_var,
-                                               onvalue=1, offvalue=0, command=lambda: activate_options())
+    MALLET_checkbox = tk.Checkbutton(
+        window,
+        text="Topic modeling (via MALLET)",
+        variable=MALLET_var,
+        onvalue=1,
+        offvalue=0,
+        command=lambda: activate_options(),
+    )
     # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                                   MALLET_checkbox,
-                                                   False, False, True, False, 90,
-                                                   GUI_IO_util.labels_x_coordinate,
-                                                   "Tick/untick the checkbox to run the java-based MALLET LDA (Latent Dirichlet Allocation) topic modeling algorithm, first released in 2002.\nMALLET was developed by Andrew McCallum of the University of Massachusetts Amherst.\nMALLET does not come with any visual displays of its own.")
+    y_multiplier_integer = GUI_IO_util.placeWidget(
+        window,
+        GUI_IO_util.labels_x_coordinate,
+        y_multiplier_integer,
+        MALLET_checkbox,
+        False,
+        False,
+        True,
+        False,
+        90,
+        GUI_IO_util.labels_x_coordinate,
+        "Tick/untick the checkbox to run the java-based MALLET LDA (Latent Dirichlet Allocation) topic modeling algorithm, first released in 2002.\nMALLET was developed by Andrew McCallum of the University of Massachusetts Amherst.\nMALLET does not come with any visual displays of its own.",
+    )
 
     optimize_intervals_var.set(1)
-    optimize_intervals_checkbox = tk.Checkbutton(window, text='Optimize topic intervals',
-                                                 variable=optimize_intervals_var,
-                                                 onvalue=1, offvalue=0)
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                                   optimize_intervals_checkbox)
+    optimize_intervals_checkbox = tk.Checkbutton(
+        window, text="Optimize topic intervals", variable=optimize_intervals_var, onvalue=1, offvalue=0
+    )
+    y_multiplier_integer = GUI_IO_util.placeWidget(
+        window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer, optimize_intervals_checkbox
+    )
 
     Gensim_var.set(0)
-    Gensim_checkbox = tk.Checkbutton(window, text='Topic modeling (via Gensim)', variable=Gensim_var,
-                                               onvalue=1, offvalue=0, command=lambda: activate_options())
+    Gensim_checkbox = tk.Checkbutton(
+        window,
+        text="Topic modeling (via Gensim)",
+        variable=Gensim_var,
+        onvalue=1,
+        offvalue=0,
+        command=lambda: activate_options(),
+    )
     # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                                   Gensim_checkbox,
-                                                   False, False, True, False, 90,
-                                                   GUI_IO_util.labels_x_coordinate,
-                                                   "Tick/untick the checkbox to run the Gensim LDA (Latent Dirichlet Allocation) topic modeling algorithm.\nGensim uses the MALLET algorithm and displays the results in beautiful interactive visuals.")
+    y_multiplier_integer = GUI_IO_util.placeWidget(
+        window,
+        GUI_IO_util.labels_x_coordinate,
+        y_multiplier_integer,
+        Gensim_checkbox,
+        False,
+        False,
+        True,
+        False,
+        90,
+        GUI_IO_util.labels_x_coordinate,
+        "Tick/untick the checkbox to run the Gensim LDA (Latent Dirichlet Allocation) topic modeling algorithm.\nGensim uses the MALLET algorithm and displays the results in beautiful interactive visuals.",
+    )
     remove_stopwords_var.set(1)
-    remove_stopwords_checkbox = tk.Checkbutton(window, text='Remove stopwords', variable=remove_stopwords_var,
-                                               onvalue=1, offvalue=0)
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                                   remove_stopwords_checkbox)
+    remove_stopwords_checkbox = tk.Checkbutton(
+        window, text="Remove stopwords", variable=remove_stopwords_var, onvalue=1, offvalue=0
+    )
+    y_multiplier_integer = GUI_IO_util.placeWidget(
+        window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer, remove_stopwords_checkbox
+    )
 
     lemmatize_var.set(1)
-    lemmatize_checkbox = tk.Checkbutton(window, text='Lemmatize words (Nouns, verbs, adverbs, adjectives)', variable=lemmatize_var, onvalue=1, offvalue=0)
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                                   lemmatize_checkbox)
+    lemmatize_checkbox = tk.Checkbutton(
+        window,
+        text="Lemmatize words (Nouns, verbs, adverbs, adjectives)",
+        variable=lemmatize_var,
+        onvalue=1,
+        offvalue=0,
+    )
+    y_multiplier_integer = GUI_IO_util.placeWidget(
+        window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer, lemmatize_checkbox
+    )
 
     nounsOnly_var.set(0)
-    nounsOnly_checkbox = tk.Checkbutton(window, text='Use nouns only (lemmatized)', variable=nounsOnly_var, onvalue=1, offvalue=0)
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+20, y_multiplier_integer,
-                                                   nounsOnly_checkbox)
+    nounsOnly_checkbox = tk.Checkbutton(
+        window, text="Use nouns only (lemmatized)", variable=nounsOnly_var, onvalue=1, offvalue=0
+    )
+    y_multiplier_integer = GUI_IO_util.placeWidget(
+        window, GUI_IO_util.labels_x_indented_coordinate + 20, y_multiplier_integer, nounsOnly_checkbox
+    )
 
     Gensim_MALLET_var.set(0)
-    Gensim_MALLET_checkbox = tk.Checkbutton(window, text='Run MALLET (Topic coherence values and plot visualization)', variable=Gensim_MALLET_var, onvalue=1, offvalue=0)
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                                   Gensim_MALLET_checkbox)
+    Gensim_MALLET_checkbox = tk.Checkbutton(
+        window,
+        text="Run MALLET (Topic coherence values and plot visualization)",
+        variable=Gensim_MALLET_var,
+        onvalue=1,
+        offvalue=0,
+    )
+    y_multiplier_integer = GUI_IO_util.placeWidget(
+        window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer, Gensim_MALLET_checkbox
+    )
 
     def Mallet_reminder(*args):
         if Gensim_MALLET_var.get():
             routine_options = reminders_util.getReminders_list(scriptName)
-            reminders_util.checkReminder(scriptName,
-                                         reminders_util.title_options_gensim_release,
-                                         reminders_util.message_gensim_release,
-                                         True)
+            reminders_util.checkReminder(
+                scriptName, reminders_util.title_options_gensim_release, reminders_util.message_gensim_release, True
+            )
             routine_options = reminders_util.getReminders_list(scriptName)
-    Gensim_MALLET_var.trace('w',Mallet_reminder)
+
+    Gensim_MALLET_var.trace("w", Mallet_reminder)
 
     def activate_options():
         if BERT_var.get():
-            BERT_checkbox.configure(state='normal')
-            MALLET_checkbox.configure(state='disabled')
-            optimize_intervals_checkbox.configure(state='disabled')
-            Gensim_checkbox.configure(state='disabled')
-            remove_stopwords_checkbox.configure(state='disabled')
-            lemmatize_checkbox.configure(state='disabled')
-            nounsOnly_checkbox.configure(state='disabled')
-            Gensim_MALLET_checkbox.configure(state='disabled')
+            BERT_checkbox.configure(state="normal")
+            MALLET_checkbox.configure(state="disabled")
+            optimize_intervals_checkbox.configure(state="disabled")
+            Gensim_checkbox.configure(state="disabled")
+            remove_stopwords_checkbox.configure(state="disabled")
+            lemmatize_checkbox.configure(state="disabled")
+            nounsOnly_checkbox.configure(state="disabled")
+            Gensim_MALLET_checkbox.configure(state="disabled")
         elif MALLET_var.get():
-            MALLET_checkbox.configure(state='normal')
-            optimize_intervals_checkbox.configure(state='normal')
-            Gensim_checkbox.configure(state='disabled')
-            remove_stopwords_checkbox.configure(state='disabled')
-            lemmatize_checkbox.configure(state='disabled')
-            nounsOnly_checkbox.configure(state='disabled')
-            Gensim_MALLET_checkbox.configure(state='disabled')
-            BERT_checkbox.configure(state='disabled')
+            MALLET_checkbox.configure(state="normal")
+            optimize_intervals_checkbox.configure(state="normal")
+            Gensim_checkbox.configure(state="disabled")
+            remove_stopwords_checkbox.configure(state="disabled")
+            lemmatize_checkbox.configure(state="disabled")
+            nounsOnly_checkbox.configure(state="disabled")
+            Gensim_MALLET_checkbox.configure(state="disabled")
+            BERT_checkbox.configure(state="disabled")
         elif Gensim_var.get():
-            Gensim_checkbox.configure(state='normal')
-            remove_stopwords_checkbox.configure(state='normal')
-            lemmatize_checkbox.configure(state='normal')
-            nounsOnly_checkbox.configure(state='normal')
-            Gensim_MALLET_checkbox.configure(state='normal')
-            MALLET_checkbox.configure(state='disabled')
-            optimize_intervals_checkbox.configure(state='disabled')
-            BERT_checkbox.configure(state='disabled')
+            Gensim_checkbox.configure(state="normal")
+            remove_stopwords_checkbox.configure(state="normal")
+            lemmatize_checkbox.configure(state="normal")
+            nounsOnly_checkbox.configure(state="normal")
+            Gensim_MALLET_checkbox.configure(state="normal")
+            MALLET_checkbox.configure(state="disabled")
+            optimize_intervals_checkbox.configure(state="disabled")
+            BERT_checkbox.configure(state="disabled")
         else:
-            MALLET_checkbox.configure(state='normal')
-            optimize_intervals_checkbox.configure(state='normal')
-            Gensim_checkbox.configure(state='normal')
-            remove_stopwords_checkbox.configure(state='normal')
-            lemmatize_checkbox.configure(state='normal')
-            nounsOnly_checkbox.configure(state='normal')
-            Gensim_MALLET_checkbox.configure(state='normal')
-            BERT_checkbox.configure(state='normal')
+            MALLET_checkbox.configure(state="normal")
+            optimize_intervals_checkbox.configure(state="normal")
+            Gensim_checkbox.configure(state="normal")
+            remove_stopwords_checkbox.configure(state="normal")
+            lemmatize_checkbox.configure(state="normal")
+            nounsOnly_checkbox.configure(state="normal")
+            Gensim_MALLET_checkbox.configure(state="normal")
+            BERT_checkbox.configure(state="normal")
 
+    videos_lookup = {"No videos available": ""}
+    videos_options = "No videos available"
 
-    videos_lookup = {'No videos available': ''}
-    videos_options = 'No videos available'
-
-    TIPS_lookup = {"Topic modeling": "TIPS_NLP_Topic modeling.pdf",
-                   "Topic modeling in Gensim": "TIPS_NLP_Topic modeling Gensim.pdf",
-                   "Topic modeling in Mallet": "TIPS_NLP_Topic modeling Mallet.pdf",
-                   'Topic modeling and corpus size': 'TIPS_NLP_Topic modeling and corpus size.pdf',
-                   'Lemmas & stopwords':'TIPS_NLP_NLP Basic language.pdf',
-                   'csv files - Problems & solutions': 'TIPS_NLP_csv files - Problems & solutions.pdf',
-                   'Statistical measures': 'TIPS_NLP_Statistical measures.pdf',
-                   'Stopwords':'TIPS_NLP_Stopwords.pdf'}
-    TIPS_options = 'Topic modeling', 'Topic modeling in Gensim', 'Topic modeling in Mallet', 'Topic modeling and corpus size', 'Lemmas & stopwords', 'csv files - Problems & solutions', 'Statistical measures','Stopwords'
-
+    TIPS_lookup = {
+        "Topic modeling": "TIPS_NLP_Topic modeling.pdf",
+        "Topic modeling in Gensim": "TIPS_NLP_Topic modeling Gensim.pdf",
+        "Topic modeling in Mallet": "TIPS_NLP_Topic modeling Mallet.pdf",
+        "Topic modeling and corpus size": "TIPS_NLP_Topic modeling and corpus size.pdf",
+        "Lemmas & stopwords": "TIPS_NLP_NLP Basic language.pdf",
+        "csv files - Problems & solutions": "TIPS_NLP_csv files - Problems & solutions.pdf",
+        "Statistical measures": "TIPS_NLP_Statistical measures.pdf",
+        "Stopwords": "TIPS_NLP_Stopwords.pdf",
+    }
+    TIPS_options = (
+        "Topic modeling",
+        "Topic modeling in Gensim",
+        "Topic modeling in Mallet",
+        "Topic modeling and corpus size",
+        "Lemmas & stopwords",
+        "csv files - Problems & solutions",
+        "Statistical measures",
+        "Stopwords",
+    )
 
     # add all the lines to the end to every special GUI
     # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
     # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
     def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         if not IO_setup_display_brief:
-            y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                      GUI_IO_util.msg_corpusData)
-            y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                          GUI_IO_util.msg_outputDirectory)
+            y_multiplier_integer = GUI_IO_util.place_help_button(
+                window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_corpusData
+            )
+            y_multiplier_integer = GUI_IO_util.place_help_button(
+                window,
+                help_button_x_coordinate,
+                y_multiplier_integer,
+                "NLP Suite Help",
+                GUI_IO_util.msg_outputDirectory,
+            )
         else:
-            y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                          GUI_IO_util.msg_IO_setup)
+            y_multiplier_integer = GUI_IO_util.place_help_button(
+                window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_IO_setup
+            )
 
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                      "Please, enter the number of topics to be used (recommended default = 20).\n\nVarying the number of topics may provide better results.")
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                      "Please, tick the checkbox if you wish to run BERtopic LLM (Large Language Model) topic modeling.\nBERTopic was developed by Maarten Grootendorst in 2022.\n\nBERTopic is based on BERT released by Google in October 2018.")
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                      "Please, tick the checkbox to split long documents to improve the effiency of BERtopic topic modeling algorithms.")
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                      "Please, tick the checkbox if you wish to run the java-based MALLET LDA (Latent Dirichlet Allocation) topic modeling algorithm, first released in 2002.\n\nMALLET was developed by Andrew McCallum, of the University of Massachusetts Amherst.")
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
-                                                             "NLP Suite Help",
-                                                             "Please, tick the checkbox if you do NOT wish to optimize intervals.\n\n"
-                                                             "Optimization, however, seems to lead to better reults "
-                                                             "(https://programminghistorian.org/lessons/topic-modeling-and-mallet).")
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                      "Please, tick the checkbox if you wish to run Gensim LDA (Latent Dirichlet Allocation) topic modeling algorithm.\nGensim uses the MALLET algorithm and displays the results in beautiful interactive visuals.")
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                      "Please, tick the checkbox if you wish to run Gensim LDA topic modeling removing stopwords first.\n\nRemoving stopwords may provide better results.")
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                      "Please, tick the checkbox if you wish to run Gensim LDA topic modeling using lemmatized words. Nouns, verbs, adjectives, and advervbs will be lemmatized.\n\nLemmatizing words may provide better results.")
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                      "Please, tick the checkbox if you wish to run Gensim LDA topic modeling using lemmatized nouns only.\n\nFocusing on nouns only may provide better results.\n\nhttps://msaxton.github.io/topic-model-best-practices/compare_noun_and_regular.html\n\nMartin, Fiona and Mark Johnson. 2015. “More Efficient Topic Modelling Through a Noun Only Approach.” Proceedings of the Australasian Language Technology Association Workshop, pp. 111−115.")
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                      "Please, tick the checkbox if you wish to run the LDA Mallet topic modeling via Gensim.\n\nThe algorithm will compute\n   1. the coherence value of each topic and\n   2. a plot that provides a visual clue for the 'best' number of topics to be used.\n\nTHESE ALGORITHMS CAN BE VERY SLOW DEPENDING UPON THE NUMBER OF INPUT DOCUMENTS PROCESSED.")
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                      GUI_IO_util.msg_openOutputFiles)
-        return y_multiplier_integer -1
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window,
+            help_button_x_coordinate,
+            y_multiplier_integer,
+            "NLP Suite Help",
+            "Please, enter the number of topics to be used (recommended default = 20).\n\nVarying the number of topics may provide better results.",
+        )
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window,
+            help_button_x_coordinate,
+            y_multiplier_integer,
+            "NLP Suite Help",
+            "Please, tick the checkbox if you wish to run BERtopic LLM (Large Language Model) topic modeling.\nBERTopic was developed by Maarten Grootendorst in 2022.\n\nBERTopic is based on BERT released by Google in October 2018.",
+        )
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window,
+            help_button_x_coordinate,
+            y_multiplier_integer,
+            "NLP Suite Help",
+            "Please, tick the checkbox to split long documents to improve the effiency of BERtopic topic modeling algorithms.",
+        )
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window,
+            help_button_x_coordinate,
+            y_multiplier_integer,
+            "NLP Suite Help",
+            "Please, tick the checkbox if you wish to run the java-based MALLET LDA (Latent Dirichlet Allocation) topic modeling algorithm, first released in 2002.\n\nMALLET was developed by Andrew McCallum, of the University of Massachusetts Amherst.",
+        )
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window,
+            help_button_x_coordinate,
+            y_multiplier_integer,
+            "NLP Suite Help",
+            "Please, tick the checkbox if you do NOT wish to optimize intervals.\n\n"
+            "Optimization, however, seems to lead to better reults "
+            "(https://programminghistorian.org/lessons/topic-modeling-and-mallet).",
+        )
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window,
+            help_button_x_coordinate,
+            y_multiplier_integer,
+            "NLP Suite Help",
+            "Please, tick the checkbox if you wish to run Gensim LDA (Latent Dirichlet Allocation) topic modeling algorithm.\nGensim uses the MALLET algorithm and displays the results in beautiful interactive visuals.",
+        )
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window,
+            help_button_x_coordinate,
+            y_multiplier_integer,
+            "NLP Suite Help",
+            "Please, tick the checkbox if you wish to run Gensim LDA topic modeling removing stopwords first.\n\nRemoving stopwords may provide better results.",
+        )
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window,
+            help_button_x_coordinate,
+            y_multiplier_integer,
+            "NLP Suite Help",
+            "Please, tick the checkbox if you wish to run Gensim LDA topic modeling using lemmatized words. Nouns, verbs, adjectives, and advervbs will be lemmatized.\n\nLemmatizing words may provide better results.",
+        )
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window,
+            help_button_x_coordinate,
+            y_multiplier_integer,
+            "NLP Suite Help",
+            "Please, tick the checkbox if you wish to run Gensim LDA topic modeling using lemmatized nouns only.\n\nFocusing on nouns only may provide better results.\n\nhttps://msaxton.github.io/topic-model-best-practices/compare_noun_and_regular.html\n\nMartin, Fiona and Mark Johnson. 2015. “More Efficient Topic Modelling Through a Noun Only Approach.” Proceedings of the Australasian Language Technology Association Workshop, pp. 111−115.",
+        )
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window,
+            help_button_x_coordinate,
+            y_multiplier_integer,
+            "NLP Suite Help",
+            "Please, tick the checkbox if you wish to run the LDA Mallet topic modeling via Gensim.\n\nThe algorithm will compute\n   1. the coherence value of each topic and\n   2. a plot that provides a visual clue for the 'best' number of topics to be used.\n\nTHESE ALGORITHMS CAN BE VERY SLOW DEPENDING UPON THE NUMBER OF INPUT DOCUMENTS PROCESSED.",
+        )
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_openOutputFiles
+        )
+        return y_multiplier_integer - 1
+
     y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
     # change the value of the readMe_message
     readMe_message = "This Python 3 script analyzes a set of documents for topic modeling with Gensim.\n\nIn INPUT the script expects a set of text files stored in a directory.\n\nIn OUTPUT, the script creates an html file with graphical displays of topic information.\n\nGensim topic modelling requires internet connection to run."
     readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
-    GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+    GUI_util.GUI_bottom(
+        config_filename,
+        config_input_output_numeric_options,
+        y_multiplier_integer,
+        readMe_command,
+        videos_lookup,
+        videos_options,
+        TIPS_lookup,
+        TIPS_options,
+        IO_setup_display_brief,
+        scriptName,
+    )
 
     reminders_util.checkReminder(
         scriptName,
         reminders_util.title_options_English_language_Gensim,
         reminders_util.message_English_language_Gensim,
-        True)
+        True,
+    )
 
     GUI_util.window.mainloop()

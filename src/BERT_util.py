@@ -4,9 +4,29 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window, "BERT_util",
-                                          ['os', 'transformers', 'csv', 'argparse', 'tkinter', 'time', 'stanza', 'sklearn',
-                                           'summarizer','sacremoses','contextualSpellCheck','sentencepiece','sentence_transformers', 'tensorflow']) == False:
+if (
+    IO_libraries_util.install_all_Python_packages(
+        GUI_util.window,
+        "BERT_util",
+        [
+            "os",
+            "transformers",
+            "csv",
+            "argparse",
+            "tkinter",
+            "time",
+            "stanza",
+            "sklearn",
+            "summarizer",
+            "sacremoses",
+            "contextualSpellCheck",
+            "sentencepiece",
+            "sentence_transformers",
+            "tensorflow",
+        ],
+    )
+    == False
+):
     sys.exit(0)
 
 
@@ -30,8 +50,10 @@ import tkinter.messagebox as mb
 import torch
 import spacy
 import contextualSpellCheck
+
 # Visualization
 import plotly.express as px
+
 ##from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 from summarizer import Summarizer
@@ -48,21 +70,32 @@ import IO_internet_util
 
 
 def _bert_first_download_alert(model_id):
-    cache_dir = os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'hub',
-                             'models--' + model_id.replace('/', '--'))
+    cache_dir = os.path.join(
+        os.path.expanduser("~"), ".cache", "huggingface", "hub", "models--" + model_id.replace("/", "--")
+    )
     if not os.path.isdir(cache_dir):
-        IO_user_interface_util.timed_alert(GUI_util.window, 6000, 'BERT model download',
-            'Downloading the BERT model "' + model_id + '" for the first time.\n\nThis is a one-time download. Please be patient, it may take several minutes depending on your internet connection.',
-            False)
+        IO_user_interface_util.timed_alert(
+            GUI_util.window,
+            6000,
+            "BERT model download",
+            'Downloading the BERT model "'
+            + model_id
+            + '" for the first time.\n\nThis is a one-time download. Please be patient, it may take several minutes depending on your internet connection.',
+            False,
+        )
 
 
 # Provides NER tags per sentence for every doc and stores in a csv file
-def NER_tags_BERT(window, inputFilename, inputDir, outputDir, configFileName, mode, chartPackage, dataTransformation, NERs=''):
+def NER_tags_BERT(
+    window, inputFilename, inputDir, outputDir, configFileName, mode, chartPackage, dataTransformation, NERs=""
+):
     _bert_first_download_alert("djagatiya/ner-roberta-base-ontonotesv5-englishv4")
     tokenizer = AutoTokenizer.from_pretrained("djagatiya/ner-roberta-base-ontonotesv5-englishv4")
     model = AutoModelForTokenClassification.from_pretrained("djagatiya/ner-roberta-base-ontonotesv5-englishv4")
 
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
+    inputDocs = IO_files_util.getFileList(
+        inputFilename, inputDir, fileType=".txt", silent=False, configFileName=configFileName
+    )
 
     Ndocs = str(len(inputDocs))
 
@@ -72,14 +105,14 @@ def NER_tags_BERT(window, inputFilename, inputDir, outputDir, configFileName, mo
     if not IO_internet_util.check_internet_availability_warning("BERT_util.py (Function BERT NER)"):
         return
 
-    startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start',
-                                                   'Started running BERT for NER annotators at',
-                                                   True, '', True)
+    startTime = IO_user_interface_util.timed_alert(
+        window, 2000, "Analysis start", "Started running BERT for NER annotators at", True, "", True
+    )
 
     # create output subdirectory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
-                                                       label='NER_BERT',
-                                                       silent=True)
+    outputDir = IO_files_util.make_output_subdirectory(
+        inputFilename, inputDir, outputDir, label="NER_BERT", silent=True
+    )
 
     # Create the NER pipeline ONCE (not per sentence — was a major performance bug)
     # aggregation_strategy="simple" pre-joins multi-word entities (e.g., "New York" → single LOC)
@@ -97,7 +130,7 @@ def NER_tags_BERT(window, inputFilename, inputDir, outputDir, configFileName, mo
         header = ["Word", "NER", "Sentence ID", "Sentence", "Document ID", "Document"]
         with open(doc, "r", encoding="utf-8", errors="ignore") as f:
             fullText = f.read()
-            fullText = fullText.replace('\n', ' ')
+            fullText = fullText.replace("\n", " ")
 
         sentences = sentence_split_stanza_text(stanzaPipeLine(fullText))
         sentenceID = 0
@@ -107,51 +140,69 @@ def NER_tags_BERT(window, inputFilename, inputDir, outputDir, configFileName, mo
             ner_result = nlp(s)
 
             for el in ner_result:
-                result.append([el['word'], el['entity_group'], sentenceID, s, documentID,IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                result.append(
+                    [
+                        el["word"],
+                        el["entity_group"],
+                        sentenceID,
+                        s,
+                        documentID,
+                        IO_csv_util.dressFilenameForCSVHyperlink(doc),
+                    ]
+                )
 
     # filter to the user-selected tags (when a subset is selected); column 1 is the NER tag
-    selected = {t.strip() for t in str(NERs).replace(',', ' ').split() if t.strip() and '---' not in t}
-    full_set = set(NER_dict['NERs'])
+    selected = {t.strip() for t in str(NERs).replace(",", " ").split() if t.strip() and "---" not in t}
+    full_set = set(NER_dict["NERs"])
     if selected and not (selected >= full_set):  # a proper subset was selected
         result = [row for row in result if row[1] in selected]
 
     result.insert(0, header)
 
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                              'NER_BERT')
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, ".csv", "NER_BERT")
     IO_error = IO_csv_util.list_to_csv(window, result, outputFilename)
 
     if not IO_error:
         filesToOpen.append(outputFilename)
         import parsers_annotators_visualization_util
+
         kwargs = NER_dict
         outputFiles = parsers_annotators_visualization_util.parsers_annotators_visualization(
-            configFileName, inputFilename, inputDir, outputDir,
-            outputFilename, ['NER'], kwargs, 
-            chartPackage, dataTransformation)
-        if outputFiles!=None:
+            configFileName,
+            inputFilename,
+            inputDir,
+            outputDir,
+            outputFilename,
+            ["NER"],
+            kwargs,
+            chartPackage,
+            dataTransformation,
+        )
+        if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
 
-        IO_user_interface_util.timed_alert(window, 2000, 'Analysis end',
-                                           'Finished running BERT NER annotator at',
-                                           True, '', True,
-                                           startTime, True)
+        IO_user_interface_util.timed_alert(
+            window, 2000, "Analysis end", "Finished running BERT NER annotator at", True, "", True, startTime, True
+        )
 
         return filesToOpen
 
 
 # provides summary of text per doc and stores in a csv file
-def doc_summary_BERT(window, inputFilename, inputDir, outputDir, mode, chartPackage, dataTransformation, configFileName):
-
+def doc_summary_BERT(
+    window, inputFilename, inputDir, outputDir, mode, chartPackage, dataTransformation, configFileName
+):
 
     result_summary_list = []
 
     header = ["Document Name", "Summary", "Document ID", "Document"]
 
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
+    inputDocs = IO_files_util.getFileList(
+        inputFilename, inputDir, fileType=".txt", silent=False, configFileName=configFileName
+    )
 
     Ndocs = str(len(inputDocs))
 
@@ -164,22 +215,25 @@ def doc_summary_BERT(window, inputFilename, inputDir, outputDir, mode, chartPack
 
         with open(doc, "r", encoding="utf-8", errors="ignore") as f:
             fullText = f.read()
-            fullText = fullText.replace('\n', ' ')
+            fullText = fullText.replace("\n", " ")
 
         bert_model = Summarizer()
-        bert_summary = ''.join(bert_model(fullText, min_length=60))
+        bert_summary = "".join(bert_model(fullText, min_length=60))
 
         result_summary_list.append(
-            [inputFilename, bert_summary, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+            [inputFilename, bert_summary, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)]
+        )
 
     result_summary_list.insert(0, header)
 
-    tempOutputFiles = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                              'Doc_Summary_BERT')
+    tempOutputFiles = IO_files_util.generate_output_file_name(
+        inputFilename, inputDir, outputDir, ".csv", "Doc_Summary_BERT"
+    )
     IO_error = IO_csv_util.list_to_csv(window, result_summary_list, tempOutputFiles)
     if not IO_error:
         return tempOutputFiles
     return tempOutputFiles
+
 
 def stanza_words(stanza_doc, lemmatize):
     """Every word of a Stanza doc, across ALL its sentences, as lemmas when lemmatize is on.
@@ -187,8 +241,11 @@ def stanza_words(stanza_doc, lemmatize):
     (Stanza_functions_util.tokenize_stanza_text returns only the LAST sentence's words, and a regex
     "sentence" can hold several Stanza ones.)
     """
-    return [(word.lemma or word.text) if lemmatize else word.text
-            for sentence in stanza_doc.sentences for word in sentence.words]
+    return [
+        (word.lemma or word.text) if lemmatize else word.text
+        for sentence in stanza_doc.sentences
+        for word in sentence.words
+    ]
 
 
 def csv_word_rows(doc_sentences, kept_words):
@@ -204,11 +261,28 @@ def csv_word_rows(doc_sentences, kept_words):
 
 
 # Creates a list of vectors/word embeddings for input files and subsequently plots them on a 2d graph
-def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, vis_menu_var,
-            dim_menu_var, compute_distances_var, top_words_var, keywords_var, lemmatize_var, remove_stopwords_var, configFileName):
+def word_embeddings_BERT(
+    window,
+    inputFilename,
+    inputDir,
+    outputDir,
+    openOutputFiles,
+    chartPackage,
+    dataTransformation,
+    vis_menu_var,
+    dim_menu_var,
+    compute_distances_var,
+    top_words_var,
+    keywords_var,
+    lemmatize_var,
+    remove_stopwords_var,
+    configFileName,
+):
     _bert_first_download_alert("sentence-transformers/all-distilroberta-v1")
-    model = SentenceTransformer('sentence-transformers/all-distilroberta-v1')
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
+    model = SentenceTransformer("sentence-transformers/all-distilroberta-v1")
+    inputDocs = IO_files_util.getFileList(
+        inputFilename, inputDir, fileType=".txt", silent=False, configFileName=configFileName
+    )
     filesToOpen = []
     Ndocs = str(len(inputDocs))
     header = ["Word", "Vector", "Sentence ID", "Sentence", "Document ID", "Document"]
@@ -218,42 +292,47 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
     all_words = []
     words_to_embed = []
     word_embeddings = {}
-    tsne_df=None
+    tsne_df = None
 
-    bad_chars = [';', ':', '', "*", "\"", "\'", "“", "”", "—", "’s", "n’t"]
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
-                                                   'Started running BERT word embeddings at', True)
+    bad_chars = [";", ":", "", "*", '"', "'", "“", "”", "—", "’s", "n’t"]
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis start", "Started running BERT word embeddings at", True
+    )
 
-
-    if inputFilename.endswith('csv'):
-        word_vectors=None
-        result_df=None
-        outputFiles = word2vec_distances_util.compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage, dataTransformation,
-                                   word_vectors,
-                                   result_df,
-                                   keywords_var,
-                                   compute_distances_var, top_words_var)
+    if inputFilename.endswith("csv"):
+        word_vectors = None
+        result_df = None
+        outputFiles = word2vec_distances_util.compute_word2vec_distances(
+            inputFilename,
+            inputDir,
+            outputDir,
+            chartPackage,
+            dataTransformation,
+            word_vectors,
+            result_df,
+            keywords_var,
+            compute_distances_var,
+            top_words_var,
+        )
         filesToOpen.extend(outputFiles)
         return filesToOpen
-
-
 
     # TODO Naman notice how Word2Vec_Gensim_util has the option of using a .csv file of already computed vectors
     #   so that you can simply use this file to visualize different cosine similarities or
     #   compute distances if you had not previously done so
     # compute only distances if inputFile is csv
     # if inputFilename.endswith('csv'):
-    #DONE
+    # DONE
 
     # TODO Naman notice how Word2Vec_main has the option of lemmatzing
     #   this needs to be implemented similarly to Word2Vec_Gensim_util
-    #DONE
+    # DONE
     if lemmatize_var:
-        stanzaPipeLine = stanza.Pipeline(lang='en', processors= 'tokenize, lemma')
-        print('Tokenizing and Lemmatizing...')
+        stanzaPipeLine = stanza.Pipeline(lang="en", processors="tokenize, lemma")
+        print("Tokenizing and Lemmatizing...")
     else:
-        stanzaPipeLine = stanza.Pipeline(lang='en', processors= 'tokenize')
-        print('Tokenizing...')
+        stanzaPipeLine = stanza.Pipeline(lang="en", processors="tokenize")
+        print("Tokenizing...")
 
     # per document: (document path, [(sentence, words), ...]). Kept so the csv below is built from EACH
     # document's own sentences; it used to re-read every document but loop over the leftover `sentences`
@@ -267,15 +346,14 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
         with open(doc, "r", encoding="utf-8", errors="ignore") as f:
             fullText = f.read()
-            fullText = fullText.replace('\n', ' ')
+            fullText = fullText.replace("\n", " ")
 
-
-        #Splitting into sentences here so we can print out the sentence that the word is used in, in order to see the context
+        # Splitting into sentences here so we can print out the sentence that the word is used in, in order to see the context
 
         sentences = split_into_sentences(fullText)
         sentence_words = []
         for s in sentences:
-             #add all the words from the docs into a list
+            # add all the words from the docs into a list
             # the local pipeline above (NOT Stanza_functions_util's, whose import here used to shadow it and
             # made the Lemmatize option a no-op)
             words = stanza_words(stanzaPipeLine(s), lemmatize_var)
@@ -283,7 +361,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
             all_words.extend(words)
         doc_sentences.append((doc, sentence_words))
 
-    #remove stop words from all_words list if that option has been selected in the GUI
+    # remove stop words from all_words list if that option has been selected in the GUI
     if remove_stopwords_var:
         words_to_embed = statistics_txt_util.excludeStopWords_list(all_words)
     else:
@@ -293,13 +371,16 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
     # token thousands of times (Harry Potter: 25,628 tokens) -- pure waste, since the dict below collapses
     # duplicates anyway. Keep the frequency counts for the top-N plot selection further down.
     from collections import Counter
+
     _word_freq = Counter(words_to_embed)
     _unique_words = list(_word_freq.keys())
-    print(f'\nStarted running BERT Word2Vec model on {len(_unique_words)} distinct words '
-          f'({len(words_to_embed)} tokens) at {time.asctime( time.localtime(time.time()))}')
+    print(
+        f"\nStarted running BERT Word2Vec model on {len(_unique_words)} distinct words "
+        f"({len(words_to_embed)} tokens) at {time.asctime(time.localtime(time.time()))}"
+    )
     word_vectors = model.encode(_unique_words)
 
-    #Creates key-value pairs of words and their corresponding vectors to be added to csv file output
+    # Creates key-value pairs of words and their corresponding vectors to be added to csv file output
     # showing words and their corresponding multidimensional vectors
     for w, e in zip(_unique_words, word_vectors):
         word_embeddings[w] = e
@@ -308,33 +389,34 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
     # taking ..." timed_alert fires at the end of this function). Reworded off the old raw-asctime
     # "Finished running BERT Word2Vec model ..." line so there aren't two differently-formatted
     # "Finished" messages.
-    print(f'\nBERT Word2Vec: computed embeddings for {len(word_embeddings)} distinct words; building output...')
+    print(f"\nBERT Word2Vec: computed embeddings for {len(word_embeddings)} distinct words; building output...")
 
     # Plotting the word embeddings
-     ## visualization
-    if not 'Do not plot' in vis_menu_var:
+    ## visualization
+    if not "Do not plot" in vis_menu_var:
         # t-SNE is ~O(n^2): run it on the TOP-N most frequent words only, NOT every word. On a large
         # corpus (Harry Potter: 25k+ distinct words) t-SNE over all of them is effectively unbounded --
         # and a 25k-point map is an unreadable hairball anyway. top_words_var is the intended cap (the
         # profiler asks for the top 200). Falsy/0 -> all words (small corpora / the standalone "all" case).
         import numpy as _np
+
         _topn = int(top_words_var) if top_words_var else 0
-        _plot_words = ([w for w, _ in _word_freq.most_common(_topn)] if _topn > 0
-                       else list(word_embeddings.keys()))
+        _plot_words = [w for w, _ in _word_freq.most_common(_topn)] if _topn > 0 else list(word_embeddings.keys())
         _plot_vectors = _np.array([word_embeddings[w] for w in _plot_words])
         _perplexity = float(max(1, min(30, len(_plot_words) - 1)))
-        print(f'\nStarted preparing charts via t-SNE for the top {len(_plot_words)} of '
-              f'{len(word_embeddings)} distinct words at {time.asctime( time.localtime(time.time()))}')
-        if dim_menu_var == '2D':
+        print(
+            f"\nStarted preparing charts via t-SNE for the top {len(_plot_words)} of "
+            f"{len(word_embeddings)} distinct words at {time.asctime(time.localtime(time.time()))}"
+        )
+        if dim_menu_var == "2D":
             tsne = TSNE(n_components=2, perplexity=_perplexity, random_state=0)
             xys = tsne.fit_transform(_plot_vectors)
             xs = xys[:, 0]
             ys = xys[:, 1]
-            tsne_df = pd.DataFrame({'Word': _plot_words, 'x': xs, 'y': ys})
+            tsne_df = pd.DataFrame({"Word": _plot_words, "x": xs, "y": ys})
 
             fig = word2vec_tsne_plot_util.plot_interactive_graph(tsne_df)
             fig_words = word2vec_tsne_plot_util.plot_interactive_graph_words(tsne_df)
-
 
         else:
             tsne = TSNE(n_components=3, perplexity=_perplexity, random_state=0)
@@ -342,52 +424,73 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
             xs = xyzs[:, 0]
             ys = xyzs[:, 1]
             zs = xyzs[:, 2]
-            tsne_df = pd.DataFrame({'Word': _plot_words, 'x': xs, 'y': ys, 'z': zs})
+            tsne_df = pd.DataFrame({"Word": _plot_words, "x": xs, "y": ys, "z": zs})
 
             fig = word2vec_tsne_plot_util.plot_interactive_3D_graph(tsne_df)
             fig_words = word2vec_tsne_plot_util.plot_interactive_3D_graph_words(tsne_df)
 
-        print(f'\nSaving csv vector file and html graph output for top {top_words_var} of {len(word_embeddings)} non-distinct words at {time.asctime( time.localtime(time.time()))}')
+        print(
+            f"\nSaving csv vector file and html graph output for top {top_words_var} of {len(word_embeddings)} non-distinct words at {time.asctime(time.localtime(time.time()))}"
+        )
 
         ### write output html graph
-        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html',
-                                                                     'Word2Vec_vector_ALL_words')
-        if not fig_words == 'none':
-            outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '_words.html', 'Word2Vec_vector_ALL_words')
+        outputFilename = IO_files_util.generate_output_file_name(
+            inputFilename, inputDir, outputDir, ".html", "Word2Vec_vector_ALL_words"
+        )
+        if not fig_words == "none":
+            outputFilename = IO_files_util.generate_output_file_name(
+                inputFilename, inputDir, outputDir, "_words.html", "Word2Vec_vector_ALL_words"
+            )
             fig_words.write_html(outputFilename)
             filesToOpen.append(outputFilename)
-        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html', 'Word2Vec_vector_ALL_words')
-        dist_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_top_' + str(top_words_var)+'_Euclidean_dist')
+        outputFilename = IO_files_util.generate_output_file_name(
+            inputFilename, inputDir, outputDir, ".html", "Word2Vec_vector_ALL_words"
+        )
+        dist_outputFilename = IO_files_util.generate_output_file_name(
+            inputFilename, inputDir, outputDir, ".csv", "Word2Vec_top_" + str(top_words_var) + "_Euclidean_dist"
+        )
         fig.write_html(outputFilename)
         filesToOpen.append(outputFilename)
 
-    print(f'\nStarted preparing the csv vector file at {time.asctime( time.localtime(time.time()))}')
+    print(f"\nStarted preparing the csv vector file at {time.asctime(time.localtime(time.time()))}")
 
-    #Will add every relevant sentence s to our csv output file, so we have to loop through them here
+    # Will add every relevant sentence s to our csv output file, so we have to loop through them here
     for documentID, doc, sentenceID, s, w in csv_word_rows(doc_sentences, set(words_to_embed)):
-        #Adding rows to our output for the csv file with words, their vectors, and the sentences they are found in
-        csv_result.append([w, word_embeddings[w], sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+        # Adding rows to our output for the csv file with words, their vectors, and the sentences they are found in
+        csv_result.append(
+            [w, word_embeddings[w], sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)]
+        )
 
-    print(f'\nSaving csv vector file for {len(csv_result)} non-distinct words at {time.asctime( time.localtime(time.time()))}')
+    print(
+        f"\nSaving csv vector file for {len(csv_result)} non-distinct words at {time.asctime(time.localtime(time.time()))}"
+    )
 
     result_df = pd.DataFrame(csv_result, columns=header)
 
     # write csv file
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                             'Word2Vec_vector_ALL_words')
-    result_df.to_csv(outputFilename, encoding='utf-8', index=False)
+    outputFilename = IO_files_util.generate_output_file_name(
+        inputFilename, inputDir, outputDir, ".csv", "Word2Vec_vector_ALL_words"
+    )
+    result_df.to_csv(outputFilename, encoding="utf-8", index=False)
 
     filesToOpen.append(outputFilename)
 
     # compute distances
     if compute_distances_var:
-
-        outputFiles = word2vec_distances_util.compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage, dataTransformation,
-                                   word_vectors,
-                                   result_df,
-                                   keywords_var,
-                                   compute_distances_var, top_words_var, BERT=True)
-        if outputFiles!=None:
+        outputFiles = word2vec_distances_util.compute_word2vec_distances(
+            inputFilename,
+            inputDir,
+            outputDir,
+            chartPackage,
+            dataTransformation,
+            word_vectors,
+            result_df,
+            keywords_var,
+            compute_distances_var,
+            top_words_var,
+            BERT=True,
+        )
+        if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
             else:
@@ -510,15 +613,14 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
         #     if len(chart_outputFilename) > 0:
         #         filesToOpen.extend(chart_outputFilename)
 
+        # keyword_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_' + str(
+        # len(keywords_list)) + '_Keywords_Cos_Similarity')
+        # keyword_df.to_csv(keyword_sim_outputFilename, encoding='utf-8', index=False)
+    # filesToOpen.append(keyword_sim_outputFilename)
 
-        #keyword_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_' + str(
-                                                                                # len(keywords_list)) + '_Keywords_Cos_Similarity')
-        #keyword_df.to_csv(keyword_sim_outputFilename, encoding='utf-8', index=False)
-       #filesToOpen.append(keyword_sim_outputFilename)
-
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
-                                       'Finished running BERT word embeddings at', True, '', True, startTime)
-
+    IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis end", "Finished running BERT word embeddings at", True, "", True, startTime
+    )
 
     return filesToOpen
 
@@ -532,16 +634,24 @@ def sentiment_analysis_BERT(inputFilename, outputDir, outputFilename, mode, Docu
 
     sentiment_task = pipeline("sentiment-analysis", model=model_path, tokenizer=model_path, truncation=True)
 
-    with open(inputFilename, 'r', encoding='utf-8', errors='ignore') as myfile:
+    with open(inputFilename, "r", encoding="utf-8", errors="ignore") as myfile:
         fulltext = myfile.read()
     # end method if file is empty
     if len(fulltext) < 1:
-        mb.showerror(title='File empty', message='The file ' + inputFilename +
-                                                 ' is empty.\n\nPlease, use another file and try again.')
-        print('Empty file ', inputFilename)
+        mb.showerror(
+            title="File empty",
+            message="The file " + inputFilename + " is empty.\n\nPlease, use another file and try again.",
+        )
+        print("Empty file ", inputFilename)
         return
 
-    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
+    from Stanza_functions_util import (
+        stanzaPipeLine,
+        sentence_split_stanza_text,
+        tokenize_stanza_text,
+        lemmatize_stanza_word,
+    )
+
     sentences = sentence_split_stanza_text(stanzaPipeLine(fulltext))
 
     i = 1
@@ -549,13 +659,16 @@ def sentiment_analysis_BERT(inputFilename, outputDir, outputFilename, mode, Docu
     for s in sentences:
         sentiment = sentiment_task(s)
 
-        writer.writerow({
-            Sentiment_measure: sentiment[0].get('score'),
-            Sentiment_label: sentiment[0].get('label'),
-            'Sentence ID': i,
-            'Sentence': s,
-            'Document ID': Document_ID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document)
-        })
+        writer.writerow(
+            {
+                Sentiment_measure: sentiment[0].get("score"),
+                Sentiment_label: sentiment[0].get("label"),
+                "Sentence ID": i,
+                "Sentence": s,
+                "Document ID": Document_ID,
+                "Document": IO_csv_util.dressFilenameForCSVHyperlink(Document),
+            }
+        )
 
         i += 1
 
@@ -563,7 +676,16 @@ def sentiment_analysis_BERT(inputFilename, outputDir, outputFilename, mode, Docu
 
 
 # helper main method for sentiment analysis
-def sentiment_main(inputFilename, inputDir, outputDir, configFileName, mode,  chartPackage='Excel', dataTransformation = 'No Transformation', model_path="cardiffnlp/twitter-xlm-roberta-base-sentiment"):
+def sentiment_main(
+    inputFilename,
+    inputDir,
+    outputDir,
+    configFileName,
+    mode,
+    chartPackage="Excel",
+    dataTransformation="No Transformation",
+    model_path="cardiffnlp/twitter-xlm-roberta-base-sentiment",
+):
     # model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment" # multilingual model
     # model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest" # English language model
 
@@ -582,38 +704,44 @@ def sentiment_main(inputFilename, inputDir, outputDir, configFileName, mode,  ch
     filesToOpen = []
 
     if len(outputDir) < 0 or not os.path.exists(outputDir):
-        print('No output directory specified, or path does not exist.')
+        print("No output directory specified, or path does not exist.")
         sys.exit(1)
     elif len(inputFilename) == 0 and len(inputDir) == 0:
         print(
-            'No input specified. Please, provide either a single file -- file or a directory of files to be analyzed --dir.')
+            "No input specified. Please, provide either a single file -- file or a directory of files to be analyzed --dir."
+        )
         sys.exit(1)
 
     # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='sentiment_BERT',
-                                                       silent=True)
-    if outputDir == '':
+    outputDir = IO_files_util.make_output_subdirectory(
+        inputFilename, inputDir, outputDir, label="sentiment_BERT", silent=True
+    )
+    if outputDir == "":
         return
 
     outputFilename = IO_files_util.generate_output_file_name(
-        inputFilename, inputDir, outputDir, '.csv', 'roBERTa', '', '', '', '', False, True)
+        inputFilename, inputDir, outputDir, ".csv", "roBERTa", "", "", "", "", False, True
+    )
 
     # check each word in sentence for sentiment and write to output_file
-    with open(outputFilename, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
+    with open(outputFilename, "w", encoding="utf-8", errors="ignore", newline="") as csvfile:
         global Sentiment_measure, Sentiment_label
-        Sentiment_measure = 'Sentiment score'
-        Sentiment_label = 'Sentiment label'
-        fieldnames = [Sentiment_measure, Sentiment_label,
-                      'Sentence ID', 'Sentence', 'Document ID', 'Document']
+        Sentiment_measure = "Sentiment score"
+        Sentiment_label = "Sentiment label"
+        fieldnames = [Sentiment_measure, Sentiment_label, "Sentence ID", "Sentence", "Document ID", "Document"]
         global writer
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         if len(inputFilename) > 0:  # handle single file
             if os.path.exists(inputFilename):
-                filesToOpen.append(sentiment_analysis_BERT(
-                    inputFilename, outputDir, outputFilename, mode, 1, inputFilename, model_path))
+                filesToOpen.append(
+                    sentiment_analysis_BERT(
+                        inputFilename, outputDir, outputFilename, mode, 1, inputFilename, model_path
+                    )
+                )
                 output_file = sentiment_analysis_BERT(
-                    inputFilename, outputDir, outputFilename, mode, 1, inputFilename, model_path)
+                    inputFilename, outputDir, outputFilename, mode, 1, inputFilename, model_path
+                )
             else:
                 print('Input file "' + inputFilename + '" is invalid.')
                 sys.exit(1)
@@ -621,12 +749,11 @@ def sentiment_main(inputFilename, inputDir, outputDir, configFileName, mode,  ch
             documentID = 0
             if os.path.isdir(inputDir):
                 directory = os.fsencode(inputDir)
-                inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt',
-                                                      silent=False,
-                                                      configFileName=configFileName)
+                inputDocs = IO_files_util.getFileList(
+                    inputFilename, inputDir, fileType=".txt", silent=False, configFileName=configFileName
+                )
                 nDocs = len(inputDocs)
                 for file in inputDocs:
-
                     head, tail = os.path.split(file)
                     # sentiment analysis
                     documentID = documentID + 1
@@ -635,8 +762,11 @@ def sentiment_main(inputFilename, inputDir, outputDir, configFileName, mode,  ch
                     if filename.endswith(".txt"):
                         # start_time = time.asctime( time.localtime(time.time()))()
                         start_time = time.time()
-                        filesToOpen.append(sentiment_analysis_BERT(
-                            filename, outputDir, outputFilename, mode, documentID, filename,model_path))
+                        filesToOpen.append(
+                            sentiment_analysis_BERT(
+                                filename, outputDir, outputFilename, mode, documentID, filename, model_path
+                            )
+                        )
                         # print("Finished SentiWordNet sentiment analysis of " + filename + " in " + str((time.asctime( time.localtime(time.time()))() - start_time)) + " seconds")
                         # print("Finished SentiWordNet sentiment analysis of " + filename + " in " + str((time.asctime( time.localtime(time.time()))() - start_time)) + " seconds")
             else:
@@ -644,19 +774,39 @@ def sentiment_main(inputFilename, inputDir, outputDir, configFileName, mode,  ch
                 # sys.exit(1)
     csvfile.close()
 
-    if chartPackage!='No charts':
+    if chartPackage != "No charts":
+        outputFiles = charts_util.plot(
+            outputFilename,
+            outputDir,
+            columns=["Sentiment score"],
+            title="Frequency of roBERTa Sentiment Scores",
+            x_label="Sentiment score",
+            count=0,
+            file_label="roBERTa_scores",
+            plot_list=["Sentiment Score"],
+            title_label="roBERTa Sentiment Scores",
+            y_label="Scores",
+        )
 
-        outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Sentiment score'], title='Frequency of roBERTa Sentiment Scores', x_label='Sentiment score', count=0, file_label='roBERTa_scores', plot_list=['Sentiment Score'], title_label='roBERTa Sentiment Scores', y_label='Scores')
-
-        if outputFiles!=None:
+        if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
 
-        outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Sentiment label'], title='Frequency of roBERTa Sentiment Labels', x_label='Sentiment label', file_label='roBERTa_labels', plot_list=['Sentiment label'], title_label='roBERTa Sentiment Labels', y_label='Frequency')
+        outputFiles = charts_util.plot(
+            outputFilename,
+            outputDir,
+            columns=["Sentiment label"],
+            title="Frequency of roBERTa Sentiment Labels",
+            x_label="Sentiment label",
+            file_label="roBERTa_labels",
+            plot_list=["Sentiment label"],
+            title_label="roBERTa Sentiment Labels",
+            y_label="Frequency",
+        )
 
-        if outputFiles!=None:
+        if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
             else:
@@ -665,28 +815,52 @@ def sentiment_main(inputFilename, inputDir, outputDir, configFileName, mode,  ch
     return filesToOpen
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # get arguments from command line
-    parser = argparse.ArgumentParser(
-        description='Sentiment analysis with BERT')
-    parser.add_argument('--file', type=str, dest='inputFilename', default='',
-                        help='a string to hold the INPUT path and filename if only ONE txt file is processed; enter --file "" or eliminate --file flag to process ALL txt files in input directory; use "" if path and filenames contain spaces')
-    parser.add_argument('--dir', type=str, dest='inputDir', default='',
-                        help='a string to hold the INPUT path of the directory of ALL txt files to be processed; use "" if path contains spaces')
-    parser.add_argument('--out', type=str, dest='outputDir', default='',
-                        help='a string to hold the path of the OUTPUT directory; use "" if path contains spaces')
-    parser.add_argument('--configFileName', type=str, dest='outputDir', default='',
-                        help='a string to hold the path of the configFileName')
-    parser.add_argument('--outfile', type=str, dest='outputFilename', default='',
-                        help='output file')
+    parser = argparse.ArgumentParser(description="Sentiment analysis with BERT")
+    parser.add_argument(
+        "--file",
+        type=str,
+        dest="inputFilename",
+        default="",
+        help='a string to hold the INPUT path and filename if only ONE txt file is processed; enter --file "" or eliminate --file flag to process ALL txt files in input directory; use "" if path and filenames contain spaces',
+    )
+    parser.add_argument(
+        "--dir",
+        type=str,
+        dest="inputDir",
+        default="",
+        help='a string to hold the INPUT path of the directory of ALL txt files to be processed; use "" if path contains spaces',
+    )
+    parser.add_argument(
+        "--out",
+        type=str,
+        dest="outputDir",
+        default="",
+        help='a string to hold the path of the OUTPUT directory; use "" if path contains spaces',
+    )
+    parser.add_argument(
+        "--configFileName",
+        type=str,
+        dest="outputDir",
+        default="",
+        help="a string to hold the path of the configFileName",
+    )
+    parser.add_argument("--outfile", type=str, dest="outputFilename", default="", help="output file")
 
-    parser.add_argument('--mode', type=str, dest='mode', default='mean',
-                        help='mode with which to calculate sentiment in the sentence: mean or median')
+    parser.add_argument(
+        "--mode",
+        type=str,
+        dest="mode",
+        default="mean",
+        help="mode with which to calculate sentiment in the sentence: mean or median",
+    )
     args = parser.parse_args()
 
     # run main
-    sys.exit(main(args.inputFilename, args.inputDir,
-                  args.outputDir, args.configFileName, args.outputFilename, args.mode))
+    sys.exit(
+        main(args.inputFilename, args.inputDir, args.outputDir, args.configFileName, args.outputFilename, args.mode)
+    )
 
 # very fast method to split a text file into a list whose elements are each sentence in that file. Found on: https://stackoverflow.com/a/31505798
 # -*- coding: utf-8 -*-
@@ -707,8 +881,10 @@ def split_into_sentences(text):
     text = re.sub(prefixes, "\\1<prd>", text)
     text = re.sub(websites, "<prd>\\1", text)
     text = re.sub(digits + "[.]" + digits, "\\1<prd>\\2", text)
-    if "..." in text: text = text.replace("...", "<prd><prd><prd>")
-    if "Ph.D" in text: text = text.replace("Ph.D.", "Ph<prd>D<prd>")
+    if "..." in text:
+        text = text.replace("...", "<prd><prd><prd>")
+    if "Ph.D" in text:
+        text = text.replace("Ph.D.", "Ph<prd>D<prd>")
     text = re.sub(r"\s" + alphabets + "[.] ", " \\1<prd> ", text)
     text = re.sub(acronyms + " " + starters, "\\1<stop> \\2", text)
     text = re.sub(alphabets + "[.]" + alphabets + "[.]" + alphabets + "[.]", "\\1<prd>\\2<prd>\\3<prd>", text)
@@ -716,10 +892,14 @@ def split_into_sentences(text):
     text = re.sub(" " + suffixes + "[.] " + starters, " \\1<stop> \\2", text)
     text = re.sub(" " + suffixes + "[.]", " \\1<prd>", text)
     text = re.sub(" " + alphabets + "[.]", " \\1<prd>", text)
-    if "”" in text: text = text.replace(".”", "”.")
-    if "\"" in text: text = text.replace(".\"", "\".")
-    if "!" in text: text = text.replace("!\"", "\"!")
-    if "?" in text: text = text.replace("?\"", "\"?")
+    if "”" in text:
+        text = text.replace(".”", "”.")
+    if '"' in text:
+        text = text.replace('."', '".')
+    if "!" in text:
+        text = text.replace('!"', '"!')
+    if "?" in text:
+        text = text.replace('?"', '"?')
     text = text.replace(".", ".<stop>")
     text = text.replace("?", "?<stop>")
     text = text.replace("!", "!<stop>")
@@ -733,15 +913,30 @@ def split_into_sentences(text):
 # the loaded model is djagatiya/ner-roberta-base-ontonotesv5-englishv4, fine-tuned on OntoNotes 5;
 # it emits the full OntoNotes 18-type scheme (via entity_group) - the same tags spaCy & Stanza use,
 # grouped below by category the way the NER dropdown groups them
-NER_dict = {'NERs': [
-    # quantitative expressions
-    "CARDINAL", "ORDINAL", "PERCENT", "MONEY", "QUANTITY",
-    # social actors
-    "PERSON", "NORP", "ORG",
-    # spatial expressions
-    "GPE", "LOC", "FAC",
-    # temporal expressions
-    "DATE", "TIME",
-    # other expressions
-    "PRODUCT", "EVENT", "WORK_OF_ART", "LAW", "LANGUAGE",
-]}
+NER_dict = {
+    "NERs": [
+        # quantitative expressions
+        "CARDINAL",
+        "ORDINAL",
+        "PERCENT",
+        "MONEY",
+        "QUANTITY",
+        # social actors
+        "PERSON",
+        "NORP",
+        "ORG",
+        # spatial expressions
+        "GPE",
+        "LOC",
+        "FAC",
+        # temporal expressions
+        "DATE",
+        "TIME",
+        # other expressions
+        "PRODUCT",
+        "EVENT",
+        "WORK_OF_ART",
+        "LAW",
+        "LANGUAGE",
+    ]
+}

@@ -23,12 +23,14 @@ STEP TWO
 All OUTPUT file names can be changed and MALLET will still run successfully
  OUTPUT file names extensions for step two can be TXT or CSV
 """
+
 import sys
 import GUI_util
 import IO_libraries_util
 
-if not IO_libraries_util.install_all_Python_packages(GUI_util.window, "MALLET Topic modeling",
-                                              ['os', 'tkinter.messagebox', 'subprocess']):
+if not IO_libraries_util.install_all_Python_packages(
+    GUI_util.window, "MALLET Topic modeling", ["os", "tkinter.messagebox", "subprocess"]
+):
     sys.exit(0)
 
 import os
@@ -47,16 +49,31 @@ from topic_modeling_corpus_size_util import corpus_size_advice
 OPTIMIZE_INTERVAL = 20
 
 
-def mallet_commands(mallet_bin, inputDir, formatted_file, num_topics, optimize, state_file, keys_file,
-                    composition_file):
+def mallet_commands(
+    mallet_bin, inputDir, formatted_file, num_topics, optimize, state_file, keys_file, composition_file
+):
     """The two MALLET command lines, import-dir and train-topics, as argument lists."""
-    import_cmd = [mallet_bin, 'import-dir', '--input', inputDir, '--output', formatted_file,
-                  '--keep-sequence', '--remove-stopwords']
-    train_cmd = [mallet_bin, 'train-topics', '--input', formatted_file, '--num-topics', str(num_topics)]
+    import_cmd = [
+        mallet_bin,
+        "import-dir",
+        "--input",
+        inputDir,
+        "--output",
+        formatted_file,
+        "--keep-sequence",
+        "--remove-stopwords",
+    ]
+    train_cmd = [mallet_bin, "train-topics", "--input", formatted_file, "--num-topics", str(num_topics)]
     if optimize:
-        train_cmd += ['--optimize-interval', str(OPTIMIZE_INTERVAL)]
-    train_cmd += ['--output-state', state_file, '--output-topic-keys', keys_file,
-                  '--output-doc-topics', composition_file]
+        train_cmd += ["--optimize-interval", str(OPTIMIZE_INTERVAL)]
+    train_cmd += [
+        "--output-state",
+        state_file,
+        "--output-topic-keys",
+        keys_file,
+        "--output-doc-topics",
+        composition_file,
+    ]
     return import_cmd, train_cmd
 
 
@@ -68,7 +85,8 @@ def mallet_outputs_missing(keys_file, composition_file):
 
 # RUN section __________________________________________________________________________________________________________
 
-def run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation,OptimizeInterval, numTopics):
+
+def run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, OptimizeInterval, numTopics):
     # to setup environment variable programmatically
     #   https://stackoverflow.com/questions/4906977/how-to-access-environment-variable-values
     # to get an environment variable
@@ -80,27 +98,27 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransform
 
     # check that the CoreNLPdir as been setup
     MALLETDir, existing_software_config, errorFound = IO_libraries_util.external_software_install(
-        'topic_modeling_mallet_util',
-        'MALLET',
-        '',
-        silent=False, errorFound=False)
+        "topic_modeling_mallet_util", "MALLET", "", silent=False, errorFound=False
+    )
 
-    if MALLETDir == None or MALLETDir=='':
+    if MALLETDir == None or MALLETDir == "":
         return
 
-    MALLETPath = ''
+    MALLETPath = ""
     try:
         # if MALLET_HOME has been set up os.getenv returns the MALLET installation path
-        MALLETPath = os.getenv('MALLET_HOME', 'MALLET_HOME')
-        if MALLETPath == 'MALLET_HOME':
+        MALLETPath = os.getenv("MALLET_HOME", "MALLET_HOME")
+        if MALLETPath == "MALLET_HOME":
             # the env variable has not been setup
-            MALLETPath = ''
-            mb.showwarning(title='MALLET-HOME environment variable',
-                           message='The value MALLET-HOME needed by MALLET to run was not found in the environment '
-                                   'variables.\n\nThe MALLET_HOME value was added programmatically to your '
-                                   'environment variables.\n\nTHIS IS A TEMPORARY FIX VALID FOR RUNNING THE MALLET AS '
-                                   'LONG AS THIS GUI REMAINS OPEN. For a more permanent solution, please read the '
-                                   'TIPS on MALLET installation and setting MALLET environment variables.')
+            MALLETPath = ""
+            mb.showwarning(
+                title="MALLET-HOME environment variable",
+                message="The value MALLET-HOME needed by MALLET to run was not found in the environment "
+                "variables.\n\nThe MALLET_HOME value was added programmatically to your "
+                "environment variables.\n\nTHIS IS A TEMPORARY FIX VALID FOR RUNNING THE MALLET AS "
+                "LONG AS THIS GUI REMAINS OPEN. For a more permanent solution, please read the "
+                "TIPS on MALLET installation and setting MALLET environment variables.",
+            )
             # add environment variable
             os.environ["MALLET_HOME"] = MALLETDir
         else:
@@ -109,16 +127,22 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransform
             if str(MALLETPath).lower() != str(MALLETDir).lower():
                 # add updated environment variable
                 os.environ["MALLET_HOME"] = MALLETDir
-                mb.showwarning(title='MALLET environment variable path update',
-                               message='The value MALLET-HOME in the environment variables was changed from\n\n  ' +
-                                       MALLETPath + '\n\nto\n\n  ' + MALLETDir)
+                mb.showwarning(
+                    title="MALLET environment variable path update",
+                    message="The value MALLET-HOME in the environment variables was changed from\n\n  "
+                    + MALLETPath
+                    + "\n\nto\n\n  "
+                    + MALLETDir,
+                )
     except BaseException:
-        mb.showwarning(title='MALLET-HOME environment variable',
-                       message='The value MALLET-HOME needed by MALLET to run was not found in the environment '
-                               'variables.\n\nThe MALLET_HOME value was added programmatically to your environment '
-                               'variables.\n\nTHIS IS A TEMPORARY FIX VALID FOR RUNNING THE MALLET AS LONG AS THIS '
-                               'GUI REMAINS OPEN. For a more permanent solution, please read the TIPS on MALLET '
-                               'installation and setting MALLET environment variables.')
+        mb.showwarning(
+            title="MALLET-HOME environment variable",
+            message="The value MALLET-HOME needed by MALLET to run was not found in the environment "
+            "variables.\n\nThe MALLET_HOME value was added programmatically to your environment "
+            "variables.\n\nTHIS IS A TEMPORARY FIX VALID FOR RUNNING THE MALLET AS LONG AS THIS "
+            "GUI REMAINS OPEN. For a more permanent solution, please read the TIPS on MALLET "
+            "installation and setting MALLET environment variables.",
+        )
         MALLETDir = MALLETDir.replace("\\", "/")
         MALLETPath = MALLETPath.replace("\\", "/")
         if str(MALLETPath).lower() != str(MALLETDir).lower():
@@ -127,40 +151,48 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransform
 
     filesToOpen = []
 
-    MALLETDir = MALLETDir + os.sep + 'bin'
+    MALLETDir = MALLETDir + os.sep + "bin"
 
-    if ' ' in inputDir:
-        mb.showerror(title='Input file error',
-                     message='The selected INPUT directory contains a blank (space) in the path. The MALLET code '
-                             'cannot handle input/output paths that contain a space and will break.\n\nPlease, '
-                             'place your input files in a directory with a path containing no spaces and try again.')
+    if " " in inputDir:
+        mb.showerror(
+            title="Input file error",
+            message="The selected INPUT directory contains a blank (space) in the path. The MALLET code "
+            "cannot handle input/output paths that contain a space and will break.\n\nPlease, "
+            "place your input files in a directory with a path containing no spaces and try again.",
+        )
         return
-    if ' ' in outputDir:
-        mb.showerror(title='Output file error',
-                     message='The selected OUTPUT directory contains a blank (space) in the path. The MALLET code '
-                             'cannot handle input/output paths that contain a space and will break.\n\nPlease, '
-                             'select an output directory with a path containing no spaces and try again.')
+    if " " in outputDir:
+        mb.showerror(
+            title="Output file error",
+            message="The selected OUTPUT directory contains a blank (space) in the path. The MALLET code "
+            "cannot handle input/output paths that contain a space and will break.\n\nPlease, "
+            "select an output directory with a path containing no spaces and try again.",
+        )
         return
     if not os.path.isdir(inputDir):
-        mb.showerror(title='Input directory error',
-                     message='The selected input directory does NOT exist.\n\nPlease, select a different directory '
-                             'and try again.')
+        mb.showerror(
+            title="Input directory error",
+            message="The selected input directory does NOT exist.\n\nPlease, select a different directory "
+            "and try again.",
+        )
         return
     if not os.path.isdir(outputDir):
-        mb.showerror(title='Output directory error',
-                     message='The selected output directory does NOT exist.\n\nPlease, select a different directory '
-                             'and try again.')
+        mb.showerror(
+            title="Output directory error",
+            message="The selected output directory does NOT exist.\n\nPlease, select a different directory "
+            "and try again.",
+        )
         return
 
-    numFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
+    numFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, "txt")
     # the same judgement as Gensim's (see topic_modeling_corpus_size_util): an error only with 0 or 1
     # documents, advice (not a default-No dialog) under 50
     level, advice = corpus_size_advice(numFiles)
-    if level == 'error':
-        mb.showerror(title='Topic modeling: not enough documents', message=advice)
+    if level == "error":
+        mb.showerror(title="Topic modeling: not enough documents", message=advice)
         return
-    if level == 'advice':
-        mb.showinfo(title='Topic modeling: a note on corpus size', message=advice)
+    if level == "advice":
+        mb.showinfo(title="Topic modeling: a note on corpus size", message=advice)
 
     """
     All OUTPUT file names can be changed and MALLET will still run successfully
@@ -203,14 +235,25 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransform
     #                                                     Keys_FileName + "\n" +
     #                                                     Compressed_FileName)
 
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
-                                                   'Started running MALLET Topic modeling at ', True,
-                                                   "Depending upon corpus size, computations may take a while... "
-                                                   "Please, be patient...")
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis start",
+        "Started running MALLET Topic modeling at ",
+        True,
+        "Depending upon corpus size, computations may take a while... Please, be patient...",
+    )
 
-    import_cmd, train_cmd = mallet_commands(MALLETDir + os.sep + 'mallet', inputDir,
-                                            TXTFiles_MALLETFormatted_FileName, numTopics, OptimizeInterval,
-                                            Compressed_FileName, Keys_FileName, Composition_FileName)
+    import_cmd, train_cmd = mallet_commands(
+        MALLETDir + os.sep + "mallet",
+        inputDir,
+        TXTFiles_MALLETFormatted_FileName,
+        numTopics,
+        OptimizeInterval,
+        Compressed_FileName,
+        Keys_FileName,
+        Composition_FileName,
+    )
     use_shell = platform == "win32"
 
     # FIRST STEP
@@ -227,8 +270,9 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransform
     # http://programminghistorian.org/lessons/topic-modeling-and-mallet
     train_rc = subprocess.call(train_cmd, shell=use_shell)
 
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
-                                       'Finished running MALLET Topic modeling at ', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis end", "Finished running MALLET Topic modeling at ", True, "", True, startTime
+    )
 
     # https://stackoverflow.com/questions/29759305/how-do-i-convert-a-tsv-to-csv
 
@@ -237,23 +281,27 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransform
 
     # the files decide (a .bat exit code is not something to trust); the exit codes only name the step
     if mallet_outputs_missing(Keys_FileName, Composition_FileName):
-        failed_step = 'import-dir' if import_rc != 0 else 'train-topics'
-        mb.showwarning(title='MALLET FATAL error',
-                       message='MALLET has not produced the expected Keys and Composition files (the ' + failed_step +
-                               ' step failed; see the command line for MALLET\'s own message). It looks like MALLET '
-                               'did NOT run.\n\nPlease, make sure that you have edited properly the environment '
-                               'variables by reading the TIPS file for MALLET installation and setting MALLET '
-                               'environment variables.')
+        failed_step = "import-dir" if import_rc != 0 else "train-topics"
+        mb.showwarning(
+            title="MALLET FATAL error",
+            message="MALLET has not produced the expected Keys and Composition files (the "
+            + failed_step
+            + " step failed; see the command line for MALLET's own message). It looks like MALLET "
+            "did NOT run.\n\nPlease, make sure that you have edited properly the environment "
+            "variables by reading the TIPS file for MALLET installation and setting MALLET "
+            "environment variables.",
+        )
         return
-    header = ['Topic #', 'Weight', 'Keywords']
+    header = ["Topic #", "Weight", "Keywords"]
     Keys_FileName = file_converter_util.tsv_converter(GUI_util.window, Keys_FileName, outputDir, header)
     Topic_Weight_in_Document = [f"Topic #{i} Weight in Document" for i in range(numTopics)]
-    header = ['Document ID', 'Document']
+    header = ["Document ID", "Document"]
     header.extend(Topic_Weight_in_Document)
     Composition_FileName = file_converter_util.tsv_converter(GUI_util.window, Composition_FileName, outputDir, header)
     # Composition files from MALLET contain file:
     import pandas as pd
-    df = pd.read_csv(Composition_FileName, encoding='utf-8', on_bad_lines='skip')
+
+    df = pd.read_csv(Composition_FileName, encoding="utf-8", on_bad_lines="skip")
     # new_df = df[df['Document'].isin(included_tags)]
     # import IO_csv_util
     # item = IO_csv_util.dressFilenameForCSVHyperlink(item)
@@ -263,7 +311,7 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransform
     filesToOpen.append(Keys_FileName)
     filesToOpen.append(Composition_FileName)
 
-    if chartPackage!='No charts':
+    if chartPackage != "No charts":
         # the MALLET files do not have headers to be able to use charts_util.visualize_chart
 
         # this plot s commented out because it requires hover-over effects not completed in statistics_csv
@@ -295,25 +343,29 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransform
         #     else:
         #         filesToOpen.extend(outputFiles)
 
-        columns_to_be_plotted_xAxis=[]
-        columns_to_be_plotted_yAxis=[[0, 1]]
-        hover_label=[2]
-        chart_title = 'MALLET Topics (Topic Weight by Topic)'
-        xAxis = 'Topic #'
-        yAxis = 'Topic weight'
+        columns_to_be_plotted_xAxis = []
+        columns_to_be_plotted_yAxis = [[0, 1]]
+        hover_label = [2]
+        chart_title = "MALLET Topics (Topic Weight by Topic)"
+        xAxis = "Topic #"
+        yAxis = "Topic weight"
 
-        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, Keys_FileName, outputDir,
-                                                  'MALLET_TM',
-                                                  chartPackage=chartPackage,
-                                                  dataTransformation=dataTransformation,
-                                                  chart_type_list=["bar"],
-                                                  chart_title=chart_title,
-                                                  column_xAxis_label_var=xAxis,
-                                                  hover_info_column_list=[], #hover_label,
-                                                  count_var=0,
-                                                  column_yAxis_label_var=yAxis)
+        outputFiles = charts_util.run_all(
+            columns_to_be_plotted_yAxis,
+            Keys_FileName,
+            outputDir,
+            "MALLET_TM",
+            chartPackage=chartPackage,
+            dataTransformation=dataTransformation,
+            chart_type_list=["bar"],
+            chart_title=chart_title,
+            column_xAxis_label_var=xAxis,
+            hover_info_column_list=[],  # hover_label,
+            count_var=0,
+            column_yAxis_label_var=yAxis,
+        )
 
-        if outputFiles!=None:
+        if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
             else:
@@ -321,8 +373,13 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransform
 
     # Composition_FileName, Keys_FileName
 
-    outputFiles = charts_util.MALLET_heatmap(Composition_FileName, Keys_FileName, outputDir, fig_set={"figure.figsize": (8, 6), "figure.dpi": 300},
-                   show_topics=True)
+    outputFiles = charts_util.MALLET_heatmap(
+        Composition_FileName,
+        Keys_FileName,
+        outputDir,
+        fig_set={"figure.figsize": (8, 6), "figure.dpi": 300},
+        show_topics=True,
+    )
 
     if outputFiles != None:
         if isinstance(outputFiles, str):
@@ -334,16 +391,19 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransform
     # --output-state file (topic_modeling_mallet_ldavis_util; Gensim 4 dropped its LdaMallet wrapper)
     try:
         import topic_modeling_mallet_ldavis_util
+
         ldavis_page = topic_modeling_mallet_ldavis_util.mallet_to_ldavis(
-            Compressed_FileName, os.path.join(outputDir, 'NLP-MALLET_topics_pyLDAvis.html'))
+            Compressed_FileName, os.path.join(outputDir, "NLP-MALLET_topics_pyLDAvis.html")
+        )
         if ldavis_page:
             filesToOpen.append(ldavis_page)
     except Exception as e:
-        mb.showwarning(title='MALLET topics view',
-                       message='The MALLET topics were not drawn in the pyLDAvis view:\n\n' + str(e))
+        mb.showwarning(
+            title="MALLET topics view", message="The MALLET topics were not drawn in the pyLDAvis view:\n\n" + str(e)
+        )
 
-    if openOutputFiles==True:
+    if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
-        filesToOpen=[] # to avoid opening files twice, here and in calling function
+        filesToOpen = []  # to avoid opening files twice, here and in calling function
 
     return filesToOpen

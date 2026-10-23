@@ -23,11 +23,11 @@ def _install():
         # pandas not importable yet (fresh install, before install_all_Python_packages runs)
         return
 
-    if getattr(pd, '_nlp_on_bad_lines_shim', False):
+    if getattr(pd, "_nlp_on_bad_lines_shim", False):
         return  # already handled this session
 
     try:
-        ver = tuple(int(x) for x in pd.__version__.split('.')[:2])
+        ver = tuple(int(x) for x in pd.__version__.split(".")[:2])
     except Exception:
         return
 
@@ -36,26 +36,27 @@ def _install():
         return
 
     def _translate(kwargs):
-        if 'on_bad_lines' in kwargs:
-            val = kwargs.pop('on_bad_lines')
-            if val == 'skip':
-                kwargs.setdefault('error_bad_lines', False)
-                kwargs.setdefault('warn_bad_lines', False)
-            elif val == 'warn':
-                kwargs.setdefault('error_bad_lines', False)
-                kwargs.setdefault('warn_bad_lines', True)
-            elif val == 'error':
-                kwargs.setdefault('error_bad_lines', True)
+        if "on_bad_lines" in kwargs:
+            val = kwargs.pop("on_bad_lines")
+            if val == "skip":
+                kwargs.setdefault("error_bad_lines", False)
+                kwargs.setdefault("warn_bad_lines", False)
+            elif val == "warn":
+                kwargs.setdefault("error_bad_lines", False)
+                kwargs.setdefault("warn_bad_lines", True)
+            elif val == "error":
+                kwargs.setdefault("error_bad_lines", True)
         return kwargs
 
     def _make(orig, name):
         def _wrapped(*args, **kwargs):
             return orig(*args, **_translate(kwargs))
-        _wrapped.__name__ = getattr(orig, '__name__', name)
-        _wrapped.__doc__ = getattr(orig, '__doc__', None)
+
+        _wrapped.__name__ = getattr(orig, "__name__", name)
+        _wrapped.__doc__ = getattr(orig, "__doc__", None)
         return _wrapped
 
-    for _name in ('read_csv', 'read_table'):
+    for _name in ("read_csv", "read_table"):
         _orig = getattr(pd, _name, None)
         if _orig is not None:
             setattr(pd, _name, _make(_orig, _name))

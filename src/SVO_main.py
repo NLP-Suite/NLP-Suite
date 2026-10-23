@@ -10,8 +10,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window, "SVO main",
-                                          ['subprocess', 'os', 'tkinter']) == False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "SVO main", ["subprocess", "os", "tkinter"]) == False:
     sys.exit(0)
 
 import os
@@ -29,6 +28,7 @@ import GUI_IO_util
 import IO_files_util
 import statistics_csv_util
 import GIS_pipeline_util
+
 # import wordclouds_util
 import IO_csv_util
 import SVO_util
@@ -43,6 +43,7 @@ import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
+
 def run():
     # widget values read here at RUN time (was: run_script_command lambda + run() params)
     inputFilename = GUI_util.inputFilename.get()
@@ -51,38 +52,51 @@ def run():
     openOutputFiles = GUI_util.open_csv_output_checkbox.get()
     chartPackage = GUI_util.charts_package_options_widget.get()
     dataTransformation = GUI_util.data_transformation_options_widget.get()
-    coref_var = globals()['coref_var'].get()
-    manual_coref_var = globals()['manual_coref_var'].get()
-    normalized_NER_date_extractor_var = globals()['normalized_NER_date_extractor_var'].get()
-    package_var = globals()['package_var'].get()
-    gender_var = globals()['gender_var'].get()
-    quote_var = globals()['quote_var'].get()
-    subjects_dict_path_var = globals()['subjects_dict_path_var'].get()
-    verbs_dict_path_var = globals()['verbs_dict_path_var'].get()
-    objects_dict_path_var = globals()['objects_dict_path_var'].get()
+    coref_var = globals()["coref_var"].get()
+    manual_coref_var = globals()["manual_coref_var"].get()
+    normalized_NER_date_extractor_var = globals()["normalized_NER_date_extractor_var"].get()
+    package_var = globals()["package_var"].get()
+    gender_var = globals()["gender_var"].get()
+    quote_var = globals()["quote_var"].get()
+    subjects_dict_path_var = globals()["subjects_dict_path_var"].get()
+    verbs_dict_path_var = globals()["verbs_dict_path_var"].get()
+    objects_dict_path_var = globals()["objects_dict_path_var"].get()
     filter_subjects = filter_subjects_var.get()
     filter_verbs = filter_verbs_var.get()
     filter_objects = filter_objects_var.get()
     lemmatize_subjects = lemmatize_subjects_var.get()
     lemmatize_verbs = lemmatize_verbs_var.get()
     lemmatize_objects = lemmatize_objects_var.get()
-    gephi_var = globals()['gephi_var'].get()
+    gephi_var = globals()["gephi_var"].get()
     # conflated: the single 'Visualize SVO relations' checkbox drives BOTH the network graphs and the wordcloud
     wordcloud_var = gephi_var
-    google_earth_var = globals()['google_earth_var'].get()
-    compare_svo_var = globals()['compare_svo_var'].get()
-    map_characters_var = globals()['map_characters_var'].get()
+    google_earth_var = globals()["google_earth_var"].get()
+    compare_svo_var = globals()["compare_svo_var"].get()
+    map_characters_var = globals()["map_characters_var"].get()
 
     config_filename = GUI_util.config_filename_selected_config.get()
 
     # get the NLP package and language options
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    (
+        error,
+        package,
+        parsers,
+        package_basics,
+        language,
+        package_display_area_value,
+        encoding_var,
+        export_json_var,
+        memory_var,
+        document_length_var,
+        limit_sentence_length_var,
+    ) = config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
 
     # get the date options from filename
-    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = config_util.get_date_options(
-        config_filename, config_input_output_numeric_options)
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = (
+        config_util.get_date_options(config_filename, config_input_output_numeric_options)
+    )
     extract_date_from_text_var = 0
 
     # pull the widget names from the GUI since the scripts change the IO values
@@ -109,8 +123,8 @@ def run():
         #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, srl_files, outputDir, scriptName)
         # return
 
-    outputCorefedDir = ''
-    outputSVODir = ''
+    outputCorefedDir = ""
+    outputSVODir = ""
     outputLocations = []
 
     filesToOpen = []
@@ -126,60 +140,91 @@ def run():
     #     config_filename, config_input_output_numeric_options)
     # extract_date_from_text_var = 0
 
-    if package_display_area_value == '':
-        mb.showwarning(title='No setup for NLP package and language',
-                       message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
+    if package_display_area_value == "":
+        mb.showwarning(
+            title="No setup for NLP package and language",
+            message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.",
+        )
         return
 
-    if package_var == '*':
+    if package_var == "*":
         svo_files = {}
-        for pkg in ['spaCy', 'Stanford CoreNLP', 'Stanza']:
-            run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation,
-                coref_var, manual_coref_var, normalized_NER_date_extractor_var,
-                pkg, gender_var, quote_var,
-                subjects_dict_path_var, verbs_dict_path_var, objects_dict_path_var,
-                filter_subjects, filter_verbs, filter_objects,
-                lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
-                gephi_var, wordcloud_var, google_earth_var, False, map_characters_var)
-            pkg_label = 'CoreNLP' if pkg == 'Stanford CoreNLP' else pkg
-            if inputFilename != '':
+        for pkg in ["spaCy", "Stanford CoreNLP", "Stanza"]:
+            run(
+                inputFilename,
+                inputDir,
+                outputDir,
+                openOutputFiles,
+                chartPackage,
+                dataTransformation,
+                coref_var,
+                manual_coref_var,
+                normalized_NER_date_extractor_var,
+                pkg,
+                gender_var,
+                quote_var,
+                subjects_dict_path_var,
+                verbs_dict_path_var,
+                objects_dict_path_var,
+                filter_subjects,
+                filter_verbs,
+                filter_objects,
+                lemmatize_subjects,
+                lemmatize_verbs,
+                lemmatize_objects,
+                gephi_var,
+                wordcloud_var,
+                google_earth_var,
+                False,
+                map_characters_var,
+            )
+            pkg_label = "CoreNLP" if pkg == "Stanford CoreNLP" else pkg
+            if inputFilename != "":
                 base = os.path.basename(inputFilename)[0:-4]
             else:
                 base = os.path.basename(inputDir)
-            svo_dir = os.path.join(outputDir, 'SVO_' + pkg_label + '_' + base)
+            svo_dir = os.path.join(outputDir, "SVO_" + pkg_label + "_" + base)
             for f in os.listdir(svo_dir) if os.path.isdir(svo_dir) else []:
-                if f.endswith('.csv') and 'SVO' in f and 'comparison' not in f:
+                if f.endswith(".csv") and "SVO" in f and "comparison" not in f:
                     svo_files[pkg_label] = os.path.join(svo_dir, f)
                     break
         labels = list(svo_files.keys())
         for i in range(len(labels)):
             for j in range(i + 1, len(labels)):
                 SVO_compare_util.compare(svo_files[labels[i]], svo_files[labels[j]], outputDir)
-        mb.showinfo(title='SVO comparison complete',
-                    message='All three parsers have been run and their SVO results compared.\n\nComparison files are in the output directory.')
+        mb.showinfo(
+            title="SVO comparison complete",
+            message="All three parsers have been run and their SVO results compared.\n\nComparison files are in the output directory.",
+        )
         return
 
     # the merge option refers to merging the txt files into one
     merge_txt_file_option = False
 
-    if coref_var == False and package_display_area_value == '':
-        mb.showwarning(title='No option selected',
-                       message="No option has been selected.\n\nPlease, select an option and try again.")
+    if coref_var == False and package_display_area_value == "":
+        mb.showwarning(
+            title="No option selected",
+            message="No option has been selected.\n\nPlease, select an option and try again.",
+        )
         return
 
-    if inputFilename[-4:] == '.csv':
-        if not 'SVO_' in inputFilename:
-            mb.showerror(title='Input file error',
-                         message="The selected input is a csv file, but... not an _svo.csv file.\n\nPlease, select an _svo.csv file (or txt file(s)) and try again.")
+    if inputFilename[-4:] == ".csv":
+        if not "SVO_" in inputFilename:
+            mb.showerror(
+                title="Input file error",
+                message="The selected input is a csv file, but... not an _svo.csv file.\n\nPlease, select an _svo.csv file (or txt file(s)) and try again.",
+            )
             return
-        if (coref_var == True or manual_coref_var == True):
-            mb.showerror(title='Input file/option error',
-                         message="The data analysis option(s) you have selected require in input a txt file, rather than a csv file.\n\nPlease, check your input file and/or algorithm selections and try again.")
+        if coref_var == True or manual_coref_var == True:
+            mb.showerror(
+                title="Input file/option error",
+                message="The data analysis option(s) you have selected require in input a txt file, rather than a csv file.\n\nPlease, check your input file and/or algorithm selections and try again.",
+            )
             return
 
     # Coref_Option = Coref_Option.lower()
 
-    annotator = ['SVO']
+    annotator = ["SVO"]
     isFile = True
     inputFileBase = ""
     inputDirBase = ""
@@ -187,9 +232,9 @@ def run():
     svo_result_list = []
     document_index = 1
     svo_CoreNLP_merged_file = ""
-    svo_CoreNLP_single_file = ''
-    location_filename=''
-    outputDirSV=outputDir
+    svo_CoreNLP_single_file = ""
+    location_filename = ""
+    outputDirSV = outputDir
 
     if len(inputFilename) > 0:
         isFile = True
@@ -198,67 +243,77 @@ def run():
         save_intermediate_file = False
         isFile = False
 
-    if package_var=='Stanford CoreNLP':
+    if package_var == "Stanford CoreNLP":
         # simplify the name since it is then used in output files/folders
-        package_var = 'CoreNLP'
-    if 'OpenIE' in package_var:
-        package_var = 'OpenIE'
+        package_var = "CoreNLP"
+    if "OpenIE" in package_var:
+        package_var = "OpenIE"
 
     # the actual directory is created in the CoreNLP_annotator_util
     #   all we need here is the name of the directory
-    if inputFilename != '':
+    if inputFilename != "":
         inputBaseName = os.path.basename(inputFilename)[0:-4]  # without .txt
     else:
         inputBaseName = os.path.basename(inputDir)
     if coref_var:
-        outputCorefDir = os.path.join(outputDirSV, 'coref_' + package_var + '_' + inputBaseName)
-        outputSVODir = os.path.join(outputDir, 'SVO_coref_' + package_var + '_' +inputBaseName)
+        outputCorefDir = os.path.join(outputDirSV, "coref_" + package_var + "_" + inputBaseName)
+        outputSVODir = os.path.join(outputDir, "SVO_coref_" + package_var + "_" + inputBaseName)
     else:
-        outputCorefDir = ''
-        outputSVODir = os.path.join(outputDir, 'SVO_' + package_var + '_' +inputBaseName)
+        outputCorefDir = ""
+        outputSVODir = os.path.join(outputDir, "SVO_" + package_var + "_" + inputBaseName)
 
     # create an SVO subdirectory of the output directory
-    outputSVODir = IO_files_util.make_output_subdirectory('','',outputSVODir, label='',
-                                                              silent=True)
-    if outputSVODir == '':
+    outputSVODir = IO_files_util.make_output_subdirectory("", "", outputSVODir, label="", silent=True)
+    if outputSVODir == "":
         return
 
-    outputDir = outputSVODir # outputDir is the main subdir inside the main output directory inside which will go gender,
+    outputDir = (
+        outputSVODir  # outputDir is the main subdir inside the main output directory inside which will go gender,
+    )
     # the outputDir folder inside the main output folder will contain subdir SVO, gender, GIS, quote, etc.
 
-    if package_var=='OpenIE':
+    if package_var == "OpenIE":
         outputSVOSVODir = outputSVODir + os.sep + package_var
     else:
-        outputSVOSVODir = outputSVODir + os.sep + 'SVO'
+        outputSVOSVODir = outputSVODir + os.sep + "SVO"
 
-# CoRef _____________________________________________________
+    # CoRef _____________________________________________________
 
     # field_names = ['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'LOCATION', 'PERSON', 'TIME', 'TIME_STAMP', 'Sentence']
 
     if coref_var:
         # must be changed
-        if language_var != 'English' and language_var != 'Chinese':
-            mb.showwarning(title='Language',
-                           message='The Stanford CoreNLP coreference resolution annotator is only available for English and Chinese.')
+        if language_var != "English" and language_var != "Chinese":
+            mb.showwarning(
+                title="Language",
+                message="The Stanford CoreNLP coreference resolution annotator is only available for English and Chinese.",
+            )
             return
         # create a subdirectory of the output directory
-        outputCorefDir = IO_files_util.make_output_subdirectory('', '', outputCorefDir, '',
-                                                                silent=True)
+        outputCorefDir = IO_files_util.make_output_subdirectory("", "", outputCorefDir, "", silent=True)
         # inputFilename and inputDir are the original txt files to be coreferenced
         # 2 items are returned: filename string and true/False for error
-        outputFiles, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename,
-                                       inputFilename, inputDir, outputCorefDir,
-                                       openOutputFiles, chartPackage, dataTransformation,
-                                       language_var, memory_var, export_json_var,
-                                       manual_coref_var)
+        outputFiles, error_indicator = Stanford_CoreNLP_coreference_util.run(
+            config_filename,
+            inputFilename,
+            inputDir,
+            outputCorefDir,
+            openOutputFiles,
+            chartPackage,
+            dataTransformation,
+            language_var,
+            memory_var,
+            export_json_var,
+            manual_coref_var,
+        )
         if error_indicator != 0:
             return
         coref_txt_files = []
         for file in outputFiles:
             # visualize the data produced under coref table
-            if 'chart' in file or '.csv' in file:
+            if "chart" in file or ".csv" in file:
                 filesToOpen.append(file)
-            elif str(file)[-4:] == '.txt':
+            elif str(file)[-4:] == ".txt":
                 # the coreferenced txt copies that SVO must now parse
                 coref_txt_files.append(file)
 
@@ -271,134 +326,164 @@ def run():
         else:
             inputDir = outputCorefDir
         # only the inputDir will be used when coreferencing, whether it will contain a set of files or just one file
-        inputFilename=''
-
+        inputFilename = ""
 
     # create an SVO_filtered subdirectory of the main output directory
-    outputSVOFilterDir=''
-    if (filter_subjects and not lemmatize_subjects) or (filter_verbs and not lemmatize_verbs) or (filter_objects and not lemmatize_objects):
-        mb.showwarning(title='Warning',
-                       message='Filtering for either S or V or O requires lemmatizing the respective object, S or V or O. '
-                               '\n\nFiltering is based on WordNet and all WWordNet entries are lemmatized.')
+    outputSVOFilterDir = ""
+    if (
+        (filter_subjects and not lemmatize_subjects)
+        or (filter_verbs and not lemmatize_verbs)
+        or (filter_objects and not lemmatize_objects)
+    ):
+        mb.showwarning(
+            title="Warning",
+            message="Filtering for either S or V or O requires lemmatizing the respective object, S or V or O. "
+            "\n\nFiltering is based on WordNet and all WWordNet entries are lemmatized.",
+        )
         return
 
     if filter_subjects or filter_verbs or filter_objects:
-        outputSVOFilterDir = outputSVODir + os.sep + 'SVO_filtered'
+        outputSVOFilterDir = outputSVODir + os.sep + "SVO_filtered"
 
     if google_earth_var:
         # create a GIS subdirectory of the output directory
-        outputGISDir = IO_files_util.make_output_subdirectory('', '', outputSVODir,
-                                                              label='GIS',
-                                                              silent=True)
-        location_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputGISDir, '.csv',
-                                                                     'SVO_' + package_var+ '_LOCATIONS')
+        outputGISDir = IO_files_util.make_output_subdirectory("", "", outputSVODir, label="GIS", silent=True)
+        location_filename = IO_files_util.generate_output_file_name(
+            inputFilename, inputDir, outputGISDir, ".csv", "SVO_" + package_var + "_LOCATIONS"
+        )
         outputLocations.append(location_filename)
 
-# Stanford CoreNLP Dependencies ++ _____________________________________________________
+    # Stanford CoreNLP Dependencies ++ _____________________________________________________
 
-    if package_var=='CoreNLP' and inputFilename[-4:] != '.csv':
-
-        if language_var == 'Arabic' or language_var == 'Hungarian':
-            mb.showwarning(title='Language',
-                           message='The Stanford CoreNLP dependency parsing is is not available for Arabic and Hungarian.')
+    if package_var == "CoreNLP" and inputFilename[-4:] != ".csv":
+        if language_var == "Arabic" or language_var == "Hungarian":
+            mb.showwarning(
+                title="Language",
+                message="The Stanford CoreNLP dependency parsing is is not available for Arabic and Hungarian.",
+            )
             return
 
-        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_util.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile("Stanford_CoreNLP_util.py") == False:
             return
 
-        annotator = ['SVO']
+        annotator = ["SVO"]
         if gender_var:
             # In Stanford_CoreNLP_util def create_output_directory subdir are created in the form annotator + "_CoreNLP"
             #   must respect this format to avoid error warning
             # create the subdirectory here so the gender file has a directory to be written into
             #   (create_output_directory makes gender_CoreNLP_<descriptor> at the top level, not nested in the SVO folder)
-            gender_dir = IO_files_util.make_output_subdirectory('', '', outputSVODir, label='gender_CoreNLP', silent=True)
-            gender_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir,
-                                                                      gender_dir, '.csv',
-                                                                      '') # SVO_CoreNLP_gender
+            gender_dir = IO_files_util.make_output_subdirectory(
+                "", "", outputSVODir, label="gender_CoreNLP", silent=True
+            )
+            gender_filename = IO_files_util.generate_output_file_name(
+                inputFilename, inputDir, gender_dir, ".csv", ""
+            )  # SVO_CoreNLP_gender
 
-            gender_filename_html = IO_files_util.generate_output_file_name(inputFilename, inputDir,
-                                                                           gender_dir, '.html',
-                                                                           '') # dict_annotated_gender
+            gender_filename_html = IO_files_util.generate_output_file_name(
+                inputFilename, inputDir, gender_dir, ".html", ""
+            )  # dict_annotated_gender
 
             annotator.append("gender")
         else:
-            gender_filename=''
-            gender_filename_html=''
+            gender_filename = ""
+            gender_filename_html = ""
         if quote_var:
             # In Stanford_CoreNLP_util def create_output_directory subdir are created in the form annotator + "_CoreNLP"
             #   must respect this format to avoid error warning
             # create the subdirectory here so the quote file has a directory to be written into
-            quote_dir = IO_files_util.make_output_subdirectory('', '', outputSVODir, label='quote_CoreNLP', silent=True)
-            quote_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir,
-                                                                     quote_dir, '.csv',
-                                                                     '') #SVO_CoreNLP_quote
+            quote_dir = IO_files_util.make_output_subdirectory("", "", outputSVODir, label="quote_CoreNLP", silent=True)
+            quote_filename = IO_files_util.generate_output_file_name(
+                inputFilename, inputDir, quote_dir, ".csv", ""
+            )  # SVO_CoreNLP_quote
             annotator.append("quote")
         else:
-            quote_filename=''
+            quote_filename = ""
 
         # annotator_params are different from gender_var and quote_var
         # annotator_params will run the annotator for SVO and run the gender and quote placing results inside the SVO output folder
         # gender_var and quote_var are used in CoreNLP_annotate to add gender and quote columns to the SVO csv output file
         # they can be passed independently, but it is useful to have both arguments
-        outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                   outputSVODir, openOutputFiles,
-                                   chartPackage,
-                                   dataTransformation,
-                                   annotator, False,
-                                   language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
-                                   filter_subjects=filter_subjects,
-                                   extract_date_from_text_var=extract_date_from_text_var,
-                                   filename_embeds_date_var=filename_embeds_date_var,
-                                   date_format=date_format_var,
-                                   items_separator_var=items_separator_var,
-                                   date_position_var=date_position_var,
-                                   google_earth_var=google_earth_var,
-                                   location_filename = location_filename,
-                                   gender_var = gender_var, gender_filename = gender_filename, gender_filename_html = gender_filename_html,
-                                   quote_var = quote_var, quote_filename = quote_filename)
+        outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(
+            config_filename,
+            inputFilename,
+            inputDir,
+            outputSVODir,
+            openOutputFiles,
+            chartPackage,
+            dataTransformation,
+            annotator,
+            False,
+            language_var,
+            export_json_var,
+            memory_var,
+            document_length_var,
+            limit_sentence_length_var,
+            filter_subjects=filter_subjects,
+            extract_date_from_text_var=extract_date_from_text_var,
+            filename_embeds_date_var=filename_embeds_date_var,
+            date_format=date_format_var,
+            items_separator_var=items_separator_var,
+            date_position_var=date_position_var,
+            google_earth_var=google_earth_var,
+            location_filename=location_filename,
+            gender_var=gender_var,
+            gender_filename=gender_filename,
+            gender_filename_html=gender_filename_html,
+            quote_var=quote_var,
+            quote_filename=quote_filename,
+        )
 
-        if outputFiles!=None:
+        if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
                 SVO_filename = outputFiles
                 svo_result_list.append(outputFiles)
             else:
-                if len(outputFiles)==0:
+                if len(outputFiles) == 0:
                     return
                 filesToOpen.extend(outputFiles)
-                SVO_filename=outputFiles[0]
+                SVO_filename = outputFiles[0]
                 svo_result_list.append(outputFiles[0])
 
             # TODO MINO: create normalize_date subdir and outputs
             nDateOutput = SVO_util.normalize_date_svo(SVO_filename, outputSVODir, chartPackage, dataTransformation)
             if nDateOutput != None:
-                if len(nDateOutput)>0:
+                if len(nDateOutput) > 0:
                     # nDateSVOFilename=nDateOutput[0] #see below; filename commented out
                     filesToOpen.extend(nDateOutput)
 
-# Stanford CoreNLP OpenIE _____________________________________________________
-    if 'OpenIE' in package_var and inputFilename[-4:] != '.csv':
-        if language_var != 'English':
-            mb.showwarning(title='Language',
-                           message='The Stanford CoreNLP OpenIE annotator is only available for English.')
+    # Stanford CoreNLP OpenIE _____________________________________________________
+    if "OpenIE" in package_var and inputFilename[-4:] != ".csv":
+        if language_var != "English":
+            mb.showwarning(
+                title="Language", message="The Stanford CoreNLP OpenIE annotator is only available for English."
+            )
             return
 
-        outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                           outputSVODir, openOutputFiles,
-                                                                           chartPackage,
-                                                                           dataTransformation,
-                                                                           'OpenIE',
-                                                                           False,
-                                                                           language_var, memory_var, export_json_var, document_length_var, limit_sentence_length_var,
-                                                                           extract_date_from_text_var=extract_date_from_text_var,
-                                                                           filename_embeds_date_var=filename_embeds_date_var,
-                                                                           date_format=date_format_var,
-                                                                           items_separator_var=items_separator_var,
-                                                                           date_position_var=date_position_var,
-                                                                           google_earth_var = google_earth_var,
-                                                                           location_filename = location_filename)
-        if outputFiles!=None:
+        outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(
+            config_filename,
+            inputFilename,
+            inputDir,
+            outputSVODir,
+            openOutputFiles,
+            chartPackage,
+            dataTransformation,
+            "OpenIE",
+            False,
+            language_var,
+            memory_var,
+            export_json_var,
+            document_length_var,
+            limit_sentence_length_var,
+            extract_date_from_text_var=extract_date_from_text_var,
+            filename_embeds_date_var=filename_embeds_date_var,
+            date_format=date_format_var,
+            items_separator_var=items_separator_var,
+            date_position_var=date_position_var,
+            google_earth_var=google_earth_var,
+            location_filename=location_filename,
+        )
+        if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
                 SVO_filename = outputFiles
@@ -408,27 +493,35 @@ def run():
                 SVO_filename = outputFiles[0]
                 svo_result_list.append(outputFiles[0])
 
-# spaCY _____________________________________________________
+    # spaCY _____________________________________________________
 
-    if package_var == 'spaCy' and inputFilename[-4:] != '.csv':
+    if package_var == "spaCy" and inputFilename[-4:] != ".csv":
         document_length_var = 1
         limit_sentence_length_var = 1000
-        annotator = 'SVO'
-        outputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
-                                                    outputSVODir,
-                                                    openOutputFiles,
-                                                    chartPackage, dataTransformation,
-                                                    annotator, False,
-                                                    language,
-                                                    memory_var, document_length_var, limit_sentence_length_var,
-                                                    filename_embeds_date_var=filename_embeds_date_var,
-                                                    date_format=date_format_var,
-                                                    items_separator_var=items_separator_var,
-                                                    date_position_var=date_position_var,
-                                                    google_earth_var=google_earth_var,
-                                                    location_filename=location_filename)
+        annotator = "SVO"
+        outputFiles = spaCy_util.spaCy_annotate(
+            config_filename,
+            inputFilename,
+            inputDir,
+            outputSVODir,
+            openOutputFiles,
+            chartPackage,
+            dataTransformation,
+            annotator,
+            False,
+            language,
+            memory_var,
+            document_length_var,
+            limit_sentence_length_var,
+            filename_embeds_date_var=filename_embeds_date_var,
+            date_format=date_format_var,
+            items_separator_var=items_separator_var,
+            date_position_var=date_position_var,
+            google_earth_var=google_earth_var,
+            location_filename=location_filename,
+        )
 
-        if outputFiles!=None:
+        if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
                 SVO_filename = outputFiles
@@ -436,30 +529,38 @@ def run():
             else:
                 filesToOpen.extend(outputFiles)
                 # the SVO output file is in outputFiles[1] outputFiles[0] contains the CoNLL parser output
-                SVO_filename=outputFiles[1]
+                SVO_filename = outputFiles[1]
                 svo_result_list.append(outputFiles[1])
 
-# Stanza _____________________________________________________
+    # Stanza _____________________________________________________
 
-    if package_var == 'Stanza' and inputFilename[-4:] != '.csv':
+    if package_var == "Stanza" and inputFilename[-4:] != ".csv":
         document_length_var = 1
         limit_sentence_length_var = 1000
-        annotator = ['SVO']
-        outputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
-                                                      outputSVODir,
-                                                      openOutputFiles,
-                                                      chartPackage, dataTransformation,
-                                                      annotator, False,
-                                                      language_list,
-                                                      memory_var, document_length_var, limit_sentence_length_var,
-                                                      filename_embeds_date_var=filename_embeds_date_var,
-                                                      date_format=date_format_var,
-                                                      items_separator_var=items_separator_var,
-                                                      date_position_var=date_position_var,
-                                                      google_earth_var=google_earth_var,
-                                                      location_filename=location_filename)
+        annotator = ["SVO"]
+        outputFiles = Stanza_util.Stanza_annotate(
+            config_filename,
+            inputFilename,
+            inputDir,
+            outputSVODir,
+            openOutputFiles,
+            chartPackage,
+            dataTransformation,
+            annotator,
+            False,
+            language_list,
+            memory_var,
+            document_length_var,
+            limit_sentence_length_var,
+            filename_embeds_date_var=filename_embeds_date_var,
+            date_format=date_format_var,
+            items_separator_var=items_separator_var,
+            date_position_var=date_position_var,
+            google_earth_var=google_earth_var,
+            location_filename=location_filename,
+        )
 
-        if outputFiles!=None:
+        if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
                 SVO_filename = outputFiles
@@ -476,85 +577,125 @@ def run():
                     svo_result_list.append(outputFiles[0])
                 else:
                     # No files returned — SVO extraction failed
-                    mb.showwarning(title='SVO Extraction Error',
-                        message='SVO extraction failed to produce output files.\n\nPlease check your input data and try again.')
+                    mb.showwarning(
+                        title="SVO Extraction Error",
+                        message="SVO extraction failed to produce output files.\n\nPlease check your input data and try again.",
+                    )
                     return
 
-# -------------------------------------------------------------------------------------------------------------------------------------
-# Lemmatizing and Filtering SVO for all packages
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    # Lemmatizing and Filtering SVO for all packages
 
-    SVO_lemmatized_filename = ''
-    SVO_filtered_filename = ''
-    if len(svo_result_list)>0:
-        if lemmatize_subjects or lemmatize_verbs or lemmatize_objects or \
-            filter_subjects or filter_verbs or filter_objects:
-            output = SVO_util.lemmatize_filter_svo(window,SVO_filename,
-                        filter_subjects, filter_verbs, filter_objects,
-                        subject_filePath, verb_filePath, object_filePath,
-                        lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
-                        outputSVOSVODir, chartPackage, dataTransformation)
+    SVO_lemmatized_filename = ""
+    SVO_filtered_filename = ""
+    if len(svo_result_list) > 0:
+        if (
+            lemmatize_subjects
+            or lemmatize_verbs
+            or lemmatize_objects
+            or filter_subjects
+            or filter_verbs
+            or filter_objects
+        ):
+            output = SVO_util.lemmatize_filter_svo(
+                window,
+                SVO_filename,
+                filter_subjects,
+                filter_verbs,
+                filter_objects,
+                subject_filePath,
+                verb_filePath,
+                object_filePath,
+                lemmatize_subjects,
+                lemmatize_verbs,
+                lemmatize_objects,
+                outputSVOSVODir,
+                chartPackage,
+                dataTransformation,
+            )
             if output != None:
-                if 'English' in language: # SVO filtered by WordNet are available for English only
+                if "English" in language:  # SVO filtered by WordNet are available for English only
                     if lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-                        SVO_lemmatized_filename=output[0]
+                        SVO_lemmatized_filename = output[0]
                     if filter_subjects or filter_verbs or filter_objects:
-                        SVO_filtered_filename=output[1]
+                        SVO_filtered_filename = output[1]
                 else:
                     SVO_lemmatized_filename = output[0]
                 # filesToOpen.extend(output)
-                if SVO_lemmatized_filename!='':
+                if SVO_lemmatized_filename != "":
                     svo_result_list.append(SVO_lemmatized_filename)
-                if SVO_filtered_filename!='':
+                if SVO_filtered_filename != "":
                     svo_result_list.append(SVO_filtered_filename)
 
         # WordNet is only available for English
-        if language_var=='English' and (lemmatize_subjects or lemmatize_verbs or lemmatize_objects):
+        if language_var == "English" and (lemmatize_subjects or lemmatize_verbs or lemmatize_objects):
             # outputFiles[0] is the filename with lemmatized SVO values
             # we want to aggregate with WordNet the verbs in column 'V'
             # check that SVO output file contains records
-            nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(SVO_lemmatized_filename,
-                                                                                   encodingValue='utf-8')
+            nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(
+                SVO_lemmatized_filename, encodingValue="utf-8"
+            )
             if nRecords > 1:
                 # outputWNDir is created in SVO_util
                 # # create a subdirectory of the output SVO directory for filtered SVOs
                 # # filtered SVOs are stored in the WordNet directory
-                outputWNDir = IO_files_util.make_output_subdirectory('', '', outputSVODir,
-                                                                     label='WordNet',
-                                                                     silent=True)
+                outputWNDir = IO_files_util.make_output_subdirectory("", "", outputSVODir, label="WordNet", silent=True)
                 # outputWNDir = outputSVODir + os.sep + 'WordNet'
-                outputFilename = IO_csv_util.extract_from_csv(SVO_lemmatized_filename, outputSVODir, '',
-                                                              ['Subject (S)', 'Object (O)'])
+                outputFilename = IO_csv_util.extract_from_csv(
+                    SVO_lemmatized_filename, outputSVODir, "", ["Subject (S)", "Object (O)"]
+                )
                 # the WordNet installation directory, WordNetDir,  is now checked in aggregate_GoingUP
-                WordNetDir=''
-                output = semantic_aggregation_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
-                                                                         config_filename, 'NOUN',
-                                                                         openOutputFiles, 
-                                                                         chartPackage, dataTransformation, language_var)
+                WordNetDir = ""
+                output = semantic_aggregation_WordNet_util.aggregate_GoingUP(
+                    WordNetDir,
+                    outputFilename,
+                    outputWNDir,
+                    config_filename,
+                    "NOUN",
+                    openOutputFiles,
+                    chartPackage,
+                    dataTransformation,
+                    language_var,
+                )
                 os.remove(outputFilename)
-                if output != None and output != '':
+                if output != None and output != "":
                     filesToOpen.extend(output)
                 if lemmatize_verbs:
-                    outputFilename = IO_csv_util.extract_from_csv(SVO_lemmatized_filename, outputWNDir, '', ['Verb (V)'])
-                    output = semantic_aggregation_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
-                                                                             config_filename, 'VERB',
-                                                                             openOutputFiles, 
-                                                                             chartPackage, dataTransformation, language_var)
+                    outputFilename = IO_csv_util.extract_from_csv(
+                        SVO_lemmatized_filename, outputWNDir, "", ["Verb (V)"]
+                    )
+                    output = semantic_aggregation_WordNet_util.aggregate_GoingUP(
+                        WordNetDir,
+                        outputFilename,
+                        outputWNDir,
+                        config_filename,
+                        "VERB",
+                        openOutputFiles,
+                        chartPackage,
+                        dataTransformation,
+                        language_var,
+                    )
                     os.remove(outputFilename)
-                    if output != None and output != '':
+                    if output != None and output != "":
                         filesToOpen.extend(output)
 
         else:
-            reminders_util.checkReminder(scriptName, reminders_util.title_options_no_SVO_records,
-                                         reminders_util.message_no_SVO_records, True)
+            reminders_util.checkReminder(
+                scriptName, reminders_util.title_options_no_SVO_records, reminders_util.message_no_SVO_records, True
+            )
 
-    reminders_util.checkReminder(scriptName, reminders_util.title_options_SVO_Inferred_Subject_Passive,
-                                 reminders_util.message_SVO_Inferred_Subject_Passive, True)
+    reminders_util.checkReminder(
+        scriptName,
+        reminders_util.title_options_SVO_Inferred_Subject_Passive,
+        reminders_util.message_SVO_Inferred_Subject_Passive,
+        True,
+    )
     # the SVO script can take in input a csv SVO file previously computed (in which case the filename will contain SVO_): inputFilename
     # results currently produced are in svo_result_list
 
-    if inputFilename[-4:] == '.csv':
+    if inputFilename[-4:] == ".csv":
         svo_result_list.append(inputFilename)
-        SVO_filename=inputFilename
+        SVO_filename = inputFilename
 
     # '@#' is an internal social-actor flag prepended to Subjects upstream (Stanford_CoreNLP_util) and
     # consumed by the lemmatize/filter logic; it must NEVER reach a chart. lemmatize_filter_svo strips it
@@ -562,21 +703,22 @@ def run():
     # treemap visualizations can still carry it. This is the single chokepoint through which every charted
     # file passes, so strip '@#' from all of them here (filtering has already used it by now).
     import pandas as pd
+
     for _svo_file in svo_result_list:
         try:
-            if _svo_file and str(_svo_file).lower().endswith('.csv') and os.path.isfile(_svo_file):
-                _df = pd.read_csv(_svo_file, encoding='utf-8', on_bad_lines='skip')
+            if _svo_file and str(_svo_file).lower().endswith(".csv") and os.path.isfile(_svo_file):
+                _df = pd.read_csv(_svo_file, encoding="utf-8", on_bad_lines="skip")
                 _changed = False
-                for _col in ('Subject (S)', 'Object (O)'):
-                    if _col in _df.columns and _df[_col].astype(str).str.contains('@#', regex=False).any():
-                        _df[_col] = _df[_col].astype(str).str.replace('@#', '', regex=False)
+                for _col in ("Subject (S)", "Object (O)"):
+                    if _col in _df.columns and _df[_col].astype(str).str.contains("@#", regex=False).any():
+                        _df[_col] = _df[_col].astype(str).str.replace("@#", "", regex=False)
                         _changed = True
                 if _changed:
-                    _df.to_csv(_svo_file, encoding='utf-8', index=False)
+                    _df.to_csv(_svo_file, encoding="utf-8", index=False)
         except Exception as e:
-            print('Warning: could not strip the internal @# marker from', _svo_file, '-', str(e))
+            print("Warning: could not strip the internal @# marker from", _svo_file, "-", str(e))
 
-    if ('SVO_' in inputFilename) or (len(svo_result_list) > 0):
+    if ("SVO_" in inputFilename) or (len(svo_result_list) > 0):
         i = 0
         for f in svo_result_list:
             head, tail = os.path.split(svo_result_list[i])
@@ -585,22 +727,41 @@ def run():
             if gephi_var:
                 import Gephi_util
                 import charts_util
+
                 # i = 0
                 # previous svo csv files can be entered in input to display networks, wordclouds or GIS maps
                 if inputFilename[-4:] == ".csv":
                     fileBase = os.path.basename(inputFilename)[0:-4]
-                    nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename, encodingValue='utf-8')
-                    if nRecords > 1:   # including headers; file is empty
-                        gexf_file = Gephi_util.create_gexf(window,fileBase, tempOutputDir, inputFilename, "Subject (S)", "Verb (V)", "Object (O)",
-                                                           "Sentence ID")
-                        if gexf_file != None and gexf_file != '':
+                    nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(
+                        inputFilename, encodingValue="utf-8"
+                    )
+                    if nRecords > 1:  # including headers; file is empty
+                        gexf_file = Gephi_util.create_gexf(
+                            window,
+                            fileBase,
+                            tempOutputDir,
+                            inputFilename,
+                            "Subject (S)",
+                            "Verb (V)",
+                            "Object (O)",
+                            "Sentence ID",
+                        )
+                        if gexf_file != None and gexf_file != "":
                             filesToOpen.append(gexf_file)
                     else:
                         nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(svo_result_list[0])
                         if nRecords > 1:  # including headers; file is empty
-                            gexf_file = Gephi_util.create_gexf(window,fileBase, inputFilename, svo_result_list[0],
-                                                               "Subject (S)", "Verb (V)", "Object (O)", "Sentence ID")
-                            if gexf_file != None and gexf_file != '':
+                            gexf_file = Gephi_util.create_gexf(
+                                window,
+                                fileBase,
+                                inputFilename,
+                                svo_result_list[0],
+                                "Subject (S)",
+                                "Verb (V)",
+                                "Object (O)",
+                                "Sentence ID",
+                            )
+                            if gexf_file != None and gexf_file != "":
                                 filesToOpen.append(gexf_file)
 
                     Sankey_limit1_var = 5
@@ -608,12 +769,21 @@ def run():
                     Sankey_limit3_var = 20
                     three_way_Sankey = True
 
-                    output_label = 'sankey'
-                    outputFilename_sankey = IO_files_util.generate_output_file_name(inputFilename, inputDir, tempOutputDir,
-                                                                                    '.html', output_label)
-                    outputFiles = charts_util.Sankey(inputFilename, outputFilename_sankey,
-                                                     'Subject (S)', Sankey_limit1_var, 'Verb (V)', Sankey_limit2_var,
-                                                     three_way_Sankey, 'Object (O)', Sankey_limit3_var)
+                    output_label = "sankey"
+                    outputFilename_sankey = IO_files_util.generate_output_file_name(
+                        inputFilename, inputDir, tempOutputDir, ".html", output_label
+                    )
+                    outputFiles = charts_util.Sankey(
+                        inputFilename,
+                        outputFilename_sankey,
+                        "Subject (S)",
+                        Sankey_limit1_var,
+                        "Verb (V)",
+                        Sankey_limit2_var,
+                        three_way_Sankey,
+                        "Object (O)",
+                        Sankey_limit3_var,
+                    )
 
                     if outputFiles != None:
                         if isinstance(outputFiles, str):
@@ -623,64 +793,85 @@ def run():
 
                 else:  # txt input file
                     # for f in svo_result_list:
-                        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(f)
-                        if nRecords > 1:  # including headers; file is empty
-                            # keep separate in case you want to export the 3 Gephi files
-                            #   (normal, lemma, filtered) to different folders
-                            #   now exported to the main SVO subdir
-                            # if 'SVO_lemma' in svo_result_list[i]:
-                            #     # tempOutputDir = outputSVOSVODir
-                            # elif 'SVO_filter' in svo_result_list[i]:
-                            #     # tempOutputDir = outputSVOSVODir
-                            # else:
-                            #     tempOutputDir = outputSVOSVODir
-                            # using Sentence ID as a proxy of a date variable to create a dynamic network graph
-                            gexf_file = Gephi_util.create_gexf(window,os.path.basename(f)[:-4], tempOutputDir, f, "Subject (S)", "Verb (V)", "Object (O)",
-                                                               "Sentence ID")
-                            if "CoreNLP" in f or "spaCy" in f or "Stanza" in f:
-                                if gexf_file!=None and gexf_file!='':
-                                    filesToOpen.append(gexf_file)
-                            if not save_intermediate_file:
-                                inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt',
-                                                                      silent=False,
-                                                                      configFileName=config_filename)
+                    nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(f)
+                    if nRecords > 1:  # including headers; file is empty
+                        # keep separate in case you want to export the 3 Gephi files
+                        #   (normal, lemma, filtered) to different folders
+                        #   now exported to the main SVO subdir
+                        # if 'SVO_lemma' in svo_result_list[i]:
+                        #     # tempOutputDir = outputSVOSVODir
+                        # elif 'SVO_filter' in svo_result_list[i]:
+                        #     # tempOutputDir = outputSVOSVODir
+                        # else:
+                        #     tempOutputDir = outputSVOSVODir
+                        # using Sentence ID as a proxy of a date variable to create a dynamic network graph
+                        gexf_file = Gephi_util.create_gexf(
+                            window,
+                            os.path.basename(f)[:-4],
+                            tempOutputDir,
+                            f,
+                            "Subject (S)",
+                            "Verb (V)",
+                            "Object (O)",
+                            "Sentence ID",
+                        )
+                        if "CoreNLP" in f or "spaCy" in f or "Stanza" in f:
+                            if gexf_file != None and gexf_file != "":
+                                filesToOpen.append(gexf_file)
+                        if not save_intermediate_file:
+                            inputDocs = IO_files_util.getFileList(
+                                inputFilename, inputDir, fileType=".txt", silent=False, configFileName=config_filename
+                            )
 
-                                # gexf_files = [os.path.join(outputDir, f) for f in os.listdir(tempOutputDir) if
-                                gexf_files = [os.path.join(outputDir, f) for f in inputDocs if
-                                                            f.endswith('.gexf')]
-                                for f in gexf_files:
-                                    if "CoreNLP" not in f and "spaCy" not in f and "Stanza" not in f: #CoreNLP accounts for both ++ and OpenIE
-                                        os.remove(f)
+                            # gexf_files = [os.path.join(outputDir, f) for f in os.listdir(tempOutputDir) if
+                            gexf_files = [os.path.join(outputDir, f) for f in inputDocs if f.endswith(".gexf")]
+                            for f in gexf_files:
+                                if (
+                                    "CoreNLP" not in f and "spaCy" not in f and "Stanza" not in f
+                                ):  # CoreNLP accounts for both ++ and OpenIE
+                                    os.remove(f)
 
-                            output_label = 'sankey'
-                            Sankey_limit1_var = 5
-                            Sankey_limit2_var = 10
-                            Sankey_limit3_var = 20
-                            three_way_Sankey = True
+                        output_label = "sankey"
+                        Sankey_limit1_var = 5
+                        Sankey_limit2_var = 10
+                        Sankey_limit3_var = 20
+                        three_way_Sankey = True
 
-                            outputFilename_sankey = IO_files_util.generate_output_file_name(f, inputDir, tempOutputDir,
-                                                                                            '.html', output_label)
-                            outputFiles = charts_util.Sankey(f, outputFilename_sankey,
-                                                             'Subject (S)', Sankey_limit1_var, 'Verb (V)', Sankey_limit2_var,
-                                                             three_way_Sankey, 'Object (O)', Sankey_limit3_var)
+                        outputFilename_sankey = IO_files_util.generate_output_file_name(
+                            f, inputDir, tempOutputDir, ".html", output_label
+                        )
+                        outputFiles = charts_util.Sankey(
+                            f,
+                            outputFilename_sankey,
+                            "Subject (S)",
+                            Sankey_limit1_var,
+                            "Verb (V)",
+                            Sankey_limit2_var,
+                            three_way_Sankey,
+                            "Object (O)",
+                            Sankey_limit3_var,
+                        )
 
-                            if outputFiles != None:
-                                if isinstance(outputFiles, str):
-                                    filesToOpen.append(outputFiles)
-                                else:
-                                    filesToOpen.extend(outputFiles)
+                        if outputFiles != None:
+                            if isinstance(outputFiles, str):
+                                filesToOpen.append(outputFiles)
+                            else:
+                                filesToOpen.extend(outputFiles)
 
-    # wordcloud  _________________________________________________
+            # wordcloud  _________________________________________________
 
             if wordcloud_var:
                 import wordclouds_util
+
                 # i = 0
-                wordcloud_title = 'Wordcloud of Subject (red), Verb (blue), Object (green)'
+                wordcloud_title = "Wordcloud of Subject (red), Verb (blue), Object (green)"
                 if inputFilename[-4:] == ".csv":
                     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
                     if nRecords > 1:  # including headers; file is empty
-                        myfile = IO_files_util.openCSVFile(inputFilename, 'r')
-                        outputFiles = wordclouds_util.SVOWordCloud(myfile, inputFilename, tempOutputDir, wordcloud_title, prefer_horizontal=.9)
+                        myfile = IO_files_util.openCSVFile(inputFilename, "r")
+                        outputFiles = wordclouds_util.SVOWordCloud(
+                            myfile, inputFilename, tempOutputDir, wordcloud_title, prefer_horizontal=0.9
+                        )
                         myfile.close()
                         filesToOpen.append(outputFiles)
                 else:
@@ -699,9 +890,16 @@ def run():
                         #     tempOutputDir = outputSVOSVODir
                         # else:
                         #     tempOutputDir = outputSVOSVODir
-                        #wordcloud_title = 'Wordcloud of Subject (red), Verb (blue), Object (green)'
+                        # wordcloud_title = 'Wordcloud of Subject (red), Verb (blue), Object (green)'
 
-                        outputFiles = wordclouds_util.SVOWordCloud(myfile, f, tempOutputDir, transformed_image_mask='', wordcloud_title=wordcloud_title, prefer_horizontal=.9)
+                        outputFiles = wordclouds_util.SVOWordCloud(
+                            myfile,
+                            f,
+                            tempOutputDir,
+                            transformed_image_mask="",
+                            wordcloud_title=wordcloud_title,
+                            prefer_horizontal=0.9,
+                        )
                         myfile.close()
                         if "CoreNLP" in f or "OpenIE" in f or "spaCy" in f or "Stanza" in f:
                             filesToOpen.append(outputFiles)
@@ -709,39 +907,55 @@ def run():
 
             i += 1
 
-    # GIS maps _____________________________________________________
+        # GIS maps _____________________________________________________
 
         if google_earth_var:
             # auto-pick the geocoder silently: Google only if a key is already configured,
             # otherwise Nominatim (no "enter API key" nag for users without a Google key)
-            if GIS_pipeline_util.has_google_api_key('Google-geocode-API_config.csv'):
-                geocoder = 'Google'
+            if GIS_pipeline_util.has_google_api_key("Google-geocode-API_config.csv"):
+                geocoder = "Google"
             else:
-                geocoder = 'Nominatim'
+                geocoder = "Nominatim"
             if os.path.isfile(location_filename):
-                reminders_util.checkReminder(scriptName, reminders_util.title_options_geocoder,
-                                             reminders_util.message_geocoder, True)
+                reminders_util.checkReminder(
+                    scriptName, reminders_util.title_options_geocoder, reminders_util.message_geocoder, True
+                )
                 # locationColumnNumber where locations are stored in the csv file; any changes to the columns will result in error
                 date_present = (extract_date_from_text_var == True) or (filename_embeds_date_var == True)
-                country_bias = ''
-                area_var = ''
+                country_bias = ""
+                area_var = ""
                 restrict = False
                 for location_filename in outputLocations:
-                    outputFiles = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
-                                 config_filename, location_filename, inputDir,
-                                 outputGISDir,
-                                 # 'Nominatim', 'Google Earth Pro & Google Maps', chartPackage, dataTransformation,
-                                 geocoder, 'Google Earth Pro & Google Maps & Python folium pin map & heatmap', chartPackage, dataTransformation,
-                                 date_present,
-                                 country_bias,
-                                 area_var,
-                                 restrict,
-                                 'Location',
-                                 'utf-8',
-                                 0, 1, [''], [''], # group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
-                                 ['Pushpins'], ['red'], # icon_var_list, specific_icon_var_list,
-                                 [0], ['1'], [0], [''], # name_var_list, scale_var_list, color_var_list, color_style_var_list,
-                                 [1], [1]) # bold_var_list, italic_var_list
+                    outputFiles = GIS_pipeline_util.GIS_pipeline(
+                        GUI_util.window,
+                        config_filename,
+                        location_filename,
+                        inputDir,
+                        outputGISDir,
+                        # 'Nominatim', 'Google Earth Pro & Google Maps', chartPackage, dataTransformation,
+                        geocoder,
+                        "Google Earth Pro & Google Maps & Python folium pin map & heatmap",
+                        chartPackage,
+                        dataTransformation,
+                        date_present,
+                        country_bias,
+                        area_var,
+                        restrict,
+                        "Location",
+                        "utf-8",
+                        0,
+                        1,
+                        [""],
+                        [""],  # group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
+                        ["Pushpins"],
+                        ["red"],  # icon_var_list, specific_icon_var_list,
+                        [0],
+                        ["1"],
+                        [0],
+                        [""],  # name_var_list, scale_var_list, color_var_list, color_style_var_list,
+                        [1],
+                        [1],
+                    )  # bold_var_list, italic_var_list
 
                     if outputFiles != None:
                         if isinstance(outputFiles, str):
@@ -752,6 +966,7 @@ def run():
     if map_characters_var and len(svo_result_list) > 0:
         import charts_util as charts_util_mc
         import pandas as pd
+
         # Prefer the FILTERED SVO (social actors only) when a subject filter was applied, so the moving
         # characters are genuine social actors rather than EVERY subject (verbs, abstract nouns, pronouns,
         # passive-inferred placeholders). The filtered file keeps the Location column. Fall back to the raw
@@ -761,51 +976,62 @@ def run():
         else:
             svo_file = svo_result_list[0]
         try:
-            svo_df = pd.read_csv(svo_file, encoding='utf-8', on_bad_lines='skip')
+            svo_df = pd.read_csv(svo_file, encoding="utf-8", on_bad_lines="skip")
         except Exception:
             svo_df = pd.DataFrame()
-        if 'Subject (S)' in svo_df.columns and 'Location' in svo_df.columns:
+        if "Subject (S)" in svo_df.columns and "Location" in svo_df.columns:
             pairs = []
             for _, row in svo_df.iterrows():
-                subj = str(row.get('Subject (S)', '')).strip()
-                locs = str(row.get('Location', '')).strip()
-                if subj and subj != 'nan' and subj != '?' and locs and locs != 'nan':
-                    doc = row.get('Document', '')
-                    sent_id = row.get('Sentence ID', '')
-                    for loc in locs.split(';'):
+                subj = str(row.get("Subject (S)", "")).strip()
+                locs = str(row.get("Location", "")).strip()
+                if subj and subj != "nan" and subj != "?" and locs and locs != "nan":
+                    doc = row.get("Document", "")
+                    sent_id = row.get("Sentence ID", "")
+                    for loc in locs.split(";"):
                         loc = loc.strip()
                         if loc:
-                            pairs.append({'Entity': subj, 'Location': loc,
-                                          'Document': doc, 'Sentence ID': sent_id})
+                            pairs.append({"Entity": subj, "Location": loc, "Document": doc, "Sentence ID": sent_id})
             if pairs:
                 pair_df = pd.DataFrame(pairs)
-                mc_output = IO_files_util.generate_output_file_name(inputFilename, inputDir,
-                                outputSVODir, '.csv', 'SVO_character-movement')
-                pair_df.to_csv(mc_output, index=False, encoding='utf-8')
+                mc_output = IO_files_util.generate_output_file_name(
+                    inputFilename, inputDir, outputSVODir, ".csv", "SVO_character-movement"
+                )
+                pair_df.to_csv(mc_output, index=False, encoding="utf-8")
                 filesToOpen.append(mc_output)
-                mapFiles = charts_util_mc.animated_migration_map(
-                    mc_output, outputSVODir, 'Entity', 'Location')
+                mapFiles = charts_util_mc.animated_migration_map(mc_output, outputSVODir, "Entity", "Location")
                 if mapFiles:
                     filesToOpen.extend(mapFiles if isinstance(mapFiles, list) else [mapFiles])
             else:
-                mb.showwarning("No character movement",
-                    "No SVO rows have both a Subject and a Location.\n\nThe animated character movement map requires sentences where a social actor appears with a location.")
+                mb.showwarning(
+                    "No character movement",
+                    "No SVO rows have both a Subject and a Location.\n\nThe animated character movement map requires sentences where a social actor appears with a location.",
+                )
 
     if compare_svo_var:
         compare_initialdir = GUI_util.output_dir_path.get()
-        file_a = tk.filedialog.askopenfilename(title='Select FIRST SVO csv file (e.g., CoreNLP)',
-                                                initialdir=compare_initialdir, filetypes=[("csv files", "*.csv")])
+        file_a = tk.filedialog.askopenfilename(
+            title="Select FIRST SVO csv file (e.g., CoreNLP)",
+            initialdir=compare_initialdir,
+            filetypes=[("csv files", "*.csv")],
+        )
         if file_a:
-            if 'SVO' not in os.path.basename(file_a):
-                mb.showwarning(title='Wrong file',
-                               message='The selected file does not appear to be an SVO csv file. SVO output filenames contain "SVO" (e.g., SVO_spaCy, SVO_Stanza, SVO_CoreNLP).\n\nPlease, select an SVO csv file and try again.')
+            if "SVO" not in os.path.basename(file_a):
+                mb.showwarning(
+                    title="Wrong file",
+                    message='The selected file does not appear to be an SVO csv file. SVO output filenames contain "SVO" (e.g., SVO_spaCy, SVO_Stanza, SVO_CoreNLP).\n\nPlease, select an SVO csv file and try again.',
+                )
             else:
-                file_b = tk.filedialog.askopenfilename(title='Select SECOND SVO csv file (e.g., Stanza)',
-                                                        initialdir=os.path.dirname(file_a), filetypes=[("csv files", "*.csv")])
+                file_b = tk.filedialog.askopenfilename(
+                    title="Select SECOND SVO csv file (e.g., Stanza)",
+                    initialdir=os.path.dirname(file_a),
+                    filetypes=[("csv files", "*.csv")],
+                )
                 if file_b:
-                    if 'SVO' not in os.path.basename(file_b):
-                        mb.showwarning(title='Wrong file',
-                                       message='The selected file does not appear to be an SVO csv file. SVO output filenames contain "SVO" (e.g., SVO_spaCy, SVO_Stanza, SVO_CoreNLP).\n\nPlease, select an SVO csv file and try again.')
+                    if "SVO" not in os.path.basename(file_b):
+                        mb.showwarning(
+                            title="Wrong file",
+                            message='The selected file does not appear to be an SVO csv file. SVO output filenames contain "SVO" (e.g., SVO_spaCy, SVO_Stanza, SVO_CoreNLP).\n\nPlease, select an SVO csv file and try again.',
+                        )
                     else:
                         compareFiles = SVO_compare_util.compare(file_a, file_b, GUI_util.output_dir_path.get())
                         if compareFiles:
@@ -828,12 +1054,12 @@ def run():
         kml_files = []
         for file in filesToOpen:
             # Skip raw SVO wordcloud (keep only lemmatized version)
-            if 'SVO_Stanza' in file and file.endswith('.png'):
+            if "SVO_Stanza" in file and file.endswith(".png"):
                 continue
             # Prioritize: .kml (GIS), .gexf (network), .png (lemmatized wordcloud), .html (Sankey/charts)
-            if file.endswith('.kml'):
+            if file.endswith(".kml"):
                 kml_files.append(file)
-            elif file.endswith('.gexf') or file.endswith('.png') or file.endswith('.html'):
+            elif file.endswith(".gexf") or file.endswith(".png") or file.endswith(".html"):
                 main_viz_files.append(file)
         # Add KML files first (GIS maps are important for SVO context)
         main_viz_files = kml_files + main_viz_files
@@ -843,24 +1069,36 @@ def run():
         filesToOpenSubset.extend(main_viz_files[:max_additional])
 
         filesToOpenSubset_string = ", \n   ".join(filesToOpenSubset)
-        print("Subset of the " + str(len(filesToOpenSubset)) + " SVO files from the different subfolders to be opened:\n   " + str(filesToOpenSubset_string))
+        print(
+            "Subset of the "
+            + str(len(filesToOpenSubset))
+            + " SVO files from the different subfolders to be opened:\n   "
+            + str(filesToOpenSubset_string)
+        )
         # SVO can produce a very large number of files. When the subset is still > 10, trim it
         # but KEEP the key visualizations: the main SVO file, the Google Earth KML, and the Folium
         # maps - prioritizing the dynamic Folium-time map so a dated corpus auto-opens it.
-        if len(filesToOpenSubset)>10:
+        if len(filesToOpenSubset) > 10:
             trimmed = [SVO_filename]
-            folium_time = [f for f in filesToOpen if str(f).endswith('.html') and 'Folium-time' in str(f)]
-            kml_files = [f for f in filesToOpen if str(f).endswith('.kml')]
-            folium_other = [f for f in filesToOpen if str(f).endswith('.html') and 'Folium' in str(f) and 'Folium-time' not in str(f)]
+            folium_time = [f for f in filesToOpen if str(f).endswith(".html") and "Folium-time" in str(f)]
+            kml_files = [f for f in filesToOpen if str(f).endswith(".kml")]
+            folium_other = [
+                f
+                for f in filesToOpen
+                if str(f).endswith(".html") and "Folium" in str(f) and "Folium-time" not in str(f)
+            ]
             for grp in (folium_time, kml_files, folium_other):
                 for f in grp:
                     if f not in trimmed:
                         trimmed.append(f)
             filesToOpenSubset = trimmed[:10]
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName, filesToOpenSubset)
+        IO_files_util.OpenOutputFiles(
+            GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName, filesToOpenSubset
+        )
 
     # one line instead of a console message per chart: how many charts were auto-switched to heatmaps
     statistics_csv_util.report_chart_shape_switches()
+
 
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
 GUI_util.run_button.configure(command=run)
@@ -869,33 +1107,35 @@ GUI_util.run_button.configure(command=run)
 
 # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
 #   just change the next statement to True or False IO_setup_display_brief=True
-IO_setup_display_brief=True
-GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
-                             GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=640, # height at brief display
-                             GUI_height_full=680, # height at full display
-                             y_multiplier_integer=GUI_util.y_multiplier_integer,
-                             y_multiplier_integer_add=2, # to be added for full display
-                             increment=2)  # to be added for full display
+IO_setup_display_brief = True
+GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(
+    IO_setup_display_brief,
+    GUI_width=GUI_IO_util.get_GUI_width(3),
+    GUI_height_brief=640,  # height at brief display
+    GUI_height_full=680,  # height at full display
+    y_multiplier_integer=GUI_util.y_multiplier_integer,
+    y_multiplier_integer_add=2,  # to be added for full display
+    increment=2,
+)  # to be added for full display
 
 
-GUI_label = 'Graphical User Interface (GUI) for Subject-Verb-Object (SVO) Extraction & Visualization Pipeline - Extracting 4 of the 5 Ws of Narrative: Who, What, When, Where'
+GUI_label = "Graphical User Interface (GUI) for Subject-Verb-Object (SVO) Extraction & Visualization Pipeline - Extracting 4 of the 5 Ws of Narrative: Who, What, When, Where"
 
 # The 4 values of config_option refer to:
 #   input file
-        # 1 for CoNLL file
-        # 2 for TXT file
-        # 3 for csv file
-        # 4 for any type of file
-        # 5 for txt or html
-        # 6 for txt or csv
+# 1 for CoNLL file
+# 2 for TXT file
+# 3 for csv file
+# 4 for any type of file
+# 5 for txt or html
+# 6 for txt or csv
 #   input dir
 #   input secondary dir
 #   output dir
-config_input_output_numeric_options=[6,1,0,1]
+config_input_output_numeric_options = [6, 1, 0, 1]
 
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = 'NLP_default_IO_config.csv'
+config_filename = "NLP_default_IO_config.csv"
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
 # location of this src python file
@@ -910,43 +1150,45 @@ inputFilename = GUI_util.inputFilename
 input_main_dir_path = GUI_util.input_main_dir_path
 
 
-subject_filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-actor-list.csv'
-verb_filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-action-list.csv'
-object_filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-actor-list.csv'
+subject_filePath = GUI_IO_util.wordLists_libPath + os.sep + "social-actor-list.csv"
+verb_filePath = GUI_IO_util.wordLists_libPath + os.sep + "social-action-list.csv"
+object_filePath = GUI_IO_util.wordLists_libPath + os.sep + "social-actor-list.csv"
 
 
 def clear(e):
     coref_var.set(0)
-    manual_coref_checkbox.configure(state='disabled')
+    manual_coref_checkbox.configure(state="disabled")
     manual_coref_var.set(0)
-    subjects_checkbox.configure(state='normal')
-    verbs_checkbox.configure(state='normal')
-    objects_checkbox.configure(state='normal')
+    subjects_checkbox.configure(state="normal")
+    verbs_checkbox.configure(state="normal")
+    objects_checkbox.configure(state="normal")
     filter_subjects_var.set(1)
     filter_verbs_var.set(1)
     filter_objects_var.set(0)
-    lemmatize_subjects_checkbox.configure(state='normal')
-    lemmatize_verbs_checkbox.configure(state='normal')
-    lemmatize_objects_checkbox.configure(state='normal')
+    lemmatize_subjects_checkbox.configure(state="normal")
+    lemmatize_verbs_checkbox.configure(state="normal")
+    lemmatize_objects_checkbox.configure(state="normal")
     lemmatize_subjects_var.set(0)
     lemmatize_verbs_var.set(1)
     lemmatize_objects_var.set(0)
     gephi_var.set(1)
     wordcloud_var.set(1)
     google_earth_var.set(1)
-    gephi_checkbox.configure(state='normal')
-    google_earth_checkbox.configure(state='normal')
+    gephi_checkbox.configure(state="normal")
+    google_earth_checkbox.configure(state="normal")
     compare_svo_var.set(0)
     map_characters_var.set(0)
 
     global subject_filePath, verb_filePath, object_filePath
 
-    subject_filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-actor-list.csv'
-    verb_filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-action-list.csv'
-    object_filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-actor-list.csv'
+    subject_filePath = GUI_IO_util.wordLists_libPath + os.sep + "social-actor-list.csv"
+    verb_filePath = GUI_IO_util.wordLists_libPath + os.sep + "social-action-list.csv"
+    object_filePath = GUI_IO_util.wordLists_libPath + os.sep + "social-actor-list.csv"
     # activate_filter_dictionaries()
 
     GUI_util.clear("Escape")
+
+
 window.bind("<Escape>", clear)
 
 package_display_area_value = tk.StringVar()
@@ -973,313 +1215,615 @@ gephi_var = tk.IntVar()
 wordcloud_var = tk.IntVar()
 google_earth_var = tk.IntVar()
 
-language=''
+language = ""
+
 
 def open_GUI():
     run_script_util.run_script("file_checker_converter_cleaner_main.py")
 
-pre_processing_button = tk.Button(window, text='Pre-processing tools (Open file checking & cleaning GUI) ',command=lambda:open_GUI())
+
+pre_processing_button = tk.Button(
+    window, text="Pre-processing tools (Open file checking & cleaning GUI) ", command=lambda: open_GUI()
+)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   pre_processing_button,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Click on the button to open the GUI")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.labels_x_coordinate,
+    y_multiplier_integer,
+    pre_processing_button,
+    False,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.labels_x_coordinate,
+    "Click on the button to open the GUI",
+)
 
 # NLP packages & languages ------------------------------------------------------------------------------------------------------
 
 coref_var.set(0)
-CoRef_checkbox = tk.Checkbutton(window, text='Coreference Resolution, PRONOMINAL (via Stanford CoreNLP - Neural Network)',
-                                variable=coref_var, onvalue=1, offvalue=0)
+CoRef_checkbox = tk.Checkbutton(
+    window,
+    text="Coreference Resolution, PRONOMINAL (via Stanford CoreNLP - Neural Network)",
+    variable=coref_var,
+    onvalue=1,
+    offvalue=0,
+)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   CoRef_checkbox,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Tick the checkbox to run the pronominal coreference resolution and run the SVO extractor on coreferenced files")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.labels_x_coordinate,
+    y_multiplier_integer,
+    CoRef_checkbox,
+    False,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.labels_x_coordinate,
+    "Tick the checkbox to run the pronominal coreference resolution and run the SVO extractor on coreferenced files",
+)
 
 # CoRef_menu_var.set("Neural Network")
 # CoRef_menu = tk.OptionMenu(window, CoRef_menu_var, 'Deterministic', 'Statistical', 'Neural Network')
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer, CoRef_menu)
 
 manual_coref_var.set(0)
-manual_coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced document ', variable=manual_coref_var,
-                                       onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                   manual_coref_checkbox,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-                                   "Tick the checkbox to manually edit a coreferenced file fixing missed (or wrongly) coreferenced pronouns\nManual coreference is available only when coreferencing a single input document")
+manual_coref_checkbox = tk.Checkbutton(
+    window, text="Manually edit coreferenced document ", variable=manual_coref_var, onvalue=1, offvalue=0
+)
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.labels_x_indented_coordinate,
+    y_multiplier_integer,
+    manual_coref_checkbox,
+    False,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.labels_x_indented_coordinate,
+    "Tick the checkbox to manually edit a coreferenced file fixing missed (or wrongly) coreferenced pronouns\nManual coreference is available only when coreferencing a single input document",
+)
+
 
 def activateCoRefOptions(*args):
     if coref_var.get() == 1:
         # CoRef_menu.configure(state='normal')
-        if input_main_dir_path.get()!='':
-            reminders_util.checkReminder(scriptName, reminders_util.title_options_CoreNLP_coref,
-                                         reminders_util.message_CoreNLP_coref, True)
+        if input_main_dir_path.get() != "":
+            reminders_util.checkReminder(
+                scriptName, reminders_util.title_options_CoreNLP_coref, reminders_util.message_CoreNLP_coref, True
+            )
             manual_coref_var.set(0)
-            manual_coref_checkbox.configure(state='disabled')
+            manual_coref_checkbox.configure(state="disabled")
         else:
-            manual_coref_checkbox.configure(state='normal')
+            manual_coref_checkbox.configure(state="normal")
             manual_coref_var.set(1)
         # manual_Coref_checkbox.configure(state='disabled')
     else:
-        manual_coref_checkbox.configure(state='disabled')
+        manual_coref_checkbox.configure(state="disabled")
         manual_coref_var.set(0)
 
-coref_var.trace('w', activateCoRefOptions)
+
+coref_var.trace("w", activateCoRefOptions)
 
 activateCoRefOptions()
 
+
 def changed_filename(tracedInputFile):
     activateCoRefOptions()
-GUI_util.input_main_dir_path.trace('w', lambda x, y, z: changed_filename(GUI_util.input_main_dir_path.get()))
+
+
+GUI_util.input_main_dir_path.trace("w", lambda x, y, z: changed_filename(GUI_util.input_main_dir_path.get()))
 # must trace on input_main_dir_path, rather than inputFilename,
 #   because inputFilename is set BEFORE input_main_dir_path in GUI_util and it is not up-to-date
 
-package_var.set('Stanford CoreNLP')
-package_lb = tk.Label(window, text='SVO package')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               package_lb, True)
+package_var.set("Stanford CoreNLP")
+package_lb = tk.Label(window, text="SVO package")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer, package_lb, True
+)
 
-package_menu = tk.OptionMenu(window, package_var, '*', 'spaCy','Stanford CoreNLP', 'Stanza', 'OpenIE (via Stanford CoreNLP)')
+package_menu = tk.OptionMenu(
+    window, package_var, "*", "spaCy", "Stanford CoreNLP", "Stanza", "OpenIE (via Stanford CoreNLP)"
+)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_S_dictionary, y_multiplier_integer,
-                                   package_menu,
-                                   False, False, True, False, 90, GUI_IO_util.open_S_dictionary,
-                                   "Use the dropdown menu to select the NLP package you wish to use to extract SVO information from your corpus.\nYour package selection is independent of the NLP package currently selected in Setup.\n\nSelecting * will run all three main parsers (spaCy, Stanford CoreNLP, Stanza) on your corpus and automatically compare the SVO results across parsers. This may take a long time.")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.open_S_dictionary,
+    y_multiplier_integer,
+    package_menu,
+    False,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.open_S_dictionary,
+    "Use the dropdown menu to select the NLP package you wish to use to extract SVO information from your corpus.\nYour package selection is independent of the NLP package currently selected in Setup.\n\nSelecting * will run all three main parsers (spaCy, Stanford CoreNLP, Stanza) on your corpus and automatically compare the SVO results across parsers. This may take a long time.",
+)
+
 
 def activate_filter_dictionaries(lemmatize_var, filter_var, dict_path_var, filter_object):
     if not lemmatize_var.get():
         if filter_var.get():
-            mb.showwarning(title='Warning',message="The 'Filter " + filter_object + "' checkbox will be ticked off since the filter algorithms require lemmatized words in input.")
+            mb.showwarning(
+                title="Warning",
+                message="The 'Filter "
+                + filter_object
+                + "' checkbox will be ticked off since the filter algorithms require lemmatized words in input.",
+            )
             filter_var.set(0)
-            dict_path_var.set('')
+            dict_path_var.set("")
     else:
         if filter_var.get():
-            if 'Subject' in filter_object or 'Object' in filter_object:
-                 dict_path_var.set('social-actor-list.csv')
-            else: # verbs
-                 dict_path_var.set('social-action-list.csv')
+            if "Subject" in filter_object or "Object" in filter_object:
+                dict_path_var.set("social-actor-list.csv")
+            else:  # verbs
+                dict_path_var.set("social-action-list.csv")
 
 
 def getDictFile(lemma_checkbox_var, filter_checkbox_var, dict_path_var, checkbox_value, dictFile):
     global subject_filePath, verb_filePath, object_filePath
     error = False
 
-    if 'English' not in str(language_list):
-        mb.showwarning(title='Warning',
-                       message='The filter functions are available only for the English language. Words in MWE, except entitymentions, are _ separated.' \
-                       '\n\nYour current language list is: ' + str(language_list) +
-                       '\n\nYou can use the Setup dropdown menu at the bottom of this GUI to select a different language.')
+    if "English" not in str(language_list):
+        mb.showwarning(
+            title="Warning",
+            message="The filter functions are available only for the English language. Words in MWE, except entitymentions, are _ separated."
+            "\n\nYour current language list is: "
+            + str(language_list)
+            + "\n\nYou can use the Setup dropdown menu at the bottom of this GUI to select a different language.",
+        )
         filter_checkbox_var.set(0)
         return
     if not lemma_checkbox_var:
-        mb.showwarning(title='Warning', message='You must first tick the "Lemmatize ' + dictFile + '" checkbox, since filter algorithms are based on lemmatized words.')
+        mb.showwarning(
+            title="Warning",
+            message='You must first tick the "Lemmatize '
+            + dictFile
+            + '" checkbox, since filter algorithms are based on lemmatized words.',
+        )
         error = True
-    filePath = ''
+    filePath = ""
     if checkbox_value:
         if not error:
-            if dictFile == 'Subject' or dictFile == 'Object':
-                filePath = 'social-actor-list.csv'
-            elif dictFile == 'Verb':
-                filePath = 'social-action-list.csv'
+            if dictFile == "Subject" or dictFile == "Object":
+                filePath = "social-actor-list.csv"
+            elif dictFile == "Verb":
+                filePath = "social-action-list.csv"
         else:
-            if dictFile == 'Subject':
+            if dictFile == "Subject":
                 filter_subjects_var.set(0)
-            elif dictFile == 'Verb':
+            elif dictFile == "Verb":
                 filter_verbs_var.set(0)
-            if dictFile == 'Object':
+            if dictFile == "Object":
                 filter_objects_var.set(0)
             return
         # elif dictFile == 'Subject' or dictFile == 'Object':
         #     filePath = 'social-actor-list.csv'
         initialFolder = GUI_IO_util.wordLists_libPath
-        filePath = tk.filedialog.askopenfilename(title='Select INPUT csv ' + dictFile + ' dictionary filter file',
-                                                 initialdir=initialFolder, filetypes=[("csv files", "*.csv")])
+        filePath = tk.filedialog.askopenfilename(
+            title="Select INPUT csv " + dictFile + " dictionary filter file",
+            initialdir=initialFolder,
+            filetypes=[("csv files", "*.csv")],
+        )
     if len(filePath) == 0:
-        if dictFile == 'Subject':
+        if dictFile == "Subject":
             filter_subjects_var.set(0)
-        elif dictFile == 'Verb':
+        elif dictFile == "Verb":
             filter_verbs_var.set(0)
-        if dictFile == 'Object':
+        if dictFile == "Object":
             filter_objects_var.set(0)
     else:
-        filePath=os.path.basename(os.path.normpath(filePath))
-    if dictFile == 'Subject':
+        filePath = os.path.basename(os.path.normpath(filePath))
+    if dictFile == "Subject":
         subject_filePath = GUI_IO_util.wordLists_libPath + os.sep + filePath
-    elif dictFile == 'Verb':
+    elif dictFile == "Verb":
         verb_filePath = GUI_IO_util.wordLists_libPath + os.sep + filePath
-    elif dictFile == 'Object':
+    elif dictFile == "Object":
         object_filePath = GUI_IO_util.wordLists_libPath + os.sep + filePath
     dict_path_var.set(filePath)
 
+
 lemmatize_subjects_var.set(1)
-lemmatize_subjects_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=lemmatize_subjects_var, onvalue=1, offvalue=0, command=lambda:activate_filter_dictionaries(lemmatize_subjects_var, filter_subjects_var, subjects_dict_path_var, 'Subject'))
+lemmatize_subjects_checkbox = tk.Checkbutton(
+    window,
+    text="Lemmatize",
+    variable=lemmatize_subjects_var,
+    onvalue=1,
+    offvalue=0,
+    command=lambda: activate_filter_dictionaries(
+        lemmatize_subjects_var, filter_subjects_var, subjects_dict_path_var, "Subject"
+    ),
+)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               lemmatize_subjects_checkbox,
-                                               True, False, True, False, 90,
-                                               GUI_IO_util.labels_x_coordinate,
-                                               "When lemmatizing subjects, WordNet will be used to aggregate subjects into top synsets noun categories")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.labels_x_coordinate,
+    y_multiplier_integer,
+    lemmatize_subjects_checkbox,
+    True,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.labels_x_coordinate,
+    "When lemmatizing subjects, WordNet will be used to aggregate subjects into top synsets noun categories",
+)
 
 filter_subjects_var.set(1)
-subjects_checkbox = tk.Checkbutton(window, text='Filter', variable=filter_subjects_var, onvalue=1, offvalue=0,
-                                   command=lambda: getDictFile(lemmatize_subjects_var.get(), filter_subjects_var, subjects_dict_path_var, filter_subjects_var.get(),
-                                                               'Subject'))
+subjects_checkbox = tk.Checkbutton(
+    window,
+    text="Filter",
+    variable=filter_subjects_var,
+    onvalue=1,
+    offvalue=0,
+    command=lambda: getDictFile(
+        lemmatize_subjects_var.get(), filter_subjects_var, subjects_dict_path_var, filter_subjects_var.get(), "Subject"
+    ),
+)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.filter_S, y_multiplier_integer,
-                                   subjects_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Filter subjects list EXCLUDING subjects that are not social actors. When S and V and O filters are selected all conditions must be met.\nThe option for filtering subjects via WordNet for social actors is available only for the English language. Words in MWE, except entitymentions, are _ separated.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.filter_S,
+    y_multiplier_integer,
+    subjects_checkbox,
+    True,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.labels_x_coordinate,
+    "Filter subjects list EXCLUDING subjects that are not social actors. When S and V and O filters are selected all conditions must be met.\nThe option for filtering subjects via WordNet for social actors is available only for the English language. Words in MWE, except entitymentions, are _ separated.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.",
+)
 
 # setup a button to open Windows Explorer on the subjects file
-openInputFile_subjects_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
-                                          command=lambda: IO_files_util.openFile(window, subject_filePath))
+openInputFile_subjects_button = tk.Button(
+    window,
+    width=GUI_IO_util.open_file_directory_button_width,
+    text="",
+    command=lambda: IO_files_util.openFile(window, subject_filePath),
+)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_S_dictionary, y_multiplier_integer,
-                                               openInputFile_subjects_button, True, False, True, False, 90, GUI_IO_util.labels_x_coordinate + 140, "Open csv file containing SUBJECT filters")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.open_S_dictionary,
+    y_multiplier_integer,
+    openInputFile_subjects_button,
+    True,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.labels_x_coordinate + 140,
+    "Open csv file containing SUBJECT filters",
+)
 
 lemmatize_verbs_var.set(1)
-lemmatize_verbs_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=lemmatize_verbs_var, onvalue=1, offvalue=0, command=lambda:activate_filter_dictionaries(lemmatize_verbs_var, filter_verbs_var, verbs_dict_path_var, 'Verb'))
+lemmatize_verbs_checkbox = tk.Checkbutton(
+    window,
+    text="Lemmatize",
+    variable=lemmatize_verbs_var,
+    onvalue=1,
+    offvalue=0,
+    command=lambda: activate_filter_dictionaries(lemmatize_verbs_var, filter_verbs_var, verbs_dict_path_var, "Verb"),
+)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
-                                               lemmatize_verbs_checkbox,
-                                               True, False, True, False, 90,
-                                               GUI_IO_util.open_reminders_x_coordinate,
-                                               "When lemmatizing verbs, WordNet will be used to aggregate verbs into top synsets verb categories")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.open_reminders_x_coordinate,
+    y_multiplier_integer,
+    lemmatize_verbs_checkbox,
+    True,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.open_reminders_x_coordinate,
+    "When lemmatizing verbs, WordNet will be used to aggregate verbs into top synsets verb categories",
+)
 
 filter_verbs_var.set(1)
-verbs_checkbox = tk.Checkbutton(window, text='Filter', variable=filter_verbs_var, onvalue=1, offvalue=0,
-                                command=lambda: getDictFile(lemmatize_verbs_var.get(), filter_verbs_var, verbs_dict_path_var, filter_verbs_var.get(), 'Verb'))
+verbs_checkbox = tk.Checkbutton(
+    window,
+    text="Filter",
+    variable=filter_verbs_var,
+    onvalue=1,
+    offvalue=0,
+    command=lambda: getDictFile(
+        lemmatize_verbs_var.get(), filter_verbs_var, verbs_dict_path_var, filter_verbs_var.get(), "Verb"
+    ),
+)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.filter_V, y_multiplier_integer,
-                                   verbs_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "Filter verbs list EXCLUDING verbs that are not social actions. When S and V and O filters are selected all conditions must be met.\nThe option for filtering verbs for social actions via WordNet is available only for the English language. Words in MWE are _ separated.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.filter_V,
+    y_multiplier_integer,
+    verbs_checkbox,
+    True,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.open_TIPS_x_coordinate,
+    "Filter verbs list EXCLUDING verbs that are not social actions. When S and V and O filters are selected all conditions must be met.\nThe option for filtering verbs for social actions via WordNet is available only for the English language. Words in MWE are _ separated.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.",
+)
 
 # setup a button to open Windows Explorer on the verbs file
-openInputFile_verbs_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
-                                       command=lambda: IO_files_util.openFile(window, verb_filePath))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_V_dictionary, y_multiplier_integer,
-                                               openInputFile_verbs_button, True, False, True, False, 90, GUI_IO_util.labels_x_coordinate + 520, "Open csv file containing VERB filters")
+openInputFile_verbs_button = tk.Button(
+    window,
+    width=GUI_IO_util.open_file_directory_button_width,
+    text="",
+    command=lambda: IO_files_util.openFile(window, verb_filePath),
+)
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.open_V_dictionary,
+    y_multiplier_integer,
+    openInputFile_verbs_button,
+    True,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.labels_x_coordinate + 520,
+    "Open csv file containing VERB filters",
+)
 
 lemmatize_objects_var.set(1)
-lemmatize_objects_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=lemmatize_objects_var, onvalue=1, offvalue=0, command=lambda:activate_filter_dictionaries(lemmatize_objects_var, filter_objects_var, objects_dict_path_var, 'Object'))
+lemmatize_objects_checkbox = tk.Checkbutton(
+    window,
+    text="Lemmatize",
+    variable=lemmatize_objects_var,
+    onvalue=1,
+    offvalue=0,
+    command=lambda: activate_filter_dictionaries(
+        lemmatize_objects_var, filter_objects_var, objects_dict_path_var, "Object"
+    ),
+)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
-                                               lemmatize_objects_checkbox,
-                                               True, False, True, False, 90,
-                                               GUI_IO_util.open_TIPS_x_coordinate,
-                                               "When lemmatizing objects, WordNet will be used to aggregate objects into top synsets noun categories")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.run_button_x_coordinate,
+    y_multiplier_integer,
+    lemmatize_objects_checkbox,
+    True,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.open_TIPS_x_coordinate,
+    "When lemmatizing objects, WordNet will be used to aggregate objects into top synsets noun categories",
+)
 
 filter_objects_var.set(0)
-objects_checkbox = tk.Checkbutton(window, text='Filter', variable=filter_objects_var, onvalue=1, offvalue=0,
-                                  command=lambda: getDictFile(lemmatize_objects_var.get(), filter_objects_var, objects_dict_path_var, filter_objects_var.get(),
-                                                              'Object'))
+objects_checkbox = tk.Checkbutton(
+    window,
+    text="Filter",
+    variable=filter_objects_var,
+    onvalue=1,
+    offvalue=0,
+    command=lambda: getDictFile(
+        lemmatize_objects_var.get(), filter_objects_var, objects_dict_path_var, filter_objects_var.get(), "Object"
+    ),
+)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.filter_O, y_multiplier_integer,
-                                   objects_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "Filter objects list EXCLUDING objects that are not social actors. When S and V and O filters are selected all conditions must be met.\nThe option for filtering objects for social actors via WordNet is available only for the English language. Words in MWE, except entitymentions, are _ separated.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.filter_O,
+    y_multiplier_integer,
+    objects_checkbox,
+    True,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.open_TIPS_x_coordinate,
+    "Filter objects list EXCLUDING objects that are not social actors. When S and V and O filters are selected all conditions must be met.\nThe option for filtering objects for social actors via WordNet is available only for the English language. Words in MWE, except entitymentions, are _ separated.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.",
+)
 
 # setup a button to open Windows Explorer on the objects file
-openInputFile_objects_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
-                                         command=lambda: IO_files_util.openFile(window, object_filePath))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_O_dictionary, y_multiplier_integer,
-                                               openInputFile_objects_button,
-                                               False, False, True, False, 90, GUI_IO_util.run_button_x_coordinate, "Open csv file containing OBJECT filters")
+openInputFile_objects_button = tk.Button(
+    window,
+    width=GUI_IO_util.open_file_directory_button_width,
+    text="",
+    command=lambda: IO_files_util.openFile(window, object_filePath),
+)
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.open_O_dictionary,
+    y_multiplier_integer,
+    openInputFile_objects_button,
+    False,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.run_button_x_coordinate,
+    "Open csv file containing OBJECT filters",
+)
 
 # subjects_dict_path_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-actor-list.csv'))
-subjects_dict_path_var.set('social-actor-list.csv')
-subjects_dict_entry = tk.Entry(window, width=GUI_IO_util.dictionary_S_width, state="disabled", textvariable=subjects_dict_path_var)
+subjects_dict_path_var.set("social-actor-list.csv")
+subjects_dict_entry = tk.Entry(
+    window, width=GUI_IO_util.dictionary_S_width, state="disabled", textvariable=subjects_dict_path_var
+)
 
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   subjects_dict_entry,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "The complete path of the subject social actor list is "+ subject_filePath+"\nTick twice the checkbox 'Filter Subject' to select a different file.")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.labels_x_coordinate,
+    y_multiplier_integer,
+    subjects_dict_entry,
+    True,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.labels_x_coordinate,
+    "The complete path of the subject social actor list is "
+    + subject_filePath
+    + "\nTick twice the checkbox 'Filter Subject' to select a different file.",
+)
 
 # verbs_dict_path_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-action-list.csv'))
-verbs_dict_path_var.set('social-action-list.csv')
-verbs_dict_entry = tk.Entry(window, width=GUI_IO_util.dictionary_V_width, state="disabled", textvariable=verbs_dict_path_var)
+verbs_dict_path_var.set("social-action-list.csv")
+verbs_dict_entry = tk.Entry(
+    window, width=GUI_IO_util.dictionary_V_width, state="disabled", textvariable=verbs_dict_path_var
+)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
-                                   verbs_dict_entry,
-                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
-                                   "The complete path of the verb social action list is "+ verb_filePath+"\nTick twice the checkbox 'Filter Verb' to select a different file.")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.open_reminders_x_coordinate,
+    y_multiplier_integer,
+    verbs_dict_entry,
+    True,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.open_reminders_x_coordinate,
+    "The complete path of the verb social action list is "
+    + verb_filePath
+    + "\nTick twice the checkbox 'Filter Verb' to select a different file.",
+)
 
-objects_dict_path_var.set('')
-objects_dict_entry = tk.Entry(window, width=GUI_IO_util.dictionary_O_width, state="disabled", textvariable=objects_dict_path_var)
+objects_dict_path_var.set("")
+objects_dict_entry = tk.Entry(
+    window, width=GUI_IO_util.dictionary_O_width, state="disabled", textvariable=objects_dict_path_var
+)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
-                                   objects_dict_entry,
-                                   False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
-                                   "The complete path of the object social actor list is "+ object_filePath+"\nTick twice the checkbox 'Filter Object' to select a different file.")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.run_button_x_coordinate,
+    y_multiplier_integer,
+    objects_dict_entry,
+    False,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.open_reminders_x_coordinate,
+    "The complete path of the object social actor list is "
+    + object_filePath
+    + "\nTick twice the checkbox 'Filter Object' to select a different file.",
+)
 
 gender_var.set(0)
-gender_checkbox = tk.Checkbutton(window, text='S & O gender (via CoreNLP)',
-                                                variable=gender_var, onvalue=1, offvalue=0, command=lambda: activate_annotator('gender'))
+gender_checkbox = tk.Checkbutton(
+    window,
+    text="S & O gender (via CoreNLP)",
+    variable=gender_var,
+    onvalue=1,
+    offvalue=0,
+    command=lambda: activate_annotator("gender"),
+)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   gender_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "The neural network gender annotator is available only via Stanford CoreNLP and for the English language only")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.labels_x_coordinate,
+    y_multiplier_integer,
+    gender_checkbox,
+    True,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.labels_x_coordinate,
+    "The neural network gender annotator is available only via Stanford CoreNLP and for the English language only",
+)
 
 quote_var.set(0)
-quote_checkbox = tk.Checkbutton(window, text='S & O quote/speaker (via CoreNLP)',
-                                                variable=quote_var, onvalue=1, offvalue=0, command=lambda: activate_annotator('quote'))
+quote_checkbox = tk.Checkbutton(
+    window,
+    text="S & O quote/speaker (via CoreNLP)",
+    variable=quote_var,
+    onvalue=1,
+    offvalue=0,
+    command=lambda: activate_annotator("quote"),
+)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
-                                   quote_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
-                                   "The neural network quote annotator is available only via Stanford CoreNLP")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.open_reminders_x_coordinate,
+    y_multiplier_integer,
+    quote_checkbox,
+    True,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.SVO_2nd_column,
+    "The neural network quote annotator is available only via Stanford CoreNLP",
+)
+
 
 def activate_annotator(annotator_type):
     # gender/quote are byproducts of the Stanford CoreNLP parse (English only).
-    if 'English' not in str(language_list):
-        mb.showwarning(title='Warning',
-                       message='The ' + annotator_type + ' annotator is only available for the English language.')
-        if annotator_type=='gender':
+    if "English" not in str(language_list):
+        mb.showwarning(
+            title="Warning", message="The " + annotator_type + " annotator is only available for the English language."
+        )
+        if annotator_type == "gender":
             gender_var.set(0)
-        elif annotator_type=='quote':
+        elif annotator_type == "quote":
             quote_var.set(0)
         return
-    if package_var.get() != 'Stanford CoreNLP':
+    if package_var.get() != "Stanford CoreNLP":
         # Instead of forcing the user to change the package in Setup and retry, switch the SVO package to
         # Stanford CoreNLP right here (visible in the dropdown). gender/quote need the CoreNLP parse; the
         # run's CoreNLP path warns if CoreNLP itself is not installed.
         # Use a modal dialog (not a timed_alert): if the user clicks RUN within the countdown, the blocking
         # run freezes the Tkinter event loop and the timed alert can never auto-close (it lingers at 0).
-        mb.showinfo(title='Using Stanford CoreNLP',
-                    message='The ' + annotator_type + ' annotator runs only via Stanford CoreNLP.\n\nThe SVO package has been switched to Stanford CoreNLP for this run.')
-        package_var.set('Stanford CoreNLP')
+        mb.showinfo(
+            title="Using Stanford CoreNLP",
+            message="The "
+            + annotator_type
+            + " annotator runs only via Stanford CoreNLP.\n\nThe SVO package has been switched to Stanford CoreNLP for this run.",
+        )
+        package_var.set("Stanford CoreNLP")
+
 
 SRL_var.set(0)
-SRL_checkbox = tk.Checkbutton(window, text='Semantic Role Labeling (SRL) (Open GUI)',
-                                                variable=SRL_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
-                                               SRL_checkbox)
-SRL_checkbox.configure(state='normal')
+SRL_checkbox = tk.Checkbutton(
+    window, text="Semantic Role Labeling (SRL) (Open GUI)", variable=SRL_var, onvalue=1, offvalue=0
+)
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window, GUI_IO_util.run_button_x_coordinate, y_multiplier_integer, SRL_checkbox
+)
+SRL_checkbox.configure(state="normal")
 
 gephi_var.set(1)
-gephi_checkbox = tk.Checkbutton(window, text='Visualize SVO relations ',
-                                variable=gephi_var, onvalue=1, offvalue=0)
+gephi_checkbox = tk.Checkbutton(window, text="Visualize SVO relations ", variable=gephi_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   gephi_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "When filtering subjects/verbs/objects, Gephi network graphs will be produced for both unfiltered and filtered SVOs and saved respectively in the SVO and SVO_filtered subdirectories.\nSankey graphs display only top 10 Subject (S), 20 Verb (V), 20 Object (O). Sunburst and Treemap charts display top 15 values. To change these default values, use the Data visualization GUI.\n"
-                                   "When lemmatizing, network graphs will also be produced for lemmatized unfiltered and filtered SVOs and saved in the WordNet subdirectory.")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.labels_x_coordinate,
+    y_multiplier_integer,
+    gephi_checkbox,
+    True,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.labels_x_coordinate,
+    "When filtering subjects/verbs/objects, Gephi network graphs will be produced for both unfiltered and filtered SVOs and saved respectively in the SVO and SVO_filtered subdirectories.\nSankey graphs display only top 10 Subject (S), 20 Verb (V), 20 Object (O). Sunburst and Treemap charts display top 15 values. To change these default values, use the Data visualization GUI.\n"
+    "When lemmatizing, network graphs will also be produced for lemmatized unfiltered and filtered SVOs and saved in the WordNet subdirectory.",
+)
 
 # 'Visualize SVO relations in wordcloud' checkbox removed: conflated into the single 'Visualize SVO
 # relations' checkbox above, which now drives both the network graphs and the wordcloud (see run()).
 wordcloud_var.set(1)
 
+
 def check_NER(first_time=False):
-    NER_available=True
-    if package_var.get()=='Stanza':
-        short_lang_list, long_lang_list=Stanza_util.get_language_list([language])
-        short_lang=short_lang_list[0]
-        long_lang=long_lang_list[0]
-        NER_available = Stanza_util.check_Stanza_annotator_availability(['NER'], short_lang, long_lang, silent=True)
+    NER_available = True
+    if package_var.get() == "Stanza":
+        short_lang_list, long_lang_list = Stanza_util.get_language_list([language])
+        short_lang = short_lang_list[0]
+        long_lang = long_lang_list[0]
+        NER_available = Stanza_util.check_Stanza_annotator_availability(["NER"], short_lang, long_lang, silent=True)
     # in spaCy all annotators ara always available
     # if package_var.get() == 'spaCy':
     #     import spaCy_util
@@ -1287,49 +1831,95 @@ def check_NER(first_time=False):
     if not NER_available:
         google_earth_var.set(0)
         if not first_time:
-            mb.showwarning(title='Warning',message='The visualization of locations in Google Earth Pro and Google Maps requires the NER annotator.' \
-                            '\n\nThe NER annotator is not available for ' + package_var.get() + ' and the ' + str(language) + ' language.' \
-                            '\n\nLocations cannot be extracted from your input document(s) and visualized as maps.')
+            mb.showwarning(
+                title="Warning",
+                message="The visualization of locations in Google Earth Pro and Google Maps requires the NER annotator."
+                "\n\nThe NER annotator is not available for "
+                + package_var.get()
+                + " and the "
+                + str(language)
+                + " language."
+                "\n\nLocations cannot be extracted from your input document(s) and visualized as maps.",
+            )
     else:
         if first_time:
             google_earth_var.set(1)
 
+
 google_earth_var.set(0)
-google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where (via Google Earth Pro & Google Maps)',
-                                       variable=google_earth_var, onvalue=1, offvalue=0, command=lambda: check_NER())
+google_earth_checkbox = tk.Checkbutton(
+    window,
+    text="Visualize Where (via Google Earth Pro & Google Maps)",
+    variable=google_earth_var,
+    onvalue=1,
+    offvalue=0,
+    command=lambda: check_NER(),
+)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
-                                   google_earth_checkbox,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-                                   "Visualize GIS maps as pin and heat maps. Google Earth Pro and Google Maps will be used as mapping software if you have obtained a free Google API key. Otherwise, Python folium will be used.\n"
-                                   "Read the TIPS file 'Google API Key' on how to get the API key.\nMaps are exported to the SVO subdirectory only, whether filtering or lemmatizing to avoid missing locations.")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.open_reminders_x_coordinate,
+    y_multiplier_integer,
+    google_earth_checkbox,
+    False,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.labels_x_indented_coordinate,
+    "Visualize GIS maps as pin and heat maps. Google Earth Pro and Google Maps will be used as mapping software if you have obtained a free Google API key. Otherwise, Python folium will be used.\n"
+    "Read the TIPS file 'Google API Key' on how to get the API key.\nMaps are exported to the SVO subdirectory only, whether filtering or lemmatizing to avoid missing locations.",
+)
 map_characters_var = tk.IntVar()
-map_characters_checkbox = tk.Checkbutton(window, text='MAP S(ubjects) moving in time and space',
-                                       variable=map_characters_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   map_characters_checkbox,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-                                   "Produce an animated map showing how SVO subjects (social actors) move across locations over the course of the narrative.\n"
-                                   "Uses the Subject (S) column as the moving entity and the Location column from the SVO output to track movement.\n"
-                                   "Unlike the GIS NER approach, this captures common-noun actors (e.g., 'the mob', 'soldiers') not just proper names.")
+map_characters_checkbox = tk.Checkbutton(
+    window, text="MAP S(ubjects) moving in time and space", variable=map_characters_var, onvalue=1, offvalue=0
+)
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.labels_x_coordinate,
+    y_multiplier_integer,
+    map_characters_checkbox,
+    False,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.labels_x_indented_coordinate,
+    "Produce an animated map showing how SVO subjects (social actors) move across locations over the course of the narrative.\n"
+    "Uses the Subject (S) column as the moving entity and the Location column from the SVO output to track movement.\n"
+    "Unlike the GIS NER approach, this captures common-noun actors (e.g., 'the mob', 'soldiers') not just proper names.",
+)
 compare_svo_var = tk.IntVar()
-compare_svo_checkbox = tk.Checkbutton(window, text='Compare SVO results across parsers',
-                                       variable=compare_svo_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   compare_svo_checkbox,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-                                   "Compare two SVO csv files produced by different parsers (e.g., CoreNLP vs Stanza). Produces a summary of triple overlap and a list of differences.")
+compare_svo_checkbox = tk.Checkbutton(
+    window, text="Compare SVO results across parsers", variable=compare_svo_var, onvalue=1, offvalue=0
+)
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.labels_x_coordinate,
+    y_multiplier_integer,
+    compare_svo_checkbox,
+    False,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.labels_x_indented_coordinate,
+    "Compare two SVO csv files produced by different parsers (e.g., CoreNLP vs Stanza). Produces a summary of triple overlap and a list of differences.",
+)
+
 
 def activateFilters(*args):
-    if package_var.get() == '*':
-        answer = mb.askyesno(title='Run all parsers',
-                             message='Selecting * will run all three main parsers (spaCy, Stanford CoreNLP, Stanza) on your corpus and automatically compare the SVO results.\n\nThis may take a very long time depending on corpus size.\n\nAre you sure you want to continue?',
-                             default='no')
+    if package_var.get() == "*":
+        answer = mb.askyesno(
+            title="Run all parsers",
+            message="Selecting * will run all three main parsers (spaCy, Stanford CoreNLP, Stanza) on your corpus and automatically compare the SVO results.\n\nThis may take a very long time depending on corpus size.\n\nAre you sure you want to continue?",
+            default="no",
+        )
         if not answer:
-            package_var.set('Stanford CoreNLP')
+            package_var.set("Stanford CoreNLP")
             return
 
-    if language!='English':
+    if language != "English":
         filter_subjects_var.set(0)
         filter_verbs_var.set(0)
         filter_objects_var.set(0)
@@ -1338,194 +1928,355 @@ def activateFilters(*args):
         # objects_checkbox.configure(state='disabled')
         return
 
-    if package_var.get()!='':
-        subjects_checkbox.configure(state='normal')
-        verbs_checkbox.configure(state='normal')
-        objects_checkbox.configure(state='normal')
-    if package_var.get()=='':
+    if package_var.get() != "":
+        subjects_checkbox.configure(state="normal")
+        verbs_checkbox.configure(state="normal")
+        objects_checkbox.configure(state="normal")
+    if package_var.get() == "":
         filter_subjects_var.set(0)
         filter_verbs_var.set(0)
         filter_objects_var.set(0)
 
         activate_filter_dictionaries()
 
-        subjects_checkbox.configure(state='disabled')
-        verbs_checkbox.configure(state='disabled')
-        objects_checkbox.configure(state='disabled')
+        subjects_checkbox.configure(state="disabled")
+        verbs_checkbox.configure(state="disabled")
+        objects_checkbox.configure(state="disabled")
         gephi_var.set(0)
         wordcloud_var.set(0)
         google_earth_var.set(0)
-        gephi_checkbox.configure(state='disabled')
-        google_earth_checkbox.configure(state='disabled')
+        gephi_checkbox.configure(state="disabled")
+        google_earth_checkbox.configure(state="disabled")
 
-package_var.trace('w', activateFilters)
+
+package_var.trace("w", activateFilters)
 
 activateFilters()
 
-videos_lookup = {'SVO':'https://www.youtube.com/watch?v=QsMD6Kqpjas'}
-videos_options='SVO'
+videos_lookup = {"SVO": "https://www.youtube.com/watch?v=QsMD6Kqpjas"}
+videos_options = "SVO"
 
-TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
-               'Coreference resolution': "TIPS_NLP_Coreference resolution.pdf",
-               'English Language Benchmarks': 'TIPS_NLP_English Language Benchmarks.pdf',
-               'Things to do with words: Overall view': 'TIPS_NLP_Things to do with words Overall view.pdf',
-               'SVO extraction and visualization': 'TIPS_NLP_SVO extraction and visualization.pdf',
-               'Stanford CoreNLP supported languages':'TIPS_NLP_Stanford CoreNLP supported languages.pdf',
-               'Stanford CoreNLP performance & accuracy':'TIPS_NLP_Stanford CoreNLP performance and accuracy.pdf',
-               'Stanford CoreNLP memory issues':'TIPS_NLP_Stanford CoreNLP memory issues.pdf',
-               'Stanford CoreNLP date extractor': 'TIPS_NLP_Stanford CoreNLP date extractor.pdf',
-               'Stanford CoreNLP OpenIE': 'TIPS_NLP_Stanford CoreNLP OpenIE.pdf',
-               'Stanford CoreNLP parser': 'TIPS_NLP_Stanford CoreNLP parser.pdf',
-               'Improving SVO output: Multi-Word Expressions (MWE) & Linking Verbs and Light Verbs':'TIPS_NLP_Multi-Word Expressions (MWE) & Linking & Light Verbs.pdf',
-               'Stanford CoreNLP enhanced dependencies parser (SVO)':'TIPS_NLP_Stanford CoreNLP enhanced dependencies parser (SVO).pdf',
-               'CoNLL table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
-               'WordNet': 'TIPS_NLP_WordNet.pdf',
-               "Google Earth Pro": "TIPS_NLP_GIS_Google Earth Pro.pdf",
-               "Google API Key":"TIPS_NLP_GIS_Google API Key.pdf",
-               "Geocoding": "TIPS_NLP_GIS_Geocoding.pdf",
-               "Geocoding: How to Improve Nominatim":"TIPS_NLP_GIS_Geocoding Nominatim.pdf",
-               "Gephi network graphs": "TIPS_NLP_Gephi network graphs.pdf",
-               'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
-               'Statistical measures': 'TIPS_NLP_Statistical measures.pdf',
-               'Excel - Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
-               'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
-               }
-               # 'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
+TIPS_lookup = {
+    "utf-8 encoding": "TIPS_NLP_Text encoding.pdf",
+    "Coreference resolution": "TIPS_NLP_Coreference resolution.pdf",
+    "English Language Benchmarks": "TIPS_NLP_English Language Benchmarks.pdf",
+    "Things to do with words: Overall view": "TIPS_NLP_Things to do with words Overall view.pdf",
+    "SVO extraction and visualization": "TIPS_NLP_SVO extraction and visualization.pdf",
+    "Stanford CoreNLP supported languages": "TIPS_NLP_Stanford CoreNLP supported languages.pdf",
+    "Stanford CoreNLP performance & accuracy": "TIPS_NLP_Stanford CoreNLP performance and accuracy.pdf",
+    "Stanford CoreNLP memory issues": "TIPS_NLP_Stanford CoreNLP memory issues.pdf",
+    "Stanford CoreNLP date extractor": "TIPS_NLP_Stanford CoreNLP date extractor.pdf",
+    "Stanford CoreNLP OpenIE": "TIPS_NLP_Stanford CoreNLP OpenIE.pdf",
+    "Stanford CoreNLP parser": "TIPS_NLP_Stanford CoreNLP parser.pdf",
+    "Improving SVO output: Multi-Word Expressions (MWE) & Linking Verbs and Light Verbs": "TIPS_NLP_Multi-Word Expressions (MWE) & Linking & Light Verbs.pdf",
+    "Stanford CoreNLP enhanced dependencies parser (SVO)": "TIPS_NLP_Stanford CoreNLP enhanced dependencies parser (SVO).pdf",
+    "CoNLL table": "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
+    "WordNet": "TIPS_NLP_WordNet.pdf",
+    "Google Earth Pro": "TIPS_NLP_GIS_Google Earth Pro.pdf",
+    "Google API Key": "TIPS_NLP_GIS_Google API Key.pdf",
+    "Geocoding": "TIPS_NLP_GIS_Geocoding.pdf",
+    "Geocoding: How to Improve Nominatim": "TIPS_NLP_GIS_Geocoding Nominatim.pdf",
+    "Gephi network graphs": "TIPS_NLP_Gephi network graphs.pdf",
+    "csv files - Problems & solutions": "TIPS_NLP_csv files - Problems & solutions.pdf",
+    "Statistical measures": "TIPS_NLP_Statistical measures.pdf",
+    "Excel - Enabling Macros": "TIPS_NLP_Excel Enabling macros.pdf",
+    "Excel smoothing data series": "TIPS_NLP_Excel smoothing data series.pdf",
+}
+# 'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
 
-TIPS_options = 'Coreference resolution', 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures', 'English Language Benchmarks', 'Things to do with words: Overall view', 'SVO extraction and visualization', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'Improving SVO output: Multi-Word Expressions (MWE) & Linking Verbs and Light Verbs', 'CoNLL table',  'WordNet', 'Google Earth Pro', 'Google API Key', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs' #, 'Java download install run'
+TIPS_options = (
+    "Coreference resolution",
+    "utf-8 encoding",
+    "Excel - Enabling Macros",
+    "Excel smoothing data series",
+    "csv files - Problems & solutions",
+    "Statistical measures",
+    "English Language Benchmarks",
+    "Things to do with words: Overall view",
+    "SVO extraction and visualization",
+    "Stanford CoreNLP supported languages",
+    "Stanford CoreNLP performance & accuracy",
+    "Stanford CoreNLP memory issues",
+    "Stanford CoreNLP date extractor",
+    "Stanford CoreNLP OpenIE",
+    "Stanford CoreNLP parser",
+    "Stanford CoreNLP enhanced dependencies parser (SVO)",
+    "Improving SVO output: Multi-Word Expressions (MWE) & Linking Verbs and Light Verbs",
+    "CoNLL table",
+    "WordNet",
+    "Google Earth Pro",
+    "Google API Key",
+    "Geocoding",
+    "Geocoding: How to Improve Nominatim",
+    "Gephi network graphs",
+)  # , 'Java download install run'
+
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
-    if IO_setup_display_brief==False:
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                      "Please, select either a txt file to be analyzed and extract SVO triplets from it, or a csv file of previously extracted SVOs if all you want to do is to visualize the previously computed results." + GUI_IO_util.msg_openFile)
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                      GUI_IO_util.msg_corpusData)
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                      GUI_IO_util.msg_outputDirectory)
+    if IO_setup_display_brief == False:
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window,
+            help_button_x_coordinate,
+            y_multiplier_integer,
+            "NLP Suite Help",
+            "Please, select either a txt file to be analyzed and extract SVO triplets from it, or a csv file of previously extracted SVOs if all you want to do is to visualize the previously computed results."
+            + GUI_IO_util.msg_openFile,
+        )
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_corpusData
+        )
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_outputDirectory
+        )
     else:
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                      GUI_IO_util.msg_IO_setup)
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_IO_setup
+        )
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, click on the 'Pre-processing tools' button to open the GUI where you will be able to perform a variety of\n   file checking options (e.g., utf-8 encoding compliance of your corpus or sentence length);\n   file cleaning options (e.g., convert non-ASCII apostrophes & quotes and % to percent).\n\nNon utf-8 compliant texts are likely to lead to code breakdown in various algorithms.\n\nASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n\n% signs will lead to code breakdon of Stanford CoreNLP.\n\nSentences without an end-of-sentence marker (. ! ?) in Stanford CoreNLP will be processed together with the next sentence, potentially leading to very long sentences.\n\nSentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox to run the Stanford CoreNLP coreference resolution annotator using the Neural Network approach.\n\nOnly pronominal, and not nominal, coreference resolution is implemented for four different types of PRONOUNS:\n   nominative: I, you, he/she, it, we, they;\n   possessive: my, mine, our(s), his/her(s), their, its, yours;\n   objective: me, you, him, her, it, them;\n   reflexive: myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves.\n\nPlease, BE PATIENT. Depending upon size and number of documents to be coreferenced the algorithm may take a long a time.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm will produce txt-format copies of the same input txt files but co-referenced."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to resolve manually cases of unresolved or wrongly resolved coreferences.\n\nThe option is not available when processing a directory of files. You can always use the 'coreference_main' GUI to\n   1. open a merged coreferenced file;\n   2. split merged coreferenced files.\n\nIf manual edit is selected, the script will also display a split-screen file for manual editing. On the left-hand side, pronouns cross-referenced by CoreNLP are tagged in YELLOW; pronouns NOT cross-referenced by CoreNLP are tagged in BLUE. On the right-hand side, pronouns cross-referenced by CoreNLP are tagged in RED, with the pronouns replaced by the referenced nouns.\n\nMANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, using the dropdown menu, select the NLP package to be used to extract SVOs from your corpus.\nYour package selection is independent of the NLP package currently selected in Setup.\n\nSelecting * will run all three main parsers (spaCy, Stanford CoreNLP, Stanza) on your corpus and automatically compare the SVO results across all pairs of parsers. This may take a very long time depending on corpus size.\n\nThe comparison produces:\n  1. A summary csv with triple overlap percentage (Jaccard), unique triple counts, and recall rates.\n  2. A differences csv listing all (S, V, O) triples found by one parser but not the other.\n  3. A shared csv listing all triples found by both parsers.\n\nIMPORTANT: Do not expect a perfect match across parsers. Different NLP packages build different dependency trees from the same sentence, so they will naturally extract different SVO triples. A low overlap rate does not necessarily mean one parser is wrong — it reflects genuine differences in how each parser analyzes syntax. The comparison is meant to highlight the differences for manual review, not to produce a pass/fail score.\n\nYou can also compare any two existing SVO csv files using the 'Compare SVO results' checkbox below. When you tick that checkbox and click RUN, two file dialogs will prompt you to select the first and second SVO csv files to compare."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the 'Lemmatize' checkboxes to produce lemmatized subjects, verbs, or objects. When SVOs are lemmatized, the algorithm will aggregate the Subjects and Objects (nouns) and Verbs (verbs) into WordNet top synset categories (e.g., 'run' into 'motion').\n\nTick the 'Filter' checkboxes to filter all SVO extracted triplets for Subjects, Verbs, and Objects via dictionary filter files.\n\nDictionary filter files can be created via WordNet and saved in the \'lib/wordLists\' subfolder.\n\nFor instance, you can filter SVO by social actors and social action. In fact, the file \'social-actor-list.csv\', created via WordNet with multiple keywords (act, group, person) and saved in the \'lib/wordLists\' subfolder, will be automatically loaded as the DEFAULT dictionary file (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly created via WordNet using multiple keywords (change, cognition, communication, contact, emotion, motion, social), saved in the \'lib/wordLists\' subfolder, and automatically loaded as the DEFAULT dictionary file for verbs.\n\nWhen working on folktales, animals, or even plants, may also act and speak. You may use the animal_list.csv filter file, based on the multiple multiple keywords (act, group, person, animal) or (act, group, person, animal, plants) and saved in the \'lib/wordLists\' subfolder.\n\nYou can edit these lists, adding and deleting entries at any time, using any text editor.\n\nWordNet produces thousands of entries for nouns and verbs. For more limited domains, you way want to pair down the number to a few hundred entries.\n\nFILTER FILES BASED ON WordNet MUST CONTAIN LEMMATIZED ENTRIES, SINCE WordNet IS BASED ON LEMMATIZED ENTRIES.\n\nA NOTE ON CONTRACTED FORMS: CoreNLP tokenizes contractions, so a contracted auxiliary or copula verb (e.g., 'It's in the area' → It / 's / area) is extracted with its original contracted surface form ('s, 've, 're, 'll, 'd). The Suite leaves these AS IN THE ORIGINAL text and does not normalize them; ticking the 'Lemmatize' Verb checkbox maps them to their base form ('s → be, 've → have, 'll → will). The Saxon (possessive) genitive 's, as in 'Claude's book', is tagged as a possessive ending, not a verb, so it is NEVER extracted as a Verb (V); it can only appear glued to a Subject or Object noun phrase."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "The three widgets display the currently selected dictionary filter files for Subjects, Verbs, and Objects (Objects share the same file as Subjects and you may wish to change that).\n\nThe filter file social-actor-list, created via WordNet with the multiple keywords act, group, person and saved in the \'lib/wordLists\' subfolder, will be automatically set as the DEFAULT filter for subjects (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly created via WordNet using multiple keywords (change, cognition, communication, contact, emotion, motion, social), saved in the \'lib/wordLists\' subfolder, and automatically loaded as the DEFAULT dictionary file for verbs.\n\nThe widgets are disabled because you are not allowed to tamper with these values. If you wish to change a selected file, please tick the appropriate checkbox in the line above (e.g., Filter Subject) and you will be prompted to select a new file."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the S & O gender checkbox if you wish to run Stanford CoreNLP neural network gender annotator to extract the gender (female, male) for every Subject and Object extracted by the SVO script.\n\n"
-                                  "Tick the S & O quote/speaker checkbox if you wish to run Stanford CoreNLP neural network quote annotator to extract the speaker involved in direct discourse for every Subject and Object extracted by the SVO script.\n\n"
-                                  "THE GENDER AND QUOTE/SPEAKER ANNOTATORS ARE AVAILABLE FOR STANFORD CORENLP AND ENGLISH LANGUAGE ONLY.\n\n"
-                                  "Tick the SRL (Semantic Role Labeling) checkbox to identify, for every verb (predicate) in a sentence, WHO did WHAT to WHOM:\n"
-                                  "   ARG0 = the Agent (the doer);\n"
-                                  "   ARG1 = the Patient (the one acted upon/affected);\n"
-                                  "   ARG2 = the Recipient or Beneficiary;\n"
-                                  "   plus modifiers Where (ARGM-LOC), When (ARGM-TMP), How (ARGM-MNR), and Why (ARGM-CAU).\n\n"
-                                  "SRL is the richer successor to Subject-Verb-Object (SVO) analysis. In INPUT it expects a txt file or a directory of txt files (ENGLISH ONLY). In OUTPUT it produces a csv file with one row per sentence-and-predicate (a sentence with several verbs yields several rows).\n\n"
-                                  "Beyond the raw PropBank arguments, SRL enriches each predicate via SemLink (Palmer's PropBank-VerbNet-FrameNet linking):\n"
-                                  "   Refined roles = fairly-accurate VerbNet thematic roles (Agent, Patient/Theme, Experiencer, Stimulus, Recipient, Goal, Result...), keeping the preposition cue alongside when it differs (e.g. 'Destination / Source');\n"
-                                  "   VerbNet class = the sense-disambiguated VerbNet class of the predicate (e.g. murder.01 = murder-42.1) - a backbone for grouping verbs into categories such as 'violence';\n"
-                                  "   FrameNet frame = the disambiguated FrameNet frame (Killing, Destroying, Execution, Attack, Cause_harm...) - interpretable action categories for content analysis (e.g. lynch = Killing).\n\n"
-                                  "Visualizations include a 'who did what to whom' network and Sankey flow (both entity-level and VerbNet-role-level), plus frequency charts of the refined roles, VerbNet classes, and FrameNet frames.\n\n"
-                                  "SRL runs in a separate, isolated Python 3.8 engine (it cannot share the Suite's packages) that is set up once per machine by running  python setup_SRL.py  - this creates the environment, downloads the BERT model, and fetches the SemLink maps. The VerbNet class and FrameNet frame columns need those maps; without them SRL still runs with heuristic refined roles.\n\n"
-                                  "Note: lemmatization inside the SRL engine uses spaCy (already present in that isolated environment), not the Suite's default Stanza, which is not installed there.\n\n"
-                                  "The first run loads the BERT-based model and may take 30-60 seconds; the GUI will appear frozen (Not Responding) while SRL runs. This is normal - please be patient."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in Gephi and Sankey network graphs, and Sunburst, Treemap charts (Sankey graphs display only top 10 Subject (S), 20 Verb (V), 20 Object (O)); Sunburst and Treemap charts display only top 15 values; to change these default values, open the Data visualization GUI and change the parameters;\n\n  2. to visualize SVO relations in a wordcloud (Subjects in red; Verbs in blue; Objects in green);\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Google or Nominatim to geocode locations. If the Google-geocode-API_config.csv file is present in the config subdirectory, Google will be used to geocode, as perhaps more accurate than Nominatim. Otherwise, Nominatim will be used. If you wish to chose between Google and Nominatim, for geocoding, please, use the GIS_main script.\n\nTo improve the geocoding of those locations that can take multiple names (e.g., 'United States', 'US', 'USA'), the NLP Suite Stanford CoreNLP algorithm uses the entries of the multi_name_locations.csv file stored in the lib\\wordLists subdirectory of the NLP Suite installation folder. Locations known under different names can be all geocoded under a single name (e.g., 'United States'). You can edit the multi_name_locations.csv file to suit your specific needs and improve geocoding."+GUI_IO_util.msg_Esc)
-                                   # "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi;\n\n  2. to visualize SVO relations in a wordcloud (Subjects in red; Verbs in blue; Objects in green);\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.\n\nThe GIS mapping option is not available for CoreNLP OpenIE." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Produce an animated map showing how SVO subjects (social actors) move across locations over the course of the narrative.\n"
-                                   "Uses the Subject (S) column as the moving entity and the Location column from the SVO output to track movement.\n"
-                                   "Unlike the GIS NER approach, this captures common-noun actors (e.g., 'the mob', 'soldiers') not just proper names."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox to compare two existing SVO csv files produced by different NLP packages (e.g., CoreNLP vs Stanza vs spaCy).\n\nWhen you click RUN with this option checked, two file dialogs will prompt you to select the first SVO csv file (e.g., from CoreNLP) and the second SVO csv file (e.g., from Stanza).\n\nThe comparison produces:\n  1. A summary csv with triple overlap percentage (Jaccard), unique triple counts, and recall rates.\n  2. A differences csv listing all (S, V, O) triples found by one parser but not the other.\n  3. A shared csv listing all triples found by both parsers.\n\nTriples are normalized (lowercase, trimmed) before comparison.\n\nIMPORTANT: Do not expect a perfect match. Different parsers build different dependency trees, so they will naturally extract different SVO triples. A low overlap rate does not mean one parser is wrong — it reflects genuine differences in syntactic analysis. Use the differences file to review the most significant discrepancies manually."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  GUI_IO_util.msg_openOutputFiles)
-    return y_multiplier_integer -1
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window,
+        help_button_x_coordinate,
+        y_multiplier_integer,
+        "NLP Suite Help",
+        "Please, click on the 'Pre-processing tools' button to open the GUI where you will be able to perform a variety of\n   file checking options (e.g., utf-8 encoding compliance of your corpus or sentence length);\n   file cleaning options (e.g., convert non-ASCII apostrophes & quotes and % to percent).\n\nNon utf-8 compliant texts are likely to lead to code breakdown in various algorithms.\n\nASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n\n% signs will lead to code breakdon of Stanford CoreNLP.\n\nSentences without an end-of-sentence marker (. ! ?) in Stanford CoreNLP will be processed together with the next sentence, potentially leading to very long sentences.\n\nSentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf."
+        + GUI_IO_util.msg_Esc,
+    )
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window,
+        help_button_x_coordinate,
+        y_multiplier_integer,
+        "NLP Suite Help",
+        "Please, tick the checkbox to run the Stanford CoreNLP coreference resolution annotator using the Neural Network approach.\n\nOnly pronominal, and not nominal, coreference resolution is implemented for four different types of PRONOUNS:\n   nominative: I, you, he/she, it, we, they;\n   possessive: my, mine, our(s), his/her(s), their, its, yours;\n   objective: me, you, him, her, it, them;\n   reflexive: myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves.\n\nPlease, BE PATIENT. Depending upon size and number of documents to be coreferenced the algorithm may take a long a time.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm will produce txt-format copies of the same input txt files but co-referenced."
+        + GUI_IO_util.msg_Esc,
+    )
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window,
+        help_button_x_coordinate,
+        y_multiplier_integer,
+        "NLP Suite Help",
+        "Please, tick the checkbox if you wish to resolve manually cases of unresolved or wrongly resolved coreferences.\n\nThe option is not available when processing a directory of files. You can always use the 'coreference_main' GUI to\n   1. open a merged coreferenced file;\n   2. split merged coreferenced files.\n\nIf manual edit is selected, the script will also display a split-screen file for manual editing. On the left-hand side, pronouns cross-referenced by CoreNLP are tagged in YELLOW; pronouns NOT cross-referenced by CoreNLP are tagged in BLUE. On the right-hand side, pronouns cross-referenced by CoreNLP are tagged in RED, with the pronouns replaced by the referenced nouns.\n\nMANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP."
+        + GUI_IO_util.msg_Esc,
+    )
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window,
+        help_button_x_coordinate,
+        y_multiplier_integer,
+        "NLP Suite Help",
+        "Please, using the dropdown menu, select the NLP package to be used to extract SVOs from your corpus.\nYour package selection is independent of the NLP package currently selected in Setup.\n\nSelecting * will run all three main parsers (spaCy, Stanford CoreNLP, Stanza) on your corpus and automatically compare the SVO results across all pairs of parsers. This may take a very long time depending on corpus size.\n\nThe comparison produces:\n  1. A summary csv with triple overlap percentage (Jaccard), unique triple counts, and recall rates.\n  2. A differences csv listing all (S, V, O) triples found by one parser but not the other.\n  3. A shared csv listing all triples found by both parsers.\n\nIMPORTANT: Do not expect a perfect match across parsers. Different NLP packages build different dependency trees from the same sentence, so they will naturally extract different SVO triples. A low overlap rate does not necessarily mean one parser is wrong — it reflects genuine differences in how each parser analyzes syntax. The comparison is meant to highlight the differences for manual review, not to produce a pass/fail score.\n\nYou can also compare any two existing SVO csv files using the 'Compare SVO results' checkbox below. When you tick that checkbox and click RUN, two file dialogs will prompt you to select the first and second SVO csv files to compare."
+        + GUI_IO_util.msg_Esc,
+    )
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window,
+        help_button_x_coordinate,
+        y_multiplier_integer,
+        "NLP Suite Help",
+        "Please, tick the 'Lemmatize' checkboxes to produce lemmatized subjects, verbs, or objects. When SVOs are lemmatized, the algorithm will aggregate the Subjects and Objects (nouns) and Verbs (verbs) into WordNet top synset categories (e.g., 'run' into 'motion').\n\nTick the 'Filter' checkboxes to filter all SVO extracted triplets for Subjects, Verbs, and Objects via dictionary filter files.\n\nDictionary filter files can be created via WordNet and saved in the 'lib/wordLists' subfolder.\n\nFor instance, you can filter SVO by social actors and social action. In fact, the file 'social-actor-list.csv', created via WordNet with multiple keywords (act, group, person) and saved in the 'lib/wordLists' subfolder, will be automatically loaded as the DEFAULT dictionary file (Press ESCape to clear selection); the file 'social-action-list.csv' is similarly created via WordNet using multiple keywords (change, cognition, communication, contact, emotion, motion, social), saved in the 'lib/wordLists' subfolder, and automatically loaded as the DEFAULT dictionary file for verbs.\n\nWhen working on folktales, animals, or even plants, may also act and speak. You may use the animal_list.csv filter file, based on the multiple multiple keywords (act, group, person, animal) or (act, group, person, animal, plants) and saved in the 'lib/wordLists' subfolder.\n\nYou can edit these lists, adding and deleting entries at any time, using any text editor.\n\nWordNet produces thousands of entries for nouns and verbs. For more limited domains, you way want to pair down the number to a few hundred entries.\n\nFILTER FILES BASED ON WordNet MUST CONTAIN LEMMATIZED ENTRIES, SINCE WordNet IS BASED ON LEMMATIZED ENTRIES.\n\nA NOTE ON CONTRACTED FORMS: CoreNLP tokenizes contractions, so a contracted auxiliary or copula verb (e.g., 'It's in the area' → It / 's / area) is extracted with its original contracted surface form ('s, 've, 're, 'll, 'd). The Suite leaves these AS IN THE ORIGINAL text and does not normalize them; ticking the 'Lemmatize' Verb checkbox maps them to their base form ('s → be, 've → have, 'll → will). The Saxon (possessive) genitive 's, as in 'Claude's book', is tagged as a possessive ending, not a verb, so it is NEVER extracted as a Verb (V); it can only appear glued to a Subject or Object noun phrase."
+        + GUI_IO_util.msg_Esc,
+    )
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window,
+        help_button_x_coordinate,
+        y_multiplier_integer,
+        "NLP Suite Help",
+        "The three widgets display the currently selected dictionary filter files for Subjects, Verbs, and Objects (Objects share the same file as Subjects and you may wish to change that).\n\nThe filter file social-actor-list, created via WordNet with the multiple keywords act, group, person and saved in the 'lib/wordLists' subfolder, will be automatically set as the DEFAULT filter for subjects (Press ESCape to clear selection); the file 'social-action-list.csv' is similarly created via WordNet using multiple keywords (change, cognition, communication, contact, emotion, motion, social), saved in the 'lib/wordLists' subfolder, and automatically loaded as the DEFAULT dictionary file for verbs.\n\nThe widgets are disabled because you are not allowed to tamper with these values. If you wish to change a selected file, please tick the appropriate checkbox in the line above (e.g., Filter Subject) and you will be prompted to select a new file."
+        + GUI_IO_util.msg_Esc,
+    )
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window,
+        help_button_x_coordinate,
+        y_multiplier_integer,
+        "NLP Suite Help",
+        "Please, tick the S & O gender checkbox if you wish to run Stanford CoreNLP neural network gender annotator to extract the gender (female, male) for every Subject and Object extracted by the SVO script.\n\n"
+        "Tick the S & O quote/speaker checkbox if you wish to run Stanford CoreNLP neural network quote annotator to extract the speaker involved in direct discourse for every Subject and Object extracted by the SVO script.\n\n"
+        "THE GENDER AND QUOTE/SPEAKER ANNOTATORS ARE AVAILABLE FOR STANFORD CORENLP AND ENGLISH LANGUAGE ONLY.\n\n"
+        "Tick the SRL (Semantic Role Labeling) checkbox to identify, for every verb (predicate) in a sentence, WHO did WHAT to WHOM:\n"
+        "   ARG0 = the Agent (the doer);\n"
+        "   ARG1 = the Patient (the one acted upon/affected);\n"
+        "   ARG2 = the Recipient or Beneficiary;\n"
+        "   plus modifiers Where (ARGM-LOC), When (ARGM-TMP), How (ARGM-MNR), and Why (ARGM-CAU).\n\n"
+        "SRL is the richer successor to Subject-Verb-Object (SVO) analysis. In INPUT it expects a txt file or a directory of txt files (ENGLISH ONLY). In OUTPUT it produces a csv file with one row per sentence-and-predicate (a sentence with several verbs yields several rows).\n\n"
+        "Beyond the raw PropBank arguments, SRL enriches each predicate via SemLink (Palmer's PropBank-VerbNet-FrameNet linking):\n"
+        "   Refined roles = fairly-accurate VerbNet thematic roles (Agent, Patient/Theme, Experiencer, Stimulus, Recipient, Goal, Result...), keeping the preposition cue alongside when it differs (e.g. 'Destination / Source');\n"
+        "   VerbNet class = the sense-disambiguated VerbNet class of the predicate (e.g. murder.01 = murder-42.1) - a backbone for grouping verbs into categories such as 'violence';\n"
+        "   FrameNet frame = the disambiguated FrameNet frame (Killing, Destroying, Execution, Attack, Cause_harm...) - interpretable action categories for content analysis (e.g. lynch = Killing).\n\n"
+        "Visualizations include a 'who did what to whom' network and Sankey flow (both entity-level and VerbNet-role-level), plus frequency charts of the refined roles, VerbNet classes, and FrameNet frames.\n\n"
+        "SRL runs in a separate, isolated Python 3.8 engine (it cannot share the Suite's packages) that is set up once per machine by running  python setup_SRL.py  - this creates the environment, downloads the BERT model, and fetches the SemLink maps. The VerbNet class and FrameNet frame columns need those maps; without them SRL still runs with heuristic refined roles.\n\n"
+        "Note: lemmatization inside the SRL engine uses spaCy (already present in that isolated environment), not the Suite's default Stanza, which is not installed there.\n\n"
+        "The first run loads the BERT-based model and may take 30-60 seconds; the GUI will appear frozen (Not Responding) while SRL runs. This is normal - please be patient."
+        + GUI_IO_util.msg_Esc,
+    )
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window,
+        help_button_x_coordinate,
+        y_multiplier_integer,
+        "NLP Suite Help",
+        "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in Gephi and Sankey network graphs, and Sunburst, Treemap charts (Sankey graphs display only top 10 Subject (S), 20 Verb (V), 20 Object (O)); Sunburst and Treemap charts display only top 15 values; to change these default values, open the Data visualization GUI and change the parameters;\n\n  2. to visualize SVO relations in a wordcloud (Subjects in red; Verbs in blue; Objects in green);\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Google or Nominatim to geocode locations. If the Google-geocode-API_config.csv file is present in the config subdirectory, Google will be used to geocode, as perhaps more accurate than Nominatim. Otherwise, Nominatim will be used. If you wish to chose between Google and Nominatim, for geocoding, please, use the GIS_main script.\n\nTo improve the geocoding of those locations that can take multiple names (e.g., 'United States', 'US', 'USA'), the NLP Suite Stanford CoreNLP algorithm uses the entries of the multi_name_locations.csv file stored in the lib\\wordLists subdirectory of the NLP Suite installation folder. Locations known under different names can be all geocoded under a single name (e.g., 'United States'). You can edit the multi_name_locations.csv file to suit your specific needs and improve geocoding."
+        + GUI_IO_util.msg_Esc,
+    )
+    # "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi;\n\n  2. to visualize SVO relations in a wordcloud (Subjects in red; Verbs in blue; Objects in green);\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.\n\nThe GIS mapping option is not available for CoreNLP OpenIE." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window,
+        help_button_x_coordinate,
+        y_multiplier_integer,
+        "NLP Suite Help",
+        "Produce an animated map showing how SVO subjects (social actors) move across locations over the course of the narrative.\n"
+        "Uses the Subject (S) column as the moving entity and the Location column from the SVO output to track movement.\n"
+        "Unlike the GIS NER approach, this captures common-noun actors (e.g., 'the mob', 'soldiers') not just proper names."
+        + GUI_IO_util.msg_Esc,
+    )
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window,
+        help_button_x_coordinate,
+        y_multiplier_integer,
+        "NLP Suite Help",
+        "Please, tick the checkbox to compare two existing SVO csv files produced by different NLP packages (e.g., CoreNLP vs Stanza vs spaCy).\n\nWhen you click RUN with this option checked, two file dialogs will prompt you to select the first SVO csv file (e.g., from CoreNLP) and the second SVO csv file (e.g., from Stanza).\n\nThe comparison produces:\n  1. A summary csv with triple overlap percentage (Jaccard), unique triple counts, and recall rates.\n  2. A differences csv listing all (S, V, O) triples found by one parser but not the other.\n  3. A shared csv listing all triples found by both parsers.\n\nTriples are normalized (lowercase, trimmed) before comparison.\n\nIMPORTANT: Do not expect a perfect match. Different parsers build different dependency trees, so they will naturally extract different SVO triples. A low overlap rate does not mean one parser is wrong — it reflects genuine differences in syntactic analysis. Use the differences file to review the most significant discrepancies manually."
+        + GUI_IO_util.msg_Esc,
+    )
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_openOutputFiles
+    )
+    return y_multiplier_integer - 1
+
+
 y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
-readMe_message = "This set of Python 3 scripts extract automatically most of the elements of a story grammar and visualize the results in network graphs and GIS maps. " \
-                 "A story grammar – basically, the 5Ws + H of modern journalism: Who, What, When, Where, Why, and How – provides the basic building blocks of narrative." \
-                 "\n\nThe set of scripts assembled here for this purpose ranges from testing for utf-8 compliance of the input text, to resolution for pronominal coreference, extraction of normalized NER dates (WHEN), visualized in various Excel charts, extraction, geocoding, and mapping in Google Earth Pro of NER locations." \
-                 "\n\nAt the heart of the SVO approach are several NLP packages to choose from. For passive sentences, the pipeline swaps S and O to transform the triplet into active voice. " \
-                 "Thus, the WHO, WHAT (WHOM) are extracted from a text. Each component of the SVO triplet can be filtered via specific dictionaries (e.g., filtering for social actors and social actions, only). " \
-                 "The set of SVO triplets are then visualized in dynamic network graphs (via Gephi & Sankey; Sankey graphs display only top 10 Subject (S), 20 Verb (V), 20 Object (O); to change these default values, use the Sankey graph option in the Data visualization GUI)." \
-                 "\n\nThe WHY and HOW of narrative are still beyond the reach of the current set of SVO scripts." \
-                 "\n\nIn INPUT the scripts expect either a single txt file or a set of txt files in a directory (the corpus). " \
-                 "You can also enter a csv file, the output of a previous run with any of the NLP packages (_svo.csv/_SVO_Result) marked file) if all you want to do is to visualize results." \
-                 "\n\nIn OUTPUT, the scripts will produce tens of files (txt, csv, png, HTML, KML), depending upon the options selected. " \
-                 "Given the large number of files produced, the output is organized in several subfolders:"\
-                 "\nSVO, containing the main SVO csv files, along with the network graphs and wordclouds if these visualization options are selected. spaCy and Stanza also export the CoNLL table."\
-                 "\nSVO_lemma, containing all the csv files (and xlsx, if Excel charts are selected) for the LEMMATIZED SVO values" \
-                 "\nSVO_filtered, containing all the csv files (and xlsx, if Excel charts are selected) for the FILTERED and LEMMATIZED SVO values" \
-                 "\nSVO_form, containing all the csv files (and xlsx, if Excel charts are selected) for the SVO values UNLEMMATIZED (i.e., form values) and UNFILTERED for social actors and/or social actions" \
-                 "\nGIS, containing Google Earth Pro pin maps and Google Maps heat maps, if the mapping option is selected" \
-                 "\nWordNet, containing the nouns and/or verbs aggregated into WordNet top synset categories (e.g., 'run' into 'motion'), if any Lemmatizing options are selected"
+readMe_message = (
+    "This set of Python 3 scripts extract automatically most of the elements of a story grammar and visualize the results in network graphs and GIS maps. "
+    "A story grammar – basically, the 5Ws + H of modern journalism: Who, What, When, Where, Why, and How – provides the basic building blocks of narrative."
+    "\n\nThe set of scripts assembled here for this purpose ranges from testing for utf-8 compliance of the input text, to resolution for pronominal coreference, extraction of normalized NER dates (WHEN), visualized in various Excel charts, extraction, geocoding, and mapping in Google Earth Pro of NER locations."
+    "\n\nAt the heart of the SVO approach are several NLP packages to choose from. For passive sentences, the pipeline swaps S and O to transform the triplet into active voice. "
+    "Thus, the WHO, WHAT (WHOM) are extracted from a text. Each component of the SVO triplet can be filtered via specific dictionaries (e.g., filtering for social actors and social actions, only). "
+    "The set of SVO triplets are then visualized in dynamic network graphs (via Gephi & Sankey; Sankey graphs display only top 10 Subject (S), 20 Verb (V), 20 Object (O); to change these default values, use the Sankey graph option in the Data visualization GUI)."
+    "\n\nThe WHY and HOW of narrative are still beyond the reach of the current set of SVO scripts."
+    "\n\nIn INPUT the scripts expect either a single txt file or a set of txt files in a directory (the corpus). "
+    "You can also enter a csv file, the output of a previous run with any of the NLP packages (_svo.csv/_SVO_Result) marked file) if all you want to do is to visualize results."
+    "\n\nIn OUTPUT, the scripts will produce tens of files (txt, csv, png, HTML, KML), depending upon the options selected. "
+    "Given the large number of files produced, the output is organized in several subfolders:"
+    "\nSVO, containing the main SVO csv files, along with the network graphs and wordclouds if these visualization options are selected. spaCy and Stanza also export the CoNLL table."
+    "\nSVO_lemma, containing all the csv files (and xlsx, if Excel charts are selected) for the LEMMATIZED SVO values"
+    "\nSVO_filtered, containing all the csv files (and xlsx, if Excel charts are selected) for the FILTERED and LEMMATIZED SVO values"
+    "\nSVO_form, containing all the csv files (and xlsx, if Excel charts are selected) for the SVO values UNLEMMATIZED (i.e., form values) and UNFILTERED for social actors and/or social actions"
+    "\nGIS, containing Google Earth Pro pin maps and Google Maps heat maps, if the mapping option is selected"
+    "\nWordNet, containing the nouns and/or verbs aggregated into WordNet top synset categories (e.g., 'run' into 'motion'), if any Lemmatizing options are selected"
+)
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName, False, package_display_area_value)
+GUI_util.GUI_bottom(
+    config_filename,
+    config_input_output_numeric_options,
+    y_multiplier_integer,
+    readMe_command,
+    videos_lookup,
+    videos_options,
+    TIPS_lookup,
+    TIPS_options,
+    IO_setup_display_brief,
+    scriptName,
+    False,
+    package_display_area_value,
+)
+
 
 def warnUser(*args):
-    reminders_util.checkReminder(scriptName, reminders_util.title_options_SVO_default,
-                                 reminders_util.message_SVO_default, True)
-    if GUI_util.input_main_dir_path.get() != '':
-        reminders_util.checkReminder(scriptName, reminders_util.title_options_SVO_corpus,
-                                     reminders_util.message_SVO_corpus, True)
-GUI_util.input_main_dir_path.trace('w', warnUser)
+    reminders_util.checkReminder(
+        scriptName, reminders_util.title_options_SVO_default, reminders_util.message_SVO_default, True
+    )
+    if GUI_util.input_main_dir_path.get() != "":
+        reminders_util.checkReminder(
+            scriptName, reminders_util.title_options_SVO_corpus, reminders_util.message_SVO_corpus, True
+        )
+
+
+GUI_util.input_main_dir_path.trace("w", warnUser)
 
 # outside trace since it is not dependent on corpus type
-reminders_util.checkReminder(scriptName, reminders_util.title_options_SVO_output,
-                             reminders_util.message_SVO_output, True)
+reminders_util.checkReminder(
+    scriptName, reminders_util.title_options_SVO_output, reminders_util.message_SVO_output, True
+)
 
 warnUser()
 
 do_not_repeat_language_warning = False
 
+
 def activate_NLP_options(*args):
-    global error, package_basics, package, language, language_var, language_list, y_multiplier_integer, do_not_repeat_language_warning
+    global \
+        error, \
+        package_basics, \
+        package, \
+        language, \
+        language_var, \
+        language_list, \
+        y_multiplier_integer, \
+        do_not_repeat_language_warning
     # after update no display
-    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var=GUI_util.setup_parsers_annotators(y_multiplier_integer, scriptName)
+    (
+        error,
+        package,
+        parsers,
+        package_basics,
+        language,
+        package_display_area_value,
+        package_display_area_value_new,
+        encoding_var,
+        export_json_var,
+        memory_var,
+        document_length_var,
+        limit_sentence_length_var,
+    ) = GUI_util.setup_parsers_annotators(y_multiplier_integer, scriptName)
     language_list = [language]
     package_var.set(package)
-    if language!='English':
-        if language != 'English' and not do_not_repeat_language_warning:
-            mb.showwarning(title='Warning',
-                           message='The current SVO extraction algorithm is rule based, dependent upon specific POS values developed for the English language.'
-                                   '\n\nChinese, for instance, has different sets of Part-Of-Speech tags and SVO results would be unreliable. Use with caution for languages other than English.')
+    if language != "English":
+        if language != "English" and not do_not_repeat_language_warning:
+            mb.showwarning(
+                title="Warning",
+                message="The current SVO extraction algorithm is rule based, dependent upon specific POS values developed for the English language."
+                "\n\nChinese, for instance, has different sets of Part-Of-Speech tags and SVO results would be unreliable. Use with caution for languages other than English.",
+            )
         do_not_repeat_language_warning = True
 
         filter_subjects_var.set(0)
         filter_verbs_var.set(0)
         filter_objects_var.set(0)
-        subjects_dict_path_var.set('')
-        verbs_dict_path_var.set('')
-        objects_dict_path_var.set('')
+        subjects_dict_path_var.set("")
+        verbs_dict_path_var.set("")
+        objects_dict_path_var.set("")
     else:
         do_not_repeat_language_warning = False
         filter_subjects_var.set(1)
         filter_verbs_var.set(1)
         filter_objects_var.set(0)
         # activate_filter_dictionaries()
-GUI_util.setup_menu.trace('w', activate_NLP_options)
+
+
+GUI_util.setup_menu.trace("w", activate_NLP_options)
 
 activate_NLP_options()
 
 if error:
-    mb.showwarning(title='Warning',
-               message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.")
+    mb.showwarning(
+        title="Warning",
+        message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.",
+    )
     run_script_util.run_script("NLP_setup_package_language_main.py")
 
 # this will display the correct hover-over info after the python call, in case options were changed
-error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+(
+    error,
+    package,
+    parsers,
+    package_basics,
+    language,
+    package_display_area_value_new,
+    encoding_var,
+    export_json_var,
+    memory_var,
+    document_length_var,
+    limit_sentence_length_var,
+) = config_util.read_NLP_package_language_config()
 
 check_NER(True)
 

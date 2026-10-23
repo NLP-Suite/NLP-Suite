@@ -1,34 +1,35 @@
-
 # given a comma-separated string in input, the function returns two variables:
 #   a string with cleaned separated values (i.e., no extra blanks) and a list [] of elements from the cleaned string
 
+
 def convert_list_to_string(input_string):
-    output_string = ''
+    output_string = ""
     for el in input_string:
-        output_string = output_string + el + ', '
+        output_string = output_string + el + ", "
     # remove last ,
     output_string = output_string.rstrip()[:-1]
     return output_string
 
+
 def process_comma_separated_string_list(keywords, case_sensitive=True):
-    print('in process_comma_separated_string_list case_sensitive', case_sensitive)
+    print("in process_comma_separated_string_list case_sensitive", case_sensitive)
 
     if not case_sensitive:
         keywords = keywords.lower()
-    if isinstance(keywords,str):
-        keywords_list=keywords.split(',')
+    if isinstance(keywords, str):
+        keywords_list = keywords.split(",")
     else:
         keywords_list = keywords
-    temp_keywords_list=[]
-    keywords_str=''
+    temp_keywords_list = []
+    keywords_str = ""
     for index, ele in enumerate(keywords_list):
-        ele=ele.strip()
-        if ele != '':
+        ele = ele.strip()
+        if ele != "":
             temp_keywords_list.append(ele)
-            if keywords_str=='':
+            if keywords_str == "":
                 keywords_str = ele
             else:
-                keywords_str = keywords_str + ', ' + ele
-    keywords_list=temp_keywords_list
+                keywords_str = keywords_str + ", " + ele
+    keywords_list = temp_keywords_list
 
     return keywords_str, keywords_list

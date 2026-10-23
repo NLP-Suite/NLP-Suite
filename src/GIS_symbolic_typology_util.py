@@ -20,23 +20,30 @@ import csv
 import os
 
 CATEGORIES = [
-    'domestic_interior', 'field_labor', 'wild_forest', 'threshold_liminal',
-    'royal_court', 'sacred', 'market_public', 'water_passage',
-    'subterranean', 'tower_height',
+    "domestic_interior",
+    "field_labor",
+    "wild_forest",
+    "threshold_liminal",
+    "royal_court",
+    "sacred",
+    "market_public",
+    "water_passage",
+    "subterranean",
+    "tower_height",
 ]
 
 # WordNet anchor synsets per category, used only for the hypernym fallback
 # (words not present in the curated lexicon). Kept conservative on purpose.
 _ANCHORS = {
-    'domestic_interior': ['room.n.01', 'dwelling.n.01', 'house.n.01', 'housing.n.01'],
-    'field_labor':       ['tract.n.01', 'farm.n.01', 'field.n.01'],
-    'wild_forest':       ['forest.n.01', 'wood.n.01', 'geological_formation.n.01'],
-    'royal_court':       ['castle.n.02', 'palace.n.01'],
-    'sacred':            ['place_of_worship.n.01', 'religious_residence.n.01'],
-    'market_public':     ['mercantile_establishment.n.01', 'municipality.n.01'],
-    'water_passage':     ['body_of_water.n.01', 'way.n.06'],
-    'subterranean':      ['cave.n.01', 'cellar.n.01'],
-    'tower_height':      ['tower.n.01'],
+    "domestic_interior": ["room.n.01", "dwelling.n.01", "house.n.01", "housing.n.01"],
+    "field_labor": ["tract.n.01", "farm.n.01", "field.n.01"],
+    "wild_forest": ["forest.n.01", "wood.n.01", "geological_formation.n.01"],
+    "royal_court": ["castle.n.02", "palace.n.01"],
+    "sacred": ["place_of_worship.n.01", "religious_residence.n.01"],
+    "market_public": ["mercantile_establishment.n.01", "municipality.n.01"],
+    "water_passage": ["body_of_water.n.01", "way.n.06"],
+    "subterranean": ["cave.n.01", "cellar.n.01"],
+    "tower_height": ["tower.n.01"],
     # threshold_liminal is hard to anchor cleanly in WordNet; rely on the lexicon.
 }
 
@@ -44,13 +51,44 @@ _ANCHORS = {
 # (they are not places: "on his way", "in that place", "in the middle"). Without
 # this guard the fallback invents a space type for them (way -> water_passage).
 _STOPWORDS = {
-    'way', 'place', 'line', 'part', 'thing', 'side', 'area', 'point', 'bit', 'lot',
-    'kind', 'sort', 'number', 'matter', 'deal', 'course', 'rest', 'world', 'one',
-    'end', 'top', 'bottom', 'front', 'back', 'middle', 'edge', 'spot', 'space',
-    'position', 'location', 'distance', 'direction', 'moment', 'time', 'day',
+    "way",
+    "place",
+    "line",
+    "part",
+    "thing",
+    "side",
+    "area",
+    "point",
+    "bit",
+    "lot",
+    "kind",
+    "sort",
+    "number",
+    "matter",
+    "deal",
+    "course",
+    "rest",
+    "world",
+    "one",
+    "end",
+    "top",
+    "bottom",
+    "front",
+    "back",
+    "middle",
+    "edge",
+    "spot",
+    "space",
+    "position",
+    "location",
+    "distance",
+    "direction",
+    "moment",
+    "time",
+    "day",
 }
 
-UNCLASSIFIED = 'unclassified'
+UNCLASSIFIED = "unclassified"
 
 _lexicon_cache = None
 
@@ -59,11 +97,12 @@ def _default_lexicon_path():
     """lib/symbolic_space_typology.csv, via GUI_IO_util.libPath when available."""
     try:
         import GUI_IO_util
-        return os.path.join(GUI_IO_util.libPath, 'symbolic_space_typology.csv')
+
+        return os.path.join(GUI_IO_util.libPath, "symbolic_space_typology.csv")
     except Exception:
         # Fallback: <repo>/lib next to this file's src/ folder.
         repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        return os.path.join(repo, 'lib', 'symbolic_space_typology.csv')
+        return os.path.join(repo, "lib", "symbolic_space_typology.csv")
 
 
 def load_lexicon(path=None):
@@ -74,10 +113,10 @@ def load_lexicon(path=None):
     p = path or _default_lexicon_path()
     lex = {}
     if os.path.isfile(p):
-        with open(p, encoding='utf-8-sig', newline='') as f:
+        with open(p, encoding="utf-8-sig", newline="") as f:
             for row in csv.DictReader(f):
-                term = (row.get('term') or '').strip().lower()
-                cat = (row.get('category') or '').strip()
+                term = (row.get("term") or "").strip().lower()
+                cat = (row.get("category") or "").strip()
                 if term and cat:
                     lex[term] = cat
     if path is None:
@@ -128,7 +167,7 @@ def classify(word, lexicon=None, use_wordnet=True):
     lex = lexicon if lexicon is not None else load_lexicon()
     if w in lex:
         return lex[w]
-    if ' ' in w:
+    if " " in w:
         last = w.split()[-1]
         if last in lex:
             return lex[last]

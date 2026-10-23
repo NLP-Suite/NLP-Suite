@@ -19,6 +19,7 @@ from tkinter import filedialog
 import math
 import webbrowser
 import re
+
 # import datetime
 from datetime import datetime
 import subprocess
@@ -43,19 +44,24 @@ import IO_csv_util
 dir_path = os.path.dirname(os.path.realpath(__file__))
 os.chdir(dir_path)
 # insert the src dir
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), ".")))
+
 
 # check if a directory exists, remove if it does, and create
-def make_directory(newDirectory,silent=True):
+def make_directory(newDirectory, silent=True):
     createDir = True
     # newDirectory=''
     # Got permission denied error if the folder is read-only.
     # Updates permission automatically
     if os.path.exists(newDirectory):
         if not silent:
-            result = mb.askyesno('Directory already exists',
-                                        'There already exists a directory\n\n' + newDirectory + '\n\nThis directory will be replaced.\n\nAre you sure you want to continue?',
-                                        default='yes')  # unattended/NLP_SILENT: proceed (replace)
+            result = mb.askyesno(
+                "Directory already exists",
+                "There already exists a directory\n\n"
+                + newDirectory
+                + "\n\nThis directory will be replaced.\n\nAre you sure you want to continue?",
+                default="yes",
+            )  # unattended/NLP_SILENT: proceed (replace)
             if not result:
                 # createDir = False
                 # return createDir
@@ -67,50 +73,57 @@ def make_directory(newDirectory,silent=True):
     except Exception as e:
         print("error: ", e.__doc__)
         # createDir = False
-        newDirectory=''
+        newDirectory = ""
     # return createDir
     return newDirectory
 
+
 def make_output_subdirectory(inputFilename, inputDir, outputDir, label, silent=True):
-    outputSubDir=''
-    if inputFilename!='':
+    outputSubDir = ""
+    if inputFilename != "":
         # process file
         inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
         outputSubDir = os.path.join(outputDir, label + "_" + inputFileBase)  # + "_CoRefed_files")
-    elif inputDir!='':
+    elif inputDir != "":
         # processing a directory
         inputDirBase = os.path.basename(inputDir)
         outputSubDir = os.path.join(outputDir, label + "_" + inputDirBase)
-    elif label != '':
+    elif label != "":
         outputSubDir = os.path.join(outputDir, label)
     else:
         outputSubDir = outputDir
     if os.path.exists(outputSubDir):
         if not silent:
-            result = mb.askyesno('Directory already exists',
-                                        'The algorithms will create a new directory\n\n' + outputSubDir + '\n\nA directory by the same name already exists and it will be replaced.\n\nAre you sure you want to continue?',
-                                        default='yes')  # unattended/NLP_SILENT: proceed (replace)
+            result = mb.askyesno(
+                "Directory already exists",
+                "The algorithms will create a new directory\n\n"
+                + outputSubDir
+                + "\n\nA directory by the same name already exists and it will be replaced.\n\nAre you sure you want to continue?",
+                default="yes",
+            )  # unattended/NLP_SILENT: proceed (replace)
             if not result:
                 # createDir = False
                 # return createDir
-                return ''
+                return ""
         try:
             shutil.rmtree(outputSubDir)
         except Exception as e:
-            mb.showwarning(title='Directory error',
-                           message="Could not remove the directory " + outputSubDir + "\n\n" + str(e))
-            outputSubDir = ''
+            mb.showwarning(
+                title="Directory error", message="Could not remove the directory " + outputSubDir + "\n\n" + str(e)
+            )
+            outputSubDir = ""
     try:
         # chmod() changes the mode of path to the passed numeric mode
-        if outputSubDir != '':
+        if outputSubDir != "":
             os.chmod(Path(outputSubDir).parent.absolute(), 0o755)
             os.mkdir(outputSubDir, 0o755)
     except Exception as e:
-        mb.showwarning(title='Directory error',
-                       message="Could not create the directory " + outputSubDir + "\n\n" + str(e))
+        mb.showwarning(
+            title="Directory error", message="Could not create the directory " + outputSubDir + "\n\n" + str(e)
+        )
         print("error: ", e.__doc__)
         # createDir = False
-        outputSubDir=''
+        outputSubDir = ""
 
     return outputSubDir
 
@@ -121,12 +134,12 @@ def make_output_subdirectory(inputFilename, inputDir, outputDir, label, silent=T
 # 		os.path.normpath(folder)))
 # 	for filename in files:
 # https://thispointer.com/python-how-to-get-list-of-files-in-directory-and-sub-directories/
-def getFileList_SubDir(inputFilename, inputDir, fileType='.*', silent=False):
+def getFileList_SubDir(inputFilename, inputDir, fileType=".*", silent=False):
     files = []
-    if inputDir!='':
+    if inputDir != "":
         if not checkDirectory(inputDir):
             return files
-        for path in Path(inputDir).rglob('*' + fileType):
+        for path in Path(inputDir).rglob("*" + fileType):
             if is_sidecar_file(path):
                 continue
             files.append(str(path))
@@ -137,8 +150,12 @@ def getFileList_SubDir(inputFilename, inputDir, fileType='.*', silent=False):
             files = [inputFilename]
         else:
             if not silent:
-                mb.showwarning(title='Input file error',
-                               message='The input file type expected by the algorithm is ' + fileType + '.\n\nPlease, select the expected file type and try again.')
+                mb.showwarning(
+                    title="Input file error",
+                    message="The input file type expected by the algorithm is "
+                    + fileType
+                    + ".\n\nPlease, select the expected file type and try again.",
+                )
     # folder, subs, files = os.walk(inputDir)
     # filter files for the desired extension
     # if fileType!='.*':
@@ -167,8 +184,6 @@ def getFileList_SubDir(inputFilename, inputDir, fileType='.*', silent=False):
 # https://thispointer.com/python-how-to-get-list-of-files-in-directory-and-sub-directories/
 
 
-
-
 import functools
 from datetime import datetime
 import os
@@ -184,6 +199,8 @@ rule_to_format = {
     "yyyy-mm": "%Y-%m",
     "yyyy": "%Y",
 }
+
+
 def parse_date(date_str, date_formats):
     # the parse date takes in a string like 09-19-2002 and converts using a date formats defined above
     try:
@@ -191,47 +208,64 @@ def parse_date(date_str, date_formats):
     except ValueError:
         pass
     return None
+
+
 # this below function attempts to make it more clear in structure.
 def help_date(c1, c2, date_loc, file_end, compare_date):
-    val1 = parse_date(c1[date_loc].replace(file_end, ''), compare_date)
-    val2 = parse_date(c2[date_loc].replace(file_end, ''), compare_date)
+    val1 = parse_date(c1[date_loc].replace(file_end, ""), compare_date)
+    val2 = parse_date(c2[date_loc].replace(file_end, ""), compare_date)
 
     if val1 is not None and val2 is not None:
-        return val1<val2
+        return val1 < val2
     return -1
+
+
 def complete_order(bb, c):
     # Helper function. usage: bb is the number, for instance 4. c is the list of preference, that is not complete.
     # for instance bb = 5, c = [1,3,4], then out = [0,2,3,1,4]. In short, it seeks
     # to find a sequence where the desired sequence is preserved, and following that complement item
     # index will be in order. This way the self compared function can be properly
     # instantiated.
-    all_elements = set(range(1, bb+1))
+    all_elements = set(range(1, bb + 1))
     non_appearing_elements = list(all_elements.difference(set(c)))
     non_appearing_elements.sort()
-    return [x-1 for x in (c+ non_appearing_elements)]
-  ##############
-  # example: input_list: a lists of files
-    # compare_split, what do you want to be splitting each file. For instance, a_b_1989.txt, has it _.
-    # compare_date, what form of date do you want to be compared. For instance, YYYY
-    # file_end, what file ending is the file, for instance, .txt in the above case
-    # date_loc, where is your date location. For instance, the above is 3 (natural order).
-    # ordering: the string like "2,3"
+    return [x - 1 for x in (c + non_appearing_elements)]
 
+
+##############
+# example: input_list: a lists of files
+# compare_split, what do you want to be splitting each file. For instance, a_b_1989.txt, has it _.
+# compare_date, what form of date do you want to be compared. For instance, YYYY
+# file_end, what file ending is the file, for instance, .txt in the above case
+# date_loc, where is your date location. For instance, the above is 3 (natural order).
+# ordering: the string like "2,3"
 
 
 def do_compare(input_list, file_end, sort_order, compare_split, date_format, date_loc):
     def compare(filename1, filename2):
         if not compare_split in filename1:
-            print("Non fatal filename error in filename separator. Error ignored.\nThe filename separator '" + compare_split + "' stored for the filenames in your corpus is not contained in the filename\n   " + filename1 + "\nYou should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration at the top of the GUI.\n\n")
+            print(
+                "Non fatal filename error in filename separator. Error ignored.\nThe filename separator '"
+                + compare_split
+                + "' stored for the filenames in your corpus is not contained in the filename\n   "
+                + filename1
+                + "\nYou should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration at the top of the GUI.\n\n"
+            )
             return -1
         if not compare_split in filename2:
             #  The information may have been entered incorrectly when setting up INPUT/OUTPUT (I/O) configuration. Please, check and edit the information. The information may have been entered incorrectly when setting up INPUT/OUTPUT (I/O) configuration. Please, check and edit the information.
-            print("Non fatal filename error in filename separator. Error ignored.\nThe filename separator '" + compare_split + "' stored for the filenames in your corpus is not contained in the filename\n   " + filename2 + "\nYou should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration at the top of the GUI.\n\n")
+            print(
+                "Non fatal filename error in filename separator. Error ignored.\nThe filename separator '"
+                + compare_split
+                + "' stored for the filenames in your corpus is not contained in the filename\n   "
+                + filename2
+                + "\nYou should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration at the top of the GUI.\n\n"
+            )
             return -1
 
         try:
-            filename1 = os.path.basename(filename1).replace(file_end, '')
-            filename2 = os.path.basename(filename2).replace(file_end, '')
+            filename1 = os.path.basename(filename1).replace(file_end, "")
+            filename2 = os.path.basename(filename2).replace(file_end, "")
 
             if compare_split in filename1 and compare_split in filename2:
                 # scenario where filenames contain separators
@@ -260,37 +294,52 @@ def do_compare(input_list, file_end, sort_order, compare_split, date_format, dat
                     return -1 if val1 < val2 else 1
         except:
             # The following pair of filenames are incompatible with the
-            print("Non fatal filename error: date error. Error ignored.\nThe date format " + date_format + " and/or date location " + str(date_location) + " stored for the filenames in your corpus are not valid for the filename\n   " + filename2 + "\nYou should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration at the top of the GUI.\n\n")
+            print(
+                "Non fatal filename error: date error. Error ignored.\nThe date format "
+                + date_format
+                + " and/or date location "
+                + str(date_location)
+                + " stored for the filenames in your corpus are not valid for the filename\n   "
+                + filename2
+                + "\nYou should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration at the top of the GUI.\n\n"
+            )
             print(filename1, "\n", filename2)
             return -1
 
     return sorted(input_list, key=functools.cmp_to_key(compare))
 
 
-def getFileListOld(inputFile, inputDir, fileType='.*',silent=False):
+def getFileListOld(inputFile, inputDir, fileType=".*", silent=False):
     files = []
-    if inputDir != '':
+    if inputDir != "":
         if not checkDirectory(inputDir):
             return files
-        for path in Path(inputDir).glob('*' + fileType):
+        for path in Path(inputDir).glob("*" + fileType):
             files.append(str(path))
         if len(files) == 0:
-            mb.showwarning(title='Input files error',
-                           message='No files of type ' + fileType + ' found in the directory\n\n' + inputDir)
+            mb.showwarning(
+                title="Input files error",
+                message="No files of type " + fileType + " found in the directory\n\n" + inputDir,
+            )
     else:
         if not checkFile(inputFile):
             return files
         if inputFile.endswith(fileType):
             files = [inputFile]
         else:
-            mb.showwarning(title='Input file error',
-                           message='The input file type expected by the algorithm is ' + fileType + '.\n\nPlease, select the expected file type and try again.')
+            mb.showwarning(
+                title="Input file error",
+                message="The input file type expected by the algorithm is "
+                + fileType
+                + ".\n\nPlease, select the expected file type and try again.",
+            )
     return files
+
+
 # Files the Suite (or Windows) drops INTO a corpus folder, which are not documents and must never be
 # analysed as if they were. _pkl_version.txt is the worst of them because it ends in .txt: a corpus of
 # five newspaper articles was being read as six documents, the sixth being a version number.
-SIDECAR_FILES = {'_pkl_version.txt', '_pkl_version.dat', 'gis_settings.json',
-                 'desktop.ini', 'thumbs.db', '.ds_store'}
+SIDECAR_FILES = {"_pkl_version.txt", "_pkl_version.dat", "gis_settings.json", "desktop.ini", "thumbs.db", ".ds_store"}
 
 
 def is_sidecar_file(path):
@@ -298,20 +347,22 @@ def is_sidecar_file(path):
     return os.path.basename(str(path)).lower() in SIDECAR_FILES
 
 
-def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=''): #New
+def getFileList(inputFile, inputDir, fileType=".*", silent=False, configFileName=""):  # New
     files = []
 
-    if inputDir != '':
+    if inputDir != "":
         if not checkDirectory(inputDir):
             return files
-        for path in Path(inputDir).glob('*' + fileType):
+        for path in Path(inputDir).glob("*" + fileType):
             if is_sidecar_file(path):
                 continue
             files.append(str(path))
         if len(files) == 0:
             if not silent:
-                mb.showwarning(title='Input files error',
-                               message='No files of type ' + fileType + ' found in the directory\n\n' + inputDir)
+                mb.showwarning(
+                    title="Input files error",
+                    message="No files of type " + fileType + " found in the directory\n\n" + inputDir,
+                )
     else:
         if not checkFile(inputFile):
             return files
@@ -319,42 +370,64 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=
             files = [inputFile]
         else:
             if not silent:
-                mb.showwarning(title='Input file error',
-                               message='The input file type expected by the algorithm is ' + fileType + '.\n\nPlease, select the expected file type and try again.')
-    #print(inputDir)
+                mb.showwarning(
+                    title="Input file error",
+                    message="The input file type expected by the algorithm is "
+                    + fileType
+                    + ".\n\nPlease, select the expected file type and try again.",
+                )
+    # print(inputDir)
 
     # append sort order and separator
     # unfortunately, the sort order is saved as first column in the config file and separator second,
     #   contrary to the display in the IO setup GUI)
-    if configFileName!='':
+    if configFileName != "":
         head, tail = os.path.split(configFileName)
-        if head=='':
+        if head == "":
             configFileName = GUI_IO_util.configPath + os.sep + configFileName
         import pandas as pd
+
         try:
-            a = pd.read_csv(configFileName, index_col=False,encoding='utf-8',on_bad_lines='skip')
+            a = pd.read_csv(configFileName, index_col=False, encoding="utf-8", on_bad_lines="skip")
         except:
-            if configFileName=='NLP_default_IO_config.csv':
+            if configFileName == "NLP_default_IO_config.csv":
                 if not silent:
-                    mb.showwarning(title='Input config file error',
-                               message='The default I/O config file ' + configFileName + ' does not exist.\n\nPlease, use the "Setup INPUT/OUTPUT configuration" button to setup the I/O config file and try again.')
+                    mb.showwarning(
+                        title="Input config file error",
+                        message="The default I/O config file "
+                        + configFileName
+                        + ' does not exist.\n\nPlease, use the "Setup INPUT/OUTPUT configuration" button to setup the I/O config file and try again.',
+                    )
             else:
                 if not silent:
-                    mb.showwarning(title='Input config file error',
-                               message='The GUI-specific config file ' + configFileName + ' does not exist.\n\nPlease, use the dropdown menu "I/O configuration" to select the GUI-specific option, then click on "Setup INPUT/OUTPUT configuration" button to setup the GUI-specific I/O config file and try again.')
+                    mb.showwarning(
+                        title="Input config file error",
+                        message="The GUI-specific config file "
+                        + configFileName
+                        + ' does not exist.\n\nPlease, use the dropdown menu "I/O configuration" to select the GUI-specific option, then click on "Setup INPUT/OUTPUT configuration" button to setup the GUI-specific I/O config file and try again.',
+                    )
             return files
         # drop records with nan in Sort order
-        a = a.dropna(subset=['Sort order'])
+        a = a.dropna(subset=["Sort order"])
         try:
-            sort_order = str(a['Sort order'][1])
+            sort_order = str(a["Sort order"][1])
         except:
             # using an old config without Sort order field, the code would break
             sort_order = 0
 
-        if str(sort_order) == '0' and inputDir!='':
+        if str(sort_order) == "0" and inputDir != "":
             sort_order = "1"
-            IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
-                        "No sort order available. Files will be read without sorting.\nIf you wish to sort the input files in a specific order, you should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration' at the top of the GUI.\n\n", False,'',True,'',False)
+            IO_user_interface_util.timed_alert(
+                GUI_util.window,
+                2000,
+                "Warning",
+                "No sort order available. Files will be read without sorting.\nIf you wish to sort the input files in a specific order, you should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration' at the top of the GUI.\n\n",
+                False,
+                "",
+                True,
+                "",
+                False,
+            )
 
         try:
             aa = float(sort_order)
@@ -364,26 +437,26 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=
             pass
 
         try:
-            separator = a['Item separator character(s)'][1]
+            separator = a["Item separator character(s)"][1]
         except:
             # using an old config without Sort order field, the code would break
-            separator = ''
+            separator = ""
 
-        if str(separator)=="nan":
-            separator=' '
+        if str(separator) == "nan":
+            separator = " "
 
         try:
-            date_format = a['Date format'][1]
+            date_format = a["Date format"][1]
         except:
             # using an old config without Sort order field, the code would break
-            date_format = ''
+            date_format = ""
 
         try:
-            date_pos = int(a['Date position'][1])
+            date_pos = int(a["Date position"][1])
         except:
             # using an old config without Sort order field, the code would break
             try:
-                date_pos = int(a['Date position'][1]) # changed to 0 from 1
+                date_pos = int(a["Date position"][1])  # changed to 0 from 1
             except:
                 date_pos = 9e999
 
@@ -394,29 +467,30 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=
     return files
 
 
-def selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, outputFileVar=None,
-               initialFolder=''):
+def selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, outputFileVar=None, initialFolder=""):
     inputFilename = ""
     # print(fileType, extension, GUI_util.outputDir.get())
-    if initialFolder == '':
+    if initialFolder == "":
         # initialFolder = os.path.dirname(os.path.abspath(__file__)) # this sets itself on NLP\src
-        if extension == '.txt':
+        if extension == ".txt":
             initialFolder = GUI_IO_util.sampleData_libPath
         else:
-            if GUI_util.output_dir_path.get()!='' and extension == '.csv':
+            if GUI_util.output_dir_path.get() != "" and extension == ".csv":
                 initialFolder = GUI_util.input_main_dir_path.get()
     if IsInputFile == True:  # as opposed to output file
         # when the file string is blank, the directory option should always also be available
         inputFilename = tk.filedialog.askopenfilename(initialdir=initialFolder, title=title, filetypes=fileType)
         from os.path import splitext
+
         file_name, extension = splitext(inputFilename)
     else:
         if outputFileVar != None:
             outputFilename = outputFileVar
-            inputFilename = tk.filedialog.asksaveasfile(initialdir=initialFolder, initialfile=outputFilename.get(),
-                                                   title=title, filetypes=fileType)
+            inputFilename = tk.filedialog.asksaveasfile(
+                initialdir=initialFolder, initialfile=outputFilename.get(), title=title, filetypes=fileType
+            )
         else:
-            print('Error in output file name creation')
+            print("Error in output file name creation")
     # when the file string is blank, the directory option should always also be available
     if inputFilename is None:
         inputFilename = ""
@@ -429,8 +503,8 @@ def selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, outp
     return inputFilename
 
 
-def selectDirectory(title, initialFolder=''):
-    if initialFolder == '':
+def selectDirectory(title, initialFolder=""):
+    if initialFolder == "":
         # initialFolder = os.path.dirname(os.path.abspath(__file__)) NLP\src
         initialFolder = GUI_IO_util.sampleData_libPath
     path = tk.filedialog.askdirectory(initialdir=initialFolder, title=title)
@@ -456,8 +530,7 @@ def safe_xml_parser():
         from lxml import etree
     except Exception:
         return None
-    return etree.XMLParser(resolve_entities=False, no_network=True,
-                           load_dtd=False, huge_tree=False)
+    return etree.XMLParser(resolve_entities=False, no_network=True, load_dtd=False, huge_tree=False)
 
 
 # A CMap name comes out of the pdf being converted. pdfminer turns it into "<name>.pickle.gz" and
@@ -472,7 +545,7 @@ def safe_xml_parser():
 # fix cannot be installed. Every real CMap name is a plain file-name component from pdfminer's own
 # directory - "UniJIS-UCS2-H", "90ms-RKSJ-V", "to-unicode-Adobe-Japan1" - so a whitelist of what a
 # name may contain is both sufficient and easy to be sure of.
-_CMAP_NAME_OK = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._+-]*$')
+_CMAP_NAME_OK = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._+-]*$")
 
 
 def is_safe_cmap_name(name):
@@ -482,13 +555,13 @@ def is_safe_cmap_name(name):
     # pdfminer strips NULs and carries on, so a NUL cannot itself escape the directory - but no real
     # CMap name contains one, and a name that has been tampered with is not one to reason about
     # twice. Rejected outright.
-    if '\x00' in name:
+    if "\x00" in name:
         return False
     if not name or len(name) > 128:
         return False
-    if not _CMAP_NAME_OK.match(name):        # excludes / \ : ~ spaces, and anything exotic
+    if not _CMAP_NAME_OK.match(name):  # excludes / \ : ~ spaces, and anything exotic
         return False
-    if '..' in name:                         # traversal, even though the charset already blocks /
+    if ".." in name:  # traversal, even though the charset already blocks /
         return False
     return True
 
@@ -505,19 +578,20 @@ def harden_pdfminer_cmap():
         from pdfminer.cmapdb import CMapDB
     except Exception:
         return False
-    if getattr(CMapDB._load_data, '_nlp_suite_guarded', False):
+    if getattr(CMapDB._load_data, "_nlp_suite_guarded", False):
         return True
 
-    original = CMapDB._load_data.__func__ if hasattr(CMapDB._load_data, '__func__') \
-        else CMapDB._load_data
+    original = CMapDB._load_data.__func__ if hasattr(CMapDB._load_data, "__func__") else CMapDB._load_data
 
     def guarded(cls, name):
         if not is_safe_cmap_name(name):
             # NOT silent: a pdf naming a CMap outside pdfminer's own directory is either broken or
             # hostile, and either way the user should be able to find out why the text is thinner.
-            print('>>> pdf conversion: refused a CMap name that points outside pdfminer\'s cmap '
-                  'directory (%r). The pdf is malformed or malicious; continuing without it.'
-                  % (name if isinstance(name, str) else type(name).__name__))
+            print(
+                ">>> pdf conversion: refused a CMap name that points outside pdfminer's cmap "
+                "directory (%r). The pdf is malformed or malicious; continuing without it."
+                % (name if isinstance(name, str) else type(name).__name__)
+            )
             raise CMapDB.CMapNotFound(name)
         return original(cls, name)
 
@@ -550,88 +624,96 @@ def open_in_desktop(path):
         pass
 
     attempts = []
-    if sys.platform == 'win32':
+    if sys.platform == "win32":
         # explorer.exe hands the path to the registered handler and returns immediately; it reports
         # a non-zero exit code even on success, which is why nothing here waits on it
-        attempts.append(['explorer.exe', path])
-        attempts.append(['cmd', '/c', 'start', '', path])
-    elif sys.platform == 'darwin':
-        attempts.append(['open', path])
+        attempts.append(["explorer.exe", path])
+        attempts.append(["cmd", "/c", "start", "", path])
+    elif sys.platform == "darwin":
+        attempts.append(["open", path])
     else:
-        attempts.append(['xdg-open', path])
+        attempts.append(["xdg-open", path])
 
-    kwargs = {'close_fds': True}
-    if sys.platform == 'win32':
+    kwargs = {"close_fds": True}
+    if sys.platform == "win32":
         # no console window when the suite is launched by pythonw or from the frozen build
-        kwargs['creationflags'] = getattr(subprocess, 'CREATE_NO_WINDOW', 0x08000000)
+        kwargs["creationflags"] = getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000)
 
     for cmd in attempts:
         try:
             subprocess.Popen(cmd, **kwargs)
             return True
         except Exception as e:
-            print('   open_in_desktop: %s failed (%s)' % (cmd[0], e))
+            print("   open_in_desktop: %s failed (%s)" % (cmd[0], e))
 
     try:
         import webbrowser
-        if webbrowser.open('file:///' + path.replace('\\', '/')):
+
+        if webbrowser.open("file:///" + path.replace("\\", "/")):
             return True
     except Exception as e:
-        print('   open_in_desktop: webbrowser failed (%s)' % e)
+        print("   open_in_desktop: webbrowser failed (%s)" % e)
 
     try:
-        os.startfile(path)          # last resort; see the warning above  # noqa: S606
+        os.startfile(path)  # last resort; see the warning above  # noqa: S606
         return True
     except Exception as e:
-        print('   open_in_desktop: os.startfile failed (%s)' % e)
+        print("   open_in_desktop: os.startfile failed (%s)" % e)
     return False
 
 
 def openExplorer(window, directory):
     if not os.path.isdir(directory):
-        mb.showwarning(title='Input dir error',message='The directory ' + directory + ' does not exist. It must have been removed.\n\nPlease, select a different directory and try again.')
+        mb.showwarning(
+            title="Input dir error",
+            message="The directory "
+            + directory
+            + " does not exist. It must have been removed.\n\nPlease, select a different directory and try again.",
+        )
     if not open_in_desktop(directory):
         print("OS error in accessing directory")
 
+
 # when called from GUI_util command=lambda we open the file
 # when called from NLP_setup_IO_main we just want to remove the date portion from the filename without opening the file
-def open_file_removing_date_from_filename(window,inputFile, open):
-    if ' (Date: ' in inputFile:
-        char_pos = inputFile.find(' (Date: ')
-        inputFile = inputFile[:char_pos] # remove the date portion (e.g., (Date: mm-dd-yyyy, _, 4) from the filename
+def open_file_removing_date_from_filename(window, inputFile, open):
+    if " (Date: " in inputFile:
+        char_pos = inputFile.find(" (Date: ")
+        inputFile = inputFile[:char_pos]  # remove the date portion (e.g., (Date: mm-dd-yyyy, _, 4) from the filename
         inputFile.rstrip()
     if open:
         openFile(window, inputFile)
     return inputFile
 
+
 # when called from GUI_util command=lambda we open the directory
 # when called from NLP_setup_IO_main we just want to remove the date portion from the directory without opening the directory
-def open_directory_removing_date_from_directory(window,inputDir, open):
-    if ' (Date: ' in inputDir:
-        char_pos = inputDir.find(' (Date: ')
-        inputDir = inputDir[:char_pos] # remove the date portion (e.g., (Date: mm-dd-yyyy, _, 4) from the dir name
+def open_directory_removing_date_from_directory(window, inputDir, open):
+    if " (Date: " in inputDir:
+        char_pos = inputDir.find(" (Date: ")
+        inputDir = inputDir[:char_pos]  # remove the date portion (e.g., (Date: mm-dd-yyyy, _, 4) from the dir name
         inputDir.rstrip()
     if open:
         openExplorer(window, inputDir)
     return inputDir
 
+
 # returns date, dateStr
-def getDateFromFileName(file_name, date_format='mm-dd-yyyy', sep='_', date_field_position=2, errMsg=True):
+def getDateFromFileName(file_name, date_format="mm-dd-yyyy", sep="_", date_field_position=2, errMsg=True):
 
     # configFile_basename is the filename w/o the full path
     file_name = ntpath.basename(file_name)
     x = file_name
 
-    reminders_util.checkReminder(file_name,
-                                 reminders_util.title_options_date_embedded,
-                                 reminders_util.message_date_embedded,
-                                 False)
+    reminders_util.checkReminder(
+        file_name, reminders_util.title_options_date_embedded, reminders_util.message_date_embedded, False
+    )
     # must assign or you get an error in return
-    date = ''
-    month=''
-    day=''
-    year=''
-    dateStr = ''
+    date = ""
+    month = ""
+    day = ""
+    year = ""
+    dateStr = ""
     if 1:
         startSearch = 0
         iteration = 0
@@ -646,143 +728,167 @@ def getDateFromFileName(file_name, date_format='mm-dd-yyyy', sep='_', date_field
         if date_field_position == 1:
             raw_date = x[startSearch:end]
         else:
-            raw_date = x[startSearch + 1:end]
+            raw_date = x[startSearch + 1 : end]
         # Normalize separators to '-' so slash/dot date formats (e.g. 'mm/dd/yyyy', which has no
         # dedicated branch below) are handled by the hyphen-based branches, and so the date's
         # actual separator in the filename need not match the configured format separator.
-        date_format = date_format.replace('/', '-').replace('.', '-')
-        raw_date = raw_date.replace('/', '-').replace('.', '-')
+        date_format = date_format.replace("/", "-").replace(".", "-")
+        raw_date = raw_date.replace("/", "-").replace(".", "-")
         # https://docs.python.org/2/library/datetime.html#strftime-strptime-behavior
         # the strptime command (strptime(date_string, format) takes date_string and formats it according to format where format has the following values:
         # %m 09 %-m 9 (does not work on all platforms); %d 07 %-d 7 (does not work on all platforms);
         # loop through INPUT date formats and change format to Python style
         # print('DATEFORMAT',date_format)
         try:
-            dateStr = ''
-            if date_format == 'mm-dd-yyyy':
+            dateStr = ""
+            if date_format == "mm-dd-yyyy":
                 # date = datetime.datetime.strptime(raw_date, '%m-%d-%Y').date()
                 # dateStr = date.strftime('%Y-%m-%d')
                 # month=dateStr[5:7]
                 # day=dateStr[8:10]
                 # year=dateStr[:4]
-                date = datetime.strptime(raw_date, '%m-%d-%Y').date()
-                dateStr = date.strftime('%m-%d-%Y')
-                month=dateStr[0:2]
-                day=dateStr[3:5]
-                year=dateStr[6:10]
-            elif date_format == 'dd-mm-yyyy':
+                date = datetime.strptime(raw_date, "%m-%d-%Y").date()
+                dateStr = date.strftime("%m-%d-%Y")
+                month = dateStr[0:2]
+                day = dateStr[3:5]
+                year = dateStr[6:10]
+            elif date_format == "dd-mm-yyyy":
                 # date = datetime.datetime.strptime(raw_date, '%d-%m-%Y').date()
                 # month=dateStr[5:7]
                 # day=dateStr[8:10]
                 # year=dateStr[:4]
-                date = datetime.strptime(raw_date, '%d-%m-%Y').date()
-                dateStr = date.strftime('%d-%m-%Y')
-                day=dateStr[0:2]
-                month=dateStr[3:5]
-                year=dateStr[6:10]
-            elif date_format == 'yyyy-mm-dd':
+                date = datetime.strptime(raw_date, "%d-%m-%Y").date()
+                dateStr = date.strftime("%d-%m-%Y")
+                day = dateStr[0:2]
+                month = dateStr[3:5]
+                year = dateStr[6:10]
+            elif date_format == "yyyy-mm-dd":
                 # date = datetime.datetime.strptime(raw_date, '%Y-%m-%d').date()
                 # month=dateStr[5:7]
                 # day=dateStr[8:10]
                 # year=dateStr[:4]
-                date = datetime.strptime(raw_date, '%Y-%m-%d').date()
-                dateStr = date.strftime('%Y-%m-%d')
-                year=dateStr[0:4]
-                month=dateStr[5:7]
-                day=dateStr[8:10]
-            elif date_format == 'yyyy-dd-mm':
+                date = datetime.strptime(raw_date, "%Y-%m-%d").date()
+                dateStr = date.strftime("%Y-%m-%d")
+                year = dateStr[0:4]
+                month = dateStr[5:7]
+                day = dateStr[8:10]
+            elif date_format == "yyyy-dd-mm":
                 # date = datetime.datetime.strptime(raw_date, '%Y-%d-%m').date()
                 # month=dateStr[5:7]
                 # day=dateStr[8:10]
                 # year=dateStr[:4]
-                date = datetime.strptime(raw_date, '%Y-%d-%m').date()
-                dateStr = date.strftime('%Y-%d-%m')
-                year=dateStr[:4]
-                day=dateStr[5:7]
-                month=dateStr[8:10]
-            elif date_format == 'yyyy-mm':
+                date = datetime.strptime(raw_date, "%Y-%d-%m").date()
+                dateStr = date.strftime("%Y-%d-%m")
+                year = dateStr[:4]
+                day = dateStr[5:7]
+                month = dateStr[8:10]
+            elif date_format == "yyyy-mm":
                 # date = datetime.datetime.strptime(raw_date, '%Y-%m').date()
                 # month=dateStr[5:7]
                 # day=0
                 # year=dateStr[:4]
-                date = datetime.strptime(raw_date, '%Y-%m').date()
-                dateStr = date.strftime('%Y-%m')
-                year=dateStr[:4]
-                month=dateStr[5:7]
-                day=0
-            elif date_format == 'yyyy':
+                date = datetime.strptime(raw_date, "%Y-%m").date()
+                dateStr = date.strftime("%Y-%m")
+                year = dateStr[:4]
+                month = dateStr[5:7]
+                day = 0
+            elif date_format == "yyyy":
                 # date = datetime.datetime.strptime(raw_date, '%Y').date()
                 # month = 0
                 # day = 0
                 # year = dateStr[:4]
-                date = datetime.strptime(raw_date, '%Y').date()
-                dateStr = date.strftime('%Y')
+                date = datetime.strptime(raw_date, "%Y").date()
+                dateStr = date.strftime("%Y")
                 year = dateStr[:4]
                 month = 0
                 day = 0
-            dateStr = dateStr.replace('/', '-')
+            dateStr = dateStr.replace("/", "-")
         except ValueError:
             if errMsg == True:
                 # mb.showwarning(title='Date format error in filename', message='You have selected the option that your input filename ('+file_name+') embeds a date.\n\nBut... you may have provided\n\n   1. the wrong date format (' + date_format + ')\n   2. the wrong date in the input filename (' + raw_date + ')\n   3. the wrong date position in the filename ('+str(date_field_position)+')\n   4. the wrong date character separator in the filename ('+sep+').\n\nPlease, check your filename and/or the date options in the GUI.\n\nThe date will be set to blank in the output CoNLL table.')
                 # print('\nDate format error in filename. You have selected the option that your input filename ('+file_name+') embeds a date.\n\nBut... you may have provided\n\n   1. the wrong date format (' + date_format + ')\n   2. the wrong date in the input filename (' + raw_date + ')\n   3. the wrong date position in the filename ('+str(date_field_position)+')\n   4. the wrong date character separator in the filename ('+sep+').\n\nPlease, check your filename and/or the date options in the GUI.\n\nThe date will be set to blank in the output CoNLL table.\n')
                 print(
-                    '\nDate format error in filename: ' + file_name + '\n   Date found: ' + raw_date + '; Expected date format: ' + date_format + '; Expected date position: ' + str(
-                        date_field_position) + '; Character separator ' + sep)
-                date = ''  # must assign or you get an error in return
-                dateStr = ''
+                    "\nDate format error in filename: "
+                    + file_name
+                    + "\n   Date found: "
+                    + raw_date
+                    + "; Expected date format: "
+                    + date_format
+                    + "; Expected date position: "
+                    + str(date_field_position)
+                    + "; Character separator "
+                    + sep
+                )
+                date = ""  # must assign or you get an error in return
+                dateStr = ""
     # TODO: see the modification, so we can get a date object and a string from the same method, DO keep this change for the file_classifier to work.
-    int_month=''
-    int_day=''
-    int_year=''
-    if month!='':
-        int_month=int(month)
-    if day!='':
-        int_day=int(day)
-    if year != '':
-        int_year=int(year)
+    int_month = ""
+    int_day = ""
+    int_year = ""
+    if month != "":
+        int_month = int(month)
+    if day != "":
+        int_day = int(day)
+    if year != "":
+        int_year = int(year)
     return date, dateStr, int_month, int_day, int_year
+
 
 def checkDirectory(path, message=True):
     if os.path.isdir(path):
         return True
     else:
         if message:
-            mb.showwarning(title='Directory error',
-                           message='The directory ' + path + ' does not exist. It may have been renamed, deleted, moved.\n\nPlease, check the DIRECTORY and try again')
+            mb.showwarning(
+                title="Directory error",
+                message="The directory "
+                + path
+                + " does not exist. It may have been renamed, deleted, moved.\n\nPlease, check the DIRECTORY and try again",
+            )
         return False
 
 
 # check to make sure the file exists, and optionally that the desired extension matches the file's
 # also gives user the option to generate a message box warning of why
 def checkFile(inputFilename, extension=None, silent=False):
-    if 'reminders.csv' in inputFilename:
+    if "reminders.csv" in inputFilename:
         head, tail = os.path.split(inputFilename)
         reminders_util.generate_reminder_list(head)
     if not os.path.isfile(inputFilename):
         if not silent:
             print("The file " + inputFilename + " could not be found.")
-            mb.showwarning(title='Input file not found',
-                           message='Error in input filename and path.\n\nThe file ' + inputFilename + ' could not be found.\n\nPlease, check the INPUT FILE PATH and try again.')
+            mb.showwarning(
+                title="Input file not found",
+                message="Error in input filename and path.\n\nThe file "
+                + inputFilename
+                + " could not be found.\n\nPlease, check the INPUT FILE PATH and try again.",
+            )
         return False
-    if extension != None and not '.' + inputFilename.rsplit('.', 1)[1] == extension:
+    if extension != None and not "." + inputFilename.rsplit(".", 1)[1] == extension:
         if not silent:
-            print('File has the wrong extension.')
-            mb.showwarning(title='Input file extension error',
-                           message='Error in input filename and path.\n\nThe file ' + inputFilename + ' does not have the expected extension ' + extension + '\n\nPlease, check the INPUT FILE and try again.')
+            print("File has the wrong extension.")
+            mb.showwarning(
+                title="Input file extension error",
+                message="Error in input filename and path.\n\nThe file "
+                + inputFilename
+                + " does not have the expected extension "
+                + extension
+                + "\n\nPlease, check the INPUT FILE and try again.",
+            )
         return False
     else:
         return True
 
 
 # inputFilename contains filename with path
-def open_kmlFile(window,inputFilename):
+def open_kmlFile(window, inputFilename):
     # resolve to an absolute path: a relative path (e.g. 'GIS\\x.kml') would make Google Earth
     # Pro fail with "Could not open file ... for reading"
     try:
         inputFilename = os.path.abspath(inputFilename)
     except Exception:
         pass
-    if sys.platform == 'win32':
+    if sys.platform == "win32":
         # Prefer launching Google Earth Pro directly: the .kml file association is frequently
         # broken/missing, in which case os.startfile (and Explorer double-click) do nothing.
         gep_paths = [
@@ -798,17 +904,20 @@ def open_kmlFile(window,inputFilename):
                     pass
         # fall back to the file association
         if not open_in_desktop(inputFilename):
-            mb.showwarning('Cannot open KML map',
+            mb.showwarning(
+                "Cannot open KML map",
                 "Could not open the KML map automatically.\n\nGoogle Earth Pro was not found at its "
                 "standard install location, and the .kml file type is not associated with it on this PC.\n\n"
-                "Open Google Earth Pro manually and use File > Open to load:\n\n" + str(inputFilename) +
-                "\n\nOr right-click the .kml file > Open with > choose Google Earth Pro (tick 'Always use this app').")
+                "Open Google Earth Pro manually and use File > Open to load:\n\n"
+                + str(inputFilename)
+                + "\n\nOr right-click the .kml file > Open with > choose Google Earth Pro (tick 'Always use this app').",
+            )
         # also webbrowser.open(inputFilename) will open the kml file in GEP
-    elif sys.platform == 'darwin':
-        subprocess.Popen(['open', inputFilename])
+    elif sys.platform == "darwin":
+        subprocess.Popen(["open", inputFilename])
     else:
         try:
-            subprocess.Popen(['xdg-open', inputFilename])
+            subprocess.Popen(["xdg-open", inputFilename])
         except OSError:
             print("OS error in opening file " + inputFilename)
 
@@ -821,14 +930,15 @@ def openFile(window, inputFilename):
         return
     if os.path.isfile(inputFilename):
         # windows
-        if platform in ['win32', 'cygwin']:
-            while True: # repeat until you close
+        if platform in ["win32", "cygwin"]:
+            while True:  # repeat until you close
                 try:
                     os.system('start "" "' + inputFilename + '"')
-                    break # exit loop
+                    break  # exit loop
                 except IOError as e:
-                    mb.showwarning(title='Input file error',
-                                   message="Could not open the file " + inputFilename + "\n\n"+str(e))
+                    mb.showwarning(
+                        title="Input file error", message="Could not open the file " + inputFilename + "\n\n" + str(e)
+                    )
                     if "Errno 22" in str(e):
                         break  # exit loop; the error is not due to file being open
                     # mb.showwarning(title='Input file error',
@@ -836,13 +946,14 @@ def openFile(window, inputFilename):
                     # restart loop
         # macOS and other unix
         else:
-            while True: # repeat until you close
+            while True:  # repeat until you close
                 try:
-                    call(['open', inputFilename])
-                    break # exit loop
+                    call(["open", inputFilename])
+                    break  # exit loop
                 except IOError as e:
-                    mb.showwarning(title='Input file error',
-                                   message="Could not open the file " + inputFilename + "\n\n"+str(e))
+                    mb.showwarning(
+                        title="Input file error", message="Could not open the file " + inputFilename + "\n\n" + str(e)
+                    )
                     if "Errno 22" in str(e):
                         break  # exit loop; the error is not due to file being open
                     # mb.showwarning(title='Input file error',
@@ -855,7 +966,7 @@ def openFile(window, inputFilename):
 
 # open a set of output files (csv, txt,...) stored as a list in filesToOpen []
 # filesToOpen is a single list []
-def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName='', filesToOpenSubset=[]):
+def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName="", filesToOpenSubset=[]):
     if filesToOpen == None:
         return
     if len(filesToOpen) == 0:
@@ -875,39 +986,41 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
     # number of files actually produced this run (before narrowing to the open-subset), so the
     # "N files produced" report stays accurate even when only a curated subset is auto-opened
     nFilesProducedFull = len(filesToOpen)
-    if len(filesToOpenSubset)> 0:
-        filesToOpen=filesToOpenSubset
+    if len(filesToOpenSubset) > 0:
+        filesToOpen = filesToOpenSubset
 
     # you want to check the number of files through all subdir created
     #   only when the output directory is NOT the default output directory
     #   (in which case you potentially get a huge number of files having nothing to do with the script being run)
     check_number_ofFiles = False
-    if outputDir!=GUI_util.output_dir_path.get():
+    if outputDir != GUI_util.output_dir_path.get():
         # check that no output subdir has been created;
         #   e.g., the parse_annotator_main passes only the main output dir rather than the subdir
-        temp_outputDir=outputDir
+        temp_outputDir = outputDir
         check_number_ofFiles = True
     else:
         # get the outputDir from the first output file
         # temp_outputDir = os.path.dirname(outputDir)
-        temp_outputDir=os.path.dirname(filesToOpen[0])
-        if temp_outputDir!=outputDir:
+        temp_outputDir = os.path.dirname(filesToOpen[0])
+        if temp_outputDir != outputDir:
             check_number_ofFiles = True
     split_files = False
     # guard: temp_outputDir can be '' or nonexistent when filesToOpen[0] is a relative/bare path;
     # os.walk would then yield nothing and next() would raise StopIteration
-    if check_number_ofFiles and temp_outputDir and os.path.isdir(temp_outputDir): #outputDir != temp_outputDir: #GUI_util.output_dir_path.get():
+    if (
+        check_number_ofFiles and temp_outputDir and os.path.isdir(temp_outputDir)
+    ):  # outputDir != temp_outputDir: #GUI_util.output_dir_path.get():
         try:
-            subDirs=next(os.walk(temp_outputDir))[1]
+            subDirs = next(os.walk(temp_outputDir))[1]
         except StopIteration:
-            subDirs=[]
+            subDirs = []
         listOfFiles = list()
-        for (dirpath, dirnames, filenames) in os.walk(temp_outputDir):
+        for dirpath, dirnames, filenames in os.walk(temp_outputDir):
             if "split_" in dirpath:
-                split_files=True
+                split_files = True
                 subDirs.remove(os.path.basename(dirpath))
                 continue
-            if len(os.listdir(dirpath))==0:
+            if len(os.listdir(dirpath)) == 0:
                 # remove empty directories
                 shutil.rmtree(dirpath)
                 # remove from list of subDirs
@@ -918,32 +1031,35 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
     else:
         listOfFiles = filesToOpen
         subDirs = []
-    nFiles=len(listOfFiles)
+    nFiles = len(listOfFiles)
     nSubDirs = len(subDirs)
-    subDirs="\n".join(subDirs)
-    label = ''
-    subsetLabel = ''
-    opened_folder_label = ''
+    subDirs = "\n".join(subDirs)
+    label = ""
+    subsetLabel = ""
+    opened_folder_label = ""
 
     nFilesProduced = nFilesProducedFull
     if nFilesProduced == 1:
-        produced_singular_plural = 'file'
+        produced_singular_plural = "file"
     else:
-        produced_singular_plural = 'files'
+        produced_singular_plural = "files"
 
     # WAY TOO MANY is based on the files produced by the CURRENT run, not the total in the directory
-    wayTooMany = ''
+    wayTooMany = ""
     if nFilesProduced > 10:
         wayTooMany = "\n\nWAY TOO MANY TO BE OPENED AUTOMATICALLY."
 
     if nFiles == 1:
-        file_singular_plural='file'
+        file_singular_plural = "file"
     else:
-        file_singular_plural = 'files'
+        file_singular_plural = "files"
 
-    opened_folder_label = "\n\nFor your convenience, the NLP Suite will place you in the main output subdirectory where you can select any other files you want/need to open:\n\n" + temp_outputDir
+    opened_folder_label = (
+        "\n\nFor your convenience, the NLP Suite will place you in the main output subdirectory where you can select any other files you want/need to open:\n\n"
+        + temp_outputDir
+    )
 
-    if nSubDirs==1:
+    if nSubDirs == 1:
         label = " exported to the subfolder:\n\n" + temp_outputDir
     elif nSubDirs > 1:
         label = "  The files are organized in " + str(nSubDirs) + " different subfolders:\n\n" + subDirs
@@ -952,21 +1068,47 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
         opened_folder_label = "\n\nFor your convenience, the NLP Suite will place you in this output subdirectory."
 
     if split_files:
-        label = label + "\n\nA folder containing split files was generated by Stanford CoreNLP to deal with CoreNLP file-size limitation of 99000 characters. " \
-                        "You do not need to be concerned about that; large files will have been split for processing and put back together automatically by the SVO algorithm."
+        label = (
+            label
+            + "\n\nA folder containing split files was generated by Stanford CoreNLP to deal with CoreNLP file-size limitation of 99000 characters. "
+            "You do not need to be concerned about that; large files will have been split for processing and put back together automatically by the SVO algorithm."
+        )
     if nSubDirs > 0:
-        if len(filesToOpenSubset)>0:
-            subsetLabel = "\n\nThe NLP Suite will open next a subset of " + str(len(filesToOpenSubset)) + " most relevant output files from the different subfolders: all charts and main csv files.\n"
+        if len(filesToOpenSubset) > 0:
+            subsetLabel = (
+                "\n\nThe NLP Suite will open next a subset of "
+                + str(len(filesToOpenSubset))
+                + " most relevant output files from the different subfolders: all charts and main csv files.\n"
+            )
 
     # always open outputDir
     openExplorer(window, temp_outputDir)
 
     if nFiles > nFilesProduced:
-        total_label = "\n\nThe output folder contains " + str(nFiles) + " total " + file_singular_plural + " (including files from previous runs)."
+        total_label = (
+            "\n\nThe output folder contains "
+            + str(nFiles)
+            + " total "
+            + file_singular_plural
+            + " (including files from previous runs)."
+        )
     else:
         total_label = ""
-    mb.showwarning(title="Output files",message="The " + scriptName + " has produced " +
-                str(nFilesProduced) + " " + produced_singular_plural + " in output." + total_label + wayTooMany + label + subsetLabel + opened_folder_label)
+    mb.showwarning(
+        title="Output files",
+        message="The "
+        + scriptName
+        + " has produced "
+        + str(nFilesProduced)
+        + " "
+        + produced_singular_plural
+        + " in output."
+        + total_label
+        + wayTooMany
+        + label
+        + subsetLabel
+        + opened_folder_label,
+    )
 
     # Auto-open decision based on files produced by the CURRENT run, not total in directory.
     # A caller that passes filesToOpenSubset has already curated exactly what to open, so honor
@@ -978,9 +1120,9 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
             flat = filesToOpen[0] if (filesToOpen and isinstance(filesToOpen[0], list)) else filesToOpen
             for file in flat:
                 if isinstance(file, str) and os.path.isfile(file) and len(file) <= 256:
-                    if file.endswith('.kml'):
+                    if file.endswith(".kml"):
                         open_kmlFile(window, file)
-                    elif file.endswith('.html') and 'Folium' in file:
+                    elif file.endswith(".html") and "Folium" in file:
                         try:
                             openFile(window, file)
                         except:
@@ -988,29 +1130,44 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
         return
 
     if len(filesToOpen) == 1:
-        singularPlural = 'file'
+        singularPlural = "file"
     else:
-        singularPlural = 'files'
-    if openOutputFiles == True:  # now the approach is to open all files at the end, so this extra check is redundant "and runningAll==False:""
+        singularPlural = "files"
+    if (
+        openOutputFiles == True
+    ):  # now the approach is to open all files at the end, so this extra check is redundant "and runningAll==False:""
         # should display a reminder about csv files with weird characters most likely dues to non utf-8 apostrophes and quotes
         #   but... this reminder does not have a specific config, so... perhaps *?
-        reminders_util.checkReminder('*', reminders_util.title_csv_files, reminders_util.message_weird_characters, True)
-        routine_options = reminders_util.getReminders_list('*')
-        IO_user_interface_util.timed_alert(window, 2000, 'Warning',
-                    'Opening ' + str(len(filesToOpen)) + ' output ' + singularPlural + '... Please wait...', False,'',True,'',True)
+        reminders_util.checkReminder("*", reminders_util.title_csv_files, reminders_util.message_weird_characters, True)
+        routine_options = reminders_util.getReminders_list("*")
+        IO_user_interface_util.timed_alert(
+            window,
+            2000,
+            "Warning",
+            "Opening " + str(len(filesToOpen)) + " output " + singularPlural + "... Please wait...",
+            False,
+            "",
+            True,
+            "",
+            True,
+        )
         if isinstance(filesToOpen[0], list):
             filesToOpen = filesToOpen[0]
         for file in filesToOpen:
             if not os.path.isfile(file):
-                print('The file could not be found by Windows:', file)
+                print("The file could not be found by Windows:", file)
                 continue
             if len(file) > 256:
-                print('The file, with path, has length > then the 256 characters allowed by Windows: ',str(len(file)), file)
+                print(
+                    "The file, with path, has length > then the 256 characters allowed by Windows: ",
+                    str(len(file)),
+                    file,
+                )
                 continue
-            if file == None or file == '':
+            if file == None or file == "":
                 continue
             if os.path.isfile(file):
-                if file.endswith('.kml'):
+                if file.endswith(".kml"):
                     open_kmlFile(window, file)
                 else:
                     try:
@@ -1027,22 +1184,23 @@ def getFileExtension(inputFilename):
     inputfile, extension = os.path.splitext(inputfile)  # remove/take out the extension
     return extension
 
+
 def getFilename(passed_string):
 
     # when X-axis values contain a document dressed for hyperlink and with full path
     #   undressed the hyperlink and only display the tail of the document
-    tail=passed_string
-    tail_noExtension=tail
+    tail = passed_string
+    tail_noExtension = tail
 
-    if isinstance(passed_string, str): # and math.isnan(passed_string) is False
-        if '=hyperlink' in passed_string:
-            passed_string=IO_csv_util.undressFilenameForCSVHyperlink(passed_string)
+    if isinstance(passed_string, str):  # and math.isnan(passed_string) is False
+        if "=hyperlink" in passed_string:
+            passed_string = IO_csv_util.undressFilenameForCSVHyperlink(passed_string)
         if os.path.isfile(passed_string):
             head, tail = os.path.split(passed_string)
-            tail_noExtension = tail.replace(getFileExtension(tail),'')
+            tail_noExtension = tail.replace(getFileExtension(tail), "")
         return tail, tail_noExtension, passed_string
     elif math.isnan(passed_string):
-        return '', '', passed_string
+        return "", "", passed_string
 
 
 # def getFilename(inputFilename):
@@ -1059,7 +1217,7 @@ def getFilename(passed_string):
 # label3,label4,label5 are available options
 def _name_tokens(name):
     """The underscore-separated words of a filename stem, lowercased, for comparison."""
-    return [t for t in str(name).split('_') if t]
+    return [t for t in str(name).split("_") if t]
 
 
 # Characters a Windows filename cannot hold. The COLON is the one that bites without a sound:
@@ -1080,8 +1238,8 @@ def safe_filename_part(name):
     sense); the rest become '_'. Windows also refuses a name ending in a dot or a space, and
     silently strips them, which turns two different names into one.
     """
-    cleaned = _ILLEGAL_IN_FILENAME.sub(lambda m: '-' if m.group() == ':' else '_', str(name))
-    return cleaned.rstrip(' .')
+    cleaned = _ILLEGAL_IN_FILENAME.sub(lambda m: "-" if m.group() == ":" else "_", str(name))
+    return cleaned.rstrip(" .")
 
 
 def label_already_in_name(label, name):
@@ -1096,11 +1254,22 @@ def label_already_in_name(label, name):
     if not want:
         return True
     n = len(want)
-    return any(have[i:i + n] == want for i in range(len(have) - n + 1))
+    return any(have[i : i + n] == want for i in range(len(have) - n + 1))
 
 
-def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtension, label1='', label2='', label3='', label4='',
-                              label5='', useTime=True, disable_suffix=False):
+def generate_output_file_name(
+    inputFilename,
+    inputDir,
+    outputDir,
+    outputExtension,
+    label1="",
+    label2="",
+    label3="",
+    label4="",
+    label5="",
+    useTime=True,
+    disable_suffix=False,
+):
     # ------------------------------------------------------------------------------------------
     # Labels are added ONCE. When one tool's output becomes the next tool's input - the ordinary
     # way a pipeline works here - the input filename already carries the labels of every step that
@@ -1115,7 +1284,7 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
     # unaffected - the names are simply no longer padded with repeats.
     # ------------------------------------------------------------------------------------------
     useTime = False  # files become too long with the addition of datetime
-    if inputDir!='':
+    if inputDir != "":
         Dir = os.path.basename(os.path.normpath(inputDir))
         # ------------------------------------------------------------------------------------
         # "Dir_<corpus>" is a THIRD copy of the corpus name when the output folders already
@@ -1133,13 +1302,13 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
         # Compared against the folder being WRITTEN INTO, not the whole path: any long path
         # eventually contains a short corpus name somewhere ("NLP_output" contains "output"), and
         # dropping the token on that would strip it from files whose folder never named the corpus.
-        _out_folder = os.path.basename(os.path.normpath(str(outputDir))) if outputDir else ''
+        _out_folder = os.path.basename(os.path.normpath(str(outputDir))) if outputDir else ""
         if Dir and _out_folder and Dir.lower() in _out_folder.lower():
-            inputfile = ''
+            inputfile = ""
         else:
-            inputfile='Dir_' + Dir
-        inputfile_noExtension=''
-    elif inputFilename!='':
+            inputfile = "Dir_" + Dir
+        inputfile_noExtension = ""
+    elif inputFilename != "":
         inputfile, inputfile_noExtension, filename_no_hyperlink = getFilename(inputFilename)
         # use inputfile_noExtension for json
         inputfile = inputfile_noExtension
@@ -1148,36 +1317,39 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
         # and os.path.join(outputDir, 'NLP_x_C:\\...') resolves to the drive letter - so the output
         # lands somewhere entirely different from the output directory, silently. Reduce to a bare
         # stem either way.
-        inputfile = os.path.splitext(os.path.basename(str(inputfile).replace('\\', os.sep)))[0]
+        inputfile = os.path.splitext(os.path.basename(str(inputfile).replace("\\", os.sep)))[0]
     else:
-        inputfile = ''
-    default_outputFilename_str =''
+        inputfile = ""
+    default_outputFilename_str = ""
     # a label already carried by the input filename is not repeated
-    if label1 != '' and label_already_in_name(label1, inputfile):
-        label1 = ''
+    if label1 != "" and label_already_in_name(label1, inputfile):
+        label1 = ""
     # do not add the NLP_ prefix if processing a file previously processed and with the prefix already added
-    if inputfile[0:4]!='NLP_': #"NLP_" not in inputfile:
-        if label1=='':
-            default_outputFilename_str = 'NLP_' + inputfile  # adding to front of file name
+    if inputfile[0:4] != "NLP_":  # "NLP_" not in inputfile:
+        if label1 == "":
+            default_outputFilename_str = "NLP_" + inputfile  # adding to front of file name
         else:
-            if inputfile!='':
-                default_outputFilename_str = 'NLP_' + str(label1) + "_" + inputfile  # adding to front of file name
+            if inputfile != "":
+                default_outputFilename_str = "NLP_" + str(label1) + "_" + inputfile  # adding to front of file name
             else:
-                default_outputFilename_str = 'NLP_' + str(label1)   # adding to front of file name
+                default_outputFilename_str = "NLP_" + str(label1)  # adding to front of file name
     else:
-        if label1=='':
-            default_outputFilename_str=inputfile
+        if label1 == "":
+            default_outputFilename_str = inputfile
         else:
-            if inputfile[0:4]=='NLP_': #only replace first 4 characters since NLP may occur elsewhere in the filename
-                default_outputFilename_str = inputfile[0:4].replace('NLP_','NLP_' + label1 + '_') + inputfile[4:]
+            if (
+                inputfile[0:4] == "NLP_"
+            ):  # only replace first 4 characters since NLP may occur elsewhere in the filename
+                default_outputFilename_str = inputfile[0:4].replace("NLP_", "NLP_" + label1 + "_") + inputfile[4:]
     for _label in (label2, label3, label4, label5):
         if len(str(_label)) > 0 and not label_already_in_name(_label, default_outputFilename_str):
             default_outputFilename_str = default_outputFilename_str + "_" + str(_label)
     if useTime == True:
-        default_outputFilename_str = default_outputFilename_str + '_' + re.sub(" ", "_", re.sub(':', '',
-                                                                                                re.sub('-', '_', str(
-                                                                                                    datetime.datetime.now())))[
-                                                                                         :-7])
+        default_outputFilename_str = (
+            default_outputFilename_str
+            + "_"
+            + re.sub(" ", "_", re.sub(":", "", re.sub("-", "_", str(datetime.datetime.now())))[:-7])
+        )
     # Labels come from column headers, chart titles and user text, and some hold characters a
     # filename cannot. See safe_filename_part: this is where a colon in a column name was quietly
     # producing a zero-byte file with no extension. Applied to the NAME only - the output directory
@@ -1187,13 +1359,14 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
     # checking if file with that name exists, if so adding _ and integer to end
     if disable_suffix == False:
         if os.path.isfile(default_outputFilename_str):
-            for i in range(1,
-                           1000):  # can't (and shouldn't) have more than 999 of the same title or last will overwrite
-                default_outputFilename_str = default_outputFilename_str.split('.cs')[0]
-                default_outputFilename_str = default_outputFilename_str + '_' + str(i)
+            for i in range(
+                1, 1000
+            ):  # can't (and shouldn't) have more than 999 of the same title or last will overwrite
+                default_outputFilename_str = default_outputFilename_str.split(".cs")[0]
+                default_outputFilename_str = default_outputFilename_str + "_" + str(i)
                 if os.path.isfile(default_outputFilename_str + outputExtension):
                     # clearing that end integer so it can increment
-                    default_outputFilename_str = default_outputFilename_str.split('_' + str(i))[0]
+                    default_outputFilename_str = default_outputFilename_str.split("_" + str(i))[0]
                     continue
                 else:
                     default_outputFilename_str = default_outputFilename_str + outputExtension
@@ -1201,12 +1374,12 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
     outFilename = os.path.join(outputDir, default_outputFilename_str)
 
     # rename a filename coreferenced by CoreNLP to obtain better filename; NLP_CoreNLP_coref should only be once n the filename
-    if 'NLP_CoreNLP_coref' in outFilename:
-        if outFilename.count('NLP_CoreNLP_coref')>1:
-            outFilename = outFilename.replace('NLP_CoreNLP_coref','coref')
+    if "NLP_CoreNLP_coref" in outFilename:
+        if outFilename.count("NLP_CoreNLP_coref") > 1:
+            outFilename = outFilename.replace("NLP_CoreNLP_coref", "coref")
             # outFilename = 'NLP_CoreNLP_coref'+outFilename
 
-    if sys.platform == 'win32' and len(outFilename) > 255:
+    if sys.platform == "win32" and len(outFilename) > 255:
         # Windows caps a full path at 255 chars. The old behavior popped a MODAL warning -- which froze
         # unattended runs like the Corpus Profiler -- and then returned the too-long name ANYWAY, so the
         # write failed regardless. Instead, SHORTEN the filename to fit and just log it. Keep the HEAD and
@@ -1214,104 +1387,124 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
         # "...verbnet_up_verb..." and "..._frequency.csv") and drop the redundant middle (typically the
         # repeated corpus name); a short hash of the original keeps it collision-safe.
         import hashlib
+
         _dir, _fn = os.path.split(outFilename)
         _stem, _ext = os.path.splitext(_fn)
-        _h = hashlib.md5(_fn.encode('utf-8')).hexdigest()[:8]
-        _room = 250 - len(_dir) - 1                       # small margin under the 255 ceiling
-        _budget = _room - len(_ext) - len(_h) - 2         # minus the two joining underscores
+        _h = hashlib.md5(_fn.encode("utf-8")).hexdigest()[:8]
+        _room = 250 - len(_dir) - 1  # small margin under the 255 ceiling
+        _budget = _room - len(_ext) - len(_h) - 2  # minus the two joining underscores
         if _budget < 10:
-            _short = (_h + _ext)[:max(1, _room)]          # dir itself is huge; keep it minimal
+            _short = (_h + _ext)[: max(1, _room)]  # dir itself is huge; keep it minimal
         else:
             _head_len = int(_budget * 0.6)
             _tail_len = _budget - _head_len
-            _head = _stem[:_head_len].rstrip('_ ')
-            _tail = _stem[len(_stem) - _tail_len:].lstrip('_ ') if _tail_len < len(_stem) else ''
-            _short = _head + '_' + _h + ('_' + _tail if _tail else '') + _ext
+            _head = _stem[:_head_len].rstrip("_ ")
+            _tail = _stem[len(_stem) - _tail_len :].lstrip("_ ") if _tail_len < len(_stem) else ""
+            _short = _head + "_" + _h + ("_" + _tail if _tail else "") + _ext
         outFilename = os.path.join(_dir, _short)
-        print('NLP Suite: filename shortened to fit the Windows 255-char path limit ->\n  ' + outFilename)
+        print("NLP Suite: filename shortened to fit the Windows 255-char path limit ->\n  " + outFilename)
 
     return outFilename
 
 
 # extension can be 'txt', 'xlsx', 'doc, 'docx' WITHOUT .
-def GetNumberOfDocumentsInDirectory(inputDirectory, extension=''):
+def GetNumberOfDocumentsInDirectory(inputDirectory, extension=""):
     numberOfDocs = 0
-    if inputDirectory=='':
-        mb.showwarning(title='No directory selected',message='The directory passed to the GetNumberOfDocumentsInDirectory function is blank.\n\nFunction aborted.')
+    if inputDirectory == "":
+        mb.showwarning(
+            title="No directory selected",
+            message="The directory passed to the GetNumberOfDocumentsInDirectory function is blank.\n\nFunction aborted.",
+        )
         return numberOfDocs
-    if extension == '':  # count any document
+    if extension == "":  # count any document
         numberOfDocs = len([os.path.join(inputDirectory, f) for f in os.listdir(inputDirectory)])
     else:  # count documents by specific document type
         extensionLength = len(extension)
-        numberOfDocs = len([os.path.join(inputDirectory, f) for f in os.listdir(inputDirectory) if
-                            f[:2] != '~$' and f[-(extensionLength + 1):] == '.' + extension])
+        numberOfDocs = len(
+            [
+                os.path.join(inputDirectory, f)
+                for f in os.listdir(inputDirectory)
+                if f[:2] != "~$" and f[-(extensionLength + 1) :] == "." + extension
+            ]
+        )
     return numberOfDocs
 
 
 # inputfile: input file path
 # open_type: "r" for read, "w" for write
 # return csvfile if opened up properly, or empty string if error occurs
-def openCSVFile(inputfile, open_type, encoding_type='utf-8'):
-    if inputfile=='':
-        mb.showwarning(title='File error',
-                       message="The input file is blank.")
+def openCSVFile(inputfile, open_type, encoding_type="utf-8"):
+    if inputfile == "":
+        mb.showwarning(title="File error", message="The input file is blank.")
         return ""
     try:
-        csvfile = open(inputfile, open_type, newline='', encoding=encoding_type, errors='ignore')
+        csvfile = open(inputfile, open_type, newline="", encoding=encoding_type, errors="ignore")
         return csvfile
     except IOError:
-        mb.showwarning(title='File error',
-                       message="Could not open the file " + inputfile + "\n\nA file with the same name is already open.\n\nPlease, close the Excel file and then click OK to resume.")
+        mb.showwarning(
+            title="File error",
+            message="Could not open the file "
+            + inputfile
+            + "\n\nA file with the same name is already open.\n\nPlease, close the Excel file and then click OK to resume.",
+        )
         return ""
 
 
-def getScript(pydict,script):
+def getScript(pydict, script):
     # global script_to_run, IO_values
     IO_values = 0
-    script_to_run = ''
+    script_to_run = ""
 
-    if script == '':
+    if script == "":
         return script_to_run, IO_values
 
     # There are FOUR values in the pydict dictionary:
-    #	1. KEY the label displayed in any of the menus (the key to be used)
-    #	val[0] the name of the python script (to be passed to NLP.py) LEAVE BLANK IF OPTION NOT AVAILABLE
-    #	val[1] 0 False 1 True whether the script has a GUI that will check IO items or we need to check IO items here
-    #	val[2] 1, 2, 3 (when the script has no GUI, i.e., val[1]=0)
-    #		1 requires input file
-    #		2 requires input Dir
-    #		3 requires either Dir or file
-    #	val[3] input file extension txt, csv, pdf, docx
+    # 1. KEY the label displayed in any of the menus (the key to be used)
+    # val[0] the name of the python script (to be passed to NLP.py) LEAVE BLANK IF OPTION NOT AVAILABLE
+    # val[1] 0 False 1 True whether the script has a GUI that will check IO items or we need to check IO items here
+    # val[2] 1, 2, 3 (when the script has no GUI, i.e., val[1]=0)
+    # 1 requires input file
+    # 2 requires input Dir
+    # 3 requires either Dir or file
+    # val[3] input file extension txt, csv, pdf, docx
 
     try:
         val = pydict[script]
     except:
-        if '---------------------' in script or len(script)==0:
-            mb.showwarning(title='Warning',
-                           message="The selected option '" + script + "' is not a valid option.\n\nIt is only an explanatory label. \n\nPlease, select a different option.")
+        if "---------------------" in script or len(script) == 0:
+            mb.showwarning(
+                title="Warning",
+                message="The selected option '"
+                + script
+                + "' is not a valid option.\n\nIt is only an explanatory label. \n\nPlease, select a different option.",
+            )
             return script_to_run, IO_values
 
         # entry not in dic; programming error; must be added!
-        mb.showwarning(title='Warning',
-                       message="The selected option '" + script + "' was not found in the Python dictionary in NLP_GUI.py.\n\nPlease, inform the NLP Suite developers of the problem.\n\nSorry!")
+        mb.showwarning(
+            title="Warning",
+            message="The selected option '"
+            + script
+            + "' was not found in the Python dictionary in NLP_GUI.py.\n\nPlease, inform the NLP Suite developers of the problem.\n\nSorry!",
+        )
         return script_to_run, IO_values
     # name of the python script
-    if val[0] == '':
-        mb.showwarning(title='Warning', message="The selected option '" + script + "' is not available yet.\n\nSorry!")
+    if val[0] == "":
+        mb.showwarning(title="Warning", message="The selected option '" + script + "' is not available yet.\n\nSorry!")
         return script_to_run, IO_values
     # check that Python script exists
     scriptName = val[0]
     # this is the case when there is no GUI and we call a function in a script
-    #	e.g., statistics_txt_util.compute_corpus_statistics
+    # e.g., statistics_txt_util.compute_corpus_statistics
 
     # all jar cases are handled separately in NLP.py
-    if scriptName.endswith('.jar'):
+    if scriptName.endswith(".jar"):
         scriptName = scriptName  # do not split jar filenames
     # deal with scripts without a GUI such as
-    #	statistics_txt_util.compute_corpus_statistics
-    #	where the first part of the item constitutes the script name
-    #	and the second part the specific function in the script
-    if (not (scriptName.endswith('.py'))) and (not (scriptName.endswith('.jar'))):
+    # statistics_txt_util.compute_corpus_statistics
+    # where the first part of the item constitutes the script name
+    # and the second part the specific function in the script
+    if (not (scriptName.endswith(".py"))) and (not (scriptName.endswith(".jar"))):
         # val[2] IO value 1, 2, 3; whether it requires a filename, a dir, or either
         # val[3] file extension (e.g., csv)
         scriptName = val[0].split(".", 1)[0]
@@ -1321,7 +1514,7 @@ def getScript(pydict,script):
         # val[2] IO value 1, 2, 3; whether it requires a filename, a dir, or either
         IO_values = val[2]
     # check the IO requirements of the function;
-    #	all py cases have their own GUI where IO requirements are checked
+    # all py cases have their own GUI where IO requirements are checked
     # if val[1]==0: #NO GUI; must check IO requirements here
     # 	if checkIO_Filename_InputDir (scriptName,val[2], val[3])==False:
     # RF return
@@ -1333,6 +1526,7 @@ def getScript(pydict,script):
     script_to_run = val[0]
 
     return script_to_run, IO_values
+
 
 def run_jar_script(scriptName, inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation):
     filesToOpen = []
@@ -1377,45 +1571,76 @@ def run_jar_script(scriptName, inputFilename, inputDir, outputDir, openOutputFil
 
 # The NLP script and sentence_analysis script use pydict dictionaries to run the script selected in a menu
 # the dict can contain a python file, a jar file or a combination of python file + function
-def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, inputDir, outputDir,
-                              openOutputFiles, chartPackage, dataTransformation, processType=''):
+def runScript_fromMenu_option(
+    script_to_run,
+    IO_values,
+    inputFilename,
+    inputDir,
+    outputDir,
+    openOutputFiles,
+    chartPackage,
+    dataTransformation,
+    processType="",
+):
     filesToOpen = []
     if len(script_to_run) == 0:
         return filesToOpen
     if script_to_run == "Gender guesser":
         import IO_internet_util
+
         # check internet connection
         if not IO_internet_util.check_internet_availability_warning("Gender guesser"):
             return filesToOpen
-        webbrowser.open('http://www.hackerfactor.com/GenderGuesser.php#About')
-    elif script_to_run.endswith('.py'):  # with GUI
+        webbrowser.open("http://www.hackerfactor.com/GenderGuesser.php#About")
+    elif script_to_run.endswith(".py"):  # with GUI
         if IO_libraries_util.check_inputPythonJavaProgramFile(script_to_run) == False:
             return filesToOpen
         run_script_util.run_script(script_to_run)
-    elif script_to_run.endswith('.jar'):  # with GUI
-        run_jar_script(script_to_run, inputFilename, inputDir, outputDir, openOutputFiles,
-                       chartPackage, dataTransformation)
+    elif script_to_run.endswith(".jar"):  # with GUI
+        run_jar_script(
+            script_to_run, inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation
+        )
     else:  # with NO GUI; does not end with py
         script = script_to_run.split(".", 1)
         import importlib
+
         pythonFile = importlib.import_module(script[0])
         # script[0] contains the Python file name
         # script[1] contains the function name inside a specific Python file
-        if IO_libraries_util.check_inputPythonJavaProgramFile(script[0] + '.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile(script[0] + ".py") == False:
             return filesToOpen
         func = getattr(pythonFile, script[1])
         # the func function will be executed (e.g., newspaper_titles in file_cleaner_util,
         #   if function_to_run contains "newspaper title"
         # correct values are checked in NLP_GUI
-        if IO_values == 1: # no inputDir
-            filesToOpen = func(GUI_util.window, inputFilename, outputDir, openOutputFiles, chartPackage, dataTransformation, processType)
-        elif IO_values == 2: # no inputFilename
-            filesToOpen = func(GUI_util.window, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, processType)
-        else: # both inputFilename and inputDir
-            filesToOpen = func(GUI_util.window, inputFilename, inputDir, outputDir,
-                 openOutputFiles,chartPackage, dataTransformation, processType)
+        if IO_values == 1:  # no inputDir
+            filesToOpen = func(
+                GUI_util.window,
+                inputFilename,
+                outputDir,
+                openOutputFiles,
+                chartPackage,
+                dataTransformation,
+                processType,
+            )
+        elif IO_values == 2:  # no inputFilename
+            filesToOpen = func(
+                GUI_util.window, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, processType
+            )
+        else:  # both inputFilename and inputDir
+            filesToOpen = func(
+                GUI_util.window,
+                inputFilename,
+                inputDir,
+                outputDir,
+                openOutputFiles,
+                chartPackage,
+                dataTransformation,
+                processType,
+            )
 
         return filesToOpen
+
 
 """
 #does not work, despite StackOverFlow recommendation; always returns None
@@ -1431,10 +1656,10 @@ def detectCsvHeader (csvFile):
 # function written by Jian Chen for NVA but not used but very helpful to generalize for all scripts
 # Gather any user provided arguments. If incorrect number to run from CL, return False
 def gatherCLAs():
-    parser = argparse.ArgumentParser(description='Process command line arguments for noun verb analysis')
-    parser.add_argument('--inputFile', help='CoNLL file input')
-    parser.add_argument('--outputDir', help='Directory to save output excel/csv files')
-    parser.add_argument('--openFiles', help='<True/False> If true, will open all exported excel/csv files')
+    parser = argparse.ArgumentParser(description="Process command line arguments for noun verb analysis")
+    parser.add_argument("--inputFile", help="CoNLL file input")
+    parser.add_argument("--outputDir", help="Directory to save output excel/csv files")
+    parser.add_argument("--openFiles", help="<True/False> If true, will open all exported excel/csv files")
     args = parser.parse_args()
 
     # numArgsProvided = len(vars(args))
@@ -1442,38 +1667,39 @@ def gatherCLAs():
     if len(sys.argv) != 3:
         return False
     else:
-        if args.openFiles == 'True':
+        if args.openFiles == "True":
             openOut = True
         else:
             openOut = False
         return args.inputFile, args.outputDir, openOut
 
 
- # move the gender & quote files under the gender & quote dir where a user is more likely to look for it
+# move the gender & quote files under the gender & quote dir where a user is more likely to look for it
 # the location_filename is moved above
 
-    # if gender_var:
-    #     # move the gender file under gender dir where a user is more likely to look for it
-    #     gender_outputDir = outputDir + os.sep + os.path.basename(outputDir.replace('_SVO_', '_gender_'))
-    #     if os.path.isfile(gender_filename) and os.path.isdir(gender_outputDir):
-    #         target_filePath = gender_outputDir + os.sep + os.path.basename(gender_filename)
-    #         # move the csv gender file
-    #         if not os.path.isfile(target_filePath):
-    #             os.replace(gender_filename, target_filePath)
-    #         # move the html gender file
-    #         target_filePath = gender_outputDir + os.sep + os.path.basename(gender_filename_html)
-    #         if os.path.isfile(gender_filename_html) and not os.path.isfile(target_filePath):
-    #             os.replace(gender_filename_html, target_filePath)
-    #
-    # if quote_var:
-    #     quote_outputDir = outputDir + os.sep + os.path.basename(outputDir.replace('_SVO_', '_quote_'))
-    #     if os.path.isfile(quote_filename) and os.path.isdir(quote_outputDir):
-    #         target_filePath = quote_outputDir + os.sep + os.path.basename(quote_filename)
-    #         # move the quote file under quote dir where a user is more likely to look for it
+# if gender_var:
+#     # move the gender file under gender dir where a user is more likely to look for it
+#     gender_outputDir = outputDir + os.sep + os.path.basename(outputDir.replace('_SVO_', '_gender_'))
+#     if os.path.isfile(gender_filename) and os.path.isdir(gender_outputDir):
+#         target_filePath = gender_outputDir + os.sep + os.path.basename(gender_filename)
+#         # move the csv gender file
+#         if not os.path.isfile(target_filePath):
+#             os.replace(gender_filename, target_filePath)
+#         # move the html gender file
+#         target_filePath = gender_outputDir + os.sep + os.path.basename(gender_filename_html)
+#         if os.path.isfile(gender_filename_html) and not os.path.isfile(target_filePath):
+#             os.replace(gender_filename_html, target_filePath)
+#
+# if quote_var:
+#     quote_outputDir = outputDir + os.sep + os.path.basename(outputDir.replace('_SVO_', '_quote_'))
+#     if os.path.isfile(quote_filename) and os.path.isdir(quote_outputDir):
+#         target_filePath = quote_outputDir + os.sep + os.path.basename(quote_filename)
+#         # move the quote file under quote dir where a user is more likely to look for it
 
 
-def select_path_from_list(window, paths, intro_text, title='Available files',
-                          browse_filetypes=None, browse_title='Select a file'):
+def select_path_from_list(
+    window, paths, intro_text, title="Available files", browse_filetypes=None, browse_title="Select a file"
+):
     """Modal picker: list 'paths' (each labelled by its parent-folder/filename) for the user to choose one.
     Returns the chosen path, the sentinel '__BROWSE__' (the list is empty, or the user chose to browse for
     another file), or None (the user cancelled). Reusable file-selection helper (CoNLL, GIS, ...).
@@ -1481,46 +1707,47 @@ def select_path_from_list(window, paths, intro_text, title='Available files',
     the folder of the currently highlighted file, and returns the browsed path directly (so the caller no
     longer needs its own filedialog for the non-empty-list case)."""
     import tkinter as tk
+
     if not paths:
-        return '__BROWSE__'
-    paths = list(paths)               # local copy; the Remove-file button may delete entries
-    result = {'value': None}
+        return "__BROWSE__"
+    paths = list(paths)  # local copy; the Remove-file button may delete entries
+    result = {"value": None}
     top = tk.Toplevel(window)
     top.title(title)
     top.transient(window)
     top.grab_set()
-    tk.Label(top, text=intro_text, justify='left', wraplength=820).pack(padx=12, pady=(12, 6), anchor='w')
+    tk.Label(top, text=intro_text, justify="left", wraplength=820).pack(padx=12, pady=(12, 6), anchor="w")
     frame = tk.Frame(top)
-    frame.pack(padx=12, fill='both', expand=True)
+    frame.pack(padx=12, fill="both", expand=True)
     sb = tk.Scrollbar(frame)
-    sb.pack(side='right', fill='y')
+    sb.pack(side="right", fill="y")
     lb = tk.Listbox(frame, width=95, height=min(12, len(paths)), yscrollcommand=sb.set)
     for p in paths:
-        lb.insert('end', os.path.join(os.path.basename(os.path.dirname(p)), os.path.basename(p)))
-    lb.pack(side='left', fill='both', expand=True)
+        lb.insert("end", os.path.join(os.path.basename(os.path.dirname(p)), os.path.basename(p)))
+    lb.pack(side="left", fill="both", expand=True)
     sb.config(command=lb.yview)
     lb.selection_set(0)
 
     def do_select():
         sel = lb.curselection()
         if sel:
-            result['value'] = paths[sel[0]]
+            result["value"] = paths[sel[0]]
             top.destroy()
 
     def do_browse():
         # if the caller supplied filetypes, open the file dialog here, starting in the folder of the
         # currently highlighted file; otherwise hand '__BROWSE__' back for the caller to browse
         if browse_filetypes is not None:
-            initialdir = ''
+            initialdir = ""
             sel = lb.curselection()
             if sel:
                 initialdir = os.path.dirname(paths[sel[0]])
             browsed = filedialog.askopenfilename(title=browse_title, initialdir=initialdir, filetypes=browse_filetypes)
-            if browsed:                       # cancelled -> leave the picker open
-                result['value'] = browsed
+            if browsed:  # cancelled -> leave the picker open
+                result["value"] = browsed
                 top.destroy()
         else:
-            result['value'] = '__BROWSE__'
+            result["value"] = "__BROWSE__"
             top.destroy()
 
     def do_open():
@@ -1542,58 +1769,71 @@ def select_path_from_list(window, paths, intro_text, title='Available files',
             empty = os.path.getsize(path) == 0
         except Exception:
             empty = False
-        if not mb.askyesno(title='Remove file',
-                           message='Permanently delete this file from disk?\n\n' + path
-                                   + ('\n\n(The file is empty.)' if empty else '')):
+        if not mb.askyesno(
+            title="Remove file",
+            message="Permanently delete this file from disk?\n\n"
+            + path
+            + ("\n\n(The file is empty.)" if empty else ""),
+        ):
             return
         try:
             os.remove(path)
         except Exception as e:
-            mb.showwarning(title='Could not remove file',
-                           message='The file could not be removed:\n\n' + path + '\n\n' + str(e))
+            mb.showwarning(
+                title="Could not remove file", message="The file could not be removed:\n\n" + path + "\n\n" + str(e)
+            )
             return
         del paths[i]
         lb.delete(i)
-        if not paths:                      # nothing left -> hand back to the caller to browse
-            result['value'] = '__BROWSE__'
+        if not paths:  # nothing left -> hand back to the caller to browse
+            result["value"] = "__BROWSE__"
             top.destroy()
             return
         lb.selection_set(min(i, len(paths) - 1))
 
-    lb.bind('<Double-Button-1>', lambda e: do_select())
+    lb.bind("<Double-Button-1>", lambda e: do_select())
     btns = tk.Frame(top)
     btns.pack(pady=10)
-    tk.Button(btns, text='Select', width=12, command=do_select).pack(side='left', padx=5)
-    tk.Button(btns, text='Open file', width=10, command=do_open).pack(side='left', padx=5)
-    tk.Button(btns, text='Remove file', width=11, command=do_remove).pack(side='left', padx=5)
-    tk.Button(btns, text='Browse for another file...', width=22, command=do_browse).pack(side='left', padx=5)
-    tk.Button(btns, text='Cancel', width=10, command=top.destroy).pack(side='left', padx=5)
+    tk.Button(btns, text="Select", width=12, command=do_select).pack(side="left", padx=5)
+    tk.Button(btns, text="Open file", width=10, command=do_open).pack(side="left", padx=5)
+    tk.Button(btns, text="Remove file", width=11, command=do_remove).pack(side="left", padx=5)
+    tk.Button(btns, text="Browse for another file...", width=22, command=do_browse).pack(side="left", padx=5)
+    tk.Button(btns, text="Cancel", width=10, command=top.destroy).pack(side="left", padx=5)
     top.wait_window()
-    return result['value']
+    return result["value"]
 
 
-def get_corpus_CoNLL_csv(window, target_var, title='Select INPUT csv CoNLL table file',
-                         fileType=(("csv files", "*.csv"),), set_inputFilename=True):
+def get_corpus_CoNLL_csv(
+    window,
+    target_var,
+    title="Select INPUT csv CoNLL table file",
+    fileType=(("csv files", "*.csv"),),
+    set_inputFilename=True,
+):
     """'Select INPUT CSV file' button handler shared by the CoNLL-cluster GUIs (nominalization, SRL,
     CoNLL Table Analyzer, semantic/syntactic analysis). Offers the CoNLL tables discovered for the current
     corpus (CoNLL_util.choose_corpus_CoNLL); else browses. Rejects an empty csv. Stores the choice in
     target_var (and GUI_util.inputFilename when set_inputFilename). Returns the chosen path ('' if none)."""
     import CoNLL_util
-    chosen = CoNLL_util.choose_corpus_CoNLL(window, GUI_util.output_dir_path.get(),
-                                            GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get())
+
+    chosen = CoNLL_util.choose_corpus_CoNLL(
+        window, GUI_util.output_dir_path.get(), GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get()
+    )
     if chosen is None:
-        return ''
-    if chosen != '__BROWSE__':
+        return ""
+    if chosen != "__BROWSE__":
         filePath = chosen
     else:
         initialFolder = os.path.dirname(os.path.abspath(target_var.get()))
         filePath = filedialog.askopenfilename(title=title, initialdir=initialFolder, filetypes=fileType)
     if filePath:
-        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(filePath, 'utf-8')
+        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(filePath, "utf-8")
         if nRecords == 0:
-            mb.showwarning(title='Warning',
-                           message="The selected input csv file is empty.\n\nPlease, select a different file and try again.")
-            return ''
+            mb.showwarning(
+                title="Warning",
+                message="The selected input csv file is empty.\n\nPlease, select a different file and try again.",
+            )
+            return ""
         target_var.set(filePath)
         if set_inputFilename:
             GUI_util.inputFilename.set(filePath)
@@ -1601,23 +1841,39 @@ def get_corpus_CoNLL_csv(window, target_var, title='Select INPUT csv CoNLL table
     #         os.replace(quote_filename, target_filePath)
 
 
-def pick_corpus_csv(window, current_path='', title='Select INPUT csv file',
-                    fileType=(("csv files", "*.csv"),), path_filter=None, validator=None):
+def pick_corpus_csv(
+    window,
+    current_path="",
+    title="Select INPUT csv file",
+    fileType=(("csv files", "*.csv"),),
+    path_filter=None,
+    validator=None,
+):
     """Discovery-driven 'Select INPUT CSV file' picker for the general-csv GUIs (statistics on csv, DB_SQL):
     list the csv files found for the current corpus (CoNLL_util.find_corpus_csv, newest first) with a Browse
     fallback -- instead of dumping the user in the src folder. Returns the chosen path, or '' if the user
     cancelled. Side-effect-free (the caller stores it and checks emptiness), so each GUI keeps its own var
     wiring. path_filter/validator narrow the discovered list (forwarded to find_corpus_csv)."""
     import CoNLL_util  # deferred: avoids the IO_files_util <-> CoNLL_util import cycle
-    matches = CoNLL_util.find_corpus_csv(GUI_util.output_dir_path.get(), GUI_util.inputFilename.get(),
-                                         GUI_util.input_main_dir_path.get(),
-                                         path_filter=path_filter, validator=validator)
-    chosen = select_path_from_list(window, matches,
-        'Select a csv file found for your corpus, or browse for another file:',
-        title='Available csv files', browse_filetypes=fileType, browse_title=title)
-    if chosen is None:                       # user cancelled
-        return ''
-    if chosen == '__BROWSE__':               # empty list -> browse ourselves, from the current file's folder
-        initialdir = os.path.dirname(os.path.abspath(current_path)) if current_path else ''
-        return filedialog.askopenfilename(title=title, initialdir=initialdir, filetypes=fileType) or ''
+
+    matches = CoNLL_util.find_corpus_csv(
+        GUI_util.output_dir_path.get(),
+        GUI_util.inputFilename.get(),
+        GUI_util.input_main_dir_path.get(),
+        path_filter=path_filter,
+        validator=validator,
+    )
+    chosen = select_path_from_list(
+        window,
+        matches,
+        "Select a csv file found for your corpus, or browse for another file:",
+        title="Available csv files",
+        browse_filetypes=fileType,
+        browse_title=title,
+    )
+    if chosen is None:  # user cancelled
+        return ""
+    if chosen == "__BROWSE__":  # empty list -> browse ourselves, from the current file's folder
+        initialdir = os.path.dirname(os.path.abspath(current_path)) if current_path else ""
+        return filedialog.askopenfilename(title=title, initialdir=initialdir, filetypes=fileType) or ""
     return chosen

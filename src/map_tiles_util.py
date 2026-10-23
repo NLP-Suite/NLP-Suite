@@ -15,21 +15,19 @@ Stdlib only: imported by GIS_folium_util and charts_util, and testable alone.
 """
 
 #: Esri's tile address - note {y} before {x}, the ArcGIS order.
-TILE_URL = ('https://server.arcgisonline.com/ArcGIS/rest/services/'
-            'World_Street_Map/MapServer/tile/{z}/{y}/{x}')
-ATTRIBUTION = 'Tiles &copy; Esri'
+TILE_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
+ATTRIBUTION = "Tiles &copy; Esri"
 MAX_ZOOM = 18
 
 
 def folium_tiles():
     """Keyword arguments for folium.Map: tiles, attr and max_zoom."""
-    return {'tiles': TILE_URL, 'attr': ATTRIBUTION, 'max_zoom': MAX_ZOOM}
+    return {"tiles": TILE_URL, "attr": ATTRIBUTION, "max_zoom": MAX_ZOOM}
 
 
-def leaflet_tile_layer_js(map_var='map', braces_doubled=False):
+def leaflet_tile_layer_js(map_var="map", braces_doubled=False):
     """The Leaflet line that adds these tiles to *map_var*.
 
     braces_doubled for a str.format template, where { must be written {{."""
-    js = ("L.tileLayer('%s', {attribution: '%s', maxZoom: %d}).addTo(%s);"
-          % (TILE_URL, ATTRIBUTION, MAX_ZOOM, map_var))
-    return js.replace('{', '{{').replace('}', '}}') if braces_doubled else js
+    js = "L.tileLayer('%s', {attribution: '%s', maxZoom: %d}).addTo(%s);" % (TILE_URL, ATTRIBUTION, MAX_ZOOM, map_var)
+    return js.replace("{", "{{").replace("}", "}}") if braces_doubled else js
