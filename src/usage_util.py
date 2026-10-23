@@ -12,7 +12,7 @@ Tracking happens only when ALL of these hold:
   1. a PostHog project key is configured (POSTHOG_PROJECT_KEY below, or the env var NLP_SUITE_POSTHOG_KEY);
   2. the user said yes to the one-time question (the answer is stored, so they are asked once per install);
   3. neither DO_NOT_TRACK nor NLP_SUITE_NO_TELEMETRY is set in the environment.
-With no key configured (the default), every function here is a no-op and the user is never asked.
+With the key emptied, every function here is a no-op and the user is never asked.
 
 Sending runs in a background thread with a short timeout. A failure (offline, firewall, PostHog down) is
 printed to the console and otherwise ignored, like the GitHub release check in GUI_util: usage counts are
@@ -29,7 +29,7 @@ import uuid
 
 # PostHog's project key is designed to be public (it can only send events, not read them), so it is safe
 # to ship in the code. Empty means tracking is off.
-POSTHOG_PROJECT_KEY = ""
+POSTHOG_PROJECT_KEY = "phc_p67xWvTnwQyhFzFfntzhQBbsGGRyrQ6acWwTjBKBNWUD"
 POSTHOG_HOST = "https://us.i.posthog.com"
 
 # Outside the repo, so the ID survives updates, re-clones and reinstalls of the Suite.
