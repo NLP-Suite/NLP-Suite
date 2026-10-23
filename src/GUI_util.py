@@ -109,6 +109,7 @@ import GUI_IO_util
 import IO_files_util
 import IO_internet_util
 import run_script_util
+import usage_util
 
 
 def set_window_icon():
@@ -252,6 +253,18 @@ setup_menu = tk.StringVar()
 data_tools_options_widget = tk.StringVar()
 
 run_button = tk.Button(window, text='RUN', width=10,height=2)
+
+# Anonymous, opt-in usage tracking (see usage_util; a no-op unless a PostHog key is configured).
+# GUI_top records which GUI this process is, so a RUN click can be attributed to it.
+_usage_script_name = ''
+
+def _track_run_click(event):
+    # Count only a completed click on an enabled RUN: released inside the button, not on a disabled one.
+    inside = 0 <= event.x < event.widget.winfo_width() and 0 <= event.y < event.widget.winfo_height()
+    if inside and str(run_button.cget('state')) == 'normal':
+        usage_util.track_run_clicked(_usage_script_name)
+
+run_button.bind('<ButtonRelease-1>', _track_run_click, add='+')
 
 # license agreement GUI
 agreement_checkbox_var=tk.IntVar()
@@ -1348,6 +1361,11 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
     # global so that they are recognized wherever they are used (e.g., select_input_secondary_dir_button in shape_of_stories_GUI)
     global select_inputFilename_button, select_input_main_dir_button, select_input_secondary_dir_button, select_output_dir_button
     # global config_input_output_alphabetic_options
+
+    # Usage tracking: deferred so the one-time consent question appears over the finished GUI, not before it.
+    global _usage_script_name
+    _usage_script_name = scriptName
+    window.after(1000, lambda: usage_util.track_gui_opened(scriptName))
 
     # Fresh grid: clear the per-row column bookkeeping so this GUI's placeWidget calls start from an
     # empty layout and no state leaks in from an earlier build in the same process.
