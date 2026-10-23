@@ -2,6 +2,7 @@
 # edited July 2020
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -13,17 +14,18 @@ if (
 ):
     sys.exit(0)
 
-import os
-import os.path, time, datetime
-from datetime import datetime, date
 import csv
-import shutil
+import datetime
+from datetime import datetime
+import os
+import os.path
 import platform
+import shutil
+import time
 import tkinter.messagebox as mb
 
 import IO_csv_util
 import IO_files_util
-import IO_user_interface_util
 
 
 def backup_files(inputFilename, inputDir, scripName, fileType=".txt", configFileName=""):
@@ -82,7 +84,7 @@ def dateGreater(d1, d2):
 def purge_duplicate_rows_byFilename(window, inputFilename, outputDir, openOutputFiles, filenameCol):
     bestFiles = {}
     filenameColNum = 2
-    with open(inputFilename, "r", encoding="utf-8", errors="ignore") as read_obj:
+    with open(inputFilename, encoding="utf-8", errors="ignore") as read_obj:
         csv_reader = csv.reader(read_obj)
         header = next(csv_reader)
         filenameColNum = IO_csv_util.get_columnNumber_from_headerValue(header, filenameCol, inputFilename)
@@ -102,7 +104,7 @@ def purge_duplicate_rows_byFilename(window, inputFilename, outputDir, openOutput
                     bestFiles[fName] = row
 
     deleteList = []
-    with open(inputFilename, "r", encoding="utf-8", errors="ignore") as read_obj:
+    with open(inputFilename, encoding="utf-8", errors="ignore") as read_obj:
         csv_reader = csv.reader(read_obj)
         header = next(csv_reader)
         if header is not None:
@@ -143,7 +145,7 @@ def purge_partial_matches(window, inputFilename, outputDir, openOutputFiles, nam
     docxdict = {}
     nameColNum = 0
     filenameColNum = 2
-    with open(inputFilename, "r", encoding="utf-8", errors="ignore") as read_obj:
+    with open(inputFilename, encoding="utf-8", errors="ignore") as read_obj:
         csv_reader = csv.reader(read_obj)
         header = next(csv_reader)
         nameColNum = IO_csv_util.get_columnNumber_from_headerValue(header, nameCol, inputFilename)
@@ -159,7 +161,7 @@ def purge_partial_matches(window, inputFilename, outputDir, openOutputFiles, nam
                     print("Unrecognized file:", row[filenameColNum])
 
     deleteList = []
-    with open(inputFilename, "r", encoding="utf-8", errors="ignore") as read_obj:
+    with open(inputFilename, encoding="utf-8", errors="ignore") as read_obj:
         csv_reader = csv.reader(read_obj)
         header = next(csv_reader)
         if header is not None:
@@ -428,17 +430,16 @@ def processFile(
                     + " was skipped from processing. An unexpected error occurred when processing the file."
                 )
                 fileFound = False
-        else:
-            if fileFound == True:
-                try:
-                    shutil.copy(inputPath + os.sep + filename, outputPath + os.sep + filename)
-                except:
-                    print(
-                        "The file "
-                        + filename
-                        + " was skipped from processing. An unexpected error occurred when processing the file."
-                    )
-                    fileFound = False
+        elif fileFound == True:
+            try:
+                shutil.copy(inputPath + os.sep + filename, outputPath + os.sep + filename)
+            except:
+                print(
+                    "The file "
+                    + filename
+                    + " was skipped from processing. An unexpected error occurred when processing the file."
+                )
+                fileFound = False
 
     if move_var == 1:
         if hasFullPath:
@@ -451,17 +452,16 @@ def processFile(
                     + filename
                     + " was skipped from processing. An unexpected error occurred when processing the file."
                 )
-        else:
-            if fileFound == True:
-                try:
-                    shutil.move(inputPath + os.sep + filename, outputPath + os.sep + filename)
-                except:
-                    print(
-                        "The file "
-                        + filename
-                        + " was skipped from processing. An unexpected error occurred when processing the file."
-                    )
-                    fileFound = False
+        elif fileFound == True:
+            try:
+                shutil.move(inputPath + os.sep + filename, outputPath + os.sep + filename)
+            except:
+                print(
+                    "The file "
+                    + filename
+                    + " was skipped from processing. An unexpected error occurred when processing the file."
+                )
+                fileFound = False
 
     if delete_var == 1:
         if hasFullPath:
@@ -474,17 +474,16 @@ def processFile(
                     + " was skipped from processing. An unexpected error occurred when processing the file."
                 )
                 fileFound = False
-        else:
-            if fileFound == True:
-                try:
-                    os.unlink(inputPath + os.sep + filename)
-                except:
-                    print(
-                        "The file "
-                        + filename
-                        + " was skipped from processing. An unexpected error occurred when processing the file."
-                    )
-                    fileFound = False
+        elif fileFound == True:
+            try:
+                os.unlink(inputPath + os.sep + filename)
+            except:
+                print(
+                    "The file "
+                    + filename
+                    + " was skipped from processing. An unexpected error occurred when processing the file."
+                )
+                fileFound = False
 
     if split_var == 1:
         split_string = ""
@@ -582,7 +581,9 @@ def get_count(path, outputPath, outputFilename):
 # https://stackoverflow.com/questions/7021141/how-to-retrieve-author-of-a-office-file-in-python
 # get_author works for docx files only
 def get_author(path_to_file):
-    import zipfile, lxml.etree
+    import zipfile
+
+    import lxml.etree
 
     # The XML inside a .docx was written by whoever sent the file, so it is parsed with entity
     # resolution and network access OFF -- otherwise reading the author of a document can be made

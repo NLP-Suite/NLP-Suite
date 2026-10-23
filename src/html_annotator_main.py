@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -12,16 +13,12 @@ if (
 
 import os
 import tkinter as tk
-from tkinter import ttk
 import tkinter.messagebox as mb
-from subprocess import call
 
 import GUI_IO_util
-import IO_files_util
-import IO_csv_util
-import reminders_util
-import constants_util
 import html_annotator_dictionary_util
+import IO_csv_util
+import IO_files_util
 import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________

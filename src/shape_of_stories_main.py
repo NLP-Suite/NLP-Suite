@@ -2,6 +2,7 @@
 # Modified by Cynthia Dong (November 2019-April 2020)
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -22,27 +23,19 @@ import os
 import tkinter as tk
 import tkinter.messagebox as mb
 
+import config_util
+import GUI_IO_util
+import IO_csv_util
+import IO_files_util
 import IO_user_interface_util
-import statistics_txt_util
+import reminders_util
 import shape_of_stories_clustering_util as cl
 import shape_of_stories_vectorizer_util as vec
 import shape_of_stories_visualization_util as viz
-
-import config_util
-import GUI_IO_util
-import IO_files_util
-import IO_csv_util
-import reminders_util
-
-import Stanford_CoreNLP_util
 import spaCy_util
+import Stanford_CoreNLP_util
 import Stanza_util
-
-import sentiment_analysis_ANEW_util as ANEW
-import sentiment_analysis_VADER_util as VADER
-import sentiment_analysis_hedonometer_util as hedonometer
-import sentiment_analysis_SentiWordNet_util as SentiWordNet
-import file_checker_util as utf
+import statistics_txt_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -638,11 +631,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(
 
 def activate_warning(*args):
     if (
-        not "CoreNLP" in sentiment_analysis_menu_var.get()
-        and not "BERT (English model)" in sentiment_analysis_menu_var.get()
-        and not "BERT (Multilingual model)" in sentiment_analysis_menu_var.get()
-        and not "spaCy" in sentiment_analysis_menu_var.get()
-        and not "Stanza" in sentiment_analysis_menu_var.get()
+        "CoreNLP" not in sentiment_analysis_menu_var.get()
+        and "BERT (English model)" not in sentiment_analysis_menu_var.get()
+        and "BERT (Multilingual model)" not in sentiment_analysis_menu_var.get()
+        and "spaCy" not in sentiment_analysis_menu_var.get()
+        and "Stanza" not in sentiment_analysis_menu_var.get()
     ):
         mb.showwarning(
             title="Sentiment Analysis option deprecated",
@@ -800,45 +793,44 @@ def check_IO_requirements(inputFilename, inputDir):
             if answer == False:
                 Error = True
                 return Error
-    else:  # inputDir
-        if inputDir != "":
-            if sentimentAnalysis == True or corpus_analysis == True:
-                nSAscoretxtFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, "txt")
-                if nSAscoretxtFiles == 0:
-                    # text files required
-                    mb.showwarning(title="Input directory error", message=txt_DirErr)
+    elif inputDir != "":
+        if sentimentAnalysis == True or corpus_analysis == True:
+            nSAscoretxtFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, "txt")
+            if nSAscoretxtFiles == 0:
+                # text files required
+                mb.showwarning(title="Input directory error", message=txt_DirErr)
+                Error = True
+                return Error
+            if nSAscoretxtFiles < 50 and sentimentAnalysis == True:
+                # too few txt files
+                answer = mb.askyesno("Input directory warning", message=txt_dirWarning)
+                if answer == False:
                     Error = True
                     return Error
-                if nSAscoretxtFiles < 50 and sentimentAnalysis == True:
-                    # too few txt files
-                    answer = mb.askyesno("Input directory warning", message=txt_dirWarning)
+
+        if not sentimentAnalysis:
+            if hierarchical_clustering or SVD or NMF or best_topic_estimation:
+                nSAscorecsvFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, "csv")
+                if nSAscorecsvFiles == 0:
+                    alternative_msg = ""
+                    nSAscoretxtFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, "txt")
+                    if nSAscoretxtFiles > 0:
+                        if nSAscoretxtFiles < 50:
+                            alternative_msg = (
+                                "\n\nALTERNATIVELY, tick the checkbox 'Sentiment analysis,' select one of the available sentiment analysis algorithms (neural network highly recommended), and try again. YOUR INPUT DIRECTORY, HOWEVER, CONTAINS ONLY "
+                                + str(nSAscoretxtFiles)
+                                + " txt FILES, FEWER THAN THE RECOMMENDED 50 MINIMUM, ALTHOUGH THE ALGORITHMS WILL STILL RUN."
+                            )
+                        else:
+                            alternative_msg = "\n\nALTERNATIVELY, tick the checkbox 'Sentiment analysis,' select one of the available sentiment analysis algorithms (neural network highly recommended), and try again. "
+                    mb.showwarning(title="Input directory error", message=csv_DirErr + alternative_msg)
+                    Error = True
+                elif nSAscorecsvFiles < 50 and sentimentAnalysis == True:
+                    # too few csv files
+                    answer = mb.askyesno("Data reduction algorithms", message=csv_dirWarning)
                     if answer == False:
                         Error = True
-                        return Error
-
-            if not sentimentAnalysis:
-                if hierarchical_clustering or SVD or NMF or best_topic_estimation:
-                    nSAscorecsvFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, "csv")
-                    if nSAscorecsvFiles == 0:
-                        alternative_msg = ""
-                        nSAscoretxtFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, "txt")
-                        if nSAscoretxtFiles > 0:
-                            if nSAscoretxtFiles < 50:
-                                alternative_msg = (
-                                    "\n\nALTERNATIVELY, tick the checkbox 'Sentiment analysis,' select one of the available sentiment analysis algorithms (neural network highly recommended), and try again. YOUR INPUT DIRECTORY, HOWEVER, CONTAINS ONLY "
-                                    + str(nSAscoretxtFiles)
-                                    + " txt FILES, FEWER THAN THE RECOMMENDED 50 MINIMUM, ALTHOUGH THE ALGORITHMS WILL STILL RUN."
-                                )
-                            else:
-                                alternative_msg = "\n\nALTERNATIVELY, tick the checkbox 'Sentiment analysis,' select one of the available sentiment analysis algorithms (neural network highly recommended), and try again. "
-                        mb.showwarning(title="Input directory error", message=csv_DirErr + alternative_msg)
-                        Error = True
-                    elif nSAscorecsvFiles < 50 and sentimentAnalysis == True:
-                        # too few csv files
-                        answer = mb.askyesno("Data reduction algorithms", message=csv_dirWarning)
-                        if answer == False:
-                            Error = True
-                return Error
+            return Error
 
     # check input file that must be a csv file containing sentiment analysis score of any data reduction options are ticked
     if (

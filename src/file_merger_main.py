@@ -1,6 +1,7 @@
 # written by Roberto Franzosi October 2019, edited Spring 2020
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -10,9 +11,9 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window, "file_merger_m
 import os
 import tkinter as tk
 
+import file_merger_util
 import GUI_IO_util
 import IO_user_interface_util
-import file_merger_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 

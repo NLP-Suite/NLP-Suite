@@ -8,11 +8,12 @@ Saves that template file with the addition to user-specified file name/location\
 Template file should be located in the lib folder
 """
 
-import GUI_IO_util
-import GIS_geocode_util
 import os
-import reminders_util
+
+import GIS_geocode_util
 import GIS_pipeline_util
+import GUI_IO_util
+import reminders_util
 
 
 # gathers the template html/js file to build a heat map,
@@ -36,7 +37,7 @@ def create_google_heatmap(window, outputFilename, gmaps_list):
     print(f"  Google Maps heatmap: {len(gmaps_list)} data points to write to {outputFilename}")
 
     js_template_loc = GUI_IO_util.Google_heatmaps_libPath + os.sep + "heatmap_template.html"
-    with open(js_template_loc, "r") as open_js:
+    with open(js_template_loc) as open_js:
         js_template = open_js.read()
 
     split_marker = "//DO NOT REMOVE! PROGRAM INSERTS THE CORRECT JS HERE!"
@@ -60,17 +61,17 @@ def create_google_heatmap(window, outputFilename, gmaps_list):
 
     # verify the output file was written correctly
     try:
-        with open(outputFilename, "r", encoding="utf-8") as verify_f:
+        with open(outputFilename, encoding="utf-8") as verify_f:
             content = verify_f.read()
         if "new google.maps.LatLng(" in content:
             count = content.count("new google.maps.LatLng(")
             print(f"  Google Maps heatmap: VERIFIED {count} LatLng points in output file.")
         else:
-            print(f"  WARNING: Google Maps heatmap output file contains NO LatLng data points!")
+            print("  WARNING: Google Maps heatmap output file contains NO LatLng data points!")
         if api_key in content:
-            print(f"  Google Maps heatmap: API key correctly inserted.")
+            print("  Google Maps heatmap: API key correctly inserted.")
         else:
-            print(f"  WARNING: API key NOT found in output file!")
+            print("  WARNING: API key NOT found in output file!")
     except Exception as e:
         print(f"  WARNING: Could not verify heatmap output: {e}")
 

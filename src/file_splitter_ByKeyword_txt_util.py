@@ -1,5 +1,4 @@
 #!/usr/bin/env Python
-# -*- coding: utf-8 -*-
 """
 Created on Sun May 24 21:45:41 2020
 
@@ -8,6 +7,7 @@ Created on Sun May 24 21:45:41 2020
 
 # source: https://www.nltk.org/_modules/nltk/tokenize.html
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -19,17 +19,19 @@ if (
 ):
     sys.exit(0)
 
-import os
-import pandas as pd
 import csv
-from Stanza_functions_util import (
-    stanzaPipeLine,
-    sentence_split_stanza_text,
-    tokenize_stanza_text,
-    lemmatize_stanza_word,
-)
+import os
 
 from nltk.corpus import wordnet  # lemmatization
+import pandas as pd
+
+from Stanza_functions_util import (
+    lemmatize_stanza_word,
+    sentence_split_stanza_text,
+    stanzaPipeLine,
+    tokenize_stanza_text,
+)
+
 # https://wordnet.princeton.edu/documentation/morphy7wn
 # https://stackoverflow.com/questions/31016540/lemmatize-plural-nouns-using-nltk-and-wordnet
 
@@ -111,7 +113,7 @@ def run(inputFilename, outputPath, keyword, first_occurrence, lemmatization=True
         contents = []
         head, docname = os.path.split(inputFilename)
         title = docname.partition(".")[0]
-        f = open(inputFilename, "r", encoding="utf-8", errors="ignore")
+        f = open(inputFilename, encoding="utf-8", errors="ignore")
         docText = f.read()
         f.close()
         # sentences_ = sent_tokenize(docText)#the list of sentneces in corpus

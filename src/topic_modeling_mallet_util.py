@@ -25,6 +25,7 @@ All OUTPUT file names can be changed and MALLET will still run successfully
 """
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -34,13 +35,13 @@ if not IO_libraries_util.install_all_Python_packages(
     sys.exit(0)
 
 import os
-import tkinter.messagebox as mb
 import subprocess
 from sys import platform
+import tkinter.messagebox as mb
 
-import IO_files_util
 import charts_util
 import file_converter_util
+import IO_files_util
 import IO_user_interface_util
 from topic_modeling_corpus_size_util import corpus_size_advice
 

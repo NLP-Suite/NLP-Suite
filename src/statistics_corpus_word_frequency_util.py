@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -12,11 +13,11 @@ if (
 
 import os
 import re
-import numpy as np
-import pandas as pd
 import tkinter.messagebox as mb
 
-import IO_csv_util
+import numpy as np
+import pandas as pd
+
 import IO_files_util
 import IO_user_interface_util
 import statistics_statistical_tests_util
@@ -40,7 +41,7 @@ def compute_word_frequency(
 
     all_words = []
     if inputFilename and os.path.exists(inputFilename):
-        with open(inputFilename, "r", encoding="utf-8", errors="ignore") as f:
+        with open(inputFilename, encoding="utf-8", errors="ignore") as f:
             text = f.read()
         words = re.findall(r"[a-zA-Z']+", text.lower())
         all_words.extend(words)
@@ -48,7 +49,7 @@ def compute_word_frequency(
         txt_files = sorted([f for f in os.listdir(inputDir) if f.endswith(".txt")])
         for filename in txt_files:
             filepath = os.path.join(inputDir, filename)
-            with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+            with open(filepath, encoding="utf-8", errors="ignore") as f:
                 text = f.read()
             words = re.findall(r"[a-zA-Z']+", text.lower())
             all_words.extend(words)

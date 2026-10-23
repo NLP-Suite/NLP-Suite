@@ -3,6 +3,7 @@
 # Wordnet_bySentenceID written by Yi Wang (April 2020)
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -14,20 +15,18 @@ if (
 ):
     sys.exit(0)
 
+from collections import defaultdict
+import csv
 import os
 import re
-import pandas as pd
-import csv
 import tkinter.messagebox as mb
-from collections import defaultdict
 
-import reminders_util
+import pandas as pd
+
 import charts_util
-import IO_files_util
-import IO_user_interface_util
 import data_manipulation_util
-import IO_csv_util
-import statistics_csv_util
+import IO_user_interface_util
+import reminders_util
 
 IO_libraries_util.import_nltk_resource(GUI_util.window, "corpora/wordnet", "wordnet")
 from nltk.corpus import wordnet as wn
@@ -561,13 +560,12 @@ def Wordnet_bySentenceID(
         # append the list to the final list
         Row_list.append(my_list)
     for index, row in enumerate(Row_list):
-        if index == 0 and Row_list[index][4] != 1:
-            for i in range(Row_list[index][4] - 1, 0, -1):
-                Row_list.insert(0, ["", "", "", "", i, Row_list[index][5], Row_list[index][6]])
-        else:
-            if index < len(Row_list) - 1 and Row_list[index + 1][4] - Row_list[index][4] > 1:
-                for i in range(Row_list[index + 1][4] - 1, Row_list[index][4], -1):
-                    Row_list.insert(index + 1, ["", "", "", "", i, Row_list[index][5], Row_list[index][6]])
+        if index == 0 and row[4] != 1:
+            for i in range(row[4] - 1, 0, -1):
+                Row_list.insert(0, ["", "", "", "", i, row[5], row[6]])
+        elif index < len(Row_list) - 1 and Row_list[index + 1][4] - row[4] > 1:
+            for i in range(Row_list[index + 1][4] - 1, row[4], -1):
+                Row_list.insert(index + 1, ["", "", "", "", i, row[5], row[6]])
     df = pd.DataFrame(
         Row_list, columns=["Form", "Lemma", "POS", category_label, "Sentence ID", "Document ID", "Document"]
     )
@@ -679,4 +677,3 @@ def complete_csv_header(inputFilename, padding_base_name):
         for row in r:
             w.writerow(row)
     os.remove(tempFile)
-    return

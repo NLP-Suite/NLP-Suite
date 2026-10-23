@@ -1,20 +1,17 @@
 # written by Rafael Piloto Fall 2021
 # edited by Roberto Franzosi Fall 2023
 
+import os
+import shutil
 import sys
-import GUI_util
-import IO_libraries_util
 
 # if IO_libraries_util.install_all_Python_packages(GUI_util.window,"POTUS_webscraper.py",['beautifulsoup4'])==False:
 #     sys.exit(0)
-
 import tkinter as tk
-import requests
 
 # conda install -c anaconda beautifulsoup4
 from bs4 import BeautifulSoup
-import os
-import shutil
+import requests
 
 base_url = "https://www.presidency.ucsb.edu/"  # base website url for link redirects
 out_path = tk.filedialog.askdirectory(

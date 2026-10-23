@@ -21,10 +21,10 @@ has no pytest CI. Run it before shipping a GUI change. Exit 0 = all good; non-ze
 missing golden widget. Prints a per-GUI report.
 """
 
-import os
-import sys
 import glob
+import os
 import subprocess
+import sys
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _SRC = os.path.join(os.path.dirname(_HERE), "src")

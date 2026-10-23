@@ -2,6 +2,7 @@
 # Written by Roberto Franzosi September 2021
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -13,7 +14,7 @@ if (
 
 import os
 import tkinter.messagebox as mb
-from subprocess import call
+
 import pandas as pd
 
 # Ignore error coming from df['Date'][index] = saved_date
@@ -22,20 +23,20 @@ pd.options.mode.chained_assignment = None
 import tkinter as tk
 from tkinter import ttk
 
-import GUI_IO_util
-import config_util  # used for Google API
-import reminders_util
-import constants_util
-import IO_csv_util
-import GIS_pipeline_util
-import GIS_file_check_util
-import IO_files_util
-import CoNLL_util
-import Stanford_CoreNLP_util
-import run_script_util
-import Stanza_util
-import spaCy_util
 import BERT_util
+import config_util  # used for Google API
+import CoNLL_util
+import constants_util
+import GIS_file_check_util
+import GIS_pipeline_util
+import GUI_IO_util
+import IO_csv_util
+import IO_files_util
+import reminders_util
+import run_script_util
+import spaCy_util
+import Stanford_CoreNLP_util
+import Stanza_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -100,7 +101,7 @@ def run():
     country_bias = country_bias_var[-2:]
 
     box_tuple = ""
-    if not "e.g.," in area_var:
+    if "e.g.," not in area_var:
         if (area_var.count("(") + area_var.count(")") != 4) or (area_var.count(",") != 3):
             mb.showwarning(
                 "Warning",
@@ -135,8 +136,8 @@ def run():
         outputDir_GIS = outputDir_mc
         if outputDir_mc == "":
             return
-        import NER_location_tracking_util
         import charts_util
+        import NER_location_tracking_util
 
         trackingFiles = NER_location_tracking_util.main(inputFilename, inputDir, outputDir_mc)
         if trackingFiles:
@@ -393,13 +394,12 @@ def run():
 
         if len(filesToOpen) > 0:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
-    else:
-        if GIS_package_var != "":
-            mb.showwarning(
-                "Option not available",
-                "The " + GIS_package_var + " option is not available yet.\n\nSorry! Please, check back soon...",
-            )
-            return
+    elif GIS_package_var != "":
+        mb.showwarning(
+            "Option not available",
+            "The " + GIS_package_var + " option is not available yet.\n\nSorry! Please, check back soon...",
+        )
+        return
 
     if Google_Earth_OpenGUI:
         run_script_util.run_script("GIS_Google_Earth_main.py")
@@ -510,7 +510,7 @@ def check_csv_file_headers(csv_file):
         geocoder_var.set("Nominatim")
         geocoder = "Nominatim"
         location_field.config(state="disabled")
-    if ("Location" in headers and not "Latitude" in headers) or "Word" in headers:
+    if ("Location" in headers and "Latitude" not in headers) or "Word" in headers:
         geocode_locations_var.set(1)
         geocode_locations_checkbox.configure(state="disabled")
         if "Word" in headers:
@@ -529,7 +529,7 @@ def check_csv_file_headers(csv_file):
         location_menu_var.set("Location")  # RF
         location_menu = "Latitude"
     # Word is the header from Stanford CoreNLP NER annotator
-    elif not "Location" in headers and not "Word" in headers and not "NER" in headers:
+    elif "Location" not in headers and "Word" not in headers and "NER" not in headers:
         mb.showwarning(
             title="Warning",
             message="The selected input csv file does not contain the word 'Location' in its headers.\n\nThe GIS algorithms expect in input either\n   1. txt file(s) from which to extract locations (via Stanford CoreNLP NER annotator) to be geocoded and mapped;\n   2. a csv file\n      a. with a column of locations (with header 'Location') to be geocoded and mapped;\n      b. a csv file with a column of locations (with header 'Location'; the header 'Word' from the CoreNLP NER annotator will be converted automatically to 'Location')';\n      c. already geocoded and to be mapped (this file will also contain latitudes and longitudes, with headers 'Latitude' and 'Longitude').\n\nPlease, select the appropriate input csv file and try again. Or simply run the complete pipeline, going from text to maps, with txt file(s) in input.",
@@ -554,25 +554,24 @@ def check_csv_file_headers(csv_file):
         geocode_locations_checkbox.configure(state="disabled")
         geocode_locations = 0
         geocode_locations_checkbox.config(state="disabled")
-    else:
-        if location_menu_var.get() == "":
+    elif location_menu_var.get() == "":
+        mb.showwarning(
+            title="Warning",
+            message="You have selected the 'GEOCODE locations' option, but you have not selected the column containing location names.\n\nYou cannot geocode without selecting the column containing locations to be coded.",
+        )
+        cannotRun = True
+    elif geocoder_var.get() == "":
+        mb.showwarning(title="Warning", message="No geocoder service option selected.\n\nThe GIS script will exit.")
+        cannotRun = True
+    elif geocode_locations_var.get() == False:
+        if map_locations_var.get() == True:
             mb.showwarning(
                 title="Warning",
-                message="You have selected the 'GEOCODE locations' option, but you have not selected the column containing location names.\n\nYou cannot geocode without selecting the column containing locations to be coded.",
+                message="You have selected the 'MAP locations' option, but the current csv input file is not geocoded and the 'GEOCODE location' widget is unchecked.\n\nYou cannot map without geocoding.",
             )
+            # geocode_locations_var.set(1)
+            # geocode_locations_checkbox.configure(state='disabled')
             cannotRun = True
-        elif geocoder_var.get() == "":
-            mb.showwarning(title="Warning", message="No geocoder service option selected.\n\nThe GIS script will exit.")
-            cannotRun = True
-        elif geocode_locations_var.get() == False:
-            if map_locations_var.get() == True:
-                mb.showwarning(
-                    title="Warning",
-                    message="You have selected the 'MAP locations' option, but the current csv input file is not geocoded and the 'GEOCODE location' widget is unchecked.\n\nYou cannot map without geocoding.",
-                )
-                # geocode_locations_var.set(1)
-                # geocode_locations_checkbox.configure(state='disabled')
-                cannotRun = True
 
     if map_locations_var.get() == False and inputIsGeocoded == True:
         mb.showwarning(
@@ -1093,8 +1092,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(
 def activate_Google_API_Google_Maps(*args):
     global GIS_package2_checkbox
     if (
-        not "folium" in GIS_package_var.get()
-        and not "Google" in GIS_package_var.get()
+        "folium" not in GIS_package_var.get()
+        and "Google" not in GIS_package_var.get()
         and len(GIS_package_var.get()) > 0
     ):
         # QGIS is not unavailable, it is simply not AUTOMATED: the Suite geocodes and writes the kml, and

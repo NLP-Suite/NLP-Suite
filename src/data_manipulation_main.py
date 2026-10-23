@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -13,14 +14,13 @@ if (
 import os
 import tkinter as tk
 from tkinter import ttk
-from subprocess import call
 import tkinter.messagebox as mb
 
-import IO_files_util
-import GUI_util
-import GUI_IO_util
-import IO_csv_util
 import data_manipulation_util
+import GUI_IO_util
+import GUI_util
+import IO_csv_util
+import IO_files_util
 import reminders_util
 import run_script_util
 
@@ -1115,7 +1115,6 @@ if __name__ == "__main__":
                 True,
             )
 
-    #
     def changed_filename(tracedInputFile):
         global error
         if tracedInputFile[-4:] != ".csv":

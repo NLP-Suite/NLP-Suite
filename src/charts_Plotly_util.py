@@ -3,6 +3,7 @@
 # https://plotly.com/python/
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -16,14 +17,13 @@ if (
 # if Plotly fails, install version 0.1.0 of kaleido
 # pip install kaleido==0.1.0post1
 
-import numpy as np
 
 import os
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import random
 
 import IO_csv_util
 

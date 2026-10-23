@@ -2,6 +2,7 @@
 # refactored for efficiency June 2026
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -14,18 +15,18 @@ if (
     sys.exit(0)
 
 import os
-import string
-import re
 from re import split
 import ssl
+import string
+
 import pandas as pd
 import requests
 import stanza
-import string_similarity_util
 
+import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
-import IO_csv_util
+import string_similarity_util
 
 SPARQL_URL = "https://yago-knowledge.org/sparql/query"
 SPARQL_TIMEOUT = 30
@@ -112,7 +113,7 @@ def YAGO_annotate(
         head, tail = os.path.split(file)
         print("Processing file " + str(file_idx) + "/" + str(nFile) + " " + tail)
 
-        with open(file, "r", encoding="utf-8", errors="ignore") as _f:
+        with open(file, encoding="utf-8", errors="ignore") as _f:
             contents = _f.read()
         contents = _preprocess(contents)
 
@@ -179,7 +180,7 @@ def YAGO_annotate(
         }
     )
 
-    from datetime import datetime, date
+    from datetime import date, datetime
 
     csvname = "YAGO_output_" + date.today().strftime("%b_%d_%Y") + "_" + datetime.now().strftime("%H_%M_%S") + ".csv"
     csvname = os.path.join(outputDir, csvname)

@@ -1,7 +1,7 @@
 import os
-import sys
 import shutil
 from subprocess import call
+import sys
 
 
 def _is_frozen():

@@ -1,6 +1,7 @@
 # written by Roberto Franzosi (Spring/summer 2020)
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -13,19 +14,18 @@ if (
     sys.exit(0)
 
 import os
-import tkinter.messagebox as mb
 import tkinter as tk
-from subprocess import call
+import tkinter.messagebox as mb
 
+import config_util
+import file_spell_checker_util
 import GUI_IO_util
 import IO_files_util
-import file_spell_checker_util
+import reminders_util
+import run_script_util
+import Stanza_util
 import statistics_txt_util
 import style_analysis_abstract_concreteness_analysis_util
-import Stanza_util
-import reminders_util
-import config_util
-import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -115,7 +115,9 @@ def run():
             )
             return
 
-        import WSI_util, WSI_viz, WSI_keyterms
+        import WSI_keyterms
+        import WSI_util
+        import WSI_viz
 
         Word2Vec_Dir = IO_files_util.make_output_subdirectory(
             inputFilename, inputDir, outputDir, label="WSI", silent=True
@@ -142,7 +144,7 @@ def run():
         filesToOpen = s_paths + v_paths + k_paths
 
     if WSD_var:
-        if not "CoNLL" in inputFilename and not "CoNLL" in csv_file.get():
+        if "CoNLL" not in inputFilename and "CoNLL" not in csv_file.get():
             mb.showwarning(
                 title="Warning",
                 message="The script Word Sense Disambiguation (WSD) algorithm requires a CoNLL FILE in INPUT.\n\n"
@@ -317,7 +319,6 @@ def run():
                 silent = True
             else:
                 silent = False
-            import spaCy_util
 
             # annotator_available = spaCy_util.check_spaCy_annotator_availability(['Objectivity/subjectivity'], language,
             #                                                                     silent)
@@ -558,12 +559,11 @@ def run():
                         filesToOpen.append(outputFiles)
                     else:
                         filesToOpen.extend(outputFiles)
-            else:
-                if not "*" == vocabulary_analysis_menu_var:
-                    mb.showwarning(
-                        title="Warning",
-                        message="The Abstract/concrete vocabulary analysis algorithm is only available for the English language.",
-                    )
+            elif not "*" == vocabulary_analysis_menu_var:
+                mb.showwarning(
+                    title="Warning",
+                    message="The Abstract/concrete vocabulary analysis algorithm is only available for the English language.",
+                )
 
         if "*" == vocabulary_analysis_menu_var or "Iconic" in vocabulary_analysis_menu_var:
             if language == "English":
@@ -586,12 +586,11 @@ def run():
                         filesToOpen.append(outputFiles)
                     else:
                         filesToOpen.extend(outputFiles)
-            else:
-                if not "*" == vocabulary_analysis_menu_var:
-                    mb.showwarning(
-                        title="Warning",
-                        message="The Iconicity analysis algorithm is only available for the English language.",
-                    )
+            elif not "*" == vocabulary_analysis_menu_var:
+                mb.showwarning(
+                    title="Warning",
+                    message="The Iconicity analysis algorithm is only available for the English language.",
+                )
 
         if "*" == vocabulary_analysis_menu_var or "Yule" in vocabulary_analysis_menu_var:
             outputFiles = statistics_txt_util.yule(window, inputFilename, inputDir, outputDir, config_filename)
@@ -1298,7 +1297,6 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         "NLP Suite Help",
         "Click 'Aggregate words by semantics (Open GUI)' to open the Semantic Aggregation GUI. There you can classify and aggregate the NOUNS and VERBS of your corpus into WordNet, VerbNet, and FrameNet categories: build a word list from a category (Zoom IN/DOWN), or roll words up into higher-level categories (Zoom OUT/UP) - at the top-level supersense or at a lower-level synset you choose. This is the context-blind (first-sense) counterpart to the Word Sense Disambiguation option above.",
     )
-    #
     y_multiplier_integer = GUI_IO_util.place_help_button(
         window,
         help_button_x_coordinate,

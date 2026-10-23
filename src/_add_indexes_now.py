@@ -1,4 +1,6 @@
-import sqlite3, glob, os
+import glob
+import os
+import sqlite3
 
 STMTS = [
     "CREATE INDEX IF NOT EXISTS idx_dc_setup ON data_Complex(ID_setup_complex)",
@@ -33,6 +35,6 @@ for db in glob.glob("C:/Users/rfranzo/Desktop/PCACE-*/*.sqlite"):
     ver_file = os.path.join(os.path.dirname(db), "_sqlite_version.txt")
     with open(ver_file, "w") as f:
         f.write("3")
-    print(f"  version stamp -> 3")
+    print("  version stamp -> 3")
     conn.close()
 print("\nDone")

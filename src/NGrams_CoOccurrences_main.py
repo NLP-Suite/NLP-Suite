@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -12,22 +13,20 @@ if (
 ):
     sys.exit(0)
 
+import datetime
+import glob
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
-import glob
-import datetime
-import pandas as pd
-from subprocess import call
 
-import IO_user_interface_util
-import GUI_IO_util
-import IO_files_util
-import charts_util
+import pandas as pd
+
 import config_util
-import reminders_util
+import GUI_IO_util
 import IO_csv_util
+import IO_files_util
 import NGrams_CoOccurrences_util
+import reminders_util
 import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -794,7 +793,7 @@ activate_ngrams_options()
 
 def activate_default_ngrams_options(*args):
     ngrams_options_list.clear()
-    if not "Case sensitive (default)" in ngrams_options_list:
+    if "Case sensitive (default)" not in ngrams_options_list:
         ngrams_options_list.append("Case sensitive (default)")
     ngrams_options_list.append("Search within sentence (default)")
     ngrams_options_list.append("Exact match (default)")
@@ -935,7 +934,7 @@ def activate_viewer_options(*args):
             viewer_options_list.remove("Exact match (default)")
         if "Exact match (default)" in viewer_options_menu_var.get() and "Partial match" in str(viewer_options_list):
             viewer_options_list.remove("Partial match")
-        if not viewer_options_menu_var.get() in viewer_options_list:
+        if viewer_options_menu_var.get() not in viewer_options_list:
             viewer_options_list.append(viewer_options_menu_var.get())
         viewer_options_menu.configure(state="disabled")
         add_viewer_button.configure(state="normal")
@@ -955,7 +954,7 @@ activate_viewer_options()
 
 def activate_default_viewer_options(*args):
     viewer_options_list.clear()
-    if not "Case sensitive (default)" in viewer_options_list:
+    if "Case sensitive (default)" not in viewer_options_list:
         viewer_options_list.append("Case sensitive (default)")
     viewer_options_list.append("Search within sentence (default)")
     viewer_options_list.append("Exact match (default)")

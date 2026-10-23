@@ -1,8 +1,9 @@
 # written by Roberto Franzosi, Wei Dai January 1 2021
 
 import sys
-import IO_libraries_util
+
 import GUI_util
+import IO_libraries_util
 
 if (
     IO_libraries_util.install_all_Python_packages(
@@ -12,16 +13,16 @@ if (
 ):
     sys.exit(0)
 
-import os
-import tkinter as tk
 from itertools import cycle
+import os
+from subprocess import call
+import tkinter as tk
 
 # https://pillow.readthedocs.io/en/3.0.x/handbook/tutorial.html
 # https://pillow.readthedocs.io/en/stable/installation.html
 # Pillow and PIL cannot co-exist in the same environment. Before installing Pillow, please uninstall PIL.
 # Pillow >= 1.0 no longer supports “import Image”. Please use “from PIL import Image” instead.
 from PIL import Image
-from subprocess import call
 
 import GUI_IO_util
 
@@ -93,8 +94,8 @@ def watch_video(video_button):
 
 
 def open_TIPS():
-    import sys
     import subprocess
+    import sys
 
     TIPS_file = "TIPS_NLP_Questions & answers.pdf"
     if os.path.isfile(os.path.join(GUI_IO_util.TIPSPath, TIPS_file)):

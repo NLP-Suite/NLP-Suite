@@ -2,9 +2,10 @@
 
 import sys
 
-# Load early so the pandas on_bad_lines kwarg works on every pandas version across the whole
-# suite (GUI_util is imported at the top of essentially every script). No-op on pandas >= 1.3.
-import pandas_compat_util
+# Creates a circular dependent imports
+# if IO_libraries_util.install_all_Python_packages(GUI_util.window, "GUI_util", ['tkinter', 'os', 'subprocess', 'PIL']) == False:
+#     sys.exit(0)
+import tkinter as tk
 
 # this will renew the SSL certificate indefinitely
 # pip install pyOpenSSL
@@ -13,11 +14,8 @@ import requests
 
 import IO_libraries_util
 
-# Creates a circular dependent imports
-# if IO_libraries_util.install_all_Python_packages(GUI_util.window, "GUI_util", ['tkinter', 'os', 'subprocess', 'PIL']) == False:
-#     sys.exit(0)
-
-import tkinter as tk
+# Load early so the pandas on_bad_lines kwarg works on every pandas version across the whole
+# suite (GUI_util is imported at the top of essentially every script). No-op on pandas >= 1.3.
 
 window = tk.Tk()
 
@@ -111,18 +109,17 @@ if silent_mode:
     _fd.asksaveasfilename = lambda *a, **k: ""
     _fd.askopenfile = lambda *a, **k: None
     _fd.asksaveasfile = lambda *a, **k: None
-from subprocess import call
 import time
 
 import config_util
-import reminders_util
-
-# import videos_util
-import TIPS_util
 import GUI_IO_util
 import IO_files_util
 import IO_internet_util
+import reminders_util
 import run_script_util
+
+# import videos_util
+import TIPS_util
 
 
 def set_window_icon():
@@ -339,8 +336,8 @@ def tk_image_from_pil(pil_image):
     Tk 8.6 decodes PNG natively, so we hand Tk base64-encoded PNG bytes through the
     built-in PhotoImage(data=...). PIL is used only to decode/resize, which never touches
     _imagingtk. Keep a reference to the returned image (Tk does not)."""
-    import io
     import base64
+    import io
 
     if pil_image.mode not in ("RGB", "RGBA", "L", "LA", "P"):
         pil_image = pil_image.convert("RGBA")
@@ -389,7 +386,7 @@ def get_local_release_version():
     release_version_file = GUI_IO_util.libPath + os.sep + "release_version.txt"
     local_release_version = "0.0.0"
     if os.path.isfile(release_version_file):
-        with open(release_version_file, "r", encoding="utf-8", errors="ignore") as file:
+        with open(release_version_file, encoding="utf-8", errors="ignore") as file:
             local_release_version = file.read()
     return local_release_version
 
@@ -574,12 +571,10 @@ def selectDirectory_set_options(window, input_main_dir_path, output_dir_path, ti
         if inputMainDir:
             if len(input_main_dir_path.get()) > 0:
                 initialFolder = input_main_dir_path.get()
-        else:
-            if len(input_secondary_dir_path.get()) > 0:
-                initialFolder = input_secondary_dir_path.get()
-    else:
-        if len(output_dir_path.get()) > 0:
-            initialFolder = output_dir_path.get()
+        elif len(input_secondary_dir_path.get()) > 0:
+            initialFolder = input_secondary_dir_path.get()
+    elif len(output_dir_path.get()) > 0:
+        initialFolder = output_dir_path.get()
     # get the directory
     directoryName = IO_files_util.selectDirectory(title, initialFolder)
     if directoryName == "":
@@ -662,7 +657,7 @@ def check_fileName(scriptName, file_type, config_input_output_numeric_options):
         err_msg = "The script '" + scriptName + "' requires a " + file_type + " FILE in INPUT.\n\n"
     elif inputFilename.get().endswith("csv"):
         if config_input_output_numeric_options[0] == 1:
-            if not "CoNLL" in inputFilename.get():
+            if "CoNLL" not in inputFilename.get():
                 err_msg = (
                     "The script '" + scriptName + "' requires a " + file_type + " FILE in INPUT.\n\n"
                     "Although the input file is a csv file, it is not a CoNLL file.\n\n"
@@ -700,7 +695,7 @@ def revalidate_run_button_secondary_dir():
     global last_missing_IO
     if input_secondary_dir_path.get() == "":
         return
-    if not "secondary" in last_missing_IO.lower():
+    if "secondary" not in last_missing_IO.lower():
         return
     # drop the secondary-directory line; the RUN button can only be re-enabled if NOTHING else is missing
     last_missing_IO = config_util.remove_missing_IO_line(last_missing_IO, "secondary")
@@ -763,12 +758,11 @@ def activateRunButton(config_filename, IO_setup_display_brief, scriptName, missi
         ):
             if "setup_IO_main" in scriptName:
                 RUN_msg = ""
+            # similar messages are displayed in config_util.check_missing_IO
+            elif scriptName == "NLP_menu_main.py":
+                RUN_msg = "\n\nThe RUN button in ALL GUIs will be disabled, and you will not be able to run any algorithm, until the expected I/O options are entered."
             else:
-                # similar messages are displayed in config_util.check_missing_IO
-                if scriptName == "NLP_menu_main.py":
-                    RUN_msg = "\n\nThe RUN button in ALL GUIs will be disabled, and you will not be able to run any algorithm, until the expected I/O options are entered."
-                else:
-                    RUN_msg = "\n\nThe RUN button is disabled until the expected I/O options are entered."
+                RUN_msg = "\n\nThe RUN button is disabled until the expected I/O options are entered."
             # Deferred (window.after) for the same reason as the missing-I/O warning above: no modal
             # during build, or macOS can't finish laying out the window behind it.
             window.after(400, lambda m=err_msg + RUN_msg: mb.showwarning(title="Warning", message=m))
@@ -1047,7 +1041,7 @@ def open_paste_text_popup():
     scrollbar.config(command=text_widget.yview)
 
     if os.path.exists(test_file):
-        with open(test_file, "r", encoding="utf-8", errors="ignore") as f:
+        with open(test_file, encoding="utf-8", errors="ignore") as f:
             prev_text = f.read()
         if prev_text.strip():
             text_widget.insert("1.0", prev_text)
@@ -1701,8 +1695,8 @@ def setup_IO_configuration_options(IO_setup_display_brief, scriptName, silent, o
     # GUIs with _ALL_ in the scriptName are designated as having a set of clickable buttons for various options but have no run options
     #   so no IO info should be displayed (unless they explicitly set non-zero IO config)
     if (
-        not "_ALL_" in scriptName or config_input_output_numeric_options != [0, 0, 0, 0]
-    ) and not "package_language" in scriptName:
+        "_ALL_" not in scriptName or config_input_output_numeric_options != [0, 0, 0, 0]
+    ) and "package_language" not in scriptName:
         try:
             # Build the DISPLAY template with a permissive file type, but keep it in a LOCAL list: this
             # used to assign [6,1,0,1] to the global config_input_output_numeric_options, clobbering the
@@ -1722,7 +1716,7 @@ def setup_IO_configuration_options(IO_setup_display_brief, scriptName, silent, o
         if missing_IO != "":
             open_setup_IO_GUI = True
     if (
-        not "NLP_setup_IO_main" in scriptName
+        "NLP_setup_IO_main" not in scriptName
     ):  # if the NLP_setup_IO_main is already opened, you do not want to open it again
         # changed_setup_IO_config(scriptName, IO_setup_display_brief, silent=False)
         if not silent and missing_IO != "":
@@ -1743,7 +1737,7 @@ def setup_IO_configuration_options(IO_setup_display_brief, scriptName, silent, o
             config_filename = config_filename_selected_config.get()
             changed_setup_IO_config(scriptName, IO_setup_display_brief, silent=False, open_setup_IO_GUI=False)
             open_setup_IO_GUI = False
-            if not "NLP_menu_main" in scriptName and not "package_language" in scriptName:
+            if "NLP_menu_main" not in scriptName and "package_language" not in scriptName:
                 IO_setup_display_brief = True
         missing_IO = display_IO_setup(
             window, IO_setup_display_brief, config_filename, config_input_output_alphabetic_options
@@ -1855,8 +1849,8 @@ IO_setup_config_SV = ""
 #   For example, you need a csv file but the default is a Directory, e.g., data_manager_main
 def GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName, silent=False):
     # config_filename='NLP_default_IO_config.csv'
+
     import IO_libraries_util
-    from PIL import Image, ImageTk
 
     # global so that they are recognized wherever they are used (e.g., select_input_secondary_dir_button in shape_of_stories_GUI)
     global select_inputFilename_button, select_input_main_dir_button, select_input_secondary_dir_button, select_output_dir_button
@@ -1912,7 +1906,7 @@ def GUI_top(config_input_output_numeric_options, config_filename, IO_setup_displ
     #   5 for txt, html (used in annotator)
     #   6 for txt, csv (used in SVO)
 
-    if not "NLP_menu_main" in scriptName and config_input_output_numeric_options != [0, 0, 0, 0]:
+    if "NLP_menu_main" not in scriptName and config_input_output_numeric_options != [0, 0, 0, 0]:
         if not IO_setup_display_brief:
             IO_config_setup_full(window, y_multiplier_integer)
         else:
@@ -2185,9 +2179,9 @@ def changed_setup_IO_config(scriptName, IO_setup_display_brief, silent=False, op
     #     # must pass config_filename and not temp_config_filename since the value is recomputed in display_IO_setup
     #     missing_IO = display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_alphabetic_options)
     if (
-        not "license" in config_filename
-        and not "package_language" in config_filename
-        and not "external_software" in config_filename
+        "license" not in config_filename
+        and "package_language" not in config_filename
+        and "external_software" not in config_filename
     ):
         missing_IO = display_IO_setup(
             window, IO_setup_display_brief, config_filename, config_input_output_alphabetic_options
@@ -2242,8 +2236,8 @@ def GUI_bottom(
     #   in this case config_input_output_numeric_options = [0,0,0,0]
     if (
         config_input_output_numeric_options != [0, 0, 0, 0]
-        and not "NLP_menu_main" in scriptName
-        and not "NLP_setup_" in scriptName
+        and "NLP_menu_main" not in scriptName
+        and "NLP_setup_" not in scriptName
     ):
         # open output csv files widget defined above since it is used earlier
         open_csv_output_label = tk.Checkbutton(
@@ -2415,13 +2409,13 @@ def GUI_bottom(
         )
 
         def run_data_tool(*args):
-            if not "data_manipulation_main.py" in scriptName and "manipulation" in data_tools_options_widget.get():
+            if "data_manipulation_main.py" not in scriptName and "manipulation" in data_tools_options_widget.get():
                 run_script_util.run_script("data_manipulation_main.py")
-            if not "statistics_csv_main.py" in scriptName and "statistics" in data_tools_options_widget.get():
+            if "statistics_csv_main.py" not in scriptName and "statistics" in data_tools_options_widget.get():
                 run_script_util.run_script("statistics_csv_main.py")
-            if not "data_visualization_main.py" in scriptName and "visualization" in data_tools_options_widget.get():
+            if "data_visualization_main.py" not in scriptName and "visualization" in data_tools_options_widget.get():
                 run_script_util.run_script("data_visualization_main.py")
-            if not "sample_corpus_main.py" in scriptName and "sampling" in data_tools_options_widget.get():
+            if "sample_corpus_main.py" not in scriptName and "sampling" in data_tools_options_widget.get():
                 run_script_util.run_script("sample_corpus_main.py")
 
         data_tools_options_widget.trace("w", run_data_tool)
@@ -2579,9 +2573,9 @@ def GUI_bottom(
     y_multiplier_integer_SV = y_multiplier_integer
     # do not display the setup widget when calling from a setup GUI or from NLP_menu_main
     if (
-        not "NLP_menu_main" in scriptName
-        and not "package_language" in config_filename
-        and not "external_software" in config_filename
+        "NLP_menu_main" not in scriptName
+        and "package_language" not in config_filename
+        and "external_software" not in config_filename
     ):
         # window.nametowidget(setup_menu_lb)
         # error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
@@ -2590,7 +2584,7 @@ def GUI_bottom(
     # there is no RUN button when setting up IO information in any of the NLP_setup scripts
     #   or in any of the GUIs that are ALL options GUIs (except for narrative_analysis where we use checkboxes instead of buttons))
     # TODO RUN button
-    if ("narrative_analysis" in scriptName) or (not "NLP_setup_" in scriptName and (not "ALL_main" in scriptName)):
+    if ("narrative_analysis" in scriptName) or ("NLP_setup_" not in scriptName and ("ALL_main" not in scriptName)):
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(
             window,
@@ -2623,7 +2617,7 @@ def GUI_bottom(
         NLP_setup_update_util.exit_window()
 
     # do not display CLOSE button for the 3 NLP_setup GUIs; the CLOSE is handled in those GUIs
-    if not "NLP_setup_" in scriptName:
+    if "NLP_setup_" not in scriptName:
         close_button = tk.Button(window, text="CLOSE", width=10, height=2, command=lambda: _close_window())
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(

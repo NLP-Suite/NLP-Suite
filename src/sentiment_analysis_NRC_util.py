@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -10,26 +11,22 @@ if (
 ):
     sys.exit(0)
 
-import os
 import csv
-import time
-import numpy as np
-import tkinter.messagebox as mb
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from matplotlib.colors import to_rgba
-from nrclex import NRCLex
-from collections import defaultdict
 import math
+import os
+import tkinter.messagebox as mb
 
-import GUI_IO_util
+from matplotlib.colors import to_rgba
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
+from nrclex import NRCLex
+import numpy as np
+
+import charts_util
 import IO_csv_util
 import IO_files_util
-import IO_user_interface_util
-import charts_util
+from Stanza_functions_util import sentence_split_stanza_text, stanzaPipeLine
 import statistics_statistical_tests_util
-
-from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
 
 EIGHT_EMOTIONS = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
 
@@ -222,7 +219,7 @@ def plot_plutchik_wheel(scores, title, outputFilename):
 
 
 def analyzefile(inputFilename, outputDir, writer, Document_ID, Document):
-    with open(inputFilename, "r", encoding="utf-8", errors="ignore") as f:
+    with open(inputFilename, encoding="utf-8", errors="ignore") as f:
         fulltext = f.read()
 
     if len(fulltext) < 1:

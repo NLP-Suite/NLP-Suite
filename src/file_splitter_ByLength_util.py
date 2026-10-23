@@ -5,6 +5,7 @@ Edited: Cynthia Dong, Roberto Franzosi, Spring 2020
 """
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -16,16 +17,12 @@ if (
 ):
     sys.exit(0)
 
-import io
 import os
-import re
-import tkinter.messagebox as mb
-import ntpath
 import shutil
 
 import GUI_util
-# from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
 
+# from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
 import IO_user_interface_util
 import reminders_util
 
@@ -90,7 +87,7 @@ def splitDocument_byLength(window, config_filename, filename_path, output_path="
     if output_path == "":
         output_path = head
     new_splitFiles_folder = output_path + os.sep + "split_files_" + str(maxLength) + "_" + filename[:-4]
-    with open(filename_path, "r", encoding="utf-8", errors="ignore") as F:
+    with open(filename_path, encoding="utf-8", errors="ignore") as F:
         text = F.read()
         length = len(text)
         if inWords:
@@ -163,17 +160,16 @@ def splitDocument_byLength(window, config_filename, filename_path, output_path="
 #   the creation of the directory is carried out in the calling script
 def split_byLength(window, input_path, filename, output_path, maxLength, inSentence=False):
     from Stanza_functions_util import (
-        stanzaPipeLine,
         sentence_split_stanza_text,
+        stanzaPipeLine,
         tokenize_stanza_text,
-        lemmatize_stanza_word,
     )
 
     # inSentence: no incomplete sentence in subfiles
     docname = os.path.split(filename)[1]
     title = docname.partition(".")[0]  # get the title of the file(without path and .txt)
     len_sentences = 0
-    with open(filename, "r", encoding="utf-8", errors="ignore") as F:
+    with open(filename, encoding="utf-8", errors="ignore") as F:
         text = F.read()
         sentences = sentence_split_stanza_text(stanzaPipeLine(text))  # sentnece list of the input txt
         len_sentences = len(sentences)
@@ -202,49 +198,48 @@ def split_byLength(window, input_path, filename, output_path, maxLength, inSente
             subfileIndex += 1
             splitText = ""
             l = 0
+        elif inSentence:  # the subfile's word count is less than max limit, but contain no incomplete sentences
+            subfile = open(
+                output_path + "/" + title + "_" + str(subfileIndex) + ".txt", "w", encoding="utf-8", errors="ignore"
+            )
+            subfile.write(splitText)
+            subfileIndex += 1
+            splitText = sent + " "
+            l = len(words)
         else:
-            if inSentence:  # the subfile's word count is less than max limit, but contain no incomplete sentences
+            diff = maxLength - l  # the index of the last word of this subfile in the sentence
+            if (
+                words.index(words[diff - 1]) == diff - 1
+            ):  # no other same word in the setence or that's the first occurrence of the word
+                splitText += sent.partition(words[diff - 1])[0] + sent.partition(words[diff - 1])[1]
                 subfile = open(
-                    output_path + "/" + title + "_" + str(subfileIndex) + ".txt", "w", encoding="utf-8", errors="ignore"
+                    output_path + "/" + title + "_" + str(subfileIndex) + ".txt",
+                    "w",
+                    encoding="utf-8",
+                    errors="ignore",
                 )
                 subfile.write(splitText)
                 subfileIndex += 1
-                splitText = sent + " "
-                l = len(words)
+                splitText = sent.partition(words[diff - 1])[2] + " "
+                l = len(words) - diff
             else:
-                diff = maxLength - l  # the index of the last word of this subfile in the sentence
-                if (
-                    words.index(words[diff - 1]) == diff - 1
-                ):  # no other same word in the setence or that's the first occurrence of the word
-                    splitText += sent.partition(words[diff - 1])[0] + sent.partition(words[diff - 1])[1]
-                    subfile = open(
-                        output_path + "/" + title + "_" + str(subfileIndex) + ".txt",
-                        "w",
-                        encoding="utf-8",
-                        errors="ignore",
-                    )
-                    subfile.write(splitText)
-                    subfileIndex += 1
-                    splitText = sent.partition(words[diff - 1])[2] + " "
-                    l = len(words) - diff
-                else:
-                    subsent = ""
-                    restsent = sent
-                    while (
-                        len(tokenize_stanza_text(stanzaPipeLine(text))) <= diff
-                    ):  # check each same word until the previous text reached the maxLength
-                        subsent += restsent.partition(words[diff - 1])[0] + restsent.partition(words[diff - 1])[1]
-                        restsent = restsent.partition(words[diff - 1])[2]
-                    subfile = open(
-                        output_path + "/" + title + "_" + str(subfileIndex) + ".txt",
-                        "w",
-                        encoding="utf-8",
-                        errors="ignore",
-                    )
-                    subfile.write(splitText + subsent)
-                    subfileIndex += 1
-                    splitText = restsent + " "
-                    l = len(tokenize_stanza_text(stanzaPipeLine(restsent)))
+                subsent = ""
+                restsent = sent
+                while (
+                    len(tokenize_stanza_text(stanzaPipeLine(text))) <= diff
+                ):  # check each same word until the previous text reached the maxLength
+                    subsent += restsent.partition(words[diff - 1])[0] + restsent.partition(words[diff - 1])[1]
+                    restsent = restsent.partition(words[diff - 1])[2]
+                subfile = open(
+                    output_path + "/" + title + "_" + str(subfileIndex) + ".txt",
+                    "w",
+                    encoding="utf-8",
+                    errors="ignore",
+                )
+                subfile.write(splitText + subsent)
+                subfileIndex += 1
+                splitText = restsent + " "
+                l = len(tokenize_stanza_text(stanzaPipeLine(restsent)))
 
     if len(splitText) > 0:
         subfile = open(

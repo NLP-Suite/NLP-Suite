@@ -7,6 +7,7 @@
 # https://stackoverflow.com/questions/61121239/how-to-extract-subject-verb-object-using-nlp-java-for-every-sentence
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -16,30 +17,28 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window, "SVO main", ["
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
-from subprocess import call
 
 # to install stanfordnlp, first install
 #   pip3 install torch===1.4.0 torchvision===0.5.0 -f https://download.pytorch.org/whl/torch_stable.html
 #   pip3 install stanfordnlp
 # import stanfordnlp
-
 import config_util
-import GUI_IO_util
-import IO_files_util
-import statistics_csv_util
 import GIS_pipeline_util
+import GUI_IO_util
 
 # import wordclouds_util
 import IO_csv_util
-import SVO_util
-import SVO_compare_util
-import Stanza_util
+import IO_files_util
+import reminders_util
+import run_script_util
+import semantic_aggregation_WordNet_util
+import spaCy_util
 import Stanford_CoreNLP_coreference_util
 import Stanford_CoreNLP_util
-import spaCy_util
-import reminders_util
-import semantic_aggregation_WordNet_util
-import run_script_util
+import Stanza_util
+import statistics_csv_util
+import SVO_compare_util
+import SVO_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -209,7 +208,7 @@ def run():
         return
 
     if inputFilename[-4:] == ".csv":
-        if not "SVO_" in inputFilename:
+        if "SVO_" not in inputFilename:
             mb.showerror(
                 title="Input file error",
                 message="The selected input is a csv file, but... not an _svo.csv file.\n\nPlease, select an _svo.csv file (or txt file(s)) and try again.",
@@ -725,8 +724,8 @@ def run():
             tempOutputDir = head
             # Gephi network graphs _________________________________________________
             if gephi_var:
-                import Gephi_util
                 import charts_util
+                import Gephi_util
 
                 # i = 0
                 # previous svo csv files can be entered in input to display networks, wordclouds or GIS maps
@@ -964,8 +963,9 @@ def run():
                             filesToOpen.extend(outputFiles)
 
     if map_characters_var and len(svo_result_list) > 0:
-        import charts_util as charts_util_mc
         import pandas as pd
+
+        import charts_util as charts_util_mc
 
         # Prefer the FILTERED SVO (social actors only) when a subject filter was applied, so the moving
         # characters are genuine social actors rather than EVERY subject (verbs, abstract nouns, pronouns,
@@ -1355,12 +1355,11 @@ def activate_filter_dictionaries(lemmatize_var, filter_var, dict_path_var, filte
             )
             filter_var.set(0)
             dict_path_var.set("")
-    else:
-        if filter_var.get():
-            if "Subject" in filter_object or "Object" in filter_object:
-                dict_path_var.set("social-actor-list.csv")
-            else:  # verbs
-                dict_path_var.set("social-action-list.csv")
+    elif filter_var.get():
+        if "Subject" in filter_object or "Object" in filter_object:
+            dict_path_var.set("social-actor-list.csv")
+        else:  # verbs
+            dict_path_var.set("social-action-list.csv")
 
 
 def getDictFile(lemma_checkbox_var, filter_checkbox_var, dict_path_var, checkbox_value, dictFile):
@@ -1841,9 +1840,8 @@ def check_NER(first_time=False):
                 + " language."
                 "\n\nLocations cannot be extracted from your input document(s) and visualized as maps.",
             )
-    else:
-        if first_time:
-            google_earth_var.set(1)
+    elif first_time:
+        google_earth_var.set(1)
 
 
 google_earth_var.set(0)

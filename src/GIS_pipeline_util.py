@@ -3,30 +3,29 @@
 # Roberto Franzosi September 2020
 # Mino Cha September 2022
 
-import os
-import pandas as pd
-import tkinter.messagebox as mb
-import tkinter as tk
 import csv
+import os
+import tkinter as tk
+import tkinter.messagebox as mb
 
-import IO_files_util
-import IO_csv_util
-import GUI_IO_util
-import reminders_util
-import GIS_file_check_util
-import GIS_location_util
-import GIS_geocode_util
-import GIS_KML_util
-import GIS_Google_Maps_util
-import GIS_folium_util
-import IO_libraries_util
-import config_util
-import TIPS_util
-import constants_util
+import pandas as pd
+
 import charts_util
+import config_util
+import GIS_file_check_util
+import GIS_folium_util
+import GIS_geocode_util
+import GIS_Google_Maps_util
+import GIS_location_util
+import GUI_IO_util
+import IO_csv_util
+import IO_files_util
+import IO_libraries_util
 
 # The script is used by SVO_main and by Google_Earth_main to run a csv file that 1. needs geocoding; 2. mapping geocoded location onto Google Earth Pro.
 import IO_user_interface_util
+import reminders_util
+import TIPS_util
 
 
 # Google_config: 'Google-geocode-API_config.csv' or 'Google-Maps-API_config.csv'
@@ -34,7 +33,7 @@ def getGoogleAPIkey(window, Google_config, display_key=False):
     configFilePath = os.path.join(GUI_IO_util.configPath, Google_config)
     configAPIKey = []
     if os.path.isfile(configFilePath):
-        with open(configFilePath, "r", encoding="utf-8", errors="ignore") as f_config:
+        with open(configFilePath, encoding="utf-8", errors="ignore") as f_config:
             configAPIKey = f_config.readlines()
     if len(configAPIKey) == 0 or display_key:
         if "Maps" in Google_config:
@@ -94,7 +93,7 @@ def has_google_api_key(Google_config):
         path = os.path.join(GUI_IO_util.configPath, Google_config)
         if not os.path.isfile(path):
             return False
-        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+        with open(path, encoding="utf-8", errors="ignore") as f:
             return any(line.strip() for line in f)
     except Exception:
         return False
@@ -134,7 +133,7 @@ def load_GIS_settings(input_dir):
     if not os.path.isfile(path):
         return "", "", False
     try:
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             settings = _json.load(f)
         return (settings.get("country_bias", ""), settings.get("area", ""), settings.get("restrict", False))
     except Exception as e:
@@ -188,7 +187,8 @@ def normalize_NER_csv_for_GIS(
     # extract the date from each Document's filename (when the corpus embeds dates in filenames)
     # so the geocoder/KML/folium popups can show it
     if filename_embeds_date_var and "Document" in df.columns:
-        import IO_files_util, IO_csv_util
+        import IO_csv_util
+        import IO_files_util
 
         def _date_of(doc):
             try:
@@ -612,9 +612,9 @@ def GIS_pipeline(
             if len(coordList) > 0:
                 print(f"  Google Maps heatmap: first coord = [{coordList[0][0]}, {coordList[0][1]}]")
             else:
-                print(f"  WARNING: Google Maps heatmap: coordList is EMPTY after reading CSV!")
+                print("  WARNING: Google Maps heatmap: coordList is EMPTY after reading CSV!")
         else:
-            print(f"  WARNING: Google Maps heatmap: 'Latitude' or 'Longitude' column NOT found in CSV!")
+            print("  WARNING: Google Maps heatmap: 'Latitude' or 'Longitude' column NOT found in CSV!")
             mb.showwarning(
                 "Warning",
                 "The input csv file\n\n"
@@ -625,21 +625,20 @@ def GIS_pipeline(
 
         GIS_Google_Maps_util.create_js(window, heatMapoutputFilename, coordList, geocoder, True)
         filesToOpen.append(heatMapoutputFilename)
-    else:
-        if nRecordsFound <= 0:
-            print(f"  Google Maps heatmap: SKIPPED - nRecordsFound={nRecordsFound}")
-        elif "Google" not in mapping_package:
-            print(f"  Google Maps heatmap: SKIPPED - mapping_package='{mapping_package}' does not contain 'Google'")
-        elif Google_Maps_API == "":
-            print(f"  Google Maps heatmap: SKIPPED - Google_Maps_API is empty")
-            mb.showwarning(
-                "Google Maps API key missing",
-                "No Google Maps API key was found.\n\n"
-                "The NLP Suite will use Python Folium instead to produce pin maps and heatmaps.\n\n"
-                "You can set up a Google Maps API key at any time from the GIS GUI.\n"
-                "Read the TIPS file TIPS_NLP_GIS_Google API Key.pdf for instructions.",
-            )
-            mapping_package = "Python folium pin map & heatmap"
+    elif nRecordsFound <= 0:
+        print(f"  Google Maps heatmap: SKIPPED - nRecordsFound={nRecordsFound}")
+    elif "Google" not in mapping_package:
+        print(f"  Google Maps heatmap: SKIPPED - mapping_package='{mapping_package}' does not contain 'Google'")
+    elif Google_Maps_API == "":
+        print("  Google Maps heatmap: SKIPPED - Google_Maps_API is empty")
+        mb.showwarning(
+            "Google Maps API key missing",
+            "No Google Maps API key was found.\n\n"
+            "The NLP Suite will use Python Folium instead to produce pin maps and heatmaps.\n\n"
+            "You can set up a Google Maps API key at any time from the GIS GUI.\n"
+            "Read the TIPS file TIPS_NLP_GIS_Google API Key.pdf for instructions.",
+        )
+        mapping_package = "Python folium pin map & heatmap"
 
     # ------------------------------------------------------------------------------------
     # Folium pin map and heat map (no API key required)

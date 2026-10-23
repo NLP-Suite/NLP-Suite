@@ -1,5 +1,6 @@
 # written by Roberto Franzosi (Spring/summer 2020)
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -14,12 +15,11 @@ if (
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
-from subprocess import call
 
 import GUI_IO_util
 import IO_files_util
-import statistics_txt_util
 import run_script_util
+import statistics_txt_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 

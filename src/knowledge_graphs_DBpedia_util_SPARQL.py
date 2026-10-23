@@ -1,16 +1,14 @@
 # Written by Chen Gong spring 2022
 
 import os
-import tkinter.messagebox as mb
+import ssl
 import string
-import re
-from re import split
-from urllib import request, error
+import tkinter.messagebox as mb
+from urllib import error
+
+from SPARQLWrapper import JSON, SPARQLWrapper
 import stanza
 
-import ssl
-
-from SPARQLWrapper import SPARQLWrapper, JSON, XML
 import IO_files_util
 
 sparql = SPARQLWrapper("http://dbpedia.org/sparql")
@@ -75,7 +73,7 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, configFileName, annotationT
     for file in files:
         fileName = file.split("/")[-1]
         print("processing file:", fileName, "\nFile: ", file_count, "/", nFile)
-        with open(file, "r", encoding="utf-8", errors="ignore") as _f:
+        with open(file, encoding="utf-8", errors="ignore") as _f:
             contents = _f.read()
         contents = preprocessing(contents)
 
@@ -385,7 +383,7 @@ def set_hyperlink_color(color, link, phrase):
 
 
 def check_eligible(phrase):
-    if [x for x in phrase if (not (x in punksAndNum))] != [] and len(phrase) > 2 and phrase.lower() != "not":
+    if [x for x in phrase if (x not in punksAndNum)] != [] and len(phrase) > 2 and phrase.lower() != "not":
         return True
     else:
         return False

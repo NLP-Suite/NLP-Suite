@@ -121,7 +121,7 @@ class TestRealCMapNamesStillWork:
     def test_every_cmap_pdfminer_actually_ships_is_allowed(self, io_files):
         """The real test set, not a sample of it. Skipped when pdfminer is absent (CI)."""
         try:
-            import pdfminer.cmapdb as cmapdb
+            from pdfminer import cmapdb
         except Exception:
             pytest.skip("pdfminer not installed")
         cmap_dir = os.path.join(os.path.dirname(cmapdb.__file__), "cmap")

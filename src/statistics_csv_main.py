@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -7,12 +8,11 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window, "Statistics_cs
 
 import os
 import tkinter as tk
-import tkinter.messagebox as mb
 import tkinter.filedialog
+import tkinter.messagebox as mb
 
 import GUI_IO_util
 import IO_csv_util
-import IO_user_interface_util
 import IO_files_util
 import statistics_csv_util
 import statistics_statistical_tests_util

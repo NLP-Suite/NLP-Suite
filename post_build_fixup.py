@@ -10,10 +10,10 @@ Usage:
 Run this AFTER: python -m PyInstaller NLP_Suite.spec --noconfirm
 """
 
-import os
-import sys
-import shutil
 import glob
+import os
+import shutil
+import sys
 
 DIST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dist", "NLP_Suite")
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -112,7 +112,7 @@ def main():
                         continue
                     if "python" not in old_shebang.lower():
                         continue
-                    with open(path, "r", errors="replace") as f:
+                    with open(path, errors="replace") as f:
                         content = f.read()
                     new_content = f"#!{python3}\n" + content[content.index("\n") + 1 :]
                     with open(path, "w") as f:

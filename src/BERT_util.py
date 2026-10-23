@@ -1,6 +1,7 @@
 # import statements
 # BERT is available as a multilingual model in 102 languages
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -30,43 +31,37 @@ if (
     sys.exit(0)
 
 
-from transformers import AutoTokenizer, AutoModelForTokenClassification
-from transformers import BertTokenizerFast, EncoderDecoderModel
-from transformers import pipeline
-from sentence_transformers import SentenceTransformer
-import pandas as pd
-import re
-import math
-from collections import Counter
-import os
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-import csv
-import time
-import itertools
-import stanza
 import argparse
+from collections import Counter
+import csv
+import os
+import re
+import time
 import tkinter.messagebox as mb
-import torch
-import spacy
-import contextualSpellCheck
+
+import pandas as pd
 
 # Visualization
-import plotly.express as px
+from sentence_transformers import SentenceTransformer
 
 ##from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
+import stanza
 from summarizer import Summarizer
+from transformers import (
+    AutoModelForTokenClassification,
+    AutoTokenizer,
+    pipeline,
+)
 
-
+import charts_util
 import IO_csv_util
 import IO_files_util
-import charts_util
-import statistics_txt_util
-import word2vec_tsne_plot_util
-import IO_user_interface_util
-import word2vec_distances_util
 import IO_internet_util
+import IO_user_interface_util
+import statistics_txt_util
+import word2vec_distances_util
+import word2vec_tsne_plot_util
 
 
 def _bert_first_download_alert(model_id):
@@ -118,7 +113,7 @@ def NER_tags_BERT(
     # aggregation_strategy="simple" pre-joins multi-word entities (e.g., "New York" → single LOC)
     nlp = pipeline("ner", model=model, tokenizer=tokenizer, aggregation_strategy="simple")
 
-    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
+    from Stanza_functions_util import sentence_split_stanza_text, stanzaPipeLine
 
     documentID = 0
     for doc in inputDocs:
@@ -128,7 +123,7 @@ def NER_tags_BERT(
         print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
 
         header = ["Word", "NER", "Sentence ID", "Sentence", "Document ID", "Document"]
-        with open(doc, "r", encoding="utf-8", errors="ignore") as f:
+        with open(doc, encoding="utf-8", errors="ignore") as f:
             fullText = f.read()
             fullText = fullText.replace("\n", " ")
 
@@ -213,7 +208,7 @@ def doc_summary_BERT(
         # doc_summary
         print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
 
-        with open(doc, "r", encoding="utf-8", errors="ignore") as f:
+        with open(doc, encoding="utf-8", errors="ignore") as f:
             fullText = f.read()
             fullText = fullText.replace("\n", " ")
 
@@ -344,7 +339,7 @@ def word_embeddings_BERT(
         # word embeddings
         print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
 
-        with open(doc, "r", encoding="utf-8", errors="ignore") as f:
+        with open(doc, encoding="utf-8", errors="ignore") as f:
             fullText = f.read()
             fullText = fullText.replace("\n", " ")
 
@@ -370,7 +365,6 @@ def word_embeddings_BERT(
     # Encode UNIQUE words only. words_to_embed keeps every occurrence, so encoding it re-embeds the same
     # token thousands of times (Harry Potter: 25,628 tokens) -- pure waste, since the dict below collapses
     # duplicates anyway. Keep the frequency counts for the top-N plot selection further down.
-    from collections import Counter
 
     _word_freq = Counter(words_to_embed)
     _unique_words = list(_word_freq.keys())
@@ -393,7 +387,7 @@ def word_embeddings_BERT(
 
     # Plotting the word embeddings
     ## visualization
-    if not "Do not plot" in vis_menu_var:
+    if "Do not plot" not in vis_menu_var:
         # t-SNE is ~O(n^2): run it on the TOP-N most frequent words only, NOT every word. On a large
         # corpus (Harry Potter: 25k+ distinct words) t-SNE over all of them is effectively unbounded --
         # and a 25k-point map is an unreadable hairball anyway. top_words_var is the intended cap (the
@@ -634,7 +628,7 @@ def sentiment_analysis_BERT(inputFilename, outputDir, outputFilename, mode, Docu
 
     sentiment_task = pipeline("sentiment-analysis", model=model_path, tokenizer=model_path, truncation=True)
 
-    with open(inputFilename, "r", encoding="utf-8", errors="ignore") as myfile:
+    with open(inputFilename, encoding="utf-8", errors="ignore") as myfile:
         fulltext = myfile.read()
     # end method if file is empty
     if len(fulltext) < 1:
@@ -646,10 +640,8 @@ def sentiment_analysis_BERT(inputFilename, outputDir, outputFilename, mode, Docu
         return
 
     from Stanza_functions_util import (
-        stanzaPipeLine,
         sentence_split_stanza_text,
-        tokenize_stanza_text,
-        lemmatize_stanza_word,
+        stanzaPipeLine,
     )
 
     sentences = sentence_split_stanza_text(stanzaPipeLine(fulltext))
@@ -864,7 +856,6 @@ if __name__ == "__main__":
 
 # very fast method to split a text file into a list whose elements are each sentence in that file. Found on: https://stackoverflow.com/a/31505798
 # -*- coding: utf-8 -*-
-import re
 
 alphabets = "([A-Za-z])"
 prefixes = "(Mr|St|Mrs|Ms|Dr)[.]"

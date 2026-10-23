@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -11,12 +12,12 @@ if (
     sys.exit(0)
 
 import os
-import simplekml
 import tkinter.messagebox as mb
+
 import pandas as pd
+import simplekml
 
 import IO_csv_util
-import IO_user_interface_util
 
 # icon_type are the different types of icon, like pushpin, paddle teardrop, paddle square....
 # 	Expected input will be a string, for example: icon_type == "pushpin"
@@ -792,170 +793,160 @@ def pin_description(
                         + "Group Value: "
                         + group_value
                     )
+            elif italic_var == 1 and bold_var == 1:
+                pnt.description = (
+                    "<i><b>Location</b></i>: "
+                    + names[index - 1]
+                    + "<br/><br/><i><b>Group Label</b></i>: "
+                    + group_label
+                    + "<br/><br/><i><b>Group Value</b></i>: "
+                    + group_value
+                    + "<br/><br/><i><b>"
+                    + description_csv_field_var
+                    + "</b></i>"
+                    + ": "
+                    + description[index - 1]
+                    + "<br/><br/>"
+                    + "<i><b>Document"
+                    + "</b></i>"
+                    + ": "
+                    + documents[index - 1]
+                )
+            elif bold_var == 1:
+                pnt.description = (
+                    "<b>Location</b>: "
+                    + names[index - 1]
+                    + "<br/><br/><b>Group Label</b>: "
+                    + group_label
+                    + "<br/><br/><b>Group Value</b>: "
+                    + group_value
+                    + "<br/><br/><b>"
+                    + description_csv_field_var
+                    + "</b>"
+                    + ": "
+                    + description[index - 1]
+                    + "<br/><br/>"
+                    + "<b>Document"
+                    + "</b>"
+                    + ": "
+                    + documents[index - 1]
+                )
+            elif italic_var == 1:
+                pnt.description = (
+                    "<i>Location</i>: "
+                    + names[index - 1]
+                    + "<br/><br/><i>Group Label</i>: "
+                    + group_label
+                    + "<br/><br/><i>Group Value</i>: "
+                    + group_value
+                    + "<br/><br/><i>"
+                    + description_csv_field_var
+                    + "</i>"
+                    + ": "
+                    + description[index - 1]
+                    + "<br/><br/>"
+                    + "<i>Document"
+                    + "</i>"
+                    + ": "
+                    + documents[index - 1]
+                )
             else:
-                if italic_var == 1 and bold_var == 1:
-                    pnt.description = (
-                        "<i><b>Location</b></i>: "
-                        + names[index - 1]
-                        + "<br/><br/><i><b>Group Label</b></i>: "
-                        + group_label
-                        + "<br/><br/><i><b>Group Value</b></i>: "
-                        + group_value
-                        + "<br/><br/><i><b>"
-                        + description_csv_field_var
-                        + "</b></i>"
-                        + ": "
-                        + description[index - 1]
-                        + "<br/><br/>"
-                        + "<i><b>Document"
-                        + "</b></i>"
-                        + ": "
-                        + documents[index - 1]
-                    )
-                elif bold_var == 1:
-                    pnt.description = (
-                        "<b>Location</b>: "
-                        + names[index - 1]
-                        + "<br/><br/><b>Group Label</b>: "
-                        + group_label
-                        + "<br/><br/><b>Group Value</b>: "
-                        + group_value
-                        + "<br/><br/><b>"
-                        + description_csv_field_var
-                        + "</b>"
-                        + ": "
-                        + description[index - 1]
-                        + "<br/><br/>"
-                        + "<b>Document"
-                        + "</b>"
-                        + ": "
-                        + documents[index - 1]
-                    )
-                elif italic_var == 1:
-                    pnt.description = (
-                        "<i>Location</i>: "
-                        + names[index - 1]
-                        + "<br/><br/><i>Group Label</i>: "
-                        + group_label
-                        + "<br/><br/><i>Group Value</i>: "
-                        + group_value
-                        + "<br/><br/><i>"
-                        + description_csv_field_var
-                        + "</i>"
-                        + ": "
-                        + description[index - 1]
-                        + "<br/><br/>"
-                        + "<i>Document"
-                        + "</i>"
-                        + ": "
-                        + documents[index - 1]
-                    )
-                else:
-                    pnt.description = (
-                        "Location: "
-                        + names[index - 1]
-                        + "<br/><br/>"
-                        + "Group Label: "
-                        + group_label
-                        + "<br/><br/>"
-                        + "Group Value: "
-                        + group_value
-                        + "<br/><br/>"
-                        + description_csv_field_var
-                        + ": "
-                        + description[index - 1]
-                        + "<br/><br/>"
-                        + "Document"
-                        + ": "
-                        + documents[index - 1]
-                    )
+                pnt.description = (
+                    "Location: "
+                    + names[index - 1]
+                    + "<br/><br/>"
+                    + "Group Label: "
+                    + group_label
+                    + "<br/><br/>"
+                    + "Group Value: "
+                    + group_value
+                    + "<br/><br/>"
+                    + description_csv_field_var
+                    + ": "
+                    + description[index - 1]
+                    + "<br/><br/>"
+                    + "Document"
+                    + ": "
+                    + documents[index - 1]
+                )
+        elif description_location_var_name == description_csv_field_var:
+            if italic_var == 1 and bold_var == 1:
+                pnt.description = (
+                    "<i><b>Group Label</b></i>: " + group_label + "<br/><br/><i><b>Group Value</b></i>: " + group_value
+                )
+            elif bold_var == 1:
+                pnt.description = "<b>Group Label</b>: " + group_label + "<br/><br/><b>Group Value</b>: " + group_value
+            elif italic_var == 1:
+                pnt.description = "<i>Group Label</i>: " + group_label + "<br/><br/><i>Group Value</i>: " + group_value
+            else:
+                pnt.description = "Group Label: " + group_label + "<br/><br/>" + "Group Value: " + group_value
+        elif italic_var == 1 and bold_var == 1:
+            pnt.description = (
+                "<i><b>Group Label</b></i>: "
+                + group_label
+                + "<br/><br/><i><b>Group Value</b></i>: "
+                + group_value
+                + "<br/><br/><i><b>"
+                + description_csv_field_var
+                + "</b></i>"
+                + ": "
+                + description[index - 1]
+                + "<br/><br/>"
+                + "<i><b>Document"
+                + "</b></i>"
+                + ": "
+                + documents[index - 1]
+            )
+        elif bold_var == 1:
+            pnt.description = (
+                "<b>Group Label</b>: "
+                + group_label
+                + "<br/><br/><b>Group Value</b>: "
+                + group_value
+                + "<br/><br/><b>"
+                + description_csv_field_var
+                + "</b>"
+                + ": "
+                + description[index - 1]
+                + "<br/><br/>"
+                + "<b>Document"
+                + "</b>"
+                + ": "
+                + documents[index - 1]
+            )
+        elif italic_var == 1:
+            pnt.description = (
+                "<i>Group Label</i>: "
+                + group_label
+                + "<br/><br/><i>Group Value</i>: "
+                + group_value
+                + "<br/><br/><i>"
+                + description_csv_field_var
+                + "</i>"
+                + ": "
+                + description[index - 1]
+                + "<br/><br/>"
+                + "<i>Document"
+                + "</i>"
+                + ": "
+                + documents[index - 1]
+            )
         else:
-            if description_location_var_name == description_csv_field_var:
-                if italic_var == 1 and bold_var == 1:
-                    pnt.description = (
-                        "<i><b>Group Label</b></i>: "
-                        + group_label
-                        + "<br/><br/><i><b>Group Value</b></i>: "
-                        + group_value
-                    )
-                elif bold_var == 1:
-                    pnt.description = (
-                        "<b>Group Label</b>: " + group_label + "<br/><br/><b>Group Value</b>: " + group_value
-                    )
-                elif italic_var == 1:
-                    pnt.description = (
-                        "<i>Group Label</i>: " + group_label + "<br/><br/><i>Group Value</i>: " + group_value
-                    )
-                else:
-                    pnt.description = "Group Label: " + group_label + "<br/><br/>" + "Group Value: " + group_value
-            else:
-                if italic_var == 1 and bold_var == 1:
-                    pnt.description = (
-                        "<i><b>Group Label</b></i>: "
-                        + group_label
-                        + "<br/><br/><i><b>Group Value</b></i>: "
-                        + group_value
-                        + "<br/><br/><i><b>"
-                        + description_csv_field_var
-                        + "</b></i>"
-                        + ": "
-                        + description[index - 1]
-                        + "<br/><br/>"
-                        + "<i><b>Document"
-                        + "</b></i>"
-                        + ": "
-                        + documents[index - 1]
-                    )
-                elif bold_var == 1:
-                    pnt.description = (
-                        "<b>Group Label</b>: "
-                        + group_label
-                        + "<br/><br/><b>Group Value</b>: "
-                        + group_value
-                        + "<br/><br/><b>"
-                        + description_csv_field_var
-                        + "</b>"
-                        + ": "
-                        + description[index - 1]
-                        + "<br/><br/>"
-                        + "<b>Document"
-                        + "</b>"
-                        + ": "
-                        + documents[index - 1]
-                    )
-                elif italic_var == 1:
-                    pnt.description = (
-                        "<i>Group Label</i>: "
-                        + group_label
-                        + "<br/><br/><i>Group Value</i>: "
-                        + group_value
-                        + "<br/><br/><i>"
-                        + description_csv_field_var
-                        + "</i>"
-                        + ": "
-                        + description[index - 1]
-                        + "<br/><br/>"
-                        + "<i>Document"
-                        + "</i>"
-                        + ": "
-                        + documents[index - 1]
-                    )
-                else:
-                    pnt.description = (
-                        "Group Label: "
-                        + group_label
-                        + "<br/><br/>"
-                        + "Group Value: "
-                        + group_value
-                        + "<br/><br/>"
-                        + description_csv_field_var
-                        + ": "
-                        + description[index - 1]
-                        + "<br/><br/>"
-                        + "Document"
-                        + ": "
-                        + documents[index - 1]
-                    )
+            pnt.description = (
+                "Group Label: "
+                + group_label
+                + "<br/><br/>"
+                + "Group Value: "
+                + group_value
+                + "<br/><br/>"
+                + description_csv_field_var
+                + ": "
+                + description[index - 1]
+                + "<br/><br/>"
+                + "Document"
+                + ": "
+                + documents[index - 1]
+            )
 
     elif group_var == 0:
         if name_var == 0:
@@ -968,87 +959,31 @@ def pin_description(
                     pnt.description = "<i>Location</i>: " + names[index - 1]
                 else:
                     pnt.description = "Location: " + names[index - 1]
-            else:
-                if italic_var == 1 and bold_var == 1:
-                    pnt.description = (
-                        "<i><b>Location</b></i>: "
-                        + names[index - 1]
-                        + "<br/><br/><i><b>"
-                        + description_csv_field_var
-                        + "</b></i>"
-                        + ": "
-                        + description[index - 1]
-                        + "<br/><br/>"
-                        + "<i><b>Document"
-                        + "</b></i>"
-                        + ": "
-                        + documents[index - 1]
-                    )
-                elif bold_var == 1:
-                    pnt.description = (
-                        "<b>Location</b>: "
-                        + names[index - 1]
-                        + "<br/><br/><b>"
-                        + description_csv_field_var
-                        + "</b>"
-                        + ": "
-                        + description[index - 1]
-                        + "<br/><br/>"
-                        + "<b>Document"
-                        + "</b>"
-                        + ": "
-                        + documents[index - 1]
-                    )
-
-                elif italic_var == 1:
-                    pnt.description = (
-                        "<i>Location</i>: "
-                        + names[index - 1]
-                        + "<br/><br/><i>"
-                        + description_csv_field_var
-                        + "</i>"
-                        + ": "
-                        + description[index - 1]
-                        + "<br/><br/>"
-                        + "<i>Document"
-                        + "</i>"
-                        + ": "
-                        + documents[index - 1]
-                    )
-                else:
-                    pnt.description = (
-                        "Location: "
-                        + names[index - 1]
-                        + "<br/><br/>"
-                        + description_csv_field_var
-                        + ": "
-                        + description[index - 1]
-                        + "<br/><br/>"
-                        + "Document"
-                        + ": "
-                        + documents[index - 1]
-                    )
-        else:
-            if italic_var == 1 and bold_var == 1:
+            elif italic_var == 1 and bold_var == 1:
                 pnt.description = (
-                    "<i><b>"
+                    "<i><b>Location</b></i>: "
+                    + names[index - 1]
+                    + "<br/><br/><i><b>"
                     + description_csv_field_var
                     + "</b></i>"
                     + ": "
                     + description[index - 1]
+                    + "<br/><br/>"
                     + "<i><b>Document"
                     + "</b></i>"
                     + ": "
                     + documents[index - 1]
                 )
-
             elif bold_var == 1:
                 pnt.description = (
-                    "<b>"
+                    "<b>Location</b>: "
+                    + names[index - 1]
+                    + "<br/><br/><b>"
                     + description_csv_field_var
                     + "</b>"
                     + ": "
                     + description[index - 1]
+                    + "<br/><br/>"
                     + "<b>Document"
                     + "</b>"
                     + ": "
@@ -1057,21 +992,75 @@ def pin_description(
 
             elif italic_var == 1:
                 pnt.description = (
-                    "<i>"
+                    "<i>Location</i>: "
+                    + names[index - 1]
+                    + "<br/><br/><i>"
                     + description_csv_field_var
                     + "</i>"
                     + ": "
                     + description[index - 1]
+                    + "<br/><br/>"
                     + "<i>Document"
                     + "</i>"
                     + ": "
                     + documents[index - 1]
                 )
-
             else:
                 pnt.description = (
-                    description_csv_field_var + ": " + description[index - 1] + "Document" + ": " + documents[index - 1]
+                    "Location: "
+                    + names[index - 1]
+                    + "<br/><br/>"
+                    + description_csv_field_var
+                    + ": "
+                    + description[index - 1]
+                    + "<br/><br/>"
+                    + "Document"
+                    + ": "
+                    + documents[index - 1]
                 )
+        elif italic_var == 1 and bold_var == 1:
+            pnt.description = (
+                "<i><b>"
+                + description_csv_field_var
+                + "</b></i>"
+                + ": "
+                + description[index - 1]
+                + "<i><b>Document"
+                + "</b></i>"
+                + ": "
+                + documents[index - 1]
+            )
+
+        elif bold_var == 1:
+            pnt.description = (
+                "<b>"
+                + description_csv_field_var
+                + "</b>"
+                + ": "
+                + description[index - 1]
+                + "<b>Document"
+                + "</b>"
+                + ": "
+                + documents[index - 1]
+            )
+
+        elif italic_var == 1:
+            pnt.description = (
+                "<i>"
+                + description_csv_field_var
+                + "</i>"
+                + ": "
+                + description[index - 1]
+                + "<i>Document"
+                + "</i>"
+                + ": "
+                + documents[index - 1]
+            )
+
+        else:
+            pnt.description = (
+                description_csv_field_var + ": " + description[index - 1] + "Document" + ": " + documents[index - 1]
+            )
 
     return pnt
 

@@ -1,6 +1,7 @@
 # written by Roberto Franzosi November 2019
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -12,17 +13,15 @@ if (
 
 import os
 import tkinter as tk
-import tkinter.ttk as ttk
+from tkinter import ttk
 import tkinter.messagebox as mb
-from subprocess import call
 
-
-import IO_internet_util
-import IO_files_util
+import config_util
 import GUI_IO_util
 import IO_csv_util
+import IO_files_util
+import IO_internet_util
 import reminders_util
-import config_util
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = (
     "True"  # for mac users to solve one error: https://stackoverflow.com/questions/53014306/error-15-initializing-libiomp5-dylib-but-found-libiomp5-dylib-already-initial
@@ -99,7 +98,7 @@ def run():
         )
         return
 
-    if differentColumns_differentColors == True and not "|" in str(csvField_color_list):
+    if differentColumns_differentColors == True and "|" not in str(csvField_color_list):
         mb.showerror(
             title="Warning",
             message="You have selected the option of using different colors for different columns of a csv file. But... you have not selected the colors to be used.\n\nPlease, select a color by ticking the Color checkbox, select your preferred color and try again.",
@@ -922,7 +921,7 @@ csv_field_var.trace("w", activateCsvField)
 
 def activate_Python_options(*args):
 
-    if not "Python" in wordclouds_var.get():
+    if "Python" not in wordclouds_var.get():
         selectedImage_var.set("")
         use_contour_only_var.set(1)
         use_contour_only_checkbox.config(state="disabled")
@@ -1216,8 +1215,8 @@ message = (
 )
 reminders_util.checkReminder(scriptName, title, message)
 
-import wordclouds_util
 import run_script_util
+import wordclouds_util
 
 font_list = wordclouds_util.get_font_list()
 font["values"] = font_list

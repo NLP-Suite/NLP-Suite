@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -11,18 +12,16 @@ if (
     sys.exit(0)
 
 import os
+import tkinter.messagebox as mb
+
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import tkinter.messagebox as mb
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from collections import defaultdict
 
-import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
 import statistics_statistical_tests_util
-
 
 NER_COLORS = {
     "PERSON": "#378ADD",
@@ -37,7 +36,7 @@ NER_COLORS = {
 
 
 def _extract_entities(filepath, nlp, doc_id):
-    with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+    with open(filepath, encoding="utf-8", errors="ignore") as f:
         text = f.read()
     if not text.strip():
         return []

@@ -1,18 +1,13 @@
-from sklearn.metrics import silhouette_score
-from tkinter import messagebox as mb
+from collections import defaultdict
 import os
-import sklearn
-from sklearn.cluster import KMeans
-from sklearn.metrics.pairwise import cosine_similarity
-from collections import defaultdict, Counter
-import random
-from tqdm import tqdm
-import torch
-from torch import nn
-import pickle
-import numpy as np
-from transformers import BertTokenizer, BertModel
+from tkinter import messagebox as mb
 
+import numpy as np
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+from sklearn.metrics.pairwise import cosine_similarity
+import torch
+from tqdm import tqdm
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -165,18 +160,17 @@ class Clusterer:
             if not do_wordpiece:
                 if tup[0] == word:
                     data.append(tup[1])
+            elif tup[0].startswith("##"):
+                if not prev_w[0].startswith("##"):
+                    ongoing_word.append(prev_w[0])
+                    ongoing_rep.append(prev_w[1])
+                ongoing_word.append(tup[0][2:])
+                ongoing_rep.append(tup[1])
             else:
-                if tup[0].startswith("##"):
-                    if not prev_w[0].startswith("##"):
-                        ongoing_word.append(prev_w[0])
-                        ongoing_rep.append(prev_w[1])
-                    ongoing_word.append(tup[0][2:])
-                    ongoing_rep.append(tup[1])
-                else:
-                    if "".join(ongoing_word) == word:
-                        data.append(np.mean(ongoing_rep, axis=0).flatten())
-                    ongoing_word = []
-                    ongoing_rep = []
+                if "".join(ongoing_word) == word:
+                    data.append(np.mean(ongoing_rep, axis=0).flatten())
+                ongoing_word = []
+                ongoing_rep = []
             prev_w = tup
         if "".join(ongoing_word) == word:
             data.append(np.mean(ongoing_rep, axis=0).flatten())

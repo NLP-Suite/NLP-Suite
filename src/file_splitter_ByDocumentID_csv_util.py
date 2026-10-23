@@ -1,10 +1,12 @@
 # Tony Mar 24 2022
 # edited Roberto April 2022
 
-import pandas as pd
 import os
-import IO_files_util
 import tkinter.messagebox as mb
+
+import pandas as pd
+
+import IO_files_util
 
 
 # split the csv file by document ID

@@ -3,13 +3,12 @@
 # modified by Jack Hester (February 2019) and Roberto Franzosi (June and December 2019)
 # modified by Chen gong (December 2021)
 # ALL SEARCHES OCCUR WITHIN SENTENCES.
-import string
-import sys
 import os
+import sys
 
+import Gephi_util
 import GUI_util
 import IO_libraries_util
-import Gephi_util
 
 if (
     IO_libraries_util.install_all_Python_packages(
@@ -19,17 +18,18 @@ if (
 ):
     sys.exit(0)
 
+import builtins
 from enum import Enum
-from typing import List
 import tkinter as tk
 import tkinter.messagebox as mb
+
 import pandas as pd
 
-import Stanford_CoreNLP_tags_util
-import CoNLL_util
-import IO_files_util
-import IO_csv_util
 import charts_util
+import CoNLL_util
+import IO_csv_util
+import IO_files_util
+import Stanford_CoreNLP_tags_util
 
 dict_POSTAG, dict_DEPREL = Stanford_CoreNLP_tags_util.dict_POSTAG, Stanford_CoreNLP_tags_util.dict_DEPREL
 
@@ -347,7 +347,7 @@ class SearchType(Enum):
     def list():
         return list(map(lambda c: c.name, SearchType))
 
-    def satisfies(self, word: List[str], index, searched_term):
+    def satisfies(self, word: builtins.list[str], index, searched_term):
         return (
             (self.value == 1 and word[index] == searched_term)
             or (self.value == 2 and word[index].startswith(searched_term))
@@ -388,7 +388,7 @@ class CoNLLFilter:
     is_and: bool
 
 
-def do_include_word(word: List[str], filters: List[CoNLLFilter]) -> bool:
+def do_include_word(word: list[str], filters: list[CoNLLFilter]) -> bool:
     # Note: if the filter relationship is "AND", then the flag is true at start,
     # and changes to false whenever the condition does not meet. On the other hand,
     # if the filter relationship is "OR," then the flag is false at start, and changes
@@ -406,10 +406,9 @@ def do_include_word(word: List[str], filters: List[CoNLLFilter]) -> bool:
             # The condition is met.
             if not is_and:
                 do_include = True
-        else:
-            # The condition is not met
-            if is_and:
-                do_include = False
+        # The condition is not met
+        elif is_and:
+            do_include = False
 
     return do_include
 
@@ -497,7 +496,7 @@ def search_CoNLL_table(
             tok_deprel = row[6]
             tok_Sentence_ID = row[10]
             tok_Document_ID = row[11]
-            if not "hyperlink" in row[12]:
+            if "hyperlink" not in row[12]:
                 tok_Document = IO_csv_util.dressFilenameForCSVHyperlink(row[12])
             else:
                 tok_Document = row[12]

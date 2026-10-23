@@ -1,6 +1,7 @@
 # Written by Gabriel Wang, Jack Hester and Cynthia Dong 2018-2019
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -10,17 +11,17 @@ if (
 ):
     sys.exit(0)
 
-import os
-import tkinter.messagebox as mb
 import difflib as df
+import os
+import re
 import tkinter as tk
 from tkinter import *
-import re
+import tkinter.messagebox as mb
 
-import IO_user_interface_util
-import Stanford_CoreNLP_util
-import reminders_util
 import GUI_IO_util
+import IO_user_interface_util
+import reminders_util
+import Stanford_CoreNLP_util
 
 
 # part of the code about search text function is adapted from
@@ -29,9 +30,7 @@ def createCorefCompareWindow(origin_display, coref_display, origin_non_coref, co
     top = Toplevel(root)
     # top.title("Comparing results from {0} LEFT: ORIGINAL text; in BLUE pronouns NOT corefed; in YELLOW pronouns corefed; RIGHT: COREFED text; in RED pronouns corefed; Edit text on the right and Save".format('Neural Network'))
     top.title(
-        "Corefed results compared (LEFT: ORIGINAL text; RIGHT: COREFED text). In BLUE pronouns NOT corefed; in RED pronouns corefed. EDIT text on the right. Use FIND bar to search text. CLOSE to exit and save changes".format(
-            "Neural Network"
-        )
+        "Corefed results compared (LEFT: ORIGINAL text; RIGHT: COREFED text). In BLUE pronouns NOT corefed; in RED pronouns corefed. EDIT text on the right. Use FIND bar to search text. CLOSE to exit and save changes"
     )
     # adding of single line text box
     topFrame = tk.Frame(top)
@@ -295,10 +294,10 @@ def compare_results(origin_text, corefed_text):
 # displays side-by-side the original and coreferenced file for manual editing
 # return error indicator: 1 error; 0 no error
 def manualCoref(original_file, corefed_file, outputFile):
-    f = open(original_file, "r", encoding="utf-8", errors="ignore")
+    f = open(original_file, encoding="utf-8", errors="ignore")
     original_text = f.read()
     f.close()
-    f = open(corefed_file, "r", encoding="utf-8", errors="ignore")
+    f = open(corefed_file, encoding="utf-8", errors="ignore")
     corefed_text = f.read()
     f.close()
 

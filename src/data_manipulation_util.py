@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -11,9 +12,10 @@ if (
     sys.exit(0)
 
 import csv
-import pandas as pd
-import tkinter.messagebox as mb
 import os.path
+import tkinter.messagebox as mb
+
+import pandas as pd
 
 import IO_files_util
 
@@ -41,7 +43,7 @@ def distinct_values(csv_path, column, limit=500):
     # runs 1.2.4. It also keeps the helper testable, since the test suite stubs pandas out.
     values = set()
     try:
-        with open(csv_path, "r", encoding="utf-8", errors="ignore", newline="") as fin:
+        with open(csv_path, encoding="utf-8", errors="ignore", newline="") as fin:
             reader = csv.reader(fin)
             try:
                 headers = next(reader)
@@ -201,11 +203,10 @@ def concat(dfs: list, separator: str):
     for i in range(len(dfs)):
         if i == 0:
             s = dfs[i].astype(str) + separator
+        elif i != len(dfs) - 1:
+            s = s + dfs[i].astype(str) + separator
         else:
-            if i != len(dfs) - 1:
-                s = s + dfs[i].astype(str) + separator
-            else:
-                s = s + dfs[i].astype(str)
+            s = s + dfs[i].astype(str)
     return s
 
 

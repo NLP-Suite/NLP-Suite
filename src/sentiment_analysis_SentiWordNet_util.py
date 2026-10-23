@@ -19,6 +19,7 @@ http://www.nltk.org/howto/sentiwordnet.html
 #   would provide a single measure of polarity.
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -30,15 +31,15 @@ if (
 ):
     sys.exit(0)
 
+import argparse
 import csv
 import os
 import time
-import argparse
 import tkinter.messagebox as mb
 
+import charts_util
 import IO_csv_util
 import IO_files_util
-import charts_util
 import statistics_statistical_tests_util
 
 # all nltk resources are stored in C:\Users\rfranzo\AppData\Roaming then nltk_data
@@ -55,11 +56,10 @@ IO_libraries_util.import_nltk_resource(GUI_util.window, "corpora/omw-1.4", "omw-
 IO_libraries_util.import_nltk_resource(GUI_util.window, "corpora/sentiwordnet", "sentiwordnet")
 
 
-from nltk.corpus import wordnet as wn
-from nltk.corpus import sentiwordnet as swn
-from nltk import word_tokenize, pos_tag
+from nltk import pos_tag, word_tokenize
+from nltk.corpus import sentiwordnet as swn, wordnet as wn
 
-fin = open("../lib/wordLists/stopwords.txt", "r")
+fin = open("../lib/wordLists/stopwords.txt")
 stops = set(fin.read().splitlines())
 
 
@@ -99,7 +99,7 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
         )
 
     # read file into string
-    with open(inputFilename, "r", encoding="utf-8", errors="ignore") as myfile:
+    with open(inputFilename, encoding="utf-8", errors="ignore") as myfile:
         fulltext = myfile.read()
     # end method if file is empty
     if len(fulltext) < 1:
@@ -111,10 +111,9 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
         return
 
     from Stanza_functions_util import (
-        stanzaPipeLine,
-        sentence_split_stanza_text,
-        tokenize_stanza_text,
         lemmatize_stanza_word,
+        sentence_split_stanza_text,
+        stanzaPipeLine,
     )
 
     # sentences = tokenize.sent_tokenize(fulltext)  # split text into sentences

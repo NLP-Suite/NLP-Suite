@@ -1,6 +1,6 @@
 import charts_util
-import reminders_util
 import IO_csv_util
+import reminders_util
 
 
 # outputFilename is actually the file containing fields to be charted
@@ -113,33 +113,32 @@ def parsers_annotators_visualization(
                 NER_tag = "MISC"
             elif len(str.split(kwargs["NERs"])) > 20:
                 NER_tag = "ALL_NER"
+            elif (
+                "CITY" in str(kwargs["NERs"])
+                and "STATE_OR_PROVINCE"
+                and str(kwargs["NERs"])
+                and "COUNTRY" in str(kwargs["NERs"])
+                and "LOCATION" in str(kwargs["NERs"])
+            ):
+                NER_tag = "SPACE"
+            elif (
+                "NUMBER" in str(kwargs["NERs"])
+                and "ORDINAL"
+                and str(kwargs["NERs"])
+                and "PERCENT" in str(kwargs["NERs"])
+            ):
+                outpNER_tag = "NUMBERS"
+            elif "PERSON" in str(kwargs["NERs"]) and "ORGANIZATION" in str(kwargs["NERs"]):
+                NER_tag = "ACTORS"
+            elif (
+                "DATE" in str(kwargs["NERs"])
+                and "TIME" in str(kwargs["NERs"])
+                and "DURATION" in str(kwargs["NERs"])
+                and "SET" in str(kwargs["NERs"])
+            ):
+                NER_tag = "DATES"
             else:
-                if (
-                    "CITY" in str(kwargs["NERs"])
-                    and "STATE_OR_PROVINCE"
-                    and str(kwargs["NERs"])
-                    and "COUNTRY" in str(kwargs["NERs"])
-                    and "LOCATION" in str(kwargs["NERs"])
-                ):
-                    NER_tag = "SPACE"
-                elif (
-                    "NUMBER" in str(kwargs["NERs"])
-                    and "ORDINAL"
-                    and str(kwargs["NERs"])
-                    and "PERCENT" in str(kwargs["NERs"])
-                ):
-                    outpNER_tag = "NUMBERS"
-                elif "PERSON" in str(kwargs["NERs"]) and "ORGANIZATION" in str(kwargs["NERs"]):
-                    NER_tag = "ACTORS"
-                elif (
-                    "DATE" in str(kwargs["NERs"])
-                    and "TIME" in str(kwargs["NERs"])
-                    and "DURATION" in str(kwargs["NERs"])
-                    and "SET" in str(kwargs["NERs"])
-                ):
-                    NER_tag = "DATES"
-                else:
-                    NER_tag = str(kwargs["NERs"])
+                NER_tag = str(kwargs["NERs"])
         except:
             NER_tag = "ALL NERs"
 
@@ -464,8 +463,9 @@ def parsers_annotators_visualization(
         "OpenIE" in str(annotator_params) and "OpenIE" in temp_outputFilename
     ):
         # create an SVO-unfiltered subdirectory of the main output directory
-        import IO_files_util
         import os
+
+        import IO_files_util
 
         outputSVOUnFilterDir = outputDir + os.sep + "SVO_form"
         if not os.path.isdir(outputSVOUnFilterDir):

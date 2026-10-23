@@ -1,8 +1,8 @@
 import os
-from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, lemmatize_stanza_word
 
-import IO_files_util
 import IO_csv_util
+import IO_files_util
+from Stanza_functions_util import sentence_split_stanza_text, stanzaPipeLine
 
 
 def sample_doc_beginning_middle_end(
@@ -29,7 +29,7 @@ def sample_doc_beginning_middle_end(
     fileLabel_middle = "middle " + str(Begin_K_sent) + "_" + str(End_K_sent)
     fileLabel_last = "last " + str(End_K_sent)
     filesToOpen = []
-    fin = open("../lib/wordLists/stopwords.txt", "r")
+    fin = open("../lib/wordLists/stopwords.txt")
     stops = set(fin.read().splitlines())
     inputDocs = IO_files_util.getFileList(
         inputFilename, inputDir, fileType=".txt", silent=False, configFileName=configFileName
@@ -45,7 +45,7 @@ def sample_doc_beginning_middle_end(
         documentID = documentID + 1
         print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
 
-        with open(doc, "r", encoding="utf-8", errors="ignore") as f:
+        with open(doc, encoding="utf-8", errors="ignore") as f:
             fullText = f.read()
             fullText = fullText.replace("\n", " ")
             name = os.path.basename(doc)

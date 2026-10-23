@@ -18,17 +18,16 @@ if (
 ):
     sys.exit(0)
 
+from collections import defaultdict
+import csv
 import os
 import re
-import csv
 import tkinter.messagebox as mb
-from collections import defaultdict
 
 import charts_util
-import IO_user_interface_util
 import GUI_IO_util
+import IO_user_interface_util
 import semantic_aggregation_WordNet_util as wn_util
-
 
 # ---- KB-aware category lists for the GUI picker (WordNet top synsets / VerbNet classes / FrameNet frames) ----
 

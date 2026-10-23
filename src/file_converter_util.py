@@ -8,9 +8,8 @@
 
 import sys
 
-import GUI_IO_util
-import IO_files_util
 import GUI_util
+import IO_files_util
 import IO_libraries_util
 import IO_user_interface_util
 
@@ -26,22 +25,22 @@ if (
 ):
     sys.exit(0)
 
-import os
+import csv
+import errno
 import io
+import os
 import re
 import shutil
-
-import csv
 import tkinter as tk
 import tkinter.messagebox as mb
-import errno
 
-# pip install pdfminer.six --user (since it may ask for permission) rather than pip install pdfminer
-from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-from pdfminer.pdfpage import PDFPage
-from pdfminer.converter import XMLConverter, HTMLConverter, TextConverter
+from pdfminer.converter import TextConverter
 from pdfminer.high_level import extract_pages
 from pdfminer.layout import LAParams, LTAnno, LTChar, LTFigure, LTImage, LTTextContainer, LTTextLine
+
+# pip install pdfminer.six --user (since it may ask for permission) rather than pip install pdfminer
+from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
+from pdfminer.pdfpage import PDFPage
 
 # Installed as soon as pdfminer is, and BEFORE any pdf is opened: a crafted pdf can otherwise make
 # pdfminer unpickle a file of the attacker's choosing, which runs its code. See
@@ -49,9 +48,10 @@ from pdfminer.layout import LAParams, LTAnno, LTChar, LTFigure, LTImage, LTTextC
 # installable on Python 3.8.
 IO_files_util.harden_pdfminer_cmap()
 
+from os.path import splitext
+
 from docx import Document  # pip install python-docx
 from docx.shared import Inches, Pt, RGBColor
-from os.path import splitext
 from striprtf.striprtf import rtf_to_text
 
 # https://pdfminersix.readthedocs.io/en/latest/
@@ -788,7 +788,7 @@ def rtf_converter(
         # fileExtension = os.path.splitext(doc)[1]
         if fileExtension == "rtf":
             lines = []  # list of each line in the txt files
-            with open(doc, "r", encoding="utf-8", errors="ignore") as rtf_fh:
+            with open(doc, encoding="utf-8", errors="ignore") as rtf_fh:
                 fullText = rtf_fh.read()
             # https://stackoverflow.com/questions/60897366/how-to-read-rtf-file-and-convert-into-python3-strings-and-can-be-stored-in-pyth
             # https://stackoverflow.com/questions/44580580/how-to-convert-rtf-string-to-plain-text-in-python-using-any-library
@@ -815,7 +815,7 @@ def rtf_converter(
 # File Converter (tsv --> csv)
 def tsv_converter(window, inputFilename, outputDir, header):
     # read a tab-separated file
-    with open(inputFilename, "r", encoding="utf-8", errors="ignore") as fin:
+    with open(inputFilename, encoding="utf-8", errors="ignore") as fin:
         cr = csv.reader(fin, delimiter="\t")
         filecontents = [line for line in cr]
 
@@ -922,8 +922,8 @@ def get_OCR_missing_requirements():
 # single character had been read. Rendering page by page keeps it at one page's worth, and lets the
 # user see progress on a job that runs for seconds per page.
 def OCR_pdf_text(doc, language="eng", dpi=300):
-    import pytesseract
     from pdf2image import convert_from_path, pdfinfo_from_path
+    import pytesseract
 
     tesseract_path = get_tesseract_path()
     if tesseract_path:

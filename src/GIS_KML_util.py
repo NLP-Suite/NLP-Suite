@@ -1,5 +1,5 @@
 import sys
-import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -11,18 +11,18 @@ if (
 ):
     sys.exit(0)
 
-import tkinter.messagebox as mb
-import simplekml
 import csv
 from datetime import datetime
-import dateutil
+import tkinter.messagebox as mb
 
-import GIS_location_util
+import dateutil
+import simplekml
+
 import GIS_Google_pin_util
+import GIS_location_util
 import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
-
 
 # generates .kml file based on CSV of geocoded locations with row format filename,loc type,name,lat,lng
 # headers row(s) are NOT expected
@@ -542,7 +542,7 @@ def generate_kml(
                             try:
                                 t = datetime.strptime(e, fmt)
                                 break
-                            except ValueError as err:
+                            except ValueError:
                                 pass
                     currentDateFormat = dateutil.parser.parse(date)
                     # years before 1900 cannot be used
@@ -665,7 +665,7 @@ def generate_kml(
                         values_row_num.append(n)
 
             index = 0
-            inputfile = csv.reader(open(inputGeocodedCsvFile, "r", encoding=encodingValue, errors="ignore"))
+            inputfile = csv.reader(open(inputGeocodedCsvFile, encoding=encodingValue, errors="ignore"))
             nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputGeocodedCsvFile, encodingValue)
             for row in inputfile:
                 for b in range(len(values_row_num)):

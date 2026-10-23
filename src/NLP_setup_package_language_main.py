@@ -1,14 +1,14 @@
 import os
 import tkinter as tk
-import tkinter.messagebox as mb
 from tkinter import ttk
+import tkinter.messagebox as mb
 
+import config_util
 import GUI_IO_util
 import GUI_util
-import Stanza_util
-import config_util
 import reminders_util
 import spaCy_util
+import Stanza_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -104,7 +104,7 @@ def display_available_options():
         + str(document_length)
         + str(limit_sentence_length)
     )
-    if not package in ["spaCy", "spaCy (transformer)", "Stanford CoreNLP", "Stanza"]:
+    if package not in ["spaCy", "spaCy (transformer)", "Stanford CoreNLP", "Stanza"]:
         mb.showwarning(
             title="Warning",
             message='"'
@@ -141,7 +141,7 @@ def display_available_options():
     if language == "":
         language = "English"
     if language_var.get() != language:
-        if not language in get_available_languages():
+        if language not in get_available_languages():
             mb.showwarning(
                 title="Warning",
                 message='"'
@@ -227,8 +227,9 @@ def get_str_package_display_area_value():
 
 
 def openConfigFile():
-    import IO_files_util
     import time
+
+    import IO_files_util
 
     IO_files_util.openFile(window, GUI_IO_util.configPath + os.sep + config_filename)
     time.sleep(10)  # wait 10 seconds to give enough time to save any changes to the csv config file
@@ -551,7 +552,7 @@ def save_NLP_config(parsers):
     memory = memory_var.get()
     document_length = document_length_var.get()
     limit_sentence_length = limit_sentence_length_var.get()
-    if not "CoreNLP" in package_var.get():
+    if "CoreNLP" not in package_var.get():
         timeout = 0
         memory = 0
         document_length = 0
@@ -635,6 +636,7 @@ def _corenlp_and_java_installed():
     revert a valid CoreNLP setup. (The profiler keeps its own stricter seatbelt at run time.)"""
     try:
         import os
+
         import IO_libraries_util
 
         corenlp_ok = False

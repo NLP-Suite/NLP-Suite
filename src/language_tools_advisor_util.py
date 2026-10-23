@@ -14,8 +14,8 @@
 #
 # The report is a static HTML file opened in the browser; nothing here needs Java or a network.
 
-import os
 import html as _html
+import os
 import webbrowser
 
 import constants_util

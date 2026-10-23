@@ -1,5 +1,6 @@
-from tkinter import messagebox as mb
 import sys
+from tkinter import messagebox as mb
+
 import GUI_util
 import IO_libraries_util
 
@@ -28,22 +29,20 @@ if (
 
 
 # import statements
-from WSI_classes import Clusterer, Matcher
-import re
-import numpy as np
-import random
-import pickle
 from collections import Counter
-from tqdm import tqdm
-import os
 import csv
+import os
+import pickle
+import random
+import re
 
-from transformers import BertModel, BertTokenizer, BertTokenizerFast, EncoderDecoderModel
-from collections import Counter
+import numpy as np
 import spacy
+from tqdm import tqdm
+from transformers import BertModel, BertTokenizer
 
 import IO_files_util
-
+from WSI_classes import Clusterer, Matcher
 
 SEED = 0
 batch_size = 32
@@ -68,7 +67,7 @@ def parse_keywords(u_vocab):
     never match anything.
     """
     if os.path.isfile(u_vocab):
-        with open(u_vocab, "r", encoding="utf-8", errors="ignore", newline="") as f:
+        with open(u_vocab, encoding="utf-8", errors="ignore", newline="") as f:
             words = [row[0] for row in csv.reader(f) if row]
     else:
         words = u_vocab.split(",")
@@ -139,7 +138,7 @@ def split_into_sentences(text, docID):
 
 def get_sent(doc, o_path):
 
-    with open(doc, "r", encoding="utf-8", errors="ignore") as f:
+    with open(doc, encoding="utf-8", errors="ignore") as f:
         fullText = f.read().lower()
     docID = os.path.basename(doc)
     sentences = split_into_sentences(fullText, docID)
@@ -178,8 +177,8 @@ def get_data(inputFilename, inputDir, Word2Vec_Dir, u_vocab=[], fileType=".txt",
 def _bert_first_download_alert_wsi():
     cache_dir = os.path.join(os.path.expanduser("~"), ".cache", "huggingface", "hub", "models--bert-base-uncased")
     if not os.path.isdir(cache_dir):
-        import IO_user_interface_util
         import GUI_util
+        import IO_user_interface_util
 
         IO_user_interface_util.timed_alert(
             GUI_util.window,
@@ -225,7 +224,7 @@ def get_centroids(all_sent, all_vocab, Word2Vec_Dir, k_range, sample=None):
     if not os.path.exists(c_path):
         os.makedirs(c_path)
     # get centroids
-    for w in tqdm(all_vocab, total=len(all_vocab), desc=f"Generating sense centroids..."):
+    for w in tqdm(all_vocab, total=len(all_vocab), desc="Generating sense centroids..."):
         if sample is None:
             seq = [tpl for tpl in all_sent if w in tpl[1].split()]
         else:
@@ -262,7 +261,7 @@ def get_cluster_sentences(Word2Vec_Dir):
     # should export the file as a csv file so that items can be used for analyzing, sorting, opening exported filenames with hyperlinks
     # should use the dressFilenameForCSVHyperlink in the filename IO_csv_util.dressFilenameForCSVHyperlink(tail)
     s_paths = []
-    with open(f"{Word2Vec_Dir}/output/senses", "r") as f:
+    with open(f"{Word2Vec_Dir}/output/senses") as f:
         tokens = f.read().split("\n")[:-1]
     vocab = list(set([tok.split("\t")[1] for tok in tokens]))
     tokens = [tok.split("\t") for tok in tokens]
@@ -308,7 +307,7 @@ def get_cluster_sentences(Word2Vec_Dir):
 
 def main():
 
-    with open("/home/gog/work/NLP-Suite/lib/sampleData/Bunin - Gentle breath.txt", "r") as f:
+    with open("/home/gog/work/NLP-Suite/lib/sampleData/Bunin - Gentle breath.txt") as f:
         text = f.read().lower()
     vocab = get_vocab(text, vocab=["olia"])
     print(vocab)

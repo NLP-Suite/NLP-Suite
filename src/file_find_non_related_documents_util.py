@@ -1,5 +1,3 @@
-# coding=utf-8
-
 # Edited by Elaine Dong, Feb 2, 2020.
 # Edited by Roberto Franzosi, November 2, 2019.
 
@@ -8,6 +6,7 @@
 ########### 4. the base line for similarity. Below which value of similarity would you consider the file to be an intruder? Recommand around 0.15.
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -19,14 +18,14 @@ if (
 ):
     sys.exit(0)
 
-import os
 from glob import glob
+import os
 import tkinter.messagebox as mb
-import config_aware_parser_util
 
+import config_aware_parser_util
 import GUI_IO_util
-import IO_files_util
 import IO_csv_util
+import IO_files_util
 
 # from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza_word
 filesToOpen = []
@@ -58,7 +57,7 @@ def load_soc_actors():
 # CM soc_acts is the input. I filtered out all social actors in dir_path
 # Version 2: when we need to filter out NERs.
 def get_article_soc_actors_NER(dir_path, soc_acts, nlp, keywords, num_doc):
-    from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza_word
+    from Stanza_functions_util import lemmatize_stanza_word, stanzaPipeLine
 
     my_files = glob(dir_path + "*.txt")
     for file in my_files:
@@ -104,7 +103,7 @@ def percent_belongs(one_doc, all_doc):
     for word, freq in one_doc.items():
         list1_sum_squre += freq * freq
         if word in all_doc:
-            numerator += one_doc[word] * all_doc[word]
+            numerator += freq * all_doc[word]
     for word, freq in all_doc.items():
         list2_sum_squre += freq * freq
     l1_sqrt = list1_sum_squre**0.5

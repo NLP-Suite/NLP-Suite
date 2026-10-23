@@ -1,10 +1,9 @@
-# coding=utf-8
-
 # Edited by Elaine Dong, Feb 18, 2020.
 # The command line should be:
 # Arguments: 1. path of the lynching folder 2. path of compilation folder 3.output path 4. path of stanfordcorenlp 5. whether or not you want to use NER to detect Named Entity Recognition (1 for yes, 0 for no)
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -14,18 +13,20 @@ if (
 ):
     sys.exit(0)
 
-import os
 from glob import glob
-import IO_files_util
-import GUI_IO_util
+import os
+
 import charts_util
-import IO_user_interface_util
 import config_aware_parser_util
+import GUI_IO_util
+import IO_files_util
+import IO_user_interface_util
 
 # check WordNet
 IO_libraries_util.import_nltk_resource(GUI_util.window, "corpora/WordNet", "WordNet")
-from nltk.stem.wordnet import WordNetLemmatizer
 import tkinter.messagebox as mb
+
+from nltk.stem.wordnet import WordNetLemmatizer
 
 lemmatizer = WordNetLemmatizer()
 filesToOpen = []
@@ -121,9 +122,9 @@ def get_comp_soc_actors(id, soc_acts, c_path, nlp, checkNER):
     print("   Processing compilation: " + id + ".txt")
     # read the compilation, and check that it is not an empty folder
     try:
-        with open(my_path, "r", encoding="utf-8", errors="ignore") as fh:
+        with open(my_path, encoding="utf-8", errors="ignore") as fh:
             fcontent = fh.read()
-    except IOError:
+    except OSError:
         print("")
         print("   Error: There is no compilation for event ID", id)
         print("")

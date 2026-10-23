@@ -1,6 +1,7 @@
 # written by Roberto Franzosi October 2019, edited Spring 2020
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -10,15 +11,12 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window, "file_splitter
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
-from subprocess import call
 
+import config_util
 import GUI_IO_util
 import IO_files_util
 import IO_user_interface_util
-import file_checker_util
-import file_cleaner_util
 import reminders_util
-import config_util
 import run_script_util
 
 # import several splitter util scripts under various if statements under Run
@@ -458,7 +456,7 @@ def getDocLength():
     if GUI_util.inputFilename.get() == "" or GUI_util.inputFilename.get()[-4:] != ".txt":
         current_docLength_var.set("")
         return
-    with open(GUI_util.inputFilename.get(), "r", encoding="utf-8", errors="ignore") as F:
+    with open(GUI_util.inputFilename.get(), encoding="utf-8", errors="ignore") as F:
         text = F.read()
         length = len(text.split())
     current_docLength_var.set(length)

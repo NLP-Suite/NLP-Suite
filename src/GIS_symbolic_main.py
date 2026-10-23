@@ -3,9 +3,10 @@
 # See docs/Narrative_Symbolic_Space_design.md and GIS_symbolic_util.py.
 
 import sys
+import tkinter.messagebox as mb
+
 import GUI_util
 import IO_libraries_util
-import tkinter.messagebox as mb
 
 if (
     IO_libraries_util.install_all_Python_packages(
@@ -18,8 +19,9 @@ if (
 import os
 import tkinter as tk
 from tkinter import filedialog
-import IO_files_util
+
 import GUI_IO_util
+import IO_files_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -135,6 +137,7 @@ def run():
     outputDir = _symbolic_output_dir(outputDir, inputFilename, inputDir)
 
     import pandas as pd
+
     import GIS_symbolic_util as ss
 
     # ---- BUILD: extract the actor-in-space table from a CoNLL corpus ---------
@@ -155,17 +158,15 @@ def run():
                 _total = _kept + dropped_pronouns
                 mb.showinfo(
                     title="Pronoun actors dropped",
-                    message="{:,} of {:,} actor-in-space events ({:.0f}%) had a PRONOUN as their "
+                    message=f"{dropped_pronouns:,} of {_total:,} actor-in-space events ({100.0 * dropped_pronouns / _total if _total else 0:.0f}%) had a PRONOUN as their "
                     'actor — "he", "they", "which" — and were left out. A pronoun is a '
                     "reference to a character, not a character: kept in, they become the "
                     'largest "actors" in every table while naming nobody.\n\n'
-                    "{:,} events were kept.\n\n"
+                    f"{_kept:,} events were kept.\n\n"
                     "To recover the dropped ones, run COREFERENCE RESOLUTION on your corpus "
                     "first (Parsers & annotators), then parse the coref-resolved text and "
                     "BUILD from that CoNLL table: the pronouns are replaced by the people "
-                    "they stand for, and those events come back with a name on them.".format(
-                        dropped_pronouns, _total, 100.0 * dropped_pronouns / _total if _total else 0, _kept
-                    ),
+                    "they stand for, and those events come back with a name on them.",
                 )
             # push the BUILD output into the input box (replacing the CoNLL) so the DYNAMIC / STATIC
             # analyses run on the Social-actors table and its columns (space_type, Sentence ID…) populate
@@ -180,12 +181,12 @@ def run():
                 # the events existed; every one of them was a pronoun
                 mb.showwarning(
                     title="Only pronoun actors found",
-                    message="{:,} actor-in-space events were found, and EVERY one of them had a "
+                    message=f"{dropped_pronouns:,} actor-in-space events were found, and EVERY one of them had a "
                     'pronoun as its actor ("he", "they", "which"), so nothing was '
                     "written.\n\n"
                     "Run COREFERENCE RESOLUTION on your corpus first (Parsers & "
                     "annotators), parse the resolved text, and BUILD from that CoNLL "
-                    "table: the pronouns become the people they stand for.".format(dropped_pronouns),
+                    "table: the pronouns become the people they stand for.",
                 )
             else:
                 mb.showwarning(
@@ -223,13 +224,11 @@ def run():
         except UnicodeDecodeError:
             df = pd.read_csv(inputFilename, encoding="ISO-8859-1", engine="python")
     except Exception as e:
-        mb.showerror(title="Could not read CSV", message="Failed to read the input CSV:\n{}".format(e))
+        mb.showerror(title="Could not read CSV", message=f"Failed to read the input CSV:\n{e}")
         return
 
     if location_col not in df.columns:
-        mb.showwarning(
-            title="Column not found", message="The location column '{}' is not in the CSV.".format(location_col)
-        )
+        mb.showwarning(title="Column not found", message=f"The location column '{location_col}' is not in the CSV.")
         return
 
     # ---- STATIC: distribution of the attribute across space-types ----------
@@ -262,12 +261,12 @@ def run():
         else:
             stats = ss.crosstab_stats(table)
             base = attribute_col.strip().replace(" ", "_")
-            csv_out = os.path.join(outputDir, "symbolic_space_{}_x_space.csv".format(base))
+            csv_out = os.path.join(outputDir, f"symbolic_space_{base}_x_space.csv")
             ss.save_crosstab_csv(table, csv_out, stats)
             filesToOpen.append(csv_out)
-            png = os.path.join(outputDir, "symbolic_space_{}_x_space_heatmap.png".format(base))
+            png = os.path.join(outputDir, f"symbolic_space_{base}_x_space_heatmap.png")
             ss.plot_attribute_space_heatmap(
-                table, png, values="residuals", stats=stats, title="{} × non-geocodable space".format(attribute_col)
+                table, png, values="residuals", stats=stats, title=f"{attribute_col} × non-geocodable space"
             )
             filesToOpen.append(png)
 

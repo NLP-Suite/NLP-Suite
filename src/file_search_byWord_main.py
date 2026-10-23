@@ -1,6 +1,7 @@
 # written by Roberto Franzosi October 2019, edited Spring 2020
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -12,17 +13,14 @@ if (
 
 import os
 import tkinter as tk
-from tkinter import ttk
 import tkinter.messagebox as mb
-from subprocess import call
 
+import config_util
+import file_search_byWord_util
 import GUI_IO_util
 import IO_files_util
-import file_search_byWord_util
 import IO_user_interface_util
 import reminders_util
-import constants_util
-import config_util
 import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -59,7 +57,7 @@ def run():
         )
         return
 
-    if search_options_menu_var.get() != "" and not search_options_menu_var.get() in str(search_options_list):
+    if search_options_menu_var.get() != "" and search_options_menu_var.get() not in str(search_options_list):
         result = mb.askyesno(
             title="Warning",
             message="There is a search value '"
@@ -85,8 +83,8 @@ def run():
     # if outputDir == '':
     #     return
 
-    if not "Search within document" in search_options_list:
-        if not "Search within sentence (default)" in search_options_list:
+    if "Search within document" not in search_options_list:
+        if "Search within sentence (default)" not in search_options_list:
             search_options_list.append("Search within sentence (default)")
 
     if "Lemmatize" in str(search_options_list):
@@ -430,7 +428,7 @@ def activate_search_var():
 
 
 def activate_default_search_options(*args):
-    if not "Case sensitive (default)" in search_options_list:
+    if "Case sensitive (default)" not in search_options_list:
         search_options_list.append("Case sensitive (default)")
     search_options_list.append("Search within sentence (default)")
     search_options_list.append("Exact match (default)")
@@ -463,7 +461,7 @@ def activate_search_options(*args):
             search_options_list.remove("Exact match (default)")
         if "Exact match (default)" in search_options_menu_var.get() and "Partial match" in str(search_options_list):
             search_options_list.remove("Partial match")
-        if not search_options_menu_var.get() in search_options_list:
+        if search_options_menu_var.get() not in search_options_list:
             search_options_list.append(search_options_menu_var.get())
         # search_options_menu.configure(state="disabled")
         add_search_button.configure(state="normal")

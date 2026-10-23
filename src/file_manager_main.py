@@ -1,21 +1,22 @@
 # Written by Roberto Franzosi December 2019
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
 if IO_libraries_util.install_all_Python_packages(GUI_util.window, "file_manager.py", ["csv", "tkinter", "os"]) == False:
     sys.exit(0)
 
+import csv
+import os
 import tkinter as tk
 import tkinter.messagebox as mb
-import os
-import csv
 
-import IO_files_util
+import file_filename_util
 import GUI_IO_util
 import IO_csv_util
-import file_filename_util
+import IO_files_util
 import IO_user_interface_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -319,7 +320,7 @@ def run():
             selectedCsvFile_colNum = 0
 
         fileList = []
-        with open(selectedCsvFile_var, "r", encoding="utf-8", errors="ignore") as read_obj:
+        with open(selectedCsvFile_var, encoding="utf-8", errors="ignore") as read_obj:
             csv_reader = csv.reader(read_obj)
             if noHeaders == False:
                 # skip first row since it has headers
@@ -341,7 +342,7 @@ def run():
     if include_subdir_var == 1:
         for inputDir, subdirs, files in os.walk(inputDir):
             for filename in files:
-                print("Processing file: {}".format(filename))
+                print(f"Processing file: {filename}")
                 fileFound, characterCount, creation_date, modification_date, author, date, dateStr = (
                     file_filename_util.processFile(
                         inputDir,
@@ -384,106 +385,105 @@ def run():
                 )
                 if fileFound:
                     i = i + 1
-    else:
-        if hasFullPath:  # This is used when full paths are present in the CSV file, we ignore the input directory
-            print("Full path present, processing regardless of existence in input directory")
-            for filename in fileList:
-                fileFound, characterCount, creation_date, modification_date, author, date, dateStr = (
-                    file_filename_util.processFile(
-                        inputDir,
-                        outputDir,
-                        filename,
-                        outputFilename,
-                        fieldnames,
-                        selectedCsvFile_var,
-                        hasFullPath,
-                        utf8_var,
-                        ASCII_var,
-                        list_var,
-                        rename_var,
-                        copy_var,
-                        move_var,
-                        delete_var,
-                        split_var,
-                        rename_new_entry,
-                        file_type_menu_var,
-                        by_creation_date_var,
-                        by_author_var,
-                        by_prefix_var,
-                        by_substring_var,
-                        string_entry_var,
-                        by_foldername_var,
-                        folder_character_separator_var,
-                        by_embedded_items_var,
-                        comparison_var,
-                        number_of_items_var,
-                        embedded_item_character_value_var,
-                        include_exclude_var,
-                        character_count_file_manager_var,
-                        character_entry_var,
-                        include_subdir_var,
-                        fileName_embeds_date,
-                        date_format,
-                        date_separator,
-                        date_position,
-                    )
+    elif hasFullPath:  # This is used when full paths are present in the CSV file, we ignore the input directory
+        print("Full path present, processing regardless of existence in input directory")
+        for filename in fileList:
+            fileFound, characterCount, creation_date, modification_date, author, date, dateStr = (
+                file_filename_util.processFile(
+                    inputDir,
+                    outputDir,
+                    filename,
+                    outputFilename,
+                    fieldnames,
+                    selectedCsvFile_var,
+                    hasFullPath,
+                    utf8_var,
+                    ASCII_var,
+                    list_var,
+                    rename_var,
+                    copy_var,
+                    move_var,
+                    delete_var,
+                    split_var,
+                    rename_new_entry,
+                    file_type_menu_var,
+                    by_creation_date_var,
+                    by_author_var,
+                    by_prefix_var,
+                    by_substring_var,
+                    string_entry_var,
+                    by_foldername_var,
+                    folder_character_separator_var,
+                    by_embedded_items_var,
+                    comparison_var,
+                    number_of_items_var,
+                    embedded_item_character_value_var,
+                    include_exclude_var,
+                    character_count_file_manager_var,
+                    character_entry_var,
+                    include_subdir_var,
+                    fileName_embeds_date,
+                    date_format,
+                    date_separator,
+                    date_position,
                 )
-                if fileFound:
-                    i = i + 1
-        elif count_file_manager_var == False:  # list, copy, move, delete
-            for filename in os.listdir(inputDir):
-                if not os.path.isdir(os.path.join(inputDir, filename)):
-                    print("Processing file: {}".format(filename))
-                    if selectedCsvFile_var != "":
-                        if filename in fileList:
-                            processFile = True
-                        else:
-                            processFile = False
-                    else:
+            )
+            if fileFound:
+                i = i + 1
+    elif count_file_manager_var == False:  # list, copy, move, delete
+        for filename in os.listdir(inputDir):
+            if not os.path.isdir(os.path.join(inputDir, filename)):
+                print(f"Processing file: {filename}")
+                if selectedCsvFile_var != "":
+                    if filename in fileList:
                         processFile = True
-                    if processFile:
-                        fileFound, characterCount, creation_date, modification_date, author, date, dateStr = (
-                            file_filename_util.processFile(
-                                inputDir,
-                                outputDir,
-                                filename,
-                                outputFilename,
-                                fieldnames,
-                                selectedCsvFile_var,
-                                hasFullPath,
-                                utf8_var,
-                                ASCII_var,
-                                list_var,
-                                rename_var,
-                                copy_var,
-                                move_var,
-                                delete_var,
-                                split_var,
-                                rename_new_entry,
-                                file_type_menu_var,
-                                by_creation_date_var,
-                                by_author_var,
-                                by_prefix_var,
-                                by_substring_var,
-                                string_entry_var,
-                                by_foldername_var,
-                                folder_character_separator_var,
-                                by_embedded_items_var,
-                                comparison_var,
-                                number_of_items_var,
-                                embedded_item_character_value_var,
-                                include_exclude_var,
-                                character_count_file_manager_var,
-                                character_entry_var,
-                                include_subdir_var,
-                                fileName_embeds_date,
-                                date_format,
-                                date_separator,
-                                date_position,
-                            )
+                    else:
+                        processFile = False
+                else:
+                    processFile = True
+                if processFile:
+                    fileFound, characterCount, creation_date, modification_date, author, date, dateStr = (
+                        file_filename_util.processFile(
+                            inputDir,
+                            outputDir,
+                            filename,
+                            outputFilename,
+                            fieldnames,
+                            selectedCsvFile_var,
+                            hasFullPath,
+                            utf8_var,
+                            ASCII_var,
+                            list_var,
+                            rename_var,
+                            copy_var,
+                            move_var,
+                            delete_var,
+                            split_var,
+                            rename_new_entry,
+                            file_type_menu_var,
+                            by_creation_date_var,
+                            by_author_var,
+                            by_prefix_var,
+                            by_substring_var,
+                            string_entry_var,
+                            by_foldername_var,
+                            folder_character_separator_var,
+                            by_embedded_items_var,
+                            comparison_var,
+                            number_of_items_var,
+                            embedded_item_character_value_var,
+                            include_exclude_var,
+                            character_count_file_manager_var,
+                            character_entry_var,
+                            include_subdir_var,
+                            fileName_embeds_date,
+                            date_format,
+                            date_separator,
+                            date_position,
                         )
-                        if fileFound:
-                            i = i + 1
+                    )
+                    if fileFound:
+                        i = i + 1
 
     import charts_util
 

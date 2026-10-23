@@ -1,20 +1,18 @@
+import os
 import sys
 from sys import platform
-import os
 
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
+import csv
+import subprocess
 import tkinter as tk
 import tkinter.messagebox as mb
-import subprocess
-from subprocess import call
+import webbrowser
+
 from psutil import virtual_memory
 import requests
-import webbrowser
-import csv
 
-import GUI_util
 import GUI_IO_util
-
 
 # ---------------------------------------------------------------------------------------------
 # Java executable resolver. The portable/packaged app has NO system Java, so Stanford CoreNLP-based
@@ -66,11 +64,11 @@ def get_java_executable():
     return _JAVA_EXECUTABLE
 
 
-import reminders_util
-import TIPS_util
 import IO_internet_util
 import IO_user_interface_util
+import reminders_util
 import run_script_util
+import TIPS_util
 
 # import pip not used
 # def install(software_name):
@@ -480,7 +478,7 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName, re
 
     message = ""
     fileList = []
-    if not "Java" in programName:  #!='Java (JDK)' Java (JDK)'
+    if "Java" not in programName:  #!='Java (JDK)' Java (JDK)'
         unarchive_msg = ""
         head, tail = os.path.split(software_dir)
         # 9/1
@@ -635,22 +633,21 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName, re
                 title=programName + " installation.", message=programName + " IS NOT INSTALLED ON YOUR MACHINE."
             )
             return False
-        else:
-            if software_dir == "" and not silent:
-                mb.showwarning(
-                    title=programName + " installation.",
-                    message=programName
-                    + " IS INSTALLED ON YOUR MACHINE (Java version "
-                    + str(java_version)
-                    + ") but the Java version is not saved in NLP_setup_external_software_config.csv"
-                    '\n\nPlease, use the droopdown meny for "Software INSTALL on your machine and select "Java (JDK)" to save the Java version in the config file.',
-                )
-                return True
+        elif software_dir == "" and not silent:
+            mb.showwarning(
+                title=programName + " installation.",
+                message=programName
+                + " IS INSTALLED ON YOUR MACHINE (Java version "
+                + str(java_version)
+                + ") but the Java version is not saved in NLP_setup_external_software_config.csv"
+                '\n\nPlease, use the droopdown meny for "Software INSTALL on your machine and select "Java (JDK)" to save the Java version in the config file.',
+            )
+            return True
 
     # MALLET
     if programName == "MALLET":
         # check that MALLET has no spaces in path
-        if ("bin" in fileList and "class" in fileList) and not " " in software_dir:
+        if ("bin" in fileList and "class" in fileList) and " " not in software_dir:
             return True
         # check that MALLET has no spaces in path
         if " " in software_dir:
@@ -750,7 +747,7 @@ def initialize_software_config_fields(existing_software_config: list) -> list:
     fields = [x[0].lower() for x in existing_software_config]
     for index, row in enumerate(sample_csv):
         if row[0].lower() not in fields:
-            existing_software_config.append(sample_csv[index])
+            existing_software_config.append(row)
     return existing_software_config
 
 
@@ -768,7 +765,7 @@ def get_existing_software_config(external_software_config_file=""):
     software_config = GUI_IO_util.configPath + os.sep + external_software_config_file
     # FIXED: must insert the new software_name into software-config.csv when the software_name is missing in the user csv file
     try:
-        csv_file = open(software_config, "r", newline="")
+        csv_file = open(software_config, newline="")
         existing_software_config = list(csv.reader(csv_file, delimiter=","))
     except:
         existing_software_config = list()
@@ -825,7 +822,7 @@ def get_software_config(softwareDir, software_name, existing_software_config):
         if row[0] == software_name:
             csv_fields[i][1] = softwareDir  # update path of csv_fields
         else:
-            csv_fields[i][1] = csv_fields[i][1]  # copy current value
+            csv_fields[i][1] = row[1]  # copy current value
     return existing_software_config
 
 
@@ -836,7 +833,7 @@ def update_software_config(softwareDir, software_name, existing_software_config)
             existing_software_config[i][1] = softwareDir  # update path of csv_fields
             break
         else:
-            existing_software_config[i][1] = existing_software_config[i][1]  # copy current value
+            existing_software_config[i][1] = row[1]  # copy current value
     return existing_software_config
 
 
@@ -942,10 +939,9 @@ def get_external_software_dir(
 
     if software_dir == "":
         software_dir = None  # specific calling scripts (e.g. Stanford CoreNL) check for None
-    else:
-        if software_name_checked == "":
-            software_dir = None
-            software_url = ""
+    elif software_name_checked == "":
+        software_dir = None
+        software_url = ""
 
     return software_dir, software_url, missing_software, errorFound
     # end of get_external_software_dir
@@ -959,9 +955,8 @@ def ask_download_installation_questions(download_install, software_name, softwar
             if download_install == "install":
                 if not silent:
                     answer = tk.messagebox.askyesno(software_name + " installation", message)
-            else:
-                if not silent:
-                    answer = tk.messagebox.askyesno(software_name + " download", message)
+            elif not silent:
+                answer = tk.messagebox.askyesno(software_name + " download", message)
             if not answer:
                 cancel_download_install = True
     return cancel_download_install
@@ -1150,35 +1145,34 @@ def display_download_installation_messages(
             '\n\nIf you have already downloaded the software, but not installed it, click on the "Software install" button to select the directory where you saved it on your machine in order to install it; '
             "you will only have to do this once (the selected installation directory will be saved in NLP_setup_external_software_config.csv)."
         )
-    else:
-        # NL_menu__main
-        if (software_dir == "" or software_dir == None) and (
-            not "NLP_menu" in calling_script and not "NLP_setup_external_software" in calling_script
-        ):
-            opening_message = (
-                "The script "
-                + calling_script.upper()
-                + " requires the external software "
-                + software_name.upper()
-                + " to run. The software needs to downloaded/installed."
-                "\n\nFor your convenience, the download function can automatically open the NLP_setup_external_software_main.py GUI "
-                "where you can download and install this and any other required external software."
-                "\n\nDO YOU WANT TO OPEN THE GUI?"
-            )
-            if not silent:
-                answer = tk.messagebox.askyesno(software_name + " installation", opening_message)
-                if answer:
-                    download_message = ""
-                    run_script_util.run_script("NLP_setup_external_software_main.py")
-                    # must get software_dir in case it was changed in the NLP_setup_external_software_main GUI
-                    software_dir, software_url, missing_software, error_found = get_external_software_dir(
-                        calling_script, software_name, silent=True, only_check_missing=True, install_download="install"
-                    )
+    # NL_menu__main
+    elif (software_dir == "" or software_dir == None) and (
+        "NLP_menu" not in calling_script and "NLP_setup_external_software" not in calling_script
+    ):
+        opening_message = (
+            "The script "
+            + calling_script.upper()
+            + " requires the external software "
+            + software_name.upper()
+            + " to run. The software needs to downloaded/installed."
+            "\n\nFor your convenience, the download function can automatically open the NLP_setup_external_software_main.py GUI "
+            "where you can download and install this and any other required external software."
+            "\n\nDO YOU WANT TO OPEN THE GUI?"
+        )
+        if not silent:
+            answer = tk.messagebox.askyesno(software_name + " installation", opening_message)
+            if answer:
+                download_message = ""
+                run_script_util.run_script("NLP_setup_external_software_main.py")
+                # must get software_dir in case it was changed in the NLP_setup_external_software_main GUI
+                software_dir, software_url, missing_software, error_found = get_external_software_dir(
+                    calling_script, software_name, silent=True, only_check_missing=True, install_download="install"
+                )
 
-                else:
-                    # download_message, installation_message are set to '' when no new download or installation is desired
-                    download_message = ""
-                return software_dir, title, opening_message, download_message, installation_message
+            else:
+                # download_message, installation_message are set to '' when no new download or installation is desired
+                download_message = ""
+            return software_dir, title, opening_message, download_message, installation_message
 
     # DOWNLOAD  messages ------------------------------------------------------------------------------
 
@@ -1560,7 +1554,7 @@ def external_software_install(calling_script, software_name, existing_software_c
             software_name = "MALLET"
         elif "wordnet" in software_name.lower():
             software_name = "WordNet"
-        if not "Java" in software_name:
+        if "Java" not in software_name:
             # check that the selected directory for the external program is correct; if so save
             if not check_inputExternalProgramFile(calling_script, software_dir, software_name, False):
                 software_dir = None

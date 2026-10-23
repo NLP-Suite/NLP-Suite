@@ -3,6 +3,7 @@
 # rewritten by Roberto Franzosi April 2020, Fall 2022
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -19,10 +20,10 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox as mb
 
+import constants_util
 import GUI_IO_util
 import IO_files_util
 import reminders_util
-import constants_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -817,9 +818,9 @@ color_palette_var.trace("w", activate_class_color_combo)
 def activate_DBpedia_YAGO_Options(y_multiplier_integerSV, confidence_level_lb, confidence_level_entry, *args):
     global firstTime, knowledge_graphs_YAGO_checkbox
     if (
-        not "DBpedia" in knowledge_graphs_var.get()
-        and not "YAGO" in knowledge_graphs_var.get()
-        and not "Wiki" in knowledge_graphs_var.get()
+        "DBpedia" not in knowledge_graphs_var.get()
+        and "YAGO" not in knowledge_graphs_var.get()
+        and "Wiki" not in knowledge_graphs_var.get()
     ):
         ontology_list.clear()
         ontology_color_list.clear()

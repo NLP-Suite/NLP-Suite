@@ -9,10 +9,8 @@ rewritten by Roberto Franzosi, Zhangyi Pan
 
 import sys
 
-import GUI_IO_util
-import IO_files_util
-import charts_util
 import GUI_util
+import IO_files_util
 import IO_libraries_util
 import IO_user_interface_util
 
@@ -24,10 +22,10 @@ if (
 ):
     sys.exit(0)
 
-import re
-import os
 import csv
 import ntpath
+import os
+import re
 
 import IO_csv_util
 
@@ -49,7 +47,7 @@ def cleanMultipleTags(text, tags):
 def gatherAnnotations(inputFile, tags, mustInclude="<p>", cleanMultiples=True):
     openingTag, closingTag = tags[0], tags[1]
     starts, ends, words = [], [], []
-    with open(inputFile, "r", encoding="utf-8", errors="ignore") as f:
+    with open(inputFile, encoding="utf-8", errors="ignore") as f:
         for line in f.readlines():
             if mustInclude in line:
                 if cleanMultiples == True:

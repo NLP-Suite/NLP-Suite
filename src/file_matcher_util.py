@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -9,8 +10,8 @@ import os
 from pathlib import Path
 from tkinter import messagebox as mb
 
-import IO_files_util
 import IO_csv_util
+import IO_files_util
 
 
 def get_group_name(stem, separator, number_of_items):
@@ -175,26 +176,25 @@ def run_default(
                                     IO_csv_util.dressFilenameForCSVHyperlink(in_search_path[0]),
                                 ]
                             )
-            else:
-                # Since this is not a search from '*', we want to detect files of in_ext_1 and find matches that are of in_ext_2
-                if "." + in_ext_1 in target_dict[stem]:
-                    # suffix of the desired type exists, add all in_ext_2 files to output
-                    for suffix in target_dict[stem]:
-                        for path in target_dict[stem][suffix]:
-                            if path.match("*." + in_ext_2):
-                                # Should we remove any files that =in_ext_1?
-                                extension = os.path.splitext(path.name)[1]
-                                folder = os.path.basename(os.path.normpath(path.parent))
-                                matched_output.append(
-                                    [
-                                        path.name,
-                                        extension,
-                                        IO_csv_util.dressFilenameForCSVHyperlink(path),
-                                        folder,
-                                        IO_csv_util.dressFilenameForCSVHyperlink(path.parent),
-                                        IO_csv_util.dressFilenameForCSVHyperlink(in_search_path[0]),
-                                    ]
-                                )
+            # Since this is not a search from '*', we want to detect files of in_ext_1 and find matches that are of in_ext_2
+            elif "." + in_ext_1 in target_dict[stem]:
+                # suffix of the desired type exists, add all in_ext_2 files to output
+                for suffix in target_dict[stem]:
+                    for path in target_dict[stem][suffix]:
+                        if path.match("*." + in_ext_2):
+                            # Should we remove any files that =in_ext_1?
+                            extension = os.path.splitext(path.name)[1]
+                            folder = os.path.basename(os.path.normpath(path.parent))
+                            matched_output.append(
+                                [
+                                    path.name,
+                                    extension,
+                                    IO_csv_util.dressFilenameForCSVHyperlink(path),
+                                    folder,
+                                    IO_csv_util.dressFilenameForCSVHyperlink(path.parent),
+                                    IO_csv_util.dressFilenameForCSVHyperlink(in_search_path[0]),
+                                ]
+                            )
 
     # Unmatched values are those that only have one suffix for a given stem
     for stem in target_dict:

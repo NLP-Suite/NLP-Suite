@@ -1,6 +1,7 @@
 # Written by Roberto Franzosi, May 2021
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -12,15 +13,15 @@ if (
 
 # IO config are saved in config_util.save_IO_config after checking values in NLP_setup_update.exit_window
 
-import os
 import argparse
-import tkinter.messagebox as mb
+import os
 import tkinter as tk
+import tkinter.messagebox as mb
 
-import GUI_IO_util
 import config_util
-import reminders_util
+import GUI_IO_util
 import IO_files_util
+import reminders_util
 
 if __name__ == "__main__":
     # get arguments from command line
@@ -165,7 +166,7 @@ if config_input_output_numeric_options[0] != 0:
     list_item = 0
     if (
         config_input_output_alphabetic_options[0][4] != ""
-        and not "Date: " in config_input_output_alphabetic_options[0][1]
+        and "Date: " not in config_input_output_alphabetic_options[0][1]
     ):
         # the index for config_input_output_numeric_options starts at 0 with I/O configuration label
         # [0][4] [0][3] and [0][5] contain date format, item character separator, and date position
@@ -250,7 +251,7 @@ if config_input_output_numeric_options[1] != 0:  # input dir
             )
         except:
             Error = True
-    if not "Date:" in config_input_output_alphabetic_options[1][1]:
+    if "Date:" not in config_input_output_alphabetic_options[1][1]:
         GUI_util.input_main_dir_path.set(config_input_output_alphabetic_options[1][1] + label)
     else:
         GUI_util.input_main_dir_path.set(config_input_output_alphabetic_options[1][1])
@@ -869,7 +870,7 @@ def get_IO_options_list(saving=False):
     # unfortunately, the sort order is saved as first column in the config file and separator second,
     #   contrary to the display in the IO setup GUI)
     if filename_embeds_multiple_items_var.get():
-        if not "..." in sort_order_var.get():
+        if "..." not in sort_order_var.get():
             if GUI_util.inputFilename.get() != "":
                 # @@@
                 inputFilename_list.append(sort_order_var.get())
@@ -913,7 +914,7 @@ def get_IO_options_list(saving=False):
     # append sort order and separator
     # unfortunately, the sort order is saved as first column in the config file and separator second,
     #   contrary to the display in the IO setup GUI)
-    if not "..." in sort_order_var.get():
+    if "..." not in sort_order_var.get():
         if GUI_util.input_main_dir_path.get() != "":
             inputDir_list.append(sort_order_var.get())
             inputDir_list.append(items_separator_var.get())  # append items separator
@@ -945,7 +946,7 @@ def get_IO_options_list(saving=False):
     else:
         inputDir2_list.append("")
 
-    if not "..." in sort_order_var.get():
+    if "..." not in sort_order_var.get():
         if GUI_util.input_secondary_dir_path.get() != "":
             inputDir2_list.append(sort_order_var.get())
             inputDir2_list.append(items_separator_var.get())
@@ -1092,14 +1093,13 @@ def close_GUI(IO_configuration_upon_entry):
     answer = False
     if Error:  # old config file without sort order; save automatically
         save_config(config_input_output_alphabetic_options)
-    else:
-        if IO_configuration_upon_entry != current_IO_configuration_str:
-            answer = tk.messagebox.askyesno(
-                "Warning",
-                "You have made changes to the default IO setup.\n\nYou will lose your changes if you CLOSE without saving.\n\nWOULD YOU LIKE TO SAVE THE CHANGES MADE?",
-            )
-            if answer:
-                save_config(config_input_output_alphabetic_options)
+    elif IO_configuration_upon_entry != current_IO_configuration_str:
+        answer = tk.messagebox.askyesno(
+            "Warning",
+            "You have made changes to the default IO setup.\n\nYou will lose your changes if you CLOSE without saving.\n\nWOULD YOU LIKE TO SAVE THE CHANGES MADE?",
+        )
+        if answer:
+            save_config(config_input_output_alphabetic_options)
     NLP_setup_update_util.exit_window()
 
 

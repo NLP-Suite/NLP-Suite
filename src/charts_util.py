@@ -4,6 +4,7 @@
 # Edited by Samir Kaddoura, March 2023
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -17,34 +18,30 @@ if (
 ):
     sys.exit(0)
 
-import plotly
-from plotly.subplots import make_subplots
+import re
+import warnings
 
 import numpy as np
-import re
-
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-import warnings
-
 warnings.simplefilter(action="ignore", category=RuntimeWarning)
 
-import tkinter.messagebox as mb
 from collections import Counter
-import pandas as pd
 import os
+import tkinter.messagebox as mb
 
+import pandas as pd
+
+import charts_Excel_util
+import charts_Plotly_util
 import IO_csv_util
 import IO_user_interface_util
-import charts_Plotly_util
 
 # Esri tiles: OpenStreetMap refuses a map page opened from disk (map_tiles_util)
 import map_tiles_util
-import charts_Excel_util
 import statistics_csv_util
-
 
 # Prepare the data (data_to_be_plotted) to be used in charts_Excel_util.create_excel_chart with the format:
 #   one series: [[['Name1','Frequency'], ['A', 7]]]
@@ -98,7 +95,7 @@ def prepare_data_to_be_plotted_inExcel(
     withHeader_var = False
     if len(headers) > 0:
         withHeader_var = True
-    if ("byDoc" in inputFilename and "hyperlinks" in inputFilename) and (not "group" in inputFilename):
+    if ("byDoc" in inputFilename and "hyperlinks" in inputFilename) and ("group" not in inputFilename):
         # sort by document ID and relevant column in headers[columns_to_be_plotted[0][0]]
         #   use [0][1] if saving with Index=False
         data = data.sort_values([headers[0], headers[columns_to_be_plotted[0][0]]])
@@ -1188,16 +1185,15 @@ def add_missing_IDs(input, outputFilename):
         newDoc = False
         if index == 0:  # first record
             newDoc = True
-        else:  # index > 0; all successive records
-            if Row_list[index][docCol_pos] - Row_list[index - 1][docCol_pos] > 0:
-                newDoc = True
+        elif row[docCol_pos] - Row_list[index - 1][docCol_pos] > 0:
+            newDoc = True
 
         if newDoc:
             start_sentence = 1
-            end_sentence = Row_list[index][sentenceID_pos]
-            inputFilename = Row_list[index][docName_pos]
+            end_sentence = row[sentenceID_pos]
+            inputFilename = row[docName_pos]
             inputFilename = IO_csv_util.undressFilenameForCSVHyperlink(inputFilename)
-            text = open(inputFilename, "r", encoding="utf-8", errors="ignore").read()
+            text = open(inputFilename, encoding="utf-8", errors="ignore").read()
             number_sentences.append([inputFilename, len(sentence_counter(text).sentences)])
 
             # check whether the last sentence for the previous doc was less than number of sentences
@@ -1244,7 +1240,7 @@ def add_missing_IDs(input, outputFilename):
                     # do NOT save current; already saved when first processing the record
                 # now process the current record
                 start_sentence = 1
-                end_sentence = Row_list[index][sentenceID_pos]
+                end_sentence = row[sentenceID_pos]
                 Row_list_new = process_sentenceID_record(
                     Row_list,
                     Row_list_new,
@@ -1261,12 +1257,12 @@ def add_missing_IDs(input, outputFilename):
         else:  # same document
             # check that current sentence is not just one sentence greater than previous one
             #   in which case start and end are the same
-            if Row_list[index][sentenceID_pos] == Row_list[index - 1][sentenceID_pos] + 1:
-                start_sentence = Row_list[index][sentenceID_pos]
-                end_sentence = Row_list[index][sentenceID_pos]
+            if row[sentenceID_pos] == Row_list[index - 1][sentenceID_pos] + 1:
+                start_sentence = row[sentenceID_pos]
+                end_sentence = row[sentenceID_pos]
             else:
                 start_sentence = Row_list[index - 1][sentenceID_pos]
-                end_sentence = Row_list[index][sentenceID_pos]
+                end_sentence = row[sentenceID_pos]
             Row_list_new = process_sentenceID_record(
                 Row_list,
                 Row_list_new,
@@ -1307,7 +1303,7 @@ def add_missing_IDs(input, outputFilename):
 
 def complete_sentence_index(file_path):
     data = pd.read_csv(file_path, encoding="utf-8", on_bad_lines="skip")
-    if not "Sentence ID" in data:
+    if "Sentence ID" not in data:
         head, tail = os.path.split(file_path)
         IO_user_interface_util.timed_alert(
             GUI_util.window,
@@ -1478,7 +1474,7 @@ def boxplot(data, outputFilename, var, points, bycategory=None, category=None, c
     if type(data) == str:
         data = pd.read_csv(data, encoding="utf-8", on_bad_lines="skip")
 
-    if not "int" in str(type(data[var][0])) and not "float" in str(type(data[var][0])):
+    if "int" not in str(type(data[var][0])) and "float" not in str(type(data[var][0])):
         mb.showwarning(
             title="Warning",
             message='The "Boxplots" option requires a numeric field.\n\nPlease, use the dropdown menu to select a numeric csv file field for visualization and try again.',
@@ -1486,7 +1482,7 @@ def boxplot(data, outputFilename, var, points, bycategory=None, category=None, c
         return
 
     if bycategory != 0 and bycategory != None and category != None:
-        if not "str" in str(type(data[category][0])):
+        if "str" not in str(type(data[category][0])):
             mb.showwarning(
                 title="Warning",
                 message='The "Split data by category" Boxplots option requires a CATEGORICAL "csv file field"".\n\nPlease, use the "csv file field" dropdown menu to select a CATEGORICAL field and try again.',
@@ -1494,7 +1490,7 @@ def boxplot(data, outputFilename, var, points, bycategory=None, category=None, c
             return
 
     if color != None:
-        if not "str" in str(type(data[color][0])):
+        if "str" not in str(type(data[color][0])):
             mb.showwarning(
                 title="Warning",
                 message='The Boxplots with "Split data by category" and color options requires a secodn CATEGORICAL "csv file field" for the color option".\n\nPlease, use the second "csv file field" dropdown menu to select a CATEGORICAL field and try again.',
@@ -1513,7 +1509,7 @@ def histogram(data, outputFilename, var, nbins=0, category=None, color=None, mar
     if type(data) == str:
         data = pd.read_csv(data, encoding="utf-8", on_bad_lines="skip")
 
-    if not "int" in str(type(data[var].dropna().iloc[0])) and not "float" in str(type(data[var].dropna().iloc[0])):
+    if "int" not in str(type(data[var].dropna().iloc[0])) and "float" not in str(type(data[var].dropna().iloc[0])):
         mb.showwarning(
             title="Warning",
             message='The "Histogram" option requires a numeric field.\n\nPlease, select a numeric csv file field and try again.',
@@ -1541,7 +1537,7 @@ def violin_plot(data, outputFilename, var, points="all", category=None, color=No
     if type(data) == str:
         data = pd.read_csv(data, encoding="utf-8", on_bad_lines="skip")
 
-    if not "int" in str(type(data[var].dropna().iloc[0])) and not "float" in str(type(data[var].dropna().iloc[0])):
+    if "int" not in str(type(data[var].dropna().iloc[0])) and "float" not in str(type(data[var].dropna().iloc[0])):
         mb.showwarning(
             title="Warning",
             message='The "Violin plot" option requires a numeric field.\n\nPlease, select a numeric csv file field and try again.',
@@ -1737,8 +1733,8 @@ def waffle_chart(inputFilename, outputDir, category_col, top_n=10, grid_size=10)
     import matplotlib
 
     matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
     import matplotlib.patches as mpatches
+    import matplotlib.pyplot as plt
     import numpy as np
 
     try:
@@ -2084,12 +2080,11 @@ def Sunburst(
                     # @@@ nan values will break the code
                     finaldata = finaldata.fillna("Blank/missing value")
                     fig = px.sunburst(finaldata, path=["interest", "Beginning or End", label])  # return Sunburst
-                else:
-                    if finaldata.empty:
-                        mb.showwarning(
-                            "Warning",
-                            "The Sunburst algorithm has produced an empty dataframe.\n\nPlease, make sure that the 'Filename label/part' you have entered are in the document name under the Document field of your input file.\n\nREMEMBER THAT SEARCH WORDS ARE CASE SENSITIVE.\n\nPlease, try again.",
-                        )
+                elif finaldata.empty:
+                    mb.showwarning(
+                        "Warning",
+                        "The Sunburst algorithm has produced an empty dataframe.\n\nPlease, make sure that the 'Filename label/part' you have entered are in the document name under the Document field of your input file.\n\nREMEMBER THAT SEARCH WORDS ARE CASE SENSITIVE.\n\nPlease, try again.",
+                    )
                 # return Plotly.offline.plot(fig)
 
             else:
@@ -2337,18 +2332,17 @@ def TimeMapper(data, outputFilename, var, date_format_var, cumulative, monthly=N
         else:
             finalframe = _build_finalframe(data, var, "day", False)
             fig = _make_fig(finalframe, var, _fixed_categories)
+    elif monthly == True and yearly == True:
+        return "Choose one of the following: daily graph, monthly graph, yearly graph"
+    elif yearly == True:
+        finalframe = _build_finalframe(data, var, "year", True)
+        fig = _make_fig(finalframe, var, _fixed_categories)
+    elif monthly == True:
+        finalframe = _build_finalframe(data, var, "month", True)
+        fig = _make_fig(finalframe, var, _fixed_categories)
     else:
-        if monthly == True and yearly == True:
-            return "Choose one of the following: daily graph, monthly graph, yearly graph"
-        elif yearly == True:
-            finalframe = _build_finalframe(data, var, "year", True)
-            fig = _make_fig(finalframe, var, _fixed_categories)
-        elif monthly == True:
-            finalframe = _build_finalframe(data, var, "month", True)
-            fig = _make_fig(finalframe, var, _fixed_categories)
-        else:
-            finalframe = _build_finalframe(data, var, "day", True)
-            fig = _make_fig(finalframe, var, _fixed_categories)
+        finalframe = _build_finalframe(data, var, "day", True)
+        fig = _make_fig(finalframe, var, _fixed_categories)
     fig = fig.update_geos(projection_type="equirectangular", visible=True, resolution=110)
     fig.write_html(outputFilename)
 
@@ -2415,9 +2409,9 @@ def visualize_colormap_data(
     color="YlOrBr",
     outputname="output_figure",
 ):
-    import seaborn as sns
     import matplotlib.pyplot as plt
     import numpy as np
+    import seaborn as sns
 
     numeric_data = data.select_dtypes(include=[np.number])
     sorted_columns = numeric_data.columns.sort_values()
@@ -2636,7 +2630,6 @@ def special_sql_commands(s, dataFrame):
     return WHERE, GROUPBY
 
 
-import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
 
 
@@ -3015,7 +3008,7 @@ def network_graph_visjs(inputFilename, outputDir, col1, col2, col3, date_col=Non
                 "font": {"size": fsz},
                 "shape": "dot",
                 "size": sz,
-                "title": "{} (freq: {})".format(n, freq),
+                "title": f"{n} (freq: {freq})",
                 "role": rk,
             }
         )
@@ -3055,10 +3048,10 @@ def network_graph_visjs(inputFilename, outputDir, col1, col2, col3, date_col=Non
         else:
             ec = "#aaaaaa"
         label_str = ", ".join(sorted(labels_for_edge)) if labels_for_edge else ""
-        title_parts = ["{} → {}".format(s, t)]
+        title_parts = [f"{s} → {t}"]
         if label_str:
-            title_parts.append("via: {}".format(label_str))
-        title_parts.append("count: {}".format(w))
+            title_parts.append(f"via: {label_str}")
+        title_parts.append(f"count: {w}")
         e_entry = {
             "from": node_id_map[s],
             "to": node_id_map[t],
@@ -3109,7 +3102,7 @@ def network_graph_visjs(inputFilename, outputDir, col1, col2, col3, date_col=Non
     for _i, _rc in enumerate(role_labels):
         if _i > 0:
             _th.append("<th></th>")
-        _th.append("<th>{}</th>".format(_rc))
+        _th.append(f"<th>{_rc}</th>")
     _th.append("<th>Count</th>")
     _table_header_html = "".join(_th)
 
@@ -3118,8 +3111,8 @@ def network_graph_visjs(inputFilename, outputDir, col1, col2, col3, date_col=Non
         _css = _role_css.get(_rc, "")
         if _i > 0:
             _td.append("'<td>&rarr;</td>'")
-        _td.append("'<td class=\"{}\">' + t[{}] + '</td>'".format(_css, _i))
-    _td.append("'<td>' + t[{}] + '</td>'".format(len(svo_cols)))
+        _td.append(f"'<td class=\"{_css}\">' + t[{_i}] + '</td>'")
+    _td.append(f"'<td>' + t[{len(svo_cols)}] + '</td>'")
     _table_row_js = " + ".join(_td)
 
     _info_click = " &rarr; ".join(role_keys)
@@ -3127,13 +3120,13 @@ def network_graph_visjs(inputFilename, outputDir, col1, col2, col3, date_col=Non
 
     legend_parts = []
     for rk, rl in zip(role_keys, role_labels):
-        legend_parts.append('<span class="leg" style="background:{}"></span>{}'.format(palette[rk], rl))
+        legend_parts.append(f'<span class="leg" style="background:{palette[rk]}"></span>{rl}')
     if all_verbs:
         legend_parts.append("&nbsp;&nbsp;|&nbsp;&nbsp;<b>Edges:</b>")
         for v in all_verbs[:12]:
-            legend_parts.append('<span class="leg-e" style="background:{}"></span>{}'.format(verb_color_map[v], v))
+            legend_parts.append(f'<span class="leg-e" style="background:{verb_color_map[v]}"></span>{v}')
         if len(all_verbs) > 12:
-            legend_parts.append("… +{} more".format(len(all_verbs) - 12))
+            legend_parts.append(f"… +{len(all_verbs) - 12} more")
     legend_html = "  ".join(legend_parts)
 
     html = """<!DOCTYPE html>
@@ -3364,7 +3357,7 @@ network.on("click", function(params) {{
 
     base = _safe_fn(os.path.splitext(os.path.basename(inputFilename))[0])
     output_files = []
-    network_file = os.path.join(outputDir, "{}_network.html".format(base))
+    network_file = os.path.join(outputDir, f"{base}_network.html")
     with open(network_file, "w", encoding="utf-8") as fh:
         fh.write(html)
     output_files.append(network_file)
@@ -3410,11 +3403,11 @@ network.on("click", function(params) {{
                 str(node_id_map[s]),
                 str(node_id_map[t]),
                 weight=str(w),
-                label="{} → {}".format(s, t),
+                label=f"{s} → {t}",
                 spells=espells,
             )
 
-        gexf_file = os.path.join(outputDir, "{}_network.gexf".format(base))
+        gexf_file = os.path.join(outputDir, f"{base}_network.gexf")
         with open(gexf_file, "wb") as gf:
             gexf.write(gf, print_stat=False)
         output_files.append(gexf_file)
@@ -3556,7 +3549,7 @@ def hierarchical_tree(inputFilename, outputDir, parent_col, child_col, label_col
     if all_groups:
         parts = []
         for g in all_groups:
-            parts.append('<span class="leg" style="background:{}"></span>{}'.format(group_color[g], g))
+            parts.append(f'<span class="leg" style="background:{group_color[g]}"></span>{g}')
         legend_html = "  ".join(parts)
 
     html = """<!DOCTYPE html>
@@ -3816,7 +3809,7 @@ update(root);
         return _re.sub(r'[<>:"/\\|?*]', "_", s).replace(" ", "_")
 
     base = _safe_fn(os.path.splitext(os.path.basename(inputFilename))[0])
-    output_file = os.path.join(outputDir, "{}_tree.html".format(base))
+    output_file = os.path.join(outputDir, f"{base}_tree.html")
     with open(output_file, "w", encoding="utf-8") as fh:
         fh.write(html)
     print(f"  Hierarchical tree saved: {output_file}")
@@ -3899,8 +3892,9 @@ def animated_migration_map(
 
     if not has_coords:
         try:
-            from geopy.geocoders import Nominatim
             import time as _time
+
+            from geopy.geocoders import Nominatim
         except ImportError:
             print("  WARNING: geopy not available for geocoding. Provide lat/lon columns or install geopy.")
             return []
@@ -3989,7 +3983,7 @@ def animated_migration_map(
 
     legend_parts = []
     for e in all_entities:
-        legend_parts.append('<span class="leg-dot" style="background:{}"></span>{}'.format(entity_color[e], e))
+        legend_parts.append(f'<span class="leg-dot" style="background:{entity_color[e]}"></span>{e}')
     legend_html = "  ".join(legend_parts)
 
     html = """<!DOCTYPE html>
@@ -4207,8 +4201,8 @@ showStep(0);
     if all_docs:
         doc_options = '<option value="">All documents</option>'
         for d in all_docs:
-            doc_options += '<option value="{0}">{0}</option>'.format(d)
-        doc_filter_html = '<div id="filter-bar">Document: <select id="doc-filter">{}</select></div>'.format(doc_options)
+            doc_options += f'<option value="{d}">{d}</option>'
+        doc_filter_html = f'<div id="filter-bar">Document: <select id="doc-filter">{doc_options}</select></div>'
     else:
         doc_filter_html = ""
 
@@ -4231,7 +4225,7 @@ showStep(0);
         return _re.sub(r'[<>:"/\\|?*]', "_", s).replace(" ", "_")
 
     base = _safe_fn(os.path.splitext(os.path.basename(inputFilename))[0])
-    output_file = os.path.join(outputDir, "{}_migration_map.html".format(base))
+    output_file = os.path.join(outputDir, f"{base}_migration_map.html")
     with open(output_file, "w", encoding="utf-8") as fh:
         fh.write(html)
     print(f"  Migration map saved: {output_file}")
@@ -4259,9 +4253,10 @@ def proportional_circle_map(inputFilename, outputDir, location_col, Google_API="
     str or ''   Path to output HTML file, or empty string on failure.
     """
     try:
+        import time as _time
+
         import folium
         from geopy.geocoders import Nominatim
-        import time as _time
     except ImportError as e:
         print(f"  Note: folium/geopy not available for map generation: {e}")
         return ""
@@ -4369,8 +4364,8 @@ def proportional_circle_map(inputFilename, outputDir, location_col, Google_API="
             fill=True,
             fill_color="#3388ff",
             fill_opacity=0.6,
-            popup="{}: {}".format(loc_name, count),
-            tooltip="{} ({})".format(loc_name, count),
+            popup=f"{loc_name}: {count}",
+            tooltip=f"{loc_name} ({count})",
         ).add_to(m)
 
     import re as _re
@@ -4380,7 +4375,7 @@ def proportional_circle_map(inputFilename, outputDir, location_col, Google_API="
 
     base = _safe_fn(os.path.splitext(os.path.basename(inputFilename))[0])
     safe_col = _safe_fn(location_col)
-    map_file = os.path.join(outputDir, "{}_{}_map.html".format(base, safe_col))
+    map_file = os.path.join(outputDir, f"{base}_{safe_col}_map.html")
     m.save(map_file)
     print(f"  Proportional circle map: {len(geo_rows)} locations geocoded for {location_col}")
     return map_file
@@ -4428,7 +4423,7 @@ def stacked_bar_from_csv(inputFilename, outputDir, group_col, segment_col, top_n
     safe_g = _safe_fn(group_col)
     safe_s = _safe_fn(segment_col)
     mode = "grouped" if grouped else "stacked"
-    out_base = os.path.join(outputDir, "{}_{}_{}_{}".format(base, mode, safe_g, safe_s))
+    out_base = os.path.join(outputDir, f"{base}_{mode}_{safe_g}_{safe_s}")
     chart_title = "{} bar: {} by {}".format("Grouped" if grouped else "Stacked", group_col, segment_col)
     visualize_stacked_bar(
         ct, top_n=top_n, x_label=group_col, y_label="Count", title=chart_title, outputname=out_base, grouped=grouped
@@ -4651,11 +4646,11 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
             freq_df.columns = [col, "Frequency"]
             safe_col = _safe_filename(col)
             try:
-                fig = _px.bar(freq_df, x=col, y="Frequency", title="Top 30 Frequency: {}".format(col))
+                fig = _px.bar(freq_df, x=col, y="Frequency", title=f"Top 30 Frequency: {col}")
                 # Force categorical x-axis so Plotly doesn't auto-detect
                 # city names or other text as dates
                 fig.update_xaxes(type="category")
-                bar_file = os.path.join(outputDir, "SQL_{}_bar.html".format(safe_col))
+                bar_file = os.path.join(outputDir, f"SQL_{safe_col}_bar.html")
                 fig.write_html(bar_file)
                 filesToOpen.append(bar_file)
             except Exception as e:
@@ -4675,7 +4670,7 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
         if not sankey_df.empty and len(sankey_df) > 0:
             try:
                 three_way = len(svo_cols) >= 3
-                sankey_out = os.path.join(outputDir, "{}_sankey.html".format(base_name))
+                sankey_out = os.path.join(outputDir, f"{base_name}_sankey.html")
                 print(f"  Sankey: using columns {svo_cols}, {len(sankey_df)} rows")
                 Sankey(
                     data=sankey_df,
@@ -4721,7 +4716,7 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
                         maxdepth=-1,
                     )
                     fig.update_traces(maxdepth=-1)
-                    sunburst_file = os.path.join(outputDir, "{}_sunburst.html".format(base_name))
+                    sunburst_file = os.path.join(outputDir, f"{base_name}_sunburst.html")
                     fig.write_html(sunburst_file)
                     filesToOpen.append(sunburst_file)
                     print(f"  Sunburst saved: {sunburst_file}")
@@ -4741,7 +4736,7 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
                         maxdepth=-1,
                     )
                     fig.update_traces(maxdepth=-1)
-                    treemap_file = os.path.join(outputDir, "{}_treemap.html".format(base_name))
+                    treemap_file = os.path.join(outputDir, f"{base_name}_treemap.html")
                     fig.write_html(treemap_file)
                     filesToOpen.append(treemap_file)
                     print(f"  Treemap saved: {treemap_file}")
@@ -4886,7 +4881,7 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
                                 "font": {"size": fsz},
                                 "shape": "dot",
                                 "size": sz,
-                                "title": "{} (freq: {})".format(n, freq),
+                                "title": f"{n} (freq: {freq})",
                                 "role": rk,
                             }
                         )
@@ -4896,7 +4891,7 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
                             "from": node_id_map[s],
                             "to": node_id_map[t],
                             "value": w,
-                            "title": "{} → {} ({})".format(s, t, w),
+                            "title": f"{s} → {t} ({w})",
                             "color": {"color": "#aaaaaa", "highlight": "#333333"},
                         }
                         if _has_dates and (s, t) in edge_dates:
@@ -5154,7 +5149,7 @@ network.on("click", function(params) {{
 
                     legend_parts = []
                     for rk, rl in zip(["S", "V", "O"], role_labels):
-                        legend_parts.append('<span class="leg" style="background:{}"></span>{}'.format(palette[rk], rl))
+                        legend_parts.append(f'<span class="leg" style="background:{palette[rk]}"></span>{rl}')
                     legend_html = "  ".join(legend_parts)
 
                     # ── Build dynamic JS template fragments for the info panel ──
@@ -5164,7 +5159,7 @@ network.on("click", function(params) {{
                     for _i, _rc in enumerate(svo_cols):
                         if _i > 0:
                             _th.append("<th></th>")
-                        _th.append("<th>{}</th>".format(_rc))
+                        _th.append(f"<th>{_rc}</th>")
                     _th.append("<th>Count</th>")
                     _table_header_html = "".join(_th)
                     # Row expression (JS): '<td class="s">' + t[0] + '</td><td>→</td>...'
@@ -5173,8 +5168,8 @@ network.on("click", function(params) {{
                         _css = _role_css.get(_rc, "")
                         if _i > 0:
                             _td.append("'<td>&rarr;</td>'")
-                        _td.append("'<td class=\"{}\">' + t[{}] + '</td>'".format(_css, _i))
-                    _td.append("'<td>' + t[{}] + '</td>'".format(len(svo_cols)))
+                        _td.append(f"'<td class=\"{_css}\">' + t[{_i}] + '</td>'")
+                    _td.append(f"'<td>' + t[{len(svo_cols)}] + '</td>'")
                     _table_row_js = " + ".join(_td)
                     # Info-panel messages
                     _info_click = " &rarr; ".join(_role_initials.get(c, c[0]) for c in svo_cols)
@@ -5198,7 +5193,7 @@ network.on("click", function(params) {{
                         slider_display="block" if _all_dates_sorted else "none",
                     )
 
-                    network_file = os.path.join(outputDir, "{}_network.html".format(base_name))
+                    network_file = os.path.join(outputDir, f"{base_name}_network.html")
                     with open(network_file, "w", encoding="utf-8") as fh:
                         fh.write(html)
                     filesToOpen.append(network_file)
@@ -5221,10 +5216,8 @@ network.on("click", function(params) {{
                         _gexf_mode = "dynamic" if _gexf_dynamic else "static"
                         _gexf_tf = "date" if _gexf_dynamic else ""
 
-                        gexf = _gephi.Gexf("NLP Suite", "{} Network".format(_svo_label))
-                        graph = gexf.addGraph(
-                            "directed", _gexf_mode, "{} Network".format(_svo_label), timeformat=_gexf_tf
-                        )
+                        gexf = _gephi.Gexf("NLP Suite", f"{_svo_label} Network")
+                        graph = gexf.addGraph("directed", _gexf_mode, f"{_svo_label} Network", timeformat=_gexf_tf)
                         # Node attribute: role
                         _default_role = role_keys[-1] if role_keys else "S"
                         role_attr_id = graph.addNodeAttribute("Role", _default_role, "string", "static")
@@ -5261,11 +5254,11 @@ network.on("click", function(params) {{
                                 str(node_id_map[s]),
                                 str(node_id_map[t]),
                                 weight=str(w),
-                                label="{} → {}".format(s, t),
+                                label=f"{s} → {t}",
                                 spells=espells,
                             )
 
-                        gexf_file = os.path.join(outputDir, "{}_network.gexf".format(base_name))
+                        gexf_file = os.path.join(outputDir, f"{base_name}_network.gexf")
                         with open(gexf_file, "wb") as gf:
                             gexf.write(gf, print_stat=False)
                         filesToOpen.append(gexf_file)
@@ -5295,10 +5288,10 @@ network.on("click", function(params) {{
                         ctab,
                         text_auto=True,
                         aspect="auto",
-                        title="Heatmap: {} × {}".format(svo_cols[0], svo_cols[1]),
+                        title=f"Heatmap: {svo_cols[0]} × {svo_cols[1]}",
                         labels=dict(x=svo_cols[1], y=svo_cols[0], color="Count"),
                     )
-                    heatmap_file = os.path.join(outputDir, "{}_heatmap.html".format(base_name))
+                    heatmap_file = os.path.join(outputDir, f"{base_name}_heatmap.html")
                     fig.write_html(heatmap_file)
                     filesToOpen.append(heatmap_file)
         except Exception as e:
@@ -5310,9 +5303,10 @@ network.on("click", function(params) {{
     svo_wc_done = False
     if len(svo_cols) >= 2:
         try:
-            from wordcloud import WordCloud as _WC
             from collections import Counter as _Counter
+
             import matplotlib
+            from wordcloud import WordCloud as _WC
 
             matplotlib.use("Agg")
             import matplotlib.pyplot as _plt
@@ -5407,7 +5401,7 @@ network.on("click", function(params) {{
                 _wc_title = "{} Word Cloud:  {}".format(_svo_label, "  —  ".join(_wc_legend_parts))
                 _plt.title(_wc_title, fontsize=12, fontweight="bold", pad=20)
                 _plt.axis("off")
-                wc_file = os.path.join(outputDir, "SQL_{}_wordcloud.png".format(_svo_label))
+                wc_file = os.path.join(outputDir, f"SQL_{_svo_label}_wordcloud.png")
                 wc.to_file(wc_file)
                 filesToOpen.append(wc_file)
                 _plt.close()
@@ -5424,8 +5418,8 @@ network.on("click", function(params) {{
     # Fall back to plain word clouds if SVO word cloud was not produced
     if not svo_wc_done:
         try:
-            from wordcloud import WordCloud as _WC2
             import matplotlib
+            from wordcloud import WordCloud as _WC2
 
             matplotlib.use("Agg")
             import matplotlib.pyplot as _plt2
@@ -5458,7 +5452,7 @@ network.on("click", function(params) {{
                         regexp=r"[\w][\w ]+",
                     ).generate_from_frequencies(phrase_freq)
                     safe_col = _safe_filename(col)
-                    wc_file = os.path.join(outputDir, "SQL_{}_wordcloud.png".format(safe_col))
+                    wc_file = os.path.join(outputDir, f"SQL_{safe_col}_wordcloud.png")
                     wc.to_file(wc_file)
                     filesToOpen.append(wc_file)
                 except Exception as e:
@@ -5482,9 +5476,10 @@ network.on("click", function(params) {{
     location_cols = [c for c in value_cols if any(kw in c.lower() for kw in _LOCATION_KEYWORDS)]
     if location_cols:
         try:
+            import time as _time
+
             import folium
             from geopy.geocoders import Nominatim
-            import time as _time
 
             geolocator = Nominatim(user_agent="NLP_Suite_cross_complex")
             _geo_cache = {}
@@ -5530,12 +5525,12 @@ network.on("click", function(params) {{
                         fill=True,
                         fill_color="#3388ff",
                         fill_opacity=0.6,
-                        popup="{}: {}".format(loc_name, count),
-                        tooltip="{} ({})".format(loc_name, count),
+                        popup=f"{loc_name}: {count}",
+                        tooltip=f"{loc_name} ({count})",
                     ).add_to(m)
 
                 safe_col = _safe_filename(loc_col)
-                map_file = os.path.join(outputDir, "{}_{}_map.html".format(base_name, safe_col))
+                map_file = os.path.join(outputDir, f"{base_name}_{safe_col}_map.html")
                 m.save(map_file)
                 filesToOpen.append(map_file)
                 print(f"  Proportional circle map: {len(geo_rows)} locations geocoded for {loc_col}")
@@ -5561,8 +5556,8 @@ def MALLET_heatmap(
     Returns:
         heatmap (object): Seaborn heatmap plot object.
     """
-    import seaborn as sns
     import matplotlib.pyplot as plt
+    import seaborn as sns
 
     try:
         topics = pd.read_csv(topics_file, encoding="utf-8", on_bad_lines="skip")

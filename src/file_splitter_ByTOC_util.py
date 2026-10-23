@@ -7,6 +7,7 @@ The script takes an input txt file that contains section headings (e.g., chapter
 """
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -18,12 +19,10 @@ if (
 ):
     sys.exit(0)
 
-import io
+import ntpath
 import os
 import re
 import tkinter.messagebox as mb
-import ntpath
-import shutil
 
 import IO_csv_util
 import IO_files_util
@@ -61,14 +60,14 @@ def splitDocument_byTOC(window, inputDocumentTobeSplit, inputTOCfile, outputDir,
     headingsNotFoundInBook = []
 
     # Read TOC file and fill headings list
-    with io.open(inputTOCfile, "r", encoding="utf-8", errors="ignore") as file:
+    with open(inputTOCfile, encoding="utf-8", errors="ignore") as file:
         # loop through each line of the TOC file, expecting one TOC entry per line
         for heading in file:
             # Remove spaces at the beginning and at the end of the string
             headings.append(heading.strip())
 
     # Read text file
-    with io.open(inputDocumentTobeSplit, "r", encoding="utf-8", errors="ignore") as f_toc:
+    with open(inputDocumentTobeSplit, encoding="utf-8", errors="ignore") as f_toc:
         fileContent = f_toc.read()
 
     # Extract text content for each heading
@@ -83,7 +82,7 @@ def splitDocument_byTOC(window, inputDocumentTobeSplit, inputTOCfile, outputDir,
         if sectionContent:
             # split file saved in the document_section folder with filename = document name + section name
             sectionFileName = os.path.join(newoutputDir, inputDocNoPathNoExtension + "_" + headings[i] + ".txt")
-            newFile = io.open(sectionFileName, "w+", encoding="utf-8", errors="ignore")
+            newFile = open(sectionFileName, "w+", encoding="utf-8", errors="ignore")
             newFile.write(sectionContent.strip())
         else:
             print("   Heading not found in main document")

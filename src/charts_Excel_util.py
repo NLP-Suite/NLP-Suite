@@ -3,6 +3,7 @@
 # Edited by Roberto Franzosi, Tony May 2022
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -15,19 +16,18 @@ if (
     sys.exit(0)
 
 
+import os
 import tkinter.messagebox as mb
+
 import openpyxl
 from openpyxl import Workbook
-
-import reminders_util
-
 import pandas as pd
-import os
 
-import IO_csv_util
 import GUI_IO_util
+import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
+import reminders_util
 
 
 # ensure filename extension is correct for hover_over effects (xlxm) and no effects (xlsx)
@@ -38,9 +38,8 @@ def checkExcel_extension(output_file_name, hover_info_column_list):
         if len(hover_info_column_list) > 0:  # there are hover over effects; must be an xlsm file
             if file_extension != "xlsm":
                 output_file_name = filename + ".xlsm"
-        else:
-            if file_extension != "xlsx":
-                output_file_name = filename + ".xlsx"
+        elif file_extension != "xlsx":
+            output_file_name = filename + ".xlsx"
     return str(output_file_name)
 
 
@@ -142,14 +141,13 @@ def create_excel_chart(
     if "pie" in str(chart_type_list).lower():
         from openpyxl.chart import (
             PieChart,
-            ProjectedPieChart,
             Reference,
         )
     if "bar" in str(chart_type_list).lower():
         from openpyxl.chart import (
             BarChart,
-            Series,
             Reference,
+            Series,
         )
     if "line" in str(chart_type_list).lower():
         from openpyxl.chart import (
@@ -159,8 +157,8 @@ def create_excel_chart(
         )
     if "scatter" in str(chart_type_list).lower():
         from openpyxl.chart import (
-            ScatterChart,
             Reference,
+            ScatterChart,
             Series,
         )
     if "radar" in str(chart_type_list).lower():
@@ -171,8 +169,8 @@ def create_excel_chart(
     if "bubble" in str(chart_type_list).lower():
         from openpyxl.chart import (
             BubbleChart,
-            Series,
             Reference,
+            Series,
         )
     """
     from the User Manual
@@ -679,7 +677,7 @@ def create_excel_chart(
     # errorFound=False
     try:
         wb.save(chart_outputFilename)
-    except IOError as e:
+    except OSError as e:
         # mb.showwarning(title='Output file error', message="Could not write the file " + outputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
         mb.showwarning(
             title="Output file error",
@@ -689,7 +687,7 @@ def create_excel_chart(
             + str(e)
             + "\n\nCLOSE THE FILE TO EXIT LOOP...",
         )
-        if not "Permission" in str(e):
+        if "Permission" not in str(e):
             chart_outputFilename = ""
             return
 

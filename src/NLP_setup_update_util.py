@@ -3,11 +3,11 @@ Author: David Dai December 22nd, 2021
 Edited Roberto Franzosi February/September 2022
 """
 
+import atexit  # a Python module
 import sys
+
 import GUI_util
 import IO_libraries_util
-
-import atexit  # a Python module
 
 # from NLP_setup_update_util import update_self
 try:
@@ -16,16 +16,13 @@ try:
     _has_pygit2 = True
 except ImportError:
     _has_pygit2 = False
-import sys
 import os
-import stat
-import tkinter.messagebox as mb
 import shutil
+import stat
 import subprocess
-import tkinter as tk
+import tkinter.messagebox as mb
 
 import IO_user_interface_util
-import config_util
 
 window = GUI_util.window
 

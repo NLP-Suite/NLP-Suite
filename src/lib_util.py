@@ -6,7 +6,6 @@ author: Roberto Franzosi, May 2019
 import sys
 
 import GUI_IO_util
-import IO_files_util
 import GUI_util
 import IO_libraries_util
 
@@ -14,10 +13,9 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window, "lib util", ["
     sys.exit(0)
 
 import os
+import subprocess
 import tkinter as tk
 import tkinter.messagebox as mb
-import subprocess
-from subprocess import call
 
 
 def check_lib_stopwords():

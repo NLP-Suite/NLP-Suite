@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -14,9 +15,9 @@ import os
 import tkinter as tk
 import tkinter.messagebox as mb
 
-import reminders_util
 import GUI_IO_util
 import IO_files_util
+import reminders_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -55,7 +56,7 @@ def run():
 
     filesToOpen = []
 
-    if not "Do not" in vis_menu_var and word_distance_file_var.get() == "":
+    if "Do not" not in vis_menu_var and word_distance_file_var.get() == "":
         result = mb.askyesno(
             "Visualization via t-SNE",
             'You have selected to run Word2Vec with the t-SNE visualization option ("Plot word vectors"). Depending upon the total number of words in your corpus, this option is computationally VERY demanding (it can take many hours on a standard laptop, particularly with BERT). Compressing an n-dimensional space into a a 2D or 3D graph can also be somewhat misleading (cosine similarities provide a better alternative).\n\nAre you sure you want to continue?',
@@ -269,7 +270,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(
 
 
 def activate_plot_options(*args):
-    if not "Do not" in vis_menu_var.get():
+    if "Do not" not in vis_menu_var.get():
         dim_menu_var.set("2D")
         dim_menu.configure(state="normal")
     else:
@@ -544,7 +545,6 @@ def activate_all_options():
         min_count_entry.configure(state="normal")
 
 
-#
 videos_lookup = {"Word2Vec": "https://www.youtube.com/watch?v=Yjj50_l9sd8"}
 videos_options = "Word2Vec"
 

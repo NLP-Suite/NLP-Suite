@@ -1,15 +1,12 @@
 # Written by Jack Hester and Roberto Franzosi
 
-import sys
 import os
-import tkinter as tk
-from tkinter import filedialog
-from subprocess import call
 import subprocess
+from subprocess import call
+import sys
 import tkinter.messagebox as mb
 
 import GUI_IO_util
-import IO_files_util
 
 
 def get_TIPS(selected_TIPS, lookup, menu_lb, dropdown_field):

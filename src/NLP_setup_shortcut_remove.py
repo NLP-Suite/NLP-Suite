@@ -1,6 +1,7 @@
-from NLP_setup_shortcut_add import remove, get_env, set_env
 import os
 from pathlib import Path
+
+from NLP_setup_shortcut_add import get_env, remove, set_env
 
 paths = get_env("Path").split(";")
 remove(paths, "")

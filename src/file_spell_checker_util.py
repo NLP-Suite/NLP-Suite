@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -34,44 +35,44 @@ if not IO_libraries_util.install_all_Python_packages(
 ):
     sys.exit(0)
 
+import collections
+import csv
+import math
 import os
 import re
+import subprocess
+import time
 from tkinter import filedialog
+import tkinter.messagebox as mb
+
+from autocorrect import Speller
+from fuzzywuzzy import process
+from langdetect import detect_langs
+from langid.langid import LanguageIdentifier, model
 
 # from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
 # import nltk
 import pandas
 import pandas as pd
-import config_aware_parser_util  # picks the parser (CoreNLP / Stanza / spaCy) selected in the NLP Suite setup
-import collections
-import tkinter.messagebox as mb
-from autocorrect import Speller
-from spellchecker import SpellChecker
-from textblob import Word
 from pandas import DataFrame
-import math
-from langdetect import DetectorFactory, detect, detect_langs
 import spacy
-from spacy_langdetect import LanguageDetector
 from spacy.language import Language
-import langid
-from langid.langid import LanguageIdentifier, model
-from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
-import csv
-import subprocess
-import time
-from fuzzywuzzy import process
-import string_similarity_util
+from spacy_langdetect import LanguageDetector
+from spellchecker import SpellChecker
 import stanza
+from textblob import Word
 
-import file_cleaner_util
 import charts_util
+import config_aware_parser_util  # picks the parser (CoreNLP / Stanza / spaCy) selected in the NLP Suite setup
+import constants_util
+import file_cleaner_util
 import IO_csv_util
 import IO_files_util
-import IO_user_interface_util
 from IO_files_util import make_directory
+import IO_user_interface_util
 import reminders_util
-import constants_util
+from Stanza_functions_util import sentence_split_stanza_text, stanzaPipeLine
+import string_similarity_util
 
 
 def lemmatizing(word):  # edited by Claude Hu 08/2020
@@ -83,7 +84,7 @@ def lemmatizing(word):  # edited by Claude Hu 08/2020
         # that lemmatization is returned as result
         # lemmatizer = WordNetLemmatizer()
         # lemma = lemmatizer.lemmatize(word, p)
-        from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza_word
+        from Stanza_functions_util import lemmatize_stanza_word
 
         lemma = lemmatize_stanza_word(stanzaPipeLine(word))
         if lemma != word:
@@ -108,7 +109,7 @@ def nltk_unusual_words(
 
     nltk.download("words")
 
-    from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza_doc, lemmatize_stanza_word
+    from Stanza_functions_util import lemmatize_stanza_doc
 
     filesToOpen = []
     unusual = []
@@ -170,7 +171,7 @@ def nltk_unusual_words(
         NLTK_english_vocab_lemmatized = set(w.lower() for w in nltk.corpus.words.words())
     else:
         filesToOpen.append(NLTK_corpus_lemmatized)
-        with open(NLTK_corpus_lemmatized, "r", encoding="utf-8", errors="ignore") as f:
+        with open(NLTK_corpus_lemmatized, encoding="utf-8", errors="ignore") as f:
             NLTK_english_vocab = f.read()
         _vocab = NLTK_english_vocab.split("\n")
         if _vocab:
@@ -185,7 +186,7 @@ def nltk_unusual_words(
         documentID = documentID + 1
         head, tail = os.path.split(file)
         print("Processing file " + str(documentID) + "/" + str(nFile) + " " + tail)
-        with open(file, "r", encoding="utf-8", errors="ignore") as f:
+        with open(file, encoding="utf-8", errors="ignore") as f:
             text = f.read()
         # text = text.lower()
         # text_list = text.split(" ")
@@ -417,10 +418,9 @@ def check_edit_dist(input_word, checklist, similarity_value):
                 exist_typo = True
                 return exist_typo, word[0], word[1]
                 # word[0] is the token, word[1] is the frequency of the token in the entire corpus
-        else:
-            if 0 < dist <= 1:
-                exist_typo = True
-                return exist_typo, word[0], word[1]
+        elif 0 < dist <= 1:
+            exist_typo = True
+            return exist_typo, word[0], word[1]
     return exist_typo, "", ""
 
 
@@ -606,11 +606,10 @@ def check_for_typo(
             return
     if by_all_tokens_var or inputCsvDictionaryFile != "":
         pass
+    elif NERs[0] == "*":
+        NERs = ["CITY", "LOCATION", "PERSON", "COUNTRY", "STATE_OR_PROVINCE", "ORGANIZATION"]
     else:
-        if NERs[0] == "*":
-            NERs = ["CITY", "LOCATION", "PERSON", "COUNTRY", "STATE_OR_PROVINCE", "ORGANIZATION"]
-        else:
-            pass
+        pass
     documents = []
     folderID = 0
     fileID = 0
@@ -716,10 +715,9 @@ def check_for_typo(
         print("Processing file " + str(fileID) + "/" + str(len(files)) + ": " + filename)
         # dir_path = os.path.join(folder, filename)
         dir_path = os.path.join(inputDir, filename)
-        with open(dir_path, "r", encoding="utf-8", errors="ignore") as src:
+        with open(dir_path, encoding="utf-8", errors="ignore") as src:
             text = src.read().replace("\n", " ")
             text = text.replace("%", "percent")
-        from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
 
         sentences = sentence_split_stanza_text(stanzaPipeLine(text))
         documents.append([sentences, filename, dir_path])
@@ -1196,7 +1194,7 @@ def spellchecking_autocorrect(text: str, inputFilename) -> (str, DataFrame):
     new_str_list = []
     speller = Speller()
     # for word in nltk.word_tokenize(text):
-    from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
+    from Stanza_functions_util import tokenize_stanza_text
 
     for word in tokenize_stanza_text(stanzaPipeLine(text)):
         if word.isalnum():
@@ -1260,7 +1258,7 @@ def spellchecking_pyspellchecker(text: str, inputFilename) -> (str, DataFrame):
         True,
     )
 
-    from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
+    from Stanza_functions_util import tokenize_stanza_text
 
     # :: pyspellchecker seems to remove punctuations.
     new_str_list = []
@@ -1304,7 +1302,7 @@ def spellchecking_text_blob(text: str, inputFilename) -> (str, DataFrame):
 
     treebank = nltk.tokenize.treebank.TreebankWordDetokenizer()
     # for word in nltk.word_tokenize(text):
-    from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
+    from Stanza_functions_util import tokenize_stanza_text
 
     for word in tokenize_stanza_text(stanzaPipeLine(text)):
         if word.isalnum():
@@ -1403,7 +1401,7 @@ def spellcheck(inputFilename, inputDir, checker_value_var, check_withinDir):
         fileID = fileID + 1
         # inputFilenames_path = os.path.join(folder, filename)
         # with open(inputFilenames_path, 'r', encoding='utf-8', errors='ignore') as opened_file:
-        with open(filename, "r", encoding="utf-8", errors="ignore") as opened_file:
+        with open(filename, encoding="utf-8", errors="ignore") as opened_file:
             print("  Processing file:", filename)
             originalText = opened_file.read()
             path_to_file = os.path.join(inputDir, filename)
@@ -1531,7 +1529,7 @@ def language_detection(
             fileID = fileID + 1
             head, tail = os.path.split(filename)
             print("Processing file " + str(fileID) + "/" + str(len(files)) + " " + tail)
-            with open(filename, "r", encoding="utf-8", errors="ignore") as f_lang:
+            with open(filename, encoding="utf-8", errors="ignore") as f_lang:
                 text = f_lang.read()
             if len(text) == 0:
                 print("  The file is empty. It will be discarded from processing.")

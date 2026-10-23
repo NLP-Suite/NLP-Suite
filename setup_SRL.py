@@ -16,9 +16,9 @@ After it finishes, tick the SRL checkbox in the SVO GUI.
 """
 
 import os
+from shutil import which
 import subprocess
 import urllib.request
-from shutil import which
 
 ENV_NAME = "nlp_srl"
 PY_VERSION = "3.8"

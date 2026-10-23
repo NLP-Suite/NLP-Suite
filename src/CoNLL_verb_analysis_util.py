@@ -6,9 +6,11 @@ modified by Siyan Pu November 2021
 """
 
 import sys
+
+import pandas as pd
+
 import GUI_util
 import IO_libraries_util
-import pandas as pd
 
 if (
     IO_libraries_util.install_all_Python_packages(
@@ -19,18 +21,15 @@ if (
     sys.exit(0)
 
 from collections import Counter
-from tkinter import filedialog
 import tkinter.messagebox as mb
-import tkinter as tk
 
-import CoNLL_util
-import IO_files_util
-import IO_csv_util
-import IO_user_interface_util
 import charts_util
-import statistics_csv_util
-import Stanford_CoreNLP_tags_util
+import CoNLL_util
+import IO_csv_util
+import IO_files_util
+import IO_user_interface_util
 import reminders_util
+import Stanford_CoreNLP_tags_util
 
 dict_POSTAG, dict_DEPREL = Stanford_CoreNLP_tags_util.dict_POSTAG, Stanford_CoreNLP_tags_util.dict_DEPREL
 
@@ -113,25 +112,24 @@ def verb_voice_compute_frequencies(list_all_tok):
             rootAuxiliary = False
             rootPassive = True
             aux_helper = tok
-        else:
-            if tok[3] == "VBN":
-                if rootPassive:
-                    num_passive += 1
-                    _auxp_VBN.append([aux_helper, tok])
-                    voiceType = "Passive"
-                elif rootAuxiliary:
-                    voiceType = "Active"
-                    num_active += 1
-                    _aux_VBN.append([aux_helper, tok])
-                else:
-                    num_active += 1
-                    _active_.append(tok)
-            else:
+        elif tok[3] == "VBN":
+            if rootPassive:
+                num_passive += 1
+                _auxp_VBN.append([aux_helper, tok])
+                voiceType = "Passive"
+            elif rootAuxiliary:
                 voiceType = "Active"
-                rootAuxiliary = False
-                rootPassive = False
+                num_active += 1
+                _aux_VBN.append([aux_helper, tok])
+            else:
                 num_active += 1
                 _active_.append(tok)
+        else:
+            voiceType = "Active"
+            rootAuxiliary = False
+            rootPassive = False
+            num_active += 1
+            _active_.append(tok)
 
     auxp_VBN_organize = []
     aux_VBN_organize = []

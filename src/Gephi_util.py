@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #
 #     Gexf library in python
 #     see gephi.org and gexf.net
@@ -13,21 +11,23 @@
 
 # from lib.gexf._gexf import Gexf, Spells, Node, Edge
 
-import datetime
 import csv
-import random
-import os
-from lxml import etree
+import datetime
 from datetime import date
-import tkinter.messagebox as mb
 import itertools
+import os
+import random
+import tkinter.messagebox as mb
 import traceback
+
+from lxml import etree
+
 import IO_libraries_util
 import IO_user_interface_util
 
 
 def msg_unexpected_tag(expected, got):
-    print("Error : incorrect xml. Expected tag {expected}, not {got}.".format(expected=expected, got=got))
+    print(f"Error : incorrect xml. Expected tag {expected}, not {got}.")
 
 
 def ns_clean(token):
@@ -392,11 +392,11 @@ class Attributes(dict):
                 attValueXML.set("value", att["value"])
                 if "start" in att.keys() and not att["start"] == "":
                     attValueXML.set(
-                        "start" if not "startopen" in att.keys() or not att["startopen"] else "startopen", att["start"]
+                        "start" if "startopen" not in att.keys() or not att["startopen"] else "startopen", att["start"]
                     )
                 if "end" in att.keys() and not att["end"] == "":
                     attValueXML.set(
-                        "end" if not "endopen" in att.keys() or not att["endopen"] else "endopen", att["end"]
+                        "end" if "endopen" not in att.keys() or not att["endopen"] else "endopen", att["end"]
                     )
             return attValuesXML
         else:
@@ -885,7 +885,7 @@ class GexfImport:
         return token[i + 1 :]
 
     def msg_unexpected_tag(self, expected, got):
-        print("Error : incorrect xml. Expected tag {expected}, not {got}.".format(expected=expected, got=got))
+        print(f"Error : incorrect xml. Expected tag {expected}, not {got}.")
 
     def extract_gexf_obj(self, meta_xml):
         for child in meta_xml:
@@ -1253,26 +1253,25 @@ def create_gexf(window, fileBase, OutputDir, inputFilename, col1, col2, col3, sp
                                 + ").",
                             )
                             return
-                else:
-                    if spellCol != "":
-                        date_str = row[spellCol]
-                        date_format = "%m-%d-%Y"
-                        # date_format = "%Y-%m-%d"  # Old code
-                        try:
-                            date_obj = datetime.datetime.strptime(date_str, date_format)
-                        except:
-                            if "/" in row[spellCol] and spellCol == "Date":
-                                mb.showwarning(
-                                    title="Warning",
-                                    message="Error in date value "
-                                    + row[spellCol]
-                                    + ".\n\nDate values should not be separated by / but by - (e.g., "
-                                    + row[spellCol]
-                                    + " should be "
-                                    + row[spellCol].replace("/", "-")
-                                    + ").",
-                                )
-                                return
+                elif spellCol != "":
+                    date_str = row[spellCol]
+                    date_format = "%m-%d-%Y"
+                    # date_format = "%Y-%m-%d"  # Old code
+                    try:
+                        date_obj = datetime.datetime.strptime(date_str, date_format)
+                    except:
+                        if "/" in row[spellCol] and spellCol == "Date":
+                            mb.showwarning(
+                                title="Warning",
+                                message="Error in date value "
+                                + row[spellCol]
+                                + ".\n\nDate values should not be separated by / but by - (e.g., "
+                                + row[spellCol]
+                                + " should be "
+                                + row[spellCol].replace("/", "-")
+                                + ").",
+                            )
+                            return
                 # days = int(float(date_obj))
                 # date(row[spellCol]).strftime(date_format)
                 if spellCol != "":  # this could be a Date field
@@ -1487,29 +1486,26 @@ def create_gexf(window, fileBase, OutputDir, inputFilename, col1, col2, col3, sp
                 else:
                     edge = Edge(graph, edge_id, row[col1], row[col3], label=row[col2])
                 graph.edges[edge_id] = edge
-            else:
-                if spellCol != "":
-                    if spellCol == "Date":
-                        import dateutil.parser
+            elif spellCol != "":
+                if spellCol == "Date":
+                    import dateutil.parser
 
-                        graph.edges[edge_id].spells.append(
-                            {
-                                "start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
-                                "end": dateutil.parser.parse(row[spellCol]).strftime(date_format),
-                            }
-                        )
+                    graph.edges[edge_id].spells.append(
+                        {
+                            "start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                            "end": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                        }
+                    )
 
-                    else:
-                        graph.edges[edge_id].spells.append(
-                            {
-                                "start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])))).strftime(
-                                    date_format
-                                ),
-                                "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1)).strftime(
-                                    date_format
-                                ),
-                            }
-                        )
+                else:
+                    graph.edges[edge_id].spells.append(
+                        {
+                            "start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])))).strftime(date_format),
+                            "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1)).strftime(
+                                date_format
+                            ),
+                        }
+                    )
     gexf.write(open(os.path.join(OutputDir, graph_name), "wb"))
 
     IO_user_interface_util.timed_alert(

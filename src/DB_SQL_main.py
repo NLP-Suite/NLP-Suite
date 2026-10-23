@@ -2,8 +2,9 @@
 # edited Austin Cai, Fall 2021
 
 import sys
-import IO_libraries_util
+
 import GUI_util
+import IO_libraries_util
 
 if (
     IO_libraries_util.install_all_Python_packages(
@@ -14,20 +15,20 @@ if (
     sys.exit(0)
 
 import os
-import tkinter as tk
-import tkinter.ttk as ttk
-import tkinter.messagebox as mb
-import sqlite3, pandas as pd
-from subprocess import call
-
+import sqlite3
 import subprocess
+import tkinter as tk
+from tkinter import ttk
+import tkinter.messagebox as mb
 
+import pandas as pd
+
+import DB_PCACE_data_analysis_util as DB_PCACE_data_analyzer_util
+import GUI_IO_util
 import IO_csv_util
 import IO_files_util
-import GUI_IO_util
 import IO_user_interface_util
 import TIPS_util
-import DB_PCACE_data_analysis_util as DB_PCACE_data_analyzer_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -203,7 +204,7 @@ def run():
             if len(parts) >= 2:
                 src_part = parts[0].strip()
                 tgt_part = parts[1].strip().replace(", ", "_").replace(" ", "_")
-                csv_name = "SQL_{}_{}.csv".format(src_part, tgt_part)
+                csv_name = f"SQL_{src_part}_{tgt_part}.csv"
             else:
                 csv_name = "sql_result.csv"
         else:
@@ -341,10 +342,10 @@ def _check_sqlite_version(in_dir):
     version_file = os.path.join(in_dir, "_sqlite_version.txt")
     if os.path.exists(version_file):
         try:
-            with open(version_file, "r") as f:
+            with open(version_file) as f:
                 stored = int(f.read().strip())
             return stored == _SQLITE_VERSION
-        except (ValueError, IOError):
+        except (OSError, ValueError):
             pass
     return False
 
@@ -1181,28 +1182,28 @@ def _update_extra_targets_label(*args):
     obj_num = 1
     # Saved pairs
     for s, ssx, t, tsx in _saved_pairs:
-        parts.append("{}:{}".format(obj_num, s))
+        parts.append(f"{obj_num}:{s}")
         obj_num += 1
         parts.append("{}:{}".format(obj_num, ssx or "*"))
         obj_num += 1
-        parts.append("{}:{}".format(obj_num, t))
+        parts.append(f"{obj_num}:{t}")
         obj_num += 1
         parts.append("{}:{}".format(obj_num, tsx or "*"))
         obj_num += 1
     # Current (unsaved) selection
     src = source_complex_var.get()
     if src:
-        parts.append("{}:{}".format(obj_num, src))
+        parts.append(f"{obj_num}:{src}")
         obj_num += 1
         src_sx = source_simplex_var.get() or "*"
-        parts.append("{}:{}".format(obj_num, src_sx))
+        parts.append(f"{obj_num}:{src_sx}")
         obj_num += 1
     tgt = target_complex_var.get()
     if tgt:
-        parts.append("{}:{}".format(obj_num, tgt))
+        parts.append(f"{obj_num}:{tgt}")
         obj_num += 1
         tgt_sx = target_simplex_var.get() or "*"
-        parts.append("{}:{}".format(obj_num, tgt_sx))
+        parts.append(f"{obj_num}:{tgt_sx}")
     text = ", ".join(parts) if parts else ""
     extra_targets_var.set(text)
     # Update the hover-over text of the Generate button to show the current selection
@@ -1352,18 +1353,18 @@ def _generate_cross_complex_query():
             return
         SQL_query_entry.delete(0.1, tk.END)
         SQL_query_entry.insert("end", query)
-        query_name_var.set("Cross-complex: {} → {}".format(src, tgt_name))
+        query_name_var.set(f"Cross-complex: {src} → {tgt_name}")
         # Warn about missing simplexes
         warnings = []
         if not DB_PCACE_data_analyzer_util.get_cross_complex_simplex_names(src):
             children = DB_PCACE_data_analyzer_util.get_children_with_simplexes(src)
-            msg = "'{}' has no simplex attributes.".format(src)
+            msg = f"'{src}' has no simplex attributes."
             if children:
                 msg += "\nTry: {}".format(", ".join(children))
             warnings.append(msg)
         if not DB_PCACE_data_analyzer_util.get_cross_complex_simplex_names(tgt_name):
             children = DB_PCACE_data_analyzer_util.get_children_with_simplexes(tgt_name)
-            msg = "'{}' has no simplex attributes.".format(tgt_name)
+            msg = f"'{tgt_name}' has no simplex attributes."
             if children:
                 msg += "\nTry: {}".format(", ".join(children))
             warnings.append(msg)
@@ -1387,7 +1388,7 @@ def _generate_cross_complex_query():
                 return
             SQL_query_entry.delete(0.1, tk.END)
             SQL_query_entry.insert("end", "\n\n".join(all_queries))
-            pair_labels = ["{} → {}".format(s, t) for s, _, t, _ in all_pairs]
+            pair_labels = [f"{s} → {t}" for s, _, t, _ in all_pairs]
             query_name_var.set("Cross-complex: {}".format("; ".join(pair_labels)))
         else:
             # Same source — use CTE multi-target generator
@@ -1754,7 +1755,7 @@ def import_query(window, title, fileType):
     filePath = tk.filedialog.askopenfilename(title=title, initialdir=init_dir, filetypes=fileType)
     if len(filePath) > 0:
         SQL_query_entry.delete(0.1, tk.END)
-        with open(filePath, "r", encoding="utf_8", errors="ignore") as file:
+        with open(filePath, encoding="utf_8", errors="ignore") as file:
             importedQuery = file.read()
         SQL_query_var.set(importedQuery)
         SQL_query_entry.insert("end", str(importedQuery))

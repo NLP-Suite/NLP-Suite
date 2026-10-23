@@ -5,8 +5,9 @@ rewritten by Roberto Franzosi, Zhangyi Pan April 2020, Brett Landau October 2020
 """
 
 import sys
-import IO_libraries_util
+
 import GUI_util
+import IO_libraries_util
 
 if (
     IO_libraries_util.install_all_Python_packages(
@@ -16,14 +17,14 @@ if (
 ):
     sys.exit(0)
 
+from csv import reader
 import os
 import re
 import tkinter.messagebox as mb
 
+import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
-from csv import reader
-import IO_csv_util
 
 
 def _term_regex(term):
@@ -81,7 +82,7 @@ def _expand_terms_by_lemma(terms, files):
     surfaces = set()
     for f in files:
         try:
-            with open(f, "r", encoding="utf-8", errors="ignore") as _fh:
+            with open(f, encoding="utf-8", errors="ignore") as _fh:
                 text = _fh.read()
         except Exception:
             continue
@@ -111,7 +112,7 @@ def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
         dictionary.append([])
     for i in num_colors:
         color_list.append(csvValue_color_list[i])
-    with open(dictFile, "r", encoding="utf-8", errors="ignore") as read_obj:
+    with open(dictFile, encoding="utf-8", errors="ignore") as read_obj:
         csv_reader = reader(read_obj)
         for row in csv_reader:
             if len(categories) > 0:
@@ -265,7 +266,7 @@ def dictionary_annotate(
         head, tail = os.path.split(file)
         i += 1
         print("Processing file " + str(i) + "/" + str(nFile) + " " + tail)
-        with open(file, "r", encoding="utf-8", errors="ignore") as _f:
+        with open(file, encoding="utf-8", errors="ignore") as _f:
             text = _f.read()
         # put filename in bold
         tail = "<b>" + tail + "</b>"
@@ -300,17 +301,16 @@ def dictionary_annotate(
             outputFilename = os.path.join(outputDir, outputFilename)
         else:
             outputFilename = file
+    elif inputDir != "":
+        outputFilename = os.path.join(
+            outputDir,
+            "NLP_dict_annotated_" + fileSubc + "_" + os.path.basename(os.path.normpath(inputDir)) + ".html",
+        )
     else:
-        if inputDir != "":
-            outputFilename = os.path.join(
-                outputDir,
-                "NLP_dict_annotated_" + fileSubc + "_" + os.path.basename(os.path.normpath(inputDir)) + ".html",
-            )
-        else:
-            outputFilename = os.path.join(
-                outputDir,
-                "NLP_dict_annotated_" + fileSubc + "_" + os.path.basename(os.path.normpath(file))[:-4] + ".html",
-            )
+        outputFilename = os.path.join(
+            outputDir,
+            "NLP_dict_annotated_" + fileSubc + "_" + os.path.basename(os.path.normpath(file))[:-4] + ".html",
+        )
     filesToOpen.append(outputFilename)
     with open(outputFilename, "w+", encoding="utf-8", errors="ignore") as f:
         f.write("<html>\n<body>\n<div>\n")

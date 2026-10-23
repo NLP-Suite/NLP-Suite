@@ -3,8 +3,9 @@
 # Wired into semantic_analysis_main.py ('More semantic analyses' dropdown).
 
 import os
-import pandas as pd
 import tkinter.messagebox as mb
+
+import pandas as pd
 
 import IO_files_util
 import IO_user_interface_util

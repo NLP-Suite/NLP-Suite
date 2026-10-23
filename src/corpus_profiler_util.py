@@ -17,8 +17,8 @@
 # working calls of the underlying analysis GUIs. Heavy imports are done lazily inside the
 # runners so the report generator (build_report) stays importable/testable on its own.
 
-import os
 import html as _html
+import os
 
 # ---------------------------------------------------------------------------------------------
 # Category metadata (order + user-question titles). Adding/moving categories is done here.
@@ -154,8 +154,9 @@ def _sentence_length_from_conll(conll_path, c):
     or anything goes wrong (the caller then falls back to a real parse)."""
     try:
         import pandas as pd
-        import IO_files_util
+
         import charts_util
+        import IO_files_util
 
         df = pd.read_csv(conll_path, encoding="utf-8", on_bad_lines="skip")
         if not {"Form", "Sentence ID", "Document ID"}.issubset(df.columns):
@@ -641,6 +642,7 @@ def _find_existing_parse_csv(c, must, required_columns, exclude=(), kind=""):
     if not outdir or not os.path.isdir(outdir):
         return []
     import glob
+
     import pandas as pd
 
     # 'lemma' is here for a measured reason, not tidiness: a Stanza SVO run writes BOTH
@@ -735,6 +737,7 @@ def _find_existing_ner_csv(c):
     if not outdir or not os.path.isdir(outdir):
         return []
     import glob
+
     import pandas as pd
 
     tag = _configured_parser_tag(c)
@@ -910,8 +913,8 @@ def _run_semantic_classes(c):
     #   FrameNet -- semantic FRAMES (verbs and nouns)
     # Same lemma lists, three lenses on meaning. Each aggregation is guarded so one failing (e.g. an
     # NLTK corpus not downloaded) never loses the others.
-    import semantic_aggregation_WordNet_util
     import semantic_aggregation_util
+    import semantic_aggregation_WordNet_util
 
     cp, dt = c["chartPackage"], c["dataTransformation"]
 
@@ -1003,6 +1006,7 @@ def _find_existing_pos_csv(c):
     if not outdir or not os.path.isdir(outdir):
         return []
     import glob
+
     import pandas as pd
 
     best, best_size = None, 0
@@ -1155,6 +1159,7 @@ def _corenlp_available():
     ok = False
     try:
         import subprocess
+
         import IO_libraries_util
 
         jr = subprocess.run([IO_libraries_util.get_java_executable(), "-version"], capture_output=True)
@@ -1831,8 +1836,9 @@ def setup_profile_output_dir(window, inputFilename, inputDir, outputDir):
     needn't hunt for the right folder to preserve. Declining -> the standard 'will be replaced?' confirm (which
     still allows abort). Returns the dir path, or '' if the user declined. (Reuse-in-place: each analysis still
     refreshes its own outputs as it runs; leftover files from analyses no longer selected simply remain.)"""
-    import IO_files_util
     import tkinter.messagebox as mb  # resolves the NLP_SILENT patch at call time, like the rest of the Suite
+
+    import IO_files_util
 
     # mirror make_output_subdirectory's exact naming for label='corpus_profile' so we probe the SAME folder
     if inputFilename:
@@ -1992,6 +1998,7 @@ def _prime_parse_cache(ctx, selected):
 
 def run_profile(ctx, selected):
     import time as _time
+
     import IO_user_interface_util
 
     # Work out what can be reused BEFORE priming the parse cache. The shared passes in
@@ -2440,6 +2447,7 @@ def parsed_sentence_count(outputDir, n_docs=0, parser_tag=""):
     if not outputDir or not os.path.isdir(outputDir):
         return 0
     import glob
+
     import pandas as pd
 
     tag = (parser_tag or "").strip().lower()
@@ -2469,7 +2477,8 @@ def parsed_sentence_count(outputDir, n_docs=0, parser_tag=""):
 
 
 def corpus_header_stats(inputFilename, inputDir, outputDir="", parser_tag=""):
-    import glob, re
+    import glob
+    import re
 
     paths = []
     if inputDir:
@@ -2580,10 +2589,9 @@ def build_report(outputDir, corpus_name, results, header_stats, run_config):
     parts.append('<div class="stats">')
     for key, lab in tiles:
         parts.append(
-            '<div class="stat"><b>%s</b><span>%s</span></div>'
-            % (_esc("{:,}".format(header_stats.get(key, 0))), _esc(lab))
+            '<div class="stat"><b>%s</b><span>%s</span></div>' % (_esc(f"{header_stats.get(key, 0):,}"), _esc(lab))
         )
-    parts.append('<div class="stat"><b>%s</b><span>output files</span></div>' % _esc("{:,}".format(total_files)))
+    parts.append('<div class="stat"><b>%s</b><span>output files</span></div>' % _esc(f"{total_files:,}"))
     parts.append("</div>")
 
     # nav
@@ -2807,7 +2815,7 @@ def _num(df, *name_subs):
 
 
 def _thousands(n):
-    return "{:,}".format(int(n))
+    return f"{int(n):,}"
 
 
 def _interp_counts(files):
@@ -3806,7 +3814,8 @@ def _make_wordcloud(inputDir, inputFilename, outputDir):
     """Generate a corpus wordcloud PNG (the iconic 'at a glance' visual). Returns its path or ''."""
     try:
         import glob as _glob
-        from wordcloud import WordCloud, STOPWORDS
+
+        from wordcloud import STOPWORDS, WordCloud
 
         paths = (
             sorted(_glob.glob(os.path.join(inputDir, "*.txt")))
@@ -3868,7 +3877,7 @@ def build_paper_summary(
     failed = [r for r in results if r.get("error")]
 
     def _fmt(n):
-        return "{:,}".format(n)
+        return f"{n:,}"
 
     # ---- abstract (templated from the real counts) ----
     dims = ", ".join(CATEGORY_TITLE[c].split("  ")[0].rstrip("?").strip().lower() for c in cats_present)

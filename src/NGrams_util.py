@@ -1,8 +1,9 @@
 ##not needed
 
 import os
-import IO_csv_util
 import string
+
+import IO_csv_util
 
 punctuation = string.punctuation
 import stanza
@@ -38,7 +39,7 @@ import re
 
 def removeart(original_sentence):
     articles_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib", "wordLists", "articles.txt")
-    with open(articles_path, "r") as fin:
+    with open(articles_path) as fin:
         articles = list(set(fin.read().splitlines()))
     # from Stanford CoreNLP calculation
     # Create a regex pattern for the determiners, case-insensitive
@@ -69,7 +70,7 @@ def removedt(original_sentence):
     determiners_path = os.path.join(
         os.path.dirname(os.path.abspath(__file__)), "..", "lib", "wordLists", "determiners.txt"
     )
-    with open(determiners_path, "r") as fin:
+    with open(determiners_path) as fin:
         determiners = list(set(fin.read().splitlines()))
 
     # from Stanford CoreNLP calculation
@@ -86,7 +87,7 @@ def removedt(original_sentence):
 
 def removestop(original_sentence):
     stopwords_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib", "wordLists", "stopwords.txt")
-    with open(stopwords_path, "r") as fin:
+    with open(stopwords_path) as fin:
         stops = list(set(fin.read().splitlines()))
     dets_pattern = r"\b(?:" + "|".join(map(re.escape, stops)) + r")\b\s*"
     filtered_sentence = re.sub(dets_pattern, "", original_sentence, flags=re.IGNORECASE)
@@ -112,7 +113,7 @@ def readandsplit(
     Sentence_ID = 0
     doc_ngramsList = []
     print("   Processing file " + str(index + 1) + "/" + str(nFiles) + " " + tail)
-    with open(filename, "r", encoding="utf_8", errors="ignore") as f:
+    with open(filename, encoding="utf_8", errors="ignore") as f:
         out = f.read()
     if excludePunctuation:
         out = out.translate(str.maketrans("", "", punctuation))
@@ -147,7 +148,6 @@ def readandsplit(
 
 # Stanza typically runs VERY fast as long as we don't repeatedly invoke a call on its pipeline.
 # It seems to be allocating some cache that speeds it up.
-import os
 
 from collections import Counter
 

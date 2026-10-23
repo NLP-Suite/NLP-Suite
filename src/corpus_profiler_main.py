@@ -9,6 +9,7 @@
 # GUI placement is deliberately rough — refine the x/y coordinates to taste.
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -17,15 +18,15 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window, "corpus profil
 
 import os
 import time
-import traceback
 import tkinter as tk
 import tkinter.messagebox as mb
+import traceback
 
-import GUI_IO_util
-import IO_user_interface_util
-import IO_files_util
 import config_util
 import corpus_profiler_util
+import GUI_IO_util
+import IO_files_util
+import IO_user_interface_util
 
 
 def run():

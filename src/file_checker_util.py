@@ -2,6 +2,7 @@
 # edited by Cynthia Dong
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -17,9 +18,10 @@ import os
 import re
 import tkinter as tk
 import tkinter.messagebox as mb
-import chardet
-import IO_csv_util
 
+import chardet
+
+import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
 
@@ -133,7 +135,7 @@ def check_utf8_compliance(window, inputFilename, inputDir, outputDir, openOutput
         # IO_util.timed_alert(window,700,'utf-8 compliance ','Processing file ' + str(docNum+1) + " (out of " + str(numberOfDocs) + ")\n\n" + doc,False)
         # https://geek-tips.github.io/articles/494831/index.html
         # 'surrogateescape' will represent any invalid bytes as code points in the Unicode Private Use Range, ranging from U + DC80 to U + DCFF.
-        with open(doc, "r", encoding="utf-8", errors="surrogateescape") as f:
+        with open(doc, encoding="utf-8", errors="surrogateescape") as f:
             for i, line in enumerate(f, 1):
                 errors = detect_decoding_errors_line(line)
                 for col, b in errors:
@@ -166,37 +168,35 @@ def check_utf8_compliance(window, inputFilename, inputDir, outputDir, openOutput
             )
         # always open the output file regardless of the setting of openOutputFiles
         IO_files_util.openFile(window, outFile)
-    else:
-        if len(inputDir) == 0:
-            if silent:
-                IO_user_interface_util.timed_alert(
-                    window, 700, "utf-8 compliance ", "The file\n\n" + inputFilename + "\n\nis utf-8 compliant."
-                )
-            else:
-                tk.messagebox.showinfo("Warning", "The file\n\n" + inputFilename + "\n\nis utf-8 compliant.")
+    elif len(inputDir) == 0:
+        if silent:
+            IO_user_interface_util.timed_alert(
+                window, 700, "utf-8 compliance ", "The file\n\n" + inputFilename + "\n\nis utf-8 compliant."
+            )
         else:
-            if silent:
-                IO_user_interface_util.timed_alert(
-                    window,
-                    700,
-                    "utf-8 compliance ",
-                    "All " + str(numberOfDocs) + " files in the directory " + inputDir + " are utf-8 compliant.",
-                    False,
-                    "",
-                    True,
-                    "",
-                    True,
-                )
-            else:
-                tk.messagebox.showinfo(
-                    "Warning",
-                    "All " + str(numberOfDocs) + " files in the directory\n\n" + inputDir + "\n\nare utf-8 compliant.",
-                    False,
-                    "",
-                    True,
-                    "",
-                    True,
-                )
+            tk.messagebox.showinfo("Warning", "The file\n\n" + inputFilename + "\n\nis utf-8 compliant.")
+    elif silent:
+        IO_user_interface_util.timed_alert(
+            window,
+            700,
+            "utf-8 compliance ",
+            "All " + str(numberOfDocs) + " files in the directory " + inputDir + " are utf-8 compliant.",
+            False,
+            "",
+            True,
+            "",
+            True,
+        )
+    else:
+        tk.messagebox.showinfo(
+            "Warning",
+            "All " + str(numberOfDocs) + " files in the directory\n\n" + inputDir + "\n\nare utf-8 compliant.",
+            False,
+            "",
+            True,
+            "",
+            True,
+        )
 
     IO_user_interface_util.timed_alert(
         GUI_util.window,
@@ -231,7 +231,7 @@ def check_empty_file(inputFilename, inputDir, configFileName):
         _, tail = os.path.split(filename)
         print("Processing file " + str(docID) + "/" + str(nDocs) + " " + tail)
         edited = False
-        with open(filename, "r", encoding="utf-8", errors="ignore") as myfile:
+        with open(filename, encoding="utf-8", errors="ignore") as myfile:
             # read file into string
             fulltext = myfile.read()
             # end method if file is empty
@@ -245,22 +245,20 @@ def check_empty_file(inputFilename, inputDir, configFileName):
             msg = 'The file "' + tail + '" is not empty'
         else:
             msg = 'The file "' + tail + '" is empty'
+    elif emptyFiles == 0:
+        msg = "There are no empty files in the directory\n\n" + inputDir
+    elif emptyFiles == 1:
+        msg = (
+            "1 file is empty in the directory\n\n"
+            + inputDir
+            + '\n\nPlease, check the command line/prompt searching for the word "empty."'
+        )
     else:
-        if emptyFiles == 0:
-            msg = "There are no empty files in the directory\n\n" + inputDir
-        else:
-            if emptyFiles == 1:
-                msg = (
-                    "1 file is empty in the directory\n\n"
-                    + inputDir
-                    + '\n\nPlease, check the command line/prompt searching for the word "empty."'
-                )
-            else:
-                msg = (
-                    str(emptyFiles)
-                    + "files are empty in the directory\n\n"
-                    + inputDir
-                    + '\n\nPlease, check the command line/prompt searching for the word "empty."'
-                )
+        msg = (
+            str(emptyFiles)
+            + "files are empty in the directory\n\n"
+            + inputDir
+            + '\n\nPlease, check the command line/prompt searching for the word "empty."'
+        )
     mb.showerror(title="File empty", message=msg)
     return

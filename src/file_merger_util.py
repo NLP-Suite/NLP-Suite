@@ -1,6 +1,7 @@
 # Written by Roberto Franzosi October 2019, revised October 2020
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -100,7 +101,7 @@ def file_merger(
                     tempFilename = doc
                 outfile.write("\n" + startString + tempFilename + endString + ".\n")
             try:
-                with open(doc, "r", encoding="utf-8", errors="ignore") as infile:
+                with open(doc, encoding="utf-8", errors="ignore") as infile:
                     outfile.write(infile.read())
             except:
                 fileError += 1

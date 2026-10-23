@@ -26,8 +26,8 @@ Uses concreteness measures by Brysbaert, Marc, Amy Beth Warriner, and Victor Kup
 import sys
 
 import GUI_util
-import IO_libraries_util
 import IO_files_util
+import IO_libraries_util
 
 if (
     IO_libraries_util.install_all_Python_packages(
@@ -39,25 +39,24 @@ if (
 ):
     sys.exit(0)
 
+import argparse
 import csv
 import os
 import statistics
-import time
-import argparse
-import pandas as pd
 import tkinter.messagebox as mb
+
+import pandas as pd
+
+import charts_util
+
+# from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
+import GUI_IO_util
+import IO_csv_util
 import IO_user_interface_util
 import lib_util
 
-# from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
-
-import GUI_IO_util
-import IO_csv_util
-import charts_util
-import statistics_csv_util
-
 _stopwords_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib", "wordLists", "stopwords.txt")
-with open(_stopwords_path, "r") as _fin:
+with open(_stopwords_path) as _fin:
     stops = set(_fin.read().splitlines())
 
 ratings = GUI_IO_util.concreteness_libPath + os.sep + "Concreteness_ratings_Brysbaert_et_al_BRM.csv"
@@ -94,7 +93,7 @@ def analyzefile(inputFilename, outputDir, outputFilename, documentID, documentNa
     """
     from Stanza_functions_util import stanzaPipeLine
 
-    with open(inputFilename, "r", encoding="utf-8", errors="ignore") as myfile:
+    with open(inputFilename, encoding="utf-8", errors="ignore") as myfile:
         fulltext = myfile.read()
     if len(fulltext) < 1:
         mb.showerror(

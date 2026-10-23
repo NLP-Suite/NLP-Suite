@@ -4,6 +4,7 @@
 # Modified by Claude Code, July 2026
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -15,26 +16,24 @@ if (
 ):
     sys.exit(0)
 
-import os
-import tkinter as tk
-from tkinter import filedialog
-import subprocess
-from subprocess import call
-import tkinter.messagebox as mb
-from sys import platform
 import csv
+import os
+import subprocess
+from sys import platform
+import tkinter as tk
+import tkinter.messagebox as mb
 
-import IO_files_util
+import charts_util
+import config_aware_parser_util
+import file_find_non_related_documents_util
+import file_summary_checker_util
 import GUI_IO_util
+import IO_files_util
 import IO_user_interface_util
 import lib_util
-import charts_util
-import reminders_util
-import file_summary_checker_util
-import file_find_non_related_documents_util
-import run_script_util
 import plagiarist_util
-import config_aware_parser_util
+import reminders_util
+import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 

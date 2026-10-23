@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -24,6 +25,7 @@ if (
     sys.exit(0)
 
 import os as _os
+
 import stanza
 
 try:
@@ -42,24 +44,23 @@ try:
 except:
     pass
 
-from stanza.pipeline.multilingual import MultilingualPipeline
-
-import pandas as pd
-import tkinter.messagebox as mb
-import sys
 import os
 import re
+import sys
+import tkinter.messagebox as mb
 import warnings
-import tkinter as tk
+
+import pandas as pd
+from stanza.pipeline.multilingual import MultilingualPipeline
+
+import constants_util
+import GUI_IO_util
+import GUI_util
+import IO_csv_util
 
 # from tenacity import retry_unless_exception_type
-
 import IO_files_util
-import IO_csv_util
-import GUI_util
-import GUI_IO_util
 import IO_user_interface_util
-import constants_util
 import parsers_annotators_visualization_util
 import Stanford_CoreNLP_clause_util
 
@@ -67,6 +68,7 @@ warnings.simplefilter(action="ignore", category=FutureWarning)
 warnings.simplefilter(action="ignore", category=RuntimeWarning)
 
 import json
+
 import stanza.resources.common
 
 DEFAULT_MODEL_DIR = stanza.resources.common.DEFAULT_MODEL_DIR
@@ -110,7 +112,7 @@ def list_all_languages():
                 # reconstruct name from, so that all Hebrew are sorted together
                 language_name = value["lang_name"].split("_")[-1] + "_" + value["lang_name"].split("_")[0]
             # do not process Chinese_Traditional since it can handle very few annotators
-            if not "Chinese_Traditional" in language_name:
+            if "Chinese_Traditional" not in language_name:
                 languages_from_resources.append(language_name)
 
     languages_from_resources.sort()
@@ -305,11 +307,10 @@ def Stanza_annotate(
                     processors = "tokenize,pos,lemma,depparse"
                 else:
                     processors = "tokenize,pos,mwt,lemma,depparse"
+            elif short_lang not in available_mwt:
+                processors = "tokenize,pos,ner,lemma,depparse"
             else:
-                if short_lang not in available_mwt:
-                    processors = "tokenize,pos,ner,lemma,depparse"
-                else:
-                    processors = "tokenize,pos,mwt,ner,lemma,depparse"
+                processors = "tokenize,pos,mwt,ner,lemma,depparse"
             if constituency_ok:
                 processors += ",constituency"
 
@@ -434,7 +435,7 @@ def Stanza_annotate(
                 text = text.split("\n\n")
                 text = [t for t in text if not re.match(r"^\s*$", t)]
         else:  # if regular annotation, open file with as string
-            text = open(doc, "r", encoding=language_encoding, errors="ignore").read().replace("\n", " ")
+            text = open(doc, encoding=language_encoding, errors="ignore").read().replace("\n", " ")
 
         if "%" in text:
             text = text.replace("%", "percent")
@@ -995,10 +996,9 @@ def _conj_string(subjects, sent_data):
                         result += ", " + sent_data[subjects[i]]["word"]
                     result += ", " + conj + " " + sent_data[subjects[-1]]["word"]
                     break
-            else:
-                if len(subjects) == 2 and subjects[-1] == dep_val:
-                    result += " " + conj + " " + sent_data[subjects[-1]]["word"]
-                    break
+            elif len(subjects) == 2 and subjects[-1] == dep_val:
+                result += " " + conj + " " + sent_data[subjects[-1]]["word"]
+                break
     if result == start_result:
         result = _token_connect(subjects, sent_data)
     return result
@@ -1509,11 +1509,11 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
         # ── MWE name replacement ──
         for idx, triple in enumerate(SVO):
             SVO[idx][0] = _replace_words_with_full_names(triple[0], persons)
-            SVO[idx][0] = _replace_words_with_full_names(SVO[idx][0], organizations)
-            SVO[idx][0] = _replace_words_with_full_names(SVO[idx][0], locations)
+            SVO[idx][0] = _replace_words_with_full_names(triple[0], organizations)
+            SVO[idx][0] = _replace_words_with_full_names(triple[0], locations)
             SVO[idx][2] = _replace_words_with_full_names(triple[2], persons)
-            SVO[idx][2] = _replace_words_with_full_names(SVO[idx][2], organizations)
-            SVO[idx][2] = _replace_words_with_full_names(SVO[idx][2], locations)
+            SVO[idx][2] = _replace_words_with_full_names(triple[2], organizations)
+            SVO[idx][2] = _replace_words_with_full_names(triple[2], locations)
 
         # ── Build output rows ──
         for i, triple in enumerate(SVO):
@@ -1793,7 +1793,7 @@ def Stanza_coref(
         head, tail = os.path.split(doc_path)
         print("Processing file " + str(docID) + "/" + str(nDocs) + " " + tail)
 
-        text = open(doc_path, "r", encoding="utf-8", errors="ignore").read()
+        text = open(doc_path, encoding="utf-8", errors="ignore").read()
         if text.strip() == "":
             print("  Skipping empty file: " + tail)
             continue

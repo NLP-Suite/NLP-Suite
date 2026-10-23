@@ -20,8 +20,9 @@ WE DO NOT USE ANY OF THESE RECOMMENDATIONS
 """
 
 import sys
-import IO_libraries_util
+
 import GUI_util
+import IO_libraries_util
 
 if (
     IO_libraries_util.install_all_Python_packages(
@@ -33,34 +34,32 @@ if (
 ):
     sys.exit(0)
 
-from typing import Any, Tuple
 
 # import pprint
+import csv
 import json
 import os
 import re
-import subprocess
 import string
+import subprocess
+import time
+import tkinter as tk
+from tkinter import messagebox as mb
 
 # not using stanfordcorenlp because it is not recognizing sentiment annotator
 import nltk
-from pycorenlp import StanfordCoreNLP
-from tkinter import messagebox as mb
-import tkinter as tk
 import pandas as pd
-import time
-import Stanford_CoreNLP_clause_util
-import csv
+from pycorenlp import StanfordCoreNLP
 
-import IO_csv_util
+import charts_util
 import file_splitter_ByLength_util
-import file_splitter_merged_txt_util
+import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
-import Stanford_CoreNLP_SVO_enhanced_dependencies_util  # Enhanced++ dependencies
-import reminders_util
 import parsers_annotators_visualization_util
-import charts_util
+import reminders_util
+import Stanford_CoreNLP_clause_util
+import Stanford_CoreNLP_SVO_enhanced_dependencies_util  # Enhanced++ dependencies
 
 url = "https://stanfordnlp.github.io/CoreNLP/human-languages.html"
 CoreNLP_web = (
@@ -110,48 +109,46 @@ def create_output_directory(
                 NER_tag = "MISC"
             elif len(str.split(kwargs["NERs"])) > 20:
                 NER_tag = "ALL_NER"
+            elif (
+                "CITY" in str(kwargs["NERs"])
+                and "STATE_OR_PROVINCE"
+                and str(kwargs["NERs"])
+                and "COUNTRY" in str(kwargs["NERs"])
+                and "LOCATION" in str(kwargs["NERs"])
+            ):
+                NER_tag = "SPACE"
+            elif (
+                "NUMBER" in str(kwargs["NERs"])
+                and "ORDINAL"
+                and str(kwargs["NERs"])
+                and "PERCENT" in str(kwargs["NERs"])
+            ):
+                outpNER_tag = "NUMBERS"
+            elif "PERSON" in str(kwargs["NERs"]) and "ORGANIZATION" in str(kwargs["NERs"]):
+                NER_tag = "ACTORS"
+            elif (
+                "DATE" in str(kwargs["NERs"])
+                and "TIME" in str(kwargs["NERs"])
+                and "DURATION" in str(kwargs["NERs"])
+                and "SET" in str(kwargs["NERs"])
+            ):
+                NER_tag = "DATES"
             else:
-                if (
-                    "CITY" in str(kwargs["NERs"])
-                    and "STATE_OR_PROVINCE"
-                    and str(kwargs["NERs"])
-                    and "COUNTRY" in str(kwargs["NERs"])
-                    and "LOCATION" in str(kwargs["NERs"])
-                ):
-                    NER_tag = "SPACE"
-                elif (
-                    "NUMBER" in str(kwargs["NERs"])
-                    and "ORDINAL"
-                    and str(kwargs["NERs"])
-                    and "PERCENT" in str(kwargs["NERs"])
-                ):
-                    outpNER_tag = "NUMBERS"
-                elif "PERSON" in str(kwargs["NERs"]) and "ORGANIZATION" in str(kwargs["NERs"]):
-                    NER_tag = "ACTORS"
-                elif (
-                    "DATE" in str(kwargs["NERs"])
-                    and "TIME" in str(kwargs["NERs"])
-                    and "DURATION" in str(kwargs["NERs"])
-                    and "SET" in str(kwargs["NERs"])
-                ):
-                    NER_tag = "DATES"
-                else:
-                    NER_tag = str(kwargs["NERs"])
+                NER_tag = str(kwargs["NERs"])
         except:
             NER_tag = "ALL NERs"
         outputDir = IO_files_util.make_output_subdirectory(
             inputFilename, inputDir, outputDir, label=annotator + "_" + NER_tag + "_CoreNLP", silent=silent
         )
+    elif outputDirSV != outputDir:
+        # create output subdirectory
+        outputDir = IO_files_util.make_output_subdirectory(
+            inputFilename, inputDir, outputDir, label=annotator + "_CoreNLP", silent=silent
+        )
     else:
-        if outputDirSV != outputDir:
-            # create output subdirectory
-            outputDir = IO_files_util.make_output_subdirectory(
-                inputFilename, inputDir, outputDir, label=annotator + "_CoreNLP", silent=silent
-            )
-        else:
-            outputDir = IO_files_util.make_output_subdirectory(
-                inputFilename, inputDir, outputDir, label=annotator + "_CoreNLP", silent=silent
-            )
+        outputDir = IO_files_util.make_output_subdirectory(
+            inputFilename, inputDir, outputDir, label=annotator + "_CoreNLP", silent=silent
+        )
 
     # create a Json subdirectory of the main output directory
     if export_json_var:
@@ -171,7 +168,7 @@ def create_output_directory(
 
 def check_CoreNLP_available_languages(language):
     available_language = True
-    if not language in available_languages:
+    if language not in available_languages:
         available_language = False
         website_name = "CoreNLP website"
         message_title = "CoreNLP website"
@@ -606,20 +603,20 @@ def CoreNLP_annotate(
         )
     if (
         "SVO" in str(annotator_params)
-        and not "gender" in str(annotator_params)
-        and not "quote" in str(annotator_params)
+        and "gender" not in str(annotator_params)
+        and "quote" not in str(annotator_params)
     ):
         reminders_util.checkReminder(
             scriptName, reminders_util.title_options_CoreNLP_SVO_timing, reminders_util.message_CoreNLP_SVO_timing, True
         )
-    if "gender" in str(annotator_params) and not "SVO" in str(annotator_params):
+    if "gender" in str(annotator_params) and "SVO" not in str(annotator_params):
         reminders_util.checkReminder(
             scriptName,
             reminders_util.title_options_CoreNLP_gender_timing,
             reminders_util.message_CoreNLP_gender_timing,
             True,
         )
-    if "quote" in str(annotator_params) and not "SVO" in str(annotator_params):
+    if "quote" in str(annotator_params) and "SVO" not in str(annotator_params):
         reminders_util.checkReminder(
             scriptName,
             reminders_util.title_options_CoreNLP_quote_timing,
@@ -689,7 +686,7 @@ def CoreNLP_annotate(
     for annotator in annotator_params:
         # if not check_CoreNLP_annotator_availability(config_filename, annotator, language):
         #     continue
-        if "coref" in annotator and not "coref" in SVO_annotators:
+        if "coref" in annotator and "coref" not in SVO_annotators:
             reminders_util.checkReminder(
                 scriptName,
                 reminders_util.title_options_CoreNLP_coref_timing,
@@ -697,9 +694,9 @@ def CoreNLP_annotate(
                 True,
             )
             SVO_annotators.append("coref")
-        if "quote" in annotator and not "quote" in SVO_annotators:
+        if "quote" in annotator and "quote" not in SVO_annotators:
             SVO_annotators.append("quote")
-        if "gender" in annotator and not "gender" in SVO_annotators:
+        if "gender" in annotator and "gender" not in SVO_annotators:
             SVO_annotators.append("gender")
         if (
             "gender" in annotator
@@ -725,7 +722,7 @@ def CoreNLP_annotate(
         if neural_network:
             # param_number_NN = 0
             for param in annotators_:
-                if not param in param_string_NN:  # the needed annotator property is not containted in the string
+                if param not in param_string_NN:  # the needed annotator property is not containted in the string
                     param_number_NN += 1
                     if param_string_NN == "":
                         param_string_NN = param
@@ -757,7 +754,7 @@ def CoreNLP_annotate(
             routine_list.append([annotator, routine, output_format, [], parse_model, output_dir, outputJsonDir])
         else:
             for param in annotators_:
-                if not param in param_string:  # the needed annotator property is not containted in the string
+                if param not in param_string:  # the needed annotator property is not containted in the string
                     param_number += 1
                     if param_string == "":
                         param_string = param
@@ -858,48 +855,47 @@ def CoreNLP_annotate(
                 stderr=subprocess.DEVNULL,
             )
 
-    else:  # Windows
-        # CoreNLP_nlp = subprocess.Popen(
-        #     ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp',  os.path.join(CoreNLPdir, '*'),
-        #      'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen' + str(sentence_length),'-timeout', '999999'])
-        if language == "English":
-            CoreNLP_nlp = subprocess.Popen(
-                [
-                    IO_libraries_util.get_java_executable(),
-                    "-mx" + str(memory_var) + "g",
-                    "-cp",
-                    os.path.join(CoreNLPdir, "*"),
-                    "edu.stanford.nlp.pipeline.StanfordCoreNLPServer",
-                    "-quiet",
-                    "true",
-                    "-parse.maxlen",
-                    str(sentence_length),
-                    "-timeout",
-                    "999999",
-                ],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-        else:
-            CoreNLP_nlp = subprocess.Popen(
-                [
-                    IO_libraries_util.get_java_executable(),
-                    "-mx" + str(memory_var) + "g",
-                    "-cp",
-                    os.path.join(CoreNLPdir, "*"),
-                    "edu.stanford.nlp.pipeline.StanfordCoreNLPServer",
-                    "-quiet",
-                    "true",
-                    "-props",
-                    language.lower(),
-                    "-parse.maxlen",
-                    str(sentence_length),
-                    "-timeout",
-                    "999999",
-                ],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
+    # CoreNLP_nlp = subprocess.Popen(
+    #     ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp',  os.path.join(CoreNLPdir, '*'),
+    #      'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen' + str(sentence_length),'-timeout', '999999'])
+    elif language == "English":
+        CoreNLP_nlp = subprocess.Popen(
+            [
+                IO_libraries_util.get_java_executable(),
+                "-mx" + str(memory_var) + "g",
+                "-cp",
+                os.path.join(CoreNLPdir, "*"),
+                "edu.stanford.nlp.pipeline.StanfordCoreNLPServer",
+                "-quiet",
+                "true",
+                "-parse.maxlen",
+                str(sentence_length),
+                "-timeout",
+                "999999",
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    else:
+        CoreNLP_nlp = subprocess.Popen(
+            [
+                IO_libraries_util.get_java_executable(),
+                "-mx" + str(memory_var) + "g",
+                "-cp",
+                os.path.join(CoreNLPdir, "*"),
+                "edu.stanford.nlp.pipeline.StanfordCoreNLPServer",
+                "-quiet",
+                "true",
+                "-props",
+                language.lower(),
+                "-parse.maxlen",
+                str(sentence_length),
+                "-timeout",
+                "999999",
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
 
     time.sleep(5)
 
@@ -970,7 +966,7 @@ def CoreNLP_annotate(
             head_split, tail_split = os.path.split(doc_split)
             if docName != doc_split:
                 print("   Processing split file " + str(split_docID) + "/" + str(nSplitDocs) + " " + tail_split)
-            text = open(doc_split, "r", encoding=language_encoding, errors="ignore").read().replace("\n", " ")
+            text = open(doc_split, encoding=language_encoding, errors="ignore").read().replace("\n", " ")
             if "%" in text:
                 reminders_util.checkReminder(
                     scriptName,
@@ -1127,15 +1123,14 @@ def CoreNLP_annotate(
                             "",
                             False,
                         )
+                # add output to the output storage list in routine_list
+                # for the special case of POS values of a double list [['Verbs'],[Nouns']] you need special handling
+                elif POS_WordNet:
+                    for i in range(0, len(run[2])):
+                        for j in sub_result[i]:
+                            run_output[i].append(j)
                 else:
-                    # add output to the output storage list in routine_list
-                    # for the special case of POS values of a double list [['Verbs'],[Nouns']] you need special handling
-                    if POS_WordNet:
-                        for i in range(0, len(run[2])):
-                            for j in sub_result[i]:
-                                run_output[i].append(j)
-                    else:
-                        run[3].extend(sub_result)
+                    run[3].extend(sub_result)
             try:
                 if errorFound:
                     errorFound = False
@@ -1173,7 +1168,7 @@ def CoreNLP_annotate(
                         inputDir,
                         outputDir_chosen,
                         ".csv",
-                        "CoreNLP_" + annotator_chosen + "_lemma_" + output_format[index][0],
+                        "CoreNLP_" + annotator_chosen + "_lemma_" + sub_output[0],
                     )
                 else:
                     # @@@
@@ -1182,10 +1177,10 @@ def CoreNLP_annotate(
                         inputDir,
                         outputDir_chosen,
                         ".csv",
-                        "CoreNLP_" + annotator_chosen + "_lemma" + output_format[index][0],
+                        "CoreNLP_" + annotator_chosen + "_lemma" + sub_output[0],
                     )
                 filesToOpen.append(outputFilename)
-                df = pd.DataFrame(run_output[index], columns=output_format[index])
+                df = pd.DataFrame(run_output[index], columns=sub_output)
                 df.to_csv(outputFilename, index=False, encoding=language_encoding)
         else:  # single, merged output
             # generate output file name
@@ -1200,33 +1195,32 @@ def CoreNLP_annotate(
                         outputFilename_tag = "MISC"
                     elif len(str.split(kwargs["NERs"])) > 20:
                         outputFilename_tag = "ALL_NER"
+                    elif (
+                        "CITY" in str(kwargs["NERs"])
+                        and "STATE_OR_PROVINCE"
+                        and str(kwargs["NERs"])
+                        and "COUNTRY" in str(kwargs["NERs"])
+                        and "LOCATION" in str(kwargs["NERs"])
+                    ):
+                        outputFilename_tag = "SPACE"
+                    elif (
+                        "NUMBER" in str(kwargs["NERs"])
+                        and "ORDINAL"
+                        and str(kwargs["NERs"])
+                        and "PERCENT" in str(kwargs["NERs"])
+                    ):
+                        outputFilename_tag = "NUMBERS"
+                    elif "PERSON" in str(kwargs["NERs"]) and "ORGANIZATION" in str(kwargs["NERs"]):
+                        outputFilename_tag = "ACTORS"
+                    elif (
+                        "DATE" in str(kwargs["NERs"])
+                        and "TIME" in str(kwargs["NERs"])
+                        and "DURATION" in str(kwargs["NERs"])
+                        and "SET" in str(kwargs["NERs"])
+                    ):
+                        outputFilename_tag = "DATES"
                     else:
-                        if (
-                            "CITY" in str(kwargs["NERs"])
-                            and "STATE_OR_PROVINCE"
-                            and str(kwargs["NERs"])
-                            and "COUNTRY" in str(kwargs["NERs"])
-                            and "LOCATION" in str(kwargs["NERs"])
-                        ):
-                            outputFilename_tag = "SPACE"
-                        elif (
-                            "NUMBER" in str(kwargs["NERs"])
-                            and "ORDINAL"
-                            and str(kwargs["NERs"])
-                            and "PERCENT" in str(kwargs["NERs"])
-                        ):
-                            outputFilename_tag = "NUMBERS"
-                        elif "PERSON" in str(kwargs["NERs"]) and "ORGANIZATION" in str(kwargs["NERs"]):
-                            outputFilename_tag = "ACTORS"
-                        elif (
-                            "DATE" in str(kwargs["NERs"])
-                            and "TIME" in str(kwargs["NERs"])
-                            and "DURATION" in str(kwargs["NERs"])
-                            and "SET" in str(kwargs["NERs"])
-                        ):
-                            outputFilename_tag = "DATES"
-                        else:
-                            outputFilename_tag = NERs
+                        outputFilename_tag = NERs
                 except:
                     NERs = "PERSON, ORGANIZATION, MISC, MONEY, NUMBER, ORDINAL, PERCENT, DATE, TIME, DURATION, SET, EMAIL, URL, CITY,STATE_OR_PROVINCE, COUNTRY, LOCATION, NATIONALITY, RELIGION, TITLE, IDEOLOGY, CRIMINAL_CHARGE,CAUSE_OF_DEATH"
                     outputFilename_tag = "ALL_NER"
@@ -1462,7 +1456,7 @@ def language_models(CoreNLPdir, language: str):
         else:  # it can never get here to test for differences in model versions
             CoreNLP_version = CoreNLPdir.split("-")[-1]
             # the language file exists but the model version if different from the package version
-            if not CoreNLP_version in language_file:
+            if CoreNLP_version not in language_file:
                 mb.showerror(
                     "Warning",
                     "The language model version\n\n"
@@ -1520,11 +1514,10 @@ def build_sentence_string(sentence):
     for token in sentence["tokens"]:
         if token["originalText"] in string.punctuation:
             complete_sent = complete_sent + token["originalText"]
+        elif token["index"] == 1:
+            complete_sent = complete_sent + token["originalText"]
         else:
-            if token["index"] == 1:
-                complete_sent = complete_sent + token["originalText"]
-            else:
-                complete_sent = complete_sent + " " + token["originalText"]
+            complete_sent = complete_sent + " " + token["originalText"]
     return complete_sent
 
 
@@ -1598,11 +1591,10 @@ def process_json_normalized_date(config_filename, documentID, document, sentence
         for token in sentence["tokens"]:
             if token["originalText"] in string.punctuation:
                 complete_sent = complete_sent + token["originalText"]
+            elif token["index"] == 1:
+                complete_sent = complete_sent + token["originalText"]
             else:
-                if token["index"] == 1:
-                    complete_sent = complete_sent + token["originalText"]
-                else:
-                    complete_sent = complete_sent + " " + token["originalText"]
+                complete_sent = complete_sent + " " + token["originalText"]
             word = token["word"]
             if token["ner"] == "DATE":
                 if norm_date == "":
@@ -1654,44 +1646,42 @@ def process_json_normalized_date(config_filename, documentID, document, sentence
                     if info == "OTHER":
                         info = date_get_tense(norm_date)
                     words = word + words
+                elif word in string.punctuation:
+                    words = words + word
                 else:
-                    if word in string.punctuation:
-                        words = words + word
-                    else:
-                        words = words + " " + word
-            else:
-                if words != "" or norm_date != "":
-                    # writer.writerow([words,norm_date, sentence_id, sent_str, documentID, file])
-                    if filename_embeds_date_var:
-                        temp = [
-                            words,
-                            norm_date,
-                            tid,
-                            info,
-                            sentenceID,
-                            complete_sent,
-                            documentID,
-                            IO_csv_util.dressFilenameForCSVHyperlink(document),
-                            date_str,
-                        ]
+                    words = words + " " + word
+            elif words != "" or norm_date != "":
+                # writer.writerow([words,norm_date, sentence_id, sent_str, documentID, file])
+                if filename_embeds_date_var:
+                    temp = [
+                        words,
+                        norm_date,
+                        tid,
+                        info,
+                        sentenceID,
+                        complete_sent,
+                        documentID,
+                        IO_csv_util.dressFilenameForCSVHyperlink(document),
+                        date_str,
+                    ]
 
-                    else:
-                        temp = [
-                            words,
-                            norm_date,
-                            tid,
-                            info,
-                            sentenceID,
-                            complete_sent,
-                            documentID,
-                            IO_csv_util.dressFilenameForCSVHyperlink(document),
-                        ]
-                    result.append(temp)
-                    words = ""
-                    norm_date = ""
-                    tid = ""
-                    # tense = ''
-                    info = ""
+                else:
+                    temp = [
+                        words,
+                        norm_date,
+                        tid,
+                        info,
+                        sentenceID,
+                        complete_sent,
+                        documentID,
+                        IO_csv_util.dressFilenameForCSVHyperlink(document),
+                    ]
+                result.append(temp)
+                words = ""
+                norm_date = ""
+                tid = ""
+                # tense = ''
+                info = ""
 
         check_sentence_length(len(sentence["tokens"]), sentenceID, config_filename)
 
@@ -1841,11 +1831,10 @@ def process_json_ner(config_filename, documentID, document, sentenceID, json, **
         for token in sentence["tokens"]:
             if token["originalText"] in string.punctuation:
                 complete_sent = complete_sent + token["originalText"]
+            elif token["index"] == 1:
+                complete_sent = complete_sent + token["originalText"]
             else:
-                if token["index"] == 1:
-                    complete_sent = complete_sent + token["originalText"]
-                else:
-                    complete_sent = complete_sent + " " + token["originalText"]
+                complete_sent = complete_sent + " " + token["originalText"]
         # TODO to be checked; formerly commented out but then the Sentence ID field was always displayed as 0
         sentenceID = sentence["index"] + 1
         check_sentence_length(len(sentence["tokens"]), sentenceID, config_filename)
@@ -1866,27 +1855,26 @@ def process_json_ner(config_filename, documentID, document, sentenceID, json, **
                 if filename_embeds_date_var:
                     temp.append(date_str)
                     NER.append(temp)
-                else:
-                    if extract_date_from_text_var:
-                        # annotated is a string in json format, we can retrieve normalizedNER from it
-                        try:
-                            # Attempt to pull out normalizedNER
-                            date_val = ner["normalizedNER"]
-                            # Check if date is valid
-                            # Use regex to see if data follows YYYY-MM-DD format
-                            # (4 digits - 2 digits - 2 digits)
-                            if re.match(r"\d{4}-\d{2}-\d{2}", date_val):
-                                norm_date = date_val
-                            else:
-                                # date did not match required format
-                                norm_date = ""
-                        except:
-                            print("normalizedNER not available.")
+                elif extract_date_from_text_var:
+                    # annotated is a string in json format, we can retrieve normalizedNER from it
+                    try:
+                        # Attempt to pull out normalizedNER
+                        date_val = ner["normalizedNER"]
+                        # Check if date is valid
+                        # Use regex to see if data follows YYYY-MM-DD format
+                        # (4 digits - 2 digits - 2 digits)
+                        if re.match(r"\d{4}-\d{2}-\d{2}", date_val):
+                            norm_date = date_val
+                        else:
+                            # date did not match required format
                             norm_date = ""
-                        temp.append(norm_date)
-                        NER.append(temp)
-                    else:
-                        NER.append(temp)
+                    except:
+                        print("normalizedNER not available.")
+                        norm_date = ""
+                    temp.append(norm_date)
+                    NER.append(temp)
+                else:
+                    NER.append(temp)
 
     # check tokenBegin & tokenEnd in current and next sentence
     # new_NER = check_NER_tokenBegin_tokenEnd(NER)
@@ -1910,11 +1898,10 @@ def process_json_sentiment(config_filename, documentID, document, sentenceID, js
         for token in sentence["tokens"]:
             if token["originalText"] in string.punctuation:
                 text = text + token["originalText"]
+            elif token["index"] == 1:
+                text = text + token["originalText"]
             else:
-                if token["index"] == 1:
-                    text = text + token["originalText"]
-                else:
-                    text = text + " " + token["originalText"]
+                text = text + " " + token["originalText"]
 
         check_sentence_length(len(sentence["tokens"]), sentenceID, config_filename)
 
@@ -2010,7 +1997,7 @@ def process_json_coref(config_filename, documentID, document, sentenceID, json, 
                     print(output_word)
                 # check lemmas as well as tags for possessive pronouns in case of tagging errors
                 if token["lemma"].lower() in possessives or token["pos"] == "PRP$":
-                    if not "'s" in output_word and output_word.lower() not in pronouns:
+                    if "'s" not in output_word and output_word.lower() not in pronouns:
                         output_word += "'s"  # add the possessive morpheme
                 output_word += token["after"]
                 if output_word == ". ":
@@ -2095,11 +2082,10 @@ def process_json_gender(config_filename, documentID, document, start_sentenceID,
         for token in sentence["tokens"]:
             if token["originalText"] in string.punctuation:
                 complete_sent = complete_sent + token["originalText"]
+            elif token["index"] == 1:
+                complete_sent = complete_sent + token["originalText"]
             else:
-                if token["index"] == 1:
-                    complete_sent = complete_sent + token["originalText"]
-                else:
-                    complete_sent = complete_sent + " " + token["originalText"]
+                complete_sent = complete_sent + " " + token["originalText"]
         sentenceID = sentence["index"] + 1
 
         check_sentence_length(len(sentence["tokens"]), sentenceID, config_filename)
@@ -2311,11 +2297,10 @@ def process_json_sentence(config_filename, documentID, document, sentenceID, jso
                 number_punctuations = number_punctuations + 1
             if token["originalText"] in string.punctuation:
                 complete_sent = complete_sent + token["originalText"]
+            elif token["index"] == 1:
+                complete_sent = complete_sent + token["originalText"]
             else:
-                if token["index"] == 1:
-                    complete_sent = complete_sent + token["originalText"]
-                else:
-                    complete_sent = complete_sent + " " + token["originalText"]
+                complete_sent = complete_sent + " " + token["originalText"]
             sentence_length = sentence_length + 1
         sentenceID = sentenceID + 1
         if "filename_embeds_date_var" in kwargs:
@@ -2420,11 +2405,10 @@ def process_json_SVO_enhanced_dependencies(
         for token in sentence["tokens"]:
             if token["originalText"] in string.punctuation:
                 complete_sent = complete_sent + token["originalText"]
+            elif token["index"] == 1:
+                complete_sent = complete_sent + token["originalText"]
             else:
-                if token["index"] == 1:
-                    complete_sent = complete_sent + token["originalText"]
-                else:
-                    complete_sent = complete_sent + " " + token["originalText"]
+                complete_sent = complete_sent + " " + token["originalText"]
 
         sentenceID = sentenceID + 1
         check_sentence_length(len(sentence["tokens"]), sentenceID, config_filename)
@@ -2756,11 +2740,10 @@ def process_json_openIE(config_filename, documentID, document, sentenceID, json,
 
             if token["originalText"] in string.punctuation:
                 complete_sent = complete_sent + token["originalText"]
+            elif token["index"] == 1:
+                complete_sent = complete_sent + token["originalText"]
             else:
-                if token["index"] == 1:
-                    complete_sent = complete_sent + token["originalText"]
-                else:
-                    complete_sent = complete_sent + " " + token["originalText"]
+                complete_sent = complete_sent + " " + token["originalText"]
         sentenceID = sentenceID + 1
 
         check_sentence_length(len(sentence["tokens"]), sentenceID, config_filename)
@@ -3182,7 +3165,7 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
                 temp.append(depLib[depID][0])
                 # Add enhanced dep here
                 depString = ""
-                dep: Tuple[int, str]
+                dep: tuple[int, str]
                 for dep in enhancedDepLib.get(depID, []):
                     if len(depString) != 0:
                         depString = depString + "|"

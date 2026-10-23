@@ -1,10 +1,11 @@
+import itertools
 import os
 import pickle
-import itertools
-import pandas as pd
-import spacy
 import re
+
+import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
+import spacy
 
 
 def extract_topn_from_vector(feature_names, sorted_items, topn):
@@ -67,10 +68,9 @@ def sense_keywords(d, o_path, re_pattern=r"[^a-zA-Z'\-’ ]", mf_prop=1, topn=10
                     continue
                 elif len(set(kw.split())) < len(kw.split()):
                     continue
-                else:
-                    if kw not in already_in and kw != w:
-                        filtered_keywords.append(kw)
-                        already_in.add(kw)
+                elif kw not in already_in and kw != w:
+                    filtered_keywords.append(kw)
+                    already_in.add(kw)
             kw_d[w][i] = filtered_keywords[:topn]
 
     kw_dfs = {w: pd.DataFrame.from_dict(kw_d[w], orient="index") for w in kw_d}

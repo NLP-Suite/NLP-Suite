@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Make a folium TimestampedGeoJson map's play button actually play.
 
 WHY. The Leaflet.TimeDimension that folium loads has two faults that together

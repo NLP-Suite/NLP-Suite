@@ -1,12 +1,11 @@
-import time
-import tkinter as tk
-import tkinter.messagebox as mb
-import os
 import json
 import logging
+import os
+import time
+import tkinter.messagebox as mb
 
-import IO_csv_util
 import GUI_IO_util
+import IO_csv_util
 
 logger = logging.getLogger()
 
@@ -60,17 +59,15 @@ def convert_time(time):
         if hours > 0:
             message = message + ", "
             message = message + str(minutes) + minute_label
-        else:
-            if minutes > 0:
-                message = message + str(minutes) + minute_label
+        elif minutes > 0:
+            message = message + str(minutes) + minute_label
     if seconds >= 0:
         if hours > 0:
             message = message + ", and " + str(seconds) + second_label
+        elif minutes > 0:
+            message = message + " and " + str(seconds) + second_label
         else:
-            if minutes > 0:
-                message = message + " and " + str(seconds) + second_label
-            else:
-                message = message + str(seconds) + second_label
+            message = message + str(seconds) + second_label
     return hours, minutes, seconds, message
 
 
@@ -113,7 +110,7 @@ def timed_alert(
             print_message_text = print_message_text.replace("Opening", "\nOpening")
         print(print_message_text)
     if not silent:
-        if not "Finished" in message_text and not "Opening" in message_text:
+        if "Finished" not in message_text and "Opening" not in message_text:
             message_text = message_text + "\n\nYou can follow the algorithm in command line."
 
         GUI_IO_util.message_box_widget(window, message_title, message_text, "OK", timeout)

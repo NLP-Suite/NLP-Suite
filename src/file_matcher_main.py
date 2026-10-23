@@ -1,6 +1,7 @@
 # Written by Roberto Franzosi December 2019
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -9,10 +10,11 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window, "file_matcher.
 
 import os
 import tkinter as tk
-import IO_user_interface_util
+
 import file_matcher_util
 import GUI_IO_util
 import IO_files_util
+import IO_user_interface_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 

@@ -3,6 +3,7 @@
 # and data_visualization_2_main.py (numeric/statistical)
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -14,14 +15,13 @@ if (
 
 import os
 import tkinter as tk
-import tkinter.ttk as ttk
+from tkinter import ttk
 import tkinter.messagebox as mb
-from subprocess import call
 
+import charts_util
 import GUI_IO_util
 import IO_csv_util
 import IO_files_util
-import charts_util
 import run_script_util
 
 # ── Run functions ──────────────────────────────────────────────────────────────
@@ -962,7 +962,7 @@ selected_csv_fields_area.place(x=350, y=45)
 
 
 def display_selected_csv_fields():
-    if csv_field_relational_var.get() != "" and not csv_field_relational_var.get() in csv_file_relational_field_list:
+    if csv_field_relational_var.get() != "" and csv_field_relational_var.get() not in csv_file_relational_field_list:
         csv_file_relational_field_list.append(csv_field_relational_var.get())
         new_string = ", ".join(csv_file_relational_field_list)
         selected_csv_file_fields.set(new_string.lstrip())
@@ -1591,16 +1591,15 @@ csv_field_visualization_menu.place(x=280, y=42)
 
 def check_selected_csv_file_field_Y_axis_list(main_Y_axis):
     global csv_field_visualization_var_SV
-    if not "Excel" in visualizations_menu_var.get():
+    if "Excel" not in visualizations_menu_var.get():
         return
     if csv_field_visualization_var.get() != "":
         if csv_field_visualization_var_SV == "":
             csv_field_visualization_var_SV = csv_field_visualization_var.get()
-        else:
-            if main_Y_axis:
-                if csv_field_visualization_var_SV in str(", ".join(csv_file_field_Y_axis_list)):
-                    csv_file_field_Y_axis_list.remove(csv_field_visualization_var_SV)
-                csv_field_visualization_var_SV = ""
+        elif main_Y_axis:
+            if csv_field_visualization_var_SV in str(", ".join(csv_file_field_Y_axis_list)):
+                csv_file_field_Y_axis_list.remove(csv_field_visualization_var_SV)
+            csv_field_visualization_var_SV = ""
     if main_Y_axis:
         field_value = csv_field_visualization_var.get()
     else:

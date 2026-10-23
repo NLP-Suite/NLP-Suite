@@ -1,6 +1,7 @@
 # Written by Roberto Franzosi
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -11,20 +12,19 @@ if (
     sys.exit(0)
 
 import os
-import IO_user_interface_util
 import tkinter as tk
 import tkinter.messagebox as mb
-from subprocess import call
 
+import config_util
 import GUI_IO_util
 import IO_files_util
-import config_util
+import IO_user_interface_util
 import reminders_util
-import Stanford_CoreNLP_util
-import Stanford_CoreNLP_coreference_util
-import Stanza_util
-import spaCy_util
 import run_script_util
+import spaCy_util
+import Stanford_CoreNLP_coreference_util
+import Stanford_CoreNLP_util
+import Stanza_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -164,69 +164,68 @@ def run():
                     annotator = "parser (pcfg)"
                 elif parser_menu_var == "Neural Network":
                     annotator = "parser (nn)"
-            else:
-                if annotators_var and annotators_menu_var != "":
-                    if "NER annotator" in annotators_menu_var:
-                        annotator = "NER"
-                    # if 'NER annotator' in annotators_menu_var:
-                    #     annotator = 'NER'
-                    #     if IO_libraries_util.check_inputPythonJavaProgramFile('NER_main.py') == False:
-                    #         return
-                    #     run_script_util.run_script("NER_main.py")
-                    elif "Sentence splitter (with sentence length)" in annotators_menu_var:
-                        annotator = "Sentence"
-                    elif "Lemma annotator" in annotators_menu_var:
-                        annotator = "Lemma"
-                    elif "POS annotator" in annotators_menu_var:
-                        annotator = "All POS"
-                    elif "Gender" in annotators_menu_var:
-                        annotator = "gender"
-                    elif "Quote" in annotators_menu_var:
-                        annotator = "quote"
-                    elif "Normalized" in annotators_menu_var:
-                        annotator = "normalized-date"
-                    elif "*" in annotators_menu_var:
-                        annotator = ["gender", "normalized-date", "quote"]
-                    elif "Sentiment analysis" in annotators_menu_var:
-                        annotator = ["sentiment"]
-                    elif "SVO" in annotators_menu_var:
-                        annotator = ["SVO"]
-                    elif "OpenIE" in annotators_menu_var:
-                        annotator = ["OpenIE"]
-                    elif "Coreference PRONOMINAL resolution" in annotators_menu_var:
-                        annotator = []
-                        if (
-                            IO_libraries_util.check_inputPythonJavaProgramFile("Stanford_CoreNLP_coReference_util.py")
-                            == False
-                        ):
-                            return
-                        outputFiles, error_indicator = Stanford_CoreNLP_coreference_util.run(
-                            config_filename,
-                            inputFilename,
-                            inputDir,
-                            outputDir,
-                            openOutputFiles,
-                            chartPackage,
-                            dataTransformation,
-                            language,
-                            memory_var,
-                            export_json_var,
-                            manual_Coref,
-                        )
-
-                        if error_indicator != 0:
-                            mb.showinfo(
-                                "Coreference Resolution Error",
-                                "Since Stanford CoreNLP Co-Reference Resolution throws error, "
-                                + "and you either didn't choose manual Co-Reference Resolution or manual Co-Referenece Resolution fails as well, the process ends now.",
-                            )
-                        if outputFiles:
-                            if isinstance(outputFiles, str):
-                                filesToOpen.append(outputFiles)
-                            else:
-                                filesToOpen.extend(outputFiles)
-                    else:
+            elif annotators_var and annotators_menu_var != "":
+                if "NER annotator" in annotators_menu_var:
+                    annotator = "NER"
+                # if 'NER annotator' in annotators_menu_var:
+                #     annotator = 'NER'
+                #     if IO_libraries_util.check_inputPythonJavaProgramFile('NER_main.py') == False:
+                #         return
+                #     run_script_util.run_script("NER_main.py")
+                elif "Sentence splitter (with sentence length)" in annotators_menu_var:
+                    annotator = "Sentence"
+                elif "Lemma annotator" in annotators_menu_var:
+                    annotator = "Lemma"
+                elif "POS annotator" in annotators_menu_var:
+                    annotator = "All POS"
+                elif "Gender" in annotators_menu_var:
+                    annotator = "gender"
+                elif "Quote" in annotators_menu_var:
+                    annotator = "quote"
+                elif "Normalized" in annotators_menu_var:
+                    annotator = "normalized-date"
+                elif "*" in annotators_menu_var:
+                    annotator = ["gender", "normalized-date", "quote"]
+                elif "Sentiment analysis" in annotators_menu_var:
+                    annotator = ["sentiment"]
+                elif "SVO" in annotators_menu_var:
+                    annotator = ["SVO"]
+                elif "OpenIE" in annotators_menu_var:
+                    annotator = ["OpenIE"]
+                elif "Coreference PRONOMINAL resolution" in annotators_menu_var:
+                    annotator = []
+                    if (
+                        IO_libraries_util.check_inputPythonJavaProgramFile("Stanford_CoreNLP_coReference_util.py")
+                        == False
+                    ):
                         return
+                    outputFiles, error_indicator = Stanford_CoreNLP_coreference_util.run(
+                        config_filename,
+                        inputFilename,
+                        inputDir,
+                        outputDir,
+                        openOutputFiles,
+                        chartPackage,
+                        dataTransformation,
+                        language,
+                        memory_var,
+                        export_json_var,
+                        manual_Coref,
+                    )
+
+                    if error_indicator != 0:
+                        mb.showinfo(
+                            "Coreference Resolution Error",
+                            "Since Stanford CoreNLP Co-Reference Resolution throws error, "
+                            + "and you either didn't choose manual Co-Reference Resolution or manual Co-Referenece Resolution fails as well, the process ends now.",
+                        )
+                    if outputFiles:
+                        if isinstance(outputFiles, str):
+                            filesToOpen.append(outputFiles)
+                        else:
+                            filesToOpen.extend(outputFiles)
+                else:
+                    return
 
             if len(annotator) > 0:
                 # all items in red (e.g., filename_embeds_date_var, date_format) are the **kwargs in the function CoreNLP_annotate
@@ -853,7 +852,7 @@ def activate_annotators_menu(*args):
         open_GUI_checkbox.place_forget()  # invisible
         annotators_menu_var.set("")
         annotators_menu.configure(state="disabled")
-    if not "CoreNLP" in annotators_menu_var.get():
+    if "CoreNLP" not in annotators_menu_var.get():
         Json_checkbox.place_forget()  # invisible
 
 
@@ -1028,16 +1027,15 @@ def activate_NLP_options(*args):
         available_parsers = "Parsers for " + str(package)  # + '                          '
     else:
         available_parsers = "Parsers"
-    if not "CoreNLP" in package:
+    if "CoreNLP" not in package:
         Json_checkbox.place_forget()  # invisible
-    else:
-        if parser_var.get():
-            Json_var.set(0)
-            y_multiplier_integer = y_multiplier_integer_SV
-            y_multiplier_integer = GUI_IO_util.placeWidget(
-                window, GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer, Json_checkbox, True
-            )
-            Json_checkbox.configure(state="normal")
+    elif parser_var.get():
+        Json_var.set(0)
+        y_multiplier_integer = y_multiplier_integer_SV
+        y_multiplier_integer = GUI_IO_util.placeWidget(
+            window, GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer, Json_checkbox, True
+        )
+        Json_checkbox.configure(state="normal")
     if CoNLL_table_analyzer_var.get() == 1:
         CoNLL_table_analyzer_checkbox_msg.config(text="Open CoNLL table analyzer GUI")
     else:

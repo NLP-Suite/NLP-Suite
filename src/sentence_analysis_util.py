@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -10,10 +11,12 @@ if (
 ):
     sys.exit(0)
 
-import tkinter as tk
 import collections
 import os
+import tkinter as tk
+
 import pandas as pd
+
 import IO_csv_util
 import IO_files_util
 
@@ -34,7 +37,7 @@ def dictionary_items_bySentenceID(
     input_dictionary_file="",
     chart_title="",
 ):
-    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text
+    from Stanza_functions_util import sentence_split_stanza_text, stanzaPipeLine, tokenize_stanza_text
 
     filesToOpen = []
     DictionaryList = []
@@ -67,7 +70,7 @@ def dictionary_items_bySentenceID(
             documentID += 1
             head, tail = os.path.split(file)
             print("Processing file ", str(documentID), "\\", str(nFile), tail)
-            with open(file, "r", encoding="utf-8", errors="ignore") as _f:
+            with open(file, encoding="utf-8", errors="ignore") as _f:
                 text = _f.read()
             # Process each word in txt
             Sentence_ID = 0
@@ -109,7 +112,7 @@ def dictionary_items_bySentenceID(
             documentID += 1
             head, tail = os.path.split(file)
             print("Processing file ", str(documentID), "\\", str(nFile), tail)
-            with open(file, "r", encoding="utf-8", errors="ignore") as _f:
+            with open(file, encoding="utf-8", errors="ignore") as _f:
                 text = _f.read()
             # Process each word in txt
             Sentence_ID = 0

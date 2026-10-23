@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -11,15 +12,11 @@ if (
     sys.exit(0)
 
 import tkinter.messagebox as mb
-import re
+
 import pandas as pd
-import os
-import csv
 
 import CoNLL_util
 import IO_csv_util
-import GUI_IO_util
-import IO_user_interface_util
 
 # multi_word_location_prefix = "Republic of, People's, Kingdom of, south, South, north, North, west, east, los, new, san, las, la, hong, Soviet"
 # split_locations_suffix = "city, island, province"
@@ -108,14 +105,13 @@ def extract_NER_locations(window, conllFile, encodingValue, datePresent):
                     # the current location value (e.g., las) needs to be merged with the next row value (e.g., las vegas)
                     tempLocation = row[1]
                     continue
+                elif tempLocation != "":  # we are on the next row
+                    currList.append(tempLocation + " " + row[1])  # col 1 is the FORM value
+                    currList.append(row[4])  # append NER tag (e.g., COUNTRY)
+                    tempLocation = ""
                 else:
-                    if tempLocation != "":  # we are on the next row
-                        currList.append(tempLocation + " " + row[1])  # col 1 is the FORM value
-                        currList.append(row[4])  # append NER tag (e.g., COUNTRY)
-                        tempLocation = ""
-                    else:
-                        currList.append(row[1])  # col 1 is the FORM value (e.g., Italy)
-                        currList.append(row[4])  # append NER tag (e.g., COUNTRY)
+                    currList.append(row[1])  # col 1 is the FORM value (e.g., Italy)
+                    currList.append(row[4])  # append NER tag (e.g., COUNTRY)
 
                 currList.append(sentenceID)
                 currList.append(sentence_str.lstrip())
@@ -290,12 +286,11 @@ def extract_csvFile_locations(
                                 else:
                                     currLocation = row["Location"]
                                 continue
+                            elif currLocation != "":
+                                currLocation = currLocation + " " + row["Location"]
+                            # currLocation = ''
                             else:
-                                if currLocation != "":
-                                    currLocation = currLocation + " " + row["Location"]
-                                # currLocation = ''
-                                else:
-                                    currLocation = row["Location"]
+                                currLocation = row["Location"]
                             # sentence = row["Sentence"]
                             # document = row["Document"]
                         except:

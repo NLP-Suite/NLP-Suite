@@ -1,6 +1,7 @@
 # Roberto Franzosi September 2020
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -16,17 +17,15 @@ if (
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
-from subprocess import call
 
+import config_util
 import GUI_IO_util
 import IO_files_util
-import reminders_util
-import config_util
+import NER_entity_timeline_util
+import run_script_util
 import spaCy_util
 import Stanford_CoreNLP_util
 import Stanza_util
-import NER_entity_timeline_util
-import run_script_util
 
 # location NER tags across all schemes (CoreNLP, OntoNotes, CoNLL); BIOES prefixes are stripped before testing
 _LOCATION_TAGS = ("GPE", "LOC", "LOCATION", "CITY", "STATE_OR_PROVINCE", "COUNTRY")
@@ -763,32 +762,31 @@ def add_NER_tag(coming_from_add, coming_from_reset):
         elif sel == "--- All other expressions":
             NER_list = ["PRODUCT", "EVENT", "WORK_OF_ART", "LAW", "LANGUAGE"]
             NER_entry_var.set(", ".join(NER_list))
-    else:
-        if "All NER tags" in sel:  # == '--- All NER tags':
-            NER_list = NER_list
-            NER_entry_var.set(
-                "PERSON, ORGANIZATION, MISC, MONEY, NUMBER, ORDINAL, PERCENT, DATE, TIME, DURATION, SET, EMAIL, URL, CITY,STATE_OR_PROVINCE, COUNTRY, LOCATION, NATIONALITY, RELIGION, TITLE, IDEOLOGY, CRIMINAL_CHARGE,CAUSE_OF_DEATH"
-            )
-        elif sel == "--- All quantitative expressions":
-            NER_list = ["NUMBER", "ORDINAL", "PERCENT"]
-            NER_entry_var.set("NUMBER, ORDINAL, PERCENT")
-        elif sel == "--- All social actors":
-            NER_list = ["PERSON", "ORGANIZATION"]
-            NER_entry_var.set("PERSON, ORGANIZATION")
-        elif sel == "--- All spatial expressions":
-            NER_list = ["CITY", "STATE_OR_PROVINCE", "COUNTRY", "LOCATION"]
-            NER_entry_var.set("CITY, STATE_OR_PROVINCE, COUNTRY, LOCATION")
-        elif sel == "--- All temporal expressions":
-            NER_list = ["DATE", "TIME", "DURATION", "SET"]
-            NER_entry_var.set("DATE, TIME, DURATION, SET")
-        elif sel == "--- All other expressions":
-            mb.showwarning(
-                title="Warning",
-                message="You cannot select the option --- All other expressions.\n\nPlease, select a different option and try again.",
-            )
-            NER_tag_var.set(" ")
-            window.focus_force()
-            return
+    elif "All NER tags" in sel:  # == '--- All NER tags':
+        NER_list = NER_list
+        NER_entry_var.set(
+            "PERSON, ORGANIZATION, MISC, MONEY, NUMBER, ORDINAL, PERCENT, DATE, TIME, DURATION, SET, EMAIL, URL, CITY,STATE_OR_PROVINCE, COUNTRY, LOCATION, NATIONALITY, RELIGION, TITLE, IDEOLOGY, CRIMINAL_CHARGE,CAUSE_OF_DEATH"
+        )
+    elif sel == "--- All quantitative expressions":
+        NER_list = ["NUMBER", "ORDINAL", "PERCENT"]
+        NER_entry_var.set("NUMBER, ORDINAL, PERCENT")
+    elif sel == "--- All social actors":
+        NER_list = ["PERSON", "ORGANIZATION"]
+        NER_entry_var.set("PERSON, ORGANIZATION")
+    elif sel == "--- All spatial expressions":
+        NER_list = ["CITY", "STATE_OR_PROVINCE", "COUNTRY", "LOCATION"]
+        NER_entry_var.set("CITY, STATE_OR_PROVINCE, COUNTRY, LOCATION")
+    elif sel == "--- All temporal expressions":
+        NER_list = ["DATE", "TIME", "DURATION", "SET"]
+        NER_entry_var.set("DATE, TIME, DURATION, SET")
+    elif sel == "--- All other expressions":
+        mb.showwarning(
+            title="Warning",
+            message="You cannot select the option --- All other expressions.\n\nPlease, select a different option and try again.",
+        )
+        NER_tag_var.set(" ")
+        window.focus_force()
+        return
     # individual-tag selection (the 'All NER tags' and '--- ...' labels are selectors, not literal tags)
     if sel != " " and "---" not in sel and "All NER tags" not in sel:
         full_default = _full_tag_set(pkg)
@@ -886,9 +884,8 @@ def activate_NER_Options(coming_from_add, coming_from_reset):
         reset_NER_button.configure(state="normal")
         if coming_from_reset:
             NER_tag_var.set(" ")
-        else:
-            if not coming_from_add:
-                NER_tag_var.set("All NER tags")  # --- All NER tags
+        elif not coming_from_add:
+            NER_tag_var.set("All NER tags")  # --- All NER tags
     elif "spaCy" in NER_packages_var.get():
         set_NER_menu_options(NER_tags_OntoNotes)
         NER_menu.configure(state="normal")

@@ -1,38 +1,32 @@
 # Written by Roberto Franzosi Fall 2020
 # Written by Roberto Franzosi Fall 2020
-import csv
-import sys
-
-import numpy as np
-
-import GUI_util
-import IO_libraries_util
+# import datetime
+from datetime import datetime
+import math
+import ntpath  # to split the path from filename
 
 # if not IO_libraries_util.install_all_Python_packages(GUI_util.window,"DB_SQL",['io','os','tkinter','subprocess','re','datetime','shutil','ntpath']):
 #     sys.exit(0)
-
 import os
-from sys import platform
-import tkinter.messagebox as mb
-import tkinter as tk
-from tkinter import filedialog
-import math
-import webbrowser
+from pathlib import Path
 import re
-
-# import datetime
-from datetime import datetime
+import shutil
 import subprocess
 from subprocess import call
-import shutil
-import ntpath  # to split the path from filename
-from pathlib import Path
+import sys
+from sys import platform
+import tkinter as tk
+from tkinter import filedialog
+import tkinter.messagebox as mb
+import webbrowser
 
-import reminders_util
 import CoNLL_util
-import IO_user_interface_util
 import GUI_IO_util
+import GUI_util
 import IO_csv_util
+import IO_libraries_util
+import IO_user_interface_util
+import reminders_util
 
 # There are 3 methods and a 2 constants present:
 # abspath returns absolute path of a path
@@ -148,14 +142,13 @@ def getFileList_SubDir(inputFilename, inputDir, fileType=".*", silent=False):
             return files
         if inputFilename.endswith(fileType):
             files = [inputFilename]
-        else:
-            if not silent:
-                mb.showwarning(
-                    title="Input file error",
-                    message="The input file type expected by the algorithm is "
-                    + fileType
-                    + ".\n\nPlease, select the expected file type and try again.",
-                )
+        elif not silent:
+            mb.showwarning(
+                title="Input file error",
+                message="The input file type expected by the algorithm is "
+                + fileType
+                + ".\n\nPlease, select the expected file type and try again.",
+            )
     # folder, subs, files = os.walk(inputDir)
     # filter files for the desired extension
     # if fileType!='.*':
@@ -185,10 +178,9 @@ def getFileList_SubDir(inputFilename, inputDir, fileType=".*", silent=False):
 
 
 import functools
-from datetime import datetime
 import os
-import run_script_util
 
+import run_script_util
 
 # the below is to convert from self-defined date format to the correct datetime format
 rule_to_format = {
@@ -243,7 +235,7 @@ def complete_order(bb, c):
 
 def do_compare(input_list, file_end, sort_order, compare_split, date_format, date_loc):
     def compare(filename1, filename2):
-        if not compare_split in filename1:
+        if compare_split not in filename1:
             print(
                 "Non fatal filename error in filename separator. Error ignored.\nThe filename separator '"
                 + compare_split
@@ -252,7 +244,7 @@ def do_compare(input_list, file_end, sort_order, compare_split, date_format, dat
                 + "\nYou should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration at the top of the GUI.\n\n"
             )
             return -1
-        if not compare_split in filename2:
+        if compare_split not in filename2:
             #  The information may have been entered incorrectly when setting up INPUT/OUTPUT (I/O) configuration. Please, check and edit the information. The information may have been entered incorrectly when setting up INPUT/OUTPUT (I/O) configuration. Please, check and edit the information.
             print(
                 "Non fatal filename error in filename separator. Error ignored.\nThe filename separator '"
@@ -280,11 +272,10 @@ def do_compare(input_list, file_end, sort_order, compare_split, date_format, dat
                             return -1
                         else:
                             return 1
+                    elif filename1[q[i]] < filename2[q[i]]:
+                        return -1
                     else:
-                        if filename1[q[i]] < filename2[q[i]]:
-                            return -1
-                        else:
-                            return 1
+                        return 1
                     i += 1
             else:
                 # scenario where filenames contain dates
@@ -368,14 +359,13 @@ def getFileList(inputFile, inputDir, fileType=".*", silent=False, configFileName
             return files
         if inputFile.endswith(fileType):
             files = [inputFile]
-        else:
-            if not silent:
-                mb.showwarning(
-                    title="Input file error",
-                    message="The input file type expected by the algorithm is "
-                    + fileType
-                    + ".\n\nPlease, select the expected file type and try again.",
-                )
+        elif not silent:
+            mb.showwarning(
+                title="Input file error",
+                message="The input file type expected by the algorithm is "
+                + fileType
+                + ".\n\nPlease, select the expected file type and try again.",
+            )
     # print(inputDir)
 
     # append sort order and separator
@@ -398,14 +388,13 @@ def getFileList(inputFile, inputDir, fileType=".*", silent=False, configFileName
                         + configFileName
                         + ' does not exist.\n\nPlease, use the "Setup INPUT/OUTPUT configuration" button to setup the I/O config file and try again.',
                     )
-            else:
-                if not silent:
-                    mb.showwarning(
-                        title="Input config file error",
-                        message="The GUI-specific config file "
-                        + configFileName
-                        + ' does not exist.\n\nPlease, use the dropdown menu "I/O configuration" to select the GUI-specific option, then click on "Setup INPUT/OUTPUT configuration" button to setup the GUI-specific I/O config file and try again.',
-                    )
+            elif not silent:
+                mb.showwarning(
+                    title="Input config file error",
+                    message="The GUI-specific config file "
+                    + configFileName
+                    + ' does not exist.\n\nPlease, use the dropdown menu "I/O configuration" to select the GUI-specific option, then click on "Setup INPUT/OUTPUT configuration" button to setup the GUI-specific I/O config file and try again.',
+                )
             return files
         # drop records with nan in Sort order
         a = a.dropna(subset=["Sort order"])
@@ -474,23 +463,21 @@ def selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, outp
         # initialFolder = os.path.dirname(os.path.abspath(__file__)) # this sets itself on NLP\src
         if extension == ".txt":
             initialFolder = GUI_IO_util.sampleData_libPath
-        else:
-            if GUI_util.output_dir_path.get() != "" and extension == ".csv":
-                initialFolder = GUI_util.input_main_dir_path.get()
+        elif GUI_util.output_dir_path.get() != "" and extension == ".csv":
+            initialFolder = GUI_util.input_main_dir_path.get()
     if IsInputFile == True:  # as opposed to output file
         # when the file string is blank, the directory option should always also be available
         inputFilename = tk.filedialog.askopenfilename(initialdir=initialFolder, title=title, filetypes=fileType)
         from os.path import splitext
 
         file_name, extension = splitext(inputFilename)
+    elif outputFileVar != None:
+        outputFilename = outputFileVar
+        inputFilename = tk.filedialog.asksaveasfile(
+            initialdir=initialFolder, initialfile=outputFilename.get(), title=title, filetypes=fileType
+        )
     else:
-        if outputFileVar != None:
-            outputFilename = outputFileVar
-            inputFilename = tk.filedialog.asksaveasfile(
-                initialdir=initialFolder, initialfile=outputFilename.get(), title=title, filetypes=fileType
-            )
-        else:
-            print("Error in output file name creation")
+        print("Error in output file name creation")
     # when the file string is blank, the directory option should always also be available
     if inputFilename is None:
         inputFilename = ""
@@ -935,7 +922,7 @@ def openFile(window, inputFilename):
                 try:
                     os.system('start "" "' + inputFilename + '"')
                     break  # exit loop
-                except IOError as e:
+                except OSError as e:
                     mb.showwarning(
                         title="Input file error", message="Could not open the file " + inputFilename + "\n\n" + str(e)
                     )
@@ -950,7 +937,7 @@ def openFile(window, inputFilename):
                 try:
                     call(["open", inputFilename])
                     break  # exit loop
-                except IOError as e:
+                except OSError as e:
                     mb.showwarning(
                         title="Input file error", message="Could not open the file " + inputFilename + "\n\n" + str(e)
                     )
@@ -1328,19 +1315,14 @@ def generate_output_file_name(
     if inputfile[0:4] != "NLP_":  # "NLP_" not in inputfile:
         if label1 == "":
             default_outputFilename_str = "NLP_" + inputfile  # adding to front of file name
+        elif inputfile != "":
+            default_outputFilename_str = "NLP_" + str(label1) + "_" + inputfile  # adding to front of file name
         else:
-            if inputfile != "":
-                default_outputFilename_str = "NLP_" + str(label1) + "_" + inputfile  # adding to front of file name
-            else:
-                default_outputFilename_str = "NLP_" + str(label1)  # adding to front of file name
-    else:
-        if label1 == "":
-            default_outputFilename_str = inputfile
-        else:
-            if (
-                inputfile[0:4] == "NLP_"
-            ):  # only replace first 4 characters since NLP may occur elsewhere in the filename
-                default_outputFilename_str = inputfile[0:4].replace("NLP_", "NLP_" + label1 + "_") + inputfile[4:]
+            default_outputFilename_str = "NLP_" + str(label1)  # adding to front of file name
+    elif label1 == "":
+        default_outputFilename_str = inputfile
+    elif inputfile[0:4] == "NLP_":  # only replace first 4 characters since NLP may occur elsewhere in the filename
+        default_outputFilename_str = inputfile[0:4].replace("NLP_", "NLP_" + label1 + "_") + inputfile[4:]
     for _label in (label2, label3, label4, label5):
         if len(str(_label)) > 0 and not label_already_in_name(_label, default_outputFilename_str):
             default_outputFilename_str = default_outputFilename_str + "_" + str(_label)
@@ -1440,7 +1422,7 @@ def openCSVFile(inputfile, open_type, encoding_type="utf-8"):
     try:
         csvfile = open(inputfile, open_type, newline="", encoding=encoding_type, errors="ignore")
         return csvfile
-    except IOError:
+    except OSError:
         mb.showwarning(
             title="File error",
             message="Could not open the file "

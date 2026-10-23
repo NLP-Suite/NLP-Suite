@@ -1,13 +1,13 @@
-import numpy as np
-import pandas as pd
-
 # from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
 import os
 
-import IO_files_util
-import IO_user_interface_util
+import numpy as np
+import pandas as pd
+
 import charts_util
 import IO_csv_util
+import IO_files_util
+import IO_user_interface_util
 
 # notSure = set()
 # added = set()
@@ -485,13 +485,12 @@ def lemmatize_filter_svo(
     dataTransformation="No transformation",
 ):
     filesToOpen = []
-    from Stanza_functions_util import (
-        stanzaPipeLine,
-        sentence_split_stanza_text,
-        tokenize_stanza_text,
-        lemmatize_stanza_word,
-    )
     from functools import lru_cache
+
+    from Stanza_functions_util import (
+        lemmatize_stanza_word,
+        stanzaPipeLine,
+    )
 
     @lru_cache(maxsize=10000)
     def memoized_lemmatize(token):
@@ -992,10 +991,8 @@ def lemmatize_filter_svo_old(
     o_filtered_set = {}
 
     from Stanza_functions_util import (
-        stanzaPipeLine,
-        sentence_split_stanza_text,
-        tokenize_stanza_text,
         lemmatize_stanza_word,
+        stanzaPipeLine,
     )
 
     startTime = IO_user_interface_util.timed_alert(
@@ -1040,13 +1037,13 @@ def lemmatize_filter_svo_old(
 
             # Generating filter dicts from filter files
             if filter_s:
-                s_filtered_set = open(filter_s_fileName, "r", encoding="utf-8-sig", errors="ignore").read().split("\n")
+                s_filtered_set = open(filter_s_fileName, encoding="utf-8-sig", errors="ignore").read().split("\n")
                 s_filtered_set = set(s_filtered_set)
             if filter_v:
-                v_filtered_set = open(filter_v_fileName, "r", encoding="utf-8-sig", errors="ignore").read().split("\n")
+                v_filtered_set = open(filter_v_fileName, encoding="utf-8-sig", errors="ignore").read().split("\n")
                 v_filtered_set = set(v_filtered_set)
             if filter_o:
-                o_filtered_set = open(filter_o_fileName, "r", encoding="utf-8-sig", errors="ignore").read().split("\n")
+                o_filtered_set = open(filter_o_fileName, encoding="utf-8-sig", errors="ignore").read().split("\n")
                 o_filtered_set = set(o_filtered_set)
 
     # update LEMMATIZED dict and FILTERED dict
@@ -1058,48 +1055,43 @@ def lemmatize_filter_svo_old(
                     stanzaPipeLine(unfiltered_svo[i]["Subject (S)"])
                 )
                 # lemmatized_svo.add(i,lemmatize_stanza_word(stanzaPipeLine(unfiltered_svo[i]['Subject (S)'])))
-                if (filter_s and filter_s_fileName != "") and (not unfiltered_svo[i]["Subject (S)"] in s_filtered_set):
+                if (filter_s and filter_s_fileName != "") and (unfiltered_svo[i]["Subject (S)"] not in s_filtered_set):
                     del filtered_svo[i]
                     # del lemmatized_filtered_svo[i]
                     deleted = True
-                else:
-                    # if lemmatize_s and lemmatized_filtered_svo != {}:
-                    # if lemmatize_s and lemmatized_filtered_svo != {}:
-                    #     lemmatized_filtered_svo[i]['Subject (S)'] = lemmatize_stanza_word(
-                    #         stanzaPipeLine(filtered_svo[i]['Subject (S)']))
-                    if lemmatize_s and filtered_svo != {}:
-                        filtered_svo[i]["Subject (S)"] = lemmatize_stanza_word(
-                            stanzaPipeLine(filtered_svo[i]["Subject (S)"])
-                        )
+                # if lemmatize_s and lemmatized_filtered_svo != {}:
+                # if lemmatize_s and lemmatized_filtered_svo != {}:
+                #     lemmatized_filtered_svo[i]['Subject (S)'] = lemmatize_stanza_word(
+                #         stanzaPipeLine(filtered_svo[i]['Subject (S)']))
+                elif lemmatize_s and filtered_svo != {}:
+                    filtered_svo[i]["Subject (S)"] = lemmatize_stanza_word(
+                        stanzaPipeLine(filtered_svo[i]["Subject (S)"])
+                    )
 
         if not pd.isna(unfiltered_svo[i]["Verb (V)"]):
             if lemmatize_v:
                 lemmatized_svo[i]["Verb (V)"] = lemmatize_stanza_word(stanzaPipeLine(unfiltered_svo[i]["Verb (V)"]))
-                if (filter_v and filter_v_fileName != "") and (not unfiltered_svo[i]["Verb (V)"] in v_filtered_set):
+                if (filter_v and filter_v_fileName != "") and (unfiltered_svo[i]["Verb (V)"] not in v_filtered_set):
                     if not deleted:
                         del filtered_svo[i]
                         # del lemmatized_filtered_svo[i]
                         deleted = True
-                else:
-                    # if not deleted and lemmatize_v and lemmatized_filtered_svo!={}:
-                    #     lemmatized_filtered_svo[i]['Verb (V)'] = lemmatize_stanza_word(stanzaPipeLine(filtered_svo[i]['Verb (V)']))
-                    if not deleted and lemmatize_v and filtered_svo != {}:
-                        filtered_svo[i]["Verb (V)"] = lemmatize_stanza_word(stanzaPipeLine(filtered_svo[i]["Verb (V)"]))
+                # if not deleted and lemmatize_v and lemmatized_filtered_svo!={}:
+                #     lemmatized_filtered_svo[i]['Verb (V)'] = lemmatize_stanza_word(stanzaPipeLine(filtered_svo[i]['Verb (V)']))
+                elif not deleted and lemmatize_v and filtered_svo != {}:
+                    filtered_svo[i]["Verb (V)"] = lemmatize_stanza_word(stanzaPipeLine(filtered_svo[i]["Verb (V)"]))
 
         if not pd.isna(unfiltered_svo[i]["Object (O)"]):
             if lemmatize_o:
                 lemmatized_svo[i]["Object (O)"] = lemmatize_stanza_word(stanzaPipeLine(unfiltered_svo[i]["Object (O)"]))
-                if (filter_o and filter_o_fileName != "") and (not unfiltered_svo[i]["Object (O)"] in o_filtered_set):
+                if (filter_o and filter_o_fileName != "") and (unfiltered_svo[i]["Object (O)"] not in o_filtered_set):
                     if not deleted:
                         del filtered_svo[i]
                         # del lemmatized_filtered_svo[i]
-                else:
-                    # if not deleted and lemmatize_o and lemmatized_filtered_svo!={}:
-                    #     lemmatized_filtered_svo[i]['Object (O)'] = lemmatize_stanza_word(stanzaPipeLine(filtered_svo[i]['Object (O)']))
-                    if not deleted and lemmatize_o and filtered_svo != {}:
-                        filtered_svo[i]["Object (O)"] = lemmatize_stanza_word(
-                            stanzaPipeLine(filtered_svo[i]["Object (O)"])
-                        )
+                # if not deleted and lemmatize_o and lemmatized_filtered_svo!={}:
+                #     lemmatized_filtered_svo[i]['Object (O)'] = lemmatize_stanza_word(stanzaPipeLine(filtered_svo[i]['Object (O)']))
+                elif not deleted and lemmatize_o and filtered_svo != {}:
+                    filtered_svo[i]["Object (O)"] = lemmatize_stanza_word(stanzaPipeLine(filtered_svo[i]["Object (O)"]))
     # print(filter_s,filter_v,filtered_svo)
 
     # filtering for WordNet social actors/actions requires lemmatizing

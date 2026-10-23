@@ -5,12 +5,12 @@
 #
 # Usage:  python SRL_worker.py <input_file_or_dir> <output_csv> [model_path]
 
-import sys
-import os
 import csv
 import glob
 import html
+import os
 import re
+import sys
 import urllib.parse
 
 # NOTE: transformer_srl is imported LAZILY inside main() (not at module top), so this script stays

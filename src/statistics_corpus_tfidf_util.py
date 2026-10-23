@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -11,14 +12,12 @@ if (
     sys.exit(0)
 
 import os
+
 import pandas as pd
-import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
-import charts_util
 
 
 def compute_tfidf(
@@ -44,14 +43,14 @@ def compute_tfidf(
     doc_names = []
 
     if inputFilename and os.path.exists(inputFilename):
-        with open(inputFilename, "r", encoding="utf-8", errors="ignore") as f:
+        with open(inputFilename, encoding="utf-8", errors="ignore") as f:
             documents.append(f.read())
         doc_names.append(os.path.basename(inputFilename))
     elif inputDir and os.path.isdir(inputDir):
         txt_files = sorted([f for f in os.listdir(inputDir) if f.endswith(".txt")])
         for filename in txt_files:
             filepath = os.path.join(inputDir, filename)
-            with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+            with open(filepath, encoding="utf-8", errors="ignore") as f:
                 text = f.read()
             if text.strip():
                 documents.append(text)
@@ -116,8 +115,8 @@ def compute_tfidf(
         filesToOpen.append(chart_file)
 
     if len(documents) > 1:
-        from sklearn.metrics.pairwise import cosine_similarity
         import matplotlib.pyplot as plt
+        from sklearn.metrics.pairwise import cosine_similarity
 
         sim_matrix = cosine_similarity(tfidf_matrix)
         sim_df = pd.DataFrame(sim_matrix, index=doc_names, columns=doc_names)

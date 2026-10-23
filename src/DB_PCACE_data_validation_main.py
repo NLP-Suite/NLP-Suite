@@ -2,8 +2,9 @@
 # Data validation and cleaning GUI for PC-ACE simplex values and aggregate codes.
 
 import sys
-import IO_libraries_util
+
 import GUI_util
+import IO_libraries_util
 
 if (
     IO_libraries_util.install_all_Python_packages(
@@ -14,22 +15,21 @@ if (
     sys.exit(0)
 
 import os
-import tkinter as tk
-import tkinter.ttk as ttk
-import tkinter.messagebox as mb
-import tkinter.filedialog as filedialog
-import pandas as pd
 import subprocess
+import tkinter as tk
+from tkinter import filedialog, ttk
+import tkinter.messagebox as mb
 
+import pandas as pd
+
+import DB_PCACE_data_analysis_util
+import file_filename_util
+import GUI_IO_util
 import IO_csv_util
 import IO_files_util
-import GUI_IO_util
 import IO_user_interface_util
-import TIPS_util
-import DB_PCACE_data_analysis_util
-import statistics_csv_util
 import Stanza_util
-import file_filename_util
+import statistics_csv_util
 
 # Track whether the database has been loaded
 _database_loaded = False

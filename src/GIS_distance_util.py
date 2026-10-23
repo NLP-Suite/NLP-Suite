@@ -16,6 +16,7 @@
 
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -27,24 +28,22 @@ if (
 ):
     sys.exit(0)
 
+import csv
 import os
 import tkinter.messagebox as mb
-import pandas as pd
-import csv
 
 from geopy import distance
-
 from geopy.distance import great_circle
+import pandas as pd
+
+import charts_util
+import GIS_geocode_util
 
 # from geopy.extra.rate_limiter import RateLimiter
-
 import GIS_location_util
-import GIS_geocode_util
+import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
-import charts_util
-import IO_csv_util
-import IO_internet_util
 
 
 def createCharts(distanceoutputFilename, outputDir, filesToOpen, chartPackage, dataTransformation, baselineLocation=""):
@@ -124,8 +123,8 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, chartPackage, d
 # the per-pair chart in createCharts, it scales to large corpora (thousands of pairs).
 def create_distance_distribution_charts(distanceoutputFilename, outputDir, filesToOpen, encodingValue="utf-8"):
     try:
-        import numpy as np
         import matplotlib.pyplot as plt
+        import numpy as np
     except Exception as e:
         print("GIS_distance distribution charts: matplotlib/numpy unavailable:", e)
         return filesToOpen

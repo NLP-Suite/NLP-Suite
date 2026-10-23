@@ -27,6 +27,7 @@ Parameters:
 # add parameter to exclude duplicates? also mean or median analysis
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -40,22 +41,22 @@ if (
 ):
     sys.exit(0)
 
+import argparse
 import csv
 import os
-import numpy as np  # np
 import time
-import argparse
-
-import pandas as pd
 import tkinter.messagebox as mb
 
+import numpy as np  # np
+import pandas as pd
+
+import charts_util
+import GUI_IO_util
 import IO_csv_util
 import IO_files_util
-import GUI_IO_util
-import charts_util
 import statistics_statistical_tests_util
 
-fin = open("../lib/wordLists/stopwords.txt", "r")
+fin = open("../lib/wordLists/stopwords.txt")
 stops = set(fin.read().splitlines())
 
 anew = GUI_IO_util.sentiment_libPath + os.sep + "EnglishShortenedANEW.csv"
@@ -87,7 +88,7 @@ def analyzefile(inputFilename, outputDir, outputFilename, csvfile, mode, Documen
     #     outputFilename = IO_files_util.generate_outputFilename_name(inputFilename, outputFilename, '.csv', 'SC', 'ANEW', '', '', '', False, True)
 
     # read file into string
-    with open(inputFilename, "r", encoding="utf-8", errors="ignore") as myfile:
+    with open(inputFilename, encoding="utf-8", errors="ignore") as myfile:
         fulltext = myfile.read()
     # end method if file is empty
     if len(fulltext) < 1:
@@ -99,10 +100,10 @@ def analyzefile(inputFilename, outputDir, outputFilename, csvfile, mode, Documen
         return
 
     from Stanza_functions_util import (
-        stanzaPipeLine,
-        sentence_split_stanza_text,
-        tokenize_stanza_text,
         lemmatize_stanza_word,
+        sentence_split_stanza_text,
+        stanzaPipeLine,
+        tokenize_stanza_text,
     )
 
     # otherwise, split into sentences

@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Fri Aug 20 22:35:13 2021
 
 @author: claude
 """
 
-import GUI_IO_util
 import json
 import os
-import difflib
-import pprint
-import sys
+
+import GUI_IO_util
 
 
 def SVO_enhanced_dependencies_sent_data_reorg(sentence):  # reorganize the dependencies output of stanford corenlp
@@ -84,10 +81,9 @@ def conj_string(subjects, sent_data):  # connect multiple conjugates into a sing
                         result = result + ", " + sent_data[subjects[i]]["word"]
                     result = result + ", " + conj + " " + sent_data[subjects[-1]]["word"]
                     break
-            else:
-                if len(subjects) == 2 and subjects[-1] == subj_gov[key]:
-                    result = result + " " + conj + " " + sent_data[subjects[-1]]["word"]
-                    break
+            elif len(subjects) == 2 and subjects[-1] == subj_gov[key]:
+                result = result + " " + conj + " " + sent_data[subjects[-1]]["word"]
+                break
     # "It is a mistake to think that we can expand the scale of construction without limit,
     # regardless of the possible objective conditions, or to go about without any certainty,
     # without paying attention to the most rational and efficient use of material,
@@ -200,9 +196,8 @@ def advcl_building(token, sent_data, ner, p_s, p_o, v_obj_obl_json, v_prep_json)
         s, v, o, negation, o_idx = verb_root_svo_building(idx, sent_data, v_obj_obl_json, v_prep_json)
         if advcl_token["pos"] == "VBN" and o == "":  # if the modifier is in passive voice
             o = p_s  # the subject of the verb it modifies will be its default object
-        else:
-            if s == "Inferred_Subject_Passive":
-                s = p_s  # the subject of the verb it modifies will be its default subject
+        elif s == "Inferred_Subject_Passive":
+            s = p_s  # the subject of the verb it modifies will be its default subject
         result.append([s, v, o])
         negation_result.append(negation)
         # extract the modifer's modifier by recursion
@@ -601,11 +596,11 @@ def SVO_extraction(sent_data, entitymentions):  # returns columns of the final o
             location_list.append(item["text"])
             loc_NER_value.append([item["text"], item["ner"], item["tokenBegin"], item["tokenEnd"]])
         if item["ner"] is not None and item["ner"] in ["PERSON"]:
-            if not item["text"] in person_list:
+            if item["text"] not in person_list:
                 person_list.append(item["text"])
                 per_NER_value.append([item["text"], item["ner"], item["tokenBegin"], item["tokenEnd"]])
         if item["ner"] is not None and item["ner"] in ["ORGANIZATION"]:
-            if not item["text"] in organization_list:
+            if item["text"] not in organization_list:
                 organization_list.append(item["text"])
                 org_NER_value.append([item["text"], item["ner"], item["tokenBegin"], item["tokenEnd"]])
 
@@ -709,12 +704,12 @@ def SVO_extraction(sent_data, entitymentions):  # returns columns of the final o
     # print("BEGIN======")
     # print(SVO)
     for index, item in enumerate(SVO):
-        SVO[index][0] = replace_words_with_full_names(SVO[index][0], person_list)
-        SVO[index][0] = replace_words_with_full_names(SVO[index][0], organization_list)
-        SVO[index][0] = replace_words_with_full_names(SVO[index][0], location_list)
-        SVO[index][2] = replace_words_with_full_names(SVO[index][2], person_list)
-        SVO[index][2] = replace_words_with_full_names(SVO[index][2], organization_list)
-        SVO[index][2] = replace_words_with_full_names(SVO[index][2], location_list)
+        SVO[index][0] = replace_words_with_full_names(item[0], person_list)
+        SVO[index][0] = replace_words_with_full_names(item[0], organization_list)
+        SVO[index][0] = replace_words_with_full_names(item[0], location_list)
+        SVO[index][2] = replace_words_with_full_names(item[2], person_list)
+        SVO[index][2] = replace_words_with_full_names(item[2], organization_list)
+        SVO[index][2] = replace_words_with_full_names(item[2], location_list)
     # print(SVO)
     # print("======END")
     # the values are returned for every SVO

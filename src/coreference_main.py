@@ -1,6 +1,7 @@
 # written by Roberto Franzosi October 2021
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -12,27 +13,24 @@ if (
 ):
     sys.exit(0)
 
-from collections import defaultdict
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
-from subprocess import call
+
+import config_util
+import file_splitter_merged_txt_util
 
 # to install stanfordnlp, first install
 #   pip3 install torch===1.4.0 torchvision===0.5.0 -f https://download.pytorch.org/whl/torch_stable.html
 #   pip3 install stanfordnlp
 # import stanfordnlp
-
-
 import GUI_IO_util
-import IO_files_util
 import GUI_util
+import IO_files_util
+import reminders_util
+import run_script_util
 import Stanford_CoreNLP_coreference_util
 import Stanza_util
-import file_splitter_merged_txt_util
-import reminders_util
-import config_util
-import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 

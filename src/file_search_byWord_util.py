@@ -1,5 +1,4 @@
 #!/usr/bin/env Python
-# -*- coding: utf-8 -*-
 """
 Created on Wed Jun 10 21:37:40 2020
 
@@ -11,6 +10,7 @@ rewritten entirely by Roberto June 2024
 """
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -22,19 +22,17 @@ if (
 ):
     sys.exit(0)
 
+import csv
 import os
 import shutil  # for copy of files
-import csv
 import tkinter.messagebox as mb
-import stanza
-import collections
-import re
 
-import IO_user_interface_util
-import IO_files_util
-import IO_csv_util
+import stanza
+
 import charts_util
-import constants_util
+import IO_csv_util
+import IO_files_util
+import IO_user_interface_util
 
 
 # the two txt files of extracted sentences, INSIDE the output directory
@@ -79,11 +77,11 @@ def find_k_adjacent_tokens(tokenized_sentence, search_word, exact_word_match, km
             # @@@ need to complete partial matching
             search_word_left = search_word_list[0]
             search_word_right = search_word_list[len_search_word - 1]
-            if tokenized_sentence[idx] == search_word_left:
+            if current_word == search_word_left:
                 prior_k = tokenized_sentence[max(0, idx - kminus) : idx]
                 # after_k = s[idx + 1:min(n, idx + kplus + 1)]
                 left.append(" ".join(prior_k))
-            if tokenized_sentence[idx] == search_word_right:
+            if current_word == search_word_right:
                 # prior_k = s[max(0, idx - kminus):idx]
                 after_k = tokenized_sentence[idx + 1 : min(n, idx + kplus + 1)]
                 right.append(" ".join(after_k))
@@ -94,10 +92,9 @@ def find_k_adjacent_tokens(tokenized_sentence, search_word, exact_word_match, km
                 # if search_word in tokenized_sentence[idx]:
                 if search_word in current_word:
                     process_before_after = True
-            else:
-                # if tokenized_sentence[idx]==search_word:
-                if search_word == current_word:
-                    process_before_after = True
+            # if tokenized_sentence[idx]==search_word:
+            elif search_word == current_word:
+                process_before_after = True
             if process_before_after:
                 left.append(" ".join(tokenized_sentence[max(0, idx - kminus) : idx]))
                 right.append(" ".join(tokenized_sentence[idx + 1 : min(n, idx + kplus + 1)]))
@@ -260,7 +257,7 @@ def search_in_all_sentences_oneDoc(
     nDocsExtractOutput = 0
     nDocsExtractMinusOutput = 0
 
-    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
+    from Stanza_functions_util import sentence_split_stanza_text, stanzaPipeLine
 
     sentences = sentence_split_stanza_text(stanzaPipeLine(docText))
     num_sentences = len(sentences)
@@ -528,7 +525,7 @@ def search_sentences_documents(
             output_dir_path = inputDir + os.sep + "search_result_csv"
             if file[-4:] != ".txt":
                 continue
-        with open(file, "r", encoding="utf-8", errors="ignore") as f_doc:
+        with open(file, encoding="utf-8", errors="ignore") as f_doc:
             docText = f_doc.read()
         import NGrams_CoOccurrences_util
 
@@ -821,68 +818,86 @@ def search_sentences_documents(
 
     # visualize results for within sentence searches ---------------------------------------------------------------
 
+    elif not search_keywords_found:
+        mb.showwarning(
+            title="Search word(s) not found",
+            message="The search keywords:\n\n   "
+            + search_keywords_str
+            + "\n\nwere not found in your input document(s) with the following set of search options:\n\n  "
+            + str("\n  ".join(search_options_list)),
+        )
+        outputFilename_csv_word = ""
     else:
-        if not search_keywords_found:
+        try:
+            df = pd.read_csv(outputFilename_csv_word)
+        except UnicodeEncodeError:
+            # mb.showwarning(title='Output file error', message="Could not write the file " + outputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
             mb.showwarning(
-                title="Search word(s) not found",
-                message="The search keywords:\n\n   "
-                + search_keywords_str
-                + "\n\nwere not found in your input document(s) with the following set of search options:\n\n  "
-                + str("\n  ".join(search_options_list)),
+                title="Input file error",
+                message="Could not read the file " + outputFilename_csv_word + "\n\nThe file is not utf-8",
             )
-            outputFilename_csv_word = ""
-        else:
-            try:
-                df = pd.read_csv(outputFilename_csv_word)
-            except UnicodeEncodeError:
-                # mb.showwarning(title='Output file error', message="Could not write the file " + outputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
-                mb.showwarning(
-                    title="Input file error",
-                    message="Could not read the file " + outputFilename_csv_word + "\n\nThe file is not utf-8",
-                )
-                df = pd.read_csv(outputFilename_csv_word, encoding="ISO-8859-1")
-            # except UnicodeEncodeError:
-            #     print('   Filename ' + outputFilename_csv_word + ' is not utf-8')
-            unique_words = df["Search Word in Sentence"].unique()
-            # Save separate CSVs for each unique search word
-            file_paths = []
-            for word in unique_words:
-                filtered_df = df[df["Search Word in Sentence"] == word]
-                output_filename = f"outputFilename_csv_word_{word}.csv"
-                output_path = os.path.join(outputDir, output_filename)
-                filtered_df.to_csv(output_path, index=False)
-                file_paths.append(output_path)
-            for outputFilename_csv_word in file_paths:
-                # bar charts ----------------------------------------------------------------------
-                chart_title = "Frequency Distribution of Search Words\n" + search_keywords_str
-                outputFiles = charts_util.visualize_chart(
-                    chartPackage,
-                    dataTransformation,
-                    outputFilename_csv_word,
-                    outputDir,
-                    columns_to_be_plotted_xAxis=["Search Word in Sentence"],
-                    columns_to_be_plotted_yAxis=["Frequency of occurrence"],
-                    chart_title=chart_title,
-                    count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
-                    hover_label=[],
-                    outputFileNameType="",
-                    column_xAxis_label=search_keywords_str,
-                    groupByList=["Document"],
-                    plotList=[],
-                    chart_title_label="",
-                )
-                if outputFiles != None:
-                    if isinstance(outputFiles, str):
-                        filesToOpen.append(outputFiles)
-                    else:
-                        filesToOpen.extend(outputFiles)
+            df = pd.read_csv(outputFilename_csv_word, encoding="ISO-8859-1")
+        # except UnicodeEncodeError:
+        #     print('   Filename ' + outputFilename_csv_word + ' is not utf-8')
+        unique_words = df["Search Word in Sentence"].unique()
+        # Save separate CSVs for each unique search word
+        file_paths = []
+        for word in unique_words:
+            filtered_df = df[df["Search Word in Sentence"] == word]
+            output_filename = f"outputFilename_csv_word_{word}.csv"
+            output_path = os.path.join(outputDir, output_filename)
+            filtered_df.to_csv(output_path, index=False)
+            file_paths.append(output_path)
+        for outputFilename_csv_word in file_paths:
+            # bar charts ----------------------------------------------------------------------
+            chart_title = "Frequency Distribution of Search Words\n" + search_keywords_str
+            outputFiles = charts_util.visualize_chart(
+                chartPackage,
+                dataTransformation,
+                outputFilename_csv_word,
+                outputDir,
+                columns_to_be_plotted_xAxis=["Search Word in Sentence"],
+                columns_to_be_plotted_yAxis=["Frequency of occurrence"],
+                chart_title=chart_title,
+                count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
+                hover_label=[],
+                outputFileNameType="",
+                column_xAxis_label=search_keywords_str,
+                groupByList=["Document"],
+                plotList=[],
+                chart_title_label="",
+            )
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
-            # wordclouds ----------------------------------------------------------------------------
+        # wordclouds ----------------------------------------------------------------------------
 
+        outputFiles = visualize_wordcloud(
+            all_found_sentences_allDocs,
+            search_keywords_str,
+            "all_sents_with_searchwords",
+            inputFilename,
+            inputDir,
+            outputDir,
+            configFileName,
+            filesToOpen,
+            lemmatize,
+        )
+
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+
+        if minus_K_var > 0 and plus_K_var > 0:
             outputFiles = visualize_wordcloud(
-                all_found_sentences_allDocs,
+                all_adjacent_sentences_allDocs,
                 search_keywords_str,
-                "all_sents_with_searchwords",
+                "K+K_sents_around_searchwords",
                 inputFilename,
                 inputDir,
                 outputDir,
@@ -897,42 +912,23 @@ def search_sentences_documents(
                 else:
                     filesToOpen.extend(outputFiles)
 
-            if minus_K_var > 0 and plus_K_var > 0:
-                outputFiles = visualize_wordcloud(
-                    all_adjacent_sentences_allDocs,
-                    search_keywords_str,
-                    "K+K_sents_around_searchwords",
-                    inputFilename,
-                    inputDir,
-                    outputDir,
-                    configFileName,
-                    filesToOpen,
-                    lemmatize,
-                )
+            outputFiles = visualize_wordcloud(
+                all_adjacent_words_allDocs,
+                search_keywords_str,
+                "-K+K_words_around_searchwords",
+                inputFilename,
+                inputDir,
+                outputDir,
+                configFileName,
+                filesToOpen,
+                lemmatize,
+            )
 
-                if outputFiles != None:
-                    if isinstance(outputFiles, str):
-                        filesToOpen.append(outputFiles)
-                    else:
-                        filesToOpen.extend(outputFiles)
-
-                outputFiles = visualize_wordcloud(
-                    all_adjacent_words_allDocs,
-                    search_keywords_str,
-                    "-K+K_words_around_searchwords",
-                    inputFilename,
-                    inputDir,
-                    outputDir,
-                    configFileName,
-                    filesToOpen,
-                    lemmatize,
-                )
-
-                if outputFiles != None:
-                    if isinstance(outputFiles, str):
-                        filesToOpen.append(outputFiles)
-                    else:
-                        filesToOpen.extend(outputFiles)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
     IO_user_interface_util.timed_alert(
         GUI_util.window,

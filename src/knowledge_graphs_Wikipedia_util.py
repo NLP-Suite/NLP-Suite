@@ -25,6 +25,7 @@
 # rather than copied, so the three knowledge bases produce identical output structure.
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -43,13 +44,12 @@ from urllib.parse import quote
 import pandas as pd
 import requests
 
+import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
-import IO_csv_util
-import IO_internet_util
 
 # shared with the YAGO annotator: same parser, same preprocessing, same HTML shape
-from knowledge_graphs_YAGO_util import _get_stanza_pipeline, _preprocess, _build_html, _eligible
+from knowledge_graphs_YAGO_util import _build_html, _eligible, _get_stanza_pipeline, _preprocess
 
 API_URL = "https://en.wikipedia.org/w/api.php"
 ARTICLE_URL = "https://en.wikipedia.org/wiki/"
@@ -184,12 +184,11 @@ def _collect_proper_noun_phrases(doc):
         for word in sent.words:
             if word.xpos in ("NNP", "NNPS"):
                 run += word.lemma + " "
-            else:
-                if run:
-                    phrase = run.strip()
-                    if _eligible(phrase):
-                        phrases.add(phrase)
-                    run = ""
+            elif run:
+                phrase = run.strip()
+                if _eligible(phrase):
+                    phrases.add(phrase)
+                run = ""
         if run:
             phrase = run.strip()
             if _eligible(phrase):
@@ -371,7 +370,7 @@ def Wikipedia_annotate(
         head, tail = os.path.split(file)
         print("Processing file " + str(file_idx) + "/" + str(nFile) + " " + tail)
 
-        with open(file, "r", encoding="utf-8", errors="ignore") as _f:
+        with open(file, encoding="utf-8", errors="ignore") as _f:
             contents = _f.read()
         contents = _preprocess(contents)
 
@@ -443,7 +442,7 @@ def Wikipedia_annotate(
         }
     )
 
-    from datetime import datetime, date
+    from datetime import date, datetime
 
     csvname = (
         "Wikipedia_output_" + date.today().strftime("%b_%d_%Y") + "_" + datetime.now().strftime("%H_%M_%S") + ".csv"

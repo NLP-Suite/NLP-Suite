@@ -1,6 +1,7 @@
 # written by Zhangyi Pan May 2020
 # edited by Yi Wang and Roberto Franzosi August 2020
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -12,15 +13,15 @@ if (
 ):
     sys.exit(0)
 
-import os
 from datetime import datetime, timedelta
-import pandas as pd
-import tkinter as tk
-import tkinter.messagebox as mb
+import os
 import shutil
+import tkinter.messagebox as mb
 
-import IO_files_util
+import pandas as pd
+
 import IO_csv_util
+import IO_files_util
 import IO_user_interface_util
 
 

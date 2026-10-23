@@ -1,4 +1,6 @@
-import sqlite3, time, sys
+import sqlite3
+import sys
+import time
 
 db = "C:/Users/rfranzo/Desktop/PCACE-lynching_xlsx/PCACE-lynching_xlsx.sqlite"
 try:

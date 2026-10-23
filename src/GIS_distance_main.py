@@ -17,6 +17,7 @@
 #   geopy includes a few other models in the distance.ELLIPSOIDS dictionary.
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -27,12 +28,12 @@ import os
 import tkinter as tk
 import tkinter.messagebox as mb
 
-import IO_files_util
-import GUI_IO_util
-import GIS_file_check_util
 import GIS_distance_util
+import GIS_file_check_util
 import GIS_geocode_util
 import GIS_pipeline_util
+import GUI_IO_util
+import IO_files_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -285,8 +286,9 @@ def _apply_selected_csv(f):
 
 
 def select_csv_file():
+    from tkinter import filedialog
+
     import CoNLL_util
-    import tkinter.filedialog as filedialog
 
     # list only the GEOCODED GIS csv files found for this corpus (Latitude + Longitude columns)
     matches = CoNLL_util.find_corpus_csv(

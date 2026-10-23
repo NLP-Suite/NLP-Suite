@@ -10,7 +10,6 @@ whatever lxml is installed - which is the point, because the environments in the
 """
 
 import importlib.util
-import io
 import os
 import sys
 import zipfile

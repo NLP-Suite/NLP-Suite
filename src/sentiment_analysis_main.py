@@ -1,6 +1,7 @@
 # written by Roberto Franzosi October 2019
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -12,21 +13,20 @@ if not IO_libraries_util.install_all_Python_packages(
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
-from subprocess import call
 
+import character_emotion_arcs_util
+import config_util
+import GUI_IO_util
 import IO_files_util
 import IO_user_interface_util
 import lib_util
-import GUI_IO_util
 import reminders_util
+import run_script_util
+import sentiment_analysis_ANEW_util
 import sentiment_analysis_hedonometer_util
+import sentiment_analysis_NRC_util
 import sentiment_analysis_SentiWordNet_util
 import sentiment_analysis_VADER_util
-import sentiment_analysis_ANEW_util
-import sentiment_analysis_NRC_util
-import character_emotion_arcs_util
-import config_util
-import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -970,7 +970,7 @@ def activate_all_options(*args):
 def activate_SOS(*args):
     # the Shape of Stories is only available when processing a directory and using CoreNLP
     if input_main_dir_path.get() == "" or (
-        not "BERT" in SA_algorithm_var.get().strip()
+        "BERT" not in SA_algorithm_var.get().strip()
         and "spaCy" not in SA_algorithm_var.get().strip()
         and SA_algorithm_var.get().strip() != "Stanza"
         and SA_algorithm_var.get().strip() != "Stanford CoreNLP"

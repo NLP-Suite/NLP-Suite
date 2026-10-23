@@ -189,7 +189,7 @@ def _build_network_html(inputFilename, outputDir, col1, col2, col3, date_col=Non
             "color": palette.get(rk, "#888"),
             "font": {"size": fsz},
             "size": sz,
-            "title": "{} (freq: {})".format(n, freq),
+            "title": f"{n} (freq: {freq})",
             "role": rk,
         }
         if n in node_image:
@@ -237,10 +237,10 @@ def _build_network_html(inputFilename, outputDir, col1, col2, col3, date_col=Non
         else:
             ec = "#aaaaaa"
         label_str = ", ".join(sorted(labels_for_edge)) if labels_for_edge else ""
-        title_parts = ["{} → {}".format(s, t)]
+        title_parts = [f"{s} → {t}"]
         if label_str:
-            title_parts.append("via: {}".format(label_str))
-        title_parts.append("count: {}".format(w))
+            title_parts.append(f"via: {label_str}")
+        title_parts.append(f"count: {w}")
         e_entry = {
             "from": node_id_map[s],
             "to": node_id_map[t],
@@ -283,13 +283,13 @@ def _build_network_html(inputFilename, outputDir, col1, col2, col3, date_col=Non
 
     legend_parts = []
     for rk, rl in zip(role_keys, role_labels):
-        legend_parts.append('<span class="leg" style="background:{}"></span>{}'.format(palette[rk], rl))
+        legend_parts.append(f'<span class="leg" style="background:{palette[rk]}"></span>{rl}')
     if all_verbs:
         legend_parts.append("&nbsp;&nbsp;|&nbsp;&nbsp;<b>Edges:</b>")
         for v in all_verbs[:12]:
-            legend_parts.append('<span class="leg-e" style="background:{}"></span>{}'.format(verb_color_map[v], v))
+            legend_parts.append(f'<span class="leg-e" style="background:{verb_color_map[v]}"></span>{v}')
         if len(all_verbs) > 12:
-            legend_parts.append("… +{} more".format(len(all_verbs) - 12))
+            legend_parts.append(f"… +{len(all_verbs) - 12} more")
     legend_html = "  ".join(legend_parts)
 
     slider_display = "block" if _has_dates else "none"
@@ -299,7 +299,7 @@ def _build_network_html(inputFilename, outputDir, col1, col2, col3, date_col=Non
     for _i, _rc in enumerate(role_labels):
         if _i > 0:
             _th.append("<th></th>")
-        _th.append("<th>{}</th>".format(_rc))
+        _th.append(f"<th>{_rc}</th>")
     _th.append("<th>Count</th>")
     _table_header_html = "".join(_th)
 
@@ -308,8 +308,8 @@ def _build_network_html(inputFilename, outputDir, col1, col2, col3, date_col=Non
         _css = role_keys[_i].lower()
         if _i > 0:
             _td.append("'<td>&rarr;</td>'")
-        _td.append("'<td class=\"{}\">' + t[{}] + '</td>'".format(_css, _i))
-    _td.append("'<td>' + t[{}] + '</td>'".format(len(svo_cols)))
+        _td.append(f"'<td class=\"{_css}\">' + t[{_i}] + '</td>'")
+    _td.append(f"'<td>' + t[{len(svo_cols)}] + '</td>'")
     _table_row_js = " + ".join(_td)
 
     csv_name = os.path.splitext(os.path.basename(inputFilename))[0]

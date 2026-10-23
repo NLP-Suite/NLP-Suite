@@ -1,7 +1,9 @@
 import tkinter.messagebox as mb
-import IO_csv_util
-import CoNLL_util
+
 import pandas as pd
+
+import CoNLL_util
+import IO_csv_util
 
 
 # returns False if error found
@@ -16,7 +18,7 @@ def geocoded_checker(numColumns, minColumns, headers, locationColumnValue, input
     longitude_name = headers[location_num + 2]
     try:
         dt = pd.read_csv(inputFilename, encoding=encodingValue, on_bad_lines="skip")
-    except IOError as e:
+    except OSError as e:
         mb.showerror(
             title="Input file error",
             message="There was an error reading the input file\n"
@@ -111,11 +113,10 @@ def restrictions_checker(inputFilename, inputIsCoNLL, withHeader, headers, locat
             if location_column_checker(inputFilename, locationColumnValue, encodingValue) is False:
                 return False
 
-    else:
-        if len(locationColumnValue) == 0:
-            if inputIsCoNLL == False:
-                mb.showerror(title="Option selection error", message=msgNolocationColumnValue)
-                return False
+    elif len(locationColumnValue) == 0:
+        if inputIsCoNLL == False:
+            mb.showerror(title="Option selection error", message=msgNolocationColumnValue)
+            return False
 
     # set default values --------------------------------------------------------------------------------------------------
     inputIsGeocoded = True

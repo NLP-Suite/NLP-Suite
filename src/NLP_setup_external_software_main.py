@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -15,10 +16,10 @@ if (
 #   def external_software_install(calling_script, software_name, existing_software_config):
 
 import os
+import time
 import tkinter as tk
 import tkinter.messagebox as mb
 import webbrowser
-import time
 
 import GUI_IO_util
 import IO_files_util
@@ -399,12 +400,11 @@ def activate_software_install(download_install, software_dir, software_url, miss
         # software_download_var contains the list of external software
         # if software_install_var.get()!='':
         #     software_download_var.set('')
-    else:
-        # software_download_var contains the external software download options
-        if software_download_var.get() != "":
-            # software_install_var.set(software_download_var.get())
-            software_install_dir_var.set(software_dir)
-            software_install_area = software_install_dir_var.get()
+    # software_download_var contains the external software download options
+    elif software_download_var.get() != "":
+        # software_install_var.set(software_download_var.get())
+        software_install_dir_var.set(software_dir)
+        software_install_area = software_install_dir_var.get()
 
 
 software_install_var.trace(

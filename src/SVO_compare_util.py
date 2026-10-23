@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -9,11 +10,11 @@ if (
     sys.exit(0)
 
 import os
-import pandas as pd
 import tkinter.messagebox as mb
 
+import pandas as pd
+
 import IO_files_util
-import IO_user_interface_util
 
 
 def _normalize(val):

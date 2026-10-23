@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -7,21 +8,22 @@ if not IO_libraries_util.install_all_Python_packages(
 ):
     sys.exit(0)
 
-import os
-import pandas as pd
-from tkinter import messagebox as mb
 import csv
+import os
+from tkinter import messagebox as mb
+
+import pandas as pd
 
 import GUI_IO_util
-import IO_files_util
 import IO_csv_util
+import IO_files_util
 import Stanford_CoreNLP_util
 
 # put the script of generate two big csvs into this file
 
 
 def text_generate(inputFilename, inputDir):
-    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text
+    from Stanza_functions_util import sentence_split_stanza_text, stanzaPipeLine
 
     articles = []
     if inputFilename == "":
@@ -31,7 +33,7 @@ def text_generate(inputFilename, inputDir):
                 if not filename.endswith(".txt"):
                     continue
                 print("  Processing file:", filename)
-                with open(os.path.join(folder, filename), "r", encoding="utf-8", errors="ignore") as src:
+                with open(os.path.join(folder, filename), encoding="utf-8", errors="ignore") as src:
                     text = src.read().replace("\n", " ")
                 # sentences = tokenize.sent_tokenize(text)
                 sentences = sentence_split_stanza_text(stanzaPipeLine(text))
@@ -44,7 +46,7 @@ def text_generate(inputFilename, inputDir):
         if not inputFilename.endswith(".txt"):
             mb.showwarning("Input File Error", "The file selected is not a txt file. Please check again.")
         else:
-            with open(inputFilename, "r", encoding="utf-8", errors="ignore") as src:
+            with open(inputFilename, encoding="utf-8", errors="ignore") as src:
                 text = src.read().replace("\n", " ")
             # sentences = tokenize.sent_tokenize(text)
             sentences = sentence_split_stanza_text(stanzaPipeLine(text))
@@ -72,7 +74,7 @@ def dictionary_annotate(
     items_separator_var = ""
     date_position_var = ""
 
-    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text
+    from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
 
     tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(
         config_filename,
@@ -212,7 +214,7 @@ def build_dictionary_yob(source_file_path):
         for filename in files:
             if filename.endswith(".txt") == False and filename.endswith(".TXT") == False:
                 continue
-            with open(os.path.join(folder, filename), "r", encoding="utf-8", errors="ignore") as src:
+            with open(os.path.join(folder, filename), encoding="utf-8", errors="ignore") as src:
                 text = src.read().replace("\n", " ")
                 temp = list(text.split(" "))
                 for elmt in temp:
@@ -236,7 +238,7 @@ def build_dictionary_state_year(source_file_path):
             if filename.endswith(".TXT") == False and filename.endswith(".txt") == False:
                 continue
             else:
-                with open(os.path.join(folder, filename), "r", encoding="utf-8", errors="ignore") as src:
+                with open(os.path.join(folder, filename), encoding="utf-8", errors="ignore") as src:
                     text = src.read().replace("\n", " ")
                     temp = list(text.split(" "))
                     for elmt in temp:

@@ -1,17 +1,11 @@
-import matplotlib.pyplot as plt
-import GUI_util
-import IO_files_util
-import re
-from sklearn.feature_extraction.text import CountVectorizer
-from bertopic import BERTopic
-
-
-from sentence_transformers import SentenceTransformer
-import pandas as pd
-import argparse
-import os
-from gensim.parsing.preprocessing import STOPWORDS
 import json
+import os
+
+from bertopic import BERTopic
+from sentence_transformers import SentenceTransformer
+from sklearn.feature_extraction.text import CountVectorizer
+
+import GUI_util
 
 
 def get_docs(inputDir, split_docs_var):
@@ -20,11 +14,11 @@ def get_docs(inputDir, split_docs_var):
     paths = [f_name for f_name in os.listdir(inputDir) if ".txt" in f_name]
     for f_name in paths:
         if split_docs_var == 0:
-            with open(f"{inputDir}/{f_name}", "r", encoding="utf-8") as f:
+            with open(f"{inputDir}/{f_name}", encoding="utf-8") as f:
                 docs.append(f.read())
         else:
             chunks = []
-            with open(f"{inputDir}/{f_name}", "r") as f:
+            with open(f"{inputDir}/{f_name}") as f:
                 paras = [para for para in f.read().split("\n") if para != ""]
             for para in paras:
                 chunks += [sentence for sentence in para.split(". ")]

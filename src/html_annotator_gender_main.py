@@ -2,6 +2,7 @@
 # rewritten by Roberto Franzosi April 2020, May 2022
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -16,16 +17,14 @@ if (
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
-from datetime import datetime
 
-import GUI_util
+import config_util
 import GUI_IO_util
-import IO_files_util
-import reminders_util
-import Stanford_CoreNLP_util
+import GUI_util
 import html_annotator_dictionary_util
 import html_annotator_gender_dictionary_util
-import config_util
+import IO_files_util
+import Stanford_CoreNLP_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -481,7 +480,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(
 
 def open_SS_website():
     url = "https://www.ssa.gov/oact/babynames/limits.html"
-    from urllib.request import urlopen  # used to call Google website to display a selected pin
 
     message_title = ""
     message = ""

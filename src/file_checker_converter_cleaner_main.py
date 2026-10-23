@@ -5,6 +5,7 @@
 # the script also converts files types (pdf-->txt; pdf-->docx; docx-->txt)
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -16,16 +17,15 @@ if (
 ):
     sys.exit(0)
 
+import importlib
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
-import importlib
-from subprocess import call
 
+import config_util
 import GUI_IO_util
 import IO_files_util
 import reminders_util
-import config_util
 import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________

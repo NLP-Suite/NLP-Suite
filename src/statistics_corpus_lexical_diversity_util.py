@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -10,13 +11,13 @@ if (
 ):
     sys.exit(0)
 
-import os
 import math
-import numpy as np
-import pandas as pd
+import os
 import tkinter.messagebox as mb
 
-import IO_csv_util
+import numpy as np
+import pandas as pd
+
 import IO_files_util
 import IO_user_interface_util
 import statistics_statistical_tests_util
@@ -142,7 +143,7 @@ def compute_lexical_diversity(
 
     rows = []
     for filepath in files_to_process:
-        with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+        with open(filepath, encoding="utf-8", errors="ignore") as f:
             text = f.read()
         if not text.strip():
             continue

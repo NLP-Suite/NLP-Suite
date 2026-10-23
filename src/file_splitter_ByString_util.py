@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -8,7 +9,6 @@ if (
 ):
     sys.exit(0)
 
-import io
 import os
 import shutil
 
@@ -38,7 +38,7 @@ def splitDocument_byStrings(inputFilename, outputPath, target, spot_one, spot_tw
 
     # print("target, spot_one, spot_two",target, spot_one, spot_two)
 
-    f = open(inputFilename, "r", encoding="utf-8", errors="ignore")
+    f = open(inputFilename, encoding="utf-8", errors="ignore")
     content = f.readlines()
     content = [x.strip() for x in content]
 
@@ -50,29 +50,27 @@ def splitDocument_byStrings(inputFilename, outputPath, target, spot_one, spot_tw
                 loc.append(True)
             else:
                 loc.append(False)
-        else:
-            if len(c) < spot_two or type(spot_two) != int or type(spot_one) != int:
-                loc.append(False)
+        elif len(c) < spot_two or type(spot_two) != int or type(spot_one) != int:
+            loc.append(False)
+        elif spot_one == spot_two:
+            if c[spot_one - 1] == target:
+                loc.append(True)
             else:
-                if spot_one == spot_two:
-                    if c[spot_one - 1] == target:
-                        loc.append(True)
-                    else:
-                        loc.append(False)
-                elif spot_one < 0 and spot_two == -1:
-                    s = spot_one * -1
-                    t = c[s:]
-                    if t == target:
-                        loc.append(True)
-                    else:
-                        loc.append(False)
+                loc.append(False)
+        elif spot_one < 0 and spot_two == -1:
+            s = spot_one * -1
+            t = c[s:]
+            if t == target:
+                loc.append(True)
+            else:
+                loc.append(False)
 
-                else:
-                    t = c[spot_one : spot_two + 1]
-                    if t == target:
-                        loc.append(True)
-                    else:
-                        loc.append(False)
+        else:
+            t = c[spot_one : spot_two + 1]
+            if t == target:
+                loc.append(True)
+            else:
+                loc.append(False)
 
     i = 1
     if loc[0] != True:
@@ -82,9 +80,9 @@ def splitDocument_byStrings(inputFilename, outputPath, target, spot_one, spot_tw
         if loc[d] == True:
             p = open(newOutputPath + "/subfile" + str(i) + ".txt", "w", encoding="utf-8", errors="ignore")
             i = i + 1
-            p.write("{}\n".format(content[d]))
+            p.write(f"{content[d]}\n")
         else:
-            p.write("{}\n".format(content[d]))
+            p.write(f"{content[d]}\n")
 
 
 # this function only split txt files whose contents are nicely split by lines without characters
@@ -92,7 +90,7 @@ def split_by_blanks(inputFilename, outputPath):
     docname = os.path.split(inputFilename)[1]
     title = docname.partition(".")[0]
     lines = []  # list of each line in the txt files
-    with open(inputFilename, "r", encoding="utf-8", errors="ignore") as iptf:  # read each line
+    with open(inputFilename, encoding="utf-8", errors="ignore") as iptf:  # read each line
         line = iptf.readline()
         while line:  # read each line of the  input txt file
             lines.append(line)

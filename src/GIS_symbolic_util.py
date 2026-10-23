@@ -63,8 +63,8 @@ _PRONOUN_POS = {"PRON", "PRP", "PRP$", "WP", "WP$", "WDT", "DET"}
 def _default_geocoder():
     """A cached, rate-limited geopy Nominatim geocode fn, or None if unavailable."""
     try:
-        from geopy.geocoders import Nominatim
         from geopy.extra.rate_limiter import RateLimiter
+        from geopy.geocoders import Nominatim
     except Exception:
         return None
     geolocator = Nominatim(user_agent="NLP_Suite_symbolic_space")
@@ -192,8 +192,8 @@ def plot_attribute_space_heatmap(
     table, output_path, values="residuals", stats=None, title="Attribute × non-geocodable space"
 ):
     """Save a heatmap PNG. values='counts', or 'residuals' (needs stats)."""
-    import numpy as np
     import matplotlib
+    import numpy as np
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -219,9 +219,7 @@ def plot_attribute_space_heatmap(
     for i in range(data.shape[0]):
         for j in range(data.shape[1]):
             v = data.values[i, j]
-            ax.text(
-                j, i, ("{:.1f}".format(v) if values == "residuals" else int(v)), ha="center", va="center", fontsize=8
-            )
+            ax.text(j, i, (f"{v:.1f}" if values == "residuals" else int(v)), ha="center", va="center", fontsize=8)
     ttl = title
     if stats and stats.get("cramers_v") is not None:
         ttl += "  (Cramer's V = {:.2f}, p = {:.3g})".format(stats["cramers_v"], stats["p_value"])
@@ -276,11 +274,12 @@ def plot_transition_graph(edges, output_path, title="Movement through non-geocod
     """Directed graph of space-type transitions. edges = [(from, to, count), ...].
     Nodes laid out on a circle; arrow width scales with transition count."""
     import math
+
     import matplotlib
 
     matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
     from matplotlib.patches import FancyArrowPatch
+    import matplotlib.pyplot as plt
 
     nodes = []
     for a, b, _ in edges:
@@ -357,6 +356,7 @@ def symbolic_movement_timeline(
     or '' if there was nothing to draw.
     """
     import json
+
     import pandas as pd
 
     try:

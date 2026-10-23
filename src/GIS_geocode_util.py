@@ -13,31 +13,29 @@ if (
 ):
     sys.exit(0)
 
-import IO_files_util
-import IO_user_interface_util
 import csv
-import tkinter.messagebox as mb
-import os  # TODO MINO GIS create kml record
-import json
-
-import time
-
-from geopy import Nominatim
-from geopy.geocoders import GoogleV3
-from geopy.exc import GeocoderTimedOut
-import simplekml  # TODO MINO GIS create kml record
-import pandas as pd  # TODO MINO GIS create kml record
 from datetime import datetime  # TODO MINO GIS date option
-import dateutil
-
-import GUI_IO_util
-import GIS_location_util
-import GIS_file_check_util
-import IO_internet_util
-import GIS_pipeline_util
-import GIS_Google_pin_util  # TODO MINO GIS create kml record
-import IO_csv_util  # TODO MINO GIS create kml record
+import json
+import os  # TODO MINO GIS create kml record
 import re
+import time
+import tkinter.messagebox as mb
+
+import dateutil
+from geopy import Nominatim
+from geopy.exc import GeocoderTimedOut
+from geopy.geocoders import GoogleV3
+import simplekml  # TODO MINO GIS create kml record
+
+import GIS_file_check_util
+import GIS_Google_pin_util  # TODO MINO GIS create kml record
+import GIS_location_util
+import GIS_pipeline_util
+import GUI_IO_util
+import IO_csv_util  # TODO MINO GIS create kml record
+import IO_files_util
+import IO_internet_util
+import IO_user_interface_util
 
 filesToOpen = []
 
@@ -80,7 +78,7 @@ def _load_geocode_cache(outputDir):
     _GEOCODE_CACHE_PATH = os.path.join(outputDir, "GIS_geocode_cache.json")
     if os.path.isfile(_GEOCODE_CACHE_PATH):
         try:
-            with open(_GEOCODE_CACHE_PATH, "r", encoding="utf-8") as f:
+            with open(_GEOCODE_CACHE_PATH, encoding="utf-8") as f:
                 _GEOCODE_CACHE = json.load(f)
             print(f"  Geocode cache loaded: {len(_GEOCODE_CACHE)} cached locations from {_GEOCODE_CACHE_PATH}")
         except Exception:
@@ -349,7 +347,7 @@ def process_geocoded_data_for_kml(
         else:
             event = ""
 
-        if not "Sentence" in headers and not "Event" in headers:
+        if "Sentence" not in headers and "Event" not in headers:
             if description_csv_field_var_list[0] != "":
                 sentence = row[description_csv_field_var_list[0]]
 
@@ -573,34 +571,33 @@ def geocode(
                     "Document",
                 ]
             )
+    # always use the locationColumnName variable passed by algorithms to make sure locations are then matched
+    elif datePresent == True:
+        # geowriter.writerow(['Location','NER','Latitude','Longitude','Address','Country from Geocoder','Date'])
+        geowriter.writerow(
+            [
+                "Location",
+                "NER",
+                "Latitude",
+                "Longitude",
+                "Address",
+                "Country from Geocoder",
+                "Date",
+                "Sentence",
+                "Document",
+            ]
+        )
     else:
-        # always use the locationColumnName variable passed by algorithms to make sure locations are then matched
-        if datePresent == True:
-            # geowriter.writerow(['Location','NER','Latitude','Longitude','Address','Country from Geocoder','Date'])
-            geowriter.writerow(
-                [
-                    "Location",
-                    "NER",
-                    "Latitude",
-                    "Longitude",
-                    "Address",
-                    "Country from Geocoder",
-                    "Date",
-                    "Sentence",
-                    "Document",
-                ]
-            )
-        else:
-            geowriter.writerow(
-                [
-                    "Location",
-                    "NER",
-                    "Latitude",
-                    "Longitude",
-                    "Address",
-                    "Country from Geocoder",
-                ]
-            )
+        geowriter.writerow(
+            [
+                "Location",
+                "NER",
+                "Latitude",
+                "Longitude",
+                "Address",
+                "Country from Geocoder",
+            ]
+        )
 
     geowriterNotFound.writerow(["Location", "NER"])
     geowriterNotFoundNonDistinct.writerow(["Location", "NER"])
@@ -769,7 +766,7 @@ def geocode(
                         lat, lng, address = location.latitude, location.longitude, location.address
                         _cache_put(itemToGeocode, lat, lng, address)
                         print(f" → ({lat}, {lng})")
-                    except Exception as e:
+                    except Exception:
                         lat, lng, address = 0, 0, " LOCATION NOT FOUND BY " + geocoder
                         _cache_put(itemToGeocode, 0, 0, address)
                         locationsNotFound = locationsNotFound + 1
@@ -842,15 +839,14 @@ def geocode(
                                 document,
                             ]
                         )
+                elif datePresent:
+                    # header is [...,'Date','Sentence','Document']; write all three so they
+                    # appear in the geocoded csv (and therefore in the folium popups)
+                    geowriter.writerow(
+                        [itemToGeocode, NER_Tag, lat, lng, address, country_geocoder, date, sentence, document]
+                    )
                 else:
-                    if datePresent:
-                        # header is [...,'Date','Sentence','Document']; write all three so they
-                        # appear in the geocoded csv (and therefore in the folium popups)
-                        geowriter.writerow(
-                            [itemToGeocode, NER_Tag, lat, lng, address, country_geocoder, date, sentence, document]
-                        )
-                    else:
-                        geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, country_geocoder])
+                    geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, country_geocoder])
 
                 # Create KML point for successfully geocoded location
                 print("   Processing geocoded record for kml file for Google Earth Pro")
@@ -884,45 +880,43 @@ def geocode(
                         GEPdateFormat = ""
                     pnt.timespan.begin = GEPdateFormat
                     pnt.timespan.end = GEPdateFormat
-            else:
-                # Geocoding failed — preserve location name with empty coordinates (no KML point created)
-                if inputIsCoNLL:
-                    if datePresent:
-                        geowriter.writerow(
-                            [
-                                itemToGeocode,
-                                NER_Tag,
-                                "",
-                                "",
-                                "Geocoding failed",
-                                "",
-                                sentenceID,
-                                sentence,
-                                documentID,
-                                document,
-                                date,
-                            ]
-                        )
-                    else:
-                        geowriter.writerow(
-                            [
-                                itemToGeocode,
-                                NER_Tag,
-                                "",
-                                "",
-                                "Geocoding failed",
-                                "",
-                                sentenceID,
-                                sentence,
-                                documentID,
-                                document,
-                            ]
-                        )
+            # Geocoding failed — preserve location name with empty coordinates (no KML point created)
+            elif inputIsCoNLL:
+                if datePresent:
+                    geowriter.writerow(
+                        [
+                            itemToGeocode,
+                            NER_Tag,
+                            "",
+                            "",
+                            "Geocoding failed",
+                            "",
+                            sentenceID,
+                            sentence,
+                            documentID,
+                            document,
+                            date,
+                        ]
+                    )
                 else:
-                    if datePresent:
-                        geowriter.writerow([itemToGeocode, NER_Tag, "", "", "Geocoding failed", "", date])
-                    else:
-                        geowriter.writerow([itemToGeocode, NER_Tag, "", "", "Geocoding failed", ""])
+                    geowriter.writerow(
+                        [
+                            itemToGeocode,
+                            NER_Tag,
+                            "",
+                            "",
+                            "Geocoding failed",
+                            "",
+                            sentenceID,
+                            sentence,
+                            documentID,
+                            document,
+                        ]
+                    )
+            elif datePresent:
+                geowriter.writerow([itemToGeocode, NER_Tag, "", "", "Geocoding failed", "", date])
+            else:
+                geowriter.writerow([itemToGeocode, NER_Tag, "", "", "Geocoding failed", ""])
 
     [geowriterNotFoundNonDistinct.writerow([item[0], item[1]]) for item in notGeocodedFull]
     csvfile.close()
@@ -989,23 +983,22 @@ def geocode(
 
     if locationsNotFound == 0:
         locationsNotFoundoutputFilename = ""  # used NOT to open the file since there are NO errors
-    else:
-        if locationsNotFound == index_locations or locationsNotFound == len(distinctGeocodedList):
-            geocodedLocationsOutputFilename = ""  # used NOT to open the file since there are no records
-            # Show helpful message to user about why geocoding failed
-            mb.showwarning(
-                title="Geocoding Failed",
-                message="The online geocoding service could not find coordinates for any of your locations.\n\n"
-                "This can happen because:\n"
-                "• Your internet connection is slow or disconnected\n"
-                "• The geocoding service is temporarily unavailable\n"
-                "• The location names don't match real places\n\n"
-                "Please:\n"
-                "1. Check your internet connection\n"
-                "2. Try again in a few moments\n"
-                "3. Check that your location names are spelled correctly\n\n"
-                "If the problem continues, try using Nominatim geocoder instead of Google.",
-            )
+    elif locationsNotFound == index_locations or locationsNotFound == len(distinctGeocodedList):
+        geocodedLocationsOutputFilename = ""  # used NOT to open the file since there are no records
+        # Show helpful message to user about why geocoding failed
+        mb.showwarning(
+            title="Geocoding Failed",
+            message="The online geocoding service could not find coordinates for any of your locations.\n\n"
+            "This can happen because:\n"
+            "• Your internet connection is slow or disconnected\n"
+            "• The geocoding service is temporarily unavailable\n"
+            "• The location names don't match real places\n\n"
+            "Please:\n"
+            "1. Check your internet connection\n"
+            "2. Try again in a few moments\n"
+            "3. Check that your location names are spelled correctly\n\n"
+            "If the problem continues, try using Nominatim geocoder instead of Google.",
+        )
     # Save geocode cache to disk for future runs
     _save_geocode_cache()
 
@@ -1085,7 +1078,7 @@ def convertToGEP(date):
                 try:
                     t = datetime.strptime(e, fmt)
                     break
-                except ValueError as err:
+                except ValueError:
                     pass
         try:
             currentDateFormat = dateutil.parser.parse(date)

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Sat Jan 22 23:05:52 2022
 
@@ -10,9 +9,9 @@ rewritten 2026 (Roberto Franzosi / Claude): correct bookend-repetition finder + 
 
 import pandas as pd
 
-import IO_files_util
 import charts_util
 import CoNLL_util  # is_noun_POS / is_verb_POS / is_adjective_POS - handle both Penn and Universal POS tags
+import IO_files_util
 
 
 def k_sent(inputFilename, outputDir, chartPackage, dataTransformation, Begin_K_sent_var, End_K_sent_var):

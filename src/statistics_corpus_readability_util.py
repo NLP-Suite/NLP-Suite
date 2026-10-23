@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -12,11 +13,10 @@ if (
 
 import os
 import re
-import numpy as np
-import pandas as pd
 import tkinter.messagebox as mb
 
-import IO_csv_util
+import pandas as pd
+
 import IO_files_util
 import IO_user_interface_util
 import statistics_statistical_tests_util
@@ -109,7 +109,7 @@ def compute_readability(
 
     rows = []
     if inputFilename and os.path.exists(inputFilename):
-        with open(inputFilename, "r", encoding="utf-8", errors="ignore") as f:
+        with open(inputFilename, encoding="utf-8", errors="ignore") as f:
             text = f.read()
         if text.strip():
             n_sent, n_words, n_syll, n_poly, n_chars = _analyze_text(text)
@@ -132,7 +132,7 @@ def compute_readability(
         txt_files = sorted([f for f in os.listdir(inputDir) if f.endswith(".txt")])
         for filename in txt_files:
             filepath = os.path.join(inputDir, filename)
-            with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+            with open(filepath, encoding="utf-8", errors="ignore") as f:
                 text = f.read()
             if not text.strip():
                 continue

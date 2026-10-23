@@ -1,5 +1,4 @@
 #!/usr/bin/env Python
-# -*- coding: utf-8 -*-
 """
 Created on Thu May 28 23:08:58 2020
 
@@ -7,6 +6,7 @@ Created on Thu May 28 23:08:58 2020
 """
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -20,6 +20,7 @@ if (
 
 import csv
 import os
+
 import pandas as pd
 
 from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text

@@ -1,21 +1,19 @@
-from os import system, environ
-import win32con
-from win32gui import SendMessage
-import sys
+import os
+from pathlib import Path
 from winreg import (
-    CloseKey,
-    OpenKey,
-    QueryValueEx,
-    SetValueEx,
     HKEY_CURRENT_USER,
     HKEY_LOCAL_MACHINE,
     KEY_ALL_ACCESS,
     KEY_READ,
     REG_EXPAND_SZ,
-    REG_SZ,
+    CloseKey,
+    OpenKey,
+    QueryValueEx,
+    SetValueEx,
 )
-import os
-from pathlib import Path
+
+import win32con
+from win32gui import SendMessage
 
 # Test Git
 
@@ -35,7 +33,7 @@ def get_env(name, user=True):
     key = OpenKey(root, subkey, 0, KEY_READ)
     try:
         value, _ = QueryValueEx(key, name)
-    except WindowsError:
+    except OSError:
         return ""
     return value
 

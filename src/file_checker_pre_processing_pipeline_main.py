@@ -1,6 +1,7 @@
 # written by Roberto Franzosi November 2023
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -15,18 +16,17 @@ if (
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
-from subprocess import call
+
 import pandas as pd
 
-import GUI_IO_util
-import IO_files_util
 import config_util
-import statistics_txt_util
-
 import file_checker_util
 import file_cleaner_util
 import file_spell_checker_util
+import GUI_IO_util
+import IO_files_util
 import run_script_util
+import statistics_txt_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 

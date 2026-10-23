@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -10,17 +11,18 @@ if (
 
 import html
 import os
-import pandas as pd
-import folium
-from folium.plugins import HeatMap, TimestampedGeoJson
 import tkinter.messagebox as mb
 
+import folium
+from folium.plugins import HeatMap, TimestampedGeoJson
+import pandas as pd
+
+import folium_time_slider_util
 import IO_files_util
 import IO_user_interface_util
 
 # Esri tiles: OpenStreetMap refuses a map page opened from disk (map_tiles_util)
 import map_tiles_util
-import folium_time_slider_util
 
 
 def _load_geocoded_data(inputFilename):
@@ -70,7 +72,6 @@ _POPUP_SKIP_COLS = {
     "Source_ID",
     "Target_ID",
     "Complex ID",
-    "Document ID",
 }
 _POPUP_SKIP_SUFFIXES = ("_ID", "_Simplex", " Order", " Identifier")
 

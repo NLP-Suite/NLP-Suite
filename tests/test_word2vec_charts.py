@@ -64,8 +64,8 @@ def test_neighbours_csv(tmp_path):
 
 
 def test_charts_write_the_four_files(tmp_path):
-    import pytest
     import _real_pandas
+    import pytest
 
     if importlib.util.find_spec("plotly") is None:
         pytest.skip("Plotly not installed here")

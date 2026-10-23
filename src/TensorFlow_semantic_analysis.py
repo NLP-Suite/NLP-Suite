@@ -1,14 +1,12 @@
 import os
+
+import matplotlib.pyplot as plt
 import nltk.data
 import numpy as np
-import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as plt
-
-import tensorflow as tf
 import tensorflow_hub as hub
 
-from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
+from Stanza_functions_util import sentence_split_stanza_text, stanzaPipeLine
 
 # Based on this colab notebook on Semantic Similarity analysis with TensorFlow Hub's Universal Sentence Encoder
 # https://colab.research.google.com/github/tensorflow/hub/blob/master/examples/colab/semantic_similarity_with_tf_hub_universal_encoder.ipynb#scrollTo=BnvjATdy64eR

@@ -1,6 +1,7 @@
 # written by Roberto Franzosi August 2020
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -13,15 +14,12 @@ if (
     sys.exit(0)
 
 import os
-from subprocess import call
-
 import tkinter as tk
 import tkinter.messagebox as mb
 
 import GUI_IO_util
-import run_script_util
 import reminders_util
-
+import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 

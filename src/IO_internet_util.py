@@ -1,14 +1,12 @@
-import sys
-import GUI_util
 # import IO_libraries_util
 
 # if IO_libraries_util.install_all_Python_packages(GUI_util.window, "IO_internet_util",
 # 								['os', 'tkinter','urllib']) == False:
 # 	sys.exit(0)
 
-from urllib.request import urlopen  # to check internet connection
 from tkinter import *
 import tkinter.messagebox as mb
+from urllib.request import urlopen  # to check internet connection
 
 # check internet connection
 # if internet connection is available, return True #otherwise, return False
@@ -107,14 +105,15 @@ def download_with_warning(script, download_function, resource="a language model"
     try:
         download_function()
         return True
-    except Exception as err:
+    except Exception as first_err:
+        failure = first_err
         if check_internet_availability_warning(script):
             try:
                 download_function()
                 return True
             except Exception as retry_err:
-                err = retry_err
-        report_download_failure(script, err, resource)
+                failure = retry_err
+        report_download_failure(script, failure, resource)
         return False
 
 

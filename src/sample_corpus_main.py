@@ -1,15 +1,13 @@
 # written by Roberto Franzosi April 2022
 
-import GUI_util
-
-from subprocess import call
-import tkinter as tk
 import os
+import tkinter as tk
 import tkinter.messagebox as mb
 
 import config_util
-import IO_files_util
 import GUI_IO_util
+import GUI_util
+import IO_files_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 

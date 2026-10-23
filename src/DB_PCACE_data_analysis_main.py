@@ -1,36 +1,30 @@
-import sys
-import tkinter
-
-import IO_libraries_util
-import GUI_util
+import datetime
 
 # if IO_libraries_util.install_all_Python_packages(GUI_util.window, "DB_PC-ACE_data_analyzer_main.py", ['os', 'tkinter','pandas'])==False:
 #     sys.exit(0)
-
 import os
-import datetime
-import pandas as pd
 import subprocess
-
+import sys
+import tkinter
 import tkinter as tk
-from tkinter import ttk
+from tkinter import filedialog, ttk
 import tkinter.messagebox as mb
-import tkinter.filedialog as filedialog
 
+import pandas as pd
 
+import charts_util
+import DB_PCACE_data_analysis_util
+import file_filename_util
+import GIS_pipeline_util
+import GUI_IO_util
+import GUI_util
 import IO_csv_util
 import IO_files_util
-import GUI_IO_util
-import TIPS_util
-import DB_PCACE_data_analysis_util
-import statistics_csv_util
-import Stanza_util
-import file_filename_util
-import Gephi_util
-import GIS_pipeline_util
-import reminders_util
-import charts_util
 import IO_user_interface_util
+import reminders_util
+import Stanza_util
+import statistics_csv_util
+import TIPS_util
 
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -2069,7 +2063,7 @@ def changed_filename(*args):
         # 25 files including all comments files
         if (len(table_list) == 0) or (
             (len(table_list) > 18)
-            and (not "data_Document.xlsx" in str(table_list) and not "data_Complex.xlsx" in str(table_list))
+            and ("data_Document.xlsx" not in str(table_list) and "data_Complex.xlsx" not in str(table_list))
         ):
             GUI_util.run_button.configure(state="disabled")
             table_menu_values = []
@@ -2234,11 +2228,10 @@ def changed_filename(*args):
 
         # Update window title to show loaded database name
         window.title(GUI_label + "  —  " + db_folder_name)
-    else:
-        if inputFilename.get() != "":
-            simplex_value_type_menu.configure(state="disabled")
-            GUI_util.run_button.configure(state="disabled")
-            error = True
+    elif inputFilename.get() != "":
+        simplex_value_type_menu.configure(state="disabled")
+        GUI_util.run_button.configure(state="disabled")
+        error = True
     clear("Escape")
 
 

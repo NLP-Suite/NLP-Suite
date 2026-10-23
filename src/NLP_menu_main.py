@@ -5,8 +5,8 @@
 # input: 1. directory name
 # output: directory name
 
-import sys
 import multiprocessing
+import sys
 
 multiprocessing.freeze_support()
 
@@ -21,16 +21,15 @@ from sys import platform
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox as mb
-from subprocess import call
 import webbrowser
 
+import config_util
+import constants_util
 import GUI_IO_util
 import IO_files_util
-import reminders_util
-import constants_util
-import config_util
-import run_script_util
 import language_tools_advisor_util
+import reminders_util
+import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -74,7 +73,7 @@ import json as _json
 if "--from-welcome" not in sys.argv:
     _launch_count_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "config", "launch_count.json")
     try:
-        with open(_launch_count_file, "r") as _f:
+        with open(_launch_count_file) as _f:
             _launch_data = _json.load(_f)
         _launch_count = _launch_data.get("count", 0)
     except (FileNotFoundError, ValueError):

@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -13,22 +14,17 @@ if (
     sys.exit(0)
 
 import os
-import pandas as pd
-import tkinter.messagebox as mb
-import math
+import string
 
 # Gensim
 import gensim
-from gensim.models import Word2Vec
-import stanza
-import itertools
 import numpy as np
-from numpy.linalg import norm
-import string
+import pandas as pd
+import stanza
 
+import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
-import IO_csv_util
 import word2vec_distances_util
 
 _stopwords_cache = None
@@ -40,7 +36,7 @@ def _load_stopwords():
         return _stopwords_cache
     stopwords_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib", "wordLists", "stopwords.txt")
     try:
-        with open(stopwords_path, "r") as f:
+        with open(stopwords_path) as f:
             _stopwords_cache = set(f.read().splitlines())
     except FileNotFoundError:
         print(f"Warning: stopwords file not found at {stopwords_path}")
@@ -120,7 +116,7 @@ def run_Gensim_word2vec(
     if len(inputFilename) > 0:
         head, tail = os.path.split(inputFilename)
         if inputFilename.endswith(".txt"):
-            with open(inputFilename, "r", encoding="utf-8", errors="ignore") as file:
+            with open(inputFilename, encoding="utf-8", errors="ignore") as file:
                 dId += 1
                 text = file.read()
                 print("Importing single file " + tail)
@@ -137,7 +133,7 @@ def run_Gensim_word2vec(
         for doc in inputDocs:
             head, tail = os.path.split(doc)
             if doc.endswith(".txt"):
-                with open(os.path.join(inputDir, doc), "r", encoding="utf-8", errors="ignore") as file:
+                with open(os.path.join(inputDir, doc), encoding="utf-8", errors="ignore") as file:
                     dId += 1
                     text = file.read()
                     print("Importing file " + str(dId) + "/" + str(len(inputDocs)) + " " + tail)

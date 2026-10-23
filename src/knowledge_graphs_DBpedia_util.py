@@ -4,6 +4,7 @@
 # refactored for efficiency June 2026
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -16,17 +17,17 @@ if (
     sys.exit(0)
 
 import os
+import shutil
+import ssl
+
+from bs4 import BeautifulSoup
 import pandas as pd
 import requests
-import urllib.parse
-import ssl
-import shutil
-from bs4 import BeautifulSoup
 
-import IO_user_interface_util
 import file_splitter_ByLength_util
-import IO_files_util
 import IO_csv_util
+import IO_files_util
+import IO_user_interface_util
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -108,7 +109,7 @@ def DBpedia_annotate(
                 )
                 splitHtmlFileList.append(outFilename)
 
-            with open(doc, "r", encoding="utf-8", errors="ignore") as _f:
+            with open(doc, encoding="utf-8", errors="ignore") as _f:
                 contents = _f.read()
 
             contents = _preprocessing(contents)
@@ -192,7 +193,7 @@ def DBpedia_annotate(
                     if htmlDoc == outFilename:
                         continue
                     if os.path.exists(htmlDoc):
-                        with open(htmlDoc, "r", encoding="utf-8", errors="ignore") as infile:
+                        with open(htmlDoc, encoding="utf-8", errors="ignore") as infile:
                             outfile.write(infile.read())
                     try:
                         os.remove(htmlDoc)
@@ -238,7 +239,7 @@ def DBpedia_annotate(
         }
     )
 
-    from datetime import datetime, date
+    from datetime import date, datetime
 
     csvname = "DBpedia_output_" + date.today().strftime("%b_%d_%Y") + "_" + datetime.now().strftime("%H_%M_%S") + ".csv"
     csvname = os.path.join(outputDir, csvname)

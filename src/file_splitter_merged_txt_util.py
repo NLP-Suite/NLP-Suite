@@ -1,11 +1,10 @@
 # Created on Tue Oct 25 2020
 # author: Brett Landau
 
+import os
 import tkinter.messagebox as mb
 
-import os
 import IO_files_util
-import GUI_util
 
 
 # given a merged file with filenames embedded in beginning and ending strings (e.g., <@# and #@>) the function splits the filename from file content
@@ -20,12 +19,11 @@ def extract_fileContent_and_fileName(outputDir, fileContent, separator_begin, se
             ID += 1
             file_to_save = os.path.split(l.split(separator_begin)[1].split(separator_end)[0])[1]
             print("Processing file " + str(ID) + "/" + str(len(lines)), file_to_save)
-        else:
-            if file_to_save != "" and l != "":
-                subfilePath = os.path.join(outputDir, file_to_save)
-                if subfilePath not in open_handles:
-                    open_handles[subfilePath] = open(subfilePath, "a", encoding="utf-8", errors="ignore")
-                open_handles[subfilePath].write(l + "\n")
+        elif file_to_save != "" and l != "":
+            subfilePath = os.path.join(outputDir, file_to_save)
+            if subfilePath not in open_handles:
+                open_handles[subfilePath] = open(subfilePath, "a", encoding="utf-8", errors="ignore")
+            open_handles[subfilePath].write(l + "\n")
     for fh in open_handles.values():
         fh.close()
     return ID
@@ -36,7 +34,7 @@ def run(inputFilename, separator_begin, separator_end, outputDir):
     nFiles = 0
     head, tail = os.path.split(inputFilename)
     tail = tail[:-4]
-    with open(inputFilename, "r", encoding="utf-8", errors="ignore") as file:
+    with open(inputFilename, encoding="utf-8", errors="ignore") as file:
         fileContent = file.read()
     count_begin = fileContent.count(separator_begin)
     if count_begin == 0:

@@ -1,6 +1,7 @@
 # written by Roberto Franzosi (Spring/summer 2020)
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -13,13 +14,11 @@ if (
     sys.exit(0)
 
 import os
-import tkinter.messagebox as mb
 import tkinter as tk
-from subprocess import call
+import tkinter.messagebox as mb
 
 import GUI_IO_util
 import run_script_util
-
 
 extra_GUIs_var = tk.IntVar()
 extra_GUIs_menu_var = tk.StringVar()
@@ -174,8 +173,8 @@ def run():
                 filesToOpen.extend(outputFiles)
 
     if corpus_statistics_byPOS_var:
-        import Stanza_util
         import config_util
+        import Stanza_util
 
         # get the NLP package and language options
         (

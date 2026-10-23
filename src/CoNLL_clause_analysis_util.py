@@ -3,8 +3,9 @@
 # modified by Jack Hester (February 2019)
 # modified by Roberto Franzosi (February 2019-August 2020), November 2021
 
-import CoNLL_util
 import sys
+
+import CoNLL_util
 import GUI_util
 import IO_libraries_util
 
@@ -18,16 +19,15 @@ if (
 
 import json
 import os
-from collections import Counter
 import tkinter.messagebox as mb
+
 import pandas as pd
 
-import IO_files_util
-import IO_csv_util
-import IO_user_interface_util
 import charts_util
+import IO_csv_util
+import IO_files_util
+import IO_user_interface_util
 
-#
 clause_position = 8  # NEW CoNLL_U
 recordID_position = 9  # NEW CoNLL_U
 sentenceID_position = 10  # NEW CoNLL_U

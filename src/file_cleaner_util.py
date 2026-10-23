@@ -2,6 +2,7 @@
 # Python version target: 3.6.3 Anaconda
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -13,19 +14,17 @@ if (
 ):
     sys.exit(0)
 
-import glob
 import os
-
-# from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
-import string
-import tkinter as tk
-import tkinter.messagebox as mb
 import re
 
-import IO_files_util
+# from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
+import tkinter as tk
+import tkinter.messagebox as mb
+
 import GUI_IO_util
-import IO_user_interface_util
 import IO_csv_util
+import IO_files_util
+import IO_user_interface_util
 
 
 def create_input_subdir(inputDir, label):
@@ -71,7 +70,6 @@ def add_full_stop_to_paragraph(
     chartPackage="Excel",
     dataTransformation="No transformation",
 ):
-    import file_filename_util
     # result=file_filename_util.backup_files(inputFilename, inputDir,'Add full-stops to paragraphs', '.txt', configFileName)
     # if result==False:
     #     return
@@ -110,7 +108,7 @@ def add_full_stop_to_paragraph(
         head, tail = os.path.split(filename)
         print("Processing file " + str(docID) + "/" + str(nDocs) + " " + tail)
         edited = False
-        with open(filename, "r", encoding="utf-8", errors="ignore") as fn:
+        with open(filename, encoding="utf-8", errors="ignore") as fn:
             # add_full_stop_to_paragraph
             outfile = outputDir + os.sep + tail.replace(".txt", label + ".txt")
             paragraphs = get_paragraphs(fn)
@@ -391,7 +389,7 @@ def remove_hard_carriage_returns(
             outfile = head + os.sep + tail.replace(".txt", label + ".txt")
         # outfile = outputDir + os.sep + tail.replace('.txt',label+'.txt')
         new_paragraph = ""
-        with open(infile, "r", encoding="utf-8", errors="ignore") as fn:
+        with open(infile, encoding="utf-8", errors="ignore") as fn:
             # remove_hard_carriage_returns
             paragraphs = get_paragraphs(fn)
             with open(outfile, "w", encoding="utf-8", errors="ignore") as out:
@@ -488,7 +486,7 @@ def add_missing_blank_after_punctuation(
             outfile = head + os.sep + tail.replace(".txt", label + ".txt")
         # outfile = outputDir + os.sep + tail.replace('.txt',label+'.txt')
         split_sentences = ""
-        with open(infile, "r", encoding="utf-8", errors="ignore") as f_in:
+        with open(infile, encoding="utf-8", errors="ignore") as f_in:
             text = f_in.read()
             processed_text = process_text_add_blank(text)
             if processed_text != text:
@@ -815,7 +813,6 @@ def remove_blank_lines(
     chartPackage="Excel",
     dataTransformation="No transformation",
 ):
-    import file_filename_util
 
     startTime = IO_user_interface_util.timed_alert(
         GUI_util.window,
@@ -874,21 +871,20 @@ def remove_blank_lines(
             mb.showwarning(title="Blank lines removed", message="No blank lines were removed from the input file.")
         else:
             mb.showwarning(title="Blank lines removed", message="Blank lines were removed from the input file.")
+    elif filesWithEmptyLines == 0:
+        mb.showwarning(
+            title="Blank lines removed",
+            message="No files contained blank lines" + " out of " + str(nDocs) + " files in the input directory.",
+        )
     else:
-        if filesWithEmptyLines == 0:
-            mb.showwarning(
-                title="Blank lines removed",
-                message="No files contained blank lines" + " out of " + str(nDocs) + " files in the input directory.",
-            )
-        else:
-            mb.showwarning(
-                title="Blank lines removed",
-                message="Blank lines were removed from "
-                + str(filesWithEmptyLines)
-                + " out of "
-                + str(nDocs)
-                + " files in the input directory.",
-            )
+        mb.showwarning(
+            title="Blank lines removed",
+            message="Blank lines were removed from "
+            + str(filesWithEmptyLines)
+            + " out of "
+            + str(nDocs)
+            + " files in the input directory.",
+        )
     # always open outputDir
     IO_files_util.openExplorer(window, head)
 
@@ -1024,7 +1020,7 @@ def newspaper_titles(
 
         # ONE pass per document. The two output folders used to be produced by two separate loops, each
         # re-reading the file and re-running the Stanza tokenizer over every paragraph of it.
-        with open(filename, "r", encoding="utf-8", errors="ignore") as fn:
+        with open(filename, encoding="utf-8", errors="ignore") as fn:
             paragraphs = get_paragraphs(fn)
 
         doc_titles = []
@@ -1336,31 +1332,29 @@ def find_replace_string(
                     + str(string_OUT[0])
                     + "\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILE."
                 )
-        else:  # when the length of FIND / REPLACE strings > 1, no actual string will be typed in the message box or printout information
-            if silent == False:
-                mb.showwarning(
-                    title="String edit",
-                    message=str(Ndocs)
-                    + " document(s) processed.\n\n"
-                    + str(docError)
-                    + " document(s) edited replacing strings.\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILE(S).",
-                )
-            else:
-                print(
-                    str(Ndocs)
-                    + " document(s) processed.\n\n"
-                    + str(docError)
-                    + " document(s) edited replacing strings.\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILE(S)."
-                )
-    else:
-        if silent == False:
-            # mb.showwarning(title='String edit', message=str(Ndocs) + ' document(s) processed.\n\nNo documents were found with the input string ' +str( string_IN))
+        elif silent == False:
             mb.showwarning(
                 title="String edit",
-                message=str(Ndocs) + " document(s) processed.\n\nNo documents were found with the input string(s).",
+                message=str(Ndocs)
+                + " document(s) processed.\n\n"
+                + str(docError)
+                + " document(s) edited replacing strings.\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILE(S).",
             )
         else:
-            print(str(Ndocs) + " document(s) processed but zero input string(s) found.")
+            print(
+                str(Ndocs)
+                + " document(s) processed.\n\n"
+                + str(docError)
+                + " document(s) edited replacing strings.\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILE(S)."
+            )
+    elif silent == False:
+        # mb.showwarning(title='String edit', message=str(Ndocs) + ' document(s) processed.\n\nNo documents were found with the input string ' +str( string_IN))
+        mb.showwarning(
+            title="String edit",
+            message=str(Ndocs) + " document(s) processed.\n\nNo documents were found with the input string(s).",
+        )
+    else:
+        print(str(Ndocs) + " document(s) processed but zero input string(s) found.")
 
     if not IO_error:
         filesToOpen.append(outputFilename)

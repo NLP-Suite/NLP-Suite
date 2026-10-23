@@ -1,8 +1,5 @@
 # Written by Roberto Franzosi January 2023
 
-import sys
-import GUI_util
-import IO_libraries_util
 
 # if pafy gives an error
 #   pip uninstall pafy
@@ -26,8 +23,8 @@ import tkinter.messagebox as mb
 # platform (Windows in particular). Import them OPTIONALLY so a missing module degrades the video
 # feature gracefully instead of breaking this whole module on import.
 try:
-    import vlc
     import pafy
+    import vlc
 
     _VIDEO_LIBS_AVAILABLE = True
 except Exception:

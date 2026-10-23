@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -10,18 +11,16 @@ if (
 ):
     sys.exit(0)
 
-import os
+from collections import Counter
 import math
-import numpy as np
-import pandas as pd
+import os
 import tkinter.messagebox as mb
-from collections import Counter, defaultdict
 
-import IO_csv_util
+import pandas as pd
+
 import IO_files_util
 import IO_user_interface_util
-
-from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
+from Stanza_functions_util import sentence_split_stanza_text, stanzaPipeLine
 
 
 def _tokenize_sentences(text):
@@ -128,7 +127,7 @@ def compute_collocation_statistics(
     all_sentences = []
 
     if inputFilename and os.path.exists(inputFilename):
-        with open(inputFilename, "r", encoding="utf-8", errors="ignore") as f:
+        with open(inputFilename, encoding="utf-8", errors="ignore") as f:
             text = f.read()
         if text.strip():
             all_sentences.extend(_tokenize_sentences(text))
@@ -136,7 +135,7 @@ def compute_collocation_statistics(
         txt_files = sorted([f for f in os.listdir(inputDir) if f.endswith(".txt")])
         for filename in txt_files:
             filepath = os.path.join(inputDir, filename)
-            with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+            with open(filepath, encoding="utf-8", errors="ignore") as f:
                 text = f.read()
             if text.strip():
                 all_sentences.extend(_tokenize_sentences(text))

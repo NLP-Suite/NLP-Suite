@@ -1,7 +1,7 @@
-import requests
-import shutil
 import os
+import shutil
 
+import requests
 
 prefix = "https://nlp-suite.oss-cn-beijing.aliyuncs.com/"
 dir_path = os.path.dirname(os.path.realpath(__file__))

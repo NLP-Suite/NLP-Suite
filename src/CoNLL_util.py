@@ -1,21 +1,18 @@
-import sys
-import GUI_util
 # import IO_libraries_util
 #
 # if IO_libraries_util.install_all_Python_packages(GUI_util.window, "CoNLL_util",
 # 								['os', 'io','tkinter','pandas','time']) == False:
 # 	sys.exit(0)
-
 import os
-import tkinter.messagebox as mb
 import time
-import io
+import tkinter.messagebox as mb
+
 import pandas as pd
 
-
+import GUI_util
+import IO_csv_util
 import IO_user_interface_util
 import Stanford_CoreNLP_tags_util
-import IO_csv_util
 
 global sentenceID_position, documentID_position, document_position
 
@@ -338,12 +335,13 @@ def _default_output_dir():
     """The Suite's default 'Output files directory', read from config/NLP_default_IO_config.csv (where the parser
     auto-creates its output subdirectories). Returns '' if it cannot be read."""
     try:
-        import GUI_IO_util
         import csv as _csv
+
+        import GUI_IO_util
 
         path = os.path.join(GUI_IO_util.configPath, "NLP_default_IO_config.csv")
         if os.path.isfile(path):
-            with open(path, "r", newline="", encoding="utf-8", errors="ignore") as fh:
+            with open(path, newline="", encoding="utf-8", errors="ignore") as fh:
                 for row in _csv.reader(fh):
                     if row and row[0].strip() == "Output files directory":
                         return row[1].strip() if len(row) > 1 else ""
@@ -705,7 +703,7 @@ def compute_sentence(CoNLL_table, recordID, sentenceID, documentID):
     :type documentID: object
     """
     # Open ConLL
-    df = pd.read_csv(io.open(CoNLL_table, "rb"), sep=",", index_col=False, encoding="utf-8", on_bad_lines="skip")
+    df = pd.read_csv(open(CoNLL_table, "rb"), sep=",", index_col=False, encoding="utf-8", on_bad_lines="skip")
     df = df[df["Sentence ID"] == sentenceID]
     df = df[df["Document ID"] == documentID]
     rows = []  # Store data
@@ -718,9 +716,8 @@ def compute_sentence(CoNLL_table, recordID, sentenceID, documentID):
                 sent_str = sent_str + str(row["Form"])
             else:
                 sent_str = sent_str + " " + str(row["Form"])
-        else:
-            if row["Sentence ID"] > sentenceID or row["Document ID"] > documentID:
-                break
+        elif row["Sentence ID"] > sentenceID or row["Document ID"] > documentID:
+            break
         index = index + 1
     return index, sent_str
 
@@ -742,7 +739,7 @@ def compute_sentence_table(CoNLL_table, output_path):
     # keep_default_na=False: a token such as 'None' or 'NA' is a word, not a missing value (a sentence starting
     #   with 'None' crashed the loop below)
     df = pd.read_csv(
-        io.open(os.path.join(output_path, CoNLL_table), "rb"),
+        open(os.path.join(output_path, CoNLL_table), "rb"),
         sep=",",
         index_col=False,
         encoding="utf-8",

@@ -8,9 +8,7 @@ rewritten by Roberto Franzosi, Zhangyi Pan, Spring 2020
 
 import sys
 
-import GUI_IO_util
 import IO_files_util
-import charts_util
 import IO_libraries_util
 import IO_user_interface_util
 
@@ -22,13 +20,13 @@ if (
 ):
     sys.exit(0)
 
-import re
-import os
 import csv
 import ntpath
-from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
+import os
+import re
 
 import GUI_util
+from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
 
 
 # Optional routine to clean any places where a duplicate tag emerged on accident
@@ -50,7 +48,7 @@ def gatherAnnotations(inputFile, tags, mustInclude="<p>", cleanMultiples=True):
     starts, ends, words = [], [], []
 
     # text = (open(inputFil, "r", encoding="utf-8", errors='ignore').read())
-    text = open(inputFile, "r", encoding="utf-8", errors="ignore").read()
+    text = open(inputFile, encoding="utf-8", errors="ignore").read()
     # split into sentences
     # sentences = nltk.sent_tokenize(text)
     sentences = tokenize_stanza_text(stanzaPipeLine(text))

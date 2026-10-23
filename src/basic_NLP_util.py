@@ -79,8 +79,8 @@ def _spacy_basic(text, lang):
         try:
             _spacy_nlp[lang] = spacy.load(model)
         except OSError:
-            import sys
             import subprocess
+            import sys
 
             subprocess.check_call([sys.executable, "-m", "spacy", "download", model])
             _spacy_nlp[lang] = spacy.load(model)

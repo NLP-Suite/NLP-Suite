@@ -2,23 +2,18 @@
 # by Jack Hester
 # Note: depends on beautifulsoup4, and urllib2!
 # v 0.0.2, now for python 3.x
-import argparse
 import os
-import re
-import glob
-import datetime as dt
 
 try:
     import urllib.request as urllib2
 except ImportError:
     import urllib2
-import time
-from bs4 import BeautifulSoup as bs
-import os.path
-import sys
-import warnings
-import datetime
 import json
+import os.path
+import time
+import warnings
+
+from bs4 import BeautifulSoup as bs
 
 warnings.filterwarnings("ignore", category=UserWarning, module="bs4")
 warnings.filterwarnings("ignore", category=UserWarning)

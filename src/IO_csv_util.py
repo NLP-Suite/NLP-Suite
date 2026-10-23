@@ -1,16 +1,16 @@
-import sys
-import GUI_util
 # import IO_libraries_util
 #
 # if IO_libraries_util.install_all_Python_packages(GUI_util.window, "IO_csv_util",
 # if IO_libraries_util.install_all_Python_packages(GUI_util.window, "IO_csv_util",
 # 								['os', 'tkinter','csv','pandas']) == False:
 # 	sys.exit(0)
-
 import csv
-import tkinter.messagebox as mb
-import pandas as pd
 import os
+import tkinter.messagebox as mb
+
+import pandas as pd
+
+import GUI_util
 import IO_files_util
 import IO_user_interface_util
 
@@ -20,7 +20,7 @@ def csvFile_has_header(file_path):
     is_header = False
     if not os.path.exists(file_path):
         return is_header
-    reader = csv.reader(open(file_path, "r", encoding="utf-8", errors="ignore"))
+    reader = csv.reader(open(file_path, encoding="utf-8", errors="ignore"))
     i = next(reader)
     is_header = not any(cell.isdigit() for cell in i)
     return is_header
@@ -88,11 +88,11 @@ def get_csvfile_headers(csvFile, ask_Question=False):
     if ask_Question:
         answer = mb.askyesno("File headers", "Does the selected input file\n\n" + csvFile + "\n\nhave headers?")
     if csvFile != "" and answer == True:
-        with open(csvFile, "r", encoding="utf-8-sig", errors="ignore") as f:
+        with open(csvFile, encoding="utf-8-sig", errors="ignore") as f:
             reader = csv.DictReader(f)
             try:
                 headers = reader.fieldnames
-            except IOError as e:  # empty files will break the next
+            except OSError as e:  # empty files will break the next
                 mb.showwarning("Warning", "Opening the csv file " + csvFile + " encountered an error.\n\n" + str(e))
                 headers = ""
             # f.seek(0)
@@ -159,7 +159,7 @@ def get_csv_field_values(inputFilename, column_name, uniqueValues=True, returnLi
     if inputFilename == "" or column_name == "":
         return [""]
 
-    with open(inputFilename, "r", encoding="utf-8", errors="ignore") as f:
+    with open(inputFilename, encoding="utf-8", errors="ignore") as f:
         csvreader = csv.reader(f)
         fields = next(csvreader)
         # from the column header get the column number that we want to extract
@@ -173,9 +173,8 @@ def get_csv_field_values(inputFilename, column_name, uniqueValues=True, returnLi
                 # the list is sorted with proper names, with capital initial first, then the improper names
                 sorted_unique_values = sorted(unique_values)
                 list(sorted_unique_values)
-            else:
-                if row[col_num] != "":
-                    unique_values = row[col_num] + ", " + unique_values
+            elif row[col_num] != "":
+                unique_values = row[col_num] + ", " + unique_values
     return unique_values
 
 
@@ -263,7 +262,7 @@ def df_to_csv(window, data_frame, outputFilename, headers=None, index=False, lan
                 )
                 data_frame.to_csv(outputFilename, columns=headers, header=None, index=index, encoding=language_encoding)
             break  # exit loop
-        except IOError as e:
+        except OSError as e:
             # mb.showwarning(title='Output file error', message="Could not write the file " + outputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
             mb.showwarning(
                 title="Output file error",
@@ -273,7 +272,7 @@ def df_to_csv(window, data_frame, outputFilename, headers=None, index=False, lan
                 + str(e)
                 + "\n\nCLOSE THE FILE TO EXIT LOOP...",
             )
-            if not "Permission" in str(e):
+            if "Permission" not in str(e):
                 outputFilename = ""
                 break  # exit loop; the error is not due to file being open
             # restart the loop
@@ -489,7 +488,7 @@ def export_csv_to_text(inputFilename, outputDir, column=None, column_list=[]):
         return
     if column == None and len(column_list) == 0:
         # reading csv file
-        text = open(inputFilename, "r", encoding="utf-8", errors="ignore")
+        text = open(inputFilename, encoding="utf-8", errors="ignore")
 
         # joining with space content of text
         text = " ".join([i for i in text])
@@ -502,7 +501,7 @@ def export_csv_to_text(inputFilename, outputDir, column=None, column_list=[]):
 
     elif len(column_list) == 0:
         df = pd.read_csv(inputFilename, encoding="utf-8", on_bad_lines="skip")
-        if not column in df.columns:
+        if column not in df.columns:
             mb.showwarning(
                 title="csv file error",
                 message="The selected csv file\n\n"
@@ -523,7 +522,7 @@ def export_csv_to_text(inputFilename, outputDir, column=None, column_list=[]):
         df = pd.read_csv(inputFilename, encoding="utf-8", on_bad_lines="skip")
 
         for column in column_list:
-            if not column in df.columns:
+            if column not in df.columns:
                 mb.showwarning(
                     title="csv file error",
                     message="The selected csv file\n\n"

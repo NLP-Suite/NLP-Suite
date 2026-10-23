@@ -1,16 +1,16 @@
 import csv
-from tqdm import tqdm
-import numpy as np
-from scipy.linalg import svd as sp_svd
-from sklearn.cluster import AgglomerativeClustering
-from sklearn.decomposition import NMF
-from scipy.cluster.hierarchy import dendrogram, linkage
-from matplotlib import pyplot as plt
 import os.path
 import re  # ANGEL
 
+from matplotlib import pyplot as plt
+import numpy as np
+from scipy.cluster.hierarchy import dendrogram
+from scipy.linalg import svd as sp_svd
+from sklearn.cluster import AgglomerativeClustering
+from sklearn.decomposition import NMF
+from tqdm import tqdm
+
 import IO_csv_util
-import IO_user_interface_util
 import shape_of_stories_vectorizer_util as vec
 import shape_of_stories_visualization_util as viz
 
@@ -18,7 +18,6 @@ import shape_of_stories_visualization_util as viz
 class SVDClustering:
     def __init__(self, n_modes):
         self.n_modes = n_modes
-        return
 
     @staticmethod
     def reweigh_vecs(vecs, cluster_ids, weights):

@@ -14,6 +14,7 @@
 
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -25,16 +26,16 @@ if (
 ):
     sys.exit(0)
 
-import os
 from collections import Counter
+import os
 import tkinter.messagebox as mb
+
 import pandas as pd
 
-import CoNLL_util
 import charts_util
-import statistics_csv_util
-import IO_files_util
+import CoNLL_util
 import IO_csv_util
+import IO_files_util
 import IO_user_interface_util
 import Stanford_CoreNLP_tags_util
 

@@ -11,6 +11,7 @@
 # differ from older output -- the 80% duplicate threshold may need re-tuning on a real corpus.
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -22,9 +23,9 @@ if (
 ):
     sys.exit(0)
 
+import csv
 import os
 import re
-import csv
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -176,21 +177,19 @@ def compute_and_write(
     most_copied = max(range(n), key=lambda i: len(duplicates[i])) if n else None
     with open(pdup, "w", encoding="utf-8") as f:
         f.write("Document similarity report (TF-IDF cosine similarity)\n")
-        f.write("Duplicate threshold: {:.0f}% similarity\n\n".format(thr_pct))
-        f.write("{} of {} documents have copies at or above the threshold.\n".format(len(docs_with_copies), n))
+        f.write(f"Duplicate threshold: {thr_pct:.0f}% similarity\n\n")
+        f.write(f"{len(docs_with_copies)} of {n} documents have copies at or above the threshold.\n")
         if most_copied is not None and duplicates[most_copied]:
             f.write(
-                "The document with the most copies is: {} ({} copies).\n".format(
-                    names[most_copied], len(duplicates[most_copied])
-                )
+                f"The document with the most copies is: {names[most_copied]} ({len(duplicates[most_copied])} copies).\n"
             )
         f.write("\n")
         for i in range(n):
             if not duplicates[i]:
                 continue
-            f.write("{} has {} copy(s):\n".format(names[i], len(duplicates[i])))
+            f.write(f"{names[i]} has {len(duplicates[i])} copy(s):\n")
             for name_j, pct in sorted(duplicates[i], key=lambda x: -x[1]):
-                f.write("   - {}  (score: {:.1f}% match)\n".format(name_j, pct))
+                f.write(f"   - {name_j}  (score: {pct:.1f}% match)\n")
             f.write("\n")
     out["duplicates_txt"] = pdup
 
@@ -209,6 +208,7 @@ def run(
 ):
     """GUI-facing entry point. Returns a dict of output paths, or None."""
     import tkinter.messagebox as mb
+
     import IO_user_interface_util
 
     if not inputDir or not os.path.isdir(inputDir):

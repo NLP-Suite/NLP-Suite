@@ -1,15 +1,15 @@
-import sys
-import GUI_util
-import IO_libraries_util
 from collections import Counter
+import sys
+
 import pandas as pd
 
-import IO_files_util
-import IO_csv_util
-import IO_user_interface_util
-import CoNLL_util
 import charts_util
-import statistics_csv_util
+import CoNLL_util
+import GUI_util
+import IO_csv_util
+import IO_files_util
+import IO_libraries_util
+import IO_user_interface_util
 import Stanford_CoreNLP_tags_util
 
 if (

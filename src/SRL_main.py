@@ -3,15 +3,13 @@
 # edited by Roberto Franzosi, Nov 2019, October 2020
 
 
-import sys
-import GUI_util
-import IO_libraries_util
-import tkinter.messagebox as mb
-
 import os
 import tkinter as tk
-import IO_files_util
+import tkinter.messagebox as mb
+
 import GUI_IO_util
+import GUI_util
+import IO_files_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 

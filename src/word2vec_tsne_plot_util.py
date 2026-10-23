@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -11,16 +12,15 @@ if (
     sys.exit(0)
 
 
-import pandas as pd
 import time
 
-import IO_files_util
-import IO_user_interface_util
-
+import pandas as pd
 
 # Visualization
 import plotly.express as px
 from sklearn.manifold import TSNE
+
+import IO_files_util
 
 
 def run_word2vec_plot(inputFilename, inputDir, outputDir, word_vector_list, filtered_words, vis_menu_var, dim_menu_var):

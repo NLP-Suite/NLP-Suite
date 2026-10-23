@@ -3,6 +3,7 @@
 # Wordnet_bySentenceID written by Yi Wang (April 2020)
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -18,18 +19,18 @@ import os
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox as mb
+
 import pandas as pd
 
-import GUI_IO_util
 import config_util
-import IO_files_util
 import CoNLL_util
-import semantic_aggregation_WordNet_util
-import semantic_aggregation_util
-import sentence_analysis_util
-import reminders_util
+import GUI_IO_util
 import html_annotator_dictionary_util
+import IO_files_util
+import reminders_util
 import run_script_util
+import semantic_aggregation_util
+import semantic_aggregation_WordNet_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -1166,9 +1167,8 @@ def setNounVerbMenu(*args):
     if noun_verb_menu_var.get() == "NOUN":
         if hidden_noun_lemma_csv.get() != "":
             csv_file_var.set(hidden_noun_lemma_csv.get())
-    else:
-        if hidden_verb_lemma_csv.get() != "":
-            csv_file_var.set(hidden_verb_lemma_csv.get())
+    elif hidden_verb_lemma_csv.get() != "":
+        csv_file_var.set(hidden_verb_lemma_csv.get())
     # KB-aware picker: WordNet top synsets (by NOUN/VERB), the 429 VerbNet classes, or the 1,221 FrameNet frames
     noun_verb_menu_options = tuple(
         semantic_aggregation_util.get_categories(knowledge_base_menu_var.get(), noun_verb_menu_var.get())

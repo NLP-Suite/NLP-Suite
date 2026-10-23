@@ -25,6 +25,7 @@
 # list of (int, list of float), optional – Phi relevance values, multiplied by the feature length, for each word-topic combination. Each element in the list is a pair of a word’s id and a list of the phi values between this word and each topic. Only returned if per_word_topics was set to True.
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -42,24 +43,22 @@ if (
 ):
     sys.exit(0)
 
+# necessary to avoid opening the GUI repeatedly
+from multiprocessing import current_process
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
 
-# necessary to avoid opening the GUI repeatedly
-from multiprocessing import current_process
-import spacy
 # python -m spacy download en_core_web_sm)
-
 import GUI_IO_util
+import IO_files_util
+import IO_internet_util
+import reminders_util
+import topic_modeling_gensim_util
 
 # @@@
 # import topic_modeling_bert_util
 import topic_modeling_mallet_util
-import topic_modeling_gensim_util
-import IO_internet_util
-import reminders_util
-import IO_files_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 

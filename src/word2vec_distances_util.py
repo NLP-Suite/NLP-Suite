@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -11,18 +12,17 @@ if (
     sys.exit(0)
 
 
-import pandas as pd
-import tkinter.messagebox as mb
+import itertools
 import math
 import time
+import tkinter.messagebox as mb
 
-import IO_files_util
-import IO_user_interface_util
-import charts_util
-
-import itertools
 import numpy as np
 from numpy.linalg import norm
+import pandas as pd
+
+import charts_util
+import IO_files_util
 
 
 def _cosine_sim_vectors(vec_a, vec_b):

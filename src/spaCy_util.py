@@ -1,6 +1,7 @@
+import sys
+
 import GUI_util
 import IO_libraries_util
-import sys
 
 if (
     IO_libraries_util.install_all_Python_packages(
@@ -24,17 +25,17 @@ except Exception as e:
     )
     sys.exit(0)
 
-from spacytextblob.spacytextblob import SpacyTextBlob
-import pandas as pd
 import os
-import warnings
 import subprocess
+import warnings
 
-import IO_files_util
-import IO_csv_util
-import GUI_util
-import IO_user_interface_util
+import pandas as pd
+
 import constants_util
+import GUI_util
+import IO_csv_util
+import IO_files_util
+import IO_user_interface_util
 import parsers_annotators_visualization_util
 import reminders_util
 
@@ -254,7 +255,7 @@ def spaCy_annotate(
         print("Processing file " + str(docID) + "/" + str(nDocs) + " " + tail)
 
         # open file and extract text
-        text = open(doc, "r", encoding=language_encoding, errors="ignore").read().replace("\n", " ")
+        text = open(doc, encoding=language_encoding, errors="ignore").read().replace("\n", " ")
 
         # process given text with spaCy annotator
         try:

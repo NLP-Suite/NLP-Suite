@@ -2,19 +2,13 @@
 
 # Import modules
 
-import pandas as pd
-import geopandas
-import gmaps
-import shapely
-import folium
-from shapely.geometry import Point
-import geocoder
 import sys
+
+import gmaps
+import pandas as pd
 
 "geopandas" in sys.modules
 import googlemaps
-from googlemaps import Client
-
 
 # insert google maps key
 ##need to insert googlemaps api key " "

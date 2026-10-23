@@ -5,19 +5,13 @@ import os
 import re
 import shutil
 import tkinter.messagebox as mb
-import pandas as pd
-
-import IO_files_util
 
 # sample the corpus by document ID, should have a csv file output already, containing a column called 'Document ID'
 # table: path to the NLP Suite output csv file
 # corpus_location: the location of the corpus
 # folder_name: the name of the folder to save the sub corpus
-
 import pandas as pd
-import numpy as np
-import os
-import shutil
+
 import IO_files_util
 
 

@@ -13,10 +13,9 @@
 # written for the NLP Suite
 
 import os
-import sys
-import subprocess
-import pandas as pd
 import tkinter.messagebox as mb
+
+import pandas as pd
 
 import GUI_util
 import IO_files_util
@@ -222,7 +221,7 @@ def fastcoref_coref(
     for docID, doc_path in enumerate(inputDocs, 1):
         tail = os.path.basename(doc_path)
         print("Processing file " + str(docID) + "/" + str(nDocs) + " " + tail)
-        text = open(doc_path, "r", encoding="utf-8", errors="ignore").read()
+        text = open(doc_path, encoding="utf-8", errors="ignore").read()
         if text.strip() == "":
             print("  Skipping empty file: " + tail)
             continue

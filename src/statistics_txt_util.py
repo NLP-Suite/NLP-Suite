@@ -1,6 +1,7 @@
 # Written by Roberto Franzosi November 2019
 # Edited by Josh Karol
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -14,16 +15,17 @@ if (
 ):
     sys.exit(0)
 
+import collections
+from collections import Counter
 import os
-import os
+import re
+import string
 import tkinter as tk
 import tkinter.messagebox as mb
-import collections
-import re
-from collections import Counter
-import string
+
 from nltk.stem.porter import PorterStemmer
 import stanza
+
 import IO_internet_util
 
 # report a failed model download in a dialog: the bare except used to swallow the real error and
@@ -45,8 +47,11 @@ IO_internet_util.download_with_warning(
 # from PIL import Image
 
 # Sentence Complexity
-import tree
-import sentence_complexity_node_util as Node
+import csv
+
+import nltk
+from nltk.draw import TreeView
+from nltk.tree import Tree
 
 # from gensim.utils import lemmatize
 import pandas as pd
@@ -55,14 +60,10 @@ import pandas as pd
 # import textstat
 # import subprocess
 import spacy
-import csv
-import nltk
-from nltk.tree import Tree
-from nltk.draw import TreeView
-from PIL import Image
 
 # For objectivity/subjectivity
-from spacytextblob.spacytextblob import SpacyTextBlob
+import sentence_complexity_node_util as Node
+import tree
 
 # whether stopwordst were already downloaded can be tested, see stackoverflow
 #   https://stackoverflow.com/questions/23704510/how-do-i-test-whether-an-nltk-resource-is-already-installed-on-the-machine-runni
@@ -73,21 +74,20 @@ from spacytextblob.spacytextblob import SpacyTextBlob
 # check punkt
 IO_libraries_util.import_nltk_resource(GUI_util.window, "tokenizers/punkt", "punkt")
 
-from nltk.corpus import stopwords
 from nltk.corpus import wordnet
 
 # from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
 import textstat
 
-import IO_user_interface_util
-import GUI_IO_util
 import charts_util
-import IO_files_util
+import GUI_IO_util
 import IO_csv_util
-import statistics_statistical_tests_util
+import IO_files_util
+import IO_user_interface_util
 import reminders_util
-import TIPS_util
 import statistics_csv_util
+import statistics_statistical_tests_util
+import TIPS_util
 
 # https://github.com/nltk/nltk/wiki/Frequently-Asked-Questions-(Stackoverflow-Edition)
 # to compute bigrams, 3-grams, ...
@@ -144,7 +144,7 @@ def lemmatizing(word):  # edited by Claude Hu 08/2020
         # that lemmatization is returned as result
         # lemmatizer = WordNetLemmatizer()
         # lemma = lemmatizer.lemmatize(word, p)
-        from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza_word
+        from Stanza_functions_util import lemmatize_stanza_word, stanzaPipeLine
 
         lemma = lemmatize_stanza_word(stanzaPipeLine(word))
         if lemma != word:
@@ -166,13 +166,13 @@ def word_count(text):
 
 def excludeStopWords_list(words):
     # stop_words = stopwords.words('english')
-    fin = open("../lib/wordLists/stopwords.txt", "r")
+    fin = open("../lib/wordLists/stopwords.txt")
     stop_words = set(fin.read().splitlines())
     # since stop_words are lowercase exclude initial-capital words (He, I)
-    words_excludeStopWords = [word for word in words if not word.lower() in stop_words]
+    words_excludeStopWords = [word for word in words if word.lower() not in stop_words]
     words = words_excludeStopWords
     # exclude punctuation
-    words_excludePunctuation = [word for word in words if not word in string.punctuation]
+    words_excludePunctuation = [word for word in words if word not in string.punctuation]
     words = words_excludePunctuation
     return words
 
@@ -281,7 +281,7 @@ def compute_corpus_statistics(
             print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
             # currentLine.append([doc])
             # fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
-            f = open(doc, "r", encoding="utf-8", errors="ignore")
+            f = open(doc, encoding="utf-8", errors="ignore")
             docText = f.read()
             f.close()
             Nsentences = textstat.sentence_count(docText)
@@ -439,6 +439,7 @@ def _find_matching_conll_table(inputDocs, search_dirs):
     the sentence-length output itself and derived artifacts (frequency / binned / chart / by-doc)."""
     import glob
     import re as _re
+
     import pandas as pd
 
     want = {os.path.splitext(os.path.basename(str(d)))[0].lower() for d in inputDocs if str(d)}
@@ -618,7 +619,7 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
                 fileID = fileID + 1
                 head, tail = os.path.split(doc)
                 print("Processing file " + str(fileID) + "/" + str(Ndocs) + " " + tail)
-                with open(doc, "r", encoding="utf-8", errors="ignore") as inputFile:
+                with open(doc, encoding="utf-8", errors="ignore") as inputFile:
                     text = inputFile.read().replace("\n", " ")
                     # ONE parse per document with the configured parser; sentence objects carry their tokens,
                     # so counts come straight off this parse (no per-sentence re-parse, no wasted lemma pass).
@@ -934,6 +935,7 @@ def process_punctuation(inputFilename, inputDir, excludePunctuation, ngrams_list
 
 
 import NGrams_util
+
 # hapax_words is True when the user selevcts too export ONLY words, False when hapax will also include numebrs, symbiols, etc.
 
 
@@ -1186,7 +1188,7 @@ def yule(window, inputFilename, inputDir, outputDir, configFileName, hideMessage
         d = {}
         index = index + 1
         print("Processing file " + str(index) + "/" + str(Ndocs) + " " + tail)
-        fullText = open(doc, "r", encoding="utf-8", errors="ignore").read()
+        fullText = open(doc, encoding="utf-8", errors="ignore").read()
         words = filter(lambda w: len(w) > 0, [w.strip("0123456789!:,.?(){}[]") for w in fullText.lower().split()])
         stemmer = PorterStemmer()
         for w in words:
@@ -1307,7 +1309,7 @@ def process_words(
     word_list_temp = []
     word_list_temp3 = []
 
-    fin = open("../lib/wordLists/stopwords.txt", "r")
+    fin = open("../lib/wordLists/stopwords.txt")
     stops = set(fin.read().splitlines())
     inputDocs = IO_files_util.getFileList(
         inputFilename, inputDir, fileType=".txt", silent=False, configFileName=configFileName
@@ -1332,7 +1334,7 @@ def process_words(
     _proc_label = "capital-initial words" if "capital" in processType.lower() else processType
 
     # ngrams already display the started running... No need to duplicate
-    if not "unigrams" in processType:
+    if "unigrams" not in processType:
         startTime = IO_user_interface_util.timed_alert(
             GUI_util.window, 2000, "Analysis start", "Started running " + _proc_label + " at", True
         )
@@ -1444,10 +1446,10 @@ def process_words(
         documentID = documentID + 1
         print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
 
-        fullText = open(doc, "r", encoding="utf-8", errors="ignore").read()
+        fullText = open(doc, encoding="utf-8", errors="ignore").read()
         fullText = fullText.replace("\n", " ")
 
-        from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text
+        from Stanza_functions_util import sentence_split_stanza_text, stanzaPipeLine, tokenize_stanza_text
 
         rep_words_first = []
         rep_words_last = []
@@ -1487,7 +1489,7 @@ def process_words(
             # print(words_with_stop)
             # don't process stopwords
             filtered_words = words
-            if processType != "" and not "pathos" in processType.lower():
+            if processType != "" and "pathos" not in processType.lower():
                 if excludeStopWords:
                     words = excludeStopWords_list(words)
                     filtered_words = [word for word in words if word.isalpha()]  # strip out words with punctuation
@@ -1712,8 +1714,6 @@ def process_words(
                     elif "?" in word:
                         question_punctuation = question_punctuation + 1
 
-                from collections import Counter
-
                 # REPEATED WORDS FIRST K SENTENCES/LAST K SENTENCES  -------------------------------------------------------------------------------
                 if "Repetition: Words" in processType:
                     for wrdID, wrd in enumerate(filtered_words):
@@ -1834,33 +1834,32 @@ def process_words(
                                     ]
                                 )
 
-                        else:
-                            if wrdID + 1 <= k:
-                                word_list.append(
-                                    [
-                                        "First",
-                                        k,
-                                        wrd,
-                                        wrdID + 1,
-                                        sentenceID,
-                                        s,
-                                        documentID,
-                                        IO_csv_util.dressFilenameForCSVHyperlink(doc),
-                                    ]
-                                )
-                            elif wrdID + 1 > len(words_with_stop) - k:
-                                word_list.append(
-                                    [
-                                        "Last",
-                                        k,
-                                        wrd,
-                                        wrdID + 1,
-                                        sentenceID,
-                                        s,
-                                        documentID,
-                                        IO_csv_util.dressFilenameForCSVHyperlink(doc),
-                                    ]
-                                )
+                        elif wrdID + 1 <= k:
+                            word_list.append(
+                                [
+                                    "First",
+                                    k,
+                                    wrd,
+                                    wrdID + 1,
+                                    sentenceID,
+                                    s,
+                                    documentID,
+                                    IO_csv_util.dressFilenameForCSVHyperlink(doc),
+                                ]
+                            )
+                        elif wrdID + 1 > len(words_with_stop) - k:
+                            word_list.append(
+                                [
+                                    "Last",
+                                    k,
+                                    wrd,
+                                    wrdID + 1,
+                                    sentenceID,
+                                    s,
+                                    documentID,
+                                    IO_csv_util.dressFilenameForCSVHyperlink(doc),
+                                ]
+                            )
 
         # REPETITION ACROSS SENTENCES (SPECIAL NGRAMS) -----------------------------------------------
         if "Repetition across" in processType:
@@ -1965,7 +1964,7 @@ def process_words(
                     x="Frequency (sentences)",
                     y="Repeated Ngram",
                     orientation="h",
-                    title=f"Top 30 Repeated Ngrams Across Sentences",
+                    title="Top 30 Repeated Ngrams Across Sentences",
                     hover_data={"Sentence IDs": True},
                     color="Frequency (sentences)",
                     color_continuous_scale="Viridis",
@@ -1990,7 +1989,7 @@ def process_words(
     filesToOpen.extend(stat_files)
 
     # ngrams already display the started running... No need to duplicate
-    if not "unigrams" in processType:
+    if "unigrams" not in processType:
         IO_user_interface_util.timed_alert(
             GUI_util.window, 2000, "Analysis end", "Finished running " + _proc_label + " at", True, "", True, startTime
         )
@@ -2003,7 +2002,7 @@ def process_words(
 def n_most_common_words(n, text):
     cleaned_words, common_words = [], []
     for word in text.split():
-        fin = open("../lib/wordLists/stopwords.txt", "r")
+        fin = open("../lib/wordLists/stopwords.txt")
         stop_words = set(fin.read().splitlines())
         if word not in stop_words and "'" not in word and '"' not in word:
             cleaned_words.append(word)
@@ -2053,7 +2052,7 @@ def convert_txt_file(
             documentID = documentID + 1
             # currentLine.append([documentID])
             print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
-            fullText = open(doc, "r", encoding="utf-8", errors="ignore").read()
+            fullText = open(doc, encoding="utf-8", errors="ignore").read()
 
             Nsentences = str(textstat.sentence_count(fullText))
             # print('TOTAL number of sentences: ',Nsentences)
@@ -2078,10 +2077,9 @@ def convert_txt_file(
                 # text_vocab = set(lemmatizer.lemmatize(w.lower()) for w in fullText.split(" ") if w.isalpha())
                 # words = set(lemmatizing(w.lower()) for w in words if w.isalpha()) # fullText.split(" ") if w.isalpha())
                 from Stanza_functions_util import (
-                    stanzaPipeLine,
-                    sentence_split_stanza_text,
-                    tokenize_stanza_text,
                     lemmatize_stanza_word,
+                    stanzaPipeLine,
+                    tokenize_stanza_text,
                 )
 
                 text_vocab = set(
@@ -2165,7 +2163,7 @@ def compute_sentence_text_readability(
         documentID = 0
         for file in files:
             # read txt file
-            text = open(file, "r", encoding="utf-8", errors="ignore").read()
+            text = open(file, encoding="utf-8", errors="ignore").read()
 
             documentID = documentID + 1
             head, tail = os.path.split(file)
@@ -2257,10 +2255,8 @@ def compute_sentence_text_readability(
             # split into sentences
             # sentences = nltk.sent_tokenize(text)
             from Stanza_functions_util import (
-                stanzaPipeLine,
                 sentence_split_stanza_text,
-                tokenize_stanza_text,
-                lemmatize_stanza_word,
+                stanzaPipeLine,
             )
 
             sentences = sentence_split_stanza_text(stanzaPipeLine(text))
@@ -2477,7 +2473,7 @@ def sentence_structure_tree(inputFilename, outputDir):
         maxNum = 1
     else:
         # split into sentences
-        text = open(inputFilename, "r", encoding="utf-8", errors="ignore").read()
+        text = open(inputFilename, encoding="utf-8", errors="ignore").read()
         sentences = nltk.sent_tokenize(text)
         maxNum = GUI_IO_util.enter_value_widget("Enter number of sentences to be visualized", "Enter", 1)
         maxNum = str(maxNum[0])
@@ -2575,7 +2571,7 @@ def compute_sentence_complexity(
         numFiles = 1
         doc = inputFilename
         if doc.endswith(".txt"):
-            with open(doc, "r", encoding="utf-8", errors="ignore") as file:
+            with open(doc, encoding="utf-8", errors="ignore") as file:
                 dId += 1
                 head, tail = os.path.split(doc)
                 print("Processing file " + str(dId) + "/" + str(numFiles) + tail)
@@ -2600,7 +2596,7 @@ def compute_sentence_complexity(
         for doc in inputDocs:
             if doc.endswith(".txt"):
                 head, tail = os.path.split(doc)
-                with open(os.path.join(inputDir, doc), "r", encoding="utf-8", errors="ignore") as file:
+                with open(os.path.join(inputDir, doc), encoding="utf-8", errors="ignore") as file:
                     dId += 1
                     print("Importing filename " + str(dId) + "/" + str(numFiles) + " " + tail)
                     text = file.read()
@@ -2736,7 +2732,7 @@ def compute_subordination_ratio(
         numFiles = 1
         doc = inputFilename
         if doc.endswith(".txt"):
-            with open(doc, "r", encoding="utf-8", errors="ignore") as file:
+            with open(doc, encoding="utf-8", errors="ignore") as file:
                 dId += 1
                 head, tail = os.path.split(doc)
                 print("Processing file " + str(dId) + "/" + str(numFiles) + tail)
@@ -2755,7 +2751,7 @@ def compute_subordination_ratio(
         for doc in inputDocs:
             if doc.endswith(".txt"):
                 head, tail = os.path.split(doc)
-                with open(os.path.join(inputDir, doc), "r", encoding="utf-8", errors="ignore") as file:
+                with open(os.path.join(inputDir, doc), encoding="utf-8", errors="ignore") as file:
                     dId += 1
                     print("Importing filename " + str(dId) + "/" + str(numFiles) + " " + tail)
                     text = file.read()
@@ -2871,7 +2867,7 @@ def compute_dependency_distance(
         numFiles = 1
         doc = inputFilename
         if doc.endswith(".txt"):
-            with open(doc, "r", encoding="utf-8", errors="ignore") as file:
+            with open(doc, encoding="utf-8", errors="ignore") as file:
                 dId += 1
                 head, tail = os.path.split(doc)
                 print("Processing file " + str(dId) + "/" + str(numFiles) + tail)
@@ -2890,7 +2886,7 @@ def compute_dependency_distance(
         for doc in inputDocs:
             if doc.endswith(".txt"):
                 head, tail = os.path.split(doc)
-                with open(os.path.join(inputDir, doc), "r", encoding="utf-8", errors="ignore") as file:
+                with open(os.path.join(inputDir, doc), encoding="utf-8", errors="ignore") as file:
                     dId += 1
                     print("Importing filename " + str(dId) + "/" + str(numFiles) + " " + tail)
                     text = file.read()

@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -10,20 +11,17 @@ if (
 ):
     sys.exit(0)
 
-import os
+from itertools import combinations
 import math
 import tkinter.messagebox as mb
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 from scipy import stats
-from itertools import combinations
 
-import IO_files_util
-import IO_csv_util
 import charts_util
-import GUI_IO_util
+import IO_files_util
 import IO_user_interface_util
-
 
 # ---------------------------------------------------------------------------
 #  Private helpers
@@ -1791,7 +1789,7 @@ def run_silhouette_test(
         )
         return filesToOpen
 
-    from sklearn.metrics import silhouette_score, silhouette_samples
+    from sklearn.metrics import silhouette_samples, silhouette_score
 
     overall = float(silhouette_score(Xv, labels))
     samp = silhouette_samples(Xv, labels)

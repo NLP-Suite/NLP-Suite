@@ -3,6 +3,7 @@
 # Rewritten by Roberto Franzosi May, September 2020
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -12,29 +13,28 @@ if (
 ):
     sys.exit(0)
 
+import io
 import os
 import tkinter as tk
+from tkinter import ttk
+import tkinter.messagebox as mb
+from urllib.request import urlopen  # used to call Google website to display a selected pin
 
-import io
 from PIL import Image, ImageTk
-import tkinter.ttk as ttk
 
 # tkcolorpicker requires tkinter and pillow to be installed (https://libraries.io/pypi/tkcolorpicker)
 # tkcolorpicker is both the package and module name
 # pillow is the Python 3 version of PIL which was an older Python 2 version
 # PIL being the commmon module for both packages, you need to check for PIL and trap PIL to tell the user to install pillow
 from tkcolorpicker import askcolor
+
 import CoNLL_util
-
-import tkinter.messagebox as mb
-from urllib.request import urlopen  # used to call Google website to display a selected pin
-
-import GUI_IO_util
-import GIS_Google_pin_util
-import IO_files_util
 import GIS_file_check_util
+import GIS_Google_pin_util
 import GIS_pipeline_util
+import GUI_IO_util
 import IO_csv_util
+import IO_files_util
 import reminders_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -98,7 +98,7 @@ def run():
             )
 
         # Word is the header from Stanford CoreNLP NER annotator
-        if not "Location" in headers and not "Word" in headers and not "NER" in headers:
+        if "Location" not in headers and "Word" not in headers and "NER" not in headers:
             GUI_util.run_button.configure(state="disabled")
             mb.showwarning(
                 title="Warning",

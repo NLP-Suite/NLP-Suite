@@ -1,5 +1,4 @@
 #!/usr/bin/env Python
-# -*- coding: utf-8 -*-
 """
 Created on Fri Oct  9 18:16:y_multiplier_integer 2020
 
@@ -7,6 +6,7 @@ Created on Fri Oct  9 18:16:y_multiplier_integer 2020
 """
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -20,28 +20,27 @@ if (
 ):
     sys.exit(0)
 
+# necessary to avoid having to do Ctrl+C to kill pyLDAvis to continue running the code
+from _thread import start_new_thread
 import os
-import tkinter.messagebox as mb
-import pandas as pd
 from pprint import pprint
 from sys import platform
+import tkinter.messagebox as mb
 
 # Gensim
 import gensim
-import gensim.corpora as corpora
-from gensim.utils import simple_preprocess
+from gensim import corpora
 from gensim.models import CoherenceModel
-
-# necessary to avoid having to do Ctrl+C to kill pyLDAvis to continue running the code
-from _thread import start_new_thread
-
-# spacy for lemmatization
-import spacy
+from gensim.utils import simple_preprocess
+import matplotlib
+import pandas as pd
 
 # plotting tools
 import pyLDAvis
 import pyLDAvis.gensim
-import matplotlib
+
+# spacy for lemmatization
+import spacy
 
 try:
     matplotlib.use("TkAgg")  # may be necessary for your system
@@ -61,9 +60,9 @@ import warnings
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+import charts_util
 import IO_files_util
 import IO_user_interface_util
-import charts_util
 import reminders_util
 
 # whether stopwordst were already downloaded can be tested, see stackoverflow
@@ -449,7 +448,7 @@ def run_Gensim(
 
     for fileName in inputDocs:
         if fileName.endswith(".txt"):
-            with open(os.path.join(inputDir, fileName), "r", encoding="utf-8", errors="ignore") as file:
+            with open(os.path.join(inputDir, fileName), encoding="utf-8", errors="ignore") as file:
                 content.append(file.read())
 
     # TODO: read in the article title in stead of an arbitrary number (1 here)

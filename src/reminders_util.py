@@ -1,16 +1,15 @@
 # Written by Cynthia Dong April 2020
 # Edited by Roberto Franzosi
-import GUI_IO_util
-import IO_files_util
-import sys
+import csv
 
 # if IO_util.install_all_Python_packages(window,"reminders_util",['os','tkinter','pandas'])==False:
 #     sys.exit(0)
-
 import os
 import tkinter.messagebox as mb
+
 import pandas as pd
-import csv
+
+import GUI_IO_util
 
 # reminders content for specific GUIs are set in the csv file reminders
 # check if the user wants tadded the release_version.txt fio see the message again
@@ -436,7 +435,7 @@ def getReminders_list(scriptName, silent=False):
     remindersFile = os.path.join(GUI_IO_util.remindersPath, "reminders.csv")
     try:
         df = pd.read_csv(remindersFile, encoding="utf-8", on_bad_lines="skip")
-        if not "Reset to ON all reminders" in df.iloc[0, 1] or not "Reset to OFF all reminders" in df.iloc[1, 1]:
+        if "Reset to ON all reminders" not in df.iloc[0, 1] or "Reset to OFF all reminders" not in df.iloc[1, 1]:
             df.iloc[0] = ["*", "Reset to ON all reminders", "Turn ON all available reminders for all GUIs", "ON"]
             df.iloc[1] = ["*", "Reset to OFF all reminders", "Turn OFF all available reminders for all GUIs", "OFF"]
             # save the reminders file since it will be read in the function resetReminder
@@ -503,14 +502,13 @@ def displayReminder(df, row_num, title, message, currentStatus, question, seeMsg
             status = "OFF"
         else:
             status = "ON"
-    else:
-        if answer == "Yes":
-            if currentStatus == "No" or currentStatus == "OFF":  # 'No' the old way of saving reminders
-                status = "ON"
-            else:
-                status = "OFF"
+    elif answer == "Yes":
+        if currentStatus == "No" or currentStatus == "OFF":  # 'No' the old way of saving reminders
+            status = "ON"
         else:
-            status = currentStatus
+            status = "OFF"
+    else:
+        status = currentStatus
     if currentStatus != status:
         # saveReminder(df,row_num, message, event, status)
         saveReminder(df, row_num, message, status)
@@ -534,11 +532,10 @@ def checkReminder(scriptName, title_options=[], message="", triggered_by_GUI_eve
     status = ""
     if title_options == []:  # None:
         title_options = getReminders_list(scriptName)
-    else:
-        if len(title_options) == 0:
-            title_options = getReminders_list(scriptName)
-            if len(title_options) == 0:  # ill formed reminders
-                return None
+    elif len(title_options) == 0:
+        title_options = getReminders_list(scriptName)
+        if len(title_options) == 0:  # ill formed reminders
+            return None
     remindersFile = os.path.join(GUI_IO_util.remindersPath, "reminders.csv")
     try:
         df = pd.read_csv(remindersFile, encoding="utf-8", on_bad_lines="skip")

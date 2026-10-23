@@ -17,6 +17,7 @@ Examples of Usage:
 """
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -24,6 +25,7 @@ if not IO_libraries_util.install_all_Python_packages(GUI_util.window, "Stanza_fu
     sys.exit(0)
 
 import stanza
+
 import IO_internet_util
 
 # should make the Stanza pipeline parametrized by lang selected by user

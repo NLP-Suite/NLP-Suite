@@ -27,8 +27,8 @@
 # Validated end-to-end against real Stanza 1.10 and spaCy 3.4 (identical noun / PERSON /
 # LOCATION / DATE output on the same text).
 
-import config_util
 import basic_NLP_util
+import config_util
 
 
 class ConfigParser:

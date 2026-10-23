@@ -23,6 +23,7 @@ Parameters:
 # add parameter to exclude duplicates? also mean or median analysis
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -36,21 +37,21 @@ if (
 ):
     sys.exit(0)
 
-import os
+import argparse
 import csv
 import json
+import os
 import statistics
 import time
-import argparse
 import tkinter.messagebox as mb
 
-import IO_csv_util
-import GUI_IO_util
 import charts_util
+import GUI_IO_util
+import IO_csv_util
 import IO_files_util
 import statistics_statistical_tests_util
 
-fin = open("../lib/wordLists/stopwords.txt", "r")
+fin = open("../lib/wordLists/stopwords.txt")
 stops = set(fin.read().splitlines())
 database = GUI_IO_util.sentiment_libPath + os.sep + "hedonometer.json"
 if not os.path.isfile(database):
@@ -76,7 +77,7 @@ def analyzefile(inputFilename, outputDir, outputFilename, mode, Document_ID, Doc
     # the output filename is reset in the specific script; must be passed as a parameter
     # cannot use time in the filename or when re-generated n the main sentimen_concreteness_analysis.py it will have a different time stamp and the file will not be found
     # read file into string
-    with open(inputFilename, "r", encoding="utf-8", errors="ignore") as myfile:
+    with open(inputFilename, encoding="utf-8", errors="ignore") as myfile:
         fulltext = myfile.read()
     # end method if file is empty
     if len(fulltext) < 1:
@@ -88,10 +89,10 @@ def analyzefile(inputFilename, outputDir, outputFilename, mode, Document_ID, Doc
         return
 
     from Stanza_functions_util import (
-        stanzaPipeLine,
-        sentence_split_stanza_text,
-        tokenize_stanza_text,
         lemmatize_stanza_word,
+        sentence_split_stanza_text,
+        stanzaPipeLine,
+        tokenize_stanza_text,
     )
 
     # otherwise, split into sentences
@@ -274,29 +275,28 @@ def main(inputFilename, inputDir, outputDir, mode, chartPackage="Excel", dataTra
                 "Document ID",
                 "Document",
             ]
-        else:
-            if mode == "mean":
-                fieldnames = [
-                    "Sentiment score (Mean)",
-                    "Sentiment label (Mean)",
-                    "Found Words",
-                    "Word List",
-                    "Sentence ID",
-                    "Sentence",
-                    "Document ID",
-                    "Document",
-                ]
-            elif mode == "median":
-                fieldnames = [
-                    "Sentiment score (Median)",
-                    "Sentiment label (Median)",
-                    "Found Words",
-                    "Word List",
-                    "Sentence ID",
-                    "Sentence",
-                    "Document ID",
-                    "Document",
-                ]
+        elif mode == "mean":
+            fieldnames = [
+                "Sentiment score (Mean)",
+                "Sentiment label (Mean)",
+                "Found Words",
+                "Word List",
+                "Sentence ID",
+                "Sentence",
+                "Document ID",
+                "Document",
+            ]
+        elif mode == "median":
+            fieldnames = [
+                "Sentiment score (Median)",
+                "Sentiment label (Median)",
+                "Found Words",
+                "Word List",
+                "Sentence ID",
+                "Sentence",
+                "Document ID",
+                "Document",
+            ]
         global writer
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()

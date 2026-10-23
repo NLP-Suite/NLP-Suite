@@ -2,18 +2,18 @@
 # re-written by Roberto Franzosi October 2021
 # completed by Austin Cai October 2021
 
+import csv
 import os
 import tkinter.messagebox as mb
-import pandas as pd
-import csv
-import numpy as np
-import pprint
 
-import GUI_util
-import IO_files_util
-import IO_csv_util
-import IO_user_interface_util
+import numpy as np
+import pandas as pd
+
 import constants_util
+import GUI_util
+import IO_csv_util
+import IO_files_util
+import IO_user_interface_util
 
 """
 NGramsCoOccurrences implements the ability to generate NGram and CoOccurrences data
@@ -21,10 +21,10 @@ NGramsCoOccurrences implements the ability to generate NGram and CoOccurrences d
 # import hashfile
 
 from Stanza_functions_util import (
-    stanzaPipeLine,
-    sentence_split_stanza_text,
     lemmatize_stanza_doc,
     lemmatize_stanza_word,
+    sentence_split_stanza_text,
+    stanzaPipeLine,
 )
 
 
@@ -59,7 +59,7 @@ def one_text_res(
 
 
 def readfile(doc):
-    with open(doc, "r", encoding="utf-8", errors="ignore") as f:
+    with open(doc, encoding="utf-8", errors="ignore") as f:
         fullText = f.read()
         fullText = fullText.replace("\n", " ")
     return fullText
@@ -96,7 +96,6 @@ def search_within_sentence_coOccurences(
     )
     results = []
     sentIndex = 0
-    import re
 
     hashOutputDir = os.path.dirname(outputDir + "_sentence")
     # SIMON cache
@@ -574,10 +573,9 @@ def search_ngrams_csv_file(
             if "Date" in headers:
                 X_axis_label = "Date"
                 groupBy = ["Date"]
-            else:
-                if "Document" in headers:
-                    X_axis_label = "Document"
-                    groupBy = ["Document"]
+            elif "Document" in headers:
+                X_axis_label = "Document"
+                groupBy = ["Document"]
             doc_pos = IO_csv_util.get_columnNumber_from_headerValue(headers, X_axis_label, inputFilename)
 
             columns_to_be_plotted_yAxis = []
@@ -622,7 +620,7 @@ def search_ngrams_csv_file(
             combined_saneky_df.to_csv(NgramsSearchFileName_Sankey, index=False)
             combined_saneky_df[combined_saneky_df.columns[0]].to_csv(NgramsSearchFileName_txt, index=False)
 
-            with open(NgramsSearchFileName_txt, "r", encoding="utf-8", errors="ignore") as f:
+            with open(NgramsSearchFileName_txt, encoding="utf-8", errors="ignore") as f:
                 q = f.read()
             for word in search_keywords_list:
                 q = q.replace(word, "")
@@ -784,7 +782,7 @@ def NGrams_coOccurrences_VIEWER(
     within_sentence_co_occurrence_search_var=True,
 ):
 
-    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
+    from Stanza_functions_util import sentence_split_stanza_text, stanzaPipeLine
 
     if search_keywords_list is None:
         search_keywords_list = []
@@ -993,7 +991,7 @@ def NGrams_coOccurrences_VIEWER(
         # if hashfile.calculate_checksum(file) in hashmap:
         #     tokens_ = hashmap[hashfile.calculate_checksum(file)]
         # else:
-        f = open(file, "r", encoding="utf-8", errors="ignore")
+        f = open(file, encoding="utf-8", errors="ignore")
         docText = f.read()
         f.close()
 
@@ -1399,12 +1397,10 @@ def save_co_occurrences(
                     line = ["Search Word(s)_lemmatized", "Co-Occurrence in Sentence", "Co-Occurrence in Document"]
                 else:
                     line = ["Search Word(s)", "Co-Occurrence in Sentence", "Co-Occurrence in Document"]
+            elif lemmatize:
+                line = ["Search Word(s)_lemmatized", "Co-Occurrence in Document"]
             else:
-                if lemmatize:
-                    line = ["Search Word(s)_lemmatized", "Co-Occurrence in Document"]
-                else:
-                    line = ["Search Word(s)", "Co-Occurrence in Document"]
-            import re
+                line = ["Search Word(s)", "Co-Occurrence in Document"]
 
             search_words_list = next(iter(coOcc_results.items()))[1]["Search Word(s)"]
             line.extend([element + "_Frequency" for element in search_words_list])
@@ -1422,7 +1418,7 @@ def save_co_occurrences(
                 for key, res in coOcc_results.items():
                     doc_coocc = False
                     if isinstance(res, dict):
-                        valuescheck_sent = coOcc_results[key]["Co-Occurrence in Sentence"].values()
+                        valuescheck_sent = res["Co-Occurrence in Sentence"].values()
                         for freq in range(len(valuescheck_sent)):
                             if list(valuescheck_sent)[freq] > 0:
                                 doc_coocc = True

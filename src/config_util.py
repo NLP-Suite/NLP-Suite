@@ -15,15 +15,15 @@
 # if not IO_libraries_util .install_all_Python_packages(GUI_util.window,"config_util",['os','tkinter']):
 #     sys.exit(0)
 
+import csv
 import os
 import tkinter.messagebox as mb
-import pandas as pd
-from subprocess import call
 
-import IO_user_interface_util
+import pandas as pd
+
 import GUI_IO_util
+import IO_user_interface_util
 import run_script_util
-import csv
 
 defaultConfigFilename = "NLP_default_IO_config.csv"
 
@@ -41,27 +41,26 @@ def checkConfigFileExists(config_filename, fileName, IO):
             + '" config file does not exist. It must have been never created, deleted, or moved.\n\nYou must re-create the file by selecting the appropriate I/O options, save them, and try again!',
         )
         fileName = ""
-    else:
-        if fileName != "":
-            if not os.path.isfile(fileName):
-                # must pass the right config filename in case there is only the default config
-                if not os.path.isfile(config_filename) and os.path.isfile(
-                    os.path.join(GUI_IO_util.configPath, defaultConfigFilename)
-                ):
-                    config_filename = defaultConfigFilename
-                mb.showwarning(
-                    title="File error",
-                    message="The "
-                    + IO
-                    + " file saved in "
-                    + config_filename
-                    + "\n\n"
-                    + fileName
-                    + "\n\nno longer exists. It must have been deleted or moved.\n\nPlease, select a new "
-                    + IO
-                    + " file and try again!",
-                )
-                fileName = ""
+    elif fileName != "":
+        if not os.path.isfile(fileName):
+            # must pass the right config filename in case there is only the default config
+            if not os.path.isfile(config_filename) and os.path.isfile(
+                os.path.join(GUI_IO_util.configPath, defaultConfigFilename)
+            ):
+                config_filename = defaultConfigFilename
+            mb.showwarning(
+                title="File error",
+                message="The "
+                + IO
+                + " file saved in "
+                + config_filename
+                + "\n\n"
+                + fileName
+                + "\n\nno longer exists. It must have been deleted or moved.\n\nPlease, select a new "
+                + IO
+                + " file and try again!",
+            )
+            fileName = ""
     return error, fileName
 
 
@@ -80,27 +79,26 @@ def checkConfigDirExists(config_filename, dirName, IO):
         )
 
         dirName = ""
-    else:
-        if dirName != "":
-            if not os.path.isdir(dirName):
-                # must pass the right config filename in case there is only the default config
-                if not os.path.isfile(config_filename) and os.path.isfile(
-                    os.path.join(GUI_IO_util.configPath, defaultConfigFilename)
-                ):
-                    config_filename = defaultConfigFilename
-                mb.showwarning(
-                    title="Directory error",
-                    message="The "
-                    + IO
-                    + " directory saved in "
-                    + config_filename
-                    + "\n\n"
-                    + dirName
-                    + "\n\nno longer exists. It must have been deleted or moved.\n\nPlease, select a new "
-                    + IO
-                    + " directory and try again!",
-                )
-                dirName = ""
+    elif dirName != "":
+        if not os.path.isdir(dirName):
+            # must pass the right config filename in case there is only the default config
+            if not os.path.isfile(config_filename) and os.path.isfile(
+                os.path.join(GUI_IO_util.configPath, defaultConfigFilename)
+            ):
+                config_filename = defaultConfigFilename
+            mb.showwarning(
+                title="Directory error",
+                message="The "
+                + IO
+                + " directory saved in "
+                + config_filename
+                + "\n\n"
+                + dirName
+                + "\n\nno longer exists. It must have been deleted or moved.\n\nPlease, select a new "
+                + IO
+                + " directory and try again!",
+            )
+            dirName = ""
     return error, dirName
 
 
@@ -378,7 +376,7 @@ def get_template_config_csv_file(config_input_output_numeric_options, config_inp
                 config_input_output_alphabetic_options = IO_configuration
         else:
             # 5 fields: label/path + sort order + 3 date items (Item separator character(s), Date format, Date position)
-            IO_configuration.append([IO_configuration_label[index], "", "", "", 0])
+            IO_configuration.append([configuration_column_label, "", "", "", 0])
     return IO_configuration
 
 
@@ -398,7 +396,7 @@ def get_input_file_directory(config_filename):
     # check that the config file exists
     if os.path.isfile(configFilePath) == True:
         config_file_exists = True
-        csv_file = open(configFilePath, "r", newline="")
+        csv_file = open(configFilePath, newline="")
         # config_input_output_alphabetic_options a double list [[]]
         config_input_output_alphabetic_options = list(csv.reader(csv_file, delimiter=","))
         input_filename = config_input_output_alphabetic_options[1][1]
@@ -436,7 +434,7 @@ def read_config_file(config_filename, config_input_output_numeric_options):
     # check that the config file exists
     if os.path.isfile(configFilePath) == True:
         config_file_exists = True
-        csv_file = open(configFilePath, "r", newline="")
+        csv_file = open(configFilePath, newline="")
         # config_input_output_alphabetic_options a double list [[]]
         config_input_output_alphabetic_options = list(csv.reader(csv_file, delimiter=","))
         config_input_output_alphabetic_options.pop(0)  # skip header
@@ -479,7 +477,7 @@ def read_config_file(config_filename, config_input_output_numeric_options):
                         message="You must enter the appropriate Input/output configuration options in NLP_setup_IO_main.py and SAVE them to exit this loop.",
                     )
             # read the newly saved options
-            csv_file = open(configFilePath, "r", newline="")
+            csv_file = open(configFilePath, newline="")
             config_input_output_alphabetic_options = list(csv.reader(csv_file, delimiter=","))
             config_input_output_alphabetic_options.pop(0)  # skip header
             # cannot use read_config_file again or it returns the old config_input_output_numeric_options
@@ -555,7 +553,7 @@ def remove_missing_IO_line(missing_IO, item_label):
     if missing_IO == "" or item_label == "":
         return missing_IO
     remaining = [
-        line for line in missing_IO.split("\n") if line.strip() != "" and not item_label.lower() in line.lower()
+        line for line in missing_IO.split("\n") if line.strip() != "" and item_label.lower() not in line.lower()
     ]
     if len(remaining) == 0:
         return ""
@@ -583,11 +581,10 @@ def check_missing_IO(window, config_filename, scriptName, IO_setup_display_brief
         enter_required_IO = "Press OK to enter the required I/O information using the 'Select INPUT and Select OUTPUT' buttons at the top of the GUI.\nPress CANCEL to exit without entering I/O information then press CLOSE."
     elif "NLP_menu_main" in scriptName:
         enter_required_IO = "The 'NLP_setup_IO_main' GUI will now open where you can enter missing required IO information.\n\nYou can also click on the top button 'Setup default I/O options: INPUT corpus file(s) and OUTPUT files directory' to enter the required I/O information."
+    elif not IO_setup_display_brief:
+        enter_required_IO = ""  #'Press OK to enter the required I/O information using the \'Select INPUT and Select OUTPUT\' buttons at the top of the GUI.\nPress CANCEL to exit without entering I/O information.'
     else:
-        if not IO_setup_display_brief:
-            enter_required_IO = ""  #'Press OK to enter the required I/O information using the \'Select INPUT and Select OUTPUT\' buttons at the top of the GUI.\nPress CANCEL to exit without entering I/O information.'
-        else:
-            enter_required_IO = "Press OK to enter the required I/O information when the I/O setup GUI opens next.\nPress CANCEL to exit without entering I/O information."
+        enter_required_IO = "Press OK to enter the required I/O information when the I/O setup GUI opens next.\nPress CANCEL to exit without entering I/O information."
     if IO_setup_display_brief == True:
         IO_button_name = "Setup INPUT/OUTPUT configuration"  # when displaying brief
     if IO_setup_display_brief == False:
@@ -611,7 +608,7 @@ def check_missing_IO(window, config_filename, scriptName, IO_setup_display_brief
     if missing_IO != "":
         Run_Button_Off = True
         if not silent:
-            if (not IO_setup_display_brief) and (not "setup_IO_main" in scriptName):
+            if (not IO_setup_display_brief) and ("setup_IO_main" not in scriptName):
                 mb.showwarning(
                     title="Warning",
                     message="The following required INPUT/OUTPUT information is missing in config file "

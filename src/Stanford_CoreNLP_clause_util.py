@@ -1,5 +1,4 @@
 #!/usr/bin/env Python
-# -*- coding: utf-8 -*-
 """
 Created on Fri Apr 26 15:16:10 2019
 
@@ -8,6 +7,7 @@ Created on Fri Apr 26 15:16:10 2019
 # Edited by Julian Lucio Paredes 2025
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -16,8 +16,9 @@ if not IO_libraries_util.install_all_Python_packages(
 ):
     sys.exit(0)
 
-from nltk.tree import Tree
 import tkinter.messagebox as mb
+
+from nltk.tree import Tree
 
 
 def constituent_spans(parsetree):

@@ -1,4 +1,5 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -11,14 +12,12 @@ if (
     sys.exit(0)
 
 import os
-import pandas as pd
 import tkinter.messagebox as mb
-from collections import defaultdict
 
-import IO_csv_util
+import pandas as pd
+
 import IO_files_util
 import IO_user_interface_util
-
 
 PERSON_TAGS = {"PERSON"}
 LOCATION_TAGS = {"GPE", "LOC", "STATE_OR_PROVINCE", "COUNTRY", "CITY", "LOCATION", "FAC"}
@@ -37,7 +36,7 @@ def _get_stanza_pipeline(language="en"):
 
 def _extract_cooccurrences(filepath, nlp, doc_id):
     """Extract person-location co-occurrences per sentence from a text file."""
-    with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+    with open(filepath, encoding="utf-8", errors="ignore") as f:
         text = f.read()
     if not text.strip():
         return []

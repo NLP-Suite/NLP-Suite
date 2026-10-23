@@ -9,6 +9,7 @@
 # https://pypi.org/project/qanom/0.0.1/
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
@@ -21,8 +22,7 @@ if (
     sys.exit(0)
 
 import os
-import tkinter as tk
-import tkinter.messagebox as mb
+
 import nltk
 
 # check averaged_perceptron_tagger
@@ -35,25 +35,23 @@ IO_libraries_util.import_nltk_resource(GUI_util.window, "tokenizers/punkt", "pun
 IO_libraries_util.import_nltk_resource(GUI_util.window, "corpora/wordnet", "wordnet")
 # IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/wordnet','omw-1.4')
 IO_libraries_util.import_nltk_resource(GUI_util.window, "corpora/omw-1.4", "omw-1.4")
-from nltk.corpus import wordnet as wn
+from collections import Counter
+import re
 
 # Nominalization detection uses WordNet derivational morphology + POS/lemma from the Suite's config-aware
 # basic NLP layer (basic_NLP_util). It no longer depends on pywsd (which broke against newer `wn`); this is
 # the standard, reproducible WordNet method (Fellbaum 1998). See _nominalization_base_verb below.
 import string
-import re
-from collections import Counter
-import nltk
+
+from nltk.corpus import wordnet as wn
 import pandas as pd
 
-
-import IO_files_util
-import IO_csv_util
-import IO_user_interface_util
 import charts_util
-import GUI_IO_util
 import config_util
-
+import GUI_IO_util
+import IO_csv_util
+import IO_files_util
+import IO_user_interface_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -69,11 +67,11 @@ import config_util
 def check_word_for_nominalization(word, nominalized_verbs_list):
     skip_record = False
     if (
-        not "ent" in word[-3:]
-        and not "ing" in word[-3:]
-        and not "ion" in word[-3:]
-        and not "ance" in word[-4:]
-        and not "ence" in word[-4:]
+        "ent" not in word[-3:]
+        and "ing" not in word[-3:]
+        and "ion" not in word[-3:]
+        and "ance" not in word[-4:]
+        and "ence" not in word[-4:]
     ):
         skip_record = True
     # check against a dictionary of nominalized verbs non ending in the standard nominalized verbs
@@ -123,8 +121,8 @@ def nominalized_verb_detection(docID, doc, dateStr, sent, check_ending, nominali
     nominalized_cnt = Counter()
 
     # sentences = tokenize.sent_tokenize(sent)
-    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
     import basic_NLP_util
+    from Stanza_functions_util import sentence_split_stanza_text, stanzaPipeLine
 
     sentences = sentence_split_stanza_text(stanzaPipeLine(sent))
 
@@ -226,32 +224,31 @@ def nominalized_verb_detection(docID, doc, dateStr, sent, check_ending, nominali
                             IO_csv_util.dressFilenameForCSVHyperlink(doc),
                         ]
                     )
-        else:
-            # result_specific_document.append([docID, IO_csv_util.dressFilenameForCSVHyperlink(doc), i+1, sentence[i], word_count[i], nomi_sen[i], nomi_count[i]])
-            if nomi_count[i] > 0:
-                if dateStr != "":
-                    result_specific_document.append(
-                        [
-                            word_count[i],
-                            nomi_sen[i],
-                            nomi_count[i],
-                            sentence[i],
-                            docID,
-                            IO_csv_util.dressFilenameForCSVHyperlink(doc),
-                            dateStr,
-                        ]
-                    )
-                else:
-                    result_specific_document.append(
-                        [
-                            word_count[i],
-                            nomi_sen[i],
-                            nomi_count[i],
-                            sentence[i],
-                            docID,
-                            IO_csv_util.dressFilenameForCSVHyperlink(doc),
-                        ]
-                    )
+        # result_specific_document.append([docID, IO_csv_util.dressFilenameForCSVHyperlink(doc), i+1, sentence[i], word_count[i], nomi_sen[i], nomi_count[i]])
+        elif nomi_count[i] > 0:
+            if dateStr != "":
+                result_specific_document.append(
+                    [
+                        word_count[i],
+                        nomi_sen[i],
+                        nomi_count[i],
+                        sentence[i],
+                        docID,
+                        IO_csv_util.dressFilenameForCSVHyperlink(doc),
+                        dateStr,
+                    ]
+                )
+            else:
+                result_specific_document.append(
+                    [
+                        word_count[i],
+                        nomi_sen[i],
+                        nomi_count[i],
+                        sentence[i],
+                        docID,
+                        IO_csv_util.dressFilenameForCSVHyperlink(doc),
+                    ]
+                )
     # print(result_specific_document)
     # result_true_false_each_noun contains a list of each word TRUE/FALSE values for nominalization for the document processed
     # result_specific_document contains a list of docID, docName, sentence... for the document processed
@@ -391,7 +388,7 @@ def nominalization(
         docID = docID + 1
         head, tail = os.path.split(doc)
         print("Processing file " + str(docID) + "/" + str(nDocs) + " " + tail)
-        with open(doc, "r", encoding="utf-8", errors="ignore") as fin:
+        with open(doc, encoding="utf-8", errors="ignore") as fin:
             doc_text = fin.read()
         result_true_false_each_noun, result_specific_document, noun_cnt, nominalized_cnt = nominalized_verb_detection(
             docID, doc, dateStr, doc_text, check_ending, nominalized_verbs_list
@@ -459,11 +456,10 @@ def nominalization(
                 columns_to_be_plotted_yAxis = [[4, 4]]
                 X_axis_label = "Date"
                 groupBy = ["Date"]
-            else:
-                if "Document" in headers:
-                    X_axis_label = "Document"
-                    groupBy = ["Document"]
-                    columns_to_be_plotted_yAxis = [[3, 3]]
+            elif "Document" in headers:
+                X_axis_label = "Document"
+                groupBy = ["Document"]
+                columns_to_be_plotted_yAxis = [[3, 3]]
 
             # column_xAxis_label='Nominalized verb'
             # columns_to_be_plotted_xAxis=[]
