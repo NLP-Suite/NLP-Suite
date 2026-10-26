@@ -117,9 +117,12 @@ pycorenlp
 stanfordcorenlp
 
 # Image
-# Pillow pinned to 10.4.0: Pillow 12.x is incompatible with the bundled Tcl/Tk 8.6 runtime and
-# crashes loading the welcome-screen images (Evan's testing) - the app won't open without this pin.
-Pillow==10.4.0
+# Pillow 13.0.0 is the first release that fixes GHSA-c6hw-5grf-ff96 (TIFF decoder OOB read; affects
+# 8.1.0 through 12.x), and it requires Python 3.11+. The old 10.4.0 pin dated from a welcome-screen crash
+# under the bundled Tcl/Tk (Evan's testing). That crash came from PIL.ImageTk / _imagingtk, which the
+# welcome screen and logo no longer use: they render through GUI_util.tk_image_from_pil (c8c215d4).
+# The only ImageTk caller left is the Google Earth icon preview, which is guarded by try/except.
+Pillow==13.0.0
 
 # Knowledge graphs
 SPARQLWrapper
